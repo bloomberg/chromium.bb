@@ -35,16 +35,15 @@ class SVGAnimatedViewBoxRect : public SVGAnimatedRect {
     return new SVGAnimatedViewBoxRect(context_element);
   }
 
-  SVGParsingError SetBaseValueAsString(const String&) override;
+  SVGParsingError AttributeChanged(const String&) override;
 
  protected:
   SVGAnimatedViewBoxRect(SVGElement* context_element)
       : SVGAnimatedRect(context_element, SVGNames::viewBoxAttr) {}
 };
 
-SVGParsingError SVGAnimatedViewBoxRect::SetBaseValueAsString(
-    const String& value) {
-  SVGParsingError parse_status = SVGAnimatedRect::SetBaseValueAsString(value);
+SVGParsingError SVGAnimatedViewBoxRect::AttributeChanged(const String& value) {
+  SVGParsingError parse_status = SVGAnimatedRect::AttributeChanged(value);
 
   if (parse_status == SVGParseStatus::kNoError &&
       (BaseValue()->Width() < 0 || BaseValue()->Height() < 0)) {

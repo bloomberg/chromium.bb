@@ -38,8 +38,9 @@ void SVGAnimatedLength::SetDefaultValueAsString(const String& value) {
   BaseValue()->SetValueAsString(value);
 }
 
-SVGParsingError SVGAnimatedLength::SetBaseValueAsString(const String& value) {
-  SVGParsingError parse_status = BaseValue()->SetValueAsString(value);
+SVGParsingError SVGAnimatedLength::AttributeChanged(const String& value) {
+  SVGParsingError parse_status =
+      SVGAnimatedProperty<SVGLength>::AttributeChanged(value);
 
   if (parse_status != SVGParseStatus::kNoError)
     BaseValue()->NewValueSpecifiedUnits(CSSPrimitiveValue::UnitType::kUserUnits,

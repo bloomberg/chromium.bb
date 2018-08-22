@@ -89,7 +89,7 @@ SVGStringListTearOff* SVGStaticStringList::TearOff() {
   return tear_off_.Get();
 }
 
-SVGParsingError SVGStaticStringList::SetBaseValueAsString(const String& value) {
+SVGParsingError SVGStaticStringList::AttributeChanged(const String& value) {
   return value_->SetValueAsString(value);
 }
 

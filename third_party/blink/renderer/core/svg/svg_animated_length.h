@@ -53,7 +53,7 @@ class SVGAnimatedLength : public ScriptWrappable,
   }
 
   void SetDefaultValueAsString(const String&);
-  SVGParsingError SetBaseValueAsString(const String&) override;
+  SVGParsingError AttributeChanged(const String&) override;
 
   const CSSValue& CssValue() const {
     return CurrentValue()->AsCSSPrimitiveValue();

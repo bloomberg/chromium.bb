@@ -46,9 +46,8 @@ class SVGAnimatedPathLength final : public SVGAnimatedNumber {
     return new SVGAnimatedPathLength(context_element);
   }
 
-  SVGParsingError SetBaseValueAsString(const String& value) override {
-    SVGParsingError parse_status =
-        SVGAnimatedNumber::SetBaseValueAsString(value);
+  SVGParsingError AttributeChanged(const String& value) override {
+    SVGParsingError parse_status = SVGAnimatedNumber::AttributeChanged(value);
     if (parse_status == SVGParseStatus::kNoError && BaseValue()->Value() < 0)
       parse_status = SVGParseStatus::kNegativeValue;
     return parse_status;

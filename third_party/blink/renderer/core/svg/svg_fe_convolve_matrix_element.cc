@@ -44,7 +44,7 @@ class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
     return new SVGAnimatedOrder(context_element);
   }
 
-  SVGParsingError SetBaseValueAsString(const String&) override;
+  SVGParsingError AttributeChanged(const String&) override;
 
  protected:
   SVGAnimatedOrder(SVGElement* context_element)
@@ -64,9 +64,9 @@ class SVGAnimatedOrder : public SVGAnimatedIntegerOptionalInteger {
   }
 };
 
-SVGParsingError SVGAnimatedOrder::SetBaseValueAsString(const String& value) {
+SVGParsingError SVGAnimatedOrder::AttributeChanged(const String& value) {
   SVGParsingError parse_status =
-      SVGAnimatedIntegerOptionalInteger::SetBaseValueAsString(value);
+      SVGAnimatedIntegerOptionalInteger::AttributeChanged(value);
   // Check for semantic errors.
   parse_status = CheckValue(parse_status, FirstInteger()->BaseValue()->Value());
   parse_status =
