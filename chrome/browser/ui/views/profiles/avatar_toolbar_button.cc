@@ -176,6 +176,10 @@ void AvatarToolbarButton::OnAccountImageUpdated(const std::string& account_id,
   UpdateIcon();
 }
 
+void AvatarToolbarButton::OnAccountRemoved(const AccountInfo& info) {
+  UpdateIcon();
+}
+
 bool AvatarToolbarButton::IsIncognito() const {
   return profile_->IsOffTheRecord() && !profile_->IsGuestSession();
 }

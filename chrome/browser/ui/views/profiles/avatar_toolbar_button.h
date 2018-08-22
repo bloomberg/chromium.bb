@@ -60,6 +60,7 @@ class AvatarToolbarButton : public ToolbarButton,
   // Needed if the first sync promo account should be displayed.
   void OnAccountImageUpdated(const std::string& account_id,
                              const gfx::Image& image) override;
+  void OnAccountRemoved(const AccountInfo& info) override;
 
   bool IsIncognito() const;
   bool ShouldShowGenericIcon() const;
