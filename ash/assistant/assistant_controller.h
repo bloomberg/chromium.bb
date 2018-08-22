@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_ASSISTANT_CONTROLLER_H_
 #define ASH_ASSISTANT_ASSISTANT_CONTROLLER_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -101,6 +102,7 @@ class ASH_EXPORT AssistantController
       mojom::WebContentsManagerPtr web_contents_manager) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
+  void OpenAssistantSettings() override;
 
   // AssistantControllerObserver:
   void OnDeepLinkReceived(
