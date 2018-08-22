@@ -339,7 +339,8 @@ AudioParam::AudioParam(BaseAudioContext& context,
                                          rate_mode,
                                          min_value,
                                          max_value)),
-      context_(context) {}
+      context_(context),
+      deferred_task_handler_(&context.GetDeferredTaskHandler()) {}
 
 AudioParam* AudioParam::Create(BaseAudioContext& context,
                                AudioParamType param_type,
@@ -362,6 +363,15 @@ AudioParam* AudioParam::Create(BaseAudioContext& context,
 
   return new AudioParam(context, param_type, default_value, rate, rate_mode,
                         min_value, max_value);
+}
+
+AudioParam::~AudioParam() {
+  // The graph lock is required to destroy the handler. And we can't use
+  // |context_| to touch it, since that object may also be a dead heap object.
+  {
+    DeferredTaskHandler::GraphAutoLocker locker(*deferred_task_handler_);
+    handler_ = nullptr;
+  }
 }
 
 void AudioParam::Trace(blink::Visitor* visitor) {

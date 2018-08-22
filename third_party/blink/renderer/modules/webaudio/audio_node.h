@@ -47,6 +47,7 @@ class AudioNodeOptions;
 class AudioNodeInput;
 class AudioNodeOutput;
 class AudioParam;
+class DeferredTaskHandler;
 class ExceptionState;
 
 // An AudioNode is the basic building block for handling audio within an
@@ -314,6 +315,8 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   USING_PRE_FINALIZER(AudioNode, Dispose);
 
  public:
+  ~AudioNode() override;
+
   void Trace(blink::Visitor*) override;
   AudioHandler& Handler() const;
 
@@ -367,7 +370,12 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   bool DisconnectFromOutputIfConnected(unsigned output_index, AudioParam&);
 
   Member<BaseAudioContext> context_;
+
+  // Needed in the destructor, where |context_| is not guaranteed to be alive.
+  scoped_refptr<DeferredTaskHandler> deferred_task_handler_;
+
   scoped_refptr<AudioHandler> handler_;
+
   // Represents audio node graph with Oilpan references. N-th HeapHashSet
   // represents a set of AudioNode objects connected to this AudioNode's N-th
   // output.

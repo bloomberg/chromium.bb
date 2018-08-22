@@ -101,7 +101,7 @@ void DeferredTaskHandler::MarkSummingJunctionDirty(
 void DeferredTaskHandler::RemoveMarkedSummingJunction(
     AudioSummingJunction* summing_junction) {
   DCHECK(IsMainThread());
-  GraphAutoLocker locker(*this);
+  DCHECK(IsGraphOwner());
   dirty_summing_junctions_.erase(summing_junction);
 }
 
