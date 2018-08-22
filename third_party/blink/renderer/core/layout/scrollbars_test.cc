@@ -194,6 +194,8 @@ TEST_F(ScrollbarsTest, ScrollbarSizeForUseZoomDSF) {
   WebViewImpl* web_view_impl =
       web_view_helper.Initialize(nullptr, &client, nullptr, nullptr);
 
+  // Needed so visual viewport supplies its own scrollbars.
+  web_view_impl->GetSettings()->SetViewportEnabled(true);
   web_view_impl->Resize(IntSize(800, 600));
 
   WebURL base_url = URLTestHelpers::ToKURL("http://example.com/");
@@ -1121,7 +1123,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
   DCHECK(!root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
   DCHECK(!root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
-  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+  DCHECK(!viewport.LayerForHorizontalScrollbar());
 
   DCHECK(div_scrollable->VerticalScrollbar());
   DCHECK(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
@@ -1148,7 +1150,7 @@ TEST_F(ScrollbarsTest, CustomScrollbarChangeToMobileByEmulator) {
   EXPECT_FALSE(root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
   EXPECT_FALSE(root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
-  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+  DCHECK(!viewport.LayerForHorizontalScrollbar());
 
   EXPECT_TRUE(div_scrollable->VerticalScrollbar());
   EXPECT_TRUE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
@@ -1411,7 +1413,7 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
             root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
   DCHECK(!root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
-  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+  DCHECK(!viewport.LayerForHorizontalScrollbar());
 
   DCHECK(div_scrollable->VerticalScrollbar());
   DCHECK(!div_scrollable->VerticalScrollbar()->IsCustomScrollbar());
@@ -1444,7 +1446,7 @@ TEST_P(ScrollbarAppearanceTest, NativeScrollbarChangeToMobileByEmulator) {
             root_scrollable->VerticalScrollbar()->IsOverlayScrollbar());
   EXPECT_FALSE(root_scrollable->VerticalScrollbar()->GetTheme().IsMockTheme());
 
-  DCHECK(!viewport.LayerForHorizontalScrollbar()->Parent());
+  DCHECK(!viewport.LayerForHorizontalScrollbar());
 
   EXPECT_TRUE(div_scrollable->VerticalScrollbar());
   EXPECT_FALSE(div_scrollable->VerticalScrollbar()->IsCustomScrollbar());

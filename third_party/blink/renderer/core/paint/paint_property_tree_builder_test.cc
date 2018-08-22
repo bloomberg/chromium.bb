@@ -148,7 +148,12 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_TRUE(positioned_scroll_node->Parent()->IsRoot());
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              positioned_scroll_node->Parent());
   } else {
     EXPECT_EQ(DocScroll(), positioned_scroll_node->Parent());
   }
@@ -181,7 +186,12 @@ TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_TRUE(transformed_scroll_node->Parent()->IsRoot());
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              positioned_scroll_node->Parent());
   } else {
     EXPECT_EQ(DocScroll(), transformed_scroll_node->Parent());
   }
@@ -388,15 +398,9 @@ TEST_P(PaintPropertyTreeBuilderTest, DocScrollingTraditional) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(TransformationMatrix(), DocPreTranslation()->Matrix());
-  // TODO(bokan): Viewport property node generation has been disabled
-  // temporarily with the flag off to diagnose https//crbug.com/868927.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(
-        GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
-        DocPreTranslation()->Parent());
-  } else {
-    EXPECT_TRUE(DocPreTranslation()->Parent()->IsRoot());
-  }
+  EXPECT_EQ(
+      GetDocument().GetPage()->GetVisualViewport().GetScrollTranslationNode(),
+      DocPreTranslation()->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -100),
             DocScrollTranslation()->Matrix());
   EXPECT_EQ(DocPreTranslation(), DocScrollTranslation()->Parent());
@@ -3512,7 +3516,12 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedScrollProperties) {
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_TRUE(overflow_a_scroll_node->Parent()->IsRoot());
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              overflow_a_scroll_node->Parent());
   } else {
     EXPECT_EQ(DocScroll(), overflow_a_scroll_node->Parent());
   }
@@ -3632,16 +3641,12 @@ TEST_P(PaintPropertyTreeBuilderTest, PositionedScrollerIsNotNested) {
   auto* fixed_overflow_scroll_node = fixed_scroll_translation->ScrollNode();
   // The fixed position overflow scroll node is parented under the root, not the
   // dom-order parent or frame's scroll.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    EXPECT_EQ(GetDocument()
-                  .GetPage()
-                  ->GetVisualViewport()
-                  .GetScrollTranslationNode()
-                  ->ScrollNode(),
-              fixed_overflow_scroll_node->Parent());
-  } else {
-    EXPECT_TRUE(fixed_overflow_scroll_node->Parent()->IsRoot());
-  }
+  EXPECT_EQ(GetDocument()
+                .GetPage()
+                ->GetVisualViewport()
+                .GetScrollTranslationNode()
+                ->ScrollNode(),
+            fixed_overflow_scroll_node->Parent());
   EXPECT_EQ(TransformationMatrix().Translate(0, -43),
             fixed_scroll_translation->Matrix());
   EXPECT_EQ(IntRect(0, 0, 13, 11), fixed_overflow_scroll_node->ContainerRect());
@@ -3700,7 +3705,12 @@ TEST_P(PaintPropertyTreeBuilderTest, NestedPositionedScrollProperties) {
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_TRUE(overflow_a_scroll_node->Parent()->IsRoot());
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              overflow_a_scroll_node->Parent());
   } else {
     EXPECT_EQ(DocScroll(), overflow_a_scroll_node->Parent());
   }
@@ -4988,7 +4998,12 @@ TEST_P(PaintPropertyTreeBuilderTest, ScrollBoundsOffset) {
   // TODO(crbug.com/732611): SPv2 invalidations are incorrect if there is
   // scrolling.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    EXPECT_TRUE(scroll_node->Parent()->IsRoot());
+    EXPECT_EQ(GetDocument()
+                  .GetPage()
+                  ->GetVisualViewport()
+                  .GetScrollTranslationNode()
+                  ->ScrollNode(),
+              scroll_node->Parent());
   } else {
     EXPECT_EQ(DocScroll(), scroll_node->Parent());
   }
