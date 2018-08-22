@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+FAIL PaymentResponse inherits from EventTarget assert_equals: expected function "function EventTarget() { [native code] }" but got function "function () { [native code] }"
+FAIL PaymentResponse has an onpayerdetailchange in the prototype chain assert_true: expected true got false
+Harness: the test ran to completion.
+
