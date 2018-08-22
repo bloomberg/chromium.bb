@@ -16,6 +16,7 @@
 #include "base/pickle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
@@ -408,7 +409,8 @@ void BrowserPluginGuest::PointerLockPermissionResponse(bool allow) {
 
 void BrowserPluginGuest::FirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  if (!features::IsUsingWindowService()) {
+  if (!features::IsUsingWindowService() &&
+      !features::IsSurfaceSynchronizationEnabled()) {
     SendMessageToEmbedder(
         std::make_unique<BrowserPluginMsg_FirstSurfaceActivation>(
             browser_plugin_instance_id(), surface_info));
