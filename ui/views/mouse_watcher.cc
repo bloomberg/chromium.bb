@@ -26,11 +26,10 @@ const int kNotifyListenerTimeMs = 300;
 
 class MouseWatcher::Observer : public ui::EventHandler {
  public:
-  explicit Observer(MouseWatcher* mouse_watcher)
+  Observer(MouseWatcher* mouse_watcher, gfx::NativeWindow window)
       : mouse_watcher_(mouse_watcher),
-        event_monitor_(EventMonitor::CreateApplicationMonitor(this)),
-        notify_listener_factory_(this) {
-  }
+        event_monitor_(EventMonitor::CreateApplicationMonitor(this, window)),
+        notify_listener_factory_(this) {}
 
   // ui::EventHandler implementation:
   void OnMouseEvent(ui::MouseEvent* event) override {
@@ -57,7 +56,7 @@ class MouseWatcher::Observer : public ui::EventHandler {
   void HandleMouseEvent(MouseWatcherHost::MouseEventType event_type) {
     // It's safe to use last_mouse_location() here as this function is invoked
     // during event dispatching.
-    if (!host()->Contains(EventMonitor::GetLastMouseLocation(), event_type)) {
+    if (!host()->Contains(event_monitor_->GetLastMouseLocation(), event_type)) {
       if (event_type == MouseWatcherHost::MOUSE_PRESS) {
         NotifyListener();
       } else if (!notify_listener_factory_.HasWeakPtrs()) {
@@ -109,9 +108,9 @@ MouseWatcher::MouseWatcher(std::unique_ptr<MouseWatcherHost> host,
 MouseWatcher::~MouseWatcher() {
 }
 
-void MouseWatcher::Start() {
+void MouseWatcher::Start(gfx::NativeWindow window) {
   if (!is_observing())
-    observer_ = std::make_unique<Observer>(this);
+    observer_ = std::make_unique<Observer>(this, window);
 }
 
 void MouseWatcher::Stop() {

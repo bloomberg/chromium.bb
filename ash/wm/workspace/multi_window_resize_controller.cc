@@ -295,7 +295,8 @@ void MultiWindowResizeController::CreateMouseWatcher() {
       std::make_unique<ResizeMouseWatcherHost>(this), this);
   mouse_watcher_->set_notify_on_exit_time(
       base::TimeDelta::FromMilliseconds(kHideDelayMS));
-  mouse_watcher_->Start();
+  DCHECK(resize_widget_);
+  mouse_watcher_->Start(resize_widget_->GetNativeWindow());
 }
 
 MultiWindowResizeController::ResizeWindows

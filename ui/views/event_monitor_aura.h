@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "ui/views/event_monitor.h"
 
+namespace aura {
+class Env;
+}
+
 namespace ui {
 class EventTarget;
 }
@@ -16,11 +20,16 @@ namespace views {
 
 class EventMonitorAura : public EventMonitor {
  public:
-  EventMonitorAura(ui::EventHandler* event_handler,
+  EventMonitorAura(aura::Env* env,
+                   ui::EventHandler* event_handler,
                    ui::EventTarget* event_target);
   ~EventMonitorAura() override;
 
+  // EventMonitor:
+  gfx::Point GetLastMouseLocation() override;
+
  private:
+  aura::Env* env_;                   // Weak.
   ui::EventHandler* event_handler_;  // Weak. Owned by our owner.
   ui::EventTarget* event_target_;    // Weak.
 

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/views/views_export.h"
 
 namespace gfx {
@@ -65,8 +66,10 @@ class VIEWS_EXPORT MouseWatcher {
   // Starts watching mouse movements. When the mouse moves outside the bounds of
   // the host the listener is notified. |Start| may be invoked any number of
   // times. If the mouse moves outside the bounds of the host the listener is
-  // notified and watcher stops watching events.
-  void Start();
+  // notified and watcher stops watching events. |window| must be a window in
+  // the hierarchy related to the host. |window| is used to setup initial state,
+  // and may be deleted before MouseWatcher.
+  void Start(gfx::NativeWindow window);
 
   // Stops watching mouse events.
   void Stop();

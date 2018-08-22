@@ -1682,7 +1682,7 @@ TEST_F(WindowTreeHostManagerTest,
   views::MouseWatcher watcher(
       std::make_unique<views::MouseWatcherViewHost>(view, gfx::Insets()),
       &listener);
-  watcher.Start();
+  watcher.Start(root2);
 
   ui::test::EventGenerator event_generator(
       widget->GetNativeWindow()->GetRootWindow());

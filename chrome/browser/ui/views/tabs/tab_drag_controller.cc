@@ -221,21 +221,21 @@ void OffsetX(int x_offset, std::vector<gfx::Rect>* rects) {
 // the escape key.
 class EscapeTracker : public ui::EventHandler {
  public:
-  explicit EscapeTracker(const base::Closure& callback)
-      : escape_callback_(callback),
-        event_monitor_(views::EventMonitor::CreateApplicationMonitor(this)) {
-  }
+  EscapeTracker(base::OnceClosure callback, gfx::NativeWindow context)
+      : escape_callback_(std::move(callback)),
+        event_monitor_(
+            views::EventMonitor::CreateApplicationMonitor(this, context)) {}
 
  private:
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* key) override {
     if (key->type() == ui::ET_KEY_PRESSED &&
-        key->key_code() == ui::VKEY_ESCAPE) {
-      escape_callback_.Run();
+        key->key_code() == ui::VKEY_ESCAPE && escape_callback_) {
+      std::move(escape_callback_).Run();
     }
   }
 
-  base::Closure escape_callback_;
+  base::OnceClosure escape_callback_;
   std::unique_ptr<views::EventMonitor> event_monitor_;
 
   DISALLOW_COPY_AND_ASSIGN(EscapeTracker);
@@ -427,10 +427,10 @@ void TabDragController::Init(TabStrip* source_tabstrip,
       std::find(tabs.begin(), tabs.end(), source_tab) - tabs.begin();
 
   // Listen for Esc key presses.
-  escape_tracker_.reset(
-      new EscapeTracker(base::Bind(&TabDragController::EndDrag,
-                                   weak_factory_.GetWeakPtr(),
-                                   END_DRAG_CANCEL)));
+  escape_tracker_ = std::make_unique<EscapeTracker>(
+      base::BindOnce(&TabDragController::EndDrag, weak_factory_.GetWeakPtr(),
+                     END_DRAG_CANCEL),
+      source_tabstrip_->GetWidget()->GetNativeWindow());
 
   if (source_tab->width() > 0) {
     offset_to_width_ratio_ = static_cast<float>(

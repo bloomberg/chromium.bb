@@ -46,8 +46,8 @@ class EventMonitorTest : public WidgetTest {
 };
 
 TEST_F(EventMonitorTest, ShouldReceiveAppEventsWhileInstalled) {
-  std::unique_ptr<EventMonitor> monitor(
-      EventMonitor::CreateApplicationMonitor(&handler_));
+  std::unique_ptr<EventMonitor> monitor(EventMonitor::CreateApplicationMonitor(
+      &handler_, widget_->GetNativeWindow()));
 
   generator_->ClickLeftButton();
   EXPECT_EQ(2, handler_.num_mouse_events());
@@ -84,8 +84,8 @@ TEST_F(EventMonitorTest, ShouldNotReceiveEventsFromOtherWindow) {
 namespace {
 class DeleteOtherOnEventHandler : public ui::EventHandler {
  public:
-  DeleteOtherOnEventHandler() {
-    monitor_ = EventMonitor::CreateApplicationMonitor(this);
+  explicit DeleteOtherOnEventHandler(gfx::NativeWindow context) {
+    monitor_ = EventMonitor::CreateApplicationMonitor(this, context);
   }
 
   bool DidDelete() const { return !handler_to_delete_; }
@@ -111,16 +111,20 @@ class DeleteOtherOnEventHandler : public ui::EventHandler {
 // Ensure correct behavior when an event monitor is removed while iterating
 // over the OS-controlled observer list.
 TEST_F(EventMonitorTest, TwoMonitors) {
-  auto deleter = std::make_unique<DeleteOtherOnEventHandler>();
-  deleter->set_monitor_to_delete(std::make_unique<DeleteOtherOnEventHandler>());
+  auto deleter =
+      std::make_unique<DeleteOtherOnEventHandler>(widget_->GetNativeWindow());
+  deleter->set_monitor_to_delete(
+      std::make_unique<DeleteOtherOnEventHandler>(widget_->GetNativeWindow()));
 
   EXPECT_FALSE(deleter->DidDelete());
   generator_->PressLeftButton();
   EXPECT_TRUE(deleter->DidDelete());
 
   // Now try setting up observers in the alternate order.
-  auto deletee = std::make_unique<DeleteOtherOnEventHandler>();
-  deleter = std::make_unique<DeleteOtherOnEventHandler>();
+  auto deletee =
+      std::make_unique<DeleteOtherOnEventHandler>(widget_->GetNativeWindow());
+  deleter =
+      std::make_unique<DeleteOtherOnEventHandler>(widget_->GetNativeWindow());
   deleter->set_monitor_to_delete(std::move(deletee));
 
   EXPECT_FALSE(deleter->DidDelete());

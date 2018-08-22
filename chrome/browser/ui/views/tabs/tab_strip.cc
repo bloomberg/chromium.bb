@@ -2180,7 +2180,7 @@ void TabStrip::AddMessageLoopObserver() {
             this, gfx::Insets(0, 0, kTabStripAnimationVSlop, 0)),
         this);
   }
-  mouse_watcher_->Start();
+  mouse_watcher_->Start(GetWidget()->GetNativeWindow());
 }
 
 void TabStrip::RemoveMessageLoopObserver() {
