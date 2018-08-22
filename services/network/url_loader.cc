@@ -848,7 +848,16 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
   }
 
   if (!url_request_->status().is_success() || num_bytes == 0) {
-    CompletePendingWrite();
+    // There may be no |pending_write_| if a URLRequestJob cancelled itself in
+    // URLRequestJob::OnSuspend() after receiving headers, while there was no
+    // pending read.
+    // TODO(mmenke): That case is rather unfortunate - something should be done
+    // at the socket layer instead, both to make for a better API (Only complete
+    // reads when there's a pending read), and to cover all TCP socket uses,
+    // since the concern is the effect that entering suspend mode has on
+    // sockets. See https://crbug.com/651120.
+    if (pending_write_)
+      CompletePendingWrite();
     NotifyCompleted(url_request_->status().ToNetError());
     // |this| will have been deleted.
     return;
