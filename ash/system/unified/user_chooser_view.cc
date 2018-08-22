@@ -29,37 +29,6 @@
 
 namespace ash {
 
-views::View* CreateUserAvatarView(int user_index) {
-  DCHECK(Shell::Get());
-  const mojom::UserSession* const user_session =
-      Shell::Get()->session_controller()->GetUserSession(user_index);
-  DCHECK(user_session);
-
-  auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
-  image_view->set_can_process_events_within_subtree(false);
-  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
-    gfx::ImageSkia icon =
-        gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
-    image_view->SetImage(icon, icon.size());
-  } else {
-    image_view->SetImage(user_session->user_info->avatar->image,
-                         gfx::Size(kTrayItemSize, kTrayItemSize));
-  }
-  return image_view;
-}
-
-base::string16 GetUserItemAccessibleString(int user_index) {
-  DCHECK(Shell::Get());
-  const mojom::UserSession* const user_session =
-      Shell::Get()->session_controller()->GetUserSession(user_index);
-  DCHECK(user_session);
-
-  return l10n_util::GetStringFUTF16(
-      IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY,
-      base::UTF8ToUTF16(user_session->user_info->display_name),
-      base::UTF8ToUTF16(user_session->user_info->display_email));
-}
-
 namespace {
 
 class CloseButton : public TopShortcutButton, public views::ButtonListener {
@@ -83,100 +52,6 @@ CloseButton::CloseButton(UnifiedSystemTrayController* controller)
 
 void CloseButton::ButtonPressed(views::Button* sender, const ui::Event& event) {
   controller_->TransitionToMainView(true /* restore_focus */);
-}
-
-// A button item of a switchable user.
-class UserItemButton : public views::Button, public views::ButtonListener {
- public:
-  UserItemButton(int user_index,
-                 UnifiedSystemTrayController* controller,
-                 bool has_close_button);
-  ~UserItemButton() override = default;
-
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
- private:
-  int user_index_;
-  UnifiedSystemTrayController* const controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(UserItemButton);
-};
-
-std::unique_ptr<views::LayoutManager> CreateLayoutManagerForIconRow() {
-  auto layout =
-      std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  return std::move(layout);
-}
-
-std::unique_ptr<views::LayoutManager> CreateLayoutManagerForBodyRow() {
-  auto layout = std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical);
-  layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_CENTER);
-  layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
-  return std::move(layout);
-}
-
-UserItemButton::UserItemButton(int user_index,
-                               UnifiedSystemTrayController* controller,
-                               bool has_close_button)
-    : Button(this), user_index_(user_index), controller_(controller) {
-  TriView* tri_view = new TriView(TriView::Orientation::HORIZONTAL, 0);
-
-  tri_view->SetMinSize(TriView::Container::START,
-                       gfx::Size(kUnifiedUserChooserAvatorIconColumnWidth,
-                                 kUnifiedUserChooserRowHeight));
-  tri_view->SetContainerLayout(TriView::Container::START,
-                               CreateLayoutManagerForIconRow());
-  tri_view->AddView(TriView::Container::START,
-                    CreateUserAvatarView(user_index));
-
-  tri_view->SetMinSize(TriView::Container::CENTER,
-                       gfx::Size(0, kUnifiedUserChooserRowHeight));
-  tri_view->SetFlexForContainer(TriView::Container::CENTER, 1);
-  tri_view->SetContainerLayout(TriView::Container::CENTER,
-                               CreateLayoutManagerForBodyRow());
-
-  const mojom::UserSession* const user_session =
-      Shell::Get()->session_controller()->GetUserSession(user_index);
-
-  auto* name = new views::Label(
-      base::UTF8ToUTF16(user_session->user_info->display_name));
-  name->SetEnabledColor(kUnifiedMenuTextColor);
-  name->SetAutoColorReadabilityEnabled(false);
-  name->SetSubpixelRenderingEnabled(false);
-  tri_view->AddView(TriView::Container::CENTER, name);
-
-  auto* email = new views::Label(
-      base::UTF8ToUTF16(user_session->user_info->display_email));
-  email->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
-  email->SetAutoColorReadabilityEnabled(false);
-  email->SetSubpixelRenderingEnabled(false);
-  tri_view->AddView(TriView::Container::CENTER, email);
-
-  if (has_close_button) {
-    tri_view->SetMinSize(TriView::Container::END,
-                         gfx::Size(kUnifiedUserChooserCloseIconColumnWidth,
-                                   kUnifiedUserChooserRowHeight));
-    tri_view->SetContainerLayout(TriView::Container::END,
-                                 CreateLayoutManagerForIconRow());
-    tri_view->AddView(TriView::Container::END, new CloseButton(controller_));
-  }
-
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-  AddChildView(tri_view);
-
-  SetTooltipText(GetUserItemAccessibleString(user_index));
-  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
-  SetFocusForPlatform();
-}
-
-void UserItemButton::ButtonPressed(views::Button* sender,
-                                   const ui::Event& event) {
-  controller_->HandleUserSwitch(user_index_);
 }
 
 // A button that will transition to multi profile login UI.
@@ -248,21 +123,152 @@ class Separator : public views::View {
 
 }  // namespace
 
+views::View* CreateUserAvatarView(int user_index) {
+  DCHECK(Shell::Get());
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(user_index);
+  DCHECK(user_session);
+
+  auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
+  image_view->set_can_process_events_within_subtree(false);
+  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
+    gfx::ImageSkia icon =
+        gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
+    image_view->SetImage(icon, icon.size());
+  } else {
+    image_view->SetImage(user_session->user_info->avatar->image,
+                         gfx::Size(kTrayItemSize, kTrayItemSize));
+  }
+  return image_view;
+}
+
+base::string16 GetUserItemAccessibleString(int user_index) {
+  DCHECK(Shell::Get());
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(user_index);
+  DCHECK(user_session);
+
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_STATUS_TRAY_USER_INFO_ACCESSIBILITY,
+      base::UTF8ToUTF16(user_session->user_info->display_name),
+      base::UTF8ToUTF16(user_session->user_info->display_email));
+}
+
+UserItemButton::UserItemButton(int user_index,
+                               UnifiedSystemTrayController* controller,
+                               bool has_close_button)
+    : Button(this),
+      user_index_(user_index),
+      controller_(controller),
+      capture_icon_(new views::ImageView) {
+  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, gfx::Insets(0, kUnifiedTopShortcutSpacing),
+      kUnifiedTopShortcutSpacing));
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
+  layout->set_minimum_cross_axis_size(kUnifiedUserChooserRowHeight);
+  AddChildView(CreateUserAvatarView(user_index));
+
+  views::View* vertical_labels = new views::View;
+  vertical_labels->set_can_process_events_within_subtree(false);
+  auto* vertical_layout = vertical_labels->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+  vertical_layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+
+  const mojom::UserSession* const user_session =
+      Shell::Get()->session_controller()->GetUserSession(user_index);
+
+  auto* name = new views::Label(
+      base::UTF8ToUTF16(user_session->user_info->display_name));
+  name->SetEnabledColor(kUnifiedMenuTextColor);
+  name->SetAutoColorReadabilityEnabled(false);
+  name->SetSubpixelRenderingEnabled(false);
+  vertical_labels->AddChildView(name);
+
+  auto* email = new views::Label(
+      base::UTF8ToUTF16(user_session->user_info->display_email));
+  email->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+  email->SetAutoColorReadabilityEnabled(false);
+  email->SetSubpixelRenderingEnabled(false);
+  vertical_labels->AddChildView(email);
+
+  AddChildView(vertical_labels);
+  layout->SetFlexForView(vertical_labels, 1);
+
+  capture_icon_->SetImage(
+      gfx::CreateVectorIcon(kSystemTrayRecordingIcon, kUnifiedMenuIconColor));
+  capture_icon_->SetVisible(false);
+  AddChildView(capture_icon_);
+
+  if (has_close_button)
+    AddChildView(new CloseButton(controller_));
+
+  SetTooltipText(GetUserItemAccessibleString(user_index));
+  SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
+  SetFocusForPlatform();
+}
+
+void UserItemButton::SetCaptureState(mojom::MediaCaptureState capture_state) {
+  capture_icon_->SetVisible(capture_state != mojom::MediaCaptureState::NONE);
+  Layout();
+
+  int res_id = 0;
+  switch (capture_state) {
+    case mojom::MediaCaptureState::AUDIO_VIDEO:
+      res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO_VIDEO;
+      break;
+    case mojom::MediaCaptureState::AUDIO:
+      res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_AUDIO;
+      break;
+    case mojom::MediaCaptureState::VIDEO:
+      res_id = IDS_ASH_STATUS_TRAY_MEDIA_RECORDING_VIDEO;
+      break;
+    case mojom::MediaCaptureState::NONE:
+      break;
+  }
+  if (res_id)
+    capture_icon_->SetTooltipText(l10n_util::GetStringUTF16(res_id));
+}
+
+void UserItemButton::ButtonPressed(views::Button* sender,
+                                   const ui::Event& event) {
+  if (user_index_ > 0)
+    controller_->HandleUserSwitch(user_index_);
+}
+
 UserChooserView::UserChooserView(UnifiedSystemTrayController* controller) {
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
   const int num_users =
       Shell::Get()->session_controller()->NumberOfLoggedInUsers();
   for (int i = 0; i < num_users; ++i) {
-    AddChildView(new UserItemButton(i, controller, i == 0));
+    auto* button = new UserItemButton(i, controller, i == 0);
+    user_item_buttons_.push_back(button);
+
+    AddChildView(button);
     AddChildView(new Separator(i < num_users - 1));
   }
   if (Shell::Get()->session_controller()->GetAddUserPolicy() ==
       AddUserSessionPolicy::ALLOWED) {
     AddChildView(new AddUserButton(controller));
   }
+
+  Shell::Get()->media_controller()->AddObserver(this);
+  Shell::Get()->media_controller()->RequestCaptureState();
 }
 
-UserChooserView::~UserChooserView() = default;
+UserChooserView::~UserChooserView() {
+  Shell::Get()->media_controller()->RemoveObserver(this);
+}
+
+void UserChooserView::OnMediaCaptureChanged(
+    const std::vector<mojom::MediaCaptureState>& capture_states) {
+  if (user_item_buttons_.size() != capture_states.size())
+    return;
+
+  for (size_t i = 0; i < user_item_buttons_.size(); ++i)
+    user_item_buttons_[i]->SetCaptureState(capture_states[i]);
+}
 
 }  // namespace ash
