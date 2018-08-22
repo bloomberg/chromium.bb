@@ -5019,3 +5019,7 @@ crbug.com/873829 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-if
 # Failures on 32-bit Android when using GPU instead of software rendering
 crbug.com/875172 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Pass Failure ]
 crbug.com/875172 [ Android ] http/tests/worklet/webexposed/global-interface-listing-paint-worklet.html [ Pass Failure ]
+
+# Does not set correct realm as scope in current implementation
+crbug.com/872138 external/wpt/client-hints/accept_ch.tentative.https.html [ Timeout Pass ]
+
