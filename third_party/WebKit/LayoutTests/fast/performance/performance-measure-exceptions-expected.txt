@@ -16,7 +16,6 @@ PASS window.performance.measure("measuring", 'domComplete', "mark") threw except
 PASS window.performance.measure("measuring", 'loadEventStart', "mark") threw exception InvalidAccessError: Failed to execute 'measure' on 'Performance': 'loadEventStart' is empty: either the event hasn't happened yet, or it would provide cross-origin timing information..
 PASS window.performance.measure("measuring", 'loadEventEnd', "mark") threw exception InvalidAccessError: Failed to execute 'measure' on 'Performance': 'loadEventEnd' is empty: either the event hasn't happened yet, or it would provide cross-origin timing information..
 PASS window.performance.measure("measuring", 51.15, "mark") threw exception SyntaxError: Failed to execute 'measure' on 'Performance': The mark '51.15' does not exist..
-PASS window.performance.measure("measuring", null, "mark") threw exception SyntaxError: Failed to execute 'measure' on 'Performance': The mark 'null' does not exist..
 PASS window.performance.measure("measuring", {}, "mark") threw exception SyntaxError: Failed to execute 'measure' on 'Performance': The mark '[object Object]' does not exist..
 PASS successfullyParsed is true
 

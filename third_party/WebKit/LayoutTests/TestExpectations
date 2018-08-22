@@ -2636,6 +2636,8 @@ crbug.com/758385 http/tests/performance-timing/custom-user-timing/po-customusert
 crbug.com/758385 http/tests/performance-timing/custom-user-timing/po-customusertiming-measure.html [ Skip ]
 crbug.com/758385 http/tests/performance-timing/custom-user-timing/po-customusertiming-featuredetection.html [ Skip ]
 
+crbug.com/876485 fast/performance/performance-measure-null-exception.html [ Failure ]
+
 # These tests requires enabling the flag LongTaskV2 in a virtual test suite.
 crbug.com/738493 http/tests/performance-timing/longtask-v2/longtask-v8compile.html [ Skip ]
 crbug.com/738493 http/tests/performance-timing/longtask-v2/longtask-executescript.html [ Skip ]
