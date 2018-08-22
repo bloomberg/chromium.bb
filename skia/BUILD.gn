@@ -358,6 +358,7 @@ component("skia") {
       "//third_party/skia/src/codec/SkCodec.cpp",
       "//third_party/skia/src/codec/SkCodecImageGenerator.cpp",
       "//third_party/skia/src/codec/SkColorTable.cpp",
+      "//third_party/skia/src/codec/SkEncodedInfo.cpp",
       "//third_party/skia/src/codec/SkGifCodec.cpp",
       "//third_party/skia/src/codec/SkIcoCodec.cpp",
       "//third_party/skia/src/codec/SkJpegCodec.cpp",
