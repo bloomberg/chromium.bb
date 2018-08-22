@@ -41,15 +41,16 @@ Vector<String> HeaderSetToVector(const WebHTTPHeaderSet& headers) {
 
 FetchResponseData* FetchResponseData::Create() {
   // "Unless stated otherwise, a response's url is null, status is 200, status
-  // message is `OK`, header list is an empty header list, and body is null."
-  return new FetchResponseData(Type::kDefault, 200, "OK");
+  // message is the empty byte sequence, header list is an empty header list,
+  // and body is null."
+  return new FetchResponseData(Type::kDefault, 200, g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateNetworkErrorResponse() {
   // "A network error is a response whose status is always 0, status message
   // is always the empty byte sequence, header list is aways an empty list,
   // and body is always null."
-  return new FetchResponseData(Type::kError, 0, "");
+  return new FetchResponseData(Type::kError, 0, g_empty_atom);
 }
 
 FetchResponseData* FetchResponseData::CreateWithBuffer(
@@ -114,7 +115,8 @@ FetchResponseData* FetchResponseData::CreateOpaqueFilteredResponse() const {
   // cache state is 'none'."
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque
-  FetchResponseData* response = new FetchResponseData(Type::kOpaque, 0, "");
+  FetchResponseData* response =
+      new FetchResponseData(Type::kOpaque, 0, g_empty_atom);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
 }
@@ -128,7 +130,7 @@ FetchResponseData* FetchResponseData::CreateOpaqueRedirectFilteredResponse()
   //
   // https://fetch.spec.whatwg.org/#concept-filtered-response-opaque-redirect
   FetchResponseData* response =
-      new FetchResponseData(Type::kOpaqueRedirect, 0, "");
+      new FetchResponseData(Type::kOpaqueRedirect, 0, g_empty_atom);
   response->SetURLList(url_list_);
   response->internal_response_ = const_cast<FetchResponseData*>(this);
   return response;
