@@ -73,7 +73,7 @@ public class CastWebContentsActivity extends Activity {
                 mIsFinishingState.set("Stopped by intent: " + intent.getAction());
             });
         });
-        createdAndNotTestingState.watch(Observers.onEnter(() -> {
+        createdAndNotTestingState.watch(Observers.onEnter(x -> {
             // Do this in onCreate() only if not testing.
             if (!CastBrowserHelper.initializeBrowser(getApplicationContext())) {
                 Toast.makeText(this, R.string.browser_process_initialization_failed,
@@ -104,13 +104,14 @@ public class CastWebContentsActivity extends Activity {
                 })));
 
         // Initialize the audio manager in onCreate() if tests haven't already.
-        mCreatedState.and(Observable.not(mAudioManagerState)).watch(Observers.onEnter(() -> {
+        mCreatedState.and(Observable.not(mAudioManagerState)).watch(Observers.onEnter(x -> {
             mAudioManagerState.set(CastAudioManager.getAudioManager(this));
         }));
 
         // Clean up stream mute state on pause events.
         mAudioManagerState.andThen(Observable.not(mResumedState))
-                .watch(Observers.onEnter((CastAudioManager audioManager, Unit u) -> {
+                .map(Both::getFirst)
+                .watch(Observers.onEnter((CastAudioManager audioManager) -> {
                     audioManager.releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
                 }));
 

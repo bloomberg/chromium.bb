@@ -37,21 +37,14 @@ public class ObserversTest {
     public void testOnEnterWithConsumerOfSuperclass() {
         Controller<Derived> controller = new Controller<>();
         List<String> result = new ArrayList<>();
+        Consumer<Base> consumer = (Base base) -> result.add(base.toString() + ": got it!");
         // Compile error if generics are wrong.
-        controller.watch(
-                Observers.onEnter((Base base) -> result.add(base.toString() + ": got it!")));
+        Observer<Derived> observer = Observers.onEnter(consumer);
+        controller.watch(observer);
         controller.set(new Derived());
         assertThat(result, contains("Derived: got it!"));
     }
 
-    @Test
-    public void testOnEnterWithRunnable() {
-        Controller<String> controller = new Controller<>();
-        List<String> result = new ArrayList<>();
-        controller.watch(Observers.onEnter(() -> result.add("ignoring value, but still got it!")));
-        controller.set("invisible");
-        assertThat(result, contains("ignoring value, but still got it!"));
-    }
 
     @Test
     public void testOnEnterMultipleActivations() {
@@ -87,22 +80,13 @@ public class ObserversTest {
     public void testOnExitWithConsumerOfSuperclass() {
         Controller<Derived> controller = new Controller<>();
         List<String> result = new ArrayList<>();
+        Consumer<Base> consumer = (Base base) -> result.add(base.toString() + ": got it!");
         // Compile error if generics are wrong.
-        controller.watch(
-                Observers.onExit((Base base) -> result.add(base.toString() + ": got it!")));
+        Observer<Derived> observer = Observers.onExit(consumer);
+        controller.watch(observer);
         controller.set(new Derived());
         controller.reset();
         assertThat(result, contains("Derived: got it!"));
-    }
-
-    @Test
-    public void testOnExitWithRunnable() {
-        Controller<String> controller = new Controller<>();
-        List<String> result = new ArrayList<>();
-        controller.watch(Observers.onExit(() -> result.add("ignoring value, but still got it!")));
-        controller.set("invisible");
-        controller.reset();
-        assertThat(result, contains("ignoring value, but still got it!"));
     }
 
     @Test
@@ -124,13 +108,9 @@ public class ObserversTest {
         List<String> result = new ArrayList<>();
         controller.watch(Observers.onEnter((Base base) -> result.add("enter " + base)));
         controller.watch(Observers.onExit((Base base) -> result.add("exit " + base)));
-        controller.watch(Observers.onEnter(() -> result.add("enter and ignore data")));
-        controller.watch(Observers.onExit(() -> result.add("exit and ignore data")));
         controller.set(new Derived());
         controller.reset();
-        assertThat(result,
-                contains("enter Derived", "enter and ignore data", "exit and ignore data",
-                        "exit Derived"));
+        assertThat(result, contains("enter Derived", "exit Derived"));
     }
 
     @Test
@@ -152,47 +132,25 @@ public class ObserversTest {
     }
 
     @Test
-    public void testWatchBothWithSuperclassAsObserverParameters() {
-        Controller<Derived> controllerA = new Controller<>();
-        Controller<Derived> controllerB = new Controller<>();
-        List<String> result = new ArrayList<>();
+    public void testBuildObserverWithFunctionThatTakesSuperclass() {
+        BiFunction<Base, Base, Scope> function = (Base a, Base b) -> {
+            return () -> {};
+        };
         // Compile error if generics are wrong.
-        controllerA.and(controllerB).watch(Observers.both((Base a, Base b) -> {
-            result.add("enter: " + a + ", " + b);
-            return () -> result.add("exit: " + a + ", " + b);
-        }));
-        controllerA.set(new Derived());
-        controllerB.set(new Derived());
-        assertThat(result, contains("enter: Derived, Derived"));
+        Observer<Both<Derived, Derived>> observer = Observers.both(function);
+    }
+
+    // Dummy class that extends Scope.
+    private static class SubScope implements Scope {
+        @Override
+        public void close() {}
     }
 
     @Test
-    public void testWatchBothOnEnter() {
-        Controller<String> controllerA = new Controller<>();
-        Controller<String> controllerB = new Controller<>();
-        List<String> result = new ArrayList<>();
-        controllerA.and(controllerB).watch(Observers.onEnter((String a, String b) -> {
-            result.add("enter: " + a + ", " + b);
-        }));
-        controllerA.set("A");
-        controllerB.set("B");
-        controllerA.set("AA");
-        controllerB.set("BB");
-        assertThat(result, contains("enter: A, B", "enter: AA, B", "enter: AA, BB"));
-    }
-
-    @Test
-    public void testWatchBothOnExit() {
-        Controller<String> controllerA = new Controller<>();
-        Controller<String> controllerB = new Controller<>();
-        List<String> result = new ArrayList<>();
-        controllerA.and(controllerB).watch(Observers.onExit((String a, String b) -> {
-            result.add("exit: " + a + ", " + b);
-        }));
-        controllerA.set("A");
-        controllerB.set("B");
-        controllerA.set("AA");
-        controllerB.set("BB");
-        assertThat(result, contains("exit: A, B", "exit: AA, B"));
+    public void testBuildObserverWithFunctionThatReturnsSubclassOfScope() {
+        SubScope subScope = new SubScope();
+        BiFunction<String, String, SubScope> function = (a, b) -> subScope;
+        // Compile error if generics are wrong.
+        Observer<Both<String, String>> observer = Observers.both(function);
     }
 }
