@@ -249,7 +249,7 @@ def _CreateInfoFile(java_files, options, srcjar_files):
       info_data[fully_qualified_name] = java_file
     # Skip aidl srcjars since they don't indent code correctly.
     source = srcjar_files.get(java_file, java_file)
-    if source.endswith('_aidl.srcjar'):
+    if '_aidl.srcjar' in source:
       continue
     assert not options.chromium_code or len(class_names) == 1, (
         'Chromium java files must only have one class: {}'.format(source))
@@ -310,7 +310,10 @@ def _OnStaleMd5(changes, options, javac_cmd, java_files, classpath_inputs,
         extracted_files = build_utils.ExtractAll(
             srcjar, path=java_dir, pattern='*.java')
         for path in extracted_files:
-          srcjar_files[path] = srcjar
+          # We want the path inside the srcjar so the viewer can have a tree
+          # structure.
+          srcjar_files[path] = '{}/{}'.format(
+              srcjar, os.path.relpath(path, java_dir))
       jar_srcs = build_utils.FindInDirectory(java_dir, '*.java')
       java_files.extend(jar_srcs)
       if changed_paths:

@@ -61,7 +61,7 @@ def _MergeInfoFiles(output, jar_paths):
         for path in zip_info.namelist():
           fully_qualified_name = _FullJavaNameFromClassFilePath(path)
           if fully_qualified_name:
-            info_data[fully_qualified_name] = jar_path
+            info_data[fully_qualified_name] = '{}/{}'.format(jar_path, path)
 
   jar_info_utils.WriteJarInfoFile(output, info_data)
 
