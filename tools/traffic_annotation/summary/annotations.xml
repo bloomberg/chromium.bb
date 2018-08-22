@@ -214,7 +214,7 @@ Refer to README.md for content description and update process.
  <item id="safe_browsing_client_side_phishing_detector" hash_code="1313982" type="0" content_hash_code="50199143" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_detection_service.cc"/>
  <item id="safe_browsing_extended_reporting" hash_code="42848942" type="0" content_hash_code="50089173" os_list="linux,windows" file_path="components/safe_browsing/ping_manager.cc"/>
  <item id="safe_browsing_feedback" hash_code="44583821" type="0" content_hash_code="114076664" os_list="linux,windows" file_path="chrome/browser/safe_browsing/download_protection/download_feedback.cc"/>
- <item id="safe_browsing_v4_update" hash_code="75153841" type="0" content_hash_code="112049516" os_list="linux,windows" file_path="components/safe_browsing/db/v4_update_protocol_manager.cc"/>
+ <item id="safe_browsing_g4_update" hash_code="75153841" type="0" content_hash_code="112049516" os_list="linux,windows" file_path="components/safe_browsing/db/v4_update_protocol_manager.cc"/>
  <item id="safe_browsing_incident" hash_code="124950347" type="0" content_hash_code="58481082" os_list="linux,windows" file_path="chrome/browser/safe_browsing/incident_reporting/incident_report_uploader_impl.cc"/>
  <item id="safe_browsing_module_loader" hash_code="6019475" type="0" content_hash_code="49511650" os_list="linux,windows" file_path="chrome/browser/safe_browsing/client_side_model_loader.cc"/>
  <item id="safe_browsing_v4_get_hash" hash_code="8561691" type="0" content_hash_code="132435617" os_list="linux,windows" file_path="components/safe_browsing/db/v4_get_hash_protocol_manager.cc"/>
