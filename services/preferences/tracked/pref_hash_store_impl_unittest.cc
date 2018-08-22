@@ -77,6 +77,15 @@ TEST_F(PrefHashStoreImplTest, ComputeSplitMacs) {
       mac_3);
 }
 
+TEST_F(PrefHashStoreImplTest, ComputeNullSplitMacs) {
+  PrefHashStoreImpl pref_hash_store(std::string(32, 0), "device_id", true);
+  std::unique_ptr<base::DictionaryValue> computed_macs =
+      pref_hash_store.ComputeSplitMacs("foo.bar", nullptr);
+
+  ASSERT_TRUE(computed_macs);
+  EXPECT_TRUE(computed_macs->empty());
+}
+
 TEST_F(PrefHashStoreImplTest, AtomicHashStoreAndCheck) {
   base::Value string_1("string1");
   base::Value string_2("string2");
