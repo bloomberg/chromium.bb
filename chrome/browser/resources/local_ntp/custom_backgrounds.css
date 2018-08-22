@@ -344,6 +344,7 @@ html[dir=rtl] .is-img-sel #bg-sel-title {
   font-weight: 500;
   height: 32px;
   line-height: normal;
+  min-width: 60px;
   padding: 0 16px;
   position: absolute;
   text-align: center;
