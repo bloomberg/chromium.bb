@@ -780,6 +780,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       service_manager::mojom::InterfaceProviderRequest
           interface_provider_request);
 
+  service_manager::BinderRegistry& BinderRegistryForTesting() {
+    return *registry_;
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 

@@ -808,6 +808,7 @@ test("content_browsertests") {
     "../browser/pointer_lock_browsertest.cc",
     "../browser/pointer_lock_browsertest.h",
     "../browser/pointer_lock_browsertest_mac.mm",
+    "../browser/portal/portal_browsertest.cc",
     "../browser/power_monitor_browsertest.cc",
     "../browser/presentation/presentation_browsertest.cc",
     "../browser/renderer_host/input/autoscroll_browsertest.cc",

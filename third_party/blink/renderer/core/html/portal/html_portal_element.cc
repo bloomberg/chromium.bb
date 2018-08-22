@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_unknown_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -33,6 +34,12 @@ HTMLPortalElement::InsertionNotificationRequest HTMLPortalElement::InsertedInto(
   if (node.IsInDocumentTree() && document.IsHTMLDocument()) {
     document.GetFrame()->GetInterfaceProvider().GetInterface(
         mojo::MakeRequest(&portal_ptr_));
+    portal_ptr_->Init(WTF::Bind(
+        [](HTMLPortalElement* portal,
+           const base::UnguessableToken& portal_token) {
+          portal->portal_token_ = portal_token;
+        },
+        WrapPersistent(this)));
   }
 
   return result;

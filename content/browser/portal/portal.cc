@@ -17,7 +17,8 @@ namespace content {
 Portal::Portal(RenderFrameHostImpl* owner_render_frame_host)
     : WebContentsObserver(
           WebContents::FromRenderFrameHost(owner_render_frame_host)),
-      owner_render_frame_host_(owner_render_frame_host) {}
+      owner_render_frame_host_(owner_render_frame_host),
+      portal_token_(base::UnguessableToken::Create()) {}
 
 Portal::~Portal() {}
 
@@ -33,14 +34,23 @@ Portal* Portal::Create(RenderFrameHostImpl* owner_render_frame_host,
                        blink::mojom::PortalRequest request) {
   auto portal_ptr = base::WrapUnique(new Portal(owner_render_frame_host));
   Portal* portal = portal_ptr.get();
-  mojo::StrongBinding<blink::mojom::Portal>::Create(std::move(portal_ptr),
-                                                    std::move(request));
+  portal->binding_ =
+      mojo::MakeStrongBinding(std::move(portal_ptr), std::move(request));
   return portal;
+}
+
+void Portal::Init(
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  std::move(callback).Run(portal_token_);
+  WebContents::CreateParams params(
+      WebContents::FromRenderFrameHost(owner_render_frame_host_)
+          ->GetBrowserContext());
+  portal_contents_ = WebContents::Create(params);
 }
 
 void Portal::RenderFrameDeleted(RenderFrameHost* render_frame_host) {
   if (render_frame_host == owner_render_frame_host_)
-    owner_render_frame_host_ = nullptr;
+    binding_->Close();  // Also deletes |this|.
 }
 
 }  // namespace content
