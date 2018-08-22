@@ -1355,7 +1355,8 @@
         {
             "platforms": [
                 "android",
-                "chromeos"
+                "chromeos",
+                "mac"
             ],
             "experiments": [
                 {
