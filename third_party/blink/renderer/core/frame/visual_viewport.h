@@ -358,7 +358,8 @@ class CORE_EXPORT VisualViewport final
   // only to report statistics about pinch-zoom usage.
   float max_page_scale_;
   bool track_pinch_zoom_stats_for_page_;
-  UniqueObjectId unique_id_;
+  CompositorElementId element_id_;
+  CompositorElementId scroll_element_id_;
 };
 
 }  // namespace blink

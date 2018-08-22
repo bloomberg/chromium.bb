@@ -1504,8 +1504,8 @@ TEST_P(VisualViewportTest,
   NavigateTo("about:blank");
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
-  EXPECT_FALSE(visual_viewport.LayerForHorizontalScrollbar()->Parent());
-  EXPECT_FALSE(visual_viewport.LayerForVerticalScrollbar()->Parent());
+  EXPECT_FALSE(visual_viewport.LayerForHorizontalScrollbar());
+  EXPECT_FALSE(visual_viewport.LayerForVerticalScrollbar());
 }
 
 // Tests that scrollbar layers are attached to the inner viewport container
@@ -1517,6 +1517,8 @@ TEST_P(VisualViewportTest,
   NavigateTo("about:blank");
 
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
+  EXPECT_TRUE(visual_viewport.LayerForHorizontalScrollbar());
+  EXPECT_TRUE(visual_viewport.LayerForVerticalScrollbar());
   EXPECT_TRUE(visual_viewport.LayerForHorizontalScrollbar()->Parent());
   EXPECT_TRUE(visual_viewport.LayerForVerticalScrollbar()->Parent());
 }
