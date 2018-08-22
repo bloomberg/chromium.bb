@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
+#include "components/viz/common/features.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
@@ -147,8 +148,10 @@ void CrossProcessFrameConnector::RenderProcessGone() {
 
 void CrossProcessFrameConnector::FirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_FirstSurfaceActivation(
-      frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info));
+  if (!features::IsSurfaceSynchronizationEnabled()) {
+    frame_proxy_in_parent_renderer_->Send(new FrameMsg_FirstSurfaceActivation(
+        frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info));
+  }
 }
 
 void CrossProcessFrameConnector::SendIntrinsicSizingInfoToParent(
