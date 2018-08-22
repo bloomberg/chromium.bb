@@ -3954,15 +3954,9 @@ crbug.com/722943 media/audio-repaint.html [ Skip ]
 crbug.com/722943 virtual/video-surface-layer/media/audio-repaint.html [ Skip ]
 
 # Sheriff failures 2018-08-13
-crbug.com/873547 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Timeout Pass ]
-crbug.com/873547 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Timeout Pass ]
 crbug.com/873454 css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 
-# Sheriff failures 2018-08-14
-crbug.com/873435 virtual/user-activation-v2/fast/events/middleClickAutoscroll-in-iframe.html [ Timeout Pass ]
-
 # Sheriff failures 2018-08-15
-crbug.com/873435 [ Mac ] fast/events/middleClickAutoscroll-in-iframe.html [ Timeout Pass ]
 crbug.com/869726 [ Mac ] fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/869726 [ Mac ] virtual/user-activation-v2/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/869726 [ Mac ] fast/events/wheel/wheel-latched-scroll-node-removed.html [ Pass Failure ]
@@ -4546,10 +4540,9 @@ crbug.com/754986 virtual/video-surface-layer/media/video-transformed.html [ Pass
 
 # Sheriff 2018-03-29
 crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
-crbug.com/827209 fast/events/middleClickAutoscroll-latching.html [ Pass Failure Timeout ]
-crbug.com/827209 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Failure Timeout ]
-# Sheriff 2018-08-14
-crbug.com/827209 virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Pass Timeout Failure ]
+crbug.com/827209 [ Win Linux ] fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
+crbug.com/827209 [ Win Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
+crbug.com/827209 [ Win Linux ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
 
 # Utility for manual testing, not intended to be run as part of layout tests.
 crbug.com/785955 http/tests/credentialmanager/tools/virtual-authenticator-environment-manual.html [ Skip ]
@@ -4680,7 +4673,7 @@ crbug.com/849978 http/tests/devtools/elements/styles-4/stylesheet-source-url-com
 
 # Sheriff 2018-06-08
 crbug.com/850170 virtual/reporting-api/external/wpt/content-security-policy/reporting-api/reporting-api-doesnt-send-reports-without-violation.https.sub.html [ Pass Crash Timeout ]
-crbug.com/851090 virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
+crbug.com/851090 [ Win Linux ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Pass Failure ]
 
 # Sheriff 2018-06-11
 crbug.com/850202 [ Linux ] http/tests/devtools/network/network-filters.js [ Pass Failure Timeout ]
@@ -4783,8 +4776,6 @@ crbug.com/859102 virtual/gpu/fast/canvas/color-space/canvas-drawImage-rec2020.ht
 
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-data-url.any.worker.html [ Timeout Pass ]
 crbug.com/867532 [ Linux ] external/wpt/workers/modules/dedicated-worker-import.any.worker.html [ Timeout Pass ]
-crbug.com/867628 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
-crbug.com/867628 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Timeout Pass Failure ]
 
 # Sheriff 2018-07-26
 crbug.com/867376 [ Mac Linux ] css3/filters/filter-repaint-composited-fallback-crash.html [ Timeout Pass ]
@@ -4941,32 +4932,16 @@ crbug.com/871578 [ Mac ] external/wpt/xhr/timeout-multiple-fetches.html [ Failur
 crbug.com/871578 [ Mac ] virtual/outofblink-cors/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
 crbug.com/871578 [ Mac ] virtual/outofblink-cors-ns/external/wpt/xhr/timeout-multiple-fetches.html [ Failure Pass ]
 
-# Flaky middleClinkAutoscroll increased flakiness on Mac
-crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Failure Pass ]
-crbug.com/851090 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass Timeout ]
-crbug.com/851090 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Failure Pass Timeout ]
-crbug.com/851090 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-over-scrollbar.html [ Failure Pass ]
-
 # Sheriff 2018-08-08
 crbug.com/871105 [ Linux ] svg/dom/remove-use-target-element-indirectly.html [ Pass Crash ]
 crbug.com/872025 [ Mac Linux ] fast/css-grid-layout/crash-large-positions.html [ Pass Timeout ]
 crbug.com/871416 fast/spatial-navigation/snav-stay-in-overflow-div.html [ Pass Failure ]
-crbug.com/872242 [ Mac ] fast/events/autoscroll-over-scrollbar.html [ Pass Failure ]
 
 # Only passes on bots with GPUs.
 crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Timeout ]
 
 # Sheriff 2018-08-09
-crbug.com/872635 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Timeout Failure Pass ]
-crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-over-scrollbar.html [ Failure Pass ]
 crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/recorded-keydown-event.html [ Timeout Pass ]
-
-# Sheriff 2018-08-10
-crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click.html [ Timeout Pass ]
-crbug.com/872705 [ Mac ] fast/events/middleClickAutoscroll-click.html [ Timeout Pass ]
-
-# Sheriff 2018-08-13
-crbug.com/873829 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-iframe-no-scrolling.html [ Timeout Pass ]
 
 crbug.com/873873 external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
 crbug.com/873873 virtual/outofblink-cors/external/wpt/service-workers/service-worker/fetch-canvas-tainting-video.https.html [ Timeout Pass ]
@@ -5012,19 +4987,52 @@ crbug.com/872535 external/wpt/wake-lock/wakelock-state-is-global.https.html [ Pa
 # Sheriff 2018-08-20
 crbug.com/862589 [ Linux Mac Win ] virtual/threaded/fast/idle-callback/long_idle_periods.html [ Timeout Pass ]
 
-# Sheriff 2018-08-21
-crbug.com/873829 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-iframe-no-scrolling.html [ Timeout Pass ]
-
-# Sheriff 2018-08-22
-crbug.com/876609 [ Mac ] fast/events/autoscroll-iframe-no-scrolling.html [ Timeout ]
-crbug.com/876609 [ Mac ] fast/events/middleClickAutoscroll-drag.html [ Timeout ]
-crbug.com/876609 [ Mac ] fast/events/middleClickAutoscroll-event-fired.html [ Timeout ]
-crbug.com/876609 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Timeout ]
-crbug.com/876609 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-in-iframe.html [ Timeout ]
-crbug.com/876609 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Timeout ]
-crbug.com/876609 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click.html [ Timeout ]
-crbug.com/876609 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Timeout ]
-crbug.com/876609 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs.html [ Timeout ]
+# fast/events/middleClickAutoscroll-* are failing on Mac
+crbug.com/874162 [ Mac ] fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-iframe-no-scrolling.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-in-overflow-hidden-html.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/autoscroll-in-textarea.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-in-textarea.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-in-textarea.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/autoscroll-over-scrollbar.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-over-scrollbar.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-over-scrollbar.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/autoscroll-should-not-stop-on-keypress.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click-hyperlink.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-click.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-click.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-drag.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-event-fired.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-in-iframe.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-latching.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-latching.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-modal-scrollable-iframe-div.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs.html [ Skip ]
+crbug.com/874162 [ Mac ] fast/events/selection-autoscroll-borderbelt.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/mouseevent_fractional/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
+crbug.com/874162 [ Mac ] virtual/user-activation-v2/fast/events/selection-autoscroll-borderbelt.html [ Skip ]
 
 # Failures on 32-bit Android when using GPU instead of software rendering
 crbug.com/875172 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Pass Failure ]
