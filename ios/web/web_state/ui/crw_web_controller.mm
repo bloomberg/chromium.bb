@@ -752,7 +752,8 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
                     stateObject:(NSString*)stateObject
                  hasUserGesture:(BOOL)hasUserGesture;
 // Sets _documentURL to newURL, and updates any relevant state information.
-- (void)setDocumentURL:(const GURL&)newURL;
+- (void)setDocumentURL:(const GURL&)newURL
+               context:(web::NavigationContextImpl*)context;
 // Sets last committed NavigationItem's title to the given |title|, which can
 // not be nil.
 - (void)setNavigationItemTitle:(NSString*)title;
@@ -1264,10 +1265,19 @@ GURL URLEscapedForHistory(const GURL& url) {
   _webStateImpl->OnNavigationFinished(context.get());
 }
 
-- (void)setDocumentURL:(const GURL&)newURL {
+- (void)setDocumentURL:(const GURL&)newURL
+               context:(web::NavigationContextImpl*)context {
   if (newURL != _documentURL && newURL.is_valid()) {
     _documentURL = newURL;
     _interactionRegisteredSinceLastURLChange = NO;
+  }
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+      (!context || !context->IsLoadingHtmlString()) &&
+      !IsWKInternalUrl(newURL) && _webView) {
+    GURL documentOrigin = newURL.GetOrigin();
+    GURL committedOrigin = _webStateImpl->GetLastCommittedURL().GetOrigin();
+    DCHECK_EQ(documentOrigin, committedOrigin)
+        << "Old and new URL detection system have a mismatch";
   }
 }
 
@@ -2952,7 +2962,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
       GURL lastCommittedURL = lastCommittedItem->GetURL();
       if (lastCommittedURL != _documentURL) {
         [self requirePageReconstruction];
-        [self setDocumentURL:lastCommittedURL];
+        [self setDocumentURL:lastCommittedURL context:nullptr];
       }
     }
   }
@@ -3916,7 +3926,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [_webView addObserver:self forKeyPath:keyPath options:0 context:nullptr];
   }
   _injectedScriptManagers = [[NSMutableSet alloc] init];
-  [self setDocumentURL:_defaultURL];
+  [self setDocumentURL:_defaultURL context:nullptr];
 }
 
 - (void)displayWebView {
@@ -4748,7 +4758,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   // This is the point where the document's URL has actually changed.
-  [self setDocumentURL:webViewURL];
+  [self setDocumentURL:webViewURL context:context];
 
   if (!committedNavigation && context) {
     self.webStateImpl->OnNavigationFinished(context);
@@ -4785,7 +4795,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   _webStateImpl->SetIsLoading(true);
   _webStateImpl->OnNavigationStarted(context.get());
   [self updateHTML5HistoryState];
-  [self setDocumentURL:URL];
+  [self setDocumentURL:URL context:context.get()];
   _webStateImpl->OnNavigationFinished(context.get());
   [self didFinishWithURL:URL loadSuccess:YES context:context.get()];
 }
@@ -5100,10 +5110,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
     DCHECK_EQ(_documentURL.GetOrigin(), webViewURL.GetOrigin());
     BOOL isSameDocumentNavigation =
         [self isKVOChangePotentialSameDocumentNavigationToURL:webViewURL];
-    [self setDocumentURL:webViewURL];
 
     web::NavigationContextImpl* existingContext =
         [self contextForPendingMainFrameNavigationWithURL:webViewURL];
+    [self setDocumentURL:webViewURL context:existingContext];
     if (!existingContext) {
       // This URL was not seen before, so register new load request.
       std::unique_ptr<web::NavigationContextImpl> newContext =
@@ -5355,7 +5365,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
-  [self setDocumentURL:newURL];
+  [self setDocumentURL:newURL context:newNavigationContext.get()];
 
   if (!_changingHistoryState) {
     // Pass either newly created context (if it exists) or context that already
