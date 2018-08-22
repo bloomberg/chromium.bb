@@ -324,7 +324,15 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 }
 
 // Test back-and-forward navigation from and to NTP.
-- (void)testHistoryBackAndForwardAroundNTP {
+// TODO(crbug.com/876449): Fix flakiness and re-enable.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testHistoryBackAndForwardAroundNTP \
+  testOpenImageInNewTabFromContextMenu
+#else
+#define MAYBE_testHistoryBackAndForwardAroundNTP \
+  FLAKY_testHistoryBackAndForwardAroundNTP
+#endif
+- (void)MAYBE_testHistoryBackAndForwardAroundNTP {
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL testURL = self.testServer->GetURL(kSimpleFileBasedTestURL);
   [ChromeEarlGrey loadURL:testURL];
