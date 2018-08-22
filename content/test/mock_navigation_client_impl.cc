@@ -25,7 +25,8 @@ void MockNavigationClientImpl::CommitNavigation(
         subresource_overrides,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
-    const base::UnguessableToken& devtools_navigation_token) {}
+    const base::UnguessableToken& devtools_navigation_token,
+    CommitNavigationCallback callback) {}
 
 void MockNavigationClientImpl::CommitFailedNavigation(
     const CommonNavigationParams& common_params,
@@ -33,6 +34,7 @@ void MockNavigationClientImpl::CommitFailedNavigation(
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) {}
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+    CommitFailedNavigationCallback callback) {}
 
 }  // namespace content

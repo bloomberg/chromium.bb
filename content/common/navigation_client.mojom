@@ -61,7 +61,8 @@ interface NavigationClient {
       array<TransferrableURLLoader>? subresource_overrides,
       ControllerServiceWorkerInfo? controller_service_worker_info,
       network.mojom.URLLoaderFactory? prefetch_loader_factory,
-      mojo_base.mojom.UnguessableToken devtools_navigation_token);
+      mojo_base.mojom.UnguessableToken devtools_navigation_token)
+      => (blink.mojom.CommitResult commit_result);
 
   // Tells the renderer that a failed navigation is ready to commit.
   //
@@ -78,6 +79,7 @@ interface NavigationClient {
       bool has_stale_copy_in_cache,
       int32 error_code,
       string? error_page_content,
-      URLLoaderFactoryBundle? subresource_loader_factories);
+      URLLoaderFactoryBundle? subresource_loader_factories)
+      => (blink.mojom.CommitResult commit_result);
 };
 

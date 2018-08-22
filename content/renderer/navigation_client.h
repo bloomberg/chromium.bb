@@ -28,14 +28,16 @@ class NavigationClient : mojom::NavigationClient {
           subresource_overrides,
       mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
       network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
-      const base::UnguessableToken& devtools_navigation_token) override;
+      const base::UnguessableToken& devtools_navigation_token,
+      CommitNavigationCallback callback) override;
   void CommitFailedNavigation(
       const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       bool has_stale_copy_in_cache,
       int error_code,
       const base::Optional<std::string>& error_page_content,
-      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) override;
+      std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+      CommitFailedNavigationCallback callback) override;
 
   void Bind(mojom::NavigationClientAssociatedRequest request);
 
