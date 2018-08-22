@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "ui/aura/window.h"
 
@@ -60,21 +59,6 @@ void MultiProfileBrowserStatusMonitor::ActiveUserChanged(
         launcher_controller_->UpdateAppState(
             browser->tab_strip_model()->GetWebContentsAt(i), false /*remove*/);
       }
-    }
-  }
-
-  // Hide settings window shelf items not associated with this profile and
-  // restore items for windows associated with the current profile.
-  for (Browser* browser : *browser_list) {
-    if (chrome::SettingsWindowManager::GetInstance()->IsSettingsBrowser(
-            browser)) {
-      aura::Window* aura_window = browser->window()->GetNativeWindow();
-      aura_window->SetProperty(
-          ash::kShelfItemTypeKey,
-          static_cast<int32_t>(
-              multi_user_util::IsProfileFromActiveUser(browser->profile())
-                  ? ash::TYPE_DIALOG
-                  : ash::TYPE_UNDEFINED));
     }
   }
 
