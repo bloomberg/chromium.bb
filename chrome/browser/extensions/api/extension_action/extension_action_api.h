@@ -197,6 +197,9 @@ class ExtensionActionHideFunction : public ExtensionActionFunction {
 
 // setIcon
 class ExtensionActionSetIconFunction : public ExtensionActionFunction {
+ public:
+  static void SetReportErrorForInvisibleIconForTesting(bool value);
+
  protected:
   ~ExtensionActionSetIconFunction() override {}
   ResponseAction RunExtensionAction() override;

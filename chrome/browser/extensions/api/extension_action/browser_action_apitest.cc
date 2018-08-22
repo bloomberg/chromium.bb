@@ -9,6 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_prefs.h"
@@ -366,6 +368,60 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   GetBrowserActionsBar()->Press(0);
   ASSERT_FALSE(catcher.GetNextResult());
   EXPECT_EQ(kEmptyPathError, catcher.message());
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, InvisibleIconBrowserAction) {
+  // Turn this on so errors are reported.
+  ExtensionActionSetIconFunction::SetReportErrorForInvisibleIconForTesting(
+      true);
+  ASSERT_TRUE(RunExtensionTest("browser_action/invisible_icon")) << message_;
+  const Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  // Test there is a browser action in the toolbar.
+  ASSERT_EQ(1, GetBrowserActionsBar()->NumberOfBrowserActions());
+  EXPECT_TRUE(GetBrowserActionsBar()->HasIcon(0));
+  gfx::Image initial_bar_icon = GetBrowserActionsBar()->GetIcon(0);
+
+  ExtensionHost* background_page =
+      ProcessManager::Get(profile())->GetBackgroundHostForExtension(
+          extension->id());
+  ASSERT_TRUE(background_page);
+
+  static constexpr char kScript[] =
+      "setIcon(%s).then(function(arg) {"
+      "  domAutomationController.send(arg);"
+      "});";
+
+  const std::string histogram_name =
+      "Extensions.DynamicExtensionActionIconWasVisible";
+  {
+    base::HistogramTester histogram_tester;
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        background_page->host_contents(),
+        base::StringPrintf(kScript, "invisible"), &result));
+    EXPECT_EQ("Icon not sufficiently visible.", result);
+    // The icon should not have changed.
+    EXPECT_TRUE(gfx::test::AreImagesEqual(initial_bar_icon,
+                                          GetBrowserActionsBar()->GetIcon(0)));
+    EXPECT_THAT(histogram_tester.GetAllSamples(histogram_name),
+                testing::ElementsAre(base::Bucket(0, 1)));
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    std::string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        background_page->host_contents(),
+        base::StringPrintf(kScript, "visible"), &result));
+    EXPECT_EQ("", result);
+    // The icon should have changed.
+    EXPECT_FALSE(gfx::test::AreImagesEqual(initial_bar_icon,
+                                           GetBrowserActionsBar()->GetIcon(0)));
+    EXPECT_THAT(histogram_tester.GetAllSamples(histogram_name),
+                testing::ElementsAre(base::Bucket(1, 1)));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
