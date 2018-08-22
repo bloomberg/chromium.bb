@@ -22,9 +22,21 @@
         };
       }
 
+      #scannerLocation {
+        background: url(chrome://theme/IDR_LOGIN_FINGERPRINT_SCANNER_ANIMATION);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: 298px 205px;
+        height: 240px;
+      }
+
+      #messageDiv {
+        height: 20px;
+      }
+
       /* Use this instead of hidden so that the dialog does not resize when the
-         problem appears or disappears. */
-      #problemDiv[invisible] {
+         message appears or disappears. */
+      #messageDiv[invisible] {
         visibility: hidden;
       }
     </style>
@@ -32,17 +44,16 @@
     <cr-dialog id="dialog" on-close="close"
         close-text="$i18n{close}">
       <div slot="title">$i18n{configureFingerprintTitle}</div>
-      <div slot="body">
-        <div class="settings-box first">
-          <span class="middle">[[getInstructionMessage_(step_)]]</span>
+      <div slot="body" on-click="fakeScan_">
+        <div id="messageDiv"
+            invisible$="[[!getInstructionMessage_(step_, problemMessage_)]]">
+            <span>[[getInstructionMessage_(step_, problemMessage_)]]</span>
         </div>
-        <cr-fingerprint-progress-arc id="arc" circle-radius="100">
+        <div id="scannerLocation" hidden="[[!showScannerLocation_(step_)]]">
+        </div>
+        <cr-fingerprint-progress-arc id="arc" circle-radius="100"
+            hidden="[[!showArc_(step_)]]">
         </cr-fingerprint-progress-arc>
-        <div id="problemDiv" class="settings-box first"
-            invisible$="[[!problemMessage_]]">
-          <iron-icon icon="cr:warning"></iron-icon>
-          <span class="middle">[[problemMessage_]]</span>
-        </div>
       </div>
       <div slot="button-container">
         <paper-button id="addAnotherButton" on-click="onAddAnotherFingerprint_"
