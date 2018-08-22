@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_impl.h"
@@ -359,8 +360,16 @@ class ActiveDirectoryJoinTest : public EnterpriseEnrollmentTest {
 
 // Shows the enrollment screen and simulates an enrollment complete event. We
 // verify that the enrollmenth helper receives the correct auth code.
+// Flaky on MSAN. https://crbug.com/876362
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia \
+  DISABLED_TestAuthCodeGetsProperlyReceivedFromGaia
+#else
+#define MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia \
+  TestAuthCodeGetsProperlyReceivedFromGaia
+#endif
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestAuthCodeGetsProperlyReceivedFromGaia) {
+                       MAYBE_TestAuthCodeGetsProperlyReceivedFromGaia) {
   ShowEnrollmentScreen();
   ExpectEnrollmentCredentials();
   SubmitEnrollmentCredentials();
@@ -388,8 +397,16 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 
 // Shows the enrollment screen and simulates a successful enrollment. Verifies
 // that the success screen is then displayed.
+// Flaky on MSAN. https://crbug.com/876362
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess \
+  DISABLED_TestProperPageGetsLoadedOnEnrollmentSuccess
+#else
+#define MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess \
+  TestProperPageGetsLoadedOnEnrollmentSuccess
+#endif
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestProperPageGetsLoadedOnEnrollmentSuccess) {
+                       MAYBE_TestProperPageGetsLoadedOnEnrollmentSuccess) {
   ShowEnrollmentScreen();
   DisableAttributePromptUpdate();
   SubmitEnrollmentCredentials();
@@ -407,8 +424,16 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
 // attribute prompt screen. Verifies the attribute prompt screen is displayed.
 // Verifies that the data the user enters into the attribute prompt screen is
 // received by the enrollment helper.
+// Flaky on MSAN. https://crbug.com/876362
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_TestAttributePromptPageGetsLoaded \
+  DISABLED_TestAttributePromptPageGetsLoaded
+#else
+#define MAYBE_TestAttributePromptPageGetsLoaded \
+  TestAttributePromptPageGetsLoaded
+#endif
 IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
-                       TestAttributePromptPageGetsLoaded) {
+                       MAYBE_TestAttributePromptPageGetsLoaded) {
   ShowEnrollmentScreen();
   ExpectAttributePromptUpdate();
   SubmitEnrollmentCredentials();
