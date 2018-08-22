@@ -8,7 +8,6 @@
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
-#include "third_party/blink/renderer/core/paint/box_clipper.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/scoped_box_clipper.h"
 #include "third_party/blink/renderer/core/paint/table_cell_painter.h"
 #include "third_party/blink/renderer/core/paint/table_row_painter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
@@ -70,9 +70,11 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info) {
   auto paint_offset = paint_info_with_offset.PaintOffset();
 
   if (local_paint_info.phase != PaintPhase::kSelfOutlineOnly) {
-    base::Optional<BoxClipper> box_clipper;
-    if (local_paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly)
+    base::Optional<ScopedBoxClipper> box_clipper;
+    if (local_paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly &&
+        local_paint_info.phase != PaintPhase::kMask) {
       box_clipper.emplace(layout_table_section_, local_paint_info);
+    }
     PaintObject(local_paint_info, paint_offset);
   }
 
@@ -128,7 +130,9 @@ void TableSectionPainter::PaintCollapsedSectionBorders(
   PaintInfoWithOffset paint_info_with_offset(layout_table_section_, paint_info);
   const auto& local_paint_info = paint_info_with_offset.GetPaintInfo();
   auto paint_offset = paint_info_with_offset.PaintOffset();
-  BoxClipper box_clipper(layout_table_section_, local_paint_info);
+  base::Optional<ScopedBoxClipper> box_clipper;
+  if (local_paint_info.phase != PaintPhase::kMask)
+    box_clipper.emplace(layout_table_section_, local_paint_info);
 
   CellSpan dirtied_rows;
   CellSpan dirtied_columns;
