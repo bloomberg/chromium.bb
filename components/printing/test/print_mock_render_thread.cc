@@ -61,8 +61,7 @@ bool PrintMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
                         OnDidGetPrintedPagesCount)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintDocument, OnDidPrintDocument)
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
-                        OnDidGetPreviewPageCount)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPreviewPage, OnDidPreviewPage)
     IPC_MESSAGE_HANDLER(PrintHostMsg_CheckForCancel, OnCheckForCancel)
 #endif
@@ -99,8 +98,8 @@ void PrintMockRenderThread::OnDidPrintDocument(
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-void PrintMockRenderThread::OnDidGetPreviewPageCount(
-    const PrintHostMsg_DidGetPreviewPageCount_Params& params,
+void PrintMockRenderThread::OnDidStartPreview(
+    const PrintHostMsg_DidStartPreview_Params& params,
     const PrintHostMsg_PreviewIds& ids) {
   print_preview_pages_remaining_ = params.page_count;
 }

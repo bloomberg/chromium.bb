@@ -106,8 +106,8 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview(
   PrintPreviewUI::SetInitialParams(GetPrintPreviewDialog(), params);
 }
 
-void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
-    const PrintHostMsg_DidGetPreviewPageCount_Params& params,
+void PrintPreviewMessageHandler::OnDidStartPreview(
+    const PrintHostMsg_DidStartPreview_Params& params,
     const PrintHostMsg_PreviewIds& ids) {
   if (params.page_count <= 0) {
     NOTREACHED();
@@ -119,7 +119,7 @@ void PrintPreviewMessageHandler::OnDidGetPreviewPageCount(
     return;
 
   print_preview_ui->ClearAllPreviewData();
-  print_preview_ui->OnDidGetPreviewPageCount(params, ids.request_id);
+  print_preview_ui->OnDidStartPreview(params, ids.request_id);
 }
 
 void PrintPreviewMessageHandler::OnDidPreviewPage(
@@ -324,8 +324,7 @@ bool PrintPreviewMessageHandler::OnMessageReceived(
 
   handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintPreviewMessageHandler, message)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
-                        OnDidGetPreviewPageCount)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
     IPC_MESSAGE_HANDLER(PrintHostMsg_PrintPreviewFailed,
                         OnPrintPreviewFailed)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetDefaultPageLayout,

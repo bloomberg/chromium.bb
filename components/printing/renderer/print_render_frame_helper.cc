@@ -1261,11 +1261,11 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
       routing_id(), default_page_layout, printable_area_in_points,
       has_page_size_style, ids));
 
-  PrintHostMsg_DidGetPreviewPageCount_Params params;
+  PrintHostMsg_DidStartPreview_Params params;
   params.page_count = print_preview_context_.total_page_count();
   params.fit_to_page_scaling =
       GetFitToPageScaleFactor(printable_area_in_points);
-  Send(new PrintHostMsg_DidGetPreviewPageCount(routing_id(), params, ids));
+  Send(new PrintHostMsg_DidStartPreview(routing_id(), params, ids));
   if (CheckForCancel())
     return false;
 

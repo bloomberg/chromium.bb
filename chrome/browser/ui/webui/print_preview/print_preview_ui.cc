@@ -693,8 +693,8 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
   g_print_preview_request_id_map.Get().Set(id_, request_id);
 }
 
-void PrintPreviewUI::OnDidGetPreviewPageCount(
-    const PrintHostMsg_DidGetPreviewPageCount_Params& params,
+void PrintPreviewUI::OnDidStartPreview(
+    const PrintHostMsg_DidStartPreview_Params& params,
     int request_id) {
   DCHECK_GT(params.page_count, 0);
   if (g_testing_delegate)
