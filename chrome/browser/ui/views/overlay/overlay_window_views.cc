@@ -217,7 +217,11 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateWindowBounds() {
 
 void OverlayWindowViews::SetUpViews() {
   // views::View that is displayed when video is hidden. ----------------------
-  window_background_view_->SetSize(GetBounds().size());
+  // Adding an extra pixel to width/height makes sure controls background cover
+  // entirely window when platform has fractional scale applied.
+  gfx::Rect larger_window_bounds = GetBounds();
+  larger_window_bounds.Inset(-1, -1);
+  window_background_view_->SetSize(larger_window_bounds.size());
   window_background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   GetWindowBackgroundLayer()->SetColor(SK_ColorBLACK);
 
@@ -309,8 +313,12 @@ void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
 }
 
 void OverlayWindowViews::UpdateControlsBounds() {
+  // Adding an extra pixel to width/height makes sure controls background cover
+  // entirely window when platform has fractional scale applied.
+  gfx::Rect larger_window_bounds = GetBounds();
+  larger_window_bounds.Inset(-1, -1);
   controls_background_view_->SetBoundsRect(
-      gfx::Rect(gfx::Point(0, 0), GetBounds().size()));
+      gfx::Rect(gfx::Point(0, 0), larger_window_bounds.size()));
 
   close_controls_view_->SetPosition(GetBounds().size());
 
