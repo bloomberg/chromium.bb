@@ -136,7 +136,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
 // static
 std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
-    const network::ResourceRequest& resource_request,
+    const GURL& url,
     ResourceContext* resource_context,
     ServiceWorkerNavigationHandleCore* navigation_handle_core,
     storage::BlobStorageContext* blob_storage_context,
@@ -152,8 +152,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
 
   // Create the handler even for insecure HTTP since it's used in the
   // case of redirect to HTTPS.
-  if (!resource_request.url.SchemeIsHTTPOrHTTPS() &&
-      !OriginCanAccessServiceWorkers(resource_request.url)) {
+  if (!url.SchemeIsHTTPOrHTTPS() && !OriginCanAccessServiceWorkers(url)) {
     return nullptr;
   }
 
@@ -296,9 +295,10 @@ ServiceWorkerProviderHost* ServiceWorkerRequestHandler::GetProviderHost(
 }
 
 void ServiceWorkerRequestHandler::MaybeCreateLoader(
-    const network::ResourceRequest& request,
+    const network::ResourceRequest& tentative_request,
     ResourceContext* resource_context,
-    LoaderCallback callback) {
+    LoaderCallback callback,
+    FallbackCallback fallback_callback) {
   NOTREACHED();
   std::move(callback).Run({});
 }

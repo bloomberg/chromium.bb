@@ -23,17 +23,20 @@ class SingleRequestURLLoaderFactory::HandlerState
       : handler_(std::move(handler)),
         handler_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
-  void HandleRequest(network::mojom::URLLoaderRequest loader,
+  void HandleRequest(const network::ResourceRequest& resource_request,
+                     network::mojom::URLLoaderRequest loader,
                      network::mojom::URLLoaderClientPtr client) {
     if (!handler_task_runner_->RunsTasksInCurrentSequence()) {
       handler_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(&HandlerState::HandleRequest, this,
-                                    std::move(loader), std::move(client)));
+          FROM_HERE,
+          base::BindOnce(&HandlerState::HandleRequest, this, resource_request,
+                         std::move(loader), std::move(client)));
       return;
     }
 
     DCHECK(handler_);
-    std::move(handler_).Run(std::move(loader), std::move(client));
+    std::move(handler_).Run(resource_request, std::move(loader),
+                            std::move(client));
   }
 
  private:
@@ -85,7 +88,7 @@ void SingleRequestURLLoaderFactory::CreateLoaderAndStart(
     const network::ResourceRequest& request,
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  state_->HandleRequest(std::move(loader), std::move(client));
+  state_->HandleRequest(request, std::move(loader), std::move(client));
 }
 
 void SingleRequestURLLoaderFactory::Clone(

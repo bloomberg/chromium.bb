@@ -87,7 +87,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
   void MaybeStartLoader(
       NavigationLoaderInterceptor* interceptor,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler);
-  void LoadFromNetwork();
+  void LoadFromNetwork(bool reset_subresource_loader_params);
 
   // The order of the interceptors is important. The former interceptor can
   // preferentially get a chance to intercept a network request.

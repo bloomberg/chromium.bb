@@ -18,7 +18,8 @@ namespace content {
 class SingleRequestURLLoaderFactory : public network::SharedURLLoaderFactory {
  public:
   using RequestHandler =
-      base::OnceCallback<void(network::mojom::URLLoaderRequest,
+      base::OnceCallback<void(const network::ResourceRequest& resource_request,
+                              network::mojom::URLLoaderRequest,
                               network::mojom::URLLoaderClientPtr)>;
 
   explicit SingleRequestURLLoaderFactory(RequestHandler handler);

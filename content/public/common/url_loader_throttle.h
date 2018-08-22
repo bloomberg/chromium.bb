@@ -95,6 +95,13 @@ class CONTENT_EXPORT URLLoaderThrottle {
   // might have some side-effects: drop upload streams data might be dropped,
   // redirect count may be reached, and cross-origin redirect are not supported
   // (at least until we have the demand).
+  //
+  // Implementations should be aware that throttling can happen multiple times
+  // for the same |request|, even after one instance of the same throttle
+  // subclass already modified the request. This happens, e.g., when a service
+  // worker initially elects to handle a request but then later falls back to
+  // network, so new throttles are created for another URLLoaderFactory to
+  // handle the request.
   virtual void WillStartRequest(network::ResourceRequest* request, bool* defer);
 
   // Called when the request was redirected.  |redirect_info| contains the

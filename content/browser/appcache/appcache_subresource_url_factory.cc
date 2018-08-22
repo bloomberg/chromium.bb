@@ -108,7 +108,7 @@ class SubresourceLoader : public network::mojom::URLLoader,
 
     network::mojom::URLLoaderClientPtr client_ptr;
     local_client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-    std::move(handler).Run(mojo::MakeRequest(&appcache_loader_),
+    std::move(handler).Run(request_, mojo::MakeRequest(&appcache_loader_),
                            std::move(client_ptr));
   }
 

@@ -68,11 +68,13 @@ void SharedWorkerScriptLoader::Start() {
     interceptor->MaybeCreateLoader(
         resource_request_, resource_context_,
         base::BindOnce(&SharedWorkerScriptLoader::MaybeStartLoader,
-                       weak_factory_.GetWeakPtr(), interceptor));
+                       weak_factory_.GetWeakPtr(), interceptor),
+        base::BindOnce(&SharedWorkerScriptLoader::LoadFromNetwork,
+                       weak_factory_.GetWeakPtr()));
     return;
   }
 
-  LoadFromNetwork();
+  LoadFromNetwork(false);
 }
 
 void SharedWorkerScriptLoader::MaybeStartLoader(
@@ -105,8 +107,11 @@ void SharedWorkerScriptLoader::MaybeStartLoader(
   Start();
 }
 
-void SharedWorkerScriptLoader::LoadFromNetwork() {
+void SharedWorkerScriptLoader::LoadFromNetwork(
+    bool reset_subresource_loader_params) {
   network::mojom::URLLoaderClientPtr client;
+  if (url_loader_client_binding_)
+    url_loader_client_binding_.Unbind();
   url_loader_client_binding_.Bind(mojo::MakeRequest(&client));
   url_loader_factory_ = default_loader_factory_;
   url_loader_factory_->CreateLoaderAndStart(

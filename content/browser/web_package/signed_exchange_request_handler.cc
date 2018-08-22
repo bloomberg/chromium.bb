@@ -59,9 +59,10 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
 SignedExchangeRequestHandler::~SignedExchangeRequestHandler() = default;
 
 void SignedExchangeRequestHandler::MaybeCreateLoader(
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& /* tentative_resource_request */,
     ResourceContext* resource_context,
-    LoaderCallback callback) {
+    LoaderCallback callback,
+    FallbackCallback fallback_callback) {
   if (!signed_exchange_loader_) {
     std::move(callback).Run({});
     return;
@@ -110,6 +111,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
 }
 
 void SignedExchangeRequestHandler::StartResponse(
+    const network::ResourceRequest& resource_request,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
   signed_exchange_loader_->ConnectToClient(std::move(client));

@@ -47,9 +47,11 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   ~SignedExchangeRequestHandler() override;
 
   // NavigationLoaderInterceptor implementation
-  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
-                         ResourceContext* resource_context,
-                         LoaderCallback callback) override;
+  void MaybeCreateLoader(
+      const network::ResourceRequest& tentative_resource_request,
+      ResourceContext* resource_context,
+      LoaderCallback callback,
+      FallbackCallback fallback_callback) override;
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response,
       network::mojom::URLLoaderPtr* loader,
@@ -57,7 +59,8 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       ThrottlingURLLoader* url_loader) override;
 
  private:
-  void StartResponse(network::mojom::URLLoaderRequest request,
+  void StartResponse(const network::ResourceRequest& resource_request,
+                     network::mojom::URLLoaderRequest request,
                      network::mojom::URLLoaderClientPtr client);
 
   // Valid after MaybeCreateLoaderForResponse intercepts the request and until

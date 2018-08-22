@@ -86,9 +86,9 @@ class ServiceWorkerControlleeRequestHandlerTest
       resource_request.url = request_->url();
       resource_request.resource_type = resource_type_;
       resource_request.headers = request()->extra_request_headers();
-      handler_->MaybeCreateLoader(
-          resource_request, &test_->mock_resource_context_,
-          base::DoNothing());
+      handler_->MaybeCreateLoader(resource_request,
+                                  &test_->mock_resource_context_,
+                                  base::DoNothing(), base::DoNothing());
     }
 
     ServiceWorkerURLJobWrapper* MaybeCreateJobWrapper() {

@@ -272,9 +272,10 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 }
 
 void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& tentative_resource_request,
     ResourceContext* resource_context,
-    LoaderCallback callback) {
+    LoaderCallback callback,
+    FallbackCallback fallback_callback) {
   DCHECK(blink::ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(is_main_resource_load_);
   ClearJob();
@@ -292,7 +293,13 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   // Fall back for the subsequent offline page interceptor to load the offline
   // snapshot of the page if required.
-  if (ShouldFallbackToLoadOfflinePage(resource_request.headers)) {
+  //
+  // TODO(crbug.com/876527): Figure out how offline page interception should
+  // interact with URLLoaderThrottles. It might be incorrect to use
+  // |tentative_resource_request.headers| here, since throttles can rewrite
+  // headers between now and when the request handler passed to
+  // |loader_callback_| is invoked.
+  if (ShouldFallbackToLoadOfflinePage(tentative_resource_request.headers)) {
     std::move(callback).Run({});
     return;
   }
@@ -300,13 +307,14 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
 
   url_job_ = std::make_unique<ServiceWorkerURLJobWrapper>(
       std::make_unique<ServiceWorkerNavigationLoader>(
-          std::move(callback), this, resource_request,
+          std::move(callback), std::move(fallback_callback), this,
+          tentative_resource_request,
           base::WrapRefCounted(context_->loader_factory_getter())));
 
   resource_context_ = resource_context;
 
-  PrepareForMainResource(resource_request.url,
-                         resource_request.site_for_cookies);
+  PrepareForMainResource(tentative_resource_request.url,
+                         tentative_resource_request.site_for_cookies);
 
   if (url_job_->ShouldFallbackToNetwork()) {
     // We're falling back to the next NavigationLoaderInterceptor, forward

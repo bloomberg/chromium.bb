@@ -35,23 +35,49 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
 
   using LoaderCallback =
       base::OnceCallback<void(SingleRequestURLLoaderFactory::RequestHandler)>;
+  using FallbackCallback =
+      base::OnceCallback<void(bool /* reset_subresource_loader_params */)>;
 
   // Asks this handler to handle this resource load request.
   // The handler must invoke |callback| eventually with either a non-null
   // RequestHandler indicating its willingness to handle the request, or a null
   // RequestHandler to indicate that someone else should handle the request.
+  //
+  // The |tentative_resource_request| passed to this function and the resource
+  // request later passed to the RequestHandler given to |callback| may not be
+  // exactly the same, because URLLoaderThrottles may rewrite the request
+  // between the two calls. However the URL must remain constant between the
+  // two, as any modifications on the URL done by URLLoaderThrottles must result
+  // in an (internal) redirect, which must restart the request with a new
+  // MaybeCreateLoader().
+  //
+  // This handler might initially elect to handle the request, but later decide
+  // to fall back to the default behavior. In that case, it can invoke
+  // |fallback_callback| to do so. An example of this is when a service worker
+  // decides to handle the request because it is in-scope, but the service
+  // worker JavaScript execution does not result in a response provided, so
+  // fallback to network is required.
+  //
+  // If |fallback_callback| is called, it must be called prior to the
+  // RequestHandler making any URLLoaderClient calls. The
+  // |reset_subresource_loader_params| parameter to |fallback_callback|
+  // indicates whether to discard the subresource loader params previously
+  // returned by MaybeCreateSubresourceLoaderParams().
   virtual void MaybeCreateLoader(
-      const network::ResourceRequest& resource_request,
+      const network::ResourceRequest& tentative_resource_request,
       ResourceContext* resource_context,
-      LoaderCallback callback) = 0;
+      LoaderCallback callback,
+      FallbackCallback fallback_callback) = 0;
 
   // Returns a SubresourceLoaderParams if any to be used for subsequent URL
   // requests going forward. Subclasses who want to set-up custom loader for
   // subresource requests may want to override this.
+  //
   // Note that the handler can return a null callback to MaybeCreateLoader(),
   // and at the same time can return non-null SubresourceLoaderParams here if it
   // does NOT want to handle the specific request given to MaybeCreateLoader()
-  // but wants to handle the subsequent resource requests.
+  // but wants to handle the subsequent resource requests or ensure other
+  // interceptors are skipped.
   virtual base::Optional<SubresourceLoaderParams>
   MaybeCreateSubresourceLoaderParams();
 

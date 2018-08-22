@@ -20,13 +20,13 @@ OfflinePageURLLoaderRequestInterceptor::
     ~OfflinePageURLLoaderRequestInterceptor() {}
 
 void OfflinePageURLLoaderRequestInterceptor::MaybeCreateLoader(
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& tentative_resource_request,
     content::ResourceContext* resource_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   url_loader_ = OfflinePageURLLoader::Create(
-      navigation_ui_data_, frame_tree_node_id_, resource_request,
+      navigation_ui_data_, frame_tree_node_id_, tentative_resource_request,
       base::BindOnce(&OfflinePageURLLoaderRequestInterceptor::OnRequestHandled,
                      base::Unretained(this), std::move(callback)));
 }
