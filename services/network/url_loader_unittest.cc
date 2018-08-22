@@ -2262,6 +2262,8 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
   std::unique_ptr<URLLoader> url_loader;
   mojom::URLLoaderFactoryParams params;
   params.corb_excluded_resource_type = kResourceType;
+  params.process_id = 123;
+  CrossOriginReadBlocking::AddExceptionForPlugin(123);
   url_loader = std::make_unique<URLLoader>(
       context(), nullptr /* network_service_client */,
       DeleteLoaderCallback(&delete_run_loop, &url_loader),
@@ -2279,6 +2281,47 @@ TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
 
   // The request body is allowed through because CORB isn't applied.
   ASSERT_NE(std::string(), body);
+
+  CrossOriginReadBlocking::RemoveExceptionForPlugin(123);
+}
+
+// This simulates a renderer that pretends to be proxying requests for Flash
+// (when browser didn't actually confirm that Flash is hosted by the given
+// process via CrossOriginReadBlocking::AddExceptionForPlugin).  We should still
+// apply CORB in this case.
+TEST_F(URLLoaderTest, CorbEffectiveWithNoCorsWhenNoActualPlugin) {
+  int kResourceType = 1;
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
+  request.resource_type = kResourceType;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
+  request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.corb_excluded_resource_type = kResourceType;
+  params.process_id = 234;
+  // No call to CrossOriginReadBlocking::AddExceptionForPlugin(123) - this is
+  // what we primarily want to cover in this test.
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  client()->RunUntilResponseBodyArrived();
+  std::string body = ReadBody();
+
+  client()->RunUntilComplete();
+
+  delete_run_loop.Run();
+
+  // The request body should be blocked by CORB.
+  ASSERT_EQ(std::string(), body);
 }
 
 }  // namespace network
