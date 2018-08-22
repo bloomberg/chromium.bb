@@ -60,7 +60,7 @@ class MimeHandlerViewContainerBase : public blink::WebAssociatedURLLoaderClient,
  protected:
   // Returns the frame which is embedding the corresponding plugin element.
   virtual content::RenderFrame* GetEmbedderRenderFrame() const;
-  virtual void CreateMimeHandlerViewGuestIfNecessary() = 0;
+  virtual void CreateMimeHandlerViewGuestIfNecessary();
   virtual blink::WebFrame* GetGuestProxyFrame() const = 0;
   virtual int32_t GetInstanceId() const = 0;
   virtual gfx::Size GetElementSize() const = 0;
