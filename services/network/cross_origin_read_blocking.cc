@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <algorithm>
-#include <set>
 #include <string>
 #include <unordered_set>
 
@@ -16,8 +15,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/no_destructor.h"
-#include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "net/base/mime_sniffer.h"
@@ -192,11 +189,6 @@ void BlockResponseHeaders(
   }
 
   headers->RemoveHeaders(names_of_headers_to_remove);
-}
-
-std::set<int>& GetPluginProxyingProcesses() {
-  static base::NoDestructor<std::set<int>> set;
-  return *set;
 }
 
 }  // namespace
@@ -865,25 +857,6 @@ void CrossOriginReadBlocking::ResponseAnalyzer::LogBlockedResponse() {
   }
 
   LogBytesReadForSniffing();
-}
-
-// static
-void CrossOriginReadBlocking::AddExceptionForPlugin(int process_id) {
-  std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
-  plugin_proxies.insert(process_id);
-}
-
-// static
-bool CrossOriginReadBlocking::ShouldAllowForPlugin(int process_id) {
-  std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
-  return base::ContainsKey(plugin_proxies, process_id);
-}
-
-// static
-void CrossOriginReadBlocking::RemoveExceptionForPlugin(int process_id) {
-  std::set<int>& plugin_proxies = GetPluginProxyingProcesses();
-  size_t number_of_elements_removed = plugin_proxies.erase(process_id);
-  DCHECK_EQ(1u, number_of_elements_removed);
 }
 
 }  // namespace network

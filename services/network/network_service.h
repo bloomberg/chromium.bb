@@ -146,8 +146,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetCryptConfig(mojom::CryptConfigPtr crypt_config) override;
 #endif
-  void AddCorbExceptionForPlugin(uint32_t process_id) override;
-  void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
 
   // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
   // one if needed.
