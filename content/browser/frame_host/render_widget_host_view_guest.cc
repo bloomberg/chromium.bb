@@ -186,15 +186,6 @@ bool RenderWidgetHostViewGuest::HasFocus() const {
   return guest_->focused();
 }
 
-#if defined(USE_AURA)
-void RenderWidgetHostViewGuest::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
-  // TODO(tdresser): Since all ProcessAckedTouchEvent() uses is the event id,
-  // don't pass the full event object here. https://crbug.com/550581.
-  GetOwnerRenderWidgetHostView()->ProcessAckedTouchEvent(touch, ack_result);
-}
-#endif
-
 void RenderWidgetHostViewGuest::PreProcessMouseEvent(
     const blink::WebMouseEvent& event) {
   if (event.GetType() == blink::WebInputEvent::kMouseDown) {
@@ -414,6 +405,10 @@ bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
   }
 
   return platform_view_->OnMessageReceived(msg);
+}
+
+RenderWidgetHostViewBase* RenderWidgetHostViewGuest::GetRootView() {
+  return GetRootView(this);
 }
 
 void RenderWidgetHostViewGuest::InitAsChild(

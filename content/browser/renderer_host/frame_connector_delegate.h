@@ -144,11 +144,6 @@ class CONTENT_EXPORT FrameConnectorDelegate {
       gfx::PointF* transformed_point,
       viz::EventSource source = viz::EventSource::ANY);
 
-  // Pass acked touch events to the root view for gesture processing.
-  virtual void ForwardProcessAckedTouchEvent(
-      const TouchEventWithLatencyInfo& touch,
-      InputEventAckState ack_result) {}
-
   // Pass acked touchpad pinch gesture events to the root view for processing.
   virtual void ForwardAckedTouchpadPinchGestureEvent(
       const blink::WebGestureEvent& event,

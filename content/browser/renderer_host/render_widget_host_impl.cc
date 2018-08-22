@@ -2616,13 +2616,16 @@ void RenderWidgetHostImpl::OnTouchEventAck(
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(ack_source, ack_result, event.event);
 
-  auto* touch_emulator = GetExistingTouchEmulator();
-  if (touch_emulator &&
-      touch_emulator->HandleTouchEventAck(event.event, ack_result)) {
-    return;
-  }
+  auto* input_event_router =
+      delegate() ? delegate()->GetInputEventRouter() : nullptr;
 
-  if (view_)
+  // At present interstitial pages might not have an input event router, so we
+  // just have the view process the ack directly in that case; the view is
+  // guaranteed to be a top-level view with an appropriate implementation of
+  // ProcessAckedTouchEvent().
+  if (input_event_router)
+    input_event_router->ProcessAckedTouchEvent(event, ack_result, view_.get());
+  else if (view_)
     view_->ProcessAckedTouchEvent(event, ack_result);
 }
 

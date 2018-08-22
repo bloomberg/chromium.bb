@@ -627,6 +627,28 @@ void RenderWidgetHostInputEventRouter::DispatchTouchEvent(
     touch_target_.target = nullptr;
 }
 
+void RenderWidgetHostInputEventRouter::ProcessAckedTouchEvent(
+    const TouchEventWithLatencyInfo& event,
+    InputEventAckState ack_result,
+    RenderWidgetHostViewBase* view) {
+  // TODO(wjmaclean): Eventually we will keep track of which outgoing touch
+  // events are emulated and which aren't, so the decision to hand off to the
+  // touch emulator won't just rely on the existence of the touch emulator.
+  if (touch_emulator_ &&
+      touch_emulator_->HandleTouchEventAck(event.event, ack_result)) {
+    return;
+  }
+
+  if (!view)
+    return;
+
+  auto* root_view = view->GetRootView();
+  if (!root_view)
+    return;
+
+  root_view->ProcessAckedTouchEvent(event, ack_result);
+}
+
 void RenderWidgetHostInputEventRouter::RouteTouchEvent(
     RenderWidgetHostViewBase* root_view,
     blink::WebTouchEvent* event,

@@ -114,6 +114,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
 
   // RenderWidgetHostViewBase implementation.
+  RenderWidgetHostViewBase* GetRootView() override;
   void InitAsPopup(RenderWidgetHostView* parent_host_view,
                    const gfx::Rect& bounds) override;
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
@@ -140,8 +141,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
 
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
-  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                              InputEventAckState ack_result) override;
   void DidStopFlinging() override;
   bool LockMouse() override;
   void UnlockMouse() override;

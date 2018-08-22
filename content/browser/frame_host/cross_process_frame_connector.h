@@ -96,8 +96,6 @@ class CONTENT_EXPORT CrossProcessFrameConnector
       const viz::SurfaceId& local_surface_id,
       gfx::PointF* transformed_point,
       viz::EventSource source = viz::EventSource::ANY) override;
-  void ForwardProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                                     InputEventAckState ack_result) override;
   void ForwardAckedTouchpadPinchGestureEvent(
       const blink::WebGestureEvent& event,
       InputEventAckState ack_result) override;
