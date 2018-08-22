@@ -78,6 +78,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   void OnVoiceInteractionSetupCompleted(bool completed) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
 
   // SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;

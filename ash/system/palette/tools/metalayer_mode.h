@@ -72,6 +72,7 @@ class ASH_EXPORT MetalayerMode : public CommonPaletteTool,
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
+  void OnLocaleChanged(const std::string& locale) override {}
 
   // HighlighterController::Observer:
   void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;

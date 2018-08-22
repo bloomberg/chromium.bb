@@ -39,6 +39,7 @@ class TestVoiceInteractionObserver : public mojom::VoiceInteractionObserver {
   }
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
 
   mojom::VoiceInteractionState voice_interaction_state() const {
     return state_;
