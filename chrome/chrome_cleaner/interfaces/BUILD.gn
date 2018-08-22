@@ -1,0 +1,21 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//mojo/public/tools/bindings/mojom.gni")
+
+mojom("engine_sandbox_interface") {
+  sources = [
+    "cleaner_engine_requests.mojom",
+    "engine_file_requests.mojom",
+    "engine_requests.mojom",
+    "engine_sandbox.mojom",
+    "pup.mojom",
+    "string16_embedded_nulls.mojom",
+    "windows_handle.mojom",
+  ]
+  deps = [
+    "//components/chrome_cleaner/public/interfaces:interfaces",
+    "//mojo/public/mojom/base",
+  ]
+}
