@@ -43,6 +43,7 @@ class AssistantFooterView : public views::View,
   void OnVoiceInteractionSetupCompleted(bool completed) override;
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
 
  private:
   void InitLayout();

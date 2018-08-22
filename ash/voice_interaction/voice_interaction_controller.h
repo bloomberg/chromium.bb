@@ -30,6 +30,7 @@ class ASH_EXPORT VoiceInteractionController
   void NotifySetupCompleted(bool completed) override;
   void NotifyFeatureAllowed(mojom::AssistantAllowedState state) override;
   void NotifyNotificationEnabled(bool enabled) override;
+  void NotifyLocaleChanged(const std::string& locale) override;
   void IsSettingEnabled(IsSettingEnabledCallback callback) override;
   void IsSetupCompleted(IsSetupCompletedCallback callback) override;
   void IsContextEnabled(IsContextEnabledCallback callback) override;
@@ -76,6 +77,8 @@ class ASH_EXPORT VoiceInteractionController
   // Whether voice interaction feature is allowed or disallowed for what reason.
   mojom::AssistantAllowedState allowed_state_ =
       mojom::AssistantAllowedState::ALLOWED;
+
+  std::string locale_;
 
   mojo::BindingSet<mojom::VoiceInteractionController> bindings_;
 

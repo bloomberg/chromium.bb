@@ -65,6 +65,11 @@ interface VoiceInteractionObserver {
 
   // Called when assistant feature allowed state has changed.
   OnAssistantFeatureAllowedChanged(AssistantAllowedState state);
+
+  // Called when locale is changed in pref. The locale is in the format can be
+  // "en-US" or simply "en". When locale is not set in pref, it returns empty
+  // string.
+  OnLocaleChanged(string locale);
 };
 
 // Interface for ash client (Chrome) to connect to the voice interaction
@@ -93,6 +98,9 @@ interface VoiceInteractionController {
 
   // Called when the notification is enabled/disabled.
   NotifyNotificationEnabled(bool enabled);
+
+  // Called when the locale is changed.
+  NotifyLocaleChanged(string locale);
 
   // Return if the voice interaction setting is enabled/disabled.
   IsSettingEnabled() => (bool enabled);

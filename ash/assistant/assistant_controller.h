@@ -172,6 +172,7 @@ class ASH_EXPORT AssistantController
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
 
   // The observer list should be initialized early so that sub-controllers may
   // register as observers during their construction.

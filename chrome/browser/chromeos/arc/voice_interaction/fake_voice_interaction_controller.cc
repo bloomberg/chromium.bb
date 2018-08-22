@@ -48,6 +48,11 @@ void FakeVoiceInteractionController::NotifyNotificationEnabled(bool enabled) {
   voice_interaction_notification_enabled_ = enabled;
 }
 
+void FakeVoiceInteractionController::NotifyLocaleChanged(
+    const std::string& locale) {
+  locale_ = locale;
+}
+
 void FakeVoiceInteractionController::IsSettingEnabled(
     IsSettingEnabledCallback callback) {
   std::move(callback).Run(voice_interaction_settings_enabled_);

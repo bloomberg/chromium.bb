@@ -70,6 +70,13 @@ void VoiceInteractionController::NotifyNotificationEnabled(bool enabled) {
   notification_enabled_ = enabled;
 }
 
+void VoiceInteractionController::NotifyLocaleChanged(
+    const std::string& locale) {
+  locale_ = locale;
+  observers_.ForAllPtrs(
+      [locale](auto* observer) { observer->OnLocaleChanged(locale); });
+}
+
 void VoiceInteractionController::IsSettingEnabled(
     IsSettingEnabledCallback callback) {
   std::move(callback).Run(settings_enabled_);
@@ -92,6 +99,10 @@ void VoiceInteractionController::IsHotwordEnabled(
 
 void VoiceInteractionController::AddObserver(
     mojom::VoiceInteractionObserverPtr observer) {
+  // Locale needs to be notified when adding observer as this property is
+  // changed at profile initialization and some observers (e.g. assistant) may
+  // be constructed at later timing.
+  observer->OnLocaleChanged(locale_);
   observers_.AddPtr(std::move(observer));
 }
 

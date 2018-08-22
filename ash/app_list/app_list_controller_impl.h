@@ -198,6 +198,7 @@ class ASH_EXPORT AppListControllerImpl
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override;
+  void OnLocaleChanged(const std::string& locale) override {}
 
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 

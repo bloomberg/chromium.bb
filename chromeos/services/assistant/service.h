@@ -93,6 +93,7 @@ class Service : public service_manager::Service,
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
 
   // chromeos::assistant::mojom::AssistantInteractionSubscriber:
   void OnInteractionStarted(bool is_voice_interaction) override{};

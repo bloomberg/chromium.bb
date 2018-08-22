@@ -48,6 +48,7 @@ class AssistantCacheController : public AssistantControllerObserver,
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       mojom::AssistantAllowedState state) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
 
   void UpdateConversationStarters();
 

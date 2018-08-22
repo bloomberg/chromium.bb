@@ -133,6 +133,7 @@ class AssistantManagerServiceImpl
   void OnVoiceInteractionSetupCompleted(bool completed) override {}
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
+  void OnLocaleChanged(const std::string& locale) override {}
 
   // AddDeviceStateListener overrides
   void OnStartFinished() override;
