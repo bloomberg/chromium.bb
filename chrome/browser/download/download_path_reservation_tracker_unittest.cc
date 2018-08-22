@@ -96,6 +96,8 @@ MockDownloadItem* DownloadPathReservationTrackerTest::CreateDownloadItem(
       .WillRepeatedly(Return(id));
   EXPECT_CALL(*item, GetTargetFilePath())
       .WillRepeatedly(ReturnRefOfCopy(base::FilePath()));
+  EXPECT_CALL(*item, GetTemporaryFilePath())
+      .WillRepeatedly(Return(base::FilePath()));
   EXPECT_CALL(*item, GetState())
       .WillRepeatedly(Return(DownloadItem::IN_PROGRESS));
   EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRefOfCopy(GURL()));

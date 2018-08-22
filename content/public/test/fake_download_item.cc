@@ -335,6 +335,11 @@ const base::FilePath& FakeDownloadItem::GetForcedFilePath() const {
   return dummy_file_path;
 }
 
+base::FilePath FakeDownloadItem::GetTemporaryFilePath() const {
+  NOTREACHED();
+  return dummy_file_path;
+}
+
 base::FilePath FakeDownloadItem::GetFileNameToReportUser() const {
   NOTREACHED();
   return base::FilePath();
