@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrframeofreference-interface
-[
-    SecureContext
-] dictionary XRFrameOfReferenceOptions {
+dictionary XRFrameOfReferenceOptions {
   boolean disableStageEmulation = false;
   double stageEmulationHeight = 0.0;
 };

@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrsessionevent-interface
-[
-    SecureContext
-] dictionary XRSessionEventInit : EventInit {
+dictionary XRSessionEventInit : EventInit {
   required XRSession session;
 };
