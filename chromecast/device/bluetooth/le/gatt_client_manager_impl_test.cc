@@ -366,6 +366,34 @@ TEST_F(GattClientManagerTest, RemoteDeviceReadRssi) {
   delegate->OnReadRemoteRssi(kTestAddr1, true /* status */, kRssi);
 }
 
+TEST_F(GattClientManagerTest, ReadRemoteRssiTimeout) {
+  static const int kRssi = -34;
+
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+
+  Connect(kTestAddr1);
+
+  // Issue a ReadRemoteRssi request.
+  base::MockCallback<RemoteDevice::RssiCallback> rssi_cb;
+  EXPECT_CALL(*gatt_client_, ReadRemoteRssi(kTestAddr1)).WillOnce(Return(true));
+  device->ReadRemoteRssi(rssi_cb.Get());
+
+  // Let ReadRemoteRssi request timeout.
+  base::TestMockTimeTaskRunner::ScopedContext context(fake_task_runner_);
+  // We should expect to receive ReadRemoteRssi failure message.
+  EXPECT_CALL(rssi_cb, Run(false, 0));
+  fake_task_runner_->FastForwardBy(
+      GattClientManagerImpl::kReadRemoteRssiTimeout);
+
+  // The following callback should be ignored.
+  delegate->OnReadRemoteRssi(kTestAddr1, true /* status */, kRssi);
+
+  // Device should remain connected.
+  EXPECT_TRUE(device->IsConnected());
+}
+
 TEST_F(GattClientManagerTest, RemoteDeviceReadRssiConcurrent) {
   static const int kRssi1 = -34;
   static const int kRssi3 = -68;
