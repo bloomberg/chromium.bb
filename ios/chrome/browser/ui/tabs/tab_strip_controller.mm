@@ -743,13 +743,9 @@ UIColor* BackgroundColor() {
 - (void)updateTabSwitcherGuide {
   NamedGuide* tabSwitcherGuide =
       [NamedGuide guideWithName:kTabStripTabSwitcherGuide view:self.view];
-  tabSwitcherGuide.constrainedFrame = _tabSwitcherButton.frame;
-  if (UseRTLLayout()) {
-    CGRect frame = tabSwitcherGuide.constrainedFrame;
-    frame.origin.x =
-        self.view.frame.size.width - _tabSwitcherButton.frame.origin.x;
-    tabSwitcherGuide.constrainedFrame = frame;
-  }
+  tabSwitcherGuide.constrainedFrame =
+      [_tabSwitcherButton.superview convertRect:_tabSwitcherButton.frame
+                                         toView:tabSwitcherGuide.owningView];
 }
 
 #pragma mark -
