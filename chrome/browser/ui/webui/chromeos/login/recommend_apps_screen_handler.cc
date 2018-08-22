@@ -105,6 +105,10 @@ void RecommendAppsScreenHandler::OnLoadSuccess(const base::Value& app_list) {
   LoadAppListInUI(app_list);
 }
 
+void RecommendAppsScreenHandler::OnParseResponseError() {
+  HandleSkip();
+}
+
 void RecommendAppsScreenHandler::HandleSkip() {
   for (auto& observer : observer_list_)
     observer.OnSkip();

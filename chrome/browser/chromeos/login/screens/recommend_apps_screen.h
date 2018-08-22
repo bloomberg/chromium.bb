@@ -9,13 +9,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/chromeos/login/screens/base_screen.h"
+#include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher.h"
 #include "chrome/browser/chromeos/login/screens/recommend_apps_screen_view.h"
-
-namespace network {
-class SimpleURLLoader;
-}
 
 namespace chromeos {
 
@@ -41,38 +37,9 @@ class RecommendAppsScreen : public BaseScreen,
   void OnViewDestroyed(RecommendAppsScreenView* view) override;
 
  private:
-  // Start downloading the recommended app list.
-  void StartDownload();
-
-  // Abort the attempt to download the recommended app list if it takes too
-  // long.
-  void OnDownloadTimeout();
-
-  // Callback function called when SimpleURLLoader completes.
-  void OnDownloaded(std::unique_ptr<std::string> response_body);
-
-  // If the response is not a valid JSON, return false.
-  // If the response contains no app, return false;
-  // Value output, in true, is a list containing:
-  // 1. name: the title of the app.
-  // 2. package_name
-  // 3. Possibly an Icon URL.
-  // Parses an input string that looks somewhat like this:
-  // [{"title_" : "title of app",
-  //   "packageName_" : "com.package.name",
-  //  "icon_": {"url_": {"privateDoNotAccessOrElseSafeUrlWrappedValue_": "http://icon_url.com/url"}}},
-  //  {"title_" : "title of second app",
-  //   "packageName_": "second package name.",
-  //  }]
-  bool ParseResponse(const std::string& response, base::Value* output);
-
   RecommendAppsScreenView* view_;
 
-  std::unique_ptr<network::SimpleURLLoader> app_list_loader_;
-
-  // Timer that enforces a custom (shorter) timeout on the attempt to download
-  // the recommended app list.
-  base::OneShotTimer download_timer_;
+  std::unique_ptr<RecommendAppsFetcher> recommend_apps_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RecommendAppsScreen);
 };

@@ -41103,6 +41103,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="Show More"/>
 </enum>
 
+<enum name="RecommendAppsResponseParseResult">
+  <int value="0" label="No Error"/>
+  <int value="1" label="Invalid JSON"/>
+  <int value="2" label="No App"/>
+</enum>
+
 <enum name="RecoveryComponentEvent">
   <int value="0" label="RunningNonElevated"/>
   <int value="1" label="ElevationNeeded"/>
