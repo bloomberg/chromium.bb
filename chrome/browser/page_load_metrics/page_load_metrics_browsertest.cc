@@ -1959,6 +1959,8 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, InputEventsForClick) {
   waiter->Wait();
 
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToNavigation, 1);
+  histogram_tester_.ExpectTotalCount(
+      internal::kHistogramInputToNavigationLinkClick, 1);
   histogram_tester_.ExpectTotalCount(internal::kHistogramInputToFirstPaint, 1);
   histogram_tester_.ExpectTotalCount(
       internal::kHistogramInputToFirstContentfulPaint, 1);
