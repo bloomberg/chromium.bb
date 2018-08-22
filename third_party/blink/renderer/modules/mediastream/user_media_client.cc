@@ -44,9 +44,7 @@ UserMediaClient::UserMediaClient(WebUserMediaClient* client)
     : client_(client) {}
 
 void UserMediaClient::RequestUserMedia(UserMediaRequest* request) {
-  // TODO(emircan): Hook up kDisplayMedia calls.
-  if (client_ && request->MediaRequestType() !=
-                     WebUserMediaRequest::MediaType::kDisplayMedia) {
+  if (client_) {
     client_->RequestUserMedia(request);
     return;
   }

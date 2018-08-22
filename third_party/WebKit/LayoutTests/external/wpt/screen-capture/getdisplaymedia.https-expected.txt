@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+PASS getDisplayMedia() with no constraints
+PASS getDisplayMedia() with video true
+PASS getDisplayMedia() with video false
+FAIL getDisplayMedia() with audio true promise_test: Unhandled rejection with value: object "TypeError: Failed to execute 'getDisplayMedia' on 'Navigator': Audio is not supported"
+PASS getDisplayMedia() with audio false
+PASS getDisplayMedia() call with non-bool constraint
+Harness: the test ran to completion.
+
