@@ -73,7 +73,6 @@ class Editor;
 class Element;
 class EventHandler;
 class EventHandlerRegistry;
-class FetchParameters;
 class FloatSize;
 class FrameConsole;
 class FrameResourceCoordinator;
@@ -95,6 +94,7 @@ class Node;
 class NodeTraversal;
 class PerformanceMonitor;
 class PluginData;
+class ResourceRequest;
 class ScriptController;
 class SharedBuffer;
 class SmoothScrollSequencer;
@@ -288,15 +288,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   AdTracker* GetAdTracker() { return ad_tracker_; }
   void SetAdTrackerForTesting(AdTracker* ad_tracker);
 
-  // Convenience function to allow loading image placeholders for the request if
-  // either the flag in Settings() for using image placeholders is set, or if
-  // the embedder decides that Client Lo-Fi should be used for this request.
-  void MaybeAllowImagePlaceholder(FetchParameters&) const;
+  // Returns true if Client Lo-Fi should be used for this request.
+  bool IsClientLoFiAllowed(const ResourceRequest&) const;
 
-  // Convenience function to allow loading image placeholders for the request if
-  // lazyloading the image is possible. Returns if lazyloading the image is
-  // possible.
-  bool MaybeAllowLazyLoadingImage(FetchParameters&) const;
+  // Returns true if lazyloading the image is possible.
+  bool IsLazyLoadingImageAllowed() const;
 
   // The returned value is a off-heap raw-ptr and should not be stored.
   WebURLLoaderFactory* GetURLLoaderFactory();

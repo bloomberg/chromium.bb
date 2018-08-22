@@ -104,7 +104,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/blink_resource_coordinator_base.h"
 #include "third_party/blink/renderer/platform/instrumentation/resource_coordinator/frame_resource_coordinator.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
-#include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
@@ -1261,33 +1260,16 @@ void ScopedFrameBlamer::LeaveContext() {
     context->Leave();
 }
 
-void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
-  if (GetSettings() && GetSettings()->GetFetchImagePlaceholders()) {
-    params.SetAllowImagePlaceholder();
-    return;
-  }
-
-  if (Client() &&
-      ShouldUseClientLoFiForRequest(params.GetResourceRequest(),
-                                    Client()->GetPreviewsStateForFrame())) {
-    params.MutableResourceRequest().SetPreviewsState(
-        params.GetResourceRequest().GetPreviewsState() |
-        WebURLRequest::kClientLoFiOn);
-    params.SetAllowImagePlaceholder();
-  }
+bool LocalFrame::IsClientLoFiAllowed(const ResourceRequest& request) const {
+  return Client() && ShouldUseClientLoFiForRequest(
+                         request, Client()->GetPreviewsStateForFrame());
 }
 
-bool LocalFrame::MaybeAllowLazyLoadingImage(FetchParameters& params) const {
+bool LocalFrame::IsLazyLoadingImageAllowed() const {
   if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled())
     return false;
-  if (params.GetPlaceholderImageRequestType() ==
-      FetchParameters::PlaceholderImageRequestType::kAllowPlaceholder) {
-    return false;
-  }
   if (Owner() && !Owner()->ShouldLazyLoadChildren())
     return false;
-
-  params.SetAllowImagePlaceholder();
   return true;
 }
 

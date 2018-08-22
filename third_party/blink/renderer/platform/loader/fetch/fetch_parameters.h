@@ -178,8 +178,12 @@ class PLATFORM_EXPORT FetchParameters {
   // Configures the request to load an image placeholder if the request is
   // eligible (e.g. the url's protocol is HTTP, etc.). If this request is
   // non-eligible, this method doesn't modify the ResourceRequest. Calling this
-  // method sets m_placeholderImageRequestType to the appropriate value.
+  // method sets placeholder_image_request_type_ to the appropriate value.
   void SetAllowImagePlaceholder();
+
+  // Configures the request to load an image as a placeholder and sets the
+  // Client LoFi preview bit.
+  void SetClientLoFiPlaceholder();
 
  private:
   ResourceRequest resource_request_;
