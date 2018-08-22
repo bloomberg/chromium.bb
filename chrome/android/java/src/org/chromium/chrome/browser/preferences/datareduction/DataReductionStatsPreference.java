@@ -38,6 +38,8 @@ import org.chromium.chrome.browser.util.FileSizeUtil;
 import org.chromium.third_party.android.datausagechart.ChartDataUsageView;
 import org.chromium.third_party.android.datausagechart.NetworkStats;
 import org.chromium.third_party.android.datausagechart.NetworkStatsHistory;
+import org.chromium.ui.widget.RectProvider;
+import org.chromium.ui.widget.ViewRectProvider;
 
 import java.util.List;
 import java.util.TimeZone;
@@ -64,9 +66,9 @@ public class DataReductionStatsPreference extends Preference {
     private NetworkStatsHistory mReceivedNetworkStatsHistory;
     private List<DataReductionDataUseItem> mSiteBreakdownItems;
 
+    private ViewRectProvider mDataReductionStatsPreferenceViewRectProvider;
+    private LinearLayout mDataReductionStatsContainer;
     private TextView mInitialDataSavingsTextView;
-    private LinearLayout mDataSavingsSummaryContainer;
-    private FrameLayout mDataSavingsChartDatesContainer;
     private TextView mDataSavingsTextView;
     private TextView mDataUsageTextView;
     private TextView mStartDateTextView;
@@ -235,13 +237,8 @@ public class DataReductionStatsPreference extends Preference {
         if (mShouldShowRealData) updateDetailData();
 
         mInitialDataSavingsTextView.setVisibility(mShouldShowRealData ? View.GONE : View.VISIBLE);
+        mDataReductionStatsContainer.setVisibility(mShouldShowRealData ? View.VISIBLE : View.GONE);
 
-        mDataSavingsSummaryContainer.setVisibility(mShouldShowRealData ? View.VISIBLE : View.GONE);
-        mChartDataUsageView.setVisibility(mShouldShowRealData ? View.VISIBLE : View.GONE);
-        mResetStatisticsButton.setVisibility(mShouldShowRealData ? View.VISIBLE : View.GONE);
-
-        mDataSavingsChartDatesContainer.setVisibility(
-                mShouldShowRealData ? View.VISIBLE : View.GONE);
         mStartDateTextView.setText(mShouldShowRealData ? mStartDatePhrase : "");
         mStartDateTextView.setContentDescription(mShouldShowRealData
                         ? context.getString(R.string.data_reduction_start_date_content_description,
@@ -268,22 +265,49 @@ public class DataReductionStatsPreference extends Preference {
     }
 
     /**
+     * Initializes a view rect observer to listen for when the bounds of the view has changed, so we
+     * can update the minimum height of the view accordingly.
+     *
+     * @param view The view to listen for bounds changes on.
+     */
+    private void initializeViewBounds(final View view) {
+        if (mDataReductionStatsPreferenceViewRectProvider != null) {
+            mDataReductionStatsPreferenceViewRectProvider.stopObserving();
+        }
+        mDataReductionStatsPreferenceViewRectProvider = new ViewRectProvider(view);
+        mDataReductionStatsPreferenceViewRectProvider.startObserving(new RectProvider.Observer() {
+            @Override
+            public void onRectChanged() {
+                int screenHeight = getContext().getResources().getDisplayMetrics().heightPixels;
+                int offset = mDataReductionStatsPreferenceViewRectProvider.getRect().top;
+                view.setMinimumHeight(screenHeight - offset);
+            }
+
+            @Override
+            public void onRectHidden() {}
+        });
+    }
+
+    /**
      * Sets up a data usage chart and text views containing data reduction statistics.
      * @param view The current view.
      */
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
+
+        initializeViewBounds(view);
+
         mInitialDataSavingsTextView = (TextView) view.findViewById(R.id.initial_data_savings);
         mInitialDataSavingsTextView.setCompoundDrawablesWithIntrinsicBounds(null,
                 VectorDrawableCompat.create(getContext().getResources(),
                         R.drawable.data_reduction_big, getContext().getTheme()),
                 null, null);
-        mDataSavingsSummaryContainer =
-                (LinearLayout) view.findViewById(R.id.data_savings_summary_container);
+
+        mDataReductionStatsContainer =
+                (LinearLayout) view.findViewById(R.id.data_reduction_stats_container);
         mDataUsageTextView = (TextView) view.findViewById(R.id.data_reduction_usage);
         mDataSavingsTextView = (TextView) view.findViewById(R.id.data_reduction_savings);
-        mDataSavingsChartDatesContainer = (FrameLayout) view.findViewById(R.id.chart_dates);
         mStartDateTextView = (TextView) view.findViewById(R.id.data_reduction_start_date);
         mEndDateTextView = (TextView) view.findViewById(R.id.data_reduction_end_date);
         mDataReductionBreakdownView =
