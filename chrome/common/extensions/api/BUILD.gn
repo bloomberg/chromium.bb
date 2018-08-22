@@ -14,14 +14,15 @@ assert(enable_extensions)
 
 # TODO(devlin): Enforce visibility restrictions on more of these targets?
 
-json_schema_api("generated_api_bundles") {
-  sources = chrome_extensions_api_schema_sources
-  bundle = true
+generated_json_strings("generated_api_json_strings") {
+  sources = chrome_extensions_api_schema_sources +
+            chrome_extensions_api_uncompiled_sources
+
   configs = [ "//build/config:precompiled_headers" ]
   bundle_name = "Chrome"
   schema_include_rules = chrome_extensions_api_schema_include_rules
 
-  uncompiled_bundle_schema_sources = [
+  sources += [
     "app.json",
     "browser_action.json",
     "commands.json",
@@ -29,21 +30,19 @@ json_schema_api("generated_api_bundles") {
     "page_action.json",
     "privacy.json",
     "proxy.json",
-    "tts_engine.json",
     "tts.json",
+    "tts_engine.json",
     "webstore.json",
   ]
   if (is_chromeos) {
-    uncompiled_bundle_schema_sources += [ "file_browser_handler.json" ]
+    sources += [ "file_browser_handler.json" ]
   } else {
     # On ChromeOS, input_method_private is fully compiled (as part of
     # schema_files), and so gets added to the bundle already. On other
     # platforms, we still need it added to the bundle.
     # TODO(devlin): That's weird. Investigate.
-    uncompiled_bundle_schema_sources += [ "input_method_private.json" ]
+    sources += [ "input_method_private.json" ]
   }
-
-  uncompiled_sources = chrome_extensions_api_uncompiled_sources
 
   root_namespace = chrome_extensions_api_root_namespace
   deps = [
@@ -94,7 +93,7 @@ json_features("manifest_features") {
 
 group("api") {
   public_deps = [
-    ":generated_api_bundles",
+    ":generated_api_json_strings",
     ":generated_api_types",
   ]
 }

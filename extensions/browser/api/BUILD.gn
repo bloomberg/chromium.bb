@@ -149,13 +149,11 @@ source_set("api") {
   }
 }
 
-json_schema_api("api_registration") {
-  sources = extensions_api_schema_files
+function_registration("api_registration") {
+  sources = extensions_api_schema_files + extensions_api_uncompiled_sources
   impl_dir = "//extensions/browser/api"
-  bundle_registration = true
   bundle_name = ""
   root_namespace = extensions_api_root_namespace
-  uncompiled_sources = extensions_api_uncompiled_sources
 
   deps = [
     ":api",
