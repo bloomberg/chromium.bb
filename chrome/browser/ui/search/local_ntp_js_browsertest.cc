@@ -49,7 +49,7 @@ class LocalNTPJavascriptTest : public LocalNTPJavascriptTestBase {
 
 // This runs a bunch of pure JS-side tests, i.e. those that don't require any
 // interaction from the native side.
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, DISABLED_SimpleJavascriptTests) {
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, SimpleJavascriptTests) {
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
