@@ -4404,6 +4404,8 @@ jumbo_split_static_library("browser") {
       "android/feed/feed_host_service_factory.h",
       "android/feed/feed_image_loader_bridge.cc",
       "android/feed/feed_image_loader_bridge.h",
+      "android/feed/feed_journal_bridge.cc",
+      "android/feed/feed_journal_bridge.h",
       "android/feed/feed_network_bridge.cc",
       "android/feed/feed_network_bridge.h",
       "android/feed/feed_scheduler_bridge.cc",
@@ -4677,6 +4679,7 @@ if (is_android) {
       sources += [
         "../android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedContentBridge.java",
         "../android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedImageLoaderBridge.java",
+        "../android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedJournalBridge.java",
         "../android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedNetworkBridge.java",
         "../android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedSchedulerBridge.java",
         "../android/feed/core/java/src/org/chromium/chrome/browser/feed/FeedStorageBridge.java",
