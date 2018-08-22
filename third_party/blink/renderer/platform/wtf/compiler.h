@@ -63,4 +63,10 @@
 #define NO_SANITIZE_CFI_ICALL
 #endif
 
+#if defined(COMPILER_MSVC)
+#define WTF_NOINLINE __declspec(noinline)
+#else
+#define WTF_NOINLINE __attribute__((noinline))
+#endif
+
 #endif /* WTF_Compiler_h */

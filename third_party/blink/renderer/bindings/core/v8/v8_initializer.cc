@@ -74,6 +74,7 @@
 #include "third_party/blink/renderer/platform/weborigin/security_violation_reporting_policy.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "v8/include/v8-profiler.h"
@@ -792,11 +793,6 @@ static void ReportFatalErrorInWorker(const char* location,
 // base/threading/platform_thread_mac.mm for details.
 static const int kWorkerMaxStackSize = 500 * 1024;
 
-// This function uses a local stack variable to determine the isolate's stack
-// limit. AddressSanitizer may relocate that local variable to a fake stack,
-// which may lead to problems during JavaScript execution.  Therefore we disable
-// AddressSanitizer for V8Initializer::initializeWorker().
-NO_SANITIZE_ADDRESS
 void V8Initializer::InitializeWorker(v8::Isolate* isolate) {
   InitializeV8Common(isolate);
 
@@ -807,9 +803,7 @@ void V8Initializer::InitializeWorker(v8::Isolate* isolate) {
           v8::Isolate::kMessageLog);
   isolate->SetFatalErrorHandler(ReportFatalErrorInWorker);
 
-  uint32_t here;
-  isolate->SetStackLimit(reinterpret_cast<uintptr_t>(&here) -
-                         kWorkerMaxStackSize);
+  isolate->SetStackLimit(WTF::GetCurrentStackPosition() - kWorkerMaxStackSize);
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInWorker);
   if (RuntimeEnabledFeatures::BloatedRendererDetectionEnabled()) {
     isolate->AddNearHeapLimitCallback(NearHeapLimitCallbackOnWorkerThread,
