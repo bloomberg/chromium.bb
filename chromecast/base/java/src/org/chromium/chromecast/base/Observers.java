@@ -16,7 +16,7 @@ public final class Observers {
      *
      * @param <T> The type of the activation data.
      */
-    public static <T> Observer<T> onEnter(Consumer<T> consumer) {
+    public static <T> Observer<T> onEnter(Consumer<? super T> consumer) {
         return (T value) -> {
             consumer.accept(value);
             return () -> {};
@@ -24,81 +24,12 @@ public final class Observers {
     }
 
     /**
-     * Shorthand for making a Observer that only has side effects on activation, and is
-     * independent of the activation value.
-     *
-     * @param <T> The type of the activation data.
-     */
-    public static <T> Observer<T> onEnter(Runnable runnable) {
-        return onEnter((T value) -> runnable.run());
-    }
-
-    /**
-     * Shorthand for making a Observer that only has side effects on activation, and has a Both
-     * object for activation data.
-     *
-     * For example, one can refactor the following:
-     *
-     *     observableA.and(observableB).watch((Both<A, B> data) -> {
-     *         A a = data.first;
-     *         B b = data.second;
-     *         ... // side effects on activation
-     *         return () -> {}; // no side effects on deactivation.
-     *     });
-     *
-     * ... into this:
-     *
-     *    observableA.and(observableB).watch(Observers.onEnter((A a, B b) -> ...));
-     *
-     * @param <A> The first argument of the consumer (and the first item in the Both).
-     * @param <B> The second argument of the consumer (and the second item in the Both).
-     */
-    public static <A, B> Observer<Both<A, B>> onEnter(BiConsumer<A, B> consumer) {
-        return onEnter(Both.adapt(consumer));
-    }
-
-    /**
      * Shorthand for making a Observer that only has side effects on deactivation.
      *
      * @param <T> The type of the activation data.
      */
-    public static <T> Observer<T> onExit(Consumer<T> consumer) {
+    public static <T> Observer<T> onExit(Consumer<? super T> consumer) {
         return (T value) -> () -> consumer.accept(value);
-    }
-
-    /**
-     * Shorthand for making a Observer that only has side effects on deactivation, and is
-     * independent of the activation data.
-     *
-     * @param <T> The type of the activation data.
-     */
-    public static <T> Observer<T> onExit(Runnable runnable) {
-        return onExit((T value) -> runnable.run());
-    }
-
-    /**
-     * Shorthand for making a Observer that only has side effects on deactivation, and has a
-     * Both object for activation data.
-     *
-     * For example, one can refactor the following:
-     *
-     *     observableA.and(observableB).watch((Both<A, B> data) -> {
-     *         A a = data.first;
-     *         B b = data.second;
-     *         return () -> {
-     *             // side effects on deactivation.
-     *         };
-     *     });
-     *
-     * ... into this:
-     *
-     *    observableA.and(observableB).watch(Observers.onExit((A a, B b) -> ...));
-     *
-     * @param <A> The first argument of the consumer (and the first item in the Both).
-     * @param <B> The second argument of the consumer (and the second item in the Both).
-     */
-    public static <A, B> Observer<Both<A, B>> onExit(BiConsumer<A, B> consumer) {
-        return onExit(Both.adapt(consumer));
     }
 
     /**
@@ -121,7 +52,7 @@ public final class Observers {
      *     observableA.and(observableB).watch(Observers.both((A a, B b) -> ...));
      */
     public static <A, B> Observer<Both<A, B>> both(
-            BiFunction<? super A, ? super B, Scope> function) {
+            BiFunction<? super A, ? super B, ? extends Scope> function) {
         return (Both<A, B> data) -> function.apply(data.first, data.second);
     }
 }

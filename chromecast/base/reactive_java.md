@@ -664,13 +664,13 @@ when the state deactivates, only when it activates. It's possible to create a
 The `return () -> {};` statement in the lambda corresponds to having no
 side-effects to handle the destructor, but this is not very readable.
 
-To make intentions clearer, the `onEnter()` method can wrap any `Runnable` or
-`Consumer` of the activation data's type:
+To make intentions clearer, the `onEnter()` method can wrap any `Consumer` of
+the activation data's type:
 
 ```java
 {
     // Without data.
-    observable.watch(Observers.onEnter(() -> Log.d(TAG, "activated")));
+    observable.watch(Observers.onEnter(x -> Log.d(TAG, "activated")));
     // With data.
     observable.watch(Observers.onEnter((String data) -> {
         Log.d(TAG, "activated: data=" + data);
@@ -678,9 +678,9 @@ To make intentions clearer, the `onEnter()` method can wrap any `Runnable` or
 }
 ```
 
-Likewise, `onExit()` is used the same way to transform any `Runnable` or
-`Consumer` of the activation data's type into a `Observer` that only has
-side effects when the state is deactivated.
+Likewise, `onExit()` is used the same way to transform any `Consumer` of the
+activation data's type into a `Observer` that only has side effects when the
+state is deactivated.
 
 #### Deconstructing Both objects
 
@@ -713,18 +713,41 @@ Using `Observers.both()`, we can rewrite the above like this:
 }
 ```
 
-The `onEnter()` and `onExit()` helpers can also take a consumer of two arguments
-and return an appropriate `Observer<Both>`:
+When using `onEnter()` or `onExit()`, which take `Consumer`s of the data type,
+it can be useful to use `Both.adapt` on a `BiConsumer` to turn it into a
+`Consumer<Both>`.
 
 ```java
 {
+    // Before:
     Observable<Both<A, B>> both = observableA.and(observableB);
-    both.watch(Observers.onEnter((A a, B b) -> {
+    both.watch(Observers.onEnter((Both<A, B> data) -> {
+        Log.d(TAG, "on enter: a = " + data.first + "; b = " + data.second);
+    }));
+    both.watch(Observers.onExit((Both<A, B> data) -> {
+        Log.d(TAG, "on exit: a = " + data.first + "; b = " + data.second);
+    }));
+    // After:
+    both.watch(Observers.onEnter(Both.adapt((A a, B b) -> {
         Log.d(TAG, "on enter: a = " + a + "; b = " + b);
-    }));
-    both.watch(Observers.onExit((A a, B b) -> {
+    })));
+    both.watch(Observers.onExit(Both.adapt((A a, B b) -> {
         Log.d(TAG, "on exit: a = " + a + "; b = " + b);
+    })));
+}
+```
+
+The `Both.adapt()` helpers are also able to turn `BiFunction`s into
+`Function<Both>` objects and `BiPredicate`s into `Predicate<Both>` objects,
+which makes them useful when using `map()` and `filter()` operators on
+`Observable<Both>` objects.
+
+```java
+{
+    both.map(Both.adapt((A a, B b) -> {
+        return new ThingBuilder().setA(a).setB(b).build();
     }));
+    both.filter(Both.adapt((A a, B b) -> a.contains(b)));
 }
 ```
 
@@ -807,7 +830,7 @@ an `Intent` with action `"org.my.app.action.FOO"`:
     String ACTION_FOO = "org.my.app.action.FOO";
     mIntentState.map(Intent::getAction)
             .filter(ACTION_FOO::equals)
-            .watch(Observers.onEnter(() -> {
+            .watch(Observers.onEnter(action -> {
                 Log.d(TAG, "Got FOO intent");
             }));
 }
@@ -839,7 +862,6 @@ an instance of a class that implements `Predicate<T>`:
 
     Controller<Integer> hasIntState = new Controller<>();
     Observable<Integer> hasValidIntState = hasIntState.filter(inRange(0, 10));
-}
 ```
 
 ... or a method reference for a method that takes the activation data and
