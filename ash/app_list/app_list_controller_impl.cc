@@ -13,6 +13,7 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/app_list/views/contents_view.h"
+#include "ash/app_list/views/search_box_view.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
@@ -388,6 +389,22 @@ void AppListControllerImpl::OnSessionStateChanged(
        app_list::AppListShowSource::kTabletMode, base::TimeTicks());
 }
 
+void AppListControllerImpl::OnActiveUserPrefServiceChanged(
+    PrefService* pref_service) {
+  if (!IsHomeLauncherEnabledInTabletMode() ||
+      !display::Display::HasInternalDisplay()) {
+    DismissAppList();
+    return;
+  }
+
+  // The app list is not dismissed before switching user, suggestion chips will
+  // not be shown. So reset app list state and trigger an initial search here to
+  // update the suggestion results.
+  DCHECK(presenter_.GetTargetVisibility());
+  presenter_.GetView()->CloseOpenedPage();
+  presenter_.GetView()->search_box_view()->ClearSearch();
+}
+
 void AppListControllerImpl::OnAppListItemWillBeDeleted(
     app_list::AppListItem* item) {
   if (client_ && item->is_folder())
@@ -415,6 +432,13 @@ void AppListControllerImpl::Show(int64_t display_id,
                                  base::TimeTicks event_time_stamp) {
   UMA_HISTOGRAM_ENUMERATION(app_list::kAppListToggleMethodHistogram,
                             show_source, app_list::kMaxAppListToggleMethod);
+
+  if (!presenter_.GetTargetVisibility() && IsVisible()) {
+    // The launcher is running close animation, so close it immediately before
+    // reshow the launcher in tablet mode.
+    presenter_.GetView()->GetWidget()->CloseNow();
+  }
+
   presenter_.Show(display_id, event_time_stamp);
 }
 
@@ -477,15 +501,9 @@ void AppListControllerImpl::OnOverviewModeEnding() {
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
-  if (IsVisible()) {
-    if (!presenter_.is_animating_to_close()) {
-      presenter_.GetView()->OnTabletModeChanged(true);
-      return;
-    }
-
-    // The launcher is running close animation, so close it immediately before
-    // reshow the launcher in tablet mode.
-    presenter_.GetView()->GetWidget()->CloseNow();
+  if (presenter_.GetTargetVisibility()) {
+    DCHECK(IsVisible());
+    presenter_.GetView()->OnTabletModeChanged(true);
   }
 
   if (!is_home_launcher_enabled_ || !display::Display::HasInternalDisplay())

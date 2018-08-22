@@ -120,9 +120,7 @@ void AppListPresenterImpl::Show(int64_t display_id,
   is_visible_ = true;
   RequestPresentationTime(display_id, event_time_stamp);
 
-  if (view_) {
-    ScheduleAnimation();
-  } else {
+  if (!view_) {
     // Note |delegate_| outlives the AppListView. For Ash, the view
     // is destroyed when dismissed.
     AppListView* view = new AppListView(delegate_->GetAppListViewDelegate());
@@ -329,7 +327,6 @@ void AppListPresenterImpl::ScheduleAnimation() {
   gfx::Transform transform;
   transform.Translate(-offset.x(), -offset.y());
   layer->SetTransform(transform);
-  is_animating_to_close_ = true;
 
   {
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
@@ -399,7 +396,6 @@ void AppListPresenterImpl::OnImplicitAnimationsCompleted() {
     view_->GetWidget()->Activate();
   } else {
     view_->GetWidget()->Close();
-    is_animating_to_close_ = false;
   }
 }
 

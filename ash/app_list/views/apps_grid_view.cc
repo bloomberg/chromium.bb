@@ -2454,18 +2454,19 @@ void AppsGridView::ButtonPressed(views::Button* sender,
 }
 
 void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
-  DCHECK(!item->is_page_break());
   EndDrag(true);
 
-  AppListItemView* view = CreateViewForItemAtIndex(index);
-  int model_index = GetTargetModelIndexFromItemIndex(index);
-  view_model_.Add(view, model_index);
-  AddChildViewAt(view, GetAppListItemViewIndexOffset() + model_index);
+  if (!item->is_page_break()) {
+    AppListItemView* view = CreateViewForItemAtIndex(index);
+    int model_index = GetTargetModelIndexFromItemIndex(index);
+    view_model_.Add(view, model_index);
+    AddChildViewAt(view, GetAppListItemViewIndexOffset() + model_index);
 
-  // Ensure that AppListItems that are added to the AppListItemList are not
-  // shown while in PEEKING. The visibility of the app icons will be updated
-  // on drag/animation from PEEKING.
-  view->SetVisible(model_->state_fullscreen() != AppListViewState::PEEKING);
+    // Ensure that AppListItems that are added to the AppListItemList are not
+    // shown while in PEEKING. The visibility of the app icons will be updated
+    // on drag/animation from PEEKING.
+    view->SetVisible(model_->state_fullscreen() != AppListViewState::PEEKING);
+  }
 
   if (IsAppsGridGapEnabled())
     view_structure_.LoadFromMetadata();
@@ -2477,10 +2478,10 @@ void AppsGridView::OnListItemAdded(size_t index, AppListItem* item) {
 }
 
 void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
-  DCHECK(!item->is_page_break());
   EndDrag(true);
 
-  DeleteItemViewAtIndex(GetModelIndexOfItem(item), true /* sanitize */);
+  if (!item->is_page_break())
+    DeleteItemViewAtIndex(GetModelIndexOfItem(item), true /* sanitize */);
 
   if (IsAppsGridGapEnabled())
     view_structure_.LoadFromMetadata();
@@ -2494,17 +2495,20 @@ void AppsGridView::OnListItemRemoved(size_t index, AppListItem* item) {
 void AppsGridView::OnListItemMoved(size_t from_index,
                                    size_t to_index,
                                    AppListItem* item) {
-  DCHECK(!item->is_page_break());
   EndDrag(true);
 
-  // The item is updated in the item list but the view_model is not updated, so
-  // get current model index by looking up view_model and predict the target
-  // model index based on its current item index.
-  int from_model_index = GetModelIndexOfItem(item);
-  int to_model_index = GetTargetModelIndexFromItemIndex(to_index);
-  view_model_.Move(from_model_index, to_model_index);
-  ReorderChildView(view_model_.view_at(to_model_index),
-                   GetAppListItemViewIndexOffset() + to_model_index);
+  if (item->is_page_break()) {
+    LOG(ERROR) << "Page break item is moved: " << item->id();
+  } else {
+    // The item is updated in the item list but the view_model is not updated,
+    // so get current model index by looking up view_model and predict the
+    // target model index based on its current item index.
+    int from_model_index = GetModelIndexOfItem(item);
+    int to_model_index = GetTargetModelIndexFromItemIndex(to_index);
+    view_model_.Move(from_model_index, to_model_index);
+    ReorderChildView(view_model_.view_at(to_model_index),
+                     GetAppListItemViewIndexOffset() + to_model_index);
+  }
 
   if (IsAppsGridGapEnabled())
     view_structure_.LoadFromMetadata();
