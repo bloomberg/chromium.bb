@@ -110,11 +110,6 @@ DeviceService::~DeviceService() {
 #if !defined(OS_ANDROID)
   device::BatteryStatusService::GetInstance()->Shutdown();
 #endif
-  if (public_ip_address_geolocation_provider_) {
-    DCHECK(io_task_runner_);
-    io_task_runner_->DeleteSoon(
-        FROM_HERE, std::move(public_ip_address_geolocation_provider_));
-  }
 }
 
 void DeviceService::OnStart() {
@@ -130,8 +125,7 @@ void DeviceService::OnStart() {
       &DeviceService::BindPowerMonitorRequest, base::Unretained(this)));
   registry_.AddInterface<mojom::PublicIpAddressGeolocationProvider>(
       base::Bind(&DeviceService::BindPublicIpAddressGeolocationProviderRequest,
-                 base::Unretained(this)),
-      io_task_runner_);
+                 base::Unretained(this)));
   registry_.AddInterface<mojom::ScreenOrientationListener>(
       base::Bind(&DeviceService::BindScreenOrientationListenerRequest,
                  base::Unretained(this)));
@@ -255,16 +249,11 @@ void DeviceService::BindPowerMonitorRequest(
 
 void DeviceService::BindPublicIpAddressGeolocationProviderRequest(
     mojom::PublicIpAddressGeolocationProviderRequest request) {
-  // This needs to run on IO thread because it uses URLRequestContextGetters
-  // which must not outlive that thread.
-  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-
   if (!public_ip_address_geolocation_provider_) {
     public_ip_address_geolocation_provider_ =
         std::make_unique<PublicIpAddressGeolocationProvider>(
             url_loader_factory_, geolocation_api_key_);
   }
-
   public_ip_address_geolocation_provider_->Bind(std::move(request));
 }
 
