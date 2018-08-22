@@ -348,12 +348,12 @@ class CrossThreadFunction<R(Args...)> {
 // above for the correct usage of those.
 template <typename FunctionType, typename... BoundParameters>
 base::OnceCallback<base::MakeUnboundRunType<FunctionType, BoundParameters...>>
-Bind(FunctionType function, BoundParameters&&... bound_parameters) {
+Bind(FunctionType&& function, BoundParameters&&... bound_parameters) {
   static_assert(internal::CheckGCedTypeRestrictions<
                     std::index_sequence_for<BoundParameters...>,
                     std::decay_t<BoundParameters>...>::ok,
                 "A bound argument uses a bad pattern.");
-  auto cb = base::BindOnce(function,
+  auto cb = base::BindOnce(std::forward<FunctionType>(function),
                            std::forward<BoundParameters>(bound_parameters)...);
 #if DCHECK_IS_ON()
   using UnboundRunType =
