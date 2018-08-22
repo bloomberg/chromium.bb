@@ -1492,7 +1492,7 @@
         },
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_and_linux_intel_and_nvidia_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
       'Linux FYI Release (NVIDIA)': {
@@ -1511,7 +1511,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_linux_release_gtests',
           'isolated_scripts': 'gpu_fyi_and_optional_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_and_linux_intel_and_nvidia_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests',
         },
       },
       'Linux FYI dEQP Release (Intel HD 630)': {
@@ -1965,7 +1965,7 @@
         },
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
       # TODO(kbr): "Experimental" caused too-long path names pre-LUCI.
@@ -2006,7 +2006,7 @@
         },
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
       },
       'Win10 FYI Release (NVIDIA)': {
@@ -2026,7 +2026,7 @@
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
           'isolated_scripts': 'gpu_fyi_and_optional_win_isolated_scripts',
-          'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_release_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
         'use_multi_dimension_trigger_script': True,
       },
@@ -2115,7 +2115,7 @@
         },
         'test_suites': {
           'gtest_tests': 'gpu_fyi_win_gtests',
-          'gpu_telemetry_tests': 'gpu_fyi_win_telemetry_tests',
+          'gpu_telemetry_tests': 'gpu_fyi_win_amd_telemetry_tests',
         },
       },
       'Win7 FYI Release (NVIDIA)': {
