@@ -106,13 +106,6 @@ let deleteLinkTitle = '';
 
 
 /**
- * True if keyboard navigation should start at the first input field.
- * @type {boolean}
- */
-let startKeyboardAtFirstField = false;
-
-
-/**
  * True if the provided url is valid.
  * @type {string}
  */
@@ -223,7 +216,7 @@ function deleteLink(event) {
 function closeDialog() {
   window.parent.postMessage({cmd: 'closeDialog'}, DOMAIN_ORIGIN);
   // Small delay to allow the dialog close before cleaning up.
-  window.setTimeout(function() {
+  window.setTimeout(() => {
     $(IDS.FORM).reset();
     $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
     $(IDS.URL_FIELD).classList.remove(CLASSES.TEXT_MODIFIED);
@@ -232,7 +225,6 @@ function closeDialog() {
     prepopulatedLink.rid = -1;
     prepopulatedLink.title = '';
     prepopulatedLink.url = '';
-    startKeyboardAtFirstField = false;
   }, 10);
 }
 
@@ -245,7 +237,6 @@ function handlePostMessage(event) {
   let cmd = event.data.cmd;
   let args = event.data;
   if (cmd === 'linkData') {
-    startKeyboardAtFirstField = true;
     if (args.tid) {  // We are editing a link, prepopulate the link data.
       document.title = editLinkTitle;
       $(IDS.DIALOG_TITLE).textContent = editLinkTitle;
@@ -259,6 +250,11 @@ function handlePostMessage(event) {
       $(IDS.DONE).setAttribute('aria-label', addLinkTitle);
       $(IDS.DONE).title = addLinkTitle;
     }
+    // Timeout is required to allow the iframe to become visible before focusing
+    // the first input field.
+    window.setTimeout(() => {
+      $(IDS.TITLE_FIELD).select();
+    }, 10);
   }
 }
 
@@ -323,12 +319,6 @@ function init() {
       // Close the iframe instead of just this dialog.
       event.preventDefault();
       closeDialog();
-    } else if (event.keyCode === KEYCODES.TAB && startKeyboardAtFirstField) {
-      // Start keyboard navigation at the first input field when the dialog
-      // opens.
-      event.preventDefault();
-      $(IDS.TITLE_FIELD).focus();
-      startKeyboardAtFirstField = false;
     }
   };
   $(IDS.URL_FIELD).addEventListener('input', (event) => {
