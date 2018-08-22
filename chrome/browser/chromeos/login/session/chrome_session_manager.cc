@@ -222,11 +222,11 @@ void ChromeSessionManager::Initialize(
   if (parsed_command_line.HasSwitch(switches::kLoginManager) &&
       (!is_running_test || force_login_screen_in_test)) {
     VLOG(1) << "Starting Chrome with login/oobe screen.";
-    LoadOobeConfiguration();
+    oobe_configuration_->CheckConfiguration();
     StartLoginOobeSession();
     return;
   } else if (is_running_test) {
-    LoadOobeConfiguration();
+    oobe_configuration_->CheckConfiguration();
   }
 
   if (!base::SysInfo::IsRunningOnChromeOS() &&
@@ -269,21 +269,10 @@ void ChromeSessionManager::SessionStarted() {
   chromeos::WebUIScreenLocker::RequestPreload();
 }
 
-void ChromeSessionManager::LoadOobeConfiguration() {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kOobeConfiguration))
-    return;
-  VLOG(1) << "Loading OOBE configuration ";
-  oobe_configuration_->LoadConfiguration(
-      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          chromeos::switches::kOobeConfiguration));
-}
-
 void ChromeSessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,
                                               const std::string& user_id_hash,
                                               bool browser_restart,
                                               bool is_child) {
-  oobe_configuration_->ResetConfiguration();
   BootTimesRecorder* btl = BootTimesRecorder::Get();
   btl->AddLoginTimeMarker("UserLoggedIn-Start", false);
   session_manager::SessionManager::NotifyUserLoggedIn(

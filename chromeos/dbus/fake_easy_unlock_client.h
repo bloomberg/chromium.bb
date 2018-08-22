@@ -12,7 +12,7 @@
 
 namespace chromeos {
 
-// A fake implemetation of EasyUnlockClient.
+// A fake implementation of EasyUnlockClient.
 class CHROMEOS_EXPORT FakeEasyUnlockClient : public EasyUnlockClient {
  public:
   // Tests if the provided keys belong to the same (fake) EC P256 key pair

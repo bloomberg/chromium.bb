@@ -36,14 +36,15 @@ class OobeConfiguration {
   void RemoveObserver(Observer* observer);
 
   void ResetConfiguration();
-  void LoadConfiguration(const base::FilePath& path);
+  void CheckConfiguration();
 
   // Returns current OobeConfiguration instance and NULL if it hasn't been
   // initialized yet.
   static OobeConfiguration* Get();
 
  private:
-  void OnConfigurationLoaded(std::unique_ptr<base::Value> configuration);
+  void OnConfigurationCheck(bool has_configuration,
+                            const std::string& configuration);
 
   // Pointer to the existing OobeConfiguration instance (if any).
   // Set in ctor, reset in dtor. Not owned since we need to control the lifetime

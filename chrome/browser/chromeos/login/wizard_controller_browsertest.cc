@@ -64,6 +64,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
+#include "chromeos/dbus/dbus_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/fake_shill_manager_client.h"
@@ -2510,7 +2511,7 @@ class WizardControllerOobeConfigurationTest : public WizardControllerTest {
     ASSERT_TRUE(chromeos::test_utils::GetTestDataPath(
         "oobe_configuration", "non_empty_configuration.json",
         &configuration_file));
-    command_line->AppendSwitchPath(chromeos::switches::kOobeConfiguration,
+    command_line->AppendSwitchPath(chromeos::switches::kFakeOobeConfiguration,
                                    configuration_file);
   }
 

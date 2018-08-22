@@ -42,7 +42,6 @@ class ChromeSessionManager : public session_manager::SessionManager {
                           bool is_child) override;
 
  private:
-  void LoadOobeConfiguration();
   std::unique_ptr<chromeos::OobeConfiguration> oobe_configuration_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManager);

@@ -242,6 +242,10 @@ ModemMessagingClient* DBusThreadManager::GetModemMessagingClient() {
   return clients_common_->modem_messaging_client_.get();
 }
 
+OobeConfigurationClient* DBusThreadManager::GetOobeConfigurationClient() {
+  return clients_browser_->oobe_configuration_client_.get();
+}
+
 PermissionBrokerClient* DBusThreadManager::GetPermissionBrokerClient() {
   return clients_common_->permission_broker_client_.get();
 }

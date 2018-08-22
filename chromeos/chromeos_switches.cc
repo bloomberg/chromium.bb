@@ -518,9 +518,6 @@ const char kNoteTakingAppIds[] = "note-taking-app-ids";
 // Indicates that if we should start bootstrapping Master OOBE.
 const char kOobeBootstrappingMaster[] = "oobe-bootstrapping-master";
 
-// Path to a OOBE configuration JSON file.
-const char kOobeConfiguration[] = "oobe-configuration-file";
-
 // Forces OOBE/login to force show a comma-separated list of screens from
 // chromeos::kScreenNames in oobe_screen.cc. Supported screens are:
 //   user-image
