@@ -4,7 +4,8 @@
 
 #include "base/task/task_executor.h"
 
-#include "base/no_destructor.h"
+#include <type_traits>
+
 #include "base/task/task_traits.h"
 #include "base/task/task_traits_extension.h"
 
@@ -17,8 +18,10 @@ namespace {
 using TaskExecutorMap =
     std::array<TaskExecutor*, TaskTraitsExtensionStorage::kMaxExtensionId>;
 TaskExecutorMap* GetTaskExecutorMap() {
-  static NoDestructor<TaskExecutorMap> executors(TaskExecutorMap{});
-  return executors.get();
+  static_assert(std::is_trivially_destructible<TaskExecutorMap>::value,
+                "TaskExecutorMap not trivially destructible");
+  static TaskExecutorMap executors{};
+  return &executors;
 }
 
 static_assert(
