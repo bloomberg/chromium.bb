@@ -13,6 +13,7 @@ import com.google.android.libraries.feed.api.stream.Stream;
 import org.chromium.base.MemoryPressureListener;
 import org.chromium.base.memory.MemoryPressureCallback;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
@@ -24,7 +25,8 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
  * A mediator for the {@link FeedNewTabPage} responsible for interacting with the
  * native library and handling business logic.
  */
-class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
+class FeedNewTabPageMediator
+        implements NewTabPageLayout.ScrollDelegate, ContextMenuManager.TouchEnabledDelegate {
     private final FeedNewTabPage mCoordinator;
     private final SnapScrollHelper mSnapScrollHelper;
     private final PrefChangeRegistrar mPrefChangeRegistrar;
@@ -34,6 +36,7 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
     private SectionHeader mSectionHeader;
     private MemoryPressureCallback mMemoryPressureCallback;
 
+    private boolean mTouchEnabled = true;
     private boolean mStreamContentChanged;
     private int mThumbnailWidth;
     private int mThumbnailHeight;
@@ -134,6 +137,21 @@ class FeedNewTabPageMediator implements NewTabPageLayout.ScrollDelegate {
         mThumbnailHeight = mCoordinator.getView().getHeight();
         mThumbnailScrollY = getVerticalScrollOffset();
         mStreamContentChanged = false;
+    }
+
+    /**
+     * @return Whether the touch events are enabled on the {@link FeedNewTabPage}.
+     * TODO(huayinz): Move this method to a Model once a Model is introduced.
+     */
+    boolean getTouchEnabled() {
+        return mTouchEnabled;
+    }
+
+    // TouchEnabledDelegate interface.
+
+    @Override
+    public void setTouchEnabled(boolean enabled) {
+        mTouchEnabled = enabled;
     }
 
     // ScrollDelegate interface.
