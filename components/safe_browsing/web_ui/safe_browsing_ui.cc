@@ -754,7 +754,7 @@ base::Value SerializeChromeUserPopulation(
   std::string user_population;
   switch (population.user_population()) {
     case ChromeUserPopulation::UNKNOWN_USER_POPULATION:
-      user_population = "REUSED_PASSWORD_TYPE_UNKNOWN";
+      user_population = "UNKNOWN_USER_POPULATION";
       break;
     case ChromeUserPopulation::SAFE_BROWSING:
       user_population = "SAFE_BROWSING";
