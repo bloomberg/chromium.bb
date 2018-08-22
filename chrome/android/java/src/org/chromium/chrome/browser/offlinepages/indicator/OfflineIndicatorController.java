@@ -5,19 +5,12 @@
 package org.chromium.chrome.browser.offlinepages.indicator;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkCapabilities;
-import android.os.Build;
 import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -30,14 +23,12 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.net.ConnectionType;
-import org.chromium.net.NetworkChangeNotifier;
 
 /**
  * Class that controls when to show the offline indicator.
  */
 public class OfflineIndicatorController
-        implements NetworkChangeNotifier.ConnectionTypeObserver, SnackbarController {
+        implements ConnectivityDetector.Observer, SnackbarController {
     // OfflineIndicatorCTREvent defined in tools/metrics/histograms/enums.xml.
     // These values are persisted to logs. Entries should not be renumbered and
     // numeric values should never be reused.
@@ -47,17 +38,14 @@ public class OfflineIndicatorController
 
     private static final int DURATION_MS = 10000;
 
-    private static boolean sSkipSystemCheckForTesting = false;
-
     @SuppressLint("StaticFieldLeak")
     private static OfflineIndicatorController sInstance;
 
-    private boolean mIsOffline = false;
     private boolean mIsShowingOfflineIndicator = false;
+    private ConnectivityDetector mConnectivityDetector;
 
     private OfflineIndicatorController() {
-        NetworkChangeNotifier.addConnectionTypeObserver(this);
-        updateConnectionType();
+        mConnectivityDetector = new ConnectivityDetector(this);
     }
 
     /**
@@ -86,20 +74,13 @@ public class OfflineIndicatorController
      */
     public static void onUpdate() {
         if (sInstance == null) return;
-        sInstance.updateConnectionType();
+        sInstance.mConnectivityDetector.detect();
     }
 
     @Override
-    public void onConnectionTypeChanged(int connectionType) {
-        if (connectionType == ConnectionType.CONNECTION_NONE) {
-            mIsOffline = true;
-        } else {
-            if (!performSystemCheckForValidatedNetwork()) {
-                mIsOffline = false;
-            }
-        }
-
-        updateOfflineIndicator();
+    public void onConnectionStateChanged(
+            @ConnectivityDetector.ConnectionState int connectionState) {
+        updateOfflineIndicator(connectionState == ConnectivityDetector.ConnectionState.VALIDATED);
     }
 
     @Override
@@ -115,52 +96,16 @@ public class OfflineIndicatorController
         mIsShowingOfflineIndicator = false;
     }
 
-    /**
-     * Consults with the Android connection manager to find out if there is a validated network.
-     * Returns true if the check is performed. A validated network is one of the following:
-     * 1) a functioning network providing Internet access
-     * 2) a captive portal and the user decided to use it as is
-     */
-    @TargetApi(Build.VERSION_CODES.M)
-    private boolean performSystemCheckForValidatedNetwork() {
-        if (sSkipSystemCheckForTesting) return false;
-
-        // NetworkCapabilities.NET_CAPABILITY_VALIDATED is only available on Marshmallow and
-        // later versions.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
-        ConnectivityManager connectivityManager =
-                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
-                        Context.CONNECTIVITY_SERVICE);
-        if (connectivityManager == null) return false;
-
-        Network[] networks = connectivityManager.getAllNetworks();
-        for (Network network : networks) {
-            NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
-            if (capabilities != null
-                    && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
-                mIsOffline = false;
-                return true;
-            }
-        }
-
-        mIsOffline = true;
-        return true;
-    }
-
-    private void updateConnectionType() {
-        onConnectionTypeChanged(NetworkChangeNotifier.getInstance().getCurrentConnectionType());
-    }
-
-    private void updateOfflineIndicator() {
+    private void updateOfflineIndicator(boolean isOnline) {
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (!(activity instanceof SnackbarManageable)) return;
         SnackbarManager snackbarManager = ((SnackbarManageable) activity).getSnackbarManager();
         if (snackbarManager == null) return;
 
-        if (mIsOffline) {
-            showOfflineIndicator(activity, snackbarManager);
-        } else {
+        if (isOnline) {
             hideOfflineIndicator(snackbarManager);
+        } else {
+            showOfflineIndicator(activity, snackbarManager);
         }
     }
 
@@ -207,7 +152,7 @@ public class OfflineIndicatorController
     }
 
     @VisibleForTesting
-    static void skipSystemCheckForTesting() {
-        sSkipSystemCheckForTesting = true;
+    public ConnectivityDetector getConnectivityDetectorForTesting() {
+        return mConnectivityDetector;
     }
 }

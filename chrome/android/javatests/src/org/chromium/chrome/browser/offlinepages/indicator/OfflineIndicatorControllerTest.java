@@ -48,7 +48,7 @@ public class OfflineIndicatorControllerTest {
 
     @Before
     public void setUp() throws Exception {
-        OfflineIndicatorController.skipSystemCheckForTesting();
+        ConnectivityDetector.skipSystemCheckForTesting();
         mActivityTestRule.startMainActivityOnBlankPage();
         ThreadUtils.runOnUiThreadBlocking(() -> {
             if (!NetworkChangeNotifier.isInitialized()) {
