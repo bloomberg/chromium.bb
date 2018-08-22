@@ -4,7 +4,6 @@
 
 // This file contains unit tests for PEImage.
 #include <algorithm>
-#include <iterator>
 #include <vector>
 
 #include "base/files/file_path.h"
@@ -214,7 +213,7 @@ TEST(PEImageTest, GetDebugId) {
   LPCSTR pdb_file = nullptr;
   size_t pdb_file_length = 0;
   EXPECT_TRUE(pe.GetDebugId(&guid, &age, &pdb_file, &pdb_file_length));
-  EXPECT_EQ(pdb_file_length, std::size(kPdbFileName) - 1);
+  EXPECT_EQ(pdb_file_length, strlen(kPdbFileName));
   EXPECT_STREQ(pdb_file, kPdbFileName);
 
   // Should be valid to call without parameters.
