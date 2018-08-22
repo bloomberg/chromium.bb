@@ -76,9 +76,13 @@
                 disabled="[[disabled]]"
                 button-text="[[i18nDynamic(locale, 'offlineLoginNextBtn')]]">
               <gaia-input slot="inputs" id="emailInput" type="email" required
-                  domain="[[emailDomain]]"
-                  error="[[i18nDynamic(locale, 'offlineLoginInvalidEmail')]]"
-                  label="[[i18nDynamic(locale, 'offlineLoginEmail')]]">
+                  domain="[[emailDomain]]">
+                <div slot="label">
+                  [[i18nDynamic(locale, 'offlineLoginEmail')]]
+                </div>
+                <div slot="error">
+                  [[i18nDynamic(locale, 'offlineLoginInvalidEmail')]]
+                </div>
               </gaia-input>
             </gaia-input-form>
           </div>
@@ -92,10 +96,13 @@
                 on-submit="onPasswordSubmitted_"
                 button-text="[[i18nDynamic(locale, 'offlineLoginNextBtn')]]">
               <gaia-input slot="inputs" id="passwordInput" type="password"
-                  error="[[i18nDynamic(locale,
-                                       'offlineLoginInvalidPassword')]]"
-                  label="[[i18nDynamic(locale, 'offlineLoginPassword')]]"
                   required>
+                <div slot="label">
+                  [[i18nDynamic(locale, 'offlineLoginPassword')]]
+                </div>
+                <div slot="error">
+                  [[i18nDynamic(locale, 'offlineLoginInvalidPassword')]]
+                </div>
               </gaia-input>
               <gaia-button type="link" on-tap="onForgotPasswordClicked_">
                 [[i18nDynamic(locale, 'offlineLoginForgotPasswordBtn')]]

@@ -11,7 +11,10 @@ Polymer({
       observer: 'onDisabledChanged_',
     },
 
-    buttonText: String
+    buttonText: {
+      type: String,
+      value: '',
+    }
   },
 
   /** @public */

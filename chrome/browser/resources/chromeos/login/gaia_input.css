@@ -22,7 +22,7 @@ paper-input-container {
   padding: 0;
 }
 
-paper-input-container > label > span {
+paper-input-container > label > ::slotted(*) {
   color: rgba(0, 0, 0, 0.54);
 }
 
