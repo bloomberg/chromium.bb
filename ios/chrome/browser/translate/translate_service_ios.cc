@@ -19,10 +19,8 @@ TranslateServiceIOS* g_translate_service = nullptr;
 TranslateServiceIOS::TranslateServiceIOS()
     : resource_request_allowed_notifier_(
           GetApplicationContext()->GetLocalState(),
-          nullptr,
-          base::BindOnce(&ApplicationContext::GetNetworkConnectionTracker,
-                         base::Unretained(GetApplicationContext()))) {
-  resource_request_allowed_notifier_.Init(this, false /* leaky */);
+          nullptr) {
+  resource_request_allowed_notifier_.Init(this);
 }
 
 TranslateServiceIOS::~TranslateServiceIOS() {

@@ -14,15 +14,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_switches.h"
-#include "content/public/browser/network_service_instance.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
-#include "content/public/test/browser_test_utils.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier_factory.h"
-#include "services/network/public/cpp/features.h"
-#include "services/network/public/mojom/network_service_test.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 // Friend of ChromeBrowserMainPartsTestApi to poke at internal state.
 class ChromeBrowserMainPartsTestApi {
@@ -43,38 +36,37 @@ class ChromeBrowserMainPartsTestApi {
 
 namespace {
 
-// Simulates a network connection change.
-void SimulateNetworkChange(network::mojom::ConnectionType type) {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !content::IsNetworkServiceRunningInProcess()) {
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(content::mojom::kNetworkServiceName,
-                        &network_service_test);
-    base::RunLoop run_loop;
-    network_service_test->SimulateNetworkChange(type, run_loop.QuitClosure());
-    run_loop.Run();
-    return;
-  }
-  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
-      net::NetworkChangeNotifier::ConnectionType(type));
-}
-
 // ChromeBrowserMainExtraParts used to install a MockNetworkChangeNotifier.
 class ChromeBrowserMainExtraPartsNetFactoryInstaller
     : public ChromeBrowserMainExtraParts {
  public:
   ChromeBrowserMainExtraPartsNetFactoryInstaller() = default;
+  ~ChromeBrowserMainExtraPartsNetFactoryInstaller() override {
+    // |network_change_notifier_| needs to be destroyed before |net_installer_|.
+    network_change_notifier_.reset();
+  }
+
+  net::test::MockNetworkChangeNotifier* network_change_notifier() {
+    return network_change_notifier_.get();
+  }
 
   // ChromeBrowserMainExtraParts:
   void PreEarlyInitialization() override {}
-  void ServiceManagerConnectionStarted(
-      content::ServiceManagerConnection* connection) override {
-    SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_NONE);
+  void PostMainMessageLoopStart() override {
+    ASSERT_TRUE(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
+    net_installer_ =
+        std::make_unique<net::NetworkChangeNotifier::DisableForTest>();
+    network_change_notifier_ =
+        std::make_unique<net::test::MockNetworkChangeNotifier>();
+    network_change_notifier_->SetConnectionType(
+        net::NetworkChangeNotifier::CONNECTION_NONE);
   }
 
  private:
+  std::unique_ptr<net::test::MockNetworkChangeNotifier>
+      network_change_notifier_;
+  std::unique_ptr<net::NetworkChangeNotifier::DisableForTest> net_installer_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainExtraPartsNetFactoryInstaller);
 };
 
@@ -115,10 +107,14 @@ IN_PROC_BROWSER_TEST_F(ChromeBrowserMainBrowserTest,
   const int initial_request_count =
       g_browser_process->variations_service()->request_count();
   ASSERT_TRUE(extra_parts_);
-  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_WIFI);
+  extra_parts_->network_change_notifier()->SetConnectionType(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
+  net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
+      net::NetworkChangeNotifier::CONNECTION_WIFI);
   // NotifyObserversOfNetworkChangeForTests uses PostTask, so run the loop until
   // idle to ensure VariationsService processes the network change.
-  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
   const int final_request_count =
       g_browser_process->variations_service()->request_count();
   EXPECT_EQ(initial_request_count + 1, final_request_count);

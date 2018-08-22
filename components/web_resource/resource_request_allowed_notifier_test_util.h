@@ -25,9 +25,7 @@ namespace web_resource {
 // it to return.
 class TestRequestAllowedNotifier : public ResourceRequestAllowedNotifier {
  public:
-  TestRequestAllowedNotifier(
-      PrefService* local_state,
-      network::NetworkConnectionTracker* network_connection_tracker);
+  explicit TestRequestAllowedNotifier(PrefService* local_state);
   ~TestRequestAllowedNotifier() override;
 
   // A version of |Init()| that accepts a custom EulaAcceptedNotifier.
