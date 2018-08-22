@@ -108,6 +108,7 @@ class BluetoothPowerController;
 class BrightnessControlDelegate;
 class CastConfigController;
 class ClientImageRegistry;
+class DisplayOutputProtection;
 class CrosDisplayConfig;
 class DetachableBaseHandler;
 class DetachableBaseNotificationController;
@@ -394,6 +395,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   DisplayErrorObserver* display_error_observer() {
     return display_error_observer_.get();
+  }
+  DisplayOutputProtection* display_output_protection() {
+    return display_output_protection_.get();
   }
 
   DockedMagnifierController* docked_magnifier_controller();
@@ -847,6 +851,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   // Controls video output device state.
   std::unique_ptr<display::DisplayConfigurator> display_configurator_;
+  std::unique_ptr<DisplayOutputProtection> display_output_protection_;
   std::unique_ptr<DisplayColorManager> display_color_manager_;
   std::unique_ptr<DisplayErrorObserver> display_error_observer_;
   std::unique_ptr<ProjectingObserver> projecting_observer_;

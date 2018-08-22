@@ -32,15 +32,6 @@
         "discardable_memory": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager"
         ],
-        "display_controller": [
-          "display.mojom.DisplayController"
-        ],
-        "display_output_protection": [
-          "display.mojom.OutputProtection"
-        ],
-        "display_dev": [
-          "display.mojom.DevDisplayController"
-        ],
         "gpu_client": [
           "ui.mojom.Gpu"
         ],
@@ -58,7 +49,6 @@
         // TODO(sky): update this to reflect what is really possible.
         "window_manager": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
-          "display.mojom.DisplayController",
           "display.mojom.NativeDisplayDelegate",
           "ui.mojom.AccessibilityManager",
           "ui.mojom.EventInjector",

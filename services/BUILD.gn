@@ -78,10 +78,6 @@ service_test("services_unittests") {
     deps += [ "//services/video_capture:tests" ]
   }
 
-  if (is_chromeos) {
-    deps += [ "//services/ui/display:tests" ]
-  }
-
   test_runner = "//services/test:run_all_service_tests"
 
   catalog = ":services_unittests_catalog"

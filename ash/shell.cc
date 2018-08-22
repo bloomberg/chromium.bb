@@ -34,6 +34,7 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_configuration_observer.h"
 #include "ash/display/display_error_observer.h"
+#include "ash/display/display_output_protection.h"
 #include "ash/display/display_prefs.h"
 #include "ash/display/display_shutdown_observer.h"
 #include "ash/display/event_transformation_handler.h"
@@ -194,7 +195,6 @@
 #include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/touch_transform_setter.h"
-#include "ui/display/mojo/dev_display_controller.mojom.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/event_target_iterator.h"
@@ -724,7 +724,9 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
       window_selector_controller_(std::make_unique<WindowSelectorController>()),
       tray_bluetooth_helper_(std::make_unique<TrayBluetoothHelper>()),
-      display_configurator_(new display::DisplayConfigurator()),
+      display_configurator_(std::make_unique<display::DisplayConfigurator>()),
+      display_output_protection_(std::make_unique<DisplayOutputProtection>(
+          display_configurator_.get())),
       native_cursor_manager_(nullptr),
       weak_factory_(this) {
   display_manager_.reset(ScreenAsh::CreateDisplayManager());

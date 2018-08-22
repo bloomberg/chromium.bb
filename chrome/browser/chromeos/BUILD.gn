@@ -190,7 +190,6 @@ source_set("chromeos") {
     "//services/preferences/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner/common",
-    "//services/ui/public/interfaces/display",
 
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//components/sync",
