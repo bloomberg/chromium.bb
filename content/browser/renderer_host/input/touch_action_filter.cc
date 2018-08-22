@@ -63,8 +63,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
   switch (gesture_event->GetType()) {
     case WebInputEvent::kGestureScrollBegin: {
       DCHECK(!suppress_manipulation_events_);
-      DCHECK(!touchscreen_scroll_in_progress_);
-      touchscreen_scroll_in_progress_ = true;
+      gesture_sequence_in_progress_ = true;
       gesture_sequence_.append("B");
       // TODO(https://crbug.com/851644): Make sure the value is properly set.
       if (!scrolling_touch_action_.has_value()) {
@@ -115,8 +114,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     case WebInputEvent::kGestureScrollEnd:
       gesture_sequence_.clear();
-      DCHECK(touchscreen_scroll_in_progress_);
-      touchscreen_scroll_in_progress_ = false;
+      gesture_sequence_in_progress_ = false;
       ReportGestureEventFiltered(suppress_manipulation_events_);
       return FilterManipulationEventAndResetState()
                  ? FilterGestureEventResult::kFilterGestureEventFiltered
@@ -134,6 +132,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     // The double tap gesture is a tap ending event. If a double tap gesture is
     // filtered out, replace it with a tap event.
     case WebInputEvent::kGestureDoubleTap:
+      gesture_sequence_in_progress_ = false;
       gesture_sequence_.append("D");
       DCHECK_EQ(1, gesture_event->data.tap.tap_count);
       if (!allow_current_double_tap_event_)
@@ -167,6 +166,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     case WebInputEvent::kGestureTap:
     case WebInputEvent::kGestureTapCancel:
+      gesture_sequence_in_progress_ = false;
       gesture_sequence_.append("A");
       if (drop_current_tap_ending_event_) {
         drop_current_tap_ending_event_ = false;
@@ -176,6 +176,7 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
 
     case WebInputEvent::kGestureTapDown:
       gesture_sequence_.append("O");
+      gesture_sequence_in_progress_ = true;
       // If the gesture is hitting a region that has a non-blocking (such as a
       // passive) event listener.
       if (gesture_event->is_source_touch_event_set_non_blocking)
@@ -362,8 +363,9 @@ void TouchActionFilter::OnHasTouchEventHandlers(bool has_handlers) {
   // If a page has a touch event handler, this function can be called twice with
   // has_handlers = false first and then true later. When it is true, we need to
   // reset the |scrolling_touch_action_|. However, we do not want to reset it if
-  // there is an active scroll in progress.
-  if (has_touch_event_handler_ && !touchscreen_scroll_in_progress_)
+  // there is an active gesture sequence in progress. For example, the
+  // OnHasTouchEventHandlers(true) can be received after a GestureTapDown.
+  if (has_touch_event_handler_ && !gesture_sequence_in_progress_)
     scrolling_touch_action_.reset();
 }
 

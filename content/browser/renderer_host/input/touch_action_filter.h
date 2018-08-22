@@ -105,9 +105,9 @@ class CONTENT_EXPORT TouchActionFilter {
   // TODO(https://crbug.com/850238): default to true or make it Optional.
   bool has_touch_event_handler_ = false;
 
-  // True if an active touch scroll gesture is in progress. i.e. after GSB and
+  // True if an active gesture sequence is in progress. i.e. after GTD and
   // before GSE.
-  bool touchscreen_scroll_in_progress_ = false;
+  bool gesture_sequence_in_progress_ = false;
 
   // What touch actions are currently permitted.
   base::Optional<cc::TouchAction> allowed_touch_action_;
