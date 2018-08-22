@@ -1259,6 +1259,11 @@ void NotificationViewMD::SetManuallyExpandedOrCollapsed(bool value) {
 }
 
 void NotificationViewMD::OnSettingsButtonPressed(const ui::Event& event) {
+  // TODO(yamaguchi): remove this line and call CloseSwipeControl() from parent
+  // view of this view. The parent view should activate the swipe control of
+  // the slider attached to this view.
+  CloseSwipeControl();
+
   if (settings_row_)
     ToggleInlineSettings(event);
   else

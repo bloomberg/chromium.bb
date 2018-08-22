@@ -7,6 +7,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/transform.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 
 namespace message_center {
 
@@ -16,8 +17,25 @@ SlideOutController::SlideOutController(ui::EventTarget* target,
 
 SlideOutController::~SlideOutController() {}
 
+void SlideOutController::CaptureControlOpenState() {
+  if (!has_swipe_control_)
+    return;
+  if (mode_ == SlideMode::FULL &&
+      fabs(gesture_amount_) >= swipe_control_width_) {
+    control_open_state_ = gesture_amount_ < 0
+                              ? SwipeControlOpenState::OPEN_ON_RIGHT
+                              : SwipeControlOpenState::OPEN_ON_LEFT;
+  } else {
+    control_open_state_ = SwipeControlOpenState::CLOSED;
+  }
+}
+
 void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
-  const float kScrollRatioForClosingNotification = 0.5f;
+  ui::Layer* layer = delegate_->GetSlideOutLayer();
+  int width = layer->bounds().width();
+  float scroll_amount_for_closing_notification =
+      has_swipe_control_ ? swipe_control_width_ + kSwipeCloseMargin
+                         : width * 0.5;
 
   if (event->type() == ui::ET_SCROLL_FLING_START) {
     // The threshold for the fling velocity is computed empirically.
@@ -29,17 +47,29 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
       event->StopPropagation();
       return;
     }
+    CaptureControlOpenState();
     RestoreVisualState();
+    delegate_->OnSlideChanged();
     return;
   }
 
   if (!event->IsScrollGestureEvent())
     return;
 
-  ui::Layer* layer = delegate_->GetSlideOutLayer();
-  int width = layer->bounds().width();
   if (event->type() == ui::ET_GESTURE_SCROLL_BEGIN) {
-    gesture_amount_ = 0.f;
+    switch (control_open_state_) {
+      case SwipeControlOpenState::CLOSED:
+        gesture_amount_ = 0.f;
+        break;
+      case SwipeControlOpenState::OPEN_ON_RIGHT:
+        gesture_amount_ = -swipe_control_width_;
+        break;
+      case SwipeControlOpenState::OPEN_ON_LEFT:
+        gesture_amount_ = swipe_control_width_;
+        break;
+      default:
+        NOTREACHED();
+    }
   } else if (event->type() == ui::ET_GESTURE_SCROLL_UPDATE) {
     // The scroll-update events include the incremental scroll amount.
     gesture_amount_ += event->details().scroll_x();
@@ -58,11 +88,11 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
       case SlideMode::PARTIALLY:
         if (gesture_amount_ >= 0) {
           scroll_amount = std::min(0.5f * gesture_amount_,
-                                   width * kScrollRatioForClosingNotification);
+                                   scroll_amount_for_closing_notification);
         } else {
           scroll_amount =
               std::max(0.5f * gesture_amount_,
-                       -1.f * width * kScrollRatioForClosingNotification);
+                       -1.f * scroll_amount_for_closing_notification);
         }
         opacity = 1.f;
         break;
@@ -75,11 +105,12 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
   } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
     float scrolled_ratio = fabsf(gesture_amount_) / width;
     if (mode_ == SlideMode::FULL &&
-        scrolled_ratio >= kScrollRatioForClosingNotification) {
+        scrolled_ratio >= scroll_amount_for_closing_notification / width) {
       SlideOutAndClose(gesture_amount_);
       event->StopPropagation();
       return;
     }
+    CaptureControlOpenState();
     RestoreVisualState();
   }
 
@@ -94,7 +125,19 @@ void SlideOutController::RestoreVisualState() {
   ui::ScopedLayerAnimationSettings settings(layer->GetAnimator());
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(kSwipeRestoreDurationMS));
-  layer->SetTransform(gfx::Transform());
+  gfx::Transform transform;
+  switch (control_open_state_) {
+    case SwipeControlOpenState::CLOSED:
+      gesture_amount_ = 0.f;
+      break;
+    case SwipeControlOpenState::OPEN_ON_RIGHT:
+      transform.Translate(-swipe_control_width_, 0);
+      break;
+    case SwipeControlOpenState::OPEN_ON_LEFT:
+      transform.Translate(swipe_control_width_, 0);
+      break;
+  }
+  layer->SetTransform(transform);
   layer->SetOpacity(1.f);
 }
 
@@ -116,7 +159,24 @@ void SlideOutController::SlideOutAndClose(int direction) {
 }
 
 void SlideOutController::OnImplicitAnimationsCompleted() {
+  delegate_->OnSlideChanged();
   delegate_->OnSlideOut();
+}
+
+void SlideOutController::EnableSwipeControl(int button_count) {
+  DCHECK(button_count > 0);
+  swipe_control_width_ =
+      kSwipeControlButtonSize * button_count +
+      kSwipeControlButtonHorizontalMargin * (button_count + 1);
+  has_swipe_control_ = true;
+}
+
+void SlideOutController::CloseSwipeControl() {
+  if (!has_swipe_control_)
+    return;
+  gesture_amount_ = 0;
+  CaptureControlOpenState();
+  RestoreVisualState();
 }
 
 }  // namespace message_center
