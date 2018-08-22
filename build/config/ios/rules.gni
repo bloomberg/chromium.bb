@@ -7,6 +7,11 @@ import("//build/config/mac/base_rules.gni")
 import("//build/config/mac/symbols.gni")
 import("//build/toolchain/toolchain.gni")
 
+# Constants corresponding to the bundle type identifier for XCTest and XCUITest
+# targets.
+_ios_xcode_xctest_bundle_id = "com.apple.product-type.bundle.unit-test"
+_ios_xcode_xcuitest_bundle_id = "com.apple.product-type.bundle.ui-testing"
+
 # Invokes lipo on multiple arch-specific binaries to create a fat binary.
 #
 # Arguments
@@ -210,8 +215,8 @@ template("create_signed_bundle") {
 
   if (defined(invoker.xcode_test_application_name)) {
     assert(
-        invoker.product_type == "com.apple.product-type.bundle.unit-test" ||
-            invoker.product_type == "com.apple.product-type.bundle.ui-testing",
+        invoker.product_type == _ios_xcode_xctest_bundle_id ||
+            invoker.product_type == _ios_xcode_xcuitest_bundle_id,
         "xcode_test_application_name can be only defined for Xcode unit or ui test target.")
   }
 
@@ -285,7 +290,6 @@ template("create_signed_bundle") {
                              "public_deps",
                              "testonly",
                              "visibility",
-                             "xcode_extra_attributes",
                              "xcode_test_application_name",
                            ])
 
@@ -297,6 +301,15 @@ template("create_signed_bundle") {
 
     if (!defined(public_deps)) {
       public_deps = []
+    }
+
+    xcode_extra_attributes = {
+      IPHONEOS_DEPLOYMENT_TARGET = ios_deployment_target
+
+      # If invoker has defined extra attributes, they override the defaults.
+      if (defined(invoker.xcode_extra_attributes)) {
+        forward_variables_from(invoker.xcode_extra_attributes, "*")
+      }
     }
 
     if (defined(invoker.bundle_binary_target)) {
@@ -1574,8 +1587,8 @@ template("ios_xctest_bundle") {
   assert(defined(invoker.deps), "deps must be defined for $target_name")
   assert(defined(invoker.product_type),
          "product_type must be defined for $target_name")
-  assert(invoker.product_type == "com.apple.product-type.bundle.unit-test" ||
-             invoker.product_type == "com.apple.product-type.bundle.ui-testing",
+  assert(invoker.product_type == _ios_xcode_xctest_bundle_id ||
+             invoker.product_type == _ios_xcode_xcuitest_bundle_id,
          "product_type defined for $target_name is invalid.")
   assert(defined(invoker.host_target),
          "host_target must be defined for $target_name")
@@ -1712,8 +1725,17 @@ template("ios_xctest_bundle") {
 
         # For XCUITest, Xcode requires specifying the host application name via
         # the TEST_TARGET_NAME attribute.
-        if (invoker.product_type == "com.apple.product-type.bundle.ui-testing") {
+        if (invoker.product_type == _ios_xcode_xcuitest_bundle_id) {
           TEST_TARGET_NAME = invoker.xcode_test_application_name
+        }
+
+        # For XCTest, Xcode requires specifying the host application path via
+        # both BUNDLE_LOADER and TEST_HOST attributes.
+        if (invoker.product_type == _ios_xcode_xctest_bundle_id) {
+          BUNDLE_LOADER = "\$(TEST_HOST)"
+          TEST_HOST =
+              "\$(BUILT_PRODUCTS_DIR)/${invoker.xcode_test_application_name}" +
+              ".app/${invoker.xcode_test_application_name}"
         }
       }
 
@@ -1773,7 +1795,7 @@ template("ios_xctest_test") {
 
   ios_xctest_bundle(_xctest_target) {
     output_name = _xctest_output
-    product_type = "com.apple.product-type.bundle.unit-test"
+    product_type = _ios_xcode_xctest_bundle_id
     host_target = _host_target
     xcode_test_application_name = _host_output
 
@@ -2011,7 +2033,7 @@ template("ios_xcuitest_test") {
   ios_xctest_bundle(_xcuitest_module_target) {
     forward_variables_from(invoker, [ "xcode_test_application_name" ])
 
-    product_type = "com.apple.product-type.bundle.ui-testing"
+    product_type = _ios_xcode_xcuitest_bundle_id
     host_target = _xcuitest_runner_target
     output_name = _xcuitest_module_output
 
