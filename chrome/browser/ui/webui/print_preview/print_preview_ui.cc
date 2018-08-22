@@ -699,8 +699,8 @@ void PrintPreviewUI::OnDidStartPreview(
   DCHECK_GT(params.page_count, 0);
   if (g_testing_delegate)
     g_testing_delegate->DidGetPreviewPageCount(params.page_count);
-  handler_->SendPageCountReady(params.page_count, request_id,
-                               params.fit_to_page_scaling);
+  handler_->SendPageCountReady(params.page_count, params.fit_to_page_scaling,
+                               request_id);
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(

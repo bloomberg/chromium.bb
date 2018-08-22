@@ -93,8 +93,8 @@ class PrintPreviewHandler
 
   // Send the print preview page count and fit to page scaling
   void SendPageCountReady(int page_count,
-                          int request_id,
-                          int fit_to_page_scaling);
+                          int fit_to_page_scaling,
+                          int request_id);
 
   // Send the default page layout
   void SendPageLayoutReady(const base::DictionaryValue& layout,

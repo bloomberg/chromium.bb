@@ -1241,8 +1241,8 @@ void PrintPreviewHandler::SendPrintPresetOptions(bool disable_scaling,
 }
 
 void PrintPreviewHandler::SendPageCountReady(int page_count,
-                                             int request_id,
-                                             int fit_to_page_scaling) {
+                                             int fit_to_page_scaling,
+                                             int request_id) {
   if (!ShouldReceiveRendererMessage(request_id))
     return;
 
