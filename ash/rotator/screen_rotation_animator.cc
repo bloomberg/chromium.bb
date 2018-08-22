@@ -33,7 +33,7 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 #include "ui/wm/core/window_util.h"
@@ -115,7 +115,8 @@ gfx::Transform CreateScreenRotationOldLayerTransformForDisplay(
     display::Display::Rotation new_rotation,
     const display::Display& display) {
   gfx::Transform inverse;
-  CHECK(CreateRotationTransform(old_rotation, new_rotation, display.bounds())
+  CHECK(CreateRotationTransform(old_rotation, new_rotation,
+                                gfx::SizeF(display.size()))
             .GetInverse(&inverse));
   return inverse;
 }

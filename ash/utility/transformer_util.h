@@ -9,17 +9,18 @@
 #include "ui/display/display.h"
 
 namespace gfx {
+class SizeF;
 class Transform;
 }
 
 namespace ash {
 
-// Creates rotation transform that rotates the |rect_to_rotate| from
+// Creates rotation transform that rotates the |size_to_rotate| from
 // |old_rotation| to |new_rotation|.
 ASH_EXPORT gfx::Transform CreateRotationTransform(
     display::Display::Rotation old_rotation,
     display::Display::Rotation new_rotation,
-    const gfx::Rect& rect_to_rotate);
+    const gfx::SizeF& size_to_rotate);
 
 }  // namespace ash
 
