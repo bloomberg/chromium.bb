@@ -22,6 +22,8 @@
 @property(nonatomic, readwrite, strong) UIColor* headerFooterTitleColor;
 // Cell highlight color.
 @property(nonatomic, readwrite, strong) UIColor* cellHighlightColor;
+// Color of cell separator line. If not set, defaults to 0xC8C7CC.
+@property(nonatomic, readwrite, strong) UIColor* cellSeparatorColor;
 
 @end
 
