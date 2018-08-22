@@ -27,7 +27,9 @@ class BlockingObserver;
 // This class must be instantiated in every scope where a blocking call is made.
 // CPU usage should be minimal within that scope. //base APIs that block
 // instantiate their own ScopedBlockingCall; it is not necessary to instantiate
-// another ScopedBlockingCall in the scope where these APIs are used.
+// another ScopedBlockingCall in the scope where these APIs are used. Nested
+// ScopedBlockingCalls are supported (mostly a no-op except for WILL_BLOCK
+// nested within MAY_BLOCK which will result in immediate WILL_BLOCK semantics).
 //
 // Good:
 //   Data data;
