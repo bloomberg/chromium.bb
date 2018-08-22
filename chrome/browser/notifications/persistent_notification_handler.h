@@ -11,9 +11,12 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/common/buildflags.h"
-#include "content/public/common/persistent_notification_status.h"
 
 class ScopedKeepAlive;
+
+namespace content {
+enum class PersistentNotificationStatus;
+}  // namespace content
 
 // NotificationHandler implementation for persistent Web Notifications, that is,
 // notifications associated with a Service Worker. Lives on the UI thread.
@@ -40,7 +43,9 @@ class PersistentNotificationHandler : public NotificationHandler {
  private:
   void OnCloseCompleted(base::OnceClosure completed_closure,
                         content::PersistentNotificationStatus status);
-  void OnClickCompleted(base::OnceClosure completed_closure,
+  void OnClickCompleted(Profile* profile,
+                        const std::string& notification_id,
+                        base::OnceClosure completed_closure,
                         content::PersistentNotificationStatus status);
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)

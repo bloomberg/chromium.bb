@@ -9,26 +9,29 @@ namespace content {
 
 // Delivery status for persistent notification clicks to a Service Worker.
 // PersistentNotificationStatus entries should not be reordered or removed.
-enum PersistentNotificationStatus {
+enum class PersistentNotificationStatus {
   // The notificationclick event has been delivered successfully.
-  PERSISTENT_NOTIFICATION_STATUS_SUCCESS = 0,
+  kSuccess = 0,
 
   // The event could not be delivered because the Service Worker is unavailable.
-  PERSISTENT_NOTIFICATION_STATUS_NO_SERVICE_WORKER,
+  kServiceWorkerMissing = 1,
 
   // The event could not be delivered because of a Service Worker error.
-  PERSISTENT_NOTIFICATION_STATUS_SERVICE_WORKER_ERROR,
+  kServiceWorkerError = 2,
 
   // The event has been delivered, but the developer extended the event with a
   // promise that has been rejected.
-  PERSISTENT_NOTIFICATION_STATUS_EVENT_WAITUNTIL_REJECTED,
+  kWaitUntilRejected = 3,
 
   // The event could not be delivered because the data associated with the
   // notification could not be read from the database.
-  PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR,
+  kDatabaseError = 4,
 
-  // Only add new entries above this line.
-  PERSISTENT_NOTIFICATION_STATUS_MAX
+  // The event could not be delivered because no permission had been granted to
+  // the origin.
+  kPermissionMissing = 5,
+
+  kMaxValue = kPermissionMissing
 };
 
 }  // content

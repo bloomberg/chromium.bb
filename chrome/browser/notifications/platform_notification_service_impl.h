@@ -81,6 +81,7 @@ class PlatformNotificationServiceImpl
 
  private:
   friend struct base::DefaultSingletonTraits<PlatformNotificationServiceImpl>;
+  friend class PersistentNotificationHandlerTest;
   friend class PlatformNotificationServiceBrowserTest;
   friend class PlatformNotificationServiceTest;
   friend class PushMessagingBrowserTest;
@@ -111,6 +112,9 @@ class PlatformNotificationServiceImpl
   // Returns a display name for an origin, to be used in the context message
   base::string16 DisplayNameForContextMessage(Profile* profile,
                                               const GURL& origin) const;
+
+  // Clears |closed_notifications_|. Should only be used for testing purposes.
+  void ClearClosedNotificationsForTesting() { closed_notifications_.clear(); }
 
   // Tracks the id of persistent notifications that have been closed
   // programmatically to avoid dispatching close events for them.
