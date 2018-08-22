@@ -24,7 +24,6 @@ import org.chromium.android_webview.services.AwVariationsSeedFetcher;
 import org.chromium.android_webview.services.ServiceInit;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.components.background_task_scheduler.TaskIds;
@@ -42,7 +41,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test AwVariationsSeedFetcher.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
 @SkipCommandLineParameterization
 public class AwVariationsSeedFetcherTest {
     private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;

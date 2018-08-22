@@ -17,7 +17,6 @@ import org.chromium.android_webview.VariationsUtils;
 import org.chromium.android_webview.services.ServiceInit;
 import org.chromium.android_webview.services.VariationsSeedHolder;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
@@ -34,7 +33,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test VariationsSeedHolder.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
 @SkipCommandLineParameterization
 public class VariationsSeedHolderTest {
     private class TestHolder extends VariationsSeedHolder {

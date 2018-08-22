@@ -15,7 +15,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.VariationsUtils;
 import org.chromium.android_webview.proto.AwVariationsSeedOuterClass.AwVariationsSeed;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher.SeedInfo;
 
@@ -27,7 +26,7 @@ import java.util.Arrays;
 /**
  * Test reading and writing variations seeds.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
 @SkipCommandLineParameterization
 public class VariationsUtilsTest {
     @Test
