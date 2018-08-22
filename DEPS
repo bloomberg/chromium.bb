@@ -239,6 +239,17 @@ deps = {
   'src/chrome/browser/resources/media_router/extension/src':
     Var('chromium_git') + '/media_router.git' + '@' + '475baa8b2eb0a7a9dd1c96c9c7a6a8d9035cc8d7',
 
+  'src/android_webview/tools/cts_archive': {
+      'packages': [
+          {
+              'package': 'chromium/android_webview/tools/cts_archive',
+              'version': 'version:1.0',
+          },
+      ],
+      'condition': 'checkout_android',
+      'dep_type': 'cipd',
+  },
+
   'src/buildtools':
     Var('chromium_git') + '/chromium/buildtools.git' + '@' +  Var('buildtools_revision'),
 

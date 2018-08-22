@@ -4,10 +4,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Runs the CTS test APKs stored in GS."""
+"""Runs the CTS test APKs stored in CIPD."""
 
 import argparse
 import json
+import logging
 import os
 import shutil
 import sys
@@ -18,18 +19,14 @@ import zipfile
 sys.path.append(os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir, 'build', 'android'))
 import devil_chromium  # pylint: disable=import-error
+from devil.android.sdk import version_codes  # pylint: disable=import-error
+from devil.android.tools import script_common  # pylint: disable=import-error
 from devil.utils import cmd_helper  # pylint: disable=import-error
-
-sys.path.append(os.path.join(
-    os.path.dirname(__file__), os.pardir, os.pardir, 'build'))
-import find_depot_tools  # pylint: disable=import-error
 
 # cts test archives for all platforms are stored in this bucket
 # contents need to be updated if there is an important fix to any of
 # the tests
-_CTS_BUCKET = 'gs://chromium-cts'
 
-_GSUTIL_PATH = os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gsutil.py')
 _TEST_RUNNER_PATH = os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir,
     'build', 'android', 'test_runner.py')
@@ -38,6 +35,17 @@ _EXPECTED_FAILURES_FILE = os.path.join(
     os.path.dirname(__file__), 'cts_config', 'expected_failure_on_bot.json')
 _WEBVIEW_CTS_GCS_PATH_FILE = os.path.join(
     os.path.dirname(__file__), 'cts_config', 'webview_cts_gcs_path.json')
+_CTS_ARCHIVE_DIR = os.path.join(os.path.dirname(__file__), 'cts_archive')
+
+_SDK_PLATFORM_DICT = {
+    version_codes.LOLLIPOP: 'L',
+    version_codes.LOLLIPOP_MR1: 'L',
+    version_codes.MARSHMALLOW: 'M',
+    version_codes.NOUGAT: 'N',
+    version_codes.NOUGAT_MR1: 'N',
+    version_codes.OREO: 'O',
+    version_codes.OREO_MR1: 'O'
+}
 
 
 def GetCtsInfo(arch, platform, item):
@@ -119,10 +127,10 @@ def MergeTestResults(existing_results_json, additional_results_json):
             "Can't merge results field %s that is not a list or dict" % v)
 
 
-def DownloadAndExtractCTSZip(args):
-  """Download and extract the CTS tests from _CTS_BUCKET.
+def ExtractCTSZip(args):
+  """Extract the CTS tests for args.platform.
 
-  Downloads the CTS zip file from _CTS_BUCKET and extract contents to
+  Extract the CTS zip file from _CTS_ARCHIVE_DIR to
   apk_dir if specified, or a new temporary directory if not.
   Returns following tuple (local_cts_dir, base_cts_dir, delete_cts_dir):
     local_cts_dir - CTS extraction location for current arch and platform
@@ -140,24 +148,15 @@ def DownloadAndExtractCTSZip(args):
     base_cts_dir = tempfile.mkdtemp()
     delete_cts_dir = True
 
-  local_cts_zip_path = os.path.join(base_cts_dir, relative_cts_zip_path)
-  google_storage_cts_zip_path = '%s/%s' % (
-      _CTS_BUCKET, os.path.join(relative_cts_zip_path))
-
-  # Download CTS APK if needed.
-  if not os.path.exists(local_cts_zip_path):
-    if cmd_helper.RunCmd([_GSUTIL_PATH, 'cp', google_storage_cts_zip_path,
-                          local_cts_zip_path]):
-      raise Exception('Error downloading CTS from Google Storage.')
-
+  cts_zip_path = os.path.join(_CTS_ARCHIVE_DIR, relative_cts_zip_path)
   local_cts_dir = os.path.join(base_cts_dir,
                                GetCtsInfo(args.arch, args.platform, 'apkdir'))
-  zf = zipfile.ZipFile(local_cts_zip_path, 'r')
+  zf = zipfile.ZipFile(cts_zip_path, 'r')
   zf.extractall(local_cts_dir)
   return (local_cts_dir, base_cts_dir, delete_cts_dir)
 
 
-def DownloadAndRunCTS(args, test_runner_args):
+def RunAllCTSTests(args, test_runner_args):
   """Run CTS tests downloaded from _CTS_BUCKET.
 
   Downloads CTS tests from bucket, runs them for the
@@ -167,7 +166,7 @@ def DownloadAndRunCTS(args, test_runner_args):
   returns the failure code of the last failing
   test.
   """
-  local_cts_dir, base_cts_dir, delete_cts_dir = DownloadAndExtractCTSZip(args)
+  local_cts_dir, base_cts_dir, delete_cts_dir = ExtractCTSZip(args)
   cts_result = 0
   json_results_file = args.json_results_file
   try:
@@ -197,7 +196,17 @@ def DownloadAndRunCTS(args, test_runner_args):
   finally:
     if delete_cts_dir and base_cts_dir:
       shutil.rmtree(base_cts_dir)
+
   return cts_result
+
+
+def DeterminePlatform(device):
+  """Determines the platform based on the Android SDK level
+
+  Returns the first letter of the platform in uppercase
+  if platform is found, otherwise returns None
+  """
+  return _SDK_PLATFORM_DICT.get(device.build_version_sdk)
 
 
 def main():
@@ -210,29 +219,44 @@ def main():
   parser.add_argument(
       '--platform',
       choices=['L', 'M', 'N', 'O'],
-      required=True,
-      help='Android platform version for CTS tests.')
+      required=False,
+      default=None,
+      help='Android platform version for CTS tests. '
+           'Will auto-determine based on SDK level by default.')
   parser.add_argument(
       '--skip-expected-failures',
       action='store_true',
       help='Option to skip all tests that are expected to fail.')
   parser.add_argument(
       '--apk-dir',
-      help='Directory to load/save CTS APKs. Will try to load CTS APK '
-           'from this directory before downloading from Google Storage '
-           'and will then cache APK here.')
+      help='Directory to extract CTS APKs to. '
+           'Will use temp directory by default.')
   parser.add_argument(
       '--test-launcher-summary-output',
       '--json-results-file',
+      '--write-full-results-to',
       dest='json_results_file', type=os.path.realpath,
       help='If set, will dump results in JSON form to the specified file. '
            'Note that this will also trigger saving per-test logcats to '
            'logdog.')
+  script_common.AddDeviceArguments(parser)
 
   args, test_runner_args = parser.parse_known_args()
   devil_chromium.Initialize()
 
-  return DownloadAndRunCTS(args, test_runner_args)
+  devices = script_common.GetDevices(args.devices, args.blacklist_file)
+  if len(devices) > 1:
+    logging.warning('Only single device supported, using 1st of %d devices: %s',
+                    len(devices), devices[0].serial)
+  test_runner_args.extend(['-d', devices[0].serial])
+
+  if args.platform is None:
+    args.platform = DeterminePlatform(devices[0])
+    if args.platform is None:
+      raise Exception('Could not auto-determine device platform, '
+                      'please specifiy --platform')
+
+  return RunAllCTSTests(args, test_runner_args)
 
 
 if __name__ == '__main__':
