@@ -368,17 +368,6 @@
       ]
     },
     {
-      "id": 51,
-      "description": "TexSubImage is faster for full uploads on ANGLE",
-      "os": {
-        "type": "win"
-      },
-      "gl_renderer": "ANGLE.*",
-      "features": [
-        "texsubimage_faster_than_teximage"
-      ]
-    },
-    {
       "id": 54,
       "cr_bugs": [124764, 349137],
       "description": "Clear uniforms before first program use on all platforms",

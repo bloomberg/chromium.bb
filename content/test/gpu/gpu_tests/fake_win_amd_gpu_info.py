@@ -117,6 +117,5 @@ FAKE_GPU_INFO = {
             'exit_on_context_lost',
             'force_cube_complete',
             'scalarize_vec_and_mat_constructor_args',
-            'texsubimage_faster_than_teximage'
         ]
 }
