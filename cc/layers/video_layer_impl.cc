@@ -154,7 +154,7 @@ void VideoLayerImpl::AppendQuads(viz::RenderPass* render_pass,
     return;
 
   updater_->AppendQuads(render_pass, frame_, transform, rotated_size,
-                        visible_layer_rect(), clip_rect(), is_clipped(),
+                        visible_quad_rect, clip_rect(), is_clipped(),
                         contents_opaque(), draw_opacity(),
                         GetSortingContextId(), visible_quad_rect);
 }
