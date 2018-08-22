@@ -3012,6 +3012,8 @@ jumbo_split_static_library("ui") {
       "webauthn/authenticator_request_sheet_model.h",
       "webauthn/sheet_models.cc",
       "webauthn/sheet_models.h",
+      "webauthn/transport_utils.cc",
+      "webauthn/transport_utils.h",
     ]
     deps += [
       "//chrome/browser/ui/views",

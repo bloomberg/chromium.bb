@@ -168,7 +168,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, TransportList) {
   model.StartFlow(std::move(transports_info_1), base::nullopt);
   EXPECT_THAT(model.transport_list_model()->transports(),
               ::testing::UnorderedElementsAre(
-                  AuthenticatorTransport::kUsb,
+                  AuthenticatorTransport::kUsbHumanInterfaceDevice,
                   AuthenticatorTransport::kNearFieldCommunication,
                   AuthenticatorTransport::kBluetoothLowEnergy,
                   AuthenticatorTransport::kInternal,

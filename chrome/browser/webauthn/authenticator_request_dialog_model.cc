@@ -43,24 +43,6 @@ base::Optional<device::FidoTransportProtocol> SelectMostLikelyTransport(
   return base::nullopt;
 }
 
-AuthenticatorTransport ToAuthenticatorTransport(
-    device::FidoTransportProtocol transport) {
-  switch (transport) {
-    case device::FidoTransportProtocol::kUsbHumanInterfaceDevice:
-      return AuthenticatorTransport::kUsb;
-    case device::FidoTransportProtocol::kNearFieldCommunication:
-      return AuthenticatorTransport::kNearFieldCommunication;
-    case device::FidoTransportProtocol::kBluetoothLowEnergy:
-      return AuthenticatorTransport::kBluetoothLowEnergy;
-    case device::FidoTransportProtocol::kInternal:
-      return AuthenticatorTransport::kInternal;
-    case device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy:
-      return AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy;
-  }
-  NOTREACHED();
-  return AuthenticatorTransport::kUsb;
-}
-
 }  // namespace
 
 // AuthenticatorRequestDialogModel::AuthenticatorReference --------------------
@@ -99,7 +81,7 @@ void AuthenticatorRequestDialogModel::StartFlow(
   transport_availability_ = std::move(transport_availability);
   last_used_transport_ = last_used_transport;
   for (const auto transport : transport_availability_.available_transports) {
-    transport_list_model_.AppendTransport(ToAuthenticatorTransport(transport));
+    transport_list_model_.AppendTransport(transport);
   }
 
   if (last_used_transport) {
@@ -116,8 +98,7 @@ void AuthenticatorRequestDialogModel::
   auto most_likely_transport =
       SelectMostLikelyTransport(transport_availability_, last_used_transport_);
   if (most_likely_transport) {
-    StartGuidedFlowForTransport(
-        ToAuthenticatorTransport(*most_likely_transport));
+    StartGuidedFlowForTransport(*most_likely_transport);
   } else if (!transport_availability_.available_transports.empty()) {
     DCHECK_GE(transport_availability_.available_transports.size(), 2u);
     SetCurrentStep(Step::kTransportSelection);
@@ -132,7 +113,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
          current_step() == Step::kWelcomeScreen ||
          current_step() == Step::kNotStarted);
   switch (transport) {
-    case AuthenticatorTransport::kUsb:
+    case AuthenticatorTransport::kUsbHumanInterfaceDevice:
       SetCurrentStep(Step::kUsbInsertAndActivate);
       break;
     case AuthenticatorTransport::kNearFieldCommunication:

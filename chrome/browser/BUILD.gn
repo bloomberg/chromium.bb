@@ -1607,6 +1607,7 @@ jumbo_split_static_library("browser") {
     "webauthn/authenticator_request_dialog_model.h",
     "webauthn/authenticator_request_scheduler.cc",
     "webauthn/authenticator_request_scheduler.h",
+    "webauthn/authenticator_transport.h",
     "webauthn/chrome_authenticator_request_delegate.cc",
     "webauthn/chrome_authenticator_request_delegate.h",
     "webauthn/transport_list_model.cc",

@@ -9,15 +9,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-
-// Enumerates transports over which a Security Key can be reached.
-enum class AuthenticatorTransport {
-  kBluetoothLowEnergy,
-  kUsb,
-  kNearFieldCommunication,
-  kInternal,
-  kCloudAssistedBluetoothLowEnergy
-};
+#include "chrome/browser/webauthn/authenticator_transport.h"
 
 // An observable list of transports that are supported on the platform.
 class TransportListModel {

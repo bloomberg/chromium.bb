@@ -30,7 +30,8 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "transports") {
       TransportListModel* transports = model->transport_list_model();
       transports->AppendTransport(AuthenticatorTransport::kBluetoothLowEnergy);
-      transports->AppendTransport(AuthenticatorTransport::kUsb);
+      transports->AppendTransport(
+          AuthenticatorTransport::kUsbHumanInterfaceDevice);
       transports->AppendTransport(
           AuthenticatorTransport::kNearFieldCommunication);
       transports->AppendTransport(AuthenticatorTransport::kInternal);
