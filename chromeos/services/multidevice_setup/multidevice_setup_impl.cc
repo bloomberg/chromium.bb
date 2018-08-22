@@ -14,7 +14,7 @@
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
-#include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_install_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
@@ -49,11 +49,11 @@ MultiDeviceSetupImpl::Factory::BuildInstance(
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     AuthTokenValidator* auth_token_validator,
-    std::unique_ptr<AndroidSmsAppInstallDelegate>
-        android_sms_app_install_delegate) {
+    std::unique_ptr<AndroidSmsAppHelperDelegate>
+        android_sms_app_helper_delegate) {
   return base::WrapUnique(new MultiDeviceSetupImpl(
       pref_service, device_sync_client, secure_channel_client,
-      auth_token_validator, std::move(android_sms_app_install_delegate)));
+      auth_token_validator, std::move(android_sms_app_helper_delegate)));
 }
 
 MultiDeviceSetupImpl::MultiDeviceSetupImpl(
@@ -61,10 +61,10 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
     device_sync::DeviceSyncClient* device_sync_client,
     secure_channel::SecureChannelClient* secure_channel_client,
     AuthTokenValidator* auth_token_validator,
-    std::unique_ptr<AndroidSmsAppInstallDelegate>
-        android_sms_app_install_delegate)
-    : android_sms_app_install_delegate_(
-          std::move(android_sms_app_install_delegate)),
+    std::unique_ptr<AndroidSmsAppHelperDelegate>
+        android_sms_app_helper_delegate)
+    : android_sms_app_helper_delegate_(
+          std::move(android_sms_app_helper_delegate)),
       eligible_host_devices_provider_(
           EligibleHostDevicesProviderImpl::Factory::Get()->BuildInstance(
               device_sync_client)),
@@ -156,7 +156,7 @@ void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_device_id,
   }
 
   host_backend_delegate_->AttemptToSetMultiDeviceHostOnBackend(*it);
-  android_sms_app_install_delegate_->InstallAndroidSmsApp();
+  android_sms_app_helper_delegate_->InstallAndroidSmsApp();
   std::move(callback).Run(true /* success */);
 }
 
