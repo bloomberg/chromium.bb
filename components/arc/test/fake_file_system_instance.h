@@ -159,6 +159,8 @@ class FakeFileSystemInstance : public mojom::FileSystemInstance {
   void RemoveWatcher(int64_t watcher_id,
                      RemoveWatcherCallback callback) override;
   void RequestMediaScan(const std::vector<std::string>& paths) override;
+  void OpenUrlsWithPermission(mojom::OpenUrlsRequestPtr request,
+                              OpenUrlsWithPermissionCallback callback) override;
 
  private:
   // A pair of an authority and a document ID which identifies the location
