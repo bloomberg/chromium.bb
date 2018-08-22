@@ -324,7 +324,8 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
 }
 
 void PaintLayer::UpdateLayerPositionRecursive(
-    UpdateLayerPositionBehavior behavior) {
+    UpdateLayerPositionBehavior behavior,
+    bool dirty_compositing_if_needed) {
   LayoutPoint old_location = location_;
   switch (behavior) {
     case AllLayers:
@@ -342,7 +343,7 @@ void PaintLayer::UpdateLayerPositionRecursive(
       NOTREACHED();
   }
 
-  if (location_ != old_location)
+  if (dirty_compositing_if_needed && location_ != old_location)
     SetNeedsCompositingInputsUpdate();
 
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
@@ -424,12 +425,14 @@ void PaintLayer::UpdateLayerPositionsAfterOverflowScroll() {
     // offset is not included in clip rects. Therefore, we do not need to clear
     // them when that PaintLayer is scrolled. We also don't need to update layer
     // positions, because they also do not depend on the root's scroll offset.
-    if (GetScrollableArea()->HasStickyDescendants())
-      UpdateLayerPositionRecursive(OnlyStickyLayers);
+    if (GetScrollableArea()->HasStickyDescendants()) {
+      UpdateLayerPositionRecursive(OnlyStickyLayers,
+                                   /* dirty_compositing */ false);
+    }
     return;
   }
   ClearClipRects();
-  UpdateLayerPositionRecursive(AllLayers);
+  UpdateLayerPositionRecursive(AllLayers, /* dirty_compositing */ false);
 }
 
 void PaintLayer::UpdateTransformationMatrix() {
