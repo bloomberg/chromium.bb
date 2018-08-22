@@ -36,7 +36,6 @@ static_library("test_support") {
   deps = [
     ":web_resource",
     "//base",
-    "//services/network/public/cpp",
   ]
 }
 

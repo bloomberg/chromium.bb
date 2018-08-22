@@ -5,6 +5,7 @@ include_rules = [
   "+ios/web",
   "+mojo/public",
   "+net",
+  "+services/network/network_change_manager.h",
   "+services/network/network_context.h",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
