@@ -49,6 +49,11 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
   HTMLInputElement* UploadButton() const;
   int UploadButtonWidth();
 
+  bool HasControlClip() const override { return true; }
+  LayoutRect ControlClipRect(const LayoutPoint&) const override;
+  LayoutRect OverflowClipRect(const LayoutPoint&,
+                              OverlayScrollbarClipBehavior) const override;
+
   static const int kAfterButtonSpacing = 4;
 
   const char* GetName() const override { return "LayoutFileUploadControl"; }
