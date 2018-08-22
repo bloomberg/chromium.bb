@@ -1426,6 +1426,21 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityInputSearch) {
   RunHtmlTest(FILE_PATH_LITERAL("input-search.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityScrollableInput) {
+  RunHtmlTest(FILE_PATH_LITERAL("scrollable-input.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityScrollableOverflow) {
+  RunHtmlTest(FILE_PATH_LITERAL("scrollable-overflow.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityScrollableTextarea) {
+  RunHtmlTest(FILE_PATH_LITERAL("scrollable-textarea.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilitySmall) {
   RunHtmlTest(FILE_PATH_LITERAL("small.html"));
 }
