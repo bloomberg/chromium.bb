@@ -32,7 +32,7 @@ namespace extensions {
 
 namespace {
 
-const char kExtensionId[] = "npnbmohejbjohgpjnmjagbafnjhkmgko";
+const char kExtensionId[] = "aohghmighlieiainnegkcijnfilokake";
 
 using UpdateClientEvents = update_client::UpdateClient::Observer::Events;
 
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
       std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="1")", kExtensionId)));
+                  R"(<app appid="%s" version="0.10")", kExtensionId)));
   EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
 }
 
@@ -164,7 +164,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
       std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="1")", kExtensionId)));
+                  R"(<app appid="%s" version="0.10")", kExtensionId)));
   EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
 }
 
@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
       std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
-                  R"(<app appid="%s" version="1")", kExtensionId)));
+                  R"(<app appid="%s" version="0.10")", kExtensionId)));
   EXPECT_THAT(update_request, ::testing::HasSubstr(R"(enabled="1")"));
 }
 
@@ -516,7 +516,7 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
 
  protected:
   // The id of the extension we want to have force-installed.
-  std::string id_ = "npnbmohejbjohgpjnmjagbafnjhkmgko";
+  std::string id_ = "aohghmighlieiainnegkcijnfilokake";
 
  private:
   policy::MockConfigurationPolicyProvider policy_provider_;
