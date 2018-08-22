@@ -141,9 +141,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
     // Use utility process to convert skia metafile to pdf.
     client->DoCompositePageToPdf(
-        params.document_cookie, render_frame_host, page_number,
-        content.metafile_data_handle, content.data_size,
-        content.subframe_content_info,
+        params.document_cookie, render_frame_host, page_number, content,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
                        weak_ptr_factory_.GetWeakPtr(), page_number, ids));
   } else {
@@ -175,8 +173,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
     DCHECK(client);
 
     client->DoCompositeDocumentToPdf(
-        params.document_cookie, render_frame_host, content.metafile_data_handle,
-        content.data_size, content.subframe_content_info,
+        params.document_cookie, render_frame_host, content,
         base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
                        weak_ptr_factory_.GetWeakPtr(),
                        params.expected_pages_count, ids));
