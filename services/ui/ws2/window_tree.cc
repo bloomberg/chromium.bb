@@ -208,6 +208,45 @@ void WindowTree::OnEmbeddingDestroyed(Embedding* embedding) {
   DeleteClientRoot(iter->get(), DeleteClientRootReason::kDeleted);
 }
 
+ClientWindowId WindowTree::RemoveScheduledEmbedUsingExistingClient(
+    const base::UnguessableToken& embed_token) {
+  auto iter = scheduled_embeds_for_existing_client_.find(embed_token);
+  if (iter == scheduled_embeds_for_existing_client_.end())
+    return ClientWindowId();
+
+  const ClientWindowId client_window_id = MakeClientWindowId(iter->second);
+  if (!IsValidIdForNewWindow(client_window_id)) {
+    DVLOG(1) << "EmbedUsingToken failed (access denied)";
+    return ClientWindowId();
+  }
+  return client_window_id;
+}
+
+void WindowTree::CompleteScheduleEmbedForExistingClient(
+    aura::Window* window,
+    const ClientWindowId& id,
+    const base::UnguessableToken& token) {
+  AddWindowToKnownWindows(window, id);
+  const bool is_top_level = false;
+  ClientRoot* client_root = CreateClientRoot(window, is_top_level);
+
+  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
+  // It's expected we only get here if a ServerWindow exists for |window|.
+  DCHECK(server_window);
+
+  const int64_t display_id =
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
+  window_tree_client_->OnEmbedFromToken(token, WindowToWindowData(window),
+                                        display_id,
+                                        server_window->local_surface_id());
+
+  // Reset the frame sink id locally (after calling OnEmbedFromToken()). This is
+  // needed so that the id used by the client matches the id used locally.
+  server_window->set_frame_sink_id(id);
+
+  client_root->RegisterVizEmbeddingSupport();
+}
+
 bool WindowTree::HasAtLeastOneRootWithCompositorFrameSink() {
   for (auto& client_root : client_roots_) {
     if (ServerWindow::GetMayBeNull(client_root->window())
@@ -292,7 +331,8 @@ void WindowTree::DeleteClientRoot(ClientRoot* client_root,
       created_window->parent()->RemoveChild(created_window);
   }
 
-  if (reason == DeleteClientRootReason::kUnembed) {
+  if (reason == DeleteClientRootReason::kUnembed ||
+      reason == DeleteClientRootReason::kDestructor) {
     // Notify the owner of the window it no longer has a client embedded in it.
     ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
     if (server_window->owning_window_tree() &&
@@ -304,6 +344,15 @@ void WindowTree::DeleteClientRoot(ClientRoot* client_root,
           ->window_tree_client_->OnEmbeddedAppDisconnected(
               server_window->owning_window_tree()->TransportIdForWindow(
                   window));
+    }
+    if (server_window->embedding())
+      server_window->embedding()->clear_embedded_tree();
+    // Only reset the embedding if it's for an existing tree. To do otherwise
+    // results in trying to delete this.
+    if (server_window->embedding() && !server_window->embedding()->binding()) {
+      server_window->SetEmbedding(nullptr);
+      if (!server_window->owning_window_tree())
+        server_window->Destroy();
     }
   }
 }
@@ -538,31 +587,6 @@ mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
       window_service_->property_converter()->GetTransportProperties(window);
   window_data->visible = window->TargetVisibility();
   return window_data;
-}
-
-void WindowTree::CompleteScheduleEmbedForExistingClient(
-    aura::Window* window,
-    const ClientWindowId& id,
-    const base::UnguessableToken& token) {
-  AddWindowToKnownWindows(window, id);
-  const bool is_top_level = false;
-  ClientRoot* client_root = CreateClientRoot(window, is_top_level);
-
-  ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
-  // It's expected we only get here if a ServerWindow exists for |window|.
-  DCHECK(server_window);
-
-  const int64_t display_id =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(window).id();
-  window_tree_client_->OnEmbedFromToken(token, WindowToWindowData(window),
-                                        display_id,
-                                        server_window->local_surface_id());
-
-  // Reset the frame sink id locally (after calling OnEmbedFromToken()). This is
-  // needed so that the id used by the client matches the id used locally.
-  server_window->set_frame_sink_id(id);
-
-  client_root->RegisterVizEmbeddingSupport();
 }
 
 mojom::WindowTreeClientPtr
@@ -1581,34 +1605,21 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
 
   // No client found using ScheduleEmbed(), check for a call to
   // ScheduleEmbedForExistingClient().
-  auto window_trees = window_service_->window_trees();
-  uint32_t id_for_window_in_child = 0u;
-  WindowTree* child_tree = nullptr;
-  for (WindowTree* tree : window_trees) {
-    auto iter = tree->scheduled_embeds_for_existing_client_.find(token);
-    if (iter != tree->scheduled_embeds_for_existing_client_.end()) {
-      id_for_window_in_child = iter->second;
-      child_tree = tree;
-      tree->scheduled_embeds_for_existing_client_.erase(iter);
-      break;
-    }
-  }
-  if (!child_tree) {
+  WindowService::TreeAndWindowId tree_and_id =
+      window_service_->FindTreeWithScheduleEmbedForExistingClient(token);
+  if (!tree_and_id.tree) {
     DVLOG(1) << "EmbedUsingToken failed (token not found)";
     std::move(callback).Run(false);
     return;
   }
-  if (child_tree == this) {
+  if (tree_and_id.tree == this) {
     DVLOG(1) << "EmbedUsingToken failed, attempt to embed self, token="
              << token.ToString();
     std::move(callback).Run(false);
     return;
   }
 
-  const ClientWindowId client_window_id_in_child =
-      child_tree->MakeClientWindowId(id_for_window_in_child);
-  if (!IsClientCreatedWindow(window) || IsTopLevel(window) ||
-      !child_tree->IsValidIdForNewWindow(client_window_id_in_child)) {
+  if (!IsClientCreatedWindow(window) || IsTopLevel(window)) {
     DVLOG(1) << "EmbedUsingToken failed (access denied)";
     std::move(callback).Run(false);
     return;
@@ -1617,11 +1628,11 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   const bool owner_intercept_events =
       (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
-  child_tree->CompleteScheduleEmbedForExistingClient(
-      window, client_window_id_in_child, token);
+  tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
+      window, tree_and_id.id, token);
   std::unique_ptr<Embedding> embedding =
       std::make_unique<Embedding>(this, window, owner_intercept_events);
-  embedding->InitForEmbedInExistingTree(child_tree);
+  embedding->InitForEmbedInExistingTree(tree_and_id.tree);
   server_window->SetEmbedding(std::move(embedding));
   // Convert |transport_window_id| to ensure the client is supplied a consistent
   // client-id.

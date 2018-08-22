@@ -19,6 +19,15 @@
 
 namespace ui {
 namespace ws2 {
+namespace {
+
+// Used as callback from ScheduleEmbed().
+void ScheduleEmbedCallback(base::UnguessableToken* result_token,
+                           const base::UnguessableToken& actual_token) {
+  *result_token = actual_token;
+}
+
+}  // namespace
 
 TEST(WindowServiceTest, DeleteWithClients) {
   // Use |test_setup| to configure aura and other state.
@@ -94,6 +103,58 @@ TEST(WindowServiceTest, ClientIdsDecrement) {
   tree = window_service.CreateWindowTree(nullptr);
   EXPECT_EQ(kInitialClientIdDecrement - 1,
             WindowTreeTestHelper(tree.get()).client_id());
+}
+
+TEST(WindowServiceTest, ScheduleEmbedForExistingClientUsingLocalWindow) {
+  WindowServiceTestSetup setup;
+  // Schedule an embed in the tree created by |setup|.
+  base::UnguessableToken token;
+  const uint32_t window_id_in_child = 149;
+  setup.window_tree_test_helper()
+      ->window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child, base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  // Create a window that will serve as the parent for the remote window and
+  // complete the embedding.
+  std::unique_ptr<aura::Window> local_window =
+      std::make_unique<aura::Window>(nullptr);
+  local_window->Init(ui::LAYER_NOT_DRAWN);
+  ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
+      local_window.get(), token, /* embed_flags */ 0));
+  EXPECT_TRUE(WindowService::HasRemoteClient(local_window.get()));
+}
+
+TEST(WindowServiceTest,
+     ScheduleEmbedForExistingClientUsingLocalWindowResetOnTreeDeleted) {
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient window_tree_client2;
+  std::unique_ptr<WindowTree> window_tree2 =
+      setup.service()->CreateWindowTree(&window_tree_client2);
+  window_tree2->InitFromFactory();
+
+  // Schedule an embed in |window_tree2|.
+  base::UnguessableToken token;
+  const uint32_t window_id_in_child = 212;
+  WindowTreeTestHelper(window_tree2.get())
+      .window_tree()
+      ->ScheduleEmbedForExistingClient(
+          window_id_in_child, base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  // Create a window that will serve as the parent for the remote window and
+  // complete the embedding.
+  std::unique_ptr<aura::Window> local_window =
+      std::make_unique<aura::Window>(nullptr);
+  local_window->Init(ui::LAYER_NOT_DRAWN);
+  ASSERT_TRUE(setup.service()->CompleteScheduleEmbedForExistingClient(
+      local_window.get(), token, /* embed_flags */ 0));
+  EXPECT_TRUE(WindowService::HasRemoteClient(local_window.get()));
+
+  // Deleting |window_tree2| should remove the remote client.
+  window_tree2.reset();
+  EXPECT_FALSE(WindowService::HasRemoteClient(local_window.get()));
 }
 
 }  // namespace ws2

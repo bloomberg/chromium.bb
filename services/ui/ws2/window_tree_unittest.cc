@@ -1354,6 +1354,38 @@ TEST(WindowTreeTest, DeleteRootOfEmbeddingFromScheduleEmbedForExistingClient) {
             SingleChangeToDescription(*client2.tracker()->changes()));
 }
 
+TEST(WindowTreeTest, DeleteEmbededTreeFromScheduleEmbedForExistingClient) {
+  WindowServiceTestSetup setup;
+  aura::Window* window_in_parent = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(window_in_parent);
+
+  // Create another client and call ScheduleEmbedForExistingClient() from it.
+  TestWindowTreeClient client2;
+  std::unique_ptr<WindowTree> tree2 =
+      setup.service()->CreateWindowTree(&client2);
+  WindowTreeTestHelper tree2_test_helper(tree2.get());
+  base::UnguessableToken token;
+  tree2_test_helper.window_tree()->ScheduleEmbedForExistingClient(
+      11, base::BindOnce(&ScheduleEmbedCallback, &token));
+  EXPECT_FALSE(token.is_empty());
+
+  // Call EmbedUsingToken() from setup.window_tree(), which should result in
+  // |tree2| getting OnEmbedFromToken().
+  bool embed_result = false;
+  bool embed_callback_called = false;
+  setup.window_tree_test_helper()->window_tree()->EmbedUsingToken(
+      setup.window_tree_test_helper()->TransportIdForWindow(window_in_parent),
+      token, kDefaultEmbedFlags,
+      base::BindOnce(&EmbedUsingTokenCallback, &embed_callback_called,
+                     &embed_result));
+  EXPECT_TRUE(embed_callback_called);
+  EXPECT_TRUE(embed_result);
+  EXPECT_TRUE(ServerWindow::GetMayBeNull(window_in_parent)->HasEmbedding());
+
+  tree2.reset();
+  EXPECT_FALSE(ServerWindow::GetMayBeNull(window_in_parent)->HasEmbedding());
+}
+
 TEST(WindowTreeTest, StackAtTop) {
   WindowServiceTestSetup setup;
   aura::Window* top_level1 =

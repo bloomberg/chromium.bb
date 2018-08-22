@@ -49,14 +49,19 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ServerWindow {
                               const viz::FrameSinkId& frame_sink_id,
                               bool is_top_level);
 
-  aura::Window* window() { return window_; }
-
   // Returns the ServerWindow associated with a window, null if not created yet.
   static ServerWindow* GetMayBeNull(aura::Window* window) {
     return const_cast<ServerWindow*>(
         GetMayBeNull(const_cast<const aura::Window*>(window)));
   }
   static const ServerWindow* GetMayBeNull(const aura::Window* window);
+
+  // Explicitly deletes this ServerWindow. This should very rarely be called.
+  // The typical use case is ServerWindow is owned by the aura::Window, and
+  // deleted when the associated window is deleted.
+  void Destroy();
+
+  aura::Window* window() { return window_; }
 
   WindowTree* owning_window_tree() { return owning_window_tree_; }
   const WindowTree* owning_window_tree() const { return owning_window_tree_; }
