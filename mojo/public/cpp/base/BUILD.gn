@@ -10,6 +10,8 @@ component("base") {
   sources = [
     "big_buffer.cc",
     "big_buffer.h",
+    "shared_memory_utils.cc",
+    "shared_memory_utils.h",
   ]
 
   defines = [ "IS_MOJO_BASE_IMPL" ]
