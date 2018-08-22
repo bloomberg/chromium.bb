@@ -1,4 +1,6 @@
-#+locale:zh-CHN
+#-display-name: Mainland Chinese braille without tone
+
+#+locale:cmn-Hans-CN
 #+type:literary
 
 # We corresponded to Braille and the simplify Chinese characters

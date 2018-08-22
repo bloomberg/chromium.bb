@@ -1,5 +1,10 @@
 # liblouis: Chinese mandarin braille code (Grade 2)
 #
+#-display-name: Two-cell Chinese Braille
+#
+#+locale:cmn-CN
+#+type:literary
+#
 # Version 1.2 2018-08-21
 # Add some punctuations.
 # Minor error correction.
