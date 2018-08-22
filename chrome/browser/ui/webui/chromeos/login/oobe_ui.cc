@@ -100,42 +100,121 @@ namespace chromeos {
 
 namespace {
 
-const char* kKnownDisplayTypes[] = {OobeUI::kOobeDisplay,
-                                    OobeUI::kLoginDisplay,
-                                    OobeUI::kLockDisplay,
-                                    OobeUI::kUserAddingDisplay,
+const char* kKnownDisplayTypes[] = {
                                     OobeUI::kAppLaunchSplashDisplay,
                                     OobeUI::kArcKioskSplashDisplay,
-                                    OobeUI::kGaiaSigninDisplay};
+                                    OobeUI::kGaiaSigninDisplay,
+                                    OobeUI::kLockDisplay,
+                                    OobeUI::kLoginDisplay,
+                                    OobeUI::kOobeDisplay,
+                                    OobeUI::kUserAddingDisplay};
 
-const char kStringsJSPath[] = "strings.js";
-const char kLockJSPath[] = "lock.js";
-const char kLoginJSPath[] = "login.js";
-const char kOobeJSPath[] = "oobe.js";
-const char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
-const char kCustomElementsHTMLPath[] = "custom_elements.html";
-const char kCustomElementsJSPath[] = "custom_elements.js";
-const char kCustomElementsUserPodHTMLPath[] = "custom_elements_user_pod.html";
-
-// Paths for deferred resource loading.
-const char kEnrollmentHTMLPath[] = "enrollment.html";
-const char kEnrollmentCSSPath[] = "enrollment.css";
-const char kEnrollmentJSPath[] = "enrollment.js";
-const char kArcAssistantLogoPath[] = "assistant_logo.png";
-const char kArcPlaystoreCSSPath[] = "playstore.css";
-const char kArcOverlayCSSPath[] = "overlay.css";
-const char kArcPlaystoreJSPath[] = "playstore.js";
-const char kArcPlaystoreLogoPath[] = "playstore.svg";
-const char kProductLogoPath[] = "product-logo.png";
-
-const char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
-const char kRecommendAppListViewHTMLPath[] = "recommend_app_list_view.html";
+// Sorted
+constexpr char kArcAssistantLogoPath[] = "assistant_logo.png";
+constexpr char kArcOverlayCSSPath[] = "overlay.css";
+constexpr char kArcPlaystoreCSSPath[] = "playstore.css";
+constexpr char kArcPlaystoreJSPath[] = "playstore.js";
+constexpr char kArcPlaystoreLogoPath[] = "playstore.svg";
+constexpr char kCustomElementsHTMLPath[] = "custom_elements.html";
+constexpr char kCustomElementsJSPath[] = "custom_elements.js";
+constexpr char kCustomElementsUserPodHTMLPath[] =
+    "custom_elements_user_pod.html";
+constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
+constexpr char kLockJSPath[] = "lock.js";
+constexpr char kLoginJSPath[] = "login.js";
+constexpr char kOobeJSPath[] = "oobe.js";
+constexpr char kProductLogoPath[] = "product-logo.png";
+constexpr char kRecommendAppListViewHTMLPath[] = "recommend_app_list_view.html";
+constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
+constexpr char kStringsJSPath[] = "strings.js";
 
 #if defined(GOOGLE_CHROME_BUILD)
-const char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
-const char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
-const char kSyncConsentIcons[] = "sync-consent-icons.html";
+constexpr char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
+constexpr char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
+constexpr char kSyncConsentIcons[] = "sync-consent-icons.html";
 #endif
+
+// Paths for deferred resource loading.
+constexpr char kEnrollmentCSSPath[] = "enrollment.css";
+constexpr char kEnrollmentHTMLPath[] = "enrollment.html";
+constexpr char kEnrollmentJSPath[] = "enrollment.js";
+
+// Adds various product logo resources.
+void AddProductLogoResources(content::WebUIDataSource* source) {
+  // Required for Assistant OOBE.
+  source->AddResourcePath(kArcAssistantLogoPath, IDR_ASSISTANT_LOGO_PNG);
+
+#if defined(GOOGLE_CHROME_BUILD)
+  source->AddResourcePath(kLogo24PX1XSvgPath, IDR_PRODUCT_LOGO_24PX_1X);
+  source->AddResourcePath(kLogo24PX2XSvgPath, IDR_PRODUCT_LOGO_24PX_2X);
+#endif
+
+  // Required in encryption migration screen.
+  source->AddResourcePath(kProductLogoPath, IDR_PRODUCT_LOGO_64);
+}
+
+void AddSyncConsentResources(content::WebUIDataSource* source) {
+#if defined(GOOGLE_CHROME_BUILD)
+  source->AddResourcePath(kSyncConsentIcons,
+                          IDR_PRODUCT_CHROMEOS_SYNC_CONSENT_SCREEN_ICONS);
+  // No #else section here as Sync Settings screen is Chrome-specific.
+#endif
+}
+
+// Adds resources for ARC-dependent screens (PlayStore ToS, Assistant, etc...)
+void AddArcScreensResources(content::WebUIDataSource* source) {
+  // Required for postprocessing of Goolge PlayStore Terms and Overlay help.
+  source->AddResourcePath(kArcOverlayCSSPath, IDR_ARC_SUPPORT_OVERLAY_CSS);
+  source->AddResourcePath(kArcPlaystoreCSSPath, IDR_ARC_SUPPORT_PLAYSTORE_CSS);
+  source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
+  source->AddResourcePath(kArcPlaystoreLogoPath,
+      IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
+
+  source->AddResourcePath(kRecommendAppListViewJSPath,
+                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
+  source->AddResourcePath(kRecommendAppListViewHTMLPath,
+                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
+}
+
+// Adds Enterprise Enrollment resources.
+void AddEnterpriseEnrollmentResources(content::WebUIDataSource* source) {
+  // Deferred resources.
+  source->AddResourcePath(kEnrollmentHTMLPath, IDR_OOBE_ENROLLMENT_HTML);
+  source->AddResourcePath(kEnrollmentCSSPath, IDR_OOBE_ENROLLMENT_CSS);
+  source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
+}
+
+// Default and non-shared resource definition for kOobeDisplay display type.
+void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
+  source->SetDefaultResource(IDR_OOBE_HTML);
+  source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
+  source->AddResourcePath(kCustomElementsHTMLPath,
+                          IDR_CUSTOM_ELEMENTS_OOBE_HTML);
+  source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
+}
+
+void AddLockDisplayTypeDefaultResources(content::WebUIDataSource* source) {
+  // TODO(crbug.com/810170): Remove the resource files associated with
+  // kShowNonMdLogin switch (IDR_LOCK_HTML/JS and IDR_LOGIN_HTML/JS and the
+  // files those use).
+  source->SetDefaultResource(IDR_MD_LOCK_HTML);
+  source->AddResourcePath(kLockJSPath, IDR_MD_LOCK_JS);
+  source->AddResourcePath(kCustomElementsHTMLPath,
+                          IDR_CUSTOM_ELEMENTS_LOCK_HTML);
+  source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOCK_JS);
+  source->AddResourcePath(kCustomElementsUserPodHTMLPath,
+                          IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
+}
+
+void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
+  source->SetDefaultResource(IDR_MD_LOGIN_HTML);
+  source->AddResourcePath(kLoginJSPath, IDR_MD_LOGIN_JS);
+  source->AddResourcePath(kCustomElementsHTMLPath,
+                          IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
+  source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOGIN_JS);
+  source->AddResourcePath(kCustomElementsUserPodHTMLPath,
+                          IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
+}
 
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
@@ -148,69 +227,30 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddLocalizedStrings(localized_strings);
   source->SetJsonPath(kStringsJSPath);
 
+  // First, configure default and non-shared resources for the current display
+  // type.
   if (display_type == OobeUI::kOobeDisplay) {
-    source->SetDefaultResource(IDR_OOBE_HTML);
-    source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
-    source->AddResourcePath(kCustomElementsHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_OOBE_HTML);
-    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
+    AddOobeDisplayTypeDefaultResources(source);
   } else if (display_type == OobeUI::kLockDisplay) {
-    // TODO(crbug.com/810170): Remove the resource files associated with
-    // kShowNonMdLogin switch (IDR_LOCK_HTML/JS and IDR_LOGIN_HTML/JS and the
-    // files those use).
-    source->SetDefaultResource(IDR_MD_LOCK_HTML);
-    source->AddResourcePath(kLockJSPath, IDR_MD_LOCK_JS);
-    source->AddResourcePath(kCustomElementsHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_LOCK_HTML);
-    source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOCK_JS);
-    source->AddResourcePath(kCustomElementsUserPodHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
+    AddLockDisplayTypeDefaultResources(source);
   } else {
-    source->SetDefaultResource(IDR_MD_LOGIN_HTML);
-    source->AddResourcePath(kLoginJSPath, IDR_MD_LOGIN_JS);
-    source->AddResourcePath(kCustomElementsHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
-    source->AddResourcePath(kCustomElementsJSPath,
-                            IDR_CUSTOM_ELEMENTS_LOGIN_JS);
-    source->AddResourcePath(kCustomElementsUserPodHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
+    AddLoginDisplayTypeDefaultResources(source);
   }
-#if defined(GOOGLE_CHROME_BUILD)
-  source->AddResourcePath(kLogo24PX1XSvgPath, IDR_PRODUCT_LOGO_24PX_1X);
-  source->AddResourcePath(kLogo24PX2XSvgPath, IDR_PRODUCT_LOGO_24PX_2X);
-  source->AddResourcePath(kSyncConsentIcons,
-                          IDR_PRODUCT_CHROMEOS_SYNC_CONSENT_SCREEN_ICONS);
-  // No #else section here as Sync Settings screen is Chrome-specific.
-#endif
 
-  // Required for postprocessing of Goolge PlayStore Terms and Overlay help.
-  source->AddResourcePath(kArcOverlayCSSPath, IDR_ARC_SUPPORT_OVERLAY_CSS);
-  source->AddResourcePath(kArcPlaystoreCSSPath, IDR_ARC_SUPPORT_PLAYSTORE_CSS);
-  source->AddResourcePath(kArcPlaystoreJSPath, IDR_ARC_SUPPORT_PLAYSTORE_JS);
-  source->AddResourcePath(kArcPlaystoreLogoPath,
-      IDR_ARC_SUPPORT_PLAYSTORE_LOGO);
+  // Configure shared resources
+  AddProductLogoResources(source);
 
-  source->AddResourcePath(kRecommendAppListViewJSPath,
-                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_JS);
-  source->AddResourcePath(kRecommendAppListViewHTMLPath,
-                          IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
-
-  // Required for Assistant OOBE.
-  source->AddResourcePath(kArcAssistantLogoPath, IDR_ASSISTANT_LOGO_PNG);
-
-  // Required in encryption migration screen.
-  source->AddResourcePath(kProductLogoPath, IDR_PRODUCT_LOGO_64);
+  if (display_type != OobeUI::kLockDisplay) {
+    AddSyncConsentResources(source);
+    AddArcScreensResources(source);
+    AddEnterpriseEnrollmentResources(source);
+  }
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyChildSrc(base::StringPrintf(
       "child-src %s/;", extensions::kGaiaAuthExtensionOrigin));
   source->OverrideContentSecurityPolicyObjectSrc(
       "object-src chrome:;");
-
-  // Serve deferred resources.
-  source->AddResourcePath(kEnrollmentHTMLPath, IDR_OOBE_ENROLLMENT_HTML);
-  source->AddResourcePath(kEnrollmentCSSPath, IDR_OOBE_ENROLLMENT_CSS);
-  source->AddResourcePath(kEnrollmentJSPath, IDR_OOBE_ENROLLMENT_JS);
 
   // Only add a filter when runing as test.
   const bool is_running_test = command_line->HasSwitch(::switches::kTestName) ||
