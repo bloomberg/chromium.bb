@@ -11,6 +11,12 @@
     <output filename="multidevice_setup_resources.pak" type="data_package" />
   </outputs>
   <release seq="1">
+    <includes>
+      <include name="IDR_MULTIDEVICE_SETUP_START_SETUP_ICON_1X_PNG" file="start_setup_icon_1x.png" type="BINDATA" />
+      <include name="IDR_MULTIDEVICE_SETUP_START_SETUP_ICON_2X_PNG" file="start_setup_icon_2x.png" type="BINDATA" />
+      <include name="IDR_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_ICON_1X_PNG" file="setup_succeeded_icon_1x.png" type="BINDATA" />
+      <include name="IDR_MULTIDEVICE_SETUP_SETUP_SUCCEEDED_ICON_2X_PNG" file="setup_succeeded_icon_2x.png" type="BINDATA" />
+    </includes>
     <structures>
       <structure name="IDR_MULTIDEVICE_SETUP_BUTTON_BAR_HTML"
                  file="button_bar.html"
