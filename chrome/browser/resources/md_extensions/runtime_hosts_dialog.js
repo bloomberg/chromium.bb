@@ -5,6 +5,39 @@
 cr.define('extensions', function() {
   'use strict';
 
+  // A RegExp to roughly match acceptable patterns entered by the user.
+  // exec'ing() this RegExp will match the following groups:
+  // 0: Full matched string.
+  // 1: Scheme + scheme separator (e.g., 'https://').
+  // 2: Scheme only (e.g., 'https').
+  // 3: Match subdomains ('*.').
+  // 4: Hostname (e.g., 'example.com').
+  // 5: Port, including ':' separator (e.g., ':80').
+  // 6: Path, include '/' separator (e.g., '/*').
+  const patternRegExp = new RegExp(
+      '^' +
+      // Scheme; optional.
+      '((http|https|\\*)://)?' +
+      // Include subdomains specifier; optional.
+      '(\\*\\.)?' +
+      // Hostname, required.
+      '([a-z0-9\\.-]+\\.[a-z0-9]+)' +
+      // Port, optional.
+      '(:[0-9]+)?' +
+      // Path, optional but if present must be '/' or '/*'.
+      '(\\/\\*|\\/)?' +
+      '$');
+
+  function getPatternFromSite(site) {
+    let res = patternRegExp.exec(site);
+    assert(res);
+    let scheme = res[1] || '*://';
+    let host = (res[3] || '') + res[4];
+    let port = res[5] || '';
+    let path = '/*';
+    return scheme + host + port + path;
+  }
+
   const RuntimeHostsDialog = Polymer({
     is: 'extensions-runtime-hosts-dialog',
 
@@ -62,17 +95,7 @@ cr.define('extensions', function() {
         return;
       }
 
-      let valid = true;
-      try {
-        // Check if the input parses as a valid URL. JS URL parsing isn't
-        // great, but it's quick and easy and better than nothing. If it's still
-        // not valid, the API will throw an error and the embedding element will
-        // call setInputInvalid().
-        let testUrl = new URL(this.site_);
-      } catch (e) {
-        valid = false;
-      }
-
+      let valid = patternRegExp.test(this.site_);
       this.inputInvalid_ = !valid;
     },
 
@@ -138,7 +161,8 @@ cr.define('extensions', function() {
      * @private
      */
     addPermission_: function() {
-      this.delegate.addRuntimeHostPermission(this.itemId, this.site_)
+      let pattern = getPatternFromSite(this.site_);
+      this.delegate.addRuntimeHostPermission(this.itemId, pattern)
           .then(
               () => {
                 this.$.dialog.close();
@@ -149,5 +173,8 @@ cr.define('extensions', function() {
     },
   });
 
-  return {RuntimeHostsDialog: RuntimeHostsDialog};
+  return {
+    RuntimeHostsDialog: RuntimeHostsDialog,
+    getPatternFromSite: getPatternFromSite
+  };
 });

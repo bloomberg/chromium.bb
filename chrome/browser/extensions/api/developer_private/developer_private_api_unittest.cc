@@ -62,6 +62,7 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/permission_set.h"
+#include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/test_extension_dir.h"
 #include "services/data_decoder/data_decoder_service.h"
@@ -1346,19 +1347,33 @@ TEST_F(DeveloperPrivateApiUnitTest, GrantHostPermission) {
     }
   };
 
-  GURL host("https://example.com");
-  EXPECT_FALSE(modifier.HasGrantedHostPermission(host));
-  run_add_host_permission(host.spec(), true, nullptr);
+  const GURL kExampleCom("https://example.com/");
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kExampleCom));
+  run_add_host_permission("https://example.com/*", true, nullptr);
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kExampleCom));
+
+  const GURL kGoogleCom("https://google.com");
+  const GURL kMapsGoogleCom("https://maps.google.com/");
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kGoogleCom));
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
+  run_add_host_permission("https://*.google.com/*", true, nullptr);
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kGoogleCom));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
 
   run_add_host_permission(kInvalidHost, false, kInvalidHostError);
+  // Path of the pattern must exactly match "/*".
+  run_add_host_permission("https://example.com/", false, kInvalidHostError);
   run_add_host_permission("https://example.com/foobar", false,
                           kInvalidHostError);
   run_add_host_permission("https://example.com/#foobar", false,
                           kInvalidHostError);
+  run_add_host_permission("https://example.com/*foobar", false,
+                          kInvalidHostError);
 
-  GURL chrome_host("chrome://settings");
-  run_add_host_permission(chrome_host.spec(), false,
-                          "Cannot grant a permission that wasn't withheld.");
+  // Cannot grant chrome:-scheme URLs.
+  GURL chrome_host("chrome://settings/*");
+  run_add_host_permission(chrome_host.spec(), false, kInvalidHostError);
+
   EXPECT_FALSE(modifier.HasGrantedHostPermission(chrome_host));
 }
 
@@ -1391,22 +1406,41 @@ TEST_F(DeveloperPrivateApiUnitTest, RemoveHostPermission) {
     }
   };
 
-  GURL host("https://example.com");
-  run_remove_host_permission(host.spec(), false,
+  run_remove_host_permission("https://example.com/*", false,
                              "Cannot remove a host that hasn't been granted.");
 
-  modifier.GrantHostPermission(host);
-  EXPECT_TRUE(modifier.HasGrantedHostPermission(host));
+  const GURL kExampleCom("https://example.com");
+  modifier.GrantHostPermission(kExampleCom);
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kExampleCom));
 
+  // Path of the pattern must exactly match "/*".
+  run_remove_host_permission("https://example.com/", false, kInvalidHostError);
   run_remove_host_permission("https://example.com/foobar", false,
                              kInvalidHostError);
   run_remove_host_permission("https://example.com/#foobar", false,
                              kInvalidHostError);
+  run_remove_host_permission("https://example.com/*foobar", false,
+                             kInvalidHostError);
   run_remove_host_permission(kInvalidHost, false, kInvalidHostError);
-  EXPECT_TRUE(modifier.HasGrantedHostPermission(host));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kExampleCom));
 
-  run_remove_host_permission(host.spec(), true, nullptr);
-  EXPECT_FALSE(modifier.HasGrantedHostPermission(host));
+  run_remove_host_permission("https://example.com/*", true, nullptr);
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kExampleCom));
+
+  URLPattern new_pattern(Extension::kValidHostPermissionSchemes,
+                         "https://*.google.com/*");
+  PermissionsUpdater(profile()).GrantRuntimePermissions(
+      *extension, PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                                URLPatternSet({new_pattern}), URLPatternSet()));
+
+  const GURL kGoogleCom("https://google.com/");
+  const GURL kMapsGoogleCom("https://maps.google.com/");
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kGoogleCom));
+  EXPECT_TRUE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
+
+  run_remove_host_permission("https://*.google.com/*", true, nullptr);
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kGoogleCom));
+  EXPECT_FALSE(modifier.HasGrantedHostPermission(kMapsGoogleCom));
 }
 
 TEST_F(DeveloperPrivateApiUnitTest, UpdateHostAccess) {
@@ -1497,6 +1531,71 @@ TEST_F(DeveloperPrivateApiUnitTest,
   RunUpdateHostAccess(*extension, "ON_SPECIFIC_SITES");
   EXPECT_TRUE(modifier.HasWithheldHostPermissions());
   EXPECT_FALSE(modifier.HasGrantedHostPermission(example_com));
+}
+
+TEST_F(DeveloperPrivateApiUnitTest,
+       UpdateHostAccess_GrantScopeGreaterThanRequestedScope) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder("test").AddPermission("http://*/*").Build();
+  service()->AddExtension(extension.get());
+  ScriptingPermissionsModifier modifier(profile(), extension.get());
+  modifier.SetWithholdHostPermissions(true);
+
+  ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(profile());
+  EXPECT_EQ(PermissionSet(),
+            extension->permissions_data()->active_permissions());
+  EXPECT_EQ(PermissionSet(),
+            *extension_prefs->GetRuntimeGrantedPermissions(extension->id()));
+
+  {
+    scoped_refptr<UIThreadExtensionFunction> function =
+        base::MakeRefCounted<api::DeveloperPrivateAddHostPermissionFunction>();
+    std::string args = base::StringPrintf(
+        R"(["%s", "%s"])", extension->id().c_str(), "*://chromium.org/*");
+    EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
+        << function->GetError();
+  }
+
+  // The active permissions (which are given to the extension process) should
+  // only include the intersection of what was requested by the extension and
+  // the runtime granted permissions - which is http://chromium.org/*.
+  URLPattern http_chromium(Extension::kValidHostPermissionSchemes,
+                           "http://chromium.org/*");
+  const PermissionSet http_chromium_set(
+      APIPermissionSet(), ManifestPermissionSet(),
+      URLPatternSet({http_chromium}), URLPatternSet());
+  EXPECT_EQ(http_chromium_set,
+            extension->permissions_data()->active_permissions());
+
+  // The runtime granted permissions should include all of what was approved by
+  // the user, which is *://chromium.org/*, and should be present in both the
+  // scriptable and explicit hosts.
+  URLPattern all_chromium(Extension::kValidHostPermissionSchemes,
+                          "*://chromium.org/*");
+  const PermissionSet all_chromium_set(
+      APIPermissionSet(), ManifestPermissionSet(),
+      URLPatternSet({all_chromium}), URLPatternSet({all_chromium}));
+  EXPECT_EQ(all_chromium_set,
+            *extension_prefs->GetRuntimeGrantedPermissions(extension->id()));
+
+  {
+    scoped_refptr<UIThreadExtensionFunction> function = base::MakeRefCounted<
+        api::DeveloperPrivateRemoveHostPermissionFunction>();
+    std::string args = base::StringPrintf(
+        R"(["%s", "%s"])", extension->id().c_str(), "*://chromium.org/*");
+    EXPECT_TRUE(api_test_utils::RunFunction(function.get(), args, profile()))
+        << function->GetError();
+  }
+
+  // Removing the granted permission should remove it entirely from both
+  // the active and the stored permissions.
+  EXPECT_EQ(PermissionSet(),
+            extension->permissions_data()->active_permissions());
+  EXPECT_EQ(PermissionSet(),
+            *extension_prefs->GetRuntimeGrantedPermissions(extension->id()));
 }
 
 TEST_F(DeveloperPrivateApiUnitTest, ExtensionUpdatedEventOnPermissionsChange) {
