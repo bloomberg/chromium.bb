@@ -64,6 +64,12 @@ public class ConsentBumpFragment extends SigninFragmentBase {
 
     @Override
     @StringRes
+    protected int getTitleTextId() {
+        return R.string.consent_bump_title;
+    }
+
+    @Override
+    @StringRes
     protected int getNegativeButtonTextId() {
         return R.string.consent_bump_more_options;
     }

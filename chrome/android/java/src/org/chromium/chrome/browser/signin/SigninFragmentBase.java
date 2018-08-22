@@ -193,6 +193,15 @@ public abstract class SigninFragmentBase
             boolean settingsClicked, Runnable callback);
 
     /**
+     * Returns the string resource id for the title TextView. This is invoked once from
+     * {@link #onCreateView}. Subclasses may override this method to customize the title text.
+     */
+    @StringRes
+    protected int getTitleTextId() {
+        return R.string.signin_title;
+    }
+
+    /**
      * Returns the string resource id for the negative button. This is invoked once from
      * {@link #onCreateView}.
      */
@@ -333,7 +342,7 @@ public abstract class SigninFragmentBase
 
     /** Sets texts for immutable elements. Accept button text is set by {@link #setHasAccounts}. */
     private void updateConsentText() {
-        mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
+        mConsentTextTracker.setText(mView.getTitleView(), getTitleTextId());
         mConsentTextTracker.setText(
                 mView.getSyncDescriptionView(), R.string.signin_sync_description);
 
