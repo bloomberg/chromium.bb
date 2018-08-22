@@ -4,18 +4,24 @@
 
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_features.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
 
-ChromeFeaturesServiceProvider::ChromeFeaturesServiceProvider(
-    std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
+ChromeFeaturesServiceProvider::ChromeFeaturesServiceProvider()
+    : weak_ptr_factory_(this) {}
 
 ChromeFeaturesServiceProvider::~ChromeFeaturesServiceProvider() = default;
 
@@ -67,10 +73,16 @@ void ChromeFeaturesServiceProvider::IsCrostiniEnabled(
     return;
   }
 
+  Profile* profile =
+      user_id_hash.empty()
+          ? ProfileManager::GetActiveUserProfile()
+          : g_browser_process->profile_manager()->GetProfileByPath(
+                ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
+
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
-  writer.AppendBool(delegate_->IsCrostiniEnabled(user_id_hash));
+  writer.AppendBool(IsCrostiniAllowedForProfile(profile));
   response_sender.Run(std::move(response));
 }
 
@@ -80,7 +92,7 @@ void ChromeFeaturesServiceProvider::IsUsbguardEnabled(
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
-  writer.AppendBool(delegate_->IsUsbguardEnabled());
+  writer.AppendBool(base::FeatureList::IsEnabled(features::kUsbguard));
   response_sender.Run(std::move(response));
 }
 
@@ -90,7 +102,7 @@ void ChromeFeaturesServiceProvider::IsShillSandboxingEnabled(
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   dbus::MessageWriter writer(response.get());
-  writer.AppendBool(delegate_->IsShillSandboxingEnabled());
+  writer.AppendBool(base::FeatureList::IsEnabled(features::kShillSandboxing));
   response_sender.Run(std::move(response));
 }
 
