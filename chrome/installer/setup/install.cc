@@ -302,7 +302,7 @@ std::string GenerateVisualElementsManifest(const base::Version& version,
       light_suffix, elements_dir.c_str(), logo_suffix, light_suffix,
       elements_dir.c_str(), logo_suffix, light_suffix,
       use_light_assets ? L"dark" : L"light",
-      use_light_assets ? L"#FFFFFF" : L"#212121"));
+      use_light_assets ? L"#FFFFFF" : L"#5F6368"));
 
   return base::UTF16ToUTF8(manifest16);
 }
@@ -328,12 +328,7 @@ VEAssetType DetermineVisualElementAssetType(const base::FilePath& base_path,
   DCHECK(base::PathExists(visual_elements_dir.Append(
       base::StringPrintf(L"Logo%ls.png", logo_suffix))));
 
-  // Check for light assets that require dark text.
-  base::string16 light_logo_file_name =
-      base::StringPrintf(L"Logo%lsLight.png", logo_suffix);
-  return base::PathExists(visual_elements_dir.Append(light_logo_file_name))
-             ? VEAssetType::kDarkAndLight
-             : VEAssetType::kDarkOnly;
+  return VEAssetType::kDarkOnly;
 }
 
 }  // namespace

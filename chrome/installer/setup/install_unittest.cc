@@ -160,18 +160,18 @@ constexpr char kExpectedPrimaryManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='#212121'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedPrimaryLightManifest[] =
     "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
     "  <VisualElements\r\n"
     "      ShowNameOnSquare150x150Logo='on'\r\n"
-    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoLight.png'\r\n"
-    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoLight.png'\r\n"
-    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoLight.png'\r\n"
-    "      ForegroundText='dark'\r\n"
-    "      BackgroundColor='#FFFFFF'/>\r\n"
+    "      Square150x150Logo='0.0.0.0\\VisualElements\\Logo.png'\r\n"
+    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
+    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
+    "      ForegroundText='light'\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -183,20 +183,20 @@ constexpr char kExpectedBetaManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='#212121'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedBetaLightManifest[] =
     "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
     "  <VisualElements\r\n"
     "      ShowNameOnSquare150x150Logo='on'\r\n"
-    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoBetaLight.png'\r\n"
+    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoBeta.png'\r\n"
     "      "
-    "Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoBetaLight.png'\r\n"
+    "Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
     "      "
-    "Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoBetaLight.png'\r\n"
-    "      ForegroundText='dark'\r\n"
-    "      BackgroundColor='#FFFFFF'/>\r\n"
+    "Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
+    "      ForegroundText='light'\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedDevManifest[] =
@@ -207,18 +207,18 @@ constexpr char kExpectedDevManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='#212121'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedDevLightManifest[] =
     "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
     "  <VisualElements\r\n"
     "      ShowNameOnSquare150x150Logo='on'\r\n"
-    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoDevLight.png'\r\n"
-    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoDevLight.png'\r\n"
-    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoDevLight.png'\r\n"
-    "      ForegroundText='dark'\r\n"
-    "      BackgroundColor='#FFFFFF'/>\r\n"
+    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoDev.png'\r\n"
+    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
+    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
+    "      ForegroundText='light'\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 constexpr char kExpectedCanaryManifest[] =
@@ -229,7 +229,7 @@ constexpr char kExpectedCanaryManifest[] =
     "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoCanary.png'\r\n"
     "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoCanary.png'\r\n"
     "      ForegroundText='light'\r\n"
-    "      BackgroundColor='#212121'/>\r\n"
+    "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
 INSTANTIATE_TEST_CASE_P(
@@ -536,24 +536,14 @@ TEST_P(CreateVisualElementsManifestTest, UpdateVisualElementsNoChange) {
   installer::UpdateVisualElementsManifest(test_dir_.GetPath(), version_,
                                           !supports_dark_text_);
 
-  // The file should have been modified only if the brand has light assets.
+  // The file should remain using the dark assets.
   ASSERT_TRUE(base::GetFileInfo(manifest_path_, &manifest_info_after));
-  if (has_light_assets_) {
-    EXPECT_NE(manifest_info_before.last_modified,
-              manifest_info_after.last_modified);
-  } else {
-    EXPECT_EQ(manifest_info_before.last_modified,
-              manifest_info_after.last_modified);
-  }
+  EXPECT_EQ(manifest_info_before.last_modified,
+            manifest_info_after.last_modified);
   ASSERT_TRUE(
       base::GetFileInfo(start_menu_shortcut_path_, &shortcut_info_after));
-  if (has_light_assets_) {
-    EXPECT_NE(shortcut_info_before.last_modified,
-              shortcut_info_after.last_modified);
-  } else {
-    EXPECT_EQ(shortcut_info_before.last_modified,
-              shortcut_info_after.last_modified);
-  }
+  EXPECT_EQ(shortcut_info_before.last_modified,
+            shortcut_info_after.last_modified);
 }
 
 TEST_F(InstallShortcutTest, CreateAllShortcuts) {
