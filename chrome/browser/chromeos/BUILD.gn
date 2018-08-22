@@ -45,6 +45,7 @@ source_set("chromeos") {
     # TODO(tbarzic): Cleanup this list.
     ":attestation_proto",
     ":backdrop_wallpaper_proto",
+    ":device_configuration_proto",
     ":device_policy_remover_generated",
     ":screen_brightness_event_proto",
     ":user_activity_event_proto",
@@ -210,6 +211,7 @@ source_set("chromeos") {
     "//third_party/re2",
     "//third_party/webrtc_overrides",
     "//third_party/zlib",
+    "//third_party/zlib/google:compression_utils",
     "//ui/aura",
     "//ui/base",
     "//ui/chromeos",
@@ -1141,6 +1143,8 @@ source_set("chromeos") {
     "login/screens/network_screen.cc",
     "login/screens/network_screen.h",
     "login/screens/network_screen_view.h",
+    "login/screens/recommend_apps/recommend_apps_fetcher.cc",
+    "login/screens/recommend_apps/recommend_apps_fetcher.h",
     "login/screens/recommend_apps_screen.cc",
     "login/screens/recommend_apps_screen.h",
     "login/screens/recommend_apps_screen_view.h",
@@ -2421,6 +2425,13 @@ proto_library("user_activity_event_proto") {
 proto_library("backdrop_wallpaper_proto") {
   sources = [
     "extensions/backdrop_wallpaper_handlers/backdrop_wallpaper.proto",
+  ]
+  generate_python = false
+}
+
+proto_library("device_configuration_proto") {
+  sources = [
+    "login/screens/recommend_apps/device_configuration.proto",
   ]
   generate_python = false
 }
