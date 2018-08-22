@@ -30,7 +30,6 @@ extern const char kAccountConsistencyFeatureMethodParameter[];
 // Account consistency method feature values.
 extern const char kAccountConsistencyFeatureMethodMirror[];
 extern const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[];
-extern const char kAccountConsistencyFeatureMethodDicePrepareMigration[];
 extern const char kAccountConsistencyFeatureMethodDiceMigration[];
 extern const char kAccountConsistencyFeatureMethodDice[];
 

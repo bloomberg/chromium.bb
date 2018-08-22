@@ -287,7 +287,7 @@ GURL GetReauthURLWithEmailForDialog(signin_metrics::AccessPoint access_point,
 GURL GetSigninURLForDice(Profile* profile, const std::string& email) {
   DCHECK(signin::DiceMethodGreaterOrEqual(
       AccountConsistencyModeManager::GetMethodForProfile(profile),
-      signin::AccountConsistencyMethod::kDicePrepareMigration));
+      signin::AccountConsistencyMethod::kDiceMigration));
   GURL url = GaiaUrls::GetInstance()->signin_chrome_sync_dice();
   if (!email.empty())
     url = net::AppendQueryParameter(url, "email_hint", email);

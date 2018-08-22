@@ -26,11 +26,6 @@ enum class AccountConsistencyMethod : int {
   // No account consistency, but Dice fixes authentication errors.
   kDiceFixAuthErrors,
 
-  // Chrome uses the Dice signin flow and silently collects tokens associated
-  // with Gaia cookies to prepare for the migration. Uses the Chrome sync Gaia
-  // endpoint to enable sync.
-  kDicePrepareMigration,
-
   // Account management UI on Gaia webpages is enabled once the accounts become
   // consistent.
   kDiceMigration,

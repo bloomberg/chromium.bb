@@ -401,13 +401,13 @@ class DiceTurnSyncOnHelperTestBase : public testing::Test {
       GoogleServiceAuthError::AuthErrorNone();
 };
 
-// Test class with only DicePrepareMigration enabled.
+// Test class with only DiceMigration enabled.
 class DiceTurnSyncOnHelperTest : public DiceTurnSyncOnHelperTestBase {
  public:
   DiceTurnSyncOnHelperTest() = default;
 
  private:
-  ScopedAccountConsistencyDicePrepareMigration scoped_dice_;
+  ScopedAccountConsistencyDiceMigration scoped_dice_;
 };
 
 // Test class with Dice and UnifiedConsent enabled.

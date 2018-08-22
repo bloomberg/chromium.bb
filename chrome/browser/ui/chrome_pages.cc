@@ -414,7 +414,7 @@ void ShowBrowserSignin(Browser* browser,
       !signin::DiceMethodGreaterOrEqual(
           AccountConsistencyModeManager::GetMethodForProfile(
               browser->profile()),
-          signin::AccountConsistencyMethod::kDicePrepareMigration) &&
+          signin::AccountConsistencyMethod::kDiceMigration) &&
       browser->tab_strip_model()->empty();
 #endif  // defined(OS_CHROMEOS)
   if (show_full_tab_chrome_signin_page) {

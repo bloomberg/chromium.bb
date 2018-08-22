@@ -557,7 +557,7 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
          account_consistency_ == signin::AccountConsistencyMethod::kMirror ||
          signin::DiceMethodGreaterOrEqual(
              account_consistency_,
-             signin::AccountConsistencyMethod::kDicePrepareMigration));
+             signin::AccountConsistencyMethod::kDiceMigration));
   if (!loading_primary_account_id_.empty() &&
       refresh_tokens_.count(loading_primary_account_id_) == 0) {
     if (load_credentials_state_ == LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS) {
@@ -670,7 +670,7 @@ void MutableProfileOAuth2TokenServiceDelegate::LoadAllCredentialsIntoMemory(
              signin::AccountConsistencyMethod::kMirror) ||
             signin::DiceMethodGreaterOrEqual(
                 account_consistency_,
-                signin::AccountConsistencyMethod::kDicePrepareMigration);
+                signin::AccountConsistencyMethod::kDiceMigration);
         LoadTokenFromDBStatus load_token_status =
             load_account
                 ? LoadTokenFromDBStatus::TOKEN_LOADED

@@ -58,7 +58,6 @@ TEST(AccountConsistencyModeManagerTest, Basic) {
   } test_cases[] = {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {signin::AccountConsistencyMethod::kDiceFixAuthErrors, false, false},
-    {signin::AccountConsistencyMethod::kDicePrepareMigration, false, false},
     {signin::AccountConsistencyMethod::kDiceMigration, false, false},
     {signin::AccountConsistencyMethod::kDice, false, true},
 #else

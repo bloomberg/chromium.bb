@@ -159,7 +159,6 @@ class DummyAccountReconcilorWithDelegate : public AccountReconcilor {
       case signin::AccountConsistencyMethod::kDisabled:
       case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
         return std::make_unique<signin::AccountReconcilorDelegate>();
-      case signin::AccountConsistencyMethod::kDicePrepareMigration:
       case signin::AccountConsistencyMethod::kDiceMigration:
       case signin::AccountConsistencyMethod::kDice:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -1083,34 +1082,6 @@ TEST_F(AccountReconcilorTest, UnverifiedAccountMerge) {
                                       GoogleServiceAuthError::AuthErrorNone());
   ASSERT_FALSE(reconcilor->is_reconcile_started_);
   ASSERT_EQ(signin_metrics::ACCOUNT_RECONCILOR_OK, reconcilor->GetState());
-}
-
-// Regression test for https://crbug.com/825143
-// Checks that the primary account is not signed out when it changes during the
-// reconcile.
-TEST_F(AccountReconcilorTest, HandleSigninDuringReconcile) {
-  SetAccountConsistency(
-      signin::AccountConsistencyMethod::kDicePrepareMigration);
-
-  cookie_manager_service()->SetListAccountsResponseNoAccounts();
-  AccountReconcilor* reconcilor = GetMockReconcilor();
-  ASSERT_EQ(signin::AccountReconcilorDelegate::RevokeTokenOption::kRevoke,
-            reconcilor->delegate_->ShouldRevokeSecondaryTokensBeforeReconcile(
-                std::vector<gaia::ListedAccount>()));
-
-  // Signin during reconcile.
-  reconcilor->StartReconcile();
-  ASSERT_TRUE(reconcilor->is_reconcile_started_);
-  const std::string account_id =
-      ConnectProfileToAccount("12345", "user@gmail.com");
-  EXPECT_CALL(*GetMockReconcilor(), PerformMergeAction(account_id)).Times(1);
-  base::RunLoop().RunUntilIdle();
-  SimulateAddAccountToCookieCompleted(reconcilor, account_id,
-                                      GoogleServiceAuthError::AuthErrorNone());
-  ASSERT_FALSE(reconcilor->is_reconcile_started_);
-
-  // The account has not been deleted.
-  EXPECT_TRUE(token_service()->RefreshTokenIsAvailable(account_id));
 }
 
 // Tests that the Dice migration happens after a no-op reconcile.
