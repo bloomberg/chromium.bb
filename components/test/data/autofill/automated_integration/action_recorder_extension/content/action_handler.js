@@ -523,7 +523,7 @@
     if (iframe.name) {
       return Promise.resolve(iframe.name);
     } else {
-      return Promise.resolve('');
+      return Promise.resolve(false);
     }
   }
 
