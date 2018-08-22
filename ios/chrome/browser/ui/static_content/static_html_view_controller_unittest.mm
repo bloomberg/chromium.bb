@@ -229,8 +229,8 @@ TEST_F(StaticHtmlViewControllerTest, L10NTest) {
   ASSERT_OCMOCK_VERIFY((OCMockObject*)loader);
   __block id string_in_page = nil;
   base::test::ios::WaitUntilCondition(^bool {
-    string_in_page =
-        web::ExecuteJavaScript([content webView], @"document.body.innerHTML");
+    string_in_page = web::test::ExecuteJavaScript([content webView],
+                                                  @"document.body.innerHTML");
     return ![string_in_page isEqual:@""];
   });
   EXPECT_TRUE([string_in_page isKindOfClass:[NSString class]]);

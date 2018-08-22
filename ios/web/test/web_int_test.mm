@@ -91,7 +91,8 @@ void WebIntTest::TearDown() {
 }
 
 id WebIntTest::ExecuteJavaScript(NSString* script) {
-  return web::ExecuteJavaScript(web_state()->GetJSInjectionReceiver(), script);
+  return web::test::ExecuteJavaScript(web_state()->GetJSInjectionReceiver(),
+                                      script);
 }
 
 bool WebIntTest::ExecuteBlockAndWaitForLoad(const GURL& url,

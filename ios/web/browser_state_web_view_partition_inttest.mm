@@ -67,12 +67,12 @@ class BrowserStateWebViewPartitionTest : public WebIntTest {
         stringWithFormat:@"document.cookie='%@=%@;"
                          @"Expires=Tue, 05-May-9999 02:18:23 GMT; Path=/'",
                          key, value];
-    web::ExecuteJavaScript(web_view, set_cookie);
+    web::test::ExecuteJavaScript(web_view, set_cookie);
   }
 
   // Returns a csv list of all cookies from |web_view|.
   NSString* GetCookies(WKWebView* web_view) {
-    id result = web::ExecuteJavaScript(web_view, @"document.cookie");
+    id result = web::test::ExecuteJavaScript(web_view, @"document.cookie");
     return base::mac::ObjCCastStrict<NSString>(result);
   }
 
@@ -83,14 +83,15 @@ class BrowserStateWebViewPartitionTest : public WebIntTest {
     NSString* set_local_storage_item = [NSString
         stringWithFormat:@"localStorage.setItem('%@', '%@')", key, value];
     NSError* unused_error = nil;
-    web::ExecuteJavaScript(web_view, set_local_storage_item, &unused_error);
+    web::test::ExecuteJavaScript(web_view, set_local_storage_item,
+                                 &unused_error);
   }
 
   // Returns the localstorage value associated with |key| from |web_view|.
   id GetLocalStorageItem(NSString* key, WKWebView* web_view) {
     NSString* get_local_storage_value =
         [NSString stringWithFormat:@"localStorage.getItem('%@');", key];
-    return web::ExecuteJavaScript(web_view, get_local_storage_value);
+    return web::test::ExecuteJavaScript(web_view, get_local_storage_value);
   }
 
   // Loads a test web page (that contains a small string) in |web_view| and

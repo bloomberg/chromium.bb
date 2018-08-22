@@ -31,14 +31,14 @@ class WebViewWebClientTest : public web::WebTest {
 TEST_F(WebViewWebClientTest, WKWebViewEarlyPageScriptAutofillController) {
   // WebView scripts rely on __gCrWeb object presence.
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, GetBrowserState());
-  web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
+  web::test::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(std::make_unique<WebViewWebClient>());
   NSString* script =
       web_client.Get()->GetDocumentStartScriptForMainFrame(GetBrowserState());
-  web::ExecuteJavaScript(web_view, script);
-  EXPECT_NSEQ(@"object",
-              web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.autofill"));
+  web::test::ExecuteJavaScript(web_view, script);
+  EXPECT_NSEQ(@"object", web::test::ExecuteJavaScript(
+                             web_view, @"typeof __gCrWeb.autofill"));
 }
 
 }  // namespace ios_web_view

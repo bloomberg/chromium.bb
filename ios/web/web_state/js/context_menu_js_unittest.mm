@@ -83,10 +83,11 @@ class ContextMenuJsFindElementAtPointTest : public web::WebTest {
   // Returns details of the DOM element at the given |x| and |y| coordinates.
   // The given point is in the device's coordinate space.
   id FindElementAtPoint(CGFloat x, CGFloat y) {
-    EXPECT_TRUE(web::WaitForInjectedScripts(web_view_));
+    EXPECT_TRUE(web::test::WaitForInjectedScripts(web_view_));
 
     // Force layout
-    web::ExecuteJavaScript(web_view_, @"document.getElementsByTagName('p')");
+    web::test::ExecuteJavaScript(web_view_,
+                                 @"document.getElementsByTagName('p')");
 
     // Clear previous script message response.
     script_message_handler_.lastReceivedScriptMessage = nil;
@@ -114,7 +115,7 @@ class ContextMenuJsFindElementAtPointTest : public web::WebTest {
         stringWithFormat:@"__gCrWeb.findElementAtPoint('%@', %g, %g, %g, %g)",
                          kRequestId, x, y, GetWebViewContentSize().width,
                          GetWebViewContentSize().height];
-    return web::ExecuteJavaScript(web_view_, script);
+    return web::test::ExecuteJavaScript(web_view_, script);
   }
 
   // Handles script message responses sent from |web_view_|.
@@ -132,7 +133,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, FindImageElementAtPoint) {
       @"<img id='foo' style='width:200;height:200;' src='file:///bogus'/>";
 
   NSString* html = [NSString stringWithFormat:kPageContentTemplate, image];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_value = @{
@@ -150,7 +151,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, FindImageElementWithTitleAtPoint) {
        "style='width:200;height:200;' src='file:///bogus'/>";
 
   NSString* html = [NSString stringWithFormat:kPageContentTemplate, image];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_value = @{
@@ -170,7 +171,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
       @"<img id='foo' style='width:200;height:200;' src='file:///bogus'/>";
 
   NSString* html = [NSString stringWithFormat:kPageContentTemplate, image];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(0, 0);
   NSDictionary* expected_value = @{
@@ -195,7 +196,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
       @"<img id='foo' style='width:200;height:200;' src='file:///bogus'/>";
 
   NSString* html = [NSString stringWithFormat:kPageContentTemplate, image];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(GetWebViewContentSize().width / 2, 50);
   NSDictionary* expected_value = @{
@@ -223,7 +224,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
        "</a>";
 
   NSString* html = [NSString stringWithFormat:kPageContentTemplate, link_image];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_value = @{
@@ -245,7 +246,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
        "</a>";
 
   NSString* html = [NSString stringWithFormat:kPageContentTemplate, link_image];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(0, 0);
   NSDictionary* expected_value = @{
@@ -272,7 +273,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
        "</a>";
 
   NSString* html = [NSString stringWithFormat:kPageContentTemplate, link_image];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(GetWebViewContentSize().width / 2, 50);
   NSDictionary* expected_value = @{
@@ -298,7 +299,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
       @"<a href='%@'><img width=400 height=400 src='foo'></img></a>";
 
   NSString* html = [NSString stringWithFormat:kImageHtml, kLinkDest];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_result = @{
@@ -318,7 +319,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, FindImageLinkedToJavaScript) {
        "<img width=400 height=400 src='foo'></img></a>";
 
   // A page with a link with some JavaScript that does not result in a NOP.
-  ASSERT_TRUE(web::LoadHtml(web_view_, kImageHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kImageHtml, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_result = @{
@@ -337,7 +338,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
   NSString* kImageHtml =
       @"<a href='javascript:;'><img width=400 height=400 src='foo'></img></a>";
 
-  ASSERT_TRUE(web::LoadHtml(web_view_, kImageHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kImageHtml, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_result = @{
@@ -357,7 +358,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
       @"<a href='javascript:void(0);'>"
        "<img width=400 height=400 src='foo'></img></a>";
 
-  ASSERT_TRUE(web::LoadHtml(web_view_, kImageHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kImageHtml, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_result = @{
@@ -377,7 +378,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
       @"<a href='javascript:void(0);  void(0); void(0)'>"
        "<img width=400 height=400 src='foo'></img></a>";
 
-  ASSERT_TRUE(web::LoadHtml(web_view_, kImageHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kImageHtml, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   NSDictionary* expected_result = @{
@@ -399,7 +400,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, LinkOfImageWithCalloutNone) {
        "</a>";
 
   NSString* html = [NSString stringWithFormat:kImageHtml, kLinkDest];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(5, 5);
   NSDictionary* expected_result = @{
@@ -427,7 +428,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, TextAreaStopsProximity) {
        "width:40px;height:40px'/>"
        "</div></body> </html>";
 
-  ASSERT_TRUE(web::LoadHtml(web_view_, kHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kHtml, GetTestURL()));
 
   id result = FindElementAtPoint(10, 10);
   NSDictionary* expected_value = @{
@@ -445,7 +446,8 @@ TEST_F(ContextMenuJsFindElementAtPointTest, UnsupportedReferrerPolicy) {
        "<img width=400 height=400 src='foo'></img>";
 
   // Load the invalid meta tag
-  ASSERT_TRUE(web::LoadHtml(web_view_, kInvalidReferrerTag, GetTestURL()));
+  ASSERT_TRUE(
+      web::test::LoadHtml(web_view_, kInvalidReferrerTag, GetTestURL()));
 
   id result = FindElementAtPoint(20, 20);
   ASSERT_TRUE([result isKindOfClass:[NSDictionary class]]);
@@ -467,10 +469,11 @@ TEST_F(ContextMenuJsFindElementAtPointTest, MAYBE_LinkOfTextFromTallPage) {
        " <div><a href='http://destination'>link</a></div>"
        "</body></html>";
 
-  ASSERT_TRUE(web::LoadHtml(web_view_, kHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kHtml, GetTestURL()));
 
   // Force layout to ensure |content_height| below is correct.
-  web::ExecuteJavaScript(web_view_, @"document.getElementsByTagName('p')");
+  web::test::ExecuteJavaScript(web_view_,
+                               @"document.getElementsByTagName('p')");
 
   // Scroll the webView to the bottom to make the link accessible.
   CGFloat content_height = GetWebViewContentSize().height;
@@ -505,7 +508,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
   NSString* kLinkHtml = @"<a href='%@'>link</a>";
 
   NSString* html = [NSString stringWithFormat:kLinkHtml, kLinkDest];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(1, 1);
   NSDictionary* expected_result = @{
@@ -534,7 +537,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest,
        "link</a>";
 
   NSString* html = [NSString stringWithFormat:kLinkHtml, kLinkDest];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(1, 1);
   NSDictionary* expected_result = @{
@@ -554,7 +557,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, LinkOfTextWithCalloutNone) {
       @"<a href='http://destination' "
        "style='-webkit-touch-callout:none;'>link</a>";
 
-  ASSERT_TRUE(web::LoadHtml(web_view_, kLinkHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kLinkHtml, GetTestURL()));
 
   id result = FindElementAtPoint(1, 1);
   EXPECT_NSEQ(@{kContextMenuElementRequestId : kRequestId}, result);
@@ -569,7 +572,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, LinkOfTextWithCalloutFromAncester) {
        " <a href='http://destination'>link</a>"
        "</body>";
 
-  ASSERT_TRUE(web::LoadHtml(web_view_, kLinkHtml, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, kLinkHtml, GetTestURL()));
 
   id result = FindElementAtPoint(1, 1);
   EXPECT_NSEQ(@{kContextMenuElementRequestId : kRequestId}, result);
@@ -586,7 +589,7 @@ TEST_F(ContextMenuJsFindElementAtPointTest, LinkOfTextWithCalloutOverride) {
        "</body>";
 
   NSString* html = [NSString stringWithFormat:kLinkHtml, kLinkDest];
-  ASSERT_TRUE(web::LoadHtml(web_view_, html, GetTestURL()));
+  ASSERT_TRUE(web::test::LoadHtml(web_view_, html, GetTestURL()));
 
   id result = FindElementAtPoint(1, 1);
   NSDictionary* expected_result = @{

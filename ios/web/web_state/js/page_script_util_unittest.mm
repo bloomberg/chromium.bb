@@ -38,20 +38,21 @@ class PageScriptUtilTest : public WebTest {
 // __gCrWeb object.
 TEST_F(PageScriptUtilTest, WKWebViewEarlyPageScript) {
   WKWebView* web_view = BuildWKWebView(CGRectZero, GetBrowserState());
-  ExecuteJavaScript(web_view,
-                    GetDocumentStartScriptForAllFrames(GetBrowserState()));
-  EXPECT_NSEQ(@"object", ExecuteJavaScript(web_view, @"typeof __gCrWeb"));
+  test::ExecuteJavaScript(
+      web_view, GetDocumentStartScriptForAllFrames(GetBrowserState()));
+  EXPECT_NSEQ(@"object", test::ExecuteJavaScript(web_view, @"typeof __gCrWeb"));
 }
 
 // Tests that embedder's WKWebView script is included into early script.
 TEST_F(PageScriptUtilTest, WKEmbedderScript) {
   GetWebClient()->SetEarlyPageScript(@"__gCrEmbedder = {};");
   WKWebView* web_view = BuildWKWebView(CGRectZero, GetBrowserState());
-  ExecuteJavaScript(web_view,
-                    GetDocumentStartScriptForAllFrames(GetBrowserState()));
-  ExecuteJavaScript(web_view,
-                    GetDocumentStartScriptForMainFrame(GetBrowserState()));
-  EXPECT_NSEQ(@"object", ExecuteJavaScript(web_view, @"typeof __gCrEmbedder"));
+  test::ExecuteJavaScript(
+      web_view, GetDocumentStartScriptForAllFrames(GetBrowserState()));
+  test::ExecuteJavaScript(
+      web_view, GetDocumentStartScriptForMainFrame(GetBrowserState()));
+  EXPECT_NSEQ(@"object",
+              test::ExecuteJavaScript(web_view, @"typeof __gCrEmbedder"));
 }
 
 }  // namespace
