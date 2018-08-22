@@ -53,49 +53,21 @@ compiler_sources = [
   "$compiler_root/util_cc_helper.py",
 ]
 
-# Outputs either the bundle of extension function registrations or the bundle of
-# generated JSON strings for each API.
+# Outputs the bundle of generated JSON strings for each API.
 #
 # Template-specific variables (in addition to the common ones described above):
-#
-# bundle [optional, default = false]
-#   Boolean indicating if the schema bundle files should be generated.
-#
-# bundle_registration [optional, default = false]
-#   Boolean indicating if the API registration bundle files should be generated.
 #
 # bundle_name [required]
 #   A string to prepend to generated bundle class names, so that multiple
 #   bundle rules can be used without conflicting.  Only used with one of
 #   the cpp-bundle generators.
-#
-# impl_dir [required if bundle_registration = true, otherwise unused]
-#   The path containing C++ implementations of API functions. This path is
-#   used as the root path when looking for {schema}/{schema}_api.h headers
-#   when generating API registration bundles. Such headers, if found, are
-#   automatically included by the generated code.
-#
-# uncompiled_sources [optional]
-#   A list of schema files which should not be compiled, but which should still
-#   be processed for API bundle generation.
-#
-# uncompiled_bundle_schema_sources [optional, only used when bundle = true]
-#   A list of schema files which should not be compiled nor registered, but
-#   should still be processed for the schema generation.
-#
-# TODO(devlin): Break this up into two targets, one for extension function
-# registration and one for generated JSON strings. https://crbug.com/864576.
-template("json_schema_api") {
+template("generated_json_strings") {
   assert(defined(invoker.sources),
          "\"sources\" must be defined for the $target_name template.")
   assert(defined(invoker.root_namespace),
          "\"root_namespace\" must be defined for the $target_name template.")
-
-  bundle = defined(invoker.bundle) && invoker.bundle
-  bundle_registration =
-      defined(invoker.bundle_registration) && invoker.bundle_registration
-  assert(bundle || bundle_registration,
-         "$target_name must specify \"bundle\" or \"bundle_registration\".")
+  assert(defined(invoker.bundle_name),
+         "\"bundle_name\" must be defined for bundles")
 
   schema_include_rules = ""
   if (defined(invoker.schema_include_rules)) {
@@ -114,99 +86,32 @@ template("json_schema_api") {
   # target_name variable.
   root_target_name = target_name
 
-  if (bundle) {
-    assert(defined(invoker.bundle_name),
-           "\"bundle_name\" must be defined for bundles")
-
-    uncompiled_sources = []
-    if (defined(invoker.uncompiled_sources)) {
-      uncompiled_sources = invoker.uncompiled_sources
-    }
-
-    uncompiled_bundle_schema_sources = []
-    if (defined(invoker.uncompiled_bundle_schema_sources)) {
-      uncompiled_bundle_schema_sources =
-          invoker.uncompiled_bundle_schema_sources
-    }
-
-    bundle_generator_schema_name = target_name + "_bundle_generator_schema"
-    action(bundle_generator_schema_name) {
-      visibility = [ ":$root_target_name" ]
-      script = compiler_script
-      inputs = compiler_sources + invoker.sources + uncompiled_sources +
-               uncompiled_bundle_schema_sources
-      outputs = [
-        "$target_gen_dir/generated_schemas.cc",
-        "$target_gen_dir/generated_schemas.h",
-      ]
-      args = [
-               "--root=" + rebase_path("//", root_build_dir),
-               "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
-               "--namespace=$root_namespace",
-               "--bundle-name=" + invoker.bundle_name,
-               "--generator=cpp-bundle-schema",
-               "--include-rules=$schema_include_rules",
-             ] + rebase_path(invoker.sources, root_build_dir) +
-             rebase_path(uncompiled_sources, root_build_dir) +
-             rebase_path(uncompiled_bundle_schema_sources, root_build_dir)
-    }
-  }
-
-  if (bundle_registration) {
-    assert(defined(invoker.bundle_name),
-           "\"bundle_name\" must be defined for bundle registrations")
-
-    uncompiled_sources = []
-    if (defined(invoker.uncompiled_sources)) {
-      uncompiled_sources = invoker.uncompiled_sources
-    }
-
-    assert(defined(invoker.impl_dir),
-           "\"impl_dir\" must be defined for the $target_name template.")
-
-    # Child directory inside the generated file tree.
-    gen_child_dir = rebase_path(invoker.impl_dir, "//")
-
-    bundle_generator_registration_name =
-        target_name + "_bundle_generator_registration"
-    action(bundle_generator_registration_name) {
-      visibility = [ ":$root_target_name" ]
-      script = compiler_script
-      inputs = compiler_sources + invoker.sources + uncompiled_sources
-      outputs = [
-        "$root_gen_dir/$gen_child_dir/generated_api_registration.cc",
-        "$root_gen_dir/$gen_child_dir/generated_api_registration.h",
-      ]
-      args = [
-               "--root=" + rebase_path("//", root_build_dir),
-               "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
-               "--namespace=$root_namespace",
-               "--bundle-name=" + invoker.bundle_name,
-               "--generator=cpp-bundle-registration",
-               "--impl-dir=$gen_child_dir",
-               "--include-rules=$schema_include_rules",
-             ] + rebase_path(invoker.sources, root_build_dir) +
-             rebase_path(uncompiled_sources, root_build_dir)
-    }
+  bundle_generator_schema_name = target_name + "_bundle_generator_schema"
+  action(bundle_generator_schema_name) {
+    visibility = [ ":$root_target_name" ]
+    script = compiler_script
+    inputs = compiler_sources + invoker.sources
+    outputs = [
+      "$target_gen_dir/generated_schemas.cc",
+      "$target_gen_dir/generated_schemas.h",
+    ]
+    args = [
+             "--root=" + rebase_path("//", root_build_dir),
+             "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
+             "--namespace=$root_namespace",
+             "--bundle-name=" + invoker.bundle_name,
+             "--generator=cpp-bundle-schema",
+             "--include-rules=$schema_include_rules",
+           ] + rebase_path(invoker.sources, root_build_dir)
   }
 
   # Compute the contents of the library/source set.
-  lib_sources = invoker.sources
-  lib_deps = []
-  lib_public_deps = []
+  lib_sources =
+      invoker.sources + get_target_outputs(":$bundle_generator_schema_name")
+  lib_deps = [ ":$bundle_generator_schema_name" ]
   lib_extra_configs = []
   if (defined(invoker.configs)) {
     lib_extra_configs += invoker.configs
-  }
-
-  if (bundle) {
-    lib_sources += get_target_outputs(":$bundle_generator_schema_name")
-    lib_deps += [ ":$bundle_generator_schema_name" ]
-  }
-
-  if (bundle_registration) {
-    lib_sources += get_target_outputs(":$bundle_generator_registration_name")
-    lib_deps += [ ":$bundle_generator_registration_name" ]
   }
 
   if (defined(invoker.deps)) {
@@ -216,7 +121,98 @@ template("json_schema_api") {
   static_library(target_name) {
     sources = lib_sources
     deps = lib_deps
-    public_deps = lib_public_deps
+    public_deps = []
+    configs += lib_extra_configs
+    public_configs = [ ":$generated_config_name" ]
+
+    if (defined(invoker.visibility)) {
+      visibility = invoker.visibility
+    }
+  }
+}
+
+# Outputs the bundle of extension function registrations.
+#
+# Template-specific variables (in addition to the common ones described above):
+#
+# bundle_name [required]
+#   A string to prepend to generated bundle class names, so that multiple
+#   bundle rules can be used without conflicting.  Only used with one of
+#   the cpp-bundle generators.
+#
+# impl_dir [required if bundle_registration = true, otherwise unused]
+#   The path containing C++ implementations of API functions. This path is
+#   used as the root path when looking for {schema}/{schema}_api.h headers
+#   when generating API registration bundles. Such headers, if found, are
+#   automatically included by the generated code.
+template("function_registration") {
+  assert(defined(invoker.sources),
+         "\"sources\" must be defined for the $target_name template.")
+  assert(defined(invoker.root_namespace),
+         "\"root_namespace\" must be defined for the $target_name template.")
+  assert(defined(invoker.bundle_name),
+         "\"bundle_name\" must be defined for bundle registrations")
+  assert(defined(invoker.impl_dir),
+         "\"impl_dir\" must be defined for the $target_name template.")
+
+  schema_include_rules = ""
+  if (defined(invoker.schema_include_rules)) {
+    schema_include_rules = invoker.schema_include_rules
+  }
+
+  generated_config_name = target_name + "_generated_config"
+  config(generated_config_name) {
+    include_dirs = [ root_gen_dir ]
+  }
+
+  root_namespace = invoker.root_namespace
+
+  # Save the target_name, since other targets (like the action() and
+  # action_foreach() below) need to reference them, but would have their own
+  # target_name variable.
+  root_target_name = target_name
+
+  # Child directory inside the generated file tree.
+  gen_child_dir = rebase_path(invoker.impl_dir, "//")
+
+  bundle_generator_registration_name =
+      target_name + "_bundle_generator_registration"
+  action(bundle_generator_registration_name) {
+    visibility = [ ":$root_target_name" ]
+    script = compiler_script
+    inputs = compiler_sources + invoker.sources
+    outputs = [
+      "$root_gen_dir/$gen_child_dir/generated_api_registration.cc",
+      "$root_gen_dir/$gen_child_dir/generated_api_registration.h",
+    ]
+    args = [
+             "--root=" + rebase_path("//", root_build_dir),
+             "--destdir=" + rebase_path(root_gen_dir, root_build_dir),
+             "--namespace=$root_namespace",
+             "--bundle-name=" + invoker.bundle_name,
+             "--generator=cpp-bundle-registration",
+             "--impl-dir=$gen_child_dir",
+             "--include-rules=$schema_include_rules",
+           ] + rebase_path(invoker.sources, root_build_dir)
+  }
+
+  # Compute the contents of the library/source set.
+  lib_sources = invoker.sources +
+                get_target_outputs(":$bundle_generator_registration_name")
+  lib_deps = [ ":$bundle_generator_registration_name" ]
+  lib_extra_configs = []
+  if (defined(invoker.configs)) {
+    lib_extra_configs += invoker.configs
+  }
+
+  if (defined(invoker.deps)) {
+    lib_deps += invoker.deps
+  }
+
+  static_library(target_name) {
+    sources = lib_sources
+    deps = lib_deps
+    public_deps = []
     configs += lib_extra_configs
     public_configs = [ ":$generated_config_name" ]
 

@@ -14,10 +14,9 @@ assert(enable_extensions,
 schema_sources = [ "identity.idl" ]
 root_namespace = "extensions::shell::api::%(namespace)s"
 
-json_schema_api("generated_api_registration_bundle") {
+function_registration("generated_api_registration") {
   sources = schema_sources
   impl_dir = "//extensions/shell/browser/api"
-  bundle_registration = true
   bundle_name = "Shell"
 
   deps = [
@@ -27,11 +26,9 @@ json_schema_api("generated_api_registration_bundle") {
   visibility = [ ":api" ]
 }
 
-json_schema_api("generated_api_strings_bundle") {
+generated_json_strings("generated_api_json_strings") {
   sources = schema_sources
-  bundle = true
   bundle_name = "Shell"
-
   visibility = [ ":api" ]
 }
 
@@ -53,8 +50,8 @@ json_features("shell_api_features") {
 
 group("api") {
   public_deps = [
-    ":generated_api_registration_bundle",
-    ":generated_api_strings_bundle",
+    ":generated_api_json_strings",
+    ":generated_api_registration",
     ":generated_api_types",
   ]
 }
