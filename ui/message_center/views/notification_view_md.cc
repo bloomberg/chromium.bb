@@ -82,7 +82,7 @@ const float kActionButtonInkDropRippleVisibleOpacity = 0.08f;
 // Highlight (hover) ink drop opacity of action buttons.
 const float kActionButtonInkDropHighlightVisibleOpacity = 0.08f;
 // Text color of action button.
-constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue700;
+constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue600;
 // Background color of the large image.
 constexpr SkColor kLargeImageBackgroundColor = SkColorSetRGB(0xf5, 0xf5, 0xf5);
 
@@ -430,7 +430,7 @@ NotificationInputContainerMD::CreateInkDropRipple() const {
 }
 
 SkColor NotificationInputContainerMD::GetInkDropBaseColor() const {
-  return gfx::kGoogleBlue700;
+  return gfx::kGoogleBlue600;
 }
 
 bool NotificationInputContainerMD::HandleKeyEvent(views::Textfield* sender,
