@@ -110,6 +110,7 @@ customBackgrounds.CLASSES = {
   COLLECTION_DIALOG: 'is-col-sel',
   COLLECTION_SELECTED: 'bg-selected',  // Highlight selected tile
   COLLECTION_TILE: 'bg-sel-tile',  // Preview tile for background customization
+  COLLECTION_TILE_BG: 'bg-sel-tile-bg',
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
   DONE_AVAILABLE: 'done-available',
   FLOAT_UP: 'float-up',
@@ -303,10 +304,11 @@ customBackgrounds.setBackground = function(
  * Create a tile for a Chrome Backgrounds collection.
  */
 customBackgrounds.createChromeBackgroundTile = function(data) {
-  var tile = document.createElement('div');
+  let tile = document.createElement('div');
   tile.style.backgroundImage = 'url(' + data.previewImageUrl + ')';
   tile.dataset.id = data.collectionId;
   tile.dataset.name = data.collectionName;
+  fadeInImageTile(tile, data.previewImageUrl);
   return tile;
 };
 
@@ -314,11 +316,12 @@ customBackgrounds.createChromeBackgroundTile = function(data) {
  * Create a tile for a Google Photos album.
  */
 customBackgrounds.createAlbumTile = function(data) {
-  var tile = document.createElement('div');
+  let tile = document.createElement('div');
   tile.style.backgroundImage = 'url(' + data.previewImageUrl + ')';
   tile.dataset.id = data.albumId;
   tile.dataset.name = data.albumName;
   tile.dataset.photoContainerId = data.photoContainerId;
+  fadeInImageTile(tile, data.previewImageUrl);
   return tile;
 };
 
@@ -410,6 +413,9 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
 
   // Create dialog tiles.
   for (var i = 0; i < collData.length; ++i) {
+    let tileBackground = document.createElement('div');
+    tileBackground.classList.add(
+        customBackgrounds.CLASSES.COLLECTION_TILE_BG);
     var tile = null;
     if (sourceIsChromeBackgrounds) {
       tile = customBackgrounds.createChromeBackgroundTile(collData[i]);
@@ -514,7 +520,8 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
     };
 
     tile.appendChild(title);
-    tileContainer.appendChild(tile);
+    tileBackground.appendChild(tile);
+    tileContainer.appendChild(tileBackground);
   }
 
   $(customBackgrounds.IDS.TILES).focus();
@@ -577,6 +584,9 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   }
 
   for (var i = 0; i < imageData.length; ++i) {
+    let tileBackground = document.createElement('div');
+    tileBackground.classList.add(
+        customBackgrounds.CLASSES.COLLECTION_TILE_BG);
     var tile = document.createElement('div');
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
     // Accessibility support for screen readers.
@@ -611,6 +621,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       }
       tile.setAttribute('aria-label', imageData[i].attributions[0]);
       tile.dataset.url = imageData[i].imageUrl;
+      fadeInImageTile(tile, imageData[i].thumbnailImageUrl);
     } else {
       tile.style.backgroundImage =
           'url(' + imageData[i].thumbnailPhotoUrl + ')';
@@ -619,6 +630,7 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       tile.dataset.attributionLine2 = '';
       tile.dataset.attributionActionUrl = '';
       tile.setAttribute('aria-label', configData.translatedStrings.photoLabel);
+      fadeInImageTile(tile, imageData[i].thumbnailPhotoUrl);
     }
 
     tile.id = 'img_tile_' + i;
@@ -678,9 +690,18 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
       }
     };
 
-    tileContainer.appendChild(tile);
+    tileBackground.appendChild(tile);
+    tileContainer.appendChild(tileBackground);
   }
   $(customBackgrounds.IDS.TILES).focus();
+};
+
+let fadeInImageTile = (tile, imageUrl) => {
+  let image = new Image();
+  image.onload = () => {
+    tile.style.opacity = '1';
+  };
+  image.src = imageUrl;
 };
 
 /**

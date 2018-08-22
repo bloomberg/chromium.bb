@@ -416,17 +416,25 @@ html[dir=rtl] #bg-sel-footer-cancel {
 }
 
 .bg-sel-tile {
-  background-color: rgba(32, 33, 36, .06);
+  background-size: cover;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 700ms;
+  width: 100%;
+}
+
+html[dir=rtl] .bg-sel-tile-bg {
+  margin: 6px 8px 0 0;
+}
+
+.bg-sel-tile-bg {
+  background-color: rgb(241, 243, 244);
   background-size: cover;
   display: inline-block;
   height: 117px;
   margin: 6px 0 0 8px;
   position: relative;
   width: 156px;
-}
-
-html[dir=rtl] .bg-sel-tile {
-  margin: 6px 8px 0 0;
 }
 
 .bg-selected {
