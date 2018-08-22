@@ -38,12 +38,15 @@ CastAudioManager::CastAudioManager(
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
     scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
+    service_manager::Connector* connector,
     bool use_mixer)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       backend_factory_getter_(std::move(backend_factory_getter)),
       browser_task_runner_(std::move(browser_task_runner)),
-      backend_task_runner_(std::move(backend_task_runner)) {
+      backend_task_runner_(std::move(backend_task_runner)),
+      browser_connector_(connector) {
   DCHECK(backend_factory_getter_);
+  DCHECK(browser_connector_);
   if (use_mixer)
     mixer_ = std::make_unique<CastAudioMixer>(this);
 }
@@ -175,11 +178,6 @@ CmaBackendFactory* CastAudioManager::backend_factory() {
   mixer_output_stream_.reset(new CastAudioOutputStream(
       params, browser_task_runner_, browser_connector_, this));
   return mixer_output_stream_.get();
-}
-
-void CastAudioManager::SetBrowserConnectorForTesting(
-    service_manager::Connector* browser_connector) {
-  browser_connector_ = browser_connector;
 }
 
 }  // namespace media

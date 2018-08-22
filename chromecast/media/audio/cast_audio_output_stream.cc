@@ -26,7 +26,6 @@
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
-#include "content/public/common/service_manager_connection.h"
 #include "media/audio/audio_device_description.h"
 #include "media/base/audio_timestamp_helper.h"
 #include "media/base/decoder_buffer.h"
@@ -359,6 +358,7 @@ CastAudioOutputStream::CastAudioOutputStream(
       audio_manager_(audio_manager),
       volume_(1.0) {
   DCHECK(browser_task_runner_);
+  DCHECK(browser_connector_);
   VLOG(1) << "CastAudioOutputStream " << this << " created with "
           << audio_params_.AsHumanReadableString();
 }
@@ -477,10 +477,6 @@ void CastAudioOutputStream::BindConnectorRequest(
 
 void CastAudioOutputStream::BindConnectorRequestOnBrowserTaskRunner(
     service_manager::mojom::ConnectorRequest connector_request) {
-  if (!browser_connector_) {
-    browser_connector_ =
-        content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  }
   browser_connector_->BindConnectorRequest(std::move(connector_request));
 }
 

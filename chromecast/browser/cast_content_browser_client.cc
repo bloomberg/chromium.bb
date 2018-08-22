@@ -58,6 +58,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
@@ -223,7 +224,11 @@ CastContentBrowserClient::CreateAudioManager(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
-      GetMediaTaskRunner(), use_mixer);
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::UI),
+      GetMediaTaskRunner(),
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      use_mixer);
 #else
   return std::make_unique<media::CastAudioManager>(
       std::make_unique<::media::AudioThreadImpl>(), audio_log_factory,
@@ -231,7 +236,9 @@ CastContentBrowserClient::CreateAudioManager(
                           base::Unretained(this)),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI),
-      GetMediaTaskRunner(), use_mixer);
+      GetMediaTaskRunner(),
+      content::ServiceManagerConnection::GetForProcess()->GetConnector(),
+      use_mixer);
 #endif  // defined(USE_ALSA)
 }
 
