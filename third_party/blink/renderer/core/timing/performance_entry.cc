@@ -58,13 +58,6 @@ DOMHighResTimeStamp PerformanceEntry::duration() const {
   return duration_;
 }
 
-const AtomicString& PerformanceEntry::CompositeKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, composite, ());
-  if (!composite.IsSet())
-    *composite = "composite";
-  return *composite;
-}
-
 const AtomicString& PerformanceEntry::EventKeyword() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, event, ());
   if (!event.IsSet())
@@ -114,13 +107,6 @@ const AtomicString& PerformanceEntry::PaintKeyword() {
   return *paint;
 }
 
-const AtomicString& PerformanceEntry::RenderKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, render, ());
-  if (!render.IsSet())
-    *render = "render";
-  return *render;
-}
-
 const AtomicString& PerformanceEntry::ResourceKeyword() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, resource, ());
   if (!resource.IsSet())
@@ -138,16 +124,12 @@ const AtomicString& PerformanceEntry::TaskattributionKeyword() {
 
 PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     const AtomicString& entry_type) {
-  if (entry_type == CompositeKeyword())
-    return kComposite;
   if (entry_type == LongtaskKeyword())
     return kLongTask;
   if (entry_type == MarkKeyword())
     return kMark;
   if (entry_type == MeasureKeyword())
     return kMeasure;
-  if (entry_type == RenderKeyword())
-    return kRender;
   if (entry_type == ResourceKeyword())
     return kResource;
   if (entry_type == NavigationKeyword())

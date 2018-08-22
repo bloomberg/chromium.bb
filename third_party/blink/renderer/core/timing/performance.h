@@ -250,8 +250,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   virtual void BuildJSONValue(V8ObjectBuilder&) const;
 
-  PerformanceEntryVector frame_timing_buffer_;
-  unsigned frame_timing_buffer_size_;
   PerformanceEntryVector resource_timing_buffer_;
   unsigned resource_timing_buffer_size_;
   PerformanceEntryVector event_timing_buffer_;
