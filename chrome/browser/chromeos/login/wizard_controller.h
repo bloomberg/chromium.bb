@@ -195,10 +195,6 @@ class WizardController : public BaseScreenDelegate,
   void ShowUpdateRequiredScreen();
   void ShowDiscoverScreen();
 
-  // Shows assistant opt-in flow.
-  void ShowAssistantOptIn();
-  void OnAssistantOptInCompleted(bool accepted);
-
   // Shows images login screen.
   void ShowLoginScreen(const LoginScreenContext& context);
 

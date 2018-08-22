@@ -6,13 +6,10 @@
 
 #include <memory>
 
-#include "ash/public/cpp/shell_window_ids.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/get_more_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/ready_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/third_party_screen_handler.h"
@@ -22,7 +19,6 @@
 #include "chrome/grit/browser_resources.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
@@ -112,13 +108,7 @@ void AssistantOptInDialog::Show(
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback) {
   DCHECK(!is_active);
   AssistantOptInDialog* dialog = new AssistantOptInDialog(std::move(callback));
-
-  int container_id = session_manager::SessionManager::Get()->session_state() ==
-                             session_manager::SessionState::ACTIVE
-                         ? ash::kShellWindowId_AlwaysOnTopContainer
-                         : ash::kShellWindowId_LockSystemModalContainer;
-  chrome::ShowWebDialogInContainer(
-      container_id, ProfileManager::GetActiveUserProfile(), dialog, true);
+  dialog->ShowSystemDialog(true);
 }
 
 // static
@@ -130,19 +120,13 @@ AssistantOptInDialog::AssistantOptInDialog(
     ash::mojom::AssistantSetup::StartAssistantOptInFlowCallback callback)
     : SystemWebDialogDelegate(GURL(chrome::kChromeUIAssistantOptInURL),
                               base::string16()),
-      callback_(std::move(callback)),
-      modal_type_(StartupUtils::IsOobeCompleted() ? ui::MODAL_TYPE_SYSTEM
-                                                  : ui::MODAL_TYPE_WINDOW) {
+      callback_(std::move(callback)) {
   DCHECK(!is_active);
   is_active = true;
 }
 
 AssistantOptInDialog::~AssistantOptInDialog() {
   is_active = false;
-}
-
-ui::ModalType AssistantOptInDialog::GetDialogModalType() const {
-  return modal_type_;
 }
 
 void AssistantOptInDialog::GetDialogSize(gfx::Size* size) const {
