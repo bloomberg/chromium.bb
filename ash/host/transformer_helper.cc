@@ -12,6 +12,8 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/compositor/layer_animation_element.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"

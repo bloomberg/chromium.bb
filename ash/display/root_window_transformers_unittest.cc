@@ -20,6 +20,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
@@ -32,6 +33,7 @@
 #include "ui/events/event_handler.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -283,6 +285,63 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   magnifier->SetEnabled(false);
 
   Shell::Get()->RemovePreTargetHandler(&event_handler);
+}
+
+// Make sure the origin of rotated root layer is aligned with pixels
+// on 2.25 scale factor device so that HW overlay kicks in.
+// https://crbug.com/869090.
+TEST_F(RootWindowTransformersTest, OriginAlignmentWithFractionalScale) {
+  auto* host_window = Shell::GetPrimaryRootWindow()->GetHost()->window();
+  EXPECT_EQ(Shell::GetPrimaryRootWindow(), host_window);
+
+  float device_scale_factor = 2.25f;
+  gfx::Transform scale_transform;
+  scale_transform.matrix().set3x3(device_scale_factor, 0, 0, 0,
+                                  device_scale_factor, 0, 0, 0, 1);
+  gfx::Transform invert_transform;
+  invert_transform.matrix().set3x3(1.0f / device_scale_factor, 0, 0, 0,
+                                   1.0f / device_scale_factor, 0, 0, 0, 1);
+
+  {
+    // Rotate 90 degree to right.
+    UpdateDisplay("3000x2000*2.25/r");
+
+    // The size of the scaled layer.
+    gfx::RectF tmp(1998, 2999);
+    // Creates a transform that can be applied to already scaled layer.
+    gfx::Transform transform(invert_transform);
+    transform.ConcatTransform(host_window->layer()->transform());
+    transform.ConcatTransform(scale_transform);
+    transform.TransformRect(&tmp);
+    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
+    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
+  }
+
+  {
+    // Upside Down.
+    UpdateDisplay("3000x2000*2.25/u");
+
+    gfx::RectF tmp(2999, 1998);
+    gfx::Transform transform(invert_transform);
+    transform.ConcatTransform(host_window->layer()->transform());
+    transform.ConcatTransform(scale_transform);
+    transform.TransformRect(&tmp);
+    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
+    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
+  }
+
+  {
+    // Rotate 90 degree to left.
+    UpdateDisplay("3000x2000*2.25/l");
+
+    gfx::RectF tmp(1998, 2999);
+    gfx::Transform transform(invert_transform);
+    transform.ConcatTransform(host_window->layer()->transform());
+    transform.ConcatTransform(scale_transform);
+    transform.TransformRect(&tmp);
+    EXPECT_EQ(gfx::SizeF(2999, 1998), tmp.size());
+    EXPECT_TRUE(gfx::IsNearestRectWithinDistance(tmp, 0.01f));
+  }
 }
 
 TEST_F(RootWindowTransformersTest, TouchScaleAndMagnify) {
