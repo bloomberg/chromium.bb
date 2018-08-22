@@ -69,7 +69,6 @@ blink_platform_sources("heap") {
     "persistent_node.h",
     "process_heap.cc",
     "process_heap.h",
-    "safe_point.h",
     "self_keep_alive.h",
     "sparse_heap_bitmap.cc",
     "sparse_heap_bitmap.h",

@@ -44,7 +44,6 @@
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
-#include "third_party/blink/renderer/platform/heap/safe_point.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -320,13 +319,13 @@ void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
   thread_state_->VisitPersistents(visitor);
 }
 
-void ThreadHeap::VisitStackRoots(MarkingVisitor* visitor) {
+void ThreadHeap::VisitStackRoots() {
   ThreadHeapStatsCollector::Scope stats_scope(
       stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);
   DCHECK(thread_state_->InAtomicMarkingPause());
   address_cache_->FlushIfDirty();
   address_cache_->EnableLookup();
-  thread_state_->VisitStack(visitor);
+  thread_state_->PushRegistersAndVisitStack();
   address_cache_->DisableLookup();
 }
 

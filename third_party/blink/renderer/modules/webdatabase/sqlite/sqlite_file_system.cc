@@ -32,7 +32,6 @@
 
 #include "sql/initialization.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/safe_point.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/sqlite/sqlite3.h"
 

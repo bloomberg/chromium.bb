@@ -204,9 +204,7 @@ class PLATFORM_EXPORT ThreadHeap {
   }
 
   void VisitPersistentRoots(Visitor*);
-  void VisitStackRoots(MarkingVisitor*);
-  void EnterSafePoint(ThreadState*);
-  void LeaveSafePoint();
+  void VisitStackRoots();
 
   // Is the finalizable GC object still alive, but slated for lazy sweeping?
   // If a lazy sweep is in progress, returns true if the object was found

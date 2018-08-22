@@ -47,7 +47,6 @@
 #include "third_party/blink/renderer/platform/heap/heap_terminated_array_builder.h"
 #include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/heap/marking_visitor.h"
-#include "third_party/blink/renderer/platform/heap/safe_point.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/heap/stack_frame_depth.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -361,9 +360,9 @@ class TestGCCollectGarbageScope {
   ~TestGCCollectGarbageScope() { ThreadState::Current()->CompleteSweep(); }
 };
 
-class TestGCMarkingScope : public TestGCCollectGarbageScope {
+class TestGCScope : public TestGCCollectGarbageScope {
  public:
-  explicit TestGCMarkingScope(BlinkGC::StackState state)
+  explicit TestGCScope(BlinkGC::StackState state)
       : TestGCCollectGarbageScope(state),
         atomic_pause_scope_(ThreadState::Current()) {
     ThreadState::Current()->Heap().stats_collector()->NotifyMarkingStarted(
@@ -371,7 +370,7 @@ class TestGCMarkingScope : public TestGCCollectGarbageScope {
     ThreadState::Current()->AtomicPausePrologue(state, BlinkGC::kAtomicMarking,
                                                 BlinkGC::GCReason::kPreciseGC);
   }
-  ~TestGCMarkingScope() {
+  ~TestGCScope() {
     ThreadState::Current()->MarkPhaseEpilogue(BlinkGC::kAtomicMarking);
     ThreadState::Current()->AtomicPauseEpilogue(BlinkGC::kAtomicMarking,
                                                 BlinkGC::kEagerSweeping);
@@ -379,16 +378,6 @@ class TestGCMarkingScope : public TestGCCollectGarbageScope {
 
  private:
   ThreadState::AtomicPauseScope atomic_pause_scope_;
-};
-
-class TestGCScope : public TestGCMarkingScope {
- public:
-  explicit TestGCScope(BlinkGC::StackState state)
-      : TestGCMarkingScope(state), safe_point_scope_(state) {}
-  ~TestGCScope() {}
-
- private:
-  SafePointScope safe_point_scope_;
 };
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
