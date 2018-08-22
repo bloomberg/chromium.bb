@@ -172,9 +172,8 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
 
     dictionary.SetKey("valuePropIdentity",
                       base::Value(activity_control_ui.identity()));
-    dictionary.SetKey(
-        "valuePropTitle",
-        base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_VALUE_PROP_TITLE)));
+    dictionary.SetKey("valuePropTitle",
+                      base::Value(activity_control_ui.title()));
     if (activity_control_ui.intro_text_paragraph_size()) {
       dictionary.SetKey(
           "valuePropIntro",
@@ -192,11 +191,9 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
 
   // Add third party string constants.
   dictionary.SetKey("thirdPartyTitle",
-                    base::Value(l10n_util::GetStringUTF16(
-                        IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE)));
-  dictionary.SetKey(
-      "thirdPartyContinueButton",
-      base::Value(l10n_util::GetStringUTF16(IDS_ASSISTANT_CONTINUE_BUTTON)));
+                    base::Value(third_party_disclosure_ui.title()));
+  dictionary.SetKey("thirdPartyContinueButton",
+                    base::Value(third_party_disclosure_ui.button_continue()));
   dictionary.SetKey("thirdPartyFooter", base::Value(consent_ui.tos_pp_links()));
 
   // Add get more screen string constants.

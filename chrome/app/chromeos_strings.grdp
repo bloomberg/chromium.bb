@@ -4861,9 +4861,6 @@
   <message name="IDS_ASSISTANT_READY_SCREEN_MESSAGE" desc="Message for assistant ready screen.">
     When your Chromebook is set up, press the Assistant button or say "Ok Google" to get help from your Assistant anytime.
   </message>
-  <message name="IDS_ASSISTANT_THIRD_PARTY_SCREEN_TITLE" desc="Title for assistant third party screen.">
-    Google Partners work with your Assistant to help you
-  </message>
   <message name="IDS_ASSISTANT_CONTINUE_BUTTON" desc="Continue button for asssitant optin flow.">
     Continue
   </message>
@@ -4872,9 +4869,6 @@
   </message>
   <message name="IDS_ASSISTANT_HOTWORD_NOTIFICATION_TITLE" desc="Title for assistant hotword enable notification.">
     Turn on 'Ok Google'
-  </message>
-  <message name="IDS_ASSISTANT_VALUE_PROP_TITLE" desc="Title for assistant value prop.">
-    Meet your Google Assistant
   </message>
   <message name="IDS_ASSISTANT_ACTIVITY_CONTROL_POPUP_LINK" desc="Link text for activity control details popup.">
     Learn more
