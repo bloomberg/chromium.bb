@@ -22,7 +22,7 @@ const blink::WebGestureDevice kSourceDevice =
 
 class TouchActionFilterTest : public testing::Test {
  public:
-  TouchActionFilterTest(){};
+  TouchActionFilterTest() { filter_.OnHasTouchEventHandlers(true); }
   ~TouchActionFilterTest() override {}
 
  protected:
@@ -461,6 +461,7 @@ TEST_F(TouchActionFilterTest, MultiTouch) {
 class TouchActionFilterPinchTest : public testing::Test {
  public:
   void RunTest(bool force_enable_zoom) {
+    filter_.OnHasTouchEventHandlers(true);
     filter_.SetForceEnableZoom(force_enable_zoom);
 
     WebGestureEvent scroll_begin =
@@ -791,6 +792,7 @@ TEST_F(TouchActionFilterTest, TouchActionResetsOnResetTouchAction) {
 }
 
 TEST_F(TouchActionFilterTest, TouchActionResetMidSequence) {
+  filter_.OnHasTouchEventHandlers(true);
   WebGestureEvent scroll_begin =
       SyntheticWebGestureEventBuilder::BuildScrollBegin(2, 3, kSourceDevice);
   WebGestureEvent pinch_begin = SyntheticWebGestureEventBuilder::Build(
@@ -915,7 +917,7 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
   filter_.ResetTouchAction();
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
 
-  filter_.OnHasTouchEventHandlers(false);
+  filter_.OnHasTouchEventHandlers(true);
   // Simulate a double tap gesture: GTD-->GT-->GTD-->GDT.
   filter_.OnSetTouchAction(cc::kTouchActionPan);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
@@ -923,8 +925,7 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
   EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPan);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  filter_.OnHasTouchEventHandlers(true);
-  EXPECT_FALSE(ScrollingTouchAction().has_value());
+  EXPECT_TRUE(ScrollingTouchAction().has_value());
   filter_.OnSetTouchAction(cc::kTouchActionPan);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
@@ -936,6 +937,25 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
   EXPECT_EQ(filter_.FilterGestureEvent(&tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&double_tap),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+}
+
+// If the renderer is busy, the gesture event might have come before the
+// OnHasTouchEventHanlders IPC is received. In this case, we should allow all
+// the gestures.
+TEST_F(TouchActionFilterTest, GestureArrivesBeforeHasHandlerSet) {
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapDown, kSourceDevice);
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+}
+
+TEST_F(TouchActionFilterTest, ResetBeforeHasHandlerSet) {
+  // This should not crash, and should set touch action to auto.
+  filter_.ResetTouchAction();
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapDown, kSourceDevice);
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
 }
 

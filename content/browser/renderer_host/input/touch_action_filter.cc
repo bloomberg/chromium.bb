@@ -40,7 +40,9 @@ TouchActionFilter::TouchActionFilter()
     : suppress_manipulation_events_(false),
       drop_current_tap_ending_event_(false),
       allow_current_double_tap_event_(true),
-      force_enable_zoom_(false) {}
+      force_enable_zoom_(false) {
+  ResetTouchAction();
+}
 
 TouchActionFilter::~TouchActionFilter() {}
 
