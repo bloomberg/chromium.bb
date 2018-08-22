@@ -75,6 +75,7 @@ class FrameImpl : public chromium::web::Frame,
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NavigationObserverDisconnected);
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NoNavigationObserverAttached);
   FRIEND_TEST_ALL_PREFIXES(ContextImplTest, ReloadFrame);
+  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, Stop);
 
   // Sends |pending_navigation_event_| to the observer if there are any changes
   // to be reported.

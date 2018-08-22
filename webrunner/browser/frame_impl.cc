@@ -161,7 +161,7 @@ void FrameImpl::GoForward() {
 }
 
 void FrameImpl::Stop() {
-  NOTIMPLEMENTED();
+  web_contents_->Stop();
 }
 
 void FrameImpl::Reload(chromium::web::ReloadType type) {

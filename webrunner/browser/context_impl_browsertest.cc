@@ -7,6 +7,7 @@
 #include "base/macros.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -508,6 +509,55 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, DelayedNavigationEventAck) {
     navigation_observer_.Acknowledge();
     run_loop.Run();
   }
+}
+
+// Observes events specific to the Stop() test case.
+struct WebContentsObserverForStop : public content::WebContentsObserver {
+  using content::WebContentsObserver::Observe;
+  MOCK_METHOD1(DidStartNavigation, void(content::NavigationHandle*));
+  MOCK_METHOD0(NavigationStopped, void());
+};
+
+IN_PROC_BROWSER_TEST_F(ContextImplTest, Stop) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  net::test_server::RegisterDefaultHandlers(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Use a request handler that will accept the connection and stall
+  // indefinitely.
+  GURL hung_url(embedded_test_server()->GetURL("/hung"));
+
+  WebContentsObserverForStop observer;
+  observer.Observe(
+      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(observer, DidStartNavigation(_))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(hung_url.spec(), nullptr);
+    run_loop.Run();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  EXPECT_TRUE(
+      context_impl()->GetFrameImplForTest(&frame)->web_contents_->IsLoading());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(observer, NavigationStopped())
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->Stop();
+    run_loop.Run();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  EXPECT_FALSE(
+      context_impl()->GetFrameImplForTest(&frame)->web_contents_->IsLoading());
 }
 
 }  // namespace webrunner
