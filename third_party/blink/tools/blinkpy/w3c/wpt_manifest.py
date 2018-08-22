@@ -172,7 +172,7 @@ class WPTManifest(object):
 
     @staticmethod
     def ensure_manifest(host):
-        """Generates the MANIFEST.json file if it does not exist."""
+        """Updates the MANIFEST.json file, or generates if it does not exist."""
         finder = PathFinder(host.filesystem)
         manifest_path = finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
         base_manifest_path = finder.path_from_layout_tests('external', 'WPT_BASE_MANIFEST.json')
@@ -181,11 +181,15 @@ class WPTManifest(object):
             _log.error('Manifest base not found at "%s".', base_manifest_path)
             host.filesystem.write_text_file(base_manifest_path, '{}')
 
-        if not host.filesystem.exists(manifest_path):
-            _log.debug('Manifest not found, copying from base "%s".', base_manifest_path)
-            host.filesystem.copyfile(base_manifest_path, manifest_path)
+        # Unconditionally replace MANIFEST.json with WPT_BASE_MANIFEST.json even
+        # if the former exists, to avoid regenerating the manifest from scratch
+        # when the manifest version changes. Remove the destination first as
+        # copyfile will fail if the two files are hardlinked or symlinked.
+        if host.filesystem.exists(manifest_path):
+            host.filesystem.remove(manifest_path)
+        host.filesystem.copyfile(base_manifest_path, manifest_path)
 
-        wpt_path = manifest_path = finder.path_from_layout_tests('external', 'wpt')
+        wpt_path = finder.path_from_layout_tests('external', 'wpt')
         WPTManifest.generate_manifest(host, wpt_path)
 
         _log.debug('Manifest generation completed.')
