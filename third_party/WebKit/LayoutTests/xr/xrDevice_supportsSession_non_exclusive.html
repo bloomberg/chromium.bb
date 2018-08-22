@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="../xr/resources/test-constants.js"></script>
+<script>
+
+promise_test( (t) => {
+  return XRTest.simulateDeviceConnection({ supportsImmersive:true })
+    .then( (controller) => { return navigator.xr.requestDevice() })
+    .then( (device) => {
+      // Non-immersive sessions without a outputContext should not be supported.
+      promise_rejects(t, 'NotSupportedError', device.supportsSession());
+
+      // Non-immersive sessions with an outputContext should be supported.
+      return device.supportsSession({
+          outputContext: getOutputContext()
+      });
+    });
+}, "supportsSession properly identifies supported non-immersive sessions");
+
+</script>
