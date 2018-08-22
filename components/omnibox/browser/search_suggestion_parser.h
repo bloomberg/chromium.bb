@@ -287,7 +287,10 @@ class SearchSuggestionParser {
     // calls SortResults, so order always holds except possibly while parsing.
     SuggestResults suggest_results;
 
-    // Navigational suggestions sorted by relevance score.
+    // Navigational suggestions sorted by relevance score, descending. This
+    // order is normally provided by server and is guaranteed after search
+    // provider calls SortResults, so order always holds except possibly while
+    // parsing.
     NavigationResults navigation_results;
 
     // The server supplied verbatim relevance scores. Negative values

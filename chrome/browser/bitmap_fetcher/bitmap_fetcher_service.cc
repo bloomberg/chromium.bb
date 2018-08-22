@@ -24,13 +24,13 @@ const size_t kMaxRequests = 25;  // Maximum number of inflight requests allowed.
 // for few images like weather answers, but with rich entity suggestions showing
 // several images at once, even changing some while the user types, a larger
 // cache is necessary to avoid flickering. Each cache entry is expected to take
-// 16kb (64x64 @ 32bpp), and experimentation shows 18 entries is enough to
-// eliminate flicker with the standard 6 suggestion omnibox filled with entities
-// so the maximum expected memory consumption is ~288kb per browser window.
+// 16kb (64x64 @ 32bpp).  With 12, the total memory consumed would be ~192kb.
+// 12 is double the default number of maximum suggestions so this can
+// accommodate one match image plus one answer image for each result.
 #if defined(OS_ANDROID)
 const int kMaxCacheEntries = 5;
 #else
-const int kMaxCacheEntries = 18;
+const int kMaxCacheEntries = 12;
 #endif
 
 }  // namespace.
