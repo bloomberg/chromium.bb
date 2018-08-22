@@ -65,8 +65,7 @@ class CastAudioManagerTest : public testing::Test {
         base::BindRepeating(&CastAudioManagerTest::GetCmaBackendFactory,
                             base::Unretained(this)),
         scoped_task_environment_.GetMainThreadTaskRunner(),
-        media_thread_.task_runner(), false);
-    audio_manager_->SetBrowserConnectorForTesting(connector_.get());
+        media_thread_.task_runner(), connector_.get(), false);
   }
 
   ~CastAudioManagerTest() override { audio_manager_->Shutdown(); }

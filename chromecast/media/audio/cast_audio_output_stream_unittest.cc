@@ -250,8 +250,7 @@ class CastAudioOutputStreamTest : public ::testing::Test {
         base::BindRepeating(&CastAudioOutputStreamTest::GetCmaBackendFactory,
                             base::Unretained(this)),
         scoped_task_environment_.GetMainThreadTaskRunner(),
-        media_thread_.task_runner(), false);
-    audio_manager_->SetBrowserConnectorForTesting(connector_.get());
+        media_thread_.task_runner(), connector_.get(), false);
     EXPECT_EQ(backend_factory_.get(), audio_manager_->backend_factory());
   }
 

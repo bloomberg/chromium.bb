@@ -23,7 +23,6 @@ cast_source_set("audio") {
     "//chromecast/media/cma/backend",
     "//chromecast/media/cma/base",
     "//chromecast/public/media",
-    "//content/public/common",
     "//media",
     "//media:shared_memory_support",
     "//services/service_manager/public/cpp",

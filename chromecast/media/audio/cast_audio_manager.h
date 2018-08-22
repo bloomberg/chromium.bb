@@ -28,6 +28,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
+      service_manager::Connector* connector,
       bool use_mixer);
   ~CastAudioManager() override;
 
@@ -45,9 +46,6 @@ class CastAudioManager : public ::media::AudioManagerBase {
   base::SingleThreadTaskRunner* backend_task_runner() {
     return backend_task_runner_.get();
   }
-
-  void SetBrowserConnectorForTesting(
-      service_manager::Connector* browser_connector);
 
  protected:
   // AudioManagerBase implementation.
@@ -81,11 +79,10 @@ class CastAudioManager : public ::media::AudioManagerBase {
   CmaBackendFactory* backend_factory_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
+  service_manager::Connector* const browser_connector_;
   std::unique_ptr<::media::AudioOutputStream> mixer_output_stream_;
   std::unique_ptr<CastAudioMixer> mixer_;
 
-  // Used in tests to override the default browser connector.
-  service_manager::Connector* browser_connector_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioManager);
 };

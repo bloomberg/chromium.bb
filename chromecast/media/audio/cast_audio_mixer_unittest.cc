@@ -17,6 +17,7 @@
 #include "chromecast/media/audio/cast_audio_manager.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
+#include "media/audio/audio_io.h"
 #include "media/audio/test_audio_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -33,11 +34,30 @@ using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
+std::unique_ptr<service_manager::Connector> CreateConnector() {
+  service_manager::mojom::ConnectorRequest request;
+  return service_manager::Connector::Create(&request);
+}
+
 // Utility functions
 ::media::AudioParameters GetAudioParams() {
   return ::media::AudioParameters(
       ::media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
       ::media::CHANNEL_LAYOUT_STEREO, 48000, 1024);
+}
+
+void SignalPull(
+    ::media::AudioOutputStream::AudioSourceCallback* source_callback,
+    base::TimeDelta delay) {
+  std::unique_ptr<::media::AudioBus> audio_bus =
+      ::media::AudioBus::Create(GetAudioParams());
+  source_callback->OnMoreData(delay, base::TimeTicks::Now(), 0,
+                              audio_bus.get());
+}
+
+void SignalError(
+    ::media::AudioOutputStream::AudioSourceCallback* source_callback) {
+  source_callback->OnError();
 }
 
 // Mock implementations
@@ -63,17 +83,9 @@ class MockAudioSourceCallback
   }
 };
 
-class MockCastAudioOutputStream : public CastAudioOutputStream {
+class MockMediaAudioOutputStream : public ::media::AudioOutputStream {
  public:
-  MockCastAudioOutputStream(
-      const ::media::AudioParameters& audio_params,
-      scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
-      service_manager::Connector* browser_connector,
-      CastAudioManager* audio_manager)
-      : CastAudioOutputStream(audio_params,
-                              browser_task_runner,
-                              browser_connector,
-                              audio_manager) {}
+  MockMediaAudioOutputStream() {}
 
   MOCK_METHOD0(Open, bool());
   MOCK_METHOD0(Close, void());
@@ -81,22 +93,11 @@ class MockCastAudioOutputStream : public CastAudioOutputStream {
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD1(SetVolume, void(double volume));
   MOCK_METHOD1(GetVolume, void(double* volume));
-
-  void SignalPull(AudioSourceCallback* source_callback, base::TimeDelta delay) {
-    std::unique_ptr<::media::AudioBus> audio_bus =
-        ::media::AudioBus::Create(GetAudioParams());
-    source_callback->OnMoreData(delay, base::TimeTicks::Now(), 0,
-                                audio_bus.get());
-  }
-
-  void SignalError(AudioSourceCallback* source_callback) {
-    source_callback->OnError();
-  }
 };
 
 class MockCastAudioManager : public CastAudioManager {
  public:
-  MockCastAudioManager()
+  explicit MockCastAudioManager(service_manager::Connector* connector)
       : CastAudioManager(
             std::make_unique<::media::TestAudioThread>(),
             nullptr,
@@ -104,6 +105,7 @@ class MockCastAudioManager : public CastAudioManager {
                                 base::Unretained(this)),
             nullptr,
             nullptr,
+            connector,
             true /* use_mixer */) {
     ON_CALL(*this, ReleaseOutputStream(_))
         .WillByDefault(
@@ -128,15 +130,14 @@ class CastAudioMixerTest : public ::testing::Test {
   CastAudioMixerTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        connector_(CreateConnector()),
         source_callback_(nullptr) {}
   ~CastAudioMixerTest() override {}
 
  protected:
   void SetUp() override {
-    mock_manager_.reset(new StrictMock<MockCastAudioManager>());
-    mock_mixer_stream_.reset(new StrictMock<MockCastAudioOutputStream>(
-        GetAudioParams(), scoped_task_environment_.GetMainThreadTaskRunner(),
-        nullptr, mock_manager_.get()));
+    mock_manager_.reset(new StrictMock<MockCastAudioManager>(connector_.get()));
+    mock_mixer_stream_.reset(new StrictMock<MockMediaAudioOutputStream>());
 
     ON_CALL(*mock_manager_, MakeMixerOutputStream(_))
         .WillByDefault(Return(mock_mixer_stream_.get()));
@@ -149,7 +150,9 @@ class CastAudioMixerTest : public ::testing::Test {
   void TearDown() override { mock_manager_->Shutdown(); }
 
   MockCastAudioManager& mock_manager() { return *mock_manager_; }
-  MockCastAudioOutputStream& mock_mixer_stream() { return *mock_mixer_stream_; }
+  MockMediaAudioOutputStream& mock_mixer_stream() {
+    return *mock_mixer_stream_;
+  }
 
   ::media::AudioOutputStream* CreateMixerStream() {
     return mock_manager_->MakeAudioOutputStream(
@@ -157,8 +160,9 @@ class CastAudioMixerTest : public ::testing::Test {
   }
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<MockCastAudioManager> mock_manager_;
-  std::unique_ptr<MockCastAudioOutputStream> mock_mixer_stream_;
+  std::unique_ptr<MockMediaAudioOutputStream> mock_mixer_stream_;
 
   // Saved params passed to |mock_mixer_stream_|.
   ::media::AudioOutputStream::AudioSourceCallback* source_callback_;
@@ -287,7 +291,7 @@ TEST_F(CastAudioMixerTest, MultiStreamCycle) {
 
     for (auto& source : sources)
       EXPECT_CALL(*source, OnMoreData(_, _, _, _));
-    mock_mixer_stream().SignalPull(source_callback_, base::TimeDelta());
+    SignalPull(source_callback_, base::TimeDelta());
 
     EXPECT_CALL(mock_manager(), ReleaseOutputStream(stream));
     stream->Close();
@@ -350,7 +354,7 @@ TEST_F(CastAudioMixerTest, OnError) {
   // Note that error will only be triggered on the first stream because that
   // is the only stream that has been started.
   EXPECT_CALL(source, OnError());
-  mock_mixer_stream().SignalError(source_callback_);
+  SignalError(source_callback_);
   base::RunLoop().RunUntilIdle();
 
   // Try to add another stream.
@@ -398,7 +402,7 @@ TEST_F(CastAudioMixerTest, Delay) {
   // using the same AudioParameters.
   base::TimeDelta delay = base::TimeDelta::FromMicroseconds(1000);
   EXPECT_CALL(source, OnMoreData(delay, _, 0, _));
-  mock_mixer_stream().SignalPull(source_callback_, delay);
+  SignalPull(source_callback_, delay);
 
   EXPECT_CALL(mock_mixer_stream(), Stop());
   EXPECT_CALL(mock_mixer_stream(), Close());

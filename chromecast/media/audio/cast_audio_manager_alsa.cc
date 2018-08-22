@@ -9,7 +9,6 @@
 
 #include "base/memory/free_deleter.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
-#include "content/public/browser/browser_thread.h"
 #include "media/audio/alsa/alsa_input.h"
 #include "media/audio/alsa/alsa_wrapper.h"
 
@@ -35,14 +34,16 @@ CastAudioManagerAlsa::CastAudioManagerAlsa(
     std::unique_ptr<::media::AudioThread> audio_thread,
     ::media::AudioLogFactory* audio_log_factory,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
+    scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
+    service_manager::Connector* connector,
     bool use_mixer)
     : CastAudioManager(std::move(audio_thread),
                        audio_log_factory,
                        std::move(backend_factory_getter),
-                       content::BrowserThread::GetTaskRunnerForThread(
-                           content::BrowserThread::UI),
+                       browser_task_runner,
                        backend_task_runner,
+                       connector,
                        use_mixer),
       wrapper_(new ::media::AlsaWrapper()) {}
 
