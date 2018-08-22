@@ -264,10 +264,9 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   //
   // For more information, see
   // https://bugs.chromium.org/p/chromium/issues/detail?id=823915.
-  if (madvise(reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
-                  AlignToPageSize(sizeof(SharedState)),
-              AlignToPageSize(mapped_size_), MADV_FREE_REUSE))
-    ;
+  madvise(reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
+              AlignToPageSize(sizeof(SharedState)),
+          AlignToPageSize(mapped_size_), MADV_FREE_REUSE);
   return DiscardableSharedMemory::SUCCESS;
 #else
   return DiscardableSharedMemory::SUCCESS;
