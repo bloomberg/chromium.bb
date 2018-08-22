@@ -149,6 +149,7 @@ class ZipReaderTest : public PlatformTest {
     ASSERT_TRUE(GetTestDataDirectory(&test_data_dir_));
 
     test_zip_file_ = test_data_dir_.AppendASCII("test.zip");
+    encrypted_zip_file_ = test_data_dir_.AppendASCII("test_encrypted.zip");
     evil_zip_file_ = test_data_dir_.AppendASCII("evil.zip");
     evil_via_invalid_utf8_zip_file_ = test_data_dir_.AppendASCII(
         "evil_via_invalid_utf8.zip");
@@ -201,6 +202,8 @@ class ZipReaderTest : public PlatformTest {
   base::FilePath test_data_dir_;
   // The path to test.zip in the test data directory.
   base::FilePath test_zip_file_;
+  // The path to test_encrypted.zip in the test data directory.
+  base::FilePath encrypted_zip_file_;
   // The path to evil.zip in the test data directory.
   base::FilePath evil_zip_file_;
   // The path to evil_via_invalid_utf8.zip in the test data directory.
@@ -364,6 +367,20 @@ TEST_F(ZipReaderTest, current_entry_info_Directory) {
 
   EXPECT_FALSE(current_entry_info->is_unsafe());
   EXPECT_TRUE(current_entry_info->is_directory());
+}
+
+TEST_F(ZipReaderTest, current_entry_info_EncryptedFile) {
+  ZipReader reader;
+  base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
+
+  ASSERT_TRUE(reader.Open(encrypted_zip_file_));
+  ASSERT_TRUE(LocateAndOpenEntry(&reader, target_path));
+  EXPECT_TRUE(reader.current_entry_info()->is_encrypted());
+  reader.Close();
+
+  ASSERT_TRUE(reader.Open(test_zip_file_));
+  ASSERT_TRUE(LocateAndOpenEntry(&reader, target_path));
+  EXPECT_FALSE(reader.current_entry_info()->is_encrypted());
 }
 
 // Verifies that the ZipReader class can extract a file from a zip archive

@@ -107,12 +107,16 @@ class ZipReader {
     // UTF-8 characters in its file name, or the file path is absolute.
     bool is_unsafe() const { return is_unsafe_; }
 
+    // Returns true if the entry is encrypted.
+    bool is_encrypted() const { return is_encrypted_; }
+
    private:
     const base::FilePath file_path_;
     int64_t original_size_;
     base::Time last_modified_;
     bool is_directory_;
     bool is_unsafe_;
+    bool is_encrypted_;
     DISALLOW_COPY_AND_ASSIGN(EntryInfo);
   };
 
