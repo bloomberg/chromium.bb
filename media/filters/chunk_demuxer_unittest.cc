@@ -1361,8 +1361,6 @@ TEST_P(ChunkDemuxerTest, Init) {
       EXPECT_EQ(kSampleFormatPlanarF32, config.sample_format());
       EXPECT_EQ(is_audio_encrypted,
                 audio_stream->audio_decoder_config().is_encrypted());
-      EXPECT_TRUE(static_cast<ChunkDemuxerStream*>(audio_stream)
-                      ->supports_partial_append_window_trimming());
     } else {
       EXPECT_FALSE(audio_stream);
     }
@@ -1372,8 +1370,6 @@ TEST_P(ChunkDemuxerTest, Init) {
       EXPECT_TRUE(video_stream);
       EXPECT_EQ(is_video_encrypted,
                 video_stream->video_decoder_config().is_encrypted());
-      EXPECT_FALSE(static_cast<ChunkDemuxerStream*>(video_stream)
-                       ->supports_partial_append_window_trimming());
     } else {
       EXPECT_FALSE(video_stream);
     }

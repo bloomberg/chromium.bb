@@ -847,10 +847,10 @@ bool FrameProcessor::ProcessFrame(scoped_refptr<StreamParserBuffer> frame,
     frame->set_timestamp(presentation_timestamp);
     frame->SetDecodeTimestamp(decode_timestamp);
 
-    if (track_buffer->stream()->supports_partial_append_window_trimming() &&
+    // Attempt to trim audio exactly to fit the append window.
+    if (frame->type() == DemuxerStream::AUDIO &&
         HandlePartialAppendWindowTrimming(append_window_start,
-                                          append_window_end,
-                                          frame)) {
+                                          append_window_end, frame)) {
       // |frame| has been partially trimmed or had preroll added.  Though
       // |frame|'s duration may have changed, do not update |frame_duration|
       // here, so |track_buffer|'s last frame duration update uses original
