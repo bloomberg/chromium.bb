@@ -762,8 +762,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   preview_callbacks_[request_id] = callback_id;
   print_preview_ui()->OnPrintPreviewRequest(request_id);
   // Add an additional key in order to identify |print_preview_ui| later on
-  // when calling PrintPreviewUI::GetCurrentPrintPreviewStatus() on the IO
-  // thread.
+  // when calling PrintPreviewUI::ShouldCancelRequest() on the IO thread.
   settings->SetInteger(printing::kPreviewUIID,
                        print_preview_ui()->GetIDForPrintPreviewUI());
 

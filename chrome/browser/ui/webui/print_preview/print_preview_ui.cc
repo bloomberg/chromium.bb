@@ -48,7 +48,6 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "extensions/common/constants.h"
-#include "printing/buildflags/buildflags.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -558,6 +557,14 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   return source;
 }
 
+PrintPreviewHandler* CreatePrintPreviewHandlers(content::WebUI* web_ui) {
+  auto handler = std::make_unique<PrintPreviewHandler>();
+  PrintPreviewHandler* handler_ptr = handler.get();
+  web_ui->AddMessageHandler(std::move(handler));
+  web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
+  return handler_ptr;
+}
+
 }  // namespace
 
 PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
@@ -565,12 +572,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui,
     : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
       id_(g_print_preview_ui_id_map.Get().Add(this)),
-      handler_(nullptr),
-      source_is_modifiable_(true),
-      source_has_selection_(false),
-      print_selection_only_(false),
-      dialog_closed_(false) {
-  handler_ = handler.get();
+      handler_(handler.get()) {
   web_ui->AddMessageHandler(std::move(handler));
 
   g_print_preview_request_id_map.Get().Set(id_, -1);
@@ -580,11 +582,7 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
     : ConstrainedWebDialogUI(web_ui),
       initial_preview_start_time_(base::TimeTicks::Now()),
       id_(g_print_preview_ui_id_map.Get().Add(this)),
-      handler_(nullptr),
-      source_is_modifiable_(true),
-      source_has_selection_(false),
-      print_selection_only_(false),
-      dialog_closed_(false) {
+      handler_(CreatePrintPreviewHandlers(web_ui)) {
   // Set up the chrome://print/ data source.
   Profile* profile = Profile::FromWebUI(web_ui);
 
@@ -600,11 +598,6 @@ PrintPreviewUI::PrintPreviewUI(content::WebUI* web_ui)
 
   // Set up the chrome://theme/ source.
   content::URLDataSource::Add(profile, new ThemeSource(profile));
-
-  auto handler = std::make_unique<PrintPreviewHandler>();
-  handler_ = handler.get();
-  web_ui->AddMessageHandler(std::move(handler));
-  web_ui->AddMessageHandler(std::make_unique<MetricsHandler>());
 
   g_print_preview_request_id_map.Get().Set(id_, -1);
 }
@@ -651,15 +644,11 @@ void PrintPreviewUI::SetInitialParams(
 }
 
 // static
-void PrintPreviewUI::GetCurrentPrintPreviewStatus(
-    const PrintHostMsg_PreviewIds& ids,
-    bool* cancel) {
+bool PrintPreviewUI::ShouldCancelRequest(const PrintHostMsg_PreviewIds& ids) {
   int current_id = -1;
-  if (!g_print_preview_request_id_map.Get().Get(ids.ui_id, &current_id)) {
-    *cancel = true;
-    return;
-  }
-  *cancel = (ids.request_id != current_id);
+  if (!g_print_preview_request_id_map.Get().Get(ids.ui_id, &current_id))
+    return true;
+  return ids.request_id != current_id;
 }
 
 int32_t PrintPreviewUI::GetIDForPrintPreviewUI() const {
@@ -823,7 +812,7 @@ void PrintPreviewUI::SetDelegateForTesting(TestingDelegate* delegate) {
 }
 
 void PrintPreviewUI::SetSelectedFileForTesting(const base::FilePath& path) {
-  handler_->FileSelectedForTesting(path, 0, NULL);
+  handler_->FileSelectedForTesting(path, 0, nullptr);
 }
 
 void PrintPreviewUI::SetPdfSavedClosureForTesting(

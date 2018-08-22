@@ -15,7 +15,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
-#include "printing/buildflags/buildflags.h"
 
 class PrintPreviewHandler;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
@@ -76,10 +75,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
       const PrintHostMsg_RequestPrintPreview_Params& params);
 
   // Determines whether to cancel a print preview request based on the request
-  // and ui ids in |ids|.
+  // and UI ids in |ids|.
   // Can be called from any thread.
-  static void GetCurrentPrintPreviewStatus(const PrintHostMsg_PreviewIds& ids,
-                                           bool* cancel);
+  static bool ShouldCancelRequest(const PrintHostMsg_PreviewIds& ids);
 
   // Returns an id to uniquely identify this PrintPreviewUI.
   int32_t GetIDForPrintPreviewUI() const;
@@ -184,23 +182,23 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   const int32_t id_;
 
   // Weak pointer to the WebUI handler.
-  PrintPreviewHandler* handler_;
+  PrintPreviewHandler* const handler_;
 
   // Indicates whether the source document can be modified.
-  bool source_is_modifiable_;
+  bool source_is_modifiable_ = true;
 
   // Indicates whether the source document has selection.
-  bool source_has_selection_;
+  bool source_has_selection_ = false;
 
   // Indicates whether only the selection should be printed.
-  bool print_selection_only_;
+  bool print_selection_only_ = false;
+
+  // Keeps track of whether OnClosePrintPreviewDialog() has been called or not.
+  bool dialog_closed_ = false;
 
   // Store the initiator title, used for populating the print preview dialog
   // title.
   base::string16 initiator_title_;
-
-  // Keeps track of whether OnClosePrintPreviewDialog() has been called or not.
-  bool dialog_closed_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

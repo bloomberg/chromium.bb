@@ -364,7 +364,7 @@ void PrintingMessageFilter::OnUpdatePrintSettingsReply(
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintingMessageFilter::OnCheckForCancel(const PrintHostMsg_PreviewIds& ids,
                                              bool* cancel) {
-  PrintPreviewUI::GetCurrentPrintPreviewStatus(ids, cancel);
+  *cancel = PrintPreviewUI::ShouldCancelRequest(ids);
 }
 #endif
 

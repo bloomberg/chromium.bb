@@ -252,9 +252,7 @@ void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
     return;
 
   // Don't bother notifying the UI if this request has been cancelled already.
-  bool cancel = false;
-  PrintPreviewUI::GetCurrentPrintPreviewStatus(ids, &cancel);
-  if (cancel)
+  if (PrintPreviewUI::ShouldCancelRequest(ids))
     return;
 
   print_preview_ui->SetPrintPreviewDataForIndex(page_number,
