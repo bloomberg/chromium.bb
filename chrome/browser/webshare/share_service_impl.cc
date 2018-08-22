@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -21,7 +22,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "third_party/blink/public/common/manifest/manifest_share_target_util.h"
+#include "net/base/escape.h"
 
 ShareServiceImpl::ShareServiceImpl() : weak_factory_(this) {}
 ShareServiceImpl::~ShareServiceImpl() = default;
@@ -88,12 +89,18 @@ ShareServiceImpl::GetTargetsWithSufficientEngagement() {
 
     std::string name;
     share_target_dict->GetString("name", &name);
-    std::string url_template;
-    share_target_dict->GetString("url_template", &url_template);
+    std::string action;
+    share_target_dict->GetString("action", &action);
+    std::string text;
+    share_target_dict->GetString("text", &text);
+    std::string title;
+    share_target_dict->GetString("title", &title);
+    std::string url;
+    share_target_dict->GetString("url", &url);
 
-    sufficiently_engaged_targets.emplace_back(std::move(manifest_url),
-                                              std::move(name),
-                                              GURL(std::move(url_template)));
+    sufficiently_engaged_targets.emplace_back(
+        std::move(manifest_url), std::move(name), GURL(std::move(action)),
+        std::move(text), std::move(title), std::move(url));
   }
 
   return sufficiently_engaged_targets;
@@ -122,21 +129,35 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
     return;
   }
 
-  GURL url_template_filled;
-  if (!blink::ReplaceWebShareUrlPlaceholders(result->url_template(), title,
-                                             text, share_url,
-                                             &url_template_filled)) {
-    // This error should not be possible at share time. content::ManifestParser
-    // should have filtered out invalid targets at manifest parse time.
-    std::move(callback).Run(blink::mojom::ShareError::INTERNAL_ERROR);
-    return;
-  }
+  std::vector<std::pair<std::string, std::string>> entry_list;
+  if (!result->title().empty() && !title.empty())
+    entry_list.push_back({result->title(), title});
+  if (!result->text().empty() && !text.empty())
+    entry_list.push_back({result->text(), text});
+  if (!result->url().empty() && share_url.is_valid())
+    entry_list.push_back({result->url(), share_url.spec()});
+
+  auto build_query_part =
+      [](const std::pair<std::string, std::string>& name_value) {
+        return base::StringPrintf(
+            "%s=%s", net::EscapeQueryParamValue(name_value.first, true).c_str(),
+            net::EscapeQueryParamValue(name_value.second, true).c_str());
+      };
+
+  std::vector<std::string> query_parts;
+  std::transform(entry_list.begin(), entry_list.end(),
+                 std::back_inserter(query_parts), build_query_part);
+
+  std::string query = base::JoinString(query_parts, "&");
+  url::Replacements<char> replacements;
+  replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
+  GURL url = result->action().ReplaceComponents(replacements);
 
   // User should not be able to cause an invalid target URL. The replaced pieces
   // are escaped. If somehow we slip through this DCHECK, it will just open
   // about:blank.
-  DCHECK(url_template_filled.is_valid());
-  OpenTargetURL(url_template_filled);
+  DCHECK(url.is_valid());
+  OpenTargetURL(url);
 
   std::move(callback).Run(blink::mojom::ShareError::OK);
 }

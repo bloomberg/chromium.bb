@@ -15,27 +15,37 @@ class WebShareTarget {
  public:
   WebShareTarget(const GURL& manifest_url,
                  const std::string& name,
-                 const GURL& url_template);
+                 const GURL& action,
+                 const std::string& text,
+                 const std::string& title,
+                 const std::string& url);
   ~WebShareTarget();
 
   // Move constructor
-  WebShareTarget(WebShareTarget&& other) = default;
+  WebShareTarget(WebShareTarget&& other);
 
   // Move assigment
   WebShareTarget& operator=(WebShareTarget&& other) = default;
 
   const std::string& name() const { return name_; }
   const GURL& manifest_url() const { return manifest_url_; }
-  // The URL template that contains placeholders to be replaced with shared
-  // data.
-  const GURL& url_template() const { return url_template_; }
+  // The action URL to append query parameters to.
+  const GURL& action() const { return action_; }
+
+  // Parameters
+  const std::string& text() const { return text_; }
+  const std::string& title() const { return title_; }
+  const std::string& url() const { return url_; }
 
   bool operator==(const WebShareTarget& other) const;
 
  private:
   GURL manifest_url_;
   std::string name_;
-  GURL url_template_;
+  GURL action_;
+  std::string text_;
+  std::string title_;
+  std::string url_;
 
   DISALLOW_COPY_AND_ASSIGN(WebShareTarget);
 };

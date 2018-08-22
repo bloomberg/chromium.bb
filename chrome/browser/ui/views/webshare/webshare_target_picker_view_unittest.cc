@@ -27,7 +27,10 @@
 
 constexpr char kAppName1[] = "App One";
 constexpr char kAppName2[] = "App Two";
-constexpr char kTemplate[] = "share?title={title}";
+constexpr char kAction[] = "share";
+constexpr char kParamText[] = "text";
+constexpr char kParamTitle[] = "title";
+constexpr char kParamUrl[] = "url";
 constexpr char kUrl1[] = "https://appone.com/path/bits";
 constexpr char kUrl2[] = "https://apptwo.xyz";
 
@@ -123,8 +126,10 @@ TEST_F(WebShareTargetPickerViewTest, EmptyListCancel) {
 // Table with 2 targets. Choose second target and share.
 TEST_F(WebShareTargetPickerViewTest, ChooseItem) {
   std::vector<WebShareTarget> targets;
-  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kTemplate));
-  targets.emplace_back(GURL(kUrl2), kAppName2, GURL(kTemplate));
+  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kAction), kParamText,
+                       kParamTitle, kParamUrl);
+  targets.emplace_back(GURL(kUrl2), kAppName2, GURL(kAction), kParamText,
+                       kParamTitle, kParamUrl);
 
   CreateView(std::move(targets));
   EXPECT_EQ(2, table()->RowCount());
@@ -150,13 +155,16 @@ TEST_F(WebShareTargetPickerViewTest, ChooseItem) {
 
   run_loop.Run();
 
-  EXPECT_EQ(WebShareTarget(GURL(kUrl2), kAppName2, GURL(kTemplate)), *result());
+  EXPECT_EQ(WebShareTarget(GURL(kUrl2), kAppName2, GURL(kAction), kParamText,
+                           kParamTitle, kParamUrl),
+            *result());
 }
 
 // Table with 1 target. Select using double-click.
 TEST_F(WebShareTargetPickerViewTest, ChooseItemWithDoubleClick) {
   std::vector<WebShareTarget> targets;
-  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kTemplate));
+  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kAction), kParamText,
+                       kParamTitle, kParamUrl);
 
   CreateView(std::move(targets));
   EXPECT_EQ(1, table()->RowCount());
@@ -172,13 +180,16 @@ TEST_F(WebShareTargetPickerViewTest, ChooseItemWithDoubleClick) {
 
   run_loop.Run();
 
-  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, GURL(kTemplate)), *result());
+  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, GURL(kAction), kParamText,
+                           kParamTitle, kParamUrl),
+            *result());
 }
 
 // Table with 1 target. Select, share and GetText.
 TEST_F(WebShareTargetPickerViewTest, GetTextAfterAccept) {
   std::vector<WebShareTarget> targets;
-  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kTemplate));
+  targets.emplace_back(GURL(kUrl1), kAppName1, GURL(kAction), kParamText,
+                       kParamTitle, kParamUrl);
 
   CreateView(std::move(targets));
   EXPECT_EQ(1, table()->RowCount());
@@ -197,5 +208,7 @@ TEST_F(WebShareTargetPickerViewTest, GetTextAfterAccept) {
   EXPECT_EQ(base::ASCIIToUTF16("App One (https://appone.com/)"),
             table()->model()->GetText(0, 0));
 
-  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, GURL(kTemplate)), *result());
+  EXPECT_EQ(WebShareTarget(GURL(kUrl1), kAppName1, GURL(kAction), kParamText,
+                           kParamTitle, kParamUrl),
+            *result());
 }

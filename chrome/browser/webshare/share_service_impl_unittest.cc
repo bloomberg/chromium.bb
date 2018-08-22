@@ -29,15 +29,14 @@ constexpr char kText[] = "My text";
 constexpr char kUrlSpec[] = "https://www.google.com/";
 
 constexpr char kTargetName[] = "Share Target";
-constexpr char kUrlTemplateHigh[] =
-    "https://www.example-high.com/target/"
-    "share?title={title}&text={text}&url={url}";
-constexpr char kUrlTemplateLow[] =
-    "https://www.example-low.com/target/"
-    "share?title={title}&text={text}&url={url}";
-constexpr char kUrlTemplateMin[] =
-    "https://www.example-min.com/target/"
-    "share?title={title}&text={text}&url={url}";
+constexpr char kParamTitle[] = "my title";
+constexpr char kParamText[] = "text%";
+constexpr char kParamUrl[] = "url";
+constexpr char kActionHigh[] = "https://www.example-high.com/target/share";
+constexpr char kActionLow[] = "https://www.example-low.com/target/share";
+constexpr char kActionLowWithQuery[] =
+    "https://www.example-low.com/target/share?a=b&c=d";
+constexpr char kActionMin[] = "https://www.example-min.com/target/share";
 constexpr char kManifestUrlHigh[] =
     "https://www.example-high.com/target/manifest.json";
 constexpr char kManifestUrlLow[] =
@@ -63,9 +62,15 @@ class ShareServiceTestImpl : public ShareServiceImpl {
 
   void AddShareTargetToPrefs(const std::string& manifest_url,
                              const std::string& name,
-                             const std::string& url_template) {
-    constexpr char kUrlTemplateKey[] = "url_template";
+                             const std::string& action,
+                             const std::string& text,
+                             const std::string& title,
+                             const std::string& url) {
+    constexpr char kActionKey[] = "action";
     constexpr char kNameKey[] = "name";
+    constexpr char kTextKey[] = "text";
+    constexpr char kTitleKey[] = "title";
+    constexpr char kUrlKey[] = "url";
 
     DictionaryPrefUpdate update(GetPrefService(),
                                 prefs::kWebShareVisitedTargets);
@@ -74,8 +79,11 @@ class ShareServiceTestImpl : public ShareServiceImpl {
     std::unique_ptr<base::DictionaryValue> origin_dict(
         new base::DictionaryValue);
 
-    origin_dict->SetKey(kUrlTemplateKey, base::Value(url_template));
+    origin_dict->SetKey(kActionKey, base::Value(action));
     origin_dict->SetKey(kNameKey, base::Value(name));
+    origin_dict->SetKey(kTextKey, base::Value(text));
+    origin_dict->SetKey(kTitleKey, base::Value(title));
+    origin_dict->SetKey(kUrlKey, base::Value(url));
 
     share_target_dict->SetWithoutPathExpansion(manifest_url,
                                                std::move(origin_dict));
@@ -191,13 +199,15 @@ class ShareServiceImplUnittest : public ChromeRenderViewHostTestHarness {
 // parameters.
 TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplateLow);
+                                                kActionLow, kParamText,
+                                                kParamTitle, kParamUrl);
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
-                                                kUrlTemplateHigh);
+                                                kActionHigh, kParamText,
+                                                kParamTitle, kParamUrl);
   // Expect this invalid URL to be ignored (not crash);
   // https://crbug.com/762388.
-  share_service_helper()->AddShareTargetToPrefs("", kTargetName,
-                                                kUrlTemplateHigh);
+  share_service_helper()->AddShareTargetToPrefs(
+      "", kTargetName, kActionHigh, kParamText, kParamTitle, kParamUrl);
 
   base::OnceCallback<void(blink::mojom::ShareError)> callback =
       base::BindOnce(&DidShare, blink::mojom::ShareError::OK);
@@ -212,9 +222,11 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlHigh), kTargetName,
-                                GURL(kUrlTemplateHigh));
+                                GURL(kActionHigh), kParamText, kParamTitle,
+                                kParamUrl);
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                GURL(kUrlTemplateLow));
+                                GURL(kActionLow), kParamText, kParamTitle,
+                                kParamUrl);
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   // Pick example-low.com.
@@ -222,7 +234,39 @@ TEST_F(ShareServiceImplUnittest, ShareCallbackParams) {
 
   const char kExpectedURL[] =
       "https://www.example-low.com/target/"
-      "share?title=My%20title&text=My%20text&url=https%3A%2F%2Fwww."
+      "share?my+title=My+title&text%25=My+text&url=https%3A%2F%2Fwww."
+      "google.com%2F";
+  EXPECT_EQ(kExpectedURL, share_service_helper()->GetLastUsedTargetURL());
+}
+
+// Adds URL already containing query parameters.
+TEST_F(ShareServiceImplUnittest, ShareCallbackWithQueryString) {
+  share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
+                                                kActionLowWithQuery, kParamText,
+                                                kParamTitle, kParamUrl);
+  base::OnceCallback<void(blink::mojom::ShareError)> callback =
+      base::BindOnce(&DidShare, blink::mojom::ShareError::OK);
+
+  base::RunLoop run_loop;
+  share_service_helper()->set_run_loop(&run_loop);
+
+  const GURL url(kUrlSpec);
+  share_service()->Share(kTitle, kText, url, std::move(callback));
+
+  run_loop.Run();
+
+  std::vector<WebShareTarget> expected_targets;
+  expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
+                                GURL(kActionLowWithQuery), kParamText,
+                                kParamTitle, kParamUrl);
+  EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
+
+  // Pick example-low.com.
+  share_service_helper()->PickTarget(kManifestUrlLow);
+
+  const char kExpectedURL[] =
+      "https://www.example-low.com/target/"
+      "share?my+title=My+title&text%25=My+text&url=https%3A%2F%2Fwww."
       "google.com%2F";
   EXPECT_EQ(kExpectedURL, share_service_helper()->GetLastUsedTargetURL());
 }
@@ -253,9 +297,11 @@ TEST_F(ShareServiceImplUnittest, ShareCancelNoTargets) {
 // Tests the result of cancelling the share in the picker UI, that has targets.
 TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
-                                                kUrlTemplateHigh);
+                                                kActionHigh, kParamText,
+                                                kParamTitle, kParamUrl);
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplateLow);
+                                                kActionLow, kParamText,
+                                                kParamTitle, kParamUrl);
 
   // Expect an error message in response.
   base::OnceCallback<void(blink::mojom::ShareError)> callback =
@@ -271,9 +317,11 @@ TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlHigh), kTargetName,
-                                GURL(kUrlTemplateHigh));
+                                GURL(kActionHigh), kParamText, kParamTitle,
+                                kParamUrl);
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                GURL(kUrlTemplateLow));
+                                GURL(kActionLow), kParamText, kParamTitle,
+                                kParamUrl);
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   // Cancel the dialog.
@@ -282,44 +330,14 @@ TEST_F(ShareServiceImplUnittest, ShareCancelWithTargets) {
   EXPECT_TRUE(share_service_helper()->GetLastUsedTargetURL().empty());
 }
 
-// Tests a target with a broken URL template (ReplacePlaceholders failure).
-TEST_F(ShareServiceImplUnittest, ShareBrokenUrl) {
-  // Invalid placeholders. Detailed tests for broken templates are in the
-  // ReplacePlaceholders test; this just tests the share response.
-  constexpr char kBrokenUrlTemplate[] =
-      "http://webshare.com/share?title={title";
-  share_service_helper()->AddShareTargetToPrefs(kManifestUrlHigh, kTargetName,
-                                                kBrokenUrlTemplate);
-
-  // Expect an error message in response.
-  base::OnceCallback<void(blink::mojom::ShareError)> callback =
-      base::BindOnce(&DidShare, blink::mojom::ShareError::INTERNAL_ERROR);
-
-  base::RunLoop run_loop;
-  share_service_helper()->set_run_loop(&run_loop);
-
-  const GURL url(kUrlSpec);
-  share_service()->Share(kTitle, kText, url, std::move(callback));
-
-  run_loop.Run();
-
-  std::vector<WebShareTarget> expected_targets;
-  expected_targets.emplace_back(GURL(kManifestUrlHigh), kTargetName,
-                                GURL(kBrokenUrlTemplate));
-  EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
-
-  // Pick example-high.com.
-  share_service_helper()->PickTarget(kManifestUrlHigh);
-
-  EXPECT_TRUE(share_service_helper()->GetLastUsedTargetURL().empty());
-}
-
 // Test to check that only targets with enough engagement were in picker.
 TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlMin, kTargetName,
-                                                kUrlTemplateMin);
+                                                kActionMin, kParamText,
+                                                kParamTitle, kParamUrl);
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplateLow);
+                                                kActionLow, kParamText,
+                                                kParamTitle, kParamUrl);
 
   base::OnceCallback<void(blink::mojom::ShareError)> callback =
       base::BindOnce(&DidShare, blink::mojom::ShareError::OK);
@@ -334,7 +352,8 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                GURL(kUrlTemplateLow));
+                                GURL(kActionLow), kParamText, kParamTitle,
+                                kParamUrl);
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   // Pick example-low.com.
@@ -342,7 +361,7 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
 
   const char kExpectedURL[] =
       "https://www.example-low.com/target/"
-      "share?title=My%20title&text=My%20text&url=https%3A%2F%2Fwww."
+      "share?my+title=My+title&text%25=My+text&url=https%3A%2F%2Fwww."
       "google.com%2F";
   EXPECT_EQ(kExpectedURL, share_service_helper()->GetLastUsedTargetURL());
 }
@@ -351,7 +370,8 @@ TEST_F(ShareServiceImplUnittest, ShareWithSomeInsufficientlyEngagedTargets) {
 // (https://crbug.com/690775).
 TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
   share_service_helper()->AddShareTargetToPrefs(kManifestUrlLow, kTargetName,
-                                                kUrlTemplateLow);
+                                                kActionLow, kParamText,
+                                                kParamTitle, kParamUrl);
 
   base::RunLoop run_loop;
   share_service_helper()->set_run_loop(&run_loop);
@@ -369,7 +389,8 @@ TEST_F(ShareServiceImplUnittest, ShareServiceDeletion) {
 
   std::vector<WebShareTarget> expected_targets;
   expected_targets.emplace_back(GURL(kManifestUrlLow), kTargetName,
-                                GURL(kUrlTemplateLow));
+                                GURL(kActionLow), kParamText, kParamTitle,
+                                kParamUrl);
   EXPECT_EQ(expected_targets, share_service_helper()->GetTargetsInPicker());
 
   chrome::WebShareTargetPickerCallback picker_callback =
