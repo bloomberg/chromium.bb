@@ -921,8 +921,9 @@ void CookieMonster::StoreLoadedCookies(
         GetKey(cookie_ptr->Domain()), std::move(cookie), false);
     const Time cookie_access_time(cookie_ptr->LastAccessDate());
     if (earliest_access_time_.is_null() ||
-        cookie_access_time < earliest_access_time_)
+        cookie_access_time < earliest_access_time_) {
       earliest_access_time_ = cookie_access_time;
+    }
 
     if (ContainsControlCharacter(cookie_ptr->Name()) ||
         ContainsControlCharacter(cookie_ptr->Value())) {
@@ -1210,8 +1211,9 @@ CookieMonster::CookieMap::iterator CookieMonster::InternalInsertCookie(
                     base::BindRepeating(&NetLogCookieMonsterCookieAdded,
                                         cc.get(), sync_to_store));
   if ((cc_ptr->IsPersistent() || persist_session_cookies_) && store_.get() &&
-      sync_to_store)
+      sync_to_store) {
     store_->AddCookie(*cc_ptr);
+  }
   CookieMap::iterator inserted =
       cookies_.insert(CookieMap::value_type(key, std::move(cc)));
 
@@ -1392,8 +1394,9 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   }
 
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&
-      sync_to_store)
+      sync_to_store) {
     store_->DeleteCookie(*cc);
+  }
   change_dispatcher_.DispatchChange(*cc, mapping.cause, mapping.notify);
   cookies_.erase(it);
 }
