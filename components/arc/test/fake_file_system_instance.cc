@@ -307,4 +307,10 @@ void FakeFileSystemInstance::RequestMediaScan(
   // Do nothing and pretend we scaned them.
 }
 
+void FakeFileSystemInstance::OpenUrlsWithPermission(
+    mojom::OpenUrlsRequestPtr request,
+    OpenUrlsWithPermissionCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
+
 }  // namespace arc

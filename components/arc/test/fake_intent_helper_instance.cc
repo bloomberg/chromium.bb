@@ -67,7 +67,7 @@ void FakeIntentHelperInstance::HandleIntent(mojom::IntentInfoPtr intent,
 void FakeIntentHelperInstance::HandleUrl(const std::string& url,
                                          const std::string& package_name) {}
 
-void FakeIntentHelperInstance::HandleUrlList(
+void FakeIntentHelperInstance::HandleUrlListDeprecated(
     std::vector<mojom::UrlWithMimeTypePtr> urls,
     mojom::ActivityNamePtr activity,
     mojom::ActionType action) {}

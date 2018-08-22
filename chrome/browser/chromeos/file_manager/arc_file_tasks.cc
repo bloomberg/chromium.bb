@@ -221,9 +221,10 @@ void ExecuteArcTaskAfterContentUrlsResolved(
   if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     auto* arc_service_manager = arc::ArcServiceManager::Get();
     if (arc_service_manager) {
+      // TODO(niwa): Switch to FileSystemInstance.OpenUrlsWithPermission().
       arc_intent_helper = ARC_GET_INSTANCE_FOR_METHOD(
           arc_service_manager->arc_bridge_service()->intent_helper(),
-          HandleUrlList);
+          HandleUrlListDeprecated);
     }
   }
   if (!arc_intent_helper) {
@@ -245,7 +246,7 @@ void ExecuteArcTaskAfterContentUrlsResolved(
     urls.push_back(std::move(url_with_type));
   }
 
-  arc_intent_helper->HandleUrlList(
+  arc_intent_helper->HandleUrlListDeprecated(
       std::move(urls), AppIdToActivityName(task.app_id),
       FileTaskActionIdToArcActionType(task.action_id));
   done.Run(extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);

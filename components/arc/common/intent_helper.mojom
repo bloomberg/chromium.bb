@@ -6,14 +6,8 @@
 
 module arc.mojom;
 
+import "components/arc/common/intent_common.mojom";
 import "components/arc/common/scale_factor.mojom";
-
-// Describes the type of action to invoke.
-enum ActionType {
-  VIEW,
-  SEND,
-  SEND_MULTIPLE,
-};
 
 [Extensible]
 enum PatternType {
@@ -67,12 +61,6 @@ struct IntentHandlerInfo {
   // RequestUrlHandlerList may fill |fallback_url| when it is called with an
   // intent: URL.
   [MinVersion=14] string? fallback_url;
-};
-
-// Describes an activity.
-struct ActivityName {
-  string package_name;
-  string? activity_name;  // may be null to indicate any activity within package
 };
 
 // Describes an icon for the activity.
@@ -198,10 +186,10 @@ interface IntentHelperInstance {
   // most suitable activity for the URL within the package will be started.
   [MinVersion=2] HandleUrl@2(string url, string package_name);
 
-  // Handles the list of URLs by sending a specified intent to the handler.
-  [MinVersion=5] HandleUrlList@7(array<UrlWithMimeType> urls,
-                                 ActivityName activity,
-                                 ActionType action_type);
+  // DEPRECATED. Use FileSystemInstance.OpenUrlsWithPermission() instead.
+  [MinVersion=5] HandleUrlListDeprecated@7(array<UrlWithMimeType> urls,
+                                           ActivityName activity,
+                                           ActionType action_type);
 
   // DEPRECATED: Please use Init@13 instead.
   InitDeprecated@0(IntentHelperHost host_ptr);

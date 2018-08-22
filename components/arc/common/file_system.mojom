@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 8
+// Next MinVersion: 9
 
 module arc.mojom;
+
+import "components/arc/common/intent_common.mojom";
+import "url/mojom/url.mojom";
 
 // Represents a document in Android DocumentsProvider.
 // See Android docs of DocumentsContract.Document for details.
@@ -49,6 +52,23 @@ enum ChangeType {
   DELETED = 1,
 };
 
+// Content URL associated with its MIME type.
+struct ContentUrlWithMimeType {
+  url.mojom.Url content_url;
+  string mime_type;
+};
+
+// Request for opening URLs by sending an intent to the specified activity.
+struct OpenUrlsRequest {
+  // Action type of the intent.
+  ActionType action_type;
+
+  // Target activity for the intent.
+  ActivityName activity_name;
+
+  // One or more URLs to open with the intent.
+  array<ContentUrlWithMimeType> urls;
+};
 
 // Next method ID: 5
 interface FileSystemHost {
@@ -73,7 +93,7 @@ interface FileSystemHost {
   [MinVersion=6] OpenFileToRead@4(string url) => (handle? fd);
 };
 
-// Next method ID: 11
+// Next method ID: 12
 interface FileSystemInstance {
   // Notes about Android Documents Provider:
   //
@@ -163,4 +183,10 @@ interface FileSystemInstance {
   // When the specified file does not exist, the corresponding entry in
   // MediaProvider is removed.
   RequestMediaScan@0(array<string> paths);
+
+  // Opens URLs by sending an intent to the specified activity.
+  // Since this grants read/write URL permissions to the activity, callers must
+  // ensure that the user is correctly aware of the URLs and the activity they
+  // are passing.
+  [MinVersion=8] OpenUrlsWithPermission@11(OpenUrlsRequest request) => ();
 };
