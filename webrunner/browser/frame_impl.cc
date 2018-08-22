@@ -132,8 +132,17 @@ void FrameImpl::Stop() {
   NOTIMPLEMENTED();
 }
 
-void FrameImpl::Reload() {
-  NOTIMPLEMENTED();
+void FrameImpl::Reload(chromium::web::ReloadType type) {
+  content::ReloadType internal_reload_type;
+  switch (type) {
+    case chromium::web::ReloadType::PARTIAL_CACHE:
+      internal_reload_type = content::ReloadType::NORMAL;
+      break;
+    case chromium::web::ReloadType::NO_CACHE:
+      internal_reload_type = content::ReloadType::BYPASSING_CACHE;
+      break;
+  }
+  web_contents_->GetController().Reload(internal_reload_type, false);
 }
 
 void FrameImpl::GetVisibleEntry(GetVisibleEntryCallback callback) {

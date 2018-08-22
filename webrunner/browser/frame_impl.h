@@ -60,7 +60,7 @@ class FrameImpl : public chromium::web::Frame,
   void GoBack() override;
   void GoForward() override;
   void Stop() override;
-  void Reload() override;
+  void Reload(chromium::web::ReloadType type) override;
   void GetVisibleEntry(GetVisibleEntryCallback callback) override;
 
   // content::WebContentsObserver implementation.
