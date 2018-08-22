@@ -26,30 +26,36 @@ namespace base {
 
 // This is the interface to post tasks.
 //
-// To post a simple one-off task with default traits: PostTask(FROM_HERE,
-//     Bind(...));
+// To post a simple one-off task with default traits:
+//     PostTask(FROM_HERE, Bind(...));
 //
 // To post a high priority one-off task to respond to a user interaction:
-//     PostTaskWithTraits(FROM_HERE, {TaskPriority::USER_BLOCKING}, Bind(...));
+//     PostTaskWithTraits(
+//         FROM_HERE,
+//         {TaskPriority::USER_BLOCKING},
+//         Bind(...));
 //
 // To post tasks that must run in sequence with default traits:
 //     scoped_refptr<SequencedTaskRunner> task_runner =
-//     CreateSequencedTaskRunnerWithTraits(TaskTraits());
+//         CreateSequencedTaskRunnerWithTraits(TaskTraits());
 //     task_runner.PostTask(FROM_HERE, Bind(...));
 //     task_runner.PostTask(FROM_HERE, Bind(...));
 //
 // To post tasks that may block, must run in sequence and can be skipped on
-// shutdown: scoped_refptr<SequencedTaskRunner> task_runner =
-// CreateSequencedTaskRunnerWithTraits({MayBlock(),
-// TaskShutdownBehavior::SKIP_ON_SHUTDOWN}); task_runner.PostTask(FROM_HERE,
-// Bind(...)); task_runner.PostTask(FROM_HERE, Bind(...));
+// shutdown:
+//     scoped_refptr<SequencedTaskRunner> task_runner =
+//         CreateSequencedTaskRunnerWithTraits(
+//             {MayBlock(), TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+//     task_runner.PostTask(FROM_HERE, Bind(...));
+//     task_runner.PostTask(FROM_HERE, Bind(...));
 //
-// The default traits apply to tasks that: (1) don't block (ref. MayBlock() and
-//     WithBaseSyncPrimitives()), (2) prefer inheriting the current priority to
-//     specifying their own, and (3) can either block shutdown or be skipped on
-//     shutdown (implementation is free to choose a fitting default). Explicit
-//     traits must be specified for tasks for which these loose requirements are
-//     not sufficient.
+// The default traits apply to tasks that:
+//     (1) don't block (ref. MayBlock() and WithBaseSyncPrimitives()),
+//     (2) prefer inheriting the current priority to specifying their own, and
+//     (3) can either block shutdown or be skipped on shutdown
+//         (implementation is free to choose a fitting default).
+// Explicit traits must be specified for tasks for which these loose
+// requirements are not sufficient.
 //
 // Tasks posted with only traits defined in base/task/task_traits.h run on
 // threads owned by the registered TaskScheduler (i.e. not on the main thread).
