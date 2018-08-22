@@ -879,7 +879,16 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
       View()->SetLastHiddenPagePopup(nullptr);
       break;
     case WebInputEvent::kGestureShowPress:
+      break;
     case WebInputEvent::kGestureDoubleTap:
+      // Until https://crbug.com/734209 is resolved and OOPIFs learn how to
+      // handle AnimateDoubleTap, we shouldn't pass this event to the event
+      // handler as it will just result in (at best) hitting NOTREACHED() in
+      // debug builds.
+      LOG(INFO) << "DoubleTap zoom animations not yet implemented for OOPIF.";
+      event_result = WebInputEventResult::kHandledSystem;
+      Client()->DidHandleGestureEvent(event, event_cancelled);
+      return event_result;
       break;
     case WebInputEvent::kGestureTwoFingerTap:
     case WebInputEvent::kGestureLongPress:
