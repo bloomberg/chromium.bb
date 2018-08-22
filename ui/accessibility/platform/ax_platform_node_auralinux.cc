@@ -754,67 +754,6 @@ static const GInterfaceInfo HyperlinkImplInfo = {
     nullptr, nullptr};
 
 //
-// AtkText interface.
-//
-
-static gchar* ax_platform_node_auralinux_get_text(AtkText* atk_text,
-                                                  gint start_offset,
-                                                  gint end_offset) {
-  AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
-  if (!obj)
-    return nullptr;
-
-  std::string text = obj->GetTextForATK();
-  if (end_offset < 0)
-    end_offset = g_utf8_strlen(text.c_str(), -1);
-
-  return g_utf8_substring(text.c_str(), start_offset, end_offset);
-}
-
-static gint ax_platform_node_auralinux_get_character_count(AtkText* atk_text) {
-  AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
-  if (!obj)
-    return 0;
-
-  std::string text = obj->GetTextForATK();
-  return g_utf8_strlen(text.c_str(), -1);
-}
-
-static AtkAttributeSet* ax_platform_node_auralinux_get_run_attributes(
-    AtkText* atk_text,
-    gint offset,
-    gint* start_offset,
-    gint* end_offset) {
-  *start_offset = -1;
-  *end_offset = -1;
-
-  AtkObject* atk_object = ATK_OBJECT(atk_text);
-  ui::AXPlatformNodeAuraLinux* obj =
-      AtkObjectToAXPlatformNodeAuraLinux(atk_object);
-  if (!obj)
-    return nullptr;
-
-  *start_offset = 0;
-  *end_offset = ax_platform_node_auralinux_get_character_count(atk_text);
-
-  return nullptr;
-}
-
-static void ax_text_interface_base_init(AtkTextIface* iface) {
-  iface->get_text = ax_platform_node_auralinux_get_text;
-  iface->get_run_attributes = ax_platform_node_auralinux_get_run_attributes;
-  iface->get_character_count = ax_platform_node_auralinux_get_character_count;
-}
-
-static const GInterfaceInfo TextInfo = {
-    reinterpret_cast<GInterfaceInitFunc>(ax_text_interface_base_init), nullptr,
-    nullptr};
-
-//
 // The rest of the AXPlatformNodeAtk code, not specific to one
 // of the Atk* interfaces.
 //
@@ -940,10 +879,6 @@ int AXPlatformNodeAuraLinux::GetGTypeInterfaceMask() {
   if (role == ATK_ROLE_LINK)
     interface_mask |= 1 << ATK_HYPERLINK_INTERFACE;
 
-  // Text interface
-  if (role == ATK_ROLE_TEXT)
-    interface_mask |= 1 << ATK_TEXT_INTERFACE;
-
   return interface_mask;
 }
 
@@ -981,8 +916,6 @@ GType AXPlatformNodeAuraLinux::GetAccessibilityGType() {
   if (interface_mask_ & (1 << ATK_HYPERLINK_INTERFACE))
     g_type_add_interface_static(type, ATK_TYPE_HYPERLINK_IMPL,
                                 &HyperlinkImplInfo);
-  if (interface_mask_ & (1 << ATK_TYPE_TEXT))
-    g_type_add_interface_static(type, ATK_TYPE_TEXT, &TextInfo);
 
   return type;
 }
@@ -1797,14 +1730,6 @@ void AXPlatformNodeAuraLinux::AddAttributeToList(const char* name,
                                                  const char* value,
                                                  AtkAttributeSet** attributes) {
   *attributes = PrependAtkAttributeToAtkAttributeSet(name, value, *attributes);
-}
-
-std::string AXPlatformNodeAuraLinux::GetTextForATK() {
-  // Special case allows us to get text even in non-HTML case, e.g. browser UI.
-  if (IsPlainTextField())
-    return GetStringAttribute(ax::mojom::StringAttribute::kValue);
-
-  return AXPlatformNodeBase::GetText();
 }
 
 }  // namespace ui

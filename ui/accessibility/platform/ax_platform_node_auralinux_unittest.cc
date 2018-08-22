@@ -74,18 +74,6 @@ static void EnsureAtkObjectDoesNotHaveAttribute(
   atk_attribute_set_free(attributes);
 }
 
-static void SetStringAttributeOnNode(
-    AXNode* ax_node,
-    ax::mojom::StringAttribute attribute,
-    const char* attribute_value,
-    base::Optional<ax::mojom::Role> role = base::nullopt) {
-  AXNodeData new_data = AXNodeData();
-  new_data.role = role.value_or(ax::mojom::Role::kApplication);
-  new_data.id = ax_node->data().id;
-  new_data.AddStringAttribute(attribute, attribute_value);
-  ax_node->SetData(new_data);
-}
-
 static void TestAtkObjectIntAttribute(
     AXNode* ax_node,
     AtkObject* atk_object,
@@ -133,7 +121,11 @@ static void TestAtkObjectStringAttribute(
   };
 
   for (unsigned i = 0; i < G_N_ELEMENTS(tests); i++) {
-    SetStringAttributeOnNode(ax_node, mojom_attribute, tests[i], role);
+    AXNodeData new_data = AXNodeData();
+    new_data.role = role.value_or(ax::mojom::Role::kApplication);
+    new_data.id = ax_node->data().id;
+    new_data.AddStringAttribute(mojom_attribute, tests[i]);
+    ax_node->SetData(new_data);
     EnsureAtkObjectHasAttributeWithValue(atk_object, attribute_name, tests[i]);
   }
 }
@@ -855,53 +847,6 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkHyperlink) {
 
   g_object_unref(hyperlink);
   g_object_unref(root_obj);
-}
-
-//
-// AtkText interface
-//
-
-TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkText) {
-  AXNodeData root_data;
-  root_data.id = 1;
-  Init(root_data);
-
-  AtkObject* root_atk_object(GetRootAtkObject());
-  ASSERT_TRUE(ATK_IS_OBJECT(root_atk_object));
-  ASSERT_TRUE(ATK_IS_TEXT(root_atk_object));
-  g_object_ref(root_atk_object);
-
-  AtkText* atk_text = ATK_TEXT(root_atk_object);
-
-  auto verify_atk_text_contents = [&](const char* expected_text,
-                                      int start_offset, int end_offset) {
-    gchar* text = atk_text_get_text(atk_text, start_offset, end_offset);
-    EXPECT_STREQ(expected_text, text);
-    g_free(text);
-  };
-
-  AXNode* root = GetRootNode();
-  SetStringAttributeOnNode(root, ax::mojom::StringAttribute::kName, "Text",
-                           ax::mojom::Role::kStaticText);
-  verify_atk_text_contents("Text", 0, -1);
-
-  EXPECT_EQ(4, atk_text_get_character_count(atk_text));
-
-  SetStringAttributeOnNode(root, ax::mojom::StringAttribute::kName,
-                           "Longer String", ax::mojom::Role::kStaticText);
-  verify_atk_text_contents("Longer String", 0, -1);
-  verify_atk_text_contents("Longer ", 0, 7);
-  verify_atk_text_contents("String", 7, -1);
-  EXPECT_EQ(13, atk_text_get_character_count(atk_text));
-
-  SetStringAttributeOnNode(root, ax::mojom::StringAttribute::kName,
-                           "\xE2\x98\xBA", ax::mojom::Role::kStaticText);
-  verify_atk_text_contents("\xE2\x98\xBA", 0, -1);
-  verify_atk_text_contents("\xE2\x98\xBA", 0, 1);
-
-  EXPECT_EQ(1, atk_text_get_character_count(atk_text));
-
-  g_object_unref(root_atk_object);
 }
 
 }  // namespace ui
