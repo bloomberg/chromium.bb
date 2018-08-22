@@ -438,8 +438,6 @@ class ScopedMemTrackerChange {
 DecoderTextureState::DecoderTextureState(
     const GpuDriverBugWorkarounds& workarounds)
     : tex_image_failed(false),
-      texsubimage_faster_than_teximage(
-          workarounds.texsubimage_faster_than_teximage),
       force_cube_map_positive_x_allocation(
           workarounds.force_cube_map_positive_x_allocation),
       force_cube_complete(workarounds.force_cube_complete),
@@ -3045,8 +3043,7 @@ void TextureManager::ValidateAndDoTexSubImage(
     }
   }
 
-  if (full_image && !texture_state->texsubimage_faster_than_teximage &&
-      !texture->IsImmutable() && !texture->HasImages()) {
+  if (full_image && !texture->IsImmutable() && !texture->HasImages()) {
     TRACE_EVENT0("gpu", "FullImage");
     GLenum internal_format;
     GLenum tex_type;
@@ -3402,27 +3399,6 @@ void TextureManager::DoTexImage(
 
   if (texture->IsAttachedToFramebuffer()) {
     framebuffer_state->clear_state_dirty = true;
-  }
-
-  if (texture_state->texsubimage_faster_than_teximage &&
-      level_is_same && args.pixels && !unpack_buffer_bound) {
-    {
-      if (args.command_type == DoTexImageArguments::kTexImage3D) {
-        glTexSubImage3D(args.target, args.level, 0, 0, 0, args.width,
-                        args.height, args.depth,
-                        AdjustTexFormat(feature_info_.get(), args.format),
-                        args.type, args.pixels);
-      } else {
-        glTexSubImage2D(args.target, args.level, 0, 0, args.width, args.height,
-                        AdjustTexFormat(feature_info_.get(), args.format),
-                        args.type, args.pixels);
-      }
-    }
-    SetLevelInfo(texture_ref, args.target, args.level, args.internal_format,
-                 args.width, args.height, args.depth, args.border, args.format,
-                 args.type, gfx::Rect(args.width, args.height));
-    texture_state->tex_image_failed = false;
-    return;
   }
 
   ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state, function_name);

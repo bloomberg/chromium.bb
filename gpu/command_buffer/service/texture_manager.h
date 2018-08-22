@@ -698,7 +698,6 @@ struct DecoderTextureState {
   // group.
   bool tex_image_failed;
 
-  bool texsubimage_faster_than_teximage;
   bool force_cube_map_positive_x_allocation;
   bool force_cube_complete;
   bool force_int_or_srgb_cube_texture_complete;
