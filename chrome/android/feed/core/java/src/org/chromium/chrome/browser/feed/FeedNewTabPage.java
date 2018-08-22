@@ -11,6 +11,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 
@@ -32,7 +33,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.feed.action.FeedActionHandler;
 import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.ntp.NewTabPageLayout;
 import org.chromium.chrome.browser.ntp.SnapScrollHelper;
@@ -56,7 +56,7 @@ import java.util.List;
 /**
  * Provides a new tab page that displays an interest feed rendered list of content suggestions.
  */
-public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
+public class FeedNewTabPage extends NewTabPage {
     private final FeedNewTabPageMediator mMediator;
     private final StreamLifecycleManager mStreamLifecycleManager;
     private final Stream mStream;
@@ -174,6 +174,12 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
             super.onConfigurationChanged(newConfig);
             mUiConfig.updateDisplayStyle();
         }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent ev) {
+            return !mMediator.getTouchEnabled() || mFakeboxDelegate.isUrlBarFocused()
+                    || super.onInterceptTouchEvent(ev);
+        }
     }
 
     /**
@@ -227,8 +233,8 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
         // TODO(twellington): Move this somewhere it can be shared with NewTabPageView?
         Runnable closeContextMenuCallback = () -> mTab.getActivity().closeContextMenu();
         ContextMenuManager contextMenuManager =
-                new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(),
-                        this::setTouchEnabled, closeContextMenuCallback, false);
+                new ContextMenuManager(mNewTabPageManager.getNavigationDelegate(), mMediator,
+                        closeContextMenuCallback, false);
         mTab.getWindowAndroid().addContextMenuCloseListener(contextMenuManager);
 
         mNewTabPageLayout.initialize(mNewTabPageManager, mTab, mTileGroupDelegate,
@@ -296,13 +302,6 @@ public class FeedNewTabPage extends NewTabPage implements TouchEnabledDelegate {
     /** @return The {@link SectionHeaderView} for the Feed section header. */
     SectionHeaderView getSectionHeaderView() {
         return mSectionHeaderView;
-    }
-
-    // TouchEnabledDelegate interface.
-
-    @Override
-    public void setTouchEnabled(boolean enabled) {
-        // TODO(twellington): implement this method.
     }
 
     /**

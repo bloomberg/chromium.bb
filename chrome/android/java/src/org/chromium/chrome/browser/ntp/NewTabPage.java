@@ -92,7 +92,7 @@ public class NewTabPage
     private TabObserver mTabObserver;
     protected boolean mSearchProviderHasLogo;
 
-    private FakeboxDelegate mFakeboxDelegate;
+    protected FakeboxDelegate mFakeboxDelegate;
     private LocationBarVoiceRecognitionHandler mVoiceRecognitionHandler;
 
     // The timestamp at which the constructor was called.
