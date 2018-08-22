@@ -420,7 +420,7 @@ void CertificatesHandler::CertificatesRefreshed() {
       policy::UserNetworkConfigurationUpdaterFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
   if (service)
-    service->GetWebTrustedCertificates(&web_trusted_certs);
+    web_trusted_certs = service->GetWebTrustedCertificates();
 #endif
   PopulateTree("personalCerts", net::USER_CERT, web_trusted_certs);
   PopulateTree("serverCerts", net::SERVER_CERT, web_trusted_certs);

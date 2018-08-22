@@ -5,12 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_POLICY_TEMP_CERTS_CACHE_NSS_H_
 #define CHROME_BROWSER_CHROMEOS_POLICY_TEMP_CERTS_CACHE_NSS_H_
 
-#include <string>
-#include <vector>
-
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "net/cert/scoped_nss_types.h"
+#include "net/cert/x509_certificate.h"
 
 namespace policy {
 
@@ -18,10 +15,8 @@ namespace policy {
 // them available e.g. for client certificate discovery.
 class TempCertsCacheNSS {
  public:
-  explicit TempCertsCacheNSS(const std::vector<std::string>& x509_certs);
+  explicit TempCertsCacheNSS(const net::CertificateList& certificates);
   ~TempCertsCacheNSS();
-
-  static std::vector<std::string> GetUntrustedAuthoritiesFromDeviceOncPolicy();
 
  private:
   // The actual cache of NSS temporary certificates.

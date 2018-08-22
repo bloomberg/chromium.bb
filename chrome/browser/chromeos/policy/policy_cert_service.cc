@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
+#include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/cert/x509_certificate.h"
@@ -57,19 +58,32 @@ PolicyCertService::CreatePolicyCertVerifier() {
                  callback));
   // Certs are forwarded to |cert_verifier_|, thus register here after
   // |cert_verifier_| is created.
-  net_conf_updater_->AddTrustedCertsObserver(this);
+  net_conf_updater_->AddPolicyProvidedCertsObserver(this);
 
-  // Set the current list of trust anchors.
-  net::CertificateList trust_anchors;
-  net_conf_updater_->GetWebTrustedCertificates(&trust_anchors);
-  OnTrustAnchorsChanged(trust_anchors);
+  // Set the current list of policy-provided server and authority certificates,
+  // and the current list of trust anchors.
+  net::CertificateList all_server_and_authority_certs =
+      net_conf_updater_->GetAllServerAndAuthorityCertificates();
+  net::CertificateList trust_anchors =
+      net_conf_updater_->GetWebTrustedCertificates();
+  OnPolicyProvidedCertsChanged(all_server_and_authority_certs, trust_anchors);
 
   return base::WrapUnique(cert_verifier_);
 }
 
-void PolicyCertService::OnTrustAnchorsChanged(
+void PolicyCertService::OnPolicyProvidedCertsChanged(
+    const net::CertificateList& all_server_and_authority_certs,
     const net::CertificateList& trust_anchors) {
   DCHECK(cert_verifier_);
+
+  // Make all policy-provided server and authority certificates available to NSS
+  // as temp certificates.
+  // Note that this is done on the UI thread because the assumption is that NSS
+  // has already been initialized by Chrome OS specific start-up code in chrome,
+  // expecting that the operation of creating in-memory NSS certs is cheap in
+  // that case.
+  temp_policy_provided_certs_ =
+      std::make_unique<TempCertsCacheNSS>(all_server_and_authority_certs);
 
   // Do not use certificates installed via ONC policy if the current session has
   // multiple profiles. This is important to make sure that any possibly tainted
@@ -101,8 +115,10 @@ bool PolicyCertService::UsedPolicyCertificates() const {
 void PolicyCertService::Shutdown() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   if (net_conf_updater_)
-    net_conf_updater_->RemoveTrustedCertsObserver(this);
-  OnTrustAnchorsChanged(net::CertificateList());
+    net_conf_updater_->RemovePolicyProvidedCertsObserver(this);
+  OnPolicyProvidedCertsChanged(
+      net::CertificateList() /* all_server_and_authority_certs */,
+      net::CertificateList() /* trust_anchors */);
   net_conf_updater_ = NULL;
 }
 

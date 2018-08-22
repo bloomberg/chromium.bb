@@ -34,6 +34,7 @@
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/temp_certs_cache_nss.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -1107,8 +1108,10 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     // out of scope and the certificates will not be held in memory anymore.
     untrusted_authority_certs_cache_ =
         std::make_unique<policy::TempCertsCacheNSS>(
-            policy::TempCertsCacheNSS::
-                GetUntrustedAuthoritiesFromDeviceOncPolicy());
+            g_browser_process->platform_part()
+                ->browser_policy_connector_chromeos()
+                ->GetDeviceNetworkConfigurationUpdater()
+                ->GetAuthorityCertificates());
   }
 
   LoadAuthExtension(!gaia_silent_load_ /* force */, false /* offline */);

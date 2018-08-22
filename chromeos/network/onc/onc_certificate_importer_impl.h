@@ -44,33 +44,51 @@ class CHROMEOS_EXPORT CertificateImporterImpl : public CertificateImporter {
   ~CertificateImporterImpl() override;
 
   // CertificateImporter overrides
-  void ImportCertificates(std::unique_ptr<OncParsedCertificates> certificates,
-                          ::onc::ONCSource source,
-                          DoneCallback done_callback) override;
+  void ImportAllCertificatesUserInitiated(
+      const std::vector<OncParsedCertificates::ServerOrAuthorityCertificate>&
+          server_or_authority_certificates,
+      const std::vector<OncParsedCertificates::ClientCertificate>&
+          client_certificates,
+      DoneCallback done_callback) override;
+
+  void ImportClientCertificates(
+      const std::vector<OncParsedCertificates::ClientCertificate>&
+          client_certificates,
+      DoneCallback done_callback) override;
 
  private:
-  void RunDoneCallback(DoneCallback callback,
-                       bool success,
-                       net::ScopedCERTCertificateList onc_trusted_certificates);
+  // Runs |task| on the |io_task_runner_|. Calls |done_callback| on the origin
+  // loop if this |CertificateImporterImpl| has not been destroyed in the
+  // meantime.
+  void RunTaskOnIOTaskRunnerAndCallDoneCallback(base::OnceCallback<bool()> task,
+                                                DoneCallback done_callback);
 
-  // This is the synchronous implementation of ImportCertificates. It is
-  // executed on the given |io_task_runner_|.
-  static void StoreCertificates(
-      ::onc::ONCSource source,
-      DoneCallback done_callback,
-      std::unique_ptr<OncParsedCertificates> certificates,
+  // Calls |callback| with |success|. This is used to ensure that |callback| is
+  // only called if this |CertificateImporterImpl| has not been destroyed yet.
+  void RunDoneCallback(DoneCallback callback, bool success);
+
+  // Synchronously imports |client_certificates| into |nssdb|. This will be
+  // executed on the |io_task_runner_|.
+  static bool StoreClientCertificates(
+      const std::vector<OncParsedCertificates::ClientCertificate>&
+          client_certificates,
+      net::NSSCertDatabase* nssdb);
+
+  // Synchronously imports all server/authority and client certificates from
+  // |certificates| into |nssdb|. This will be executed on the
+  // |io_task_runner_|.
+  static bool StoreAllCertificatesUserInitiated(
+      const std::vector<OncParsedCertificates::ServerOrAuthorityCertificate>&
+          server_or_authority_certificates,
+      const std::vector<OncParsedCertificates::ClientCertificate>&
+          client_certificates,
       net::NSSCertDatabase* nssdb);
 
   // Imports the Server or CA certificate |certificate|. Web trust is only
-  // applied if the certificate requests the TrustBits attribute "Web" and if
-  // the |allow_trust_imports| permission is granted, otherwise the attribute is
-  // ignored.
-  static bool StoreServerOrCaCertificate(
-      ::onc::ONCSource source,
-      bool allow_trust_imports,
+  // applied if the certificate requests the TrustBits attribute "Web".
+  static bool StoreServerOrCaCertificateUserInitiated(
       const OncParsedCertificates::ServerOrAuthorityCertificate& certificate,
-      net::NSSCertDatabase* nssdb,
-      net::ScopedCERTCertificateList* onc_trusted_certificates);
+      net::NSSCertDatabase* nssdb);
 
   static bool StoreClientCertificate(
       const OncParsedCertificates::ClientCertificate& certificate,

@@ -18,6 +18,7 @@
 #include "net/cert/internal/cert_errors.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/pem_tokenizer.h"
+#include "net/cert/x509_certificate.h"
 #include "net/der/input.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,19 +33,6 @@ class TempCertsCacheNSSTest : public testing::Test {
   ~TempCertsCacheNSSTest() override {}
 
  protected:
-  // Reads the certificates from |pem_cert_files|, assuming that each file
-  // contains one CERTIFICATE block. Returns all certificates.
-  // Note: This funcion uses ASSERT_ macros, so the caller must verify for
-  // failures after it returns.
-  void GetCertificatesFromFiles(std::vector<base::FilePath> pem_cert_files,
-                                std::vector<std::string>* out_x509_certs) {
-    for (const auto& pem_cert_file : pem_cert_files) {
-      std::string x509_cert;
-      ASSERT_TRUE(base::ReadFileToString(pem_cert_file, &x509_cert));
-      out_x509_certs->push_back(std::move(x509_cert));
-    }
-  }
-
   // Checks if the certificate stored in |pem_cert_file| can be found in the
   // default NSS certificate database using CERT_FindCertByName.
   // Stores the result in *|out_available|.
@@ -118,10 +106,14 @@ TEST_F(TempCertsCacheNSSTest, CertMadeAvailable) {
   base::FilePath cert_file_path =
       net::GetTestCertsDirectory().AppendASCII("client_1_ca.pem");
   {
-    std::vector<std::string> x509_certs;
-    ASSERT_NO_FATAL_FAILURE(
-        GetCertificatesFromFiles({cert_file_path}, &x509_certs));
-    TempCertsCacheNSS cache(x509_certs);
+    std::string x509_authority_cert;
+    ASSERT_TRUE(base::ReadFileToString(cert_file_path, &x509_authority_cert));
+    net::CertificateList x509_authority_certs =
+        net::X509Certificate::CreateCertificateListFromBytes(
+            x509_authority_cert.data(), x509_authority_cert.length(),
+            net::X509Certificate::Format::FORMAT_AUTO);
+
+    TempCertsCacheNSS cache(x509_authority_certs);
 
     bool cert_available = false;
     ASSERT_NO_FATAL_FAILURE(
