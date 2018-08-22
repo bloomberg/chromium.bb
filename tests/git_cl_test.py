@@ -3114,17 +3114,6 @@ class TestGitCl(TestCase):
   def _mock_gerrit_changes_for_detail_cache(self):
     self.mock(git_cl._GerritChangelistImpl, '_GetGerritHost', lambda _: 'host')
 
-  def test_gerrit_change_detail_cache_normalize(self):
-    self._mock_gerrit_changes_for_detail_cache()
-    self.calls = [
-        (('GetChangeDetail', 'host', '2', ['CASE']), 'b'),
-    ]
-    cl = git_cl.Changelist(codereview='gerrit')
-    self.assertEqual(cl._GetChangeDetail(issue=2, options=['CaSe']), 'b')
-    self.assertEqual(cl._GetChangeDetail(issue=2, options=['CASE']), 'b')
-    self.assertEqual(cl._GetChangeDetail(issue='2'), 'b')
-    self.assertEqual(cl._GetChangeDetail(issue=2), 'b')
-
   def test_gerrit_change_detail_cache_simple(self):
     self._mock_gerrit_changes_for_detail_cache()
     self.calls = [
@@ -3132,13 +3121,14 @@ class TestGitCl(TestCase):
         (('GetChangeDetail', 'host', '2', []), 'b'),
         (('GetChangeDetail', 'host', '2', []), 'b2'),
     ]
-    cl = git_cl.Changelist(issue=1, codereview='gerrit')
-    self.assertEqual(cl._GetChangeDetail(), 'a')  # Miss.
-    self.assertEqual(cl._GetChangeDetail(), 'a')
-    self.assertEqual(cl._GetChangeDetail(issue=2), 'b')  # Miss.
-    self.assertEqual(cl._GetChangeDetail(issue=2, no_cache=True), 'b2')  # Miss.
-    self.assertEqual(cl._GetChangeDetail(), 'a')
-    self.assertEqual(cl._GetChangeDetail(issue=2), 'b2')
+    cl1 = git_cl.Changelist(issue=1, codereview='gerrit')
+    cl2 = git_cl.Changelist(issue=2, codereview='gerrit')
+    self.assertEqual(cl1._GetChangeDetail(), 'a')  # Miss.
+    self.assertEqual(cl1._GetChangeDetail(), 'a')
+    self.assertEqual(cl2._GetChangeDetail(), 'b')  # Miss.
+    self.assertEqual(cl2._GetChangeDetail(no_cache=True), 'b2')  # Miss.
+    self.assertEqual(cl1._GetChangeDetail(), 'a')
+    self.assertEqual(cl2._GetChangeDetail(), 'b2')
 
   def test_gerrit_change_detail_cache_options(self):
     self._mock_gerrit_changes_for_detail_cache()

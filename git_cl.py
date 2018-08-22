@@ -2493,7 +2493,6 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
             (self.GetIssue(), self.GetIssueOwner(), details['email']))
       confirm_or_exit(action='upload')
 
-
   def _PostUnsetIssueProperties(self):
     """Which branch-specific properties to erase when unsetting issue."""
     return ['gerritsquashhash']
@@ -2661,15 +2660,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     gerrit_util.SubmitChange(self._GetGerritHost(), self.GetIssue(),
                              wait_for_merge=wait_for_merge)
 
-  def _GetChangeDetail(self, options=None, issue=None,
-                       no_cache=False):
-    """Returns details of the issue by querying Gerrit and caching results.
+  def _GetChangeDetail(self, options=None, no_cache=False):
+    """Returns details of associated Gerrit change and caching results.
 
     If fresh data is needed, set no_cache=True which will clear cache and
     thus new data will be fetched from Gerrit.
     """
     options = options or []
-    issue = issue or self.GetIssue()
+    issue = self.GetIssue()
     assert issue, 'issue is required to query Gerrit'
 
     # Optimization to avoid multiple RPCs:
@@ -2678,7 +2676,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       options.append('CURRENT_COMMIT')
 
     # Normalize issue and options for consistent keys in cache.
-    issue = str(issue)
+    issue = str(self.GetIssue())
     options = [o.upper() for o in options]
 
     # Check in cache first unless no_cache is True.
@@ -2697,8 +2695,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           return data
 
     try:
-      data = gerrit_util.GetChangeDetail(
-          self._GetGerritHost(), str(issue), options)
+      data = gerrit_util.GetChangeDetail(self._GetGerritHost(), issue, options)
     except gerrit_util.GerritError as e:
       if e.http_status == 404:
         raise GerritChangeNotExists(issue, self.GetCodereviewServer())
