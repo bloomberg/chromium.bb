@@ -64,7 +64,6 @@ constexpr int kOverviewSelectorTransitionMilliseconds = 250;
 
 // The color and opacity of the screen shield in overview.
 constexpr SkColor kShieldColor = SkColorSetARGB(255, 0, 0, 0);
-constexpr float kShieldOpacity = 0.6f;
 
 // The color and opacity of the overview selector.
 constexpr SkColor kWindowSelectionColor = SkColorSetARGB(36, 255, 255, 255);
@@ -346,6 +345,22 @@ WindowGrid::WindowGrid(aura::Window* root_window,
 }
 
 WindowGrid::~WindowGrid() = default;
+
+// static
+SkColor WindowGrid::GetShieldColor() {
+  SkColor shield_color = kShieldColor;
+  // Extract the dark muted color from the wallpaper and mix it with
+  // |kShieldBaseColor|. Just use |kShieldBaseColor| if the dark muted color
+  // could not be extracted.
+  SkColor dark_muted_color =
+      Shell::Get()->wallpaper_controller()->GetProminentColor(
+          color_utils::ColorProfile());
+  if (dark_muted_color != ash::kInvalidWallpaperColor) {
+    shield_color =
+        color_utils::GetResultingPaintColor(kShieldBaseColor, dark_muted_color);
+  }
+  return shield_color;
+}
 
 void WindowGrid::Shutdown() {
   for (const auto& window : window_list_)
@@ -1076,17 +1091,6 @@ void WindowGrid::InitShieldWidget() {
        SHELF_BACKGROUND_MAXIMIZED)
           ? 1.f
           : 0.f;
-  SkColor shield_color = kShieldColor;
-  // Extract the dark muted color from the wallpaper and mix it with
-  // |kShieldBaseColor|. Just use |kShieldBaseColor| if the dark muted color
-  // could not be extracted.
-  SkColor dark_muted_color =
-      Shell::Get()->wallpaper_controller()->GetProminentColor(
-          color_utils::ColorProfile());
-  if (dark_muted_color != ash::kInvalidWallpaperColor) {
-    shield_color =
-        color_utils::GetResultingPaintColor(kShieldBaseColor, dark_muted_color);
-  }
   shield_widget_ = CreateBackgroundWidget(
       root_window_, ui::LAYER_SOLID_COLOR, SK_ColorTRANSPARENT, 0, 0,
       SK_ColorTRANSPARENT, initial_opacity, /*parent=*/nullptr,
@@ -1098,7 +1102,7 @@ void WindowGrid::InitShieldWidget() {
 
   // Create |shield_view_| and animate its background and label if needed.
   shield_view_ = new ShieldView();
-  shield_view_->SetBackgroundColor(shield_color);
+  shield_view_->SetBackgroundColor(GetShieldColor());
   shield_view_->SetGridBounds(bounds_);
   shield_widget_->SetContentsView(shield_view_);
   shield_widget_->SetOpacity(initial_opacity);

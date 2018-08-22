@@ -4,7 +4,13 @@
 
 #include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_delegate.h"
 
+#include <vector>
+
+#include "ash/app_list/app_list_controller_impl.h"
+#include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_widget_controller.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
@@ -130,6 +136,141 @@ class SourceWindowAnimationObserver : public ui::ImplicitAnimationObserver,
 
 }  // namespace
 
+// WindowsHider hides all visible windows except the currently dragged window
+// and the dragged window's source window upon its creation, and restores the
+// windows' visibility upon its destruction. It also blurs and darkens the
+// background, hides the home launcher if home launcher is enabled. Only need to
+// do so if we need to scale up and down the source window when dragging a tab
+// window out of it.
+class TabletModeBrowserWindowDragDelegate::WindowsHider
+    : public aura::WindowObserver {
+ public:
+  explicit WindowsHider(aura::Window* dragged_window)
+      : dragged_window_(dragged_window) {
+    DCHECK(dragged_window);
+    aura::Window* source_window =
+        dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey);
+    DCHECK(source_window);
+
+    // Disable the backdrop for |source_window| during dragging.
+    source_window_backdrop_ = source_window->GetProperty(kBackdropWindowMode);
+    source_window->SetProperty(kBackdropWindowMode,
+                               BackdropWindowMode::kDisabled);
+
+    DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
+
+    aura::Window* root_window = dragged_window->GetRootWindow();
+    std::vector<aura::Window*> windows =
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+    for (aura::Window* window : windows) {
+      if (window == dragged_window || window == source_window ||
+          window->GetRootWindow() != root_window) {
+        continue;
+      }
+
+      window_visibility_map_.emplace(window, window->IsVisible());
+      if (window->IsVisible())
+        window->Hide();
+      window->AddObserver(this);
+    }
+
+    // Hide the home launcher if it's enabled during dragging.
+    AppListControllerImpl* app_list_controller =
+        Shell::Get()->app_list_controller();
+    if (app_list_controller->IsHomeLauncherEnabledInTabletMode())
+      app_list_controller->DismissAppList();
+
+    // Blurs the wallpaper background.
+    RootWindowController::ForWindow(root_window)
+        ->wallpaper_widget_controller()
+        ->SetWallpaperBlur(
+            static_cast<float>(WindowSelectorController::kWallpaperBlurSigma));
+
+    // Darken the background.
+    shield_widget_ = CreateBackgroundWidget(
+        root_window, ui::LAYER_SOLID_COLOR, SK_ColorTRANSPARENT, 0, 0,
+        SK_ColorTRANSPARENT, /*initial_opacity*/ 1.f, /*parent=*/nullptr,
+        /*stack_on_top=*/true);
+    aura::Window* widget_window = shield_widget_->GetNativeWindow();
+    const gfx::Rect bounds = widget_window->parent()->bounds();
+    widget_window->SetBounds(bounds);
+    views::View* shield_view = new views::View();
+    shield_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+    shield_view->layer()->SetColor(WindowGrid::GetShieldColor());
+    shield_view->layer()->SetOpacity(WindowGrid::kShieldOpacity);
+    shield_widget_->SetContentsView(shield_view);
+  }
+
+  ~WindowsHider() override {
+    // It might be possible that |source_window| is destroyed during dragging.
+    aura::Window* source_window =
+        dragged_window_->GetProperty(ash::kTabDraggingSourceWindowKey);
+    if (source_window)
+      source_window->SetProperty(kBackdropWindowMode, source_window_backdrop_);
+
+    for (auto iter = window_visibility_map_.begin();
+         iter != window_visibility_map_.end(); ++iter) {
+      iter->first->RemoveObserver(this);
+      if (iter->second)
+        iter->first->Show();
+    }
+
+    DCHECK(!Shell::Get()->window_selector_controller()->IsSelecting());
+
+    // Reshow the home launcher if it's enabled after dragging.
+    AppListControllerImpl* app_list_controller =
+        Shell::Get()->app_list_controller();
+    if (app_list_controller->IsHomeLauncherEnabledInTabletMode())
+      app_list_controller->ShowAppList();
+
+    // Clears the background wallpaper blur.
+    RootWindowController::ForWindow(dragged_window_->GetRootWindow())
+        ->wallpaper_widget_controller()
+        ->SetWallpaperBlur(WindowSelectorController::kWallpaperClearBlurSigma);
+
+    // Clears the background darken widget.
+    shield_widget_.reset();
+  }
+
+  // aura::WindowObserver:
+  void OnWindowDestroying(aura::Window* window) override {
+    window->RemoveObserver(this);
+    window_visibility_map_.erase(window);
+  }
+
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    if (visible) {
+      // Do not let |window| change to visible during the lifetime of |this|.
+      // Also update |window_visibility_map_| so that we can restore the window
+      // visibility correctly.
+      window->Hide();
+      window_visibility_map_[window] = visible;
+    }
+    // else do nothing. It must come from Hide() function above thus should be
+    // ignored.
+  }
+
+ private:
+  // The currently dragged window. Guaranteed to be non-nullptr during the
+  // lifetime of |this|.
+  aura::Window* dragged_window_;
+
+  // A shield that darkens the entire background during dragging. It should
+  // have the same effect as in overview.
+  std::unique_ptr<views::Widget> shield_widget_;
+
+  // Maintains the map between windows and their visibilities. All windows
+  // except the dragged window and the source window should stay hidden during
+  // dragging.
+  std::map<aura::Window*, bool> window_visibility_map_;
+
+  // The original backdrop mode of the source window. Should be disabled during
+  // dragging.
+  BackdropWindowMode source_window_backdrop_ = BackdropWindowMode::kAuto;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowsHider);
+};
+
 TabletModeBrowserWindowDragDelegate::TabletModeBrowserWindowDragDelegate() =
     default;
 
@@ -172,6 +313,7 @@ void TabletModeBrowserWindowDragDelegate::EndingForDraggedWindow(
         wm::GetWindowState(source_window));
   }
   scrim_.reset();
+  windows_hider_.reset();
 }
 
 bool TabletModeBrowserWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
@@ -195,6 +337,10 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
        GetWindowSelector()->IsWindowInOverview(source_window))) {
     return;
   }
+
+  // Only create WindowHider if we need to scale up/down the source window.
+  if (!windows_hider_)
+    windows_hider_ = std::make_unique<WindowsHider>(dragged_window_);
 
   const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()

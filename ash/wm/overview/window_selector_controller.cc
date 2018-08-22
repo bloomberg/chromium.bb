@@ -38,7 +38,6 @@ namespace {
 // when this is true.
 bool g_disable_wallpaper_blur_for_tests = false;
 
-constexpr double kWallpaperClearBlurSigma = 0.f;
 constexpr int kBlurSlideDurationMs = 250;
 
 // Returns true if |window| should be hidden when entering overview.
@@ -144,17 +143,17 @@ class WindowSelectorController::OverviewBlurController
     if (state_ == WallpaperAnimationState::kNormal)
       return;
 
-    double value = state_ == WallpaperAnimationState::kAddingBlur
-                       ? kWallpaperBlurSigma
-                       : kWallpaperClearBlurSigma;
+    float value = state_ == WallpaperAnimationState::kAddingBlur
+                      ? kWallpaperBlurSigma
+                      : kWallpaperClearBlurSigma;
     for (aura::Window* root : roots_to_animate_)
       ApplyBlur(root, value);
     state_ = WallpaperAnimationState::kNormal;
   }
 
   void AnimationProgressed(const gfx::Animation* animation) override {
-    double value = animation_.CurrentValueBetween(kWallpaperClearBlurSigma,
-                                                  kWallpaperBlurSigma);
+    float value = animation_.CurrentValueBetween(kWallpaperClearBlurSigma,
+                                                 kWallpaperBlurSigma);
     for (aura::Window* root : roots_to_animate_)
       ApplyBlur(root, value);
   }
@@ -177,7 +176,7 @@ class WindowSelectorController::OverviewBlurController
   void ApplyBlur(aura::Window* root, float blur_sigma) {
     RootWindowController::ForWindow(root)
         ->wallpaper_widget_controller()
-        ->SetWallpaperBlur(static_cast<float>(blur_sigma));
+        ->SetWallpaperBlur(blur_sigma);
   }
 
   // Called when the wallpaper is to be changed. Checks to see which root
@@ -186,7 +185,7 @@ class WindowSelectorController::OverviewBlurController
   // the wallpaper does not need blur animation.
   void OnBlurChange() {
     const bool should_blur = state_ == WallpaperAnimationState::kAddingBlur;
-    const double value =
+    const float value =
         should_blur ? kWallpaperBlurSigma : kWallpaperClearBlurSigma;
     for (aura::Window* root : roots_to_animate_)
       root->RemoveObserver(this);
