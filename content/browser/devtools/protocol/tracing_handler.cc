@@ -34,6 +34,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -404,7 +405,28 @@ void TracingHandler::Start(Maybe<std::string> categories,
                                                    options.fromMaybe(""));
   }
 
-  SetupProcessFilter(nullptr);
+  // GPU process id can only be retrieved on IO thread. Do some thread hopping.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::IO, FROM_HERE, base::BindOnce([]() {
+        GpuProcessHost* gpu_process_host = GpuProcessHost::Get();
+        return gpu_process_host ? gpu_process_host->GetProcessId()
+                                : base::kNullProcessId;
+      }),
+      base::BindOnce(&TracingHandler::StartTracingWithGpuPid,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void TracingHandler::StartTracingWithGpuPid(
+    std::unique_ptr<StartCallback> callback,
+    base::ProcessId gpu_pid) {
+  // Check if tracing was stopped in mid-air.
+  if (!did_initiate_recording_) {
+    callback->sendFailure(Response::Error(
+        "Tracing was stopped before start has been completed."));
+    return;
+  }
+
+  SetupProcessFilter(gpu_pid, nullptr);
 
   TracingController::GetInstance()->StartTracing(
       trace_config_, base::BindRepeating(&TracingHandler::OnRecordingEnabled,
@@ -413,14 +435,20 @@ void TracingHandler::Start(Maybe<std::string> categories,
 }
 
 void TracingHandler::SetupProcessFilter(
+    base::ProcessId gpu_pid,
     RenderFrameHost* new_render_frame_host) {
   if (!frame_tree_node_)
     return;
 
   base::ProcessId browser_pid = base::Process::Current().Pid();
   std::unordered_set<base::ProcessId> included_process_ids({browser_pid});
+
+  if (gpu_pid != base::kNullProcessId)
+    included_process_ids.insert(gpu_pid);
+
   if (new_render_frame_host)
     AppendProcessId(new_render_frame_host, &included_process_ids);
+
   for (FrameTreeNode* node :
        frame_tree_node_->frame_tree()->SubtreeNodes(frame_tree_node_)) {
     RenderFrameHost* frame_host = node->current_frame_host();
@@ -495,8 +523,13 @@ void TracingHandler::GetCategories(
 
 void TracingHandler::OnRecordingEnabled(
     std::unique_ptr<StartCallback> callback) {
-  EmitFrameTree();
+  if (!did_initiate_recording_) {
+    callback->sendFailure(Response::Error(
+        "Tracing was stopped before start has been completed."));
+    return;
+  }
 
+  EmitFrameTree();
   callback->sendSuccess();
 
   bool screenshot_enabled;
@@ -646,7 +679,8 @@ void TracingHandler::ReadyToCommitNavigation(
                        "FrameCommittedInBrowser", TRACE_EVENT_SCOPE_THREAD,
                        "data", std::move(data));
 
-  SetupProcessFilter(navigation_handle->GetRenderFrameHost());
+  SetupProcessFilter(base::kNullProcessId,
+                     navigation_handle->GetRenderFrameHost());
   TracingController::GetInstance()->StartTracing(
       trace_config_, base::RepeatingCallback<void()>());
 }
