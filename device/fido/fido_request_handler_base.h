@@ -171,6 +171,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   void AddAuthenticator(std::unique_ptr<FidoAuthenticator> authenticator);
   void NotifyObserverTransportAvailability();
 
+  // Invokes FidoAuthenticator::InitializeAuthenticator(), followed by
+  // DispatchRequest(). InitializeAuthenticator() sends a GetInfo command
+  // to FidoDeviceAuthenticator instances in order to determine their protocol
+  // versions before a request can be dispatched.
+  void InitializeAuthenticatorAndDispatchRequest(FidoAuthenticator*);
+
   AuthenticatorMap active_authenticators_;
   std::vector<std::unique_ptr<FidoDiscovery>> discoveries_;
   TransportAvailabilityObserver* observer_ = nullptr;

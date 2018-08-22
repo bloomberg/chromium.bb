@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "device/fido/fido_authenticator.h"
 
@@ -31,6 +32,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   ~FidoDeviceAuthenticator() override;
 
   // FidoAuthenticator:
+  void InitializeAuthenticator(base::OnceClosure callback) override;
   void MakeCredential(
       CtapMakeCredentialRequest request,
       MakeCredentialCallback callback) override;
@@ -40,6 +42,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
   std::string GetId() const override;
   const AuthenticatorSupportedOptions& Options() const override;
   FidoTransportProtocol AuthenticatorTransport() const override;
+  base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 
  protected:
   void OnCtapMakeCredentialResponseReceived(
@@ -55,6 +58,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
  private:
   FidoDevice* const device_;
   std::unique_ptr<FidoTask> task_;
+  base::WeakPtrFactory<FidoDeviceAuthenticator> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoDeviceAuthenticator);
 };

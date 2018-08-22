@@ -102,9 +102,6 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   // Expect successful insertion.
   auto device0 = std::make_unique<MockFidoDevice>();
   auto* device0_raw = device0.get();
-  device0->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
   base::RunLoop device0_done;
   EXPECT_CALL(observer, DeviceAdded(&discovery, device0_raw))
       .WillOnce(testing::InvokeWithoutArgs(
@@ -113,16 +110,11 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_TRUE(discovery.AddDevice(std::move(device0)));
   device0_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
-  // Device should have been initialized as a CTAP device.
-  EXPECT_EQ(ProtocolVersion::kCtap, device0_raw->supported_protocol());
-  EXPECT_TRUE(device0_raw->device_info());
 
   // Expect successful insertion.
   base::RunLoop device1_done;
   auto device1 = std::make_unique<MockFidoDevice>();
   auto* device1_raw = device1.get();
-  device1->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
   EXPECT_CALL(observer, DeviceAdded(&discovery, device1_raw))
       .WillOnce(testing::InvokeWithoutArgs(
           [&device1_done]() { device1_done.Quit(); }));
@@ -130,9 +122,6 @@ TEST(FidoDiscoveryTest, TestAddRemoveDevices) {
   EXPECT_TRUE(discovery.AddDevice(std::move(device1)));
   device1_done.Run();
   ::testing::Mock::VerifyAndClearExpectations(&observer);
-  // Device should have been initialized as a U2F device.
-  EXPECT_EQ(ProtocolVersion::kU2f, device1_raw->supported_protocol());
-  EXPECT_FALSE(device1_raw->device_info());
 
   // Inserting a device with an already present id should be prevented.
   auto device1_dup = std::make_unique<MockFidoDevice>();

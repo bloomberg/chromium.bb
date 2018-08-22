@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -17,14 +19,22 @@
 namespace device {
 
 FidoDeviceAuthenticator::FidoDeviceAuthenticator(FidoDevice* device)
-    : device_(device) {
-  DCHECK(device_->SupportedProtocolIsInitialized());
-}
+    : device_(device), weak_factory_(this) {}
 FidoDeviceAuthenticator::~FidoDeviceAuthenticator() = default;
+
+void FidoDeviceAuthenticator::InitializeAuthenticator(
+    base::OnceClosure callback) {
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FidoDevice::DiscoverSupportedProtocolAndDeviceInfo,
+                     device()->GetWeakPtr(), std::move(callback)));
+}
 
 void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                              MakeCredentialCallback callback) {
   DCHECK(!task_);
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
   // TODO(martinkr): Change FidoTasks to take all request parameters by const
   // reference, so we can avoid copying these from the RequestHandler.
   task_ = std::make_unique<MakeCredentialTask>(device_, std::move(request),
@@ -33,6 +43,8 @@ void FidoDeviceAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
 
 void FidoDeviceAuthenticator::GetAssertion(CtapGetAssertionRequest request,
                                            GetAssertionCallback callback) {
+  DCHECK(device_->SupportedProtocolIsInitialized())
+      << "InitializeAuthenticator() must be called first.";
   task_ = std::make_unique<GetAssertionTask>(device_, std::move(request),
                                              std::move(callback));
 }
@@ -70,6 +82,10 @@ FidoTransportProtocol FidoDeviceAuthenticator::AuthenticatorTransport() const {
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);
+}
+
+base::WeakPtr<FidoAuthenticator> FidoDeviceAuthenticator::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace device
