@@ -2740,6 +2740,12 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+    TestNetLogEntry::List entries;
+    net_log_.GetEntries(&entries);
+    for (const auto& entry : entries) {
+      EXPECT_NE(entry.type,
+                NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE);
+    }
   }
 
   // Verify that the cookie isn't sent.
@@ -2759,6 +2765,11 @@ TEST_F(URLRequestTest, DoNotSendCookies_ViaPolicy) {
 
     EXPECT_EQ(1, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+    TestNetLogEntry::List entries;
+    net_log_.GetEntries(&entries);
+    ExpectLogContainsSomewhereAfter(
+        entries, 0, NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE,
+        NetLogEventPhase::NONE);
   }
 }
 
@@ -2785,6 +2796,12 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+    TestNetLogEntry::List entries;
+    net_log_.GetEntries(&entries);
+    for (const auto& entry : entries) {
+      EXPECT_NE(entry.type,
+                NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);
+    }
   }
 
   // Try to set-up another cookie and update the previous cookie.
@@ -2802,6 +2819,11 @@ TEST_F(URLRequestTest, DoNotSaveCookies_ViaPolicy) {
 
     EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
     EXPECT_EQ(2, network_delegate.blocked_set_cookie_count());
+    TestNetLogEntry::List entries;
+    net_log_.GetEntries(&entries);
+    ExpectLogContainsSomewhereAfter(
+        entries, 0, NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE,
+        NetLogEventPhase::NONE);
   }
 
   // Verify the cookies weren't saved or updated.
