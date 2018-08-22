@@ -9,9 +9,13 @@ import argparse
 import sys
 
 from test_results import api
+from test_results import frames
 
 
 def main():
+  if frames.pandas is None:
+    return 'ERROR: This tool requires pandas to run, try: pip install pandas'
+
   parser = argparse.ArgumentParser()
   subparsers = parser.add_subparsers(dest='action')
   subparsers.required = True
@@ -23,7 +27,8 @@ def main():
   args = parser.parse_args()
 
   if args.action == 'builders':
-    print api.GetBuilders()
+    data = api.GetBuilders()
+    print frames.BuildersDataFrame(data)
   elif args.action == 'results':
     print api.GetTestResults(args.master, args.builder, args.test_type)
   else:
