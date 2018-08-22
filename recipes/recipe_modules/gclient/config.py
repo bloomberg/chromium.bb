@@ -412,3 +412,9 @@ def angle(c):
   soln = c.solutions.add()
   soln.name = 'angle'
   soln.url = 'https://chromium.googlesource.com/angle/angle.git'
+
+@config_ctx()
+def dawn(c):
+  soln = c.solutions.add()
+  soln.name = 'dawn'
+  soln.url = 'https://dawn.googlesource.com/dawn.git'
