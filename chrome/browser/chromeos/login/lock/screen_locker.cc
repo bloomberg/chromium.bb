@@ -679,6 +679,8 @@ bool ScreenLocker::IsUserLoggedIn(const AccountId& account_id) const {
 void ScreenLocker::OnAuthScanDone(
     uint32_t scan_result,
     const base::flat_map<std::string, std::vector<std::string>>& matches) {
+  VLOG(1) << "Receive fingerprint auth scan result. scan_result="
+          << scan_result;
   unlock_attempt_type_ = AUTH_FINGERPRINT;
   user_manager::User* active_user =
       user_manager::UserManager::Get()->GetActiveUser();
@@ -693,21 +695,26 @@ void ScreenLocker::OnAuthScanDone(
       LoginAuthRecorder::AuthMethod::kFingerprint);
 
   if (scan_result != biod::ScanResult::SCAN_RESULT_SUCCESS) {
+    LOG(ERROR) << "Fingerprint unlock failed because scan_result="
+               << scan_result;
     OnFingerprintAuthFailure(*active_user);
     return;
   }
 
   UserContext user_context(*active_user);
   if (!base::ContainsKey(matches, active_user->username_hash())) {
+    LOG(ERROR) << "Fingerprint unlock failed because it does not match active"
+               << " user's record";
     OnFingerprintAuthFailure(*active_user);
     return;
   }
   delegate_->SetFingerprintState(active_user->GetAccountId(),
                                  FingerprintState::kSignin);
-  OnAuthSuccess(user_context);
+  VLOG(1) << "Fingerprint unlock is successful.";
   LoginScreenClient::Get()->auth_recorder()->RecordFingerprintAuthSuccess(
       true /*success*/,
       quick_unlock_storage->fingerprint_storage()->unlock_attempt_count());
+  OnAuthSuccess(user_context);
 }
 
 void ScreenLocker::OnSessionFailed() {
@@ -728,6 +735,8 @@ void ScreenLocker::OnFingerprintAuthFailure(const user_manager::User& user) {
       quick_unlock_storage->IsFingerprintAuthenticationAvailable()) {
     quick_unlock_storage->fingerprint_storage()->AddUnlockAttempt();
     if (quick_unlock_storage->fingerprint_storage()->ExceededUnlockAttempts()) {
+      VLOG(1) << "Fingerprint unlock is disabled because it reached maximum"
+              << " unlock attempt.";
       delegate_->SetFingerprintState(user.GetAccountId(),
                                      FingerprintState::kRemoved);
       delegate_->ShowErrorMessage(IDS_LOGIN_ERROR_FINGERPRINT_MAX_ATTEMPT,
