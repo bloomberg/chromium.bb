@@ -235,6 +235,16 @@ LayoutBoxModelObject* AXLayoutObject::GetLayoutBoxModelObject() const {
   return ToLayoutBoxModelObject(layout_object_);
 }
 
+bool IsProgrammaticallyScrollable(LayoutBox* box) {
+  if (!box->HasOverflowClip()) {
+    // If overflow is visible it is not scrollable.
+    return false;
+  }
+  // Return true if the content is larger than the available space.
+  return box->PixelSnappedScrollWidth() != box->PixelSnappedClientWidth() ||
+         box->PixelSnappedScrollHeight() != box->PixelSnappedClientHeight();
+}
+
 ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
   if (IsWebArea())
     return DocumentFrameView()->LayoutViewport();
@@ -243,10 +253,24 @@ ScrollableArea* AXLayoutObject::GetScrollableAreaIfScrollable() const {
     return nullptr;
 
   LayoutBox* box = ToLayoutBox(layout_object_);
-  if (!box->CanBeScrolledAndHasScrollableArea())
-    return nullptr;
 
-  return box->GetScrollableArea();
+  // This should possibly use box->CanBeScrolledAndHasScrollableArea() as it
+  // used to; however, accessibility must consider any kind of non-visible
+  // overflow as programmatically scrollable. Unfortunately
+  // LayoutBox::CanBeScrolledAndHasScrollableArea() method calls
+  // LayoutBox::CanBeProgramaticallyScrolled() which does not consider
+  // visibility:hidden content to be programmatically scrollable, although it
+  // certainly is, and can even be scrolled by selecting and using shift+arrow
+  // keys. It should be noticed that the new code used here reduces the overall
+  // amount of work as well.
+  // It is not sufficient to expose it only in the anoymous child, because that
+  // child is truncated in platform accessibility trees, which present the
+  // textfield as a leaf.
+  ScrollableArea* scrollable_area = box->GetScrollableArea();
+  if (scrollable_area && IsProgrammaticallyScrollable(box))
+    return scrollable_area;
+
+  return nullptr;
 }
 
 static bool IsImageOrAltText(LayoutBoxModelObject* box, Node* node) {
