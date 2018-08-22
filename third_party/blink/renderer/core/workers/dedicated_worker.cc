@@ -135,6 +135,7 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
                                   ExceptionState& exception_state) {
   DCHECK(GetExecutionContext()->IsContextThread());
 
+  BlinkTransferableMessage transferable_message;
   Transferables transferables;
   scoped_refptr<SerializedScriptValue> serialized_message =
       PostMessageHelper::SerializeMessageByMove(script_state->GetIsolate(),
@@ -143,18 +144,20 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
   DCHECK(serialized_message);
+  transferable_message.message = serialized_message;
 
   // Disentangle the port in preparation for sending it to the remote context.
-  auto channels = MessagePort::DisentanglePorts(
+  transferable_message.ports = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), transferables.message_ports,
       exception_state);
   if (exception_state.HadException())
     return;
-  v8_inspector::V8StackTraceId stack_id =
+
+  transferable_message.sender_stack_trace_id =
       ThreadDebugger::From(script_state->GetIsolate())
           ->StoreCurrentStackTrace("Worker.postMessage");
-  context_proxy_->PostMessageToWorkerGlobalScope(std::move(serialized_message),
-                                                 std::move(channels), stack_id);
+  context_proxy_->PostMessageToWorkerGlobalScope(
+      std::move(transferable_message));
 }
 
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model

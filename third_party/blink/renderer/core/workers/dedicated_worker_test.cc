@@ -177,9 +177,8 @@ class DedicatedWorkerTest : public PageTestBase {
   }
 
   void DispatchMessageEvent() {
-    WorkerMessagingProxy()->PostMessageToWorkerGlobalScope(
-        nullptr /* message */, Vector<MessagePortChannel>(),
-        v8_inspector::V8StackTraceId());
+    BlinkTransferableMessage message;
+    WorkerMessagingProxy()->PostMessageToWorkerGlobalScope(std::move(message));
   }
 
   DedicatedWorkerMessagingProxyForTest* WorkerMessagingProxy() {

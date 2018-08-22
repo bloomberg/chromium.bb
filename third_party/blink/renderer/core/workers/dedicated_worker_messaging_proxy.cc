@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
@@ -24,12 +25,6 @@
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
-
-struct DedicatedWorkerMessagingProxy::QueuedTask {
-  scoped_refptr<SerializedScriptValue> message;
-  Vector<MessagePortChannel> channels;
-  v8_inspector::V8StackTraceId stack_id;
-};
 
 DedicatedWorkerMessagingProxy::DedicatedWorkerMessagingProxy(
     ExecutionContext* execution_context,
@@ -76,24 +71,21 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
 }
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
-    scoped_refptr<SerializedScriptValue> message,
-    Vector<MessagePortChannel> channels,
-    const v8_inspector::V8StackTraceId& stack_id) {
+    BlinkTransferableMessage message) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate())
     return;
   if (!was_script_evaluated_) {
-    queued_early_tasks_.push_back(
-        QueuedTask{std::move(message), std::move(channels), stack_id});
+    queued_early_tasks_.push_back(std::move(message));
     return;
   }
   PostCrossThreadTask(
       *GetWorkerThread()->GetTaskRunner(TaskType::kPostedMessage), FROM_HERE,
       CrossThreadBind(
           &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
-          CrossThreadUnretained(&WorkerObjectProxy()), std::move(message),
-          WTF::Passed(std::move(channels)),
-          CrossThreadUnretained(GetWorkerThread()), stack_id));
+          CrossThreadUnretained(&WorkerObjectProxy()),
+          WTF::Passed(std::move(message)),
+          CrossThreadUnretained(GetWorkerThread())));
 }
 
 bool DedicatedWorkerMessagingProxy::HasPendingActivity() const {
@@ -105,7 +97,7 @@ void DedicatedWorkerMessagingProxy::DidEvaluateScript(bool success) {
   DCHECK(IsParentContextThread());
   was_script_evaluated_ = true;
 
-  Vector<QueuedTask> tasks;
+  Vector<BlinkTransferableMessage> tasks;
   queued_early_tasks_.swap(tasks);
 
   // The worker thread can already be terminated.
@@ -123,28 +115,25 @@ void DedicatedWorkerMessagingProxy::DidEvaluateScript(bool success) {
         CrossThreadBind(
             &DedicatedWorkerObjectProxy::ProcessMessageFromWorkerObject,
             CrossThreadUnretained(&WorkerObjectProxy()),
-            WTF::Passed(std::move(task.message)),
-            WTF::Passed(std::move(task.channels)),
-            CrossThreadUnretained(GetWorkerThread()), task.stack_id));
+            WTF::Passed(std::move(task)),
+            CrossThreadUnretained(GetWorkerThread())));
   }
 }
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerObject(
-    scoped_refptr<SerializedScriptValue> message,
-    Vector<MessagePortChannel> channels,
-    const v8_inspector::V8StackTraceId& stack_id) {
+    BlinkTransferableMessage message) {
   DCHECK(IsParentContextThread());
   if (!worker_object_ || AskedToTerminate())
     return;
 
   ThreadDebugger* debugger =
       ThreadDebugger::From(ToIsolate(GetExecutionContext()));
-  MessagePortArray* ports =
-      MessagePort::EntanglePorts(*GetExecutionContext(), std::move(channels));
-  debugger->ExternalAsyncTaskStarted(stack_id);
+  MessagePortArray* ports = MessagePort::EntanglePorts(
+      *GetExecutionContext(), std::move(message.ports));
+  debugger->ExternalAsyncTaskStarted(message.sender_stack_trace_id);
   worker_object_->DispatchEvent(
-      *MessageEvent::Create(ports, std::move(message)));
-  debugger->ExternalAsyncTaskFinished(stack_id);
+      *MessageEvent::Create(ports, std::move(message.message)));
+  debugger->ExternalAsyncTaskFinished(message.sender_stack_trace_id);
 }
 
 void DedicatedWorkerMessagingProxy::DispatchErrorEvent(

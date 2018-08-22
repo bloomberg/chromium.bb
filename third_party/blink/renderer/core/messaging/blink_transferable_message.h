@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/blink_cloneable_message.h"
+#include "third_party/blink/renderer/platform/cross_thread_copier.h"
 
 namespace blink {
 
@@ -43,6 +44,15 @@ CORE_EXPORT BlinkTransferableMessage
 // alive. Call EnsureDataIsOwned on the returned message if you need it to live
 // longer.
 CORE_EXPORT TransferableMessage ToTransferableMessage(BlinkTransferableMessage);
+
+template <>
+struct CrossThreadCopier<BlinkTransferableMessage> {
+  STATIC_ONLY(CrossThreadCopier);
+  using Type = BlinkTransferableMessage;
+  static Type Copy(Type pointer) {
+    return pointer;  // This is in fact a move.
+  }
+};
 
 }  // namespace blink
 
