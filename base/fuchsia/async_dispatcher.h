@@ -6,6 +6,7 @@
 #define BASE_FUCHSIA_ASYNC_DISPATCHER_H_
 
 #include <lib/async/dispatcher.h>
+#include <lib/async/exception.h>
 #include <lib/zx/event.h>
 #include <lib/zx/port.h>
 #include <lib/zx/timer.h>
@@ -35,9 +36,11 @@ class BASE_EXPORT AsyncDispatcher : public async_dispatcher_t {
   void Stop();
 
  private:
+  class ExceptionState;
   class WaitState;
   class TaskState;
 
+  // ASYNC_OPS_V1 operations.
   static zx_time_t NowOp(async_dispatcher_t* async);
   static zx_status_t BeginWaitOp(async_dispatcher_t* async, async_wait_t* wait);
   static zx_status_t CancelWaitOp(async_dispatcher_t* async,
@@ -54,11 +57,19 @@ class BASE_EXPORT AsyncDispatcher : public async_dispatcher_t {
                                         zx_vaddr_t addr,
                                         size_t length);
 
+  // ASYNC_OPS_V2 operations.
+  static zx_status_t BindExceptionPortOp(async_dispatcher_t* dispatcher,
+                                         async_exception_t* exception);
+  static zx_status_t UnbindExceptionPortOp(async_dispatcher_t* dispatcher,
+                                           async_exception_t* exception);
+
   // async_ops_t implementation. Called by corresponding *Op() methods above.
   zx_status_t BeginWait(async_wait_t* wait);
   zx_status_t CancelWait(async_wait_t* wait);
   zx_status_t PostTask(async_task_t* task);
   zx_status_t CancelTask(async_task_t* task);
+  zx_status_t BindExceptionPort(async_exception_t* exception);
+  zx_status_t UnbindExceptionPort(async_exception_t* exception);
 
   // Runs tasks in |task_list_| that have deadline in the past.
   void DispatchTasks();
@@ -73,6 +84,7 @@ class BASE_EXPORT AsyncDispatcher : public async_dispatcher_t {
   zx::event stop_event_;
 
   LinkedList<WaitState> wait_list_;
+  LinkedList<ExceptionState> exception_list_;
 
   async_ops_t ops_storage_;
 
