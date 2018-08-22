@@ -1109,7 +1109,7 @@ TEST_F(PipelineIntegrationTest, SwitchVideoTrackDuringPlayback) {
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusOggTrimmingHashed) {
-  ASSERT_EQ(PIPELINE_OK, Start("opus-trimming-test.webm", kHashed));
+  ASSERT_EQ(PIPELINE_OK, Start("opus-trimming-test.ogg", kHashed));
 
   Play();
 
@@ -1868,20 +1868,20 @@ INSTANTIATE_TEST_CASE_P(
     CBRSeek_HasTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-CBR-has-TOC.mp3",
-                                        "-0.71,0.36,2.96,2.68,2.11,-1.08,")));
+                                        "-0.58,0.61,3.08,2.55,0.90,-1.20,")));
 
 INSTANTIATE_TEST_CASE_P(
     CBRSeeks_NoTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-CBR-no-TOC.mp3",
-                                        "0.95,0.56,1.34,0.47,1.77,0.84,")));
+                                        "1.16,0.68,1.25,0.60,1.66,0.93,")));
 
 // VBR seeks can be fast *OR* accurate, but not both. We chose fast.
 INSTANTIATE_TEST_CASE_P(
     VBRSeeks_HasTOC,
     Mp3FastSeekIntegrationTest,
     ::testing::Values(Mp3FastSeekParams("bear-audio-10s-VBR-has-TOC.mp3",
-                                        "-0.15,-0.83,0.54,1.00,1.94,0.93,")));
+                                        "-0.08,-0.53,0.75,0.89,2.44,0.73,")));
 
 INSTANTIATE_TEST_CASE_P(
     VBRSeeks_NoTOC,
