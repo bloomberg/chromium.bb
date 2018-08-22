@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -59,6 +59,15 @@ class LayoutManagerImpl : public aura::LayoutManager {
 
   DISALLOW_COPY_AND_ASSIGN(LayoutManagerImpl);
 };
+
+chromium::web::NavigationEntry ConvertContentNavigationEntry(
+    content::NavigationEntry* entry) {
+  DCHECK(entry);
+  chromium::web::NavigationEntry converted;
+  converted.title = base::UTF16ToUTF8(entry->GetTitle());
+  converted.url = entry->GetURL().spec();
+  return converted;
+}
 
 }  // namespace
 
@@ -146,8 +155,15 @@ void FrameImpl::Reload(chromium::web::ReloadType type) {
 }
 
 void FrameImpl::GetVisibleEntry(GetVisibleEntryCallback callback) {
-  NOTIMPLEMENTED();
-  callback(nullptr);
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (!entry) {
+    callback(nullptr);
+    return;
+  }
+
+  chromium::web::NavigationEntry output = ConvertContentNavigationEntry(entry);
+  callback(std::make_unique<chromium::web::NavigationEntry>(std::move(output)));
 }
 
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,

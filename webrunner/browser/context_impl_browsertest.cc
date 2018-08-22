@@ -233,5 +233,103 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, ReloadFrame) {
   }
 }
 
+IN_PROC_BROWSER_TEST_F(ContextImplTest, GetVisibleEntry) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  // Verify that a Frame returns a null NavigationEntry prior to receiving any
+  // LoadUrl() calls.
+  {
+    base::RunLoop run_loop;
+    controller->GetVisibleEntry(
+        [&run_loop](std::unique_ptr<chromium::web::NavigationEntry> details) {
+          EXPECT_EQ(nullptr, details.get());
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL title1(embedded_test_server()->GetURL(kPage1Path));
+  GURL title2(embedded_test_server()->GetURL(kPage2Path));
+
+  // Navigate to a page.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
+                           Field(&NavigationDetails::title, kPage1Title),
+                           Field(&NavigationDetails::url, IsSet()))))
+        .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
+    controller->LoadUrl(title1.spec(), nullptr);
+    run_loop.Run();
+  }
+
+  // Verify that GetVisibleEntry() reflects the new Frame navigation state.
+  {
+    base::RunLoop run_loop;
+    controller->GetVisibleEntry(
+        [&run_loop,
+         &title1](std::unique_ptr<chromium::web::NavigationEntry> details) {
+          EXPECT_TRUE(details);
+          EXPECT_EQ(details->url, title1.spec());
+          EXPECT_EQ(details->title, kPage1Title);
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+
+  // Navigate to another page.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
+                           Field(&NavigationDetails::title, kPage2Title),
+                           Field(&NavigationDetails::url, IsSet()))))
+        .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
+    controller->LoadUrl(title2.spec(), nullptr);
+    run_loop.Run();
+  }
+
+  // Verify the navigation with GetVisibleEntry().
+  {
+    base::RunLoop run_loop;
+    controller->GetVisibleEntry(
+        [&run_loop,
+         &title2](std::unique_ptr<chromium::web::NavigationEntry> details) {
+          EXPECT_TRUE(details);
+          EXPECT_EQ(details->url, title2.spec());
+          EXPECT_EQ(details->title, kPage2Title);
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+
+  // Navigate back to the first page.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
+                           Field(&NavigationDetails::title, kPage1Title),
+                           Field(&NavigationDetails::url, IsSet()))))
+        .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
+    controller->GoBack();
+    run_loop.Run();
+  }
+
+  // Verify the navigation with GetVisibleEntry().
+  {
+    base::RunLoop run_loop;
+    controller->GetVisibleEntry(
+        [&run_loop,
+         &title1](std::unique_ptr<chromium::web::NavigationEntry> details) {
+          EXPECT_TRUE(details);
+          EXPECT_EQ(details->url, title1.spec());
+          EXPECT_EQ(details->title, kPage1Title);
+          run_loop.Quit();
+        });
+    run_loop.Run();
+  }
+}
+
 }  // namespace
 }  // namespace webrunner
