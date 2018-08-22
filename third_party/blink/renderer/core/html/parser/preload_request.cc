@@ -24,8 +24,7 @@ KURL PreloadRequest::CompleteURL(Document* document) {
   return document->CompleteURL(resource_url_);
 }
 
-Resource* PreloadRequest::Start(Document* document,
-                                CSSPreloaderResourceClient* client) {
+Resource* PreloadRequest::Start(Document* document) {
   DCHECK(IsMainThread());
 
   FetchInitiatorInfo initiator_info;
@@ -101,7 +100,7 @@ Resource* PreloadRequest::Start(Document* document,
     // the async request to the blocked script here.
   }
 
-  return document->Loader()->StartPreload(resource_type_, params, client);
+  return document->Loader()->StartPreload(resource_type_, params);
 }
 
 }  // namespace blink

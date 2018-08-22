@@ -976,26 +976,6 @@
             ]
         }
     ],
-    "CSSExternalScanner": [
-        {
-            "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_ScanAndPreload",
-                    "params": {
-                        "cssExternalScannerNoPreload": "false",
-                        "cssExternalScannerPreload": "true"
-                    }
-                }
-            ]
-        }
-    ],
     "CertificateTransparencyLogAuditing": [
         {
             "platforms": [

@@ -30,15 +30,11 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/html/parser/html_token.h"
 #include "third_party/blink/renderer/core/html/parser/preload_request.h"
-#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
 class SegmentedString;
-class HTMLResourcePreloader;
 
 class CSSPreloadScanner {
   DISALLOW_NEW();
@@ -95,42 +91,6 @@ class CSSPreloadScanner {
   const KURL* predicted_base_element_url_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CSSPreloadScanner);
-};
-
-// Each CSSPreloaderResourceClient keeps track of a single CSS resource, and
-// drives a CSSPreloadScanner as raw data arrives for it. This lets us preload
-// @import tags before parsing.
-class CORE_EXPORT CSSPreloaderResourceClient
-    : public GarbageCollectedFinalized<CSSPreloaderResourceClient>,
-      public ResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(CSSPreloaderResourceClient);
-
- public:
-  CSSPreloaderResourceClient(HTMLResourcePreloader*);
-  ~CSSPreloaderResourceClient() override;
-  void NotifyFinished(Resource*) override;
-  void DataReceived(Resource*, const char*, size_t) override;
-  String DebugName() const override { return "CSSPreloaderResourceClient"; }
-
-  void Trace(blink::Visitor*) override;
-
- protected:
-  // Protected for tests, which don't want to initialize a fully featured
-  // DocumentLoader.
-  virtual void FetchPreloads(PreloadRequestStream& preloads);
-
- private:
-  void ScanCSS(const CSSStyleSheetResource*);
-  void MaybeClearResource();
-
-  enum PreloadPolicy {
-    kScanOnly,
-    kScanAndPreload,
-  };
-
-  const PreloadPolicy policy_;
-  WeakMember<HTMLResourcePreloader> preloader_;
-  bool received_first_data_ = false;
 };
 
 }  // namespace blink
