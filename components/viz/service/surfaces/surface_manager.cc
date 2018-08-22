@@ -495,17 +495,10 @@ void SurfaceManager::RemoveTemporaryReference(const SurfaceId& surface_id,
 
 Surface* SurfaceManager::GetLatestInFlightSurface(
     const SurfaceRange& surface_range) {
-
   // If primary exists, we return it.
   Surface* primary_surface = GetSurfaceForId(surface_range.end());
   if (primary_surface && primary_surface->HasActiveFrame())
     return primary_surface;
-
-  // If fallback is not specified we return nullptr.
-  // TODO(akaba): after fixing https://crbug.com/861769 we need to return
-  // something older than primary.
-  if (!surface_range.start())
-    return nullptr;
 
   // If both end of the range exists, we try the primary's FrameSinkId first.
   Surface* latest_surface = GetLatestInFlightSurfaceForFrameSinkId(
@@ -519,9 +512,12 @@ Surface* SurfaceManager::GetLatestInFlightSurface(
 
   // Fallback might have neither temporary or presistent references, so we
   // consider it separately.
-  if (!latest_surface)
+  if (!latest_surface && surface_range.start())
     latest_surface = GetSurfaceForId(*surface_range.start());
-  return latest_surface;
+
+  if (latest_surface && latest_surface->HasActiveFrame())
+    return latest_surface;
+  return nullptr;
 }
 
 void SurfaceManager::ExpireOldTemporaryReferences() {

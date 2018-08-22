@@ -2243,8 +2243,9 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithoutFallback) {
   EXPECT_EQ(GetSurfaceForId(child_id1),
             GetLatestInFlightSurface(child_id2, child_id1));
 
-  // Fallback is not specified and primary doesn't exists so we return nullptr.
-  EXPECT_EQ(nullptr, GetLatestInFlightSurface(child_id2, base::nullopt));
+  // Fallback is not specified and |child_id1| is the latest.
+  EXPECT_EQ(GetSurfaceForId(child_id1),
+            GetLatestInFlightSurface(child_id2, base::nullopt));
 
   // Activate |child_id2|
   child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),

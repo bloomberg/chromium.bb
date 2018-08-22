@@ -1606,7 +1606,7 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, InvalidSurfaceReference) {
 // SolidColorDrawQuad should be placed in lieu of a frame.
 TEST_F(SurfaceAggregatorValidSurfaceTest, ValidSurfaceReferenceWithNoFrame) {
   LocalSurfaceId empty_local_surface_id = allocator_.GenerateId();
-  SurfaceId surface_with_no_frame_id(support_->frame_sink_id(),
+  SurfaceId surface_with_no_frame_id(kArbitraryFrameSinkId1,
                                      empty_local_surface_id);
 
   Quad quads[] = {
