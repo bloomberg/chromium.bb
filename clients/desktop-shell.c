@@ -736,7 +736,8 @@ panel_add_launcher(struct panel *panel, const char *icon, const char *path)
 enum {
 	BACKGROUND_SCALE,
 	BACKGROUND_SCALE_CROP,
-	BACKGROUND_TILE
+	BACKGROUND_TILE,
+	BACKGROUND_CENTERED
 };
 
 static void
@@ -800,14 +801,27 @@ background_draw(struct widget *widget, void *data)
 		case BACKGROUND_TILE:
 			cairo_pattern_set_extend(pattern, CAIRO_EXTEND_REPEAT);
 			break;
+		case BACKGROUND_CENTERED:
+			s = (sx < sy) ? sx : sy;
+			if (s < 1.0)
+				s = 1.0;
+
+			/* align center */
+			tx = (im_w - s * allocation.width) * 0.5;
+			ty = (im_h - s * allocation.height) * 0.5;
+
+			cairo_matrix_init_translate(&matrix, tx, ty);
+			cairo_matrix_scale(&matrix, s, s);
+			cairo_pattern_set_matrix(pattern, &matrix);
+			break;
 		}
 
 		cairo_set_source(cr, pattern);
 		cairo_pattern_destroy (pattern);
 		cairo_surface_destroy(image);
+		cairo_mask(cr, pattern);
 	}
 
-	cairo_paint(cr);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 
@@ -1143,6 +1157,8 @@ background_create(struct desktop *desktop, struct output *output)
 		background->type = BACKGROUND_SCALE_CROP;
 	} else if (strcmp(type, "tile") == 0) {
 		background->type = BACKGROUND_TILE;
+	} else if (strcmp(type, "centered") == 0) {
+		background->type = BACKGROUND_CENTERED;
 	} else {
 		background->type = -1;
 		fprintf(stderr, "invalid background-type: %s\n",
