@@ -145,25 +145,15 @@ static int NumberOfPhysicalProcessors() {
 // Adds extra system information to Media.AudioXXXMac UMA statistics.
 // Only called when it has been detected that audio callbacks does not start
 // as expected.
-static void AddSystemInfoToUMA(bool is_on_battery, int num_resumes) {
-  // Logs true or false depending on if the machine is on battery power or not.
-  UMA_HISTOGRAM_BOOLEAN("Media.Audio.IsOnBatteryPowerMac", is_on_battery);
+static void AddSystemInfoToUMA() {
   // Number of logical processors/cores on the current machine.
   UMA_HISTOGRAM_COUNTS("Media.Audio.LogicalProcessorsMac",
                        base::SysInfo::NumberOfProcessors());
   // Number of physical processors/cores on the current machine.
   UMA_HISTOGRAM_COUNTS("Media.Audio.PhysicalProcessorsMac",
                        NumberOfPhysicalProcessors());
-  // Counts number of times the system has resumed from power suspension.
-  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.ResumeEventsMac", num_resumes);
-  // System uptime in hours.
-  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.UptimeMac",
-                            base::SysInfo::Uptime().InHours());
-  DVLOG(1) << "uptime: " << base::SysInfo::Uptime().InHours();
   DVLOG(1) << "logical processors: " << base::SysInfo::NumberOfProcessors();
   DVLOG(1) << "physical processors: " << NumberOfPhysicalProcessors();
-  DVLOG(1) << "battery power: " << is_on_battery;
-  DVLOG(1) << "resume events: " << num_resumes;
 }
 
 // Finds the first subdevice, in an aggregate device, with output streams.
@@ -228,7 +218,6 @@ AUAudioInputStream::AUAudioInputStream(
             kNumberOfBlocksBufferInFifo),
       got_input_callback_(false),
       input_callback_is_active_(false),
-      start_was_deferred_(false),
       buffer_size_was_changed_(false),
       audio_unit_render_has_worked_(false),
       noise_reduction_suppressed_(false),
@@ -686,7 +675,6 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   // Check if we should defer Start() for http://crbug.com/160920.
   if (manager_->ShouldDeferStreamStart()) {
     LOG(WARNING) << "Start of input audio is deferred";
-    start_was_deferred_ = true;
     // Use a cancellable closure so that if Stop() is called before Start()
     // actually runs, we can cancel the pending start.
     deferred_start_cb_.Reset(base::Bind(&AUAudioInputStream::Start,
@@ -782,21 +770,6 @@ void AUAudioInputStream::Close() {
 
   // Uninitialize and dispose the audio unit.
   CloseAudioUnit();
-
-  // Add more UMA stats but only if AGC was activated, i.e. for e.g. WebRTC
-  // audio input streams.
-  if (GetAutomaticGainControl()) {
-    // Log whether call to Start() was deferred or not. To be compared with
-    // Media.Audio.InputStartWasDeferredMac which logs the same value but only
-    // when input audio fails to start.
-    UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputStartWasDeferredAudioWorkedMac",
-                          start_was_deferred_);
-    // Log if a change of I/O buffer size was required. To be compared with
-    // Media.Audio.InputBufferSizeWasChangedMac which logs the same value but
-    // only when input audio fails to start.
-    UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputBufferSizeWasChangedAudioWorkedMac",
-                          buffer_size_was_changed_);
-  }
 
   // Inform the audio manager that we have been closed. This will cause our
   // destruction.
@@ -1378,16 +1351,8 @@ void AUAudioInputStream::CloseAudioUnit() {
 
 void AUAudioInputStream::AddHistogramsForFailedStartup() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputStartWasDeferredMac",
-                        start_was_deferred_);
   UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputBufferSizeWasChangedMac",
                         buffer_size_was_changed_);
-  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfOutputStreamsMac",
-                            manager_->output_streams());
-  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfLowLatencyInputStreamsMac",
-                            manager_->low_latency_input_streams());
-  UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
-                            manager_->basic_input_streams());
   // |input_params_.frames_per_buffer()| is set at construction and corresponds
   // to the requested (by the client) number of audio frames per I/O buffer
   // connected to the selected input device. Ideally, this size will be the same
@@ -1404,14 +1369,8 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
   base::UmaHistogramSparse("Media.Audio.ActualInputBufferFrameSizeMac",
                            io_buffer_frame_size_);
   DVLOG(1) << "io_buffer_frame_size_: " << io_buffer_frame_size_;
-  // TODO(henrika): this value will currently always report true. It should
-  // be fixed when we understand the problem better.
-  UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac",
-                        GetAutomaticGainControl());
-  // Add information about things like number of logical processors, number
-  // of system resume events etc.
-  AddSystemInfoToUMA(manager_->IsOnBatteryPower(),
-                     manager_->GetNumberOfResumeNotifications());
+  // Add information about things like number of logical processors etc.
+  AddSystemInfoToUMA();
 }
 
 void AUAudioInputStream::UpdateCaptureTimestamp(
