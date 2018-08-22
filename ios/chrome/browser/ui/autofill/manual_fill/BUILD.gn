@@ -16,9 +16,6 @@ source_set("manual_fill") {
     "//ios/chrome/browser/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//net:net",
-    "//third_party/material_design_icons:ic_account_circle",
-    "//third_party/material_design_icons:ic_credit_card",
-    "//third_party/material_design_icons:ic_vpn_key",
     "//url:url",
   ]
   libs = [ "UIKit.framework" ]
@@ -29,9 +26,15 @@ source_set("manual_fill_ui") {
   sources = [
     "credential.h",
     "credential.mm",
+    "manual_fill_accessory_view_controller.h",
+    "manual_fill_accessory_view_controller.mm",
   ]
   deps = [
     "//base",
+    "//ios/chrome/browser/ui/autofill/manual_fill/resources:addresses",
+    "//third_party/material_design_icons:ic_credit_card",
+    "//third_party/material_design_icons:ic_keyboard",
+    "//third_party/material_design_icons:ic_vpn_key",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
