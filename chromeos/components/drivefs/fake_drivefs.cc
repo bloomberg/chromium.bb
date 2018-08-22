@@ -185,4 +185,8 @@ void FakeDriveFs::SetPinned(const base::FilePath& path,
 
 void FakeDriveFs::UpdateNetworkState(bool pause_syncing, bool is_offline) {}
 
+void FakeDriveFs::ResetCache(ResetCacheCallback callback) {
+  std::move(callback).Run(drive::FILE_ERROR_OK);
+}
+
 }  // namespace drivefs

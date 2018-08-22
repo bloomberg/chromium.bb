@@ -33,6 +33,9 @@ interface DriveFs {
   // Update DriveFS with the current network state, including whether the
   // network is available and whether syncing should be paused.
   UpdateNetworkState(bool pause_syncing, bool is_offline);
+
+  // Reset DriveFS cache.
+  ResetCache() => (FileError error);
 };
 
 // Implemented by Chrome, used from DriveFS.

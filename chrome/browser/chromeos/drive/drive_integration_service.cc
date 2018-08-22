@@ -59,6 +59,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/base/network_change_notifier.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -209,6 +210,10 @@ FileError InitializeMetadata(
   LOG_IF(WARNING, error != FILE_ERROR_OK)
       << "Failed to initialize resource metadata. " << FileErrorToString(error);
   return error;
+}
+
+void ResetCacheDone(base::OnceCallback<void(bool)> callback, FileError error) {
+  std::move(callback).Run(error == FILE_ERROR_OK);
 }
 
 }  // namespace
@@ -603,9 +608,13 @@ void DriveIntegrationService::ClearCacheAndRemountFileSystem(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(callback);
 
-  // TODO(crbug.com/845393): Implement for DriveFS.
-  if (state_ != INITIALIZED || drivefs_holder_) {
+  if (state_ != INITIALIZED) {
     callback.Run(false);
+    return;
+  } else if (drivefs_holder_) {
+    GetDriveFsInterface()->ResetCache(
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(&ResetCacheDone, callback), FILE_ERROR_ABORT));
     return;
   }
 
