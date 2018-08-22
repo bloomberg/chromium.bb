@@ -199,7 +199,7 @@ void SVGSVGElement::ParseAttribute(const AttributeModificationParams& params) {
         name == SVGNames::widthAttr ? width_ : height_;
     SVGParsingError parse_error;
     if (!value.IsNull())
-      parse_error = property->SetBaseValueAsString(value);
+      parse_error = property->AttributeChanged(value);
     if (parse_error != SVGParseStatus::kNoError || value.IsNull())
       property->SetDefaultValueAsString("100%");
     ReportAttributeParsingError(parse_error, name, value);

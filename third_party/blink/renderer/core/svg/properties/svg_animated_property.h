@@ -57,7 +57,7 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
   virtual void SetAnimatedValue(SVGPropertyBase*) = 0;
   virtual void AnimationEnded();
 
-  virtual SVGParsingError SetBaseValueAsString(const String&) = 0;
+  virtual SVGParsingError AttributeChanged(const String&) = 0;
   virtual bool NeedsSynchronizeAttribute() = 0;
   virtual void SynchronizeAttribute();
 
@@ -123,7 +123,7 @@ class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
 
   bool IsAnimating() const override { return current_value_; }
 
-  SVGParsingError SetBaseValueAsString(const String& value) override {
+  SVGParsingError AttributeChanged(const String& value) override {
     return base_value_->SetValueAsString(value);
   }
 

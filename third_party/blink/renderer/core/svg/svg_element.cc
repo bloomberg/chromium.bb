@@ -679,8 +679,7 @@ void SVGElement::ParseAttribute(const AttributeModificationParams& params) {
   // Element::ParseAttribute). We don't tell Element about the change to avoid
   // parsing the class list twice.
   if (SVGAnimatedPropertyBase* property = PropertyFromAttribute(params.name)) {
-    SVGParsingError parse_error =
-        property->SetBaseValueAsString(params.new_value);
+    SVGParsingError parse_error = property->AttributeChanged(params.new_value);
     ReportAttributeParsingError(parse_error, params.name, params.new_value);
     return;
   }
