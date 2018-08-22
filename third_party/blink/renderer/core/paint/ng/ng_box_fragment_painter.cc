@@ -20,7 +20,6 @@
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
-#include "third_party/blink/renderer/core/paint/ng/ng_box_clipper.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -30,6 +29,7 @@
 #include "third_party/blink/renderer/core/paint/paint_info_with_offset.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_phase.h"
+#include "third_party/blink/renderer/core/paint/scoped_box_clipper.h"
 #include "third_party/blink/renderer/core/paint/scrollable_area_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -152,11 +152,12 @@ void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info) {
 
   if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
       original_phase != PaintPhase::kSelfOutlineOnly) {
-    base::Optional<NGBoxClipper> box_clipper;
+    base::Optional<ScopedBoxClipper> box_clipper;
     if (original_phase == PaintPhase::kForeground ||
         original_phase == PaintPhase::kFloat ||
-        original_phase == PaintPhase::kDescendantOutlinesOnly)
+        original_phase == PaintPhase::kDescendantOutlinesOnly) {
       box_clipper.emplace(box_fragment_, info);
+    }
     PaintObject(info, paint_offset);
   }
 
@@ -545,7 +546,7 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
   local_paint_info.phase = PaintPhase::kFloat;
   PaintObject(local_paint_info, paint_offset);
   {
-    NGBoxClipper box_clipper(box_fragment_, local_paint_info);
+    ScopedBoxClipper box_clipper(box_fragment_, local_paint_info);
     local_paint_info.phase = PaintPhase::kForeground;
     PaintObject(local_paint_info, paint_offset);
   }
