@@ -154,7 +154,8 @@ class SimpleBuilder(generic_builders.Builder):
       else:
         stage_class = test_stages.HWTestStage
 
-      if builder_run.config.enable_skylab_hw_tests:
+      if (builder_run.config.enable_skylab_hw_tests and
+          suite_config.enable_skylab):
         if suite_config.async:
           stage_class = test_stages.ASyncSkylabHWTestStage
         else:

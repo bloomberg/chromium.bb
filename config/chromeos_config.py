@@ -375,14 +375,16 @@ class HWTestList(object):
         pool=constants.HWTEST_CTS_POOL,
         timeout=config_lib.HWTestConfig.CTS_QUAL_HW_TEST_TIMEOUT,
         priority=constants.HWTEST_CTS_PRIORITY,
-        async=True)
+        async=True,
+        enable_skylab=False)
     cts_config.update(kwargs)
 
     gts_config = dict(
         pool=constants.HWTEST_GTS_POOL,
         timeout=config_lib.HWTestConfig.GTS_QUAL_HW_TEST_TIMEOUT,
         priority=constants.HWTEST_GTS_PRIORITY,
-        async=True)
+        async=True,
+        enable_skylab=False)
     gts_config.update(kwargs)
 
     return [config_lib.HWTestConfig(constants.HWTEST_CTS_QUAL_SUITE,

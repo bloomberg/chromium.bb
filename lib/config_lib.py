@@ -509,7 +509,8 @@ class HWTestConfig(object):
                minimum_duts=0,
                suite_min_duts=0,
                suite_args=None,
-               offload_failures_only=False):
+               offload_failures_only=False,
+               enable_skylab=True):
     """Constructor -- see members above."""
     assert not async or not blocking
     assert not warn_only or not critical
@@ -528,6 +529,10 @@ class HWTestConfig(object):
     self.suite_min_duts = suite_min_duts
     self.suite_args = suite_args
     self.offload_failures_only = offload_failures_only
+    # Usually whether to run in skylab is controlled by 'enable_skylab_hw_test'
+    # in build config. But for some particular suites, we want to exclude them
+    # from Skylab even if the build config is migrated to Skylab.
+    self.enable_skylab = enable_skylab
 
   def SetBranchedValues(self):
     """Changes the HW Test timeout/priority values to branched values."""
