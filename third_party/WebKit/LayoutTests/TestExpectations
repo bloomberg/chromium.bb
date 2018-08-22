@@ -2186,6 +2186,8 @@ crbug.com/400829 media/video-object-fit.html [ Failure ]
 crbug.com/400829 virtual/video-surface-layer/media/video-object-fit.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]
 crbug.com/400829 virtual/video-surface-layer/media/stable/video-object-fit-stable.html [ Failure ]
+crbug.com/400829 compositing/composited-canvas-with-overflowing-object-fit.html [ Failure ]
+crbug.com/400829 virtual/gpu/fast/canvas/canvas-with-overflowing-object-fit.html [ Failure ]
 
 # We only want to run one of the web-animations-api tests in stable mode.
 crbug.com/441553 virtual/stable/web-animations-api [ Skip ]
