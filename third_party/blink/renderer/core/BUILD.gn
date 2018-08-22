@@ -1874,6 +1874,7 @@ jumbo_source_set("unit_tests") {
     "frame/rotation_viewport_anchor_test.cc",
     "frame/use_counter_test.cc",
     "frame/visual_viewport_test.cc",
+    "fullscreen/scoped_allow_fullscreen_test.cc",
     "geometry/dom_matrix_test.cc",
     "html/anchor_element_metrics_test.cc",
     "html/canvas/canvas_async_blob_creator_test.cc",
