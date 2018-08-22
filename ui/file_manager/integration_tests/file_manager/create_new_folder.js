@@ -14,32 +14,28 @@ var TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"] ';
 
 /**
  * Selects the first item in the file list.
+ *
  * @param {string} windowId The Files app windowId.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function selectFirstListItem(windowId) {
+function selectFirstFileListItem(windowId) {
   return Promise.resolve().then(function() {
-    // Ensure no selected item.
-    return remoteCall.waitForElementLost(
-        windowId,
-        'div.detail-table > list > li[selected]');
+    // Ensure no file list items are selected.
+    return remoteCall.waitForElementLost(windowId, ['#file-list [selected]']);
   }).then(function() {
-    // Push Down.
+    // Press DownArrow key to select an item.
+    const key = ['#file-list', 'ArrowDown', 'Down', false, false, false];
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
+    // Await file list item selection.
+    return remoteCall.waitForElement(windowId, ['.table-row[selected]']);
+  }).then(function() {
+    // Retrieve all selected items in the file list.
     return remoteCall.callRemoteTestUtil(
-        'fakeKeyDown', windowId,
-        // Down
-        ['#file-list', 'ArrowDown', 'Down', true, false, false]);
-  }).then(function() {
-    // Wait for selection.
-    return remoteCall.waitForElement(windowId,
-                                     'div.detail-table > list > li[selected]');
-  }).then(function() {
-    // Ensure that only the first item is selected.
-    return remoteCall.callRemoteTestUtil(
-        'queryAllElements',
-        windowId,
-        ['div.detail-table > list > li[selected]']);
+        'queryAllElements', windowId, ['#file-list [selected]']);
   }).then(function(elements) {
+    // Check: the first list item only should be selected.
     chrome.test.assertEq(1, elements.length);
     chrome.test.assertEq('listitem-1', elements[0].attributes['id']);
   });
@@ -174,7 +170,7 @@ testcase.selectCreateFolderDownloads = function() {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
-    return selectFirstListItem(windowId);
+    return selectFirstFileListItem(windowId);
   }).then(function() {
     return createNewFolder(windowId, '', BASIC_LOCAL_ENTRY_SET, 'Downloads');
   });
