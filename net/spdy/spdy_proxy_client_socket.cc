@@ -190,8 +190,19 @@ void SpdyProxyClientSocket::ApplySocketTag(const SocketTag& tag) {
 int SpdyProxyClientSocket::Read(IOBuffer* buf,
                                 int buf_len,
                                 CompletionOnceCallback callback) {
-  DCHECK(read_callback_.is_null());
-  DCHECK(!user_buffer_.get());
+  int rv = ReadIfReady(buf, buf_len, std::move(callback));
+  if (rv == ERR_IO_PENDING) {
+    user_buffer_ = buf;
+    user_buffer_len_ = static_cast<size_t>(buf_len);
+  }
+  return rv;
+}
+
+int SpdyProxyClientSocket::ReadIfReady(IOBuffer* buf,
+                                       int buf_len,
+                                       CompletionOnceCallback callback) {
+  DCHECK(!read_callback_);
+  DCHECK(!user_buffer_);
 
   if (next_state_ == STATE_DISCONNECTED)
     return ERR_SOCKET_NOT_CONNECTED;
@@ -204,14 +215,17 @@ int SpdyProxyClientSocket::Read(IOBuffer* buf,
   DCHECK(buf);
   size_t result = PopulateUserReadBuffer(buf->data(), buf_len);
   if (result == 0) {
-    user_buffer_ = buf;
-    user_buffer_len_ = static_cast<size_t>(buf_len);
-    DCHECK(!callback.is_null());
     read_callback_ = std::move(callback);
     return ERR_IO_PENDING;
   }
-  user_buffer_ = NULL;
   return result;
+}
+
+int SpdyProxyClientSocket::CancelReadIfReady() {
+  // Only a pending ReadIfReady() can be canceled.
+  DCHECK(!user_buffer_) << "Pending Read() cannot be canceled";
+  read_callback_.Reset();
+  return OK;
 }
 
 size_t SpdyProxyClientSocket::PopulateUserReadBuffer(char* data, size_t len) {
@@ -453,11 +467,17 @@ void SpdyProxyClientSocket::OnDataReceived(std::unique_ptr<SpdyBuffer> buffer) {
                                   NULL);
   }
 
-  if (!read_callback_.is_null()) {
-    int rv = PopulateUserReadBuffer(user_buffer_->data(), user_buffer_len_);
-    user_buffer_ = NULL;
-    user_buffer_len_ = 0;
-    std::move(read_callback_).Run(rv);
+  if (read_callback_) {
+    if (user_buffer_) {
+      int rv = PopulateUserReadBuffer(user_buffer_->data(), user_buffer_len_);
+      user_buffer_ = nullptr;
+      user_buffer_len_ = 0;
+      std::move(read_callback_).Run(rv);
+    } else {
+      // If ReadIfReady() is used instead of Read(), tell the caller that data
+      // is available for reading.
+      std::move(read_callback_).Run(OK);
+    }
   }
 }
 
