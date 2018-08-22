@@ -2,6 +2,8 @@
 
 #+locale:cmn-Hans-CN
 #+type:literary
+#+system:cmn-traditional
+#+variant:no-tone
 
 # We corresponded to Braille and the simplify Chinese characters
 # referring to the rules of a book named the website linking

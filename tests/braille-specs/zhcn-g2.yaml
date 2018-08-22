@@ -1,7 +1,9 @@
 # encoding: utf-8 
-
 display: unicode.dis
-table: [zhcn-g2.ctb]
+table:
+  locale: cmn-CN
+  system: cmn-two-cell
+  __assert-match: zhcn-g2.ctb
 tests:
   - [现,⠓⠋]
   - [在,⠙⠛]
