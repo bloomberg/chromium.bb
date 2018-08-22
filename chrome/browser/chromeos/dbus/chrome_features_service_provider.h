@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DBUS_CHROME_FEATURES_SERVICE_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_DBUS_CHROME_FEATURES_SERVICE_PROVIDER_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -32,22 +30,7 @@ namespace chromeos {
 class ChromeFeaturesServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  // Delegate interface providing additional resources to
-  // ChromeFeaturesServiceProvider.
-  class Delegate {
-   public:
-    Delegate() {}
-    virtual ~Delegate() {}
-
-    virtual bool IsCrostiniEnabled(const std::string& user_id_hash) = 0;
-    virtual bool IsUsbguardEnabled() = 0;
-    virtual bool IsShillSandboxingEnabled() = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
-  explicit ChromeFeaturesServiceProvider(std::unique_ptr<Delegate> delegate);
+  ChromeFeaturesServiceProvider();
   ~ChromeFeaturesServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -69,7 +52,6 @@ class ChromeFeaturesServiceProvider
       dbus::MethodCall* method_call,
       dbus::ExportedObject::ResponseSender response_sender);
 
-  std::unique_ptr<Delegate> delegate_;
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
   base::WeakPtrFactory<ChromeFeaturesServiceProvider> weak_ptr_factory_;

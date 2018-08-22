@@ -597,8 +597,6 @@ source_set("chromeos") {
     "dbus/component_updater_service_provider.h",
     "dbus/drive_file_stream_service_provider.cc",
     "dbus/drive_file_stream_service_provider.h",
-    "dbus/finch_features_service_provider_delegate.cc",
-    "dbus/finch_features_service_provider_delegate.h",
     "dbus/kiosk_info_service_provider.cc",
     "dbus/kiosk_info_service_provider.h",
     "dbus/proxy_resolution_service_provider.cc",

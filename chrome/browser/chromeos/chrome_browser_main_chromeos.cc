@@ -50,7 +50,6 @@
 #include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
-#include "chrome/browser/chromeos/dbus/finch_features_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
@@ -359,12 +358,11 @@ class DBusServices {
             std::make_unique<ComponentUpdaterServiceProvider>(
                 g_browser_process->platform_part()->cros_component_manager())));
 
-    finch_features_service_ = CrosDBusService::Create(
+    chrome_features_service_ = CrosDBusService::Create(
         kChromeFeaturesServiceName,
         dbus::ObjectPath(kChromeFeaturesServicePath),
         CrosDBusService::CreateServiceProviderList(
-            std::make_unique<ChromeFeaturesServiceProvider>(
-                std::make_unique<FinchFeaturesServiceProviderDelegate>())));
+            std::make_unique<ChromeFeaturesServiceProvider>()));
 
     vm_applications_service_ = CrosDBusService::Create(
         vm_tools::apps::kVmApplicationsServiceName,
@@ -417,7 +415,7 @@ class DBusServices {
     kiosk_info_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
-    finch_features_service_.reset();
+    chrome_features_service_.reset();
     vm_applications_service_.reset();
     drive_file_stream_service_.reset();
     ProcessDataCollector::Shutdown();
@@ -434,7 +432,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;
-  std::unique_ptr<CrosDBusService> finch_features_service_;
+  std::unique_ptr<CrosDBusService> chrome_features_service_;
   std::unique_ptr<CrosDBusService> vm_applications_service_;
   std::unique_ptr<CrosDBusService> drive_file_stream_service_;
 
