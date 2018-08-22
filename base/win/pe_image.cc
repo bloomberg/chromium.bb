@@ -545,7 +545,8 @@ bool PEImage::VerifyMagic() const {
   return true;
 }
 
-bool PEImage::ImageRVAToOnDiskOffset(DWORD rva, DWORD* on_disk_offset) const {
+bool PEImage::ImageRVAToOnDiskOffset(uintptr_t rva,
+                                     DWORD* on_disk_offset) const {
   LPVOID address = RVAToAddr(rva);
   return ImageAddrToOnDiskOffset(address, on_disk_offset);
 }
@@ -570,7 +571,7 @@ bool PEImage::ImageAddrToOnDiskOffset(LPVOID address,
   return true;
 }
 
-PVOID PEImage::RVAToAddr(DWORD rva) const {
+PVOID PEImage::RVAToAddr(uintptr_t rva) const {
   if (rva == 0)
     return NULL;
 
@@ -594,7 +595,7 @@ const IMAGE_DATA_DIRECTORY* PEImage::GetDataDirectory(UINT directory) const {
   return &nt_headers->OptionalHeader.DataDirectory[directory];
 }
 
-PVOID PEImageAsData::RVAToAddr(DWORD rva) const {
+PVOID PEImageAsData::RVAToAddr(uintptr_t rva) const {
   if (rva == 0)
     return NULL;
 
