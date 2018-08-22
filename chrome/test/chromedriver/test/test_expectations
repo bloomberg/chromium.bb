@@ -12,44 +12,21 @@ import fnmatch
 
 _REVISION_NEGATIVE_FILTER = {}
 _REVISION_NEGATIVE_FILTER['HEAD'] = [
-    'AlertsTest.testIncludesAlertTextInUnhandledAlertException',
-    'AlertsTest.testShouldGetTextOfAlertOpenedInSetTimeout',
-    'AlertsTest.testShouldHandleAlertOnPageUnload',
-    'AlertsTest.testShouldHandleAlertOnWindowClose',
-    'AlertsTest.testShouldNotHandleAlertInAnotherWindow',
-    'AuthenticatedPageLoadingTest.*',
     'AvailableLogsTest.driverLogShouldBeEnabledByDefault',
-    'BasicMouseInterfaceTest.testMousePositionIsNotPreservedInActionsChain',
-    'BasicMouseInterfaceTest.testMovingIntoAnImageEnclosedInALink',
-    'BasicMouseInterfaceTest.testMovingMouseBackAndForthPastViewPort',
-    'BasicMouseInterfaceTest.testMovingMousePastViewPort',
     'ChromeOptionsFunctionalTest.*',
-    'ClickScrollingTest.testShouldBeAbleToClickOnAnElementHiddenByDoubleOverflow',
-    'ClickScrollingTest.testShouldNotBeAbleToClickElementThatIsOutOfViewInANonScrollableFrame',
-    'ClickScrollingTest.testShouldNotScrollIfAlreadyScrolledAndElementIsInView',
     'ClickTest.testShouldBeAbleToClickOnAnElementInFrameGreaterThanTwoViewports',
-    'CombinedInputActionsTest.testClickingOnFormElements',
     'CoordinatesTest.testShouldScrollPageAndGetCoordinatesOfAnElementThatIsOutOfViewPort',
     'CorrectEventFiringTest.testShouldFireEventsInTheRightOrder',
     'CorrectEventFiringTest.testShouldFireFocusEventWhenClicking',
-    'DragAndDropTest.testDragTooFar',
-    'ExecutingAsyncJavascriptTest.includesAlertTextInUnhandledAlertException',
-    'ExecutingAsyncJavascriptTest.shouldCatchErrorsWithMessageAndStacktraceWhenExecutingInitialScript',
-    'ExecutingAsyncJavascriptTest.throwsIfAlertHappensDuringScript',
-    'ExecutingAsyncJavascriptTest.throwsIfAlertHappensDuringScriptWhichTimesOut',
-    'ExecutingAsyncJavascriptTest.throwsIfScriptTriggersAlert',
     'ExecutingAsyncJavascriptTest.throwsIfScriptTriggersAlertWhichTimesOut',
     'ExecutingJavascriptTest.testShouldThrowExceptionIfExecutingOnNoPage',
-    'ExecutingJavascriptTest.testShouldThrowAnExceptionWithMessageAndStacktraceWhenTheJavascriptIsBad',
     'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
-    'FrameSwitchingTest.testShouldNotBeAbleToDoAnythingTheFrameIsDeletedFromUnderUs',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1249
     'FrameSwitchingTest.testGetCurrentUrl',
     'I18nTest.testShouldBeAbleToActivateIMEEngine',
     # Broken because AddWebStorage.java is broken.
     'LocalStorageTest.*',
     'LocationContextTest.*',
-    'MiscTest.testShouldBeAbleToGetTheSourceOfAnXmlDocument',
     'PageLoadingTest.shouldBeAbleToDisableAcceptOfInsecureSslCertsWithRequiredCapability',
     'PageLoadingTest.testShouldNotWaitIndefinitelyIfAnExternalResourceFailsToLoad',
     # PerformanceLoggingTest is for firefox only; "performance" log deprecated.
@@ -60,7 +37,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # Broken because AddWebStorage.java is broken.
     'SessionStorageTest.*',
     'SqlDatabaseTest.*',
-    'SvgDocumentTest.testClickOnSvgElement',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePage',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithLongX',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithLongY',
@@ -68,7 +44,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongX',
     'TakesScreenshotTest.testShouldCaptureScreenshotWithTooLongY',
     'TextPagesTest.testShouldBeAbleToLoadASimplePageOfText',
-    'TextPagesTest.testShouldThrowExceptionWhenAddingCookieToAPageThatIsNotHtml',
     'TypingTest.testGenerateKeyPressEventEvenWhenElementPreventsDefault',
     'TypingTest.testNonPrintableCharactersShouldWorkWithContentEditableOrDesignModeSet',
     'TypingTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
@@ -86,7 +61,7 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=528
     'PageLoadingTest.testShouldDoNothingIfThereIsNothingToGoBackTo',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1113
-    'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
+    #'FrameSwitchingTest.testShouldNotSwitchMagicallyToTheTopWindow',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1151
     'DragAndDropTest.testDragAndDrop',
     'DragAndDropTest.testShouldAllowUsersToDragAndDropToElementsOffTheCurrentViewPort',
@@ -96,80 +71,17 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1674
     'WindowSwitchingTest.testShouldBeAbleToIterateOverAllOpenWindows',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1138
-    'AlertsTest.testSettingTheValueOfAnAlertThrows',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1910
-    'AlertsTest.testPromptShouldUseDefaultValueIfNoKeysSent',
-    'UnexpectedAlertBehaviorTest.canAcceptUnhandledAlert',
-    'UnexpectedAlertBehaviorTest.canSpecifyUnhandledAlertBehaviourUsingCapabilities',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
-    'ClickTest.testShouldBeAbleToClickOnAPartiallyOverlappedLinkThatWrapsToTheNextLine',
-    'ClickTest.testShouldSetRelatedTargetForMouseOut',
-
-    'ContentEditableTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
-    'ContentEditableTest.testShouldAppendToTinyMCE',
-    'CorrectEventFiringTest.testNativelyClickOverlappingElements',
-    'CorrectEventFiringTest.testClickPartiallyOverlappingElements',
-
-    'ElementFindingTest.testShouldBeAbleToFindElementByXPathInXmlDocument',
-
-    'ExecutingJavascriptTest.shouldReturnDocumentElementIfDocumentIsReturned',
-    'ExecutingJavascriptTest.testShouldBeAbleToReturnADateObject',
-    'ExecutingJavascriptTest.shouldHandleRecursiveStructures',
-
-    'I18nTest.testEnteringSupplementaryCharacters',
-
-    'PageLoadingTest.testEagerStrategyShouldNotWaitForResourcesOnRefresh',
-    'PageLoadingTest.testEagerStrategyShouldWaitForDocumentToBeLoaded',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
-    'PageLoadingTest.testShouldNotStopLoadingPageAfterTimeout',
-    'PageLoadingTest.testEagerStrategyShouldNotWaitForResources',
-
-    'PositionAndSizeTest.testShouldHandleNonIntegerPositionAndSize',
 
     'ProxySettingTest.canConfigureProxyThroughPACFile',
     'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
     'ProxySettingTest.canConfigureManualHttpProxy',
     'ProxySettingTest.canConfigureNoProxy',
 
-    'SelectElementTest.shouldNotAllowInvisibleOptionsToBeSelectedByVisibleText',
-    'SelectElementTest.shouldNotAllowUserToDeselectOptionsByInvisibleText',
-
-    'TakesScreenshotTest.testShouldCaptureScreenshotOfAnElement',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
-    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithTooLongX',
-    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithTooLongY',
-    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithLongX',
-    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithLongY',
-    'TakesScreenshotTest.testShouldCaptureScreenshotOfPageWithTooLongXandY',
-
-    'TextHandlingTest.testShouldNotReturnLtrMarks',
-    'TextHandlingTest.testShouldTrimTextWithMultiByteWhitespaces',
-
-    'UnexpectedAlertBehaviorTest.canDismissUnhandledAlert',
-    'UnexpectedAlertBehaviorTest.canSilentlyAcceptUnhandledAlert',
-    'UnexpectedAlertBehaviorTest.canDismissUnhandledAlertsByDefault',
-    'UnexpectedAlertBehaviorTest.canSilentlyDismissUnhandledAlert',
-
-    'UploadTest.testClickFileInput',
-
-    'PageLoadingTest.testNoneStrategyShouldNotWaitForPageToRefresh',
     'BasicMouseInterfaceTest.testHoverPersists',
 
-    'AlertsTest.testShouldHandleAlertOnPageLoad',
-    'AlertsTest.testShouldAllowAUserToSetTheValueOfAPrompt',
-    'AlertsTest.testHandlesTwoAlertsFromOneInteraction',
-    'AlertsTest.testCanQuitWhenAnAlertIsPresent',
-    'AlertsTest.testShouldImplicitlyHandleAlertOnPageBeforeUnload',
-    'AlertsTest.testSwitchingToMissingAlertInAClosedWindowThrows',
-    'AlertsTest.testShouldAllowAUserToAcceptAPrompt',
-    'AlertsTest.testShouldAllowUsersToAcceptAnAlertManually',
-    'AlertsTest.testShouldThrowIllegalArgumentExceptionWhenKeysNull',
-    'AlertsTest.testShouldAllowAUserToDismissAPrompt',
-    'AlertsTest.testShouldAllowUsersToAcceptAnAlertWithNoTextManually',
-    'AlertsTest.shouldHandleAlertOnFormSubmit',
-    'AlertsTest.testShouldBeAbleToOverrideTheWindowAlertMethod',
     'ElementAttributeTest.testShouldReturnInnerHtml',
     'ExecutingAsyncJavascriptTest.shouldBeAbleToMakeXMLHttpRequestsAndWaitForTheResponse',
     'MiscTest.testShouldReturnTheSourceOfAPage',
@@ -190,7 +102,6 @@ _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2480
-    'PageLoadingTest.testNoneStrategyShouldNotWaitForPageToRefresh',
     'TakesScreenshotTest.testShouldCaptureScreenshotOfCurrentViewport',
 ]
 
