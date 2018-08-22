@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/test/test_timeouts.h"
@@ -32,13 +33,19 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/javascript_test_observer.h"
+#include "content/public/test/ppapi_test_utils.h"
 #include "content/public/test/test_renderer_host.h"
 #include "extensions/common/constants.h"
 #include "extensions/test/extension_test_message_listener.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "net/base/net_errors.h"
 #include "ppapi/shared_impl/test_utils.h"
 #include "rlz/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 #if defined(OS_MACOSX)
@@ -380,6 +387,228 @@ TEST_PPAPI_NACL(UDPSocketPrivate_Connect)
 TEST_PPAPI_NACL(UDPSocketPrivate_ConnectFailure)
 TEST_PPAPI_NACL(UDPSocketPrivate_Broadcast)
 TEST_PPAPI_NACL(UDPSocketPrivate_SetSocketFeatureErrors)
+
+namespace {
+
+// UDPSocket subclass that wraps a real network::mojom::UDPSocket, and can
+// simulate certain failures. Owns itself, and destroys itself when one of
+// its Mojo pipes is closed.
+class WrappedUDPSocket : public network::mojom::UDPSocket {
+ public:
+  // Type of failure to simulate. "DropPipe" failures correspond to dropping a
+  // Mojo pipe (Which typically happens if the network service crashes, or the
+  // parent NetworkContext is torn down). "Error" failures correspond to
+  // returning net::ERR_FAILED.
+  enum class FailureType {
+    kBindError,
+    kBindDropPipe,
+    kBroadcastError,
+    kBroadcastDropPipe,
+    kSendToDropPipe,
+    kSendToError,
+    kDropReceiverPipeOnConstruction,
+    kDropReceiverPipeOnReceiveMore,
+    kReadError,
+  };
+  WrappedUDPSocket(FailureType failure_type,
+                   network::mojom::NetworkContext* network_context,
+                   network::mojom::UDPSocketRequest socket_request,
+                   network::mojom::UDPSocketReceiverPtr socket_receiver)
+      : failure_type_(failure_type), binding_(this, std::move(socket_request)) {
+    if (failure_type == FailureType::kDropReceiverPipeOnConstruction)
+      socket_receiver.reset();
+    socket_receiver_ = std::move(socket_receiver);
+    network_context->CreateUDPSocket(mojo::MakeRequest(&wrapped_socket_),
+                                     nullptr);
+    binding_.set_connection_error_handler(
+        base::BindOnce(&WrappedUDPSocket::Close, base::Unretained(this)));
+    wrapped_socket_.set_connection_error_handler(
+        base::BindOnce(&WrappedUDPSocket::Close, base::Unretained(this)));
+  }
+
+  // network::mojom::UDPSocket implementation.
+  void Connect(const net::IPEndPoint& remote_addr,
+               network::mojom::UDPSocketOptionsPtr options,
+               ConnectCallback callback) override {
+    NOTREACHED();
+  }
+  void Bind(const net::IPEndPoint& local_addr,
+            network::mojom::UDPSocketOptionsPtr options,
+            BindCallback callback) override {
+    if (failure_type_ == FailureType::kBindError) {
+      std::move(callback).Run(net::ERR_FAILED, base::nullopt);
+      return;
+    }
+    if (failure_type_ == FailureType::kBindDropPipe) {
+      Close();
+      return;
+    }
+    wrapped_socket_->Bind(local_addr, std::move(options), std::move(callback));
+  }
+  void SetBroadcast(bool broadcast, SetBroadcastCallback callback) override {
+    if (failure_type_ == FailureType::kBroadcastError) {
+      std::move(callback).Run(net::ERR_FAILED);
+      return;
+    }
+    if (failure_type_ == FailureType::kBroadcastDropPipe) {
+      Close();
+      return;
+    }
+    wrapped_socket_->SetBroadcast(broadcast, std::move(callback));
+  }
+  void SetSendBufferSize(int32_t send_buffer_size,
+                         SetSendBufferSizeCallback callback) override {
+    wrapped_socket_->SetSendBufferSize(send_buffer_size, std::move(callback));
+  }
+  void SetReceiveBufferSize(int32_t receive_buffer_size,
+                            SetReceiveBufferSizeCallback callback) override {
+    wrapped_socket_->SetReceiveBufferSize(receive_buffer_size,
+                                          std::move(callback));
+  }
+  void JoinGroup(const net::IPAddress& group_address,
+                 JoinGroupCallback callback) override {
+    wrapped_socket_->JoinGroup(group_address, std::move(callback));
+  }
+  void LeaveGroup(const net::IPAddress& group_address,
+                  LeaveGroupCallback callback) override {
+    wrapped_socket_->LeaveGroup(group_address, std::move(callback));
+  }
+  void ReceiveMore(uint32_t num_additional_datagrams) override {
+    if (failure_type_ == FailureType::kDropReceiverPipeOnReceiveMore) {
+      socket_receiver_.reset();
+      return;
+    }
+    if (failure_type_ == FailureType::kReadError) {
+      for (uint32_t i = 0; i < num_additional_datagrams; ++i) {
+        socket_receiver_->OnReceived(net::ERR_FAILED, base::nullopt,
+                                     base::nullopt);
+      }
+      return;
+    }
+    // None of the tests using this fixture expect to read anything
+    // successfully, so just ignore this call if it isn't supposed to result in
+    // an error of some sort.
+  }
+  void ReceiveMoreWithBufferSize(uint32_t num_additional_datagrams,
+                                 uint32_t buffer_size) override {
+    NOTREACHED();
+  }
+  void SendTo(const net::IPEndPoint& dest_addr,
+              base::span<const uint8_t> data,
+              const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+              SendToCallback callback) override {
+    if (failure_type_ == FailureType::kSendToError) {
+      std::move(callback).Run(net::ERR_FAILED);
+      return;
+    }
+    if (failure_type_ == FailureType::kSendToDropPipe) {
+      Close();
+      return;
+    }
+    wrapped_socket_->SendTo(dest_addr, data, traffic_annotation,
+                            std::move(callback));
+  }
+  void Send(base::span<const uint8_t> data,
+            const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
+            SendCallback callback) override {
+    NOTREACHED();
+  }
+  void Close() override {
+    // Deleting |this| before closing the bindings can cause Mojo to DCHECK if
+    // there's a pending callback.
+    binding_.Close();
+    socket_receiver_.reset();
+    delete this;
+  }
+
+ private:
+  const FailureType failure_type_;
+  mojo::Binding<network::mojom::UDPSocket> binding_;
+  network::mojom::UDPSocketPtr wrapped_socket_;
+
+  // Only populated on certain read FailureTypes.
+  network::mojom::UDPSocketReceiverPtr socket_receiver_;
+
+  DISALLOW_COPY_AND_ASSIGN(WrappedUDPSocket);
+};
+
+void TestCreateUDPSocketCallback(
+    WrappedUDPSocket::FailureType failure_type,
+    network::mojom::NetworkContext* network_context,
+    network::mojom::UDPSocketRequest socket_request,
+    network::mojom::UDPSocketReceiverPtr socket_receiver) {
+  // This will delete itself when one of its Mojo pipes is closed.
+  new WrappedUDPSocket(failure_type, network_context, std::move(socket_request),
+                       std::move(socket_receiver));
+}
+
+#define RUN_UDP_FAILURE_TEST(test_name, failure_type)                    \
+  do {                                                                   \
+    auto callback =                                                      \
+        base::BindRepeating(&TestCreateUDPSocketCallback, failure_type); \
+    ppapi::SetPepperUDPSocketCallackForTesting(&callback);               \
+    RunTestViaHTTP(LIST_TEST(test_name));                                \
+    ppapi::SetPepperUDPSocketCallackForTesting(nullptr);                 \
+  } while (false)
+
+}  // namespace
+
+// Macro for tests that use |WrappedUDPSocket| to simulate errors. |test_name|
+// and |_test| are separate values because there are often multiple ways to get
+// the same error pattern (Dropped mojo pipe and failed call, generally).
+#define UDPSOCKET_FAILURE_TEST(test_name, _test, failure_type)               \
+  IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, test_name) {                 \
+    RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
+  }                                                                          \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, MAYBE_PPAPI_NACL(test_name)) { \
+    RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
+  }                                                                          \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(test_name)) {       \
+    RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
+  }                                                                          \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, MAYBE_PPAPI_PNACL(test_name)) { \
+    RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
+  }                                                                          \
+  IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClNonSfiTest,                           \
+                         MAYBE_PNACL_NONSFI(test_name)) {                    \
+    RUN_UDP_FAILURE_TEST(_test, failure_type);                               \
+  }
+
+UDPSOCKET_FAILURE_TEST(UDPSocket_BindError,
+                       UDPSocket_BindFails,
+                       WrappedUDPSocket::FailureType::kBindError);
+UDPSOCKET_FAILURE_TEST(UDPSocket_BindDropPipe,
+                       UDPSocket_BindFails,
+                       WrappedUDPSocket::FailureType::kBindDropPipe);
+UDPSOCKET_FAILURE_TEST(UDPSocket_BroadcastBeforeBindError,
+                       UDPSocket_BroadcastBeforeBindFails,
+                       WrappedUDPSocket::FailureType::kBroadcastError);
+UDPSOCKET_FAILURE_TEST(UDPSocket_BroadcastBeforeBindDropPipe,
+                       UDPSocket_BroadcastBeforeBindFails,
+                       WrappedUDPSocket::FailureType::kBroadcastDropPipe);
+UDPSOCKET_FAILURE_TEST(UDPSocket_BroadcastAfterBindError,
+                       UDPSocket_BroadcastAfterBindFails,
+                       WrappedUDPSocket::FailureType::kBroadcastError);
+UDPSOCKET_FAILURE_TEST(UDPSocket_BroadcastAfterBindDropPipe,
+                       UDPSocket_BroadcastAfterBindFails,
+                       WrappedUDPSocket::FailureType::kBroadcastDropPipe);
+UDPSOCKET_FAILURE_TEST(UDPSocket_SendToBeforeDropPipeFails,
+                       UDPSocket_SendToFails,
+                       WrappedUDPSocket::FailureType::kSendToDropPipe);
+UDPSOCKET_FAILURE_TEST(UDPSocket_DropPipeAfterBindSendToFails,
+                       UDPSocket_SendToFails,
+                       WrappedUDPSocket::FailureType::kSendToError);
+UDPSOCKET_FAILURE_TEST(UDPSocket_ReadError,
+                       UDPSocket_ReadFails,
+                       WrappedUDPSocket::FailureType::kReadError);
+UDPSOCKET_FAILURE_TEST(
+    UDPSocket_DropReceiverPipeOnConstruction,
+    UDPSocket_ReadFails,
+    WrappedUDPSocket::FailureType::kDropReceiverPipeOnConstruction);
+UDPSOCKET_FAILURE_TEST(
+    UDPSocket_DropReceiverPipeOnReceiveMore,
+    UDPSocket_ReadFails,
+    WrappedUDPSocket::FailureType::kDropReceiverPipeOnReceiveMore);
 
 // Disallowed socket tests.
 TEST_PPAPI_NACL_DISALLOWED_SOCKETS(HostResolverPrivateDisallowed)
