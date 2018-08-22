@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 // https://immersive-web.github.io/webxr/#xrwebgllayer-interface
-[
-    SecureContext
-] dictionary XRWebGLLayerInit {
+dictionary XRWebGLLayerInit {
   boolean antialias = true;
   boolean depth = true;
   boolean stencil = false;
