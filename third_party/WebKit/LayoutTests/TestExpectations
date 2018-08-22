@@ -2734,6 +2734,9 @@ crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-element-0/fieldset-overflow-hidden.html [ Failure ]
+crbug.com/626703 [ Mac10.12 ] external/wpt/webxr/xrSession_requestAnimationFrame_getDevicePose.https.html [ Failure Timeout ]
+crbug.com/626703 [ Mac10.10 ] external/wpt/editing/run/delete.html?2001-3000 [ Failure Timeout ]
 crbug.com/626703 external/wpt/payment-request/payment-response/onpayerdetailchange-attribute.manual.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-element-0/fieldset-painting-order.html [ Failure ]
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/tasks.window.html [ Timeout ]
