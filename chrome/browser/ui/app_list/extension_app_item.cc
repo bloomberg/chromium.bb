@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -76,7 +77,8 @@ void ExtensionAppItem::Reload() {
   SetNameAndShortName(extension->name(), extension->short_name());
   if (!icon_) {
     icon_ = extensions::ChromeAppIconService::Get(profile())->CreateIcon(
-        this, extension_id(), extension_misc::EXTENSION_ICON_MEDIUM);
+        this, extension_id(),
+        app_list::AppListConfig::instance().grid_icon_dimension());
   } else {
     icon_->Reload();
   }

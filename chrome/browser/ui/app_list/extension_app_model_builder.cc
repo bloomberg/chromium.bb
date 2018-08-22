@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -87,10 +88,11 @@ void ExtensionAppModelBuilder::OnBeginExtensionInstall(
     return;
 
   // Icons from the webstore can be unusual sizes. Once installed,
-  // ExtensionAppItem uses extension_misc::EXTENSION_ICON_MEDIUM (48) to load
-  // it, so be consistent with that.
-  gfx::Size icon_size(extension_misc::EXTENSION_ICON_MEDIUM,
-                      extension_misc::EXTENSION_ICON_MEDIUM);
+  // ExtensionAppItem uses AppListConfig::instance().grid_icon_dimension() to
+  // load it, so be consistent with that.
+  const int icon_dimension =
+      app_list::AppListConfig::instance().grid_icon_dimension();
+  gfx::Size icon_size(icon_dimension, icon_dimension);
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       params.installing_icon, skia::ImageOperations::RESIZE_BEST, icon_size));
 
