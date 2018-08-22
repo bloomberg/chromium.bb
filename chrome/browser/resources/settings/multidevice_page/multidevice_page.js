@@ -31,6 +31,31 @@ Polymer({
         return map;
       },
     },
+
+    /**
+     * Authentication token provided by password-prompt-dialog.
+     * @private {string}
+     */
+    authToken_: {
+      type: String,
+      value: '',
+      observer: 'authTokenChanged_',
+    },
+
+    /**
+     * The feature which the user wishes to enable, but which requires
+     * authentication. Once |authToken_| is valid, this value will be passed
+     * along to |browserProxy_|, and subsequently cleared.
+     * @private {?settings.MultiDeviceFeature}
+     */
+    attemptedEnabledFeature_: {type: Number, value: null},
+
+    /** @private {boolean} */
+    showPasswordPromptDialog_: {type: Boolean, value: false},
+  },
+
+  listeners: {
+    'feature-toggle-clicked': 'onFeatureToggleClicked_',
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -130,11 +155,89 @@ Polymer({
         this.browserProxy_.showMultiDeviceSetupDialog();
         return;
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
-        // Intentional fall-through.
+      // Intentional fall-through.
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_VERIFICATION:
         // If this device is waiting for action on the server or the host
         // device, clicking the button should trigger this action.
         this.browserProxy_.retryPendingHostSetup();
+    }
+  },
+
+  /**
+   * Tell |this.browserProxy_| to enable |this.attemptedEnabledFeature_|.
+   * @private
+   */
+  enableAttemptedFeature_: function() {
+    if (this.attemptedEnabledFeature_ != null) {
+      this.browserProxy_.setFeatureEnabledState(
+          this.attemptedEnabledFeature_, true /* enabled */, this.authToken_);
+      this.attemptedEnabledFeature_ = null;
+    }
+  },
+
+  /** @private */
+  openPasswordPromptDialog_: function() {
+    this.showPasswordPromptDialog_ = true;
+  },
+
+  /** @private */
+  onPasswordPromptDialogClose_: function() {
+    this.showPasswordPromptDialog_ = false;
+  },
+
+  /**
+   * Attempt to enable the provided feature. If not authenticated (i.e.,
+   * |authToken_| is invalid), display the password prompt to begin the
+   * authentication process.
+   *
+   * @param {!{detail: !Object}} event
+   * @private
+   */
+  onFeatureToggleClicked_: function(event) {
+    let feature = event.detail.feature;
+    let enabled = event.detail.enabled;
+
+    // Authentication is never required if disabling a feature; only consider it
+    // if enabling.
+    if (enabled) {
+      // TODO(crbug.com/876436): Actually determine this, when the API is
+      // available. It's fine to default to true here for now, because it errs
+      // on the side of more security.
+      let isSmartLockPrefEnabled = true;
+
+      let isPasswordPromptRequired =
+          (feature === settings.MultiDeviceFeature.SMART_LOCK) ||
+          (feature === settings.MultiDeviceFeature.BETTER_TOGETHER_SUITE &&
+           isSmartLockPrefEnabled);
+
+      if (isPasswordPromptRequired) {
+        this.attemptedEnabledFeature_ = feature;
+
+        if (this.authToken_) {
+          this.enableAttemptedFeature_();
+        } else {
+          this.openPasswordPromptDialog_();
+        }
+        return;
+      }
+    }
+
+    // No authentication is required.
+    this.browserProxy_.setFeatureEnabledState(feature, enabled);
+  },
+
+  /**
+   * Called when the authToken_ changes. If the authToken is valid, that
+   * indicates the user authenticated successfully. If not, cancel the pending
+   * attempt to enable attemptedEnabledFeature_.
+   * @param {String} authToken
+   * @private
+   */
+  authTokenChanged_: function(authToken) {
+    if (this.authToken_) {
+      this.enableAttemptedFeature_();
+    } else {
+      this.attemptedEnabledFeature_ = null;
     }
   },
 });

@@ -60,6 +60,7 @@ js_library("multidevice_page") {
     ":multidevice_browser_proxy",
     ":multidevice_constants",
     ":multidevice_feature_behavior",
+    "../controls:password_prompt_dialog",
     "//ui/webui/resources/js:cr",
   ]
 }
