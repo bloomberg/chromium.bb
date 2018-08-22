@@ -26,12 +26,14 @@
 
 #include "third_party/blink/renderer/core/page/create_window.h"
 
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_window_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
+#include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -195,6 +197,24 @@ static Frame* ReuseExistingWindow(LocalFrame& active_frame,
   return nullptr;
 }
 
+static void MaybeLogWindowOpenUKM(LocalFrame& opener_frame) {
+  AdTracker* ad_tracker = opener_frame.GetAdTracker();
+  if (!ad_tracker) {
+    return;
+  }
+
+  ukm::UkmRecorder* ukm_recorder = opener_frame.GetDocument()->UkmRecorder();
+  ukm::SourceId source_id = opener_frame.GetDocument()->UkmSourceID();
+  bool is_ad_subframe = opener_frame.IsAdSubframe();
+  bool is_ad_script_in_stack = ad_tracker->IsAdScriptInStack();
+  if (source_id != ukm::kInvalidSourceId) {
+    ukm::builders::AbusiveExperienceHeuristic(source_id)
+        .SetDidWindowOpenFromAdSubframe(is_ad_subframe)
+        .SetDidWindowOpenFromAdScript(is_ad_script_in_stack)
+        .Record(ukm_recorder);
+  }
+}
+
 static Frame* CreateNewWindow(LocalFrame& opener_frame,
                               const FrameLoadRequest& request,
                               const WebWindowFeatures& features,
@@ -256,6 +276,7 @@ static Frame* CreateNewWindow(LocalFrame& opener_frame,
   page->GetChromeClient().SetWindowRectWithAdjustment(window_rect, frame);
   page->GetChromeClient().Show(policy);
 
+  MaybeLogWindowOpenUKM(opener_frame);
   created = true;
   return &frame;
 }

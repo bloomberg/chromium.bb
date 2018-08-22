@@ -14,9 +14,12 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_test_utils.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -111,14 +114,15 @@ content::RenderFrameHost* AdTaggingBrowserTest::CreateFrameImpl(
   std::string script = base::StringPrintf(
       "%s('%s','%s');", ad_script ? "createAdFrame" : "createFrame",
       url.spec().c_str(), name.c_str());
-
-  content::TestNavigationObserver navigation_observer(GetWebContents(), 1);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
   EXPECT_TRUE(content::ExecuteScript(rfh, script));
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded())
       << navigation_observer.last_net_error_code();
   return content::FrameMatchingPredicate(
-      GetWebContents(), base::BindRepeating(&content::FrameMatchesName, name));
+      web_contents, base::BindRepeating(&content::FrameMatchesName, name));
 }
 
 content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(
@@ -126,18 +130,19 @@ content::RenderFrameHost* AdTaggingBrowserTest::CreateDocWrittenFrameImpl(
     bool ad_script) {
   content::RenderFrameHost* rfh = adapter.render_frame_host();
   std::string name = GetUniqueFrameName();
-
   std::string script = base::StringPrintf(
       "%s('%s', '%s');",
       ad_script ? "createDocWrittenAdFrame" : "createDocWrittenFrame",
       name.c_str(), GetURL("").spec().c_str());
-  content::TestNavigationObserver navigation_observer(GetWebContents(), 1);
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(rfh);
+  content::TestNavigationObserver navigation_observer(web_contents, 1);
   EXPECT_TRUE(content::ExecuteScript(rfh, script));
   navigation_observer.Wait();
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded())
       << navigation_observer.last_net_error_code();
   return content::FrameMatchingPredicate(
-      GetWebContents(), base::BindRepeating(&content::FrameMatchesName, name));
+      web_contents, base::BindRepeating(&content::FrameMatchesName, name));
 }
 
 // Given a RenderFrameHost, navigates the page to the given |url| and waits
@@ -318,6 +323,110 @@ IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, SameOriginFrameTagging) {
   content::RenderFrameHost* ad_frame =
       CreateDocWrittenFrameFromAdScript(GetWebContents());
   EXPECT_TRUE(*observer.GetIsAdSubframe(ad_frame->GetFrameTreeNodeId()));
+}
+
+const ukm::mojom::UkmEntry* FindDocumentCreatedEntry(
+    const ukm::TestUkmRecorder& ukm_recorder,
+    ukm::SourceId source_id) {
+  auto entries =
+      ukm_recorder.GetEntriesByName(ukm::builders::DocumentCreated::kEntryName);
+
+  for (auto* entry : entries) {
+    if (entry->source_id == source_id)
+      return entry;
+  }
+
+  NOTREACHED();
+  return nullptr;
+}
+
+void ExpectLatestUkmEntry(const ukm::TestUkmRecorder& ukm_recorder,
+                          size_t expected_num_entries,
+                          base::StringPiece metric_name,
+                          bool from_main_frame,
+                          const GURL& main_frame_url,
+                          int64_t expected_value) {
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::AbusiveExperienceHeuristic::kEntryName);
+  EXPECT_EQ(expected_num_entries, entries.size());
+
+  // Check that the event is keyed to |main_frame_url| only if it was from the
+  // top frame.
+  if (from_main_frame) {
+    ukm_recorder.ExpectEntrySourceHasUrl(entries.back(), main_frame_url);
+  } else {
+    EXPECT_FALSE(ukm_recorder.GetSourceForSourceId(entries.back()->source_id));
+  }
+
+  // Check that a DocumentCreated entry was created, and it's keyed to
+  // |main_frame_url| only if it was from the top frame. However, we can always
+  // use the navigation source ID to link this source to |main_frame_url|.
+  const ukm::mojom::UkmEntry* dc_entry =
+      FindDocumentCreatedEntry(ukm_recorder, entries.back()->source_id);
+  EXPECT_EQ(entries.back()->source_id, dc_entry->source_id);
+  if (from_main_frame) {
+    ukm_recorder.ExpectEntrySourceHasUrl(dc_entry, main_frame_url);
+  } else {
+    EXPECT_FALSE(ukm_recorder.GetSourceForSourceId(dc_entry->source_id));
+  }
+
+  const ukm::UkmSource* navigation_source =
+      ukm_recorder.GetSourceForSourceId(*ukm_recorder.GetEntryMetric(
+          dc_entry, ukm::builders::DocumentCreated::kNavigationSourceIdName));
+  EXPECT_EQ(main_frame_url, navigation_source->url());
+
+  EXPECT_EQ(from_main_frame,
+            *ukm_recorder.GetEntryMetric(
+                dc_entry, ukm::builders::DocumentCreated::kIsMainFrameName));
+
+  ukm_recorder.ExpectEntryMetric(entries.back(), metric_name, expected_value);
+}
+
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenFromSubframe) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  GURL main_frame_url =
+      embedded_test_server()->GetURL("a.com", "/ad_tagging/frame_factory.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+  content::WebContents* main_tab = GetWebContents();
+
+  size_t expected_num_entries = 0;
+  for (bool cross_origin : {false, true}) {
+    for (bool ad_frame : {false, true}) {
+      std::string hostname = cross_origin ? "b.com" : "a.com";
+      std::string suffix = ad_frame ? "&ad=true" : "";
+      SCOPED_TRACE(::testing::Message()
+                   << "cross_origin = " << cross_origin << ", "
+                   << "ad_frame = " << ad_frame);
+      RenderFrameHost* child = CreateSrcFrame(
+          main_tab, embedded_test_server()->GetURL(
+                        hostname, "/ad_tagging/frame_factory.html?1" + suffix));
+      EXPECT_TRUE(content::ExecuteScript(child, "window.open();"));
+      ExpectLatestUkmEntry(ukm_recorder, ++expected_num_entries,
+                           ukm::builders::AbusiveExperienceHeuristic::
+                               kDidWindowOpenFromAdSubframeName,
+                           false /* from_main_frame */, main_frame_url,
+                           ad_frame);
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AdTaggingBrowserTest, WindowOpenWithScriptInStack) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  GURL main_frame_url = GetURL("frame_factory.html");
+  ui_test_utils::NavigateToURL(browser(), main_frame_url);
+  content::WebContents* main_tab = GetWebContents();
+
+  EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromNonAdScript();"));
+  ExpectLatestUkmEntry(
+      ukm_recorder, 1 /* expected_num_entries */,
+      ukm::builders::AbusiveExperienceHeuristic::kDidWindowOpenFromAdScriptName,
+      true /* from_main_frame */, main_frame_url, false /* expected_value */);
+
+  EXPECT_TRUE(content::ExecuteScript(main_tab, "windowOpenFromAdScript();"));
+  ExpectLatestUkmEntry(
+      ukm_recorder, 2 /* expected_num_entries */,
+      ukm::builders::AbusiveExperienceHeuristic::kDidWindowOpenFromAdScriptName,
+      true /* from_main_frame */, main_frame_url, true /* expected_value */);
 }
 
 }  // namespace
