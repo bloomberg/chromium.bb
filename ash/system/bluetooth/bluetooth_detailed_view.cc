@@ -358,6 +358,8 @@ void BluetoothDetailedView::CreateExtraTitleRowButtons() {
 
   toggle_ =
       TrayPopupUtils::CreateToggleButton(this, IDS_ASH_STATUS_TRAY_BLUETOOTH);
+  toggle_->SetIsOn(Shell::Get()->tray_bluetooth_helper()->GetBluetoothEnabled(),
+                   false /* animate */);
   tri_view()->AddView(TriView::Container::END, toggle_);
 
   settings_ = CreateSettingsButton(IDS_ASH_STATUS_TRAY_BLUETOOTH_SETTINGS);
