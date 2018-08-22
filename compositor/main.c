@@ -2548,10 +2548,7 @@ int main(int argc, char *argv[])
 
 	wl_list_init(&wet.layoutput_list);
 
-	if (os_fd_set_cloexec(fileno(stdin))) {
-		printf("Unable to set stdin as close on exec().\n");
-		return EXIT_FAILURE;
-	}
+	os_fd_set_cloexec(fileno(stdin));
 
 	cmdline = copy_command_line(argc, argv);
 	parse_options(core_options, ARRAY_LENGTH(core_options), &argc, argv);
