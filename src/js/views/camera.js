@@ -33,11 +33,11 @@ camera.views.Camera = function(context, router, model) {
   this.model_ = model;
 
   /**
-   * Video element to capture the stream.
-   * @type {Video}
+   * Video preview for the camera.
+   * @type {camera.views.camera.Preview}
    * @private
    */
-  this.video_ = document.querySelector('#preview-video');
+  this.preview_ = new camera.views.camera.Preview();
 
   /**
    * Current camera stream.
@@ -168,13 +168,6 @@ camera.views.Camera = function(context, router, model) {
   // End of properties, seal the object.
   Object.seal(this);
 
-  this.video_.addEventListener('resize', () => {
-    if (this.video_.videoHeight) {
-      this.context_.onAspectRatio(
-          this.video_.videoWidth / this.video_.videoHeight);
-      this.updateLayout_();
-    }
-  });
   this.shutterButton_.addEventListener('click',
       this.onShutterButtonClicked_.bind(this));
 };
@@ -330,9 +323,9 @@ camera.views.Camera.prototype.onKeyPressed = function(event) {
     this.keyBuffer_ = '';
   }
   if (this.keyBuffer_.indexOf('RES') !== -1) {
-    if (this.video_.videoWidth || this.video_.videoHeight) {
-      this.showToastMessage_(
-          this.video_.videoWidth + ' x ' + this.video_.videoHeight, false);
+    var result = this.preview_.toString();
+    if (result) {
+      this.showToastMessage_(result, false);
     }
     this.keyBuffer_ = '';
   }
@@ -486,20 +479,7 @@ camera.views.Camera.prototype.createPhotoBlob_ = function() {
       return this.imageCapture_.takePhoto(photoSettings);
     });
   } else {
-    var canvas = document.createElement('canvas');
-    var context = canvas.getContext('2d');
-    canvas.width = this.video_.videoWidth;
-    canvas.height = this.video_.videoHeight;
-    context.drawImage(this.video_, 0, 0);
-    return new Promise((resolve, reject) => {
-      canvas.toBlob(blob => {
-        if (blob) {
-          resolve(blob);
-        } else {
-          reject('Photo blob error.');
-        }
-      }, 'image/jpeg');
-    });
+    return this.preview_.toImage();
   }
 };
 
@@ -533,67 +513,44 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
 camera.views.Camera.prototype.startWithConstraints_ = function(
     constraints, onSuccess, onFailure) {
   navigator.mediaDevices.getUserMedia(constraints).then(stream => {
-    var onLoadedMetadata = () => {
-      this.video_.play();
-      this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
-      // Use a watchdog since the stream.onended event is unreliable in the
-      // recent version of Chrome. As of 55, the event is still broken.
-      this.watchdog_ = setInterval(() => {
-        // Check if video stream is ended (audio stream may still be live).
-        if (!stream.getVideoTracks().length ||
-            stream.getVideoTracks()[0].readyState == 'ended') {
-          clearInterval(this.watchdog_);
-          this.watchdog_ = null;
-          this.onstop_();
-        }
-      }, 100);
-      this.stream_ = stream;
-      this.options_.updateStreamOptions(constraints, stream);
-      document.body.classList.add('capturing');
-      this.updateControls_();
-      onSuccess();
-    };
-    // Mute to avoid echo from the captured audio.
-    this.video_.muted = true;
-    // Load the stream and wait for the metadata.
-    // TODO(yuli): Maybe create a new video element to prevent blink.
-    this.video_.addEventListener('loadedmetadata', onLoadedMetadata);
-    this.video_.srcObject = stream;
-  }, onFailure);
+    return this.preview_.setSource(stream, () => {
+      this.context_.onAspectRatio(this.preview_.aspectRatio);
+      this.updateLayout_();
+    });
+  }).then(stream => {
+    // Use a watchdog since the stream.onended event is unreliable in the
+    // recent version of Chrome. As of 55, the event is still broken.
+    this.watchdog_ = setInterval(() => {
+      // Check if video stream is ended (audio stream may still be live).
+      if (!stream.getVideoTracks().length ||
+          stream.getVideoTracks()[0].readyState == 'ended') {
+        clearInterval(this.watchdog_);
+        this.watchdog_ = null;
+        this.onstop_();
+      }
+    }, 100);
+    this.stream_ = stream;
+    this.options_.updateStreamOptions(constraints, stream);
+    document.body.classList.add('capturing');
+    this.updateControls_();
+    onSuccess();
+  }).catch(onFailure);
 };
-
-/**
- * Layouts the video element's size shown in the window.
- * @private
- */
-camera.views.Camera.prototype.layoutVideoSize_ = function() {
-  // Make video content keeps its aspect ratio inside the window's inner-bounds;
-  // it may fill up the window or be letterboxed when fullscreen/maximized.
-  // Don't use app-window.innerBounds' width/height properties during resizing
-  // as they are not updated immediately.
-  var f = camera.util.isWindowFullSize() ? Math.min : Math.max;
-  var scale = f(window.innerHeight / this.video_.videoHeight,
-      window.innerWidth / this.video_.videoWidth);
-  this.video_.width = scale * this.video_.videoWidth;
-  this.video_.height = scale * this.video_.videoHeight;
-}
 
 /**
  * Updates the layout for video-size or window-size changes.
  * @private
  */
 camera.views.Camera.prototype.updateLayout_ = function() {
-  if (this.video_.videoHeight) {
-    this.layoutVideoSize_();
-  }
+  this.preview_.layoutElementSize();
+
   // TODO(yuli): Check if the app runs on a tablet display.
   var fullWindow = camera.util.isWindowFullSize();
   var tabletLandscape = fullWindow && (window.innerWidth > window.innerHeight);
   document.body.classList.toggle('tablet-landscape', tabletLandscape);
 
   // Shift video-element to top/left for aligning buttons in small letterbox.
-  var letterboxW = window.innerWidth - this.video_.width;
-  var letterboxH = window.innerHeight - this.video_.height;
+  var [letterboxW, letterboxH] = this.preview_.letterboxSize;
   var shiftPreview = (measure) => {
     return measure > 1 && measure < 160;
   };
@@ -652,7 +609,7 @@ camera.views.Camera.prototype.stop_ = function() {
     this.watchdog_ = null;
   }
   // TODO(yuli): Ensure stopping stream won't clear paused video element.
-  this.video_.pause();
+  this.preview_.pause();
   if (this.stream_) {
     this.stream_.getVideoTracks()[0].stop();
   }

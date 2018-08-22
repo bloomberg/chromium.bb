@@ -329,8 +329,10 @@ camera.Camera.prototype.onKeyPressed_ = function(event) {
  * @private
  */
 camera.Camera.prototype.onAspectRatio_ = function(aspectRatio) {
-  chrome.app.window.current().aspectRatio = aspectRatio;
-  this.updateWindowSize_();
+  if (aspectRatio) {
+    chrome.app.window.current().aspectRatio = aspectRatio;
+    this.updateWindowSize_();
+  }
 };
 
 /**
