@@ -41,7 +41,7 @@
                 android:layout_marginStart="@dimen/signin_margin_start"
                 android:layout_marginTop="15dp"
                 android:layout_marginEnd="@dimen/signin_margin_end"
-                android:text="@string/consent_bump_title"
+                android:text="@string/consent_bump_more_options_title"
                 android:textAppearance="@style/BlackHeadline1"/>
             <TextView
                 android:id="@+id/consent_bump_description"
