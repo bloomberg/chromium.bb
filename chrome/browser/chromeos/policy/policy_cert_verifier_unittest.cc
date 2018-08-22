@@ -76,11 +76,11 @@ class PolicyCertVerifierTest : public testing::Test {
       const net::TestCompletionCallback& test_callback,
       net::CertVerifyResult* verify_result,
       std::unique_ptr<net::CertVerifier::Request>* request) {
-    return cert_verifier_->Verify(net::CertVerifier::RequestParams(
-                                      test_server_cert_.get(), "127.0.0.1", 0,
-                                      std::string(), net::CertificateList()),
-                                  verify_result, test_callback.callback(),
-                                  request, net::NetLogWithSource());
+    return cert_verifier_->Verify(
+        net::CertVerifier::RequestParams(test_server_cert_.get(), "127.0.0.1",
+                                         0, std::string()),
+        verify_result, test_callback.callback(), request,
+        net::NetLogWithSource());
   }
 
   bool SupportsAdditionalTrustAnchors() {
@@ -235,12 +235,69 @@ TEST_F(PolicyCertVerifierTest, VerifyUsingAdditionalTrustAnchor) {
     net::TestCompletionCallback callback;
     std::unique_ptr<net::CertVerifier::Request> request;
     int error = VerifyTestServerCert(callback, &verify_result, &request);
-    // Note: this hits the cached result from the first Verify() in this test.
+    // Note: Changing the trust anchors should flush the cache.
+    ASSERT_EQ(net::ERR_IO_PENDING, error);
+    EXPECT_TRUE(request);
+    error = callback.WaitForResult();
     EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
   }
   // The additional trust anchors were reset, thus |cert_verifier_| should not
   // signal it's usage anymore.
   EXPECT_FALSE(WasTrustAnchorUsedAndReset());
+}
+
+TEST_F(PolicyCertVerifierTest,
+       VerifyUsesAdditionalTrustAnchorsAfterConfigChange) {
+  ASSERT_TRUE(SupportsAdditionalTrustAnchors());
+
+  // |test_server_cert_| is untrusted, so Verify() fails.
+  {
+    net::CertVerifyResult verify_result;
+    net::TestCompletionCallback callback;
+    std::unique_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
+    ASSERT_EQ(net::ERR_IO_PENDING, error);
+    EXPECT_TRUE(request);
+    error = callback.WaitForResult();
+    EXPECT_EQ(net::ERR_CERT_AUTHORITY_INVALID, error);
+  }
+  EXPECT_FALSE(WasTrustAnchorUsedAndReset());
+
+  net::CertificateList test_ca_x509cert_list =
+      net::x509_util::CreateX509CertificateListFromCERTCertificates(
+          test_ca_cert_list_);
+  ASSERT_FALSE(test_ca_x509cert_list.empty());
+
+  // Verify() again with the additional trust anchors.
+  cert_verifier_->SetTrustAnchors(test_ca_x509cert_list);
+  {
+    net::CertVerifyResult verify_result;
+    net::TestCompletionCallback callback;
+    std::unique_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
+    ASSERT_EQ(net::ERR_IO_PENDING, error);
+    EXPECT_TRUE(request);
+    error = callback.WaitForResult();
+    EXPECT_EQ(net::OK, error);
+  }
+  EXPECT_TRUE(WasTrustAnchorUsedAndReset());
+
+  // Change the configuration to enable SHA-1, which should still use the
+  // additional trust anchors.
+  net::CertVerifier::Config config;
+  config.enable_sha1_local_anchors = true;
+  cert_verifier_->SetConfig(config);
+  {
+    net::CertVerifyResult verify_result;
+    net::TestCompletionCallback callback;
+    std::unique_ptr<net::CertVerifier::Request> request;
+    int error = VerifyTestServerCert(callback, &verify_result, &request);
+    ASSERT_EQ(net::ERR_IO_PENDING, error);
+    EXPECT_TRUE(request);
+    error = callback.WaitForResult();
+    EXPECT_EQ(net::OK, error);
+  }
+  EXPECT_TRUE(WasTrustAnchorUsedAndReset());
 }
 
 }  // namespace policy

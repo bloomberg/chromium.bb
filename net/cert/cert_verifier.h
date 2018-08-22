@@ -58,6 +58,12 @@ class NET_EXPORT CertVerifier {
     // additional certificates to be blacklisted beyond the internal blacklist,
     // whether leaves or intermediates.
     scoped_refptr<CRLSet> crl_set;
+
+    // Additional trust anchors to consider during path validation. Ordinarily,
+    // implementations of CertVerifier use trust anchors from the configured
+    // system store. This is implementation-specific plumbing for passing
+    // additional anchors through.
+    CertificateList additional_trust_anchors;
   };
 
   class Request {
@@ -100,17 +106,12 @@ class NET_EXPORT CertVerifier {
   // |ocsp_response| is optional, but if non-empty, should contain an OCSP
   // response obtained via OCSP stapling. It may be ignored by the
   // CertVerifier.
-  //
-  // |additional_trust_anchors| is optional, but if non-empty, should contain
-  // additional certificates to be treated as trust anchors. It may be ignored
-  // by the CertVerifier.
   class NET_EXPORT RequestParams {
    public:
     RequestParams(scoped_refptr<X509Certificate> certificate,
                   const std::string& hostname,
                   int flags,
-                  const std::string& ocsp_response,
-                  CertificateList additional_trust_anchors);
+                  const std::string& ocsp_response);
     RequestParams(const RequestParams& other);
     ~RequestParams();
 
@@ -120,9 +121,6 @@ class NET_EXPORT CertVerifier {
     const std::string& hostname() const { return hostname_; }
     int flags() const { return flags_; }
     const std::string& ocsp_response() const { return ocsp_response_; }
-    const CertificateList& additional_trust_anchors() const {
-      return additional_trust_anchors_;
-    }
 
     bool operator==(const RequestParams& other) const;
     bool operator<(const RequestParams& other) const;
@@ -132,7 +130,6 @@ class NET_EXPORT CertVerifier {
     std::string hostname_;
     int flags_;
     std::string ocsp_response_;
-    CertificateList additional_trust_anchors_;
 
     // Used to optimize sorting/indexing comparisons.
     std::string key_;

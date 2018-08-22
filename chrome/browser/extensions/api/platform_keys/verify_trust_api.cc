@@ -197,8 +197,7 @@ void VerifyTrustAPI::IOPart::Verify(std::unique_ptr<Params> params,
 
   const int return_value = verifier->Verify(
       net::CertVerifier::RequestParams(std::move(cert_chain), details.hostname,
-                                       flags, ocsp_response,
-                                       net::CertificateList()),
+                                       flags, ocsp_response),
       verify_result_ptr, bound_callback, &request_state->request, *net_log);
 
   if (return_value != net::ERR_IO_PENDING) {

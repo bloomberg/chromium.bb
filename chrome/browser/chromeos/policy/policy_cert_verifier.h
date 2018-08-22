@@ -52,6 +52,7 @@ class PolicyCertVerifier : public net::CertVerifier {
   void SetConfig(const Config& config) override;
 
  private:
+  net::CertVerifier::Config orig_config_;
   net::CertificateList trust_anchors_;
   base::Closure anchor_used_callback_;
   std::unique_ptr<CertVerifier> delegate_;

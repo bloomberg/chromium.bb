@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -28,6 +29,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/cert/cert_verify_proc.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -115,6 +117,28 @@ std::unique_ptr<KeyedService> TestPolicyCertServiceFactory(
       kUsers[0], g_policy_cert_verifier_for_factory,
       user_manager::UserManager::Get());
 }
+
+class MockCertVerifyProc : public net::CertVerifyProc {
+ public:
+  MockCertVerifyProc() = default;
+
+  // net::CertVerifyProc implementation
+  bool SupportsAdditionalTrustAnchors() const override { return true; }
+
+ protected:
+  ~MockCertVerifyProc() override = default;
+
+ private:
+  int VerifyInternal(net::X509Certificate* cert,
+                     const std::string& hostname,
+                     const std::string& ocsp_response,
+                     int flags,
+                     net::CRLSet* crl_set,
+                     const net::CertificateList& additional_trust_anchors,
+                     net::CertVerifyResult* result) override {
+    return net::ERR_FAILED;
+  }
+};
 
 }  // namespace
 
@@ -386,6 +410,8 @@ TEST_F(MultiProfileUserControllerTest,
   LoginUser(0);
 
   cert_verifier_.reset(new policy::PolicyCertVerifier(base::Closure()));
+  cert_verifier_->InitializeOnIOThread(
+      base::MakeRefCounted<MockCertVerifyProc>());
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(
@@ -422,6 +448,8 @@ TEST_F(MultiProfileUserControllerTest,
   SetPrefBehavior(0, MultiProfileUserController::kBehaviorUnrestricted);
 
   cert_verifier_.reset(new policy::PolicyCertVerifier(base::Closure()));
+  cert_verifier_->InitializeOnIOThread(
+      base::MakeRefCounted<MockCertVerifyProc>());
   g_policy_cert_verifier_for_factory = cert_verifier_.get();
   ASSERT_TRUE(
       policy::PolicyCertServiceFactory::GetInstance()->SetTestingFactoryAndUse(

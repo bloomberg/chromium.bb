@@ -1186,7 +1186,7 @@ int SSLClientSocketImpl::DoVerifyCert(int result) {
   return cert_verifier_->Verify(
       CertVerifier::RequestParams(server_cert_, host_and_port_.host(),
                                   ssl_config_.GetCertVerifyFlags(),
-                                  ocsp_response.as_string(), CertificateList()),
+                                  ocsp_response.as_string()),
       &server_cert_verify_result_,
       base::Bind(&SSLClientSocketImpl::OnHandshakeIOComplete,
                  base::Unretained(this)),
