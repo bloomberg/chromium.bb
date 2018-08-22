@@ -17,8 +17,11 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
+#include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_task_environment.h"
@@ -32,6 +35,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -190,12 +194,17 @@ class MultipleWritesInterceptor : public net::URLRequestInterceptor {
   DISALLOW_COPY_AND_ASSIGN(MultipleWritesInterceptor);
 };
 
-// Every read completes synchronously, returning a single byte.
+// Every read completes synchronously.
 class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
  public:
+  // If |fill_entire_buffer| is true, each read fills the entire read buffer at
+  // once. Otherwise, one byte is read at a time.
   URLRequestEternalSyncReadsJob(net::URLRequest* request,
-                                net::NetworkDelegate* network_delegate)
-      : URLRequestJob(request, network_delegate), weak_factory_(this) {}
+                                net::NetworkDelegate* network_delegate,
+                                bool fill_entire_buffer)
+      : URLRequestJob(request, network_delegate),
+        fill_entire_buffer_(fill_entire_buffer),
+        weak_factory_(this) {}
 
   // net::URLRequestJob implementation:
   void Start() override {
@@ -206,6 +215,11 @@ class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
 
   int ReadRawData(net::IOBuffer* buf, int buf_size) override {
     DCHECK_GT(buf_size, 0);
+    if (fill_entire_buffer_) {
+      memset(buf->data(), 'a', buf_size);
+      return buf_size;
+    }
+
     buf->data()[0] = 'a';
     return 1;
   }
@@ -214,6 +228,8 @@ class URLRequestEternalSyncReadsJob : public net::URLRequestJob {
   ~URLRequestEternalSyncReadsJob() override {}
 
   void StartAsync() { NotifyHeadersComplete(); }
+
+  const bool fill_entire_buffer_;
 
   base::WeakPtrFactory<URLRequestEternalSyncReadsJob> weak_factory_;
 
@@ -225,13 +241,24 @@ class EternalSyncReadsInterceptor : public net::URLRequestInterceptor {
   EternalSyncReadsInterceptor() {}
   ~EternalSyncReadsInterceptor() override {}
 
-  static GURL GetURL() { return GURL("http://eternal"); }
+  static std::string GetHostName() { return "eternal"; }
+
+  static GURL GetSingleByteURL() { return GURL("http://eternal/single-byte"); }
+  static GURL GetFillBufferURL() { return GURL("http://eternal/fill-buffer"); }
 
   // URLRequestInterceptor implementation:
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    return new URLRequestEternalSyncReadsJob(request, network_delegate);
+    if (request->url() == GetSingleByteURL()) {
+      return new URLRequestEternalSyncReadsJob(request, network_delegate,
+                                               false /* fill_entire_buffer */);
+    }
+    if (request->url() == GetFillBufferURL()) {
+      return new URLRequestEternalSyncReadsJob(request, network_delegate,
+                                               true /* fill_entire_buffer */);
+    }
+    return nullptr;
   }
 
  private:
@@ -426,8 +453,8 @@ class URLLoaderTest : public testing::Test {
   // EternalSyncReadsInterceptor::GetURL(), which creates URLRequestJobs where
   // all reads return a sync byte that's read synchronously.
   void AddEternalSyncReadsInterceptor() {
-    net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-        EternalSyncReadsInterceptor::GetURL(),
+    net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
+        "http", EternalSyncReadsInterceptor::GetHostName(),
         std::make_unique<EternalSyncReadsInterceptor>());
   }
 
@@ -1872,8 +1899,8 @@ TEST_F(URLLoaderTest, ResourceSchedulerIntegration) {
 TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
   AddEternalSyncReadsInterceptor();
 
-  ResourceRequest request =
-      CreateResourceRequest("GET", EternalSyncReadsInterceptor::GetURL());
+  ResourceRequest request = CreateResourceRequest(
+      "GET", EternalSyncReadsInterceptor::GetSingleByteURL());
 
   base::RunLoop delete_run_loop;
   mojom::URLLoaderPtr loader;
@@ -1892,6 +1919,68 @@ TEST_F(URLLoaderTest, ReadPipeClosedWhileReadTaskPosted) {
   client()->RunUntilResponseBodyArrived();
   client()->response_body_release();
   delete_run_loop.Run();
+}
+
+// Test power monitor source that can simulate entering suspend mode. Can't use
+// the one in base/ because it insists on bringing its own MessageLoop.
+class TestPowerMonitorSource : public base::PowerMonitorSource {
+ public:
+  TestPowerMonitorSource() = default;
+  ~TestPowerMonitorSource() override = default;
+
+  void Shutdown() override {}
+
+  void Suspend() { ProcessPowerEvent(SUSPEND_EVENT); }
+
+  void Resume() { ProcessPowerEvent(RESUME_EVENT); }
+
+  bool IsOnBatteryPowerImpl() override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPowerMonitorSource);
+};
+
+// This tests the case where suspend mode is entered when there's a loader that
+// has received response headers but has no pending read. URLRequestJob will
+// cancel the request and call OnReadCompleted despite there being no pending
+// read, which is a bit weird, and can cause crashes if not handled properly.
+TEST_F(URLLoaderTest, EnterSuspendModeWhileNoPendingRead) {
+  AddEternalSyncReadsInterceptor();
+
+  std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
+      std::make_unique<TestPowerMonitorSource>();
+  TestPowerMonitorSource* unowned_power_monitor_source =
+      power_monitor_source.get();
+  base::PowerMonitor power_monitor(std::move(power_monitor_source));
+
+  ResourceRequest request = CreateResourceRequest(
+      "GET", EternalSyncReadsInterceptor::GetFillBufferURL());
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), mojom::kURLLoadOptionNone, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  // This will spin the run loop until the Mojo read buffer is full. The
+  // URLLoader will end up waiting for Mojo to give it more read buffer space.
+  base::RunLoop().RunUntilIdle();
+
+  unowned_power_monitor_source->Suspend();
+
+  client()->RunUntilComplete();
+  EXPECT_EQ(net::ERR_ABORTED, client()->completion_status().error_code);
+  delete_run_loop.Run();
+
+  unowned_power_monitor_source->Resume();
 }
 
 // A mock NetworkServiceClient that responds auth challenges with previously
