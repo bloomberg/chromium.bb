@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -120,6 +121,7 @@ class DemoSessionTest : public testing::Test {
     image_loader_client_ = image_loader_client.get();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
         std::move(image_loader_client));
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
   }
 
   void TearDown() override {
@@ -134,6 +136,7 @@ class DemoSessionTest : public testing::Test {
   // Points to the image loader client passed to the test DBusTestManager.
   TestImageLoaderClient* image_loader_client_ = nullptr;
   content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DemoSessionTest);
