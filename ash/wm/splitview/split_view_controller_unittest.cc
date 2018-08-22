@@ -4,6 +4,7 @@
 
 #include "ash/wm/splitview/split_view_controller.h"
 
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/app_types.h"
@@ -18,6 +19,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/drag_window_resizer_mash.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -2547,6 +2549,52 @@ TEST_F(SplitViewTabDraggingTest, DraggedWindowShouldHaveActiveWindowShadow) {
   shadow = shadow_controller->GetShadowForWindow(window2.get());
   ASSERT_TRUE(shadow);
   EXPECT_FALSE(shadow_controller->IsShadowVisibleForWindow(window2.get()));
+}
+
+// Test that if the source window needs to be scaled up/down because of dragging
+// a tab window out of it, other windows' visibilities and the home launcher's
+// visibility should change accordingly.
+TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+  EXPECT_TRUE(window4->IsVisible());
+
+  // 1) Start dragging |window1|. |window2| is the source window.
+  std::unique_ptr<WindowResizer> resizer =
+      StartDrag(window1.get(), window2.get());
+  DragWindowWithOffset(resizer.get(), 10, 10);
+
+  // Test that |window3| should be hidden now. |window1| and |window2| should
+  // stay visible during dragging.
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_FALSE(window3->IsVisible());
+  EXPECT_FALSE(window4->IsVisible());
+
+  // Test that home launcher should be dismissed.
+  if (Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+    EXPECT_FALSE(Shell::Get()->app_list_controller()->IsVisible());
+
+  // Test that during dragging, we could not show a hidden window.
+  window3->Show();
+  EXPECT_FALSE(window3->IsVisible());
+
+  // After dragging, the windows' visibilities should have restored.
+  CompleteDrag(std::move(resizer));
+  EXPECT_TRUE(window1->IsVisible());
+  EXPECT_TRUE(window2->IsVisible());
+  EXPECT_TRUE(window3->IsVisible());
+  EXPECT_TRUE(window4->IsVisible());
+
+  // Test that home launcher should be reshown.
+  if (Shell::Get()->app_list_controller()->IsHomeLauncherEnabledInTabletMode())
+    EXPECT_TRUE(Shell::Get()->app_list_controller()->IsVisible());
 }
 
 class TestWindowDelegateWithWidget : public views::WidgetDelegate {

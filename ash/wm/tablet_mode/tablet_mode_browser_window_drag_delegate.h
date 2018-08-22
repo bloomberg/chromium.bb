@@ -24,6 +24,8 @@ class TabletModeBrowserWindowDragDelegate
   ~TabletModeBrowserWindowDragDelegate() override;
 
  private:
+  class WindowsHider;
+
   // TabletModeWindowDragDelegate:
   void PrepareForDraggedWindow(const gfx::Point& location_in_screen) override;
   void UpdateForDraggedWindow(const gfx::Point& location_in_screen) override;
@@ -49,6 +51,13 @@ class TabletModeBrowserWindowDragDelegate
   // transparent background and to prevent the dragged window merge into any
   // browser window beneath it during dragging.
   std::unique_ptr<views::Widget> scrim_;
+
+  // It's used to hide all visible windows if the source window needs to be
+  // scaled up/down during dragging a tab out of the source window. It also
+  // hides the home launcher if home launcher is enabled, blurs and darkens the
+  // background upon its creation. All of these will be restored upon its
+  // destruction.
+  std::unique_ptr<WindowsHider> windows_hider_;
 
   DISALLOW_COPY_AND_ASSIGN(TabletModeBrowserWindowDragDelegate);
 };
