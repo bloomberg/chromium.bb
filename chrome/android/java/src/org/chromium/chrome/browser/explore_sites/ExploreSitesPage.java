@@ -9,10 +9,10 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.native_page.BasicNativePage;
+import org.chromium.chrome.browser.native_page.NativePageHost;
 
 /**
  * Provides functionality when the user interacts with the explore sites page.

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp;
+package org.chromium.chrome.browser.native_page;
 
 import android.view.View;
 
@@ -14,9 +14,8 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.ntp.NativePageFactory.NativePageType;
+import org.chromium.chrome.browser.native_page.NativePageFactory.NativePageType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
