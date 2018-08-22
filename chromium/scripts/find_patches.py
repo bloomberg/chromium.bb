@@ -97,6 +97,12 @@ def main(argv):
     origin_branch = argv[1]
   else:
     origin_branch = "HEAD"
+
+  # Make sure that upstream is up-to-date, else many things will likely not
+  # be reachable from it.  We don't do this if run as part of a script.
+  if subprocess.call(["git", "fetch", "upstream"]):
+    raise Exception("Could not fetch from upstream")
+
   write_patches_file(origin_branch, sys.stdout)
 
 def write_patches_file(origin_branch, output_file):
@@ -105,6 +111,8 @@ def write_patches_file(origin_branch, output_file):
   # We'll use that to compare against.
   upstream = run(["git", "merge-base", "upstream/master", origin_branch]
                 ).strip()
+  if not upstream:
+    raise Exception("Could not find upstream commit")
 
   # "Everything reachable from |origin_branch| but not |upstream|".  In other
   # words, all and only chromium changes.  Note that there are non-chromium
