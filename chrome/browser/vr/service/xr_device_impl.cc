@@ -194,7 +194,7 @@ void XRDeviceImpl::SetListeningForActivate(
   client_ = std::move(client);
   BrowserXRRuntime* immersive_runtime =
       XRRuntimeManager::GetInstance()->GetImmersiveRuntime();
-  if (immersive_runtime && client) {
+  if (immersive_runtime && client_) {
     immersive_runtime->UpdateListeningForActivate(this);
   }
 }
