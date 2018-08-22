@@ -889,11 +889,14 @@ gfx::Size BookmarkBarView::CalculatePreferredSize() const {
 }
 
 bool BookmarkBarView::CanProcessEventsWithinSubtree() const {
-  // If the bookmark bar is attached and the omnibox popup is open (on top of
+  // Before Material Refresh, the omnibox popup was a full-width dropdown that
+  // laid on top of the bookmark bar if it was attached. For that old UI,
+  // if the bookmark bar is attached and the omnibox popup is open (on top of
   // the bar), prevent events from targeting the bookmark bar or any of its
   // descendants. This will prevent hovers/clicks just above the omnibox popup
   // from activating the top few pixels of items on the bookmark bar.
-  if (!IsDetached() && browser_view_ &&
+  if (!ui::MaterialDesignController::IsRefreshUi() && !IsDetached() &&
+      browser_view_ &&
       browser_view_->GetLocationBar()
           ->GetOmniboxView()
           ->model()
