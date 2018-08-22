@@ -1313,6 +1313,11 @@ static void* do_malloc_pages(ThreadCache* heap, size_t size) {
 
   Length num_pages = tcmalloc::pages(size);
 
+  // Chromium profiling.  Measurements in March 2013 suggest this
+  // imposes a small enough runtime cost that there's no reason to
+  // try to optimize it.
+  heap->AddToByteAllocatedTotal(size);
+
   // NOTE: we're passing original size here as opposed to rounded-up
   // size as we do in do_malloc_small. The difference is small here
   // (at most 4k out of at least 256k). And not rounding up saves us
@@ -1356,6 +1361,12 @@ ATTRIBUTE_ALWAYS_INLINE inline void* do_malloc(size_t size) {
   if (PREDICT_FALSE(!Static::sizemap()->GetSizeClass(size, &cl))) {
     return do_malloc_pages(cache, size);
   }
+
+  // TODO(jar): If this has any detectable performance impact, it can be
+  // optimized by only tallying sizes if the profiler was activated to recall
+  // these tallies.  I don't think this is performance critical, but we really
+  // should measure it.
+  cache->AddToByteAllocatedTotal(size);  // Chromium profiling.
 
   size_t allocated_size = Static::sizemap()->class_to_size(cl);
   if (PREDICT_FALSE(cache->SampleAllocation(allocated_size))) {
