@@ -364,6 +364,8 @@ component("net") {
     "ssl/token_binding.h",
     "third_party/quic/core/quic_error_codes.cc",
     "third_party/quic/core/quic_error_codes.h",
+    "third_party/uri_template/uri_template.cc",
+    "third_party/uri_template/uri_template.h",
   ]
   net_unfiltered_sources = []
 
@@ -5152,6 +5154,7 @@ test("net_unittests") {
     "third_party/spdy/core/spdy_test_utils.h",
     "third_party/spdy/platform/api/spdy_mem_slice_test.cc",
     "third_party/spdy/platform/api/spdy_string_utils_test.cc",
+    "third_party/uri_template/uri_template_test.cc",
     "tools/content_decoder_tool/content_decoder_tool.cc",
     "tools/content_decoder_tool/content_decoder_tool.h",
     "tools/content_decoder_tool/content_decoder_tool_unittest.cc",
@@ -6202,4 +6205,16 @@ fuzzer_test("net_quic_stream_factory_fuzzer") {
     "//net",
     "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
   ]
+}
+
+fuzzer_test("net_uri_template_fuzzer") {
+  sources = [
+    "third_party/uri_template/uri_template_fuzzer.cc",
+  ]
+  deps = [
+    ":net_fuzzer_test_support",
+    "//base",
+    "//net",
+  ]
+  dict = "data/fuzzer_dictionaries/net_uri_template_fuzzer.dict"
 }
