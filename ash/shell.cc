@@ -365,12 +365,8 @@ int Shell::GetOpenSystemModalWindowContainerId() {
 
   // Traverse all system modal containers, and find its direct child window
   // with "SystemModal" setting, and visible.
-  // Note: LockSystemModalContainer is more restrictive, so make it preferable
-  // to SystemModalCotainer.
-  constexpr int modal_window_ids[] = {kShellWindowId_LockSystemModalContainer,
-                                      kShellWindowId_SystemModalContainer};
   for (aura::Window* root : Shell::GetAllRootWindows()) {
-    for (int modal_window_id : modal_window_ids) {
+    for (int modal_window_id : kSystemModalContainerIds) {
       aura::Window* system_modal = root->GetChildById(modal_window_id);
       if (!system_modal)
         continue;

@@ -35,9 +35,17 @@ bool HasTransientParentWindow(const aura::Window* window) {
 
 aura::Window* GetSystemModalContainer(aura::Window* root,
                                       aura::Window* window) {
-  aura::Window* transient_parent = ::wm::GetTransientParent(window);
   DCHECK_EQ(ui::MODAL_TYPE_SYSTEM,
             window->GetProperty(aura::client::kModalKey));
+
+  // If |window| is already in a system modal container in |root|, re-use it.
+  for (auto modal_container_id : kSystemModalContainerIds) {
+    aura::Window* modal_container = root->GetChildById(modal_container_id);
+    if (window->parent() == modal_container)
+      return modal_container;
+  }
+
+  aura::Window* transient_parent = ::wm::GetTransientParent(window);
 
   // If screen lock is not active and user session is active,
   // all modal windows are placed into the normal modal container.

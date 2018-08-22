@@ -195,8 +195,12 @@ void WindowServiceDelegateImpl::SetModalType(aura::Window* window,
   window->SetProperty(aura::client::kModalKey, type);
 
   // Reparent the window if it will become, or will no longer be, system modal.
-  if (type == ui::MODAL_TYPE_SYSTEM || old_type == ui::MODAL_TYPE_SYSTEM)
-    wm::GetDefaultParent(window, window->GetBoundsInScreen())->AddChild(window);
+  if (type == ui::MODAL_TYPE_SYSTEM || old_type == ui::MODAL_TYPE_SYSTEM) {
+    aura::Window* const parent =
+        wm::GetDefaultParent(window, window->GetBoundsInScreen());
+    if (parent != window->parent())
+      parent->AddChild(window);
+  }
 }
 
 ui::SystemInputInjector* WindowServiceDelegateImpl::GetSystemInputInjector() {
