@@ -148,10 +148,6 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   // Sets the memory limit, in bytes, on the SourceBufferStream.
   void SetStreamMemoryLimit(size_t memory_limit);
 
-  bool supports_partial_append_window_trimming() const {
-    return partial_append_window_trimming_enabled_;
-  }
-
   void SetLiveness(Liveness liveness);
 
   MediaTrack::Id media_track_id() const { return media_track_id_; }
@@ -185,7 +181,6 @@ class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
   mutable base::Lock lock_;
   State state_;
   ReadCB read_cb_;
-  bool partial_append_window_trimming_enabled_;
   bool is_enabled_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(ChunkDemuxerStream);

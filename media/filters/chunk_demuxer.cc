@@ -94,7 +94,6 @@ ChunkDemuxerStream::ChunkDemuxerStream(Type type,
       liveness_(DemuxerStream::LIVENESS_UNKNOWN),
       media_track_id_(media_track_id),
       state_(UNINITIALIZED),
-      partial_append_window_trimming_enabled_(false),
       is_enabled_(true) {}
 
 void ChunkDemuxerStream::StartReturningData() {
@@ -267,13 +266,6 @@ bool ChunkDemuxerStream::UpdateAudioConfig(const AudioDecoderConfig& config,
   base::AutoLock auto_lock(lock_);
   if (!SBSTREAM_IS_SET) {
     DCHECK_EQ(state_, UNINITIALIZED);
-
-    // Enable partial append window support for most audio codecs (notably: not
-    // opus).
-    partial_append_window_trimming_enabled_ =
-        config.codec() == kCodecMP3 || config.codec() == kCodecAAC ||
-        config.codec() == kCodecVorbis || config.codec() == kCodecFLAC;
-
     SBSTREAM_RESET(config, media_log);
     return true;
   }
