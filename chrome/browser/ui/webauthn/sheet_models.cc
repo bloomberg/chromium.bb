@@ -382,6 +382,12 @@ bool AuthenticatorTouchIdSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
 
+bool AuthenticatorTouchIdSheetModel::IsBackButtonVisible() const {
+  // Clicking back would not dismiss the native Touch ID dialog, which would be
+  // confusing. The user can cancel the native dialog to dismiss it.
+  return false;
+}
+
 gfx::ImageSkia* AuthenticatorTouchIdSheetModel::GetStepIllustration() const {
 #if defined(OS_MACOSX)
   return GetImage(IDR_WEBAUTHN_ILLUSTRATION_TOUCHID_1X);
