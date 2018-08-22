@@ -55,6 +55,9 @@ message UserConsentSpecifics {
         11;
 
     UserConsentTypes.UnifiedConsent unified_consent = 13;
+
+    UserConsentTypes.AssistantActivityControlConsent
+        assistant_activity_control_consent = 14;
   }
 
   // ===========================================================================
