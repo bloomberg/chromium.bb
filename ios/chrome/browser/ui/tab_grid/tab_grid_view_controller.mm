@@ -629,6 +629,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   styler.headerFooterTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
   styler.cellHighlightColor =
       [UIColor colorWithWhite:0 alpha:kGridDarkThemeCellHighlightColorAlpha];
+  styler.cellSeparatorColor = UIColorFromRGB(kGridDarkThemeCellSeparatorColor);
   self.remoteTabsViewController.styler = styler;
 
   UIView* contentView = self.scrollContentView;

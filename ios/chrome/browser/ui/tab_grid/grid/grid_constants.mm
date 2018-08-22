@@ -63,6 +63,7 @@ const int kGridDarkThemeCellHeaderColor = 0x5F6368;
 const int kGridDarkThemeCellSelectionColor = 0x9AA0A6;
 const int kGridDarkThemeCellCloseButtonTintColor = 0xFFFFFF;
 const CGFloat kGridDarkThemeCellHighlightColorAlpha = 0.7;
+const int kGridDarkThemeCellSeparatorColor = 0x535354;
 
 // GridCell dimensions.
 const CGSize kGridCellSizeSmall = CGSize{144.0f, 168.0f};

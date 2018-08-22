@@ -19,11 +19,6 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Color of the TableView separators.
-const CGFloat kTableViewSeparatorColor = 0xC8C7CC;
-}
-
 @interface ChromeTableViewController ()
 // The loading displayed by [self startLoadingIndicatorWithLoadingMessage:].
 @property(nonatomic, strong) TableViewLoadingView* loadingView;
@@ -83,7 +78,7 @@ const CGFloat kTableViewSeparatorColor = 0xC8C7CC;
   [super viewDidLoad];
 
   [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
-  [self.tableView setSeparatorColor:UIColorFromRGB(kTableViewSeparatorColor)];
+  [self.tableView setSeparatorColor:self.styler.cellSeparatorColor];
   [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
 
   // Configure the app bar if needed.
