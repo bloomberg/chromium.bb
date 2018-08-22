@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/printing/common/print_messages.h"
+#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -19,15 +20,45 @@
 #include "printing/printing_utils.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+namespace printing {
+
 namespace {
 
-uint64_t GenerateFrameGuid(int process_id, int frame_id) {
+uint64_t GenerateFrameGuid(content::RenderFrameHost* render_frame_host) {
+  int process_id = render_frame_host->GetProcess()->GetID();
+  int frame_id = render_frame_host->GetRoutingID();
   return static_cast<uint64_t>(process_id) << 32 | frame_id;
 }
 
-}  // namespace
+// Converts a ContentToProxyIdMap to ContentToFrameMap.
+// ContentToProxyIdMap maps content id to the routing id of its corresponding
+// render frame proxy. This is generated when the content holder was created;
+// ContentToFrameMap maps content id to its render frame's global unique id.
+// The global unique id has the render process id concatenated with render
+// frame routing id, which can uniquely identify a render frame.
+ContentToFrameMap ConvertContentInfoMap(
+    content::RenderFrameHost* render_frame_host,
+    const ContentToProxyIdMap& content_proxy_map) {
+  ContentToFrameMap content_frame_map;
+  int process_id = render_frame_host->GetProcess()->GetID();
+  for (const auto& entry : content_proxy_map) {
+    auto content_id = entry.first;
+    auto proxy_id = entry.second;
+    // Find the RenderFrameHost that the proxy id corresponds to.
+    content::RenderFrameHost* rfh =
+        content::RenderFrameHost::FromPlaceholderId(process_id, proxy_id);
+    if (!rfh) {
+      // If the corresponding RenderFrameHost cannot be found, just skip it.
+      continue;
+    }
 
-namespace printing {
+    // Store this frame's global unique id into the map.
+    content_frame_map[content_id] = GenerateFrameGuid(rfh);
+  }
+  return content_frame_map;
+}
+
+}  // namespace
 
 PrintCompositeClient::PrintCompositeClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {}
@@ -49,13 +80,12 @@ bool PrintCompositeClient::OnMessageReceived(
 
 void PrintCompositeClient::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
-  auto frame_guid = GenerateFrameGuid(render_frame_host->GetProcess()->GetID(),
-                                      render_frame_host->GetRoutingID());
+  uint64_t frame_guid = GenerateFrameGuid(render_frame_host);
   auto iter = pending_subframe_cookies_.find(frame_guid);
   if (iter != pending_subframe_cookies_.end()) {
     // When a subframe we are expecting is deleted, we should notify pdf
     // compositor service.
-    for (auto doc_cookie : iter->second) {
+    for (int doc_cookie : iter->second) {
       auto& compositor = GetCompositeRequest(doc_cookie);
       compositor->NotifyUnavailableSubframe(frame_guid);
     }
@@ -90,12 +120,10 @@ void PrintCompositeClient::OnDidPrintFrameContent(
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
       params.metafile_data_handle, params.data_size,
       mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
-  auto frame_guid = GenerateFrameGuid(render_frame_host->GetProcess()->GetID(),
-                                      render_frame_host->GetRoutingID());
+  uint64_t frame_guid = GenerateFrameGuid(render_frame_host);
   compositor->AddSubframeContent(
       frame_guid, std::move(buffer_handle),
-      ConvertContentInfoMap(web_contents(), render_frame_host,
-                            params.subframe_content_info));
+      ConvertContentInfoMap(render_frame_host, params.subframe_content_info));
 
   // Update our internal states about this frame.
   pending_subframe_cookies_[frame_guid].erase(document_cookie);
@@ -111,109 +139,97 @@ void PrintCompositeClient::PrintCrossProcessSubframe(
   PrintMsg_PrintFrame_Params params;
   params.printable_area = rect;
   params.document_cookie = document_cookie;
-  uint64_t frame_guid = GenerateFrameGuid(subframe_host->GetProcess()->GetID(),
-                                          subframe_host->GetRoutingID());
-  if (subframe_host->IsRenderFrameLive()) {
-    auto subframe_iter = printed_subframes_.find(document_cookie);
-    if (subframe_iter != printed_subframes_.end() &&
-        base::ContainsKey(subframe_iter->second, frame_guid)) {
-      // If this frame is already printed, no need to print again.
-      return;
-    }
-
-    auto cookie_iter = pending_subframe_cookies_.find(frame_guid);
-    if (cookie_iter != pending_subframe_cookies_.end() &&
-        base::ContainsKey(cookie_iter->second, document_cookie)) {
-      // If this frame is being printed, no need to print again.
-      return;
-    }
-
-    // Send the request to the destination frame.
-    subframe_host->Send(
-        new PrintMsg_PrintFrameContent(subframe_host->GetRoutingID(), params));
-    pending_subframe_cookies_[frame_guid].insert(document_cookie);
-  } else {
+  uint64_t frame_guid = GenerateFrameGuid(subframe_host);
+  if (!subframe_host->IsRenderFrameLive()) {
     // When the subframe is dead, no need to send message,
     // just notify the service.
     auto& compositor = GetCompositeRequest(document_cookie);
     compositor->NotifyUnavailableSubframe(frame_guid);
+    return;
   }
+
+  auto subframe_iter = printed_subframes_.find(document_cookie);
+  if (subframe_iter != printed_subframes_.end() &&
+      base::ContainsKey(subframe_iter->second, frame_guid)) {
+    // If this frame is already printed, no need to print again.
+    return;
+  }
+
+  auto cookie_iter = pending_subframe_cookies_.find(frame_guid);
+  if (cookie_iter != pending_subframe_cookies_.end() &&
+      base::ContainsKey(cookie_iter->second, document_cookie)) {
+    // If this frame is being printed, no need to print again.
+    return;
+  }
+
+  // Send the request to the destination frame.
+  subframe_host->Send(
+      new PrintMsg_PrintFrameContent(subframe_host->GetRoutingID(), params));
+  pending_subframe_cookies_[frame_guid].insert(document_cookie);
 }
 
 void PrintCompositeClient::DoCompositePageToPdf(
     int document_cookie,
     content::RenderFrameHost* render_frame_host,
     int page_num,
-    base::SharedMemoryHandle handle,
-    uint32_t data_size,
-    const ContentToProxyIdMap& subframe_content_info,
+    const PrintHostMsg_DidPrintContent_Params& content,
     mojom::PdfCompositor::CompositePageToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto& compositor = GetCompositeRequest(document_cookie);
 
-  DCHECK(data_size);
+  DCHECK(content.data_size);
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      handle, data_size,
+      content.metafile_data_handle, content.data_size,
       mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
-  // Since this class owns compositor, compositor will be gone when this class
-  // is destructed. Mojo won't call its callback in that case so it is safe to
-  // use unretained |this| pointer here.
   compositor->CompositePageToPdf(
-      GenerateFrameGuid(render_frame_host->GetProcess()->GetID(),
-                        render_frame_host->GetRoutingID()),
-      page_num, std::move(buffer_handle),
-      ConvertContentInfoMap(web_contents(), render_frame_host,
-                            subframe_content_info),
+      GenerateFrameGuid(render_frame_host), page_num, std::move(buffer_handle),
+      ConvertContentInfoMap(render_frame_host, content.subframe_content_info),
       base::BindOnce(&PrintCompositeClient::OnDidCompositePageToPdf,
-                     base::Unretained(this), std::move(callback)));
+                     std::move(callback)));
 }
 
 void PrintCompositeClient::DoCompositeDocumentToPdf(
     int document_cookie,
     content::RenderFrameHost* render_frame_host,
-    base::SharedMemoryHandle handle,
-    uint32_t data_size,
-    const ContentToProxyIdMap& subframe_content_info,
+    const PrintHostMsg_DidPrintContent_Params& content,
     mojom::PdfCompositor::CompositeDocumentToPdfCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto& compositor = GetCompositeRequest(document_cookie);
 
-  DCHECK(data_size);
+  DCHECK(content.data_size);
   mojo::ScopedSharedBufferHandle buffer_handle = mojo::WrapSharedMemoryHandle(
-      handle, data_size,
+      content.metafile_data_handle, content.data_size,
       mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly);
+
   // Since this class owns compositor, compositor will be gone when this class
   // is destructed. Mojo won't call its callback in that case so it is safe to
   // use unretained |this| pointer here.
   compositor->CompositeDocumentToPdf(
-      GenerateFrameGuid(render_frame_host->GetProcess()->GetID(),
-                        render_frame_host->GetRoutingID()),
-      std::move(buffer_handle),
-      ConvertContentInfoMap(web_contents(), render_frame_host,
-                            subframe_content_info),
+      GenerateFrameGuid(render_frame_host), std::move(buffer_handle),
+      ConvertContentInfoMap(render_frame_host, content.subframe_content_info),
       base::BindOnce(&PrintCompositeClient::OnDidCompositeDocumentToPdf,
                      base::Unretained(this), document_cookie,
                      std::move(callback)));
 }
 
+// static
 void PrintCompositeClient::OnDidCompositePageToPdf(
-    printing::mojom::PdfCompositor::CompositePageToPdfCallback callback,
-    printing::mojom::PdfCompositor::Status status,
+    mojom::PdfCompositor::CompositePageToPdfCallback callback,
+    mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   // Due to https://crbug.com/742517, we can not add and use COUNT for enums in
   // mojo.
   UMA_HISTOGRAM_ENUMERATION(
       "CompositePageToPdf.Status", status,
-      static_cast<int32_t>(
-          printing::mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
+      static_cast<int32_t>(mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
           1);
   std::move(callback).Run(status, std::move(region));
 }
 
 void PrintCompositeClient::OnDidCompositeDocumentToPdf(
     int document_cookie,
-    printing::mojom::PdfCompositor::CompositeDocumentToPdfCallback callback,
-    printing::mojom::PdfCompositor::Status status,
+    mojom::PdfCompositor::CompositeDocumentToPdfCallback callback,
+    mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   RemoveCompositeRequest(document_cookie);
   // Clear all stored printed subframes.
@@ -223,35 +239,9 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
   // mojo.
   UMA_HISTOGRAM_ENUMERATION(
       "CompositeDocToPdf.Status", status,
-      static_cast<int32_t>(
-          printing::mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
+      static_cast<int32_t>(mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
           1);
   std::move(callback).Run(status, std::move(region));
-}
-
-ContentToFrameMap PrintCompositeClient::ConvertContentInfoMap(
-    content::WebContents* web_contents,
-    content::RenderFrameHost* render_frame_host,
-    const ContentToProxyIdMap& content_proxy_map) {
-  ContentToFrameMap content_frame_map;
-  int process_id = render_frame_host->GetProcess()->GetID();
-  for (auto& entry : content_proxy_map) {
-    auto content_id = entry.first;
-    auto proxy_id = entry.second;
-    // Find the RenderFrameHost that the proxy id corresponds to.
-    content::RenderFrameHost* rfh =
-        content::RenderFrameHost::FromPlaceholderId(process_id, proxy_id);
-    if (!rfh) {
-      // If we could not find the corresponding RenderFrameHost,
-      // just skip it.
-      continue;
-    }
-
-    // Store this frame's global unique id into the map.
-    content_frame_map[content_id] =
-        GenerateFrameGuid(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  }
-  return content_frame_map;
 }
 
 mojom::PdfCompositorPtr& PrintCompositeClient::GetCompositeRequest(int cookie) {
