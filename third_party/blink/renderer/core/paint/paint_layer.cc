@@ -351,15 +351,9 @@ void PaintLayer::UpdateLayerPositionRecursive(
 }
 
 bool PaintLayer::SticksToScroller() const {
-  if (GetLayoutObject().StyleRef().GetPosition() != EPosition::kSticky)
+  if (!GetLayoutObject().StyleRef().HasStickyConstrainedPosition())
     return false;
-  if (auto* ancestor_scrollable_area =
-          AncestorOverflowLayer()->GetScrollableArea()) {
-    return ancestor_scrollable_area->GetStickyConstraintsMap()
-        .at(const_cast<PaintLayer*>(this))
-        .GetAnchorEdges();
-  }
-  return false;
+  return AncestorOverflowLayer()->GetScrollableArea();
 }
 
 bool PaintLayer::FixedToViewport() const {

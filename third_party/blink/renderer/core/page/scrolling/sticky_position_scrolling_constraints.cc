@@ -8,11 +8,11 @@
 namespace blink {
 
 FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
-    const FloatRect& overflow_clip_rect,
+    const FloatRect& content_box_rect,
     const StickyConstraintsMap& constraints_map) {
-  FloatRect sticky_box_rect = scroll_container_relative_sticky_box_rect_;
+  FloatRect sticky_box_rect = scroll_container_relative_sticky_box_rect;
   FloatRect containing_block_rect =
-      scroll_container_relative_containing_block_rect_;
+      scroll_container_relative_containing_block_rect;
   FloatSize ancestor_sticky_box_offset =
       AncestorStickyBoxOffset(constraints_map);
   FloatSize ancestor_containing_block_offset =
@@ -21,10 +21,10 @@ FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
   // Adjust the cached rect locations for any sticky ancestor elements. The
   // sticky offset applied to those ancestors affects us as follows:
   //
-  //   1. |nearest_sticky_layer_shifting_sticky_box_| is a sticky layer between
+  //   1. |nearest_sticky_layer_shifting_sticky_box| is a sticky layer between
   //      ourselves and our containing block, e.g. a nested inline parent.
   //      It shifts only the sticky_box_rect and not the containing_block_rect.
-  //   2. |nearest_sticky_layer_shifting_containing_block_| is a sticky layer
+  //   2. |nearest_sticky_layer_shifting_containing_block| is a sticky layer
   //      between our containing block (inclusive) and our scroll ancestor
   //      (exclusive). As such, it shifts both the sticky_box_rect and the
   //      containing_block_rect.
@@ -43,8 +43,8 @@ FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
   // As per the spec, 'left' overrides 'right' and 'top' overrides 'bottom'.
   FloatRect box_rect = sticky_box_rect;
 
-  if (HasAnchorEdge(kAnchorEdgeRight)) {
-    float right_limit = overflow_clip_rect.MaxX() - right_offset_;
+  if (is_anchored_right) {
+    float right_limit = content_box_rect.MaxX() - right_offset;
     float right_delta =
         std::min<float>(0, right_limit - sticky_box_rect.MaxX());
     float available_space =
@@ -55,8 +55,8 @@ FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
     box_rect.Move(right_delta, 0);
   }
 
-  if (HasAnchorEdge(kAnchorEdgeLeft)) {
-    float left_limit = overflow_clip_rect.X() + left_offset_;
+  if (is_anchored_left) {
+    float left_limit = content_box_rect.X() + left_offset;
     float left_delta = std::max<float>(0, left_limit - sticky_box_rect.X());
     float available_space = std::max<float>(
         0, containing_block_rect.MaxX() - sticky_box_rect.MaxX());
@@ -66,8 +66,8 @@ FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
     box_rect.Move(left_delta, 0);
   }
 
-  if (HasAnchorEdge(kAnchorEdgeBottom)) {
-    float bottom_limit = overflow_clip_rect.MaxY() - bottom_offset_;
+  if (is_anchored_bottom) {
+    float bottom_limit = content_box_rect.MaxY() - bottom_offset;
     float bottom_delta =
         std::min<float>(0, bottom_limit - sticky_box_rect.MaxY());
     float available_space =
@@ -78,8 +78,8 @@ FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
     box_rect.Move(0, bottom_delta);
   }
 
-  if (HasAnchorEdge(kAnchorEdgeTop)) {
-    float top_limit = overflow_clip_rect.Y() + top_offset_;
+  if (is_anchored_top) {
+    float top_limit = content_box_rect.Y() + top_offset;
     float top_delta = std::max<float>(0, top_limit - sticky_box_rect.Y());
     float available_space = std::max<float>(
         0, containing_block_rect.MaxY() - sticky_box_rect.MaxY());
@@ -93,44 +93,38 @@ FloatSize StickyPositionScrollingConstraints::ComputeStickyOffset(
 
   // Now that we have computed our current sticky offset, update the cached
   // accumulated sticky offsets.
-  total_sticky_box_sticky_offset_ = ancestor_sticky_box_offset + sticky_offset;
-  total_containing_block_sticky_offset_ = ancestor_sticky_box_offset +
-                                          ancestor_containing_block_offset +
-                                          sticky_offset;
+  total_sticky_box_sticky_offset = ancestor_sticky_box_offset + sticky_offset;
+  total_containing_block_sticky_offset = ancestor_sticky_box_offset +
+                                         ancestor_containing_block_offset +
+                                         sticky_offset;
 
   return sticky_offset;
 }
 
 FloatSize StickyPositionScrollingConstraints::GetOffsetForStickyPosition(
     const StickyConstraintsMap& constraints_map) const {
-  FloatSize nearest_sticky_layer_shifting_sticky_box_constraints_offset;
-  if (nearest_sticky_layer_shifting_sticky_box_) {
-    nearest_sticky_layer_shifting_sticky_box_constraints_offset =
-        constraints_map.at(nearest_sticky_layer_shifting_sticky_box_)
-            .total_sticky_box_sticky_offset_;
-  }
-  return total_sticky_box_sticky_offset_ -
-         nearest_sticky_layer_shifting_sticky_box_constraints_offset;
+  return total_sticky_box_sticky_offset -
+         AncestorStickyBoxOffset(constraints_map);
 }
 
 FloatSize StickyPositionScrollingConstraints::AncestorStickyBoxOffset(
-    const StickyConstraintsMap& constraints_map) {
-  if (!nearest_sticky_layer_shifting_sticky_box_)
+    const StickyConstraintsMap& constraints_map) const {
+  if (!nearest_sticky_layer_shifting_sticky_box)
     return FloatSize();
-  DCHECK(constraints_map.Contains(nearest_sticky_layer_shifting_sticky_box_));
-  return constraints_map.at(nearest_sticky_layer_shifting_sticky_box_)
-      .total_sticky_box_sticky_offset_;
+  DCHECK(constraints_map.Contains(nearest_sticky_layer_shifting_sticky_box));
+  return constraints_map.at(nearest_sticky_layer_shifting_sticky_box)
+      .total_sticky_box_sticky_offset;
 }
 
 FloatSize StickyPositionScrollingConstraints::AncestorContainingBlockOffset(
-    const StickyConstraintsMap& constraints_map) {
-  if (!nearest_sticky_layer_shifting_containing_block_) {
+    const StickyConstraintsMap& constraints_map) const {
+  if (!nearest_sticky_layer_shifting_containing_block) {
     return FloatSize();
   }
-  DCHECK(constraints_map.Contains(
-      nearest_sticky_layer_shifting_containing_block_));
-  return constraints_map.at(nearest_sticky_layer_shifting_containing_block_)
-      .total_containing_block_sticky_offset_;
+  DCHECK(
+      constraints_map.Contains(nearest_sticky_layer_shifting_containing_block));
+  return constraints_map.at(nearest_sticky_layer_shifting_containing_block)
+      .total_containing_block_sticky_offset;
 }
 
 }  // namespace blink

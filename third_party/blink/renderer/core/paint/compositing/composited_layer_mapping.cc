@@ -351,28 +351,20 @@ void CompositedLayerMapping::UpdateStickyConstraints(
       constraints_map.at(&owning_layer_);
 
   constraint.is_sticky = true;
-  constraint.is_anchored_left =
-      constraints.GetAnchorEdges() &
-      StickyPositionScrollingConstraints::kAnchorEdgeLeft;
-  constraint.is_anchored_right =
-      constraints.GetAnchorEdges() &
-      StickyPositionScrollingConstraints::kAnchorEdgeRight;
-  constraint.is_anchored_top =
-      constraints.GetAnchorEdges() &
-      StickyPositionScrollingConstraints::kAnchorEdgeTop;
-  constraint.is_anchored_bottom =
-      constraints.GetAnchorEdges() &
-      StickyPositionScrollingConstraints::kAnchorEdgeBottom;
-  constraint.left_offset = constraints.LeftOffset();
-  constraint.right_offset = constraints.RightOffset();
-  constraint.top_offset = constraints.TopOffset();
-  constraint.bottom_offset = constraints.BottomOffset();
+  constraint.is_anchored_left = constraints.is_anchored_left;
+  constraint.is_anchored_right = constraints.is_anchored_right;
+  constraint.is_anchored_top = constraints.is_anchored_top;
+  constraint.is_anchored_bottom = constraints.is_anchored_bottom;
+  constraint.left_offset = constraints.left_offset;
+  constraint.right_offset = constraints.right_offset;
+  constraint.top_offset = constraints.top_offset;
+  constraint.bottom_offset = constraints.bottom_offset;
   constraint.scroll_container_relative_sticky_box_rect =
-      RoundedIntRect(constraints.ScrollContainerRelativeStickyBoxRect());
-  constraint.scroll_container_relative_containing_block_rect =
-      RoundedIntRect(constraints.ScrollContainerRelativeContainingBlockRect());
+      RoundedIntRect(constraints.scroll_container_relative_sticky_box_rect);
+  constraint.scroll_container_relative_containing_block_rect = RoundedIntRect(
+      constraints.scroll_container_relative_containing_block_rect);
   PaintLayer* sticky_box_shifting_ancestor =
-      constraints.NearestStickyLayerShiftingStickyBox();
+      constraints.nearest_sticky_layer_shifting_sticky_box;
   if (sticky_box_shifting_ancestor &&
       sticky_box_shifting_ancestor->GetCompositedLayerMapping()) {
     constraint.nearest_element_shifting_sticky_box =
@@ -381,7 +373,7 @@ void CompositedLayerMapping::UpdateStickyConstraints(
             ->GetElementId();
   }
   PaintLayer* containing_block_shifting_ancestor =
-      constraints.NearestStickyLayerShiftingContainingBlock();
+      constraints.nearest_sticky_layer_shifting_containing_block;
   if (containing_block_shifting_ancestor &&
       containing_block_shifting_ancestor->GetCompositedLayerMapping()) {
     constraint.nearest_element_shifting_containing_block =

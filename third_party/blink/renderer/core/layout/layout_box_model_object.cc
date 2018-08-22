@@ -802,6 +802,8 @@ LayoutSize LayoutBoxModelObject::RelativePositionOffset() const {
 }
 
 void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
+  DCHECK(StyleRef().HasStickyConstrainedPosition());
+
   const FloatSize constraining_size = ComputeStickyConstrainingRect().Size();
 
   StickyPositionScrollingConstraints constraints;
@@ -878,8 +880,8 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
                             max_container_width) +
           MinimumValueForLength(Style()->MarginLeft(), max_width));
 
-  constraints.SetScrollContainerRelativeContainingBlockRect(
-      FloatRect(scroll_container_relative_containing_block_rect));
+  constraints.scroll_container_relative_containing_block_rect =
+      FloatRect(scroll_container_relative_containing_block_rect);
 
   FloatRect sticky_box_rect =
       IsLayoutInline() ? FloatRect(ToLayoutInline(this)->LinesBoundingBox())
@@ -898,10 +900,10 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   FloatSize container_border_offset(containing_block->BorderLeft(),
                                     containing_block->BorderTop());
   sticky_location -= container_border_offset;
-  constraints.SetScrollContainerRelativeStickyBoxRect(
+  constraints.scroll_container_relative_sticky_box_rect =
       FloatRect(scroll_container_relative_padding_box_rect.Location() +
                     ToFloatSize(sticky_location),
-                flipped_sticky_box_rect.Size()));
+                flipped_sticky_box_rect.Size());
 
   // To correctly compute the offsets, the constraints need to know about any
   // nested position:sticky elements between themselves and their
@@ -909,14 +911,14 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   //
   // The respective search ranges are [container, containingBlock) and
   // [containingBlock, scrollAncestor).
-  constraints.SetNearestStickyLayerShiftingStickyBox(
-      FindFirstStickyBetween(location_container, containing_block));
+  constraints.nearest_sticky_layer_shifting_sticky_box =
+      FindFirstStickyBetween(location_container, containing_block);
   // We cannot use |scrollAncestor| here as it disregards the root
   // ancestorOverflowLayer(), which we should include.
-  constraints.SetNearestStickyLayerShiftingContainingBlock(
+  constraints.nearest_sticky_layer_shifting_containing_block =
       FindFirstStickyBetween(
           containing_block,
-          &Layer()->AncestorOverflowLayer()->GetLayoutObject()));
+          &Layer()->AncestorOverflowLayer()->GetLayoutObject());
 
   // We skip the right or top sticky offset if there is not enough space to
   // honor both the left/right or top/bottom offsets.
@@ -938,17 +940,15 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   }
 
   if (!Style()->Left().IsAuto() && !skip_left) {
-    constraints.SetLeftOffset(MinimumValueForLength(
-        Style()->Left(), LayoutUnit(constraining_size.Width())));
-    constraints.AddAnchorEdge(
-        StickyPositionScrollingConstraints::kAnchorEdgeLeft);
+    constraints.left_offset = MinimumValueForLength(
+        Style()->Left(), LayoutUnit(constraining_size.Width()));
+    constraints.is_anchored_left = true;
   }
 
   if (!Style()->Right().IsAuto() && !skip_right) {
-    constraints.SetRightOffset(MinimumValueForLength(
-        Style()->Right(), LayoutUnit(constraining_size.Width())));
-    constraints.AddAnchorEdge(
-        StickyPositionScrollingConstraints::kAnchorEdgeRight);
+    constraints.right_offset = MinimumValueForLength(
+        Style()->Right(), LayoutUnit(constraining_size.Width()));
+    constraints.is_anchored_right = true;
   }
 
   bool skip_bottom = false;
@@ -970,20 +970,16 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   }
 
   if (!Style()->Top().IsAuto()) {
-    constraints.SetTopOffset(MinimumValueForLength(
-        Style()->Top(), LayoutUnit(constraining_size.Height())));
-    constraints.AddAnchorEdge(
-        StickyPositionScrollingConstraints::kAnchorEdgeTop);
+    constraints.top_offset = MinimumValueForLength(
+        Style()->Top(), LayoutUnit(constraining_size.Height()));
+    constraints.is_anchored_top = true;
   }
 
   if (!Style()->Bottom().IsAuto() && !skip_bottom) {
-    constraints.SetBottomOffset(MinimumValueForLength(
-        Style()->Bottom(), LayoutUnit(constraining_size.Height())));
-    constraints.AddAnchorEdge(
-        StickyPositionScrollingConstraints::kAnchorEdgeBottom);
+    constraints.bottom_offset = MinimumValueForLength(
+        Style()->Bottom(), LayoutUnit(constraining_size.Height()));
+    constraints.is_anchored_bottom = true;
   }
-  // At least one edge should be anchored if we are calculating constraints.
-  DCHECK(constraints.GetAnchorEdges());
   PaintLayerScrollableArea* scrollable_area =
       Layer()->AncestorOverflowLayer()->GetScrollableArea();
   scrollable_area->GetStickyConstraintsMap().Set(Layer(), constraints);
