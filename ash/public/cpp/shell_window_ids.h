@@ -184,6 +184,12 @@ const int32_t kAllShellContainerIds[] = {
     kShellWindowId_PowerButtonAnimationContainer,
 };
 
+// A list of system modal container IDs. The order of the list is important that
+// the more restrictive container appears before the less restrictive ones.
+const int32_t kSystemModalContainerIds[] = {
+    kShellWindowId_LockSystemModalContainer,
+    kShellWindowId_SystemModalContainer};
+
 // These are the list of container ids of containers which may contain windows
 // that need to be activated.
 ASH_PUBLIC_EXPORT extern const int32_t kActivatableShellWindowIds[];
