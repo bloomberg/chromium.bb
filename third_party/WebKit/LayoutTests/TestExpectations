@@ -2719,6 +2719,7 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 crbug.com/875622 external/wpt/css/css-animations/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
 crbug.com/875622 external/wpt/css/css-transitions/AnimationEffect-getComputedTiming.tentative.html [ Pass Failure ]
+crbug.com/875622 external/wpt/css/css-transitions/CSSTransition-startTime.tentative.html [ Pass Failure Timeout ]
 
 # wptserve raises exceptions when running this test:
 crbug.com/870526 external/wpt/background-fetch/idlharness.https.any.serviceworker.html [ Skip ]
