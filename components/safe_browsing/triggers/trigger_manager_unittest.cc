@@ -29,10 +29,10 @@ namespace safe_browsing {
 class MockThreatDetails : public ThreatDetails {
  public:
   MockThreatDetails() {}
+  ~MockThreatDetails() override {}
   MOCK_METHOD2(FinishCollection, void(bool did_proceed, int num_visits));
 
  private:
-  ~MockThreatDetails() override {}
   DISALLOW_COPY_AND_ASSIGN(MockThreatDetails);
 };
 
@@ -40,7 +40,7 @@ class MockThreatDetailsFactory : public ThreatDetailsFactory {
  public:
   ~MockThreatDetailsFactory() override {}
 
-  scoped_refptr<ThreatDetails> CreateThreatDetails(
+  std::unique_ptr<ThreatDetails> CreateThreatDetails(
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
@@ -49,7 +49,7 @@ class MockThreatDetailsFactory : public ThreatDetailsFactory {
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
-    return base::MakeRefCounted<MockThreatDetails>();
+    return std::make_unique<MockThreatDetails>();
   }
 };
 
@@ -135,8 +135,11 @@ class TriggerManagerTest : public ::testing::Test {
         trigger_type, web_contents, base::TimeDelta(), false, 0, options);
 
     // Invoke the callback if the report was to be sent.
-    if (expect_report_sent)
+    if (expect_report_sent) {
+      // Allow the ThreatDetails to complete, then remove it.
+      base::RunLoop().RunUntilIdle();
       trigger_manager_.ThreatDetailsDone(web_contents);
+    }
 
     return result;
   }

@@ -43,7 +43,7 @@ struct DataCollectorsContainer {
   // Note: new data collection types should be added below as additional fields.
 
   // Collects ThreatDetails which contains resource URLs and partial DOM.
-  scoped_refptr<ThreatDetails> threat_details;
+  std::unique_ptr<ThreatDetails> threat_details;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DataCollectorsContainer);

@@ -271,7 +271,7 @@ void TrimElements(const std::set<int> target_ids,
 // don't leak it.
 class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
  public:
-  scoped_refptr<ThreatDetails> CreateThreatDetails(
+  std::unique_ptr<ThreatDetails> CreateThreatDetails(
       BaseUIManager* ui_manager,
       WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,
@@ -280,7 +280,10 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
       ReferrerChainProvider* referrer_chain_provider,
       bool trim_to_ad_tags,
       ThreatDetailsDoneCallback done_callback) override {
-    auto threat_details = base::WrapRefCounted(new ThreatDetails(
+    // We can't use make_unique due to the protected constructor. We can't
+    // directly use std::unique_ptr<ThreatDetails>(new ThreatDetails(...))
+    // due to presubmit errors. So we use base::WrapUnique:
+    auto threat_details = base::WrapUnique(new ThreatDetails(
         ui_manager, web_contents, unsafe_resource, url_loader_factory,
         history_service, referrer_chain_provider, trim_to_ad_tags,
         done_callback));
@@ -301,7 +304,7 @@ static base::LazyInstance<ThreatDetailsFactoryImpl>::DestructorAtExit
 
 // Create a ThreatDetails for the given tab.
 /* static */
-scoped_refptr<ThreatDetails> ThreatDetails::NewThreatDetails(
+std::unique_ptr<ThreatDetails> ThreatDetails::NewThreatDetails(
     BaseUIManager* ui_manager,
     WebContents* web_contents,
     const UnsafeResource& resource,
@@ -342,7 +345,8 @@ ThreatDetails::ThreatDetails(
       cache_collector_(new ThreatDetailsCacheCollector),
       done_callback_(done_callback),
       all_done_expected_(false),
-      is_all_done_(false) {
+      is_all_done_(false),
+      weak_factory_(this) {
   redirects_collector_ = new ThreatDetailsRedirectsCollector(
       history_service ? history_service->AsWeakPtr()
                       : base::WeakPtr<history::HistoryService>());
@@ -357,7 +361,8 @@ ThreatDetails::ThreatDetails()
       ambiguous_dom_(false),
       trim_to_ad_tags_(false),
       all_done_expected_(false),
-      is_all_done_(false) {}
+      is_all_done_(false),
+      weak_factory_(this) {}
 
 ThreatDetails::~ThreatDetails() {
   DCHECK(all_done_expected_ == is_all_done_);
@@ -570,8 +575,8 @@ void ThreatDetails::StartCollection() {
     // OnReceivedThreatDOMDetails will be called when the renderer replies.
     // TODO(mattm): In theory, if the user proceeds through the warning DOM
     // detail collection could be started once the page loads.
-    web_contents()->ForEachFrame(
-        base::BindRepeating(&ThreatDetails::RequestThreatDOMDetails, this));
+    web_contents()->ForEachFrame(base::BindRepeating(
+        &ThreatDetails::RequestThreatDOMDetails, GetWeakPtr()));
   }
 }
 
@@ -582,7 +587,7 @@ void ThreatDetails::RequestThreatDOMDetails(content::RenderFrameHost* frame) {
       threat_reporter.get();
   pending_render_frame_hosts_.push_back(frame);
   raw_threat_report->GetThreatDOMDetails(
-      base::BindOnce(&ThreatDetails::OnReceivedThreatDOMDetails, this,
+      base::BindOnce(&ThreatDetails::OnReceivedThreatDOMDetails, GetWeakPtr(),
                      std::move(threat_reporter), frame));
 }
 
@@ -704,7 +709,8 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
     urls.push_back(GURL(it->first));
   }
   redirects_collector_->StartHistoryCollection(
-      urls, base::Bind(&ThreatDetails::OnRedirectionCollectionReady, this));
+      urls,
+      base::Bind(&ThreatDetails::OnRedirectionCollectionReady, GetWeakPtr()));
 }
 
 void ThreatDetails::OnRedirectionCollectionReady() {
@@ -718,7 +724,7 @@ void ThreatDetails::OnRedirectionCollectionReady() {
   // Call the cache collector
   cache_collector_->StartCacheCollection(
       url_loader_factory_, &resources_, &cache_result_,
-      base::Bind(&ThreatDetails::OnCacheCollectionReady, this));
+      base::Bind(&ThreatDetails::OnCacheCollectionReady, GetWeakPtr()));
 }
 
 void ThreatDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
@@ -831,6 +837,10 @@ void ThreatDetails::FrameDeleted(RenderFrameHost* render_frame_host) {
 void ThreatDetails::RenderFrameHostChanged(RenderFrameHost* old_host,
                                            RenderFrameHost* new_host) {
   FrameDeleted(old_host);
+}
+
+base::WeakPtr<ThreatDetails> ThreatDetails::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace safe_browsing
