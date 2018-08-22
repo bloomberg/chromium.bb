@@ -409,7 +409,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
             browser()->profile());
     if (signin::DiceMethodGreaterOrEqual(
             account_consistency,
-            signin::AccountConsistencyMethod::kDicePrepareMigration)) {
+            signin::AccountConsistencyMethod::kDiceMigration)) {
       EXPECT_EQ(1, reconcilor_blocked_count_);
       WaitForReconcilorUnblockedCount(1);
     } else {
@@ -634,12 +634,6 @@ class DiceFixAuthErrorsBrowserTest : public DiceBrowserTestBase {
  public:
   DiceFixAuthErrorsBrowserTest()
       : DiceBrowserTestBase(AccountConsistencyMethod::kDiceFixAuthErrors) {}
-};
-
-class DicePrepareMigrationBrowserTest : public DiceBrowserTestBase {
- public:
-  DicePrepareMigrationBrowserTest()
-      : DiceBrowserTestBase(AccountConsistencyMethod::kDicePrepareMigration) {}
 };
 
 // Checks that signin on Gaia triggers the fetch for a refresh token.
@@ -924,29 +918,9 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, Signout) {
   WaitForReconcilorUnblockedCount(0);
 }
 
-IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, Signout) {
-  // Start from a signed-in state.
-  SetupSignedInAccounts();
-
-  // Signout from main account on the web.
-  SignOutWithDice(kAllAccounts);
-
-  // Check that the user is still signed in Chrome on the main account, the
-  // token for the secondary token has been deleted.
-  EXPECT_EQ(GetMainAccountID(),
-            GetSigninManager()->GetAuthenticatedAccountId());
-  EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
-  EXPECT_FALSE(
-      GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
-  EXPECT_EQ(1, token_revoked_notification_count_);
-  EXPECT_EQ(1, token_revoked_count_);
-  EXPECT_EQ(1, reconcilor_blocked_count_);
-  WaitForReconcilorUnblockedCount(1);
-}
-
 // Tests that Sync is enabled if the ENABLE_SYNC response is received after the
 // refresh token.
-IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, EnableSyncAfterToken) {
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
   EXPECT_EQ(0, reconcilor_started_count_);
 
   // Signin using the Chrome Sync endpoint.
@@ -962,11 +936,11 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, EnableSyncAfterToken) {
   // Receive ENABLE_SYNC.
   SendEnableSyncResponse();
 
-  // Check that the Dice request header was sent, with no signout confirmation.
+  // Check that the Dice request header was sent, with signout confirmation.
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   EXPECT_EQ(base::StringPrintf("version=%s,client_id=%s,device_id=%s,"
                                "signin_mode=all_accounts,"
-                               "signout_mode=no_confirmation",
+                               "signout_mode=show_confirmation",
                                signin::kDiceProtocolVersion, client_id.c_str(),
                                GetDeviceId().c_str()),
             dice_request_header_);
@@ -993,7 +967,7 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, EnableSyncAfterToken) {
 
 // Tests that Sync is enabled if the ENABLE_SYNC response is received before the
 // refresh token.
-IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, EnableSyncBeforeToken) {
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncBeforeToken) {
   EXPECT_EQ(0, reconcilor_started_count_);
 
   ui_test_utils::UrlLoadObserver enable_sync_url_observer(
@@ -1015,11 +989,11 @@ IN_PROC_BROWSER_TEST_F(DicePrepareMigrationBrowserTest, EnableSyncBeforeToken) {
   SendRefreshTokenResponse();
   EXPECT_TRUE(GetTokenService()->RefreshTokenIsAvailable(GetMainAccountID()));
 
-  // Check that the Dice request header was sent, with no signout confirmation.
+  // Check that the Dice request header was sent, with signout confirmation.
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   EXPECT_EQ(base::StringPrintf("version=%s,client_id=%s,device_id=%s,"
                                "signin_mode=all_accounts,"
-                               "signout_mode=no_confirmation",
+                               "signout_mode=show_confirmation",
                                signin::kDiceProtocolVersion, client_id.c_str(),
                                GetDeviceId().c_str()),
             dice_request_header_);

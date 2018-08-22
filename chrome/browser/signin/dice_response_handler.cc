@@ -299,7 +299,7 @@ bool DiceResponseHandler::CanGetTokenForAccount(const std::string& gaia_id,
                                                 const std::string& email) {
   if (signin::DiceMethodGreaterOrEqual(
           account_consistency_,
-          signin::AccountConsistencyMethod::kDicePrepareMigration)) {
+          signin::AccountConsistencyMethod::kDiceMigration)) {
     return true;
   }
 

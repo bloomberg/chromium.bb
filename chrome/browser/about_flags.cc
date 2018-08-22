@@ -364,10 +364,6 @@ const FeatureEntry::FeatureParam kAccountConsistencyDice[] = {
     {kAccountConsistencyFeatureMethodParameter,
      kAccountConsistencyFeatureMethodDice}};
 
-const FeatureEntry::FeatureParam kAccountConsistencyDicePrepareMigration[] = {
-    {kAccountConsistencyFeatureMethodParameter,
-     kAccountConsistencyFeatureMethodDicePrepareMigration}};
-
 const FeatureEntry::FeatureParam kAccountConsistencyDiceMigration[] = {
     {kAccountConsistencyFeatureMethodParameter,
      kAccountConsistencyFeatureMethodDiceMigration}};
@@ -381,10 +377,6 @@ const FeatureEntry::FeatureVariation kAccountConsistencyFeatureVariations[] = {
      nullptr /* variation_id */},
     {"Dice (migration)", kAccountConsistencyDiceMigration,
      arraysize(kAccountConsistencyDiceMigration), nullptr /* variation_id */},
-    {"Dice (prepare migration, Chrome sync endpoint)",
-     kAccountConsistencyDicePrepareMigration,
-     arraysize(kAccountConsistencyDicePrepareMigration),
-     nullptr /* variation_id */},
     {"Dice (fix auth errors)", kAccountConsistencyDiceFixAuthErrors,
      arraysize(kAccountConsistencyDiceFixAuthErrors),
      nullptr /* variation_id */}};

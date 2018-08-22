@@ -79,7 +79,7 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     testing::InSequence mock_sequence;
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDicePrepareMigration);
+        &client, AccountConsistencyMethod::kDiceMigration);
     delegate.OnReconcileFinished("account", true /* is_reconcile_noop */);
   }
 
@@ -91,7 +91,7 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     testing::InSequence mock_sequence;
     EXPECT_CALL(client, SetReadyForDiceMigration(false)).Times(1);
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDicePrepareMigration);
+        &client, AccountConsistencyMethod::kDiceMigration);
     delegate.OnReconcileFinished("account", false /* is_reconcile_noop */);
   }
 
@@ -100,7 +100,7 @@ TEST(DiceAccountReconcilorDelegateTest, OnReconcileFinished) {
     testing::InSequence mock_sequence;
     EXPECT_CALL(client, SetReadyForDiceMigration(true)).Times(1);
     DiceAccountReconcilorDelegate delegate(
-        &client, AccountConsistencyMethod::kDicePrepareMigration);
+        &client, AccountConsistencyMethod::kDiceMigration);
     delegate.OnReconcileFinished("account", true /* is_reconcile_noop */);
   }
 }

@@ -125,7 +125,7 @@ void SigninViewController::ShowSignin(
       AccountConsistencyModeManager::GetMethodForProfile(profile);
   if (signin::DiceMethodGreaterOrEqual(
           account_consistency,
-          signin::AccountConsistencyMethod::kDicePrepareMigration)) {
+          signin::AccountConsistencyMethod::kDiceMigration)) {
     std::string email;
     if (GetSigninReasonFromMode(mode) ==
         signin_metrics::Reason::REASON_REAUTHENTICATION) {

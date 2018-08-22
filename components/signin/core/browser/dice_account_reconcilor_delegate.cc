@@ -23,8 +23,8 @@ DiceAccountReconcilorDelegate::DiceAccountReconcilorDelegate(
 }
 
 bool DiceAccountReconcilorDelegate::IsReconcileEnabled() const {
-  return DiceMethodGreaterOrEqual(
-      account_consistency_, AccountConsistencyMethod::kDicePrepareMigration);
+  return DiceMethodGreaterOrEqual(account_consistency_,
+                                  AccountConsistencyMethod::kDiceMigration);
 }
 
 bool DiceAccountReconcilorDelegate::IsAccountConsistencyEnforced() const {
@@ -115,10 +115,7 @@ DiceAccountReconcilorDelegate::ShouldRevokeSecondaryTokensBeforeReconcile(
     const std::vector<gaia::ListedAccount>& gaia_accounts) {
   // During the Dice migration step, before Dice is actually enabled, chrome
   // tokens must be cleared when the cookies are cleared.
-  if (DiceMethodGreaterOrEqual(
-          account_consistency_,
-          AccountConsistencyMethod::kDicePrepareMigration) &&
-      (account_consistency_ != AccountConsistencyMethod::kDice) &&
+  if ((account_consistency_ == AccountConsistencyMethod::kDiceMigration) &&
       gaia_accounts.empty()) {
     return RevokeTokenOption::kRevoke;
   }
@@ -135,9 +132,8 @@ void DiceAccountReconcilorDelegate::OnReconcileFinished(
 
   // Migration happens on startup if the last reconcile was a no-op and the
   // refresh tokens are Dice-compatible.
-  if (DiceMethodGreaterOrEqual(
-          account_consistency_,
-          AccountConsistencyMethod::kDicePrepareMigration)) {
+  if (DiceMethodGreaterOrEqual(account_consistency_,
+                               AccountConsistencyMethod::kDiceMigration)) {
     signin_client_->SetReadyForDiceMigration(
         reconcile_is_noop && signin_client_->GetPrefs()->GetBoolean(
                                  prefs::kTokenServiceDiceCompatible));

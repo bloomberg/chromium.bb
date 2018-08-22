@@ -141,7 +141,7 @@ bool IsDiceSigninPageEnabled(Profile* profile) {
   return (account_consistency != signin::AccountConsistencyMethod::kMirror) &&
          signin::DiceMethodGreaterOrEqual(
              account_consistency,
-             signin::AccountConsistencyMethod::kDicePrepareMigration);
+             signin::AccountConsistencyMethod::kDiceMigration);
 }
 
 // Returns the render frame host where Gaia credentials can be filled in.

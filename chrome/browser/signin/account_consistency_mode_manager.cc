@@ -34,8 +34,6 @@ const char kAccountConsistencyFeatureMethodParameter[] = "method";
 const char kAccountConsistencyFeatureMethodMirror[] = "mirror";
 const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[] =
     "dice_fix_auth_errors";
-const char kAccountConsistencyFeatureMethodDicePrepareMigration[] =
-    "dice_prepare_migration_new_endpoint";
 const char kAccountConsistencyFeatureMethodDiceMigration[] = "dice_migration";
 const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
@@ -262,8 +260,6 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
 
   if (method_value == kAccountConsistencyFeatureMethodDiceFixAuthErrors)
     method = AccountConsistencyMethod::kDiceFixAuthErrors;
-  else if (method_value == kAccountConsistencyFeatureMethodDicePrepareMigration)
-    method = AccountConsistencyMethod::kDicePrepareMigration;
   else if (method_value == kAccountConsistencyFeatureMethodDiceMigration)
     method = AccountConsistencyMethod::kDiceMigration;
   else if (method_value == kAccountConsistencyFeatureMethodDice)
@@ -273,7 +269,7 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
     return method;
 
   DCHECK(signin::DiceMethodGreaterOrEqual(
-      method, AccountConsistencyMethod::kDicePrepareMigration));
+      method, AccountConsistencyMethod::kDiceMigration));
 
   // Legacy supervised users cannot get Dice.
   // TODO(droger): remove this once legacy supervised users are no longer

@@ -47,10 +47,10 @@ ProcessDiceHeaderDelegateImpl::~ProcessDiceHeaderDelegateImpl() = default;
 bool ProcessDiceHeaderDelegateImpl::ShouldEnableSync() {
   if (!signin::DiceMethodGreaterOrEqual(
           account_consistency_,
-          signin::AccountConsistencyMethod::kDicePrepareMigration)) {
-    // Dice prepare migration not enabled.
-    VLOG(1) << "Do not start sync after web sign-in [DICE prepare migration "
-               "not enabled].";
+          signin::AccountConsistencyMethod::kDiceMigration)) {
+    // Dice migration not enabled.
+    VLOG(1)
+        << "Do not start sync after web sign-in [DICE migration not enabled].";
     return false;
   }
 

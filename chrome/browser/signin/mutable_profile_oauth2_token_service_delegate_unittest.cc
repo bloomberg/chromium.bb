@@ -558,40 +558,6 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
 
-// Tests that Dice migration does not happen in "PrepareMigration" state.
-TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, DiceMigrationNotEnabled) {
-  ASSERT_EQ(AccountTrackerService::MIGRATION_DONE,
-            account_tracker_service_.GetMigrationState());
-  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
-  CreateOAuth2ServiceDelegate(
-      signin::AccountConsistencyMethod::kDicePrepareMigration);
-  oauth2_service_delegate_->RevokeAllCredentials();
-
-  // Add account info to the account tracker.
-  AccountInfo primary_account = CreateTestAccountInfo(
-      "primary_account", false /* is_hosted_domain*/, true /* is_valid*/);
-  account_tracker_service_.SeedAccountInfo(primary_account);
-
-  ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.account_id,
-                       "refresh_token");
-  oauth2_service_delegate_->LoadCredentials(primary_account.account_id);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(1, tokens_loaded_count_);
-  EXPECT_EQ(1, token_available_count_);
-  EXPECT_EQ(0, token_revoked_count_);
-  EXPECT_EQ(1, start_batch_changes_);
-  EXPECT_EQ(1, end_batch_changes_);
-  EXPECT_EQ(1, auth_error_changed_count_);
-  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
-      primary_account.account_id));
-  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
-            oauth2_service_delegate_->GetLoadCredentialsState());
-
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
-}
-
 // Tests that the migration happened after loading consummer accounts.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        DiceMigrationConsummerAccounts) {

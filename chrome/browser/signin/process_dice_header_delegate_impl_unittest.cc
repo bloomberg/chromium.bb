@@ -28,8 +28,8 @@ const signin::AccountConsistencyMethod kDiceFixAuthErrors =
     signin::AccountConsistencyMethod::kDiceFixAuthErrors;
 const signin::AccountConsistencyMethod kDice =
     signin::AccountConsistencyMethod::kDice;
-const signin::AccountConsistencyMethod kDicePrepareMigration =
-    signin::AccountConsistencyMethod::kDicePrepareMigration;
+const signin::AccountConsistencyMethod kDiceMigration =
+    signin::AccountConsistencyMethod::kDiceMigration;
 
 class ProcessDiceHeaderDelegateImplTest
     : public ChromeRenderViewHostTestHarness {
@@ -156,14 +156,14 @@ TestConfiguration kEnableSyncTestCases[] = {
     // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
     {kDiceFixAuthErrors,    false,      false,       false,            false},
     {kDiceFixAuthErrors,    false,      true,        false,            false},
-    {kDicePrepareMigration, false,      false,       false,            false},
-    {kDicePrepareMigration, false,      true,        true,             true},
+    {kDiceMigration,        false,      false,       false,            false},
+    {kDiceMigration,        false,      true,        true,             true},
     {kDice,                 false,      false,       false,            false},
     {kDice,                 false,      true,        true,             true},
     {kDiceFixAuthErrors,    true,       false,       false,            false},
     {kDiceFixAuthErrors,    true,       false,       false,            false},
-    {kDicePrepareMigration, true,       false,       false,            false},
-    {kDicePrepareMigration, true,       false,       false,            false},
+    {kDiceMigration,        true,       false,       false,            false},
+    {kDiceMigration,        true,       false,       false,            false},
     {kDice,                 true,       false,       false,            false},
     {kDice,                 true,       true,        false,            false},
     // clang-format on
@@ -203,14 +203,14 @@ TestConfiguration kHandleTokenExchangeFailureTestCases[] = {
     // AccountConsistency | signed_in | signin_tab | callback_called | show_ntp
     {kDiceFixAuthErrors,    false,      false,       false,            false},
     {kDiceFixAuthErrors,    false,      true,        false,            false},
-    {kDicePrepareMigration, false,      false,       false,            false},
-    {kDicePrepareMigration, false,      true,        true,             true},
+    {kDiceMigration,        false,      false,       false,            false},
+    {kDiceMigration,        false,      true,        true,             true},
     {kDice,                 false,      false,       true,             false},
     {kDice,                 false,      true,        true,             true},
     {kDiceFixAuthErrors,    true,       false,       false,            false},
     {kDiceFixAuthErrors,    true,       false,       false,            false},
-    {kDicePrepareMigration, true,       false,       false,            false},
-    {kDicePrepareMigration, true,       false,       false,            false},
+    {kDiceMigration,        true,       false,       false,            false},
+    {kDiceMigration,        true,       false,       false,            false},
     {kDice,                 true,       false,       true,             false},
     {kDice,                 true,       true,        true,             false},
     // clang-format on
