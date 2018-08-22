@@ -512,4 +512,56 @@ TEST_F(FidoMakeCredentialHandlerTest,
   EXPECT_FALSE(callback().was_called());
 }
 
+// If a device with transport type kInternal returns a
+// CTAP2_ERR_OPERATION_DENIED error, the request should complete with
+// FidoReturnCode::kUserConsentDenied.
+TEST_F(FidoMakeCredentialHandlerTest,
+       TestRequestWithOperationDeniedErrorPlatform) {
+  auto platform_device = MockFidoDevice::MakeCtap(
+      ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice));
+  platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  platform_device->ExpectCtap2CommandAndRespondWithError(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      CtapDeviceResponseCode::kCtap2ErrOperationDenied);
+  EXPECT_CALL(*platform_device, GetId())
+      .WillRepeatedly(testing::Return("device0"));
+  set_mock_platform_device(std::move(platform_device));
+
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::
+                  kPlatform,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(callback().was_called());
+  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+}
+
+// Like |TestRequestWithOperationDeniedErrorPlatform|, but with a
+// cross-platform device. The request should not complete after the
+// CTAP2_ERR_OPERATION_DENIED error (see https://crbug/875982).
+TEST_F(FidoMakeCredentialHandlerTest,
+       TestRequestWithOperationDeniedErrorCrossPlatform) {
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  device->ExpectCtap2CommandAndRespondWithError(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      CtapDeviceResponseCode::kCtap2ErrOperationDenied);
+
+  auto request_handler =
+      CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
+          AuthenticatorSelectionCriteria(
+              AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
+              false /* require_resident_key */,
+              UserVerificationRequirement::kPreferred));
+
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
+}
+
 }  // namespace device

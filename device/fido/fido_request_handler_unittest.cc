@@ -43,6 +43,7 @@ enum class FakeTaskResponse : uint8_t {
   kSuccess = 0x00,
   kErrorReceivedAfterObtainingUserPresence = 0x01,
   kProcessingError = 0x02,
+  kOperationDenied = 0x03,
 };
 
 class TestTransportAvailabilityObserver
@@ -117,6 +118,10 @@ class FakeFidoTask : public FidoTask {
                                  std::vector<uint8_t>());
         return;
 
+      case FakeTaskResponse::kOperationDenied:
+        std::move(callback_).Run(
+            CtapDeviceResponseCode::kCtap2ErrOperationDenied, base::nullopt);
+        return;
       case FakeTaskResponse::kProcessingError:
       default:
         std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
@@ -180,6 +185,10 @@ std::vector<uint8_t> CreateFakeUserPresenceVerifiedError() {
 
 std::vector<uint8_t> CreateFakeDeviceProcesssingError() {
   return {base::strict_cast<uint8_t>(FakeTaskResponse::kProcessingError)};
+}
+
+std::vector<uint8_t> CreateFakeOperationDeniedError() {
+  return {base::strict_cast<uint8_t>(FakeTaskResponse::kOperationDenied)};
 }
 
 }  // namespace
@@ -387,6 +396,67 @@ TEST_F(FidoRequestHandlerTest, TestRequestWithMultipleFailureResponses) {
   EXPECT_TRUE(request_handler->is_complete());
   EXPECT_EQ(FidoReturnCode::kUserConsentButCredentialNotRecognized,
             callback().status());
+}
+
+// If a device with transport type kInternal returns a
+// CTAP2_ERR_OPERATION_DENIED error, the request should be cancelled on all
+// pending authenticators.
+TEST_F(FidoRequestHandlerTest,
+       TestRequestWithOperationDeniedErrorInternalTransport) {
+  auto request_handler = CreateFakeHandler();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  // Device will send CTAP2_ERR_OPERATION_DENIED.
+  auto device0 = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestGetInfoResponsePlatformDevice);
+  device0->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeOperationDeniedError(),
+                                       base::TimeDelta::FromMicroseconds(10));
+
+  auto device1 = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
+  EXPECT_CALL(*device1, Cancel());
+
+  discovery()->AddDevice(std::move(device0));
+  discovery()->AddDevice(std::move(device1));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  callback().WaitForCallback();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
+}
+
+// Like |TestRequestWithOperationDeniedErrorInternalTransport|, but the
+// CTAP2_ERR_OPERATION_DENIED error is returned by a device with
+// cross-platform transport. The operation should not be cancelled (see
+// https://crbug/875982).
+TEST_F(FidoRequestHandlerTest,
+       TestRequestWithOperationDeniedErrorCrossPlatform) {
+  auto request_handler = CreateFakeHandler();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+
+  // Device will send CTAP2_ERR_OPERATION_DENIED.
+  auto device0 = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  device0->SetDeviceTransport(FidoTransportProtocol::kUsbHumanInterfaceDevice);
+  device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeOperationDeniedError());
+
+  // Pending device will *NOT* be cancelled and can send a success reply
+  // eventually.
+  auto device1 = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
+                                       CreateFakeSuccessDeviceResponse(),
+                                       base::TimeDelta::FromMicroseconds(10));
+
+  discovery()->AddDevice(std::move(device0));
+  discovery()->AddDevice(std::move(device1));
+
+  // The request will stay pending, the reply has not triggered the callback.
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  callback().WaitForCallback();
+  EXPECT_TRUE(request_handler->is_complete());
+  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
 }
 
 // Requests should be dispatched to the authenticator passed to
