@@ -47,6 +47,7 @@ namespace {
 
 // static
 constexpr base::TimeDelta GattClientManagerImpl::kConnectTimeout;
+constexpr base::TimeDelta GattClientManagerImpl::kReadRemoteRssiTimeout;
 
 GattClientManagerImpl::GattClientManagerImpl(
     bluetooth_v2_shlib::GattClient* gatt_client)
@@ -183,6 +184,7 @@ void GattClientManagerImpl::OnConnectChanged(
     }
 
     base::Erase(pending_read_remote_rssi_requests_, addr);
+    read_remote_rssi_timeout_timer_.Stop();
   }
 
   // We won't declare the device connected until service discovery completes.
@@ -259,17 +261,21 @@ void GattClientManagerImpl::OnReadRemoteRssi(
     bool status,
     int rssi) {
   MAKE_SURE_IO_THREAD(OnReadRemoteRssi, addr, status, rssi);
+
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
   it->second->OnReadRemoteRssiComplete(status, rssi);
 
   if (pending_read_remote_rssi_requests_.empty() ||
       addr != pending_read_remote_rssi_requests_.front()) {
-    NOTREACHED() << "Unexpected call to " << __func__;
+    // This can happen when the regular OnReadRemoteRssi is received after
+    // ReadRemoteRssi timed out.
+    LOG(ERROR) << "Unexpected call to " << __func__;
     return;
   }
 
   pending_read_remote_rssi_requests_.pop_front();
+  read_remote_rssi_timeout_timer_.Stop();
   // Try to run the next ReadRemoteRssi request
   RunQueuedReadRemoteRssiRequest();
 }
@@ -391,14 +397,18 @@ void GattClientManagerImpl::RunQueuedReadRemoteRssiRequest() {
 
     addr = pending_read_remote_rssi_requests_.front();
   }
+
+  read_remote_rssi_timeout_timer_.Start(
+      FROM_HERE, kReadRemoteRssiTimeout,
+      base::BindRepeating(&GattClientManagerImpl::OnReadRemoteRssiTimeout,
+                          weak_this_, addr));
 }
 
 void GattClientManagerImpl::OnConnectTimeout(
     const bluetooth_v2_shlib::Addr& addr) {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   // Get the last byte because whole address is PII.
-  std::string addr_str = util::AddrToString(addr);
-  addr_str = addr_str.substr(addr_str.size() - 2);
+  std::string addr_str = util::AddrLastByteString(addr);
 
   LOG(ERROR) << "Connect (" << addr_str << ")"
              << " timed out. Disconnecting";
@@ -411,6 +421,19 @@ void GattClientManagerImpl::OnConnectTimeout(
     RUN_ON_IO_THREAD(OnConnectChanged, addr, false /* status */,
                      false /* connected */);
   }
+}
+
+void GattClientManagerImpl::OnReadRemoteRssiTimeout(
+    const bluetooth_v2_shlib::Addr& addr) {
+  DCHECK(io_task_runner_->BelongsToCurrentThread());
+  // Get the last byte because whole address is PII.
+  std::string addr_str = util::AddrLastByteString(addr);
+
+  LOG(ERROR) << "ReadRemoteRssi (" << addr_str << ")"
+             << " timed out.";
+
+  // ReadRemoteRssi times out before OnReadRemoteRssi is received.
+  RUN_ON_IO_THREAD(OnReadRemoteRssi, addr, false /* status */, 0 /* rssi */);
 }
 
 // static

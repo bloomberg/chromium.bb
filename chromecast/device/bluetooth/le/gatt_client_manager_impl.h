@@ -26,9 +26,13 @@ class GattClientManagerImpl
       public bluetooth_v2_shlib::Gatt::Client::Delegate {
  public:
   // If a Connect request takes longer than this amount of time, we will treat
-  // it as a Connect failure.
+  // it as a failure.
   static constexpr base::TimeDelta kConnectTimeout =
       base::TimeDelta::FromSeconds(40);
+  // If a ReadRemoteRssi request takes longer than this amount of time, we will
+  // treat it as a failure.
+  static constexpr base::TimeDelta kReadRemoteRssiTimeout =
+      base::TimeDelta::FromSeconds(10);
 
   explicit GattClientManagerImpl(bluetooth_v2_shlib::GattClient* gatt_client);
   ~GattClientManagerImpl() override;
@@ -102,6 +106,7 @@ class GattClientManagerImpl
   void RunQueuedReadRemoteRssiRequest();
 
   void OnConnectTimeout(const bluetooth_v2_shlib::Addr& addr);
+  void OnReadRemoteRssiTimeout(const bluetooth_v2_shlib::Addr& addr);
 
   static void FinalizeOnIoThread(
       std::unique_ptr<base::WeakPtrFactory<GattClientManagerImpl>>
@@ -121,8 +126,12 @@ class GattClientManagerImpl
   std::set<bluetooth_v2_shlib::Addr> connected_devices_;
 
   // Timer for pending Connect requests. If any Connect request times out, we
-  // will treat it as a Connect failure.
+  // will treat it as a failure.
   base::OneShotTimer connect_timeout_timer_;
+
+  // Timer for pending ReadRemoteRssi requests. If any ReadRemoteRssi request
+  // times out, we will treat it as a failure.
+  base::OneShotTimer read_remote_rssi_timeout_timer_;
 
   // Queue for concurrent Connect requests.
   std::deque<bluetooth_v2_shlib::Addr> pending_connect_requests_;
