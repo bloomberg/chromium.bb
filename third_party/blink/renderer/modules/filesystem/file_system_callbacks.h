@@ -59,6 +59,7 @@ class File;
 class FileMetadata;
 class FileWriterBase;
 class Metadata;
+class ScriptPromiseResolver;
 
 // Passed to DOMFileSystem implementations that may report errors. Subclasses
 // may capture the error for throwing on return to script (for synchronous APIs)
@@ -117,6 +118,16 @@ class ScriptErrorCallback final : public ErrorCallbackBase {
   Member<V8PersistentCallbackInterface<V8ErrorCallback>> callback_;
 };
 
+class PromiseErrorCallback final : public ErrorCallbackBase {
+ public:
+  explicit PromiseErrorCallback(ScriptPromiseResolver*);
+  void Trace(Visitor*) override;
+  void Invoke(FileError::ErrorCode) override;
+
+ private:
+  Member<ScriptPromiseResolver> resolver_;
+};
+
 class EntryCallbacks final : public FileSystemCallbacksBase {
  public:
   class OnDidGetEntryCallback
@@ -143,6 +154,16 @@ class EntryCallbacks final : public FileSystemCallbacksBase {
         : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
     Member<V8PersistentCallbackInterface<V8EntryCallback>> callback_;
+  };
+
+  class OnDidGetEntryPromiseImpl : public OnDidGetEntryCallback {
+   public:
+    explicit OnDidGetEntryPromiseImpl(ScriptPromiseResolver*);
+    void Trace(Visitor*) override;
+    void OnSuccess(Entry*) override;
+
+   private:
+    Member<ScriptPromiseResolver> resolver_;
   };
 
   static std::unique_ptr<AsyncFileSystemCallbacks> Create(

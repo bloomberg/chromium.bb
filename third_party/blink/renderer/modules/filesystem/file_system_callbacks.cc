@@ -34,6 +34,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/platform/web_file_writer.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
@@ -44,6 +46,7 @@
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system_base.h"
 #include "third_party/blink/renderer/modules/filesystem/entry.h"
 #include "third_party/blink/renderer/modules/filesystem/file_entry.h"
+#include "third_party/blink/renderer/modules/filesystem/file_system_base_handle.h"
 #include "third_party/blink/renderer/modules/filesystem/file_writer.h"
 #include "third_party/blink/renderer/modules/filesystem/metadata.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
@@ -127,6 +130,20 @@ void ScriptErrorCallback::Invoke(FileError::ErrorCode error) {
 ScriptErrorCallback::ScriptErrorCallback(V8ErrorCallback* callback)
     : callback_(ToV8PersistentCallbackInterface(callback)) {}
 
+// PromiseErrorCallback -------------------------------------------------------
+
+PromiseErrorCallback::PromiseErrorCallback(ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void PromiseErrorCallback::Trace(Visitor* visitor) {
+  ErrorCallbackBase::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void PromiseErrorCallback::Invoke(FileError::ErrorCode error) {
+  resolver_->Reject(FileError::CreateDOMException(error));
+}
+
 // EntryCallbacks -------------------------------------------------------------
 
 void EntryCallbacks::OnDidGetEntryV8Impl::Trace(blink::Visitor* visitor) {
@@ -136,6 +153,19 @@ void EntryCallbacks::OnDidGetEntryV8Impl::Trace(blink::Visitor* visitor) {
 
 void EntryCallbacks::OnDidGetEntryV8Impl::OnSuccess(Entry* entry) {
   callback_->InvokeAndReportException(nullptr, entry);
+}
+
+EntryCallbacks::OnDidGetEntryPromiseImpl::OnDidGetEntryPromiseImpl(
+    ScriptPromiseResolver* resolver)
+    : resolver_(resolver) {}
+
+void EntryCallbacks::OnDidGetEntryPromiseImpl::Trace(Visitor* visitor) {
+  OnDidGetEntryCallback::Trace(visitor);
+  visitor->Trace(resolver_);
+}
+
+void EntryCallbacks::OnDidGetEntryPromiseImpl::OnSuccess(Entry* entry) {
+  resolver_->Resolve(entry->asFileSystemHandle());
 }
 
 std::unique_ptr<AsyncFileSystemCallbacks> EntryCallbacks::Create(
