@@ -25,7 +25,6 @@ if (!mac_views_browser) {
 untranslated_xibs = [
   "BookmarkBarFolderWindow.xib",
   "FindBar.xib",
-  "GlobalErrorBubble.xib",
   "InfoBar.xib",
 ]
 
