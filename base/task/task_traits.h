@@ -204,14 +204,13 @@ class BASE_EXPORT TaskTraits {
   bool operator==(const TaskTraits& other) const {
     static_assert(24 == sizeof(TaskTraits),
                   "Update comparison operator when TaskTraits change");
-    return priority_set_explicitly_ == other.priority_set_explicitly_ &&
-           priority_ == other.priority_ &&
+    return extension_ == other.extension_ && priority_ == other.priority_ &&
+           shutdown_behavior_ == other.shutdown_behavior_ &&
+           priority_set_explicitly_ == other.priority_set_explicitly_ &&
            shutdown_behavior_set_explicitly_ ==
                other.shutdown_behavior_set_explicitly_ &&
-           shutdown_behavior_ == other.shutdown_behavior_ &&
            may_block_ == other.may_block_ &&
-           with_base_sync_primitives_ == other.with_base_sync_primitives_ &&
-           extension_ == other.extension_;
+           with_base_sync_primitives_ == other.with_base_sync_primitives_;
   }
 
   // Returns TaskTraits constructed by combining |left| and |right|. If a trait
