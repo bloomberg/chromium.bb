@@ -12,6 +12,7 @@ import optparse
 import os
 import re
 import sys
+from schema_validator import SchemaValidator
 
 
 LEADING_WHITESPACE = re.compile('^([ \t]*)')
@@ -79,6 +80,7 @@ class PolicyTemplateChecker(object):
     self.num_policies_in_groups = 0
     self.options = None
     self.features = []
+    self.schema_validator = SchemaValidator()
 
   def _Error(self, message, parent_element=None, identifier=None,
              offending_snippet=None):
@@ -186,39 +188,46 @@ class PolicyTemplateChecker(object):
 
   def _CheckPolicySchema(self, policy, policy_type):
     '''Checks that the 'schema' field matches the 'type' field.'''
-    self._CheckContains(policy, 'schema', dict)
-    if isinstance(policy.get('schema'), dict):
-      self._CheckContains(policy['schema'], 'type', str)
-      schema_type = policy['schema'].get('type')
+    schema = self._CheckContains(policy, 'schema', dict)
+    if schema:
+      schema_type = self._CheckContains(schema, 'type', str)
       if schema_type not in TYPE_TO_SCHEMA[policy_type]:
         self._Error('Schema type must match the existing type for policy %s' %
                     policy.get('name'))
+      if not self.schema_validator.ValidateSchema(schema):
+        self._Error('Schema is invalid for policy %s' % policy.get('name'))
 
-      # Checks that boolean policies are not negated (which makes them harder to
-      # reason about).
-      if (schema_type == 'boolean' and
-          'disable' in policy.get('name').lower() and
-          policy.get('name') not in LEGACY_INVERTED_POLARITY_WHITELIST):
-        self._Error(('Boolean policy %s uses negative polarity, please make ' +
-                     'new boolean policies follow the XYZEnabled pattern. ' +
-                     'See also http://crbug.com/85687') % policy.get('name'))
+    if policy.has_key('validation_schema'):
+      validation_schema = policy.get('validation_schema')
+      if not self.schema_validator.ValidateSchema(validation_schema):
+        self._Error('Validation schema is invalid for policy %s' %
+                    policy.get('name'))
 
-      # Checks that the policy doesn't have a validation_schema - the whole
-      # schema should be defined in 'schema'- unless whitelisted as legacy.
-      if (policy.has_key('validation_schema') and
-          policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
-        self._Error(('"validation_schema" is defined for new policy %s - ' +
-                     'entire schema data should be contained in "schema"') %
-                     policy.get('name'))
+    # Checks that boolean policies are not negated (which makes them harder to
+    # reason about).
+    if (policy_type == 'main' and
+        'disable' in policy.get('name').lower() and
+        policy.get('name') not in LEGACY_INVERTED_POLARITY_WHITELIST):
+      self._Error(('Boolean policy %s uses negative polarity, please make ' +
+                    'new boolean policies follow the XYZEnabled pattern. ' +
+                    'See also http://crbug.com/85687') % policy.get('name'))
 
-      # Try to make sure that any policy with a complex schema is storing it as
-      # a 'dict', not embedding it inside JSON strings - unless whitelisted.
-      if (self._AppearsToContainEmbeddedJson(policy.get('example_value')) and
-          policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
-        self._Error(('Example value for new policy %s looks like JSON. Do ' +
-                     'not store complex data as stringified JSON - instead, ' +
-                     'store it in a dict and define it in "schema".') %
-                     policy.get('name'))
+    # Checks that the policy doesn't have a validation_schema - the whole
+    # schema should be defined in 'schema'- unless whitelisted as legacy.
+    if (policy.has_key('validation_schema') and
+        policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
+      self._Error(('"validation_schema" is defined for new policy %s - ' +
+                    'entire schema data should be contained in "schema"') %
+                    policy.get('name'))
+
+    # Try to make sure that any policy with a complex schema is storing it as
+    # a 'dict', not embedding it inside JSON strings - unless whitelisted.
+    if (self._AppearsToContainEmbeddedJson(policy.get('example_value')) and
+        policy.get('name') not in LEGACY_EMBEDDED_JSON_WHITELIST):
+      self._Error(('Example value for new policy %s looks like JSON. Do ' +
+                    'not store complex data as stringified JSON - instead, ' +
+                    'store it in a dict and define it in "schema".') %
+                    policy.get('name'))
 
   # Returns True if the example value for a policy seems to contain JSON
   # embedded inside a string. Simply checks if strings start with '{', so it
