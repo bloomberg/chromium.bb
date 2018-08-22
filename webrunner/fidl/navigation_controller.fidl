@@ -17,7 +17,7 @@ interface NavigationController {
   50: GoBack();
   51: GoForward();
   52: Stop();
-  53: Reload();
+  53: Reload(ReloadType type);
 
   // Returns information for the currently visible content regardless of
   // loading state, or a null entry if no content is being displayed.
@@ -48,4 +48,12 @@ enum LoadUrlReason {
 struct NavigationEntry {
   string url;    // The page's URL.
   string title;  // The user-visible page title.
+};
+
+enum ReloadType {
+  // Reloads the current entry, bypassing the cache for the main resource.
+  PARTIAL_CACHE = 0;
+
+  // Reloads the current entry, bypassing the cache entirely.
+  NO_CACHE = 1;
 };
