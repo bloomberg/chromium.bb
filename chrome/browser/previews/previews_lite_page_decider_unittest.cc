@@ -21,27 +21,34 @@ class PreviewsLitePageDeciderTest : public testing::Test {
 };
 
 TEST_F(PreviewsLitePageDeciderTest, TestServerUnavailable) {
-  const base::TimeTicks kNow = base::TimeTicks::Now();
   struct TestCase {
-    base::TimeTicks retry_at;
-    base::TimeTicks now;
+    base::TimeDelta set_available_after;
+    base::TimeDelta check_available_after;
     bool want_is_unavailable;
   };
   const TestCase kTestCases[]{
       {
-          kNow - base::TimeDelta::FromMinutes(1), kNow, false,
+          base::TimeDelta::FromMinutes(1), base::TimeDelta::FromMinutes(2),
+          false,
       },
       {
-          kNow + base::TimeDelta::FromMinutes(1), kNow, true,
+          base::TimeDelta::FromMinutes(2), base::TimeDelta::FromMinutes(1),
+          true,
       },
   };
 
   for (const TestCase& test_case : kTestCases) {
     std::unique_ptr<PreviewsLitePageDecider> decider =
         std::make_unique<PreviewsLitePageDecider>();
-    decider->SetServerUnavailableUntil(test_case.retry_at);
-    EXPECT_EQ(decider->IsServerUnavailable(test_case.now),
-              test_case.want_is_unavailable);
+    std::unique_ptr<base::SimpleTestTickClock> clock =
+        std::make_unique<base::SimpleTestTickClock>();
+    decider->SetClockForTesting(clock.get());
+
+    decider->SetServerUnavailableFor(test_case.set_available_after);
+    EXPECT_TRUE(decider->IsServerUnavailable());
+
+    clock->Advance(test_case.check_available_after);
+    EXPECT_EQ(decider->IsServerUnavailable(), test_case.want_is_unavailable);
   }
 }
 

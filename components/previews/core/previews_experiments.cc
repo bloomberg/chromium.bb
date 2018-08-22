@@ -135,6 +135,12 @@ base::TimeDelta LitePagePreviewsSingleBypassDuration() {
       60 * 5));
 }
 
+int PreviewServerLoadshedMaxSeconds() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+      features::kLitePageServerPreviews, "loadshed_max_seconds",
+      5 * 60 /* 5 minutes */);
+}
+
 GURL GetLitePagePreviewsDomainURL() {
   std::string variable_host_str = GetFieldTrialParamValueByFeature(
       features::kLitePageServerPreviews, "previews_host");
