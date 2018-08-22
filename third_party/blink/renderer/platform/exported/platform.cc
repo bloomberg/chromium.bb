@@ -62,6 +62,7 @@
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
 #include "third_party/blink/renderer/platform/partition_alloc_memory_dump_provider.h"
+#include "third_party/blink/renderer/platform/scheduler/common/simple_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/webrtc/api/rtpparameters.h"
@@ -116,20 +117,21 @@ Platform::~Platform() = default;
 
 namespace {
 
-class SingleThreadedWebThread : public WebThread {
+class SimpleMainThread : public WebThread {
  public:
   bool IsCurrentThread() const override {
     DCHECK(WTF::IsMainThread());
     return true;
   }
-  ThreadScheduler* Scheduler() const override {
-    // TODO(yutak): Implement default scheduler.
-    return nullptr;
-  }
+  // TODO(yutak): Remove the const qualifier so we don't have to use mutable.
+  ThreadScheduler* Scheduler() const override { return &scheduler_; }
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const override {
     DCHECK(WTF::IsMainThread());
     return base::ThreadTaskRunnerHandle::Get();
   }
+
+ private:
+  mutable scheduler::SimpleThreadScheduler scheduler_;
 };
 
 }  // namespace
@@ -146,7 +148,7 @@ void Platform::CreateMainThreadAndInitialize(Platform* platform) {
   DCHECK(!g_platform);
   DCHECK(platform);
   g_platform = platform;
-  g_platform->owned_main_thread_ = std::make_unique<SingleThreadedWebThread>();
+  g_platform->owned_main_thread_ = std::make_unique<SimpleMainThread>();
   g_platform->main_thread_ = g_platform->owned_main_thread_.get();
   InitializeCommon(platform);
 }
