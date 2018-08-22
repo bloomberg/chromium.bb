@@ -6,6 +6,7 @@
     "service_manager:connector": {
       "provides": {
         "converter": [
+            "printing.mojom.PdfNupConverter",
             "printing.mojom.PdfToEmfConverterFactory",
             "printing.mojom.PdfToPwgRasterConverter" ]
        },
