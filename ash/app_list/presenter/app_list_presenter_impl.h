@@ -85,8 +85,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(int y_scroll_offset);
 
-  bool is_animating_to_close() const { return is_animating_to_close_; }
-
   // Schedules animation for app list when overview mode starts or ends.
   void ScheduleOverviewModeAnimation(bool start);
 
@@ -159,9 +157,6 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // The last visibility change and its display id.
   bool last_visible_ = false;
   int64_t last_display_id_ = display::kInvalidDisplayId;
-
-  // True if app list is running close animation.
-  bool is_animating_to_close_ = false;
 
   // The timer used to delay the start time of an animation.
   base::OneShotTimer start_animation_timer_;
