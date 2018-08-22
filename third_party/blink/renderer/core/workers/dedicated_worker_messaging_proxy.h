@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "third_party/blink/public/mojom/message_port/message_port.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
@@ -17,16 +18,11 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer_policy.h"
 
-namespace v8_inspector {
-struct V8StackTraceId;
-}
-
 namespace blink {
 
 class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
 class FetchClientSettingsObjectSnapshot;
-class SerializedScriptValue;
 class WorkerOptions;
 
 // A proxy class to talk to the DedicatedWorkerGlobalScope on a worker thread
@@ -46,18 +42,14 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
       FetchClientSettingsObjectSnapshot* outside_settings_object,
       const v8_inspector::V8StackTraceId&,
       const String& source_code);
-  void PostMessageToWorkerGlobalScope(scoped_refptr<SerializedScriptValue>,
-                                      Vector<MessagePortChannel>,
-                                      const v8_inspector::V8StackTraceId&);
+  void PostMessageToWorkerGlobalScope(BlinkTransferableMessage);
 
   bool HasPendingActivity() const;
 
   // These methods come from worker context thread via
   // DedicatedWorkerObjectProxy and are called on the parent context thread.
   void DidEvaluateScript(bool success);
-  void PostMessageToWorkerObject(scoped_refptr<SerializedScriptValue>,
-                                 Vector<MessagePortChannel>,
-                                 const v8_inspector::V8StackTraceId&);
+  void PostMessageToWorkerObject(BlinkTransferableMessage);
   void DispatchErrorEvent(const String& error_message,
                           std::unique_ptr<SourceLocation>,
                           int exception_id);
@@ -92,8 +84,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
 
   // Tasks are queued here until worker scripts are evaluated on the worker
   // global scope.
-  struct QueuedTask;
-  Vector<QueuedTask> queued_early_tasks_;
+  Vector<BlinkTransferableMessage> queued_early_tasks_;
   DISALLOW_COPY_AND_ASSIGN(DedicatedWorkerMessagingProxy);
 };
 

@@ -106,17 +106,19 @@ void DedicatedWorkerGlobalScope::postMessage(ScriptState* script_state,
   if (exception_state.HadException())
     return;
   DCHECK(serialized_message);
+  BlinkTransferableMessage transferable_message;
+  transferable_message.message = serialized_message;
   // Disentangle the port in preparation for sending it to the remote context.
-  auto channels = MessagePort::DisentanglePorts(
+  transferable_message.ports = MessagePort::DisentanglePorts(
       ExecutionContext::From(script_state), transferables.message_ports,
       exception_state);
   if (exception_state.HadException())
     return;
   ThreadDebugger* debugger = ThreadDebugger::From(script_state->GetIsolate());
-  v8_inspector::V8StackTraceId stack_id =
+  transferable_message.sender_stack_trace_id =
       debugger->StoreCurrentStackTrace("postMessage");
-  WorkerObjectProxy().PostMessageToWorkerObject(std::move(serialized_message),
-                                                std::move(channels), stack_id);
+  WorkerObjectProxy().PostMessageToWorkerObject(
+      std::move(transferable_message));
 }
 
 DedicatedWorkerObjectProxy& DedicatedWorkerGlobalScope::WorkerObjectProxy()

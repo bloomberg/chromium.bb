@@ -35,14 +35,11 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/threaded_object_proxy_base.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-
-namespace v8_inspector {
-struct V8StackTraceId;
-}  // namespace v8_inspector
 
 namespace blink {
 
@@ -63,14 +60,9 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
       ParentExecutionContextTaskRunners*);
   ~DedicatedWorkerObjectProxy() override;
 
-  void PostMessageToWorkerObject(scoped_refptr<SerializedScriptValue>,
-                                 Vector<MessagePortChannel>,
-                                 const v8_inspector::V8StackTraceId&);
+  void PostMessageToWorkerObject(BlinkTransferableMessage);
   void ProcessUnhandledException(int exception_id, WorkerThread*);
-  void ProcessMessageFromWorkerObject(scoped_refptr<SerializedScriptValue>,
-                                      Vector<MessagePortChannel>,
-                                      WorkerThread*,
-                                      const v8_inspector::V8StackTraceId&);
+  void ProcessMessageFromWorkerObject(BlinkTransferableMessage, WorkerThread*);
 
   // ThreadedObjectProxyBase overrides.
   void ReportException(const String& error_message,
