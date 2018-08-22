@@ -92,7 +92,7 @@ class PPAPI_HOST_EXPORT ResourceMessageFilter
   // Called when a filter is added to a ResourceHost.
   void OnFilterAdded(ResourceHost* resource_host);
   // Called when a filter is removed from a ResourceHost.
-  virtual void OnFilterDestroyed();
+  void OnFilterDestroyed();
 
   // This will dispatch the message handler on the target thread. It returns
   // true if the message was handled by this filter and false otherwise.

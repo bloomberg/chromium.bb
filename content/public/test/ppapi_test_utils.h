@@ -5,20 +5,12 @@
 #ifndef CONTENT_PUBLIC_TEST_PPAPI_TEST_UTILS_H_
 #define CONTENT_PUBLIC_TEST_PPAPI_TEST_UTILS_H_
 
-#include "base/callback_forward.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "services/network/public/mojom/udp_socket.mojom.h"
 
 namespace base {
 class CommandLine;
 }
-
-namespace network {
-namespace mojom {
-class NetworkContext;
-}
-}  // namespace network
 
 // This file specifies utility functions used in Pepper testing in
 // browser_tests and content_browsertests.
@@ -42,17 +34,6 @@ bool RegisterFlashTestPlugin(base::CommandLine* command_line)
 // Registers the Blink test plugin to application/x-blink-test-plugin.
 bool RegisterBlinkTestPlugin(base::CommandLine* command_line)
     WARN_UNUSED_RESULT;
-
-using CreateUDPSocketCallback = base::RepeatingCallback<void(
-    network::mojom::NetworkContext* network_context,
-    network::mojom::UDPSocketRequest socket_request,
-    network::mojom::UDPSocketReceiverPtr socket_receiver)>;
-
-// Sets callback to be invoked when creating a UDPSocket for use by pepper.
-// Passed in callback must remain valid until the method is called again with
-// a nullptr, to clear the callback.
-void SetPepperUDPSocketCallackForTesting(
-    const CreateUDPSocketCallback* create_udp_socket_callback);
 
 }  // namespace ppapi
 

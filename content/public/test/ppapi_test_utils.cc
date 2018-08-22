@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
-#include "content/browser/renderer_host/pepper/pepper_udp_socket_message_filter.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_switches.h"
 #include "ppapi/shared_impl/ppapi_constants.h"
@@ -143,12 +142,6 @@ bool RegisterBlinkTestPlugin(base::CommandLine* command_line) {
                                    "x-blink-deprecated-test-plugin#"
                                    "blinkdeprecatedtestplugin")));
   return RegisterPlugins(command_line, plugins);
-}
-
-void SetPepperUDPSocketCallackForTesting(
-    const CreateUDPSocketCallback* create_udp_socket_callback) {
-  content::PepperUDPSocketMessageFilter::SetCreateUDPSocketCallbackForTesting(
-      create_udp_socket_callback);
 }
 
 }  // namespace ppapi
