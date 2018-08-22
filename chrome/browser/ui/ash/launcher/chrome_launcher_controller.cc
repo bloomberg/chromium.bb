@@ -998,7 +998,7 @@ void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
                : keyboard::KEYBOARD_SHOW_OVERRIDE_DISABLED);
   }
   // TODO(crbug.com/557406): Fix this interaction pattern in Mash.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     const bool is_enabled = keyboard::IsKeyboardEnabled();
     if (was_enabled && !is_enabled)
       ash::Shell::Get()->DisableKeyboard();

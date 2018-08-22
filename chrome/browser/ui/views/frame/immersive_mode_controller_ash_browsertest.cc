@@ -266,8 +266,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   ASSERT_NO_FATAL_FAILURE(test::SetAndWaitForTabletMode(false));
   EXPECT_FALSE(controller()->IsEnabled());
 
-  // TODO(estade): make kTopviewInset work in OopAsh.
-  if (features::IsAshInBrowserProcess())
+  // TODO(estade): make kTopviewInset work in mash.
+  if (!features::IsUsingWindowService())
     EXPECT_GT(aura_window->GetProperty(aura::client::kTopViewInset), 0);
 }
 
@@ -275,10 +275,10 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 // tablet mode.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
                        FrameLayoutToggleTabletMode) {
-  // For OopAsh, the layout is handled in Ash and tested by
+  // For mash, the layout is handled in Ash and tested by
   // FrameCaptionButtonContainerViewTest.
-  // TODO(estade): remove this test when OopAsh is default.
-  if (!features::IsAshInBrowserProcess())
+  // TODO(estade): remove this test when mash is default.
+  if (features::IsUsingWindowService())
     return;
 
   LaunchAppBrowser();

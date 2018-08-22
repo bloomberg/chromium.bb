@@ -113,7 +113,7 @@ void ImmersiveModeControllerAsh::Init(BrowserView* browser_view) {
       browser_view_->top_container());
 
   observed_windows_.Add(
-      features::IsAshInBrowserProcess()
+      !features::IsUsingWindowService()
           ? browser_view_->GetNativeWindow()
           : browser_view_->GetNativeWindow()->GetRootWindow());
 }
@@ -206,7 +206,7 @@ void ImmersiveModeControllerAsh::LayoutBrowserRootView() {
 }
 
 void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
-  if (features::IsAshInBrowserProcess())
+  if (!features::IsUsingWindowService())
     return;
 
   DCHECK(!mash_reveal_widget_);

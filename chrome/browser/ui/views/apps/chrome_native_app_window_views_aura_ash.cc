@@ -233,7 +233,7 @@ bool ChromeNativeAppWindowViewsAuraAsh::ShouldRemoveStandardFrame() {
   if (IsFrameless())
     return true;
 
-  return HasFrameColor() && features::IsAshInBrowserProcess();
+  return HasFrameColor() && !features::IsUsingWindowService();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -331,7 +331,7 @@ ChromeNativeAppWindowViewsAuraAsh::CreateNonClientFrameView(
   if (IsFrameless())
     return CreateNonStandardAppFrame();
 
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsUsingWindowService())
     return nullptr;
 
   ash::NonClientFrameViewAsh* custom_frame_view =
@@ -395,7 +395,7 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
   SkRegion* draggable_region = GetDraggableRegion();
   // Set the NativeAppWindow's draggable region on the mus window.
   if (draggable_region && !draggable_region->isEmpty() && widget() &&
-      !features::IsAshInBrowserProcess()) {
+      features::IsUsingWindowService()) {
     // Supply client area insets that encompass all draggable regions.
     gfx::Insets insets(draggable_region->getBounds().bottom(), 0, 0, 0);
 

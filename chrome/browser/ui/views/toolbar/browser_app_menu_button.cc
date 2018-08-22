@@ -107,7 +107,7 @@ void BrowserAppMenuButton::ShowMenu(bool for_drop) {
 #if defined(OS_CHROMEOS)
   // On platforms other than ChromeOS or when running under MASH, there is no
   // KeyboardController in the browser process.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled() &&
         keyboard_controller->IsKeyboardVisible()) {
