@@ -757,7 +757,7 @@ TEST_F(NotificationViewMDTest, ExpandLongMessage) {
 }
 
 TEST_F(NotificationViewMDTest, TestAccentColor) {
-  constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue700;
+  constexpr SkColor kActionButtonTextColor = gfx::kGoogleBlue600;
   constexpr SkColor kCustomAccentColor = gfx::kGoogleYellow900;
 
   std::unique_ptr<Notification> notification = CreateSimpleNotification();
