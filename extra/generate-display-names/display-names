@@ -125,3 +125,9 @@
 * ../../tables/tr.tbl                           Turkish computer braille
 * ../../tables/vi.ctb                           Vietnamese computer braille
 * ../../tables/vi.tbl                           Vietnamese braille
+  ../../tables/zh_CHN.tbl                       Mainland Chinese braille without tone
+* ../../tables/zh_HK.tbl                        Cantonese braille
+  ../../tables/zh_TW.tbl                        Taiwanese braille
+  ../../tables/zhcn-g1.ctb                      Mainland Chinese braille with tone
+  ../../tables/zhcn-g2.ctb                      Two-cell Chinese Braille
+
