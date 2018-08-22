@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/vr/base_compositor_delegate.h"
+#include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -38,6 +39,41 @@ bool GlRenderer::Initialize(const scoped_refptr<gl::GLSurface>& surface) {
     return false;
   PostRenderFrameTask();
   return true;
+}
+
+// TODO(acondor): Provide actual implementation for the methods.
+FovRectangles GlRenderer::GetRecommendedFovs() {
+  return {{}, {}};
+}
+float GlRenderer::GetZNear() {
+  return 0;
+}
+RenderInfo GlRenderer::GetRenderInfo(FrameType frame_type) {
+  return {};
+}
+RenderInfo GlRenderer::GetOptimizedRenderInfoForFovs(
+    const FovRectangles& fovs) {
+  return {};
+}
+void GlRenderer::InitializeBuffers() {}
+void GlRenderer::PrepareBufferForWebXr() {}
+void GlRenderer::PrepareBufferForWebXrOverlayElements() {}
+void GlRenderer::PrepareBufferForContentQuadLayer(
+    const gfx::Transform& quad_transform) {}
+void GlRenderer::PrepareBufferForBrowserUi() {}
+void GlRenderer::OnFinishedDrawingBuffer() {}
+void GlRenderer::GetWebXrDrawParams(int* texture_id, Transform* uv_transform) {}
+bool GlRenderer::IsContentQuadReady() {
+  return true;
+}
+void GlRenderer::GetContentQuadDrawParams(Transform* uv_transform,
+                                          float* border_x,
+                                          float* border_y) {}
+void GlRenderer::SubmitFrame(FrameType frame_type) {}
+void GlRenderer::SetUiInterface(CompositorUiInterface* ui) {}
+void GlRenderer::SetShowingVrDialog(bool showing) {}
+int GlRenderer::GetContentBufferWidth() {
+  return 0;
 }
 
 void GlRenderer::RenderFrame() {

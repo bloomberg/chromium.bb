@@ -317,10 +317,6 @@ void Ui::RemoveAllTabs() {
   model_->incognito_tabs.clear();
 }
 
-bool Ui::CanSendWebVrVSync() {
-  return model_->web_vr_enabled() && !model_->web_vr.showing_hosted_ui;
-}
-
 void Ui::SetAlertDialogEnabled(bool enabled,
                                PlatformUiInputDelegate* delegate,
                                float width,
@@ -466,17 +462,17 @@ void Ui::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
   model_->projection_matrix = proj_matrix;
 }
 
-void Ui::OnWebVrFrameAvailable() {
+void Ui::OnWebXrFrameAvailable() {
   if (model_->web_vr_enabled())
     model_->web_vr.state = kWebVrPresenting;
 }
 
-void Ui::OnWebVrTimeoutImminent() {
+void Ui::OnWebXrTimeoutImminent() {
   if (model_->web_vr_enabled())
     model_->web_vr.state = kWebVrTimeoutImminent;
 }
 
-void Ui::OnWebVrTimedOut() {
+void Ui::OnWebXrTimedOut() {
   if (model_->web_vr_enabled())
     model_->web_vr.state = kWebVrTimedOut;
 }
@@ -725,8 +721,7 @@ void Ui::HandleMenuButtonEvents(InputEventList* input_event_list) {
   }
 }
 
-std::pair<UiInterface::FovRectangle, UiInterface::FovRectangle>
-Ui::GetMinimalFovForWebXrOverlayElements(
+std::pair<FovRectangle, FovRectangle> Ui::GetMinimalFovForWebXrOverlayElements(
     const gfx::Transform& left_view,
     const FovRectangle& fov_recommended_left,
     const gfx::Transform& right_view,
@@ -737,11 +732,10 @@ Ui::GetMinimalFovForWebXrOverlayElements(
           GetMinimalFov(right_view, elements, fov_recommended_right, z_near)};
 }
 
-Ui::FovRectangle Ui::GetMinimalFov(
-    const gfx::Transform& view_matrix,
-    const std::vector<const UiElement*>& elements,
-    const Ui::FovRectangle& fov_recommended,
-    float z_near) {
+FovRectangle Ui::GetMinimalFov(const gfx::Transform& view_matrix,
+                               const std::vector<const UiElement*>& elements,
+                               const FovRectangle& fov_recommended,
+                               float z_near) {
   // Calculate boundary of Z near plane in view space.
   float z_near_left =
       -z_near * std::tan(fov_recommended.left * base::kPiFloat / 180);
@@ -812,7 +806,7 @@ Ui::FovRectangle Ui::GetMinimalFov(
   }
 
   if (!has_visible_element) {
-    return Ui::FovRectangle{0.f, 0.f, 0.f, 0.f};
+    return FovRectangle{0.f, 0.f, 0.f, 0.f};
   }
 
   // Add a small margin to fix occasional border clipping due to precision.
@@ -826,8 +820,7 @@ Ui::FovRectangle Ui::GetMinimalFov(
   float right_degrees = std::atan(right / z_near) * 180 / base::kPiFloat;
   float bottom_degrees = std::atan(-bottom / z_near) * 180 / base::kPiFloat;
   float top_degrees = std::atan(top / z_near) * 180 / base::kPiFloat;
-  return Ui::FovRectangle{left_degrees, right_degrees, bottom_degrees,
-                          top_degrees};
+  return FovRectangle{left_degrees, right_degrees, bottom_degrees, top_degrees};
 }
 
 #if defined(FEATURE_MODULES)

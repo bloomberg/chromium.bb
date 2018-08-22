@@ -115,7 +115,7 @@ TEST_F(UiTest, WebVrToastStateTransitions) {
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(true);
-  ui_->OnWebVrFrameAvailable();
+  ui_->OnWebXrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
                          CapturingStateModel());
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
@@ -134,7 +134,7 @@ TEST_F(UiTest, WebVrToastTransience) {
   CreateScene(kNotInWebVr);
 
   ui_->SetWebVrMode(true);
-  ui_->OnWebVrFrameAvailable();
+  ui_->OnWebXrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
                          CapturingStateModel());
   EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
@@ -177,7 +177,7 @@ TEST_F(UiTest, CaptureToasts) {
   for (auto& spec : GetIndicatorSpecs()) {
     for (int i = 0; i < 3; ++i) {
       ui_->SetWebVrMode(true);
-      ui_->OnWebVrFrameAvailable();
+      ui_->OnWebXrFrameAvailable();
 
       CapturingStateModel active_capturing;
       CapturingStateModel background_capturing;
@@ -390,15 +390,12 @@ TEST_F(UiTest, UiModeVoiceSearchFromOmnibox) {
 TEST_F(UiTest, HostedUiInWebVr) {
   CreateScene(kInWebVr);
   VerifyVisibility({kWebVrHostedUi, kWebVrFloor}, false);
-  EXPECT_TRUE(ui_->CanSendWebVrVSync());
 
   ui_->SetAlertDialogEnabled(true, nullptr, 0, 0);
-  EXPECT_FALSE(ui_->CanSendWebVrVSync());
   OnBeginFrame();
   VerifyVisibility({kWebVrHostedUi, kWebVrBackground, kWebVrFloor}, true);
 
   ui_->SetAlertDialogEnabled(false, nullptr, 0, 0);
-  EXPECT_TRUE(ui_->CanSendWebVrVSync());
   OnBeginFrame();
   VerifyVisibility({kWebVrHostedUi, kWebVrFloor}, false);
 }
@@ -623,13 +620,13 @@ TEST_F(UiTest, UiUpdatesForWebVR) {
 TEST_F(UiTest, WebVrFramesIgnoredWhenUnexpected) {
   CreateScene(kInWebVr);
 
-  ui_->OnWebVrFrameAvailable();
+  ui_->OnWebXrFrameAvailable();
   VerifyOnlyElementsVisible("Elements hidden", std::set<UiElementName>{});
   // Disable WebVR mode.
   ui_->SetWebVrMode(false);
 
   // New frame available after exiting WebVR mode.
-  ui_->OnWebVrFrameAvailable();
+  ui_->OnWebXrFrameAvailable();
   VerifyOnlyElementsVisible("Browser visible", kElementsVisibleInBrowsing);
 }
 
@@ -643,7 +640,7 @@ TEST_F(UiTest, UiUpdateTransitionToWebVR) {
 
   // Transition to WebVR mode
   ui_->SetWebVrMode(true);
-  ui_->OnWebVrFrameAvailable();
+  ui_->OnWebXrFrameAvailable();
 
   // All elements should be hidden.
   VerifyOnlyElementsVisible("Elements hidden", std::set<UiElementName>{});
@@ -1283,7 +1280,7 @@ TEST_F(UiTest, DoNotShowIndicatorsAfterHostedUi) {
   CreateScene(kInWebVr);
   ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
-  ui_->OnWebVrFrameAvailable();
+  ui_->OnWebXrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
                          CapturingStateModel());
   OnBeginFrame();
@@ -1304,7 +1301,7 @@ TEST_F(UiTest, LongPressMenuButtonInWebVrMode) {
   CreateScene(kInWebVr);
   ui_->SetWebVrMode(true);
   EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
-  ui_->OnWebVrFrameAvailable();
+  ui_->OnWebXrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel(), CapturingStateModel(),
                          CapturingStateModel());
   OnBeginFrame();

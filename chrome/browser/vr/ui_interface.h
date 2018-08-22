@@ -12,6 +12,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
+#include "chrome/browser/vr/compositor_ui_interface.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/keyboard_ui_interface.h"
 
@@ -36,18 +37,14 @@ using InputEventList = std::vector<std::unique_ptr<InputEvent>>;
 // This interface represents the methods that should be called by its owner, and
 // also serves to make all such methods virtual for the sake of separating a UI
 // feature module.
-class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
+class UiInterface : public BrowserUiInterface,
+                    public CompositorUiInterface,
+                    public KeyboardUiInterface {
  public:
   ~UiInterface() override {}
 
   virtual base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() = 0;
 
-  // TODO(ymalik): We expose this to stop sending VSync to the WebVR page until
-  // the splash screen has been visible for its minimum duration. The visibility
-  // logic currently lives in the UI, and it'd be much cleaner if the UI didn't
-  // have to worry about this, and if it were told to hide the splash screen
-  // like other WebVR phases (e.g. OnWebVrFrameAvailable below).
-  virtual bool CanSendWebVrVSync() = 0;
   virtual void SetAlertDialogEnabled(bool enabled,
                                      PlatformUiInputDelegate* delegate,
                                      float width,
@@ -65,18 +62,10 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
   virtual void ShowPlatformToast(const base::string16& text) = 0;
   virtual void CancelPlatformToast() = 0;
   virtual bool ShouldRenderWebVr() = 0;
-  virtual void OnGlInitialized(unsigned int content_texture_id,
-                               GlTextureLocation content_location,
-                               unsigned int content_overlay_texture_id,
-                               GlTextureLocation content_overlay_location,
-                               unsigned int ui_texture_id) = 0;
   virtual void OnPause() = 0;
   virtual void OnControllerUpdated(const ControllerModel& controller_model,
                                    const ReticleModel& reticle_model) = 0;
   virtual void OnProjMatrixChanged(const gfx::Transform& proj_matrix) = 0;
-  virtual void OnWebVrFrameAvailable() = 0;
-  virtual void OnWebVrTimedOut() = 0;
-  virtual void OnWebVrTimeoutImminent() = 0;
   virtual bool IsControllerVisible() const = 0;
   virtual bool SkipsRedrawWhenNotDirty() const = 0;
   virtual void OnSwapContents(int new_content_id) = 0;
@@ -117,14 +106,7 @@ class UiInterface : public BrowserUiInterface, public KeyboardUiInterface {
   // 10.f, 10.f} in the example case.
   // Using a smaller FOV could improve the performance a lot while we are
   // showing UIs on top of WebVR content.
-  struct FovRectangle {
-    float left;
-    float right;
-    float bottom;
-    float top;
-  };
-  virtual std::pair<FovRectangle, FovRectangle>
-  GetMinimalFovForWebXrOverlayElements(
+  virtual FovRectangles GetMinimalFovForWebXrOverlayElements(
       const gfx::Transform& left_view,
       const FovRectangle& fov_recommended_left,
       const gfx::Transform& right_view,

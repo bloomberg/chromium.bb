@@ -5,7 +5,14 @@
 #ifndef CHROME_BROWSER_VR_COMPOSITOR_DELEGATE_H_
 #define CHROME_BROWSER_VR_COMPOSITOR_DELEGATE_H_
 
+#include "base/callback.h"
+#include "chrome/browser/vr/compositor_ui_interface.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/vr_export.h"
+
+namespace gfx {
+class Transform;
+}
 
 namespace gl {
 class GLSurface;
@@ -13,11 +20,37 @@ class GLSurface;
 
 namespace vr {
 
+struct RenderInfo;
+
 class VR_EXPORT CompositorDelegate {
  public:
-  typedef base::OnceCallback<void()> SkiaContextCallback;
-
+  using Transform = float[16];
+  enum FrameType { kUiFrame, kWebXrFrame };
+  using SkiaContextCallback = base::OnceCallback<void()>;
   virtual ~CompositorDelegate() {}
+
+  virtual FovRectangles GetRecommendedFovs() = 0;
+  virtual float GetZNear() = 0;
+  virtual RenderInfo GetRenderInfo(FrameType frame_type) = 0;
+  virtual RenderInfo GetOptimizedRenderInfoForFovs(
+      const FovRectangles& fovs) = 0;
+  virtual void InitializeBuffers() = 0;
+  virtual void PrepareBufferForWebXr() = 0;
+  virtual void PrepareBufferForWebXrOverlayElements() = 0;
+  virtual void PrepareBufferForContentQuadLayer(
+      const gfx::Transform& quad_transform) = 0;
+  virtual void PrepareBufferForBrowserUi() = 0;
+  virtual void OnFinishedDrawingBuffer() = 0;
+  virtual void GetWebXrDrawParams(int* texture_id, Transform* uv_transform) = 0;
+  virtual bool IsContentQuadReady() = 0;
+  virtual void GetContentQuadDrawParams(Transform* uv_transform,
+                                        float* border_x,
+                                        float* border_y) = 0;
+  virtual void SubmitFrame(FrameType frame_type) = 0;
+
+  virtual void SetUiInterface(CompositorUiInterface* ui) = 0;
+  virtual void SetShowingVrDialog(bool showing) = 0;
+  virtual int GetContentBufferWidth() = 0;
 
   // These methods return true when succeeded.
   virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface) = 0;

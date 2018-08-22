@@ -25,7 +25,29 @@ class GlRenderer : public BaseCompositorDelegate {
   GlRenderer();
   ~GlRenderer() override;
 
+  // CompositorDelegate implementation.
   bool Initialize(const scoped_refptr<gl::GLSurface>& surface) override;
+  FovRectangles GetRecommendedFovs() override;
+  float GetZNear() override;
+  RenderInfo GetRenderInfo(FrameType frame_type) override;
+  RenderInfo GetOptimizedRenderInfoForFovs(const FovRectangles& fovs) override;
+  void InitializeBuffers() override;
+  void PrepareBufferForWebXr() override;
+  void PrepareBufferForWebXrOverlayElements() override;
+  void PrepareBufferForContentQuadLayer(
+      const gfx::Transform& quad_transform) override;
+  void PrepareBufferForBrowserUi() override;
+  void OnFinishedDrawingBuffer() override;
+  void GetWebXrDrawParams(int* texture_id, Transform* uv_transform) override;
+  bool IsContentQuadReady() override;
+  void GetContentQuadDrawParams(Transform* uv_transform,
+                                float* border_x,
+                                float* border_y) override;
+  void SubmitFrame(FrameType frame_type) override;
+  void SetUiInterface(CompositorUiInterface* ui) override;
+  void SetShowingVrDialog(bool showing) override;
+  int GetContentBufferWidth() override;
+
   void RenderFrame();
   void PostRenderFrameTask();
   void set_vr_context(VrTestContext* vr_context) { vr_context_ = vr_context; }

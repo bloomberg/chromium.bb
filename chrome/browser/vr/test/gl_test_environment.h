@@ -14,8 +14,6 @@
 
 namespace vr {
 
-class CompositorDelegate;
-
 class GlTestEnvironment {
  public:
   explicit GlTestEnvironment(const gfx::Size frame_buffer_size);
@@ -25,7 +23,7 @@ class GlTestEnvironment {
 
  private:
   scoped_refptr<gl::GLSurface> surface_;
-  std::unique_ptr<CompositorDelegate> compositor_delegate_;
+  scoped_refptr<gl::GLContext> context_;
   GLuint vao_ = 0;
   GLuint frame_buffer_ = 0;
 };

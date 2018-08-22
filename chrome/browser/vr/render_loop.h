@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/vr/compositor_delegate.h"
+#include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/vr_export.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -20,9 +22,12 @@ class TimeTicks;
 namespace vr {
 
 enum class VrUiTestActivityResult;
-class CompositorDelegate;
+class BrowserUiInterface;
 class ControllerDelegate;
+class PlatformInputHandler;
+class PlatformUiInputDelegate;
 class RenderLoopBrowserInterface;
+class SchedulerDelegate;
 class UiInterface;
 struct ControllerTestInput;
 struct RenderInfo;
@@ -36,28 +41,40 @@ struct UiTestState;
 // VrShellGl and make this class concrete (http://crbug.com/767282).
 class VR_EXPORT RenderLoop {
  public:
-  enum FrameType { kUiFrame, kWebXrFrame };
-
   RenderLoop(std::unique_ptr<UiInterface> ui,
              CompositorDelegate* compositor_delegate,
+             SchedulerDelegate* scheduler_delegate,
              std::unique_ptr<ControllerDelegate> controller_delegate,
              RenderLoopBrowserInterface* browser,
              size_t sliding_time_size);
   virtual ~RenderLoop();
 
-  virtual void OnPause();
-  virtual void OnResume();
+  void Draw(CompositorDelegate::FrameType frame_type,
+            base::TimeTicks current_time);
+
+  void OnPause();
+  void OnResume();
+
+  void OnSwapContents(int new_content_id);
+  void EnableAlertDialog(PlatformInputHandler* input_handler,
+                         float width,
+                         float height);
+  void DisableAlertDialog();
+  void SetAlertDialogSize(float width, float height);
+  void SetDialogLocation(float x, float y);
+  void SetDialogFloating(bool floating);
+  void ShowToast(const base::string16& text);
+  void CancelToast();
+  void ContentBoundsChanged(int width, int height);
+
+  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
 
   void PerformControllerActionForTesting(ControllerTestInput controller_input);
   void SetUiExpectingActivityForTesting(
       UiTestActivityExpectation ui_expectation);
+  void AcceptDoffPromptForTesting();
 
  protected:
-  // Position, hide and/or show UI elements, process input and update textures.
-  // Returns true if the scene changed.
-  void UpdateUi(const RenderInfo& render_info,
-                base::TimeTicks currrent_time,
-                FrameType frame_type);
   device::mojom::XRInputSourceStatePtr ProcessControllerInputForWebXr(
       const RenderInfo& render_info,
       base::TimeTicks current_time);
@@ -70,9 +87,16 @@ class VR_EXPORT RenderLoop {
     return ui_processing_time_;
   }
 
-  std::unique_ptr<UiInterface> ui_;
-
  private:
+  // Position, hide and/or show UI elements, process input and update textures.
+  // Returns true if the scene changed.
+  void UpdateUi(const RenderInfo& render_info,
+                base::TimeTicks currrent_time,
+                CompositorDelegate::FrameType frame_type);
+  void DrawWebXr();
+  void DrawWebXrOverlay(const RenderInfo& render_info);
+  void DrawContentQuad();
+  void DrawBrowserUi(const RenderInfo& render_info);
   base::TimeDelta ProcessControllerInput(const RenderInfo& render_info,
                                          base::TimeTicks current_time);
 
@@ -80,10 +104,14 @@ class VR_EXPORT RenderLoop {
                                 bool ui_updated);
   void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
 
+  std::unique_ptr<UiInterface> ui_;
   CompositorDelegate* compositor_delegate_;
+  SchedulerDelegate* scheduler_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
   bool using_controller_delegate_for_testing_ = false;
+
+  std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
 
   RenderLoopBrowserInterface* browser_;
 
