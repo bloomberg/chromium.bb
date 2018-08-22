@@ -215,15 +215,10 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kEnableTouchpadThreeFingerClick, prefs::kNaturalScroll,
     prefs::kPrimaryMouseButtonRight, prefs::kMouseReverseScroll,
     prefs::kMouseSensitivity, prefs::kTouchpadSensitivity,
-    prefs::kUse24HourClock, prefs::kUserTimezone,
-    prefs::kResolveTimezoneByGeolocation,
-    prefs::kResolveTimezoneByGeolocationMethod,
-    prefs::kResolveTimezoneByGeolocationMigratedToMethod,
-
-    prefs::kLabsAdvancedFilesystemEnabled, prefs::kLabsMediaplayerEnabled,
-    prefs::kShow3gPromoNotification, prefs::kDataSaverPromptsShown,
-    prefs::kChromeOSReleaseNotesVersion, prefs::kNoteTakingAppId,
-    prefs::kNoteTakingAppEnabledOnLockScreen,
+    prefs::kUse24HourClock, prefs::kLabsAdvancedFilesystemEnabled,
+    prefs::kLabsMediaplayerEnabled, prefs::kShow3gPromoNotification,
+    prefs::kDataSaverPromptsShown, prefs::kChromeOSReleaseNotesVersion,
+    prefs::kNoteTakingAppId, prefs::kNoteTakingAppEnabledOnLockScreen,
     prefs::kNoteTakingAppsLockScreenWhitelist,
     prefs::kNoteTakingAppsLockScreenToastShown,
     prefs::kRestoreLastLockScreenNote, prefs::kSessionUserActivitySeen,
@@ -495,12 +490,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kFactoryResetRequested, prefs::kFactoryResetTPMFirmwareUpdateMode,
     prefs::kDebuggingFeaturesRequested,
-
-#if defined(OS_CHROMEOS)
-    prefs::kResolveDeviceTimezoneByGeolocation,
-    prefs::kResolveDeviceTimezoneByGeolocationMethod,
-    prefs::kSystemTimezoneAutomaticDetectionPolicy,
-#endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
 #if !defined(OS_CHROMEOS)
