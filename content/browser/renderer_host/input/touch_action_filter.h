@@ -101,8 +101,9 @@ class CONTENT_EXPORT TouchActionFilter {
   bool force_enable_zoom_;
 
   // Indicates whether this page has touch event handler or not. Set by
-  // InputRouterImpl::OnHasTouchEventHandler.
-  // TODO(https://crbug.com/850238): default to true or make it Optional.
+  // InputRouterImpl::OnHasTouchEventHandlers. Default to false because one
+  // could not scroll anyways when there is no content, and this is consistent
+  // with the default state committed after DocumentLoader::DidCommitNavigation.
   bool has_touch_event_handler_ = false;
 
   // True if an active gesture sequence is in progress. i.e. after GTD and
