@@ -66,9 +66,11 @@ Polymer({
    */
   onChange_: function() {
     this.resetChecked_();
-    // TODO(hansberry): Do a password check when this.feature is SMART_LOCK or
-    // BETTER_TOGETHER_SUITE.
-    // TODO(jordynass): Have this request a change in the feature's status via
-    // the browserProxy.
+
+    // Pass the negation of |this.checked_|: this indicates that if the toggle
+    // is checked, the intent is for it to be unchecked, and vice versa.
+    this.fire(
+        'feature-toggle-clicked',
+        {feature: this.feature, enabled: !this.checked_});
   },
 });
