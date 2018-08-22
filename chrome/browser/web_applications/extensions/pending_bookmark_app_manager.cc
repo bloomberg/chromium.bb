@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
@@ -17,6 +18,8 @@
 namespace extensions {
 
 namespace {
+
+const int kSecondsToWaitForWebContentsLoad = 30;
 
 std::unique_ptr<content::WebContents> WebContentsCreateWrapper(
     Profile* profile) {
@@ -43,7 +46,8 @@ struct PendingBookmarkAppManager::Installation {
 PendingBookmarkAppManager::PendingBookmarkAppManager(Profile* profile)
     : profile_(profile),
       web_contents_factory_(base::BindRepeating(&WebContentsCreateWrapper)),
-      task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)) {}
+      task_factory_(base::BindRepeating(&InstallationTaskCreateWrapper)),
+      timer_(std::make_unique<base::OneShotTimer>()) {}
 
 PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 
@@ -91,6 +95,11 @@ void PendingBookmarkAppManager::SetFactoriesForTesting(
   task_factory_ = std::move(task_factory);
 }
 
+void PendingBookmarkAppManager::SetTimerForTesting(
+    std::unique_ptr<base::OneShotTimer> timer) {
+  timer_ = std::move(timer);
+}
+
 void PendingBookmarkAppManager::MaybeStartNextInstallation() {
   if (current_installation_)
     return;
@@ -110,6 +119,10 @@ void PendingBookmarkAppManager::MaybeStartNextInstallation() {
       current_installation_->info.url);
   load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
   web_contents_->GetController().LoadURLWithParams(load_params);
+  timer_->Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(kSecondsToWaitForWebContentsLoad),
+      base::BindOnce(&PendingBookmarkAppManager::OnWebContentsLoadTimedOut,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
@@ -123,6 +136,12 @@ void PendingBookmarkAppManager::CreateWebContentsIfNecessary() {
 void PendingBookmarkAppManager::OnInstalled(
     BookmarkAppInstallationTask::Result result) {
   CurrentInstallationFinished(result.app_id);
+}
+
+void PendingBookmarkAppManager::OnWebContentsLoadTimedOut() {
+  web_contents_->Stop();
+  Observe(nullptr);
+  CurrentInstallationFinished(std::string());
 }
 
 void PendingBookmarkAppManager::CurrentInstallationFinished(
@@ -144,6 +163,7 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
 void PendingBookmarkAppManager::DidFinishLoad(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url) {
+  timer_->Stop();
   if (web_contents_->GetMainFrame() != render_frame_host) {
     return;
   }
@@ -169,6 +189,7 @@ void PendingBookmarkAppManager::DidFailLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
+  timer_->Stop();
   if (web_contents_->GetMainFrame() != render_frame_host) {
     return;
   }

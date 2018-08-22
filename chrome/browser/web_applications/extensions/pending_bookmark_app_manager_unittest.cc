@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/bind_test_util.h"
+#include "base/timer/mock_timer.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_installation_task.h"
@@ -550,6 +551,85 @@ TEST_F(PendingBookmarkAppManagerTest, InstallApps_PendingInstall) {
   base::RunLoop().RunUntilIdle();
   SuccessfullyLoad(GURL(kBarWebAppUrl));
 
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
+}
+
+TEST_F(PendingBookmarkAppManagerTest, WebContentsLoadTimedOut) {
+  auto pending_app_manager = GetPendingBookmarkAppManagerWithTestFactories();
+  auto timer_to_pass = std::make_unique<base::MockOneShotTimer>();
+  auto* timer = timer_to_pass.get();
+
+  pending_app_manager->SetTimerForTesting(std::move(timer_to_pass));
+
+  // Queue through Install.
+  pending_app_manager->Install(
+      GetQuxAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(timer->IsRunning());
+
+  // Verify that the timer is stopped after a successful load.
+  SuccessfullyLoad(GURL(kQuxWebAppUrl));
+  EXPECT_FALSE(timer->IsRunning());
+  EXPECT_TRUE(install_succeeded());
+  EXPECT_EQ(GURL(kQuxWebAppUrl), install_callback_url());
+  ResetResults();
+
+  // Queue through Install.
+  pending_app_manager->Install(
+      GetQuxAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(timer->IsRunning());
+
+  // Fire the timer to simulate a failed load.
+  timer->Fire();
+  EXPECT_FALSE(install_succeeded());
+  EXPECT_EQ(GURL(kQuxWebAppUrl), install_callback_url());
+  ResetResults();
+
+  // Queue through InstallApps.
+  std::vector<web_app::PendingAppManager::AppInfo> apps_to_install;
+  apps_to_install.push_back(GetFooAppInfo());
+  apps_to_install.push_back(GetBarAppInfo());
+
+  pending_app_manager->InstallApps(
+      std::move(apps_to_install),
+      base::BindRepeating(&PendingBookmarkAppManagerTest::InstallCallback,
+                          base::Unretained(this)));
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(timer->IsRunning());
+
+  // Fire the timer to simulate a failed load.
+  timer->Fire();
+  EXPECT_FALSE(install_succeeded());
+  EXPECT_EQ(GURL(kFooWebAppUrl), install_callback_url());
+  ResetResults();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(timer->IsRunning());
+
+  // Fire the timer to simulate a failed load.
+  timer->Fire();
+  EXPECT_FALSE(install_succeeded());
+  EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
+  ResetResults();
+
+  // Ensure a successful load after a timer fire works.
+  pending_app_manager->Install(
+      GetBarAppInfo(),
+      base::BindOnce(&PendingBookmarkAppManagerTest::InstallCallback,
+                     base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(timer->IsRunning());
+
+  // Verify that the timer is stopped after a successful load.
+  SuccessfullyLoad(GURL(kBarWebAppUrl));
+  EXPECT_FALSE(timer->IsRunning());
   EXPECT_TRUE(install_succeeded());
   EXPECT_EQ(GURL(kBarWebAppUrl), install_callback_url());
 }
