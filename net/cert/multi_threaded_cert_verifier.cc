@@ -253,7 +253,7 @@ class CertVerifierJob {
         {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
         base::BindOnce(&DoVerifyOnWorkerThread, verify_proc, key_.certificate(),
                        key_.hostname(), key_.ocsp_response(), flags,
-                       config.crl_set, key_.additional_trust_anchors()),
+                       config.crl_set, config.additional_trust_anchors),
         base::BindOnce(&CertVerifierJob::OnJobCompleted,
                        weak_ptr_factory_.GetWeakPtr(), config_id));
   }

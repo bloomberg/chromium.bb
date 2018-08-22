@@ -369,7 +369,7 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
 
   return verifier_->Verify(
       CertVerifier::RequestParams(cert_, hostname_, cert_verify_flags_,
-                                  std::string(), CertificateList()),
+                                  std::string()),
       &verify_details_->cert_verify_result,
       base::Bind(&ProofVerifierChromium::Job::OnIOComplete,
                  base::Unretained(this)),

@@ -323,8 +323,7 @@ void SignedExchangeHandler::OnCertReceived(
   int result = cert_verifier->Verify(
       net::CertVerifier::RequestParams(
           unverified_cert_chain_->cert(), envelope_->request_url().host(),
-          0 /* cert_verify_flags */, unverified_cert_chain_->ocsp(),
-          net::CertificateList()),
+          0 /* cert_verify_flags */, unverified_cert_chain_->ocsp()),
       &cert_verify_result_,
       base::BindRepeating(&SignedExchangeHandler::OnCertVerifyComplete,
                           base::Unretained(this)),

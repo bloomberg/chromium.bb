@@ -96,7 +96,7 @@ void VerifyTestServerCertOnIOThread(
   base::MessageLoopCurrent::ScopedNestableTaskAllower allow_nested;
   *verification_result = test_callback.GetResult(cert_verifier->Verify(
       net::CertVerifier::RequestParams(test_server_cert.get(), "127.0.0.1", 0,
-                                       std::string(), net::CertificateList()),
+                                       std::string()),
       &verify_result, test_callback.callback(), &request,
       net::NetLogWithSource()));
 }

@@ -299,9 +299,9 @@ TEST_F(TrialComparisonCertVerifierTest, NotOptedIn) {
       profile(),
       base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>());
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -337,9 +337,9 @@ TEST_F(TrialComparisonCertVerifierTest, FeatureDisabled) {
       profile(),
       base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>());
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -375,9 +375,9 @@ TEST_F(TrialComparisonCertVerifierTest, SameResult) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -409,9 +409,9 @@ TEST_F(TrialComparisonCertVerifierTest, Incognito) {
       profile()->GetOffTheRecordProfile(),  // Use an incognito Profile.
       base::MakeRefCounted<FakeCertVerifyProc>(net::OK, dummy_result),
       base::MakeRefCounted<NotCalledCertVerifyProc>());
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -451,9 +451,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierErrorSecondaryOk) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -519,9 +519,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -590,9 +590,9 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersDifferentErrors) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -660,9 +660,9 @@ TEST_F(TrialComparisonCertVerifierTest,
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -739,9 +739,9 @@ TEST_F(TrialComparisonCertVerifierTest,
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -843,8 +843,7 @@ TEST_F(TrialComparisonCertVerifierTest,
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
   net::CertVerifier::RequestParams params(leaf, "test.example", 0 /* flags */,
-                                          std::string() /* ocsp_response */,
-                                          {} /* additional_trust_anchors */);
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -896,8 +895,7 @@ TEST_F(TrialComparisonCertVerifierTest, BothVerifiersOkDifferentCertStatus) {
   verifier.SetConfig(config);
 
   net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", 0,
-                                          std::string() /* ocsp_response */,
-                                          {} /* additional_trust_anchors */);
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -975,9 +973,9 @@ TEST_F(TrialComparisonCertVerifierTest, Coalescing) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
 
   // Start first verification request.
   net::CertVerifyResult result_1;
@@ -1061,9 +1059,9 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   std::unique_ptr<net::CertVerifier::Request> request;
   int error =
@@ -1129,9 +1127,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
   auto verifier = std::make_unique<TrialComparisonCertVerifier>(
       profile(), verify_proc1, base::MakeRefCounted<NotCalledCertVerifyProc>());
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   std::unique_ptr<net::CertVerifier::Request> request;
   int error =
@@ -1179,9 +1177,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedBeforeTrialVerificationStarted) {
   auto verifier = std::make_unique<TrialComparisonCertVerifier>(
       profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1235,9 +1233,9 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedAfterTrialVerificationStarted) {
   auto verifier = std::make_unique<TrialComparisonCertVerifier>(
       profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1310,9 +1308,9 @@ TEST_F(TrialComparisonCertVerifierTest,
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1370,9 +1368,9 @@ TEST_F(TrialComparisonCertVerifierTest, MacUndesiredRevocationChecking) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1437,9 +1435,9 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryRevokedSecondaryOk) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1518,9 +1516,9 @@ TEST_F(TrialComparisonCertVerifierTest, MultipleEVPolicies) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1580,9 +1578,9 @@ TEST_F(TrialComparisonCertVerifierTest, MultipleEVPoliciesNoneValidForRoot) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1650,9 +1648,9 @@ TEST_F(TrialComparisonCertVerifierTest, MultiplePoliciesOnlyOneIsEV) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;
@@ -1700,9 +1698,9 @@ TEST_F(TrialComparisonCertVerifierTest, LocallyTrustedLeaf) {
 
   TrialComparisonCertVerifier verifier(profile(), verify_proc1, verify_proc2);
 
-  net::CertVerifier::RequestParams params(
-      leaf_cert_1_, "127.0.0.1", 0 /* flags */,
-      std::string() /* ocsp_response */, {} /* additional_trust_anchors */);
+  net::CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1",
+                                          0 /* flags */,
+                                          std::string() /* ocsp_response */);
   net::CertVerifyResult result;
   net::TestCompletionCallback callback;
   std::unique_ptr<net::CertVerifier::Request> request;

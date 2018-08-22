@@ -33,13 +33,11 @@ CertVerifier::RequestParams::RequestParams(
     scoped_refptr<X509Certificate> certificate,
     const std::string& hostname,
     int flags,
-    const std::string& ocsp_response,
-    CertificateList additional_trust_anchors)
+    const std::string& ocsp_response)
     : certificate_(std::move(certificate)),
       hostname_(hostname),
       flags_(flags),
-      ocsp_response_(ocsp_response),
-      additional_trust_anchors_(std::move(additional_trust_anchors)) {
+      ocsp_response_(ocsp_response) {
   // For efficiency sake, rather than compare all of the fields for each
   // comparison, compute a hash of their values. This is done directly in
   // this class, rather than as an overloaded hash operator, for efficiency's
@@ -55,10 +53,6 @@ CertVerifier::RequestParams::RequestParams(
   SHA256_Update(&ctx, hostname_.data(), hostname.size());
   SHA256_Update(&ctx, &flags, sizeof(flags));
   SHA256_Update(&ctx, ocsp_response.data(), ocsp_response.size());
-  for (const auto& trust_anchor : additional_trust_anchors_) {
-    SHA256_Update(&ctx, CRYPTO_BUFFER_data(trust_anchor->cert_buffer()),
-                  CRYPTO_BUFFER_len(trust_anchor->cert_buffer()));
-  }
   SHA256_Final(reinterpret_cast<uint8_t*>(
                    base::WriteInto(&key_, SHA256_DIGEST_LENGTH + 1)),
                &ctx);
@@ -91,15 +85,16 @@ std::unique_ptr<CertVerifier> CertVerifier::CreateDefault() {
 
 bool operator==(const CertVerifier::Config& lhs,
                 const CertVerifier::Config& rhs) {
-  return std::tie(lhs.enable_rev_checking,
-                  lhs.require_rev_checking_local_anchors,
-                  lhs.enable_sha1_local_anchors,
-                  lhs.disable_symantec_enforcement, lhs.crl_set) ==
-         std::tie(rhs.enable_rev_checking,
-                  rhs.require_rev_checking_local_anchors,
-                  rhs.enable_sha1_local_anchors,
-                  rhs.disable_symantec_enforcement, rhs.crl_set);
+  return std::tie(
+             lhs.enable_rev_checking, lhs.require_rev_checking_local_anchors,
+             lhs.enable_sha1_local_anchors, lhs.disable_symantec_enforcement,
+             lhs.crl_set, lhs.additional_trust_anchors) ==
+         std::tie(
+             rhs.enable_rev_checking, rhs.require_rev_checking_local_anchors,
+             rhs.enable_sha1_local_anchors, rhs.disable_symantec_enforcement,
+             rhs.crl_set, rhs.additional_trust_anchors);
 }
+
 bool operator!=(const CertVerifier::Config& lhs,
                 const CertVerifier::Config& rhs) {
   return !(lhs == rhs);

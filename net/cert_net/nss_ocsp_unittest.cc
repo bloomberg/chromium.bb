@@ -150,7 +150,7 @@ TEST_F(NssHttpTest, TestAia) {
   int flags = 0;
   int error = verifier()->Verify(
       CertVerifier::RequestParams(test_cert, "aia-host.invalid", flags,
-                                  std::string(), CertificateList()),
+                                  std::string()),
       &verify_result, test_callback.callback(), &request, NetLogWithSource());
   ASSERT_THAT(error, IsError(ERR_IO_PENDING));
 

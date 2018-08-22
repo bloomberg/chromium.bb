@@ -503,8 +503,7 @@ TEST_F(NetworkServiceSSLConfigServiceTest, CRLSetIsApplied) {
   net::CertVerifyResult cert_verify_result1;
   std::unique_ptr<net::CertVerifier::Request> request1;
   int result = network_context_->url_request_context()->cert_verifier()->Verify(
-      net::CertVerifier::RequestParams(cert, "127.0.0.1", 0, std::string(),
-                                       net::CertificateList()),
+      net::CertVerifier::RequestParams(cert, "127.0.0.1", 0, std::string()),
       &cert_verify_result1, callback1.callback(), &request1,
       net::NetLogWithSource());
   ASSERT_THAT(callback1.GetResult(result), net::test::IsOk());
@@ -525,8 +524,7 @@ TEST_F(NetworkServiceSSLConfigServiceTest, CRLSetIsApplied) {
   net::CertVerifyResult cert_verify_result2;
   std::unique_ptr<net::CertVerifier::Request> request2;
   result = network_context_->url_request_context()->cert_verifier()->Verify(
-      net::CertVerifier::RequestParams(cert, "127.0.0.1", 0, std::string(),
-                                       net::CertificateList()),
+      net::CertVerifier::RequestParams(cert, "127.0.0.1", 0, std::string()),
       &cert_verify_result2, callback2.callback(), &request2,
       net::NetLogWithSource());
   ASSERT_THAT(callback2.GetResult(result),
