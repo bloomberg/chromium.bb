@@ -1158,10 +1158,9 @@ TEST_F(WebMediaPlayerMSTest, FrameSizeChange) {
 }
 
 // Tests that GpuMemoryBufferVideoFramePool is called in the expected sequence.
-// TODO(https://crbug.com/831327): Flaky under load / CPU scheduling delays.
-TEST_F(WebMediaPlayerMSTest, DISABLED_CreateHardwareFrames) {
+TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
   InitializeWebMediaPlayerMS(false);
-  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
+  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(false);
   SetGpuMemoryBufferVideoForTesting();
 
   const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
@@ -1179,9 +1178,11 @@ TEST_F(WebMediaPlayerMSTest, DISABLED_CreateHardwareFrames) {
   EXPECT_CALL(*this, DoReadyStateChanged(
                          blink::WebMediaPlayer::kReadyStateHaveEnoughData));
   EXPECT_CALL(*this, CheckSizeChanged(provider->get_standard_size()));
+
+  // Run all the tasks that will assign current frame in
+  // WebMediaPlayerMSCompositor.
   std::move(frame_ready_cbs_[0]).Run();
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_OK);
+  base::RunLoop().RunUntilIdle();
 
   auto frame = compositor_->GetCurrentFrameWithoutUpdatingStatistics();
   ASSERT_TRUE(frame != nullptr);
@@ -1190,69 +1191,6 @@ TEST_F(WebMediaPlayerMSTest, DISABLED_CreateHardwareFrames) {
   EXPECT_CALL(*this, DoSetCcLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }
-
-// Hidden and closed trigger different events on Android and this test doesn't
-// cover that, see HiddenPlayerTests for specifics.
-#if !defined(OS_ANDROID)
-// Tests that GpuMemoryBufferVideoFramePool is not called when page is hidden.
-// TODO(https://crbug.com/831327): Flaky under load / CPU scheduling delays.
-TEST_F(WebMediaPlayerMSTest,
-       DISABLED_StopsCreatingHardwareFramesWhenHiddenOrClosed) {
-  InitializeWebMediaPlayerMS(false);
-  MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
-  SetGpuMemoryBufferVideoForTesting();
-
-  const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
-  static int tokens[] = {0, kTestBrake};
-  std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
-  provider->QueueFrames(timestamps);
-  EXPECT_CALL(*this, DoSetCcLayer(true));
-  EXPECT_CALL(*this, DoStartRendering());
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveMetadata));
-  EXPECT_CALL(*this, DoReadyStateChanged(
-                         blink::WebMediaPlayer::kReadyStateHaveEnoughData));
-  EXPECT_CALL(*this, CheckSizeChanged(provider->get_standard_size()));
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_OK);
-  ASSERT_EQ(1u, frame_ready_cbs_.size());
-  frame_ready_cbs_.clear();
-
-  // Hidden should stop passing frames to GpuMemoryBufferVideoFramePool.
-  player_->OnFrameHidden();
-  provider->QueueFrames(timestamps, false);
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_OK);
-  ASSERT_EQ(0u, frame_ready_cbs_.size());
-
-  // Shown should resume passing frames to GpuMemoryBufferVideoFramePool.
-  player_->OnFrameShown();
-  provider->QueueFrames(timestamps, false);
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_OK);
-  ASSERT_EQ(1u, frame_ready_cbs_.size());
-  frame_ready_cbs_.clear();
-
-  // Hidden should stop passing frames to GpuMemoryBufferVideoFramePool.
-  player_->OnFrameClosed();
-  provider->QueueFrames(timestamps, false);
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_OK);
-  ASSERT_EQ(0u, frame_ready_cbs_.size());
-
-  // Shown should resume passing frames to GpuMemoryBufferVideoFramePool.
-  player_->OnFrameShown();
-  provider->QueueFrames(timestamps, false);
-  message_loop_controller_.RunAndWaitForStatus(
-      media::PipelineStatus::PIPELINE_OK);
-  ASSERT_EQ(1u, frame_ready_cbs_.size());
-
-  testing::Mock::VerifyAndClearExpectations(this);
-
-  EXPECT_CALL(*this, DoSetCcLayer(false));
-  EXPECT_CALL(*this, DoStopRendering());
-}
-#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
 TEST_F(WebMediaPlayerMSTest, HiddenPlayerTests) {
