@@ -15,6 +15,7 @@
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -46,7 +47,11 @@ class FakeFrame : public chromium::web::Frame {
 
   ~FakeFrame() override = default;
 
-  fidl::Binding<chromium::web::Frame>& binding() { return binding_; }
+  void set_on_set_observer_callback(base::OnceClosure callback) {
+    on_set_observer_callback_ = std::move(callback);
+  }
+
+  chromium::web::NavigationEventObserver* observer() { return observer_.get(); }
 
   void CreateView(
       fidl::InterfaceRequest<fuchsia::ui::viewsv1token::ViewOwner> view_owner,
@@ -57,8 +62,17 @@ class FakeFrame : public chromium::web::Frame {
       fidl::InterfaceRequest<chromium::web::NavigationController> controller)
       override {}
 
+  void SetNavigationEventObserver(
+      fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
+      override {
+    observer_.Bind(std::move(observer));
+    std::move(on_set_observer_callback_).Run();
+  }
+
  private:
   fidl::Binding<chromium::web::Frame> binding_;
+  chromium::web::NavigationEventObserverPtr observer_;
+  base::OnceClosure on_set_observer_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeFrame);
 };
@@ -109,14 +123,19 @@ MULTIPROCESS_TEST_MAIN(SpawnContextServer) {
       &context, fidl::InterfaceRequest<chromium::web::Context>(
                     std::move(context_handle)));
 
-  // When a Frame is bound, immediately broadcast a navigation event to its
-  // event listeners.
+  // When a Frame's NavigationEventObserver is bound, immediately broadcast a
+  // navigation event to its listeners.
   context.set_on_create_frame_callback(
       base::BindRepeating([](FakeFrame* frame) {
-        chromium::web::NavigationStateChangeDetails details;
-        details.url = kUrl;
-        details.title = kTitle;
-        frame->binding().events().OnNavigationStateChanged(std::move(details));
+        frame->set_on_set_observer_callback(base::BindOnce(
+            [](FakeFrame* frame) {
+              chromium::web::NavigationEvent event;
+              event.url = kUrl;
+              event.title = kTitle;
+              frame->observer()->OnNavigationStateChanged(std::move(event),
+                                                          []() {});
+            },
+            frame));
       }));
 
   // Quit the process when the context is destroyed.
@@ -158,20 +177,17 @@ class ContextProviderImplTest : public base::MultiProcessTest {
       ADD_FAILURE();
       run_loop.Quit();
     });
+    (*context)->CreateFrame(frame_ptr.NewRequest());
 
     // Create a Frame and expect to see a navigation event.
-    chromium::web::NavigationStateChangeDetails nav_change_stored;
-    frame_ptr.events().OnNavigationStateChanged =
-        [&nav_change_stored,
-         &run_loop](chromium::web::NavigationStateChangeDetails nav_change) {
-          nav_change_stored = nav_change;
-          run_loop.Quit();
-        };
-    (*context)->CreateFrame(frame_ptr.NewRequest());
+    CapturingNavigationEventObserver change_observer(run_loop.QuitClosure());
+    fidl::Binding<chromium::web::NavigationEventObserver>
+        change_observer_binding(&change_observer);
+    frame_ptr->SetNavigationEventObserver(change_observer_binding.NewBinding());
     run_loop.Run();
 
-    EXPECT_EQ(nav_change_stored.url, kUrl);
-    EXPECT_EQ(nav_change_stored.title, kTitle);
+    EXPECT_EQ(change_observer.captured_event().url, kUrl);
+    EXPECT_EQ(change_observer.captured_event().title, kTitle);
   }
 
   chromium::web::CreateContextParams BuildCreateContextParams() {
@@ -194,6 +210,27 @@ class ContextProviderImplTest : public base::MultiProcessTest {
   chromium::web::ContextProviderPtr provider_ptr_;
 
  private:
+  struct CapturingNavigationEventObserver
+      : public chromium::web::NavigationEventObserver {
+   public:
+    CapturingNavigationEventObserver(base::OnceClosure on_change_cb)
+        : on_change_cb_(std::move(on_change_cb)) {}
+    ~CapturingNavigationEventObserver() override = default;
+
+    void OnNavigationStateChanged(
+        chromium::web::NavigationEvent change,
+        OnNavigationStateChangedCallback callback) override {
+      captured_event_ = std::move(change);
+      std::move(on_change_cb_).Run();
+    }
+
+    chromium::web::NavigationEvent captured_event() { return captured_event_; }
+
+   private:
+    base::OnceClosure on_change_cb_;
+    chromium::web::NavigationEvent captured_event_;
+  };
+
   DISALLOW_COPY_AND_ASSIGN(ContextProviderImplTest);
 };
 

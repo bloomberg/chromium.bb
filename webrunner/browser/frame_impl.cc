@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/window.h"
@@ -69,6 +70,29 @@ chromium::web::NavigationEntry ConvertContentNavigationEntry(
   return converted;
 }
 
+// Computes the observable differences between |entry_1| and |entry_2|.
+// Returns true if they are different, |false| if their observable fields are
+// identical.
+bool ComputeNavigationEvent(const chromium::web::NavigationEntry& old_entry,
+                            const chromium::web::NavigationEntry& new_entry,
+                            chromium::web::NavigationEvent* computed_event) {
+  DCHECK(computed_event);
+
+  bool is_changed = false;
+
+  if (old_entry.title != new_entry.title) {
+    is_changed = true;
+    computed_event->title = new_entry.title;
+  }
+
+  if (old_entry.url != new_entry.url) {
+    is_changed = true;
+    computed_event->url = new_entry.url;
+  }
+
+  return is_changed;
+}
+
 }  // namespace
 
 FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
@@ -78,7 +102,6 @@ FrameImpl::FrameImpl(std::unique_ptr<content::WebContents> web_contents,
       context_(context),
       binding_(this, std::move(frame_request)) {
   binding_.set_error_handler([this]() { context_->DestroyFrame(this); });
-  Observe(web_contents_.get());
 }
 
 FrameImpl::~FrameImpl() {
@@ -166,28 +189,64 @@ void FrameImpl::GetVisibleEntry(GetVisibleEntryCallback callback) {
   callback(std::make_unique<chromium::web::NavigationEntry>(std::move(output)));
 }
 
+void FrameImpl::SetNavigationEventObserver(
+    fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer) {
+  // Reset the event buffer state.
+  waiting_for_navigation_event_ack_ = false;
+  cached_navigation_state_ = {};
+  pending_navigation_event_ = {};
+  pending_navigation_event_is_dirty_ = false;
+
+  if (observer) {
+    navigation_observer_.Bind(std::move(observer));
+    navigation_observer_.set_error_handler([this]() {
+      // Stop observing on Observer connection loss.
+      SetNavigationEventObserver(nullptr);
+    });
+    Observe(web_contents_.get());
+  } else {
+    navigation_observer_.Unbind();
+    Observe(nullptr);  // Stop receiving WebContentsObserver events.
+  }
+}
+
 void FrameImpl::DidFinishLoad(content::RenderFrameHost* render_frame_host,
                               const GURL& validated_url) {
   if (web_contents_->GetMainFrame() != render_frame_host) {
     return;
   }
 
-  std::string current_url = validated_url.spec();
-  std::string current_title = base::UTF16ToUTF8(web_contents_->GetTitle());
+  // TODO(kmarshall): Get NavigationEntry from NavigationController.
+  chromium::web::NavigationEntry current_navigation_state;
+  current_navigation_state.url = validated_url.spec();
+  current_navigation_state.title = base::UTF16ToUTF8(web_contents_->GetTitle());
 
-  bool is_changed;
-  chromium::web::NavigationStateChangeDetails delta;
-  if (current_title != cached_navigation_state_.title) {
-    is_changed = true;
-    delta.title = current_title;
+  pending_navigation_event_is_dirty_ |=
+      ComputeNavigationEvent(cached_navigation_state_, current_navigation_state,
+                             &pending_navigation_event_);
+  cached_navigation_state_ = std::move(current_navigation_state);
+
+  if (pending_navigation_event_is_dirty_ &&
+      !waiting_for_navigation_event_ack_) {
+    MaybeSendNavigationEvent();
   }
+}
 
-  if (current_url != cached_navigation_state_.url) {
-    is_changed = true;
-    delta.url = current_url;
+void FrameImpl::MaybeSendNavigationEvent() {
+  if (pending_navigation_event_is_dirty_) {
+    pending_navigation_event_is_dirty_ = false;
+    waiting_for_navigation_event_ack_ = true;
+
+    // Send the event to the observer and, upon acknowledgement, revisit this
+    // function to send another update.
+    navigation_observer_->OnNavigationStateChanged(
+        std::move(pending_navigation_event_),
+        [this]() { MaybeSendNavigationEvent(); });
+    return;
+  } else {
+    // No more changes to report.
+    waiting_for_navigation_event_ack_ = false;
   }
-
-  binding_.events().OnNavigationStateChanged(std::move(delta));
 }
 
 }  // namespace webrunner

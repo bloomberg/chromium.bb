@@ -5,6 +5,7 @@
 #include <lib/fidl/cpp/binding.h>
 
 #include "base/macros.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -15,7 +16,6 @@
 #include "webrunner/browser/webrunner_browser_test.h"
 
 namespace webrunner {
-namespace {
 
 using testing::_;
 using testing::AllOf;
@@ -23,9 +23,9 @@ using testing::Field;
 using testing::InvokeWithoutArgs;
 using testing::Mock;
 
-// Use a shorter name for NavigationStateChangeDetails, because it is
+// Use a shorter name for NavigationEvent, because it is
 // referenced frequently in this file.
-using NavigationDetails = chromium::web::NavigationStateChangeDetails;
+using NavigationDetails = chromium::web::NavigationEvent;
 
 const char kPage1Path[] = "/title1.html";
 const char kPage2Path[] = "/title2.html";
@@ -36,38 +36,90 @@ MATCHER(IsSet, "Checks if an optional field is set.") {
   return !arg.is_null();
 }
 
+// Defines mock methods used by tests to observe NavigationStateChangeEvents
+// and lower-level WebContentsObserver events.
+class MockNavigationObserver : public chromium::web::NavigationEventObserver,
+                               public content::WebContentsObserver {
+ public:
+  using content::WebContentsObserver::Observe;
+
+  MockNavigationObserver() = default;
+  ~MockNavigationObserver() override = default;
+
+  // Acknowledges processing of the most recent OnNavigationStateChanged call.
+  void Acknowledge() {
+    DCHECK(navigation_ack_callback_);
+    std::move(navigation_ack_callback_)();
+
+    // Pump the acknowledgement message over IPC.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  MOCK_METHOD1(MockableOnNavigationStateChanged,
+               void(chromium::web::NavigationEvent change));
+
+  // chromium::web::NavigationEventObserver implementation.
+  // Proxies calls to MockableOnNavigationStateChanged(), because GMock does
+  // not work well with fit::Callbacks inside mocked actions.
+  void OnNavigationStateChanged(
+      chromium::web::NavigationEvent change,
+      OnNavigationStateChangedCallback callback) override {
+    MockableOnNavigationStateChanged(std::move(change));
+    navigation_ack_callback_ = std::move(callback);
+  }
+
+  // WebContentsObserver implementation.
+  MOCK_METHOD2(DidFinishLoad,
+               void(content::RenderFrameHost* render_frame_host,
+                    const GURL& validated_url));
+
+ private:
+  OnNavigationStateChangedCallback navigation_ack_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockNavigationObserver);
+};
+
 class ContextImplTest : public WebRunnerBrowserTest {
  public:
-  ContextImplTest() = default;
+  ContextImplTest() : navigation_observer_binding_(&navigation_observer_) {}
   ~ContextImplTest() = default;
 
   MOCK_METHOD1(OnServeHttpRequest,
                void(const net::test_server::HttpRequest& request));
 
  protected:
-  void NavigateAndCheck(const std::string& url,
-                        const std::string& expected_title,
-                        chromium::web::NavigationController* controller) {
-    base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, expected_title),
-                           Field(&NavigationDetails::url, IsSet()))))
-        .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
-    controller->LoadUrl(url, nullptr);
-    run_loop.Run();
-    Mock::VerifyAndClearExpectations(this);
-  }
-
   chromium::web::FramePtr CreateFrame() {
     chromium::web::FramePtr frame;
     context()->CreateFrame(frame.NewRequest());
-    frame.events().OnNavigationStateChanged =
-        fit::bind_member(this, &ContextImplTest::OnNavigationStateChanged);
+    frame->SetNavigationEventObserver(
+        navigation_observer_binding_.NewBinding());
+    base::RunLoop().RunUntilIdle();
     return frame;
   }
 
-  MOCK_METHOD1(OnNavigationStateChanged,
-               void(chromium::web::NavigationStateChangeDetails change));
+  // Navigates a |controller| to |url|, blocking until navigation is complete.
+  void CheckLoadUrl(const std::string& url,
+                    const std::string& expected_title,
+                    chromium::web::NavigationController* controller) {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, expected_title),
+                    Field(&NavigationDetails::url, url))))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(url, nullptr);
+    run_loop.Run();
+    Mock::VerifyAndClearExpectations(this);
+    navigation_observer_.Acknowledge();
+  }
+
+  void TearDownOnMainThread() override {
+    navigation_observer_binding_.Unbind();
+  }
+
+  testing::StrictMock<MockNavigationObserver> navigation_observer_;
+  fidl::Binding<chromium::web::NavigationEventObserver>
+      navigation_observer_binding_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ContextImplTest);
@@ -87,11 +139,10 @@ class WebContentsDeletionObserver : public content::WebContentsObserver {
 IN_PROC_BROWSER_TEST_F(ContextImplTest, NavigateFrame) {
   chromium::web::FramePtr frame = CreateFrame();
 
-  chromium::web::NavigationControllerPtr navigation_controller;
-  frame->GetNavigationController(navigation_controller.NewRequest());
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
 
-  NavigateAndCheck(url::kAboutBlankURL, url::kAboutBlankURL,
-                   navigation_controller.get());
+  CheckLoadUrl(url::kAboutBlankURL, url::kAboutBlankURL, controller.get());
 
   frame.Unbind();
 }
@@ -140,34 +191,19 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, GoBackAndForward) {
   GURL title1(embedded_test_server()->GetURL(kPage1Path));
   GURL title2(embedded_test_server()->GetURL(kPage2Path));
 
-  {
-    base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage1Title),
-                           Field(&NavigationDetails::url, IsSet()))))
-        .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
-    controller->LoadUrl(title1.spec(), nullptr);
-    run_loop.Run();
-  }
+  CheckLoadUrl(title1.spec(), kPage1Title, controller.get());
+  CheckLoadUrl(title2.spec(), kPage2Title, controller.get());
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage2Title),
-                           Field(&NavigationDetails::url, IsSet()))))
-        .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
-    controller->LoadUrl(title2.spec(), nullptr);
-    run_loop.Run();
-  }
-
-  {
-    base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage1Title),
-                           Field(&NavigationDetails::url, IsSet()))))
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage1Title),
+                    Field(&NavigationDetails::url, IsSet()))))
         .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
     controller->GoBack();
     run_loop.Run();
+    navigation_observer_.Acknowledge();
   }
 
   // At the top of the navigation entry list; this should be a no-op.
@@ -178,12 +214,14 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, GoBackAndForward) {
 
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage2Title),
-                           Field(&NavigationDetails::url, IsSet()))))
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage2Title),
+                    Field(&NavigationDetails::url, IsSet()))))
         .WillOnce(InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
     controller->GoForward();
     run_loop.Run();
+    navigation_observer_.Acknowledge();
   }
 
   // At the end of the navigation entry list; this should be a no-op.
@@ -205,28 +243,27 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, ReloadFrame) {
   GURL url(embedded_test_server()->GetURL(kPage1Path));
 
   EXPECT_CALL(*this, OnServeHttpRequest(_));
-  NavigateAndCheck(url.spec(), kPage1Title, navigation_controller.get());
+  CheckLoadUrl(url.spec(), kPage1Title, navigation_controller.get());
+
+  navigation_observer_.Observe(
+      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
 
   // Reload with NO_CACHE.
   {
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnServeHttpRequest(_));
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage1Title),
-                           Field(&NavigationDetails::url, IsSet()))))
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, url))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     navigation_controller->Reload(chromium::web::ReloadType::NO_CACHE);
     run_loop.Run();
     Mock::VerifyAndClearExpectations(this);
+    navigation_observer_.Acknowledge();
   }
-
   // Reload with PARTIAL_CACHE.
   {
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnServeHttpRequest(_));
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage1Title),
-                           Field(&NavigationDetails::url, IsSet()))))
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, url))
         .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
     navigation_controller->Reload(chromium::web::ReloadType::PARTIAL_CACHE);
     run_loop.Run();
@@ -258,12 +295,14 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, GetVisibleEntry) {
   // Navigate to a page.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage1Title),
-                           Field(&NavigationDetails::url, IsSet()))))
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage1Title),
+                    Field(&NavigationDetails::url, IsSet()))))
         .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
     controller->LoadUrl(title1.spec(), nullptr);
     run_loop.Run();
+    navigation_observer_.Acknowledge();
   }
 
   // Verify that GetVisibleEntry() reflects the new Frame navigation state.
@@ -283,12 +322,14 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, GetVisibleEntry) {
   // Navigate to another page.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage2Title),
-                           Field(&NavigationDetails::url, IsSet()))))
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage2Title),
+                    Field(&NavigationDetails::url, IsSet()))))
         .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
     controller->LoadUrl(title2.spec(), nullptr);
     run_loop.Run();
+    navigation_observer_.Acknowledge();
   }
 
   // Verify the navigation with GetVisibleEntry().
@@ -308,12 +349,14 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, GetVisibleEntry) {
   // Navigate back to the first page.
   {
     base::RunLoop run_loop;
-    EXPECT_CALL(*this, OnNavigationStateChanged(testing::AllOf(
-                           Field(&NavigationDetails::title, kPage1Title),
-                           Field(&NavigationDetails::url, IsSet()))))
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage1Title),
+                    Field(&NavigationDetails::url, IsSet()))))
         .WillOnce(testing::InvokeWithoutArgs([&run_loop] { run_loop.Quit(); }));
     controller->GoBack();
     run_loop.Run();
+    navigation_observer_.Acknowledge();
   }
 
   // Verify the navigation with GetVisibleEntry().
@@ -331,5 +374,140 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, GetVisibleEntry) {
   }
 }
 
-}  // namespace
+IN_PROC_BROWSER_TEST_F(ContextImplTest, NoNavigationObserverAttached) {
+  chromium::web::FramePtr frame;
+  context()->CreateFrame(frame.NewRequest());
+  base::RunLoop().RunUntilIdle();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL title1(embedded_test_server()->GetURL(kPage1Path));
+  GURL title2(embedded_test_server()->GetURL(kPage2Path));
+
+  navigation_observer_.Observe(
+      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, title1))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(title1.spec(), nullptr);
+    run_loop.Run();
+  }
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, title2))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(title2.spec(), nullptr);
+    run_loop.Run();
+  }
+}
+
+// Verifies that a Frame will handle navigation observer disconnection events
+// gracefully.
+IN_PROC_BROWSER_TEST_F(ContextImplTest, NavigationObserverDisconnected) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL title1(embedded_test_server()->GetURL(kPage1Path));
+  GURL title2(embedded_test_server()->GetURL(kPage2Path));
+
+  navigation_observer_.Observe(
+      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, title1));
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage1Title),
+                    Field(&NavigationDetails::url, IsSet()))))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(title1.spec(), nullptr);
+    run_loop.Run();
+  }
+
+  // Disconnect the observer & spin the runloop to propagate the disconnection
+  // event over IPC.
+  navigation_observer_binding_.Unbind();
+  base::RunLoop().RunUntilIdle();
+
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, title2))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(title2.spec(), nullptr);
+    run_loop.Run();
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(ContextImplTest, DelayedNavigationEventAck) {
+  chromium::web::FramePtr frame = CreateFrame();
+
+  chromium::web::NavigationControllerPtr controller;
+  frame->GetNavigationController(controller.NewRequest());
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL title1(embedded_test_server()->GetURL(kPage1Path));
+  GURL title2(embedded_test_server()->GetURL(kPage2Path));
+
+  // Expect an navigation event here, but deliberately postpone acknowledgement
+  // until the end of the test.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage1Title),
+                    Field(&NavigationDetails::url, IsSet()))))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(title1.spec(), nullptr);
+    run_loop.Run();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Since we have blocked NavigationEventObserver's flow, we must observe the
+  // WebContents events directly via a test-only seam.
+  navigation_observer_.Observe(
+      context_impl()->GetFrameImplForTest(&frame)->web_contents_.get());
+
+  // Navigate to a second page.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, title2))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(title2.spec(), nullptr);
+    run_loop.Run();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Navigate to the first page.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_, DidFinishLoad(_, title1))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    controller->LoadUrl(title1.spec(), nullptr);
+    run_loop.Run();
+    Mock::VerifyAndClearExpectations(this);
+  }
+
+  // Since there was no observable change in navigation state since the last
+  // ack, there should be no more NavigationEvents generated.
+  {
+    base::RunLoop run_loop;
+    EXPECT_CALL(navigation_observer_,
+                MockableOnNavigationStateChanged(testing::AllOf(
+                    Field(&NavigationDetails::title, kPage1Title),
+                    Field(&NavigationDetails::url, IsSet()))))
+        .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
+    navigation_observer_.Acknowledge();
+    run_loop.Run();
+  }
+}
+
 }  // namespace webrunner
