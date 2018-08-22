@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 #import <XCTest/XCTest.h>
 
-#include "base/ios/ios_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
@@ -477,11 +476,6 @@ void FocusOmnibox() {
 // Check the button visibility of the toolbar when the omnibox is focused from a
 // different orientation than the default one.
 - (void)testFocusOmniboxFromOtherOrientation {
-  // TODO(crbug.com/854847) Re-enable these tests once EG bug is fixed.
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 12.");
-  }
-
   // Load a page to have the toolbar visible (hidden on NTP).
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
@@ -520,10 +514,6 @@ void FocusOmnibox() {
 // Check the button visibility of the toolbar when the omnibox is focused from
 // the default orientation.
 - (void)testFocusOmniboxFromPortrait {
-  // TODO(crbug.com/854847) Re-enable these tests once EG bug is fixed.
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 12.");
-  }
   // Load a page to have the toolbar visible (hidden on NTP).
   [ChromeEarlGrey loadURL:GURL("chrome://version")];
 
