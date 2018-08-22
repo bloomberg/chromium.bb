@@ -27,11 +27,11 @@ class PrintSettings;
 using printing::PrintingContextLinux;
 
 // Needs to be freed on the UI thread to clean up its GTK members variables.
-class PrintDialogGtk2 : public printing::PrintDialogGtkInterface,
-                        public base::RefCountedThreadSafe<
-                            PrintDialogGtk2,
-                            content::BrowserThread::DeleteOnUIThread>,
-                        public aura::WindowObserver {
+class PrintDialogGtk : public printing::PrintDialogGtkInterface,
+                       public base::RefCountedThreadSafe<
+                           PrintDialogGtk,
+                           content::BrowserThread::DeleteOnUIThread>,
+                       public aura::WindowObserver {
  public:
   // Creates and returns a print dialog.
   static printing::PrintDialogGtkInterface* CreatePrintDialog(
@@ -55,13 +55,13 @@ class PrintDialogGtk2 : public printing::PrintDialogGtkInterface,
  private:
   friend struct content::BrowserThread::DeleteOnThread<
       content::BrowserThread::UI>;
-  friend class base::DeleteHelper<PrintDialogGtk2>;
+  friend class base::DeleteHelper<PrintDialogGtk>;
 
-  explicit PrintDialogGtk2(PrintingContextLinux* context);
-  ~PrintDialogGtk2() override;
+  explicit PrintDialogGtk(PrintingContextLinux* context);
+  ~PrintDialogGtk() override;
 
   // Handles dialog response.
-  CHROMEGTK_CALLBACK_1(PrintDialogGtk2, void, OnResponse, int);
+  CHROMEGTK_CALLBACK_1(PrintDialogGtk, void, OnResponse, int);
 
   // Prints document named |document_name|.
   void SendDocumentToPrinter(const base::string16& document_name);
@@ -77,7 +77,7 @@ class PrintDialogGtk2 : public printing::PrintDialogGtkInterface,
   PrintingContextLinux::PrintSettingsCallback callback_;
   PrintingContextLinux* context_;
 
-  // Print dialog settings. PrintDialogGtk2 owns |dialog_| and holds references
+  // Print dialog settings. PrintDialogGtk owns |dialog_| and holds references
   // to the other objects.
   GtkWidget* dialog_;
   GtkPrintSettings* gtk_settings_;
@@ -86,7 +86,7 @@ class PrintDialogGtk2 : public printing::PrintDialogGtkInterface,
 
   base::FilePath path_to_pdf_;
 
-  DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk2);
+  DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk);
 };
 
 #endif  // CHROME_BROWSER_UI_LIBGTKUI_PRINT_DIALOG_GTK_H_

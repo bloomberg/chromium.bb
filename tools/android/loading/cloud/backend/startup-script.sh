@@ -30,7 +30,7 @@ apt-get install -yq libffi-dev libssl-dev
 # Chrome dependencies
 apt-get install -yq libpangocairo-1.0-0 libXcomposite1 libXcursor1 libXdamage1 \
     libXi6 libXtst6 libnss3 libcups2 libgconf2-4 libXss1 libXrandr2 \
-    libatk1.0-0 libasound2 libgtk2.0-0
+    libatk1.0-0 libasound2 libgtk-3-0
 # Trace collection dependencies
 apt-get install -yq xvfb
 

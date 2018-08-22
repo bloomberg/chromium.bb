@@ -17,21 +17,21 @@
 namespace libgtkui {
 
 // static
-Gtk2EventLoop* Gtk2EventLoop::GetInstance() {
-  return base::Singleton<Gtk2EventLoop>::get();
+GtkEventLoop* GtkEventLoop::GetInstance() {
+  return base::Singleton<GtkEventLoop>::get();
 }
 
-Gtk2EventLoop::Gtk2EventLoop() {
+GtkEventLoop::GtkEventLoop() {
   gdk_event_handler_set(DispatchGdkEvent, nullptr, nullptr);
 }
 
-Gtk2EventLoop::~Gtk2EventLoop() {
+GtkEventLoop::~GtkEventLoop() {
   gdk_event_handler_set(reinterpret_cast<GdkEventFunc>(gtk_main_do_event),
                         nullptr, nullptr);
 }
 
 // static
-void Gtk2EventLoop::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
+void GtkEventLoop::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
   switch (gdk_event->type) {
     case GDK_KEY_PRESS:
     case GDK_KEY_RELEASE:
@@ -45,7 +45,7 @@ void Gtk2EventLoop::DispatchGdkEvent(GdkEvent* gdk_event, gpointer) {
 }
 
 // static
-void Gtk2EventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
+void GtkEventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   // This function translates GdkEventKeys into XKeyEvents and puts them to
   // the X event queue.
   //
@@ -72,7 +72,7 @@ void Gtk2EventLoop::ProcessGdkEventKey(const GdkEventKey& gdk_event_key) {
   x_event.xkey.keycode = gdk_event_key.hardware_keycode;
   x_event.xkey.same_screen = true;
 
-  // We want to process the gtk2 event; mapped to an X11 event immediately
+  // We want to process the gtk event; mapped to an X11 event immediately
   // otherwise if we put it back on the queue we may get items out of order.
   if (ui::X11EventSource* x11_source = ui::X11EventSource::GetInstance())
     x11_source->DispatchXEventNow(&x_event);

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK3_BACKGROUND_PAINTER_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_GTK3_BACKGROUND_PAINTER_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_GTK_BACKGROUND_PAINTER_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_GTK_BACKGROUND_PAINTER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
@@ -18,11 +18,10 @@ namespace libgtkui {
 // A background that paints a button using GTK foreign drawing.  The
 // type and style of widget to be drawn is decided by a
 // GtkStyleContext.  Always renders a background and a frame.
-class Gtk3BackgroundPainter : public views::Background {
+class GtkBackgroundPainter : public views::Background {
  public:
-  Gtk3BackgroundPainter(const views::Button* button,
-                        ScopedStyleContext context);
-  ~Gtk3BackgroundPainter() override;
+  GtkBackgroundPainter(const views::Button* button, ScopedStyleContext context);
+  ~GtkBackgroundPainter() override;
 
   void Paint(gfx::Canvas* canvas, views::View* view) const override;
 
@@ -32,9 +31,9 @@ class Gtk3BackgroundPainter : public views::Background {
   const views::Button* button_;
   mutable ScopedStyleContext context_;
 
-  DISALLOW_COPY_AND_ASSIGN(Gtk3BackgroundPainter);
+  DISALLOW_COPY_AND_ASSIGN(GtkBackgroundPainter);
 };
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK3_BACKGROUND_PAINTER_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_GTK_BACKGROUND_PAINTER_H_

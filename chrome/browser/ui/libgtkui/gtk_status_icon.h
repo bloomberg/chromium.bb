@@ -29,10 +29,10 @@ class AppIndicatorIconMenu;
 
 // Status icon implementation which uses the system tray X11 spec (via
 // GtkStatusIcon).
-class Gtk2StatusIcon : public views::StatusIconLinux {
+class GtkStatusIcon : public views::StatusIconLinux {
  public:
-  Gtk2StatusIcon(const gfx::ImageSkia& image, const base::string16& tool_tip);
-  ~Gtk2StatusIcon() override;
+  GtkStatusIcon(const gfx::ImageSkia& image, const base::string16& tool_tip);
+  ~GtkStatusIcon() override;
 
   // Overridden from views::StatusIconLinux:
   void SetImage(const gfx::ImageSkia& image) override;
@@ -41,20 +41,20 @@ class Gtk2StatusIcon : public views::StatusIconLinux {
   void RefreshPlatformContextMenu() override;
 
  private:
-  CHROMEG_CALLBACK_0(Gtk2StatusIcon, void, OnClick, GtkStatusIcon*);
+  CHROMEG_CALLBACK_0(GtkStatusIcon, void, OnClick, GtkStatusIcon*);
 
-  CHROMEG_CALLBACK_2(Gtk2StatusIcon,
+  CHROMEG_CALLBACK_2(GtkStatusIcon,
                      void,
                      OnContextMenuRequested,
                      GtkStatusIcon*,
                      guint,
                      guint);
 
-  GtkStatusIcon* gtk_status_icon_;
+  ::GtkStatusIcon* gtk_status_icon_;
 
   std::unique_ptr<AppIndicatorIconMenu> menu_;
 
-  DISALLOW_COPY_AND_ASSIGN(Gtk2StatusIcon);
+  DISALLOW_COPY_AND_ASSIGN(GtkStatusIcon);
 };
 
 }  // namespace libgtkui

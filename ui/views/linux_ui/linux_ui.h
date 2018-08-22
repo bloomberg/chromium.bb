@@ -57,11 +57,6 @@ class NavButtonProvider;
 
 // Adapter class with targets to render like different toolkits. Set by any
 // project that wants to do linux desktop native rendering.
-//
-// TODO(erg): We're hardcoding GTK2, when we'll need to have backends for (at
-// minimum) GTK2 and GTK3. LinuxUI::instance() should actually be a very
-// complex method that pokes around with dlopen against a libuigtk2.so, a
-// liuigtk3.so, etc.
 class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
                              public gfx::LinuxFontDelegate,
                              public ui::ShellDialogLinux,

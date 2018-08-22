@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
@@ -127,6 +126,7 @@ component("accessibility") {
     sources += [
       "platform/atk_util_auralinux.cc",
       "platform/atk_util_auralinux.h",
+      "platform/atk_util_auralinux_gtk.cc",
       "platform/ax_platform_atk_hyperlink.cc",
       "platform/ax_platform_atk_hyperlink.h",
       "platform/ax_platform_node_auralinux.cc",
@@ -137,11 +137,6 @@ component("accessibility") {
 
     if (use_glib) {
       configs += [ "//build/config/linux:glib" ]
-    }
-    if (use_gtk3) {
-      sources += [ "platform/atk_util_auralinux_gtk3.cc" ]
-    } else {
-      sources += [ "platform/atk_util_auralinux_gtk2.cc" ]
     }
   }
 

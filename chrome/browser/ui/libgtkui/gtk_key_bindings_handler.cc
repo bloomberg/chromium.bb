@@ -30,7 +30,7 @@ using ui::TextEditCommand;
 
 namespace libgtkui {
 
-Gtk2KeyBindingsHandler::Gtk2KeyBindingsHandler()
+GtkKeyBindingsHandler::GtkKeyBindingsHandler()
     : fake_window_(gtk_offscreen_window_new()),
       handler_(CreateNewHandler()),
       has_xkb_(false) {
@@ -43,12 +43,12 @@ Gtk2KeyBindingsHandler::Gtk2KeyBindingsHandler()
                                &major, &minor);
 }
 
-Gtk2KeyBindingsHandler::~Gtk2KeyBindingsHandler() {
+GtkKeyBindingsHandler::~GtkKeyBindingsHandler() {
   gtk_widget_destroy(handler_);
   gtk_widget_destroy(fake_window_);
 }
 
-bool Gtk2KeyBindingsHandler::MatchEvent(
+bool GtkKeyBindingsHandler::MatchEvent(
     const ui::Event& event,
     std::vector<ui::TextEditCommandAuraLinux>* edit_commands) {
   CHECK(event.IsKeyEvent());
@@ -78,7 +78,7 @@ bool Gtk2KeyBindingsHandler::MatchEvent(
   return matched;
 }
 
-GtkWidget* Gtk2KeyBindingsHandler::CreateNewHandler() {
+GtkWidget* GtkKeyBindingsHandler::CreateNewHandler() {
   Handler* handler =
       static_cast<Handler*>(g_object_new(HandlerGetType(), nullptr));
 
@@ -96,12 +96,12 @@ GtkWidget* Gtk2KeyBindingsHandler::CreateNewHandler() {
   return GTK_WIDGET(handler);
 }
 
-void Gtk2KeyBindingsHandler::EditCommandMatched(TextEditCommand command,
-                                                const std::string& value) {
+void GtkKeyBindingsHandler::EditCommandMatched(TextEditCommand command,
+                                               const std::string& value) {
   edit_commands_.push_back(ui::TextEditCommandAuraLinux(command, value));
 }
 
-void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
+void GtkKeyBindingsHandler::BuildGdkEventKeyFromXEvent(
     const ui::PlatformEvent& xevent,
     GdkEventKey* gdk_event) {
   GdkKeymap* keymap = gdk_keymap_get_for_display(gdk_display_get_default());
@@ -139,11 +139,11 @@ void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
   gdk_event->state |= state;
 }
 
-void Gtk2KeyBindingsHandler::HandlerInit(Handler* self) {
+void GtkKeyBindingsHandler::HandlerInit(Handler* self) {
   self->owner = nullptr;
 }
 
-void Gtk2KeyBindingsHandler::HandlerClassInit(HandlerClass* klass) {
+void GtkKeyBindingsHandler::HandlerClassInit(HandlerClass* klass) {
   GtkTextViewClass* text_view_class = GTK_TEXT_VIEW_CLASS(klass);
   GtkWidgetClass* widget_class = GTK_WIDGET_CLASS(klass);
 
@@ -177,11 +177,11 @@ void Gtk2KeyBindingsHandler::HandlerClassInit(HandlerClass* klass) {
                                   G_CALLBACK(ToggleCursorVisible));
 }
 
-GType Gtk2KeyBindingsHandler::HandlerGetType() {
+GType GtkKeyBindingsHandler::HandlerGetType() {
   static volatile gsize type_id_volatile = 0;
   if (g_once_init_enter(&type_id_volatile)) {
     GType type_id = g_type_register_static_simple(
-        GTK_TYPE_TEXT_VIEW, g_intern_static_string("Gtk2KeyBindingsHandler"),
+        GTK_TYPE_TEXT_VIEW, g_intern_static_string("GtkKeyBindingsHandler"),
         sizeof(HandlerClass),
         reinterpret_cast<GClassInitFunc>(HandlerClassInit), sizeof(Handler),
         reinterpret_cast<GInstanceInitFunc>(HandlerInit),
@@ -191,7 +191,7 @@ GType Gtk2KeyBindingsHandler::HandlerGetType() {
   return type_id_volatile;
 }
 
-Gtk2KeyBindingsHandler* Gtk2KeyBindingsHandler::GetHandlerOwner(
+GtkKeyBindingsHandler* GtkKeyBindingsHandler::GetHandlerOwner(
     GtkTextView* text_view) {
   Handler* handler =
       G_TYPE_CHECK_INSTANCE_CAST(text_view, HandlerGetType(), Handler);
@@ -199,24 +199,24 @@ Gtk2KeyBindingsHandler* Gtk2KeyBindingsHandler::GetHandlerOwner(
   return handler->owner;
 }
 
-void Gtk2KeyBindingsHandler::BackSpace(GtkTextView* text_view) {
+void GtkKeyBindingsHandler::BackSpace(GtkTextView* text_view) {
   GetHandlerOwner(text_view)->EditCommandMatched(
       TextEditCommand::DELETE_BACKWARD, std::string());
 }
 
-void Gtk2KeyBindingsHandler::CopyClipboard(GtkTextView* text_view) {
+void GtkKeyBindingsHandler::CopyClipboard(GtkTextView* text_view) {
   GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::COPY,
                                                  std::string());
 }
 
-void Gtk2KeyBindingsHandler::CutClipboard(GtkTextView* text_view) {
+void GtkKeyBindingsHandler::CutClipboard(GtkTextView* text_view) {
   GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::CUT,
                                                  std::string());
 }
 
-void Gtk2KeyBindingsHandler::DeleteFromCursor(GtkTextView* text_view,
-                                              GtkDeleteType type,
-                                              gint count) {
+void GtkKeyBindingsHandler::DeleteFromCursor(GtkTextView* text_view,
+                                             GtkDeleteType type,
+                                             gint count) {
   if (!count)
     return;
 
@@ -263,7 +263,7 @@ void Gtk2KeyBindingsHandler::DeleteFromCursor(GtkTextView* text_view,
       return;
   }
 
-  Gtk2KeyBindingsHandler* owner = GetHandlerOwner(text_view);
+  GtkKeyBindingsHandler* owner = GetHandlerOwner(text_view);
   if (count < 0)
     count = -count;
   for (; count > 0; --count) {
@@ -273,18 +273,18 @@ void Gtk2KeyBindingsHandler::DeleteFromCursor(GtkTextView* text_view,
   }
 }
 
-void Gtk2KeyBindingsHandler::InsertAtCursor(GtkTextView* text_view,
-                                            const gchar* str) {
+void GtkKeyBindingsHandler::InsertAtCursor(GtkTextView* text_view,
+                                           const gchar* str) {
   if (str && *str) {
     GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::INSERT_TEXT,
                                                    str);
   }
 }
 
-void Gtk2KeyBindingsHandler::MoveCursor(GtkTextView* text_view,
-                                        GtkMovementStep step,
-                                        gint count,
-                                        gboolean extend_selection) {
+void GtkKeyBindingsHandler::MoveCursor(GtkTextView* text_view,
+                                       GtkMovementStep step,
+                                       gint count,
+                                       gboolean extend_selection) {
   if (!count)
     return;
 
@@ -381,52 +381,51 @@ void Gtk2KeyBindingsHandler::MoveCursor(GtkTextView* text_view,
       return;
   }
 
-  Gtk2KeyBindingsHandler* owner = GetHandlerOwner(text_view);
+  GtkKeyBindingsHandler* owner = GetHandlerOwner(text_view);
   if (count < 0)
     count = -count;
   for (; count > 0; --count)
     owner->EditCommandMatched(command, std::string());
 }
 
-void Gtk2KeyBindingsHandler::MoveViewport(GtkTextView* text_view,
-                                          GtkScrollStep step,
-                                          gint count) {
+void GtkKeyBindingsHandler::MoveViewport(GtkTextView* text_view,
+                                         GtkScrollStep step,
+                                         gint count) {
   // Not supported by webkit.
 }
 
-void Gtk2KeyBindingsHandler::PasteClipboard(GtkTextView* text_view) {
+void GtkKeyBindingsHandler::PasteClipboard(GtkTextView* text_view) {
   GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::PASTE,
                                                  std::string());
 }
 
-void Gtk2KeyBindingsHandler::SelectAll(GtkTextView* text_view,
-                                       gboolean select) {
+void GtkKeyBindingsHandler::SelectAll(GtkTextView* text_view, gboolean select) {
   GetHandlerOwner(text_view)->EditCommandMatched(
       select ? TextEditCommand::SELECT_ALL : TextEditCommand::UNSELECT,
       std::string());
 }
 
-void Gtk2KeyBindingsHandler::SetAnchor(GtkTextView* text_view) {
+void GtkKeyBindingsHandler::SetAnchor(GtkTextView* text_view) {
   GetHandlerOwner(text_view)->EditCommandMatched(TextEditCommand::SET_MARK,
                                                  std::string());
 }
 
-void Gtk2KeyBindingsHandler::ToggleCursorVisible(GtkTextView* text_view) {
+void GtkKeyBindingsHandler::ToggleCursorVisible(GtkTextView* text_view) {
   // Not supported by webkit.
 }
 
-void Gtk2KeyBindingsHandler::ToggleOverwrite(GtkTextView* text_view) {
+void GtkKeyBindingsHandler::ToggleOverwrite(GtkTextView* text_view) {
   // Not supported by webkit.
 }
 
-gboolean Gtk2KeyBindingsHandler::ShowHelp(GtkWidget* widget,
-                                          GtkWidgetHelpType arg1) {
+gboolean GtkKeyBindingsHandler::ShowHelp(GtkWidget* widget,
+                                         GtkWidgetHelpType arg1) {
   // Just for disabling the default handler.
   return FALSE;
 }
 
-void Gtk2KeyBindingsHandler::MoveFocus(GtkWidget* widget,
-                                       GtkDirectionType arg1) {
+void GtkKeyBindingsHandler::MoveFocus(GtkWidget* widget,
+                                      GtkDirectionType arg1) {
   // Just for disabling the default handler.
 }
 

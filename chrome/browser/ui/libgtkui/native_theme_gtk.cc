@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/native_theme_gtk3.h"
+#include "chrome/browser/ui/libgtkui/native_theme_gtk.h"
 
 #include <gtk/gtk.h>
 
@@ -406,12 +406,12 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
 }  // namespace
 
 // static
-NativeThemeGtk3* NativeThemeGtk3::instance() {
-  CR_DEFINE_STATIC_LOCAL(NativeThemeGtk3, s_native_theme, ());
+NativeThemeGtk* NativeThemeGtk::instance() {
+  CR_DEFINE_STATIC_LOCAL(NativeThemeGtk, s_native_theme, ());
   return &s_native_theme;
 }
 
-NativeThemeGtk3::NativeThemeGtk3() {
+NativeThemeGtk::NativeThemeGtk() {
   // These types are needed by g_type_from_name(), but may not be registered at
   // this point.  We need the g_type_class magic to make sure the compiler
   // doesn't optimize away this code.
@@ -440,11 +440,11 @@ NativeThemeGtk3::NativeThemeGtk3() {
   OnThemeChanged(gtk_settings_get_default(), nullptr);
 }
 
-NativeThemeGtk3::~NativeThemeGtk3() {
+NativeThemeGtk::~NativeThemeGtk() {
   NOTREACHED();
 }
 
-void NativeThemeGtk3::SetThemeCssOverride(ScopedCssProvider provider) {
+void NativeThemeGtk::SetThemeCssOverride(ScopedCssProvider provider) {
   if (theme_css_override_) {
     gtk_style_context_remove_provider_for_screen(
         gdk_screen_get_default(),
@@ -458,8 +458,8 @@ void NativeThemeGtk3::SetThemeCssOverride(ScopedCssProvider provider) {
   }
 }
 
-void NativeThemeGtk3::OnThemeChanged(GtkSettings* settings,
-                                     GtkParamSpec* param) {
+void NativeThemeGtk::OnThemeChanged(GtkSettings* settings,
+                                    GtkParamSpec* param) {
   SetThemeCssOverride(ScopedCssProvider());
   for (auto& color : color_cache_)
     color = base::nullopt;
@@ -479,7 +479,7 @@ void NativeThemeGtk3::OnThemeChanged(GtkSettings* settings,
   }
 }
 
-SkColor NativeThemeGtk3::GetSystemColor(ColorId color_id) const {
+SkColor NativeThemeGtk::GetSystemColor(ColorId color_id) const {
   if (color_cache_[color_id])
     return color_cache_[color_id].value();
 
@@ -488,10 +488,10 @@ SkColor NativeThemeGtk3::GetSystemColor(ColorId color_id) const {
   return color;
 }
 
-void NativeThemeGtk3::PaintArrowButton(cc::PaintCanvas* canvas,
-                                       const gfx::Rect& rect,
-                                       Part direction,
-                                       State state) const {
+void NativeThemeGtk::PaintArrowButton(cc::PaintCanvas* canvas,
+                                      const gfx::Rect& rect,
+                                      Part direction,
+                                      State state) const {
   auto context = GetStyleContextFromCss(
       GtkVersionCheck(3, 20)
           ? "GtkScrollbar#scrollbar #contents GtkButton#button"
@@ -520,20 +520,21 @@ void NativeThemeGtk3::PaintArrowButton(cc::PaintCanvas* canvas,
   PaintArrow(canvas, rect, direction, GetFgColorFromStyleContext(context));
 }
 
-void NativeThemeGtk3::PaintScrollbarTrack(
+void NativeThemeGtk::PaintScrollbarTrack(
     cc::PaintCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect) const {
-  PaintWidget(canvas, rect, GetStyleContextFromCss(
-                                GtkVersionCheck(3, 20)
-                                    ? "GtkScrollbar#scrollbar #contents #trough"
-                                    : "GtkScrollbar.scrollbar.trough"),
-              BG_RENDER_NORMAL, true);
+  PaintWidget(
+      canvas, rect,
+      GetStyleContextFromCss(GtkVersionCheck(3, 20)
+                                 ? "GtkScrollbar#scrollbar #contents #trough"
+                                 : "GtkScrollbar.scrollbar.trough"),
+      BG_RENDER_NORMAL, true);
 }
 
-void NativeThemeGtk3::PaintScrollbarThumb(
+void NativeThemeGtk::PaintScrollbarThumb(
     cc::PaintCanvas* canvas,
     Part part,
     State state,
@@ -547,9 +548,9 @@ void NativeThemeGtk3::PaintScrollbarThumb(
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
 }
 
-void NativeThemeGtk3::PaintScrollbarCorner(cc::PaintCanvas* canvas,
-                                           State state,
-                                           const gfx::Rect& rect) const {
+void NativeThemeGtk::PaintScrollbarCorner(cc::PaintCanvas* canvas,
+                                          State state,
+                                          const gfx::Rect& rect) const {
   auto context = GetStyleContextFromCss(
       GtkVersionCheck(3, 19, 2)
           ? "GtkScrolledWindow#scrolledwindow #junction"
@@ -557,7 +558,7 @@ void NativeThemeGtk3::PaintScrollbarCorner(cc::PaintCanvas* canvas,
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
 }
 
-void NativeThemeGtk3::PaintMenuPopupBackground(
+void NativeThemeGtk::PaintMenuPopupBackground(
     cc::PaintCanvas* canvas,
     const gfx::Size& size,
     const MenuBackgroundExtraParams& menu_background) const {
@@ -565,7 +566,7 @@ void NativeThemeGtk3::PaintMenuPopupBackground(
               BG_RENDER_RECURSIVE, false);
 }
 
-void NativeThemeGtk3::PaintMenuItemBackground(
+void NativeThemeGtk::PaintMenuItemBackground(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
@@ -575,7 +576,7 @@ void NativeThemeGtk3::PaintMenuItemBackground(
   PaintWidget(canvas, rect, context, BG_RENDER_NORMAL, true);
 }
 
-void NativeThemeGtk3::PaintMenuSeparator(
+void NativeThemeGtk::PaintMenuSeparator(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,
@@ -646,7 +647,7 @@ void NativeThemeGtk3::PaintMenuSeparator(
   }
 }
 
-void NativeThemeGtk3::PaintFrameTopArea(
+void NativeThemeGtk::PaintFrameTopArea(
     cc::PaintCanvas* canvas,
     State state,
     const gfx::Rect& rect,

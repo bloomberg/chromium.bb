@@ -24,7 +24,7 @@
 
 namespace libgtkui {
 
-X11InputMethodContextImplGtk2::X11InputMethodContextImplGtk2(
+X11InputMethodContextImplGtk::X11InputMethodContextImplGtk(
     ui::LinuxInputMethodContextDelegate* delegate,
     bool is_simple)
     : delegate_(delegate),
@@ -49,7 +49,7 @@ X11InputMethodContextImplGtk2::X11InputMethodContextImplGtk2(
   // handled.
 }
 
-X11InputMethodContextImplGtk2::~X11InputMethodContextImplGtk2() {
+X11InputMethodContextImplGtk::~X11InputMethodContextImplGtk() {
   if (gtk_context_) {
     g_object_unref(gtk_context_);
     gtk_context_ = nullptr;
@@ -58,7 +58,7 @@ X11InputMethodContextImplGtk2::~X11InputMethodContextImplGtk2() {
 
 // Overriden from ui::LinuxInputMethodContext
 
-bool X11InputMethodContextImplGtk2::DispatchKeyEvent(
+bool X11InputMethodContextImplGtk::DispatchKeyEvent(
     const ui::KeyEvent& key_event) {
   if (!key_event.HasNativeEvent() || !gtk_context_)
     return false;
@@ -92,19 +92,19 @@ bool X11InputMethodContextImplGtk2::DispatchKeyEvent(
   return handled;
 }
 
-void X11InputMethodContextImplGtk2::Reset() {
+void X11InputMethodContextImplGtk::Reset() {
   gtk_im_context_reset(gtk_context_);
 }
 
-void X11InputMethodContextImplGtk2::Focus() {
+void X11InputMethodContextImplGtk::Focus() {
   gtk_im_context_focus_in(gtk_context_);
 }
 
-void X11InputMethodContextImplGtk2::Blur() {
+void X11InputMethodContextImplGtk::Blur() {
   gtk_im_context_focus_out(gtk_context_);
 }
 
-void X11InputMethodContextImplGtk2::SetCursorLocation(const gfx::Rect& rect) {
+void X11InputMethodContextImplGtk::SetCursorLocation(const gfx::Rect& rect) {
   // Remember the caret bounds so that we can set the cursor location later.
   // gtk_im_context_set_cursor_location() takes the location relative to the
   // client window, which is unknown at this point.  So we'll call
@@ -120,7 +120,7 @@ void X11InputMethodContextImplGtk2::SetCursorLocation(const gfx::Rect& rect) {
 
 // private:
 
-void X11InputMethodContextImplGtk2::ResetXModifierKeycodesCache() {
+void X11InputMethodContextImplGtk::ResetXModifierKeycodesCache() {
   modifier_keycodes_.clear();
   meta_keycodes_.clear();
   super_keycodes_.clear();
@@ -164,7 +164,7 @@ void X11InputMethodContextImplGtk2::ResetXModifierKeycodesCache() {
   }
 }
 
-GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
+GdkEvent* X11InputMethodContextImplGtk::GdkEventFromNativeEvent(
     const ui::PlatformEvent& native_event) {
   XEvent xkeyevent;
   if (native_event->type == GenericEvent) {
@@ -256,12 +256,12 @@ GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
   return event;
 }
 
-bool X11InputMethodContextImplGtk2::IsKeycodeModifierKey(
+bool X11InputMethodContextImplGtk::IsKeycodeModifierKey(
     unsigned int keycode) const {
   return modifier_keycodes_.find(keycode) != modifier_keycodes_.end();
 }
 
-bool X11InputMethodContextImplGtk2::IsAnyOfKeycodesPressed(
+bool X11InputMethodContextImplGtk::IsAnyOfKeycodesPressed(
     const std::vector<int>& keycodes,
     const char* keybits,
     int num_keys) const {
@@ -277,15 +277,15 @@ bool X11InputMethodContextImplGtk2::IsAnyOfKeycodesPressed(
 
 // GtkIMContext event handlers.
 
-void X11InputMethodContextImplGtk2::OnCommit(GtkIMContext* context,
-                                             gchar* text) {
+void X11InputMethodContextImplGtk::OnCommit(GtkIMContext* context,
+                                            gchar* text) {
   if (context != gtk_context_)
     return;
 
   delegate_->OnCommit(base::UTF8ToUTF16(text));
 }
 
-void X11InputMethodContextImplGtk2::OnPreeditChanged(GtkIMContext* context) {
+void X11InputMethodContextImplGtk::OnPreeditChanged(GtkIMContext* context) {
   if (context != gtk_context_)
     return;
 
@@ -302,14 +302,14 @@ void X11InputMethodContextImplGtk2::OnPreeditChanged(GtkIMContext* context) {
   delegate_->OnPreeditChanged(composition_text);
 }
 
-void X11InputMethodContextImplGtk2::OnPreeditEnd(GtkIMContext* context) {
+void X11InputMethodContextImplGtk::OnPreeditEnd(GtkIMContext* context) {
   if (context != gtk_context_)
     return;
 
   delegate_->OnPreeditEnd();
 }
 
-void X11InputMethodContextImplGtk2::OnPreeditStart(GtkIMContext* context) {
+void X11InputMethodContextImplGtk::OnPreeditStart(GtkIMContext* context) {
   if (context != gtk_context_)
     return;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/gtk3_background_painter.h"
+#include "chrome/browser/ui/libgtkui/gtk_background_painter.h"
 
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/button.h"
@@ -32,14 +32,13 @@ GtkStateFlags ButtonStateToStateFlags(views::Button::ButtonState state) {
 
 }  // namespace
 
-Gtk3BackgroundPainter::Gtk3BackgroundPainter(const views::Button* button,
-                                             ScopedStyleContext context)
+GtkBackgroundPainter::GtkBackgroundPainter(const views::Button* button,
+                                           ScopedStyleContext context)
     : button_(button), context_(std::move(context)) {}
 
-Gtk3BackgroundPainter::~Gtk3BackgroundPainter() {}
+GtkBackgroundPainter::~GtkBackgroundPainter() {}
 
-void Gtk3BackgroundPainter::Paint(gfx::Canvas* canvas,
-                                  views::View* view) const {
+void GtkBackgroundPainter::Paint(gfx::Canvas* canvas, views::View* view) const {
   float scale = canvas->image_scale();
   SkBitmap bitmap;
   bitmap.allocN32Pixels(scale * view->width(), scale * view->height());
@@ -53,7 +52,7 @@ void Gtk3BackgroundPainter::Paint(gfx::Canvas* canvas,
   canvas->DrawImageInt(gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, scale)), 0, 0);
 }
 
-GtkStateFlags Gtk3BackgroundPainter::CalculateStateFlags() const {
+GtkStateFlags GtkBackgroundPainter::CalculateStateFlags() const {
   GtkStateFlags state = ButtonStateToStateFlags(button_->state());
   if (!button_->GetWidget()->IsActive())
     state = static_cast<GtkStateFlags>(state | GTK_STATE_FLAG_BACKDROP);

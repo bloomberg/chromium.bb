@@ -37,7 +37,6 @@ libglib2.0-0 \
 libgnome-keyring0 \
 libgpg-error0 \
 libgtk-3-0 \
-libgtk2.0-0 \
 libido3-0.1-0 \
 libindicator3-7 \
 libnspr4 \

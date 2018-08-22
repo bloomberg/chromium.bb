@@ -453,7 +453,7 @@ Here's how to install the Arabic (ar) and Hebrew (he) language packs:
 
 Note that the `--lang` flag does **not** work properly for this.
 
-On non-Debian systems, you need the `gtk20.mo` files. (Please update these docs
+On non-Debian systems, you need the `gtk30.mo` files. (Please update these docs
 with the appropriate instructions if you know what they are.)
 
 ## Breakpad

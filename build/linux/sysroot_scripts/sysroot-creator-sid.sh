@@ -137,7 +137,6 @@ DEBIAN_PACKAGES="\
   libgtk-3-0
   libgtk-3-dev
   libgtk2.0-0
-  libgtk2.0-dev
   libharfbuzz-dev
   libharfbuzz-gobject0
   libharfbuzz-icu0

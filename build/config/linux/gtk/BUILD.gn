@@ -2,15 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/linux/gtk/gtk.gni")
 import("//build/config/linux/pkg_config.gni")
 
 assert(is_linux, "This file should only be referenced on Linux")
 
-# The target in this file will automatically reference GTK2 or GTK3 depending
-# on the state of the build flag. Some builds reference both 2 and 3, and some
-# builds reference neither, so both need to be available but in different
-# directories so pkg-config is only run when necessary.
+# GN doesn't check visibility for configs so we give this an obviously internal
+# name to discourage random targets from accidentally depending on this and
+# bypassing the GTK target's visibility.
+pkg_config("gtk_internal_config") {
+  # Gtk requires gmodule, but it does not list it as a dependency in some
+  # misconfigured systems.
+  packages = [
+    "gmodule-2.0",
+    "gtk+-3.0",
+    "gthread-2.0",
+  ]
+}
 
 # Basically no parts of Chrome should depend on GTK. To prevent accidents, the
 # parts that explicitly need GTK are whitelisted on this target.
@@ -27,15 +34,18 @@ group("gtk") {
     "//remoting/host:remoting_me2me_host_static",
     "//remoting/test:it2me_standalone_host_main",
     "//webrtc/examples:peerconnection_client",
+    "//chrome/browser/ui/libgtkui:*",
   ]
 
-  if (use_gtk3) {
-    public_deps = [
-      "//build/config/linux/gtk3",
-    ]
-  } else {
-    public_deps = [
-      "//build/config/linux/gtk2",
-    ]
-  }
+  public_configs = [ ":gtk_internal_config" ]
+}
+
+# Depend on "gtkprint" to get this.
+pkg_config("gtkprint_internal_config") {
+  packages = [ "gtk+-unix-print-3.0" ]
+}
+
+group("gtkprint") {
+  visibility = [ "//chrome/browser/ui/libgtkui:*" ]
+  public_configs = [ ":gtkprint_internal_config" ]
 }

@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/nav_button_provider_gtk3.h"
+#include "chrome/browser/ui/libgtkui/nav_button_provider_gtk.h"
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/ui/libgtkui/gtk3_background_painter.h"
+#include "chrome/browser/ui/libgtkui/gtk_background_painter.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "ui/base/glib/scoped_gobject.h"
 #include "ui/gfx/image/image_skia.h"
@@ -289,13 +289,13 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
 
 }  // namespace
 
-NavButtonProviderGtk3::NavButtonProviderGtk3() {}
+NavButtonProviderGtk::NavButtonProviderGtk() {}
 
-NavButtonProviderGtk3::~NavButtonProviderGtk3() {}
+NavButtonProviderGtk::~NavButtonProviderGtk() {}
 
-void NavButtonProviderGtk3::RedrawImages(int top_area_height,
-                                         bool maximized,
-                                         bool active) {
+void NavButtonProviderGtk::RedrawImages(int top_area_height,
+                                        bool maximized,
+                                        bool active) {
   auto header_context = CreateHeaderContext(maximized);
 
   GtkBorder header_padding;
@@ -365,7 +365,7 @@ void NavButtonProviderGtk3::RedrawImages(int top_area_height,
   }
 }
 
-gfx::ImageSkia NavButtonProviderGtk3::GetImage(
+gfx::ImageSkia NavButtonProviderGtk::GetImage(
     chrome::FrameButtonDisplayType type,
     views::Button::ButtonState state) const {
   auto it = button_images_.find(type);
@@ -373,31 +373,31 @@ gfx::ImageSkia NavButtonProviderGtk3::GetImage(
   return it->second[state];
 }
 
-gfx::Insets NavButtonProviderGtk3::GetNavButtonMargin(
+gfx::Insets NavButtonProviderGtk::GetNavButtonMargin(
     chrome::FrameButtonDisplayType type) const {
   auto it = button_margins_.find(type);
   DCHECK(it != button_margins_.end());
   return it->second;
 }
 
-gfx::Insets NavButtonProviderGtk3::GetTopAreaSpacing() const {
+gfx::Insets NavButtonProviderGtk::GetTopAreaSpacing() const {
   return top_area_spacing_;
 }
 
-int NavButtonProviderGtk3::GetInterNavButtonSpacing() const {
+int NavButtonProviderGtk::GetInterNavButtonSpacing() const {
   return inter_button_spacing_;
 }
 
 std::unique_ptr<views::Background>
-NavButtonProviderGtk3::CreateAvatarButtonBackground(
+NavButtonProviderGtk::CreateAvatarButtonBackground(
     const views::Button* avatar_button) const {
   auto header_context = CreateHeaderContext(false);
   auto button_context = CreateAvatarButtonContext(header_context);
-  return std::make_unique<Gtk3BackgroundPainter>(avatar_button,
-                                                 std::move(button_context));
+  return std::make_unique<GtkBackgroundPainter>(avatar_button,
+                                                std::move(button_context));
 }
 
-void NavButtonProviderGtk3::CalculateCaptionButtonLayout(
+void NavButtonProviderGtk::CalculateCaptionButtonLayout(
     const gfx::Size& content_size,
     int top_area_height,
     gfx::Size* caption_button_size,

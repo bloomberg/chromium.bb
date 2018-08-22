@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/settings_provider_gtk3.h"
+#include "chrome/browser/ui/libgtkui/settings_provider_gtk.h"
 
 #include "base/strings/string_split.h"
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
@@ -57,8 +57,8 @@ void ParseActionString(const std::string& value,
 
 }  // namespace
 
-SettingsProviderGtk3::FrameActionSettingWatcher::FrameActionSettingWatcher(
-    SettingsProviderGtk3* settings_provider,
+SettingsProviderGtk::FrameActionSettingWatcher::FrameActionSettingWatcher(
+    SettingsProviderGtk* settings_provider,
     const std::string& setting_name,
     views::LinuxUI::NonClientWindowFrameActionSourceType action_type,
     views::LinuxUI::NonClientWindowFrameAction default_action)
@@ -74,12 +74,12 @@ SettingsProviderGtk3::FrameActionSettingWatcher::FrameActionSettingWatcher(
   OnSettingChanged(settings, nullptr);
 }
 
-SettingsProviderGtk3::FrameActionSettingWatcher::~FrameActionSettingWatcher() {
+SettingsProviderGtk::FrameActionSettingWatcher::~FrameActionSettingWatcher() {
   if (signal_id_)
     g_signal_handler_disconnect(gtk_settings_get_default(), signal_id_);
 }
 
-void SettingsProviderGtk3::FrameActionSettingWatcher::OnSettingChanged(
+void SettingsProviderGtk::FrameActionSettingWatcher::OnSettingChanged(
     GtkSettings* settings,
     GParamSpec* param) {
   std::string value =
@@ -90,7 +90,7 @@ void SettingsProviderGtk3::FrameActionSettingWatcher::OnSettingChanged(
                                                                action);
 }
 
-SettingsProviderGtk3::SettingsProviderGtk3(GtkUi* delegate)
+SettingsProviderGtk::SettingsProviderGtk(GtkUi* delegate)
     : delegate_(delegate), signal_id_decoration_layout_(0) {
   DCHECK(delegate_);
   GtkSettings* settings = gtk_settings_get_default();
@@ -128,14 +128,14 @@ SettingsProviderGtk3::SettingsProviderGtk3(GtkUi* delegate)
   }
 }
 
-SettingsProviderGtk3::~SettingsProviderGtk3() {
+SettingsProviderGtk::~SettingsProviderGtk() {
   if (signal_id_decoration_layout_) {
     g_signal_handler_disconnect(gtk_settings_get_default(),
                                 signal_id_decoration_layout_);
   }
 }
 
-void SettingsProviderGtk3::SetWindowButtonOrderingFromGtkLayout(
+void SettingsProviderGtk::SetWindowButtonOrderingFromGtkLayout(
     const std::string& gtk_layout) {
   std::vector<views::FrameButton> leading_buttons;
   std::vector<views::FrameButton> trailing_buttons;
@@ -143,15 +143,14 @@ void SettingsProviderGtk3::SetWindowButtonOrderingFromGtkLayout(
   delegate_->SetWindowButtonOrdering(leading_buttons, trailing_buttons);
 }
 
-void SettingsProviderGtk3::OnDecorationButtonLayoutChanged(
-    GtkSettings* settings,
-    GParamSpec* param) {
+void SettingsProviderGtk::OnDecorationButtonLayoutChanged(GtkSettings* settings,
+                                                          GParamSpec* param) {
   SetWindowButtonOrderingFromGtkLayout(
       GetGtkSettingsStringProperty(settings, "gtk-decoration-layout"));
 }
 
-void SettingsProviderGtk3::OnThemeChanged(GtkSettings* settings,
-                                          GParamSpec* param) {
+void SettingsProviderGtk::OnThemeChanged(GtkSettings* settings,
+                                         GParamSpec* param) {
   std::string layout = GetDecorationLayoutFromGtkWindow();
   SetWindowButtonOrderingFromGtkLayout(layout);
 }

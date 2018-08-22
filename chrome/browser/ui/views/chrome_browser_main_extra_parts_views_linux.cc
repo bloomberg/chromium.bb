@@ -67,10 +67,9 @@ ChromeBrowserMainExtraPartsViewsLinux::
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::PreEarlyInitialization() {
-  // TODO(erg): Refactor this into a dlopen call when we add a GTK3 port.
-  views::LinuxUI* gtk2_ui = BuildGtkUi();
-  gtk2_ui->SetNativeThemeOverride(base::Bind(&GetNativeThemeForWindow));
-  views::LinuxUI::SetInstance(gtk2_ui);
+  views::LinuxUI* gtk_ui = BuildGtkUi();
+  gtk_ui->SetNativeThemeOverride(base::Bind(&GetNativeThemeForWindow));
+  views::LinuxUI::SetInstance(gtk_ui);
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {

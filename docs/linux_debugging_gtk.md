@@ -8,7 +8,7 @@ for notes on how to make GTK warnings fatal.
 
 ## Using GTK Debug packages
 
-    sudo apt-get install libgtk2.0-0-dbg
+    sudo apt-get install libgtk-3-0-dbg
 
 Make sure that you're building a binary that matches your architecture (e.g.
 64-bit on a 64-bit machine), and there you go.
@@ -21,7 +21,7 @@ doing:
 
 ```shell
 $ cd /my/dir
-$ apt-get source libgtk2.0-0
+$ apt-get source libgtk-3-0
 $ gdb ...
 (gdb) set substitute-path /build/buildd /my/dir
 ```
@@ -45,14 +45,6 @@ Install it with
 And then run Chrome with
 
     GTK_MODULES=gtkparasite ./out/Debug/chrome
-
-### ghardy
-
-If you're within the Google network on ghardy, which is too old to include
-gtkparasite, you can do:
-
-    scp bunny.sfo:/usr/lib/gtk-2.0/modules/libgtkparasite.so /tmp
-    sudo cp /tmp/libgtkparasite.so /usr/lib/gtk-2.0/modules/libgtkparasite.so
 
 ## GDK_DEBUG
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_NAV_BUTTON_PROVIDER_GTK3_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_NAV_BUTTON_PROVIDER_GTK3_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_NAV_BUTTON_PROVIDER_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_NAV_BUTTON_PROVIDER_GTK_H_
 
 #include <map>
 
@@ -15,10 +15,10 @@
 
 namespace libgtkui {
 
-class LIBGTKUI_EXPORT NavButtonProviderGtk3 : public views::NavButtonProvider {
+class LIBGTKUI_EXPORT NavButtonProviderGtk : public views::NavButtonProvider {
  public:
-  NavButtonProviderGtk3();
-  ~NavButtonProviderGtk3() override;
+  NavButtonProviderGtk();
+  ~NavButtonProviderGtk() override;
 
   // views::NavButtonProvider:
   void RedrawImages(int top_area_height, bool maximized, bool active) override;
@@ -47,4 +47,4 @@ class LIBGTKUI_EXPORT NavButtonProviderGtk3 : public views::NavButtonProvider {
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_NAV_BUTTON_PROVIDER_GTK3_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_NAV_BUTTON_PROVIDER_GTK_H_
