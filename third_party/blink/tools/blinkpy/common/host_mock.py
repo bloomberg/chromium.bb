@@ -122,4 +122,4 @@ class MockHost(MockSystemHost):
         filesystem.maybe_make_directory(filesystem.join(external_dir, 'wpt'))
 
         manifest_base_path = filesystem.join(external_dir, 'WPT_BASE_MANIFEST.json')
-        filesystem.files[manifest_base_path] = '{}'
+        filesystem.files[manifest_base_path] = '{"manifest": "base"}'

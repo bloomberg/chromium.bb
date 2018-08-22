@@ -19,6 +19,7 @@ class WPTManifestUnitTest(unittest.TestCase):
         self.assertFalse(host.filesystem.exists(manifest_path))
         WPTManifest.ensure_manifest(host)
         self.assertTrue(host.filesystem.exists(manifest_path))
+        self.assertEqual(host.filesystem.written_files, {manifest_path: '{"manifest": "base"}'})
 
         webkit_base = '/mock-checkout/third_party/WebKit'
         self.assertEqual(
@@ -39,11 +40,12 @@ class WPTManifestUnitTest(unittest.TestCase):
         host = MockHost()
         manifest_path = '/mock-checkout/third_party/WebKit/LayoutTests/external/wpt/MANIFEST.json'
 
-        host.filesystem.write_text_file(manifest_path, '{}')
-        self.assertTrue(host.filesystem.exists(manifest_path))
+        host.filesystem.write_text_file(manifest_path, '{"manifest": "NOT base"}')
 
+        self.assertTrue(host.filesystem.exists(manifest_path))
         WPTManifest.ensure_manifest(host)
         self.assertTrue(host.filesystem.exists(manifest_path))
+        self.assertEqual(host.filesystem.written_files, {manifest_path: '{"manifest": "base"}'})
 
         webkit_base = '/mock-checkout/third_party/WebKit'
         self.assertEqual(
