@@ -54,60 +54,12 @@
 #include "third_party/blink/renderer/core/loader/scheduled_navigation.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-
-namespace {
-
-// Add new scheduled navigation types before ScheduledLastEntry
-enum ScheduledNavigationType {
-  kScheduledReload,
-  kScheduledFormSubmission,
-  kScheduledURLNavigation,
-  kScheduledRedirect,
-  kScheduledFrameNavigation,
-  kScheduledPageBlock,
-
-  kScheduledLastEntry
-};
-
-// If the current frame has a provisional document loader, a scheduled
-// navigation might abort that load. Log those occurrences until
-// crbug.com/557430 is resolved.
-void MaybeLogScheduledNavigationClobber(ScheduledNavigationType type,
-                                        LocalFrame* frame) {
-  if (!frame->Loader().GetProvisionalDocumentLoader())
-    return;
-  // Include enumeration values userGesture variants.
-  DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                      scheduled_navigation_clobber_histogram,
-                      ("Navigation.Scheduled.MaybeCausedAbort",
-                       ScheduledNavigationType::kScheduledLastEntry * 2));
-
-  int value = Frame::HasTransientUserActivation(frame)
-                  ? type + kScheduledLastEntry
-                  : type;
-  scheduled_navigation_clobber_histogram.Count(value);
-
-  DEFINE_STATIC_LOCAL(
-      CustomCountHistogram, scheduled_clobber_abort_time_histogram,
-      ("Navigation.Scheduled.MaybeCausedAbort.Time", 1, 10000, 50));
-  TimeTicks navigation_start = frame->Loader()
-                                   .GetProvisionalDocumentLoader()
-                                   ->GetTiming()
-                                   .NavigationStart();
-  if (!navigation_start.is_null()) {
-    scheduled_clobber_abort_time_histogram.Count(
-        (CurrentTimeTicks() - navigation_start).InSecondsF());
-  }
-}
-
-}  // namespace
 
 unsigned NavigationDisablerForBeforeUnload::navigation_disable_count_ = 0;
 
@@ -153,10 +105,6 @@ class ScheduledURLNavigation : public ScheduledNavigation {
       request.SetBlobURLToken(std::move(token_clone));
     }
 
-    ScheduledNavigationType type =
-        IsLocationChange() ? ScheduledNavigationType::kScheduledFrameNavigation
-                           : ScheduledNavigationType::kScheduledURLNavigation;
-    MaybeLogScheduledNavigationClobber(type, frame);
     frame->Loader().StartNavigation(request);
   }
 
@@ -197,8 +145,6 @@ class ScheduledRedirect final : public ScheduledURLNavigation {
       load_type = WebFrameLoadType::kReload;
     }
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-    MaybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::kScheduledRedirect, frame);
     frame->Loader().StartNavigation(request, load_type);
   }
 
@@ -267,8 +213,6 @@ class ScheduledReload final : public ScheduledNavigation {
       return;
     FrameLoadRequest request = FrameLoadRequest(nullptr, resource_request);
     request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
-    MaybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::kScheduledReload, frame);
     frame->Loader().StartNavigation(request, WebFrameLoadType::kReload);
   }
 
@@ -332,8 +276,6 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
     FrameLoadRequest frame_request =
         submission_->CreateFrameLoadRequest(OriginDocument());
     frame_request.SetReplacesCurrentItem(ReplacesCurrentItem());
-    MaybeLogScheduledNavigationClobber(
-        ScheduledNavigationType::kScheduledFormSubmission, frame);
     frame->Loader().StartNavigation(frame_request, WebFrameLoadType::kStandard,
                                     submission_->GetNavigationPolicy());
   }

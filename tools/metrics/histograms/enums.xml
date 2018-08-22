@@ -42761,6 +42761,9 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="ScheduledNavigationType">
+  <obsolete>
+    Deprecated August 2018
+  </obsolete>
   <int value="0" label="(no gesture) ScheduledReload"/>
   <int value="1" label="(no gesture) ScheduledFormSubmission"/>
   <int value="2" label="(no gesture) ScheduledURLNavigation"/>
