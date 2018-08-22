@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DBUS_VM_APPLICATIONS_SERVICE_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_DBUS_VM_APPLICATIONS_SERVICE_PROVIDER_H_
 
-#include <memory>
-
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,13 +15,6 @@ namespace dbus {
 class MethodCall;
 }  // namespace dbus
 
-namespace vm_tools {
-namespace apps {
-class ApplicationList;
-class TerminalParams;
-}  // namespace apps
-}  // namespace vm_tools
-
 namespace chromeos {
 
 // This class exports D-Bus methods for functions that we want to be available
@@ -31,24 +22,7 @@ namespace chromeos {
 class VmApplicationsServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  // Delegate interface providing additional resources to
-  // VmApplicationsServiceProvider.
-  // TODO(derat): Move the delegate into this class.
-  class Delegate {
-   public:
-    Delegate() = default;
-    virtual ~Delegate() = default;
-
-    virtual void UpdateApplicationList(
-        const vm_tools::apps::ApplicationList& app_list) = 0;
-    virtual void LaunchTerminal(
-        const vm_tools::apps::TerminalParams& terminal_params) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Delegate);
-  };
-
-  explicit VmApplicationsServiceProvider(std::unique_ptr<Delegate> delegate);
+  VmApplicationsServiceProvider();
   ~VmApplicationsServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -67,8 +41,6 @@ class VmApplicationsServiceProvider
       dbus::ExportedObject::ResponseSender response_sender);
   void LaunchTerminal(dbus::MethodCall* method_call,
                       dbus::ExportedObject::ResponseSender response_sender);
-
-  std::unique_ptr<Delegate> delegate_;
 
   base::WeakPtrFactory<VmApplicationsServiceProvider> weak_ptr_factory_;
 

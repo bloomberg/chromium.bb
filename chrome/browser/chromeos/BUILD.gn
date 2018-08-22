@@ -609,8 +609,6 @@ source_set("chromeos") {
     "dbus/virtual_file_request_service_provider.h",
     "dbus/vm_applications_service_provider.cc",
     "dbus/vm_applications_service_provider.h",
-    "dbus/vm_applications_service_provider_delegate.cc",
-    "dbus/vm_applications_service_provider_delegate.h",
     "device_sync/device_sync_client_factory.cc",
     "device_sync/device_sync_client_factory.h",
     "display/output_protection_controller_ash.cc",
