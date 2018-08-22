@@ -20,6 +20,8 @@ source_set("feed_core") {
     "feed_image_database.h",
     "feed_image_manager.cc",
     "feed_image_manager.h",
+    "feed_journal_database.cc",
+    "feed_journal_database.h",
     "feed_journal_mutation.cc",
     "feed_journal_mutation.h",
     "feed_journal_operation.cc",

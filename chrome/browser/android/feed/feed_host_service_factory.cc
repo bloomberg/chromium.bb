@@ -18,6 +18,7 @@
 #include "components/feed/core/feed_content_database.h"
 #include "components/feed/core/feed_host_service.h"
 #include "components/feed/core/feed_image_manager.h"
+#include "components/feed/core/feed_journal_database.h"
 #include "components/feed/core/feed_networking_host.h"
 #include "components/feed/core/feed_scheduler_host.h"
 #include "components/feed/core/feed_storage_database.h"
@@ -93,10 +94,12 @@ KeyedService* FeedHostServiceFactory::BuildServiceInstanceFor(
 
   auto content_database = std::make_unique<FeedContentDatabase>(feed_dir);
 
+  auto journal_database = std::make_unique<FeedJournalDatabase>(feed_dir);
+
   return new FeedHostService(
       std::move(image_manager), std::move(networking_host),
       std::move(scheduler_host), std::move(storage_database),
-      std::move(content_database));
+      std::move(content_database), std::move(journal_database));
 }
 
 content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(
