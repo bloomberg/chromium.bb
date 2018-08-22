@@ -1074,30 +1074,21 @@ void URLRequest::NotifySSLCertificateError(const SSLInfo& ssl_info,
 
 bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SEND_COOKIES));
-  bool can_get_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
-    can_get_cookies =
-        network_delegate_->CanGetCookies(*this, cookie_list,
-                                         /*allowed_from_caller=*/true);
+    return network_delegate_->CanGetCookies(*this, cookie_list,
+                                            /*allowed_from_caller=*/true);
   }
-
-  if (!can_get_cookies)
-    net_log_.AddEvent(NetLogEventType::COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE);
-  return can_get_cookies;
+  return g_default_can_use_cookies;
 }
 
 bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
                               CookieOptions* options) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES));
-  bool can_set_cookies = g_default_can_use_cookies;
   if (network_delegate_) {
-    can_set_cookies =
-        network_delegate_->CanSetCookie(*this, cookie, options,
-                                        /*allowed_from_caller=*/true);
+    return network_delegate_->CanSetCookie(*this, cookie, options,
+                                           /*allowed_from_caller=*/true);
   }
-  if (!can_set_cookies)
-    net_log_.AddEvent(NetLogEventType::COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE);
-  return can_set_cookies;
+  return g_default_can_use_cookies;
 }
 
 bool URLRequest::CanEnablePrivacyMode() const {

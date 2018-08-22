@@ -3165,13 +3165,3 @@ EVENT_TYPE(COOKIE_PERSISTENT_STORE_KEY_LOAD_COMPLETED)
 //    "type": <Classname of persistent cookie store>
 //  }
 EVENT_TYPE(COOKIE_PERSISTENT_STORE_CLOSED)
-
-// Event emitted when getting cookies is blocked by a NetworkDelegate.
-//  {
-//  }
-EVENT_TYPE(COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE)
-
-// Event emitted when setting cookies is blocked by a NetworkDelegate.
-//  {
-//  }
-EVENT_TYPE(COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE)
