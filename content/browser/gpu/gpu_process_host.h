@@ -118,6 +118,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // null if the process no longer exists.
   static GpuProcessHost* FromID(int host_id);
   int host_id() const { return host_id_; }
+  base::ProcessId GetProcessId() const;
 
   // IPC::Sender implementation.
   bool Send(IPC::Message* msg) override;
