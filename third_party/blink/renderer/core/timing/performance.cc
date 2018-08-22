@@ -85,14 +85,12 @@ DOMHighResTimeStamp GetUnixAtZeroMonotonic() {
 using PerformanceObserverVector = HeapVector<Member<PerformanceObserver>>;
 
 static const size_t kDefaultResourceTimingBufferSize = 250;
-static const size_t kDefaultFrameTimingBufferSize = 150;
 constexpr size_t kDefaultEventTimingBufferSize = 150;
 
 Performance::Performance(
     TimeTicks time_origin,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : frame_timing_buffer_size_(kDefaultFrameTimingBufferSize),
-      resource_timing_buffer_size_(kDefaultResourceTimingBufferSize),
+    : resource_timing_buffer_size_(kDefaultResourceTimingBufferSize),
       event_timing_buffer_max_size_(kDefaultEventTimingBufferSize),
       user_timing_(nullptr),
       time_origin_(time_origin),
@@ -143,7 +141,6 @@ PerformanceEntryVector Performance::getEntries() {
   // calls this method.
   if (navigation_timing_)
     entries.push_back(navigation_timing_);
-  entries.AppendVector(frame_timing_buffer_);
 
   if (user_timing_) {
     entries.AppendVector(user_timing_->GetMarks());
@@ -188,14 +185,6 @@ PerformanceEntryVector Performance::getEntriesByType(
         navigation_timing_ = CreateNavigationTimingInstance();
       if (navigation_timing_)
         entries.push_back(navigation_timing_);
-      break;
-    case PerformanceEntry::kComposite:
-    case PerformanceEntry::kRender:
-      for (const auto& frame : frame_timing_buffer_) {
-        if (type == frame->EntryTypeEnum()) {
-          entries.push_back(frame);
-        }
-      }
       break;
     case PerformanceEntry::kMark:
       if (user_timing_)
@@ -271,15 +260,6 @@ PerformanceEntryVector Performance::getEntriesByName(
       navigation_timing_ = CreateNavigationTimingInstance();
     if (navigation_timing_ && navigation_timing_->name() == name)
       entries.push_back(navigation_timing_);
-  }
-
-  if (entry_type.IsNull() || type == PerformanceEntry::kComposite ||
-      type == PerformanceEntry::kRender) {
-    for (const auto& frame : frame_timing_buffer_) {
-      if (frame->name() == name &&
-          (entry_type.IsNull() || entry_type == frame->entryType()))
-        entries.push_back(frame);
-    }
   }
 
   if (user_timing_) {
@@ -880,7 +860,6 @@ void Performance::BuildJSONValue(V8ObjectBuilder& builder) const {
 }
 
 void Performance::Trace(blink::Visitor* visitor) {
-  visitor->Trace(frame_timing_buffer_);
   visitor->Trace(resource_timing_buffer_);
   visitor->Trace(event_timing_buffer_);
   visitor->Trace(navigation_timing_);
