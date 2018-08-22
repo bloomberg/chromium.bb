@@ -65,7 +65,6 @@ class LayoutScrollbarPart;
 struct PaintInvalidatorContext;
 class PaintLayer;
 class ScrollingCoordinator;
-class StickyPositionScrollingConstraints;
 class SubtreeLayoutScope;
 
 struct CORE_EXPORT PaintLayerScrollableAreaRareData {
