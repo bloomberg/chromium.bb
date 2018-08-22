@@ -6,12 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SERIALIZATION_POST_MESSAGE_HELPER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/message_port/message_port.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
+class ExecutionContext;
 class ExceptionState;
 class PostMessageOptions;
 class ScriptValue;
@@ -35,6 +37,12 @@ class CORE_EXPORT PostMessageHelper {
       const PostMessageOptions& options,
       Transferables& transferables,
       ExceptionState&);
+
+  // Create a snapshot of the user activation state. Return null if this if the
+  // execution context is not a window.
+  static mojom::blink::UserActivationSnapshotPtr CreateUserActivationSnapshot(
+      ExecutionContext*,
+      const PostMessageOptions&);
 };
 
 }  // namespace blink

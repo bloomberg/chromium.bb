@@ -38,7 +38,7 @@
     // TODO(bashi): |source| should be (WindowProxy or MessagePort)?
     readonly attribute EventTarget? source;
     [CachedAttribute=isPortsDirty] readonly attribute FrozenArray<MessagePort> ports;
-    [Exposed=Window, RuntimeEnabled=UserActivationAPI] readonly attribute UserActivation? userActivation;
+    [RuntimeEnabled=UserActivationAPI] readonly attribute UserActivation? userActivation;
 
     // TODO(foolip): none of the arguments should have [Default=Undefined] (they
     // have other default values in the spec) and |sourceArg|'s type is wrong.

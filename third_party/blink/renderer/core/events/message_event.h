@@ -62,7 +62,13 @@ class CORE_EXPORT MessageEvent final : public Event {
                               const String& last_event_id = String(),
                               EventTarget* source = nullptr) {
     return new MessageEvent(std::move(data), origin, last_event_id, source,
-                            ports);
+                            ports, nullptr);
+  }
+  static MessageEvent* Create(MessagePortArray* ports,
+                              scoped_refptr<SerializedScriptValue> data,
+                              UserActivation* user_activation) {
+    return new MessageEvent(std::move(data), String(), String(), nullptr, ports,
+                            user_activation);
   }
   static MessageEvent* Create(Vector<MessagePortChannel> channels,
                               scoped_refptr<SerializedScriptValue> data,
@@ -201,7 +207,8 @@ class CORE_EXPORT MessageEvent final : public Event {
                const String& origin,
                const String& last_event_id,
                EventTarget* source,
-               MessagePortArray*);
+               MessagePortArray*,
+               UserActivation* user_activation);
   MessageEvent(scoped_refptr<SerializedScriptValue> data,
                const String& origin,
                const String& last_event_id,

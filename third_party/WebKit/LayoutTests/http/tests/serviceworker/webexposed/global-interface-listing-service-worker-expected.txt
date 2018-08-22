@@ -714,6 +714,7 @@ interface MessageEvent : Event
     getter origin
     getter ports
     getter source
+    getter userActivation
     method constructor
     method initMessageEvent
 interface MessagePort : EventTarget

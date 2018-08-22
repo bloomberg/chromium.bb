@@ -643,6 +643,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter origin
 [Worker]     getter ports
 [Worker]     getter source
+[Worker]     getter userActivation
 [Worker]     method constructor
 [Worker]     method initMessageEvent
 [Worker] interface MessagePort : EventTarget
