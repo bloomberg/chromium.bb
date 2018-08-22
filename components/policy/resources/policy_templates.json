@@ -12751,11 +12751,11 @@
 
       If the policy is set to false, or is unset, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> may not collect nor upload such logs.
 
-      These logs contain information such as the time and size of sent and received RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. This information is helpful when debugging issues with audio or video calls in Chrome, such as bandwidth estimation issues, etc. The logs do not contain audio or video contents from the call.
+      These logs contain diagnostic information helpful when debugging issues with audio or video calls in Chrome, such as the time and size of sent and received RTP packets, feedback about congestion on the network, and metadata about time and quality of audio and video frames. These logs do not contain audio or video contents from the call.
 
-      This data collection can only be triggered by Google's web services, such as Google Hangouts or Google Meet.
+      This data collection by Chrome can only be triggered by Google's web services, such as Google Hangouts or Google Meet.
 
-      These logs may be associated, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
+      Google may associate these logs, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
       ''',
     },
     {
