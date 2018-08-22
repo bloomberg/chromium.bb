@@ -592,7 +592,8 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
                              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
   _autoFillProfileDetailItem =
       [self detailItemWithType:ItemTypeAutofillProfile
-                          text:l10n_util::GetNSString(IDS_AUTOFILL_ADDRESSES)
+                          text:l10n_util::GetNSString(
+                                   IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE)
                     detailText:detailText
                  iconImageName:kSettingsAutofillProfileImageName];
 

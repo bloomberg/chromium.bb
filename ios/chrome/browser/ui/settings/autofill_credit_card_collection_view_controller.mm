@@ -16,14 +16,19 @@
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
+#include "ios/chrome/browser/ui/collection_view/cells/collection_view_cell_constants.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/autofill_credit_card_edit_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/autofill_data_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -34,11 +39,13 @@ namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierSwitches = kSectionIdentifierEnumZero,
+  SectionIdentifierSubtitle,
   SectionIdentifierCards,
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeAutofillCardSwitch = kItemTypeEnumZero,
+  ItemTypeAutofillCardSwitchSubtitle,
   ItemTypeCard,
   ItemTypeHeader,
 };
@@ -106,6 +113,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:[self cardSwitchItem]
       toSectionWithIdentifier:SectionIdentifierSwitches];
 
+  [model addSectionWithIdentifier:SectionIdentifierSubtitle];
+  [model addItem:[self cardSwitchSubtitleItem]
+      toSectionWithIdentifier:SectionIdentifierSubtitle];
+
   [self populateCardSection];
 }
 
@@ -136,6 +147,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
   switchItem.on = [self isAutofillCreditCardEnabled];
   switchItem.accessibilityIdentifier = @"cardItem_switch";
   return switchItem;
+}
+
+- (CollectionViewItem*)cardSwitchSubtitleItem {
+  CollectionViewTextItem* textItem = [[CollectionViewTextItem alloc]
+      initWithType:ItemTypeAutofillCardSwitchSubtitle];
+  textItem.text =
+      l10n_util::GetNSString(IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_SUBLABEL);
+  if (experimental_flags::IsSettingsUIRebootEnabled()) {
+    textItem.textFont = [UIFont systemFontOfSize:kUIKitMultilineDetailFontSize];
+    textItem.textColor = UIColorFromRGB(kUIKitMultilineDetailTextColor);
+  } else {
+    textItem.textFont = [[MDCTypography fontLoader] regularFontOfSize:14];
+    textItem.textColor = [[MDCPalette greyPalette] tint500];
+  }
+  textItem.numberOfTextLines = 0;
+  return textItem;
 }
 
 - (CollectionViewItem*)cardSectionHeader {
@@ -259,8 +286,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
-  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
-  return type == ItemTypeAutofillCardSwitch;
+  NSInteger sectionIdentifier =
+      [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
+  return sectionIdentifier == SectionIdentifierSwitches ||
+         sectionIdentifier == SectionIdentifierSubtitle;
+}
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldHideItemBackgroundAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger sectionIdentifier =
+      [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
+  return sectionIdentifier == SectionIdentifierSubtitle;
 }
 
 #pragma mark - UICollectionViewDelegate

@@ -103,7 +103,7 @@ id<GREYMatcher> PaymentMethodsButton() {
 }
 // Matcher for the addresses cell on the main Settings screen.
 id<GREYMatcher> AddressesButton() {
-  return ButtonWithAccessibilityLabelId(IDS_AUTOFILL_ADDRESSES);
+  return ButtonWithAccessibilityLabelId(IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);
 }
 // Matcher for the Google Chrome cell on the main Settings screen.
 id<GREYMatcher> GoogleChromeButton() {

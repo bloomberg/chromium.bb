@@ -69,10 +69,13 @@ TEST_F(AutofillProfileCollectionViewControllerTest, TestInitialization) {
   CreateController();
   CheckController();
 
-  // Expect one header section.
-  EXPECT_EQ(1, NumberOfSections());
+  // Expect one header section and one subtitle section.
+  EXPECT_EQ(2, NumberOfSections());
   // Expect header section to contain one row (the address Autofill toggle).
   EXPECT_EQ(1, NumberOfItemsInSection(0));
+  // Expect subtitle section to contain one row (the address Autofill toggle
+  // subtitle).
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Adding a single address results in an address section.
@@ -81,10 +84,10 @@ TEST_F(AutofillProfileCollectionViewControllerTest, TestOneProfile) {
   CreateController();
   CheckController();
 
-  // Expect two sections (header and addresses section).
-  EXPECT_EQ(2, NumberOfSections());
+  // Expect three sections (header, subtitle, and addresses section).
+  EXPECT_EQ(3, NumberOfSections());
   // Expect address section to contain one row (the address itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 }
 
 // Deleting the only profile results in item deletion and section deletion.
@@ -93,10 +96,10 @@ TEST_F(AutofillProfileCollectionViewControllerTest, TestOneProfileItemDeleted) {
   CreateController();
   CheckController();
 
-  // Expect two sections (header and addresses section).
-  EXPECT_EQ(2, NumberOfSections());
+  // Expect three sections (header, subtitle, and addresses section).
+  EXPECT_EQ(3, NumberOfSections());
   // Expect address section to contain one row (the address itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 
   AutofillProfileCollectionViewController* view_controller =
       base::mac::ObjCCastStrict<AutofillProfileCollectionViewController>(
@@ -124,14 +127,14 @@ TEST_F(AutofillProfileCollectionViewControllerTest, TestOneProfileItemDeleted) {
 
   // This call cause a modification of the PersonalDataManager, so wait until
   // the asynchronous task complete in addition to waiting for the UI update.
-  delete_item_with_wait(1, 0);
+  delete_item_with_wait(2, 0);
   observer.Wait();  // Wait for completion of the asynchronous operation.
 
   // Exit 'edit' mode.
   [view_controller editButtonPressed];
 
-  // Expect one header section only.
-  EXPECT_EQ(1, NumberOfSections());
+  // Expect address section to have been removed.
+  EXPECT_EQ(2, NumberOfSections());
 }
 
 }  // namespace
