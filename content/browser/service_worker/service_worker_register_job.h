@@ -10,9 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/scoped_observer.h"
 #include "base/time/time.h"
-#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -36,8 +34,7 @@ namespace content {
 //  - waiting for older ServiceWorkerVersions to deactivate
 //  - designating the new version to be the 'active' version
 //  - updating storage
-class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
-                                 public EmbeddedWorkerInstance::Listener {
+class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase {
  public:
   typedef base::OnceCallback<void(blink::ServiceWorkerStatusCode status,
                                   const std::string& status_message,
@@ -138,9 +135,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   void AddRegistrationToMatchingProviderHosts(
       ServiceWorkerRegistration* registration);
 
-  // EmbeddedWorkerInstance::Listener implementation:
-  void OnScriptLoaded() override;
-  void OnDestroyed() override;
+  void OnPausedAfterDownload();
 
   void BumpLastUpdateCheckTimeIfNeeded();
 
@@ -162,8 +157,7 @@ class ServiceWorkerRegisterJob : public ServiceWorkerRegisterJobBase,
   blink::ServiceWorkerStatusCode promise_resolved_status_;
   std::string promise_resolved_status_message_;
   scoped_refptr<ServiceWorkerRegistration> promise_resolved_registration_;
-  ScopedObserver<EmbeddedWorkerInstance, EmbeddedWorkerInstance::Listener>
-      observer_;
+
   base::WeakPtrFactory<ServiceWorkerRegisterJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerRegisterJob);

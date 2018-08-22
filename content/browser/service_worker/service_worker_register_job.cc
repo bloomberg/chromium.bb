@@ -10,12 +10,14 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_job_coordinator.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/service_worker/service_worker_write_to_cache_job.h"
 #include "content/common/service_worker/service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -47,7 +49,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       force_bypass_cache_(false),
       skip_script_comparison_(false),
       promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk),
-      observer_(this),
       weak_factory_(this) {}
 
 ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
@@ -66,7 +67,6 @@ ServiceWorkerRegisterJob::ServiceWorkerRegisterJob(
       force_bypass_cache_(force_bypass_cache),
       skip_script_comparison_(skip_script_comparison),
       promise_resolved_status_(blink::ServiceWorkerStatusCode::kOk),
-      observer_(this),
       weak_factory_(this) {
   internal_.registration = registration;
 }
@@ -360,10 +360,9 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
                                            version_id, context_));
   new_version()->set_force_bypass_cache_for_scripts(force_bypass_cache_);
   if (registration()->has_installed_version() && !skip_script_comparison_) {
-    new_version()->set_pause_after_download(true);
-    observer_.Add(new_version()->embedded_worker());
-  } else {
-    new_version()->set_pause_after_download(false);
+    new_version()->SetToPauseAfterDownload(
+        base::BindOnce(&ServiceWorkerRegisterJob::OnPausedAfterDownload,
+                       weak_factory_.GetWeakPtr()));
   }
   new_version()->StartWorker(
       ServiceWorkerMetrics::EventType::INSTALL,
@@ -541,10 +540,8 @@ void ServiceWorkerRegisterJob::CompleteInternal(
     const std::string& status_message) {
   SetPhase(COMPLETE);
 
-  if (new_version()) {
-    new_version()->set_pause_after_download(false);
-    observer_.RemoveAll();
-  }
+  if (new_version())
+    new_version()->SetToNotPauseAfterDownload();
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
     if (registration()) {
@@ -611,36 +608,32 @@ void ServiceWorkerRegisterJob::AddRegistrationToMatchingProviderHosts(
   }
 }
 
-void ServiceWorkerRegisterJob::OnScriptLoaded() {
-  DCHECK(new_version()->pause_after_download());
-  new_version()->set_pause_after_download(false);
+void ServiceWorkerRegisterJob::OnPausedAfterDownload() {
   net::URLRequestStatus status =
       new_version()->script_cache_map()->main_script_status();
   if (!status.is_success()) {
-    // OnScriptLoaded signifies a successful network load, which translates into
-    // a script cache error only in the byte-for-byte identical case.
+    // OnPausedAfterDownload() signifies a successful network load, which
+    // translates into a script cache error only in the byte-for-byte identical
+    // case.
     DCHECK_EQ(status.error(),
               ServiceWorkerWriteToCacheJob::kIdenticalScriptError);
 
     BumpLastUpdateCheckTimeIfNeeded();
     ResolvePromise(blink::ServiceWorkerStatusCode::kOk, std::string(),
                    registration());
+    // Note: Complete() destroys this job and hence risks destroying
+    // |new_version()| inside this callback, which is impolite and dangerous.
+    // But most of this class operates this way, and introducing asynchronicity
+    // here can potentially create bad interactions with other callbacks into
+    // this class, so continue the pattern here. This code path should be
+    // removed anyway when the byte-to-byte update check is moved outside of
+    // worker startup.
     Complete(blink::ServiceWorkerStatusCode::kErrorExists,
              "The updated worker is identical to the incumbent.");
     return;
   }
 
   new_version()->embedded_worker()->ResumeAfterDownload();
-}
-
-void ServiceWorkerRegisterJob::OnDestroyed() {
-  // The version's EmbeddedWorkerInstance is getting destructed, so
-  // remove the observer to avoid a use-after-free. We expect to continue when
-  // the StartWorker() callback is called with failure.
-  // TODO(crbug.com/855852): Remove the EmbeddedWorkerInstance::Listener
-  // interface and have this class listen to ServiceWorkerVersion directly.
-  if (observer_.IsObserving(new_version()->embedded_worker()))
-    observer_.Remove(new_version()->embedded_worker());
 }
 
 void ServiceWorkerRegisterJob::BumpLastUpdateCheckTimeIfNeeded() {

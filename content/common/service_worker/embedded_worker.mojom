@@ -139,9 +139,9 @@ interface EmbeddedWorkerInstanceHost {
   // because DevTools requires the shadow page to have been created before
   // inspecting the worker.
   OnReadyForInspection();
-  // Indicates that the worker has finished loading the script.
+  // Indicates that the worker has finished loading the main script.
   //
-  // This is only called for new (non-installed) scripts. It's used so the
+  // This is only called for new (non-installed) workers. It's used so the
   // browser process knows it can resume the paused worker via
   // ResumeAfterDownloaded().
   OnScriptLoaded();
