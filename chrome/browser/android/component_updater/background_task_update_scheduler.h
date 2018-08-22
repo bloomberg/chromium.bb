@@ -37,6 +37,8 @@ class BackgroundTaskUpdateScheduler : public UpdateScheduler {
   void OnStopTask(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
  private:
+  void OnStartTaskDelayed();
+
   base::android::ScopedJavaGlobalRef<jobject> j_update_scheduler_;
   UserTask user_task_;
   OnStopTaskCallback on_stop_;
