@@ -14,6 +14,7 @@
 
 #include "base/containers/adapters.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -1415,7 +1416,7 @@ void LayerTreeImpl::UnregisterLayer(LayerImpl* layer) {
 
 // These manage ownership of the LayerImpl.
 void LayerTreeImpl::AddLayer(std::unique_ptr<LayerImpl> layer) {
-  DCHECK(std::find(layers_->begin(), layers_->end(), layer) == layers_->end());
+  DCHECK(!base::ContainsValue(*layers_, layer));
   DCHECK(layer);
   layers_->push_back(std::move(layer));
   set_needs_update_draw_properties();
@@ -1791,8 +1792,7 @@ void LayerTreeImpl::ProcessUIResourceRequestQueue() {
 }
 
 void LayerTreeImpl::RegisterPictureLayerImpl(PictureLayerImpl* layer) {
-  DCHECK(std::find(picture_layers_.begin(), picture_layers_.end(), layer) ==
-         picture_layers_.end());
+  DCHECK(!base::ContainsValue(picture_layers_, layer));
   picture_layers_.push_back(layer);
 }
 

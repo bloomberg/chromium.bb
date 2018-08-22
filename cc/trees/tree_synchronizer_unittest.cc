@@ -12,6 +12,7 @@
 
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
@@ -431,18 +432,12 @@ TEST_F(TreeSynchronizerTest, SyncSimpleTreeThenDestroy) {
 
   ASSERT_EQ(3u, layer_impl_destruction_list.size());
 
-  EXPECT_TRUE(std::find(layer_impl_destruction_list.begin(),
-                        layer_impl_destruction_list.end(),
-                        old_tree_root_layer_id) !=
-              layer_impl_destruction_list.end());
-  EXPECT_TRUE(std::find(layer_impl_destruction_list.begin(),
-                        layer_impl_destruction_list.end(),
-                        old_tree_first_child_layer_id) !=
-              layer_impl_destruction_list.end());
-  EXPECT_TRUE(std::find(layer_impl_destruction_list.begin(),
-                        layer_impl_destruction_list.end(),
-                        old_tree_second_child_layer_id) !=
-              layer_impl_destruction_list.end());
+  EXPECT_TRUE(base::ContainsValue(layer_impl_destruction_list,
+                                  old_tree_root_layer_id));
+  EXPECT_TRUE(base::ContainsValue(layer_impl_destruction_list,
+                                  old_tree_first_child_layer_id));
+  EXPECT_TRUE(base::ContainsValue(layer_impl_destruction_list,
+                                  old_tree_second_child_layer_id));
 }
 
 // Constructs+syncs a tree with mask layer.

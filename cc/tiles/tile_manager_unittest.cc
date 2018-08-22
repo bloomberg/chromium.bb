@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/recording_source.h"
@@ -2492,8 +2493,7 @@ TEST_F(TileManagerReadyToDrawTest, TilePrioritiesUpdated) {
         final_num_prepaint++;
       } else {
         final_num_required++;
-        if (std::find(prepaint_tiles.begin(), prepaint_tiles.end(), tile) !=
-            prepaint_tiles.end()) {
+        if (base::ContainsValue(prepaint_tiles, tile)) {
           found_one_prepaint_to_required_transition = true;
         }
       }
