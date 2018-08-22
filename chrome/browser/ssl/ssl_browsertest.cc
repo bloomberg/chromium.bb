@@ -3899,10 +3899,6 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
 // This test checks the behavior of mixed content blocking for the requests
 // from a dedicated worker by changing the settings in WebPreferences.
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MAYBE_MixedContentSettings) {
-  // TODO(carlosil): Reenable tests once confirmed not flaky for committed
-  // interstitials.
-  if (AreCommittedInterstitialsEnabled())
-    return;
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
@@ -3979,10 +3975,6 @@ IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest, MAYBE_MixedContentSettings) {
 // block-all-mixed-content CSP is set.
 IN_PROC_BROWSER_TEST_P(SSLUIWorkerFetchTest,
                        MAYBE_MixedContentSettingsWithBlockingCSP) {
-  // TODO(carlosil): Reenable tests once confirmed not flaky for committed
-  // interstitials.
-  if (AreCommittedInterstitialsEnabled())
-    return;
   ChromeContentBrowserClientForMixedContentTest browser_client;
   content::ContentBrowserClient* old_browser_client =
       content::SetBrowserClientForTesting(&browser_client);
