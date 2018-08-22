@@ -71,9 +71,9 @@ void GatherMetricsForRenderProcess(content::RenderProcessHost* host,
 
 }  // namespace
 
-PerformanceMonitor::PerformanceMonitor() {}
+PerformanceMonitor::PerformanceMonitor() = default;
 
-PerformanceMonitor::~PerformanceMonitor() {}
+PerformanceMonitor::~PerformanceMonitor() = default;
 
 // static
 PerformanceMonitor* PerformanceMonitor::GetInstance() {
