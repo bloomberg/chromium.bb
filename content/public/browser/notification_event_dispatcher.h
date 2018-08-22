@@ -11,13 +11,13 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
-#include "content/public/common/persistent_notification_status.h"
 
 class GURL;
 
 namespace content {
 
 class BrowserContext;
+enum class PersistentNotificationStatus;
 
 // This is the dispatcher to be used for firing events related to notifications.
 // This class is a singleton, the instance of which can be retrieved using the

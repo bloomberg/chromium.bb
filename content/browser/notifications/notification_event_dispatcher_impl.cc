@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
 
 namespace content {
@@ -57,13 +58,13 @@ void ServiceWorkerNotificationEventFinished(
             << blink::ServiceWorkerStatusToString(service_worker_status);
 #endif
 
-  PersistentNotificationStatus status = PERSISTENT_NOTIFICATION_STATUS_SUCCESS;
+  PersistentNotificationStatus status = PersistentNotificationStatus::kSuccess;
   switch (service_worker_status) {
     case blink::ServiceWorkerStatusCode::kOk:
       // Success status was initialized above.
       break;
     case blink::ServiceWorkerStatusCode::kErrorEventWaitUntilRejected:
-      status = PERSISTENT_NOTIFICATION_STATUS_EVENT_WAITUNTIL_REJECTED;
+      status = PersistentNotificationStatus::kWaitUntilRejected;
       break;
     case blink::ServiceWorkerStatusCode::kErrorFailed:
     case blink::ServiceWorkerStatusCode::kErrorAbort:
@@ -82,7 +83,7 @@ void ServiceWorkerNotificationEventFinished(
     case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
-      status = PERSISTENT_NOTIFICATION_STATUS_SERVICE_WORKER_ERROR;
+      status = PersistentNotificationStatus::kServiceWorkerError;
       break;
   }
   NotificationEventFinished(dispatch_complete_callback, status);
@@ -114,10 +115,10 @@ void DispatchNotificationEventOnRegistration(
     return;
   }
 
-  PersistentNotificationStatus status = PERSISTENT_NOTIFICATION_STATUS_SUCCESS;
+  PersistentNotificationStatus status = PersistentNotificationStatus::kSuccess;
   switch (service_worker_status) {
     case blink::ServiceWorkerStatusCode::kErrorNotFound:
-      status = PERSISTENT_NOTIFICATION_STATUS_NO_SERVICE_WORKER;
+      status = PersistentNotificationStatus::kServiceWorkerMissing;
       break;
     case blink::ServiceWorkerStatusCode::kErrorFailed:
     case blink::ServiceWorkerStatusCode::kErrorAbort:
@@ -136,7 +137,7 @@ void DispatchNotificationEventOnRegistration(
     case blink::ServiceWorkerStatusCode::kErrorDiskCache:
     case blink::ServiceWorkerStatusCode::kErrorRedundant:
     case blink::ServiceWorkerStatusCode::kErrorDisallowed:
-      status = PERSISTENT_NOTIFICATION_STATUS_SERVICE_WORKER_ERROR;
+      status = PersistentNotificationStatus::kServiceWorkerError;
       break;
     case blink::ServiceWorkerStatusCode::kOk:
       NOTREACHED();
@@ -169,7 +170,7 @@ void FindServiceWorkerRegistration(
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(dispatch_error_callback,
-                       PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR));
+                       PersistentNotificationStatus::kDatabaseError));
     return;
   }
 
@@ -259,10 +260,10 @@ void OnPersistentNotificationDataDeleted(
                                            service_worker_status);
     return;
   }
-  NotificationEventFinished(
-      dispatch_complete_callback,
-      success ? PERSISTENT_NOTIFICATION_STATUS_SUCCESS
-              : PERSISTENT_NOTIFICATION_STATUS_DATABASE_ERROR);
+  NotificationEventFinished(dispatch_complete_callback,
+                            success
+                                ? PersistentNotificationStatus::kSuccess
+                                : PersistentNotificationStatus::kDatabaseError);
 }
 
 // Called when the persistent notification close event has been handled
