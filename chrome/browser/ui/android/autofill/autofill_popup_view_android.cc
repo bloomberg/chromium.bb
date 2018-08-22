@@ -107,7 +107,7 @@ void AutofillPopupViewAndroid::OnSuggestionsChanged() {
     Java_AutofillPopupBridge_addToAutofillSuggestionArray(
         env, data_array, i, value, label, android_icon_id,
         /*icon_at_start=*/false, suggestion.frontend_id, is_deletable,
-        is_label_multiline, suggestion.is_value_bold);
+        is_label_multiline, /*isLabelBold*/ false);
   }
 
   Java_AutofillPopupBridge_show(env, java_object_, data_array,
