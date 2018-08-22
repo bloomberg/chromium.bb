@@ -597,26 +597,18 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
     return true;
   }
 
-  DCHECK(codec_format == PIXEL_FORMAT_I420 ||
-         codec_format == PIXEL_FORMAT_I420A);
-
   *video_frame = frame_pool_.CreateFrame(codec_format, visible_size,
                                          gfx::Rect(visible_size),
                                          config_.natural_size(), kNoTimestamp);
   if (!(*video_frame))
     return false;
 
-  libyuv::I420Copy(
-      vpx_image->planes[VPX_PLANE_Y], vpx_image->stride[VPX_PLANE_Y],
-      vpx_image->planes[VPX_PLANE_U], vpx_image->stride[VPX_PLANE_U],
-      vpx_image->planes[VPX_PLANE_V], vpx_image->stride[VPX_PLANE_V],
-      (*video_frame)->visible_data(VideoFrame::kYPlane),
-      (*video_frame)->stride(VideoFrame::kYPlane),
-      (*video_frame)->visible_data(VideoFrame::kUPlane),
-      (*video_frame)->stride(VideoFrame::kUPlane),
-      (*video_frame)->visible_data(VideoFrame::kVPlane),
-      (*video_frame)->stride(VideoFrame::kVPlane), coded_size.width(),
-      coded_size.height());
+  for (int plane = 0; plane < 3; plane++) {
+    libyuv::CopyPlane(
+        vpx_image->planes[plane], vpx_image->stride[plane],
+        (*video_frame)->visible_data(plane), (*video_frame)->stride(plane),
+        (*video_frame)->row_bytes(plane), (*video_frame)->rows(plane));
+  }
 
   return true;
 }

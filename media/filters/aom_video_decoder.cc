@@ -325,17 +325,11 @@ scoped_refptr<VideoFrame> AomVideoDecoder::CopyImageToVideoFrame(
     PackPlane(VideoFrame::kUPlane, img, frame.get());
     PackPlane(VideoFrame::kVPlane, img, frame.get());
   } else {
-    // Despite having I420 in the name this will copy any YUV format.
-    libyuv::I420Copy(img->planes[AOM_PLANE_Y], img->stride[AOM_PLANE_Y],
-                     img->planes[AOM_PLANE_U], img->stride[AOM_PLANE_U],
-                     img->planes[AOM_PLANE_V], img->stride[AOM_PLANE_V],
-                     frame->visible_data(VideoFrame::kYPlane),
-                     frame->stride(VideoFrame::kYPlane),
-                     frame->visible_data(VideoFrame::kUPlane),
-                     frame->stride(VideoFrame::kUPlane),
-                     frame->visible_data(VideoFrame::kVPlane),
-                     frame->stride(VideoFrame::kVPlane), visible_rect.width(),
-                     visible_rect.height());
+    for (int plane = 0; plane < 3; plane++) {
+      libyuv::CopyPlane(img->planes[plane], img->stride[plane],
+                        frame->visible_data(plane), frame->stride(plane),
+                        frame->row_bytes(plane), frame->rows(plane));
+    }
   }
 
   return frame;
