@@ -5,19 +5,18 @@
 'use strict';
 
 /**
- * Constants for interacting with the directory tree on the LHS of Files.
+ * Constants for interacting with the directory tree on the LHS of Files app.
  * When we are not in guest mode, we fill Google Drive with the basic entry set
  * which causes an extra tree-item to be added.
  */
 var TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"] ';
-var TREEITEM_DOWNLOADS =
-    '#directory-tree [volume-type-for-testing="downloads"] ';
+var TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"] ';
 var EXPAND_ICON = '> .tree-row > .expand-icon';
 var EXPANDED_SUBTREE = '> .tree-children[expanded]';
 
 /**
  * Selects the first item in the file list.
- * @param {string} windowId ID of the target window.
+ * @param {string} windowId The Files app windowId.
  * @return {Promise} Promise to be fulfilled on success.
  */
 function selectFirstListItem(windowId) {
@@ -50,7 +49,7 @@ function selectFirstListItem(windowId) {
 
 /**
  * Creates new folder.
- * @param {string} windowId ID of the target window.
+ * @param {string} windowId The Files app windowId.
  * @param {string} path Initial path.
  * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
  * @param {string} rootLabel label path's root.
@@ -140,7 +139,7 @@ function createNewFolder(windowId, path, initialEntrySet, rootLabel) {
 
 /**
  * This is used to expand the tree item for Downloads or Drive.
- * @param {string} windowId The Files app window.
+ * @param {string} windowId The Files app windowId.
  * @param {string} selector The Downloads or Drive tree item selector.
  * @return {Promise} Promise fulfilled on success.
  */
@@ -157,17 +156,16 @@ function expandRoot(windowId, selector) {
 }
 
 testcase.selectCreateFolderDownloads = function() {
-  var PATH = RootPath.DOWNLOADS;
-  var windowId = null;
-  var promise = new Promise(function(callback) {
-    setupAndWaitUntilReady(null, PATH, callback);
+  let windowId;
+
+  const promise = new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
   }).then(function(results) {
     windowId = results.windowId;
-    return selectFirstListItem(windowId);
-  }).then(function() {
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
-    return remoteCall.waitForElement(windowId, '#detail-table');
+    return selectFirstListItem(windowId);
   }).then(function() {
     return createNewFolder(windowId, '', BASIC_LOCAL_ENTRY_SET, 'Downloads');
   });
@@ -176,15 +174,14 @@ testcase.selectCreateFolderDownloads = function() {
 };
 
 testcase.createFolderDownloads = function() {
-  var PATH = RootPath.DOWNLOADS;
-  var windowId = null;
-  var promise = new Promise(function(callback) {
-    setupAndWaitUntilReady(null, PATH, callback);
+  let windowId;
+
+  const promise = new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
   }).then(function(results) {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
-  }).then(function() {
-    return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
     return createNewFolder(windowId, '', BASIC_LOCAL_ENTRY_SET, 'Downloads');
   });
@@ -193,35 +190,31 @@ testcase.createFolderDownloads = function() {
 };
 
 testcase.createFolderNestedDownloads = function() {
-  var PATH = RootPath.DOWNLOADS;
-  const expectedPhotosInitialSet = [];
+  let windowId;
 
-  var windowId = null;
-  var promise = new Promise(function(callback) {
-    setupAndWaitUntilReady(null, PATH, callback);
+  const promise = new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, RootPath.DOWNLOADS, resolve, BASIC_LOCAL_ENTRY_SET, []);
   }).then(function(results) {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
-    return remoteCall.waitForElement(windowId, '#detail-table');
-  }).then(function() {
-    return createNewFolder(
-        windowId, '/photos', expectedPhotosInitialSet, 'Downloads');
+    const photosEntrySet = [];
+    return createNewFolder(windowId, '/photos', photosEntrySet, 'Downloads');
   });
 
   testPromise(promise);
 };
 
 testcase.createFolderDrive = function() {
-  var PATH = RootPath.DRIVE;
-  var windowId = null;
-  var promise = new Promise(function(callback) {
-    setupAndWaitUntilReady(null, PATH, callback);
+  let windowId;
+
+  const promise = new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, RootPath.DRIVE, resolve, [], BASIC_DRIVE_ENTRY_SET);
   }).then(function(results) {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DRIVE);
-  }).then(function() {
-    return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
     return createNewFolder(windowId, '', BASIC_DRIVE_ENTRY_SET, 'My Drive');
   });
