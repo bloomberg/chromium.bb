@@ -37,11 +37,6 @@
 namespace translate {
 
 namespace {
-// The delay we wait in milliseconds before checking whether the translation has
-// finished.
-// Note: This should be kept in sync with the constant of the same name in
-// translate_ios.js.
-const int kTranslateStatusCheckDelayMs = 400;
 // Language name passed to the Translate element for it to detect the language.
 const char kAutoDetectionLanguage[] = "auto";
 
@@ -225,15 +220,6 @@ void IOSTranslateDriver::TranslationDidSucceed(
                                      translate_errors);
 }
 
-void IOSTranslateDriver::CheckTranslateStatus(
-    const std::string& source_language,
-    const std::string& target_language,
-    int page_seq_no) {
-  if (!IsPageValid(page_seq_no))
-    return;
-  translate_controller_->CheckTranslateStatus();
-}
-
 bool IOSTranslateDriver::IsPageValid(int page_seq_no) const {
   bool user_navigated_away = page_seq_no != page_seq_no_;
   return !user_navigated_away && web_state_;
@@ -260,12 +246,6 @@ void IOSTranslateDriver::OnTranslateScriptReady(bool success,
                            ? source_language_
                            : kAutoDetectionLanguage;
   translate_controller_->StartTranslation(source_language_, target_language_);
-  // Check the status of the translation -- after a delay.
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::Bind(&IOSTranslateDriver::CheckTranslateStatus,
-                            weak_method_factory_.GetWeakPtr(), source_language_,
-                            target_language_, pending_page_seq_no_),
-      base::TimeDelta::FromMilliseconds(kTranslateStatusCheckDelayMs));
 }
 
 void IOSTranslateDriver::OnTranslateComplete(

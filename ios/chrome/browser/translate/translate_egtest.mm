@@ -245,17 +245,11 @@ using translate::LanguageDetectionController;
   web::WebState* _webState;  // weak
 }
 
-// YES if translate status has been checked, indicating that translate callbacks
-// have all been invoked
-@property bool translateStatusChecked;
-
 - (instancetype)initWithWebState:(web::WebState*)webState;
 
 @end
 
 @implementation MockTranslateScriptManager
-
-@synthesize translateStatusChecked = _translateStatusChecked;
 
 - (instancetype)initWithWebState:(web::WebState*)webState {
   if ((self = [super init])) {
@@ -278,26 +272,20 @@ using translate::LanguageDetectionController;
 }
 
 - (void)inject {
-  // Prevent the actual script from being injected.
-}
-
-- (void)injectTranslateStatusScript {
-  _webState->ExecuteJavaScript(
-      base::UTF8ToUTF16("__gCrWeb.message.invokeOnHost({"
-                        "  'command': 'translate.status',"
-                        "  'success': true,"
-                        "  'originalPageLanguage': 'fr',"
-                        "  'translationTime': 0});"));
-  self.translateStatusChecked = true;
-}
-
-- (void)injectWaitUntilTranslateReadyScript {
+  // Prevent the actual script from being injected and instead just invoke host
+  // with 'translate.ready' followed by 'translate.status'.
   _webState->ExecuteJavaScript(
       base::UTF8ToUTF16("__gCrWeb.message.invokeOnHost({"
                         "  'command': 'translate.ready',"
                         "  'timeout': false,"
                         "  'loadTime': 0,"
                         "  'readyTime': 0});"));
+  _webState->ExecuteJavaScript(
+      base::UTF8ToUTF16("__gCrWeb.message.invokeOnHost({"
+                        "  'command': 'translate.status',"
+                        "  'success': true,"
+                        "  'originalPageLanguage': 'fr',"
+                        "  'translationTime': 0});"));
 }
 
 @end
@@ -780,14 +768,6 @@ using translate::LanguageDetectionController;
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
                                    IDS_TRANSLATE_INFOBAR_ACCEPT)]
       performAction:grey_tap()];
-
-  // Wait for all callbacks.
-  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
-                 base::test::ios::kWaitForJSCompletionTimeout,
-                 ^{
-                   return jsTranslateManager.translateStatusChecked;
-                 }),
-             @"Did not receive all translate status callbacks");
 
   // Check that the translation happened.
   [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
