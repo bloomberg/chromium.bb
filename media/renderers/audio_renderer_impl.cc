@@ -763,9 +763,13 @@ bool AudioRendererImpl::HandleDecodedBuffer_Locked(
       // Trim off any additional time before the start timestamp.
       const base::TimeDelta trim_time = start_timestamp_ - buffer->timestamp();
       if (trim_time > base::TimeDelta()) {
-        buffer->TrimStart(buffer->frame_count() *
-                          (static_cast<double>(trim_time.InMicroseconds()) /
-                           buffer->duration().InMicroseconds()));
+        const int frames_to_trim = AudioTimestampHelper::TimeToFrames(
+            trim_time, buffer->sample_rate());
+        DVLOG(1) << __func__ << ": Trimming first audio buffer by "
+                 << frames_to_trim << " frames so it starts at "
+                 << start_timestamp_;
+
+        buffer->TrimStart(frames_to_trim);
         buffer->set_timestamp(start_timestamp_);
       }
       // If the entire buffer was trimmed, request a new one.
