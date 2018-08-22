@@ -113,7 +113,8 @@ void SSLErrorAssistantComponentInstallerPolicy::GetHash(
 }
 
 std::string SSLErrorAssistantComponentInstallerPolicy::GetName() const {
-  return "SSL Error Assistant";
+  // This is a user visible string, so using something other than SSL and TLS.
+  return "Certificate Error Assistant";
 }
 
 update_client::InstallerAttributes
