@@ -185,7 +185,9 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/uk.yaml				  \
 	braille-specs/vi-g1_backward.yaml		  \
 	braille-specs/vi-g1_harness.yaml		  \
-	braille-specs/zh-chn.yaml
+	braille-specs/zh-chn.yaml			  \
+	braille-specs/zhcn-g1.yaml			  \
+	braille-specs/zhcn-g2.yaml
 
 # This test hangs when configured without --enable-ucs4
 if HAVE_UCS4

@@ -356,6 +356,8 @@ table_files = \
 	wiskunde-chardefs.cti \
 	zh-chn.ctb \
 	zh_CHN.tbl \
+	zhcn-g1.ctb \
+	zhcn-g2.ctb \
 	zh-hk.ctb \
 	zh_HK.tbl \
 	zh-tw.ctb \
