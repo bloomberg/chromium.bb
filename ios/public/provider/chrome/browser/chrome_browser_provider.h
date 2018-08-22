@@ -19,6 +19,7 @@
 class AppDistributionProvider;
 class BrandedImageProvider;
 class ExternalSearchProvider;
+class FullscreenProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
 class SpotlightProvider;
@@ -160,6 +161,9 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the External Search provider.
   virtual ExternalSearchProvider* GetExternalSearchProvider() const;
+
+  // Returns an instance of the fullscreen provider.
+  virtual FullscreenProvider* GetFullscreenProvider() const;
 
   // Checks for native iOS apps that are installed.
   virtual void CheckForFirstPartyApps() const;
