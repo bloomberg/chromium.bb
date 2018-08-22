@@ -119,6 +119,7 @@ class OverlayWindowViews : public content::OverlayWindow,
   void SetSecondCustomControlsBounds();
 
   ui::Layer* GetControlsBackgroundLayer();
+  ui::Layer* GetCloseControlsLayer();
   ui::Layer* GetControlsParentLayer();
 
   // Toggles the play/pause control through the |controller_| and updates the
