@@ -239,9 +239,7 @@ SkBitmap ImageFrameGenerator::TryToResumeDecode(
     SkBitmap::Allocator& allocator,
     ImageDecoder::AlphaOption alpha_option,
     ImageDecoder::HighBitDepthDecodingOption high_bit_depth_decoding_option) {
-#if DCHECK_IS_ON()
-  DCHECK(decode_mutex_.Locked());
-#endif
+  decode_mutex_.AssertAcquired();
 
   TRACE_EVENT1("blink", "ImageFrameGenerator::tryToResumeDecode", "frame index",
                static_cast<int>(index));
@@ -334,9 +332,7 @@ ImageFrame* ImageFrameGenerator::Decode(
     ImageDecoder::HighBitDepthDecodingOption high_bit_depth_decoding_option,
     const SkISize& scaled_size,
     bool& used_external_allocator) {
-#if DCHECK_IS_ON()
-  DCHECK(decode_mutex_.Locked());
-#endif
+  decode_mutex_.AssertAcquired();
   TRACE_EVENT2("blink", "ImageFrameGenerator::decode", "width",
                full_size_.width(), "height", full_size_.height());
 

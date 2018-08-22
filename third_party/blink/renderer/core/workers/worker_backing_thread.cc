@@ -32,7 +32,7 @@ Mutex& IsolatesMutex() {
 
 HashSet<v8::Isolate*>& Isolates() {
 #if DCHECK_IS_ON()
-  DCHECK(IsolatesMutex().Locked());
+  IsolatesMutex().AssertAcquired();
 #endif
   static HashSet<v8::Isolate*>& isolates = *new HashSet<v8::Isolate*>();
   return isolates;

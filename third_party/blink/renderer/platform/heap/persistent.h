@@ -186,7 +186,7 @@ class PersistentBase {
         crossThreadnessConfiguration == kCrossThreadPersistentConfiguration,
         "This Persistent does not require the cross-thread lock.");
 #if DCHECK_IS_ON()
-    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
     raw_ = nullptr;
     CrossThreadPersistentRegion& region =
@@ -342,7 +342,7 @@ class PersistentBase {
                      kWeakPersistentConfiguration,
                      kCrossThreadPersistentConfiguration>* persistent) {
 #if DCHECK_IS_ON()
-    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
     persistent->ClearWithLockHeld();
   }
