@@ -213,12 +213,8 @@ void DisconnectWindowGtk::Start(
   G_GNUC_END_IGNORE_DEPRECATIONS;
   gtk_container_add(GTK_CONTAINER(window), align);
 
-#if GTK_MAJOR_VERSION == 2
-  GtkWidget* button_row = gtk_hbox_new(FALSE, 12);
-#else
   GtkWidget* button_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
   gtk_box_set_homogeneous(GTK_BOX(button_row), FALSE);
-#endif
   gtk_container_add(GTK_CONTAINER(align), button_row);
 
   button_ = gtk_button_new_with_label(
@@ -238,13 +234,11 @@ void DisconnectWindowGtk::Start(
   gtk_label_set_attributes(GTK_LABEL(message_), attributes);
   pango_attr_list_unref(attributes);
 
-#if GTK_MAJOR_VERSION > 2
   GdkScreen* screen = gtk_widget_get_screen(disconnect_window_);
   GdkVisual* visual = gdk_screen_get_rgba_visual(screen);
 
   if (visual)
     gtk_widget_set_visual(disconnect_window_, visual);
-#endif
 
   gtk_widget_show_all(disconnect_window_);
 
@@ -287,51 +281,10 @@ gboolean DisconnectWindowGtk::OnConfigure(GtkWidget* widget,
 
   // gdk_window_set_back_pixmap() is not supported in GDK3, and
   // background drawing is handled in OnDraw().
-#if GTK_MAJOR_VERSION == 2
-  // Create the depth 1 pixmap for the window shape.
-  GdkPixmap* shape_mask =
-      gdk_pixmap_new(nullptr, current_width_, current_height_, 1);
-  cairo_t* cairo_context = gdk_cairo_create(shape_mask);
-
-  // Set the arc radius for the corners.
-  const int kCornerRadius = 6;
-
-  // Initialize the whole bitmap to be transparent.
-  cairo_set_source_rgba(cairo_context, 0, 0, 0, 0);
-  cairo_set_operator(cairo_context, CAIRO_OPERATOR_SOURCE);
-  cairo_paint(cairo_context);
-
-  // Paint an opaque round rect covering the whole area (leaving the extreme
-  // corners transparent).
-  cairo_set_source_rgba(cairo_context, 1, 1, 1, 1);
-  cairo_set_operator(cairo_context, CAIRO_OPERATOR_SOURCE);
-  AddRoundRectPath(cairo_context, current_width_, current_height_,
-                   kCornerRadius);
-  cairo_fill(cairo_context);
-
-  cairo_destroy(cairo_context);
-  gdk_window_shape_combine_mask(widget->window, shape_mask, 0, 0);
-  g_object_unref(shape_mask);
-
-  // Create a full-color pixmap for the window background image.
-  GdkPixmap* background =
-      gdk_pixmap_new(nullptr, current_width_, current_height_, 24);
-  cairo_context = gdk_cairo_create(background);
-  DrawBackground(cairo_context, current_width_, current_height_);
-  cairo_destroy(cairo_context);
-
-  gdk_window_set_back_pixmap(widget->window, background, FALSE);
-  g_object_unref(background);
-  gdk_window_invalidate_rect(widget->window, nullptr, TRUE);
-#endif  // GTK_MAJOR_VERSION == 2
-
   return FALSE;
 }
 
 gboolean DisconnectWindowGtk::OnDraw(GtkWidget* widget, cairo_t* cr) {
-#if GTK_MAJOR_VERSION == 2
-  NOTREACHED();
-#endif
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DrawBackground(cr, current_width_, current_height_);

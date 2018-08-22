@@ -18,20 +18,20 @@ struct DefaultSingletonTraits;
 
 namespace libgtkui {
 
-class Gtk2EventLoop {
+class GtkEventLoop {
  public:
-  static Gtk2EventLoop* GetInstance();
+  static GtkEventLoop* GetInstance();
 
  private:
-  friend struct base::DefaultSingletonTraits<Gtk2EventLoop>;
+  friend struct base::DefaultSingletonTraits<GtkEventLoop>;
 
-  Gtk2EventLoop();
-  ~Gtk2EventLoop();
+  GtkEventLoop();
+  ~GtkEventLoop();
 
   static void DispatchGdkEvent(GdkEvent* gdk_event, gpointer);
   static void ProcessGdkEventKey(const GdkEventKey& gdk_event_key);
 
-  DISALLOW_COPY_AND_ASSIGN(Gtk2EventLoop);
+  DISALLOW_COPY_AND_ASSIGN(GtkEventLoop);
 };
 
 }  // namespace libgtkui

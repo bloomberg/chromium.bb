@@ -71,14 +71,10 @@ void ContinueWindowGtk::CreateWindow() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!continue_window_);
 
-  GtkDialogFlags flags = GTK_DIALOG_MODAL;
-#if GTK_MAJOR_VERSION == 2
-  flags = static_cast<GtkDialogFlags>(flags | GTK_DIALOG_NO_SEPARATOR);
-#endif
   continue_window_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_PRODUCT_NAME).c_str(),
       nullptr,
-      flags,
+      GTK_DIALOG_MODAL,
       l10n_util::GetStringUTF8(IDS_STOP_SHARING_BUTTON).c_str(),
       GTK_RESPONSE_CANCEL,
       l10n_util::GetStringUTF8(IDS_CONTINUE_BUTTON).c_str(),

@@ -38,10 +38,10 @@ namespace libgtkui {
 // definition of webkit edit commands.
 // See webkit/glue/editor_client_impl.cc for key bindings predefined in our
 // webkit glue.
-class Gtk2KeyBindingsHandler {
+class GtkKeyBindingsHandler {
  public:
-  Gtk2KeyBindingsHandler();
-  virtual ~Gtk2KeyBindingsHandler();
+  GtkKeyBindingsHandler();
+  virtual ~GtkKeyBindingsHandler();
 
   // Matches a key event against predefined gtk key bindings, false will be
   // returned if the key event doesn't correspond to a predefined key binding.
@@ -54,7 +54,7 @@ class Gtk2KeyBindingsHandler {
   // Object structure of Handler class, which is derived from GtkTextView.
   struct Handler {
     GtkTextView parent_object;
-    Gtk2KeyBindingsHandler* owner;
+    GtkKeyBindingsHandler* owner;
   };
 
   // Class structure of Handler class.
@@ -82,8 +82,8 @@ class Gtk2KeyBindingsHandler {
   // Registeres Handler class to GObject type system and return its type id.
   static GType HandlerGetType();
 
-  // Gets the Gtk2KeyBindingsHandler object which owns the Handler object.
-  static Gtk2KeyBindingsHandler* GetHandlerOwner(GtkTextView* text_view);
+  // Gets the GtkKeyBindingsHandler object which owns the Handler object.
+  static GtkKeyBindingsHandler* GetHandlerOwner(GtkTextView* text_view);
 
   // Handler of "backspace" signal.
   static void BackSpace(GtkTextView* text_view);

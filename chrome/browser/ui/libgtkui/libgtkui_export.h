@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_LIBGTKUI_LIBGTKUI_EXPORT_H_
 
 // Defines LIBGTKUI_EXPORT so that functionality implemented by our limited
-// gtk2 module can be exported to consumers.
+// gtk module can be exported to consumers.
 
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_SETTINGS_PROVIDER_GTK3_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_SETTINGS_PROVIDER_GTK3_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_SETTINGS_PROVIDER_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_SETTINGS_PROVIDER_GTK_H_
 
 #include <string>
 
@@ -19,16 +19,16 @@ namespace libgtkui {
 
 class GtkUi;
 
-class SettingsProviderGtk3 : public SettingsProvider {
+class SettingsProviderGtk : public SettingsProvider {
  public:
-  explicit SettingsProviderGtk3(GtkUi* delegate);
-  ~SettingsProviderGtk3() override;
+  explicit SettingsProviderGtk(GtkUi* delegate);
+  ~SettingsProviderGtk() override;
 
  private:
   class FrameActionSettingWatcher {
    public:
     FrameActionSettingWatcher(
-        SettingsProviderGtk3* settings_provider,
+        SettingsProviderGtk* settings_provider,
         const std::string& setting_name,
         views::LinuxUI::NonClientWindowFrameActionSourceType action_type,
         views::LinuxUI::NonClientWindowFrameAction default_action);
@@ -41,7 +41,7 @@ class SettingsProviderGtk3 : public SettingsProvider {
                        GParamSpec*);
 
    private:
-    SettingsProviderGtk3* settings_provider_;
+    SettingsProviderGtk* settings_provider_;
     std::string setting_name_;
     views::LinuxUI::NonClientWindowFrameActionSourceType action_type_;
     views::LinuxUI::NonClientWindowFrameAction default_action_;
@@ -52,13 +52,13 @@ class SettingsProviderGtk3 : public SettingsProvider {
 
   void SetWindowButtonOrderingFromGtkLayout(const std::string& gtk_layout);
 
-  CHROMEG_CALLBACK_1(SettingsProviderGtk3,
+  CHROMEG_CALLBACK_1(SettingsProviderGtk,
                      void,
                      OnDecorationButtonLayoutChanged,
                      GtkSettings*,
                      GParamSpec*);
 
-  CHROMEG_CALLBACK_1(SettingsProviderGtk3,
+  CHROMEG_CALLBACK_1(SettingsProviderGtk,
                      void,
                      OnThemeChanged,
                      GtkSettings*,
@@ -71,9 +71,9 @@ class SettingsProviderGtk3 : public SettingsProvider {
   std::vector<std::unique_ptr<FrameActionSettingWatcher>>
       frame_action_setting_watchers_;
 
-  DISALLOW_COPY_AND_ASSIGN(SettingsProviderGtk3);
+  DISALLOW_COPY_AND_ASSIGN(SettingsProviderGtk);
 };
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_SETTINGS_PROVIDER_GTK3_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_SETTINGS_PROVIDER_GTK_H_

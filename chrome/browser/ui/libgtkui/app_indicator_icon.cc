@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/stringize_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -90,27 +91,15 @@ void EnsureMethodsLoaded() {
 
   void* indicator_lib = nullptr;
 
-  // These include guards might be unnecessary, but let's keep them as a
-  // precaution since using gtk2 and gtk3 symbols in the same process is
-  // explicitly unsupported.
-#if GTK_MAJOR_VERSION == 2
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator.so", RTLD_LAZY);
+  if (!indicator_lib) {
+    indicator_lib =
+        dlopen("libappindicator" STRINGIZE(GTK_MAJOR_VERSION) ".so", RTLD_LAZY);
+  }
 
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator.so.1", RTLD_LAZY);
-
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator.so.0", RTLD_LAZY);
-#endif
-
-#if GTK_MAJOR_VERSION == 3
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator3.so", RTLD_LAZY);
-
-  if (!indicator_lib)
-    indicator_lib = dlopen("libappindicator3.so.1", RTLD_LAZY);
-#endif
+  if (!indicator_lib) {
+    indicator_lib = dlopen(
+        "libappindicator" STRINGIZE(GTK_MAJOR_VERSION) ".so.1", RTLD_LAZY);
+  }
 
   if (!indicator_lib)
     return;

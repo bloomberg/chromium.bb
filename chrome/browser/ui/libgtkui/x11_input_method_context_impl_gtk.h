@@ -23,11 +23,11 @@ namespace libgtkui {
 
 // An implementation of LinuxInputMethodContext which is based on X11 event loop
 // and uses GtkIMContext(gtk-immodule) as a bridge from/to underlying IMEs.
-class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
+class X11InputMethodContextImplGtk : public ui::LinuxInputMethodContext {
  public:
-  X11InputMethodContextImplGtk2(ui::LinuxInputMethodContextDelegate* delegate,
-                                bool is_simple);
-  ~X11InputMethodContextImplGtk2() override;
+  X11InputMethodContextImplGtk(ui::LinuxInputMethodContextDelegate* delegate,
+                               bool is_simple);
+  ~X11InputMethodContextImplGtk() override;
 
   // Overriden from ui::LinuxInputMethodContext
   bool DispatchKeyEvent(const ui::KeyEvent& key_event) override;
@@ -58,20 +58,20 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
 
   // GtkIMContext event handlers.  They are shared among |gtk_context_simple_|
   // and |gtk_multicontext_|.
-  CHROMEG_CALLBACK_1(X11InputMethodContextImplGtk2,
+  CHROMEG_CALLBACK_1(X11InputMethodContextImplGtk,
                      void,
                      OnCommit,
                      GtkIMContext*,
                      gchar*);
-  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2,
+  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk,
                      void,
                      OnPreeditChanged,
                      GtkIMContext*);
-  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2,
+  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk,
                      void,
                      OnPreeditEnd,
                      GtkIMContext*);
-  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk2,
+  CHROMEG_CALLBACK_0(X11InputMethodContextImplGtk,
                      void,
                      OnPreeditStart,
                      GtkIMContext*);
@@ -95,7 +95,7 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
   std::vector<int> super_keycodes_;
   std::vector<int> hyper_keycodes_;
 
-  DISALLOW_COPY_AND_ASSIGN(X11InputMethodContextImplGtk2);
+  DISALLOW_COPY_AND_ASSIGN(X11InputMethodContextImplGtk);
 };
 
 }  // namespace libgtkui

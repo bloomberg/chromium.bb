@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK3_H_
-#define CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK3_H_
+#ifndef CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK_H_
+#define CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK_H_
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -19,10 +19,10 @@ namespace libgtkui {
 
 using ScopedCssProvider = ScopedGObject<GtkCssProvider>;
 
-// A version of NativeTheme that uses GTK3-rendered widgets.
-class NativeThemeGtk3 : public ui::NativeThemeBase {
+// A version of NativeTheme that uses GTK-rendered widgets.
+class NativeThemeGtk : public ui::NativeThemeBase {
  public:
-  static NativeThemeGtk3* instance();
+  static NativeThemeGtk* instance();
 
   // Overridden from ui::NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
@@ -65,12 +65,12 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
       const FrameTopAreaExtraParams& frame_top_area) const override;
 
  private:
-  NativeThemeGtk3();
-  ~NativeThemeGtk3() override;
+  NativeThemeGtk();
+  ~NativeThemeGtk() override;
 
   void SetThemeCssOverride(ScopedCssProvider provider);
 
-  CHROMEG_CALLBACK_1(NativeThemeGtk3,
+  CHROMEG_CALLBACK_1(NativeThemeGtk,
                      void,
                      OnThemeChanged,
                      GtkSettings*,
@@ -80,9 +80,9 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
 
   ScopedCssProvider theme_css_override_;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk3);
+  DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk);
 };
 
 }  // namespace libgtkui
 
-#endif  // CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK3_H_
+#endif  // CHROME_BROWSER_UI_LIBGTKUI_NATIVE_THEME_GTK_H_
