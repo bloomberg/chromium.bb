@@ -89,15 +89,19 @@ class ServiceWorkerURLTrackingRequestHandler
     return nullptr;
   }
 
-  void MaybeCreateLoader(const network::ResourceRequest& resource_request,
-                         ResourceContext*,
-                         LoaderCallback callback) override {
+  void MaybeCreateLoader(
+      const network::ResourceRequest& tentative_resource_request,
+      ResourceContext*,
+      LoaderCallback callback,
+      FallbackCallback fallback_callback) override {
     // |provider_host_| may have been deleted when the request is resumed.
     if (!provider_host_)
       return;
-    const GURL stripped_url = net::SimplifyUrlForRequest(resource_request.url);
+    const GURL stripped_url =
+        net::SimplifyUrlForRequest(tentative_resource_request.url);
     provider_host_->SetDocumentUrl(stripped_url);
-    provider_host_->SetTopmostFrameUrl(resource_request.site_for_cookies);
+    provider_host_->SetTopmostFrameUrl(
+        tentative_resource_request.site_for_cookies);
     // Fall back to network.
     std::move(callback).Run({});
   }

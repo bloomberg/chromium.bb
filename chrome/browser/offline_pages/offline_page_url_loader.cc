@@ -64,12 +64,12 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
 std::unique_ptr<OfflinePageURLLoader> OfflinePageURLLoader::Create(
     content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id,
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& tentative_resource_request,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
-  if (ShouldCreateLoader(resource_request)) {
-    return base::WrapUnique(
-        new OfflinePageURLLoader(navigation_ui_data, frame_tree_node_id,
-                                 resource_request, std::move(callback)));
+  if (ShouldCreateLoader(tentative_resource_request)) {
+    return base::WrapUnique(new OfflinePageURLLoader(
+        navigation_ui_data, frame_tree_node_id, tentative_resource_request,
+        std::move(callback)));
   }
 
   std::move(callback).Run({});
@@ -79,18 +79,23 @@ std::unique_ptr<OfflinePageURLLoader> OfflinePageURLLoader::Create(
 OfflinePageURLLoader::OfflinePageURLLoader(
     content::NavigationUIData* navigation_ui_data,
     int frame_tree_node_id,
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& tentative_resource_request,
     content::URLLoaderRequestInterceptor::LoaderCallback callback)
     : navigation_ui_data_(navigation_ui_data),
       frame_tree_node_id_(frame_tree_node_id),
-      transition_type_(resource_request.transition_type),
+      transition_type_(tentative_resource_request.transition_type),
       loader_callback_(std::move(callback)),
       binding_(this),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
+  // TODO(crbug.com/876527): Figure out how offline page interception should
+  // interact with URLLoaderThrottles. It might be incorrect to use
+  // |tentative_resource_request.headers| here, since throttles can rewrite
+  // headers between now and when the request handler passed to
+  // |loader_callback_| is invoked.
   request_handler_ = std::make_unique<OfflinePageRequestHandler>(
-      resource_request.url, resource_request.headers, this);
+      tentative_resource_request.url, tentative_resource_request.headers, this);
   request_handler_->Start();
 }
 
@@ -239,6 +244,7 @@ void OfflinePageURLLoader::ReadRawData() {
 
 void OfflinePageURLLoader::OnReceiveError(
     int error,
+    const network::ResourceRequest& /* resource_request */,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
   client_ = std::move(client);
@@ -247,8 +253,13 @@ void OfflinePageURLLoader::OnReceiveError(
 
 void OfflinePageURLLoader::OnReceiveResponse(
     int64_t file_size,
+    const network::ResourceRequest& /* resource_request */,
     network::mojom::URLLoaderRequest request,
     network::mojom::URLLoaderClientPtr client) {
+  // TODO(crbug.com/876527): Figure out how offline page interception should
+  // interact with URLLoaderThrottles. It might be incorrect to ignore
+  // |resource_request| here, since it's the current request after
+  // throttles.
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(

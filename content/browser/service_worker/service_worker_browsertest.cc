@@ -3309,11 +3309,8 @@ class ServiceWorkerURLLoaderThrottleTest : public ServiceWorkerBrowserTest {
 
 // Test that the throttles can inject headers during navigation that are
 // observable inside the service worker's fetch event.
-//
-// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
-// test.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
-                       DISABLED_FetchEventForNavigationHasThrottledRequest) {
+                       FetchEventForNavigationHasThrottledRequest) {
   // This tests throttling behavior which only has an effect on service worker
   // interception when servicification is on.
   if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
@@ -3353,11 +3350,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
 }
 
 // Test that redirects by throttles occur before service worker interception.
-//
-// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
-// test.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
-                       DISABLED_RedirectOccursBeforeFetchEvent) {
+                       RedirectOccursBeforeFetchEvent) {
   // This tests throttling behavior which only has an effect on service worker
   // interception when servicification is on.
   if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
@@ -3408,21 +3402,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
 
 // Test that the headers injected by throttles during navigation are
 // present in the network request in the case of network fallback.
-//
-// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
-// test.
 IN_PROC_BROWSER_TEST_F(
     ServiceWorkerURLLoaderThrottleTest,
-    DISABLED_NavigationHasThrottledRequestHeadersAfterNetworkFallback) {
-  // This tests throttling behavior on network requests which only has an effect
-  // on headers when NetworkService is on. ServiceWorkerServicification won't
-  // pass this test because it uses throttles before the request to the service
-  // worker but throttle-modified headers are not propagated to network requests
-  // through ResourceDispatcherHost, because the legacy network code has its own
-  // code path that applies the same throttling independent from the
-  // navigation's URLLoaderThrottles.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    LOG(WARNING) << "This test requires NetworkService.";
+    NavigationHasThrottledRequestHeadersAfterNetworkFallback) {
+  // This tests throttling behavior which only has an effect on service worker
+  // interception when servicification is on.
+  if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {
+    LOG(WARNING)
+        << "This test requires NetworkService or ServiceWorkerServicification.";
     return;
   }
 
@@ -3444,20 +3431,30 @@ IN_PROC_BROWSER_TEST_F(
   // service worker network fallback.
   EXPECT_EQ(true, EvalJs(shell()->web_contents()->GetMainFrame(),
                          "!!navigator.serviceWorker.controller"));
-  // The injected header should be present.
-  EXPECT_EQ("injected value", EvalJs(shell()->web_contents()->GetMainFrame(),
-                                     "document.body.textContent"));
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // The injected header should be present.
+    EXPECT_EQ("injected value", EvalJs(shell()->web_contents()->GetMainFrame(),
+                                       "document.body.textContent"));
+  } else {
+    // S13nServiceWorker: the injected header is not present. Throttle-modified
+    // headers are not propagated to network requests through
+    // ResourceDispatcherHost, because the legacy network code has its own code
+    // path that applies the same throttling independent from the navigation's
+    // URLLoaderThrottles.
+    DCHECK(base::FeatureList::IsEnabled(
+        blink::features::kServiceWorkerServicification));
+    EXPECT_EQ("None", EvalJs(shell()->web_contents()->GetMainFrame(),
+                             "document.body.textContent"));
+  }
 
   SetBrowserClientForTesting(old_content_browser_client);
 }
 
 // Test that the headers injected by throttles during navigation are
 // present in the navigation preload request.
-//
-// TODO(crbug.com/873575): Disabled until the next patch lands which fixes the
-// test.
 IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
-                       DISABLED_NavigationPreloadHasThrottledRequestHeaders) {
+                       NavigationPreloadHasThrottledRequestHeaders) {
   // This tests throttling behavior which only has an effect on service worker
   // interception when servicification is on.
   if (!blink::ServiceWorkerUtils::IsServicificationEnabled()) {

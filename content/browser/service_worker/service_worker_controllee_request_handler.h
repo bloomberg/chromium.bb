@@ -80,9 +80,10 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
   // NavigationLoaderInterceptor overrides:
-  void MaybeCreateLoader(const network::ResourceRequest& request,
+  void MaybeCreateLoader(const network::ResourceRequest& tentative_request,
                          ResourceContext* resource_context,
-                         LoaderCallback callback) override;
+                         LoaderCallback callback,
+                         FallbackCallback fallback_callback) override;
   // Returns params with the ControllerServiceWorkerPtr if we have found
   // a matching controller service worker for the |request| that is given
   // to MaybeCreateLoader(). Otherwise this returns base::nullopt.

@@ -1249,6 +1249,7 @@ class OfflinePageURLLoaderBuilder : public TestURLLoaderClient::Observer {
                             const net::HttpRequestHeaders& extra_headers,
                             bool is_main_frame);
   void MaybeStartLoader(
+      const network::ResourceRequest& request,
       content::URLLoaderRequestInterceptor::RequestHandler request_handler);
   void ReadBody();
   void ReadCompletedOnIO(const ResponseInfo& response);
@@ -1308,7 +1309,7 @@ void OfflinePageURLLoaderBuilder::InterceptRequestOnIO(
       navigation_ui_data_.get(),
       test_base_->web_contents()->GetMainFrame()->GetFrameTreeNodeId(), request,
       base::BindOnce(&OfflinePageURLLoaderBuilder::MaybeStartLoader,
-                     base::Unretained(this)));
+                     base::Unretained(this), request));
 
   // |url_loader_| may not be created.
   if (!url_loader_)
@@ -1336,6 +1337,7 @@ void OfflinePageURLLoaderBuilder::InterceptRequest(
 }
 
 void OfflinePageURLLoaderBuilder::MaybeStartLoader(
+    const network::ResourceRequest& request,
     content::URLLoaderRequestInterceptor::RequestHandler request_handler) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -1350,7 +1352,7 @@ void OfflinePageURLLoaderBuilder::MaybeStartLoader(
   url_loader_.release();
 
   std::move(request_handler)
-      .Run(mojo::MakeRequest(&loader_), client_->CreateInterfacePtr());
+      .Run(request, mojo::MakeRequest(&loader_), client_->CreateInterfacePtr());
 }
 
 void OfflinePageURLLoaderBuilder::ReadBody() {

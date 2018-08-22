@@ -29,7 +29,8 @@ class URLLoaderRequestInterceptor {
   virtual ~URLLoaderRequestInterceptor() = default;
 
   using RequestHandler =
-      base::OnceCallback<void(network::mojom::URLLoaderRequest,
+      base::OnceCallback<void(const network::ResourceRequest& resource_request,
+                              network::mojom::URLLoaderRequest,
                               network::mojom::URLLoaderClientPtr)>;
   using LoaderCallback = base::OnceCallback<void(RequestHandler)>;
 
@@ -37,8 +38,13 @@ class URLLoaderRequestInterceptor {
   // The handler must invoke |callback| eventually with either a non-null
   // RequestHandler indicating its willingness to handle the request, or a null
   // RequestHandler to indicate that someone else should handle the request.
+  //
+  // The |tentative_resource_request| passed to this function and the resource
+  // request later passed to the RequestHandler given to |callback| may not be
+  // exactly the same. See documentation for
+  // NavigationLoaderInterceptor::MaybeCreateLoader.
   virtual void MaybeCreateLoader(
-      const network::ResourceRequest& resource_request,
+      const network::ResourceRequest& tentative_resource_request,
       ResourceContext* resource_context,
       LoaderCallback callback) = 0;
 };

@@ -167,11 +167,9 @@ class ServiceWorkerRequestHandlerTest : public testing::Test {
       bool expected_handler_created) {
     std::unique_ptr<ServiceWorkerNavigationHandleCore> navigation_handle_core =
         CreateNavigationHandleCore(helper_->context_wrapper());
-    network::ResourceRequest resource_request;
-    resource_request.url = GURL(url);
     std::unique_ptr<NavigationLoaderInterceptor> interceptor =
         ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
-            resource_request, nullptr /* resource_context */,
+            GURL(url), nullptr /* resource_context */,
             navigation_handle_core.get(), &blob_storage_context_,
             false /* skip_service_worker */, RESOURCE_TYPE_MAIN_FRAME,
             REQUEST_CONTEXT_TYPE_HYPERLINK,

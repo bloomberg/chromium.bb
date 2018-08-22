@@ -85,25 +85,30 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 
 ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
     NavigationLoaderInterceptor::LoaderCallback callback,
+    NavigationLoaderInterceptor::FallbackCallback fallback_callback,
     Delegate* delegate,
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& tentative_resource_request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)
     : loader_callback_(std::move(callback)),
+      fallback_callback_(std::move(fallback_callback)),
       delegate_(delegate),
-      resource_request_(resource_request),
       url_loader_factory_getter_(std::move(url_loader_factory_getter)),
       binding_(this),
       weak_factory_(this) {
   TRACE_EVENT_WITH_FLOW1(
       "ServiceWorker",
       "ServiceWorkerNavigationLoader::ServiceWorkerNavigationloader", this,
-      TRACE_EVENT_FLAG_FLOW_OUT, "url", resource_request_.url.spec());
+      TRACE_EVENT_FLAG_FLOW_OUT, "url", tentative_resource_request.url.spec());
 
   DCHECK(ServiceWorkerUtils::IsMainResourceType(
-      static_cast<ResourceType>(resource_request.resource_type)));
+      static_cast<ResourceType>(tentative_resource_request.resource_type)));
 
   response_head_.load_timing.request_start = base::TimeTicks::Now();
   response_head_.load_timing.request_start_time = base::Time::Now();
+
+  // Beware that the final resource request may change due to throttles, so
+  // don't save |tentative_resource_request| here. We'll get the real one in
+  // StartRequest.
 }
 
 ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
@@ -134,7 +139,10 @@ void ServiceWorkerNavigationLoader::ForwardToServiceWorker() {
       "ServiceWorker", "ServiceWorkerNavigationLoader::ForwardToServiceWorker",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
-  StartRequest();
+
+  std::move(loader_callback_)
+      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartRequest,
+                          weak_factory_.GetWeakPtr()));
 }
 
 bool ServiceWorkerNavigationLoader::ShouldFallbackToNetwork() {
@@ -159,7 +167,20 @@ ServiceWorkerNavigationLoader::AsWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-void ServiceWorkerNavigationLoader::StartRequest() {
+void ServiceWorkerNavigationLoader::StartRequest(
+    const network::ResourceRequest& resource_request,
+    network::mojom::URLLoaderRequest request,
+    network::mojom::URLLoaderClientPtr client) {
+  resource_request_ = resource_request;
+
+  DCHECK(!binding_.is_bound());
+  DCHECK(!url_loader_client_.is_bound());
+  binding_.Bind(std::move(request));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&ServiceWorkerNavigationLoader::OnConnectionClosed,
+                     base::Unretained(this)));
+  url_loader_client_ = std::move(client);
+
   DCHECK_EQ(ResponseType::FORWARD_TO_SERVICE_WORKER, response_type_);
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
@@ -176,14 +197,15 @@ void ServiceWorkerNavigationLoader::StartRequest() {
     delegate_->ReportDestination(
         ServiceWorkerMetrics::MainResourceRequestDestination::
             kErrorNoActiveWorkerFromDelegate);
-    ReturnNetworkError();
+    StartErrorResponse();
     return;
   }
 
   // ServiceWorkerFetchDispatcher requires a std::unique_ptr<ResourceRequest>
   // so make one here.
   // TODO(crbug.com/803125): Try to eliminate unnecessary copying?
-  auto request = std::make_unique<network::ResourceRequest>(resource_request_);
+  auto resource_request_to_pass =
+      std::make_unique<network::ResourceRequest>(resource_request_);
 
   // Passing the request body over Mojo moves out the DataPipeGetter elements,
   // which would mean we should clone the body like
@@ -191,14 +213,15 @@ void ServiceWorkerNavigationLoader::StartRequest() {
   // here yet: they are only created by the renderer when converting from a
   // Blob, which doesn't happen for navigations. In interest of speed, just
   // don't clone until proven necessary.
-  DCHECK(BodyHasNoDataPipeGetters(request->request_body.get()))
+  DCHECK(BodyHasNoDataPipeGetters(resource_request_to_pass->request_body.get()))
       << "We assumed there would be no data pipe getter elements here, but "
          "there are. Add code here to clone the body before proceeding.";
 
   // Dispatch the fetch event.
   delegate_->WillDispatchFetchEventForMainResource();
   fetch_dispatcher_ = std::make_unique<ServiceWorkerFetchDispatcher>(
-      std::move(request), std::string() /* request_body_blob_uuid */,
+      std::move(resource_request_to_pass),
+      std::string() /* request_body_blob_uuid */,
       0 /* request_body_blob_size */, nullptr /* request_body_blob */,
       std::string() /* client_id */, active_worker,
       net::NetLogWithSource() /* TODO(scottmg): net log? */,
@@ -247,17 +270,13 @@ void ServiceWorkerNavigationLoader::CommitCompleted(int error_code) {
       network::URLLoaderCompletionStatus(error_code));
 }
 
-void ServiceWorkerNavigationLoader::ReturnNetworkError() {
+void ServiceWorkerNavigationLoader::StartErrorResponse() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_WITH_FLOW0(
-      "ServiceWorker", "ServiceWorkerNavigationLoader::ReturnNetworkError",
+      "ServiceWorker", "ServiceWorkerNavigationLoader::StartErrorResponse",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-
-  DCHECK(!url_loader_client_.is_bound());
-  DCHECK(loader_callback_);
-  std::move(loader_callback_)
-      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartErrorResponse,
-                          weak_factory_.GetWeakPtr()));
+  DCHECK_EQ(Status::kStarted, status_);
+  CommitCompleted(net::ERR_FAILED);
 }
 
 void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
@@ -303,19 +322,28 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   if (!delegate_->RequestStillValid(&result)) {
-    ReturnNetworkError();
+    StartErrorResponse();
     return;
   }
 
   if (status != blink::ServiceWorkerStatusCode::kOk) {
+    // Dispatching the event to the service worker failed. Do a last resort
+    // attempt to load the page via network as if there was no service worker.
+    // It'd be more correct and simpler to remove this path and show an error
+    // page, but the risk is that the user will be stuck if there's a persistent
+    // failure.
     delegate_->MainResourceLoadFailed();
-    FallbackToNetwork();
+    std::move(fallback_callback_)
+        .Run(true /* reset_subresource_loader_params */);
     return;
   }
 
   if (fetch_result ==
       ServiceWorkerFetchDispatcher::FetchEventResult::kShouldFallback) {
-    FallbackToNetwork();
+    // TODO(falken): Propagate the timing info to the renderer somehow, or else
+    // Navigation Timing etc APIs won't know about service worker.
+    std::move(fallback_callback_)
+        .Run(false /* reset_subresource_loader_params */);
     return;
   }
 
@@ -325,30 +353,18 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
   // A response with status code 0 is Blink telling us to respond with
   // network error.
   if (response->status_code == 0) {
-    ReturnNetworkError();
+    StartErrorResponse();
     return;
   }
 
-  std::move(loader_callback_)
-      .Run(base::BindOnce(&ServiceWorkerNavigationLoader::StartResponse,
-                          weak_factory_.GetWeakPtr(), std::move(response),
-                          version, std::move(body_as_stream)));
+  StartResponse(std::move(response), std::move(version),
+                std::move(body_as_stream));
 }
 
 void ServiceWorkerNavigationLoader::StartResponse(
     blink::mojom::FetchAPIResponsePtr response,
     scoped_refptr<ServiceWorkerVersion> version,
-    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-    network::mojom::URLLoaderRequest request,
-    network::mojom::URLLoaderClientPtr client) {
-  DCHECK(!binding_.is_bound());
-  DCHECK(!url_loader_client_.is_bound());
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
-      base::BindOnce(&ServiceWorkerNavigationLoader::OnConnectionClosed,
-                     base::Unretained(this)));
-  url_loader_client_ = std::move(client);
-
+    blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
   ServiceWorkerLoaderHelpers::SaveResponseInfo(*response, &response_head_);
   ServiceWorkerLoaderHelpers::SaveResponseHeaders(
       response->status_code, response->status_text, response->headers,
@@ -433,15 +449,6 @@ void ServiceWorkerNavigationLoader::StartResponse(
 
   // The response has no body.
   CommitCompleted(net::OK);
-}
-
-void ServiceWorkerNavigationLoader::StartErrorResponse(
-    network::mojom::URLLoaderRequest request,
-    network::mojom::URLLoaderClientPtr client) {
-  DCHECK_EQ(Status::kStarted, status_);
-  DCHECK(!url_loader_client_.is_bound());
-  url_loader_client_ = std::move(client);
-  CommitCompleted(net::ERR_FAILED);
 }
 
 // URLLoader implementation----------------------------------------

@@ -445,15 +445,19 @@ class ServiceWorkerNavigationLoaderTest
     kDidNotHandleRequest,
   };
 
-  // Returns whether ServiceWorkerNavigationLoader handled the request. If
-  // kHandledRequest was returned, the request is ongoing and the caller can use
-  // functions like client_.RunUntilComplete() to wait for completion.
+  // Starts a request. Returns whether ServiceWorkerNavigationLoader handled the
+  // request. If kHandledRequest was returned, the request is ongoing and the
+  // caller can use functions like client_.RunUntilComplete() to wait for
+  // completion.
   LoaderResult StartRequest(std::unique_ptr<network::ResourceRequest> request) {
     // Start a ServiceWorkerNavigationLoader. It should return a
     // RequestHandler.
     SingleRequestURLLoaderFactory::RequestHandler handler;
     loader_ = std::make_unique<ServiceWorkerNavigationLoader>(
-        base::BindOnce(&ReceiveRequestHandler, &handler), this, *request,
+        base::BindOnce(&ReceiveRequestHandler, &handler),
+        base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
+                       base::Unretained(this)),
+        this, *request,
         base::WrapRefCounted<URLLoaderFactoryGetter>(
             helper_->context()->loader_factory_getter()));
     loader_->ForwardToServiceWorker();
@@ -462,10 +466,30 @@ class ServiceWorkerNavigationLoaderTest
       return LoaderResult::kDidNotHandleRequest;
 
     // Run the handler. It will load |request.url|.
-    std::move(handler).Run(mojo::MakeRequest(&loader_ptr_),
+    std::move(handler).Run(*request, mojo::MakeRequest(&loader_ptr_),
                            client_.CreateInterfacePtr());
 
     return LoaderResult::kHandledRequest;
+  }
+
+  // The |fallback_callback| passed to the ServiceWorkerNavigationLoader in
+  // StartRequest().
+  void Fallback(bool reset_subresource_loader_params) {
+    did_call_fallback_callback_ = true;
+    reset_subresource_loader_params_ = reset_subresource_loader_params;
+    if (quit_closure_for_fallback_callback_)
+      std::move(quit_closure_for_fallback_callback_).Run();
+  }
+
+  // Runs until the ServiceWorkerNavigationLoader created in StartRequest()
+  // calls the |fallback_callback| given to it. The argument passed to
+  // |fallback_callback| is saved in |reset_subresurce_loader_params_|.
+  void RunUntilFallbackCallback() {
+    if (did_call_fallback_callback_)
+      return;
+    base::RunLoop run_loop;
+    quit_closure_for_fallback_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
   }
 
   void ExpectResponseInfo(const network::ResourceResponseHead& info,
@@ -528,6 +552,11 @@ class ServiceWorkerNavigationLoaderTest
   bool was_main_resource_load_failed_called_ = false;
   std::unique_ptr<ServiceWorkerNavigationLoader> loader_;
   network::mojom::URLLoaderPtr loader_ptr_;
+
+  bool did_call_fallback_callback_ = false;
+  bool reset_subresource_loader_params_ = false;
+  base::OnceClosure quit_closure_for_fallback_callback_;
+
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -577,10 +606,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, RequestBody) {
   request->request_body = request_body;
 
   // This test doesn't use the response to the fetch event, so just have the
-  // service worker do simple network fallback.
-  helper_->RespondWithFallback();
-  LoaderResult result = StartRequest(std::move(request));
-  EXPECT_EQ(LoaderResult::kDidNotHandleRequest, result);
+  // service worker do the default simple response.
+  StartRequest(std::move(request));
+  client_.RunUntilComplete();
 
   // Verify that the request body was passed to the fetch event.
   std::string body;
@@ -782,7 +810,12 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackResponse) {
 
   // Perform the request.
   LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kDidNotHandleRequest, result);
+  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+
+  // The fallback callback should be called.
+  RunUntilFallbackCallback();
+  EXPECT_FALSE(reset_subresource_loader_params_);
+  EXPECT_FALSE(was_main_resource_load_failed_called_);
 
   // The request should not be handled by the loader, but it shouldn't be a
   // failure.
@@ -815,8 +848,13 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FailFetchDispatch) {
 
   // Perform the request.
   LoaderResult result = StartRequest(CreateRequest());
-  EXPECT_EQ(LoaderResult::kDidNotHandleRequest, result);
+  EXPECT_EQ(LoaderResult::kHandledRequest, result);
+
+  // The fallback callback should be called.
+  RunUntilFallbackCallback();
+  EXPECT_TRUE(reset_subresource_loader_params_);
   EXPECT_TRUE(was_main_resource_load_failed_called_);
+
   histogram_tester.ExpectUniqueSample(
       kHistogramMainResourceFetchEvent,
       blink::ServiceWorkerStatusCode::kErrorFailed, 1);
@@ -859,7 +897,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, FallbackToNetwork) {
 
   SingleRequestURLLoaderFactory::RequestHandler handler;
   auto loader = std::make_unique<ServiceWorkerNavigationLoader>(
-      base::BindOnce(&ReceiveRequestHandler, &handler), this, request,
+      base::BindOnce(&ReceiveRequestHandler, &handler),
+      base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
+                     base::Unretained(this)),
+      this, request,
       base::WrapRefCounted<URLLoaderFactoryGetter>(
           helper_->context()->loader_factory_getter()));
   // Ask the loader to fallback to network. In production code,
@@ -956,7 +997,10 @@ TEST_F(ServiceWorkerNavigationLoaderTest, LifetimeAfterFallbackToNetwork) {
 
   SingleRequestURLLoaderFactory::RequestHandler handler;
   auto loader = std::make_unique<ServiceWorkerNavigationLoader>(
-      base::BindOnce(&ReceiveRequestHandler, &handler), this, request,
+      base::BindOnce(&ReceiveRequestHandler, &handler),
+      base::BindOnce(&ServiceWorkerNavigationLoaderTest::Fallback,
+                     base::Unretained(this)),
+      this, request,
       base::WrapRefCounted<URLLoaderFactoryGetter>(
           helper_->context()->loader_factory_getter()));
   base::WeakPtr<ServiceWorkerNavigationLoader> loader_weakptr =

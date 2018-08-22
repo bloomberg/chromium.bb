@@ -34,10 +34,13 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
  public:
   // Creates and returns a loader to serve the offline page. Nullptr is returned
   // if offline page cannot or should not be served.
+  //
+  // See NavigationLoaderInterceptor::MaybeCreateLoader documentation for the
+  // meaning of |tentative_resource_request|.
   static std::unique_ptr<OfflinePageURLLoader> Create(
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id,
-      const network::ResourceRequest& resource_request,
+      const network::ResourceRequest& tentative_resource_request,
       content::URLLoaderRequestInterceptor::LoaderCallback callback);
 
   ~OfflinePageURLLoader() override;
@@ -53,7 +56,7 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   OfflinePageURLLoader(
       content::NavigationUIData* navigation_ui_data,
       int frame_tree_node_id,
-      const network::ResourceRequest& resource_request,
+      const network::ResourceRequest& tentative_resource_request,
       content::URLLoaderRequestInterceptor::LoaderCallback callback);
 
   // network::mojom::URLLoader:
@@ -82,9 +85,11 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
 
   void ReadRawData();
   void OnReceiveResponse(int64_t file_size,
+                         const network::ResourceRequest& resource_request,
                          network::mojom::URLLoaderRequest request,
                          network::mojom::URLLoaderClientPtr client);
   void OnReceiveError(int error,
+                      const network::ResourceRequest& resource_request,
                       network::mojom::URLLoaderRequest request,
                       network::mojom::URLLoaderClientPtr client);
   void OnHandleReady(MojoResult result, const mojo::HandleSignalsState& state);

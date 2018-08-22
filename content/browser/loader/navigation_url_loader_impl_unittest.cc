@@ -71,13 +71,13 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
 
   void MaybeCreateLoader(const network::ResourceRequest& resource_request,
                          ResourceContext* resource_context,
-                         LoaderCallback callback) override {
-    std::move(callback).Run(
-        base::BindOnce(&TestNavigationLoaderInterceptor::StartLoader,
-                       base::Unretained(this), resource_request));
+                         LoaderCallback callback,
+                         FallbackCallback fallback_callback) override {
+    std::move(callback).Run(base::BindOnce(
+        &TestNavigationLoaderInterceptor::StartLoader, base::Unretained(this)));
   }
 
-  void StartLoader(network::ResourceRequest resource_request,
+  void StartLoader(const network::ResourceRequest& resource_request,
                    network::mojom::URLLoaderRequest request,
                    network::mojom::URLLoaderClientPtr client) {
     *most_recent_resource_request_ = resource_request;

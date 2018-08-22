@@ -120,8 +120,13 @@ void AppCacheURLLoaderJob::DeleteIfNeeded() {
   delete this;
 }
 
-void AppCacheURLLoaderJob::Start(network::mojom::URLLoaderRequest request,
-                                 network::mojom::URLLoaderClientPtr client) {
+void AppCacheURLLoaderJob::Start(
+    const network::ResourceRequest& /* resource_request */,
+    network::mojom::URLLoaderRequest request,
+    network::mojom::URLLoaderClientPtr client) {
+  // TODO(crbug.com/876531): Figure out how AppCache interception should
+  // interact with URLLoaderThrottles. It might be incorrect to ignore
+  // |resource_request| here, since it's the current request after throttles.
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
   client_ = std::move(client);

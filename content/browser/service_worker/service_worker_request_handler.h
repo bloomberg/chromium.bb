@@ -71,7 +71,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
   // just creates a NavigationLoaderInterceptor and returns it.
   static std::unique_ptr<NavigationLoaderInterceptor>
   InitializeForNavigationNetworkService(
-      const network::ResourceRequest& resource_request,
+      const GURL& url,
       ResourceContext* resource_context,
       ServiceWorkerNavigationHandleCore* navigation_handle_core,
       storage::BlobStorageContext* blob_storage_context,
@@ -139,9 +139,10 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       ResourceContext* context) = 0;
 
   // NavigationLoaderInterceptor overrides.
-  void MaybeCreateLoader(const network::ResourceRequest& request,
+  void MaybeCreateLoader(const network::ResourceRequest& tentative_request,
                          ResourceContext* resource_context,
-                         LoaderCallback callback) override;
+                         LoaderCallback callback,
+                         FallbackCallback fallback_callback) override;
 
  protected:
   ServiceWorkerRequestHandler(

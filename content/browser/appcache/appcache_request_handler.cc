@@ -546,13 +546,21 @@ void AppCacheRequestHandler::OnCacheSelectionComplete(AppCacheHost* host) {
 }
 
 void AppCacheRequestHandler::MaybeCreateLoader(
-    const network::ResourceRequest& resource_request,
+    const network::ResourceRequest& tentative_resource_request,
     ResourceContext* resource_context,
-    LoaderCallback callback) {
+    LoaderCallback callback,
+    FallbackCallback fallback_callback) {
   loader_callback_ =
       base::BindOnce(&AppCacheRequestHandler::RunLoaderCallbackForMainResource,
                      weak_factory_.GetWeakPtr(), std::move(callback));
-  request_->AsURLLoaderRequest()->set_request(resource_request);
+
+  // TODO(crbug.com/876531): Figure out how AppCache interception should
+  // interact with URLLoaderThrottles. It might be incorrect to store
+  // |tentative_resource_request| here, since throttles can rewrite headers
+  // between now and when the request handler passed to |loader_callback_| is
+  // invoked.
+  request_->AsURLLoaderRequest()->set_request(tentative_resource_request);
+
   MaybeLoadResource(nullptr);
   // If a job is created, the job assumes ownership of the callback and
   // the responsibility to call it. If no job is created, we call it with
@@ -572,16 +580,19 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
   // a loader to start.
   bool was_called = false;
   loader_callback_ = base::BindOnce(
-      [](network::mojom::URLLoaderPtr* loader,
+      [](const network::ResourceRequest& resource_request,
+         network::mojom::URLLoaderPtr* loader,
          network::mojom::URLLoaderClientRequest* client_request,
          bool* was_called,
          SingleRequestURLLoaderFactory::RequestHandler handler) {
         *was_called = true;
         network::mojom::URLLoaderClientPtr client;
         *client_request = mojo::MakeRequest(&client);
-        std::move(handler).Run(mojo::MakeRequest(loader), std::move(client));
+        std::move(handler).Run(resource_request, mojo::MakeRequest(loader),
+                               std::move(client));
       },
-      loader, client_request, &was_called);
+      *(request_->AsURLLoaderRequest()->GetResourceRequest()), loader,
+      client_request, &was_called);
   request_->AsURLLoaderRequest()->set_response(response);
   if (!MaybeLoadFallbackForResponse(nullptr)) {
     DCHECK(!was_called);
@@ -612,9 +623,13 @@ void AppCacheRequestHandler::MaybeCreateSubresourceLoader(
     LoaderCallback loader_callback) {
   DCHECK(!job_);
   DCHECK(!is_main_resource());
+  // AppCache doesn't use the fallback_callback.
+  FallbackCallback fallback_callback = base::DoNothing();
+
   // Subresource loads start out just like a main resource loads, but they go
   // down different branches along the way to completion.
-  MaybeCreateLoader(resource_request, nullptr, std::move(loader_callback));
+  MaybeCreateLoader(resource_request, nullptr, std::move(loader_callback),
+                    std::move(fallback_callback));
 }
 
 void AppCacheRequestHandler::MaybeFallbackForSubresourceResponse(

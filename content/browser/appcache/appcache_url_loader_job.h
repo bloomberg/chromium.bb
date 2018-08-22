@@ -39,7 +39,8 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   ~AppCacheURLLoaderJob() override;
 
   // Sets up the bindings.
-  void Start(network::mojom::URLLoaderRequest request,
+  void Start(const network::ResourceRequest& resource_request,
+             network::mojom::URLLoaderRequest request,
              network::mojom::URLLoaderClientPtr client);
 
   // AppCacheJob overrides.
