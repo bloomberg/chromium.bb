@@ -132,12 +132,11 @@ Polymer({
   onScanReceived_: function(scan) {
     switch (this.step_) {
       case settings.FingerprintSetupStep.LOCATE_SCANNER:
+        this.$.arc.reset();
+        this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
+        this.percentComplete_ = 0;
+        break;
       case settings.FingerprintSetupStep.MOVE_FINGER:
-        if (this.step_ == settings.FingerprintSetupStep.LOCATE_SCANNER) {
-          this.$.arc.reset();
-          this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
-          this.percentComplete_ = 0;
-        }
         if (scan.isComplete) {
           this.problemMessage_ = '';
           this.step_ = settings.FingerprintSetupStep.READY;
@@ -148,7 +147,6 @@ Polymer({
         } else {
           this.setProblem_(scan.result);
           if (scan.result == settings.FingerprintResultType.SUCCESS) {
-            this.problemMessage_ = '';
             if (scan.percentComplete > this.percentComplete_) {
               this.$.arc.setProgress(
                   this.percentComplete_, scan.percentComplete,
@@ -171,14 +169,15 @@ Polymer({
    * on.
    * @param {!settings.FingerprintSetupStep} step The current step the
    *     fingerprint setup is on.
+   * @param {string} problemMessage Message for the scan result.
    * @private
    */
-  getInstructionMessage_: function(step) {
+  getInstructionMessage_: function(step, problemMessage) {
     switch (step) {
       case settings.FingerprintSetupStep.LOCATE_SCANNER:
         return this.i18n('configureFingerprintInstructionLocateScannerStep');
       case settings.FingerprintSetupStep.MOVE_FINGER:
-        return this.i18n('configureFingerprintInstructionMoveFingerStep');
+        return problemMessage;
       case settings.FingerprintSetupStep.READY:
         return this.i18n('configureFingerprintInstructionReadyStep');
     }
@@ -201,20 +200,11 @@ Polymer({
         }, SHOW_TAP_SENSOR_MESSAGE_DELAY_MS);
         break;
       case settings.FingerprintResultType.PARTIAL:
-        this.problemMessage_ = this.i18n('configureFingerprintPartialData');
-        break;
       case settings.FingerprintResultType.INSUFFICIENT:
-        this.problemMessage_ =
-            this.i18n('configureFingerprintInsufficientData');
-        break;
       case settings.FingerprintResultType.SENSOR_DIRTY:
-        this.problemMessage_ = this.i18n('configureFingerprintSensorDirty');
-        break;
       case settings.FingerprintResultType.TOO_SLOW:
-        this.problemMessage_ = this.i18n('configureFingerprintTooSlow');
-        break;
       case settings.FingerprintResultType.TOO_FAST:
-        this.problemMessage_ = this.i18n('configureFingerprintTooFast');
+        this.problemMessage_ = this.i18n('configureFingerprintTryAgain');
         break;
       case settings.FingerprintResultType.IMMOBILE:
         this.problemMessage_ = this.i18n('configureFingerprintImmobile');
@@ -267,7 +257,25 @@ Polymer({
     this.fire('add-fingerprint');
     this.reset_();
     this.$.arc.reset();
+    this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
     this.browserProxy_.startEnroll();
+  },
+
+  /**
+   * Whether scanner location should be shown at the current step.
+   * @private
+   */
+  showScannerLocation_: function() {
+    return this.step_ == settings.FingerprintSetupStep.LOCATE_SCANNER;
+  },
+
+  /**
+   * Whether fingerprint progress circle should be shown at the current step.
+   * @private
+   */
+  showArc_: function() {
+    return this.step_ == settings.FingerprintSetupStep.MOVE_FINGER ||
+        this.step_ == settings.FingerprintSetupStep.READY;
   },
 });
 })();
