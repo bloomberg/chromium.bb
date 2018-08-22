@@ -50,7 +50,16 @@ do
      /^    [cC]urrency(Map|Meta|Spacing|UnitPatterns)\{$/, /^    \}$/ p
      /^    Version\{.*\}$/p
      /^\}$/p' $i
+
+    # Delete empty blocks. Otherwise, locale fallback fails.
+    # See crbug.com/791318 and crbug.com/870338 .
+    sed -r -i \
+      '/^    Currenc(ie.*|yPlurals)\{$/ {
+         N
+         /^    Currenc(ie.*|yPlurals)\{\n    \}/ d
+      }' "${i}"
 done
+
 
 # Chrome on Android is not localized to the following languages and we
 # have to minimize the locale data for them.
