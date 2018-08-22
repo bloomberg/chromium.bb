@@ -8,12 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/media_stream_request.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/keyboard/keyboard_ui.h"
+
+class ChromeKeyboardWebContents;
+class GURL;
 
 namespace aura {
 class Window;
@@ -25,8 +27,7 @@ class Rect;
 
 namespace content {
 class BrowserContext;
-class WebContents;
-}  // namespace content
+}
 
 namespace ui {
 class InputMethod;
@@ -36,8 +37,7 @@ class Shadow;
 // Subclass of KeyboardUI. It is used by KeyboardController to get
 // access to the virtual keyboard window and setup Chrome extension functions.
 class ChromeKeyboardUI : public keyboard::KeyboardUI,
-                         public aura::WindowObserver,
-                         public content::WebContentsObserver {
+                         public aura::WindowObserver {
  public:
   class TestApi {
    public:
@@ -75,11 +75,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
  private:
   class WindowBoundsChangeObserver;
 
-  std::unique_ptr<content::WebContents> CreateWebContents();
-
-  // Loads the web contents for the given |url|.
-  void LoadContents(const GURL& url);
-
   // Gets the virtual keyboard URL, either the default keyboard URL or the IME
   // override URL.
   GURL GetVirtualKeyboardUrl();
@@ -101,22 +96,11 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // this method creates it.
   void SetShadowAroundKeyboard();
 
-  // The implementation can choose to setup the WebContents before the virtual
-  // keyboard page is loaded (e.g. install a WebContentsObserver).
-  // SetupWebContents() is called right after creating the WebContents, before
-  // loading the keyboard page.
-  void SetupWebContents(content::WebContents* contents);
-
-  // content::WebContentsObserver overrides
-  void RenderViewCreated(content::RenderViewHost* render_view_host) override;
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override;
-
   // The BrowserContext to use for creating the WebContents hosting the
   // keyboard.
   content::BrowserContext* const browser_context_;
 
-  std::unique_ptr<content::WebContents> keyboard_contents_;
+  std::unique_ptr<ChromeKeyboardWebContents> keyboard_contents_;
   std::unique_ptr<ui::Shadow> shadow_;
 
   std::unique_ptr<keyboard::KeyboardControllerObserver> observer_;

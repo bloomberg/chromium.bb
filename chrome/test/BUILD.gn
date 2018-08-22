@@ -3399,6 +3399,7 @@ test("unit_tests") {
       "../browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc",
       "../browser/ui/ash/browser_image_registrar_unittest.cc",
       "../browser/ui/ash/chrome_keyboard_ui_unittest.cc",
+      "../browser/ui/ash/chrome_keyboard_web_contents_unittest.cc",
       "../browser/ui/ash/ime_controller_client_unittest.cc",
       "../browser/ui/ash/ksv/keyboard_shortcut_viewer_metadata_unittest.cc",
       "../browser/ui/ash/launcher/arc_app_shelf_id_unittest.cc",
