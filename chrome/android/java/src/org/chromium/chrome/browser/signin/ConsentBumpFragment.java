@@ -53,7 +53,7 @@ public class ConsentBumpFragment extends SigninFragmentBase {
     @Override
     protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
             boolean settingsClicked, Runnable callback) {
-        // TODO(https://crbug.com/869426): Save the consent state.
+        UnifiedConsentServiceBridge.setUnifiedConsentGiven(true);
         if (settingsClicked) {
             PreferencesLauncher.launchSettingsPage(
                     getActivity(), SyncAndServicesPreferences.class.getName());

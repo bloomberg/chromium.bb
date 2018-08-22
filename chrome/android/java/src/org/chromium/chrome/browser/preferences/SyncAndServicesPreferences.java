@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
+import org.chromium.chrome.browser.signin.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ui.PassphraseCreationDialogFragment;
@@ -318,10 +319,12 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         String key = preference.getKey();
         if (USE_SYNC_AND_ALL_SERVICES.equals(key)) {
-            if ((boolean) newValue) {
+            boolean enabled = (boolean) newValue;
+            if (enabled) {
                 mSyncGroup.setExpanded(true);
                 mNonpersonalizedServices.setExpanded(true);
             }
+            UnifiedConsentServiceBridge.setUnifiedConsentGiven(enabled);
             ThreadUtils.postOnUiThread(this::updateSyncStateFromSelectedModelTypes);
             ThreadUtils.postOnUiThread(this::updateDataTypeState);
         } else if (PREF_SEARCH_SUGGESTIONS.equals(key)) {
@@ -778,6 +781,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     }
 
     private void updatePreferences() {
+        mUseSyncAndAllServices.setChecked(UnifiedConsentServiceBridge.isUnifiedConsentGiven());
+
         mNavigationError.setChecked(mPrefServiceBridge.isResolveNavigationErrorEnabled());
         mNetworkPredictions.setChecked(mPrefServiceBridge.getNetworkPredictionEnabled());
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
