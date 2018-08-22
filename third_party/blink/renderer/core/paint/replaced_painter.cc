@@ -92,11 +92,9 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
         PropertyTreeState new_properties =
             local_paint_info.context.GetPaintController()
                 .CurrentPaintChunkProperties();
-        bool painter_implements_object_fit_and_clip =
-            layout_replaced_.IsLayoutImage();
         bool property_changed = false;
         if (paint_properties->ReplacedContentTransform() &&
-            !painter_implements_object_fit_and_clip) {
+            layout_replaced_.IsSVGRoot()) {
           new_properties.SetTransform(
               paint_properties->ReplacedContentTransform());
           DCHECK(paint_properties->ReplacedContentTransform()
@@ -108,8 +106,10 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
                   .ToAffineTransform());
           property_changed = true;
         }
+        bool painter_implements_content_box_clip =
+            layout_replaced_.IsLayoutImage();
         if (paint_properties->OverflowClip() &&
-            (!painter_implements_object_fit_and_clip ||
+            (!painter_implements_content_box_clip ||
              layout_replaced_.StyleRef().HasBorderRadius())) {
           new_properties.SetClip(paint_properties->OverflowClip());
           property_changed = true;

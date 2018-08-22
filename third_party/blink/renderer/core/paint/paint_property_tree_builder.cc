@@ -243,12 +243,15 @@ static bool NeedsReplacedContentTransform(const LayoutObject& object) {
   if (object.IsSVGRoot())
     return true;
 
-  // Non-composited images have a micro-optimization to embed object-fit into
-  // the drawings instead of using a transform node.
+  // Only directly composited images need a transform node to scale contents
+  // to the object-fit box. Note that we don't actually know whether the image
+  // will be directly composited. This condition is relaxed to stay on the
+  // safe side.
+  // TODO(crbug.com/875110): Figure out the condition for SPv2.
   bool is_spv1_composited =
       object.HasLayer() &&
       ToLayoutBoxModelObject(object).Layer()->GetCompositedLayerMapping();
-  if (object.IsLayoutImage() && !object.IsVideo() && is_spv1_composited)
+  if (object.IsImage() && is_spv1_composited)
     return true;
 
   return false;
@@ -1012,7 +1015,7 @@ static bool NeedsOverflowClipForReplacedContents(
   // the drawings instead of using a clip node.
   bool is_spv1_composited =
       replaced.HasLayer() && replaced.Layer()->GetCompositedLayerMapping();
-  if (replaced.IsLayoutImage() && !replaced.IsVideo() && !is_spv1_composited)
+  if (replaced.IsImage() && !is_spv1_composited)
     return false;
 
   // Embedded objects are always sized to fit the content rect.
@@ -1298,7 +1301,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
       content_to_parent_space =
           SVGRootPainter(ToLayoutSVGRoot(object_))
               .TransformToPixelSnappedBorderBox(context_.current.paint_offset);
-    } else if (object_.IsLayoutImage() && !object_.IsVideo()) {
+    } else if (object_.IsImage()) {
       const LayoutImage& layout_image = ToLayoutImage(object_);
       LayoutRect layout_replaced_rect = layout_image.ReplacedContentRect();
       layout_replaced_rect.MoveBy(context_.current.paint_offset);
@@ -1312,6 +1315,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
         content_to_parent_space =
             RectToRect(FloatRect(src_rect), FloatRect(replaced_rect));
       }
+    } else {
+      NOTREACHED();
     }
     if (!content_to_parent_space.IsIdentity()) {
       OnUpdate(properties_->UpdateReplacedContentTransform(

@@ -131,6 +131,8 @@ Bug(none) compositing/overflow/composited-scroll-with-fractional-translation.htm
 crbug.com/865039 compositing/masks/mask-with-added-filters.html [ Pass ]
 # Link highlights are no longer affected by ancestor effects.
 crbug.com/857501 compositing/gestures/gesture-tapHighlight-with-filter.html [ Pass ]
+crbug.com/400829 media/video-object-fit.html [ Pass ]
+crbug.com/400829 compositing/composited-canvas-with-overflowing-object-fit.html [ Pass ]
 
 # Backdrop filters are experimental (behind a flag) and do not really work with
 # or without BlinkGenPropertyTrees. These tests are marked as failing because
