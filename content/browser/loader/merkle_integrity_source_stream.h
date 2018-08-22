@@ -19,12 +19,12 @@ namespace content {
 
 // MerkleIntegritySourceStream decodes and validates content encoded with the
 // "mi-sha256" content encoding
-// (https://tools.ietf.org/html/draft-thomson-http-mice-02).
+// (https://tools.ietf.org/html/draft-thomson-http-mice-03).
 // TODO(ksakamoto): This class should eventually live in src/net/filter/.
 class CONTENT_EXPORT MerkleIntegritySourceStream
     : public net::FilterSourceStream {
  public:
-  MerkleIntegritySourceStream(base::StringPiece mi_header_value,
+  MerkleIntegritySourceStream(base::StringPiece digest_header_value,
                               std::unique_ptr<SourceStream> upstream);
   ~MerkleIntegritySourceStream() override;
 

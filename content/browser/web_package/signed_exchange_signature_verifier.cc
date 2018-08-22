@@ -347,10 +347,11 @@ SignedExchangeSignatureVerifier::Result SignedExchangeSignatureVerifier::Verify(
   }
 
   if (!base::EqualsCaseInsensitiveASCII(envelope.signature().integrity,
-                                        "mi-draft2")) {
+                                        "digest/mi-sha256-03")) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy,
-        "The current implemention only supports \"mi\" integrity scheme.");
+        "The current implemention only supports \"digest/mi-sha256-03\" "
+        "integrity scheme.");
     return Result::kErrInvalidSignatureIntegrity;
   }
   return Result::kSuccess;

@@ -92,7 +92,7 @@ TEST(SignedExchangeEnvelopeTest, ParseGoldenFile) {
   EXPECT_EQ(envelope->response_code(), static_cast<net::HttpStatusCode>(200u));
   EXPECT_EQ(envelope->response_headers().size(), 3u);
   EXPECT_EQ(envelope->response_headers().find("content-encoding")->second,
-            "mi-sha256-draft2");
+            "mi-sha256-03");
 }
 
 TEST(SignedExchangeEnvelopeTest, ValidHeader) {
