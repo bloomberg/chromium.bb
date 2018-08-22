@@ -353,6 +353,7 @@ function renderTheme() {
     window.setTimeout(function() {
       $('custom-bg').style.backgroundImage = '';
     }, 1000);
+    customBackgrounds.clearAttribution();
   }
 
   $(customBackgrounds.IDS.RESTORE_DEFAULT)
