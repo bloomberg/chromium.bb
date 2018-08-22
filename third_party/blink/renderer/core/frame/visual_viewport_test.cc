@@ -403,6 +403,11 @@ TEST_P(VisualViewportTest, TestWebViewResizedBeforeAttachment) {
   VisualViewport& visual_viewport = GetFrame()->GetPage()->GetVisualViewport();
   EXPECT_FLOAT_SIZE_EQ(FloatSize(320, 240),
                        visual_viewport.ContainerLayer()->Size());
+
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(IntSize(320, 240),
+              visual_viewport.GetScrollNode()->ContainerRect().Size());
+  }
 }
 
 // Make sure that the visibleRect method acurately reflects the scale and scroll
@@ -738,9 +743,14 @@ TEST_P(VisualViewportTest, TestAttachingNewFrameSetsInnerScrollLayerSize) {
   // Navigate again, this time the LocalFrameView should be smaller.
   RegisterMockedHttpURLLoad("viewport-device-width.html");
   NavigateTo(base_url_ + "viewport-device-width.html");
+  WebView()->UpdateAllLifecyclePhases();
 
-  // Ensure the scroll layer matches the frame view's size.
+  // Ensure the scroll contents size matches the frame view's size.
   EXPECT_EQ(IntSize(320, 240), visual_viewport.ScrollLayer()->Size());
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(IntSize(320, 240),
+              visual_viewport.GetScrollNode()->ContentsRect().Size());
+  }
 
   // Ensure the location and scale were reset.
   EXPECT_EQ(FloatSize(), visual_viewport.GetScrollOffset());
@@ -1534,6 +1544,15 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
       frame_view.LayoutViewport()->LayerForScrolling()->CcLayer();
 
   EXPECT_EQ(gfx::Size(1500, 2400), scroll_layer->bounds());
+
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(IntSize(1500, 2400), frame_view.GetLayoutView()
+                                       ->FirstFragment()
+                                       .PaintProperties()
+                                       ->Scroll()
+                                       ->ContentsRect()
+                                       .Size());
+  }
 }
 
 // Tests that resizing the visual viepwort keeps its bounds within the outer
@@ -1957,7 +1976,7 @@ TEST_P(VisualViewportTest, RotationAnchoringWithRootScroller) {
 }
 
 // Make sure a composited background-attachment:fixed background gets resized
-// when using inert (non-layout affecting) browser controls.
+// by browser controls.
 TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
@@ -2033,7 +2052,7 @@ static void configureAndroidNonCompositing(WebSettings* settings) {
 }
 
 // Make sure a non-composited background-attachment:fixed background gets
-// resized when using inert (non-layout affecting) browser controls.
+// resized by browser controls.
 TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
@@ -2342,6 +2361,13 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());
 
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(IntSize(400, 600),
+              visual_viewport.GetScrollNode()->ContainerRect().Size());
+    EXPECT_EQ(IntSize(320, 480),
+              visual_viewport.GetScrollNode()->ContentsRect().Size());
+  }
+
   WebView().ApplyViewportDeltas(WebFloatSize(1, 1), WebFloatSize(),
                                 WebFloatSize(), 2, 1);
   EXPECT_EQ(IntSize(400, 600), visual_viewport.ContainerLayer()->Size());
@@ -2350,6 +2376,13 @@ TEST_F(VisualViewportSimTest, ScrollingContentsSmallerThanContainer) {
   EXPECT_EQ(IntSize(320, 480), visual_viewport.ScrollLayer()->Size());
   EXPECT_EQ(gfx::Size(320, 480),
             visual_viewport.ScrollLayer()->CcLayer()->bounds());
+
+  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    EXPECT_EQ(IntSize(400, 600),
+              visual_viewport.GetScrollNode()->ContainerRect().Size());
+    EXPECT_EQ(IntSize(320, 480),
+              visual_viewport.GetScrollNode()->ContentsRect().Size());
+  }
 }
 
 }  // namespace
