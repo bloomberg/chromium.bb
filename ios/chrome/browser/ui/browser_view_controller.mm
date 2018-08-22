@@ -5059,7 +5059,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   self.consentBumpCoordinator.delegate = self;
   [self.consentBumpCoordinator start];
   self.consentBumpCoordinator.viewController.modalPresentationStyle =
-      UIModalPresentationPageSheet;
+      UIModalPresentationFormSheet;
   [self presentViewController:self.consentBumpCoordinator.viewController
                      animated:YES
                    completion:nil];
