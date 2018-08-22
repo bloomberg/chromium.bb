@@ -13,12 +13,12 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation.h"
 #include "third_party/blink/renderer/modules/screen_orientation/screen_orientation_dispatcher.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
-#include "third_party/blink/renderer/platform/scoped_orientation_change_indicator.h"
 
 namespace blink {
 
@@ -219,7 +219,8 @@ void ScreenOrientationControllerImpl::DispatchEventTimerFired(TimerBase*) {
   if (!orientation_)
     return;
 
-  ScopedOrientationChangeIndicator orientation_change_indicator;
+  ScopedAllowFullscreen allow_fullscreen(
+      ScopedAllowFullscreen::kOrientationChange);
   orientation_->DispatchEvent(*Event::Create(EventTypeNames::change));
 }
 

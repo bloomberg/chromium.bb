@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
+#include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
@@ -52,7 +53,6 @@
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/feature_policy/feature_policy.h"
-#include "third_party/blink/renderer/platform/scoped_orientation_change_indicator.h"
 
 namespace blink {
 
@@ -214,7 +214,8 @@ bool AllowedToRequestFullscreen(Document& document) {
     return true;
 
   //  The algorithm is triggered by a user generated orientation change.
-  if (ScopedOrientationChangeIndicator::ProcessingOrientationChange()) {
+  if (ScopedAllowFullscreen::FullscreenAllowedReason() ==
+      ScopedAllowFullscreen::kOrientationChange) {
     UseCounter::Count(document,
                       WebFeature::kFullscreenAllowedByOrientationChange);
     return true;

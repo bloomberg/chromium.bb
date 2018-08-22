@@ -12,5 +12,7 @@ blink_core_sources("fullscreen") {
     "element_fullscreen.h",
     "fullscreen.cc",
     "fullscreen.h",
+    "scoped_allow_fullscreen.cc",
+    "scoped_allow_fullscreen.h",
   ]
 }
