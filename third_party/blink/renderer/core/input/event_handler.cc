@@ -437,7 +437,7 @@ EventHandler::OptionalCursor EventHandler::SelectCursor(
   if (scroll_manager_->MiddleClickAutoscrollInProgress())
     return kNoCursorChange;
 
-  if (result.GetScrollbar())
+  if (result.GetScrollbar() && !result.GetScrollbar()->IsCustomScrollbar())
     return PointerCursor();
 
   Node* node = result.InnerPossiblyPseudoNode();

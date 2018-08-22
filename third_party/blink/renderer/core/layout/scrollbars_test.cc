@@ -572,6 +572,58 @@ TEST_F(ScrollbarsTest, MouseOverScrollbarInCustomCursorElement) {
   EXPECT_EQ(Cursor::Type::kPointer, CursorType());
 }
 
+// Ensure mouse cursor should be override when hovering over the custom
+// scrollbar.
+TEST_F(ScrollbarsTest, MouseOverCustomScrollbarInCustomCursorElement) {
+  WebView().Resize(WebSize(250, 250));
+
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    body {
+      margin: 0;
+    }
+    #d1 {
+      width: 200px;
+      height: 200px;
+      overflow: auto;
+      cursor: move;
+    }
+    #d2 {
+      height: 400px;
+    }
+    ::-webkit-scrollbar {
+      background: none;
+      height: 5px;
+      width: 5px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: black;
+    }
+    </style>
+    <div id='d1'>
+        <div id='d2'></div>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  Document& document = GetDocument();
+
+  Element* div = document.getElementById("d1");
+
+  // Ensure hittest has DIV and scrollbar.
+  HitTestResult hit_test_result = HitTest(195, 5);
+
+  EXPECT_EQ(hit_test_result.InnerElement(), div);
+  EXPECT_TRUE(hit_test_result.GetScrollbar());
+
+  HandleMouseMoveEvent(195, 5);
+
+  EXPECT_EQ(Cursor::Type::kMove, CursorType());
+}
+
 // Makes sure that mouse hover over an overlay scrollbar doesn't activate
 // elements below(except the Element that owns the scrollbar) unless the
 // scrollbar is faded out.
