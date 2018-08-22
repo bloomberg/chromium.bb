@@ -6,7 +6,6 @@
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
--ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 
 # Domain Reliability has yet to be hookup to the NetworkService.
@@ -99,6 +98,10 @@
 # Extension listeners for "chrome.proxy.onProxyError" are not called for errors
 # in PAC scripts.
 -ProxySettingsApiTest.ProxyEventsParseError
+# https://crbug.com/876568
+# Extension listeners for "chrome.proxy.onProxyError" are not called for
+# failures connecting to proxy.
+-ProxySettingsApiTest.ProxyEventsInvalidProxy
 
 # https://crbug.com/827582
 # Editing response cookies through headers with webRequest is not supported with
