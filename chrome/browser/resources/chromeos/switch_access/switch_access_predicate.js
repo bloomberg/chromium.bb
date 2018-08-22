@@ -4,6 +4,7 @@
 
 let StateType = chrome.automation.StateType;
 let RoleType = chrome.automation.RoleType;
+let DefaultActionVerb = chrome.automation.DefaultActionVerb;
 
 /**
  * Class containing predicates for the chrome automation API. Each predicate
@@ -105,13 +106,15 @@ SwitchAccessPredicate.isGroup = function(node, scope) {
       node !== scope)
     return false;
 
-  let interestingBranches = 0;
-  let children = node.children || [];
-  for (let child of children) {
+  let interestingBranchesCount =
+      SwitchAccessPredicate.isActionable(node) ? 1 : 0;
+  let child = node.firstChild;
+  while (child) {
     if (SwitchAccessPredicate.isInterestingSubtree(child))
-      interestingBranches += 1;
-    if (interestingBranches > 1)
+      interestingBranchesCount += 1;
+    if (interestingBranchesCount > 1)
       return true;
+    child = child.nextSibling;
   }
   return false;
 };
@@ -138,7 +141,7 @@ SwitchAccessPredicate.hasSameLocation_ = function(node1, node2) {
  * @return {boolean}
  */
 SwitchAccessPredicate.isInterestingSubtree = function(node) {
-  let children = node.children || [];
+  let children = node.children;
   return SwitchAccessPredicate.isActionable(node) ||
       children.some(SwitchAccessPredicate.isInterestingSubtree);
 };
@@ -151,28 +154,41 @@ SwitchAccessPredicate.isInterestingSubtree = function(node) {
  * @return {boolean}
  */
 SwitchAccessPredicate.isActionable = function(node) {
+  let defaultActionVerb = node.defaultActionVerb;
   let loc = node.location;
   let parent = node.parent;
   let root = node.root;
   let role = node.role;
   let state = node.state;
 
-  // Skip things that are offscreen
+  // Skip things that are offscreen.
   if (state[StateType.OFFSCREEN] || loc.top < 0 || loc.left < 0)
     return false;
 
-  // Should just leave these as groups
+  // These web containers are not directly actionable.
   if (role === RoleType.WEB_VIEW || role === RoleType.ROOT_WEB_AREA)
     return false;
 
   if (parent) {
     // crbug.com/710559
-    // Work around for browser tabs
+    // Work around for browser tabs.
     if (role === RoleType.TAB && parent.role === RoleType.TAB_LIST &&
         root.role === RoleType.DESKTOP)
       return true;
   }
 
-  // The general rule that applies to everything.
-  return state[StateType.FOCUSABLE];
+  // Check various indicators that the node is actionable.
+  // TODO(zhelfins): Update tests to reflect this updated behavior.
+
+  if (defaultActionVerb && defaultActionVerb !== 'none' &&
+      defaultActionVerb !== DefaultActionVerb.CLICK_ANCESTOR)
+    return true;
+
+  if (node.inputType)
+    return true;
+
+  if (role === RoleType.BUTTON)
+    return true;
+
+  return false;
 };

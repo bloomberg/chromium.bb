@@ -180,7 +180,9 @@ AutomationManager.prototype = {
         SwitchAccessPredicate.restrictions(this.scope_));
 
     // Special case: Scope is actionable.
-    if (this.node_ === this.scope_ && !this.visitingScopeAsActionable_) {
+    if (this.node_ === this.scope_ &&
+        SwitchAccessPredicate.isActionable(this.node_) &&
+        !this.visitingScopeAsActionable_) {
       this.showScopeAsActionable_();
       return;
     }
@@ -218,7 +220,7 @@ AutomationManager.prototype = {
     let node = treeWalker.next().node;
 
     // Special case: Scope is actionable
-    if (node === this.scope_) {
+    if (node === this.scope_ && SwitchAccessPredicate.isActionable(node)) {
       this.showScopeAsActionable_();
       return;
     }
