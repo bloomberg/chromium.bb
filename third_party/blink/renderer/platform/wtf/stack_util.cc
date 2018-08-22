@@ -143,6 +143,14 @@ void* GetStackStart() {
 #endif
 }
 
+uintptr_t GetCurrentStackPosition() {
+#if defined(COMPILER_MSVC)
+  return reinterpret_cast<uintptr_t>(_AddressOfReturnAddress());
+#else
+  return reinterpret_cast<uintptr_t>(__builtin_frame_address(0));
+#endif
+}
+
 namespace internal {
 
 uintptr_t g_main_thread_stack_start = 0;

@@ -8,12 +8,19 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
 
 WTF_EXPORT size_t GetUnderestimatedStackSize();
 WTF_EXPORT void* GetStackStart();
+
+// Returns the current stack position such that it works correctly with ASAN and
+// SafeStack. Must be marked noinline because it relies on compiler intrinsics
+// that report the current stack frame and if inlined it could report a position
+// above the current stack position.
+WTF_EXPORT WTF_NOINLINE uintptr_t GetCurrentStackPosition();
 
 namespace internal {
 
