@@ -318,6 +318,11 @@ bool BrowserNonClientFrameView::ShouldDrawStrokes() const {
   if (!MD::IsRefreshUi())
     return true;
 
+  // In single-tab mode, the whole point is to have the active tab blend with
+  // the frame.
+  if (ShouldPaintAsSingleTabMode())
+    return false;
+
   // Refresh normally avoids strokes and relies on the active tab contrasting
   // sufficiently with the frame background.  When there isn't enough contrast,
   // fall back to a stroke.  Always compute the contrast ratio against the
