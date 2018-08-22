@@ -38,6 +38,7 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   static const SkColor kWarningColor;
 
   // Horizontal spacing between value and description in the row.
+  // TODO(crbug.com/876364): Replace this with a global constant.
   static const int kValueLabelPadding = 24;
 
   static int GetCornerRadius();

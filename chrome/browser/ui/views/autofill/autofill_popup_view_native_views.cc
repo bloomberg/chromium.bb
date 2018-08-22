@@ -384,7 +384,7 @@ void AutofillPopupItemView::CreateContent() {
 
   AddChildView(CreateValueLabel());
 
-  AddSpacerWithSize(views::MenuConfig::instance().item_horizontal_padding,
+  AddSpacerWithSize(AutofillPopupBaseView::kValueLabelPadding,
                     /*resize=*/true, layout_manager);
 
   views::View* description_label = CreateDescriptionLabel();
