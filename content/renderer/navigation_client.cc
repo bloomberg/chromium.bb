@@ -23,7 +23,8 @@ void NavigationClient::CommitNavigation(
         subresource_overrides,
     mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
     network::mojom::URLLoaderFactoryPtr prefetch_loader_factory,
-    const base::UnguessableToken& devtools_navigation_token) {
+    const base::UnguessableToken& devtools_navigation_token,
+    CommitNavigationCallback callback) {
   // TODO(ahemery): The reset should be done when the navigation did commit
   // (meaning at a later stage). This is not currently possible because of
   // race conditions leading to the early deletion of NavigationRequest would
@@ -35,7 +36,7 @@ void NavigationClient::CommitNavigation(
       std::move(subresource_overrides),
       std::move(controller_service_worker_info),
       std::move(prefetch_loader_factory), devtools_navigation_token,
-      mojom::FrameNavigationControl::CommitNavigationCallback());
+      std::move(callback));
 }
 
 void NavigationClient::CommitFailedNavigation(
@@ -44,12 +45,12 @@ void NavigationClient::CommitFailedNavigation(
     bool has_stale_copy_in_cache,
     int error_code,
     const base::Optional<std::string>& error_page_content,
-    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders) {
+    std::unique_ptr<URLLoaderFactoryBundleInfo> subresource_loaders,
+    CommitFailedNavigationCallback callback) {
   ResetDisconnectionHandler();
   render_frame_->CommitFailedNavigation(
       common_params, request_params, has_stale_copy_in_cache, error_code,
-      error_page_content, std::move(subresource_loaders),
-      mojom::FrameNavigationControl::CommitFailedNavigationCallback());
+      error_page_content, std::move(subresource_loaders), std::move(callback));
 }
 
 void NavigationClient::Bind(mojom::NavigationClientAssociatedRequest request) {

@@ -4165,7 +4165,9 @@ void RenderFrameHostImpl::CommitNavigation(
           head, common_params, request_params,
           std::move(url_loader_client_endpoints), CloneSubresourceFactories(),
           std::move(subresource_overrides), std::move(controller),
-          std::move(prefetch_loader_factory), devtools_navigation_token);
+          std::move(prefetch_loader_factory), devtools_navigation_token,
+          base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                         base::Unretained(this), navigation_id));
     } else {
       GetNavigationControl()->CommitNavigation(
           head, common_params, request_params,
@@ -4238,7 +4240,9 @@ void RenderFrameHostImpl::FailedNavigation(
       request->GetCommitNavigationClient()) {
     request->GetCommitNavigationClient()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
-        error_page_content, CloneSubresourceFactories());
+        error_page_content, CloneSubresourceFactories(),
+        base::BindOnce(&RenderFrameHostImpl::OnCrossDocumentCommitProcessed,
+                       base::Unretained(this), navigation_id));
   } else {
     GetNavigationControl()->CommitFailedNavigation(
         common_params, request_params, has_stale_copy_in_cache, error_code,
