@@ -313,6 +313,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     NOTIMPLEMENTED();
   }
 
+  ui::ws2::WindowService* GetWindowService() override {
+    NOTIMPLEMENTED();
+    return nullptr;
+  }
+
   std::unique_ptr<app_list::AppListModel> model_;
   std::unique_ptr<app_list::SearchModel> search_model_;
 

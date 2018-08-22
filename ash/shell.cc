@@ -1118,9 +1118,13 @@ void Shell::Init(
   voice_interaction_controller_ =
       std::make_unique<VoiceInteractionController>();
 
+  window_service_owner_ =
+      std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
+
   // |app_list_controller_| is put after |tablet_mode_controller_| as the former
   // uses the latter in constructor.
-  app_list_controller_ = std::make_unique<AppListControllerImpl>();
+  app_list_controller_ = std::make_unique<AppListControllerImpl>(
+      window_service_owner_->window_service());
   shelf_controller_ = std::make_unique<ShelfController>();
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
@@ -1295,8 +1299,6 @@ void Shell::Init(
     connector_->StartService(tap_visualizer::mojom::kServiceName);
   }
 
-  window_service_owner_ =
-      std::make_unique<WindowServiceOwner>(std::move(gpu_interface_provider));
   if (::features::IsAshInBrowserProcess()) {
     ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
         focus_controller(), window_tree_host_manager_->input_method());

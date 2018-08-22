@@ -43,8 +43,10 @@ int64_t GetDisplayIdToShowAppListOn() {
 
 namespace ash {
 
-AppListControllerImpl::AppListControllerImpl()
-    : presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
+AppListControllerImpl::AppListControllerImpl(
+    ui::ws2::WindowService* window_service)
+    : window_service_(window_service),
+      presenter_(std::make_unique<AppListPresenterDelegateImpl>(this)),
       is_home_launcher_enabled_(app_list::features::IsHomeLauncherEnabled()),
       voice_interaction_binding_(this) {
   model_.AddObserver(this);
@@ -690,6 +692,10 @@ void AppListControllerImpl::ShowWallpaperContextMenu(
     const gfx::Point& onscreen_location,
     ui::MenuSourceType source_type) {
   Shell::Get()->ShowContextMenu(onscreen_location, source_type);
+}
+
+ui::ws2::WindowService* AppListControllerImpl::GetWindowService() {
+  return window_service_;
 }
 
 void AppListControllerImpl::OnVisibilityChanged(bool visible) {

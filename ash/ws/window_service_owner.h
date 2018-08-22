@@ -40,25 +40,22 @@ class ASH_EXPORT WindowServiceOwner {
   // WindowService.
   void BindWindowService(service_manager::mojom::ServiceRequest request);
 
-  // Returns the WindowService, or null if BindWindowService() hasn't been
-  // called yet.
   ui::ws2::WindowService* window_service() { return window_service_; }
 
  private:
   friend class AshTestHelper;
-
-  // Non-null until |service_context_| is created.
-  std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider_;
-
-  // The following state is created once BindWindowService() is called.
 
   std::unique_ptr<WindowServiceDelegateImpl> window_service_delegate_;
 
   // Handles the ServiceRequest. Owns |window_service_|.
   std::unique_ptr<service_manager::ServiceContext> service_context_;
 
-  // The WindowService. This is owned by |service_context_|.
-  ui::ws2::WindowService* window_service_ = nullptr;
+  // The WindowService. The constructor creates the WindowService and assigns
+  // it to |owned_window_service_| and |window_service_|. When
+  // BindWindowService() is called |owned_window_service_| is passed to
+  // |service_context_|.
+  std::unique_ptr<ui::ws2::WindowService> owned_window_service_;
+  ui::ws2::WindowService* window_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceOwner);
 };
