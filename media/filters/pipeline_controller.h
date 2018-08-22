@@ -114,6 +114,10 @@ class MEDIA_EXPORT PipelineController {
   // Returns true if the current target state is suspended.
   bool IsSuspended();
 
+  // Returns true if Seek() was called and there is a seek operation which has
+  // not yet completed.
+  bool IsPendingSeek();
+
   // Returns true if |pipeline_| is suspended.
   bool IsPipelineSuspended();
 
@@ -188,6 +192,9 @@ class MEDIA_EXPORT PipelineController {
   // Indicates that a seek has occurred. When set, a seeked callback will be
   // issued at the next stable state.
   bool pending_seeked_cb_ = false;
+
+  // Indicates that a seek has occurred from an explicit call to Seek().
+  bool pending_seek_except_start_ = false;
 
   // Indicates that time has been changed by a seek, which will be reported at
   // the next seeked callback.

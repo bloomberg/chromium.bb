@@ -1774,9 +1774,9 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
   DVLOG(1) << __func__ << "(" << state << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
-  // Ignore buffering state changes until we've completed all outstanding
-  // operations unless this is a buffering update for a suspended startup.
-  if (!pipeline_controller_.IsStable() && !for_suspended_start)
+  // Ignore buffering state changes caused by back-to-back seeking, so as not
+  // to assume the second seek has finished when it was only the first seek.
+  if (pipeline_controller_.IsPendingSeek())
     return;
 
   auto log_event = media_log_->CreateBufferingStateChangedEvent(
