@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.widget;
 
 import android.os.SystemClock;
+import android.support.design.widget.TabLayout;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -31,8 +31,8 @@ import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutTab;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelListItem;
+import org.chromium.chrome.browser.widget.accessibility.AccessibilityTabModelWrapper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -117,7 +117,7 @@ public class OverviewListLayoutTest {
         mActivityTestRule.startMainActivityFromLauncher();
     }
 
-    private ViewGroup getContainer() {
+    private AccessibilityTabModelWrapper getContainer() {
         return ((OverviewListLayout) mActivityTestRule.getActivity().getOverviewListLayout())
                 .getContainer();
     }
@@ -151,11 +151,7 @@ public class OverviewListLayoutTest {
     private CharSequence getTabTitleOfListItem(int index) {
         View childView = getListItem(index);
         TextView childTextView;
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            childTextView = (TextView) childView.findViewById(org.chromium.chrome.R.id.title);
-        } else {
-            childTextView = (TextView) childView.findViewById(org.chromium.chrome.R.id.tab_title);
-        }
+        childTextView = (TextView) childView.findViewById(org.chromium.chrome.R.id.title);
         return childTextView.getText();
     }
 
@@ -218,13 +214,8 @@ public class OverviewListLayoutTest {
             }
         });
 
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                    item.findViewById(R.id.close_btn_modern));
-        } else {
-            TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                    item.findViewById(R.id.close_btn));
-        }
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                item.findViewById(R.id.close_btn_modern));
 
         didReceiveClosureCommittedHelper.waitForCallback(0);
 
@@ -315,8 +306,8 @@ public class OverviewListLayoutTest {
             }
         });
 
-        TestTouchUtils.performClickOnMainSync(
-                InstrumentationRegistry.getInstrumentation(), item.findViewById(R.id.close_btn));
+        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
+                item.findViewById(R.id.close_btn_modern));
 
         didReceivePendingClosureHelper.waitForCallback(0);
 
@@ -385,7 +376,7 @@ public class OverviewListLayoutTest {
     public void testModelSwitcherVisibility() throws InterruptedException {
         setupTabs();
 
-        View switcherButtons = getContainer().findViewById(R.id.button_wrapper);
+        View switcherButtons = getContainer().findViewById(R.id.tab_wrapper);
 
         Assert.assertEquals(
                 "Tab Model Switcher buttons visible", View.GONE, switcherButtons.getVisibility());
@@ -412,22 +403,20 @@ public class OverviewListLayoutTest {
         TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity().findViewById(R.id.tab_switcher_button));
 
-        View switcherButtons = getContainer().findViewById(R.id.button_wrapper);
+        View switcherButtons = getContainer().findViewById(R.id.tab_wrapper);
 
         Assert.assertEquals("Tab Model Switcher buttons visible", View.VISIBLE,
                 switcherButtons.getVisibility());
 
-        View incognitoButton = switcherButtons.findViewById(R.id.incognito_tabs_button);
+        TabLayout.Tab incognitoButton = getContainer().getIncognitoTabsButton();
 
         Assert.assertNotNull("IncognitoButton is null", incognitoButton);
 
-        TestTouchUtils.performClickOnMainSync(
-                InstrumentationRegistry.getInstrumentation(), incognitoButton);
+        ThreadUtils.runOnUiThreadBlocking(() -> incognitoButton.select());
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(2));
 
-        TestTouchUtils.performClickOnMainSync(InstrumentationRegistry.getInstrumentation(),
-                switcherButtons.findViewById(R.id.standard_tabs_button));
+        ThreadUtils.runOnUiThreadBlocking(() -> getContainer().getStandardTabsButton().select());
 
         CriteriaHelper.pollInstrumentationThread(new ChildCountCriteria(4));
     }

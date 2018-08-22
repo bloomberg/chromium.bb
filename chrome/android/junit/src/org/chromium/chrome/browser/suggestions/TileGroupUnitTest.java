@@ -62,7 +62,7 @@ import java.util.List;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@DisableFeatures({ChromeFeatureList.NTP_MODERN_LAYOUT, ChromeFeatureList.CHROME_MODERN_DESIGN})
+@DisableFeatures({ChromeFeatureList.NTP_MODERN_LAYOUT})
 public class TileGroupUnitTest {
     private static final int MAX_TILES_TO_FETCH = 4;
     private static final int TILE_TITLE_LINES = 1;

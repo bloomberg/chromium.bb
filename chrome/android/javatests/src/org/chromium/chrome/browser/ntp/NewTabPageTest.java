@@ -73,7 +73,6 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
-import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -120,20 +119,6 @@ public class NewTabPageTest {
     public RenderTestRule mRenderTestRule =
             new RenderTestRule("chrome/test/data/android/render_tests");
 
-    // This is only used for directly setting the feature state, therefore not annotated with @Rule.
-    // TODO(bauerb): Refactor so it doesn't use AnnotationRule.
-    private ChromeModernDesign.Processor mChromeModernProcessor =
-            new ChromeModernDesign.Processor();
-
-    /** Parameter provider for enabling/disabling Chrome Modern. */
-    public static class ModernParams implements ParameterProvider {
-        @Override
-        public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(false).name("DisableChromeModern"),
-                    new ParameterSet().value(true).name("EnableChromeModern"));
-        }
-    }
-
     /** Parameter provider for enabling/disabling "Interest Feed Content Suggestions". */
     public static class InterestFeedParams implements ParameterProvider {
         @Override
@@ -153,18 +138,6 @@ public class NewTabPageTest {
     private FakeMostVisitedSites mMostVisitedSites;
     private EmbeddedTestServer mTestServer;
     private List<SiteSuggestion> mSiteSuggestions;
-
-    @ParameterAnnotations.UseMethodParameterBefore(ModernParams.class)
-    public void setupModernDesign(boolean enabled) {
-        mChromeModernProcessor.setPrefs(enabled);
-
-        if (enabled) mRenderTestRule.setVariantPrefix("modern");
-    }
-
-    @ParameterAnnotations.UseMethodParameterAfter(ModernParams.class)
-    public void teardownModernDesign(boolean enabled) {
-        mChromeModernProcessor.clearTestState();
-    }
 
     @ParameterAnnotations.UseMethodParameterBefore(InterestFeedParams.class)
     public void setupInterestFeed(boolean interestFeedEnabled) {
@@ -233,8 +206,7 @@ public class NewTabPageTest {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @DisableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
-    @ParameterAnnotations.UseMethodParameter(ModernParams.class)
-    public void testRender(boolean modern) throws IOException {
+    public void testRender() throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         RenderTestRule.sanitize(mNtp.getView());
         mRenderTestRule.render(mTileGridLayout, "most_visited");
@@ -250,8 +222,7 @@ public class NewTabPageTest {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @EnableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
-    @ParameterAnnotations.UseMethodParameter(ModernParams.class)
-    public void testRender_Simplified(boolean modern) throws IOException {
+    public void testRender_Simplified() throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         RenderTestRule.sanitize(mNtp.getView());
         mRenderTestRule.render(mNtp.getView().getRootView(), "simplified_new_tab_page");

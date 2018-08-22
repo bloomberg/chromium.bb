@@ -18,7 +18,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
@@ -322,10 +321,6 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         }
 
         int maxNumber = getMaxNumber();
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
-            maxNumber = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                    ChromeFeatureList.CHROME_MODERN_DESIGN, MAX_NUMBER, maxNumber);
-        }
         if (maxNumber == -1) {
             recordSurveyFilteringResult(FilteringResult.MAX_NUMBER_MISSING);
             return false;

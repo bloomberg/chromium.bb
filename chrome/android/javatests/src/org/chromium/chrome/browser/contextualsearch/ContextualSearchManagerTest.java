@@ -76,6 +76,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.navigation_interception.NavigationParams;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -2855,10 +2856,14 @@ public class ContextualSearchManagerTest {
     /**
      * Tests that the quick action caption is set correctly when one is available. Also tests that
      * the caption gets changed when the panel is expanded and reset when the panel is closed.
+     * TODO(https://crbug.com/831783): Remove the DisableFeatures block turning off contextual
+     * suggestions.
      */
     @Test
     @SmallTest
     @Feature({"ContextualSearch"})
+    @Features.DisableFeatures({ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
+            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON})
     public void testQuickActionCaptionAndImage() throws InterruptedException, TimeoutException {
         mPanel.getAnimationHandler().enableTestingMode();
 

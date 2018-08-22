@@ -171,7 +171,6 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_MEMEX = "ChromeMemex";
     public static final String CHROME_MODERN_ALTERNATE_CARD_LAYOUT =
             "ChromeModernAlternateCardLayout";
-    public static final String CHROME_MODERN_DESIGN = "ChromeModernDesign";
     public static final String CHROME_MODERN_FULL_ROLL = "ChromeModernFullRoll";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";

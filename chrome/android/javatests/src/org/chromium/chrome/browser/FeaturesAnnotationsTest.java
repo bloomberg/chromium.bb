@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import static junit.framework.Assert.assertTrue;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
@@ -18,10 +16,8 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -56,25 +52,6 @@ public class FeaturesAnnotationsTest {
         List<String> finalDisabledList = getArgsList(false);
         assertThat(finalDisabledList, hasItems("Two"));
         assertThat(finalDisabledList.size(), equalTo(1));
-    }
-
-    /**
-     * Tests the compatibility between {@link EnableFeatures} and other rules.
-     * {@link @ChromeModernDesign} here explicitly calls {@link Features#enable(String...)}, so
-     * its feature should also be added to the set of registered flags.
-     */
-    @Test
-    @SmallTest
-    @ChromeModernDesign.Enable
-    @EnableFeatures("One")
-    public void testFeaturesIncludeValuesSetFromOtherRules() throws InterruptedException {
-        mActivityRule.startMainActivityOnBlankPage();
-
-        List<String> finalEnabledList = getArgsList(true);
-        assertThat(finalEnabledList, hasItems("One", ChromeFeatureList.CHROME_MODERN_DESIGN));
-        assertTrue(ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MODERN_DESIGN));
-        assertTrue("ChromeModernDesign should be enabled.",
-                FeatureUtilities.isChromeModernDesignEnabled());
     }
 
     /**

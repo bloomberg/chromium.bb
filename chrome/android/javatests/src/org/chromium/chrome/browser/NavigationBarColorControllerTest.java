@@ -20,24 +20,15 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.params.ParameterAnnotations;
-import org.chromium.base.test.params.ParameterProvider;
-import org.chromium.base.test.params.ParameterSet;
-import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ntp.NewTabPageTest.ModernParams;
-import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.ChromeModernDesign;
-
-import java.util.Arrays;
 
 /** Tests for the NavigationBarColorController.  */
-@RunWith(ParameterizedRunner.class)
-@ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @MinAndroidSdkLevel(Build.VERSION_CODES.O_MR1)
 @TargetApi(Build.VERSION_CODES.O_MR1)
@@ -45,32 +36,9 @@ public class NavigationBarColorControllerTest {
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
 
-    /** Parameter provider for enabling/disabling Chrome Modern. */
-    public static class ModernParams implements ParameterProvider {
-        @Override
-        public Iterable<ParameterSet> getParameters() {
-            return Arrays.asList(new ParameterSet().value(false).name("DisableChromeModern"),
-                    new ParameterSet().value(true).name("EnableChromeModern"));
-        }
-    }
-
-    private ChromeModernDesign.Processor mChromeModernProcessor =
-            new ChromeModernDesign.Processor();
-
     private Window mWindow;
     private int mLightNavigationColor;
     private int mDarkNavigationColor;
-
-    @ParameterAnnotations.UseMethodParameterBefore(ModernParams.class)
-    public void setupModernDesign(boolean enabled) {
-        mChromeModernProcessor.setPrefs(enabled);
-    }
-
-    @ParameterAnnotations.UseMethodParameterAfter(ModernParams.class)
-    public void teardownModernDesign(boolean enabled) {
-        mChromeModernProcessor.clearTestState();
-    }
-
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
@@ -82,21 +50,15 @@ public class NavigationBarColorControllerTest {
 
     @Test
     @SmallTest
-    @ParameterAnnotations.UseMethodParameter(ModernParams.class)
-    public void testToggleOverview(boolean modern) {
+    public void testToggleOverview() {
         assertEquals("Navigation bar should be white before entering overview mode.",
                 mLightNavigationColor, mWindow.getNavigationBarColor());
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
 
-        if (modern) {
-            assertEquals("Navigation bar should be white in overview mode.", mLightNavigationColor,
-                    mWindow.getNavigationBarColor());
-        } else {
-            assertEquals("Navigation bar should be black in overview mode.", mDarkNavigationColor,
-                    mWindow.getNavigationBarColor());
-        }
+        assertEquals("Navigation bar should be white in overview mode.", mLightNavigationColor,
+                mWindow.getNavigationBarColor());
 
         ThreadUtils.runOnUiThreadBlocking(
                 () -> mActivityTestRule.getActivity().getLayoutManager().hideOverview(false));

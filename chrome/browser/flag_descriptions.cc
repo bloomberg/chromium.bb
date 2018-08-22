@@ -2227,11 +2227,6 @@ const char kChromeModernAlternateCardLayoutName[] =
 const char kChromeModernAlternateCardLayoutDescription[] =
     "Enable the alternate card layout for Chrome Modern Design.";
 
-const char kChromeModernDesignName[] = "Chrome Modern Design";
-const char kChromeModernDesignDescription[] =
-    "Enable modern design for Chrome. Chrome must be restarted twice for this "
-    "flag to take effect.";
-
 const char kChromeModernFullRollName[] = "Chrome Modern Full-Roll";
 const char kChromeModernFullRollDescription[] =
     "Enable modern full-roll animation for Chrome.";

@@ -28,16 +28,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.DiscardableReferencePool;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.params.ParameterAnnotations.ClassParameter;
-import org.chromium.base.test.params.ParameterAnnotations.UseRunnerDelegate;
-import org.chromium.base.test.params.ParameterSet;
-import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
@@ -64,10 +59,8 @@ import org.chromium.chrome.browser.widget.displaystyle.HorizontalDisplayStyle;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.displaystyle.VerticalDisplayStyle;
 import org.chromium.chrome.test.ChromeActivityTestRule;
-import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
+import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.RenderTestRule;
-import org.chromium.chrome.test.util.browser.ChromeModernDesign;
-import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.compositor.layouts.DisableChromeAnimations;
 import org.chromium.chrome.test.util.browser.suggestions.DummySuggestionsEventReporter;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
@@ -76,23 +69,15 @@ import org.chromium.net.NetworkChangeNotifier;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 /**
  * Tests for the appearance of Article Snippets.
  */
-@RunWith(ParameterizedRunner.class)
-@UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
+@RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@ChromeModernDesign.Disable
 public class ArticleSnippetsTest {
-    @ClassParameter
-    private static List<ParameterSet> sClassParams =
-            Arrays.asList(new ParameterSet().value(false).name("DisableNTPModernLayout"),
-                    new ParameterSet().value(true).name("EnableNTPModernLayout"));
-
     @Rule
     public SuggestionsDependenciesRule mSuggestionsDeps = new SuggestionsDependenciesRule();
 
@@ -123,21 +108,8 @@ public class ArticleSnippetsTest {
 
     private long mTimestamp;
 
-    private final boolean mEnableNTPModernLayout;
-
-    public ArticleSnippetsTest(boolean enableNTPModernLayout) {
-        mEnableNTPModernLayout = enableNTPModernLayout;
-    }
-
     @Before
     public void setUp() throws Exception {
-        if (mEnableNTPModernLayout) {
-            Features.getInstance().enable(ChromeFeatureList.NTP_MODERN_LAYOUT);
-            mRenderTestRule.setVariantPrefix("modern");
-        } else {
-            Features.getInstance().disable(ChromeFeatureList.NTP_MODERN_LAYOUT);
-        }
-
         mActivityTestRule.startMainActivityOnBlankPage();
         mThumbnailProvider = new MockThumbnailProvider();
         mSnippetsSource = new FakeSuggestionsSource();
