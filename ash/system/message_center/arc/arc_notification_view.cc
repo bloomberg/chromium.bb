@@ -145,7 +145,16 @@ void ArcNotificationView::OnContainerAnimationStarted() {
   content_view_->OnContainerAnimationStarted();
 }
 
+void ArcNotificationView::OnSettingsButtonPressed(const ui::Event& event) {
+  // TODO(yamaguchi): remove this line and call CloseSwipeControl() from parent
+  // view of this view. The parent view should activate the swipe control of
+  // the slider attached to this view. Same for OnShoozeButtonPressed().
+  CloseSwipeControl();
+  MessageView::OnSettingsButtonPressed(event);
+}
+
 void ArcNotificationView::OnSnoozeButtonPressed(const ui::Event& event) {
+  CloseSwipeControl();
   if (item_)
     return item_->OpenSnooze();
 }

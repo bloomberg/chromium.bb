@@ -123,6 +123,23 @@ void MessageView::SetIsNested() {
                                            ninebox_insets),
         -gfx::ShadowValue::GetMargin(shadow.values)));
   }
+
+  if (!base::FeatureList::IsEnabled(message_center::kNotificationSwipeControl))
+    return;
+  auto* control_buttons_view = GetControlButtonsView();
+  if (control_buttons_view) {
+    int control_button_count =
+        (control_buttons_view->settings_button() ? 1 : 0) +
+        (control_buttons_view->snooze_button() ? 1 : 0);
+    if (control_button_count)
+      slide_out_controller_.EnableSwipeControl(control_button_count);
+    // TODO(crbug.com/1177464): support updating the swipe control when
+    // should_show_setting_buttons is changed after notification creation.
+  }
+}
+
+void MessageView::CloseSwipeControl() {
+  slide_out_controller_.CloseSwipeControl();
 }
 
 bool MessageView::IsCloseButtonFocused() const {
@@ -324,6 +341,10 @@ MessageView::Mode MessageView::GetMode() const {
     return Mode::PINNED;
 
   return Mode::NORMAL;
+}
+
+float MessageView::GetSlideAmount() const {
+  return slide_out_controller_.gesture_amount();
 }
 
 void MessageView::SetSettingMode(bool setting_mode) {

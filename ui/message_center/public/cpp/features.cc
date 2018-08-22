@@ -15,4 +15,7 @@ const base::Feature kNewStyleNotifications {
 #endif
 };
 
+const base::Feature kNotificationSwipeControl{
+    "NotificationSwipeControl", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace message_center

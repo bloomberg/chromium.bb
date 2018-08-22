@@ -80,6 +80,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   virtual bool IsAutoExpandingAllowed() const;
   virtual bool IsManuallyExpandedOrCollapsed() const;
   virtual void SetManuallyExpandedOrCollapsed(bool value);
+  virtual void CloseSwipeControl();
 
   // Update corner radii of the notification. Subclasses will override this to
   // implement rounded corners if they don't use MessageView's default
@@ -117,6 +118,9 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::InkDropHostView,
   void OnSlideOut() override;
 
   Mode GetMode() const;
+
+  // Gets the current horizontal scroll offset of the view by slide gesture.
+  float GetSlideAmount() const;
 
   // Set "setting" mode. This overrides "pinned" mode. See the comment of
   // MessageView::Mode enum for detail.
