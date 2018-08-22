@@ -376,17 +376,34 @@ UserMediaRequest* UserMediaRequest::Create(
   if (error_state.HadException())
     return nullptr;
 
-  switch (media_type) {
-    case WebUserMediaRequest::MediaType::kUserMedia: {
-      if (audio.IsNull() && video.IsNull()) {
-        error_state.ThrowTypeError(
-            "At least one of audio and video must be requested");
-        return nullptr;
-      }
-      break;
+  if (media_type == WebUserMediaRequest::MediaType::kDisplayMedia) {
+    // TODO(emircan): Support constraints after the spec change.
+    // https://w3c.github.io/mediacapture-screen-share/#constraints
+    // 5.2 Constraining Display Surface Selection
+    // The getDisplayMedia function does not permit the use of constraints for
+    // selection of a source as described in the getUserMedia() algorithm.
+    // Prior to invoking the getUserMedia() algorithm, if either of the video
+    // and audio attributes are set to a MediaTrackConstraints value (as
+    // opposed to being absent or set to a Boolean value), reject the promise
+    // with a InvalidAccessError and abort.
+    if (options.audio().IsMediaTrackConstraints() ||
+        options.video().IsMediaTrackConstraints()) {
+      error_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidAccessError,
+          "getDisplayMedia() does not permit the use of constraints.");
+      return nullptr;
     }
-    case WebUserMediaRequest::MediaType::kDisplayMedia:
-      break;
+    // TODO(emircan): Enable when audio capture is supported.
+    if (!options.audio().IsNull() && options.audio().GetAsBoolean()) {
+      error_state.ThrowTypeError("Audio is not supported");
+      return nullptr;
+    }
+  }
+
+  if (audio.IsNull() && video.IsNull()) {
+    error_state.ThrowTypeError(
+        "At least one of audio and video must be requested");
+    return nullptr;
   }
 
   if (!audio.IsNull())
