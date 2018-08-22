@@ -4,6 +4,9 @@
 
 #include "ash/assistant/assistant_controller.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "ash/assistant/assistant_cache_controller.h"
 #include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
@@ -110,6 +113,11 @@ void AssistantController::RequestScreenshot(
                                                           std::move(callback));
 }
 
+void AssistantController::OpenAssistantSettings() {
+  // Launch Assistant settings via deeplink.
+  OpenUrl(assistant::util::CreateAssistantSettingsDeepLink());
+}
+
 void AssistantController::ManageWebContents(
     const base::UnguessableToken& id_token,
     mojom::ManagedWebContentsParamsPtr params,
@@ -175,7 +183,7 @@ void AssistantController::DownloadImage(
 void AssistantController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  using namespace assistant::util;
+  using assistant::util::DeepLinkType;
 
   switch (type) {
     case DeepLinkType::kFeedback:
@@ -263,12 +271,12 @@ void AssistantController::NotifyDestroying() {
 }
 
 void AssistantController::NotifyDeepLinkReceived(const GURL& deep_link) {
-  using namespace assistant::util;
+  using assistant::util::DeepLinkType;
 
   // Retrieve deep link type and parsed parameters.
-  DeepLinkType type = GetDeepLinkType(deep_link);
+  DeepLinkType type = assistant::util::GetDeepLinkType(deep_link);
   const std::map<std::string, std::string> params =
-      GetDeepLinkParams(deep_link);
+      assistant::util::GetDeepLinkParams(deep_link);
 
   for (AssistantControllerObserver& observer : observers_)
     observer.OnDeepLinkReceived(type, params);
