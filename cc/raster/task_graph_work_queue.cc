@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 
 namespace cc {
@@ -215,9 +216,7 @@ void TaskGraphWorkQueue::ScheduleTasks(NamespaceToken token, TaskGraph* graph) {
                     }))
       continue;
 
-    DCHECK(std::find(task_namespace.completed_tasks.begin(),
-                     task_namespace.completed_tasks.end(),
-                     node.task) == task_namespace.completed_tasks.end());
+    DCHECK(!base::ContainsValue(task_namespace.completed_tasks, node.task));
     node.task->state().DidCancel();
     task_namespace.completed_tasks.push_back(node.task);
   }
@@ -328,9 +327,7 @@ void TaskGraphWorkQueue::CompleteTask(PrioritizedTask completed_task) {
         TaskNamespace::Vector& ready_to_run_namespaces =
             ready_to_run_namespaces_[dependent_node.category];
 
-        DCHECK(std::find(ready_to_run_namespaces.begin(),
-                         ready_to_run_namespaces.end(),
-                         task_namespace) == ready_to_run_namespaces.end());
+        DCHECK(!base::ContainsValue(ready_to_run_namespaces, task_namespace));
         ready_to_run_namespaces.push_back(task_namespace);
       }
       ready_to_run_namespaces_has_heap_properties = false;

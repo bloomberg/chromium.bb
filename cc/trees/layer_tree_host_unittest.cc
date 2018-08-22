@@ -12,6 +12,7 @@
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -7587,8 +7588,7 @@ class LayerTreeTestPageScaleFlags : public LayerTreeTest {
               layer->IsAffectedByPageScale()
                   ? this->affected_by_page_scale_
                   : this->not_affected_by_page_scale_;
-          EXPECT_TRUE(std::find(list.begin(), list.end(), layer->id()) !=
-                      list.end());
+          EXPECT_TRUE(base::ContainsValue(list, layer->id()));
         });
 
     EndTest();

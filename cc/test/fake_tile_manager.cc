@@ -9,6 +9,7 @@
 
 #include <limits>
 
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
@@ -51,9 +52,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
 FakeTileManager::~FakeTileManager() = default;
 
 bool FakeTileManager::HasBeenAssignedMemory(Tile* tile) {
-  return std::find(tiles_for_raster.begin(),
-                   tiles_for_raster.end(),
-                   tile) != tiles_for_raster.end();
+  return base::ContainsValue(tiles_for_raster, tile);
 }
 
 }  // namespace cc

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
@@ -304,8 +305,7 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
 
   bool VerifyLayerInList(scoped_refptr<Layer> layer,
                          const LayerList* layer_list) {
-    return std::find(layer_list->begin(), layer_list->end(), layer) !=
-           layer_list->end();
+    return base::ContainsValue(*layer_list, layer);
   }
 
  private:
@@ -9745,8 +9745,7 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
 
   // The root layer should be in the RenderSurfaceList.
   const auto* rsl = render_surface_list_impl();
-  EXPECT_NE(std::find(rsl->begin(), rsl->end(), GetRenderSurface(root)),
-            rsl->end());
+  EXPECT_TRUE(base::ContainsValue(*rsl, GetRenderSurface(root)));
 }
 
 TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {

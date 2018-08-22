@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/animation/animation.h"
@@ -603,8 +604,7 @@ void AnimationHost::ScrollAnimationAbort() {
 }
 
 void AnimationHost::AddToTicking(scoped_refptr<Animation> animation) {
-  DCHECK(std::find(ticking_animations_.begin(), ticking_animations_.end(),
-                   animation) == ticking_animations_.end());
+  DCHECK(!base::ContainsValue(ticking_animations_, animation));
   ticking_animations_.push_back(animation);
 }
 
