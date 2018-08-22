@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser;
+package org.chromium.chrome.browser.native_page;
 
 import android.app.Activity;
 import android.content.res.Resources;
@@ -11,6 +11,7 @@ import android.widget.FrameLayout.LayoutParams;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
@@ -114,7 +115,7 @@ public abstract class BasicNativePage extends EmptyTabObserver implements Native
     }
 
     /**
-     * Updates the top and bottom margin depending on wether the browser controls are shown or
+     * Updates the top and bottom margin depending on whether the browser controls are shown or
      * hidden.
      */
     private void updateMargins(@BrowserControlsState int constraints) {

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.feed;
 
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.NativePageHost;
+import org.chromium.chrome.browser.native_page.NativePageHost;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 
