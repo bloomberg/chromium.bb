@@ -480,6 +480,7 @@ source_set("common") {
     deps += [
       "//third_party/fuchsia-sdk:fdio",
       "//third_party/fuchsia-sdk:fonts",
+      "//third_party/fuchsia-sdk:scenic",
     ]
   }
 }
