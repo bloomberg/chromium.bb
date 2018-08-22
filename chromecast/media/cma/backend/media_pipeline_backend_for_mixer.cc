@@ -81,10 +81,13 @@ bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
 
   start_playback_pts_us_ = start_pts;
 
+  int64_t effective_start_pts =
+      (IsIgnorePtsMode() ? INT64_MIN : start_playback_pts_us_);
+  bool start_playback_asap = !av_sync_;
   if (audio_decoder_ &&
-      !audio_decoder_->Start(start_playback_pts_us_,
-                             av_sync_ ? false : true /* start_playback_asap */))
+      !audio_decoder_->Start(effective_start_pts, start_playback_asap)) {
     return false;
+  }
 
   if (video_decoder_ && !video_decoder_->Start(start_playback_pts_us_, true))
     return false;
