@@ -626,14 +626,11 @@ static int get_est_rate_dist(TileDataEnc *tile_data, BLOCK_SIZE bsize,
 
 static int64_t get_est_rd(TileDataEnc *tile_data, BLOCK_SIZE bsize, int rdmult,
                           int64_t sse, int curr_cost) {
-  aom_clear_system_state();
-  InterModeRdModel *md = &tile_data->inter_mode_rd_models[bsize];
-  if (md->ready) {
-    const double est_ld = md->a * sse + md->b;
-    const double est_residue_cost = (sse - md->dist_mean) / est_ld;
-    const int64_t est_cost = (int64_t)round(est_residue_cost) + curr_cost;
-    const int64_t int64_dist_mean = (int64_t)round(md->dist_mean);
-    const int64_t est_rd = RDCOST(rdmult, est_cost, int64_dist_mean);
+  int est_residue_cost;
+  int64_t est_dist;
+  if (get_est_rate_dist(tile_data, bsize, sse, &est_residue_cost, &est_dist)) {
+    int rate = est_residue_cost + curr_cost;
+    int64_t est_rd = RDCOST(rdmult, rate, est_dist);
     return est_rd;
   }
   return 0;
