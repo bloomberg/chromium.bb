@@ -747,10 +747,11 @@ typedef struct InterModeSearchState {
 
 #if CONFIG_COLLECT_INTER_MODE_RD_STATS
 static int inter_mode_data_block_idx(BLOCK_SIZE bsize) {
-  if (bsize == BLOCK_8X8) return 1;
-  if (bsize == BLOCK_16X16) return 2;
-  if (bsize == BLOCK_32X32) return 3;
-  return -1;
+  if (bsize == BLOCK_4X4 || bsize == BLOCK_4X8 || bsize == BLOCK_8X4 ||
+      bsize == BLOCK_4X16 || bsize == BLOCK_16X4) {
+    return -1;
+  }
+  return 1;
 }
 
 void av1_inter_mode_data_init(TileDataEnc *tile_data) {
@@ -861,7 +862,7 @@ static void inter_mode_data_push(TileDataEnc *tile_data, BLOCK_SIZE bsize,
     rd_model->dist_sum += dist;
     rd_model->ld_sum += ld;
     rd_model->sse_sum += sse;
-    rd_model->sse_sse_sum += sse * sse;
+    rd_model->sse_sse_sum += (double)sse * (double)sse;
     rd_model->sse_ld_sum += sse * ld;
   }
 }
@@ -12189,7 +12190,7 @@ void av1_rd_pick_inter_mode_sb(AV1_COMP *cpi, TileDataEnc *tile_data,
       const int data_idx = inter_modes_info->rd_idx_pair_arr[j].idx;
       *mbmi = inter_modes_info->mbmi_arr[data_idx];
       int64_t curr_est_rd = inter_modes_info->est_rd_arr[data_idx];
-      if (curr_est_rd * 0.9 > top_est_rd) {
+      if (curr_est_rd * 0.85 > top_est_rd) {
         continue;
       }
       const int mode_rate = inter_modes_info->mode_rate_arr[data_idx];
