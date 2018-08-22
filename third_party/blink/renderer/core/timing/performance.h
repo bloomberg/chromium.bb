@@ -220,7 +220,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       const AtomicString& measure_name,
       const StringOrDoubleOrPerformanceMeasureOptions& start,
       const StringOrDouble& end,
-      bool end_is_empty,
       ExceptionState&);
 
   PerformanceMeasure* measureInternal(ScriptState*,

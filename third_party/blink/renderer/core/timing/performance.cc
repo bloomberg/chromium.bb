@@ -629,7 +629,7 @@ PerformanceMeasure* Performance::measure(
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
     ExceptionState& exception_state) {
   return measureInternal(script_state, measure_name, start_or_options,
-                         NativeValueTraits<StringOrDouble>::NullValue(), true,
+                         NativeValueTraits<StringOrDouble>::NullValue(),
                          exception_state);
 }
 
@@ -640,7 +640,7 @@ PerformanceMeasure* Performance::measure(
     const StringOrDouble& end,
     ExceptionState& exception_state) {
   return measureInternal(script_state, measure_name, start_or_options, end,
-                         false, exception_state);
+                         exception_state);
 }
 
 // |start_or_options|: while in options type, the value is an object {start,
@@ -665,7 +665,6 @@ PerformanceMeasure* Performance::measureInternal(
     const AtomicString& measure_name,
     const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
     const StringOrDouble& end,
-    bool end_is_empty,
     ExceptionState& exception_state) {
   if (RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
     if (start_or_options.IsPerformanceMeasureOptions()) {
@@ -714,7 +713,7 @@ PerformanceMeasure* Performance::measureInternal(
           StringOrDouble::FromString(start_or_options.GetAsString());
     } else {
       DCHECK(start_or_options.IsNull());
-      converted_start = StringOrDouble::FromString("null");
+      DCHECK(converted_start.IsNull());
     }
 
     StringOrDouble converted_end;
@@ -725,11 +724,7 @@ PerformanceMeasure* Performance::measureInternal(
           String::NumberToStringECMAScript(end.GetAsDouble()));
     } else {
       DCHECK(end.IsNull());
-      if (end_is_empty) {
-        converted_end = NativeValueTraits<StringOrDouble>::NullValue();
-      } else {
-        converted_end = StringOrDouble::FromString("null");
-      }
+      DCHECK(converted_end.IsNull());
     }
     measureInternal(script_state, measure_name, converted_start, converted_end,
                     ScriptValue::CreateNull(script_state), exception_state);
