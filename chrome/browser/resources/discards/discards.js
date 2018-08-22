@@ -251,7 +251,6 @@ cr.define('discards', function() {
    * @param {string} A string representation of the discarding reason.
    */
   function discardReasonToString(reason) {
-    return 'none';
     switch (reason) {
       case mojom.LifecycleUnitDiscardReason.EXTERNAL:
         return 'external';
