@@ -50,7 +50,15 @@ using testing::UnorderedElementsAreArray;
 
 class PageSchedulerImplTest : public testing::Test {
  public:
-  PageSchedulerImplTest() = default;
+  PageSchedulerImplTest() {
+    feature_list_.InitAndEnableFeature(blink::features::kStopInBackground);
+  }
+
+  PageSchedulerImplTest(std::vector<base::Feature> enabled_features,
+                        std::vector<base::Feature> disabled_features) {
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
   ~PageSchedulerImplTest() override = default;
 
  protected:
@@ -205,20 +213,20 @@ class PageSchedulerImplTest : public testing::Test {
   std::unique_ptr<MainThreadSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
   std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 class PageSchedulerImplStopNonTimersInBackgroundEnabledTest
     : public PageSchedulerImplTest {
  public:
-  PageSchedulerImplStopNonTimersInBackgroundEnabledTest() {
-    feature_list_.InitWithFeatures(
-        {blink::features::kStopNonTimersInBackground}, {});
-  }
+  PageSchedulerImplStopNonTimersInBackgroundEnabledTest()
+      : PageSchedulerImplTest({blink::features::kStopInBackground,
+                               blink::features::kStopNonTimersInBackground},
+                              {}) {}
 
   ~PageSchedulerImplStopNonTimersInBackgroundEnabledTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(PageSchedulerImplTest, TestDestructionOfFrameSchedulersBefore) {

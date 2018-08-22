@@ -3723,8 +3723,8 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(blink::features::kStopNonTimersInBackground)},
 
     {"stop-in-background", flag_descriptions::kStopInBackgroundName,
-     flag_descriptions::kStopInBackgroundDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kStopInBackground)},
+     flag_descriptions::kStopInBackgroundDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(blink::features::kStopInBackground)},
 
 #if defined(OS_CHROMEOS)
     {"ash-enable-keyboard-shortcut-viewer",

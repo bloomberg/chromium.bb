@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
@@ -583,7 +584,7 @@ bool PageSchedulerImpl::IsBackgrounded() const {
 }
 
 bool PageSchedulerImpl::ShouldFreezePage() const {
-  if (!RuntimeEnabledFeatures::StopInBackgroundEnabled())
+  if (!base::FeatureList::IsEnabled(blink::features::kStopInBackground))
     return false;
   return IsBackgrounded();
 }
