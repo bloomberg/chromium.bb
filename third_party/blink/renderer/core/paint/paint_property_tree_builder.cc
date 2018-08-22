@@ -957,26 +957,6 @@ void FragmentPaintPropertyTreeBuilder::UpdateClipPathClip(
   }
 }
 
-void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
-  if (!NeedsPaintPropertyUpdate())
-    return;
-
-  if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_) &&
-      !NeedsFilter(object_)) {
-    fragment_data_.ClearLocalBorderBoxProperties();
-  } else {
-    PropertyTreeState local_border_box =
-        PropertyTreeState(context_.current.transform, context_.current.clip,
-                          context_.current_effect);
-
-    if (!fragment_data_.HasLocalBorderBoxProperties() ||
-        local_border_box != fragment_data_.LocalBorderBoxProperties())
-      property_added_or_removed_ = true;
-
-    fragment_data_.SetLocalBorderBoxProperties(std::move(local_border_box));
-  }
-}
-
 // Returns true if we are printing which was initiated by the frame. We should
 // ignore clipping and scroll transform on contents. WebLocalFrameImpl will
 // issue artificial page clip for each page, and always print from the origin
@@ -1035,6 +1015,26 @@ static bool NeedsOverflowClip(const LayoutObject& object) {
 
   return object.IsBox() && ToLayoutBox(object).ShouldClipOverflow() &&
          !IsPrintingRootLayoutView(object);
+}
+
+void FragmentPaintPropertyTreeBuilder::UpdateLocalBorderBoxContext() {
+  if (!NeedsPaintPropertyUpdate())
+    return;
+
+  if (!object_.HasLayer() && !NeedsPaintOffsetTranslation(object_) &&
+      !NeedsFilter(object_) && !NeedsOverflowClip(object_)) {
+    fragment_data_.ClearLocalBorderBoxProperties();
+  } else {
+    PropertyTreeState local_border_box =
+        PropertyTreeState(context_.current.transform, context_.current.clip,
+                          context_.current_effect);
+
+    if (!fragment_data_.HasLocalBorderBoxProperties() ||
+        local_border_box != fragment_data_.LocalBorderBoxProperties())
+      property_added_or_removed_ = true;
+
+    fragment_data_.SetLocalBorderBoxProperties(std::move(local_border_box));
+  }
 }
 
 bool FragmentPaintPropertyTreeBuilder::NeedsOverflowControlsClip() const {

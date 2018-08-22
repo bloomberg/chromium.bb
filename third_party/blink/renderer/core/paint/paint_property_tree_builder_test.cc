@@ -5922,4 +5922,25 @@ TEST_P(PaintPropertyTreeBuilderTest, SubpixelPositionedScrollNode) {
   EXPECT_EQ(IntRect(0, 0, 1000, 200), scroll_node->ContentsRect());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       LayoutMenuListHasOverlowAndLocalBorderBoxProperties) {
+  SetBodyInnerHTML(R"HTML(
+    <!doctype HTML>
+    <select id="selection" style="width: 80px;">
+      <option>lorem ipsum dolor</option>
+    </select>
+  )HTML");
+
+  const auto& fragment = GetDocument()
+                             .getElementById("selection")
+                             ->GetLayoutObject()
+                             ->FirstFragment();
+
+  EXPECT_TRUE(fragment.PaintProperties());
+  EXPECT_TRUE(fragment.PaintProperties()->OverflowClip());
+  ASSERT_TRUE(fragment.HasLocalBorderBoxProperties());
+  EXPECT_EQ(fragment.ContentsProperties().Clip(),
+            fragment.PaintProperties()->OverflowClip());
+}
+
 }  // namespace blink
