@@ -1651,7 +1651,7 @@ Tab::SeparatorOpacities Tab::GetSeparatorOpacities(bool for_layout) const {
     // animation value, lest the trailing separator on this tab disappear while
     // the subsequent tab is being dragged.
     const float hover_value = hover_controller_.GetAnimationValue();
-    const Tab* subsequent_tab = controller_->GetSubsequentTab(this);
+    const Tab* subsequent_tab = controller_->GetAdjacentTab(this, 1);
     const float subsequent_hover =
         !for_layout && subsequent_tab && !subsequent_tab->IsActive()
             ? float{subsequent_tab->hover_controller_.GetAnimationValue()}
@@ -1662,6 +1662,27 @@ Tab::SeparatorOpacities Tab::GetSeparatorOpacities(bool for_layout) const {
     // since if there is a previous tab that's hovered and not being dragged, it
     // will draw atop this tab.
     leading_opacity = 1.f - hover_value;
+
+    const Tab* previous_tab = controller_->GetAdjacentTab(this, -1);
+    if (IsSelected()) {
+      // Since this tab is selected, its shape will be visible against adjacent
+      // unselected tabs, so remove the separator in those cases.
+      if (previous_tab && !previous_tab->IsSelected())
+        leading_opacity = 0;
+      if (subsequent_tab && !subsequent_tab->IsSelected())
+        trailing_opacity = 0;
+    } else if (controller_->HasVisibleBackgroundTabShapes()) {
+      // Since this tab is unselected, adjacent selected tabs will normally
+      // paint atop it, covering the separator.  But if the user drags those
+      // selected tabs away, the exposed region looks like the window frame; and
+      // since background tab shapes are visible, there should be no separator.
+      // TODO(pkasting): https://crbug.com/876599  When a tab is animating into
+      // this gap, we should adjust its separator opacities as well.
+      if (previous_tab && previous_tab->IsSelected())
+        leading_opacity = 0;
+      if (subsequent_tab && subsequent_tab->IsSelected())
+        trailing_opacity = 0;
+    }
   }
 
   // For the first or last tab in the strip, fade the leading or trailing

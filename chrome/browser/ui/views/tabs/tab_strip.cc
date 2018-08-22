@@ -1070,12 +1070,12 @@ Tab* TabStrip::GetTabAt(const gfx::Point& point) {
   return view && view->id() == VIEW_ID_TAB ? static_cast<Tab*>(view) : nullptr;
 }
 
-const Tab* TabStrip::GetSubsequentTab(const Tab* tab) {
+const Tab* TabStrip::GetAdjacentTab(const Tab* tab, int offset) {
   int index = GetModelIndexOfTab(tab);
   if (index < 0)
     return nullptr;
-  ++index;
-  return index >= tab_count() ? nullptr : tab_at(index);
+  index += offset;
+  return IsValidModelIndex(index) ? tab_at(index) : nullptr;
 }
 
 void TabStrip::OnMouseEventInTab(views::View* source,

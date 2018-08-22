@@ -113,9 +113,9 @@ class TabController {
   // or null if there is no tab that contains the specified point.
   virtual Tab* GetTabAt(const gfx::Point& point) = 0;
 
-  // Returns the next tab in the model order. Returns nullptr if there
-  // isn't another tab beyond the given tab.
-  virtual const Tab* GetSubsequentTab(const Tab* tab) = 0;
+  // Returns the tab at offset |offset| from the current tab in the model order.
+  // Returns nullptr if that offset does not result in a valid model index.
+  virtual const Tab* GetAdjacentTab(const Tab* tab, int offset) = 0;
 
   // Invoked when a mouse event occurs on |source|.
   virtual void OnMouseEventInTab(views::View* source,
