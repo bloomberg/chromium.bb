@@ -1689,3 +1689,44 @@ TEST_F('BackgroundTest', 'MathContentViaInnerHtml', function() {
         .replay();
   });
 });
+
+TEST_F('BackgroundTest', 'GestureGranularity', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function(root) {/*
+    <p>This is a test</p>
+  */}, function(root) {
+    var doGesture = (gesture) => {
+      return () => { GestureCommandHandler.onAccessibilityGesture_(gesture) };
+    };
+    mockFeedback
+        .call(doGesture('swipeLeft3'))
+        .expectSpeech('Word')
+        .call(doGesture('swipeDown1'))
+        .expectSpeech('is')
+        .call(doGesture('swipeDown1'))
+        .expectSpeech('a')
+        .call(doGesture('swipeUp1'))
+        .expectSpeech('is')
+
+        .call(doGesture('swipeLeft3'))
+        .expectSpeech('Character')
+        .call(doGesture('swipeDown1'))
+        .expectSpeech('s')
+        .call(doGesture('swipeUp1'))
+        .expectSpeech('i')
+
+        .call(doGesture('swipeLeft3'))
+        .expectSpeech('Line')
+        .call(doGesture('swipeUp1'))
+        .expectSpeech('This is a test')
+
+        .call(doGesture('swipeRight3'))
+        .expectSpeech('Character')
+        .call(doGesture('swipeRight3'))
+        .expectSpeech('Word')
+        .call(doGesture('swipeRight3'))
+        .expectSpeech('Line')
+
+        .replay();
+  });
+});

@@ -767,6 +767,48 @@ CommandHandler.onCommand = function(command) {
       if (node)
         node.scrollForward();
       break;
+
+    // These commands are only available when invoked from touch.
+    case 'nextAtGranularity':
+    case 'previousAtGranularity':
+      var backwards = command == 'previousAtGranularity';
+      switch (GestureCommandHandler.granularity) {
+        case GestureGranularity.CHARACTER:
+          command = backwards ? 'previousCharacter' : 'nextCharacter';
+          break;
+        case GestureGranularity.WORD:
+          command = backwards ? 'previousWord' : 'nextWord';
+          break;
+        case GestureGranularity.LINE:
+          command = backwards ? 'previousLine' : 'nextLine';
+          break;
+      }
+      CommandHandler.onCommand(command);
+      return false;
+    case 'nextGranularity':
+    case 'previousGranularity':
+      var backwards = command == 'previousGranularity';
+      var gran = GestureCommandHandler.granularity;
+      var next = backwards ?
+          (--gran >= 0 ? gran : GestureGranularity.COUNT - 1) :
+          ++gran % GestureGranularity.COUNT;
+      GestureCommandHandler.granularity =
+          /** @type {GestureGranularity} */ (next);
+
+      var announce = '';
+      switch (GestureCommandHandler.granularity) {
+        case GestureGranularity.CHARACTER:
+          announce = Msgs.getMsg('character_granularity');
+          break;
+        case GestureGranularity.WORD:
+          announce = Msgs.getMsg('word_granularity');
+          break;
+        case GestureGranularity.LINE:
+          announce = Msgs.getMsg('line_granularity');
+          break;
+      }
+      cvox.ChromeVox.tts.speak(announce, cvox.QueueMode.FLUSH);
+      return false;
     default:
       return true;
   }

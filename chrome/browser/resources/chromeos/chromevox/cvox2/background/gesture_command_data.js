@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 goog.provide('GestureCommandData');
+goog.provide('GestureGranularity');
 
 /**
  * Map from gesture names (ax::mojom::Gesture defined in
@@ -19,12 +20,12 @@ goog.provide('GestureCommandData');
 GestureCommandData.GESTURE_COMMAND_MAP = {
   'click': {command: 'forceClickOnCurrentItem'},
   'swipeUp1': {
-    command: 'previousLine',
+    command: 'previousAtGranularity',
     menuKeyOverride: true,
     keyOverride: {keyCode: 38 /* up */, skipStart: true, multiline: true}
   },
   'swipeDown1': {
-    command: 'nextLine',
+    command: 'nextAtGranularity',
     menuKeyOverride: true,
     keyOverride: {keyCode: 40 /* Down */, skipEnd: true, multiline: true}
   },
@@ -50,6 +51,20 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
   },
   'swipeUp3': {command: 'scrollForward'},
   'swipeDown3': {command: 'scrollBackward'},
+  'swipeLeft3': {command: 'previousGranularity'},
+  'swipeRight3': {command: 'nextGranularity'},
+
   'tap2': {command: 'stopSpeech'},
   'tap4': {command: 'showPanelMenuMostRecent'},
+};
+
+/**
+ * Possible granularities to navigate.
+ * @enum {number}
+ */
+GestureGranularity = {
+  CHARACTER: 0,
+  WORD: 1,
+  LINE: 2,
+  COUNT: 3
 };

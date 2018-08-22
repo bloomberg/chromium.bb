@@ -162,6 +162,12 @@
       <message desc='The description of the nextGranularity key.  Navigation granularity can be e.g. "sentence level", "word level".  Granularity is also referred as "level of detail".  c.f. http://chromevox.com/tutorial/text_navigation.html Displayed in the Options page.' name="IDS_CHROMEVOX_NEXT_GRANULARITY">
         Increase navigation granularity
       </message>
+      <message desc="The description of the previousAtGranularity gesture. Displayed in the Options page." name="IDS_CHROMEVOX_PREVIOUS_AT_GRANULARITY">
+        Move to previous at granularity
+      </message>
+      <message desc='The description of the nextGranularity gesture.  Navigation granularity can be e.g. "word level".  Granularity is also referred as "level of detail".  c.f. http://chromevox.com/tutorial/text_navigation.html Displayed in the Options page.' name="IDS_CHROMEVOX_NEXT_AT_GRANULARITY">
+        Move to next at granularity
+      </message>
       <message desc="The description of the actOnCurrentItem key. The current item is the HTML element which has focus.  Taking action is similar to using the mouse to click on the element. Displayed in the Options page." name="IDS_CHROMEVOX_ACT_ON_CURRENT_ITEM">
         Take action on current item
       </message>
