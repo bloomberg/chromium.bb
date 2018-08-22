@@ -357,6 +357,12 @@ str EscapeForHTMLImpl(base::BasicStringPiece<str> input) {
   return result;
 }
 
+// Everything except alphanumerics and -._~
+// See RFC 3986 for the list of unreserved characters.
+static const Charmap kUnreservedCharmap = {
+    {0xffffffffL, 0xfc009fffL, 0x78000001L, 0xb8000001L, 0xffffffffL,
+     0xffffffffL, 0xffffffffL, 0xffffffffL}};
+
 // Everything except alphanumerics and !'()*-._~
 // See RFC 2396 for the list of reserved characters.
 static const Charmap kQueryCharmap = {{
@@ -398,6 +404,10 @@ static const Charmap kExternalHandlerCharmap = {{
 }};
 
 }  // namespace
+
+std::string EscapeAllExceptUnreserved(base::StringPiece text) {
+  return Escape(text, kUnreservedCharmap, false);
+}
 
 std::string EscapeQueryParamValue(base::StringPiece text, bool use_plus) {
   return Escape(text, kQueryCharmap, use_plus);

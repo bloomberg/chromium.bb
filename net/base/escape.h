@@ -19,6 +19,10 @@ namespace net {
 
 // Escaping --------------------------------------------------------------------
 
+// Escapes all characters except unreserved characters. Unreserved characters,
+// as defined in RFC 3986, include alphanumerics and -._~
+NET_EXPORT std::string EscapeAllExceptUnreserved(base::StringPiece text);
+
 // Escapes characters in text suitable for use as a query parameter value.
 // We %XX everything except alphanumerics and -_.!~*'()
 // Spaces change to "+" unless you pass usePlus=false.
