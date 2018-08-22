@@ -12,6 +12,16 @@ gcc_toolchain("target") {
   ar = cros_target_ar
   cc = cros_target_cc
   cxx = cros_target_cxx
+
+  # Relativize path if compiler is specified such that not to lookup from $PATH
+  # and cc/cxx does not contain additional flags.
+  if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
+    cc = rebase_path(cc, root_build_dir)
+  }
+  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+    cxx = rebase_path(cxx, root_build_dir)
+  }
+
   ld = cxx
   if (cros_target_ld != "") {
     ld = cros_target_ld
@@ -46,6 +56,15 @@ gcc_toolchain("nacl_bootstrap") {
   ar = cros_target_ar
   cc = cros_target_cc
   cxx = cros_target_cxx
+
+  # Relativize path if compiler is specified such that not to lookup from $PATH
+  # and cc/cxx does not contain additional flags.
+  if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
+    cc = rebase_path(cc, root_build_dir)
+  }
+  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+    cxx = rebase_path(cxx, root_build_dir)
+  }
   ld = cxx
   if (cros_target_ld != "") {
     ld = cros_target_ld
@@ -77,6 +96,15 @@ gcc_toolchain("host") {
   ar = cros_host_ar
   cc = cros_host_cc
   cxx = cros_host_cxx
+
+  # Relativize path if compiler is specified such that not to lookup from $PATH
+  # and cc/cxx does not contain additional flags.
+  if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
+    cc = rebase_path(cc, root_build_dir)
+  }
+  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+    cxx = rebase_path(cxx, root_build_dir)
+  }
   ld = cxx
   if (cros_host_ld != "") {
     ld = cros_host_ld
@@ -106,6 +134,15 @@ gcc_toolchain("v8_snapshot") {
   ar = cros_v8_snapshot_ar
   cc = cros_v8_snapshot_cc
   cxx = cros_v8_snapshot_cxx
+
+  # Relativize path if compiler is specified such that not to lookup from $PATH
+  # and cc/cxx does not contain additional flags.
+  if (cc != get_path_info(cc, "file") && string_replace(cc, " ", "") == cc) {
+    cc = rebase_path(cc, root_build_dir)
+  }
+  if (cxx != get_path_info(cxx, "file") && string_replace(cxx, " ", "") == cxx) {
+    cxx = rebase_path(cxx, root_build_dir)
+  }
   ld = cxx
   if (cros_v8_snapshot_ld != "") {
     ld = cros_v8_snapshot_ld
