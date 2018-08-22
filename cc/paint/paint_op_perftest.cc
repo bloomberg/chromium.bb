@@ -129,7 +129,7 @@ TEST_F(PaintOpPerfTest, ManyFlagsOps) {
   SkScalar intervals[] = {1.f, 1.f};
   flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
   flags.setMaskFilter(SkMaskFilter::MakeBlur(
-      SkBlurStyle::kOuter_SkBlurStyle, 4.3f, SkRect::MakeXYWH(1, 1, 1, 1)));
+      SkBlurStyle::kOuter_SkBlurStyle, 4.3));
   flags.setColorFilter(
       SkColorMatrixFilter::MakeLightingFilter(SK_ColorYELLOW, SK_ColorGREEN));
 

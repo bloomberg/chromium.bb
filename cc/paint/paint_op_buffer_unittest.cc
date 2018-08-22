@@ -1072,7 +1072,7 @@ std::vector<PaintFlags> test_flags = {
       SkScalar intervals[] = {1.f, 1.f};
       flags.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
       flags.setMaskFilter(SkMaskFilter::MakeBlur(
-          SkBlurStyle::kOuter_SkBlurStyle, 4.3f, test_rects[0]));
+          SkBlurStyle::kOuter_SkBlurStyle, 4.3f));
       flags.setColorFilter(SkColorMatrixFilter::MakeLightingFilter(
           SK_ColorYELLOW, SK_ColorGREEN));
 
