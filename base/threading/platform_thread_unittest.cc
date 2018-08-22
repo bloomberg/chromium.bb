@@ -7,7 +7,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -16,7 +15,6 @@
 #include "base/threading/platform_thread_internal_posix.h"
 #elif defined(OS_WIN)
 #include <windows.h>
-#include "base/threading/platform_thread_win.h"
 #endif
 
 namespace base {
@@ -290,7 +288,16 @@ class ThreadPriorityTestThread : public FunctionTestThread {
   DISALLOW_COPY_AND_ASSIGN(ThreadPriorityTestThread);
 };
 
-void TestSetCurrentThreadPriority() {
+}  // namespace
+// Test changing a created thread's priority (which has different semantics on
+// some platforms).
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/851759): Thread priorities are not implemented in Fuchsia.
+#define MAYBE_SetCurrentThreadPriority DISABLED_SetCurrentThreadPriority
+#else
+#define MAYBE_SetCurrentThreadPriority SetCurrentThreadPriority
+#endif
+TEST(PlatformThreadTest, MAYBE_SetCurrentThreadPriority) {
   ThreadPriorityTestThread thread;
   PlatformThreadHandle handle;
 
@@ -303,30 +310,6 @@ void TestSetCurrentThreadPriority() {
   PlatformThread::Join(handle);
   ASSERT_FALSE(thread.IsRunning());
 }
-
-}  // namespace
-
-// Test changing a created thread's priority.
-#if defined(OS_FUCHSIA)
-// TODO(crbug.com/851759): Thread priorities are not implemented in Fuchsia.
-#define MAYBE_SetCurrentThreadPriority DISABLED_SetCurrentThreadPriority
-#else
-#define MAYBE_SetCurrentThreadPriority SetCurrentThreadPriority
-#endif
-TEST(PlatformThreadTest, MAYBE_SetCurrentThreadPriority) {
-  TestSetCurrentThreadPriority();
-}
-
-#if defined(OS_WIN)
-// Test changing a created thread's priority, with the
-// kWindowsThreadModeBackground feature enabled.
-TEST(PlatformThreadTest, SetCurrentThreadPriorityWithThreadModeBackground) {
-  test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kWindowsThreadModeBackground);
-  TestSetCurrentThreadPriority();
-}
-#endif  // defined(OS_WIN)
 
 // This tests internal PlatformThread APIs used under some POSIX platforms,
 // with the exception of Mac OS X, iOS and Fuchsia.

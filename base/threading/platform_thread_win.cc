@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/threading/platform_thread_win.h"
+#include "base/threading/platform_thread.h"
 
 #include <stddef.h>
 
@@ -15,21 +15,12 @@
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 
 #include <windows.h>
 
 namespace base {
 
 namespace {
-
-// The value returned by ::GetThreadPriority() after background thread mode is
-// enabled on Windows 7.
-constexpr int kWin7BackgroundThreadModePriority = 4;
-
-// The value returned by ::GetThreadPriority() after background thread mode is
-// enabled on Windows 8+.
-constexpr int kWin8AboveBackgroundThreadModePriority = -4;
 
 // The information on how to set the thread name comes from
 // a MSDN article: http://msdn2.microsoft.com/en-us/library/xcb2z8hs.aspx
@@ -153,11 +144,6 @@ bool CreateThreadInternal(size_t stack_size,
 
 }  // namespace
 
-namespace features {
-const Feature kWindowsThreadModeBackground{"WindowsThreadModeBackground",
-                                           FEATURE_DISABLED_BY_DEFAULT};
-}  // namespace features
-
 // static
 PlatformThreadId PlatformThread::CurrentId() {
   return ::GetCurrentThreadId();
@@ -277,22 +263,10 @@ bool PlatformThread::CanIncreaseCurrentThreadPriority() {
 
 // static
 void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
-  const bool use_thread_mode_background =
-      base::FeatureList::IsEnabled(features::kWindowsThreadModeBackground);
-
-  if (use_thread_mode_background && priority != ThreadPriority::BACKGROUND) {
-    // Exit background mode if the new priority is not BACKGROUND. This is a
-    // no-op if not in background mode.
-    ::SetThreadPriority(PlatformThread::CurrentHandle().platform_handle(),
-                        THREAD_MODE_BACKGROUND_END);
-  }
-
   int desired_priority = THREAD_PRIORITY_ERROR_RETURN;
   switch (priority) {
     case ThreadPriority::BACKGROUND:
-      desired_priority = use_thread_mode_background
-                             ? THREAD_MODE_BACKGROUND_BEGIN
-                             : THREAD_PRIORITY_LOWEST;
+      desired_priority = THREAD_PRIORITY_LOWEST;
       break;
     case ThreadPriority::NORMAL:
       desired_priority = THREAD_PRIORITY_NORMAL;
@@ -309,27 +283,20 @@ void PlatformThread::SetCurrentThreadPriority(ThreadPriority priority) {
   }
   DCHECK_NE(desired_priority, THREAD_PRIORITY_ERROR_RETURN);
 
+#if DCHECK_IS_ON()
   const BOOL success =
+#endif
       ::SetThreadPriority(PlatformThread::CurrentHandle().platform_handle(),
                           desired_priority);
   DPLOG_IF(ERROR, !success) << "Failed to set thread priority to "
                             << desired_priority;
-
-  // Sanity check that GetCurrentThreadPriority() is consistent with
-  // SetCurrentThreadPriority().
-  DCHECK_EQ(GetCurrentThreadPriority(), priority);
 }
 
 // static
 ThreadPriority PlatformThread::GetCurrentThreadPriority() {
-  const int priority =
+  int priority =
       ::GetThreadPriority(PlatformThread::CurrentHandle().platform_handle());
-
   switch (priority) {
-    case kWin7BackgroundThreadModePriority:
-      DCHECK_EQ(win::GetVersion(), win::VERSION_WIN7);
-      FALLTHROUGH;
-    case kWin8AboveBackgroundThreadModePriority:
     case THREAD_PRIORITY_LOWEST:
       return ThreadPriority::BACKGROUND;
     case THREAD_PRIORITY_NORMAL:
@@ -339,11 +306,12 @@ ThreadPriority PlatformThread::GetCurrentThreadPriority() {
     case THREAD_PRIORITY_TIME_CRITICAL:
       return ThreadPriority::REALTIME_AUDIO;
     case THREAD_PRIORITY_ERROR_RETURN:
-      PCHECK(false) << "GetThreadPriority error";
+      DPCHECK(false) << "GetThreadPriority error";
+      FALLTHROUGH;
+    default:
+      NOTREACHED() << "Unexpected priority: " << priority;
+      return ThreadPriority::NORMAL;
   }
-
-  NOTREACHED();
-  return ThreadPriority::NORMAL;
 }
 
 }  // namespace base
