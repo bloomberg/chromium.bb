@@ -20,8 +20,6 @@ namespace {
 
 smb_client::SmbService* GetSmbService(Profile* profile) {
   smb_client::SmbService* const service = smb_client::SmbService::Get(profile);
-  DCHECK(service);
-
   return service;
 }
 
@@ -62,6 +60,9 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
   CHECK(args->GetString(3, &password));
 
   smb_client::SmbService* const service = GetSmbService(profile_);
+  if (!service) {
+    return;
+  }
 
   chromeos::file_system_provider::MountOptions mo;
   mo.display_name = mount_name.empty() ? mount_url : mount_name;
@@ -87,6 +88,9 @@ void SmbHandler::HandleSmbMountResponse(SmbMountResult result) {
 
 void SmbHandler::HandleStartDiscovery(const base::ListValue* args) {
   smb_client::SmbService* const service = GetSmbService(profile_);
+  if (!service) {
+    return;
+  }
 
   service->GatherSharesInNetwork(base::BindRepeating(
       &SmbHandler::HandleGatherSharesResponse, weak_ptr_factory_.GetWeakPtr()));

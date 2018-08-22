@@ -135,9 +135,13 @@ class SmbService : public KeyedService,
   // Set up NetBios host locator.
   void SetUpNetBiosHostLocator();
 
+  // Whether Network File Shares are allowed to be used. Controlled via policy.
+  bool IsAllowedByPolicy() const;
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
+  static bool service_should_run_;
   const ProviderId provider_id_;
   Profile* profile_;
   std::unique_ptr<TempFileManager> temp_file_manager_;
