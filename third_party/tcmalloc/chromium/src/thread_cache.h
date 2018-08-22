@@ -93,6 +93,17 @@ class ThreadCache {
 
   bool TryRecordAllocationFast(size_t k);
 
+  // Record additional bytes allocated.
+  void AddToByteAllocatedTotal(size_t k) { total_bytes_allocated_ += k; }
+
+  // Return the total number of bytes allocated from this heap.  The value will
+  // wrap when there is an overflow, and so only the differences between two
+  // values should be relied on (and even then, modulo 2^32).
+  uint32 GetTotalBytesAllocated() const;
+
+  // On the current thread, return GetTotalBytesAllocated().
+  static uint32 GetBytesAllocatedOnCurrentThread();
+
   static void         InitModule();
   static void         InitTSD();
   static ThreadCache* GetThreadHeap();
@@ -322,6 +333,14 @@ class ThreadCache {
   int32         size_;                     // Combined size of data
   int32         max_size_;                 // size_ > max_size_ --> Scavenge()
 
+  // The following is the tally of bytes allocated on a thread as a response to
+  // any flavor of malloc() call.  The aggegated amount includes all padding to
+  // the smallest class that can hold the request, or to the nearest whole page
+  // when a large allocation is made without using a class.  This sum is
+  // currently used for Chromium profiling, where tallies are kept of the amount
+  // of memory allocated during the running of each task on each thread.
+  uint32 total_bytes_allocated_;  // Total, modulo 2^32.
+
   // We sample allocations, biased by the size of the allocation
   Sampler       sampler_;               // A sampler
 
@@ -356,6 +375,10 @@ extern PageHeapAllocator<ThreadCache> threadcache_allocator;
 
 inline int ThreadCache::HeapsInUse() {
   return threadcache_allocator.inuse();
+}
+
+inline uint32 ThreadCache::GetTotalBytesAllocated() const {
+  return total_bytes_allocated_;
 }
 
 inline ATTRIBUTE_ALWAYS_INLINE void* ThreadCache::Allocate(
