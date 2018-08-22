@@ -32,6 +32,9 @@ class InternalAppWindowShelfController : public AppWindowLauncherController,
   explicit InternalAppWindowShelfController(ChromeLauncherController* owner);
   ~InternalAppWindowShelfController() override;
 
+  // AppWindowLauncherController:
+  void ActiveUserChanged(const std::string& user_email) override;
+
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;
 
@@ -39,7 +42,7 @@ class InternalAppWindowShelfController : public AppWindowLauncherController,
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
-  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override;
+  void OnWindowVisibilityChanging(aura::Window* window, bool visible) override;
   void OnWindowDestroying(aura::Window* window) override;
 
   // Creates an AppWindow and updates its AppWindowLauncherItemController by
@@ -47,22 +50,21 @@ class InternalAppWindowShelfController : public AppWindowLauncherController,
   void RegisterAppWindow(aura::Window* window, const ash::ShelfID& shelf_id);
 
  private:
-  using ShelfIdToAppWindow =
-      std::map<ash::ShelfID, std::unique_ptr<AppWindowBase>>;
+  using AuraWindowToAppWindow =
+      std::map<aura::Window*, std::unique_ptr<AppWindowBase>>;
+
+  void AddToShelf(AppWindowBase* app_window);
+  void RemoveFromShelf(AppWindowBase* app_window);
 
   // Removes an AppWindow from its AppWindowLauncherItemController.
   void UnregisterAppWindow(AppWindowBase* app_window);
-
-  // Deletes an AppWindow.
-  // Returns true if an AppWindow of |shelf_id| exists, otherwise returns false.
-  bool DeleteAppWindow(const ash::ShelfID& shelf_id);
 
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
       aura::Window* window) override;
   void OnItemDelegateDiscarded(ash::ShelfItemDelegate* delegate) override;
 
-  ShelfIdToAppWindow shelf_id_to_app_window_;
+  AuraWindowToAppWindow aura_window_to_app_window_;
   std::vector<aura::Window*> observed_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(InternalAppWindowShelfController);
