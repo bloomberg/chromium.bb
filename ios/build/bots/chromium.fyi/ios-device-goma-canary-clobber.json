@@ -22,5 +22,6 @@
   "tests": [
   ],
   "clobber": true,
-  "use_goma_canary": true
+  "use_goma_canary": true,
+  "goma_client_type": "candidate"
 }
