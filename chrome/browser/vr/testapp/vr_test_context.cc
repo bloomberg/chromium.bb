@@ -264,7 +264,7 @@ void VrTestContext::HandleInput(ui::Event* event) {
         active_capturing.location_access_enabled = true;
         ui_->SetCapturingState(active_capturing, background_capturing,
                                potential_capturing);
-        ui_->OnWebVrFrameAvailable();
+        ui_->OnWebXrFrameAvailable();
         break;
       }
       case ui::DomCode::US_O:
@@ -504,10 +504,10 @@ void VrTestContext::CycleWebVrModes() {
       break;
     }
     case kWebVrAwaitingFirstFrame:
-      ui_->OnWebVrTimeoutImminent();
+      ui_->OnWebXrTimeoutImminent();
       break;
     case kWebVrTimeoutImminent:
-      ui_->OnWebVrTimedOut();
+      ui_->OnWebXrTimedOut();
       break;
     case kWebVrTimedOut:
       ui_->SetWebVrMode(false);

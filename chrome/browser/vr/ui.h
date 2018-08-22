@@ -120,7 +120,6 @@ class VR_UI_EXPORT Ui : public UiInterface {
 
   // UiInterface
   base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr() override;
-  bool CanSendWebVrVSync() override;
   void SetAlertDialogEnabled(bool enabled,
                              PlatformUiInputDelegate* delegate,
                              float width,
@@ -137,19 +136,11 @@ class VR_UI_EXPORT Ui : public UiInterface {
   void ShowPlatformToast(const base::string16& text) override;
   void CancelPlatformToast() override;
   bool ShouldRenderWebVr() override;
-  void OnGlInitialized(unsigned int content_texture_id,
-                       GlTextureLocation content_location,
-                       unsigned int content_overlay_texture_id,
-                       GlTextureLocation content_overlay_location,
-                       unsigned int ui_texture_id) override;
 
   void OnPause() override;
   void OnControllerUpdated(const ControllerModel& controller_model,
                            const ReticleModel& reticle_model) override;
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix) override;
-  void OnWebVrFrameAvailable() override;
-  void OnWebVrTimedOut() override;
-  void OnWebVrTimeoutImminent() override;
   bool IsControllerVisible() const override;
   bool SkipsRedrawWhenNotDirty() const override;
   void OnSwapContents(int new_content_id) override;
@@ -188,6 +179,16 @@ class VR_UI_EXPORT Ui : public UiInterface {
       const gfx::Transform& right_view,
       const FovRectangle& fov_recommended_right,
       float z_near) override;
+
+  // CompositorUiInterface
+  void OnGlInitialized(unsigned int content_texture_id,
+                       GlTextureLocation content_location,
+                       unsigned int content_overlay_texture_id,
+                       GlTextureLocation content_overlay_location,
+                       unsigned int ui_texture_id) override;
+  void OnWebXrFrameAvailable() override;
+  void OnWebXrTimedOut() override;
+  void OnWebXrTimeoutImminent() override;
 
   // KeyboardUiInterface
   void OnInputEdited(const EditedText& info) override;

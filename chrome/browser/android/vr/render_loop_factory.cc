@@ -10,9 +10,16 @@
 #include "chrome/browser/android/vr/gvr_keyboard_delegate.h"
 #include "chrome/browser/android/vr/vr_gl_thread.h"
 #include "chrome/browser/android/vr/vr_shell_gl.h"
+#include "chrome/browser/vr/render_loop.h"
 #include "chrome/browser/vr/sounds_manager_audio_delegate.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_factory.h"
+
+namespace {
+// Number of frames to use for sliding averages for pose timings,
+// as used for estimating prediction times.
+constexpr unsigned kSlidingAverageSize = 5;
+}  // namespace
 
 namespace vr {
 
@@ -58,10 +65,16 @@ std::unique_ptr<VrShellGl> RenderLoopFactory::Create(
   auto controller_delegate =
       std::make_unique<GvrControllerDelegate>(params->gvr_api, vr_gl_thread);
   auto vr_shell_gl = std::make_unique<VrShellGl>(
-      vr_gl_thread, std::move(ui), std::move(controller_delegate),
+      std::move(ui), std::move(controller_delegate), vr_gl_thread,
       params->gvr_api, params->reprojected_rendering, params->daydream_support,
       params->ui_initial_state.in_web_vr, params->pause_content,
-      params->low_density);
+      params->low_density, kSlidingAverageSize);
+  vr_shell_gl->SetDrawWebXrCallback(base::BindRepeating(
+      &RenderLoop::Draw, base::Unretained(vr_shell_gl.get()),
+      CompositorDelegate::kWebXrFrame));
+  vr_shell_gl->SetDrawBrowserCallback(base::BindRepeating(
+      &RenderLoop::Draw, base::Unretained(vr_shell_gl.get()),
+      CompositorDelegate::kUiFrame));
   vr_gl_thread->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&VrShellGl::Init, vr_shell_gl->GetWeakPtr(),

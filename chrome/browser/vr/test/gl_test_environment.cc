@@ -4,7 +4,6 @@
 
 #include "chrome/browser/vr/test/gl_test_environment.h"
 
-#include "chrome/browser/vr/base_compositor_delegate.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_image_test_support.h"
@@ -16,9 +15,9 @@ GlTestEnvironment::GlTestEnvironment(const gfx::Size frame_buffer_size) {
   // Setup offscreen GL context.
   gl::GLImageTestSupport::InitializeGL(base::nullopt);
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-  compositor_delegate_ = std::make_unique<BaseCompositorDelegate>();
-  if (!compositor_delegate_->Initialize(surface_))
-    return;
+  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
+                                       gl::GLContextAttribs());
+  context_->MakeCurrent(surface_.get());
 
   if (gl::GLContext::GetCurrent()->GetVersionInfo()->IsAtLeastGL(3, 3)) {
     // To avoid glGetVertexAttribiv(0, ...) failing.
@@ -36,7 +35,8 @@ GlTestEnvironment::~GlTestEnvironment() {
   if (vao_) {
     glDeleteVertexArraysOES(1, &vao_);
   }
-  compositor_delegate_.reset();
+  context_->ReleaseCurrent(surface_.get());
+  context_ = nullptr;
   surface_ = nullptr;
   gl::GLImageTestSupport::CleanupGL();
 }

@@ -23,6 +23,7 @@
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/render_info.h"
 #include "chrome/browser/vr/render_loop.h"
+#include "chrome/browser/vr/scheduler_delegate.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -58,13 +59,11 @@ struct SyncToken;
 
 namespace vr {
 
-class BrowserUiInterface;
+class CompositorUiInterface;
 class ControllerDelegate;
 class FPSMeter;
 class GlBrowserInterface;
 class MailboxToSurfaceBridge;
-class PlatformInputHandler;
-class PlatformUiInputDelegate;
 class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
 class UiInterface;
@@ -99,18 +98,20 @@ struct Viewport {
 // It is not threadsafe and must only be used on the GL thread.
 class VrShellGl : public RenderLoop,
                   public BaseCompositorDelegate,
+                  public SchedulerDelegate,
                   public device::mojom::XRPresentationProvider,
                   public device::mojom::XRFrameDataProvider {
  public:
-  VrShellGl(GlBrowserInterface* browser,
-            std::unique_ptr<UiInterface> ui,
+  VrShellGl(std::unique_ptr<UiInterface> ui,
             std::unique_ptr<ControllerDelegate> controller_delegate,
+            GlBrowserInterface* browser,
             gvr::GvrApi* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
             bool start_in_web_vr_mode,
             bool pause_content,
-            bool low_density);
+            bool low_density,
+            size_t sliding_time_size);
   ~VrShellGl() override;
 
   void Init(base::WaitableEvent* gl_surface_created_event,
@@ -119,11 +120,35 @@ class VrShellGl : public RenderLoop,
   void OnTriggerEvent(bool pressed);
   void OnExitPresent();
 
-  // RenderLoop overrides.
-  void OnPause() override;
-  void OnResume() override;
+  // CompositorDelegate overrides.
+  FovRectangles GetRecommendedFovs() override;
+  float GetZNear() override;
+  RenderInfo GetRenderInfo(FrameType frame_type) override;
+  RenderInfo GetOptimizedRenderInfoForFovs(const FovRectangles& fovs) override;
+  void InitializeBuffers() override;
+  void PrepareBufferForWebXr() override;
+  void PrepareBufferForWebXrOverlayElements() override;
+  bool IsContentQuadReady() override;
+  void PrepareBufferForContentQuadLayer(
+      const gfx::Transform& quad_transform) override;
+  void PrepareBufferForBrowserUi() override;
+  void OnFinishedDrawingBuffer() override;
+  void GetWebXrDrawParams(int* texture_id, Transform* uv_transform) override;
+  void GetContentQuadDrawParams(Transform* uv_transform,
+                                float* border_x,
+                                float* border_y) override;
+  void SubmitFrame(FrameType frame_type) override;
+  void SetUiInterface(CompositorUiInterface* ui) override;
+  void SetShowingVrDialog(bool showing) override;
+  int GetContentBufferWidth() override;
 
-  base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
+  // SchedulerDelegate overrides.
+  void SetDrawWebXrCallback(DrawCallback callback) override;
+  void SetDrawBrowserCallback(DrawCallback callback) override;
+  // TODO(acondor): Drop "Scheduler" from these names once RenderLoop owns
+  // VrShellGl.
+  void OnSchedulerPause() override;
+  void OnSchedulerResume() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
     return task_runner_;
@@ -135,7 +160,6 @@ class VrShellGl : public RenderLoop,
   void WebVrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
                                             const gfx::Size& size);
   void WebVrPrepareSharedBuffer(const gfx::Size& size);
-  void ContentBoundsChanged(int width, int height);
   void BufferBoundsChanged(const gfx::Size& content_buffer_size,
                            const gfx::Size& overlay_buffer_size);
   void UIBoundsChanged(int width, int height);
@@ -146,22 +170,6 @@ class VrShellGl : public RenderLoop,
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
       device::mojom::XRRuntimeSessionOptionsPtr options);
-
-  void OnSwapContents(int new_content_id);
-
-  void EnableAlertDialog(PlatformInputHandler* input_handler,
-                         float width,
-                         float height);
-  void DisableAlertDialog();
-
-  void SetAlertDialogSize(float width, float height);
-  void SetDialogLocation(float x, float y);
-  void SetDialogFloating(bool floating);
-
-  void ShowToast(const base::string16& text);
-  void CancelToast();
-
-  void AcceptDoffPromptForTesting();
 
  private:
   void InitializeGl(gfx::AcceleratedWidget surface);
@@ -183,28 +191,25 @@ class VrShellGl : public RenderLoop,
                       RenderInfo* out_render_info);
   void UpdateContentViewportTransforms(const gfx::Transform& head_pose);
   void DrawFrame(int16_t frame_index, base::TimeTicks current_time);
-  void DrawIntoAcquiredFrame(int16_t frame_index, base::TimeTicks current_time);
-  void DrawFrameSubmitWhenReady(int16_t frame_index,
+  void DrawFrameSubmitWhenReady(FrameType frame_type,
                                 const gfx::Transform& head_pose,
                                 std::unique_ptr<gl::GLFenceEGL> fence);
-  void DrawFrameSubmitNow(int16_t frame_index, const gfx::Transform& head_pose);
+  void DrawFrameSubmitNow(FrameType frame_type,
+                          const gfx::Transform& head_pose);
   bool ShouldDrawWebVr();
-  void DrawWebVr();
-  void DrawContentQuad();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void OnContentFrameAvailable();
   void OnContentOverlayFrameAvailable();
   void OnUiFrameAvailable();
-  void OnWebVRFrameAvailable();
+  void OnWebXrFrameAvailable();
   void OnNewWebVRFrame();
   void ScheduleOrCancelWebVrFrameTimeout();
-  void OnWebVrTimeoutImminent();
-  void OnWebVrFrameTimedOut();
+  void OnWebXrTimeoutImminent();
+  void OnWebXrFrameTimedOut();
 
   base::TimeDelta GetPredictedFrameTime();
-  void AddWebVrRenderTimeEstimate(int16_t frame_index,
-                                  const base::TimeTicks& fence_complete_time);
+  void AddWebVrRenderTimeEstimate(const base::TimeTicks& fence_complete_time);
 
   void OnVSync(base::TimeTicks frame_time);
 
@@ -255,9 +260,10 @@ class VrShellGl : public RenderLoop,
   void ProcessWebVrFrameFromMailbox(int16_t frame_index,
                                     const gpu::MailboxHolder& mailbox);
 
+  bool CanSendWebXrVSync() const;
   // Used for discarding unwanted WebVR frames while UI is showing. We can't
   // safely cancel frames from processing start until they show up in
-  // OnWebVRFrameAvailable, so only support cancelling them before or after
+  // OnWebXrFrameAvailable, so only support cancelling them before or after
   // that lifecycle segment.
   void WebVrCancelAnimatingFrame();
   void WebVrCancelProcessingFrameAfterTransfer();
@@ -270,8 +276,6 @@ class VrShellGl : public RenderLoop,
 
   // samplerExternalOES texture data for WebVR content image.
   int webvr_texture_id_ = 0;
-  int content_texture_id_ = 0;
-  int content_overlay_texture_id_ = 0;
 
   // Set from feature flags.
   bool webvr_vsync_align_;
@@ -362,6 +366,7 @@ class VrShellGl : public RenderLoop,
   device::mojom::XRPresentationClientPtr submit_client_;
 
   GlBrowserInterface* browser_;
+  CompositorUiInterface* ui_;
 
   uint64_t webvr_frames_received_ = 0;
 
@@ -398,14 +403,16 @@ class VrShellGl : public RenderLoop,
   // for later. If we exit WebVR before it is executed, we need to
   // cancel it to avoid inconsistent state.
   base::CancelableOnceCallback<
-      void(int16_t, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
-      webvr_delayed_gvr_submit_;
+      void(FrameType, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
+      webxr_delayed_gvr_submit_;
+
+  DrawCallback web_xr_draw_callback_;
+  DrawCallback browser_draw_callback_;
 
   std::vector<gvr::BufferSpec> specs_;
 
   ControllerModel controller_model_;
 
-  std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
   bool showing_vr_dialog_ = false;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
