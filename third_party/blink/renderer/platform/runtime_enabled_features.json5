@@ -1150,10 +1150,6 @@
       status: "experimental",
     },
     {
-      name: "StopInBackground",
-      status: "test",
-    },
-    {
       name: "TextUnderlinePositionLeftRight",
       status: "experimental",
     },

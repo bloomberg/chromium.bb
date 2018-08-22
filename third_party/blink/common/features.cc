@@ -4,6 +4,8 @@
 
 #include "third_party/blink/public/common/features.h"
 
+#include "build/build_config.h"
+
 namespace blink {
 namespace features {
 
@@ -46,8 +48,19 @@ const base::Feature kRecordAnchorMetricsVisible{
 // Enable Portals. https://crbug.com/865123.
 const base::Feature kPortals{"Portals", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Stop non-timer task queues in background, after allowed grace time. Launch
-// bug: https://crbug.com/822954.
+// Freeze scheduler task queues in background after allowed grace time.
+// "stop" is a legacy name.
+const base::Feature kStopInBackground {
+  "stop-in-background",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
+
+// Freeze non-timer task queues in background, after allowed grace time. Launch
+// bug: https://crbug.com/822954. "stop" is a legacy name.
 const base::Feature kStopNonTimersInBackground{
     "stop-non-timers-in-background", base::FEATURE_DISABLED_BY_DEFAULT};
 

@@ -34,7 +34,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "url/gurl.h"
 
 namespace resource_coordinator {
@@ -69,11 +68,6 @@ bool IsValidStateChange(LifecycleUnitState from,
         case LifecycleUnitState::DISCARDED: {
           return reason == StateChangeReason::SYSTEM_MEMORY_PRESSURE ||
                  reason == StateChangeReason::EXTENSION_INITIATED;
-        }
-        // Renderer-initiated freezing.
-        case LifecycleUnitState::FROZEN: {
-          return base::FeatureList::IsEnabled(features::kStopInBackground) &&
-                 reason == StateChangeReason::RENDERER_INITIATED;
         }
         default:
           return false;

@@ -420,9 +420,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableV8ContextSnapshot(
       base::FeatureList::IsEnabled(features::kV8ContextSnapshot));
 
-  if (base::FeatureList::IsEnabled(features::kStopInBackground))
-    WebRuntimeFeatures::EnableStopInBackground(true);
-
   WebRuntimeFeatures::EnablePWAFullCodeCache(
       base::FeatureList::IsEnabled(features::kPWAFullCodeCache));
 
