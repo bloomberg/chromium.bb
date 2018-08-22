@@ -152,6 +152,12 @@ class DiscardableMemoryImpl : public base::DiscardableMemory {
 int64_t GetDefaultMemoryLimit() {
   const int kMegabyte = 1024 * 1024;
 
+#if defined(CHROMECAST_BUILD)
+  // Bypass IsLowEndDevice() check and fix max_default_memory_limit to 64MB on
+  // Chromecast devices. Set value here as IsLowEndDevice() is used on some, but
+  // not all Chromecast devices.
+  int64_t max_default_memory_limit = 64 * kMegabyte;
+#else
 #if defined(OS_ANDROID)
   // Limits the number of FDs used to 32, assuming a 4MB allocation size.
   int64_t max_default_memory_limit = 128 * kMegabyte;
@@ -162,6 +168,7 @@ int64_t GetDefaultMemoryLimit() {
   // Use 1/8th of discardable memory on low-end devices.
   if (base::SysInfo::IsLowEndDevice())
     max_default_memory_limit /= 8;
+#endif
 
 #if defined(OS_LINUX)
   base::FilePath shmem_dir;
