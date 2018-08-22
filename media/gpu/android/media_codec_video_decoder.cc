@@ -503,6 +503,10 @@ void MediaCodecVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
 void MediaCodecVideoDecoder::FlushCodec() {
   DVLOG(2) << __func__;
+
+  // If a deferred flush was pending, then it isn't anymore.
+  deferred_flush_pending_ = false;
+
   if (!codec_ || codec_->IsFlushed())
     return;
 
@@ -591,7 +595,10 @@ bool MediaCodecVideoDecoder::QueueInput() {
   // If the codec is drained, flush it when there is a pending decode and no
   // unreleased output buffers. This lets us avoid both unbacking frames when we
   // flush, and flushing unnecessarily, like at EOS.
-  if (codec_->IsDrained()) {
+  //
+  // Often, we'll elide the eos to drain the codec, but we want to pretend that
+  // we did.  In this case, we should also flush.
+  if (codec_->IsDrained() || deferred_flush_pending_) {
     if (!codec_->HasUnreleasedOutputBuffers() && !pending_decodes_.empty()) {
       FlushCodec();
       return true;
@@ -691,8 +698,9 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   }
 
   // If we're draining for reset or destroy we can discard |output_buffer|
-  // without rendering it.
-  if (drain_type_)
+  // without rendering it.  This is also true if we elided the drain itself,
+  // and deferred a flush that would have happened when the drain completed.
+  if (drain_type_ || deferred_flush_pending_)
     return true;
 
   // Record the frame type that we're sending and some information about why.
@@ -772,6 +780,11 @@ void MediaCodecVideoDecoder::StartDrainingCodec(DrainType drain_type) {
   // instead. Draining is responsible for a lot of complexity.
   if (decoder_config_.codec() != kCodecVP8 || !codec_ || codec_->IsFlushed() ||
       codec_->IsDrained()) {
+    // If the codec isn't already drained or flushed, then we have to remember
+    // that we owe it a flush.  We also have to remember not to deliver any
+    // output buffers that might still be in progress in the codec.
+    deferred_flush_pending_ =
+        codec_ && !codec_->IsDrained() && !codec_->IsFlushed();
     OnCodecDrained();
     return;
   }
@@ -795,7 +808,14 @@ void MediaCodecVideoDecoder::OnCodecDrained() {
   }
 
   std::move(reset_cb_).Run();
-  FlushCodec();
+
+  // Flush the codec unless (a) it's already flushed, (b) it's drained and the
+  // flush will be handled automatically on the next decode, or (c) we've
+  // elided the eos and want to defer the flush.
+  if (codec_ && !codec_->IsFlushed() && !codec_->IsDrained() &&
+      !deferred_flush_pending_) {
+    FlushCodec();
+  }
 }
 
 void MediaCodecVideoDecoder::EnterTerminalState(State state) {
