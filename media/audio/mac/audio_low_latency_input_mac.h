@@ -236,10 +236,6 @@ class MEDIA_EXPORT AUAudioInputStream
   // This timer lives on the main browser thread.
   std::unique_ptr<base::OneShotTimer> input_callback_timer_;
 
-  // Set to true if the Start() call was delayed.
-  // See AudioManagerMac::ShouldDeferStreamStart() for details.
-  bool start_was_deferred_;
-
   // Set to true if the audio unit's IO buffer was changed when Open() was
   // called.
   bool buffer_size_was_changed_;
