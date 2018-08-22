@@ -15,6 +15,7 @@
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/public/cpp/android_sms_app_install_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
 namespace chromeos {
@@ -96,7 +97,8 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
               ->BuildInstance(device_sync_client,
                               pref_service,
                               setup_flow_completion_recorder_.get(),
-                              base::DefaultClock::GetInstance())) {
+                              base::DefaultClock::GetInstance())),
+      auth_token_validator_(auth_token_validator) {
   host_status_provider_->AddObserver(this);
   feature_state_manager_->AddObserver(this);
 }
@@ -133,9 +135,12 @@ void MultiDeviceSetupImpl::GetEligibleHostDevices(
 }
 
 void MultiDeviceSetupImpl::SetHostDevice(const std::string& host_device_id,
+                                         const std::string& auth_token,
                                          SetHostDeviceCallback callback) {
-  // TODO(crbug.com/870122): Use AuthTokenValidator to verify that the
-  // user is authenticated.
+  if (!auth_token_validator_->IsAuthTokenValid(auth_token)) {
+    std::move(callback).Run(false /* success */);
+    return;
+  }
 
   cryptauth::RemoteDeviceRefList eligible_devices =
       eligible_host_devices_provider_->GetEligibleHostDevices();
@@ -179,7 +184,19 @@ void MultiDeviceSetupImpl::GetHostStatus(GetHostStatusCallback callback) {
 void MultiDeviceSetupImpl::SetFeatureEnabledState(
     mojom::Feature feature,
     bool enabled,
+    const base::Optional<std::string>& auth_token,
     SetFeatureEnabledStateCallback callback) {
+  // TODO(crbug.com/876377): If kBetterTogetherSuite is being enabled, only
+  // require password if Smartlock pref is enabled.
+  bool is_auth_token_required =
+      enabled && (feature == mojom::Feature::kSmartLock ||
+                  feature == mojom::Feature::kBetterTogetherSuite);
+  if (is_auth_token_required &&
+      (!auth_token || !auth_token_validator_->IsAuthTokenValid(*auth_token))) {
+    std::move(callback).Run(false /* success */);
+    return;
+  }
+
   std::move(callback).Run(
       feature_state_manager_->SetFeatureEnabledState(feature, enabled));
 }

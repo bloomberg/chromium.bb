@@ -49,12 +49,14 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(
       const std::string& host_device_id,
+      const std::string& auth_token,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
   void SetFeatureEnabledState(
       mojom::Feature feature,
       bool enabled,
+      const base::Optional<std::string>& auth_token,
       mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback)
       override;
   void GetFeatureStates(

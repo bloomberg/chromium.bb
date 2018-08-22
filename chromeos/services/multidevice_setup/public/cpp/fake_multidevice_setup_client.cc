@@ -12,7 +12,7 @@ FakeMultiDeviceSetupClient::FakeMultiDeviceSetupClient() = default;
 
 FakeMultiDeviceSetupClient::~FakeMultiDeviceSetupClient() {
   DCHECK(get_eligible_host_devices_callback_queue_.empty());
-  DCHECK(set_host_device_id_and_callback_queue_.empty());
+  DCHECK(set_host_args_queue_.empty());
   DCHECK(get_host_status_callback_queue_.empty());
   DCHECK(set_feature_enabled_state_args_queue_.empty());
   DCHECK(get_feature_states_args_queue_.empty());
@@ -29,11 +29,12 @@ void FakeMultiDeviceSetupClient::InvokePendingGetEligibleHostDevicesCallback(
 
 void FakeMultiDeviceSetupClient::InvokePendingSetHostDeviceCallback(
     const std::string& expected_device_id,
+    const std::string& expected_auth_token,
     bool success) {
-  DCHECK_EQ(expected_device_id,
-            set_host_device_id_and_callback_queue_.front().first);
-  std::move(set_host_device_id_and_callback_queue_.front().second).Run(success);
-  set_host_device_id_and_callback_queue_.pop();
+  DCHECK_EQ(expected_device_id, std::get<0>(set_host_args_queue_.front()));
+  DCHECK_EQ(expected_auth_token, std::get<1>(set_host_args_queue_.front()));
+  std::move(std::get<2>(set_host_args_queue_.front())).Run(success);
+  set_host_args_queue_.pop();
 }
 
 void FakeMultiDeviceSetupClient::InvokePendingGetHostStatusCallback(
@@ -47,11 +48,13 @@ void FakeMultiDeviceSetupClient::InvokePendingGetHostStatusCallback(
 void FakeMultiDeviceSetupClient::InvokePendingSetFeatureEnabledStateCallback(
     mojom::Feature expected_feature,
     bool expected_enabled,
+    const base::Optional<std::string>& expected_auth_token,
     bool success) {
   auto& tuple = set_feature_enabled_state_args_queue_.front();
   DCHECK_EQ(expected_feature, std::get<0>(tuple));
   DCHECK_EQ(expected_enabled, std::get<1>(tuple));
-  std::move(std::get<2>(tuple)).Run(success);
+  DCHECK(expected_auth_token == std::get<2>(tuple));
+  std::move(std::get<3>(tuple)).Run(success);
   set_feature_enabled_state_args_queue_.pop();
 }
 
@@ -84,9 +87,9 @@ void FakeMultiDeviceSetupClient::GetEligibleHostDevices(
 
 void FakeMultiDeviceSetupClient::SetHostDevice(
     const std::string& host_device_id,
+    const std::string& auth_token,
     mojom::MultiDeviceSetup::SetHostDeviceCallback callback) {
-  set_host_device_id_and_callback_queue_.emplace(host_device_id,
-                                                 std::move(callback));
+  set_host_args_queue_.emplace(host_device_id, auth_token, std::move(callback));
 }
 
 void FakeMultiDeviceSetupClient::RemoveHostDevice() {
@@ -100,8 +103,9 @@ void FakeMultiDeviceSetupClient::GetHostStatus(GetHostStatusCallback callback) {
 void FakeMultiDeviceSetupClient::SetFeatureEnabledState(
     mojom::Feature feature,
     bool enabled,
+    const base::Optional<std::string>& auth_token,
     mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) {
-  set_feature_enabled_state_args_queue_.emplace(feature, enabled,
+  set_feature_enabled_state_args_queue_.emplace(feature, enabled, auth_token,
                                                 std::move(callback));
 }
 

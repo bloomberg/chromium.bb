@@ -70,11 +70,13 @@ class MultiDeviceSetupInitializer
       mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
+                     const std::string& auth_token,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
   void SetFeatureEnabledState(mojom::Feature feature,
                               bool enabled,
+                              const base::Optional<std::string>& auth_token,
                               SetFeatureEnabledStateCallback callback) override;
   void GetFeatureStates(GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(RetrySetHostNowCallback callback) override;
@@ -104,7 +106,10 @@ class MultiDeviceSetupInitializer
   std::vector<mojom::FeatureStateObserverPtr> pending_feature_state_observers_;
   std::vector<GetEligibleHostDevicesCallback> pending_get_eligible_hosts_args_;
   std::vector<GetHostStatusCallback> pending_get_host_args_;
-  std::vector<std::tuple<mojom::Feature, bool, SetFeatureEnabledStateCallback>>
+  std::vector<std::tuple<mojom::Feature,
+                         bool,
+                         base::Optional<std::string>,
+                         SetFeatureEnabledStateCallback>>
       pending_set_feature_enabled_args_;
   std::vector<GetFeatureStatesCallback> pending_get_feature_states_args_;
   std::vector<RetrySetHostNowCallback> pending_retry_set_host_args_;
@@ -112,7 +117,7 @@ class MultiDeviceSetupInitializer
   // Special case: for SetHostDevice() and RemoveHostDevice(), only keep track
   // of the most recent call. Since each call to either of these functions
   // overwrites the previous call, only one needs to be passed.
-  base::Optional<std::pair<std::string, SetHostDeviceCallback>>
+  base::Optional<std::tuple<std::string, std::string, SetHostDeviceCallback>>
       pending_set_host_args_;
   bool pending_should_remove_host_device_ = false;
 

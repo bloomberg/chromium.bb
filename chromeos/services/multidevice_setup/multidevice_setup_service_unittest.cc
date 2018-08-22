@@ -223,7 +223,7 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
 
   // SetFeatureEnabledState().
   multidevice_setup_ptr()->SetFeatureEnabledState(
-      mojom::Feature::kBetterTogetherSuite, true /* enabled */,
+      mojom::Feature::kBetterTogetherSuite, true /* enabled */, "authToken",
       base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
 
@@ -251,7 +251,8 @@ TEST_F(MultiDeviceSetupServiceTest, CallFunctionsBeforeInitialization) {
 }
 
 TEST_F(MultiDeviceSetupServiceTest, SetThenRemoveBeforeInitialization) {
-  multidevice_setup_ptr()->SetHostDevice("publicKey", base::DoNothing());
+  multidevice_setup_ptr()->SetHostDevice("publicKey", "authToken",
+                                         base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
 
   multidevice_setup_ptr()->RemoveHostDevice();
@@ -271,10 +272,12 @@ TEST_F(MultiDeviceSetupServiceTest, RemoveThenSetThenSetBeforeInitialization) {
   multidevice_setup_ptr()->RemoveHostDevice();
   multidevice_setup_ptr().FlushForTesting();
 
-  multidevice_setup_ptr()->SetHostDevice("publicKey1", base::DoNothing());
+  multidevice_setup_ptr()->SetHostDevice("publicKey1", "authToken1",
+                                         base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
 
-  multidevice_setup_ptr()->SetHostDevice("publicKey2", base::DoNothing());
+  multidevice_setup_ptr()->SetHostDevice("publicKey2", "authToken2",
+                                         base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
 
   EXPECT_FALSE(fake_multidevice_setup());
@@ -283,7 +286,10 @@ TEST_F(MultiDeviceSetupServiceTest, RemoveThenSetThenSetBeforeInitialization) {
   // been forwarded.
   FinishInitialization();
   EXPECT_EQ(1u, fake_multidevice_setup()->set_host_args().size());
-  EXPECT_EQ("publicKey2", fake_multidevice_setup()->set_host_args()[0].first);
+  EXPECT_EQ("publicKey2",
+            std::get<0>(fake_multidevice_setup()->set_host_args()[0]));
+  EXPECT_EQ("authToken2",
+            std::get<1>(fake_multidevice_setup()->set_host_args()[0]));
   EXPECT_EQ(0u, fake_multidevice_setup()->num_remove_host_calls());
 }
 
@@ -313,7 +319,8 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
   EXPECT_EQ(1u, fake_multidevice_setup()->get_eligible_hosts_args().size());
 
   // SetHostDevice().
-  multidevice_setup_ptr()->SetHostDevice("publicKey", base::DoNothing());
+  multidevice_setup_ptr()->SetHostDevice("publicKey", "authToken",
+                                         base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
   EXPECT_EQ(1u, fake_multidevice_setup()->set_host_args().size());
 
@@ -329,7 +336,7 @@ TEST_F(MultiDeviceSetupServiceTest, FinishInitializationFirst) {
 
   // SetFeatureEnabledState().
   multidevice_setup_ptr()->SetFeatureEnabledState(
-      mojom::Feature::kBetterTogetherSuite, true /* enabled */,
+      mojom::Feature::kBetterTogetherSuite, true /* enabled */, "authToken",
       base::DoNothing());
   multidevice_setup_ptr().FlushForTesting();
   EXPECT_EQ(1u, fake_multidevice_setup()->set_feature_enabled_args().size());

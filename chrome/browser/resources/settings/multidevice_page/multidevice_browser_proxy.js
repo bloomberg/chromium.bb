@@ -14,9 +14,12 @@ cr.define('settings', function() {
      * @param {!settings.MultiDeviceFeature} feature The feature whose state
      *     should be set.
      * @param {boolean} enabled Whether the feature should be turned off or on.
+     * @param {String} authToken Proof that the user is authenticated. Needed
+     *     to enable Smart Lock, and Better Together Suite if the Smart Lock
+     *     user pref is enabled.
      * @return {!Promise<boolean>} Whether the operation was successful.
      */
-    setFeatureEnabledState(feature, enabled) {}
+    setFeatureEnabledState(feature, enabled, authToken) {}
 
     retryPendingHostSetup() {}
   }
@@ -36,8 +39,9 @@ cr.define('settings', function() {
     }
 
     /** @override */
-    setFeatureEnabledState(feature, enabled) {
-      return cr.sendWithPromise('setFeatureEnabledState');
+    setFeatureEnabledState(feature, enabled, authToken) {
+      return cr.sendWithPromise(
+          'setFeatureEnabledState', feature, enabled, authToken);
     }
 
     /** @override */

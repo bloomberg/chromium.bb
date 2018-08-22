@@ -65,6 +65,7 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
  private:
   friend class MultiDeviceSetupImplTest;
 
+  // TODO(crbug.com/874283): Remove SecureChannelClient injection.
   MultiDeviceSetupImpl(
       PrefService* pref_service,
       device_sync::DeviceSyncClient* device_sync_client,
@@ -81,11 +82,13 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
       mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
+                     const std::string& auth_token,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
   void SetFeatureEnabledState(mojom::Feature feature,
                               bool enabled,
+                              const base::Optional<std::string>& auth_token,
                               SetFeatureEnabledStateCallback callback) override;
   void GetFeatureStates(GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(RetrySetHostNowCallback callback) override;
@@ -112,6 +115,7 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup,
   std::unique_ptr<FeatureStateManager> feature_state_manager_;
   std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
+  AuthTokenValidator* auth_token_validator_;
 
   mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;
   mojo::InterfacePtrSet<mojom::FeatureStateObserver> feature_state_observers_;
