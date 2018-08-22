@@ -67,13 +67,14 @@ using FrameTreeIdToChildIdsMap = base::hash_map<int, std::unordered_set<int>>;
 // sending a report.
 using ThreatDetailsDoneCallback = base::Callback<void(content::WebContents*)>;
 
-class ThreatDetails : public base::RefCounted<ThreatDetails>,
-                      public content::WebContentsObserver {
+class ThreatDetails : public content::WebContentsObserver {
  public:
   typedef security_interstitials::UnsafeResource UnsafeResource;
 
+  ~ThreatDetails() override;
+
   // Constructs a new ThreatDetails instance, using the factory.
-  static scoped_refptr<ThreatDetails> NewThreatDetails(
+  static std::unique_ptr<ThreatDetails> NewThreatDetails(
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
       const UnsafeResource& resource,
@@ -106,6 +107,8 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
 
+  base::WeakPtr<ThreatDetails> GetWeakPtr();
+
  protected:
   friend class ThreatDetailsFactoryImpl;
   friend class TestThreatDetailsFactory;
@@ -124,8 +127,6 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
   // Default constructor for testing only.
   ThreatDetails();
 
-  ~ThreatDetails() override;
-
   virtual void AddDOMDetails(const int frame_tree_node_id,
                              std::vector<mojom::ThreatDOMDetailsNodePtr> params,
                              const KeyToFrameTreeIdMap& child_frame_tree_map);
@@ -140,8 +141,6 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
   void StartCollection();
 
  private:
-  friend class base::RefCounted<ThreatDetails>;
-
   // Whether the url is "public" so we can add it to the report.
   bool IsReportableUrl(const GURL& url) const;
 
@@ -270,6 +269,9 @@ class ThreatDetails : public base::RefCounted<ThreatDetails>,
   // deleted.
   std::vector<content::RenderFrameHost*> pending_render_frame_hosts_;
 
+  // Used for references to |this| bound in callbacks.
+  base::WeakPtrFactory<ThreatDetails> weak_factory_;
+
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HistoryServiceUrls);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HttpsResourceSanitization);
   FRIEND_TEST_ALL_PREFIXES(ThreatDetailsTest, HTTPCacheNoEntries);
@@ -289,7 +291,7 @@ class ThreatDetailsFactory {
  public:
   virtual ~ThreatDetailsFactory() {}
 
-  virtual scoped_refptr<ThreatDetails> CreateThreatDetails(
+  virtual std::unique_ptr<ThreatDetails> CreateThreatDetails(
       BaseUIManager* ui_manager,
       content::WebContents* web_contents,
       const security_interstitials::UnsafeResource& unsafe_resource,

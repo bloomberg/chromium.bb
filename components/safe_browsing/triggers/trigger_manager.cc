@@ -186,12 +186,11 @@ bool TriggerManager::StartCollectingThreatDetailsWithReason(
     return false;
 
   bool should_trim_threat_details = trigger_type == TriggerType::AD_SAMPLE;
-  collectors->threat_details =
-      scoped_refptr<ThreatDetails>(ThreatDetails::NewThreatDetails(
-          ui_manager_, web_contents, resource, url_loader_factory,
-          history_service, referrer_chain_provider_, should_trim_threat_details,
-          base::Bind(&TriggerManager::ThreatDetailsDone,
-                     weak_factory_.GetWeakPtr())));
+  collectors->threat_details = ThreatDetails::NewThreatDetails(
+      ui_manager_, web_contents, resource, url_loader_factory, history_service,
+      referrer_chain_provider_, should_trim_threat_details,
+      base::Bind(&TriggerManager::ThreatDetailsDone,
+                 weak_factory_.GetWeakPtr()));
   return true;
 }
 
@@ -220,7 +219,8 @@ bool TriggerManager::FinishCollectingThreatDetails(
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ThreatDetails::FinishCollection,
-                       collectors->threat_details, did_proceed, num_visits),
+                       collectors->threat_details->GetWeakPtr(), did_proceed,
+                       num_visits),
         delay);
 
     // Record that this trigger fired and collected data.
