@@ -8,14 +8,12 @@
 
 #import <LocalAuthentication/LocalAuthentication.h>
 
-#include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
-#include "base/threading/sequenced_task_runner_handle.h"
 #include "device/base/features.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/ctap_get_assertion_request.h"
@@ -89,11 +87,6 @@ bool TouchIdAuthenticator::HasCredentialForGetAssertionRequest(
   return false;
 }
 
-void TouchIdAuthenticator::InitializeAuthenticator(base::OnceClosure callback) {
-  base::SequencedTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                   std::move(callback));
-}
-
 void TouchIdAuthenticator::MakeCredential(CtapMakeCredentialRequest request,
                                           MakeCredentialCallback callback) {
   if (__builtin_available(macOS 10.12.2, *)) {
@@ -157,15 +150,10 @@ const AuthenticatorSupportedOptions& TouchIdAuthenticator::Options() const {
   return options;
 }
 
-base::WeakPtr<FidoAuthenticator> TouchIdAuthenticator::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
-}
-
 TouchIdAuthenticator::TouchIdAuthenticator(std::string keychain_access_group,
                                            std::string metadata_secret)
     : keychain_access_group_(std::move(keychain_access_group)),
-      metadata_secret_(std::move(metadata_secret)),
-      weak_factory_(this) {}
+      metadata_secret_(std::move(metadata_secret)) {}
 
 }  // namespace mac
 }  // namespace fido
