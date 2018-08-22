@@ -856,17 +856,6 @@
       type: "PassiveListenerDefault",
     },
 
-    // Whether the CSSPreloadScanner is used for externally CSS preloads. NoPreload
-    // indicates that the scanner will be used, but no preloads issued.
-    {
-      name: "cssExternalScannerNoPreload",
-      initial: false,
-    },
-    {
-      name: "cssExternalScannerPreload",
-      initial: false,
-    },
-
     // Some platforms have media subsystems which are too buggy to allow preloading
     // of content by default. See http://crbug.com/612909 for details.
     {

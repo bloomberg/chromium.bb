@@ -30,7 +30,6 @@
 #include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 
@@ -45,7 +44,6 @@ HTMLResourcePreloader* HTMLResourcePreloader::Create(Document& document) {
 
 void HTMLResourcePreloader::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
-  visitor->Trace(css_preloaders_);
 }
 
 int HTMLResourcePreloader::CountPreloads() {
@@ -76,19 +74,7 @@ void HTMLResourcePreloader::Preload(
   if (!document_->Loader())
     return;
 
-  CSSPreloaderResourceClient* client = nullptr;
-  // Don't scan a Resource more than once, to avoid a self-referencing
-  // stlyesheet causing infinite recursion.
-  if (!css_preloaders_.Contains(preload->ResourceURL()) &&
-      preload->ResourceType() == Resource::kCSSStyleSheet) {
-    Settings* settings = document_->GetSettings();
-    if (settings && (settings->GetCSSExternalScannerNoPreload() ||
-                     settings->GetCSSExternalScannerPreload())) {
-      client = new CSSPreloaderResourceClient(this);
-      css_preloaders_.insert(preload->ResourceURL(), client);
-    }
-  }
-  preload->Start(document_, client);
+  preload->Start(document_);
 }
 
 }  // namespace blink

@@ -1806,10 +1806,6 @@ void MaybeAppendBlinkSettingsSwitchForFieldTrial(
       //       disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections
       //       disallowFetchForDocWrittenScriptsInMainFrameIfEffectively2G
       "DisallowFetchForDocWrittenScriptsInMainFrame",
-
-      // Keys: cssExternalScannerNoPreload
-      //       cssExternalScannerPreload
-      "CSSExternalScanner",
   };
 
   std::vector<std::string> blink_settings;

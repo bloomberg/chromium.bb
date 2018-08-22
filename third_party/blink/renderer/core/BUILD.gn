@@ -1932,7 +1932,6 @@ jumbo_source_set("unit_tests") {
     "html/media_element_filling_viewport_test.cc",
     "html/parser/atomic_html_token_test.cc",
     "html/parser/compact_html_token_test.cc",
-    "html/parser/css_preload_scanner_test.cc",
     "html/parser/html_document_parser_loading_test.cc",
     "html/parser/html_document_parser_test.cc",
     "html/parser/html_entity_parser_test.cc",

@@ -179,7 +179,6 @@ TEST_F(DisableWebRtcEncryptionFlagTest, StableChannel) {
 class BlinkSettingsFieldTrialTest : public testing::Test {
  public:
   static const char kDisallowFetchFieldTrialName[];
-  static const char kCSSExternalScannerFieldTrialName[];
   static const char kFakeGroupName[];
 
   BlinkSettingsFieldTrialTest()
@@ -235,8 +234,6 @@ class BlinkSettingsFieldTrialTest : public testing::Test {
 
 const char BlinkSettingsFieldTrialTest::kDisallowFetchFieldTrialName[] =
     "DisallowFetchForDocWrittenScriptsInMainFrame";
-const char BlinkSettingsFieldTrialTest::kCSSExternalScannerFieldTrialName[] =
-    "CSSExternalScanner";
 const char BlinkSettingsFieldTrialTest::kFakeGroupName[] = "FakeGroup";
 
 TEST_F(BlinkSettingsFieldTrialTest, NoFieldTrial) {
@@ -266,28 +263,6 @@ TEST_F(BlinkSettingsFieldTrialTest, FieldTrialEnabled) {
   AppendContentBrowserClientSwitches();
   EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
   EXPECT_EQ("key1=value1,key2=value2",
-            command_line().GetSwitchValueASCII(switches::kBlinkSettings));
-}
-
-TEST_F(BlinkSettingsFieldTrialTest, MultipleFieldTrialsEnabled) {
-  CreateFieldTrialWithParams(kDisallowFetchFieldTrialName, kFakeGroupName,
-                             "key1", "value1", "key2", "value2");
-  CreateFieldTrialWithParams(kCSSExternalScannerFieldTrialName, kFakeGroupName,
-                             "keyA", "valueA", "keyB", "valueB");
-  AppendContentBrowserClientSwitches();
-  EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
-  EXPECT_EQ("key1=value1,key2=value2,keyA=valueA,keyB=valueB",
-            command_line().GetSwitchValueASCII(switches::kBlinkSettings));
-}
-
-TEST_F(BlinkSettingsFieldTrialTest, MultipleFieldTrialsDuplicateKeys) {
-  CreateFieldTrialWithParams(kDisallowFetchFieldTrialName, kFakeGroupName,
-                             "key1", "value1", "key2", "value2");
-  CreateFieldTrialWithParams(kCSSExternalScannerFieldTrialName, kFakeGroupName,
-                             "key2", "duplicate", "key3", "value3");
-  AppendContentBrowserClientSwitches();
-  EXPECT_TRUE(command_line().HasSwitch(switches::kBlinkSettings));
-  EXPECT_EQ("key1=value1,key2=value2,key2=duplicate,key3=value3",
             command_line().GetSwitchValueASCII(switches::kBlinkSettings));
 }
 

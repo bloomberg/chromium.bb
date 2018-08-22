@@ -28,17 +28,11 @@
 #include "third_party/blink/renderer/core/html/parser/css_preload_scanner.h"
 
 #include <memory>
-#include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
+
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
-#include "third_party/blink/renderer/core/html/parser/html_resource_preloader.h"
-#include "third_party/blink/renderer/core/loader/document_loader.h"
-#include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
 #include "third_party/blink/renderer/platform/text/segmented_string.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
@@ -254,110 +248,6 @@ void CSSPreloadScanner::EmitRule(const SegmentedString& source) {
     state_ = kDoneParsingImportRules;
   rule_.Clear();
   rule_value_.Clear();
-}
-
-CSSPreloaderResourceClient::CSSPreloaderResourceClient(
-    HTMLResourcePreloader* preloader)
-    : policy_(preloader->GetDocument()
-                      ->GetSettings()
-                      ->GetCSSExternalScannerPreload()
-                  ? kScanAndPreload
-                  : kScanOnly),
-      preloader_(preloader) {}
-
-CSSPreloaderResourceClient::~CSSPreloaderResourceClient() = default;
-
-void CSSPreloaderResourceClient::NotifyFinished(Resource*) {
-  MaybeClearResource();
-}
-
-// Only attach for one appendData call, as that's where most imports will likely
-// be (according to spec).
-void CSSPreloaderResourceClient::DataReceived(Resource* resource,
-                                              const char*,
-                                              size_t) {
-  if (received_first_data_)
-    return;
-  received_first_data_ = true;
-  if (preloader_)
-    ScanCSS(ToCSSStyleSheetResource(resource));
-  MaybeClearResource();
-}
-
-void CSSPreloaderResourceClient::ScanCSS(
-    const CSSStyleSheetResource* resource) {
-  DCHECK(preloader_);
-
-  // Early abort if there is no document loader. Do this early to ensure that
-  // scan histograms and preload histograms do not count different quantities.
-  if (!preloader_->GetDocument()->Loader())
-    return;
-
-  // Passing an empty SegmentedString here results in PreloadRequest with no
-  // file/line information.
-  // TODO(csharrison): If this becomes an issue the CSSPreloadScanner may be
-  // augmented to take care of this case without performing an additional
-  // copy.
-  TimeTicks start_time = CurrentTimeTicks();
-  const String& chunk = resource->SheetText(nullptr);
-  if (chunk.IsNull())
-    return;
-  CSSPreloadScanner css_preload_scanner;
-
-  ReferrerPolicy referrer_policy = kReferrerPolicyDefault;
-  String referrer_policy_header =
-      resource->GetResponse().HttpHeaderField(HTTPNames::Referrer_Policy);
-  if (!referrer_policy_header.IsNull()) {
-    SecurityPolicy::ReferrerPolicyFromHeaderValue(
-        referrer_policy_header, kDoNotSupportReferrerPolicyLegacyKeywords,
-        &referrer_policy);
-  }
-  css_preload_scanner.SetReferrerPolicy(referrer_policy);
-  PreloadRequestStream preloads;
-  css_preload_scanner.Scan(chunk, SegmentedString(), preloads,
-                           resource->GetResponse().Url());
-  UMA_HISTOGRAM_CUSTOM_TIMES(
-      "PreloadScanner.ExternalCSS.ScanTime", CurrentTimeTicks() - start_time,
-      TimeDelta::FromMilliseconds(1), TimeDelta::FromSeconds(1000), 50);
-  FetchPreloads(preloads);
-}
-
-void CSSPreloaderResourceClient::FetchPreloads(PreloadRequestStream& preloads) {
-  if (preloads.size()) {
-    preloader_->GetDocument()->Loader()->DidObserveLoadingBehavior(
-        WebLoadingBehaviorFlag::kWebLoadingBehaviorCSSPreloadFound);
-  }
-
-  if (policy_ == kScanAndPreload) {
-    int current_preload_count = preloader_->CountPreloads();
-    preloader_->TakeAndPreload(preloads);
-    DEFINE_STATIC_LOCAL(
-        CustomCountHistogram, css_import_histogram,
-        ("PreloadScanner.ExternalCSS.PreloadCount", 1, 100, 50));
-    css_import_histogram.Count(preloader_->CountPreloads() -
-                               current_preload_count);
-  }
-}
-
-void CSSPreloaderResourceClient::MaybeClearResource() {
-  // Do not remove the client for unused, speculative markup preloads. This will
-  // trigger cancellation of the request and potential removal from memory
-  // cache. Link preloads are an exception because they support dynamic removal
-  // cancelling the request (and have their own passive resource client).
-  // Note: Speculative preloads which remain unused for their lifetime will
-  // never have this client removed. This should be fine because we only hold
-  // weak references to the resource.
-  if (GetResource() && GetResource()->IsUnusedPreload() &&
-      !GetResource()->IsLinkPreload()) {
-    return;
-  }
-
-  ClearResource();
-}
-
-void CSSPreloaderResourceClient::Trace(blink::Visitor* visitor) {
-  visitor->Trace(preloader_);
-  ResourceClient::Trace(visitor);
 }
 
 }  // namespace blink
