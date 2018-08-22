@@ -1752,7 +1752,7 @@ class CustomTitleWidgetDelegate : public WidgetDelegate {
 };
 
 // Test that undocumented title-hiding API we're using does the job.
-TEST_F(NativeWidgetMacTest, DoesHideTitle) {
+TEST_F(NativeWidgetMacTest, DISABLED_DoesHideTitle) {
   // Same as CreateTopLevelPlatformWidget but with a custom delegate.
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   Widget* widget = new Widget;
