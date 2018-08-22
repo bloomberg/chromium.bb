@@ -30,7 +30,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_pref_names.h"
-#include "ui/base/ime/chromeos/extension_ime_util.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -643,16 +642,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
-
-// ui/base/ime/chromeos/extension_ime_util.h
-#if defined(OS_CHROMEOS)
-    chromeos::extension_ime_util::kBrailleImeExtensionId,
-    chromeos::extension_ime_util::kBrailleImeExtensionPath,
-
-    // TODO(https://crbug.com/861722): Check with code owners why this pref is
-    // required in tests, if possible, update tests and remove.
-    chromeos::extension_ime_util::kBrailleImeEngineId,
-#endif  // defined(OS_CHROMEOS)
 };
 
 }  // namespace
