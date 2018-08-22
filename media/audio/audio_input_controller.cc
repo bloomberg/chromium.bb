@@ -552,7 +552,6 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
 
   UpdateSilenceState(level_dbfs < kSilenceThresholdDBFS);
 
-  UMA_HISTOGRAM_PERCENTAGE("Media.MicrophoneVolume", microphone_volume_percent);
   log_string = base::StringPrintf(
       "AIC::OnData: microphone volume=%d%%", microphone_volume_percent);
   if (microphone_volume_percent < kLowLevelMicrophoneLevelPercent)
