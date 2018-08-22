@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <response protocol="3.1" server="prod">
   <daystart elapsed_days="4054" elapsed_seconds="61236"/>
-  <app appid="npnbmohejbjohgpjnmjagbafnjhkmgko" cohort="" cohortname="" status="ok">
+  <app appid="aohghmighlieiainnegkcijnfilokake" cohort="" cohortname="" status="ok">
     <updatecheck status="ok">
       <urls>
         <url codebase="http://localhost/download/"/>
       </urls>
-      <manifest version="2.0.0.0">
+      <manifest version="0.1">
         <packages>
-          <package fp="1.03afd045f9d1d76d1bed742d362abd425e4c3c1e4d5275f4b99d9c7a8dabc675" hash_sha256="c5c552baf3703dd817dc7753d9a71dd555ff873408e47e8381e336ca34754425" name="v1.crx" required="true" size="909"/>
+          <package fp="1.d6f11c606729d553e9c9b3d0db9e5d51567ea969bedd98008cce7b9415a17490" hash_sha256="d6f11c606729d553e9c9b3d0db9e5d51567ea969bedd98008cce7b9415a17490" name="v1.crx" required="true" size="23276"/>
         </packages>
       </manifest>
     </updatecheck>
