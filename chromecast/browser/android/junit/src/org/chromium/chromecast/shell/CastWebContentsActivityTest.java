@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 
 import android.content.Intent;
 import android.media.AudioManager;
+import android.view.KeyEvent;
 import android.view.WindowManager;
 
 import org.junit.Assert;
@@ -174,5 +175,26 @@ public class CastWebContentsActivityTest {
         mActivityLifecycle.create();
         Assert.assertTrue(Shadows.shadowOf(mShadowActivity.getWindow())
                                   .getFlag(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
+    }
+
+    @Test
+    public void testStopDoesNotCauseFinish() {
+        mActivityLifecycle.create().start().resume();
+        mActivityLifecycle.pause().stop();
+        Assert.assertFalse(mShadowActivity.isFinishing());
+    }
+
+    @Test
+    public void testUserLeaveAndStopCausesFinish() {
+        mActivityLifecycle.create().start().resume();
+        mActivityLifecycle.pause().userLeaving().stop();
+        Assert.assertTrue(mShadowActivity.isFinishing());
+    }
+
+    @Test
+    public void testBackButtonFinishes() {
+        mActivityLifecycle.create().start().resume();
+        mActivity.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK));
+        Assert.assertTrue(mShadowActivity.isFinishing());
     }
 }

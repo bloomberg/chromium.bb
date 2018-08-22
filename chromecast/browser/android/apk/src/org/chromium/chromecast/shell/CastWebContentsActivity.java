@@ -45,6 +45,10 @@ public class CastWebContentsActivity extends Activity {
     private final Controller<Unit> mCreatedState = new Controller<>();
     // Tracks whether this Activity is between onResume() and onPause().
     private final Controller<Unit> mResumedState = new Controller<>();
+    // Tracks whether this Activity is between onStart() and onStop().
+    private final Controller<Unit> mStartedState = new Controller<>();
+    // Tracks whether the user has left according to onUserLeaveHint().
+    private final Controller<Unit> mUserLeftState = new Controller<>();
     // Tracks the most recent Intent for the Activity.
     private final Controller<Intent> mGotIntentState = new Controller<>();
     // Set this to cause the Activity to finish.
@@ -133,6 +137,11 @@ public class CastWebContentsActivity extends Activity {
             intent.setFlags(flags);
             startActivity(intent);
         }));
+
+        Observable<?> stoppingBecauseUserLeftState =
+                Observable.not(mStartedState).and(mUserLeftState);
+        stoppingBecauseUserLeftState.watch(Observers.onEnter(
+                x -> { mIsFinishingState.set("User left and activity stopped."); }));
     }
 
     @Override
@@ -156,6 +165,7 @@ public class CastWebContentsActivity extends Activity {
     @Override
     protected void onStart() {
         if (DEBUG) Log.d(TAG, "onStart");
+        mStartedState.set(Unit.unit());
         super.onStart();
     }
 
@@ -176,6 +186,7 @@ public class CastWebContentsActivity extends Activity {
     @Override
     protected void onStop() {
         if (DEBUG) Log.d(TAG, "onStop");
+        mStartedState.reset();
         super.onStop();
     }
 
@@ -187,6 +198,12 @@ public class CastWebContentsActivity extends Activity {
         }
         mCreatedState.reset();
         super.onDestroy();
+    }
+
+    @Override
+    protected void onUserLeaveHint() {
+        mUserLeftState.set(Unit.unit());
+        super.onUserLeaveHint();
     }
 
     @Override
