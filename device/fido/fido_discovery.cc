@@ -136,11 +136,8 @@ bool FidoDiscovery::AddDevice(std::unique_ptr<FidoDevice> device) {
   if (!result.second) {
     return false;  // Duplicate device id.
   }
-  FidoDevice* device_ptr = result.first->second.get();
-  // Determine the device protocol version before notifying observers.
-  device_ptr->DiscoverSupportedProtocolAndDeviceInfo(
-      base::BindOnce(&FidoDiscovery::NotifyDeviceAdded,
-                     weak_factory_.GetWeakPtr(), device_ptr));
+
+  NotifyDeviceAdded(result.first->second.get());
   return true;
 }
 

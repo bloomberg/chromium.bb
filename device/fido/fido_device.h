@@ -47,6 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual void Cancel() = 0;
   virtual std::string GetId() const = 0;
   virtual FidoTransportProtocol DeviceTransport() const = 0;
+  virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
 
   // Sends a speculative AuthenticatorGetInfo request to determine whether the
   // device supports the CTAP2 protocol, and initializes supported_protocol_
@@ -68,8 +69,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   State state() const { return state_; }
 
  protected:
-  virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
-
   void OnDeviceInfoReceived(base::OnceClosure done,
                             base::Optional<std::vector<uint8_t>> response);
   void SetDeviceInfo(AuthenticatorGetInfoResponse device_info);
