@@ -152,10 +152,6 @@ public class SafeBrowsingTest {
             final String metadata;
             Arrays.sort(threatsOfInterest);
 
-            // TODO(ntfschr): remove this assert once we support Unwanted Software warnings
-            // (crbug/729272)
-            Assert.assertEquals(Arrays.binarySearch(threatsOfInterest, UNWANTED_SOFTWARE_CODE), -1);
-
             if (uri.endsWith(PHISHING_HTML_PATH)
                     && Arrays.binarySearch(threatsOfInterest, PHISHING_CODE) >= 0) {
                 metadata = buildMetadataFromCode(PHISHING_CODE);
@@ -473,14 +469,13 @@ public class SafeBrowsingTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testSafeBrowsingDoesNotBlockUnwantedSoftwarePages() throws Throwable {
-        // TODO(ntfschr): this is a temporary check until we add support for Unwanted Software
-        // warnings (crbug/729272)
+    public void testSafeBrowsingBlocksUnwantedSoftwarePages() throws Throwable {
         loadGreenPage();
-        final String responseUrl = mTestServer.getURL(UNWANTED_SOFTWARE_HTML_PATH);
-        mActivityTestRule.loadUrlSync(
-                mAwContents, mContentsClient.getOnPageFinishedHelper(), responseUrl);
-        assertTargetPageHasLoaded(UNWANTED_SOFTWARE_PAGE_BACKGROUND_COLOR);
+        loadPathAndWaitForInterstitial(UNWANTED_SOFTWARE_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(UNWANTED_SOFTWARE_PAGE_BACKGROUND_COLOR);
+        // Assume that we are rendering the interstitial, since we see neither the previous page nor
+        // the target page
     }
 
     @Test
@@ -736,6 +731,17 @@ public class SafeBrowsingTest {
         loadPathAndWaitForInterstitial(PHISHING_HTML_PATH);
         assertGreenPageNotShowing();
         assertTargetPageNotShowing(PHISHING_PAGE_BACKGROUND_COLOR);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testSafeBrowsingCanShowQuietUnwantedSoftwareInterstitial() throws Throwable {
+        mAwContents.setCanShowBigInterstitial(false);
+        loadGreenPage();
+        loadPathAndWaitForInterstitial(UNWANTED_SOFTWARE_HTML_PATH);
+        assertGreenPageNotShowing();
+        assertTargetPageNotShowing(UNWANTED_SOFTWARE_PAGE_BACKGROUND_COLOR);
     }
 
     @Test

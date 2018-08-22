@@ -47,6 +47,10 @@ class SafeBrowsingQuietErrorUI
   int GetHTMLTemplateId() const override;
 
  private:
+  void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
+  void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
+  void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
+
   bool is_giant_webview_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingQuietErrorUI);
