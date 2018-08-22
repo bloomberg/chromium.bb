@@ -731,6 +731,10 @@ void AssistantManagerServiceImpl::OnConversationTurnFinishedOnMainThread(
             mojom::AssistantInteractionResolution::kError);
       });
       break;
+    // The device was not elected to produce a response.
+    case Resolution::DEVICE_NOT_SELECTED:
+      // TODO(b/112952143): handle this case appropriately.
+      break;
   }
 }
 
