@@ -593,7 +593,18 @@ unsigned AudioHandler::NumberOfOutputChannels() const {
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(BaseAudioContext& context)
-    : context_(context), handler_(nullptr) {}
+    : context_(context),
+      deferred_task_handler_(&context.GetDeferredTaskHandler()),
+      handler_(nullptr) {}
+
+AudioNode::~AudioNode() {
+  // The graph lock is required to destroy the handler. And we can't use
+  // |context_| to touch it, since that object may also be a dead heap object.
+  {
+    DeferredTaskHandler::GraphAutoLocker locker(*deferred_task_handler_);
+    handler_ = nullptr;
+  }
+}
 
 void AudioNode::Dispose() {
   DCHECK(IsMainThread());

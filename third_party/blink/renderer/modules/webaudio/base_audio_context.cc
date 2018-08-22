@@ -109,6 +109,13 @@ BaseAudioContext::BaseAudioContext(Document* document,
       output_position_() {}
 
 BaseAudioContext::~BaseAudioContext() {
+  {
+    // We may need to destroy summing junctions, which must happen while this
+    // object is still valid and with the graph lock held.
+    GraphAutoLocker locker(this);
+    destination_handler_ = nullptr;
+  }
+
   GetDeferredTaskHandler().ContextWillBeDestroyed();
   DCHECK(!active_source_nodes_.size());
   DCHECK(!is_resolving_resume_promises_);

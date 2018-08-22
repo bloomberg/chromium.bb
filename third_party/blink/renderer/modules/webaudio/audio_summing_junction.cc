@@ -33,6 +33,7 @@ AudioSummingJunction::AudioSummingJunction(DeferredTaskHandler& handler)
     : deferred_task_handler_(&handler), rendering_state_need_updating_(false) {}
 
 AudioSummingJunction::~AudioSummingJunction() {
+  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
   GetDeferredTaskHandler().RemoveMarkedSummingJunction(this);
 }
 

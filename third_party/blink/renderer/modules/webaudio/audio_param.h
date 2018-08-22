@@ -270,6 +270,8 @@ class AudioParam final : public ScriptWrappable {
       float min_value = -std::numeric_limits<float>::max(),
       float max_value = std::numeric_limits<float>::max());
 
+  ~AudioParam() override;
+
   void Trace(blink::Visitor*) override;
   // |handler| always returns a valid object.
   AudioParamHandler& Handler() const { return *handler_; }
@@ -325,6 +327,8 @@ class AudioParam final : public ScriptWrappable {
   scoped_refptr<AudioParamHandler> handler_;
   Member<BaseAudioContext> context_;
 
+  // Needed in the destructor, where |context_| is not guaranteed to be alive.
+  scoped_refptr<DeferredTaskHandler> deferred_task_handler_;
 };
 
 }  // namespace blink
