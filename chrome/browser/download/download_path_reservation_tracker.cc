@@ -164,10 +164,23 @@ struct CreateReservationInfo {
   base::FilePath source_path;
   base::FilePath suggested_path;
   base::FilePath default_download_path;
+  base::FilePath temporary_path;
   bool create_target_directory;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action;
   DownloadPathReservationTracker::ReservedPathCallback completion_callback;
 };
+
+// Check if |target_path| is writable.
+bool IsPathWritable(const CreateReservationInfo& info,
+                    const base::FilePath& target_path) {
+  if (base::PathIsWritable(target_path.DirName()))
+    return true;
+  // If a temporary file is already created under the same dir as |target_path|,
+  // return true. This is to avoid the windows network share issue. See
+  // http://crbug.com/383765.
+  return !info.temporary_path.empty() &&
+         info.temporary_path.DirName() == target_path.DirName();
+}
 
 // Verify that |target_path| can be written to and also resolve any conflicts if
 // necessary by uniquifying the filename.
@@ -178,7 +191,7 @@ PathValidationResult ValidatePathAndResolveConflicts(
   // to the user's Documents directory. We'll prompt them in this case. No
   // further amendments are made to the filename since the user is going to be
   // prompted.
-  if (!base::PathIsWritable(target_path->DirName())) {
+  if (!IsPathWritable(info, *target_path)) {
     DVLOG(1) << "Unable to write to path \"" << target_path->value() << "\"";
     base::FilePath target_dir;
     base::PathService::Get(chrome::DIR_USER_DOCUMENTS, &target_dir);
@@ -401,6 +414,7 @@ void DownloadPathReservationTracker::GetReservedPath(
                                 source_path,
                                 target_path,
                                 default_path,
+                                download_item->GetTemporaryFilePath(),
                                 create_directory,
                                 conflict_action,
                                 callback};

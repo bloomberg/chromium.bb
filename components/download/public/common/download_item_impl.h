@@ -248,6 +248,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   const base::FilePath& GetFullPath() const override;
   const base::FilePath& GetTargetFilePath() const override;
   const base::FilePath& GetForcedFilePath() const override;
+  base::FilePath GetTemporaryFilePath() const override;
   base::FilePath GetFileNameToReportUser() const override;
   TargetDisposition GetTargetDisposition() const override;
   const std::string& GetHash() const override;
