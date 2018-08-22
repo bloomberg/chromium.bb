@@ -103,13 +103,26 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
 
   WindowService* window_service() { return window_service_; }
 
-  ClientWindowId ClientWindowIdForWindow(aura::Window* window);
+  // Returns the ClientWindowId for the window the client previously supplied
+  // to ScheduleEmbedForExistingClient(). If the client did not call
+  // ScheduleEmbedForExistingClient() with |embed_token|, an invalid
+  // ClientWindowId is returned.
+  ClientWindowId RemoveScheduledEmbedUsingExistingClient(
+      const base::UnguessableToken& embed_token);
+
+  // Completes a previous call to ScheduleEmbedForExistingClient().
+  void CompleteScheduleEmbedForExistingClient(
+      aura::Window* window,
+      const ClientWindowId& id,
+      const base::UnguessableToken& token);
 
   const std::string& client_name() const { return client_name_; }
 
   // Returns true if at a compositor frame sink has been created for at least
   // one of the roots.
   bool HasAtLeastOneRootWithCompositorFrameSink();
+
+  ClientWindowId ClientWindowIdForWindow(aura::Window* window);
 
  private:
   friend class ClientRoot;
@@ -241,12 +254,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTree
   std::vector<mojom::WindowDataPtr> WindowsToWindowDatas(
       const std::vector<aura::Window*>& windows);
   mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
-
-  // Call to complete a previous call to ScheduleEmbedForExistingClient().
-  void CompleteScheduleEmbedForExistingClient(
-      aura::Window* window,
-      const ClientWindowId& id,
-      const base::UnguessableToken& token);
 
   // Returns the WindowTreeClient previously scheduled for an embed with the
   // given |token| from ScheduleEmbed(). If this client is the result of an

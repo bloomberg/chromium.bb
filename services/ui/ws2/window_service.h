@@ -37,6 +37,10 @@ class FocusClient;
 }
 }
 
+namespace base {
+class UnguessableToken;
+}
+
 namespace display {
 class Display;
 }
@@ -99,23 +103,30 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Whether |window| hosts a remote client.
   static bool HasRemoteClient(const aura::Window* window);
 
-  aura::Env* env() { return env_; }
+  struct TreeAndWindowId {
+    ClientWindowId id;
+    WindowTree* tree = nullptr;
+  };
+  // Returns the WindowTree that previously made a call to
+  // ScheduleEmbedForExistingClient(). If a WindowTree made a call to
+  // ScheduleEmbedForExistingClient() the |id| supplied by the client is
+  // returned.
+  TreeAndWindowId FindTreeWithScheduleEmbedForExistingClient(
+      const base::UnguessableToken& embed_token);
+
+  // Completes a previous call to ScheduleEmbedForExistingClient(). |window|
+  // is the Window to perform the embedding in. See the mojom for details on
+  // |embed_flags| and |embed_token|.
+  bool CompleteScheduleEmbedForExistingClient(
+      aura::Window* window,
+      const base::UnguessableToken& embed_token,
+      int embed_flags);
 
   void AddObserver(WindowServiceObserver* observer);
   void RemoveObserver(WindowServiceObserver* observer);
   base::ObserverList<WindowServiceObserver>::Unchecked& observers() {
     return observers_;
   }
-
-  WindowServiceDelegate* delegate() { return delegate_; }
-
-  aura::PropertyConverter* property_converter() { return &property_converter_; }
-
-  aura::client::FocusClient* focus_client() { return focus_client_; }
-
-  const std::set<WindowTree*>& window_trees() const { return window_trees_; }
-
-  service_manager::BinderRegistry* registry() { return &registry_; }
 
   // Called when the surface of |client_name| is first activated.
   void OnFirstSurfaceActivation(const std::string& client_name);
@@ -140,7 +151,19 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // for details.
   std::string GetIdForDebugging(aura::Window* window);
 
+  aura::Env* env() { return env_; }
+
   ScreenProvider* screen_provider() { return screen_provider_.get(); }
+
+  WindowServiceDelegate* delegate() { return delegate_; }
+
+  aura::PropertyConverter* property_converter() { return &property_converter_; }
+
+  aura::client::FocusClient* focus_client() { return focus_client_; }
+
+  const std::set<WindowTree*>& window_trees() const { return window_trees_; }
+
+  service_manager::BinderRegistry* registry() { return &registry_; }
 
   // service_manager::Service:
   void OnStart() override;

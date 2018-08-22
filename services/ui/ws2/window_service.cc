@@ -11,6 +11,7 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/ui/common/switches.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/event_injector.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/remoting_event_injector.h"
@@ -109,6 +110,49 @@ void WindowService::SetDisplayForNewWindows(int64_t display_id) {
 // static
 bool WindowService::HasRemoteClient(const aura::Window* window) {
   return ServerWindow::GetMayBeNull(window);
+}
+
+WindowService::TreeAndWindowId
+WindowService::FindTreeWithScheduleEmbedForExistingClient(
+    const base::UnguessableToken& embed_token) {
+  for (WindowTree* tree : window_trees_) {
+    ClientWindowId client_window_id =
+        tree->RemoveScheduledEmbedUsingExistingClient(embed_token);
+    if (client_window_id.is_valid()) {
+      TreeAndWindowId tree_and_id;
+      tree_and_id.id = client_window_id;
+      tree_and_id.tree = tree;
+      return tree_and_id;
+    }
+  }
+  return TreeAndWindowId();
+}
+
+bool WindowService::CompleteScheduleEmbedForExistingClient(
+    aura::Window* window,
+    const base::UnguessableToken& embed_token,
+    int embed_flags) {
+  // Caller must supply a window, and further the window should not be exposed
+  // to a remote client yet.
+  DCHECK(window);
+  DCHECK(!HasRemoteClient(window));
+
+  const TreeAndWindowId tree_and_id =
+      FindTreeWithScheduleEmbedForExistingClient(embed_token);
+  if (!tree_and_id.tree)
+    return false;
+
+  ServerWindow* server_window =
+      GetServerWindowForWindowCreateIfNecessary(window);
+  const bool owner_intercept_events =
+      (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+  tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
+      window, tree_and_id.id, embed_token);
+  std::unique_ptr<Embedding> embedding =
+      std::make_unique<Embedding>(nullptr, window, owner_intercept_events);
+  embedding->InitForEmbedInExistingTree(tree_and_id.tree);
+  server_window->SetEmbedding(std::move(embedding));
+  return true;
 }
 
 void WindowService::AddObserver(WindowServiceObserver* observer) {

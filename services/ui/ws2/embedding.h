@@ -53,12 +53,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
     return embedding_tree_intercepts_events_;
   }
 
+  // Used during destruction to ensure the |embedded_tree_| is not notified.
+  void clear_embedded_tree() { embedded_tree_ = nullptr; }
   WindowTree* embedded_tree() { return embedded_tree_; }
 
   aura::Window* window() { return window_; }
 
+  WindowTreeBinding* binding() { return binding_.get(); }
+
  private:
-  // The client that initiated the embedding.
+  // The client that initiated the embedding. This is null if the embedding
+  // was completed locally (by way of ScheduleEmbedForExistingClient()).
   WindowTree* embedding_tree_;
 
   // The window the embedding is in.

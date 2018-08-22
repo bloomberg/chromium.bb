@@ -212,4 +212,8 @@ source_set("tests") {
   data_deps = [
     "//services/ui/test_ws",
   ]
+
+  if (toolkit_views) {
+    deps += [ "//services/ui/ws2/remote_view_host:tests" ]
+  }
 }

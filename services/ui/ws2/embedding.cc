@@ -21,12 +21,11 @@ Embedding::Embedding(WindowTree* embedding_tree,
     : embedding_tree_(embedding_tree),
       window_(window),
       embedding_tree_intercepts_events_(embedding_tree_intercepts_events) {
-  DCHECK(embedding_tree_);
   DCHECK(window_);
 }  // namespace ws2
 
 Embedding::~Embedding() {
-  if (!binding_)
+  if (!binding_ && embedded_tree_)
     embedded_tree_->OnEmbeddingDestroyed(this);
 }
 

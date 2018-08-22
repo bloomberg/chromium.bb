@@ -439,6 +439,15 @@ const ServerWindow* ServerWindow::GetMayBeNull(const aura::Window* window) {
   return window ? window->GetProperty(kServerWindowKey) : nullptr;
 }
 
+void ServerWindow::Destroy() {
+  // This should only be called for windows created locally for an embedding
+  // (not created by a remote client). Such windows do not have an owner.
+  DCHECK(!owning_window_tree_);
+  // static_cast is needed to determine which function SetProperty() applies
+  // to.
+  window_->SetProperty(kServerWindowKey, static_cast<ServerWindow*>(nullptr));
+}
+
 WindowTree* ServerWindow::embedded_window_tree() {
   return embedding_ ? embedding_->embedded_tree() : nullptr;
 }
