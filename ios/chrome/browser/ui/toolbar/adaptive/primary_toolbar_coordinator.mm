@@ -155,6 +155,12 @@
                              animated:NO];
 }
 
+- (void)exitFullscreen {
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->ResetModel();
+}
+
 #pragma mark - FakeboxFocuser
 
 - (void)focusFakebox {

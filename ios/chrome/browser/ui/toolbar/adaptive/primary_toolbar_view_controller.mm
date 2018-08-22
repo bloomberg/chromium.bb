@@ -102,6 +102,10 @@
   // set to topLayoutGuide after the view creation on iOS 10.
   [self.view setUp];
 
+  [self.view.collapsedToolbarButton addTarget:self
+                                       action:@selector(exitFullscreen)
+                             forControlEvents:UIControlEventTouchUpInside];
+
   if (IsCompactHeight(self)) {
     self.view.locationBarExtraBottomPadding.constant =
         kAdaptiveLocationBarExtraVerticalMargin;
@@ -172,6 +176,8 @@
       [self.buttonFactory.toolbarConfiguration
           locationBarBackgroundColorWithVisibility:alphaValue];
   self.previousFullscreenProgress = progress;
+
+  self.view.collapsedToolbarButton.hidden = progress > 0.05;
 }
 
 - (void)updateForFullscreenEnabled:(BOOL)enabled {
@@ -260,6 +266,11 @@
   [NSLayoutConstraint
       deactivateConstraints:self.view.contractedNoMarginConstraints];
   [NSLayoutConstraint deactivateConstraints:self.view.expandedConstraints];
+}
+
+// Exits fullscreen.
+- (void)exitFullscreen {
+  [self.delegate exitFullscreen];
 }
 
 @end

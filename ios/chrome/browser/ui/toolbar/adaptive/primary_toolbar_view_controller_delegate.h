@@ -14,6 +14,9 @@
 - (void)viewControllerTraitCollectionDidChange:
     (UITraitCollection*)previousTraitCollection;
 
+// Exits fullscreen.
+- (void)exitFullscreen;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_ADAPTIVE_PRIMARY_TOOLBAR_VIEW_CONTROLLER_DELEGATE_H_
