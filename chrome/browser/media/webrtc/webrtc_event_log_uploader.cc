@@ -18,6 +18,7 @@
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "ui/base/text/bytes_formatting.h"
 
 namespace {
 // TODO(crbug.com/817495): Eliminate the duplication with other uploaders.
@@ -108,25 +109,12 @@ void BindURLLoaderFactoryRequest(
   shared_url_loader_factory->Clone(std::move(url_loader_factory_request));
 }
 
-#if DCHECK_IS_ON()
 void OnURLLoadUploadProgress(uint64_t current, uint64_t total) {
-  std::string unit;
-  if (total <= 1000) {
-    unit = "bytes";
-  } else if (total <= 1000 * 1000) {
-    unit = "KBs";
-    current /= 1000;
-    total /= 1000;
-  } else {
-    unit = "MBs";
-    current /= 1000 * 1000;
-    total /= 1000 * 1000;
-  }
-  VLOG(1) << "WebRTC event log upload progress: " << current << " / " << total
-          << " " << unit << ".";
+  ui::DataUnits unit = ui::GetByteDisplayUnits(total);
+  VLOG(1) << "WebRTC event log upload progress: "
+          << FormatBytesWithUnits(current, unit, false) << " / "
+          << FormatBytesWithUnits(total, unit, true) << ".";
 }
-#endif
-
 }  // namespace
 
 const char WebRtcEventLogUploaderImpl::kUploadURL[] =
@@ -263,10 +251,8 @@ void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
   url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kWebrtcEventLogUploaderTrafficAnnotation);
   url_loader_->AttachStringForUpload(upload_data, MimeContentType());
-#if DCHECK_IS_ON()
   url_loader_->SetOnUploadProgressCallback(
       base::BindRepeating(OnURLLoadUploadProgress));
-#endif
 
   // See comment in destructor for an explanation about why using
   // base::Unretained(this) is safe here.
