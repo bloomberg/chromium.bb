@@ -15,7 +15,6 @@ namespace crash_reporter {
 namespace {
 
 using FilePosition = uint32_t;
-const FilePosition kInvalidFilePos = static_cast<FilePosition>(-1);
 
 // This class is a helper to edit minidump files written by MiniDumpWriteDump.
 // It assumes the minidump file it operates on has a directory entry pointing to
@@ -139,9 +138,14 @@ bool MinidumpUpdater::AppendSimpleDictionary(
     return false;
 
   // Seek to the tail of the file, where we're going to extend it.
-  FilePosition next_available_byte = file_->Seek(base::File::FROM_END, 0);
-  if (next_available_byte == kInvalidFilePos)
+  int64_t seek_position = file_->Seek(base::File::FROM_END, 0);
+
+  if (seek_position == -1 ||
+      seek_position > std::numeric_limits<FilePosition>::max()) {
     return false;
+  }
+
+  FilePosition next_available_byte = static_cast<FilePosition>(seek_position);
 
   // Write the key/value pairs and collect their locations.
   std::vector<crashpad::MinidumpSimpleStringDictionaryEntry> entries;
