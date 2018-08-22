@@ -199,6 +199,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   //----------------------------------------------------------------------------
   // The following methods can be overridden by derived classes.
 
+  // Returns the root-view associated with this view. Always returns |this| for
+  // non-embeddable derived views.
+  virtual RenderWidgetHostViewBase* GetRootView();
+
   // Notifies the View that the renderer text selection has changed.
   virtual void SelectionChanged(const base::string16& text,
                                 size_t offset,
@@ -311,7 +315,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // |touch|'s coordinates are in the coordinate space of the view to which it
   // was targeted.
   virtual void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
-                                      InputEventAckState ack_result) {}
+                                      InputEventAckState ack_result);
 
   virtual void DidOverscroll(const ui::DidOverscrollParams& params) {}
 

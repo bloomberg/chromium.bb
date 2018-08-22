@@ -225,17 +225,6 @@ bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
       *transformed_point, target_view, transformed_point, source);
 }
 
-void CrossProcessFrameConnector::ForwardProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch,
-    InputEventAckState ack_result) {
-  auto* main_view = GetRootRenderWidgetHostView();
-  // Note that the event's coordinates are in |view_|'s coordinate space, but
-  // since |ProcessAckedTouchEvent| doesn't use the coordinates, we don't
-  // bother to transform them back to the root coordinate space.
-  if (main_view)
-    main_view->ProcessAckedTouchEvent(touch, ack_result);
-}
-
 void CrossProcessFrameConnector::ForwardAckedTouchpadPinchGestureEvent(
     const blink::WebGestureEvent& event,
     InputEventAckState ack_result) {

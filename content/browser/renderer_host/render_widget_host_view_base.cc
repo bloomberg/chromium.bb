@@ -161,6 +161,10 @@ int RenderWidgetHostViewBase::GetMouseWheelMinimumGranularity() const {
   return 0;
 }
 
+RenderWidgetHostViewBase* RenderWidgetHostViewBase::GetRootView() {
+  return this;
+}
+
 void RenderWidgetHostViewBase::SelectionChanged(const base::string16& text,
                                                 size_t offset,
                                                 const gfx::Range& range) {
@@ -394,6 +398,12 @@ gfx::NativeViewAccessible
 
 bool RenderWidgetHostViewBase::RequestRepaintForTesting() {
   return false;
+}
+
+void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
+    const TouchEventWithLatencyInfo& touch,
+    InputEventAckState ack_result) {
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewBase::UpdateScreenInfo(gfx::NativeView view) {

@@ -375,6 +375,11 @@ gfx::Size RenderWidgetHostViewChildFrame::GetCompositorViewportPixelSize()
   return gfx::Size();
 }
 
+RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetRootView() {
+  return frame_connector_ ? frame_connector_->GetRootRenderWidgetHostView()
+                          : nullptr;
+}
+
 void RenderWidgetHostViewChildFrame::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& bounds) {
@@ -661,15 +666,6 @@ gfx::Rect RenderWidgetHostViewChildFrame::GetBoundsInRootWindow() {
       rect = root_view->GetBoundsInRootWindow();
   }
   return rect;
-}
-
-void RenderWidgetHostViewChildFrame::ProcessAckedTouchEvent(
-    const TouchEventWithLatencyInfo& touch,
-    InputEventAckState ack_result) {
-  if (!frame_connector_)
-    return;
-
-  frame_connector_->ForwardProcessAckedTouchEvent(touch, ack_result);
 }
 
 void RenderWidgetHostViewChildFrame::DidStopFlinging() {

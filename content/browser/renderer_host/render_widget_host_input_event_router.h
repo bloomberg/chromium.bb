@@ -19,10 +19,12 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "components/viz/service/surfaces/surface_hittest_delegate.h"
+#include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/touch_emulator_client.h"
 #include "content/browser/renderer_host/render_widget_host_view_base_observer.h"
 #include "content/browser/renderer_host/render_widget_targeter.h"
 #include "content/common/content_export.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 
 struct FrameHostMsg_HittestData_Params;
@@ -86,6 +88,9 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                          blink::WebGestureEvent* event,
                          const ui::LatencyInfo& latency);
   void OnHandledTouchStartOrFirstTouchMove(uint32_t unique_touch_event_id);
+  void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& event,
+                              InputEventAckState ack_result,
+                              RenderWidgetHostViewBase* view);
   void RouteTouchEvent(RenderWidgetHostViewBase* root_view,
                        blink::WebTouchEvent *event,
                        const ui::LatencyInfo& latency);
