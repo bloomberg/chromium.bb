@@ -11,12 +11,8 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/logging.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -24,13 +20,13 @@
 #include "components/download/public/common/download_file_impl.h"
 #include "components/download/public/common/download_task_runner.h"
 #include "content/browser/devtools/protocol/devtools_download_manager_delegate.h"
+#include "content/browser/devtools/protocol/devtools_protocol_test_support.h"
 #include "content/browser/download/download_manager_impl.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -46,7 +42,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/slow_download_http_response.h"
@@ -55,10 +50,6 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
-#include "content/test/content_browser_test_utils_internal.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/test/cert_test_util.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -83,10 +74,6 @@ using testing::ElementsAre;
 namespace content {
 
 namespace {
-
-const char kIdParam[] = "id";
-const char kMethodParam[] = "method";
-const char kParamsParam[] = "params";
 
 // If |params| contains an explanation with a non-empty certificate list,
 // returns true and points |certificate| to the certificate list of the first
@@ -178,326 +165,6 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
 }  // namespace
 
-class DevToolsProtocolTest : public ContentBrowserTest,
-                             public DevToolsAgentHostClient,
-                             public WebContentsDelegate {
- public:
-  typedef base::Callback<bool(base::DictionaryValue*)> NotificationMatcher;
-
-  DevToolsProtocolTest()
-      : last_sent_id_(0),
-        waiting_for_command_result_id_(0),
-        in_dispatch_(false),
-        agent_host_can_close_(false) {}
-
-  void SetUpOnMainThread() override {
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
- protected:
-  // WebContentsDelegate methods:
-  bool DidAddMessageToConsole(WebContents* source,
-                              int32_t level,
-                              const base::string16& message,
-                              int32_t line_no,
-                              const base::string16& source_id) override {
-    console_messages_.push_back(base::UTF16ToUTF8(message));
-    return true;
-  }
-
-  blink::WebSecurityStyle GetSecurityStyle(
-      content::WebContents* web_contents,
-      content::SecurityStyleExplanations* security_style_explanations)
-      override {
-    security_style_explanations->secure_explanations.push_back(
-        SecurityStyleExplanation(
-            "an explanation title", "an explanation summary",
-            "an explanation description", cert_,
-            blink::WebMixedContentContextType::kNotMixedContent));
-    return blink::kWebSecurityStyleNeutral;
-  }
-
-  base::DictionaryValue* SendCommand(
-      const std::string& method,
-      std::unique_ptr<base::DictionaryValue> params) {
-    return SendCommand(method, std::move(params), true);
-  }
-
-  base::DictionaryValue* SendCommand(
-      const std::string& method,
-      std::unique_ptr<base::DictionaryValue> params,
-      bool wait) {
-    in_dispatch_ = true;
-    base::DictionaryValue command;
-    command.SetInteger(kIdParam, ++last_sent_id_);
-    command.SetString(kMethodParam, method);
-    if (params)
-      command.Set(kParamsParam, std::move(params));
-
-    std::string json_command;
-    base::JSONWriter::Write(command, &json_command);
-    agent_host_->DispatchProtocolMessage(this, json_command);
-    // Some messages are dispatched synchronously.
-    // Only run loop if we are not finished yet.
-    if (in_dispatch_ && wait) {
-      WaitForResponse();
-      in_dispatch_ = false;
-      return result_.get();
-    }
-    in_dispatch_ = false;
-    return result_.get();
-  }
-
-  void WaitForResponse() {
-    waiting_for_command_result_id_ = last_sent_id_;
-    base::RunLoop().Run();
-  }
-
-  bool HasValue(const std::string& path) {
-    base::Value* value = nullptr;
-    return result_->Get(path, &value);
-  }
-
-  bool HasListItem(const std::string& path_to_list,
-                   const std::string& name,
-                   const std::string& value) {
-    base::ListValue* list;
-    if (!result_->GetList(path_to_list, &list))
-      return false;
-
-    for (size_t i = 0; i != list->GetSize(); i++) {
-      base::DictionaryValue* item;
-      if (!list->GetDictionary(i, &item))
-        return false;
-      std::string id;
-      if (!item->GetString(name, &id))
-        return false;
-      if (id == value)
-        return true;
-    }
-    return false;
-  }
-
-  void Attach() {
-    agent_host_ = DevToolsAgentHost::GetOrCreateFor(shell()->web_contents());
-    agent_host_->AttachClient(this);
-    shell()->web_contents()->SetDelegate(this);
-  }
-
-  void AttachToBrowserTarget() {
-    // Tethering domain is not used in tests.
-    agent_host_ = DevToolsAgentHost::CreateForBrowser(
-        nullptr, DevToolsAgentHost::CreateServerSocketCallback());
-    agent_host_->AttachClient(this);
-    shell()->web_contents()->SetDelegate(this);
-  }
-
-  void Detach() {
-    if (agent_host_) {
-      agent_host_->DetachClient(this);
-      agent_host_ = nullptr;
-    }
-  }
-
-  void TearDownOnMainThread() override { Detach(); }
-
-  std::unique_ptr<base::DictionaryValue> WaitForNotification(
-      const std::string& notification) {
-    return WaitForNotification(notification, false);
-  }
-
-  std::unique_ptr<base::DictionaryValue> WaitForNotification(
-      const std::string& notification,
-      bool allow_existing) {
-    if (allow_existing) {
-      for (size_t i = 0; i < notifications_.size(); i++) {
-        if (notifications_[i] == notification) {
-          std::unique_ptr<base::DictionaryValue> result =
-              std::move(notification_params_[i]);
-          notifications_.erase(notifications_.begin() + i);
-          notification_params_.erase(notification_params_.begin() + i);
-          return result;
-        }
-      }
-    }
-
-    waiting_for_notification_ = notification;
-    RunMessageLoop();
-    return std::move(waiting_for_notification_params_);
-  }
-
-  // Waits for a notification whose params, when passed to |matcher|, returns
-  // true. Existing notifications are allowed.
-  std::unique_ptr<base::DictionaryValue> WaitForMatchingNotification(
-      const std::string& notification,
-      const NotificationMatcher& matcher) {
-    for (size_t i = 0; i < notifications_.size(); i++) {
-      if (notifications_[i] == notification &&
-          matcher.Run(notification_params_[i].get())) {
-        std::unique_ptr<base::DictionaryValue> result =
-            std::move(notification_params_[i]);
-        notifications_.erase(notifications_.begin() + i);
-        notification_params_.erase(notification_params_.begin() + i);
-        return result;
-      }
-    }
-
-    waiting_for_notification_ = notification;
-    waiting_for_notification_matcher_ = matcher;
-    RunMessageLoop();
-    return std::move(waiting_for_notification_params_);
-  }
-
-  void ClearNotifications() {
-    notifications_.clear();
-    notification_params_.clear();
-  }
-
-  struct ExpectedNavigation {
-    std::string url;
-    bool is_redirect;
-    bool abort;
-  };
-
-  std::string RemovePort(const GURL& url) {
-    GURL::Replacements remove_port;
-    remove_port.ClearPort();
-    return url.ReplaceComponents(remove_port).spec();
-  }
-
-  // Waits for the expected navigations to occur in any order. If an expected
-  // navigation occurs, Network.continueInterceptedRequest is called with the
-  // specified navigation_response to either allow it to proceed or to cancel
-  // it.
-  void ProcessNavigationsAnyOrder(
-      std::vector<ExpectedNavigation> expected_navigations) {
-    std::unique_ptr<base::DictionaryValue> params;
-    while (!expected_navigations.empty()) {
-      std::unique_ptr<base::DictionaryValue> params =
-          WaitForNotification("Network.requestIntercepted");
-
-      std::string interception_id;
-      ASSERT_TRUE(params->GetString("interceptionId", &interception_id));
-      bool is_redirect = params->HasKey("redirectUrl");
-      bool is_navigation;
-      ASSERT_TRUE(params->GetBoolean("isNavigationRequest", &is_navigation));
-      std::string resource_type;
-      ASSERT_TRUE(params->GetString("resourceType", &resource_type));
-      std::string url;
-      ASSERT_TRUE(params->GetString("request.url", &url));
-      if (is_redirect)
-        ASSERT_TRUE(params->GetString("redirectUrl", &url));
-      // The url will typically have a random port which we want to remove.
-      url = RemovePort(GURL(url));
-
-      if (!is_navigation) {
-        params.reset(new base::DictionaryValue());
-        params->SetString("interceptionId", interception_id);
-        SendCommand("Network.continueInterceptedRequest", std::move(params),
-                    false);
-        continue;
-      }
-
-      bool navigation_was_expected = false;
-      for (auto it = expected_navigations.begin();
-           it != expected_navigations.end(); it++) {
-        if (url != it->url || is_redirect != it->is_redirect)
-          continue;
-
-        params.reset(new base::DictionaryValue());
-        params->SetString("interceptionId", interception_id);
-        if (it->abort)
-          params->SetString("errorReason", "Aborted");
-        SendCommand("Network.continueInterceptedRequest", std::move(params),
-                    false);
-
-        navigation_was_expected = true;
-        expected_navigations.erase(it);
-        break;
-      }
-      EXPECT_TRUE(navigation_was_expected)
-          << "url = " << url << "is_redirect = " << is_redirect;
-    }
-  }
-
-  std::vector<std::string> GetAllFrameUrls() {
-    std::vector<std::string> urls;
-    for (RenderFrameHost* render_frame_host :
-         shell()->web_contents()->GetAllFrames()) {
-      urls.push_back(RemovePort(render_frame_host->GetLastCommittedURL()));
-    }
-    return urls;
-  }
-
-  void set_agent_host_can_close() { agent_host_can_close_ = true; }
-
-  void SetSecurityExplanationCert(
-      const scoped_refptr<net::X509Certificate>& cert) {
-    cert_ = cert;
-  }
-
-  std::unique_ptr<base::DictionaryValue> result_;
-  scoped_refptr<DevToolsAgentHost> agent_host_;
-  int last_sent_id_;
-  std::vector<int> result_ids_;
-  std::vector<std::string> notifications_;
-  std::vector<std::string> console_messages_;
-  std::vector<std::unique_ptr<base::DictionaryValue>> notification_params_;
-
- private:
-  void DispatchProtocolMessage(DevToolsAgentHost* agent_host,
-                               const std::string& message) override {
-    std::unique_ptr<base::DictionaryValue> root(
-        static_cast<base::DictionaryValue*>(
-            base::JSONReader::Read(message).release()));
-    int id;
-    if (root->GetInteger("id", &id)) {
-      result_ids_.push_back(id);
-      base::DictionaryValue* result;
-      ASSERT_TRUE(root->GetDictionary("result", &result));
-      result_.reset(result->DeepCopy());
-      in_dispatch_ = false;
-      if (id && id == waiting_for_command_result_id_) {
-        waiting_for_command_result_id_ = 0;
-        base::RunLoop::QuitCurrentDeprecated();
-      }
-    } else {
-      std::string notification;
-      EXPECT_TRUE(root->GetString("method", &notification));
-      notifications_.push_back(notification);
-      base::DictionaryValue* params;
-      if (root->GetDictionary("params", &params)) {
-        notification_params_.push_back(params->CreateDeepCopy());
-      } else {
-        notification_params_.push_back(
-            base::WrapUnique(new base::DictionaryValue()));
-      }
-      if (waiting_for_notification_ == notification &&
-          (waiting_for_notification_matcher_.is_null() ||
-           waiting_for_notification_matcher_.Run(
-               notification_params_[notification_params_.size() - 1].get()))) {
-        waiting_for_notification_ = std::string();
-        waiting_for_notification_matcher_ = NotificationMatcher();
-        waiting_for_notification_params_ = base::WrapUnique(
-            notification_params_[notification_params_.size() - 1]->DeepCopy());
-        base::RunLoop::QuitCurrentDeprecated();
-      }
-    }
-  }
-
-  void AgentHostClosed(DevToolsAgentHost* agent_host) override {
-    if (!agent_host_can_close_)
-      NOTREACHED();
-  }
-
-  std::string waiting_for_notification_;
-  NotificationMatcher waiting_for_notification_matcher_;
-  std::unique_ptr<base::DictionaryValue> waiting_for_notification_params_;
-  int waiting_for_command_result_id_;
-  bool in_dispatch_;
-  bool agent_host_can_close_;
-  scoped_refptr<net::X509Certificate> cert_;
-};
 
 class TestInterstitialDelegate : public InterstitialPageDelegate {
  private:
