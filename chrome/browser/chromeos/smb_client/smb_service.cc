@@ -24,6 +24,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/base/network_interfaces.h"
@@ -54,6 +55,10 @@ std::unique_ptr<NetBiosClientInterface> GetNetBiosClient(Profile* profile) {
   return std::make_unique<NetBiosClient>(network_context);
 }
 
+bool IsEnabledByFlag() {
+  return base::FeatureList::IsEnabled(features::kNativeSmb);
+}
+
 // Metric recording functions.
 void RecordMountResult(SmbMountResult result) {
   DCHECK_LE(result, SmbMountResult::kMaxValue);
@@ -67,9 +72,12 @@ void RecordRemountResult(SmbMountResult result) {
 
 }  // namespace
 
+bool SmbService::service_should_run_ = false;
+
 SmbService::SmbService(Profile* profile)
     : provider_id_(ProviderId::CreateFromNativeId("smb")), profile_(profile) {
-  if (base::FeatureList::IsEnabled(features::kNativeSmb)) {
+  service_should_run_ = IsEnabledByFlag() && IsAllowedByPolicy();
+  if (service_should_run_) {
     StartSetup();
   }
 }
@@ -78,7 +86,10 @@ SmbService::~SmbService() {}
 
 // static
 SmbService* SmbService::Get(content::BrowserContext* context) {
-  return SmbServiceFactory::Get(context);
+  if (service_should_run_) {
+    return SmbServiceFactory::Get(context);
+  }
+  return nullptr;
 }
 
 // static
@@ -324,6 +335,10 @@ void SmbService::SetUpNetBiosHostLocator() {
       GetSmbProviderClient());
 
   share_finder_->RegisterHostLocator(std::move(netbios_host_locator));
+}
+
+bool SmbService::IsAllowedByPolicy() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kNetworkFileSharesAllowed);
 }
 
 void SmbService::RecordMountCount() const {
