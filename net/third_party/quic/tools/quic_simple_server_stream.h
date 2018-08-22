@@ -6,9 +6,7 @@
 #define NET_THIRD_PARTY_QUIC_TOOLS_QUIC_SIMPLE_SERVER_STREAM_H_
 
 #include "base/macros.h"
-#include "net/http/http_response_headers.h"
 #include "net/third_party/quic/core/http/quic_spdy_server_stream_base.h"
-#include "net/third_party/quic/core/http/quic_spdy_stream.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 #include "net/third_party/quic/tools/quic_backend_response.h"
