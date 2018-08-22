@@ -48,8 +48,8 @@ class PreviewsLitePageDecider
   FRIEND_TEST_ALL_PREFIXES(PreviewsLitePageDeciderTest, TestSingleBypass);
 
   // PreviewsLitePageNavigationThrottleManager:
-  void SetServerUnavailableUntil(base::TimeTicks retry_at) override;
-  bool IsServerUnavailable(base::TimeTicks now) override;
+  void SetServerUnavailableFor(base::TimeDelta retry_after) override;
+  bool IsServerUnavailable() override;
   void AddSingleBypass(std::string url) override;
   bool CheckSingleBypass(std::string url) override;
 

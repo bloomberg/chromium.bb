@@ -4,8 +4,12 @@
 
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 
+#include <string>
+
 #include "base/memory/weak_ptr.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "components/base32/base32.h"
 #include "components/previews/core/previews_experiments.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,6 +22,7 @@
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
+#include "net/http/http_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -87,6 +92,9 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
     return false;
 
   if (!navigation_handle()->IsInMainFrame())
+    return false;
+
+  if (manager_->IsServerUnavailable())
     return false;
 
   if (IsPreviewsDomain(navigation_handle()->GetURL()))
@@ -223,6 +231,18 @@ PreviewsLitePageNavigationThrottle::WillProcessResponse() {
   if (response_code == net::HTTP_OK ||
       response_code == net::HTTP_TEMPORARY_REDIRECT)
     return content::NavigationThrottle::PROCEED;
+
+  if (response_code == net::HTTP_SERVICE_UNAVAILABLE) {
+    std::string retry_after_header;
+    base::TimeDelta retry_after = base::TimeDelta::FromSeconds(
+        base::RandInt(60, previews::params::PreviewServerLoadshedMaxSeconds()));
+    if (response_headers->EnumerateHeader(nullptr, "retry-after",
+                                          &retry_after_header)) {
+      net::HttpUtil::ParseRetryAfterHeader(retry_after_header,
+                                           base::Time::Now(), &retry_after);
+    }
+    manager_->SetServerUnavailableFor(retry_after);
+  }
 
   manager_->AddSingleBypass(original_url);
   content::OpenURLParams url_params =

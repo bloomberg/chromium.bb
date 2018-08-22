@@ -15,12 +15,12 @@
 class PreviewsLitePageNavigationThrottleManager {
  public:
   // Used to notify that the Previews Server should not be sent anymore requests
-  // until after the given time.
-  virtual void SetServerUnavailableUntil(base::TimeTicks retry_at) = 0;
+  // until after the given duration.
+  virtual void SetServerUnavailableFor(base::TimeDelta retry_after) = 0;
 
   // Returns true if a Preview should not be triggered because the server is
   // unavailable.
-  virtual bool IsServerUnavailable(base::TimeTicks now) = 0;
+  virtual bool IsServerUnavailable() = 0;
 
   // Informs the manager that the given URL should be bypassed one time.
   virtual void AddSingleBypass(std::string url) = 0;

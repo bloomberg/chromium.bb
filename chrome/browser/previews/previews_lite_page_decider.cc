@@ -74,18 +74,19 @@ bool PreviewsLitePageDecider::IsDataSaverEnabled(
   return drp_settings->IsDataReductionProxyEnabled();
 }
 
-void PreviewsLitePageDecider::SetServerUnavailableUntil(
-    base::TimeTicks retry_at) {
+void PreviewsLitePageDecider::SetServerUnavailableFor(
+    base::TimeDelta retry_after) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::TimeTicks retry_at = clock_->NowTicks() + retry_after;
   if (!retry_at_.has_value() || retry_at > retry_at_)
     retry_at_ = retry_at;
 }
 
-bool PreviewsLitePageDecider::IsServerUnavailable(base::TimeTicks now) {
+bool PreviewsLitePageDecider::IsServerUnavailable() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!retry_at_.has_value())
     return false;
-  bool server_loadshedding = retry_at_ > now;
+  bool server_loadshedding = retry_at_ > clock_->NowTicks();
   if (!server_loadshedding)
     retry_at_.reset();
   return server_loadshedding;

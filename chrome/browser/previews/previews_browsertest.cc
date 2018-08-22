@@ -12,9 +12,14 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/previews/previews_lite_page_decider.h"
 #include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_service.h"
+#include "chrome/browser/previews/previews_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -24,6 +29,7 @@
 #include "components/optimization_guide/test_component_creator.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/test/browser_test_utils.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -407,19 +413,20 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
       const net::test_server::HttpRequest& request) {
     std::unique_ptr<net::test_server::BasicHttpResponse> response(
         new net::test_server::BasicHttpResponse);
-    std::string original_url;
+    std::string original_url_str;
 
     // Ignore anything that's not a previews request with an unused status.
-    if (!PreviewsLitePageNavigationThrottle::GetOriginalURL(request.GetURL(),
-                                                            &original_url)) {
+    if (!PreviewsLitePageNavigationThrottle::GetOriginalURL(
+            request.GetURL(), &original_url_str)) {
       response->set_code(net::HttpStatusCode::HTTP_BAD_REQUEST);
       return response;
     }
+    GURL original_url = GURL(original_url_str);
 
-    std::string query_param;
+    std::string code_query_param;
     int return_code = 0;
-    if (net::GetValueForKeyInQuery(GURL(original_url), "resp", &query_param))
-      base::StringToInt(query_param, &return_code);
+    if (net::GetValueForKeyInQuery(original_url, "resp", &code_query_param))
+      base::StringToInt(code_query_param, &return_code);
 
     switch (return_code) {
       case 200:
@@ -436,24 +443,37 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
         response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
         break;
       default:
-        response->set_code(net::HTTP_BAD_REQUEST);
         response->set_code(net::HTTP_OK);
         break;
+    }
+
+    std::string headers_query_param;
+    if (net::GetValueForKeyInQuery(original_url, "headers",
+                                   &headers_query_param)) {
+      net::HttpRequestHeaders headers;
+      headers.AddHeadersFromString(headers_query_param);
+      net::HttpRequestHeaders::Iterator iter(headers);
+      while (iter.GetNext())
+        response->AddCustomHeader(iter.name(), iter.value());
     }
     return std::move(response);
   }
 
   GURL previews_server() { return previews_server_->base_url(); }
 
-  GURL http_lite_page_url(int return_code) {
+  GURL http_lite_page_url(int return_code, std::string* headers = nullptr) {
     std::string query = "resp=" + base::IntToString(return_code);
+    if (headers)
+      query += "&headers=" + *headers;
     GURL::Replacements replacements;
     replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
     return http_url().ReplaceComponents(replacements);
   }
 
-  GURL https_lite_page_url(int return_code) {
+  GURL https_lite_page_url(int return_code, std::string* headers = nullptr) {
     std::string query = "resp=" + base::IntToString(return_code);
+    if (headers)
+      query += "&headers=" + *headers;
     GURL::Replacements replacements;
     replacements.SetQuery(query.c_str(), url::Component(0, query.length()));
     return https_url().ReplaceComponents(replacements);
@@ -562,6 +582,54 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   // Verify the preview is not triggered when the server responds with 503.
   ui_test_utils::NavigateToURL(browser(), https_lite_page_url(503));
   VerifyPreviewNotLoaded();
+}
+
+// Previews InfoBar (which these tests trigger) does not work on Mac.
+// See https://crbug.com/782322 for detail.
+// Also occasional flakes on win7 (https://crbug.com/789542).
+#if defined(OS_ANDROID) || defined(OS_LINUX)
+#define MAYBE_LitePagePreviewsLoadshed LitePagePreviewsLoadshed
+#else
+#define MAYBE_LitePagePreviewsLoadshed DISABLED_LitePagePreviewsLoadshed
+#endif
+IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
+                       MAYBE_LitePagePreviewsLoadshed) {
+  PreviewsService* previews_service =
+      PreviewsServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(previews_service);
+  PreviewsLitePageDecider* decider =
+      previews_service->previews_lite_page_decider();
+  ASSERT_TRUE(decider);
+
+  std::unique_ptr<base::SimpleTestTickClock> clock =
+      std::make_unique<base::SimpleTestTickClock>();
+  decider->SetClockForTesting(clock.get());
+
+  // Send a loadshed response. Client should not retry for a randomly chosen
+  // duration [1 min, 5 mins).
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(503));
+  VerifyPreviewNotLoaded();
+
+  clock->Advance(base::TimeDelta::FromMinutes(1));
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
+  VerifyPreviewNotLoaded();
+
+  clock->Advance(base::TimeDelta::FromMinutes(4));
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
+  VerifyPreviewLoaded();
+
+  // Send a loadshed response with a specific time duration, 30 seconds, to
+  // retry after.
+  std::string headers = "Retry-After: 30";
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(503, &headers));
+  VerifyPreviewNotLoaded();
+
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
+  VerifyPreviewNotLoaded();
+
+  clock->Advance(base::TimeDelta::FromSeconds(31));
+  ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
+  VerifyPreviewLoaded();
 }
 
 class PreviewsLitePageServerDataSaverBrowserTest
