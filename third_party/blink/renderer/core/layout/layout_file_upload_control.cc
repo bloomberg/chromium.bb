@@ -38,6 +38,7 @@ namespace blink {
 using namespace HTMLNames;
 
 const int kDefaultWidthNumChars = 34;
+const int kButtonShadowHeight = 2;
 
 LayoutFileUploadControl::LayoutFileUploadControl(HTMLInputElement* input)
     : LayoutBlockFlow(input),
@@ -179,6 +180,22 @@ String LayoutFileUploadControl::FileTextValue() const {
   return LayoutTheme::GetTheme().FileListNameForWidth(
       input->GetLocale(), input->files(), Style()->GetFont(),
       MaxFilenameWidth());
+}
+
+LayoutRect LayoutFileUploadControl::ControlClipRect(
+    const LayoutPoint& additional_offset) const {
+  LayoutRect rect(additional_offset, Size());
+  rect.Expand(BorderInsets());
+  rect.Expand(LayoutUnit(), LayoutUnit(kButtonShadowHeight));
+  return rect;
+}
+
+// Override to allow effective ControlClipRect to be bigger than the padding
+// box because of kButtonShadowHeight.
+LayoutRect LayoutFileUploadControl::OverflowClipRect(
+    const LayoutPoint& additional_offset,
+    OverlayScrollbarClipBehavior) const {
+  return ControlClipRect(additional_offset);
 }
 
 }  // namespace blink
