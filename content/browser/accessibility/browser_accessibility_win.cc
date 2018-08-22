@@ -53,7 +53,7 @@ void BrowserAccessibilityWin::OnLocationChanged() {
 }
 
 base::string16 BrowserAccessibilityWin::GetText() const {
-  return GetCOM()->AXPlatformNodeWin::GetTextAsString16();
+  return GetCOM()->AXPlatformNodeWin::GetText();
 }
 
 gfx::NativeViewAccessible BrowserAccessibilityWin::GetNativeViewAccessible() {

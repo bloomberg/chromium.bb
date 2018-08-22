@@ -86,8 +86,6 @@ class AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void Init(AXPlatformNodeDelegate* delegate) override;
   int GetIndexInParent() override;
 
-  std::string GetTextForATK();
-
  protected:
   void AddAttributeToList(const char* name,
                           const char* value,

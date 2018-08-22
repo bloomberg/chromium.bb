@@ -389,12 +389,13 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
     // the inner text.
     NSString* name =
         [self getStringAttribute:ax::mojom::StringAttribute::kName];
-    return [name length] > 0 ? name : base::SysUTF8ToNSString(node_->GetText());
+    return [name length] > 0 ? name
+                             : base::SysUTF16ToNSString(node_->GetText());
   } else if (eventType == ax::mojom::Event::kLiveRegionChanged &&
              node_->GetData().HasStringAttribute(
                  ax::mojom::StringAttribute::kContainerLiveStatus)) {
     // Live regions announce their inner text.
-    return base::SysUTF8ToNSString(node_->GetText());
+    return base::SysUTF16ToNSString(node_->GetText());
   }
   // Only alerts and live regions have something to announce.
   return nil;
