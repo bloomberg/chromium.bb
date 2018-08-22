@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-FAIL idl_test setup promise_test: Unhandled rejection with value: object "TypeError: Cannot read property 'requestDevice' of undefined"
+PASS idl_test setup
 PASS Partial interface Navigator: original interface defined
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
 PASS Partial interface mixin WebGLRenderingContextBase: original interface mixin defined
@@ -11,10 +11,10 @@ PASS XR interface: existence and properties of interface prototype object's "con
 PASS XR interface: existence and properties of interface prototype object's @@unscopables property
 PASS XR interface: operation requestDevice()
 PASS XR interface: attribute ondevicechange
-FAIL XR must be primary interface of navigator.XR assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL Stringification of navigator.XR assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL XR interface: navigator.XR must inherit property "requestDevice()" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL XR interface: navigator.XR must inherit property "ondevicechange" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+PASS XR must be primary interface of navigator.xr
+PASS Stringification of navigator.xr
+PASS XR interface: navigator.xr must inherit property "requestDevice()" with the proper type
+PASS XR interface: navigator.xr must inherit property "ondevicechange" with the proper type
 PASS XRDevice interface: existence and properties of interface object
 PASS XRDevice interface object length
 PASS XRDevice interface object name
@@ -23,12 +23,6 @@ PASS XRDevice interface: existence and properties of interface prototype object'
 PASS XRDevice interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRDevice interface: operation supportsSession(XRSessionCreationOptions)
 PASS XRDevice interface: operation requestSession(XRSessionCreationOptions)
-FAIL XRDevice must be primary interface of device assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: device is not defined"
-FAIL Stringification of device assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: device is not defined"
-FAIL XRDevice interface: device must inherit property "supportsSession(XRSessionCreationOptions)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: device is not defined"
-FAIL XRDevice interface: calling supportsSession(XRSessionCreationOptions) on device with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: device is not defined"
-FAIL XRDevice interface: device must inherit property "requestSession(XRSessionCreationOptions)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: device is not defined"
-FAIL XRDevice interface: calling requestSession(XRSessionCreationOptions) on device with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: device is not defined"
 PASS XRSession interface: existence and properties of interface object
 PASS XRSession interface object length
 PASS XRSession interface object name
@@ -54,30 +48,6 @@ PASS XRSession interface: attribute onend
 FAIL XRSession interface: attribute onselect assert_true: The prototype object must have a property "onselect" expected true got false
 FAIL XRSession interface: attribute onselectstart assert_true: The prototype object must have a property "onselectstart" expected true got false
 FAIL XRSession interface: attribute onselectend assert_true: The prototype object must have a property "onselectend" expected true got false
-FAIL XRSession must be primary interface of session assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL Stringification of session assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "device" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "immersive" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "outputContext" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "environmentBlendMode" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "depthNear" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "depthFar" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "baseLayer" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "requestFrameOfReference(XRFrameOfReferenceType, XRFrameOfReferenceOptions)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: calling requestFrameOfReference(XRFrameOfReferenceType, XRFrameOfReferenceOptions) on session with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "getInputSources()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "requestAnimationFrame(XRFrameRequestCallback)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: calling requestAnimationFrame(XRFrameRequestCallback) on session with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "cancelAnimationFrame(long)" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: calling cancelAnimationFrame(long) on session with too few arguments must throw TypeError assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "end()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "onblur" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "onfocus" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "onresetpose" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "onend" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "onselect" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "onselectstart" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
-FAIL XRSession interface: session must inherit property "onselectend" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: session is not defined"
 PASS XRFrame interface: existence and properties of interface object
 PASS XRFrame interface object length
 PASS XRFrame interface object name
