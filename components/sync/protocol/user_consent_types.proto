@@ -133,4 +133,15 @@ message UserConsentTypes {
     // consent was given or not given/revoked.
     optional ConsentStatus status = 3;
   }
+
+  // The User Consent for Assistant activity control is determined by the user
+  // action on the Assistant opt-in flow.
+  message AssistantActivityControlConsent {
+    // An opaque token to for ui auditing, which strengthens the audit trail.
+    optional bytes ui_audit_key = 1;
+
+    // The status of the Assistant activity control consent. This specifies
+    // whether the consent was given or not given.
+    optional ConsentStatus status = 2;
+  }
 }
