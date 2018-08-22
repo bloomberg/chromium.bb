@@ -2,6 +2,8 @@
 
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="icons.html">
 <link rel="import" href="multidevice_setup_shared_css.html">
 <link rel="import" href="ui_page.html">
 <link rel="import" href="ui_page_container_behavior.html">
@@ -26,16 +28,17 @@
         width: 240px;
       }
 
-      #animation-container {
+      #page-icon-container {
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
       }
 
-      #animation-placeholder {
-        background-color: lightblue;
-        height: 100px;
+      #page-icon {
+        background-image: -webkit-image-set(url(start_setup_icon_1x.png) 1x,
+                                            url(start_setup_icon_2x.png) 2x);
+        height: 116px;
         margin-top: 20px;
-        width: 300px;
+        width: 320px;
       }
 
       #feature-details-container {
@@ -57,10 +60,11 @@
       .feature-detail iron-icon {
         --iron-icon-height: 20px;
         --iron-icon-width: 20px;
+        position: fixed;
       }
 
       .feature-detail span {
-        padding-left: 8px;
+        padding-left: 28px;
       }
     </style>
     <ui-page header-text="[[headerText]]" icon-name="google-g">
@@ -83,8 +87,8 @@
                 </template>
               </select>
             </div>
-            <div id="animation-container">
-              <div id="animation-placeholder">Animation Placeholder</div>
+            <div id="page-icon-container">
+              <div id="page-icon"></div>
             </div>
           </div>
           <div id="feature-details-container" class="flex">
@@ -92,18 +96,16 @@
               $i18n{startSetupPageFeatureListHeader}
             </div>
             <div class="feature-detail">
-              <!-- TODO(jordynass): Use correct icon. -->
-              <iron-icon icon="multidevice-setup-icons:google-g"></iron-icon>
+              <iron-icon icon="multidevice-setup-icons-20:messages"></iron-icon>
               <span>$i18n{startSetupPageFeatureListAwm}</span>
             </div>
             <div class="feature-detail">
-              <!-- TODO(jordynass): Use correct icon. -->
-              <iron-icon icon="multidevice-setup-icons:google-g"></iron-icon>
+              <iron-icon icon="multidevice-setup-icons-20:downloads">
+              </iron-icon>
               <span>$i18n{startSetupPageFeatureListInstallApps}</span>
             </div>
             <div class="feature-detail">
-              <!-- TODO(jordynass): Use correct icon. -->
-              <iron-icon icon="multidevice-setup-icons:google-g"></iron-icon>
+              <iron-icon icon="multidevice-setup-icons-20:features"></iron-icon>
               <span>$i18n{startSetupPageFeatureListAddFeatures}</span>
             </div>
           </div>

@@ -8,13 +8,15 @@
 <dom-module id="setup-succeeded-page">
   <template>
     <style include="iron-flex">
-      #animation-container {
+      #page-icon-container {
         @apply(--layout-horizontal);
         @apply(--layout-center-justified);
       }
 
-      #animation-placeholder {
-        background-color: lightblue;
+      #page-icon {
+        background-image: -webkit-image-set(
+                              url(setup_succeeded_icon_1x.png) 1x,
+                              url(setup_succeeded_icon_2x.png) 2x);
         height: 156px;
         margin-top: 20px;
         width: 416px;
@@ -22,8 +24,8 @@
     </style>
     <ui-page header-text="[[headerText]]" icon-name="google-g">
       <span slot="message" inner-h-t-m-l="[[messageHtml]]"></span>
-      <div id="animation-container" slot="additional-content">
-        <div id="animation-placeholder">Animation Placeholder</div>
+      <div id="page-icon-container" slot="additional-content">
+        <div id="page-icon"></div>
       </div>
     </ui-page>
   </template>
