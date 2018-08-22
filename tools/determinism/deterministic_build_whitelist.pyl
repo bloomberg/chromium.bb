@@ -30,6 +30,19 @@
 
     # TODO(tikuta): Remove this when crbug.com/870584 is fixed.
     'v8_context_snapshot.bin',
+
+    'chrome_100_percent.pak',
+    'chrome_200_percent.pak',
+    'components_tests_resources.pak',
+    'content_shell.pak',
+    'extensions_shell_and_test.pak',
+    'headless_lib.pak',
+    'mr_extension',
+    'mr_extension/release',
+    'resources.pak',
+    'ui/en-US.pak',
+    'ui_test.pak',
+    'vr_test.pak',
   ],
 
   # https://crbug.com/330262
