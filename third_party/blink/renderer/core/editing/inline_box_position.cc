@@ -45,6 +45,8 @@ namespace blink {
 
 namespace {
 
+const int kBlockFlowAdjustmentMaxRecursionDepth = 1024;
+
 bool IsNonTextLeafChild(LayoutObject* object) {
   if (object->SlowFirstChild())
     return false;
@@ -187,11 +189,19 @@ InlineBoxPosition ComputeInlineBoxPositionForAtomicInline(
 
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
-    const PositionWithAffinityTemplate<Strategy>&);
+    const PositionWithAffinityTemplate<Strategy>&,
+    int recursion_depth);
 
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
-    const PositionTemplate<Strategy>& position) {
+    const PositionTemplate<Strategy>& position,
+    int recursion_depth) {
+  if (recursion_depth >= kBlockFlowAdjustmentMaxRecursionDepth) {
+    // TODO(editing-dev): This function enters infinite recursion in some cases.
+    // Find the root cause and fix it. See https://crbug.com/857266
+    return PositionWithAffinityTemplate<Strategy>();
+  }
+
   // Try a visually equivalent position with possibly opposite editability. This
   // helps in case |position| is in an editable block but surrounded by
   // non-editable positions. It acts to negate the logic at the beginning of
@@ -201,7 +211,8 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
   if (downstream_equivalent != position) {
     return ComputeInlineAdjustedPositionAlgorithm(
         PositionWithAffinityTemplate<Strategy>(downstream_equivalent,
-                                               TextAffinity::kUpstream));
+                                               TextAffinity::kUpstream),
+        recursion_depth + 1);
   }
   const PositionTemplate<Strategy>& upstream_equivalent =
       UpstreamIgnoringEditingBoundaries(position);
@@ -211,12 +222,14 @@ PositionWithAffinityTemplate<Strategy> AdjustBlockFlowPositionToInline(
 
   return ComputeInlineAdjustedPositionAlgorithm(
       PositionWithAffinityTemplate<Strategy>(upstream_equivalent,
-                                             TextAffinity::kUpstream));
+                                             TextAffinity::kUpstream),
+      recursion_depth + 1);
 }
 
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
-    const PositionWithAffinityTemplate<Strategy>& position) {
+    const PositionWithAffinityTemplate<Strategy>& position,
+    int recursion_depth) {
   // TODO(yoichio): We don't assume |position| is canonicalized no longer and
   // there are few cases failing to compute. Fix it: crbug.com/812535.
   DCHECK(!position.AnchorNode()->IsShadowRoot()) << position;
@@ -233,7 +246,8 @@ PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
   if (layout_object.IsLayoutBlockFlow() &&
       CanHaveChildrenForEditing(position.AnchorNode()) &&
       HasRenderedNonAnonymousDescendantsWithHeight(&layout_object)) {
-    return AdjustBlockFlowPositionToInline(position.GetPosition());
+    return AdjustBlockFlowPositionToInline(position.GetPosition(),
+                                           recursion_depth);
   }
 
   // TODO(crbug.com/567964): Change the second operand to DCHECK once fixed.
@@ -350,19 +364,19 @@ InlineBoxPosition ComputeInlineBoxPosition(const VisiblePosition& position) {
 
 PositionWithAffinity ComputeInlineAdjustedPosition(
     const PositionWithAffinity& position) {
-  return ComputeInlineAdjustedPositionAlgorithm(position);
+  return ComputeInlineAdjustedPositionAlgorithm(position, 0);
 }
 
 PositionInFlatTreeWithAffinity ComputeInlineAdjustedPosition(
     const PositionInFlatTreeWithAffinity& position) {
-  return ComputeInlineAdjustedPositionAlgorithm(position);
+  return ComputeInlineAdjustedPositionAlgorithm(position, 0);
 }
 
 PositionWithAffinity ComputeInlineAdjustedPosition(
     const VisiblePosition& position) {
   DCHECK(position.IsValid()) << position;
   return ComputeInlineAdjustedPositionAlgorithm(
-      position.ToPositionWithAffinity());
+      position.ToPositionWithAffinity(), 0);
 }
 
 InlineBoxPosition ComputeInlineBoxPositionForInlineAdjustedPosition(
