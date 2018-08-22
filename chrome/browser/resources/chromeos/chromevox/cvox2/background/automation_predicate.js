@@ -457,7 +457,7 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
  */
 AutomationPredicate.checkable = AutomationPredicate.roles([
   Role.CHECK_BOX, Role.RADIO_BUTTON, Role.MENU_ITEM_CHECK_BOX,
-  Role.MENU_ITEM_RADIO, Role.TOGGLE_BUTTON, Role.TREE_ITEM
+  Role.MENU_ITEM_RADIO, Role.SWITCH, Role.TOGGLE_BUTTON, Role.TREE_ITEM
 ]);
 
 /**
