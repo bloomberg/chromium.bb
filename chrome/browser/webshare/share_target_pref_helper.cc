@@ -9,6 +9,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "net/base/escape.h"
 
 void UpdateShareTargetInPrefs(const GURL& manifest_url,
                               const blink::Manifest& manifest,
@@ -17,9 +18,9 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
   base::DictionaryValue* share_target_dict = update.Get();
 
   // Manifest does not contain a share_target field, or it does but the
-  // url_template is invalid.
+  // action is not a valid URL.
   if (!manifest.share_target.has_value() ||
-      !manifest.share_target.value().url_template.is_valid()) {
+      !manifest.share_target->action.is_valid()) {
     share_target_dict->RemoveWithoutPathExpansion(manifest_url.spec(), nullptr);
     return;
   }
@@ -30,15 +31,34 @@ void UpdateShareTargetInPrefs(const GURL& manifest_url,
   DCHECK(manifest_url.is_valid());
 
   constexpr char kNameKey[] = "name";
-  constexpr char kUrlTemplateKey[] = "url_template";
+  constexpr char kActionKey[] = "action";
+  constexpr char kTitleKey[] = "title";
+  constexpr char kTextKey[] = "text";
+  constexpr char kUrlKey[] = "url";
 
   std::unique_ptr<base::DictionaryValue> origin_dict(new base::DictionaryValue);
 
   if (!manifest.name.is_null()) {
     origin_dict->SetKey(kNameKey, base::Value(manifest.name.string()));
   }
-  origin_dict->SetKey(kUrlTemplateKey,
-                      base::Value(manifest.share_target->url_template.spec()));
+  url::Replacements<char> replacements;
+  replacements.ClearQuery();
+  origin_dict->SetKey(
+      kActionKey,
+      base::Value(manifest.share_target->action.ReplaceComponents(replacements)
+                      .spec()));
+  if (!manifest.share_target->params.text.is_null()) {
+    origin_dict->SetKey(
+        kTextKey, base::Value(manifest.share_target->params.text.string()));
+  }
+  if (!manifest.share_target->params.title.is_null()) {
+    origin_dict->SetKey(
+        kTitleKey, base::Value(manifest.share_target->params.title.string()));
+  }
+  if (!manifest.share_target->params.url.is_null()) {
+    origin_dict->SetKey(
+        kUrlKey, base::Value(manifest.share_target->params.url.string()));
+  }
 
   share_target_dict->SetWithoutPathExpansion(manifest_url.spec(),
                                              std::move(origin_dict));
