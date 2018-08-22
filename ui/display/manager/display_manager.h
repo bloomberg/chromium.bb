@@ -28,7 +28,6 @@
 #include "ui/display/manager/display_manager_export.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"
-#include "ui/display/mojo/dev_display_controller.mojom.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/unified_desktop_utils.h"
 
@@ -147,11 +146,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   const UnifiedDesktopLayoutMatrix& current_unified_desktop_matrix() const {
     return current_unified_desktop_matrix_;
   }
-
-  // Sets controller used to add/remove fake displays. If this is set then
-  // AddRemoveDisplay() will delegate out to |dev_display_controller_| instead
-  // of adding/removing a ManagedDisplayInfo.
-  void SetDevDisplayController(mojom::DevDisplayControllerPtr controller);
 
   // Initializes displays using command line flag. Returns false if no command
   // line flag was provided.
@@ -662,8 +656,6 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   base::Closure created_mirror_window_;
 
   base::ObserverList<DisplayObserver>::Unchecked observers_;
-
-  display::mojom::DevDisplayControllerPtr dev_display_controller_;
 
   // Not empty if mixed mirror mode should be turned on (the specified source
   // display is mirrored to the specified destination displays). Empty if mixed

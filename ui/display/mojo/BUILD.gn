@@ -6,7 +6,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
-    "dev_display_controller.mojom",
     "display.mojom",
     "display_constants.mojom",
     "display_layout.mojom",

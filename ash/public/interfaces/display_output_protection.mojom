@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module display.mojom;
+module ash.mojom;
 
 // An interface for clients that are allowed to control the display output
 // content protection. Multiple clients can request content protection at
 // the same time, and the display will be protected until all clients are
 // closed or set |desired_method_mask| to 0 with |SetContentProtection|.
-interface OutputProtection {
+interface DisplayOutputProtection {
   // Queries link status and protection status.
   // |link_mask| is the type of connected display links, which is a bitmask of
   // DisplayConnectionType values.

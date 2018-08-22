@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_MUS_H_
 #define CHROME_BROWSER_CHROMEOS_DISPLAY_OUTPUT_PROTECTION_CONTROLLER_MUS_H_
 
+#include "ash/public/interfaces/display_output_protection.mojom.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/display/output_protection_delegate.h"
-#include "services/ui/public/interfaces/display/output_protection.mojom.h"
 
 namespace chromeos {
 
@@ -29,7 +29,7 @@ class OutputProtectionControllerMus
       const OutputProtectionDelegate::SetProtectionCallback& callback) override;
 
  private:
-  display::mojom::OutputProtectionPtr output_protection_;
+  ash::mojom::DisplayOutputProtectionPtr display_output_protection_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputProtectionControllerMus);

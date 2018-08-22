@@ -26,6 +26,7 @@ mojom("interfaces_internal") {
     "client_image_registry.mojom",
     "constants.mojom",
     "cros_display_config.mojom",
+    "display_output_protection.mojom",
     "docked_magnifier_controller.mojom",
     "event_properties.mojom",
     "event_rewriter_controller.mojom",

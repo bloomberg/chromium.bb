@@ -137,7 +137,7 @@
         "tracing": [
           "tracing"
         ],
-        "ui": [ "arc_manager", "display_output_protection" ],
+        "ui": [ "arc_manager" ],
         "unzip_service": [ "unzip_file" ],
         "video_capture": [ "capture", "tests" ]
       }

@@ -65,7 +65,6 @@
         "secure_channel": [ "secure_channel" ],
         "shortcut_viewer_app": [ "shortcut_viewer" ],
         "ui": [
-          "display_dev",
           "ime_registrar",
           "input_device_controller",
           "window_manager"

@@ -53,7 +53,8 @@
         ],
         // Only chrome is allowed to use this (required as dbus runs in Chrome).
         "display": [
-          "ash.mojom.AshDisplayController"
+          "ash.mojom.AshDisplayController",
+          "ash.mojom.DisplayOutputProtection"
         ],
         "mus:window_manager": [ "ui.mojom.AcceleratorRegistrar" ],
         "service_manager:service_factory": [
@@ -73,7 +74,6 @@
         "quick_launch_app": [ "mash:launchable" ],
         "service_manager": [ "service_manager:singleton" ],
         "ui": [
-          "display_dev",
           "ozone",
           "window_manager"
         ],
