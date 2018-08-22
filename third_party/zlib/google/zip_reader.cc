@@ -89,7 +89,9 @@ void StringWriterDelegate::SetTimeModified(const base::Time& time) {
 ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
                                 const unz_file_info& raw_file_info)
     : file_path_(base::FilePath::FromUTF8Unsafe(file_name_in_zip)),
-      is_directory_(false) {
+      is_directory_(false),
+      is_unsafe_(false),
+      is_encrypted_(false) {
   original_size_ = raw_file_info.uncompressed_size;
 
   // Directory entries in zip files end with "/".
@@ -112,6 +114,9 @@ ZipReader::EntryInfo::EntryInfo(const std::string& file_name_in_zip,
       base::StartsWith(file_name_in_zip, "/",
                        base::CompareCase::INSENSITIVE_ASCII))
     is_unsafe_ = true;
+
+  // Whether the file is encrypted is bit 0 of the flag.
+  is_encrypted_ = raw_file_info.flag & 1;
 
   // Construct the last modified time. The timezone info is not present in
   // zip files, so we construct the time as local time.
