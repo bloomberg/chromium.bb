@@ -81,6 +81,7 @@ void SocketDataPump::ReceiveMore() {
       buf.get(), base::saturated_cast<int>(num_bytes),
       base::BindRepeating(&SocketDataPump::OnNetworkReadIfReadyCompleted,
                           weak_factory_.GetWeakPtr()));
+  DCHECK_NE(net::ERR_READ_IF_READY_NOT_IMPLEMENTED, read_result);
   receive_stream_ =
       pending_receive_buffer->Complete(read_result >= 0 ? read_result : 0);
   if (read_result == net::ERR_IO_PENDING) {

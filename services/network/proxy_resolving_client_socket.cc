@@ -74,7 +74,8 @@ int ProxyResolvingClientSocket::ReadIfReady(
 int ProxyResolvingClientSocket::CancelReadIfReady() {
   if (socket_handle_->socket())
     return socket_handle_->socket()->CancelReadIfReady();
-  return net::ERR_SOCKET_NOT_CONNECTED;
+  // Return net::OK as ReadIfReady() is canceled when socket is disconnected.
+  return net::OK;
 }
 
 int ProxyResolvingClientSocket::Write(
