@@ -82,6 +82,8 @@ extern const char kHistogramCacheCompletedResources[];
 
 extern const char kHistogramInputToNavigation[];
 extern const char kBackgroundHistogramInputToNavigation[];
+extern const char kHistogramInputToNavigationLinkClick[];
+extern const char kHistogramInputToNavigationOmnibox[];
 extern const char kHistogramInputToFirstPaint[];
 extern const char kBackgroundHistogramInputToFirstPaint[];
 extern const char kHistogramInputToFirstContentfulPaint[];

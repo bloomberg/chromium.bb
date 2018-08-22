@@ -233,6 +233,10 @@ const char kHistogramInputToNavigation[] =
     "PageLoad.Experimental.InputTiming.InputToNavigationStart";
 const char kBackgroundHistogramInputToNavigation[] =
     "PageLoad.Experimental.InputTiming.InputToNavigationStart.Background";
+const char kHistogramInputToNavigationLinkClick[] =
+    "PageLoad.Experimental.InputTiming.InputToNavigationStart.FromLinkClick";
+const char kHistogramInputToNavigationOmnibox[] =
+    "PageLoad.Experimental.InputTiming.InputToNavigationStart.FromOmnibox";
 const char kHistogramInputToFirstPaint[] =
     "PageLoad.Experimental.PaintTiming.InputToFirstPaint";
 const char kBackgroundHistogramInputToFirstPaint[] =
@@ -408,6 +412,17 @@ void CorePageLoadMetricsObserver::OnFirstContentfulPaintInPage(
           internal::kHistogramInputToFirstContentfulPaint,
           timing.input_to_navigation_start.value() +
               timing.paint_timing->first_contentful_paint.value());
+
+      if (ui::PageTransitionCoreTypeIs(transition_, ui::PAGE_TRANSITION_LINK)) {
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramInputToNavigationLinkClick,
+                            timing.input_to_navigation_start.value());
+      } else if (ui::PageTransitionCoreTypeIs(transition_,
+                                              ui::PAGE_TRANSITION_GENERATED) ||
+                 ui::PageTransitionCoreTypeIs(transition_,
+                                              ui::PAGE_TRANSITION_TYPED)) {
+        PAGE_LOAD_HISTOGRAM(internal::kHistogramInputToNavigationOmnibox,
+                            timing.input_to_navigation_start.value());
+      }
     }
 
     switch (GetPageLoadType(transition_)) {
