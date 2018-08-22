@@ -15,6 +15,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
@@ -282,5 +283,15 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
     protected void onDetachedFromWindow() {
         mIsAttachedToWindow = false;
         super.onDetachedFromWindow();
+    }
+
+    @VisibleForTesting
+    public TabLayout.Tab getIncognitoTabsButton() {
+        return mModernIncognitoButton;
+    }
+
+    @VisibleForTesting
+    public TabLayout.Tab getStandardTabsButton() {
+        return mModernStandardButton;
     }
 }

@@ -51,7 +51,6 @@ public class FeatureUtilities {
     private static String sChromeHomeSwipeLogicType;
 
     private static Boolean sIsSoleEnabled;
-    private static Boolean sIsChromeModernDesignEnabled;
     private static Boolean sIsHomePageButtonForceEnabled;
     private static Boolean sIsHomepageTileEnabled;
     private static Boolean sIsNewTabPageButtonEnabled;
@@ -164,7 +163,6 @@ public class FeatureUtilities {
         cacheSoleEnabled();
         cacheCommandLineOnNonRootedEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
-        cacheChromeModernDesignEnabled();
         cacheHomePageButtonForceEnabled();
         cacheHomepageTileEnabled();
         cacheNewTabPageButtonEnabledAndMaybeVariant();
@@ -186,18 +184,6 @@ public class FeatureUtilities {
             return false;
         }
         return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
-    }
-
-    /**
-     * Cache whether or not modern design is enabled so on next startup, the value can be made
-     * available immediately.
-     */
-    public static void cacheChromeModernDesignEnabled() {
-        boolean isModernEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_MODERN_DESIGN);
-
-        ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
-        manager.setChromeModernDesignEnabled(isModernEnabled);
     }
 
     /**
@@ -415,26 +401,12 @@ public class FeatureUtilities {
     }
 
     /**
-     * Resets whether Chrome modern design is enabled for tests. After this is called, the next
-     * call to #isChromeModernDesignEnabled() will retrieve the value from shared preferences.
-     */
-    public static void resetChromeModernDesignEnabledForTests() {
-        sIsChromeModernDesignEnabled = null;
-    }
-
-    /**
+     * Deprecated!
      * @return Whether Chrome modern design is enabled. This returns true if Chrome Home is enabled.
      */
     @CalledByNative
     public static boolean isChromeModernDesignEnabled() {
-        if (sIsChromeModernDesignEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
-                sIsChromeModernDesignEnabled = prefManager.isChromeModernDesignEnabled();
-            }
-        }
-
-        return sIsChromeModernDesignEnabled;
+        return true;
     }
 
     /**

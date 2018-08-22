@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.Overrid
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -186,7 +187,7 @@ public class WebappNavigationTest {
         ChromeTabUtils.waitForTabPageLoaded(customTab.getActivityTab(), offOriginUrl());
 
         Assert.assertEquals(
-                getDefaultPrimaryColor(), customTab.getToolbarManager().getPrimaryColor());
+                getDefaultPrimaryColorForCct(), customTab.getToolbarManager().getPrimaryColor());
     }
 
     /**
@@ -227,7 +228,7 @@ public class WebappNavigationTest {
         CustomTabActivity customTab = ChromeActivityTestRule.waitFor(CustomTabActivity.class);
         ChromeTabUtils.waitForTabPageLoaded(customTab.getActivityTab(), offOriginUrl());
         Assert.assertEquals(
-                getDefaultPrimaryColor(), customTab.getToolbarManager().getPrimaryColor());
+                getDefaultPrimaryColorForCct(), customTab.getToolbarManager().getPrimaryColor());
     }
 
     /**
@@ -422,6 +423,11 @@ public class WebappNavigationTest {
     private long getDefaultPrimaryColor() {
         return ApiCompatibilityUtils.getColor(
                 mActivityTestRule.getActivity().getResources(), R.color.default_primary_color);
+    }
+
+    private long getDefaultPrimaryColorForCct() {
+        return ColorUtils.getDefaultThemeColor(
+                mActivityTestRule.getActivity().getResources(), true, false);
     }
 
     private String offOriginUrl() {

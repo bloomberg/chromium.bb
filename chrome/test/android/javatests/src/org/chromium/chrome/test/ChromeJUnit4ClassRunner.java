@@ -22,7 +22,6 @@ import org.chromium.base.test.util.SkipCheck;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.chrome.test.util.ChromeRestriction;
-import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content.browser.test.ContentJUnit4ClassRunner;
 import org.chromium.policy.test.annotations.Policies;
@@ -57,8 +56,7 @@ public class ChromeJUnit4ClassRunner extends ContentJUnit4ClassRunner {
 
     @Override
     protected List<TestRule> getDefaultTestRules() {
-        return addToList(super.getDefaultTestRules(), new Features.InstrumentationProcessor(),
-                new ChromeModernDesign.Processor());
+        return addToList(super.getDefaultTestRules(), new Features.InstrumentationProcessor());
     }
 
     private static class ChromeRestrictionSkipCheck extends RestrictionSkipCheck {

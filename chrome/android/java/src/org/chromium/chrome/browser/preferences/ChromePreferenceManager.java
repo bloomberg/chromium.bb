@@ -113,6 +113,11 @@ public class ChromePreferenceManager {
      */
     public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
+    /**
+     * Deprecated in M70. This value may still exist in the shared preferences file. Do not reuse.
+     * TODO(twellington): Remove preference from the file in a future pref cleanup effort.
+     */
+    @Deprecated
     private static final String CHROME_MODERN_DESIGN_ENABLED_KEY = "chrome_modern_design_enabled";
 
     /**
@@ -399,21 +404,6 @@ public class ChromePreferenceManager {
      */
     public void setNewTabPageSigninPromoSuppressionPeriodStart(long timeMillis) {
         writeLong(NTP_SIGNIN_PROMO_SUPPRESSION_PERIOD_START, timeMillis);
-    }
-
-    /**
-     * @return Whether Chrome modern design is enabled.
-     */
-    public boolean isChromeModernDesignEnabled() {
-        return mSharedPreferences.getBoolean(CHROME_MODERN_DESIGN_ENABLED_KEY, false);
-    }
-
-    /**
-     * Set whether or not Chrome modern design is enabled.
-     * @param isEnabled Whether the feature is enabled.
-     */
-    public void setChromeModernDesignEnabled(boolean isEnabled) {
-        writeBoolean(CHROME_MODERN_DESIGN_ENABLED_KEY, isEnabled);
     }
 
     /**

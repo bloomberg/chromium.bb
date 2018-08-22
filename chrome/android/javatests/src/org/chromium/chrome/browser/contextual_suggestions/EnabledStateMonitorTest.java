@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.policy.test.annotations.Policies;
@@ -37,7 +36,6 @@ import org.chromium.ui.test.util.UiRestriction;
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 @Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
-@ChromeModernDesign.Enable
 public class EnabledStateMonitorTest implements EnabledStateMonitor.Observer {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

@@ -897,7 +897,12 @@ public class CustomTabActivityTest {
                                    .getToolbarManager()
                                    .getToolbarModelForTesting()
                                    .shouldEmphasizeHttpsScheme());
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
+        // TODO(https://crbug.com/871805): Use helper class to determine whether dark status icons
+        // are supported.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Assert.assertEquals(expectedColor,
+                    mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
+        } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             Assert.assertEquals(ColorUtils.getDarkenedColorForStatusBar(expectedColor),
                     mCustomTabActivityTestRule.getActivity().getWindow().getStatusBarColor());
         }

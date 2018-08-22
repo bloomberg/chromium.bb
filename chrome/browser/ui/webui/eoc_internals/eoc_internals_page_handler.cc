@@ -21,11 +21,10 @@ using contextual_suggestions::ContextualSuggestionsResult;
 
 namespace {
 bool AreChromeFlagsSetup() {
-  return (base::FeatureList::IsEnabled(
-              contextual_suggestions::kContextualSuggestionsBottomSheet) ||
-          base::FeatureList::IsEnabled(
-              contextual_suggestions::kContextualSuggestionsButton)) &&
-         base::FeatureList::IsEnabled(chrome::android::kChromeModernDesign);
+  return base::FeatureList::IsEnabled(
+             contextual_suggestions::kContextualSuggestionsBottomSheet) ||
+         base::FeatureList::IsEnabled(
+             contextual_suggestions::kContextualSuggestionsButton);
 }
 
 std::string GetAreChromeFlagsSetupString() {

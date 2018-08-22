@@ -169,7 +169,7 @@ public class OverviewListLayout extends Layout implements AccessibilityTabModelA
     }
 
     @VisibleForTesting
-    public ViewGroup getContainer() {
+    public AccessibilityTabModelWrapper getContainer() {
         return mTabModelWrapper;
     }
 

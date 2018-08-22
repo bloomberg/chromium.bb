@@ -10,7 +10,6 @@ import static junit.framework.Assert.assertTrue;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
 import static org.chromium.chrome.test.util.browser.suggestions.FakeMostVisitedSites.createSiteSuggestion;
 
@@ -49,7 +48,6 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.NewTabPageTestUtils;
 import org.chromium.chrome.test.util.RenderTestRule;
-import org.chromium.chrome.test.util.browser.ChromeModernDesign;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
@@ -105,7 +103,6 @@ public class TileGridLayoutTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeModernDesign.Disable
     public void testTileGridAppearance() throws Exception {
         NewTabPage ntp = setUpFakeDataToShowOnNtp(FAKE_MOST_VISITED_URLS.length);
         mRenderTestRule.render(getTileGridLayout(ntp), "ntp_tile_grid_layout");
@@ -115,7 +112,6 @@ public class TileGridLayoutTest {
     //@MediumTest
     @DisabledTest(message = "crbug.com/771648")
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeModernDesign.Enable
     public void testModernTileGridAppearance_Full() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
 
@@ -136,31 +132,8 @@ public class TileGridLayoutTest {
     @Test
     //@MediumTest
     @DisabledTest(message = "crbug.com/771648")
-    @Feature({"NewTabPage", "RenderTest"})
-    @ChromeModernDesign.Disable
-    public void testTileGridAppearance_Full() throws IOException, InterruptedException {
-        View tileGridLayout = renderTiles(makeSuggestions(FAKE_MOST_VISITED_URLS.length));
-
-        setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, mActivityTestRule.getActivity());
-        mRenderTestRule.render(tileGridLayout, "full_grid_portrait");
-
-        setOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, mActivityTestRule.getActivity());
-        mRenderTestRule.render(tileGridLayout, "full_grid_landscape");
-
-        // In landscape, classic tiles should use at most tile_grid_layout_max_width px.
-        int tileGridMaxWidthPx = tileGridLayout.getResources().getDimensionPixelSize(
-                R.dimen.tile_grid_layout_max_width);
-        if (((FrameLayout) tileGridLayout.getParent()).getMeasuredWidth() > tileGridMaxWidthPx) {
-            assertThat(tileGridLayout.getMeasuredWidth(), lessThanOrEqualTo(tileGridMaxWidthPx));
-        }
-    }
-
-    @Test
-    //@MediumTest
-    @DisabledTest(message = "crbug.com/771648")
     @RetryOnFailure
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeModernDesign.Enable
     public void testModernTileGridAppearance_Two() throws IOException, InterruptedException {
         View tileGridLayout = renderTiles(makeSuggestions(2));
 
@@ -172,25 +145,8 @@ public class TileGridLayoutTest {
     }
 
     @Test
-    //@MediumTest
-    @DisabledTest(message = "crbug.com/771648")
-    @RetryOnFailure
-    @Feature({"NewTabPage", "RenderTest"})
-    @ChromeModernDesign.Disable
-    public void testTileGridAppearance_Two() throws IOException, InterruptedException {
-        View tileGridLayout = renderTiles(makeSuggestions(2));
-
-        setOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, mActivityTestRule.getActivity());
-        mRenderTestRule.render(tileGridLayout, "two_tiles_grid_portrait");
-
-        setOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE, mActivityTestRule.getActivity());
-        mRenderTestRule.render(tileGridLayout, "two_tiles_grid_landscape");
-    }
-
-    @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
-    @ChromeModernDesign.Enable
     public void testTileAppearanceModern()
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
@@ -201,22 +157,6 @@ public class TileGridLayoutTest {
 
         mRenderTestRule.render(tiles.getChildAt(0), "tile_modern_offline");
         mRenderTestRule.render(tiles.getChildAt(1), "tile_modern");
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"NewTabPage", "RenderTest"})
-    @ChromeModernDesign.Disable
-    public void testTileAppearanceClassic()
-            throws IOException, InterruptedException, TimeoutException {
-        List<SiteSuggestion> suggestions = makeSuggestions(2);
-        List<String> offlineAvailableUrls = Collections.singletonList(suggestions.get(0).url);
-        ViewGroup tiles = renderTiles(suggestions, offlineAvailableUrls);
-
-        mLoadCompleteHelper.waitForCallback(0);
-
-        mRenderTestRule.render(tiles.getChildAt(0), "tile_classic_offline");
-        mRenderTestRule.render(tiles.getChildAt(1), "tile_classic");
     }
 
     private List<SiteSuggestion> makeSuggestions(int count) {
