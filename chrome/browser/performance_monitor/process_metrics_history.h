@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
-#include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/common/process_type.h"
 
@@ -66,18 +65,16 @@ class ProcessMetricsHistory {
   // renderer processes.
   ProcessMetricsMetadata process_data_;
   std::unique_ptr<base::ProcessMetrics> process_metrics_;
-  int last_update_sequence_;
+  int last_update_sequence_ = 0;
 
-  double cpu_usage_;
+  double cpu_usage_ = 0.0;
 
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
-  int idle_wakeups_;
+  int idle_wakeups_ = 0;
 #endif
 #if defined(OS_MACOSX)
-  int package_idle_wakeups_;
+  int package_idle_wakeups_ = 0;
 #endif
-
-  content::BackgroundTracingManager::TriggerHandle trace_trigger_handle_;
 
   DISALLOW_ASSIGN(ProcessMetricsHistory);
 };

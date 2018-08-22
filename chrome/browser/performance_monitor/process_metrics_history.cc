@@ -17,26 +17,13 @@
 
 namespace performance_monitor {
 
-namespace {
-
-const char kBrowserProcessTrigger[] =
-    "ProcessMetricsHistory.BrowserProcess.HighCPU";
-const char kGPUProcessTrigger[] = "ProcessMetricsHistory.GPUProcess.HighCPU";
-const char kExtensionPersistentProcessTrigger[] =
-    "ProcessMetricsHistory.ExtensionPersistentProcess.HighCPU";
-
-}  // namespace
-
 // If a process is consistently above this CPU utilization percentage over time,
 // we consider it as high and may take action.
 const float kHighCPUUtilizationThreshold = 90.0f;
 
-ProcessMetricsHistory::ProcessMetricsHistory()
-    : last_update_sequence_(0), cpu_usage_(0.0), trace_trigger_handle_(-1) {
-}
+ProcessMetricsHistory::ProcessMetricsHistory() = default;
 
-ProcessMetricsHistory::~ProcessMetricsHistory() {
-}
+ProcessMetricsHistory::~ProcessMetricsHistory() = default;
 
 void ProcessMetricsHistory::Initialize(
     const ProcessMetricsMetadata& process_data,
@@ -53,28 +40,6 @@ void ProcessMetricsHistory::Initialize(
   process_metrics_ =
       base::ProcessMetrics::CreateProcessMetrics(process_data_.handle);
 #endif
-
-  const char* trigger_name = NULL;
-  switch (process_data_.process_type) {
-    case content::PROCESS_TYPE_BROWSER:
-      trigger_name = kBrowserProcessTrigger;
-      break;
-    case content::PROCESS_TYPE_GPU:
-      trigger_name = kGPUProcessTrigger;
-      break;
-  }
-  switch (process_data_.process_subtype) {
-    case kProcessSubtypeExtensionPersistent:
-      trigger_name = kExtensionPersistentProcessTrigger;
-      break;
-    default:
-      break;
-  }
-  if (trigger_name) {
-    trace_trigger_handle_ =
-        content::BackgroundTracingManager::GetInstance()->RegisterTriggerType(
-            trigger_name);
-  }
 }
 
 void ProcessMetricsHistory::SampleMetrics() {
@@ -195,13 +160,6 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
             "PerformanceMonitor.HighCPU.RendererExtensionEventProcess", true);
       }
       break;
-  }
-
-  if (cpu_usage_ > kHighCPUUtilizationThreshold &&
-      trace_trigger_handle_ != -1) {
-    content::BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
-        trace_trigger_handle_,
-        content::BackgroundTracingManager::StartedFinalizingCallback());
   }
 }
 
