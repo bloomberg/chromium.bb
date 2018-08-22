@@ -4958,7 +4958,7 @@ crbug.com/872242 [ Mac ] fast/events/autoscroll-over-scrollbar.html [ Pass Failu
 crbug.com/871445 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Timeout ]
 
 # Sheriff 2018-08-09
-crbug.com/872635 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Failure Pass ]
+crbug.com/872635 [ Mac ] fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Timeout Failure Pass ]
 crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-over-scrollbar.html [ Failure Pass ]
 crbug.com/872705 [ Mac ] virtual/mouseevent_fractional/fast/events/recorded-keydown-event.html [ Timeout Pass ]
 
@@ -5015,6 +5015,17 @@ crbug.com/862589 [ Linux Mac Win ] virtual/threaded/fast/idle-callback/long_idle
 
 # Sheriff 2018-08-21
 crbug.com/873829 [ Mac ] virtual/mouseevent_fractional/fast/events/autoscroll-iframe-no-scrolling.html [ Timeout Pass ]
+
+# Sheriff 2018-08-22
+crbug.com/876609 [ Mac ] fast/events/autoscroll-iframe-no-scrolling.html [ Timeout ]
+crbug.com/876609 [ Mac ] fast/events/middleClickAutoscroll-drag.html [ Timeout ]
+crbug.com/876609 [ Mac ] fast/events/middleClickAutoscroll-event-fired.html [ Timeout ]
+crbug.com/876609 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-drag.html [ Timeout ]
+crbug.com/876609 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-in-iframe.html [ Timeout ]
+crbug.com/876609 [ Mac ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-nested-divs-forbidden.html [ Timeout ]
+crbug.com/876609 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-click.html [ Timeout ]
+crbug.com/876609 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-drag.html [ Timeout ]
+crbug.com/876609 [ Mac ] virtual/user-activation-v2/fast/events/middleClickAutoscroll-nested-divs.html [ Timeout ]
 
 # Failures on 32-bit Android when using GPU instead of software rendering
 crbug.com/875172 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Pass Failure ]
