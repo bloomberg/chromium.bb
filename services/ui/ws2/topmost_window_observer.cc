@@ -7,6 +7,7 @@
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_delegate.h"
 #include "services/ui/ws2/window_tree.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -43,10 +44,10 @@ TopmostWindowObserver::TopmostWindowObserver(WindowTree* window_tree,
     ::wm::ConvertPointToScreen(root_, &last_location_);
   } else {
     gfx::PointF point;
-    if (ui::GestureRecognizer::Get()->GetLastTouchPointForTarget(last_target_,
-                                                                 &point)) {
+    ui::GestureRecognizer* gesture_recognizer =
+        initial_target->env()->gesture_recognizer();
+    if (gesture_recognizer->GetLastTouchPointForTarget(last_target_, &point))
       last_location_ = gfx::Point(point.x(), point.y());
-    }
     ::wm::ConvertPointToScreen(last_target_, &last_location_);
   }
   UpdateTopmostWindows();

@@ -177,7 +177,7 @@ int DragDropController::StartDragAndDrop(
     // We need to transfer the current gesture sequence and the GR's touch event
     // queue to the |drag_drop_tracker_|'s capture window so that when it takes
     // capture, it still gets a valid gesture state.
-    ui::GestureRecognizer::Get()->TransferEventsTo(
+    Shell::Get()->aura_env()->gesture_recognizer()->TransferEventsTo(
         source_window, tracker->capture_window(),
         ui::GestureRecognizer::ShouldCancelTouches::Cancel);
     // We also send a gesture end to the source window so it can clear state.

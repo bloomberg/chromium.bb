@@ -105,10 +105,6 @@ class EVENTS_EXPORT GestureRecognizerImpl : public GestureRecognizer,
   DISALLOW_COPY_AND_ASSIGN(GestureRecognizerImpl);
 };
 
-// Provided only for testing:
-EVENTS_EXPORT void SetGestureRecognizerForTesting(
-    GestureRecognizer* gesture_recognizer);
-
 }  // namespace ui
 
 #endif  // UI_EVENTS_GESTURES_GESTURE_RECOGNIZER_IMPL_H_

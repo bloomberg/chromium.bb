@@ -799,6 +799,10 @@ bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
   return true;
 }
 
+ui::GestureRecognizer* NativeWidgetAura::GetGestureRecognizer() {
+  return window_->env()->gesture_recognizer();
+}
+
 void NativeWidgetAura::OnSizeConstraintsChanged() {
   if (is_parallel_widget_in_window_manager_)
     return;

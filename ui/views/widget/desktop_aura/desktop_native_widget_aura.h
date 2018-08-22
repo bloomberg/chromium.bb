@@ -186,6 +186,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   void SetVisibilityAnimationTransition(
       Widget::VisibilityTransition transition) override;
   bool IsTranslucentWindowOpacitySupported() const override;
+  ui::GestureRecognizer* GetGestureRecognizer() override;
   void OnSizeConstraintsChanged() override;
   void RepostNativeEvent(gfx::NativeEvent native_event) override;
   std::string GetName() const override;

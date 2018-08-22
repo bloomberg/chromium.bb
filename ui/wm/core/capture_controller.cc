@@ -5,6 +5,7 @@
 #include "ui/wm/core/capture_controller.h"
 
 #include "ui/aura/client/capture_client_observer.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
@@ -66,7 +67,8 @@ void CaptureController::SetCapture(aura::Window* new_capture_window) {
     // committing |capture_window_|.
     aura::WindowTracker tracker;
     tracker.Add(new_capture_window);
-    ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(new_capture_window);
+    new_capture_window->env()->gesture_recognizer()->CancelActiveTouchesExcept(
+        new_capture_window);
     if (!tracker.Contains(new_capture_window))
       new_capture_window = nullptr;
   }

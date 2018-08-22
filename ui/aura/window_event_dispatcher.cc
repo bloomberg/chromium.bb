@@ -105,7 +105,7 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host,
       are_events_in_pixels_(are_events_in_pixels),
       observer_manager_(this),
       event_targeter_(std::make_unique<WindowTargeter>()) {
-  ui::GestureRecognizer::Get()->AddGestureEventHelper(this);
+  env_->gesture_recognizer()->AddGestureEventHelper(this);
   env_->AddObserver(this);
   if (env_->mode() == Env::Mode::MUS)
     mus_mouse_location_updater_ = std::make_unique<MusMouseLocationUpdater>();
@@ -113,8 +113,8 @@ WindowEventDispatcher::WindowEventDispatcher(WindowTreeHost* host,
 
 WindowEventDispatcher::~WindowEventDispatcher() {
   TRACE_EVENT0("shutdown", "WindowEventDispatcher::Destructor");
+  env_->gesture_recognizer()->RemoveGestureEventHelper(this);
   env_->RemoveObserver(this);
-  ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
 }
 
 void WindowEventDispatcher::Shutdown() {
@@ -201,7 +201,7 @@ void WindowEventDispatcher::ProcessedTouchEvent(
     ui::EventResult result,
     bool is_source_touch_event_set_non_blocking) {
   ui::GestureRecognizer::Gestures gestures =
-      ui::GestureRecognizer::Get()->AckTouchEvent(
+      env_->gesture_recognizer()->AckTouchEvent(
           unique_event_id, result, is_source_touch_event_set_non_blocking,
           window);
   DispatchDetails details = ProcessGestures(window, std::move(gestures));
@@ -647,7 +647,7 @@ ui::EventDispatchDetails WindowEventDispatcher::PostDispatchEvent(
       if (!touchevent.synchronous_handling_disabled()) {
         Window* window = static_cast<Window*>(target);
         ui::GestureRecognizer::Gestures gestures =
-            ui::GestureRecognizer::Get()->AckTouchEvent(
+            env_->gesture_recognizer()->AckTouchEvent(
                 touchevent.unique_event_id(), event.result(),
                 false /* is_source_touch_event_set_non_blocking */, window);
 
@@ -1068,8 +1068,8 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
   host_->window()->env()->env_controller()->UpdateStateForTouchEvent(*event);
 
   ui::TouchEvent orig_event(*event, target, window());
-  if (!ui::GestureRecognizer::Get()->ProcessTouchEventPreDispatch(&orig_event,
-                                                                  target)) {
+  if (!env_->gesture_recognizer()->ProcessTouchEventPreDispatch(&orig_event,
+                                                                target)) {
     // The event is invalid - ignore it.
     event->StopPropagation();
     event->DisableSynchronousHandling();

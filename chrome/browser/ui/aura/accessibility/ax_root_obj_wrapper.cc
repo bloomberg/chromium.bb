@@ -10,14 +10,17 @@
 #include "chrome/common/channel_info.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
 
-AXRootObjWrapper::AXRootObjWrapper() : alert_window_(new aura::Window(NULL)) {
+AXRootObjWrapper::AXRootObjWrapper()
+    : alert_window_(std::make_unique<aura::Window>(nullptr)) {
   alert_window_->Init(ui::LAYER_NOT_DRAWN);
+  aura::Env::GetInstance()->AddObserver(this);
 
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->AddObserver(this);
@@ -27,10 +30,13 @@ AXRootObjWrapper::~AXRootObjWrapper() {
   if (display::Screen::GetScreen())
     display::Screen::GetScreen()->RemoveObserver(this);
 
-  if (alert_window_) {
-    delete alert_window_;
-    alert_window_ = NULL;
-  }
+  // If alert_window_ is nullptr already, that means OnWillDestroyEnv
+  // was already called, so we shouldn't call RemoveObserver(this) again.
+  if (!alert_window_)
+    return;
+
+  aura::Env::GetInstance()->RemoveObserver(this);
+  alert_window_.reset();
 }
 
 views::AXAuraObjWrapper* AXRootObjWrapper::GetAlertForText(
@@ -38,7 +44,8 @@ views::AXAuraObjWrapper* AXRootObjWrapper::GetAlertForText(
   alert_window_->SetTitle(base::UTF8ToUTF16((text)));
   views::AXWindowObjWrapper* window_obj =
       static_cast<views::AXWindowObjWrapper*>(
-          views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_));
+          views::AXAuraObjCache::GetInstance()->GetOrCreate(
+              alert_window_.get()));
   window_obj->set_is_alert(true);
   return window_obj;
 }
@@ -61,7 +68,7 @@ void AXRootObjWrapper::GetChildren(
     std::vector<views::AXAuraObjWrapper*>* out_children) {
   views::AXAuraObjCache::GetInstance()->GetTopLevelWindows(out_children);
   out_children->push_back(
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_));
+      views::AXAuraObjCache::GetInstance()->GetOrCreate(alert_window_.get()));
 }
 
 void AXRootObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
@@ -94,4 +101,11 @@ void AXRootObjWrapper::OnDisplayMetricsChanged(const display::Display& display,
                                                uint32_t changed_metrics) {
   AutomationManagerAura::GetInstance()->OnEvent(
       this, ax::mojom::Event::kLocationChanged);
+}
+
+void AXRootObjWrapper::OnWindowInitialized(aura::Window* window) {}
+
+void AXRootObjWrapper::OnWillDestroyEnv() {
+  alert_window_.reset();
+  aura::Env::GetInstance()->RemoveObserver(this);
 }

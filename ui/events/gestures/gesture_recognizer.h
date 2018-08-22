@@ -20,10 +20,6 @@ namespace ui {
 // into gestures.
 class EVENTS_EXPORT GestureRecognizer {
  public:
-  static GestureRecognizer* Create();
-  static GestureRecognizer* Get();
-  static void Reset();
-
   using Gestures = std::vector<std::unique_ptr<GestureEvent>>;
 
   virtual ~GestureRecognizer() {}

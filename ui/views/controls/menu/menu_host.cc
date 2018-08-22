@@ -84,7 +84,7 @@ void TransferGesture(Widget* source, Widget* target) {
 #if defined(OS_MACOSX)
   NOTIMPLEMENTED();
 #else   // !defined(OS_MACOSX)
-  ui::GestureRecognizer::Get()->TransferEventsTo(
+  source->GetGestureRecognizer()->TransferEventsTo(
       source->GetNativeView(), target->GetNativeView(),
       ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
 #endif  // defined(OS_MACOSX)
@@ -171,12 +171,12 @@ void MenuHost::ShowMenuHost(bool do_capture) {
       // gesture events instead of being dropped.
       internal::TransferGesture(owner_, this);
     } else {
-      ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+      GetGestureRecognizer()->CancelActiveTouchesExcept(nullptr);
     }
 #if defined(MACOSX)
     // Cancel existing touches, so we don't miss some touch release/cancel
     // events due to the menu taking capture.
-    ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+    GetGestureRecognizer()->CancelActiveTouchesExcept(nullptr);
 #endif  // defined (OS_MACOSX)
     // If MenuHost has no parent widget, it needs to call Show to get focus,
     // so that it will get keyboard events.

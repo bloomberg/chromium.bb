@@ -9,6 +9,7 @@
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -96,7 +97,7 @@ Window* WindowTargeter::GetPriorityTargetInRootWindow(
     // Query the gesture-recognizer to find targets for touch events.
     const ui::TouchEvent& touch = *event.AsTouchEvent();
     ui::GestureConsumer* consumer =
-        ui::GestureRecognizer::Get()->GetTouchLockedTarget(touch);
+        root_window->env()->gesture_recognizer()->GetTouchLockedTarget(touch);
     if (consumer)
       return static_cast<Window*>(consumer);
   }
@@ -116,10 +117,11 @@ Window* WindowTargeter::FindTargetInRootWindow(Window* root_window,
     // Query the gesture-recognizer to find targets for touch events.
     const ui::TouchEvent& touch = *event.AsTouchEvent();
     // GetTouchLockedTarget() is handled in GetPriorityTargetInRootWindow().
-    DCHECK(!ui::GestureRecognizer::Get()->GetTouchLockedTarget(touch));
-    ui::GestureConsumer* consumer =
-        ui::GestureRecognizer::Get()->GetTargetForLocation(
-            event.location_f(), touch.source_device_id());
+    ui::GestureRecognizer* gesture_recognizer =
+        root_window->env()->gesture_recognizer();
+    DCHECK(!gesture_recognizer->GetTouchLockedTarget(touch));
+    ui::GestureConsumer* consumer = gesture_recognizer->GetTargetForLocation(
+        event.location_f(), touch.source_device_id());
     if (consumer)
       return static_cast<Window*>(consumer);
 

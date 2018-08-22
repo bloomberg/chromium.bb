@@ -1003,6 +1003,10 @@ bool Widget::IsTranslucentWindowOpacitySupported() const {
   return native_widget_->IsTranslucentWindowOpacitySupported();
 }
 
+ui::GestureRecognizer* Widget::GetGestureRecognizer() {
+  return native_widget_->GetGestureRecognizer();
+}
+
 void Widget::OnSizeConstraintsChanged() {
   native_widget_->OnSizeConstraintsChanged();
   if (non_client_view_)

@@ -11,6 +11,7 @@
 #include "ui/aura/env.h"
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/input_state_lookup.h"
+#include "ui/events/gestures/gesture_recognizer.h"
 
 namespace aura {
 namespace test {
@@ -61,6 +62,11 @@ class EnvTestHelper {
   // location.
   void SetAlwaysUseLastMouseLocation(bool value) {
     env_->always_use_last_mouse_location_ = value;
+  }
+
+  void SetGestureRecognizer(
+      std::unique_ptr<ui::GestureRecognizer> gesture_recognizer) {
+    env_->gesture_recognizer_ = std::move(gesture_recognizer);
   }
 
   WindowTreeClient* GetWindowTreeClient() { return env_->window_tree_client_; }
