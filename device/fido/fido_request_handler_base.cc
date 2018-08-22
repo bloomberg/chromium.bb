@@ -119,7 +119,7 @@ void FidoRequestHandlerBase::StartAuthenticatorRequest(
   if (authenticator == active_authenticators_.end())
     return;
 
-  InitializeAuthenticatorAndDispatchRequest(authenticator->second.get());
+  DispatchRequest(authenticator->second.get());
 }
 
 void FidoRequestHandlerBase::CancelOngoingTasks(
@@ -214,14 +214,11 @@ void FidoRequestHandlerBase::AddAuthenticator(
   if (should_delay_request)
     return;
 
-  // Post |InitializeAuthenticatorAndDispatchRequest| into its own task. This
-  // avoids hairpinning, even if the authenticator immediately invokes the
-  // request callback.
+  // Post |DispatchRequest| into its own task. This avoids hairpinning, even
+  // if the authenticator immediately invokes the request callback.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest,
-          GetWeakPtr(), authenticator_ptr));
+      FROM_HERE, base::BindOnce(&FidoRequestHandlerBase::DispatchRequest,
+                                GetWeakPtr(), authenticator_ptr));
 }
 
 void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
@@ -248,13 +245,6 @@ void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
 void FidoRequestHandlerBase::NotifyObserverTransportAvailability() {
   DCHECK(observer_);
   observer_->OnTransportAvailabilityEnumerated(transport_availability_info_);
-}
-
-void FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest(
-    FidoAuthenticator* authenticator) {
-  authenticator->InitializeAuthenticator(
-      base::BindOnce(&FidoRequestHandlerBase::DispatchRequest,
-                     weak_factory_.GetWeakPtr(), authenticator));
 }
 
 }  // namespace device

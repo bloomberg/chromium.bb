@@ -533,9 +533,6 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestGetInfoResponsePlatformDevice);
-  device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetAssertion,
       test_data::kTestGetAssertionResponse);
   set_mock_platform_device(std::move(device));

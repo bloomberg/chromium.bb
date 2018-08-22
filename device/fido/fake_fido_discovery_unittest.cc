@@ -118,6 +118,9 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
 
   auto device0 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device0, GetId()).WillOnce(::testing::Return("device0"));
+  device0->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
   base::RunLoop device0_done;
   EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_))
       .WillOnce(testing::InvokeWithoutArgs(
@@ -132,6 +135,9 @@ TEST_F(FakeFidoDiscoveryTest, AddDevice) {
 
   auto device1 = std::make_unique<MockFidoDevice>();
   EXPECT_CALL(*device1, GetId()).WillOnce(::testing::Return("device1"));
+  device1->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
   base::RunLoop device1_done;
   EXPECT_CALL(observer, DeviceAdded(&discovery, ::testing::_))
       .WillOnce(testing::InvokeWithoutArgs(

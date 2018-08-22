@@ -367,9 +367,6 @@ TEST_F(FidoMakeCredentialHandlerTest,
   EXPECT_CALL(*platform_device, GetId())
       .WillRepeatedly(testing::Return("device0"));
   platform_device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestGetInfoResponsePlatformDevice);
-  platform_device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorMakeCredential,
       test_data::kTestMakeCredentialResponse);
   set_mock_platform_device(std::move(platform_device));
@@ -420,9 +417,6 @@ TEST_F(FidoMakeCredentialHandlerTest,
   platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   EXPECT_CALL(*platform_device, GetId())
       .WillRepeatedly(testing::Return("device0"));
-  platform_device->ExpectCtap2CommandAndRespondWith(
-      CtapRequestCommand::kAuthenticatorGetInfo,
-      test_data::kTestAuthenticatorGetInfoResponse);
   set_mock_platform_device(std::move(platform_device));
 
   auto request_handler =

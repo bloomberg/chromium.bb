@@ -1864,8 +1864,8 @@ TEST_F(AuthenticatorImplRequestDelegateTest,
       std::move(mock_delegate), task_runner);
   AddTransport(device::FidoTransportProtocol::kBluetoothLowEnergy);
 
-  auto mock_ble_device = device::MockFidoDevice::MakeCtap();
-  mock_ble_device->StubGetId();
+  auto mock_ble_device =
+      device::MockFidoDevice::MakeCtapWithGetInfoExpectation();
   mock_ble_device->SetDeviceTransport(
       device::FidoTransportProtocol::kBluetoothLowEnergy);
   const auto device_id = mock_ble_device->GetId();
