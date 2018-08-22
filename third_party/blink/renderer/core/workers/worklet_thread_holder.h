@@ -98,13 +98,13 @@ class WorkletThreadHolder {
     WaitableEvent waitable_event;
     thread_->BackingThread().PostTask(
         FROM_HERE,
-        CrossThreadBind(&WorkletThreadHolder::ShutdownOnWorlketThread,
+        CrossThreadBind(&WorkletThreadHolder::ShutdownOnWorkletThread,
                         CrossThreadUnretained(this),
                         CrossThreadUnretained(&waitable_event)));
     waitable_event.Wait();
   }
 
-  void ShutdownOnWorlketThread(WaitableEvent* waitable_event) {
+  void ShutdownOnWorkletThread(WaitableEvent* waitable_event) {
     thread_->ShutdownOnBackingThread();
     waitable_event->Signal();
   }
