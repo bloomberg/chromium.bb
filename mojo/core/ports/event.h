@@ -128,8 +128,8 @@ class COMPONENT_EXPORT(MOJO_CORE_PORTS) UserMessageEvent : public Event {
   void ReservePorts(size_t num_ports);
   bool NotifyWillBeRoutedExternally();
 
-  uint32_t sequence_num() const { return sequence_num_; }
-  void set_sequence_num(uint32_t sequence_num) { sequence_num_ = sequence_num; }
+  uint64_t sequence_num() const { return sequence_num_; }
+  void set_sequence_num(uint64_t sequence_num) { sequence_num_ = sequence_num; }
 
   size_t num_ports() const { return ports_.size(); }
   PortDescriptor* port_descriptors() { return port_descriptors_.data(); }
