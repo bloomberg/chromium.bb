@@ -365,6 +365,16 @@ void ArcAuthService::OnAuthCodeFetched(bool success,
             ArcSessionManager::Get()->auth_context()->full_account_id(),
             GetAccountType(profile_), policy_util::IsAccountManaged(profile_)),
         mojom::ArcSignInStatus::SUCCESS);
+  } else if (chromeos::DemoSession::Get() &&
+             chromeos::DemoSession::Get()->started()) {
+    // For demo sessions, if auth code fetch failed (e.g. because the device is
+    // offline), fall back to accountless offline demo mode provisioning.
+    OnAccountInfoReady(
+        CreateAccountInfo(true /* is_enforced */, std::string() /* auth_info */,
+                          std::string() /* auth_name */,
+                          mojom::ChromeAccountType::OFFLINE_DEMO_ACCOUNT,
+                          true /* is_managed */),
+        mojom::ArcSignInStatus::SUCCESS);
   } else {
     // Send error to ARC.
     OnAccountInfoReady(
