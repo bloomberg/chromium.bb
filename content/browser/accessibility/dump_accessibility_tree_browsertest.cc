@@ -1003,6 +1003,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBody) {
   RunHtmlTest(FILE_PATH_LITERAL("body.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBodyTabIndex) {
+  RunHtmlTest(FILE_PATH_LITERAL("body-tabindex.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBoundsInherits) {
   RunHtmlTest(FILE_PATH_LITERAL("bounds-inherits.html"));
 }

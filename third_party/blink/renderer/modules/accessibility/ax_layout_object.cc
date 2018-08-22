@@ -677,7 +677,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   if (layout_object_->IsBR())
     return false;
 
-  if (CanSetFocusAttribute())
+  if (CanSetFocusAttribute() && GetNode() && !IsHTMLBodyElement(GetNode()))
     return false;
 
   if (IsLink())
