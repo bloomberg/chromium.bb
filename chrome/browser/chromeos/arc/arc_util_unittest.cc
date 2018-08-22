@@ -32,6 +32,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -1009,14 +1011,17 @@ INSTANTIATE_TEST_CASE_P(
 
 class ArcOobeTest : public ChromeArcUtilTest {
  public:
-  ArcOobeTest()
-      : oobe_configuration_(std::make_unique<chromeos::OobeConfiguration>()) {}
+  ArcOobeTest() {
+    chromeos::DBusThreadManager::GetSetterForTesting();
+    oobe_configuration_ = std::make_unique<chromeos::OobeConfiguration>();
+  }
 
   ~ArcOobeTest() override {
     // Fake display host have to be shut down first, as it may access
     // configuration.
     fake_login_display_host_.reset();
     oobe_configuration_.reset();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
  protected:

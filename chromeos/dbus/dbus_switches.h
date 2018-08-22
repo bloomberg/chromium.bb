@@ -12,6 +12,7 @@ namespace switches {
 
 CHROMEOS_EXPORT extern const char kAttestationServer[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
+CHROMEOS_EXPORT extern const char kFakeOobeConfiguration[];
 CHROMEOS_EXPORT extern const char kShillStub[];
 CHROMEOS_EXPORT extern const char kSmsTestMessages[];
 CHROMEOS_EXPORT extern const char kSystemDevMode[];

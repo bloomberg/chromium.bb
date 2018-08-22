@@ -49,6 +49,7 @@ class LorgnetteManagerClient;
 class MachineLearningClient;
 class MediaAnalyticsClient;
 class ModemMessagingClient;
+class OobeConfigurationClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class SessionManagerClient;
@@ -154,6 +155,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   MachineLearningClient* GetMachineLearningClient();
   MediaAnalyticsClient* GetMediaAnalyticsClient();
   ModemMessagingClient* GetModemMessagingClient();
+  OobeConfigurationClient* GetOobeConfigurationClient();
   PermissionBrokerClient* GetPermissionBrokerClient();
   PowerManagerClient* GetPowerManagerClient();
   SessionManagerClient* GetSessionManagerClient();

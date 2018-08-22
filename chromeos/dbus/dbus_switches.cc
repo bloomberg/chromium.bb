@@ -14,6 +14,9 @@ const char kAttestationServer[] = "attestation-server";
 // Forces the stub implementation of D-Bus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// Path to a OOBE configuration JSON file (used by FakeOobeConfigurationClient).
+const char kFakeOobeConfiguration[] = "fake-oobe-configuration-file";
+
 // Overrides Shill stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
 // comma separated (no spaces). Note: all options are in the format 'foo=x'.

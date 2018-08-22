@@ -30,12 +30,14 @@
 #include "chromeos/dbus/fake_image_loader_client.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
 #include "chromeos/dbus/fake_media_analytics_client.h"
+#include "chromeos/dbus/fake_oobe_configuration_client.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "chromeos/dbus/fake_virtual_file_provider_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "chromeos/dbus/lorgnette_manager_client.h"
 #include "chromeos/dbus/media_analytics_client.h"
+#include "chromeos/dbus/oobe_configuration_client.h"
 #include "chromeos/dbus/smb_provider_client.h"
 #include "chromeos/dbus/virtual_file_provider_client.h"
 
@@ -114,6 +116,11 @@ DBusClientsBrowser::DBusClientsBrowser(bool use_real_clients) {
     media_analytics_client_.reset(new FakeMediaAnalyticsClient);
 
   if (use_real_clients)
+    oobe_configuration_client_ = OobeConfigurationClient::Create();
+  else
+    oobe_configuration_client_.reset(new FakeOobeConfigurationClient);
+
+  if (use_real_clients)
     smb_provider_client_.reset(SmbProviderClient::Create());
   else
     smb_provider_client_ = std::make_unique<FakeSmbProviderClient>();
@@ -143,6 +150,7 @@ void DBusClientsBrowser::Initialize(dbus::Bus* system_bus) {
   image_loader_client_->Init(system_bus);
   lorgnette_manager_client_->Init(system_bus);
   media_analytics_client_->Init(system_bus);
+  oobe_configuration_client_->Init(system_bus);
   smb_provider_client_->Init(system_bus);
   virtual_file_provider_client_->Init(system_bus);
 }
