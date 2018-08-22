@@ -22,7 +22,7 @@ class DictionaryValue;
 }
 
 class MockPrinter;
-struct PrintHostMsg_DidGetPreviewPageCount_Params;
+struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_PreviewIds;
@@ -78,9 +78,8 @@ class PrintMockRenderThread : public content::MockRenderThread {
   void OnDidGetPrintedPagesCount(int cookie, int number_pages);
   void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params);
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnDidGetPreviewPageCount(
-      const PrintHostMsg_DidGetPreviewPageCount_Params& params,
-      const PrintHostMsg_PreviewIds& ids);
+  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+                         const PrintHostMsg_PreviewIds& ids);
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params,
                         const PrintHostMsg_PreviewIds& ids);
   void OnCheckForCancel(const PrintHostMsg_PreviewIds& ids, bool* cancel);

@@ -17,7 +17,7 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 
 class PrintPreviewHandler;
-struct PrintHostMsg_DidGetPreviewPageCount_Params;
+struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
@@ -85,10 +85,9 @@ class PrintPreviewUI : public ConstrainedWebDialogUI {
   // Notifies the Web UI of a print preview request with |request_id|.
   virtual void OnPrintPreviewRequest(int request_id);
 
-  // Notifies the Web UI about the page count of the request preview.
-  void OnDidGetPreviewPageCount(
-      const PrintHostMsg_DidGetPreviewPageCount_Params& params,
-      int request_id);
+  // Notifies the Web UI about the properties of the request preview.
+  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+                         int request_id);
 
   // Notifies the Web UI of the default page layout according to the currently
   // selected printer and page size.

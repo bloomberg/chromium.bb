@@ -284,19 +284,14 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintContent_Params)
 IPC_STRUCT_END()
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-// Parameters to describe a rendered document.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
-  // Document's content including metafile data and subframe info.
-  IPC_STRUCT_MEMBER(PrintHostMsg_DidPrintContent_Params, content)
+// Parameters to describe the to-be-rendered preview document.
+IPC_STRUCT_BEGIN(PrintHostMsg_DidStartPreview_Params)
+  // Total page count for the rendered preview. (Not the number of pages the
+  // user selected to print.)
+  IPC_STRUCT_MEMBER(int, page_count)
 
-  // Cookie for the document to ensure correctness.
-  IPC_STRUCT_MEMBER(int, document_cookie)
-
-  // Store the expected pages count.
-  IPC_STRUCT_MEMBER(int, expected_pages_count)
-
-  // Whether the preview can be modified.
-  IPC_STRUCT_MEMBER(bool, modifiable)
+  // Scaling % to fit to page
+  IPC_STRUCT_MEMBER(int, fit_to_page_scaling)
 IPC_STRUCT_END()
 
 // Parameters to describe a rendered preview page.
@@ -311,13 +306,19 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
   IPC_STRUCT_MEMBER(int, document_cookie)
 IPC_STRUCT_END()
 
-// Parameters sent along with the page count.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidGetPreviewPageCount_Params)
-  // Total page count.
-  IPC_STRUCT_MEMBER(int, page_count)
+// Parameters to describe the final rendered preview document.
+IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewDocument_Params)
+  // Document's content including metafile data and subframe info.
+  IPC_STRUCT_MEMBER(PrintHostMsg_DidPrintContent_Params, content)
 
-  // Scaling % to fit to page
-  IPC_STRUCT_MEMBER(int, fit_to_page_scaling)
+  // Cookie for the document to ensure correctness.
+  IPC_STRUCT_MEMBER(int, document_cookie)
+
+  // Store the expected pages count.
+  IPC_STRUCT_MEMBER(int, expected_pages_count)
+
+  // Whether the preview can be modified.
+  IPC_STRUCT_MEMBER(bool, modifiable)
 IPC_STRUCT_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -337,7 +338,6 @@ IPC_STRUCT_BEGIN(PrintHostMsg_DidPrintDocument_Params)
 
   // The physical offsets of the printer in DPI. Used for PS printing.
   IPC_STRUCT_MEMBER(gfx::Point, physical_offsets)
-
 IPC_STRUCT_END()
 
 // TODO(dgn) Rename *ScriptedPrint messages because they are not called only
@@ -460,9 +460,9 @@ IPC_MESSAGE_CONTROL3(PrintHostMsg_TempFileForPrintingWritten,
 IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview,
                     PrintHostMsg_RequestPrintPreview_Params /* params */)
 
-// Notify the browser the number of pages in the print preview document.
-IPC_MESSAGE_ROUTED2(PrintHostMsg_DidGetPreviewPageCount,
-                    PrintHostMsg_DidGetPreviewPageCount_Params /* params */,
+// Notify the browser the about the to-be-rendered print preview document.
+IPC_MESSAGE_ROUTED2(PrintHostMsg_DidStartPreview,
+                    PrintHostMsg_DidStartPreview_Params /* params */,
                     PrintHostMsg_PreviewIds /* ids */)
 
 // Notify the browser of the default page layout according to the currently

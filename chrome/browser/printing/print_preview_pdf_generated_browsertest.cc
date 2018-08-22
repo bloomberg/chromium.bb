@@ -141,8 +141,7 @@ class PrintPreviewObserver : public WebContentsObserver {
 
   bool OnMessageReceived(const IPC::Message& message) override {
     IPC_BEGIN_MESSAGE_MAP(PrintPreviewObserver, message)
-      IPC_MESSAGE_HANDLER(PrintHostMsg_DidGetPreviewPageCount,
-                          OnDidGetPreviewPageCount)
+      IPC_MESSAGE_HANDLER(PrintHostMsg_DidStartPreview, OnDidStartPreview)
     IPC_END_MESSAGE_MAP()
     return false;
   }
@@ -268,11 +267,10 @@ class PrintPreviewObserver : public WebContentsObserver {
     DISALLOW_COPY_AND_ASSIGN(UIDoneLoadingMessageHandler);
   };
 
-  // Called when the observer gets the IPC message stating that the page count
-  // is ready.
-  void OnDidGetPreviewPageCount(
-      const PrintHostMsg_DidGetPreviewPageCount_Params& params,
-      const PrintHostMsg_PreviewIds& ids) {
+  // Called when the observer gets the IPC message with the preview document's
+  // properties.
+  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+                         const PrintHostMsg_PreviewIds& ids) {
     WebContents* web_contents = GetDialog();
     ASSERT_TRUE(web_contents);
     Observe(web_contents);

@@ -202,14 +202,13 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
   void VerifyPreviewPageCount(int expected_count) {
-    const IPC::Message* page_cnt_msg =
+    const IPC::Message* preview_started_message =
         render_thread_->sink().GetUniqueMessageMatching(
-            PrintHostMsg_DidGetPreviewPageCount::ID);
-    ASSERT_TRUE(page_cnt_msg);
-    PrintHostMsg_DidGetPreviewPageCount::Param post_page_count_param;
-    PrintHostMsg_DidGetPreviewPageCount::Read(page_cnt_msg,
-                                              &post_page_count_param);
-    EXPECT_EQ(expected_count, std::get<0>(post_page_count_param).page_count);
+            PrintHostMsg_DidStartPreview::ID);
+    ASSERT_TRUE(preview_started_message);
+    PrintHostMsg_DidStartPreview::Param param;
+    PrintHostMsg_DidStartPreview::Read(preview_started_message, &param);
+    EXPECT_EQ(expected_count, std::get<0>(param).page_count);
   }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 

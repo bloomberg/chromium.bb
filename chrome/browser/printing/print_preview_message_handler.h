@@ -13,9 +13,9 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 class PrintPreviewUI;
-struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
+struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
 struct PrintHostMsg_SetOptionsFromDocument_Params;
@@ -69,9 +69,8 @@ class PrintPreviewMessageHandler
                                  const gfx::Rect& printable_area_in_points,
                                  bool has_custom_page_size_style,
                                  const PrintHostMsg_PreviewIds& ids);
-  void OnDidGetPreviewPageCount(
-      const PrintHostMsg_DidGetPreviewPageCount_Params& params,
-      const PrintHostMsg_PreviewIds& ids);
+  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+                         const PrintHostMsg_PreviewIds& ids);
   void OnDidPreviewPage(content::RenderFrameHost* render_frame_host,
                         const PrintHostMsg_DidPreviewPage_Params& params,
                         const PrintHostMsg_PreviewIds& ids);
