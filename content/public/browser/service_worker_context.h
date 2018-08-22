@@ -69,6 +69,14 @@ class ServiceWorkerContext {
   // Returns true if |url| is within the service worker |scope|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
 
+  // Runs a |task| on task |runner| making sure that
+  // |service_worker_context| is alive while the task is being run.
+  CONTENT_EXPORT static void RunTask(
+      scoped_refptr<base::SequencedTaskRunner> runner,
+      const base::Location& from_here,
+      ServiceWorkerContext* service_worker_context,
+      base::OnceClosure task);
+
   // Observer methods are always dispatched on the UI thread.
   virtual void AddObserver(ServiceWorkerContextObserver* observer) = 0;
   virtual void RemoveObserver(ServiceWorkerContextObserver* observer) = 0;
