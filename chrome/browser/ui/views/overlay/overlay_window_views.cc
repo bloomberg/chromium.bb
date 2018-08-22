@@ -235,6 +235,11 @@ void OverlayWindowViews::SetUpViews() {
   play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
   play_pause_controls_view_->set_owned_by_client();
 
+  // views::View that closes the window. --------------------------------------
+  close_controls_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
+  close_controls_view_->layer()->SetFillsBoundsOpaquely(false);
+  close_controls_view_->set_owned_by_client();
+
   UpdatePlayPauseControlsSize();
 
   // Accessibility.
@@ -256,14 +261,13 @@ void OverlayWindowViews::SetUpViews() {
   controls_parent_view_->SetSize(GetBounds().size());
   controls_parent_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
   controls_parent_view_->AddChildView(play_pause_controls_view_.get());
-  controls_parent_view_->AddChildView(close_controls_view_.get());
-  close_controls_view_->set_owned_by_client();
   controls_parent_view_->layer()->SetFillsBoundsOpaquely(false);
   controls_parent_view_->set_owned_by_client();
 
   // Add as child views to this widget. ---------------------------------------
   GetContentsView()->AddChildView(controls_background_view_.get());
   GetContentsView()->AddChildView(controls_parent_view_.get());
+  GetContentsView()->AddChildView(close_controls_view_.get());
 
   // Paint to ui::Layers. -----------------------------------------------------
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
@@ -300,6 +304,7 @@ void OverlayWindowViews::UpdateLayerBoundsWithLetterboxing(
 
 void OverlayWindowViews::UpdateControlsVisibility(bool is_visible) {
   GetControlsBackgroundLayer()->SetVisible(is_visible);
+  GetCloseControlsLayer()->SetVisible(is_visible);
   GetControlsParentLayer()->SetVisible(is_visible);
 }
 
@@ -529,6 +534,10 @@ ui::Layer* OverlayWindowViews::GetVideoLayer() {
 
 ui::Layer* OverlayWindowViews::GetControlsBackgroundLayer() {
   return controls_background_view_->layer();
+}
+
+ui::Layer* OverlayWindowViews::GetCloseControlsLayer() {
+  return close_controls_view_->layer();
 }
 
 ui::Layer* OverlayWindowViews::GetControlsParentLayer() {
