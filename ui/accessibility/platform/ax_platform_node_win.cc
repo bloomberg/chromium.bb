@@ -211,10 +211,6 @@ IAccessible2UsageObserver::IAccessible2UsageObserver() {
 IAccessible2UsageObserver::~IAccessible2UsageObserver() {
 }
 
-AXHypertext::AXHypertext() {}
-AXHypertext::AXHypertext(const AXHypertext& other) = default;
-AXHypertext::~AXHypertext() {}
-
 // static
 base::ObserverList<IAccessible2UsageObserver>::Unchecked&
 GetIAccessible2UsageObserverList() {
@@ -281,8 +277,6 @@ void AXPlatformNodeWin::Init(AXPlatformNodeDelegate* delegate) {
 size_t AXPlatformNodeWin::GetInstanceCountForTesting() {
   return g_unique_id_map.Get().size();
 }
-
-const base::char16 AXPlatformNodeWin::kEmbeddedCharacter = L'\xfffc';
 
 void AXPlatformNodeWin::ClearOwnRelations() {
   for (size_t i = 0; i < relations_.size(); ++i)
@@ -5364,53 +5358,6 @@ base::string16 AXPlatformNodeWin::GetValue() {
     value = GetString16Attribute(ax::mojom::StringAttribute::kUrl);
 
   return value;
-}
-
-AXHypertext AXPlatformNodeWin::ComputeHypertext() {
-  AXHypertext result;
-
-  if (IsPlainTextField()) {
-    result.hypertext = GetValue();
-    return result;
-  }
-
-  int child_count = delegate_->GetChildCount();
-
-  if (!child_count) {
-    if (IsRichTextField()) {
-      // We don't want to expose any associated label in IA2 Hypertext.
-      return result;
-    }
-    result.hypertext = GetString16Attribute(ax::mojom::StringAttribute::kName);
-    return result;
-  }
-
-  // Construct the hypertext for this node, which contains the concatenation
-  // of all of the static text and widespace of this node's children and an
-  // embedded object character for all the other children. Build up a map from
-  // the character index of each embedded object character to the id of the
-  // child object it points to.
-  base::string16 hypertext;
-  for (int i = 0; i < child_count; ++i) {
-    auto* child = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(delegate_->ChildAtIndex(i)));
-
-    DCHECK(child);
-    // Similar to Firefox, we don't expose text-only objects in IA2 hypertext.
-    if (child->IsTextOnlyObject()) {
-      hypertext +=
-          child->GetString16Attribute(ax::mojom::StringAttribute::kName);
-    } else {
-      int32_t char_offset = static_cast<int32_t>(hypertext.size());
-      int32_t child_unique_id = child->GetUniqueId();
-      int32_t index = static_cast<int32_t>(result.hyperlinks.size());
-      result.hyperlink_offset_to_index[char_offset] = index;
-      result.hyperlinks.push_back(child_unique_id);
-      hypertext += kEmbeddedCharacter;
-    }
-  }
-  result.hypertext = hypertext;
-  return result;
 }
 
 bool AXPlatformNodeWin::ShouldNodeHaveReadonlyStateByDefault(
