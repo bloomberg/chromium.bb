@@ -700,6 +700,10 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   int ReadIfReadyImpl(IOBuffer* buf,
                       int buf_len,
                       CompletionOnceCallback callback);
+
+  // Helper method to run |pending_read_if_ready_callback_| if it is not null.
+  void RunReadIfReadyCallback(int result);
+
   AddressList addresses_;
 
   SocketDataProvider* data_;

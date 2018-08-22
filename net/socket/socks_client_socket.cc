@@ -185,6 +185,26 @@ int SOCKSClientSocket::Read(IOBuffer* buf,
   return rv;
 }
 
+int SOCKSClientSocket::ReadIfReady(IOBuffer* buf,
+                                   int buf_len,
+                                   CompletionOnceCallback callback) {
+  DCHECK(completed_handshake_);
+  DCHECK_EQ(STATE_NONE, next_state_);
+  DCHECK(user_callback_.is_null());
+  DCHECK(!callback.is_null());
+
+  // Pass |callback| directly instead of wrapping it with OnReadWriteComplete.
+  // This is to avoid setting |was_ever_used_| unless data is actually read.
+  int rv = transport_->socket()->ReadIfReady(buf, buf_len, std::move(callback));
+  if (rv > 0)
+    was_ever_used_ = true;
+  return rv;
+}
+
+int SOCKSClientSocket::CancelReadIfReady() {
+  return transport_->socket()->CancelReadIfReady();
+}
+
 // Write is called by the transport layer. This can only be done if the
 // SOCKS handshake is complete.
 int SOCKSClientSocket::Write(
