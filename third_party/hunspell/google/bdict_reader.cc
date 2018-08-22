@@ -76,7 +76,7 @@ class NodeReader {
   // additional affix IDs following the node when leaf_has_following is set,
   // but this will not handle those.
   inline int affix_id_for_leaf() const {
-    if (node_offset_ >= bdict_length_ - 2) {
+    if (node_offset_ >= bdict_length_ - 1) {
       is_valid_ = false;
       return 0;
     }
