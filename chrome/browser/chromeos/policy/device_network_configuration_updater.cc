@@ -16,6 +16,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/network_device_handler.h"
+#include "chromeos/network/onc/onc_parsed_certificates.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/cros_settings_provider.h"
@@ -23,6 +24,7 @@
 #include "chromeos/tools/variable_expander.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/cert/x509_certificate.h"
 
 namespace policy {
 
@@ -80,33 +82,29 @@ DeviceNetworkConfigurationUpdater::DeviceNetworkConfigurationUpdater(
     device_asset_id_fetcher_ = base::BindRepeating(&GetDeviceAssetID);
 }
 
-std::vector<std::string>
+net::CertificateList
 DeviceNetworkConfigurationUpdater::GetAuthorityCertificates() {
-  base::ListValue certificates_onc;
+  net::CertificateList authority_certs;
+
+  base::ListValue onc_certificates_value;
   ParseCurrentPolicy(nullptr /* network_configs */,
-                     nullptr /* global_network_config */, &certificates_onc);
+                     nullptr /* global_network_config */,
+                     &onc_certificates_value);
 
-  std::vector<std::string> x509_authority_certs;
-  for (size_t i = 0; i < certificates_onc.GetSize(); ++i) {
-    const base::DictionaryValue* certificate = nullptr;
-    certificates_onc.GetDictionary(i, &certificate);
-    DCHECK(certificate);
+  chromeos::onc::OncParsedCertificates onc_parsed_certificates(
+      onc_certificates_value);
 
-    const base::Value* cert_type_value = certificate->FindKeyOfType(
-        ::onc::certificate::kType, base::Value::Type::STRING);
-    if (cert_type_value &&
-        cert_type_value->GetString() == ::onc::certificate::kAuthority) {
-      const base::Value* cert_x509_value = certificate->FindKeyOfType(
-          ::onc::certificate::kX509, base::Value::Type::STRING);
-      if (!cert_x509_value || cert_x509_value->GetString().empty()) {
-        LOG(ERROR) << "Certificate missing X509 data.";
-        continue;
-      }
-      x509_authority_certs.push_back(cert_x509_value->GetString());
+  for (const chromeos::onc::OncParsedCertificates::ServerOrAuthorityCertificate&
+           onc_certificate :
+       onc_parsed_certificates.server_or_authority_certificates()) {
+    if (onc_certificate.type() ==
+        chromeos::onc::OncParsedCertificates::ServerOrAuthorityCertificate::
+            Type::kAuthority) {
+      authority_certs.push_back(onc_certificate.certificate());
     }
   }
 
-  return x509_authority_certs;
+  return authority_certs;
 }
 
 void DeviceNetworkConfigurationUpdater::Init() {

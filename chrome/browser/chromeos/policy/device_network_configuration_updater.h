@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "components/onc/onc_constants.h"
+#include "net/cert/x509_certificate.h"
 
 namespace base {
 class DictionaryValue;
@@ -56,7 +57,7 @@ class DeviceNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
 
   // Returns all authority certificates from the currently applied ONC device
   // policy.
-  std::vector<std::string> GetAuthorityCertificates();
+  net::CertificateList GetAuthorityCertificates();
 
  private:
   DeviceNetworkConfigurationUpdater(

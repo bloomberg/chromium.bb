@@ -11,13 +11,17 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/screens/gaia_view.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager_test_api.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
+#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/net/nss_context.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,6 +30,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/chromeos_test_utils.h"
+#include "chromeos/network/onc/onc_certificate_importer.h"
+#include "chromeos/network/onc/onc_certificate_importer_impl.h"
 #include "chromeos/network/onc/onc_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -33,21 +39,32 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/policy/policy_constants.h"
 #include "components/session_manager/core/session_manager.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/test_completion_callback.h"
+#include "net/cert/cert_database.h"
 #include "net/cert/cert_verifier.h"
+#include "net/cert/nss_cert_database.h"
 #include "net/test/cert_test_util.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
 
+namespace policy {
+
 namespace {
 
 // Test data file storing an ONC blob with an Authority certificate.
 constexpr char kRootCertOnc[] = "root-ca-cert.onc";
+constexpr char kClientCertOnc[] = "certificate-client.onc";
+constexpr char kClientCertSubjectCommonName[] = "lmao";
 constexpr char kNetworkComponentDirectory[] = "network";
 // A PEM-encoded certificate which was signed by the Authority specified in
 // |kRootCertOnc|.
@@ -57,14 +74,15 @@ constexpr char kDeviceLocalAccountId[] = "dla1@example.com";
 // Allows waiting until the list of policy-pushed web-trusted certificates
 // changes.
 class WebTrustedCertsChangedObserver
-    : public policy::UserNetworkConfigurationUpdater::WebTrustedCertsObserver {
+    : public UserNetworkConfigurationUpdater::PolicyProvidedCertsObserver {
  public:
   WebTrustedCertsChangedObserver() {}
 
-  // UserNetworkConfigurationUpdater:
-  void OnTrustAnchorsChanged(
+  // UserNetworkConfigurationUpdater:PolicyProvidedCertsObserver
+  void OnPolicyProvidedCertsChanged(
+      const net::CertificateList& all_server_and_authority_certs,
       const net::CertificateList& trust_anchors) override {
-    run_loop.QuitClosure().Run();
+    run_loop.Quit();
   }
 
   void Wait() { run_loop.Run(); }
@@ -73,6 +91,22 @@ class WebTrustedCertsChangedObserver
   base::RunLoop run_loop;
 
   DISALLOW_COPY_AND_ASSIGN(WebTrustedCertsChangedObserver);
+};
+
+// Allows waiting until the |CertDatabase| notifies its observers that it has
+// changd.
+class CertDatabaseChangedObserver : public net::CertDatabase::Observer {
+ public:
+  CertDatabaseChangedObserver() {}
+
+  void OnCertDBChanged() override { run_loop.Quit(); }
+
+  void Wait() { run_loop.Run(); }
+
+ private:
+  base::RunLoop run_loop;
+
+  DISALLOW_COPY_AND_ASSIGN(CertDatabaseChangedObserver);
 };
 
 // Called on the IO thread to verify the |test_server_cert| using the
@@ -101,21 +135,99 @@ void VerifyTestServerCertOnIOThread(
       net::NetLogWithSource()));
 }
 
+// Verifies |certificate| with |profile|'s CertVerifier and returns the result.
+int VerifyTestServerCert(
+    Profile* profile,
+    const scoped_refptr<net::X509Certificate>& certificate) {
+  base::RunLoop().RunUntilIdle();
+  base::RunLoop run_loop;
+  int verification_result;
+  scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
+      profile->GetRequestContext();
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&VerifyTestServerCertOnIOThread,
+                     url_request_context_getter, certificate,
+                     &verification_result),
+      run_loop.QuitClosure());
+  run_loop.Run();
+  return verification_result;
+}
+
 bool IsSessionStarted() {
   return session_manager::SessionManager::Get()->IsSessionStarted();
 }
 
+// Returns true if |cert_handle| refers to a certificate that has a subject
+// CommonName equal to |subject_common_name|.
+bool HasSubjectCommonName(CERTCertificate* cert_handle,
+                          const std::string& subject_common_name) {
+  char* nss_text = CERT_GetCommonName(&cert_handle->subject);
+  if (!nss_text)
+    return false;
+
+  const bool result = subject_common_name == nss_text;
+  PORT_Free(nss_text);
+
+  return result;
+}
+
+void IsCertInNSSDatabaseOnIOThreadWithCertDb(
+    const std::string& subject_common_name,
+    bool* out_system_slot_available,
+    base::OnceClosure done_closure,
+    net::NSSCertDatabase* cert_db) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  net::ScopedCERTCertificateList certs = cert_db->ListCertsSync();
+  for (const net::ScopedCERTCertificate& cert : certs) {
+    if (HasSubjectCommonName(cert.get(), subject_common_name)) {
+      *out_system_slot_available = true;
+      break;
+    }
+  }
+  std::move(done_closure).Run();
+}
+
+void IsCertInNSSDatabaseOnIOThread(content::ResourceContext* resource_context,
+                                   const std::string& subject_common_name,
+                                   bool* out_cert_found,
+                                   base::OnceClosure done_closure) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  auto did_get_cert_db_callback = base::BindRepeating(
+      &IsCertInNSSDatabaseOnIOThreadWithCertDb, subject_common_name,
+      out_cert_found, base::AdaptCallbackForRepeating(std::move(done_closure)));
+
+  net::NSSCertDatabase* cert_db = GetNSSCertDatabaseForResourceContext(
+      resource_context, did_get_cert_db_callback);
+  if (cert_db)
+    did_get_cert_db_callback.Run(cert_db);
+}
+
+// Returns true if a certificate with subject CommonName |common_name| is
+// present in the |NSSCertDatbase| for |profile|.
+bool IsCertInNSSDatabase(Profile* profile,
+                         const std::string& subject_common_name) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::RunLoop run_loop;
+  bool cert_found = false;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(IsCertInNSSDatabaseOnIOThread,
+                     profile->GetResourceContext(), subject_common_name,
+                     &cert_found, run_loop.QuitClosure()));
+  run_loop.Run();
+  return cert_found;
+}
+
 }  // namespace
 
-namespace policy {
-
 // Base class for testing if policy-provided trust roots take effect.
-class PolicyProvidedTrustRootsTestBase : public DevicePolicyCrosBrowserTest {
+class PolicyProvidedTrustAnchorsTestBase : public DevicePolicyCrosBrowserTest {
  protected:
-  PolicyProvidedTrustRootsTestBase() {}
+  PolicyProvidedTrustAnchorsTestBase() {}
 
   // InProcessBrowserTest:
-  ~PolicyProvidedTrustRootsTestBase() override {}
+  ~PolicyProvidedTrustAnchorsTestBase() override {}
 
   void SetUpInProcessBrowserTestFixture() override {
     // Load the certificate which is only OK if the policy-provided authority is
@@ -142,45 +254,24 @@ class PolicyProvidedTrustRootsTestBase : public DevicePolicyCrosBrowserTest {
   // the notification that policy-provided trust roots have changed is sent from
   // |profile|'s UserNetworkConfigurationUpdater.
   void SetRootCertONCPolicy(Profile* profile) {
-    policy::UserNetworkConfigurationUpdater*
-        user_network_configuration_updater =
-            policy::UserNetworkConfigurationUpdaterFactory::GetForProfile(
-                profile);
+    UserNetworkConfigurationUpdater* user_network_configuration_updater =
+        UserNetworkConfigurationUpdaterFactory::GetForProfile(profile);
     WebTrustedCertsChangedObserver trust_roots_changed_observer;
-    user_network_configuration_updater->AddTrustedCertsObserver(
+    user_network_configuration_updater->AddPolicyProvidedCertsObserver(
         &trust_roots_changed_observer);
 
     const std::string& user_policy_blob =
         chromeos::onc::test_utils::ReadTestData(kRootCertOnc);
     policy::PolicyMap policy;
-    policy.Set(policy::key::kOpenNetworkConfiguration,
-               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               policy::POLICY_SOURCE_CLOUD,
+    policy.Set(key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(user_policy_blob), nullptr);
     provider_.UpdateChromePolicy(policy);
     // Note that this relies on the implementation detail that the notification
     // is sent even if the trust roots effectively remain the same.
     trust_roots_changed_observer.Wait();
-    user_network_configuration_updater->RemoveTrustedCertsObserver(
+    user_network_configuration_updater->RemovePolicyProvidedCertsObserver(
         &trust_roots_changed_observer);
-  }
-
-  // Verifies |test_server_cert_| with |profile|'s CertVerifier and returns the
-  // result.
-  int VerifyTestServerCert(Profile* profile) {
-    base::RunLoop().RunUntilIdle();
-    base::RunLoop run_loop;
-    int verification_result;
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter =
-        profile->GetRequestContext();
-    content::BrowserThread::PostTaskAndReply(
-        content::BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&VerifyTestServerCertOnIOThread,
-                       url_request_context_getter, test_server_cert_,
-                       &verification_result),
-        run_loop.QuitClosure());
-    run_loop.Run();
-    return verification_result;
   }
 
  private:
@@ -191,19 +282,20 @@ class PolicyProvidedTrustRootsTestBase : public DevicePolicyCrosBrowserTest {
   scoped_refptr<net::X509Certificate> test_server_cert_;
 };
 
-class PolicyProvidedTrustRootsRegularUserTest
-    : public PolicyProvidedTrustRootsTestBase {};
+class PolicyProvidedTrustAnchorsRegularUserTest
+    : public PolicyProvidedTrustAnchorsTestBase {};
 
-IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustRootsRegularUserTest,
+IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsRegularUserTest,
                        AllowedForRegularUser) {
   SetRootCertONCPolicy(browser()->profile());
-  EXPECT_EQ(net::OK, VerifyTestServerCert(browser()->profile()));
+  EXPECT_EQ(net::OK,
+            VerifyTestServerCert(browser()->profile(), test_server_cert_));
 }
 
 // Base class for testing policy-provided trust roots with device-local
 // accounts. Needs device policy.
-class PolicyProvidedTrustRootsDeviceLocalAccountTest
-    : public PolicyProvidedTrustRootsTestBase {
+class PolicyProvidedTrustAnchorsDeviceLocalAccountTest
+    : public PolicyProvidedTrustAnchorsTestBase {
  protected:
   void SetUp() override {
     // Configure and start the test server.
@@ -216,13 +308,13 @@ class PolicyProvidedTrustRootsDeviceLocalAccountTest
                                   PolicyBuilder::kFakeDeviceId);
     ASSERT_TRUE(policy_server_.Start());
 
-    PolicyProvidedTrustRootsTestBase::SetUp();
+    PolicyProvidedTrustAnchorsTestBase::SetUp();
   }
 
   virtual void SetupDevicePolicy() = 0;
 
   void SetUpInProcessBrowserTestFixture() override {
-    PolicyProvidedTrustRootsTestBase::SetUpInProcessBrowserTestFixture();
+    PolicyProvidedTrustAnchorsTestBase::SetUpInProcessBrowserTestFixture();
 
     InstallOwnerKey();
     MarkAsEnterpriseOwned();
@@ -235,12 +327,12 @@ class PolicyProvidedTrustRootsDeviceLocalAccountTest
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    PolicyProvidedTrustRootsTestBase::SetUpCommandLine(command_line);
+    PolicyProvidedTrustAnchorsTestBase::SetUpCommandLine(command_line);
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitch(chromeos::switches::kOobeSkipPostLogin);
-    command_line->AppendSwitchASCII(policy::switches::kDeviceManagementUrl,
+    command_line->AppendSwitchASCII(switches::kDeviceManagementUrl,
                                     policy_server_.GetServiceURL().spec());
   }
 
@@ -248,7 +340,7 @@ class PolicyProvidedTrustRootsDeviceLocalAccountTest
     if (IsSessionStarted())
       return;
     content::WindowedNotificationObserver(chrome::NOTIFICATION_SESSION_STARTED,
-                                          base::Bind(IsSessionStarted))
+                                          base::BindRepeating(IsSessionStarted))
         .Wait();
   }
 
@@ -262,10 +354,10 @@ class PolicyProvidedTrustRootsDeviceLocalAccountTest
 
 // Sets up device policy for public session and provides functions to sing into
 // it.
-class PolicyProvidedTrustRootsPublicSessionTest
-    : public PolicyProvidedTrustRootsDeviceLocalAccountTest {
+class PolicyProvidedTrustAnchorsPublicSessionTest
+    : public PolicyProvidedTrustAnchorsDeviceLocalAccountTest {
  protected:
-  // PolicyProvidedTrustRootsDeviceLocalAccountTest:
+  // PolicyProvidedTrustAnchorsDeviceLocalAccountTest:
   void SetupDevicePolicy() override {
     em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     em::DeviceLocalAccountInfoProto* account =
@@ -301,13 +393,10 @@ class PolicyProvidedTrustRootsPublicSessionTest
   }
 };
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_AllowedInPublicSession DISABLED_AllowedInPublicSession
-#else
-#define MAYBE_AllowedInPublicSession AllowedInPublicSession
-#endif
-IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustRootsPublicSessionTest,
-                       MAYBE_AllowedInPublicSession) {
+// TODO(https://crbug.com/874831): Re-enable this after the source of the
+// flakiness has been identified.
+IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsPublicSessionTest,
+                       DISABLED_AllowedInPublicSession) {
   StartLogin();
   WaitForSessionStart();
 
@@ -317,7 +406,152 @@ IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustRootsPublicSessionTest,
   ASSERT_TRUE(browser);
 
   SetRootCertONCPolicy(browser->profile());
-  EXPECT_EQ(net::OK, VerifyTestServerCert(browser->profile()));
+  EXPECT_EQ(net::OK,
+            VerifyTestServerCert(browser->profile(), test_server_cert_));
+}
+
+class PolicyProvidedTrustAnchorsOnUserSessionInitTest
+    : public LoginPolicyTestBase,
+      content::NotificationObserver {
+ protected:
+  PolicyProvidedTrustAnchorsOnUserSessionInitTest() {}
+
+  void SetUpOnMainThread() override {
+    LoginPolicyTestBase::SetUpOnMainThread();
+
+    session_started_notification_registrar_ =
+        std::make_unique<content::NotificationRegistrar>();
+    session_started_notification_registrar_->Add(
+        this, chrome::NOTIFICATION_SESSION_STARTED,
+        content::NotificationService::AllSources());
+  }
+
+  void TearDownOnMainThread() override {
+    session_started_notification_registrar_.reset();
+
+    LoginPolicyTestBase::TearDownOnMainThread();
+  }
+
+  void GetMandatoryPoliciesValue(base::DictionaryValue* policy) const override {
+    const std::string& user_policy_blob =
+        chromeos::onc::test_utils::ReadTestData(kRootCertOnc);
+    policy->SetKey(key::kOpenNetworkConfiguration,
+                   base::Value(user_policy_blob));
+  }
+
+  bool user_session_started() { return user_session_started_; }
+
+  void WaitSessionStart() {
+    if (user_session_started())
+      return;
+
+    content::WindowedNotificationObserver(
+        chrome::NOTIFICATION_SESSION_STARTED,
+        content::NotificationService::AllSources())
+        .Wait();
+  }
+
+  void TriggerLogIn() {
+    chromeos::LoginDisplayHost::default_host()
+        ->GetOobeUI()
+        ->GetGaiaScreenView()
+        ->ShowSigninScreenForTest(kAccountId, kAccountPassword, kEmptyServices);
+  }
+
+  Profile* active_user_profile() {
+    const user_manager::User* const user =
+        user_manager::UserManager::Get()->GetActiveUser();
+    Profile* const profile =
+        chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+    return profile;
+  }
+
+ private:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    EXPECT_EQ(chrome::NOTIFICATION_SESSION_STARTED, type);
+    user_session_started_ = true;
+  }
+
+  bool user_session_started_ = false;
+
+  std::unique_ptr<content::NotificationRegistrar>
+      session_started_notification_registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(PolicyProvidedTrustAnchorsOnUserSessionInitTest);
+};
+
+// Verifies that the policy-provided trust root is active as soon as the user
+// session starts.
+IN_PROC_BROWSER_TEST_F(PolicyProvidedTrustAnchorsOnUserSessionInitTest,
+                       TrustAnchorsAvailableImmediatelyAfterSessionStart) {
+  // Load the certificate which is only OK if the policy-provided authority is
+  // actually trusted.
+  base::FilePath cert_pem_file_path;
+  chromeos::test_utils::GetTestDataPath(kNetworkComponentDirectory, kGoodCert,
+                                        &cert_pem_file_path);
+  scoped_refptr<net::X509Certificate> test_server_cert =
+      net::ImportCertFromFile(cert_pem_file_path.DirName(),
+                              cert_pem_file_path.BaseName().value());
+
+  SkipToLoginScreen();
+  TriggerLogIn();
+
+  EXPECT_FALSE(user_session_started());
+
+  WaitSessionStart();
+  EXPECT_EQ(net::OK,
+            VerifyTestServerCert(active_user_profile(), test_server_cert));
+}
+
+// Testing policy-provided client cert import.
+class PolicyProvidedClientCertsTest : public DevicePolicyCrosBrowserTest {
+ protected:
+  PolicyProvidedClientCertsTest() {}
+  ~PolicyProvidedClientCertsTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // Set up the mock policy provider.
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+
+    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
+  }
+
+  // Sets the ONC-policy to the blob defined by |kClientCertOnc|. Then waits
+  // until |CertDatabase| notifies its observers that the database has changed.
+  void SetClientCertONCPolicy(Profile* profile) {
+    net::CertDatabase* cert_database = net::CertDatabase::GetInstance();
+    CertDatabaseChangedObserver cert_database_changed_observer;
+    cert_database->AddObserver(&cert_database_changed_observer);
+
+    const std::string& user_policy_blob =
+        chromeos::onc::test_utils::ReadTestData(kClientCertOnc);
+    policy::PolicyMap policy;
+    policy.Set(key::kOpenNetworkConfiguration, policy::POLICY_LEVEL_MANDATORY,
+               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(user_policy_blob), nullptr);
+    provider_.UpdateChromePolicy(policy);
+
+    cert_database_changed_observer.Wait();
+    cert_database->RemoveObserver(&cert_database_changed_observer);
+  }
+
+ private:
+  MockConfigurationPolicyProvider provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(PolicyProvidedClientCertsTest, ClientCertsImported) {
+  // Sanity check: we don't expect the client certificate to be present before
+  // setting the user ONC policy.
+  EXPECT_FALSE(
+      IsCertInNSSDatabase(browser()->profile(), kClientCertSubjectCommonName));
+
+  SetClientCertONCPolicy(browser()->profile());
+  EXPECT_TRUE(
+      IsCertInNSSDatabase(browser()->profile(), kClientCertSubjectCommonName));
 }
 
 }  // namespace policy

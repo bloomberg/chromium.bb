@@ -469,7 +469,9 @@ TEST_F(MultiProfileUserControllerTest,
   net::CertificateList certificates;
   certificates.push_back(
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
-  service->OnTrustAnchorsChanged(certificates);
+  service->OnPolicyProvidedCertsChanged(
+      certificates /* all_server_and_authority_certs */,
+      certificates /* trust_anchors */);
   EXPECT_TRUE(service->has_policy_certificates());
   EXPECT_FALSE(controller()->IsUserAllowedInSession(
       test_users_[1].GetUserEmail(), &reason));
