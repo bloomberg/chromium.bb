@@ -159,8 +159,10 @@ void ServiceWorkerTaskQueue::RunTaskAfterStartWorker(
   content::ServiceWorkerContext* service_worker_context =
       partition->GetServiceWorkerContext();
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
+  content::ServiceWorkerContext::RunTask(
+      content::BrowserThread::GetTaskRunnerForThread(
+          content::BrowserThread::IO),
+      FROM_HERE, service_worker_context,
       base::BindOnce(
           &GetServiceWorkerInfoOnIO, context_id->service_worker_scope(),
           context_id->extension_id(), service_worker_context, std::move(task)));

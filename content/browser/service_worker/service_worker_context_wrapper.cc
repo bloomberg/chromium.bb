@@ -160,11 +160,29 @@ void MessageFinishedSending(ServiceWorkerContext::ResultCallback callback,
   std::move(callback).Run(status == blink::ServiceWorkerStatusCode::kOk);
 }
 
+void RunOnceClosure(scoped_refptr<ServiceWorkerContextWrapper> ref_holder,
+                    base::OnceClosure task) {
+  std::move(task).Run();
+}
+
 }  // namespace
 
 // static
 bool ServiceWorkerContext::ScopeMatches(const GURL& scope, const GURL& url) {
   return ServiceWorkerUtils::ScopeMatches(scope, url);
+}
+
+// static
+void ServiceWorkerContext::RunTask(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    const base::Location& from_here,
+    ServiceWorkerContext* service_worker_context,
+    base::OnceClosure task) {
+  auto ref = base::WrapRefCounted(
+      static_cast<ServiceWorkerContextWrapper*>(service_worker_context));
+  task_runner->PostTask(
+      from_here,
+      base::BindOnce(&RunOnceClosure, std::move(ref), std::move(task)));
 }
 
 ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
