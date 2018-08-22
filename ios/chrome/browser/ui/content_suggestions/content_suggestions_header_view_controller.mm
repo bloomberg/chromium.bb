@@ -157,9 +157,10 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                     safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
   if (self.isShowing && IsUIRefreshPhase1Enabled()) {
     CGFloat progress =
-        self.logoIsShowing
+        self.logoIsShowing || !content_suggestions::IsRegularXRegularSizeClass()
             ? [self.headerView searchFieldProgressForOffset:offset
                                              safeAreaInsets:safeAreaInsets]
+            // RxR with no logo hides the fakebox, so always show the omnibox.
             : 1;
     if (!IsSplitToolbarMode()) {
       [self.toolbarDelegate setScrollProgressForTabletOmnibox:progress];
