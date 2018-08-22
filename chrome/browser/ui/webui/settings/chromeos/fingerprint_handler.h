@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_FINGERPRINT_HANDLER_H_
 
 #include "base/containers/flat_map.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -16,6 +17,10 @@ class Profile;
 namespace base {
 class ListValue;
 }  // namespace base
+
+namespace session_manager {
+class SessionManager;
+}  // namespace session_manager
 
 namespace chromeos {
 namespace settings {
@@ -76,6 +81,9 @@ class FingerprintHandler : public ::settings::SettingsPageUIHandler,
 
   device::mojom::FingerprintPtr fp_service_;
   mojo::Binding<device::mojom::FingerprintObserver> binding_;
+  ScopedObserver<session_manager::SessionManager,
+                 session_manager::SessionManagerObserver>
+      session_observer_;
 
   base::WeakPtrFactory<FingerprintHandler> weak_ptr_factory_;
 
