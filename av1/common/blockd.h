@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_COMMON_BLOCKD_H_
-#define AV1_COMMON_BLOCKD_H_
+#ifndef AOM_AV1_COMMON_BLOCKD_H_
+#define AOM_AV1_COMMON_BLOCKD_H_
 
 #include "config/aom_config.h"
 
@@ -1168,4 +1168,4 @@ static INLINE int av1_get_max_eob(TX_SIZE tx_size) {
 }  // extern "C"
 #endif
 
-#endif  // AV1_COMMON_BLOCKD_H_
+#endif  // AOM_AV1_COMMON_BLOCKD_H_

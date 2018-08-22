@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_COMMON_LOOPFILTER_H_
-#define AV1_COMMON_LOOPFILTER_H_
+#ifndef AOM_AV1_COMMON_AV1_LOOPFILTER_H_
+#define AOM_AV1_COMMON_AV1_LOOPFILTER_H_
 
 #include "config/aom_config.h"
 
@@ -160,4 +160,4 @@ void av1_filter_block_plane_hor(struct AV1Common *const cm,
 }  // extern "C"
 #endif
 
-#endif  // AV1_COMMON_LOOPFILTER_H_
+#endif  // AOM_AV1_COMMON_AV1_LOOPFILTER_H_

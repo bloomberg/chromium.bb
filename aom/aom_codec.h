@@ -36,8 +36,8 @@
  * Once initialized, the instance is manged using other functions from
  * the aom_codec_* family.
  */
-#ifndef AOM_AOM_CODEC_H_
-#define AOM_AOM_CODEC_H_
+#ifndef AOM_AOM_AOM_CODEC_H_
+#define AOM_AOM_AOM_CODEC_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -526,4 +526,4 @@ typedef struct cfg_options {
 #ifdef __cplusplus
 }
 #endif
-#endif  // AOM_AOM_CODEC_H_
+#endif  // AOM_AOM_AOM_CODEC_H_

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_DSP_BITWRITER_BUFFER_H_
-#define AOM_DSP_BITWRITER_BUFFER_H_
+#ifndef AOM_AOM_DSP_BITWRITER_BUFFER_H_
+#define AOM_AOM_DSP_BITWRITER_BUFFER_H_
 
 #include "aom/aom_integer.h"
 
@@ -48,4 +48,4 @@ void aom_wb_write_uvlc(struct aom_write_bit_buffer *wb, uint32_t v);
 }  // extern "C"
 #endif
 
-#endif  // AOM_DSP_BITWRITER_BUFFER_H_
+#endif  // AOM_AOM_DSP_BITWRITER_BUFFER_H_

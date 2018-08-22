@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_ENCODER_ENCODER_H_
-#define AV1_ENCODER_ENCODER_H_
+#ifndef AOM_AV1_ENCODER_ENCODER_H_
+#define AOM_AV1_ENCODER_ENCODER_H_
 
 #include <stdio.h>
 
@@ -980,4 +980,4 @@ aom_fixed_buf_t *av1_get_global_headers(AV1_COMP *cpi);
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_ENCODER_H_
+#endif  // AOM_AV1_ENCODER_ENCODER_H_

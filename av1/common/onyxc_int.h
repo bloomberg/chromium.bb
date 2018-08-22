@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_COMMON_ONYXC_INT_H_
-#define AV1_COMMON_ONYXC_INT_H_
+#ifndef AOM_AV1_COMMON_ONYXC_INT_H_
+#define AOM_AV1_COMMON_ONYXC_INT_H_
 
 #include "config/aom_config.h"
 #include "config/av1_rtcd.h"
@@ -1338,4 +1338,4 @@ static INLINE uint8_t major_minor_to_seq_level_idx(BitstreamLevel bl) {
 }  // extern "C"
 #endif
 
-#endif  // AV1_COMMON_ONYXC_INT_H_
+#endif  // AOM_AV1_COMMON_ONYXC_INT_H_

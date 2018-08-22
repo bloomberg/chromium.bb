@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef AOM_AOM_ENCODER_H_
-#define AOM_AOM_ENCODER_H_
+#ifndef AOM_AOM_AOM_ENCODER_H_
+#define AOM_AOM_AOM_ENCODER_H_
 
 /*!\defgroup encoder Encoder Algorithm Interface
  * \ingroup codec
@@ -991,4 +991,4 @@ const aom_image_t *aom_codec_get_preview_frame(aom_codec_ctx_t *ctx);
 #ifdef __cplusplus
 }
 #endif
-#endif  // AOM_AOM_ENCODER_H_
+#endif  // AOM_AOM_AOM_ENCODER_H_

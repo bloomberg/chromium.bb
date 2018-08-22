@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_DSP_BINARY_CODES_WRITER_H_
-#define AOM_DSP_BINARY_CODES_WRITER_H_
+#ifndef AOM_AOM_DSP_BINARY_CODES_WRITER_H_
+#define AOM_AOM_DSP_BINARY_CODES_WRITER_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -65,4 +65,4 @@ int aom_count_signed_primitive_refsubexpfin(uint16_t n, uint16_t k, int16_t ref,
 }  // extern "C"
 #endif
 
-#endif  // AOM_DSP_BINARY_CODES_WRITER_H_
+#endif  // AOM_AOM_DSP_BINARY_CODES_WRITER_H_

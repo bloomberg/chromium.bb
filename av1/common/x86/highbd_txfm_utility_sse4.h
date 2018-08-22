@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef _HIGHBD_TXFM_UTILITY_SSE4_H
-#define _HIGHBD_TXFM_UTILITY_SSE4_H
+#ifndef AOM_AV1_COMMON_X86_HIGHBD_TXFM_UTILITY_SSE4_H_
+#define AOM_AV1_COMMON_X86_HIGHBD_TXFM_UTILITY_SSE4_H_
 
 #include <smmintrin.h> /* SSE4.1 */
 
@@ -108,4 +108,4 @@ void av1_highbd_inv_txfm2d_add_universe_sse4_1(const int32_t *input,
                                                TX_TYPE tx_type, TX_SIZE tx_size,
                                                int eob, const int bd);
 
-#endif  // _HIGHBD_TXFM_UTILITY_SSE4_H
+#endif  // AOM_AV1_COMMON_X86_HIGHBD_TXFM_UTILITY_SSE4_H_

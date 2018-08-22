@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_COMMON_RECONINTER_H_
-#define AV1_COMMON_RECONINTER_H_
+#ifndef AOM_AV1_COMMON_RECONINTER_H_
+#define AOM_AV1_COMMON_RECONINTER_H_
 
 #include "av1/common/filter.h"
 #include "av1/common/onyxc_int.h"
@@ -354,4 +354,4 @@ int av1_allow_warp(const MB_MODE_INFO *const mbmi,
 }  // extern "C"
 #endif
 
-#endif  // AV1_COMMON_RECONINTER_H_
+#endif  // AOM_AV1_COMMON_RECONINTER_H_

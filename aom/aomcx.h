@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef AOM_AOMCX_H_
-#define AOM_AOMCX_H_
+#ifndef AOM_AOM_AOMCX_H_
+#define AOM_AOM_AOMCX_H_
 
 /*!\defgroup aom_encoder AOMedia AOM/AV1 Encoder
  * \ingroup aom
@@ -1195,4 +1195,4 @@ AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SUBSAMPLING_Y, unsigned int)
 }  // extern "C"
 #endif
 
-#endif  // AOM_AOMCX_H_
+#endif  // AOM_AOM_AOMCX_H_

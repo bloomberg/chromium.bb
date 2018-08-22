@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_TXFM_SSE4_H_
-#define AV1_TXFM_SSE4_H_
+#ifndef AOM_AV1_COMMON_X86_AV1_TXFM_SSE4_H_
+#define AOM_AV1_COMMON_X86_AV1_TXFM_SSE4_H_
 
 #include <smmintrin.h>
 
@@ -68,4 +68,4 @@ static INLINE void av1_round_shift_rect_array_32_sse4_1(__m128i *input,
 }
 #endif
 
-#endif  // AV1_TXFM_SSE4_H_
+#endif  // AOM_AV1_COMMON_X86_AV1_TXFM_SSE4_H_

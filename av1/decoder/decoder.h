@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_DECODER_DECODER_H_
-#define AV1_DECODER_DECODER_H_
+#ifndef AOM_AV1_DECODER_DECODER_H_
+#define AOM_AV1_DECODER_DECODER_H_
 
 #include "config/aom_config.h"
 
@@ -311,4 +311,4 @@ typedef void (*block_visitor_fn_t)(AV1Decoder *const pbi, ThreadData *const td,
 }  // extern "C"
 #endif
 
-#endif  // AV1_DECODER_DECODER_H_
+#endif  // AOM_AV1_DECODER_DECODER_H_

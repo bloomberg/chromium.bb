@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef TEST_COMP_AVG_PRED_TEST_H_
-#define TEST_COMP_AVG_PRED_TEST_H_
+#ifndef AOM_TEST_COMP_AVG_PRED_TEST_H_
+#define AOM_TEST_COMP_AVG_PRED_TEST_H_
 
 #include "config/aom_dsp_rtcd.h"
 
@@ -552,4 +552,4 @@ class AV1HighBDJNTCOMPAVGUPSAMPLEDTest
 }  // namespace AV1JNTCOMPAVG
 }  // namespace libaom_test
 
-#endif  // TEST_COMP_AVG_PRED_TEST_H_
+#endif  // AOM_TEST_COMP_AVG_PRED_TEST_H_

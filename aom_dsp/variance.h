@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AOM_DSP_VARIANCE_H_
-#define AOM_DSP_VARIANCE_H_
+#ifndef AOM_AOM_DSP_VARIANCE_H_
+#define AOM_AOM_DSP_VARIANCE_H_
 
 #include "config/aom_config.h"
 
@@ -127,4 +127,4 @@ uint64_t aom_highbd_sse_odd_size(const uint8_t *a, int a_stride,
 }  // extern "C"
 #endif
 
-#endif  // AOM_DSP_VARIANCE_H_
+#endif  // AOM_AOM_DSP_VARIANCE_H_

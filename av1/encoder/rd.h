@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_ENCODER_RD_H_
-#define AV1_ENCODER_RD_H_
+#ifndef AOM_AV1_ENCODER_RD_H_
+#define AOM_AV1_ENCODER_RD_H_
 
 #include <limits.h>
 
@@ -459,4 +459,4 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_RD_H_
+#endif  // AOM_AV1_ENCODER_RD_H_

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_ENCODER_MCOMP_H_
-#define AV1_ENCODER_MCOMP_H_
+#ifndef AOM_AV1_ENCODER_MCOMP_H_
+#define AOM_AV1_ENCODER_MCOMP_H_
 
 #include "av1/encoder/block.h"
 #include "aom_dsp/variance.h"
@@ -158,4 +158,4 @@ unsigned int av1_refine_warped_mv(const struct AV1_COMP *cpi,
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_MCOMP_H_
+#endif  // AOM_AV1_ENCODER_MCOMP_H_

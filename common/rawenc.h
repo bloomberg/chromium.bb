@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef RAWENC_H_
-#define RAWENC_H_
+#ifndef AOM_COMMON_RAWENC_H_
+#define AOM_COMMON_RAWENC_H_
 
 #include "aom/aom_decoder.h"
 #include "common/md5_utils.h"
@@ -29,4 +29,4 @@ void raw_update_image_md5(const aom_image_t *img, const int *planes,
 }  // extern "C"
 #endif
 
-#endif  // RAWENC_H_
+#endif  // AOM_COMMON_RAWENC_H_

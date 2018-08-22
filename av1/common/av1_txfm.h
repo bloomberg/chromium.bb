@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_TXFM_H_
-#define AV1_TXFM_H_
+#ifndef AOM_AV1_COMMON_AV1_TXFM_H_
+#define AOM_AV1_COMMON_AV1_TXFM_H_
 
 #include <assert.h>
 #include <math.h>
@@ -214,4 +214,4 @@ void av1_range_check_buf(int32_t stage, const int32_t *input,
 }
 #endif  // __cplusplus
 
-#endif  // AV1_TXFM_H_
+#endif  // AOM_AV1_COMMON_AV1_TXFM_H_

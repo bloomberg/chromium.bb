@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_COMMON_AV1_CONVOLVE_H_
-#define AV1_COMMON_AV1_CONVOLVE_H_
+#ifndef AOM_AV1_COMMON_CONVOLVE_H_
+#define AOM_AV1_COMMON_CONVOLVE_H_
 #include "av1/common/filter.h"
 
 #ifdef __cplusplus
@@ -121,4 +121,4 @@ void av1_highbd_convolve_2d_facade(const uint8_t *src8, int src_stride,
 }  // extern "C"
 #endif
 
-#endif  // AV1_COMMON_AV1_CONVOLVE_H_
+#endif  // AOM_AV1_COMMON_CONVOLVE_H_

@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_ENCODER_BLOCK_H_
-#define AV1_ENCODER_BLOCK_H_
+#ifndef AOM_AV1_ENCODER_BLOCK_H_
+#define AOM_AV1_ENCODER_BLOCK_H_
 
 #include "av1/common/entropymv.h"
 #include "av1/common/entropy.h"
@@ -416,4 +416,4 @@ static INLINE int tx_size_to_depth(TX_SIZE tx_size, BLOCK_SIZE bsize) {
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_BLOCK_H_
+#endif  // AOM_AV1_ENCODER_BLOCK_H_

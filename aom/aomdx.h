@@ -18,8 +18,8 @@
  * \brief Provides definitions for using AOM or AV1 within the aom Decoder
  *        interface.
  */
-#ifndef AOM_AOMDX_H_
-#define AOM_AOMDX_H_
+#ifndef AOM_AOM_AOMDX_H_
+#define AOM_AOM_AOMDX_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -291,4 +291,4 @@ AOM_CTRL_USE_TYPE(AV1_SET_INSPECTION_CALLBACK, aom_inspect_init *)
 }  // extern "C"
 #endif
 
-#endif  // AOM_AOMDX_H_
+#endif  // AOM_AOM_AOMDX_H_

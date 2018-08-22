@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_DECODER_DECODEFRAME_H_
-#define AV1_DECODER_DECODEFRAME_H_
+#ifndef AOM_AV1_DECODER_DECODEFRAME_H_
+#define AOM_AV1_DECODER_DECODEFRAME_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -82,4 +82,4 @@ void av1_set_single_tile_decoding_mode(AV1_COMMON *const cm);
 }  // extern "C"
 #endif
 
-#endif  // AV1_DECODER_DECODEFRAME_H_
+#endif  // AOM_AV1_DECODER_DECODEFRAME_H_

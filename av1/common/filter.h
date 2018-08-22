@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_COMMON_FILTER_H_
-#define AV1_COMMON_FILTER_H_
+#ifndef AOM_AV1_COMMON_FILTER_H_
+#define AOM_AV1_COMMON_FILTER_H_
 
 #include <assert.h>
 
@@ -200,4 +200,4 @@ static INLINE const int16_t *av1_get_interp_filter_subpel_kernel(
 }  // extern "C"
 #endif
 
-#endif  // AV1_COMMON_FILTER_H_
+#endif  // AOM_AV1_COMMON_FILTER_H_

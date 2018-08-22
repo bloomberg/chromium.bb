@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_ENCODER_FIRSTPASS_H_
-#define AV1_ENCODER_FIRSTPASS_H_
+#ifndef AOM_AV1_ENCODER_FIRSTPASS_H_
+#define AOM_AV1_ENCODER_FIRSTPASS_H_
 
 #include "av1/common/enums.h"
 #include "av1/common/onyxc_int.h"
@@ -204,4 +204,4 @@ static INLINE int get_number_of_extra_arfs(int interval, int arf_pending) {
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_FIRSTPASS_H_
+#endif  // AOM_AV1_ENCODER_FIRSTPASS_H_

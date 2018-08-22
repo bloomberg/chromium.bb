@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_ENCODER_ENCODEFRAME_H_
-#define AV1_ENCODER_ENCODEFRAME_H_
+#ifndef AOM_AV1_ENCODER_ENCODEFRAME_H_
+#define AOM_AV1_ENCODER_ENCODEFRAME_H_
 
 #include "aom/aom_integer.h"
 #include "av1/common/blockd.h"
@@ -41,4 +41,4 @@ void av1_encode_tile(struct AV1_COMP *cpi, struct ThreadData *td, int tile_row,
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_ENCODEFRAME_H_
+#endif  // AOM_AV1_ENCODER_ENCODEFRAME_H_

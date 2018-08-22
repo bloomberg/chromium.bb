@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_TXMF1D_SSE2_H_
-#define AV1_TXMF1D_SSE2_H_
+#ifndef AOM_AV1_ENCODER_X86_AV1_TXFM1D_SSE4_H_
+#define AOM_AV1_ENCODER_X86_AV1_TXFM1D_SSE4_H_
 
 #include <smmintrin.h>
 #include "av1/common/av1_txfm.h"
@@ -138,4 +138,4 @@ static INLINE void transpose_32(int txfm_size, const __m128i *input,
 }
 #endif
 
-#endif  // AV1_TXMF1D_SSE2_H_
+#endif  // AOM_AV1_ENCODER_X86_AV1_TXFM1D_SSE4_H_

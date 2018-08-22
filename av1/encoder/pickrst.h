@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef AV1_ENCODER_PICKRST_H_
-#define AV1_ENCODER_PICKRST_H_
+#ifndef AOM_AV1_ENCODER_PICKRST_H_
+#define AOM_AV1_ENCODER_PICKRST_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -43,4 +43,4 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi);
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_PICKRST_H_
+#endif  // AOM_AV1_ENCODER_PICKRST_H_

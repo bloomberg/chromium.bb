@@ -8,8 +8,8 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
-#ifndef COMMON_AV1_CONFIG_H_
-#define COMMON_AV1_CONFIG_H_
+#ifndef AOM_COMMON_AV1_CONFIG_H_
+#define AOM_COMMON_AV1_CONFIG_H_
 
 #include "aom/aom_integer.h"
 
@@ -83,4 +83,4 @@ int write_av1config(const Av1Config *config, size_t capacity,
 } /* extern "C" */
 #endif
 
-#endif  // COMMON_AV1_CONFIG_H_
+#endif  // AOM_COMMON_AV1_CONFIG_H_

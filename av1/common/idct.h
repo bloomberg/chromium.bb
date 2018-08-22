@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_COMMON_IDCT_H_
-#define AV1_COMMON_IDCT_H_
+#ifndef AOM_AV1_COMMON_IDCT_H_
+#define AOM_AV1_COMMON_IDCT_H_
 
 #include "config/aom_config.h"
 
@@ -66,4 +66,4 @@ highbd_inv_txfm_add av1_highbd_inv_txfm_add_32x8;
 }  // extern "C"
 #endif
 
-#endif  // AV1_COMMON_IDCT_H_
+#endif  // AOM_AV1_COMMON_IDCT_H_

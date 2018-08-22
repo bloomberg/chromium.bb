@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef Y4MENC_H_
-#define Y4MENC_H_
+#ifndef AOM_COMMON_Y4MENC_H_
+#define AOM_COMMON_Y4MENC_H_
 
 #include "aom/aom_decoder.h"
 #include "common/md5_utils.h"
@@ -35,4 +35,4 @@ void y4m_update_image_md5(const aom_image_t *img, const int *planes,
 }  // extern "C"
 #endif
 
-#endif  // Y4MENC_H_
+#endif  // AOM_COMMON_Y4MENC_H_

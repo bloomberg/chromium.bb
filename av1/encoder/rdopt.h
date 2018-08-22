@@ -9,8 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#ifndef AV1_ENCODER_RDOPT_H_
-#define AV1_ENCODER_RDOPT_H_
+#ifndef AOM_AV1_ENCODER_RDOPT_H_
+#define AOM_AV1_ENCODER_RDOPT_H_
 
 #include "av1/common/blockd.h"
 #include "av1/common/txb_common.h"
@@ -135,4 +135,4 @@ void av1_inter_mode_data_fit(TileDataEnc *tile_data, int rdmult);
 }  // extern "C"
 #endif
 
-#endif  // AV1_ENCODER_RDOPT_H_
+#endif  // AOM_AV1_ENCODER_RDOPT_H_
