@@ -11,6 +11,7 @@
 #include "chrome/browser/devtools/chrome_devtools_session.h"
 #include "chrome/browser/devtools/device/android_device_manager.h"
 #include "chrome/browser/devtools/device/tcp_device_provider.h"
+#include "chrome/browser/devtools/devtools_browser_context_manager.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/devtools/protocol/target_handler.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -219,6 +220,22 @@ std::string ChromeDevToolsManagerDelegate::GetDiscoveryPageHTML() {
   return ui::ResourceBundle::GetSharedInstance()
       .GetRawDataResource(IDR_DEVTOOLS_DISCOVERY_PAGE_HTML)
       .as_string();
+}
+
+std::vector<content::BrowserContext*>
+ChromeDevToolsManagerDelegate::GetBrowserContexts() {
+  return DevToolsBrowserContextManager::GetInstance().GetBrowserContexts();
+}
+
+content::BrowserContext* ChromeDevToolsManagerDelegate::CreateBrowserContext() {
+  return DevToolsBrowserContextManager::GetInstance().CreateBrowserContext();
+}
+
+void ChromeDevToolsManagerDelegate::DisposeBrowserContext(
+    content::BrowserContext* context,
+    DisposeCallback callback) {
+  DevToolsBrowserContextManager::GetInstance().DisposeBrowserContext(
+      context, std::move(callback));
 }
 
 bool ChromeDevToolsManagerDelegate::HasBundledFrontendResources() {

@@ -43,6 +43,11 @@ class HeadlessDevToolsManagerDelegate
   void ClientDetached(content::DevToolsAgentHost* agent_host,
                       content::DevToolsAgentHostClient* client) override;
 
+  std::vector<content::BrowserContext*> GetBrowserContexts() override;
+  content::BrowserContext* CreateBrowserContext() override;
+  void DisposeBrowserContext(content::BrowserContext* context,
+                             DisposeCallback callback) override;
+
  private:
   base::WeakPtr<HeadlessBrowserImpl> browser_;
   std::map<content::DevToolsAgentHostClient*,

@@ -77,7 +77,8 @@
                 "async": ["getInfo"]
             },
             {
-                "domain": "Target"
+                "domain": "Target",
+                "async": ["disposeBrowserContext"]
             },
             {
                 "domain": "Tethering",

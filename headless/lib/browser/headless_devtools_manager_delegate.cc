@@ -72,4 +72,40 @@ void HeadlessDevToolsManagerDelegate::ClientDetached(
   sessions_.erase(client);
 }
 
+std::vector<content::BrowserContext*>
+HeadlessDevToolsManagerDelegate::GetBrowserContexts() {
+  std::vector<content::BrowserContext*> contexts;
+  for (auto* context : browser_->GetAllBrowserContexts()) {
+    if (context != browser_->GetDefaultBrowserContext())
+      contexts.push_back(HeadlessBrowserContextImpl::From(context));
+  }
+  return contexts;
+}
+
+content::BrowserContext*
+HeadlessDevToolsManagerDelegate::CreateBrowserContext() {
+  auto builder = browser_->CreateBrowserContextBuilder();
+  builder.SetIncognitoMode(true);
+  HeadlessBrowserContext* browser_context = builder.Build();
+  return HeadlessBrowserContextImpl::From(browser_context);
+}
+
+void HeadlessDevToolsManagerDelegate::DisposeBrowserContext(
+    content::BrowserContext* browser_context,
+    DisposeCallback callback) {
+  HeadlessBrowserContextImpl* context =
+      HeadlessBrowserContextImpl::From(browser_context);
+  std::vector<HeadlessWebContents*> web_contents = context->GetAllWebContents();
+  while (!web_contents.empty()) {
+    for (auto* wc : web_contents)
+      wc->Close();
+    // Since HeadlessWebContents::Close spawns a nested run loop to await
+    // closing, new web_contents could be opened. We need to re-query pages and
+    // close them too.
+    web_contents = context->GetAllWebContents();
+  }
+  context->Close();
+  std::move(callback).Run(true, "");
+}
+
 }  // namespace headless

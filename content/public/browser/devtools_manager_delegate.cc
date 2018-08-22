@@ -36,6 +36,20 @@ scoped_refptr<DevToolsAgentHost> DevToolsManagerDelegate::CreateNewTarget(
   return nullptr;
 }
 
+std::vector<content::BrowserContext*>
+DevToolsManagerDelegate::GetBrowserContexts() {
+  return std::vector<content::BrowserContext*>();
+}
+
+content::BrowserContext* DevToolsManagerDelegate::CreateBrowserContext() {
+  return nullptr;
+}
+
+void DevToolsManagerDelegate::DisposeBrowserContext(BrowserContext*,
+                                                    DisposeCallback callback) {
+  std::move(callback).Run(false, "Browser Context disposal is not supported");
+}
+
 void DevToolsManagerDelegate::ClientAttached(DevToolsAgentHost* agent_host,
                                              DevToolsAgentHostClient* client) {}
 void DevToolsManagerDelegate::ClientDetached(DevToolsAgentHost* agent_host,

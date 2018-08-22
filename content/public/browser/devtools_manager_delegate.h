@@ -46,6 +46,19 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Creates new inspectable target given the |url|.
   virtual scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url);
 
+  // Get all live browser contexts created by CreateBrowserContext() method.
+  virtual std::vector<BrowserContext*> GetBrowserContexts();
+
+  // May return null if not supported or not possible. Delegate must take
+  // ownership of the created browser context, and may destroy it at will.
+  virtual BrowserContext* CreateBrowserContext();
+
+  // Dispose browser context that was created with |CreateBrowserContext|
+  // method.
+  using DisposeCallback = base::OnceCallback<void(bool, const std::string&)>;
+  virtual void DisposeBrowserContext(BrowserContext* context,
+                                     DisposeCallback callback);
+
   // Called when a new client is attached/detached.
   virtual void ClientAttached(DevToolsAgentHost* agent_host,
                               DevToolsAgentHostClient* client);

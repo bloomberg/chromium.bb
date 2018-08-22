@@ -644,19 +644,6 @@ Response TargetHandler::ExposeDevToolsProtocol(
   return Response::OK();
 }
 
-Response TargetHandler::CreateBrowserContext(std::string* out_context_id) {
-  return Response::Error("Not supported");
-}
-
-Response TargetHandler::DisposeBrowserContext(const std::string& context_id) {
-  return Response::Error("Not supported");
-}
-
-Response TargetHandler::GetBrowserContexts(
-    std::unique_ptr<protocol::Array<String>>* browser_context_ids) {
-  return Response::Error("Not supported");
-}
-
 Response TargetHandler::CreateTarget(const std::string& url,
                                      Maybe<int> width,
                                      Maybe<int> height,
@@ -731,6 +718,68 @@ void TargetHandler::DevToolsAgentHostCrashed(DevToolsAgentHost* host,
                            host->GetWebContents()
                                ? host->GetWebContents()->GetCrashedErrorCode()
                                : 0);
+}
+
+protocol::Response TargetHandler::CreateBrowserContext(
+    std::string* out_context_id) {
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!delegate)
+    return Response::Error("Browser context management is not supported.");
+  BrowserContext* context = delegate->CreateBrowserContext();
+  if (!context)
+    return Response::Error("Failed to create browser context.");
+  *out_context_id = context->UniqueId();
+  return protocol::Response::OK();
+}
+
+protocol::Response TargetHandler::GetBrowserContexts(
+    std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids) {
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!delegate)
+    return Response::Error("Browser context management is not supported.");
+  std::vector<content::BrowserContext*> contexts =
+      delegate->GetBrowserContexts();
+  *browser_context_ids = std::make_unique<protocol::Array<protocol::String>>();
+  for (auto* context : contexts)
+    (*browser_context_ids)->addItem(context->UniqueId());
+  return protocol::Response::OK();
+}
+
+void TargetHandler::DisposeBrowserContext(
+    const std::string& context_id,
+    std::unique_ptr<DisposeBrowserContextCallback> callback) {
+  DevToolsManagerDelegate* delegate =
+      DevToolsManager::GetInstance()->delegate();
+  if (!delegate) {
+    callback->sendFailure(protocol::Response::Error(
+        "Browser context management is not supported."));
+    return;
+  }
+  std::vector<content::BrowserContext*> contexts =
+      delegate->GetBrowserContexts();
+  auto context_it =
+      std::find_if(contexts.begin(), contexts.end(),
+                   [&context_id](content::BrowserContext* context) {
+                     return context->UniqueId() == context_id;
+                   });
+  if (context_it == contexts.end()) {
+    callback->sendFailure(protocol::Response::Error(
+        "Failed to find context with id " + context_id));
+    return;
+  }
+  delegate->DisposeBrowserContext(
+      *context_it,
+      base::BindOnce(
+          [](std::unique_ptr<DisposeBrowserContextCallback> callback,
+             bool success, const std::string& error) {
+            if (success)
+              callback->sendSuccess();
+            else
+              callback->sendFailure(protocol::Response::Error(error));
+          },
+          std::move(callback)));
 }
 
 }  // namespace protocol
