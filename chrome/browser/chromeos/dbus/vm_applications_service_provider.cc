@@ -4,7 +4,16 @@
 
 #include "chrome/browser/chromeos/dbus/vm_applications_service_provider.h"
 
+#include <string>
+#include <vector>
+
 #include "base/bind.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -12,9 +21,8 @@
 
 namespace chromeos {
 
-VmApplicationsServiceProvider::VmApplicationsServiceProvider(
-    std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
+VmApplicationsServiceProvider::VmApplicationsServiceProvider()
+    : weak_ptr_factory_(this) {}
 
 VmApplicationsServiceProvider::~VmApplicationsServiceProvider() = default;
 
@@ -60,7 +68,13 @@ void VmApplicationsServiceProvider::UpdateApplicationList(
     return;
   }
 
-  delegate_->UpdateApplicationList(request);
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (ProfileHelper::IsPrimaryProfile(profile)) {
+    crostini::CrostiniRegistryService* registry_service =
+        crostini::CrostiniRegistryServiceFactory::GetForProfile(profile);
+    registry_service->UpdateApplicationList(request);
+  }
+
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
@@ -80,7 +94,15 @@ void VmApplicationsServiceProvider::LaunchTerminal(
     return;
   }
 
-  delegate_->LaunchTerminal(request);
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (ProfileHelper::IsPrimaryProfile(profile) &&
+      request.owner_id() == CryptohomeIdForProfile(profile)) {
+    crostini::CrostiniManager::GetInstance()->LaunchContainerTerminal(
+        profile, request.vm_name(), request.container_name(),
+        std::vector<std::string>(request.params().begin(),
+                                 request.params().end()));
+  }
+
   response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
