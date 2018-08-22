@@ -21,11 +21,6 @@
           "object": "LayoutBlockFlow (positioned) DIV class='absolute green reflected'",
           "rect": [250, 280, 100, 100],
           "reason": "chunk reordered"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='hideMe' class='absolute red'",
-          "rect": [250, 280, 100, 100],
-          "reason": "style change"
         }
       ],
       "transform": 1
