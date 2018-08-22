@@ -150,9 +150,6 @@ using ::testing::make_tuple;
 #define PARAM_LIST_16X16                                     \
   &av1_fwd_txfm2d_16x16_c, &av1_inv_txfm2d_add_16x16_sse4_1, \
       &av1_inv_txfm2d_add_16x16_c, 256
-#define PARAM_LIST_64X64                                     \
-  &av1_fwd_txfm2d_64x64_c, &av1_inv_txfm2d_add_64x64_sse4_1, \
-      &av1_inv_txfm2d_add_64x64_c, 4096
 
 const IHbdHtParam kArrayIhtParam[] = {
   // 16x16
@@ -212,8 +209,6 @@ const IHbdHtParam kArrayIhtParam[] = {
   make_tuple(PARAM_LIST_4X4, ADST_FLIPADST, 12),
   make_tuple(PARAM_LIST_4X4, FLIPADST_ADST, 10),
   make_tuple(PARAM_LIST_4X4, FLIPADST_ADST, 12),
-  make_tuple(PARAM_LIST_64X64, DCT_DCT, 10),
-  make_tuple(PARAM_LIST_64X64, DCT_DCT, 12),
 };
 
 INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdInvHTNxN,

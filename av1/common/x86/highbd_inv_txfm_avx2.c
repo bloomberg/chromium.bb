@@ -16,6 +16,7 @@
 
 #include "av1/common/av1_inv_txfm1d_cfg.h"
 #include "av1/common/idct.h"
+#include "av1/common/x86/highbd_txfm_utility_sse4.h"
 
 // Note:
 //  Total 32x4 registers to represent 32x32 block coefficients.
@@ -723,9 +724,6 @@ void av1_highbd_inv_txfm_add_avx2(const tran_low_t *input, uint8_t *dest,
     case TX_32X16:
       av1_highbd_inv_txfm_add_32x16(input, dest, stride, txfm_param);
       break;
-    case TX_64X64:
-      av1_highbd_inv_txfm_add_64x64_sse4_1(input, dest, stride, txfm_param);
-      break;
     case TX_32X64:
       av1_highbd_inv_txfm_add_32x64(input, dest, stride, txfm_param);
       break;
@@ -752,6 +750,11 @@ void av1_highbd_inv_txfm_add_avx2(const tran_low_t *input, uint8_t *dest,
       break;
     case TX_32X8:
       av1_highbd_inv_txfm_add_32x8(input, dest, stride, txfm_param);
+      break;
+    case TX_64X64:
+      av1_highbd_inv_txfm2d_add_universe_sse4_1(
+          input, dest, stride, txfm_param->tx_type, txfm_param->tx_size,
+          txfm_param->eob, txfm_param->bd);
       break;
     default: assert(0 && "Invalid transform size"); break;
   }
