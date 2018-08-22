@@ -99,61 +99,6 @@ test.localNtp.testMDNotApplied = function() {
   assertFalse(document.body.classList.contains('md'));
 }
 
-/**
- * Tests that the edit custom background button is visible if both
- * the flag is enabled and no custom theme is being used.
- */
-test.localNtp.showEditCustomBackground = function() {
-  // Turn off voice search to avoid reinitializing the speech object
-  configData.isVoiceSearchEnabled = false;
-
-  configData.isCustomBackgroundsEnabled = true;
-  getThemeBackgroundInfo = () => {return {usingDefaultTheme: true};};
-  initLocalNTP(/*isGooglePage=*/true);
-  assertTrue(elementIsVisible($('edit-bg')));
-}
-
-/**
- * Tests that the edit custom background button is not visible if
- * the flag is disabled.
- */
-test.localNtp.hideEditCustomBackgroundFlag = function() {
-  // Turn off voice search to avoid reinitializing the speech object
-  configData.isVoiceSearchEnabled = false;
-
-  configData.isCustomBackgroundsEnabled = false;
-  initLocalNTP(/*isGooglePage=*/true);
-  assertFalse(elementIsVisible($('edit-bg')));
-}
-
-/**
- * Tests that the edit custom background button is not visible if
- * a custom theme is being used.
- */
-test.localNtp.hideEditCustomBackgroundTheme = function() {
-  // Turn off voice search to avoid reinitializing the speech object
-  configData.isVoiceSearchEnabled = false;
-
-  getThemeBackgroundInfo = () => {return {usingDefaultTheme: false};};
-  initLocalNTP(/*isGooglePage=*/true);
-  assertFalse(elementIsVisible($('edit-bg')));
-}
-
-// ***************************** HELPER FUNCTIONS *****************************
-// Helper functions used in tests.
-
-
-/**
- * Creates and initializes a LocalNTP object.
- * @param {boolean} isGooglePage Whether to make it a Google-branded NTP.
- */
-function initLocalNTP(isGooglePage) {
-  configData.isGooglePage = isGooglePage;
-  var localNTP = LocalNTP();
-  localNTP.disableIframesForTesting();
-  localNTP.init();
-}
-
 
 // ****************************** ADVANCED TESTS ******************************
 // Advanced tests are controlled from the native side. The helpers here are

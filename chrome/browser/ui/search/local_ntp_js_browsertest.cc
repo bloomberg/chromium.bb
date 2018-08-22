@@ -49,7 +49,7 @@ class LocalNTPJavascriptTest : public LocalNTPJavascriptTestBase {
 
 // This runs a bunch of pure JS-side tests, i.e. those that don't require any
 // interaction from the native side.
-IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, SimpleJavascriptTests) {
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, LocalNTPTests) {
   content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
       browser(), GURL(chrome::kChromeUINewTabURL));
   ASSERT_TRUE(search::IsInstantNTP(active_tab));
@@ -58,6 +58,20 @@ IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, SimpleJavascriptTests) {
   bool success = false;
   ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
       active_tab, "!!runSimpleTests('localNtp')", &success));
+  EXPECT_TRUE(success);
+}
+
+// This runs a bunch of pure JS-side tests for custom backgrounds, i.e. those
+// that don't require any interaction from the native side.
+IN_PROC_BROWSER_TEST_F(LocalNTPJavascriptTest, CustomBackgroundsTests) {
+  content::WebContents* active_tab = local_ntp_test_utils::OpenNewTab(
+      browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+
+  // Run the tests.
+  bool success = false;
+  ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+      active_tab, "!!runSimpleTests('customBackgrounds')", &success));
   EXPECT_TRUE(success);
 }
 

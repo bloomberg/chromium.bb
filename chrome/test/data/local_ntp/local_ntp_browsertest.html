@@ -14,6 +14,7 @@
   <script src="chrome-search://local-ntp/custom-backgrounds.js" charset="utf-8"></script>
   <script src="test_utils.js" charset="utf-8"></script>
   <script src="local_ntp_browsertest.js" charset="utf-8"></script>
+  <script src="custom_backgrounds_browsertest.js" charset="utf-8"></script>
   <template id="local-ntp-template">
     <div id="custom-bg"></div>
     <div id="ntp-contents">
@@ -92,7 +93,12 @@
         <div class="bg-option-img"></div>
         <div id="edit-bg-upload-image-text" class="bg-option-text"></div>
       </div>
-      <div id="edit-bg-restore-default" class="bg-option" tabindex="0">
+      <div id="edit-bg-divider"></div>
+      <div id="custom-links-restore-default" class="bg-option bg-option-disabled" tabindex="0">
+        <div class="bg-option-img"></div>
+        <div id="custom-links-restore-default-text" class="bg-option-text"></div>
+      </div>
+      <div id="edit-bg-restore-default" class="bg-option bg-option-disabled" tabindex="0">
         <div class="bg-option-img"></div>
         <div id="edit-bg-restore-default-text" class="bg-option-text"></div>
       </div>

@@ -190,6 +190,18 @@ function elementIsVisible(elem) {
 }
 
 
+/**
+ * Creates and initializes a LocalNTP object.
+ * @param {boolean} isGooglePage Whether to make it a Google-branded NTP.
+ */
+function initLocalNTP(isGooglePage) {
+  configData.isGooglePage = isGooglePage;
+  var localNTP = LocalNTP();
+  localNTP.disableIframesForTesting();
+  localNTP.init();
+}
+
+
 // ***************************** HELPER CLASSES *****************************
 // Helper classes used for mocking in tests.
 
