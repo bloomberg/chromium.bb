@@ -953,4 +953,15 @@ TEST_P(ParameterizedLocalCaretRectTest, BidiTextWithImage) {
                 PositionWithAffinity(Position::AfterNode(image))));
 }
 
+// https://crbug.com/876044
+TEST_P(ParameterizedLocalCaretRectTest, RtlMeterNoCrash) {
+  SetBodyContent("foo<meter dir=rtl></meter>");
+  const Position position = Position::LastPositionInNode(*GetDocument().body());
+  // Shouldn't crash inside
+  const LocalCaretRect local_caret_rect =
+      LocalCaretRectOfPosition(PositionWithAffinity(position));
+  EXPECT_EQ(GetDocument().QuerySelector("meter")->GetLayoutObject(),
+            local_caret_rect.layout_object);
+}
+
 }  // namespace blink

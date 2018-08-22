@@ -69,8 +69,9 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
     // DCHECK hit, we should pass primary direction to the latter function.
     // TODO(crbug.com/793098): Fix it so that we don't need to bother about
     // primary direction.
-    DCHECK_EQ(PrimaryDirectionOf(*position.AnchorNode()),
-              PrimaryDirectionOf(*adjusted.AnchorNode()));
+    DCHECK_EQ(
+        PrimaryDirectionOf(*position.GetPosition().ComputeContainerNode()),
+        PrimaryDirectionOf(*adjusted.GetPosition().ComputeContainerNode()));
     const InlineBoxPosition& box_position =
         ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
 
@@ -122,8 +123,8 @@ LocalCaretRect LocalSelectionRectOfPositionTemplate(
   // DCHECK hit, we should pass primary direction to the latter function.
   // TODO(crbug.com/793098): Fix it so that we don't need to bother about
   // primary direction.
-  DCHECK_EQ(PrimaryDirectionOf(*position.AnchorNode()),
-            PrimaryDirectionOf(*adjusted.AnchorNode()));
+  DCHECK_EQ(PrimaryDirectionOf(*position.GetPosition().ComputeContainerNode()),
+            PrimaryDirectionOf(*adjusted.GetPosition().ComputeContainerNode()));
   const InlineBoxPosition& box_position =
       ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted);
 
