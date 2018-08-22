@@ -1024,6 +1024,32 @@ TEST_F(WebViewTest, FinishComposingTextDoesNotAssert) {
       WebInputMethodController::kKeepSelection);
 }
 
+// Regression test for https://crbug.com/873999
+TEST_F(WebViewTest, LongPressOutsideInputShouldNotSelectPlaceholderText) {
+  RegisterMockedHttpURLLoad("input_placeholder.html");
+  WebViewImpl* web_view =
+      web_view_helper_.InitializeAndLoad(base_url_ + "input_placeholder.html");
+  web_view->SetInitialFocus(false);
+  web_view->Resize(WebSize(500, 300));
+  web_view->UpdateAllLifecyclePhases();
+  RunPendingTasks();
+
+  WebString input_id = WebString::FromUTF8("input");
+
+  // Focus in input.
+  EXPECT_TRUE(TapElementById(WebInputEvent::kGestureTap, input_id));
+
+  // Long press below input.
+  WebGestureEvent event(WebInputEvent::kGestureLongPress,
+                        WebInputEvent::kNoModifiers,
+                        WebInputEvent::GetStaticTimeStampForTests(),
+                        kWebGestureDeviceTouchscreen);
+  event.SetPositionInWidget(WebFloatPoint(100, 150));
+  EXPECT_EQ(WebInputEventResult::kHandledSystem,
+            web_view->HandleInputEvent(WebCoalescedInputEvent(event)));
+  EXPECT_TRUE(web_view->MainFrameImpl()->SelectionAsText().IsEmpty());
+}
+
 TEST_F(WebViewTest, FinishComposingTextCursorPositionChange) {
   RegisterMockedHttpURLLoad("input_field_populated.html");
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(

@@ -4757,14 +4757,20 @@ PositionWithAffinity LayoutBlockFlow::PositionForPoint(
       }
     }
 
+    if (closest_box->GetLineLayoutItem().IsAtomicInlineLevel()) {
+      // We want to pass the original point other than a corrected one.
+      LayoutPoint point(point_in_logical_contents);
+      if (!IsHorizontalWritingMode())
+        point = point.TransposedPoint();
+      return PositionForPointRespectingEditingBoundaries(
+          LineLayoutBox(closest_box->GetLineLayoutItem()), point);
+    }
+
     // pass the box a top position that is inside it
     LayoutPoint point(point_in_logical_contents.X(),
                       closest_box->Root().BlockDirectionPointInLine());
     if (!IsHorizontalWritingMode())
       point = point.TransposedPoint();
-    if (closest_box->GetLineLayoutItem().IsAtomicInlineLevel())
-      return PositionForPointRespectingEditingBoundaries(
-          LineLayoutBox(closest_box->GetLineLayoutItem()), point);
     return closest_box->GetLineLayoutItem().PositionForPoint(point);
   }
 
