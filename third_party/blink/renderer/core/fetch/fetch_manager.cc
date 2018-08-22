@@ -544,7 +544,13 @@ void FetchManager::Loader::DidReceiveResponse(
         new BodyStreamBuffer(script_state, sri_consumer, signal_));
   }
   response_data->SetStatus(response.HttpStatusCode());
-  response_data->SetStatusMessage(response.HttpStatusText());
+  if (response.Url().ProtocolIsAbout() || response.Url().ProtocolIsData() ||
+      response.Url().ProtocolIs("blob")) {
+    response_data->SetStatusMessage("OK");
+  } else {
+    response_data->SetStatusMessage(response.HttpStatusText());
+  }
+
   for (auto& it : response.HttpHeaderFields())
     response_data->HeaderList()->Append(it.key, it.value);
   if (response.UrlListViaServiceWorker().IsEmpty()) {
