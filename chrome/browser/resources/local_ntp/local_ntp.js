@@ -101,6 +101,7 @@ var CLASSES = {
   // Applies ripple animation to the element on click
   RIPPLE: 'ripple',
   RIPPLE_CONTAINER: 'ripple-container',
+  RIPPLE_EFFECT_MASK: 'ripple-effect-mask',
   RIPPLE_EFFECT: 'ripple-effect',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
@@ -839,7 +840,8 @@ function enableMD() {
 
 
 /**
- * Enables ripple animations for elements with CLASSES.RIPPLE.
+ * Enables ripple animations for elements with CLASSES.RIPPLE. The target
+ * element must have position relative or absolute.
  * TODO(kristipark): Remove after migrating to WebUI.
  */
 function addRippleAnimations() {
@@ -868,22 +870,22 @@ function addRippleAnimations() {
         Math.min(RIPPLE_MAX_RADIUS_PX, Math.max.apply(Math, cornerDistances));
 
     let ripple = document.createElement('div');
+    let rippleMask = document.createElement('div');
     let rippleContainer = document.createElement('div');
     ripple.classList.add(CLASSES.RIPPLE_EFFECT);
+    rippleMask.classList.add(CLASSES.RIPPLE_EFFECT_MASK);
     rippleContainer.classList.add(CLASSES.RIPPLE_CONTAINER);
-    rippleContainer.appendChild(ripple);
+    rippleMask.appendChild(ripple);
+    rippleContainer.appendChild(rippleMask);
     target.appendChild(rippleContainer);
     // Ripple start location
     ripple.style.marginLeft = x + 'px';
     ripple.style.marginTop = y + 'px';
 
-    rippleContainer.style.left = rect.left + 'px';
-    rippleContainer.style.top = rect.top + 'px';
-    rippleContainer.style.width = target.offsetWidth + 'px';
-    rippleContainer.style.height = target.offsetHeight + 'px';
-    rippleContainer.style.borderRadius =
+    rippleMask.style.width = target.offsetWidth + 'px';
+    rippleMask.style.height = target.offsetHeight + 'px';
+    rippleMask.style.borderRadius =
         window.getComputedStyle(target).borderRadius;
-    rippleContainer.style.position = 'fixed';
 
     // Start transition/ripple
     ripple.style.width = radius * 2 + 'px';
@@ -894,6 +896,7 @@ function addRippleAnimations() {
 
     window.setTimeout(function() {
       ripple.remove();
+      rippleMask.remove();
       rippleContainer.remove();
     }, RIPPLE_DURATION_MS);
   };

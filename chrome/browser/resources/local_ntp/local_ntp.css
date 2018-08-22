@@ -608,6 +608,7 @@ html[dir=rtl] #mv-notice-x {
   color: rgb(26,115,232);
   margin-inline-start: 0;
   padding: 0 16px;
+  position: relative;
 }
 
 #mv-notice-links span:hover,
@@ -715,14 +716,22 @@ html[dir=rtl] #attribution,
 }
 
 .ripple-container {
-  height: 0;
+  height: 100%;
   left: 0;
-  overflow: hidden;
   pointer-events: none;
   position: absolute;
   top: 0;
-  width: 0;
+  width: 100%;
   z-index: 100;
+}
+
+.ripple-effect-mask {
+  height: 0;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  width: 0;
 }
 
 .ripple-effect {
