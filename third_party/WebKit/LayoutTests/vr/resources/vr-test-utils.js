@@ -1,17 +1,13 @@
 'use strict';
 
 MockVRService.prototype.setListeningForActivate = function(client) {
-  for (let i = 0; i < this.runtimes_.length; i++) {
-    this.runtimes_[i].displayClient_ = client;
+  for (let i = 0; i < this.devices_.length; i++) {
+    this.devices_[i].displayClient_ = client;
   }
 };
 
-MockVRService.prototype.getImmersiveVRDisplayInfo = function() {
-  return Promise.resolve(
-      {info: this.runtimes_[0] ? this.runtimes_[0].displayInfo_ : null});
-};
 
-MockRuntime.prototype.setPose = function(pose) {
+MockDevice.prototype.setPose = function(pose) {
   if (pose == null) {
     this.pose_ = null;
   } else {
@@ -34,8 +30,12 @@ MockRuntime.prototype.setPose = function(pose) {
   }
 };
 
-MockRuntime.prototype.forceActivate = function(reason) {
+MockDevice.prototype.forceActivate = function(reason) {
   this.displayClient_.onActivate(reason);
+};
+
+MockDevice.prototype.getImmersiveVRDisplayInfo = function() {
+  return Promise.resolve({info: this.displayInfo_});
 };
 
 function vr_test(func, vrDisplays, name, properties) {

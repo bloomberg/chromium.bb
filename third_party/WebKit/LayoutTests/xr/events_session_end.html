@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<canvas id="webgl-canvas"></canvas>
+
+<script>
+
+let testName = "Test end fires when session ends";
+
+let watcherDone = new Event("watcherdone");
+
+let fakeDeviceInitParams = { supportsImmersive:true };
+
+let requestSessionOptions = [
+  { immersive: true },
+  { outputContext: getOutputContext() }
+];
+
+let testFunction = function(session, t) {
+  let eventWatcher = new EventWatcher(t, session, ["end", "watcherdone"]);
+  let eventPromise = eventWatcher.wait_for(["end", "watcherdone"]);
+
+  function onSessionEnd(event) {
+    t.step( () => {
+      assert_equals(event.session, session);
+      session.dispatchEvent(watcherDone);
+    });
+  }
+  session.addEventListener("end", onSessionEnd, false);
+  session.end();
+
+  return eventPromise;
+};
+
+xr_session_promise_test(
+  testFunction, fakeDeviceInitParams, requestSessionOptions, testName);
+
+</script>

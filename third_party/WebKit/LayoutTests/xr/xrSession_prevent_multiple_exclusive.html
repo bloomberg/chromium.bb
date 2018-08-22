@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
+<script src="file:///gen/device/vr/public/mojom/vr_service.mojom.js"></script>
+<script src="../external/wpt/resources/chromium/webxr-test.js"></script>
+<script src="../xr/resources/xr-test-utils.js"></script>
+<script src="../xr/resources/test-constants.js"></script>
+<canvas id="webgl-canvas"></canvas>
+
+<script>
+
+
+promise_test( (t) => {
+  return XRTest.simulateDeviceConnection({ supportsImmersive:true })
+    .then( (controller) => { return navigator.xr.requestDevice() })
+    .then( (device) => new Promise((resolve) => {
+      runWithUserGesture( () => {
+        resolve(device.requestSession({ immersive: true })
+          .then( (session) => new Promise((resolve) => {
+            runWithUserGesture( () => {
+              // Requesting a second immersive session from a device that already
+              // has an active immersive session should fail. Immersive sessions
+              // should take up the users entire view, and therefore it should
+              // be impossible for a user to be engaged with more than one.
+              resolve(promise_rejects(
+                t,
+                "InvalidStateError",
+                device.requestSession({ immersive: true })
+              ).then( () => {
+                  // End the immersive session and try again. Now the immersive
+                  // session creation should succeed.
+                  return session.end().then( () => new Promise((resolve) => {
+                    runWithUserGesture( () => {
+                      resolve(device.requestSession({ immersive: true }));
+                    });
+                  }));
+                }));
+            });
+        })));
+      });
+    }));
+}, "requestSession prevents creation of multiple simultaneous immersive sessions");
+
+</script>

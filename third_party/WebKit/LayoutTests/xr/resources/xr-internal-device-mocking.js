@@ -4,9 +4,9 @@
  * for interal tests. The main mocked objects are found in
  * ../external/wpt/resources/chromium/webxr-test.js. */
 
-MockRuntime.prototype.base_getFrameData = MockRuntime.prototype.getFrameData;
+MockDevice.prototype.base_getFrameData = MockDevice.prototype.getFrameData;
 
-MockRuntime.prototype.getFrameData = function() {
+MockDevice.prototype.getFrameData = function() {
   return this.base_getFrameData().then((result) => {
     if (result.frameData && result.frameData.pose && this.input_sources_) {
       let input_states = [];
@@ -21,7 +21,7 @@ MockRuntime.prototype.getFrameData = function() {
   });
 };
 
-MockRuntime.prototype.addInputSource = function(source) {
+MockDevice.prototype.addInputSource = function(source) {
   if (!this.input_sources_) {
     this.input_sources_ = [];
     this.next_input_source_index_ = 1;
@@ -32,7 +32,7 @@ MockRuntime.prototype.addInputSource = function(source) {
   this.input_sources_.push(source);
 };
 
-MockRuntime.prototype.removeInputSource = function(source) {
+MockDevice.prototype.removeInputSource = function(source) {
   if (!this.input_sources_)
     return;
 
@@ -44,11 +44,11 @@ MockRuntime.prototype.removeInputSource = function(source) {
   }
 };
 
-MockRuntime.prototype.setHitTestResults = function(results) {
+MockDevice.prototype.setHitTestResults = function(results) {
   this.hittest_results_ = results;
 };
 
-MockRuntime.prototype.requestHitTest = function(ray) {
+MockDevice.prototype.requestHitTest = function(ray) {
   var hit_results = this.hittest_results_;
   if (!hit_results) {
     var hit = new device.mojom.XRHitResult();
@@ -58,13 +58,13 @@ MockRuntime.prototype.requestHitTest = function(ray) {
   return Promise.resolve(hit_results);
 };
 
-MockRuntime.prototype.setResetPose = function(to) {
+MockDevice.prototype.setResetPose = function(to) {
   if (this.pose_) {
     this.pose_.poseReset = to;
   }
 };
 
-MockRuntime.prototype.setStageTransform = function(value) {
+MockDevice.prototype.setStageTransform = function(value) {
   if (value) {
     if (!this.displayInfo_.stageParameters) {
       this.displayInfo_.stageParameters = {
@@ -82,11 +82,11 @@ MockRuntime.prototype.setStageTransform = function(value) {
   this.sessionClient_.onChanged(this.displayInfo_);
 };
 
-MockRuntime.prototype.getSubmitFrameCount = function() {
+MockDevice.prototype.getSubmitFrameCount = function() {
   return this.presentation_provider_.submit_frame_count_;
 };
 
-MockRuntime.prototype.getMissingFrameCount = function() {
+MockDevice.prototype.getMissingFrameCount = function() {
   return this.presentation_provider_.missing_frame_count_;
 };
 
