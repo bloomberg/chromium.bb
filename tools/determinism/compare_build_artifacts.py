@@ -155,6 +155,12 @@ def compare_files(first_filepath, second_filepath):
 
   Returns None if the files are equal, a string otherwise.
   """
+  if not os.path.exists(first_filepath):
+    return 'file does not exist %s' % first_filepath
+  if not os.path.exists(second_filepath):
+    return 'file does not exist %s' % second_filepath
+
+
   if first_filepath.endswith('.isolated'):
     with open(first_filepath, 'rb') as f:
       lhs = json.load(f)
