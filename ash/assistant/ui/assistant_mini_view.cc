@@ -158,10 +158,12 @@ void AssistantMiniView::UpdatePrompt() {
       break;
     case InputModality::kKeyboard:
     case InputModality::kVoice:
-      // If we've cached an active query, we'll use that as our prompt. If not,
-      // we fall back to our default prompt string.
+      // If we've cached an active query, we'll use that as our prompt provided
+      // it is non-empty. If not, we fall back to our default prompt string.
+      // TODO(dmblack): Once b/112000321 is fixed we should remove empty query
+      // handling as that should only occur due to an invalid interaction state.
       label_->SetText(
-          last_active_query_.has_value()
+          last_active_query_.has_value() && !last_active_query_.value().empty()
               ? base::UTF8ToUTF16(last_active_query_.value())
               : l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_PROMPT_DEFAULT));
       break;
