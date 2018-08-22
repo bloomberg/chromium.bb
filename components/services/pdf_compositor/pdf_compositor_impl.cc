@@ -15,7 +15,7 @@
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "printing/common/pdf_metafile_utils.h"
+#include "printing/common/metafile_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDocument.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"

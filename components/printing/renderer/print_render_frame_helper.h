@@ -19,7 +19,7 @@
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "printing/buildflags/buildflags.h"
-#include "printing/pdf_metafile_skia.h"
+#include "printing/common/metafile_utils.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "ui/gfx/geometry/size.h"
@@ -54,6 +54,7 @@ class WebView;
 namespace printing {
 
 struct PageSizeMargins;
+class MetafileSkia;
 class PrepareFrameAndViewForPrint;
 
 // Stores reference to frame using WebVew and unique name.
@@ -293,7 +294,7 @@ class PrintRenderFrameHelper
                          int page_count,
                          double scale_factor,
                          blink::WebLocalFrame* frame,
-                         PdfMetafileSkia* metafile,
+                         MetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
                          gfx::Rect* content_area_in_dpi);
 
@@ -311,7 +312,7 @@ class PrintRenderFrameHelper
   // Helper methods -----------------------------------------------------------
 
   bool CopyMetafileDataToReadOnlySharedMem(
-      const PdfMetafileSkia& metafile,
+      const MetafileSkia& metafile,
       PrintHostMsg_DidPrintContent_Params* params);
 
   // Helper method to get page layout in points and fit to page if needed.
@@ -328,9 +329,6 @@ class PrintRenderFrameHelper
   static std::vector<int> GetPrintedPages(
       const PrintMsg_PrintPages_Params& params,
       int page_count);
-
-  // Helper function to find document type.
-  static SkiaDocumentType GetDocType(const PrintMsg_Print_Params& params);
 
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
@@ -368,7 +366,7 @@ class PrintRenderFrameHelper
   // |metafile| is the rendered page and should be valid.
   // Returns true if print preview should continue, false on failure.
   bool PreviewPageRendered(int page_number,
-                           std::unique_ptr<PdfMetafileSkia> metafile);
+                           std::unique_ptr<MetafileSkia> metafile);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   void SetPrintPagesParams(const PrintMsg_PrintPages_Params& settings);
@@ -455,7 +453,7 @@ class PrintRenderFrameHelper
     const blink::WebNode& prepared_node() const;
 
     int total_page_count() const;
-    PdfMetafileSkia* metafile();
+    MetafileSkia* metafile();
     int last_error() const;
 
    private:
@@ -476,7 +474,7 @@ class PrintRenderFrameHelper
     blink::WebNode source_node_;
 
     std::unique_ptr<PrepareFrameAndViewForPrint> prep_frame_view_;
-    std::unique_ptr<PdfMetafileSkia> metafile_;
+    std::unique_ptr<MetafileSkia> metafile_;
 
     // Total page count in the renderer.
     int total_page_count_ = 0;

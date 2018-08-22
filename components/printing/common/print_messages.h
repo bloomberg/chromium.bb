@@ -17,7 +17,7 @@
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
-#include "printing/common/pdf_metafile_utils.h"
+#include "printing/common/metafile_utils.h"
 #include "printing/page_range.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -444,7 +444,7 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_ScriptedPrint,
 
 #if defined(OS_ANDROID)
 // Asks the browser to create a temporary file for the renderer to fill
-// in resulting PdfMetafileSkia in printing.
+// in resulting MetafileSkia in printing.
 IPC_SYNC_MESSAGE_CONTROL1_2(PrintHostMsg_AllocateTempFileForPrinting,
                             int /* render_frame_id */,
                             base::FileDescriptor /* temp file fd */,

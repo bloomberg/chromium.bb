@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_metafile_skia.h"
+#include "printing/metafile_skia.h"
 
 #include "cc/paint/paint_record.h"
-#include "printing/common/pdf_metafile_utils.h"
+#include "printing/common/metafile_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 
 namespace printing {
 
-TEST(PdfMetafileSkiaTest, TestFrameContent) {
+TEST(MetafileSkiaTest, TestFrameContent) {
   constexpr int kPictureSideLen = 100;
   constexpr int kPageSideLen = 150;
 
@@ -31,7 +31,7 @@ TEST(PdfMetafileSkiaTest, TestFrameContent) {
   SkSize page_size = SkSize::Make(kPageSideLen, kPageSideLen);
 
   // Finish creating the entire metafile.
-  PdfMetafileSkia metafile(SkiaDocumentType::MSKP, 1);
+  MetafileSkia metafile(SkiaDocumentType::MSKP, 1);
   metafile.AppendPage(page_size, std::move(record));
   metafile.AppendSubframeInfo(content_id, 2, std::move(pic_holder));
   metafile.FinishFrameContent();

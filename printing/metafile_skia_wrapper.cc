@@ -16,7 +16,7 @@ const char kMetafileKey[] = "CrMetafile";
 
 // static
 void MetafileSkiaWrapper::SetMetafileOnCanvas(cc::PaintCanvas* canvas,
-                                              PdfMetafileSkia* metafile) {
+                                              MetafileSkia* metafile) {
   sk_sp<MetafileSkiaWrapper> wrapper;
   // Can't use sk_make_sp<>() because the constructor is private.
   if (metafile)
@@ -27,7 +27,7 @@ void MetafileSkiaWrapper::SetMetafileOnCanvas(cc::PaintCanvas* canvas,
 }
 
 // static
-PdfMetafileSkia* MetafileSkiaWrapper::GetMetafileFromCanvas(
+MetafileSkia* MetafileSkiaWrapper::GetMetafileFromCanvas(
     cc::PaintCanvas* canvas) {
   SkMetaData& meta = canvas->getMetaData();
   SkRefCnt* value;
@@ -37,8 +37,7 @@ PdfMetafileSkia* MetafileSkiaWrapper::GetMetafileFromCanvas(
   return static_cast<MetafileSkiaWrapper*>(value)->metafile_;
 }
 
-MetafileSkiaWrapper::MetafileSkiaWrapper(PdfMetafileSkia* metafile)
-    : metafile_(metafile) {
-}
+MetafileSkiaWrapper::MetafileSkiaWrapper(MetafileSkia* metafile)
+    : metafile_(metafile) {}
 
 }  // namespace printing

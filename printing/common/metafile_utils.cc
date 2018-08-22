@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/common/pdf_metafile_utils.h"
+#include "printing/common/metafile_utils.h"
 
 #include "base/time/time.h"
 #include "third_party/skia/include/core/SkCanvas.h"

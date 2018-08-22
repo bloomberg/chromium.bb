@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PDF_METAFILE_SKIA_H_
-#define PRINTING_PDF_METAFILE_SKIA_H_
+#ifndef PRINTING_METAFILE_SKIA_H_
+#define PRINTING_METAFILE_SKIA_H_
 
 #include <stdint.h>
 
@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
-#include "printing/common/pdf_metafile_utils.h"
+#include "printing/common/metafile_utils.h"
 #include "printing/metafile.h"
 #include "skia/ext/platform_canvas.h"
 
@@ -23,18 +23,17 @@
 
 namespace printing {
 
-struct PdfMetafileSkiaData;
+struct MetafileSkiaData;
 
 // This class uses Skia graphics library to generate a PDF or MSKP document.
-// TODO(thestig): Rename to MetafileSkia.
-class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
+class PRINTING_EXPORT MetafileSkia : public Metafile {
  public:
   // Default constructor, for SkiaDocumentType::PDF type only.
   // TODO(weili): we should split up this use case into a different class, see
   //              comments before InitFromData()'s implementation.
-  PdfMetafileSkia();
-  PdfMetafileSkia(SkiaDocumentType type, int document_cookie);
-  ~PdfMetafileSkia() override;
+  MetafileSkia();
+  MetafileSkia(SkiaDocumentType type, int document_cookie);
+  ~MetafileSkia() override;
 
   // Metafile methods.
   bool Init() override;
@@ -73,13 +72,13 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   void FinishFrameContent();
 
   // Return a new metafile containing just the current page in draft mode.
-  std::unique_ptr<PdfMetafileSkia> GetMetafileForCurrentPage(
+  std::unique_ptr<MetafileSkia> GetMetafileForCurrentPage(
       SkiaDocumentType type);
 
   // This method calls StartPage and then returns an appropriate
   // PlatformCanvas implementation bound to the context created by
   // StartPage or NULL on error.  The PaintCanvas pointer that
-  // is returned is owned by this PdfMetafileSkia object and does not
+  // is returned is owned by this MetafileSkia object and does not
   // need to be ref()ed or unref()ed.  The canvas will remain valid
   // until FinishPage() or FinishDocument() is called.
   cc::PaintCanvas* GetVectorCanvasForNewPage(const gfx::Size& page_size,
@@ -97,7 +96,7 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   const ContentToProxyIdMap& GetSubframeContentInfo() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(PdfMetafileSkiaTest, TestFrameContent);
+  FRIEND_TEST_ALL_PREFIXES(MetafileSkiaTest, TestFrameContent);
 
   // The following three functions are used for tests only.
   void AppendPage(const SkSize& page_size, sk_sp<cc::PaintRecord> record);
@@ -110,11 +109,11 @@ class PRINTING_EXPORT PdfMetafileSkia : public Metafile {
   // data holder with corresponding place holder SkPicture.
   void CustomDataToSkPictureCallback(SkCanvas* canvas, uint32_t content_id);
 
-  std::unique_ptr<PdfMetafileSkiaData> data_;
+  std::unique_ptr<MetafileSkiaData> data_;
 
-  DISALLOW_COPY_AND_ASSIGN(PdfMetafileSkia);
+  DISALLOW_COPY_AND_ASSIGN(MetafileSkia);
 };
 
 }  // namespace printing
 
-#endif  // PRINTING_PDF_METAFILE_SKIA_H_
+#endif  // PRINTING_METAFILE_SKIA_H_

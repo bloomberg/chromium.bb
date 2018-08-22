@@ -99,7 +99,7 @@ class ScopedPPVar;
 }
 
 namespace printing {
-class PdfMetafileSkia;
+class MetafileSkia;
 }
 
 namespace content {
@@ -791,7 +791,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   //
   // The metafile to save into, which is guaranteed to be valid between a
   // successful PrintBegin call and a PrintEnd call.
-  printing::PdfMetafileSkia* metafile_;
+  printing::MetafileSkia* metafile_;
   // An array of page ranges.
   std::vector<PP_PrintPageNumberRange_Dev> ranges_;
 

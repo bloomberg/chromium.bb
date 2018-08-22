@@ -4,8 +4,8 @@
 
 source_set("common") {
   sources = [
-    "pdf_metafile_utils.cc",
-    "pdf_metafile_utils.h",
+    "metafile_utils.cc",
+    "metafile_utils.h",
   ]
 
   deps = [

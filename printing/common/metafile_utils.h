@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_COMMON_PDF_METAFILE_UTILS_H_
-#define PRINTING_COMMON_PDF_METAFILE_UTILS_H_
+#ifndef PRINTING_COMMON_METAFILE_UTILS_H_
+#define PRINTING_COMMON_METAFILE_UTILS_H_
 
 #include <map>
 #include <string>
@@ -42,4 +42,4 @@ SkDeserialProcs DeserializationProcs(DeserializationContext* ctx);
 
 }  // namespace printing
 
-#endif  // PRINTING_COMMON_PDF_METAFILE_UTILS_H_
+#endif  // PRINTING_COMMON_METAFILE_UTILS_H_

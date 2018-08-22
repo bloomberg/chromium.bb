@@ -36,7 +36,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/print_backend_consts.h"
-#include "printing/pdf_metafile_skia.h"
+#include "printing/metafile_skia.h"
 #include "printing/print_job_constants.h"
 #include "printing/printed_document.h"
 #include "printing/units.h"
@@ -112,7 +112,7 @@ class ArcPrintServiceFactory
 
 // This creates a Metafile instance which is a wrapper around a byte buffer at
 // this point.
-std::unique_ptr<printing::PdfMetafileSkia> ReadFileOnBlockingTaskRunner(
+std::unique_ptr<printing::MetafileSkia> ReadFileOnBlockingTaskRunner(
     base::File file,
     size_t data_size) {
   // TODO(vkuzkokov) Can we make give pipe to CUPS directly?
@@ -127,7 +127,7 @@ std::unique_ptr<printing::PdfMetafileSkia> ReadFileOnBlockingTaskRunner(
 
   file.Close();
 
-  auto metafile = std::make_unique<printing::PdfMetafileSkia>();
+  auto metafile = std::make_unique<printing::MetafileSkia>();
   if (!metafile->InitFromData(buf.data(), buf.size())) {
     LOG(ERROR) << "Failed to initialize PDF metafile";
     return nullptr;
@@ -448,7 +448,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
   }
 
   // Store Metafile and start printing if PrintJob is created as well.
-  void OnFileRead(std::unique_ptr<printing::PdfMetafileSkia> metafile) {
+  void OnFileRead(std::unique_ptr<printing::MetafileSkia> metafile) {
     metafile_ = std::move(metafile);
     StartPrintingIfReady();
   }
@@ -481,7 +481,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
   mojom::PrintJobInstancePtr instance_;
   ArcPrintServiceImpl* const service_;
   chromeos::CupsPrintJobManager* const job_manager_;
-  std::unique_ptr<printing::PdfMetafileSkia> metafile_;
+  std::unique_ptr<printing::MetafileSkia> metafile_;
   scoped_refptr<printing::PrintJob> job_;
   chromeos::CupsPrintJob* cups_job_;
   content::NotificationRegistrar registrar_;
