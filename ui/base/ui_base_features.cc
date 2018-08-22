@@ -40,7 +40,7 @@ const base::Feature kEnableVirtualKeyboardMdUi = {
     "EnableVirtualKeyboardMdUi", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kEnableVirtualKeyboardUkm = {
-    "EnableVirtualKeyboardUkm", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableVirtualKeyboardUkm", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables all upcoming UI features.
 const base::Feature kExperimentalUi{"ExperimentalUi",
