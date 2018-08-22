@@ -55,6 +55,8 @@ class FakeDriveFs : public drivefs::mojom::DriveFs,
 
   void UpdateNetworkState(bool pause_syncing, bool is_offline) override;
 
+  void ResetCache(ResetCacheCallback callback) override;
+
   const base::FilePath mount_path_;
 
   std::map<base::FilePath, FileMetadata> metadata_;
