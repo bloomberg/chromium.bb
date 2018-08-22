@@ -333,6 +333,7 @@ class TCPSocketTest : public testing::Test {
   }
 
   TestSocketObserver* observer() { return &test_observer_; }
+  SocketFactory* factory() { return factory_.get(); }
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -1053,6 +1054,36 @@ TEST_F(TCPSocketWithMockSocketTest, SetNoDelayAndKeepAlive) {
                                 }));
     run_loop.Run();
   }
+}
+
+TEST_F(TCPSocketWithMockSocketTest, SocketDestroyedBeforeConnectCompletes) {
+  std::vector<net::MockRead> reads;
+  std::vector<net::MockWrite> writes;
+  net::StaticSocketDataProvider data_provider(reads, writes);
+  data_provider.set_connect_data(
+      net::MockConnect(net::ASYNC, net::ERR_IO_PENDING));
+  mock_client_socket_factory_.AddSocketDataProvider(&data_provider);
+
+  mojom::TCPConnectedSocketPtr client_socket;
+  net::IPEndPoint server_addr(net::IPAddress::IPv4Localhost(), 1234);
+  net::AddressList remote_addr_list(server_addr);
+  int net_error = net::OK;
+  base::RunLoop run_loop;
+  factory()->CreateTCPConnectedSocket(
+      base::nullopt, remote_addr_list, TRAFFIC_ANNOTATION_FOR_TESTS,
+      mojo::MakeRequest(&client_socket), nullptr,
+      base::BindLambdaForTesting(
+          [&](int result,
+              const base::Optional<net::IPEndPoint>& actual_local_addr,
+              const base::Optional<net::IPEndPoint>& peer_addr,
+              mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
+              mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+            net_error = result;
+            run_loop.Quit();
+          }));
+  client_socket.reset();
+  run_loop.Run();
+  EXPECT_EQ(net::ERR_ABORTED, net_error);
 }
 
 // Tests the case where net::ServerSocket::Listen() succeeds but

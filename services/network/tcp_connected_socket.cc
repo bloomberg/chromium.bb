@@ -46,7 +46,16 @@ TCPConnectedSocket::TCPConnectedSocket(
       std::move(send_pipe_handle), traffic_annotation);
 }
 
-TCPConnectedSocket::~TCPConnectedSocket() {}
+TCPConnectedSocket::~TCPConnectedSocket() {
+  if (connect_callback_) {
+    // If |this| is destroyed when connect hasn't completed, tell the consumer
+    // that request has been aborted.
+    std::move(connect_callback_)
+        .Run(net::ERR_ABORTED, base::nullopt, base::nullopt,
+             mojo::ScopedDataPipeConsumerHandle(),
+             mojo::ScopedDataPipeProducerHandle());
+  }
+}
 
 void TCPConnectedSocket::Connect(
     const base::Optional<net::IPEndPoint>& local_addr,

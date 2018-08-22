@@ -484,6 +484,9 @@ interface NetworkContext {
   // to receive data over the connection. On failure, |result| is a network
   // error code.
   //
+  // If the client closes |socket| before this completes, the callback will be
+  // invoked with net::ERR_ABORTED.
+  //
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
   CreateTCPConnectedSocket(
