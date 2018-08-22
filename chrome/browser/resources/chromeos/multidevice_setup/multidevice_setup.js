@@ -145,9 +145,7 @@ cr.define('multidevice_setup', function() {
           return;
         case PageName.START:
           let deviceId = /** @type {string} */ (this.selectedDeviceId_);
-          // TODO(hansberry): Pass the auth token to the setHostDevice() call
-          //     when functionality has been implemented.
-          this.multideviceSetup.setHostDevice(deviceId)
+          this.multideviceSetup.setHostDevice(deviceId, this.authToken_)
               .then((responseParams) => {
                 if (!responseParams.success) {
                   console.warn(

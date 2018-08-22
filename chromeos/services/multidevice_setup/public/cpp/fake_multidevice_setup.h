@@ -39,7 +39,8 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
     return get_eligible_hosts_args_;
   }
 
-  std::vector<std::pair<std::string, SetHostDeviceCallback>>& set_host_args() {
+  std::vector<std::tuple<std::string, std::string, SetHostDeviceCallback>>&
+  set_host_args() {
     return set_host_args_;
   }
 
@@ -47,7 +48,10 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
 
   std::vector<GetHostStatusCallback>& get_host_args() { return get_host_args_; }
 
-  std::vector<std::tuple<mojom::Feature, bool, SetFeatureEnabledStateCallback>>&
+  std::vector<std::tuple<mojom::Feature,
+                         bool,
+                         base::Optional<std::string>,
+                         SetFeatureEnabledStateCallback>>&
   set_feature_enabled_args() {
     return set_feature_enabled_args_;
   }
@@ -75,11 +79,13 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
       mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
+                     const std::string& auth_token,
                      SetHostDeviceCallback callback) override;
   void RemoveHostDevice() override;
   void GetHostStatus(GetHostStatusCallback callback) override;
   void SetFeatureEnabledState(mojom::Feature feature,
                               bool enabled,
+                              const base::Optional<std::string>& auth_token,
                               SetFeatureEnabledStateCallback callback) override;
   void GetFeatureStates(GetFeatureStatesCallback callback) override;
   void RetrySetHostNow(RetrySetHostNowCallback callback) override;
@@ -91,10 +97,14 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
   std::vector<mojom::HostStatusObserverPtr> host_status_observers_;
   std::vector<mojom::FeatureStateObserverPtr> feature_state_observers_;
   std::vector<GetEligibleHostDevicesCallback> get_eligible_hosts_args_;
-  std::vector<std::pair<std::string, SetHostDeviceCallback>> set_host_args_;
+  std::vector<std::tuple<std::string, std::string, SetHostDeviceCallback>>
+      set_host_args_;
   size_t num_remove_host_calls_ = 0u;
   std::vector<GetHostStatusCallback> get_host_args_;
-  std::vector<std::tuple<mojom::Feature, bool, SetFeatureEnabledStateCallback>>
+  std::vector<std::tuple<mojom::Feature,
+                         bool,
+                         base::Optional<std::string>,
+                         SetFeatureEnabledStateCallback>>
       set_feature_enabled_args_;
   std::vector<GetFeatureStatesCallback> get_feature_states_args_;
   std::vector<RetrySetHostNowCallback> retry_set_host_now_args_;

@@ -5,6 +5,7 @@
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 
 #include <algorithm>
+#include <tuple>
 #include <utility>
 
 #include "base/memory/scoped_refptr.h"
@@ -162,23 +163,26 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
         *eligible_host_devices_, expected_eligible_host_devices);
   }
 
-  void CallSetHostDevice(const std::string& public_key, bool expect_success) {
+  void CallSetHostDevice(const std::string& public_key,
+                         const std::string& auth_token,
+                         bool expect_success) {
     base::RunLoop run_loop;
 
     client_->SetHostDevice(
-        public_key,
+        public_key, auth_token,
         base::BindOnce(
             &MultiDeviceSetupClientImplTest::OnSetHostDeviceCompleted,
             base::Unretained(this), run_loop.QuitClosure()));
 
     SendPendingMojoMessages();
 
-    std::vector<
-        std::pair<std::string, mojom::MultiDeviceSetup::SetHostDeviceCallback>>&
+    std::vector<std::tuple<std::string, std::string,
+                           mojom::MultiDeviceSetup::SetHostDeviceCallback>>&
         callbacks = fake_multidevice_setup_->set_host_args();
     EXPECT_EQ(1u, callbacks.size());
-    EXPECT_EQ(public_key, callbacks[0].first);
-    std::move(callbacks[0].second).Run(expect_success);
+    EXPECT_EQ(public_key, std::get<0>(callbacks[0]));
+    EXPECT_EQ(auth_token, std::get<1>(callbacks[0]));
+    std::move(std::get<2>(callbacks[0])).Run(expect_success);
 
     run_loop.Run();
 
@@ -224,13 +228,14 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
 
   void CallSetFeatureEnabledState(mojom::Feature feature,
                                   bool enabled,
+                                  const base::Optional<std::string>& auth_token,
                                   bool should_succeed) {
     size_t num_set_feature_enabled_args_before_call =
         fake_multidevice_setup_->set_feature_enabled_args().size();
 
     base::RunLoop run_loop;
     client_->SetFeatureEnabledState(
-        feature, enabled,
+        feature, enabled, auth_token,
         base::BindOnce(
             &MultiDeviceSetupClientImplTest::OnSetFeatureEnabledStateCompleted,
             base::Unretained(this), run_loop.QuitClosure()));
@@ -244,8 +249,11 @@ class MultiDeviceSetupClientImplTest : public testing::Test {
     EXPECT_EQ(enabled,
               std::get<1>(
                   fake_multidevice_setup_->set_feature_enabled_args().back()));
+    EXPECT_EQ(auth_token,
+              std::get<2>(
+                  fake_multidevice_setup_->set_feature_enabled_args().back()));
     std::move(
-        std::get<2>(fake_multidevice_setup_->set_feature_enabled_args().back()))
+        std::get<3>(fake_multidevice_setup_->set_feature_enabled_args().back()))
         .Run(should_succeed /* success */);
 
     run_loop.Run();
@@ -424,12 +432,12 @@ TEST_F(MultiDeviceSetupClientImplTest, TestGetEligibleHostDevices) {
 }
 
 TEST_F(MultiDeviceSetupClientImplTest, TestSetHostDevice_Success) {
-  CallSetHostDevice(test_remote_device_list_[0].public_key,
+  CallSetHostDevice(test_remote_device_list_[0].public_key, "authToken",
                     true /* expect_success */);
 }
 
 TEST_F(MultiDeviceSetupClientImplTest, TestSetHostDevice_Failure) {
-  CallSetHostDevice(test_remote_device_list_[0].public_key,
+  CallSetHostDevice(test_remote_device_list_[0].public_key, "authToken",
                     false /* expect_success */);
 }
 
@@ -449,11 +457,14 @@ TEST_F(MultiDeviceSetupClientImplTest, TestGetHostStatus_NoHost) {
 
 TEST_F(MultiDeviceSetupClientImplTest, SetFeatureEnabledState) {
   CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
-                             true /* enabled */, true /* should_succeed */);
+                             true /* enabled */, "authToken1",
+                             true /* should_succeed */);
   CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
-                             false /* enabled */, false /* should_succeed */);
+                             false /* enabled */, "authToken2",
+                             false /* should_succeed */);
   CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
-                             false /* enabled */, true /* should_succeed */);
+                             false /* enabled */, "authToken3",
+                             true /* should_succeed */);
 }
 
 TEST_F(MultiDeviceSetupClientImplTest, GetFeatureState) {

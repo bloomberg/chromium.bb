@@ -58,12 +58,14 @@ class MultiDeviceSetupClient {
       GetEligibleHostDevicesCallback callback) = 0;
   virtual void SetHostDevice(
       const std::string& host_device_id,
+      const std::string& auth_token,
       mojom::MultiDeviceSetup::SetHostDeviceCallback callback) = 0;
   virtual void RemoveHostDevice() = 0;
   virtual void GetHostStatus(GetHostStatusCallback callback) = 0;
   virtual void SetFeatureEnabledState(
       mojom::Feature feature,
       bool enabled,
+      const base::Optional<std::string>& auth_token,
       mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) = 0;
   virtual void GetFeatureStates(
       mojom::MultiDeviceSetup::GetFeatureStatesCallback callback) = 0;

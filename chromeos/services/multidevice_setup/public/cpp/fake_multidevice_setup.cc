@@ -22,8 +22,8 @@ FakeMultiDeviceSetup::~FakeMultiDeviceSetup() {
   }
 
   for (auto& set_host_arg : set_host_args_) {
-    if (set_host_arg.second)
-      std::move(set_host_arg.second).Run(false /* success */);
+    if (std::get<2>(set_host_arg))
+      std::move(std::get<2>(set_host_arg)).Run(false /* success */);
   }
 
   for (auto& get_host_arg : get_host_args_) {
@@ -35,8 +35,8 @@ FakeMultiDeviceSetup::~FakeMultiDeviceSetup() {
   }
 
   for (auto& set_feature_enabled_args : set_feature_enabled_args_) {
-    if (std::get<2>(set_feature_enabled_args))
-      std::move(std::get<2>(set_feature_enabled_args)).Run(false /* success */);
+    if (std::get<3>(set_feature_enabled_args))
+      std::move(std::get<3>(set_feature_enabled_args)).Run(false /* success */);
   }
 
   for (auto& get_feature_states_arg : get_feature_states_args_) {
@@ -83,8 +83,9 @@ void FakeMultiDeviceSetup::GetEligibleHostDevices(
 }
 
 void FakeMultiDeviceSetup::SetHostDevice(const std::string& host_device_id,
+                                         const std::string& auth_token,
                                          SetHostDeviceCallback callback) {
-  set_host_args_.emplace_back(host_device_id, std::move(callback));
+  set_host_args_.emplace_back(host_device_id, auth_token, std::move(callback));
 }
 
 void FakeMultiDeviceSetup::RemoveHostDevice() {
@@ -98,8 +99,10 @@ void FakeMultiDeviceSetup::GetHostStatus(GetHostStatusCallback callback) {
 void FakeMultiDeviceSetup::SetFeatureEnabledState(
     mojom::Feature feature,
     bool enabled,
+    const base::Optional<std::string>& auth_token,
     SetFeatureEnabledStateCallback callback) {
-  set_feature_enabled_args_.emplace_back(feature, enabled, std::move(callback));
+  set_feature_enabled_args_.emplace_back(feature, enabled, auth_token,
+                                         std::move(callback));
 }
 
 void FakeMultiDeviceSetup::GetFeatureStates(GetFeatureStatesCallback callback) {

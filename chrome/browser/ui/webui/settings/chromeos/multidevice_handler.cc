@@ -152,8 +152,13 @@ void MultideviceHandler::HandleSetFeatureEnabledState(
   result = args->GetBoolean(2, &enabled);
   DCHECK(result);
 
+  base::Optional<std::string> auth_token;
+  std::string possible_token_value;
+  if (args->GetString(3, &possible_token_value))
+    auth_token = possible_token_value;
+
   multidevice_setup_client_->SetFeatureEnabledState(
-      feature, enabled,
+      feature, enabled, auth_token,
       base::BindOnce(&MultideviceHandler::OnSetFeatureStateEnabledResult,
                      callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
 }

@@ -43,6 +43,8 @@ namespace {
 
 const size_t kNumTestDevices = 3;
 
+const char kValidAuthToken[] = "validAuthToken";
+
 cryptauth::RemoteDeviceList RefListToRawList(
     const cryptauth::RemoteDeviceRefList& ref_list) {
   cryptauth::RemoteDeviceList raw_list;
@@ -363,7 +365,10 @@ class MultiDeviceSetupImplTest : public testing::Test {
         std::make_unique<device_sync::FakeDeviceSyncClient>();
     fake_secure_channel_client_ =
         std::make_unique<secure_channel::FakeSecureChannelClient>();
+
     fake_auth_token_validator_ = std::make_unique<FakeAuthTokenValidator>();
+    fake_auth_token_validator_->set_expected_auth_token(kValidAuthToken);
+
     auto fake_android_sms_app_install_delegate =
         std::make_unique<FakeAndroidSmsAppInstallDelegate>();
     fake_android_sms_app_install_delegate_ =
@@ -459,10 +464,11 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return eligible_devices_list;
   }
 
-  bool CallSetHostDevice(const std::string& host_device_id) {
+  bool CallSetHostDevice(const std::string& host_device_id,
+                         const std::string& auth_token) {
     base::RunLoop run_loop;
     multidevice_setup_->SetHostDevice(
-        host_device_id,
+        host_device_id, auth_token,
         base::BindOnce(&MultiDeviceSetupImplTest::OnHostSet,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -488,10 +494,13 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return host_status_update;
   }
 
-  bool CallSetFeatureEnabledState(mojom::Feature feature, bool enabled) {
+  bool CallSetFeatureEnabledState(
+      mojom::Feature feature,
+      bool enabled,
+      const base::Optional<std::string>& auth_token) {
     base::RunLoop run_loop;
     multidevice_setup_->SetFeatureEnabledState(
-        feature, enabled,
+        feature, enabled, auth_token,
         base::BindOnce(&MultiDeviceSetupImplTest::OnSetFeatureEnabled,
                        base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
@@ -739,7 +748,95 @@ TEST_F(MultiDeviceSetupImplTest, AccountStatusChangeDelegate) {
                     ->num_existing_user_chromebook_added_events_handled());
 }
 
-TEST_F(MultiDeviceSetupImplTest, FeatureStateChanges) {
+TEST_F(MultiDeviceSetupImplTest, FeatureStateChanges_NoAuthTokenRequired) {
+  // The feature mojom::Feature::kInstantTethering is used throughout this
+  // test because it never requires authentication for either enabling or
+  // disabling.
+
+  auto observer = std::make_unique<FakeFeatureStateObserver>();
+  multidevice_setup()->AddFeatureStateObserver(
+      observer->GenerateInterfacePtr());
+
+  EXPECT_EQ(mojom::FeatureState::kUnavailableNoVerifiedHost,
+            CallGetFeatureStates()[mojom::Feature::kInstantTethering]);
+
+  fake_feature_state_manager()->SetFeatureState(
+      mojom::Feature::kInstantTethering,
+      mojom::FeatureState::kNotSupportedByChromebook);
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kNotSupportedByChromebook,
+            CallGetFeatureStates()[mojom::Feature::kInstantTethering]);
+  EXPECT_EQ(1u, observer->feature_state_updates().size());
+
+  fake_feature_state_manager()->SetFeatureState(
+      mojom::Feature::kInstantTethering, mojom::FeatureState::kEnabledByUser);
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kInstantTethering]);
+  EXPECT_EQ(2u, observer->feature_state_updates().size());
+
+  EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kInstantTethering,
+                                         false /* enabled */,
+                                         base::nullopt /* auth_token */));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kInstantTethering]);
+  EXPECT_EQ(3u, observer->feature_state_updates().size());
+}
+
+TEST_F(MultiDeviceSetupImplTest,
+       FeatureStateChanges_AuthTokenRequired_SmartLock) {
+  // mojom::Feature::kSmartLock requires authentication when attempting to
+  // enable.
+
+  auto observer = std::make_unique<FakeFeatureStateObserver>();
+  multidevice_setup()->AddFeatureStateObserver(
+      observer->GenerateInterfacePtr());
+
+  EXPECT_EQ(mojom::FeatureState::kUnavailableNoVerifiedHost,
+            CallGetFeatureStates()[mojom::Feature::kSmartLock]);
+
+  fake_feature_state_manager()->SetFeatureState(
+      mojom::Feature::kSmartLock, mojom::FeatureState::kEnabledByUser);
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kSmartLock]);
+  EXPECT_EQ(1u, observer->feature_state_updates().size());
+
+  // No authentication is required to disable the feature.
+  EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kSmartLock,
+                                         false /* enabled */,
+                                         base::nullopt /* auth_token */));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kSmartLock]);
+  EXPECT_EQ(2u, observer->feature_state_updates().size());
+
+  // However, authentication is required to enable the feature.
+  EXPECT_FALSE(CallSetFeatureEnabledState(
+      mojom::Feature::kSmartLock, true /* enabled */, "invalidAuthToken"));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kSmartLock]);
+  EXPECT_EQ(2u, observer->feature_state_updates().size());
+
+  // Now, send a valid auth token; it should successfully enable.
+  EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kSmartLock,
+                                         true /* enabled */, kValidAuthToken));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kSmartLock]);
+  EXPECT_EQ(3u, observer->feature_state_updates().size());
+}
+
+TEST_F(MultiDeviceSetupImplTest,
+       FeatureStateChanges_AuthTokenRequired_BetterTogetherSuite) {
+  // mojom::Feature::kBetterTogetherSuite requires authentication when
+  // attempting to enable, but only if the Smart Lock pref is enabled.
+
+  // TODO(crbug.com/876377): If kBetterTogetherSuite is being enabled, only
+  // require password if Smartlock pref is enabled.
+
   auto observer = std::make_unique<FakeFeatureStateObserver>();
   multidevice_setup()->AddFeatureStateObserver(
       observer->GenerateInterfacePtr());
@@ -749,24 +846,35 @@ TEST_F(MultiDeviceSetupImplTest, FeatureStateChanges) {
 
   fake_feature_state_manager()->SetFeatureState(
       mojom::Feature::kBetterTogetherSuite,
-      mojom::FeatureState::kNotSupportedByChromebook);
-  SendPendingObserverMessages();
-  EXPECT_EQ(mojom::FeatureState::kNotSupportedByChromebook,
-            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
-  EXPECT_EQ(1u, observer->feature_state_updates().size());
-
-  fake_feature_state_manager()->SetFeatureState(
-      mojom::Feature::kBetterTogetherSuite,
       mojom::FeatureState::kEnabledByUser);
   SendPendingObserverMessages();
   EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
             CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
-  EXPECT_EQ(2u, observer->feature_state_updates().size());
+  EXPECT_EQ(1u, observer->feature_state_updates().size());
 
+  // No authentication is required to disable the feature.
   EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
-                                         false /* enabled */));
+                                         false /* enabled */,
+                                         base::nullopt /* auth_token */));
   SendPendingObserverMessages();
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(2u, observer->feature_state_updates().size());
+
+  // However, authentication is required to enable the feature.
+  EXPECT_FALSE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                                          true /* enabled */,
+                                          "invalidAuthToken"));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
+            CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  EXPECT_EQ(2u, observer->feature_state_updates().size());
+
+  // Now, send a valid auth token; it should successfully enable.
+  EXPECT_TRUE(CallSetFeatureEnabledState(mojom::Feature::kBetterTogetherSuite,
+                                         true /* enabled */, kValidAuthToken));
+  SendPendingObserverMessages();
+  EXPECT_EQ(mojom::FeatureState::kEnabledByUser,
             CallGetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
   EXPECT_EQ(3u, observer->feature_state_updates().size());
 }
@@ -800,11 +908,12 @@ TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
   EXPECT_FALSE(CallRetrySetHostNow());
 
   // Set an invalid host as the host device; this should fail.
-  EXPECT_FALSE(CallSetHostDevice("invalidHostDeviceId"));
+  EXPECT_FALSE(CallSetHostDevice("invalidHostDeviceId", kValidAuthToken));
   EXPECT_FALSE(fake_host_backend_delegate()->HasPendingHostRequest());
 
   // Set device 0 as the host; this should succeed.
-  EXPECT_TRUE(CallSetHostDevice(test_devices()[0].GetDeviceId()));
+  EXPECT_TRUE(
+      CallSetHostDevice(test_devices()[0].GetDeviceId(), kValidAuthToken));
   EXPECT_TRUE(fake_host_backend_delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0],
             fake_host_backend_delegate()->GetPendingHostRequest());
@@ -855,6 +964,22 @@ TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
 
   // Simulate the host being removed on the back-end.
   fake_host_backend_delegate()->NotifyHostChangedOnBackend(base::nullopt);
+}
+
+TEST_F(MultiDeviceSetupImplTest, TestSetHostDevice_InvalidAuthToken) {
+  // Start with no eligible devices.
+  EXPECT_TRUE(CallGetEligibleHostDevices().empty());
+  VerifyCurrentHostStatus(mojom::HostStatus::kNoEligibleHosts,
+                          base::nullopt /* host_device */);
+
+  // Add a status observer.
+  auto observer = std::make_unique<FakeHostStatusObserver>();
+  multidevice_setup()->AddHostStatusObserver(observer->GenerateInterfacePtr());
+
+  // Set a valid host as the host device, but pass an invalid token.
+  EXPECT_FALSE(
+      CallSetHostDevice(test_devices()[0].GetDeviceId(), "invalidAuthToken"));
+  EXPECT_FALSE(fake_host_backend_delegate()->HasPendingHostRequest());
 }
 
 }  // namespace multidevice_setup

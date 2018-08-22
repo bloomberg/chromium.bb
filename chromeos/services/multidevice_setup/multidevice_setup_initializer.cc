@@ -116,22 +116,25 @@ void MultiDeviceSetupInitializer::GetEligibleHostDevices(
 
 void MultiDeviceSetupInitializer::SetHostDevice(
     const std::string& host_device_id,
+    const std::string& auth_token,
     SetHostDeviceCallback callback) {
   if (multidevice_setup_impl_) {
-    multidevice_setup_impl_->SetHostDevice(host_device_id, std::move(callback));
+    multidevice_setup_impl_->SetHostDevice(host_device_id, auth_token,
+                                           std::move(callback));
     return;
   }
 
   // If a pending request to set another device exists, invoke its callback. It
   // is stale, since now an updated request has been made to set the host.
   if (pending_set_host_args_) {
-    std::move(pending_set_host_args_->second).Run(false /* success */);
+    std::move(std::get<2>(*pending_set_host_args_)).Run(false /* success */);
   }
 
   // If a pending request to remove the current device exists, cancel it.
   pending_should_remove_host_device_ = false;
 
-  pending_set_host_args_ = std::make_pair(host_device_id, std::move(callback));
+  pending_set_host_args_ =
+      std::make_tuple(host_device_id, auth_token, std::move(callback));
 }
 
 void MultiDeviceSetupInitializer::RemoveHostDevice() {
@@ -143,7 +146,7 @@ void MultiDeviceSetupInitializer::RemoveHostDevice() {
   // If a pending request to set another device exists, invoke its callback. It
   // is stale, since now a request has been made to remove the host.
   if (pending_set_host_args_) {
-    std::move(pending_set_host_args_->second).Run(false /* success */);
+    std::move(std::get<2>(*pending_set_host_args_)).Run(false /* success */);
     pending_set_host_args_.reset();
   }
 
@@ -163,14 +166,15 @@ void MultiDeviceSetupInitializer::GetHostStatus(
 void MultiDeviceSetupInitializer::SetFeatureEnabledState(
     mojom::Feature feature,
     bool enabled,
+    const base::Optional<std::string>& auth_token,
     SetFeatureEnabledStateCallback callback) {
   if (multidevice_setup_impl_) {
-    multidevice_setup_impl_->SetFeatureEnabledState(feature, enabled,
-                                                    std::move(callback));
+    multidevice_setup_impl_->SetFeatureEnabledState(
+        feature, enabled, auth_token, std::move(callback));
     return;
   }
 
-  pending_set_feature_enabled_args_.emplace_back(feature, enabled,
+  pending_set_feature_enabled_args_.emplace_back(feature, enabled, auth_token,
                                                  std::move(callback));
 }
 
@@ -235,8 +239,9 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
   if (pending_set_host_args_) {
     DCHECK(!pending_should_remove_host_device_);
     multidevice_setup_impl_->SetHostDevice(
-        pending_set_host_args_->first,
-        std::move(pending_set_host_args_->second));
+        std::get<0>(*pending_set_host_args_),
+        std::get<1>(*pending_set_host_args_),
+        std::move(std::get<2>(*pending_set_host_args_)));
     pending_set_host_args_.reset();
   }
 
@@ -248,7 +253,8 @@ void MultiDeviceSetupInitializer::InitializeImplementation() {
     multidevice_setup_impl_->SetFeatureEnabledState(
         std::get<0>(set_feature_enabled_args),
         std::get<1>(set_feature_enabled_args),
-        std::move(std::get<2>(set_feature_enabled_args)));
+        std::get<2>(set_feature_enabled_args),
+        std::move(std::get<3>(set_feature_enabled_args)));
   }
   pending_set_feature_enabled_args_.clear();
 

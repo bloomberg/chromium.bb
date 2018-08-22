@@ -69,8 +69,10 @@ void MultiDeviceSetupClientImpl::GetEligibleHostDevices(
 
 void MultiDeviceSetupClientImpl::SetHostDevice(
     const std::string& host_device_id,
+    const std::string& auth_token,
     mojom::MultiDeviceSetup::SetHostDeviceCallback callback) {
-  multidevice_setup_ptr_->SetHostDevice(host_device_id, std::move(callback));
+  multidevice_setup_ptr_->SetHostDevice(host_device_id, auth_token,
+                                        std::move(callback));
 }
 
 void MultiDeviceSetupClientImpl::RemoveHostDevice() {
@@ -86,8 +88,9 @@ void MultiDeviceSetupClientImpl::GetHostStatus(GetHostStatusCallback callback) {
 void MultiDeviceSetupClientImpl::SetFeatureEnabledState(
     mojom::Feature feature,
     bool enabled,
+    const base::Optional<std::string>& auth_token,
     mojom::MultiDeviceSetup::SetFeatureEnabledStateCallback callback) {
-  multidevice_setup_ptr_->SetFeatureEnabledState(feature, enabled,
+  multidevice_setup_ptr_->SetFeatureEnabledState(feature, enabled, auth_token,
                                                  std::move(callback));
 }
 

@@ -194,6 +194,7 @@ class MultideviceHandlerTest : public testing::Test {
 
   void CallSetFeatureEnabledState(multidevice_setup::mojom::Feature feature,
                                   bool enabled,
+                                  const base::Optional<std::string>& auth_token,
                                   bool success) {
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
@@ -201,13 +202,15 @@ class MultideviceHandlerTest : public testing::Test {
     args.AppendString("handlerFunctionName");
     args.AppendInteger(static_cast<int>(feature));
     args.AppendBoolean(enabled);
+    if (auth_token)
+      args.AppendString(*auth_token);
 
     base::ListValue empty_args;
     test_web_ui()->HandleReceivedMessage("setFeatureEnabledState", &args);
     fake_multidevice_setup_client()
         ->InvokePendingSetFeatureEnabledStateCallback(
             feature /* expected_feature */, enabled /* expected_enabled */,
-            success);
+            auth_token /* expected_auth_token */, success);
 
     EXPECT_EQ(call_data_count_before_call + 1u,
               test_web_ui()->call_data().size());
@@ -301,13 +304,13 @@ TEST_F(MultideviceHandlerTest, RetryPendingHostSetup) {
 TEST_F(MultideviceHandlerTest, SetFeatureEnabledState) {
   CallSetFeatureEnabledState(
       multidevice_setup::mojom::Feature::kBetterTogetherSuite,
-      true /* enabled */, true /* success */);
+      true /* enabled */, "authToken" /* auth_token */, true /* success */);
   CallSetFeatureEnabledState(
       multidevice_setup::mojom::Feature::kBetterTogetherSuite,
-      false /* enabled */, false /* success */);
+      false /* enabled */, "authToken" /* auth_token */, false /* success */);
   CallSetFeatureEnabledState(
       multidevice_setup::mojom::Feature::kBetterTogetherSuite,
-      false /* enabled */, true /* success */);
+      false /* enabled */, "authToken" /* auth_token */, true /* success */);
 }
 
 }  // namespace settings
