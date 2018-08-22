@@ -36,7 +36,7 @@ suite('RuntimeHostsDialog', function() {
       let id = args[0];
       let input = args[1];
       assertEquals(ITEM_ID, id);
-      assertEquals(site, input);
+      assertEquals('http://www.example.com/*', input);
     });
   });
 
@@ -66,7 +66,7 @@ suite('RuntimeHostsDialog', function() {
     delegate.acceptRuntimeHostPermission = false;
 
     const input = dialog.$$('cr-input');
-    const site = 'http://http://http://';
+    const site = 'http://....a';
     input.value = site;
     input.fire('input');
     assertFalse(input.invalid);
@@ -81,12 +81,12 @@ suite('RuntimeHostsDialog', function() {
   });
 
   test('editing current entry', function() {
-    const oldSite = 'http://example.com';
-    const newSite = 'http://chromium.org';
+    const oldPattern = 'http://example.com/*';
+    const newPattern = 'http://chromium.org/*';
 
-    dialog.currentSite = oldSite;
+    dialog.currentSite = oldPattern;
     const input = dialog.$$('cr-input');
-    input.value = newSite;
+    input.value = newPattern;
     input.fire('input');
     const submit = dialog.$.submit;
 
@@ -94,12 +94,32 @@ suite('RuntimeHostsDialog', function() {
     return delegate.whenCalled('removeRuntimeHostPermission')
         .then((args) => {
           expectEquals(ITEM_ID, args[0] /* id */);
-          expectEquals(oldSite, args[1] /* site */);
+          expectEquals(oldPattern, args[1] /* pattern */);
           return delegate.whenCalled('addRuntimeHostPermission');
         })
         .then((args) => {
           expectEquals(ITEM_ID, args[0] /* id */);
-          expectEquals(newSite, args[1] /* site */);
+          expectEquals(newPattern, args[1] /* pattern */);
         });
+  });
+
+  test('get pattern from url', function() {
+    expectEquals(
+        'https://example.com/*',
+        extensions.getPatternFromSite('https://example.com/*'));
+    expectEquals(
+        'https://example.com/*',
+        extensions.getPatternFromSite('https://example.com/'));
+    expectEquals(
+        'https://example.com/*',
+        extensions.getPatternFromSite('https://example.com'));
+    expectEquals(
+        'https://*.example.com/*',
+        extensions.getPatternFromSite('https://*.example.com/*'));
+    expectEquals(
+        '*://example.com/*', extensions.getPatternFromSite('example.com'));
+    expectEquals(
+        'https://example.com:80/*',
+        extensions.getPatternFromSite('https://example.com:80/*'));
   });
 });

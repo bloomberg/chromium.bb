@@ -34,6 +34,7 @@
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -265,6 +266,25 @@ developer::LoadError CreateLoadError(
   response.source->after_highlight = highlighter.GetAfterFeature();
 
   return response;
+}
+
+base::Optional<URLPattern> ParseRuntimePermissionsPattern(
+    const std::string& pattern_str) {
+  constexpr int kValidRuntimePermissionSchemes = URLPattern::SCHEME_HTTP |
+                                                 URLPattern::SCHEME_HTTPS |
+                                                 URLPattern::SCHEME_FILE;
+
+  URLPattern pattern(kValidRuntimePermissionSchemes);
+  if (pattern.Parse(pattern_str) != URLPattern::PARSE_SUCCESS)
+    return base::nullopt;
+
+  // We don't allow adding paths for permissions, because they aren't meaningful
+  // in terms of origin access. The frontend should validate this, but there's
+  // a chance something can slip through, so we should fail gracefully.
+  if (pattern.path() != "/*")
+    return base::nullopt;
+
+  return pattern;
 }
 
 }  // namespace
@@ -1969,30 +1989,27 @@ DeveloperPrivateAddHostPermissionFunction::Run() {
       developer::AddHostPermission::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GURL host(params->host);
-  if (!host.is_valid() || host.path_piece().length() > 1 || host.has_query() ||
-      host.has_ref()) {
+  base::Optional<URLPattern> pattern =
+      ParseRuntimePermissionsPattern(params->host);
+  if (!pattern)
     return RespondNow(Error(kInvalidHost));
-  }
 
   const Extension* extension = GetExtensionById(params->extension_id);
   if (!extension)
     return RespondNow(Error(kNoSuchExtensionError));
 
-  ScriptingPermissionsModifier scripting_modifier(browser_context(), extension);
-  if (!scripting_modifier.CanAffectExtension())
+  if (!ScriptingPermissionsModifier(browser_context(), extension)
+           .CanAffectExtension()) {
     return RespondNow(Error(kCannotChangeHostPermissions));
-
-  // Only grant withheld permissions. This also ensures that we won't grant
-  // any permission for a host that shouldn't be accessible to the extension,
-  // like chrome:-scheme urls.
-  if (!extension->permissions_data()
-           ->withheld_permissions()
-           .HasEffectiveAccessToURL(host)) {
-    return RespondNow(Error("Cannot grant a permission that wasn't withheld."));
   }
 
-  scripting_modifier.GrantHostPermission(host);
+  URLPatternSet new_host_permissions({*pattern});
+  PermissionsUpdater(browser_context())
+      .GrantRuntimePermissions(
+          *extension,
+          PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        new_host_permissions, new_host_permissions));
+
   return RespondNow(NoArguments());
 }
 
@@ -2007,11 +2024,10 @@ DeveloperPrivateRemoveHostPermissionFunction::Run() {
       developer::RemoveHostPermission::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params);
 
-  GURL host(params->host);
-  if (!host.is_valid() || host.path_piece().length() > 1 || host.has_query() ||
-      host.has_ref()) {
+  base::Optional<URLPattern> pattern =
+      ParseRuntimePermissionsPattern(params->host);
+  if (!pattern)
     return RespondNow(Error(kInvalidHost));
-  }
 
   const Extension* extension = GetExtensionById(params->extension_id);
   if (!extension)
@@ -2021,10 +2037,18 @@ DeveloperPrivateRemoveHostPermissionFunction::Run() {
   if (!scripting_modifier.CanAffectExtension())
     return RespondNow(Error(kCannotChangeHostPermissions));
 
-  if (!scripting_modifier.HasGrantedHostPermission(host))
+  URLPatternSet host_permissions_to_remove({*pattern});
+  std::unique_ptr<const PermissionSet> permissions_to_remove =
+      PermissionSet::CreateIntersection(
+          PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        host_permissions_to_remove, host_permissions_to_remove),
+          *scripting_modifier.GetRevokablePermissions(),
+          URLPatternSet::IntersectionBehavior::kDetailed);
+  if (permissions_to_remove->IsEmpty())
     return RespondNow(Error("Cannot remove a host that hasn't been granted."));
 
-  scripting_modifier.RemoveGrantedHostPermission(host);
+  PermissionsUpdater(browser_context())
+      .RevokeRuntimePermissions(*extension, *permissions_to_remove);
   return RespondNow(NoArguments());
 }
 

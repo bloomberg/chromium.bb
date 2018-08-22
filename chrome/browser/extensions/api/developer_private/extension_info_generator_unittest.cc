@@ -36,7 +36,10 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/feature_switch.h"
 #include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "extensions/common/url_pattern.h"
+#include "extensions/common/url_pattern_set.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -430,7 +433,7 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissions) {
             info->permissions.host_access);
   ASSERT_TRUE(info->permissions.runtime_host_permissions);
   EXPECT_THAT(*info->permissions.runtime_host_permissions,
-              testing::UnorderedElementsAre("example.com"));
+              testing::UnorderedElementsAre("https://example.com/*"));
   EXPECT_THAT(info->permissions.simple_permissions, testing::IsEmpty());
 
   // An extension that doesn't request any host permissions should not have
@@ -455,6 +458,50 @@ TEST_F(ExtensionInfoGeneratorUnitTest, RuntimeHostPermissionsWithoutFeature) {
   ASSERT_EQ(1u, info->permissions.simple_permissions.size());
   EXPECT_EQ("Read and change all your data on the websites you visit",
             info->permissions.simple_permissions[0].message);
+}
+
+// Tests that runtime_host_permissions is correctly populated when permissions
+// are granted by the user beyond what the extension originally requested in the
+// manifest.
+TEST_F(ExtensionInfoGeneratorUnitTest,
+       RuntimeHostPermissionsBeyondRequestedScope) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      CreateExtension("extension", ListBuilder().Append("http://*/*").Build(),
+                      Manifest::INTERNAL);
+
+  std::unique_ptr<developer::ExtensionInfo> info =
+      GenerateExtensionInfo(extension->id());
+
+  // Withhold permissions, and grant *://chromium.org/*.
+  ScriptingPermissionsModifier permissions_modifier(profile(), extension);
+  permissions_modifier.SetWithholdHostPermissions(true);
+  URLPattern all_chromium(Extension::kValidHostPermissionSchemes,
+                          "*://chromium.org/*");
+  PermissionSet all_chromium_set(APIPermissionSet(), ManifestPermissionSet(),
+                                 URLPatternSet({all_chromium}),
+                                 URLPatternSet({all_chromium}));
+  PermissionsUpdater(profile()).GrantRuntimePermissions(*extension,
+                                                        all_chromium_set);
+
+  // The extension should only be granted http://chromium.org/* (since that's
+  // the intersection with what it requested).
+  URLPattern http_chromium(Extension::kValidHostPermissionSchemes,
+                           "http://chromium.org/*");
+  EXPECT_EQ(PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                          URLPatternSet({http_chromium}), URLPatternSet()),
+            extension->permissions_data()->active_permissions());
+
+  // The generated info should use the entirety of the granted permission,
+  // which is *://chromium.org/*.
+  info = GenerateExtensionInfo(extension->id());
+  EXPECT_EQ(developer::HOST_ACCESS_ON_SPECIFIC_SITES,
+            info->permissions.host_access);
+  ASSERT_TRUE(info->permissions.runtime_host_permissions);
+  EXPECT_THAT(*info->permissions.runtime_host_permissions,
+              testing::UnorderedElementsAre("*://chromium.org/*"));
 }
 
 // Test that file:// access checkbox does not show up when the user can't

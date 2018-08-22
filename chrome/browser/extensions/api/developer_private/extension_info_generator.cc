@@ -273,24 +273,33 @@ void AddPermissionsInfo(content::BrowserContext* browser_context,
   if (!permissions_modifier.HasWithheldHostPermissions()) {
     permissions->host_access = developer::HOST_ACCESS_ON_ALL_SITES;
   } else {
-    constexpr bool include_rcd = true;
-    constexpr bool exclude_file_scheme = true;
-    std::set<std::string> distinct_hosts =
-        permission_message_util::GetDistinctHosts(
-            active_permissions.effective_hosts(), include_rcd,
-            exclude_file_scheme);
-    // TODO(devlin): This isn't quite right - it's possible the user just
-    // selected "on specific sites" from the dropdown, and hasn't yet added
-    // any sites. We'll need to handle this.
-    // https://crbug.com/844128.
-    if (!distinct_hosts.empty()) {
+    ExtensionPrefs* extension_prefs = ExtensionPrefs::Get(browser_context);
+    std::unique_ptr<const PermissionSet> runtime_granted_permissions =
+        extension_prefs->GetRuntimeGrantedPermissions(extension.id());
+    if (runtime_granted_permissions->effective_hosts().is_empty()) {
+      // TODO(devlin): This isn't quite right - it's possible the user just
+      // selected "on specific sites" from the dropdown, and hasn't yet added
+      // any sites. We'll need to handle this.
+      // https://crbug.com/844128.
+      permissions->host_access = developer::HOST_ACCESS_ON_CLICK;
+    } else {
       permissions->host_access = developer::HOST_ACCESS_ON_SPECIFIC_SITES;
+      std::set<std::string> distinct_hosts;
+      for (auto pattern : runtime_granted_permissions->effective_hosts()) {
+        // We only allow addition/removal of full hosts (since from a
+        // permissions point of view, path is irrelevant). We always make the
+        // path wildcard when adding through this UI, but the optional
+        // permissions API may allow adding permissions with paths.
+        // TODO(devlin): Investigate, and possibly change the optional
+        // permissions API.
+        pattern.SetPath("/*");
+        distinct_hosts.insert(pattern.GetAsString());
+      }
+
       permissions->runtime_host_permissions =
           std::make_unique<std::vector<std::string>>(
               std::make_move_iterator(distinct_hosts.begin()),
               std::make_move_iterator(distinct_hosts.end()));
-    } else {
-      permissions->host_access = developer::HOST_ACCESS_ON_CLICK;
     }
   }
 }
