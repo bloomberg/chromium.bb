@@ -122,6 +122,8 @@ class PaymentsClientTest : public testing::Test {
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  // Issue an UnmaskCard request. This requires an OAuth token before starting
+  // the request.
   void StartUnmasking() {
     if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
       identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
@@ -136,6 +138,7 @@ class PaymentsClientTest : public testing::Test {
                                        weak_ptr_factory_.GetWeakPtr()));
   }
 
+  // Issue a GetUploadDetails request.
   void StartGettingUploadDetails() {
     if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
       identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
@@ -149,6 +152,8 @@ class PaymentsClientTest : public testing::Test {
         /*billable_service_number=*/12345);
   }
 
+  // Issue an UploadCard request. This requires an OAuth token before starting
+  // the request.
   void StartUploading(bool include_cvc) {
     if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
       identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
@@ -173,6 +178,8 @@ class PaymentsClientTest : public testing::Test {
 
   net::HttpRequestHeaders* GetRequestHeaders() { return &intercepted_headers_; }
 
+  // Issues access token in response to any access token request. This will
+  // start the Payments Request which requires the authentication.
   void IssueOAuthToken() {
     identity_test_env_.WaitForAccessTokenRequestIfNecessaryAndRespondWithToken(
         "totally_real_token",
@@ -508,7 +515,9 @@ TEST_F(PaymentsClientTest, UploadIncludesCvcInRequestIfProvided) {
 
 TEST_F(PaymentsClientTest, UploadDoesNotIncludeCvcInRequestIfNotProvided) {
   StartUploading(/*include_cvc=*/false);
+  IssueOAuthToken();
 
+  EXPECT_TRUE(!GetUploadData().empty());
   // Verify that the encrypted_cvc and s7e_13_cvc parameters were not included
   // in the request.
   EXPECT_TRUE(GetUploadData().find("encrypted_cvc") == std::string::npos);
