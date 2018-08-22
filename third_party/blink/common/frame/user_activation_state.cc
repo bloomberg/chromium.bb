@@ -6,12 +6,11 @@
 
 namespace blink {
 
-// This is a tentative timespan, which should be more than the current limit of
-// 1 sec (in UGI) because we want a reasonable value that works even for a slow
-// network.  Currently we are experimenting with a vary large value (eqvt to no
-// expiry): https://crbug.com/776404.
+// The expiry time should be long enough to allow network round trips even in a
+// very slow connection (to support xhr-like calls with user activation), yet
+// not too long to make an "unattneded" page feel activated.
 constexpr base::TimeDelta kActivationLifespan =
-    base::TimeDelta::FromSeconds(3600);
+    base::TimeDelta::FromSeconds(30);
 
 void UserActivationState::Activate() {
   has_been_active_ = true;

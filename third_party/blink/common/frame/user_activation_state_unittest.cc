@@ -65,7 +65,7 @@ TEST_F(UserActivationStateTest, ExpirationTest) {
   user_activation_state.Activate();
 
   // Right before activation expiry, both bits remain set.
-  AdvanceClock(base::TimeDelta::FromSeconds(3599));
+  AdvanceClock(base::TimeDelta::FromSeconds(29));
   EXPECT_TRUE(user_activation_state.HasBeenActive());
   EXPECT_TRUE(user_activation_state.IsActive());
 
@@ -99,7 +99,7 @@ TEST_F(UserActivationStateTest, ConsumptionPlusExpirationTest) {
 
   // An activation is not consumable after expiry.
   user_activation_state.Activate();
-  AdvanceClock(base::TimeDelta::FromSeconds(3600));
+  AdvanceClock(base::TimeDelta::FromSeconds(30));
   EXPECT_FALSE(user_activation_state.ConsumeIfActive());
 
   // Consecutive activations within expiry is consumable only once.
