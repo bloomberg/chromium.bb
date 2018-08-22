@@ -61,7 +61,7 @@ void TooltipIcon::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 void TooltipIcon::MouseMovedOutOfHost() {
   if (IsMouseHovered()) {
-    mouse_watcher_->Start();
+    mouse_watcher_->Start(GetWidget()->GetNativeWindow());
     return;
   }
 
@@ -96,7 +96,7 @@ void TooltipIcon::ShowBubble() {
     View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
     mouse_watcher_ = std::make_unique<MouseWatcher>(
         std::make_unique<MouseWatcherViewHost>(frame, gfx::Insets()), this);
-    mouse_watcher_->Start();
+    mouse_watcher_->Start(GetWidget()->GetNativeWindow());
   }
 }
 

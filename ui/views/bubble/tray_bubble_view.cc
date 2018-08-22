@@ -419,7 +419,7 @@ void TrayBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
     // cannot see a lag.
     mouse_watcher_->set_notify_on_exit_time(
         base::TimeDelta::FromMilliseconds(kFrameTimeInMS));
-    mouse_watcher_->Start();
+    mouse_watcher_->Start(GetWidget()->GetNativeWindow());
   }
 }
 

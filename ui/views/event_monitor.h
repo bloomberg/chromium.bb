@@ -25,9 +25,11 @@ class VIEWS_EXPORT EventMonitor {
 
   // Create an instance for monitoring application events.
   // Events will be forwarded to |event_handler| before they are dispatched to
-  // the application.
+  // the application. |context| is used to determine where to observer events
+  // from. |context| may be destroyed before the EventMonitor.
   static std::unique_ptr<EventMonitor> CreateApplicationMonitor(
-      ui::EventHandler* event_handler);
+      ui::EventHandler* event_handler,
+      gfx::NativeWindow context);
 
   // Create an instance for monitoring events on a specific window.
   // Events will be forwarded to |event_handler| before they are dispatched to
@@ -39,7 +41,7 @@ class VIEWS_EXPORT EventMonitor {
 
   // Returns the last mouse location seen in a mouse event in screen
   // coordinates.
-  static gfx::Point GetLastMouseLocation();
+  virtual gfx::Point GetLastMouseLocation() = 0;
 };
 
 }  // namespace views

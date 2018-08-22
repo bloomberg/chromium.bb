@@ -1931,7 +1931,8 @@ TEST_F(WidgetTest, DestroyedWithCaptureViaEventMonitor) {
   widget->SetCapture(view_handler);
 
   ClosingEventHandler monitor_handler(widget);
-  auto monitor = EventMonitor::CreateApplicationMonitor(&monitor_handler);
+  auto monitor = EventMonitor::CreateApplicationMonitor(
+      &monitor_handler, widget->GetNativeWindow());
 
   ui::test::EventGenerator generator(
       IsMus() ? widget->GetNativeWindow() : GetContext(),

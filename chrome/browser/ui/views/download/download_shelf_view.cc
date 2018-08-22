@@ -137,7 +137,7 @@ void DownloadShelfView::RemoveDownloadView(View* view) {
   if (download_views_.empty())
     Close(AUTOMATIC);
   else if (CanAutoClose())
-    mouse_watcher_.Start();
+    mouse_watcher_.Start(GetWidget()->GetNativeWindow());
   Layout();
   SchedulePaint();
 }
@@ -174,7 +174,7 @@ void DownloadShelfView::OnPaintBorder(gfx::Canvas* canvas) {
 
 void DownloadShelfView::OpenedDownload() {
   if (CanAutoClose())
-    mouse_watcher_.Start();
+    mouse_watcher_.Start(GetWidget()->GetNativeWindow());
 }
 
 content::PageNavigator* DownloadShelfView::GetNavigator() {

@@ -18,6 +18,9 @@ class EventMonitorMac : public EventMonitor {
                   gfx::NativeWindow target_window);
   ~EventMonitorMac() override;
 
+  // EventMonitor:
+  gfx::Point GetLastMouseLocation() override;
+
  private:
   id monitor_;
   ui::WeakPtrNSObjectFactory<EventMonitorMac> factory_;
