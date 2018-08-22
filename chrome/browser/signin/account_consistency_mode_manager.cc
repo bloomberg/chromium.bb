@@ -4,6 +4,8 @@
 
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 
+#include <string>
+
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial_params.h"
@@ -21,7 +23,7 @@
 #include "google_apis/google_api_keys.h"
 
 #if defined(OS_CHROMEOS)
-#include "components/signin/core/browser/signin_pref_names.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 using signin::AccountConsistencyMethod;
@@ -243,6 +245,11 @@ AccountConsistencyModeManager::ComputeAccountConsistencyMethod(
       kAccountConsistencyFeature, kAccountConsistencyFeatureMethodParameter);
 
 #if defined(OS_CHROMEOS)
+  if (chromeos::switches::IsAccountManagerEnabled())
+    return AccountConsistencyMethod::kMirror;
+
+  // TODO(sinhak): Clean this up. When Account Manager is released, Chrome OS
+  // will always have Mirror enabled for regular profiles.
   return (method_value == kAccountConsistencyFeatureMethodMirror ||
           profile->GetPrefs()->GetBoolean(
               prefs::kAccountConsistencyMirrorRequired))
