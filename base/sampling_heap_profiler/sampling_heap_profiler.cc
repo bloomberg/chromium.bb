@@ -57,7 +57,9 @@ Atomic32 g_hooks_installed;
 
 void* AllocFn(const AllocatorDispatch* self, size_t size, void* context) {
   void* address = self->next->alloc_function(self->next, size, context);
-  SamplingHeapProfiler::RecordAlloc(address, size, kSkipBaseAllocatorFrames);
+  SamplingHeapProfiler::RecordAlloc(address, size,
+                                    SamplingHeapProfiler::kMalloc, nullptr,
+                                    kSkipBaseAllocatorFrames);
   return address;
 }
 
@@ -68,6 +70,7 @@ void* AllocZeroInitializedFn(const AllocatorDispatch* self,
   void* address =
       self->next->alloc_zero_initialized_function(self->next, n, size, context);
   SamplingHeapProfiler::RecordAlloc(address, n * size,
+                                    SamplingHeapProfiler::kMalloc, nullptr,
                                     kSkipBaseAllocatorFrames);
   return address;
 }
@@ -78,7 +81,9 @@ void* AllocAlignedFn(const AllocatorDispatch* self,
                      void* context) {
   void* address =
       self->next->alloc_aligned_function(self->next, alignment, size, context);
-  SamplingHeapProfiler::RecordAlloc(address, size, kSkipBaseAllocatorFrames);
+  SamplingHeapProfiler::RecordAlloc(address, size,
+                                    SamplingHeapProfiler::kMalloc, nullptr,
+                                    kSkipBaseAllocatorFrames);
   return address;
 }
 
@@ -89,7 +94,9 @@ void* ReallocFn(const AllocatorDispatch* self,
   // Note: size == 0 actually performs free.
   SamplingHeapProfiler::RecordFree(address);
   address = self->next->realloc_function(self->next, address, size, context);
-  SamplingHeapProfiler::RecordAlloc(address, size, kSkipBaseAllocatorFrames);
+  SamplingHeapProfiler::RecordAlloc(address, size,
+                                    SamplingHeapProfiler::kMalloc, nullptr,
+                                    kSkipBaseAllocatorFrames);
   return address;
 }
 
@@ -113,6 +120,7 @@ unsigned BatchMallocFn(const AllocatorDispatch* self,
       self->next, size, results, num_requested, context);
   for (unsigned i = 0; i < num_allocated; ++i) {
     SamplingHeapProfiler::RecordAlloc(results[i], size,
+                                      SamplingHeapProfiler::kMalloc, nullptr,
                                       kSkipBaseAllocatorFrames);
   }
   return num_allocated;
@@ -150,7 +158,8 @@ AllocatorDispatch g_allocator_dispatch = {&AllocFn,
 #if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
 
 void PartitionAllocHook(void* address, size_t size, const char*) {
-  SamplingHeapProfiler::RecordAlloc(address, size);
+  SamplingHeapProfiler::RecordAlloc(
+      address, size, SamplingHeapProfiler::kPartitionAlloc, nullptr);
 }
 
 void PartitionFreeHook(void* address) {
@@ -288,6 +297,8 @@ size_t SamplingHeapProfiler::GetNextSampleInterval(size_t interval) {
 // static
 void SamplingHeapProfiler::RecordAlloc(void* address,
                                        size_t size,
+                                       AllocatorType type,
+                                       const char* context,
                                        uint32_t skip_frames) {
   if (UNLIKELY(!base::subtle::NoBarrier_Load(&g_running)))
     return;
@@ -316,7 +327,8 @@ void SamplingHeapProfiler::RecordAlloc(void* address,
 
   AccumulatedBytesTLS().Set(reinterpret_cast<void*>(accumulated_bytes));
 
-  instance_->DoRecordAlloc(samples * mean_interval, size, address, skip_frames);
+  instance_->DoRecordAlloc(samples * mean_interval, size, address, type,
+                           context, skip_frames);
 }
 
 void SamplingHeapProfiler::RecordStackTrace(Sample* sample,
@@ -353,6 +365,8 @@ void SamplingHeapProfiler::RecordStackTrace(Sample* sample,
 void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
                                          size_t size,
                                          void* address,
+                                         AllocatorType type,
+                                         const char* context,
                                          uint32_t skip_frames) {
   if (entered_.Get())
     return;
@@ -362,7 +376,7 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
     Sample sample(size, total_allocated, ++last_sample_ordinal_);
     RecordStackTrace(&sample, skip_frames);
     for (auto* observer : observers_)
-      observer->SampleAdded(sample.ordinal, size, total_allocated);
+      observer->SampleAdded(address, size, total_allocated, type, context);
     samples_.emplace(address, std::move(sample));
     // TODO(alph): Sometimes RecordAlloc is called twice in a row without
     // a RecordFree in between. Investigate it.
@@ -392,7 +406,7 @@ void SamplingHeapProfiler::DoRecordFree(void* address) {
     auto it = samples_.find(address);
     CHECK(it != samples_.end());
     for (auto* observer : observers_)
-      observer->SampleRemoved(it->second.ordinal);
+      observer->SampleRemoved(address);
     samples_.erase(it);
     sampled_addresses_set().Remove(address);
   }

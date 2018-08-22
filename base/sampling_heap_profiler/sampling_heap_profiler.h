@@ -29,6 +29,8 @@ class LockFreeAddressHashSet;
 // The recorded samples can then be retrieved using GetSamples method.
 class BASE_EXPORT SamplingHeapProfiler {
  public:
+  enum AllocatorType : uint32_t { kMalloc, kPartitionAlloc, kBlinkGC, kMax };
+
   class BASE_EXPORT Sample {
    public:
     Sample(const Sample&);
@@ -49,8 +51,12 @@ class BASE_EXPORT SamplingHeapProfiler {
   class SamplesObserver {
    public:
     virtual ~SamplesObserver() = default;
-    virtual void SampleAdded(uint32_t id, size_t size, size_t total) = 0;
-    virtual void SampleRemoved(uint32_t id) = 0;
+    virtual void SampleAdded(void* address,
+                             size_t size,
+                             size_t total,
+                             AllocatorType type,
+                             const char* context) = 0;
+    virtual void SampleRemoved(void* address) = 0;
   };
 
   // Must be called early during the process initialization. It creates and
@@ -77,7 +83,11 @@ class BASE_EXPORT SamplingHeapProfiler {
 
   std::vector<Sample> GetSamples(uint32_t profile_id);
 
-  static void RecordAlloc(void* address, size_t, uint32_t skip_frames = 0);
+  static void RecordAlloc(void* address,
+                          size_t,
+                          AllocatorType,
+                          const char* context,
+                          uint32_t skip_frames = 0);
   static void RecordFree(void* address);
 
   static SamplingHeapProfiler* GetInstance();
@@ -93,6 +103,8 @@ class BASE_EXPORT SamplingHeapProfiler {
   void DoRecordAlloc(size_t total_allocated,
                      size_t allocation_size,
                      void* address,
+                     AllocatorType type,
+                     const char* context,
                      uint32_t skip_frames);
   void DoRecordFree(void* address);
   void RecordStackTrace(Sample*, uint32_t skip_frames);

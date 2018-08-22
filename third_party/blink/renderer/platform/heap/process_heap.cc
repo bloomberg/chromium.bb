@@ -14,8 +14,10 @@ namespace blink {
 
 namespace {
 
-void BlinkGCAllocHook(uint8_t* address, size_t size, const char*) {
-  base::SamplingHeapProfiler::RecordAlloc(address, size);
+void BlinkGCAllocHook(uint8_t* address, size_t size, const char* context) {
+  base::SamplingHeapProfiler::RecordAlloc(
+      address, size, base::SamplingHeapProfiler::AllocatorType::kBlinkGC,
+      context);
 }
 
 void BlinkGCFreeHook(uint8_t* address) {
