@@ -26,15 +26,19 @@ class SamplesCollector : public SamplingHeapProfiler::SamplesObserver {
  public:
   explicit SamplesCollector(size_t watch_size) : watch_size_(watch_size) {}
 
-  void SampleAdded(uint32_t id, size_t size, size_t) override {
+  void SampleAdded(void* address,
+                   size_t size,
+                   size_t,
+                   SamplingHeapProfiler::AllocatorType,
+                   const char*) override {
     if (sample_added || size != watch_size_)
       return;
-    sample_id_ = id;
+    sample_address_ = address;
     sample_added = true;
   }
 
-  void SampleRemoved(uint32_t id) override {
-    if (id == sample_id_)
+  void SampleRemoved(void* address) override {
+    if (address == sample_address_)
       sample_removed = true;
   }
 
@@ -43,7 +47,7 @@ class SamplesCollector : public SamplingHeapProfiler::SamplesObserver {
 
  private:
   size_t watch_size_;
-  uint32_t sample_id_ = 0;
+  void* sample_address_ = nullptr;
 };
 
 TEST_F(SamplingHeapProfilerTest, CollectSamples) {
