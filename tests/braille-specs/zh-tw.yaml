@@ -1,6 +1,6 @@
 display: unicode.dis
 table:
-  locale: zh-TW
+  locale: cmn-TW
   __assert-match: zh_TW.tbl # zh-tw.ctb
 tests:
   - [一,⠡⠄]
