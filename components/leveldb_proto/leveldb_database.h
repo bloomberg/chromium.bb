@@ -64,6 +64,10 @@ class LevelDB {
   // directory.
   virtual bool Destroy();
 
+  // Returns true if we successfully read the approximate memory usage property
+  // from the LevelDB.
+  bool GetApproximateMemoryUse(uint64_t* approx_mem);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ProtoDatabaseImplLevelDBTest, TestDBInitFail);
 

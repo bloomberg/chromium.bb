@@ -93,10 +93,8 @@ leveldb::Status LevelDB::Init(const base::FilePath& database_dir,
       // reads/writes and the block cache should be empty.
       uint64_t approx_mem = 0;
       std::string usage_string;
-      if (db_->GetProperty("leveldb.approximate-memory-usage", &usage_string) &&
-          base::StringToUint64(usage_string, &approx_mem)) {
+      if (GetApproximateMemoryUse(&approx_mem))
         approx_mem_histogram_->Add(approx_mem);
-      }
     }
   } else {
     LOG(WARNING) << "Unable to open " << database_dir.value() << ": "
@@ -234,6 +232,12 @@ bool LevelDB::Destroy() {
   if (destroy_histogram_)
     destroy_histogram_->Add(leveldb_env::GetLevelDBStatusUMAValue(s));
   return s.ok();
+}
+
+bool LevelDB::GetApproximateMemoryUse(uint64_t* approx_mem) {
+  std::string usage_string;
+  return (db_->GetProperty("leveldb.approximate-memory-usage", &usage_string) &&
+          base::StringToUint64(usage_string, approx_mem));
 }
 
 }  // namespace leveldb_proto

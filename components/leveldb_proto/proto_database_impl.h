@@ -70,6 +70,8 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
                         const leveldb_env::Options& options,
                         typename ProtoDatabase<T>::InitCallback callback);
 
+  bool GetApproximateMemoryUse(uint64_t* approx_mem);
+
  private:
   base::ThreadChecker thread_checker_;
 
@@ -386,6 +388,11 @@ void ProtoDatabaseImpl<T>::GetEntry(
       base::BindOnce(RunGetCallback<T>, std::move(callback),
                      base::Owned(success), base::Owned(found),
                      std::move(entry)));
+}
+
+template <typename T>
+bool ProtoDatabaseImpl<T>::GetApproximateMemoryUse(uint64_t* approx_mem) {
+  return db_->GetApproximateMemoryUse(approx_mem);
 }
 
 }  // namespace leveldb_proto
