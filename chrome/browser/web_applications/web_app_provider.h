@@ -41,6 +41,9 @@ class WebAppProvider : public KeyedService {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
+  // KeyedService
+  void Shutdown() override;
+
  private:
   void OnScanForExternalWebApps(
       std::vector<web_app::PendingAppManager::AppInfo>);
