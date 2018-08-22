@@ -561,19 +561,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kComponentUpdatesEnabled,
 
-#if defined(OS_ANDROID)
-    prefs::kLocationSettingsBackoffLevelDSE,
-    prefs::kLocationSettingsBackoffLevelDefault,
-    prefs::kLocationSettingsNextShowDSE,
-    prefs::kLocationSettingsNextShowDefault,
-
-    prefs::kSearchGeolocationDisclosureDismissed,
-    prefs::kSearchGeolocationDisclosureShownCount,
-    prefs::kSearchGeolocationDisclosureLastShowDate,
-    prefs::kSearchGeolocationPreDisclosureMetricsRecorded,
-    prefs::kSearchGeolocationPostDisclosureMetricsRecorded,
-#endif
-
     prefs::kDSEGeolocationSettingDeprecated,
 
     prefs::kDSEPermissionsSettings, prefs::kDSEWasDisabledByPolicy,
