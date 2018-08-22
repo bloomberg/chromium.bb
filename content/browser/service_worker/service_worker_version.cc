@@ -774,6 +774,22 @@ void ServiceWorkerVersion::Doom() {
   context_->storage()->PurgeResources(resources);
 }
 
+void ServiceWorkerVersion::SetToPauseAfterDownload(base::OnceClosure callback) {
+  pause_after_download_callback_ = std::move(callback);
+}
+
+void ServiceWorkerVersion::SetToNotPauseAfterDownload() {
+  pause_after_download_callback_.Reset();
+}
+
+void ServiceWorkerVersion::OnMainScriptLoaded() {
+  if (!pause_after_download_callback_)
+    return;
+  // The callback can destroy |this|, so protect it first.
+  auto protect = base::WrapRefCounted(this);
+  std::move(pause_after_download_callback_).Run();
+}
+
 void ServiceWorkerVersion::SetValidOriginTrialTokens(
     const blink::TrialTokenValidator::FeatureToTokensMap& tokens) {
   origin_trial_tokens_ = validator_->GetValidTokens(
@@ -1504,9 +1520,10 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->scope = scope_;
   params->script_url = script_url_;
   params->is_installed = IsInstalled(status_);
-  params->pause_after_download = pause_after_download_;
+  params->pause_after_download = pause_after_download();
 
-  if (IsInstalled(status()) && !pause_after_download_) {
+  if (IsInstalled(status())) {
+    DCHECK(!params->pause_after_download);
     DCHECK(!installed_scripts_sender_);
     installed_scripts_sender_ =
         std::make_unique<ServiceWorkerInstalledScriptsSender>(this);

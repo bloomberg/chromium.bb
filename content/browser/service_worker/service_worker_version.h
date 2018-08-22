@@ -415,10 +415,16 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Used for pausing service worker startup in the renderer in order to do the
   // byte-for-byte check.
-  bool pause_after_download() const { return pause_after_download_; }
-  void set_pause_after_download(bool pause_after_download) {
-    pause_after_download_ = pause_after_download;
+  bool pause_after_download() const {
+    return !pause_after_download_callback_.is_null();
   }
+  void SetToPauseAfterDownload(base::OnceClosure callback);
+  void SetToNotPauseAfterDownload();
+
+  // For use by EmbeddedWorkerInstance. Called when the main script loaded.
+  // This is only called for new (non-installed) workers. It's used for resuming
+  // a paused worker via ResumeAfterDownload().
+  void OnMainScriptLoaded();
 
   // Returns nullptr if the main script is not loaded yet and:
   //  1) The worker is a new one.
@@ -865,9 +871,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   bool skip_waiting_ = false;
   bool skip_recording_startup_time_ = false;
   bool force_bypass_cache_for_scripts_ = false;
-  bool pause_after_download_ = false;
   bool is_update_scheduled_ = false;
   bool in_dtor_ = false;
+
+  // For service worker update checks. Non-null if pause after download during
+  // startup was requested. Once paused, the callback is run and reset to
+  // null.
+  base::OnceClosure pause_after_download_callback_;
 
   std::unique_ptr<net::HttpResponseInfo> main_script_http_info_;
 

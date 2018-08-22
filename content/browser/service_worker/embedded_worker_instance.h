@@ -78,6 +78,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     STARTING_PHASE_MAX_VALUE,
   };
 
+  // DEPRECATED, only for use by ServiceWorkerVersion.
+  // TODO(crbug.com/855852): Remove this interface.
   class Listener {
    public:
     virtual ~Listener() {}
@@ -105,8 +107,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     // worker died. When this is called, status is STOPPED.
     virtual void OnDetached(EmbeddedWorkerStatus old_status) {}
 
-    virtual void OnScriptLoaded() {}
-    virtual void OnScriptLoadFailed() {}
     virtual void OnReportException(const base::string16& error_message,
                                    int line_number,
                                    int column_number,
@@ -116,9 +116,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                                         const base::string16& message,
                                         int line_number,
                                         const GURL& source_url) {}
-    // The instance is being deleted, so it's not safe to call any methods that
-    // may result in a virtual method call.
-    virtual void OnDestroyed() {}
   };
 
   ~EmbeddedWorkerInstance() override;
@@ -164,6 +161,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   int thread_id() const { return thread_id_; }
   int worker_devtools_agent_route_id() const;
 
+  // DEPRECATED, only for use by ServiceWorkerVersion.
+  // TODO(crbug.com/855852): Remove the Listener interface.
   void AddObserver(Listener* listener);
   void RemoveObserver(Listener* listener);
 

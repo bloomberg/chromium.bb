@@ -222,7 +222,7 @@ class ServiceWorkerNewScriptLoaderTest : public testing::Test {
     version_->SetStatus(ServiceWorkerVersion::NEW);
 
     if (registration_->waiting_version() || registration_->active_version())
-      version_->set_pause_after_download(true);
+      version_->SetToPauseAfterDownload(base::DoNothing());
   }
 
   void DoRequest(const GURL& url,
