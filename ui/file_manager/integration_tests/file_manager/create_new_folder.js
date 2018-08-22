@@ -11,8 +11,6 @@
  */
 var TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"] ';
 var TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"] ';
-var EXPAND_ICON = '> .tree-row > .expand-icon';
-var EXPANDED_SUBTREE = '> .tree-children[expanded]';
 
 /**
  * Selects the first item in the file list.
@@ -138,20 +136,31 @@ function createNewFolder(windowId, path, initialEntrySet, rootLabel) {
 }
 
 /**
- * This is used to expand the tree item for Downloads or Drive.
- * @param {string} windowId The Files app windowId.
- * @param {string} selector The Downloads or Drive tree item selector.
+ * Expands the directory tree item given by |selector| (Downloads or Drive)
+ * to reveal its subtree child items.
+ *
+ * @param {string} appId The Files app windowId.
+ * @param {string} selector Downloads or Drive directory tree item selector.
  * @return {Promise} Promise fulfilled on success.
  */
-function expandRoot(windowId, selector) {
-  return remoteCall.waitForElement(
-      windowId, selector + EXPAND_ICON).then(function() {
-    return remoteCall.callRemoteTestUtil(
-        'fakeMouseClick', windowId, [selector + EXPAND_ICON]);
+function expandRoot(appId, selector) {
+  const expandIcon = selector + ' > .tree-row > .expand-icon';
+
+  return new Promise(function(resolve) {
+    // Wait for the subtree expand icon to appear.
+    remoteCall.waitForElement(appId, [expandIcon]).then(resolve);
+  }).then(function() {
+    // Click the expand icon to expand the subtree.
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [expandIcon]);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    return remoteCall.waitForElement(windowId,
-        selector + EXPANDED_SUBTREE);
+    // Wait for the subtree to expand and display its children.
+    const expandedSubtree = selector + ' > .tree-children[expanded]';
+    return remoteCall.waitForElement(appId, expandedSubtree);
+  }).then(function(element) {
+    // Verify expected subtree child item name.
+    if (element.text.indexOf('photos') === -1)
+      chrome.test.fail('directory subtree child item "photos" not found');
   });
 }
 
