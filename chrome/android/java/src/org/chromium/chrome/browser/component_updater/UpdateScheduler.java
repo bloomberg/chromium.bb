@@ -20,10 +20,14 @@ import org.chromium.components.background_task_scheduler.TaskInfo;
 /** Java-side implementation of the component update scheduler using the BackgroundTaskScheduler. */
 @JNINamespace("component_updater")
 public class UpdateScheduler {
+    // This is the delay in case we have to reschedule before the component updater could schedule
+    // component updates.
+    private static final int DEFAULT_DELAY_MS = 600000; // 10 minutes.
+
     private static UpdateScheduler sInstance;
     private TaskFinishedCallback mTaskFinishedCallback;
     private long mNativeScheduler;
-    private long mDelayMs;
+    private long mDelayMs = DEFAULT_DELAY_MS;
 
     @CalledByNative
     /* package */ static UpdateScheduler getInstance() {

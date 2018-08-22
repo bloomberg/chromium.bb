@@ -4,9 +4,18 @@
 
 #include "chrome/browser/android/component_updater/background_task_update_scheduler.h"
 
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "jni/UpdateScheduler_jni.h"
 
 namespace component_updater {
+
+namespace {
+
+// Delay of running component updates after the background task fires to give
+// enough time for async component registration.
+const base::TimeDelta kOnStartTaskDelay = base::TimeDelta::FromSeconds(2);
+
+}  // namespace
 
 // static
 bool BackgroundTaskUpdateScheduler::IsAvailable() {
@@ -43,8 +52,13 @@ void BackgroundTaskUpdateScheduler::Stop() {
 void BackgroundTaskUpdateScheduler::OnStartTask(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  user_task_.Run(base::BindOnce(&Java_UpdateScheduler_finishTask,
-                                base::Unretained(env), j_update_scheduler_));
+  // Component registration is async. Add some delay to give some time for the
+  // registration.
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&BackgroundTaskUpdateScheduler::OnStartTaskDelayed,
+                     base::Unretained(this)),
+      kOnStartTaskDelay);
 }
 
 void BackgroundTaskUpdateScheduler::OnStopTask(
@@ -52,6 +66,17 @@ void BackgroundTaskUpdateScheduler::OnStopTask(
     const base::android::JavaParamRef<jobject>& obj) {
   DCHECK(on_stop_);
   on_stop_.Run();
+}
+
+void BackgroundTaskUpdateScheduler::OnStartTaskDelayed() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (!user_task_) {
+    LOG(WARNING) << "No components registered to update";
+    Java_UpdateScheduler_finishTask(env, j_update_scheduler_);
+    return;
+  }
+  user_task_.Run(base::BindOnce(&Java_UpdateScheduler_finishTask,
+                                base::Unretained(env), j_update_scheduler_));
 }
 
 }  // namespace component_updater
