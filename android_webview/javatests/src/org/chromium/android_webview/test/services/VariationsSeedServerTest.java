@@ -23,8 +23,9 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.services.IVariationsSeedServer;
 import org.chromium.android_webview.services.VariationsSeedServer;
+import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,7 +34,8 @@ import java.io.IOException;
 /**
  * Test VariationsSeedServer.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
+@SkipCommandLineParameterization
 public class VariationsSeedServerTest {
     private static final long BINDER_TIMEOUT_MILLIS = 10000;
 

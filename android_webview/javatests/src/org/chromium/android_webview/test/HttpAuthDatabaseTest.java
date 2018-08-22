@@ -14,13 +14,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.HttpAuthDatabase;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
 /**
  * Test suite for HttpAuthDatabase.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
+@SkipCommandLineParameterization
 public class HttpAuthDatabaseTest {
     private static final String TEST_DATABASE = "http_auth_for_HttpAuthDatabaseTest.db";
 

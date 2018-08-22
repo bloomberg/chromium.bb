@@ -23,7 +23,6 @@ import org.chromium.android_webview.test.services.MockVariationsSeedServer;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
@@ -35,7 +34,7 @@ import java.util.concurrent.TimeoutException;
 /**
  * Test VariationsSeedLoader.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
 @SkipCommandLineParameterization
 public class VariationsSeedLoaderTest {
     private static final long TIMEOUT_MILLIS = 10000;

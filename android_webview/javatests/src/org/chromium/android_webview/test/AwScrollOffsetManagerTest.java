@@ -12,13 +12,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwScrollOffsetManager;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
 /**
  * Integration tests for ScrollOffsetManager.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
+@SkipCommandLineParameterization
 public class AwScrollOffsetManagerTest {
     private static class TestScrollOffsetManagerDelegate implements AwScrollOffsetManager.Delegate {
         private int mOverScrollDeltaX;

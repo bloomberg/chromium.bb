@@ -14,8 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.services.CrashReceiverService;
+import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,8 @@ import java.io.IOException;
 /**
  * Instrumentation tests for CrashReceiverService.
  */
-@RunWith(BaseJUnit4ClassRunner.class)
+@RunWith(AwJUnit4ClassRunner.class)
+@SkipCommandLineParameterization
 public class CrashReceiverServiceTest {
     @Before
     public void setUp() throws Exception {
