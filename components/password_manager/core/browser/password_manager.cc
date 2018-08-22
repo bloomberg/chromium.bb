@@ -671,9 +671,6 @@ void PasswordManager::CreatePendingLoginManagers(
                        base::CompareCase::SENSITIVE))
       continue;
 
-    if (form.is_gaia_with_skip_save_password_form)
-      continue;
-
     bool old_manager_found = false;
     for (const auto& old_manager : pending_login_managers_) {
       if (old_manager->DoesManage(form, driver) !=
@@ -723,6 +720,9 @@ void PasswordManager::CreateFormManagers(
   // Find new forms.
   std::vector<const PasswordForm*> new_forms;
   for (const PasswordForm& form : forms) {
+    // TODO(https://crbug.com/831123): Implement inside NewPasswordFormManger
+    // not-filling Gaia forms that should be ignored instead of non-creating
+    // NewPasswordFormManger instance.
     if (form.is_gaia_with_skip_save_password_form)
       continue;
     auto form_it =

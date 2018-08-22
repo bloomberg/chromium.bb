@@ -856,6 +856,37 @@ TEST_F(PasswordManagerTest, SyncCredentialsNotSaved) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
 }
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+TEST_F(PasswordManagerTest, HashSavedOnGaiaFormWithSkipSavePassword) {
+  EXPECT_CALL(client_, IsSavingAndFillingEnabledForCurrentPage())
+      .WillRepeatedly(Return(true));
+
+  std::vector<PasswordForm> observed;
+  PasswordForm form(MakeSimpleGAIAForm());
+  // Simulate that this is Gaia form that should be ignored for saving/filling.
+  form.is_gaia_with_skip_save_password_form = true;
+  observed.push_back(form);
+  manager()->OnPasswordFormsParsed(&driver_, observed);
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+
+  ON_CALL(*client_.GetStoreResultFilter(), ShouldSaveGaiaPasswordHash(_))
+      .WillByDefault(Return(true));
+  ON_CALL(*client_.GetStoreResultFilter(), ShouldSave(_))
+      .WillByDefault(Return(false));
+  ON_CALL(*client_.GetStoreResultFilter(), IsSyncAccountEmail(_))
+      .WillByDefault(Return(true));
+
+  EXPECT_CALL(*store_,
+              SaveGaiaPasswordHash(
+                  "googleuser", form.password_value,
+                  metrics_util::SyncPasswordHashChange::SAVED_IN_CONTENT_AREA));
+
+  OnPasswordFormSubmitted(form);
+  observed.clear();
+  manager()->OnPasswordFormsRendered(&driver_, observed, true);
+}
+#endif
+
 // On a successful login with an updated password,
 // CredentialsFilter::ReportFormLoginSuccess and CredentialsFilter::ShouldSave
 // should be called. The argument of ShouldSave shold be the submitted form.
