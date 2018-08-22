@@ -30,9 +30,9 @@ source_set("auth_token_validator") {
   ]
 }
 
-source_set("android_sms_app_install_delegate") {
+source_set("android_sms_app_helper_delegate") {
   sources = [
-    "android_sms_app_install_delegate.h",
+    "android_sms_app_helper_delegate.h",
   ]
 
   public_deps = [
@@ -56,8 +56,8 @@ static_library("test_support") {
   testonly = true
 
   sources = [
-    "fake_android_sms_app_install_delegate.cc",
-    "fake_android_sms_app_install_delegate.h",
+    "fake_android_sms_app_helper_delegate.cc",
+    "fake_android_sms_app_helper_delegate.h",
     "fake_auth_token_validator.cc",
     "fake_auth_token_validator.h",
     "fake_multidevice_setup.cc",
@@ -67,7 +67,7 @@ static_library("test_support") {
   ]
 
   public_deps = [
-    ":android_sms_app_install_delegate",
+    ":android_sms_app_helper_delegate",
     ":auth_token_validator",
     ":cpp",
     "//chromeos/services/multidevice_setup",

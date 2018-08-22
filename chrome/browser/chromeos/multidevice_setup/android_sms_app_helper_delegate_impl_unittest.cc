@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_install_delegate_impl.h"
+#include "chrome/browser/chromeos/multidevice_setup/android_sms_app_helper_delegate_impl.h"
 
 #include <memory>
 #include <vector>
@@ -18,17 +18,17 @@ namespace chromeos {
 
 namespace multidevice_setup {
 
-class AndroidSmsAppInstallDelegateImplTest : public testing::Test {
+class AndroidSmsAppHelperDelegateImplTest : public testing::Test {
  protected:
-  AndroidSmsAppInstallDelegateImplTest() = default;
-  ~AndroidSmsAppInstallDelegateImplTest() override = default;
+  AndroidSmsAppHelperDelegateImplTest() = default;
+  ~AndroidSmsAppHelperDelegateImplTest() override = default;
 
   // testing::Test:
   void SetUp() override {
     test_pending_app_manager_ =
         std::make_unique<web_app::TestPendingAppManager>();
-    android_sms_app_install_delegate_ = base::WrapUnique(
-        new AndroidSmsAppInstallDelegateImpl(test_pending_app_manager_.get()));
+    android_sms_app_helper_delegate_ = base::WrapUnique(
+        new AndroidSmsAppHelperDelegateImpl(test_pending_app_manager_.get()));
   }
 
   web_app::TestPendingAppManager* test_pending_app_manager() {
@@ -36,18 +36,17 @@ class AndroidSmsAppInstallDelegateImplTest : public testing::Test {
   }
 
   void InstallApp() {
-    android_sms_app_install_delegate_->InstallAndroidSmsApp();
+    android_sms_app_helper_delegate_->InstallAndroidSmsApp();
   }
 
  private:
   std::unique_ptr<web_app::TestPendingAppManager> test_pending_app_manager_;
-  std::unique_ptr<AndroidSmsAppInstallDelegate>
-      android_sms_app_install_delegate_;
+  std::unique_ptr<AndroidSmsAppHelperDelegate> android_sms_app_helper_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppInstallDelegateImplTest);
+  DISALLOW_COPY_AND_ASSIGN(AndroidSmsAppHelperDelegateImplTest);
 };
 
-TEST_F(AndroidSmsAppInstallDelegateImplTest, TestInstallMessagesApp) {
+TEST_F(AndroidSmsAppHelperDelegateImplTest, TestInstallMessagesApp) {
   InstallApp();
 
   std::vector<web_app::PendingAppManager::AppInfo> expected_apps_to_install;

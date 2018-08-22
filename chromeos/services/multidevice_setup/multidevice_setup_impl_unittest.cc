@@ -26,7 +26,7 @@
 #include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_install_delegate.h"
+#include "chromeos/services/multidevice_setup/public/cpp/fake_android_sms_app_helper_delegate.h"
 #include "chromeos/services/multidevice_setup/public/cpp/fake_auth_token_validator.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
@@ -369,10 +369,10 @@ class MultiDeviceSetupImplTest : public testing::Test {
     fake_auth_token_validator_ = std::make_unique<FakeAuthTokenValidator>();
     fake_auth_token_validator_->set_expected_auth_token(kValidAuthToken);
 
-    auto fake_android_sms_app_install_delegate =
-        std::make_unique<FakeAndroidSmsAppInstallDelegate>();
-    fake_android_sms_app_install_delegate_ =
-        fake_android_sms_app_install_delegate.get();
+    auto fake_android_sms_app_helper_delegate =
+        std::make_unique<FakeAndroidSmsAppHelperDelegate>();
+    fake_android_sms_app_helper_delegate_ =
+        fake_android_sms_app_helper_delegate.get();
 
     fake_eligible_host_devices_provider_factory_ =
         std::make_unique<FakeEligibleHostDevicesProviderFactory>(
@@ -424,7 +424,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
     multidevice_setup_ = MultiDeviceSetupImpl::Factory::Get()->BuildInstance(
         test_pref_service_.get(), fake_device_sync_client_.get(),
         fake_secure_channel_client_.get(), fake_auth_token_validator_.get(),
-        std::move(fake_android_sms_app_install_delegate));
+        std::move(fake_android_sms_app_helper_delegate));
   }
 
   void TearDown() override {
@@ -613,8 +613,8 @@ class MultiDeviceSetupImplTest : public testing::Test {
     return fake_account_status_change_delegate_notifier_factory_->instance();
   }
 
-  FakeAndroidSmsAppInstallDelegate* fake_android_sms_app_install_delegate() {
-    return fake_android_sms_app_install_delegate_;
+  FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate() {
+    return fake_android_sms_app_helper_delegate_;
   }
 
   cryptauth::RemoteDeviceRefList& test_devices() { return test_devices_; }
@@ -698,7 +698,7 @@ class MultiDeviceSetupImplTest : public testing::Test {
       fake_setup_flow_completion_recorder_factory_;
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>
       fake_account_status_change_delegate_notifier_factory_;
-  FakeAndroidSmsAppInstallDelegate* fake_android_sms_app_install_delegate_;
+  FakeAndroidSmsAppHelperDelegate* fake_android_sms_app_helper_delegate_;
 
   std::unique_ptr<FakeAccountStatusChangeDelegate>
       fake_account_status_change_delegate_;
@@ -949,7 +949,7 @@ TEST_F(MultiDeviceSetupImplTest, ComprehensiveHostTest) {
                           observer.get(), 3u /* expected_observer_index */);
 
   // Messages App install should have succeeded.
-  EXPECT_TRUE(fake_android_sms_app_install_delegate()->HasInstalledApp());
+  EXPECT_TRUE(fake_android_sms_app_helper_delegate()->HasInstalledApp());
 
   // Remove the host.
   multidevice_setup()->RemoveHostDevice();

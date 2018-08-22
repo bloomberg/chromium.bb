@@ -52,7 +52,7 @@ static_library("multidevice_setup") {
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
     "//chromeos/services/multidevice_setup/proto",
-    "//chromeos/services/multidevice_setup/public/cpp:android_sms_app_install_delegate",
+    "//chromeos/services/multidevice_setup/public/cpp:android_sms_app_helper_delegate",
     "//chromeos/services/multidevice_setup/public/cpp:auth_token_validator",
     "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/multidevice_setup/public/mojom",
