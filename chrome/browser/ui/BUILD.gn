@@ -1772,6 +1772,8 @@ jumbo_split_static_library("ui") {
       "ash/chrome_browser_main_extra_parts_ash.h",
       "ash/chrome_keyboard_ui.cc",
       "ash/chrome_keyboard_ui.h",
+      "ash/chrome_keyboard_web_contents.cc",
+      "ash/chrome_keyboard_web_contents.h",
       "ash/chrome_launcher_prefs.cc",
       "ash/chrome_launcher_prefs.h",
       "ash/chrome_new_window_client.cc",
