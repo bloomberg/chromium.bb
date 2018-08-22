@@ -28,7 +28,8 @@ AwUrlCheckerDelegateImpl::AwUrlCheckerDelegateImpl(
       ui_manager_(std::move(ui_manager)),
       threat_types_(safe_browsing::CreateSBThreatTypeSet(
           {safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
-           safe_browsing::SB_THREAT_TYPE_URL_PHISHING})),
+           safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+           safe_browsing::SB_THREAT_TYPE_URL_UNWANTED})),
       whitelist_manager_(whitelist_manager) {}
 
 AwUrlCheckerDelegateImpl::~AwUrlCheckerDelegateImpl() = default;

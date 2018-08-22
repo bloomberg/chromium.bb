@@ -305,6 +305,13 @@
   <message name="IDS_PHISHING_WEBVIEW_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page. Allows the user to proceed using a link.">
     This content might try to trick you into installing software or revealing personal information. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_HARMFUL_WEBVIEW_HEADING" desc="The heading of the unwanted software interstitial on medium sized Webview.">
+    Harmful content blocked.
+  </message>
+  <message name="IDS_HARMFUL_WEBVIEW_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page. Allows the user to proceed using a link.">
+    This content might try to install deceptive apps that pretend to be something else or collect data that may be used to track you. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+
   <message name="IDS_CONNECTION_HELP_SHOW_MORE" desc="The button label to expand sections for the chrome://connection-help site. Paired with IDS_CONNECTION_HELP_SHOW_LESS">
     Show More
   </message>
