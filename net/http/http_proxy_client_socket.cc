@@ -198,20 +198,24 @@ int HttpProxyClientSocket::Read(IOBuffer* buf,
                                 int buf_len,
                                 CompletionOnceCallback callback) {
   DCHECK(user_callback_.is_null());
-  if (next_state_ != STATE_DONE) {
-    // We're trying to read the body of the response but we're still trying
-    // to establish an SSL tunnel through the proxy.  We can't read these
-    // bytes when establishing a tunnel because they might be controlled by
-    // an active network attacker.  We don't worry about this for HTTP
-    // because an active network attacker can already control HTTP sessions.
-    // We reach this case when the user cancels a 407 proxy auth prompt.
-    // See http://crbug.com/8473.
-    DCHECK_EQ(407, response_.headers->response_code());
-
+  if (!CheckDone())
     return ERR_TUNNEL_CONNECTION_FAILED;
-  }
 
   return transport_->socket()->Read(buf, buf_len, std::move(callback));
+}
+
+int HttpProxyClientSocket::ReadIfReady(IOBuffer* buf,
+                                       int buf_len,
+                                       CompletionOnceCallback callback) {
+  DCHECK(user_callback_.is_null());
+  if (!CheckDone())
+    return ERR_TUNNEL_CONNECTION_FAILED;
+
+  return transport_->socket()->ReadIfReady(buf, buf_len, std::move(callback));
+}
+
+int HttpProxyClientSocket::CancelReadIfReady() {
+  return transport_->socket()->CancelReadIfReady();
 }
 
 int HttpProxyClientSocket::Write(
@@ -495,6 +499,22 @@ int HttpProxyClientSocket::DoDrainBodyComplete(int result) {
   }
 
   return DidDrainBodyForAuthRestart();
+}
+
+bool HttpProxyClientSocket::CheckDone() {
+  if (next_state_ != STATE_DONE) {
+    // We're trying to read the body of the response but we're still trying
+    // to establish an SSL tunnel through the proxy.  We can't read these
+    // bytes when establishing a tunnel because they might be controlled by
+    // an active network attacker.  We don't worry about this for HTTP
+    // because an active network attacker can already control HTTP sessions.
+    // We reach this case when the user cancels a 407 proxy auth prompt.
+    // See http://crbug.com/8473.
+    DCHECK_EQ(407, response_.headers->response_code());
+
+    return false;
+  }
+  return true;
 }
 
 //----------------------------------------------------------------

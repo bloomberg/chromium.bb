@@ -305,6 +305,20 @@ int HttpProxyClientSocketWrapper::Read(IOBuffer* buf,
   return ERR_SOCKET_NOT_CONNECTED;
 }
 
+int HttpProxyClientSocketWrapper::ReadIfReady(IOBuffer* buf,
+                                              int buf_len,
+                                              CompletionOnceCallback callback) {
+  if (transport_socket_)
+    return transport_socket_->ReadIfReady(buf, buf_len, std::move(callback));
+  return ERR_SOCKET_NOT_CONNECTED;
+}
+
+int HttpProxyClientSocketWrapper::CancelReadIfReady() {
+  if (transport_socket_)
+    return transport_socket_->CancelReadIfReady();
+  return OK;
+}
+
 int HttpProxyClientSocketWrapper::Write(
     IOBuffer* buf,
     int buf_len,

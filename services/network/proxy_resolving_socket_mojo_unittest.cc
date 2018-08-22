@@ -211,7 +211,7 @@ TEST_P(ProxyResolvingSocketTest, ConnectToProxy) {
     base::RunLoop().RunUntilIdle();
     if (!is_direct) {
       EXPECT_EQ(net::IPEndPoint(), actual_remote_addr);
-      EXPECT_FALSE(socket_data.AllReadDataConsumed());
+      EXPECT_TRUE(socket_data.AllReadDataConsumed());
       EXPECT_TRUE(socket_data.AllWriteDataConsumed());
     } else {
       EXPECT_EQ(remote_addr.ToString(), actual_remote_addr.ToString());
