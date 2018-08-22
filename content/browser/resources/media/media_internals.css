@@ -180,7 +180,7 @@ h3 {
 
 label.audio-focus-session,
 label.selectable-button {
-  display: inline-block;
+  display: block;
   border: solid 1px #999;
   border-radius: 3px;
   padding: 6px;
@@ -220,6 +220,9 @@ label.destructed-player {
 
 .player-frame {
   font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .no-players-selected #players .property-wrapper,

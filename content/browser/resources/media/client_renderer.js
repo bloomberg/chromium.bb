@@ -373,7 +373,7 @@ var ClientRenderer = (function() {
         var label = document.createElement('label');
 
         var name_text = p.url || 'Player ' + player.id;
-        var name_node = document.createElement('span');
+        var name_node = document.createElement('div');
         name_node.appendChild(document.createTextNode(name_text));
         name_node.className = 'player-name';
         label.appendChild(name_node);
@@ -385,8 +385,7 @@ var ClientRenderer = (function() {
           frame.push(p.frame_url);
         var frame_text = frame.join(' - ');
         if (frame_text) {
-          label.appendChild(document.createElement('br'));
-          var frame_node = document.createElement('span');
+          var frame_node = document.createElement('div');
           frame_node.className = 'player-frame';
           frame_node.appendChild(document.createTextNode(frame_text));
           label.appendChild(frame_node);
@@ -405,8 +404,7 @@ var ClientRenderer = (function() {
           desc.push('(' + p.event + ')');
         var desc_text = desc.join(' ');
         if (desc_text) {
-          label.appendChild(document.createElement('br'));
-          var desc_node = document.createElement('span');
+          var desc_node = document.createElement('div');
           desc_node.className = 'player-desc';
           desc_node.appendChild(document.createTextNode(desc_text));
           label.appendChild(desc_node);
