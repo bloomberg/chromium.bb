@@ -6,7 +6,7 @@
 
 #include <string.h>
 
-#include "base/base64url.h"
+#include "base/base64.h"
 #include "base/big_endian.h"
 #include "base/numerics/safe_conversions.h"
 #include "net/base/io_buffer.h"
@@ -19,7 +19,7 @@ namespace {
 // maximum record size in TLS and the default maximum frame size in HTTP/2.
 constexpr uint64_t kMaxRecordSize = 16 * 1024;
 
-constexpr char kMiSha256Header[] = "mi-sha256-draft2=";
+constexpr char kMiSha256Header[] = "mi-sha256-03=";
 constexpr size_t kMiSha256HeaderLength = sizeof(kMiSha256Header) - 1;
 
 // Copies as many bytes from |input| as will fit in |output| and advances both.
@@ -34,16 +34,14 @@ size_t CopyClamped(base::span<const char>* input, base::span<char>* output) {
 }  // namespace
 
 MerkleIntegritySourceStream::MerkleIntegritySourceStream(
-    base::StringPiece mi_header_value,
+    base::StringPiece digest_header_value,
     std::unique_ptr<SourceStream> upstream)
     // TODO(ksakamoto): Use appropriate SourceType.
     : net::FilterSourceStream(SourceStream::TYPE_NONE, std::move(upstream)) {
-  // TODO(ksakamoto): Support quoted parameter value.
   std::string next_proof;
-  if (!mi_header_value.starts_with(kMiSha256Header) ||
-      !base::Base64UrlDecode(mi_header_value.substr(kMiSha256HeaderLength),
-                             base::Base64UrlDecodePolicy::DISALLOW_PADDING,
-                             &next_proof) ||
+  if (!digest_header_value.starts_with(kMiSha256Header) ||
+      !base::Base64Decode(digest_header_value.substr(kMiSha256HeaderLength),
+                          &next_proof) ||
       next_proof.size() != SHA256_DIGEST_LENGTH) {
     failed_ = true;
   } else {

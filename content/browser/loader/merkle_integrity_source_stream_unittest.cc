@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/loader/merkle_integrity_source_stream.h"
-#include "base/base64url.h"
+#include "base/base64.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/filter/mock_source_stream.h"
@@ -17,13 +17,13 @@ const int kBigBufferSize = 4096;
 const int kSmallBufferSize = 1;
 
 const char kMIEmptyBody[] =
-    "mi-sha256-draft2=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0";
+    "mi-sha256-03=bjQLnP+zepicpUTmu3gKLHiQHT+zNzh2hRGjBhevoB0=";
 const char kMISingleRecord[] =
-    "mi-sha256-draft2=dcRDgR2GM35DluAV13PzgnG6-pvQwPywfFvAu1UeFrs";
+    "mi-sha256-03=dcRDgR2GM35DluAV13PzgnG6+pvQwPywfFvAu1UeFrs=";
 const char kMIMultipleRecords[] =
-    "mi-sha256-draft2=IVa9shfs0nyKEhHqtB3WVNANJ2Njm5KjQLjRtnbkYJ4";
+    "mi-sha256-03=IVa9shfs0nyKEhHqtB3WVNANJ2Njm5KjQLjRtnbkYJ4=";
 const char kMIWholeNumberOfRecords[] =
-    "mi-sha256-draft2=L2vdwBplKvIr0ZPkcuskWZfEVDgVdHa6aD363UpKuZs";
+    "mi-sha256-03=L2vdwBplKvIr0ZPkcuskWZfEVDgVdHa6aD363UpKuZs=";
 
 enum class ReadResultType {
   // Each call to AddReadResult is a separate read from the lower layer
@@ -112,8 +112,7 @@ class MerkleIntegritySourceStreamTest
 
   std::string Base64Decode(const char* hash) {
     std::string out;
-    EXPECT_TRUE(base::Base64UrlDecode(
-        hash, base::Base64UrlDecodePolicy::DISALLOW_PADDING, &out));
+    EXPECT_TRUE(base::Base64Decode(hash, &out));
     EXPECT_EQ(32u, out.size());
     return out;
   }
@@ -180,7 +179,7 @@ TEST_P(MerkleIntegritySourceStreamTest, MalformedMIHeader) {
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, WrongMIAttributeName) {
-  Init("mi-sha256-draft1=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0");
+  Init("mi-sha256-01=bjQLnP+zepicpUTmu3gKLHiQHT+zNzh2hRGjBhevoB0=");
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
@@ -188,7 +187,7 @@ TEST_P(MerkleIntegritySourceStreamTest, WrongMIAttributeName) {
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, HashTooShort) {
-  Init("mi-sha256-draft2=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoA");
+  Init("mi-sha256-03=bjQLnP+zepicpUTmu3gKLHiQHT+zNzh2hRGjBhevoA==");
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
@@ -196,7 +195,7 @@ TEST_P(MerkleIntegritySourceStreamTest, HashTooShort) {
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, HashTooLong) {
-  Init("mi-sha256-draft2=bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0A");
+  Init("mi-sha256-03=bjQLnP+zepicpUTmu3gKLHiQHT+zNzh2hRGjBhevoB0A");
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
@@ -329,11 +328,11 @@ TEST_P(MerkleIntegritySourceStreamTest, MultipleRecords) {
                           sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
-      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+      Base64Decode("OElbplJlPK+Rv6JNK6p5/515IaoPoZo+2elWL7OQ60A=");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
-      Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+      Base64Decode("iPMpmgExHPrbEX3/RvwP4d16fWlK4l++p75PUu/KyN0=");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 32, kMessage.size() - 32, net::OK,
                           GetParam().mode);
@@ -353,9 +352,9 @@ TEST_P(MerkleIntegritySourceStreamTest, MultipleRecordsAllAtOnce) {
   std::string body(reinterpret_cast<const char*>(kRecordSize),
                    sizeof(kRecordSize));
   body += kMessage.substr(0, 16);
-  body += Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+  body += Base64Decode("OElbplJlPK+Rv6JNK6p5/515IaoPoZo+2elWL7OQ60A=");
   body += kMessage.substr(16, 16);
-  body += Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+  body += Base64Decode("iPMpmgExHPrbEX3/RvwP4d16fWlK4l++p75PUu/KyN0=");
   body += kMessage.substr(32);
 
   source()->AddReadResult(body.data(), body.size(), net::OK, GetParam().mode);
@@ -375,11 +374,11 @@ TEST_P(MerkleIntegritySourceStreamTest, MultipleRecordsWrongLastRecordHash) {
                           sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
-      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+      Base64Decode("OElbplJlPK+Rv6JNK6p5/515IaoPoZo+2elWL7OQ60A=");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
-      Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+      Base64Decode("iPMpmgExHPrbEX3/RvwP4d16fWlK4l++p75PUu/KyN0=");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 32, kMessage.size() - 32, net::OK,
                           GetParam().mode);
@@ -400,7 +399,7 @@ TEST_P(MerkleIntegritySourceStreamTest, MultipleRecordsWrongFirstRecordHash) {
                           sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
-      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+      Base64Decode("OElbplJlPK+Rv6JNK6p5/515IaoPoZo+2elWL7OQ60A=");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
 
   std::string actual_output;
@@ -418,11 +417,11 @@ TEST_P(MerkleIntegritySourceStreamTest, TrailingNetError) {
                           sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
-      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+      Base64Decode("OElbplJlPK+Rv6JNK6p5/515IaoPoZo+2elWL7OQ60A=");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
-      Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+      Base64Decode("iPMpmgExHPrbEX3/RvwP4d16fWlK4l++p75PUu/KyN0=");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 32, kMessage.size() - 32, net::OK,
                           GetParam().mode);
@@ -447,11 +446,11 @@ TEST_P(MerkleIntegritySourceStreamTest, Truncated) {
                           sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
-      Base64Decode("OElbplJlPK-Rv6JNK6p5_515IaoPoZo-2elWL7OQ60A");
+      Base64Decode("OElbplJlPK+Rv6JNK6p5/515IaoPoZo+2elWL7OQ60A=");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
-      Base64Decode("iPMpmgExHPrbEX3_RvwP4d16fWlK4l--p75PUu_KyN0");
+      Base64Decode("iPMpmgExHPrbEX3/RvwP4d16fWlK4l++p75PUu/KyN0=");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
   // |hash2| is the hash of "atermelon", but this stream ends early. Decoding
   // thus should fail.
@@ -470,7 +469,7 @@ TEST_P(MerkleIntegritySourceStreamTest, Truncated) {
 // represent the empty string. Update the code and possibly this test depending
 // on how https://github.com/martinthomson/http-mice/issues/3 is resolved.
 TEST_P(MerkleIntegritySourceStreamTest, EmptyFinalRecord) {
-  Init("mi-sha256-draft2=JJnIuaOEc2247K9V88VQAQy1GJuQ6ylaVM7mG69QkE4");
+  Init("mi-sha256-03=JJnIuaOEc2247K9V88VQAQy1GJuQ6ylaVM7mG69QkE4=");
   const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
   const std::string kMessage(
       "When I grow up, I want to be a watermelon!! \xf0\x9f\x8d\x89");
@@ -479,15 +478,15 @@ TEST_P(MerkleIntegritySourceStreamTest, EmptyFinalRecord) {
                           sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
-      Base64Decode("hhJEKpkbuZoWUjzBPAZxMUN2DXdJ6epkS0McZh77IXo");
+      Base64Decode("hhJEKpkbuZoWUjzBPAZxMUN2DXdJ6epkS0McZh77IXo=");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
-      Base64Decode("RKTTVSMiH3bkxUQKreVATPL1KUd5eqRdmDgRQcZq_80");
+      Base64Decode("RKTTVSMiH3bkxUQKreVATPL1KUd5eqRdmDgRQcZq/80=");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 32, 16, net::OK, GetParam().mode);
   std::string hash3 =
-      Base64Decode("bjQLnP-zepicpUTmu3gKLHiQHT-zNzh2hRGjBhevoB0");
+      Base64Decode("bjQLnP+zepicpUTmu3gKLHiQHT+zNzh2hRGjBhevoB0=");
   source()->AddReadResult(hash3.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
 
@@ -507,11 +506,11 @@ TEST_P(MerkleIntegritySourceStreamTest, WholeNumberOfRecords) {
                           sizeof(kRecordSize), net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data(), 16, net::OK, GetParam().mode);
   std::string hash1 =
-      Base64Decode("2s-MNG6NrTt556s__HYnQTjG3WOktEcXZ61O8mzG9f4");
+      Base64Decode("2s+MNG6NrTt556s//HYnQTjG3WOktEcXZ61O8mzG9f4=");
   source()->AddReadResult(hash1.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 16, 16, net::OK, GetParam().mode);
   std::string hash2 =
-      Base64Decode("qa_cQSMjFyZsm0cnYG4H6LqwOM_hzMSclK6I8iVoZYQ");
+      Base64Decode("qa/cQSMjFyZsm0cnYG4H6LqwOM/hzMSclK6I8iVoZYQ=");
   source()->AddReadResult(hash2.data(), 32, net::OK, GetParam().mode);
   source()->AddReadResult(kMessage.data() + 32, 16, net::OK, GetParam().mode);
 
@@ -530,9 +529,9 @@ TEST_P(MerkleIntegritySourceStreamTest, WholeNumberOfRecordsAllAtOnce) {
   std::string body(reinterpret_cast<const char*>(kRecordSize),
                    sizeof(kRecordSize));
   body += kMessage.substr(0, 16);
-  body += Base64Decode("2s-MNG6NrTt556s__HYnQTjG3WOktEcXZ61O8mzG9f4");
+  body += Base64Decode("2s+MNG6NrTt556s//HYnQTjG3WOktEcXZ61O8mzG9f4=");
   body += kMessage.substr(16, 16);
-  body += Base64Decode("qa_cQSMjFyZsm0cnYG4H6LqwOM_hzMSclK6I8iVoZYQ");
+  body += Base64Decode("qa/cQSMjFyZsm0cnYG4H6LqwOM/hzMSclK6I8iVoZYQ=");
   body += kMessage.substr(32, 16);
 
   source()->AddReadResult(body.data(), body.size(), net::OK, GetParam().mode);

@@ -47,7 +47,7 @@ namespace content {
 
 namespace {
 
-constexpr char kMiHeader[] = "MI-Draft2";
+constexpr char kDigestHeader[] = "Digest";
 
 net::CertVerifier* g_cert_verifier_for_testing = nullptr;
 
@@ -520,16 +520,16 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   response_head.load_timing.send_end = now;
   response_head.load_timing.receive_headers_end = now;
 
-  std::string mi_header_value;
-  if (!response_head.headers->EnumerateHeader(nullptr, kMiHeader,
-                                              &mi_header_value)) {
+  std::string digest_header_value;
+  if (!response_head.headers->EnumerateHeader(nullptr, kDigestHeader,
+                                              &digest_header_value)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy_.get(), "Signed exchange has no MI-Draft2: header");
+        devtools_proxy_.get(), "Signed exchange has no Digest: header");
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
   auto mi_stream = std::make_unique<MerkleIntegritySourceStream>(
-      mi_header_value, std::move(source_));
+      digest_header_value, std::move(source_));
 
   net::SSLInfo ssl_info;
   ssl_info.cert = cert_verify_result_.verified_cert;

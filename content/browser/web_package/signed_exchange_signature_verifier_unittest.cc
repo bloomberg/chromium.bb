@@ -20,7 +20,7 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
   envelope.set_request_url(GURL("https://example.com/index.html"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
 
   base::Optional<std::vector<uint8_t>> encoded =
       SignedExchangeSignatureVerifier::EncodeCanonicalExchangeHeaders(envelope);
@@ -51,9 +51,9 @@ TEST(SignedExchangeSignatureVerifier, EncodeCanonicalExchangeHeaders) {
 
           0x50, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x65, 0x6e,
           0x63, 0x6f, 0x64, 0x69, 0x6e, 0x67, // bytes "content-encoding"
-          0x50, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d,
-          0x64, 0x72, 0x61, 0x66, 0x74, 0x32
-          // bytes "mi-sha256-draft2"
+          0x4c, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d,
+          0x30, 0x33
+          // bytes "mi-sha256-03"
       // clang-format on
   };
   EXPECT_THAT(*encoded,
@@ -65,9 +65,9 @@ const uint64_t kSignatureHeaderExpires = 1517895941;
 
 // See content/testdata/sxg/README on how to generate these data.
 // clang-format off
-constexpr char kSignatureHeaderRSA[] = R"(label; sig=*yYFb09i7VXuqsGBxc3RuJzGL4XMD9bZ20kXWSv1JObEf7KIG0MznSE1nu1fE+7DrgWQxH7FQfSWjyseOAvxsBOfkptmCCi/Ffklz3N1UU8LfwfaLWj80oBqDeofiIYwevSSpsaRKBYie7KjiVOjslFLOGe82MmHyF2utFRKY/i6UAHgMrg2FGfbwBaJsxEgtpPcN8/QnFKgt1la+JjwvYbMHpJhHTedDqx9GCxJOzbJjKRL1E2tIBvhDfK2m3eJv/nqvgWkK3MOd/Xp4FkndciS3eNyZZjwvJ6IL/3x4e0AZ36KvglpS092ZftiE4lKQWnHmVeDRmEHW6qOyv1Q3+w==*; validity-url="https://example.com/resource.validity.msg"; integrity="mi-draft2"; cert-url="https://example.com/cert.msg"; cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; date=1517892341; expires=1517895941)";
-constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEQCIA0w6auOuWGT6//MO/h43/xkXBchJUOp53GU5dmA8U+/AiAe0FggCblVxzosT2Ow9rrC2Q8zO0DZPLSNbcu29xYP6g==*; validity-url="https://example.com/resource.validity.msg"; integrity="mi-draft2"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
-constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGYCMQC/P8m0ZnPrIMlI3I412MixcK9cQSirIECUNR7pOIlTiLaH95L72KXqq2aL+lxxKIICMQDU3s/BhoWtR61eKG9SqgGHd0ZtUJVY24xaJ2yHiYWxZU/QhOr5ZArSj3x1khivpRg=*; validity-url="https://example.com/resource.validity.msg"; integrity="mi-draft2"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderRSA[] = R"(label; sig=*HrNLDfn6oHUmfx3YvP7dTseyZdmnQQB7jR8yea0FezZmy7IwJVtcZ/tGpXJ6fe8druTsGeFArdCeeLBapmPLq8BP6k6Uk2ClKUWNbM3is/HHaWWsfpLBF2fETKEBXvvUI9G8nJqDLJ9RS3AAZMEG+OrCybR1kEFDhc+Cp34isj8aUn7OG1ugq8ADt1DkP8xwSLn4MA2E6tHdG1dNNs+GpWE5pUbqe49DdQaQp/DcvOpixeDi3iID2VHDeASfyCVQvxNfEPRLKQ5fOELlGerTVY5XTXeegUfUuzTRHDsOBTPQ4iihCK2+/8vRwx92sExXnMH163ZL/YIM55FoU2KuRQ==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEYCIQD0rF/pJqqYa9WEE6eZcGzrVKv8yx+78tLAATxfLlyoWgIhAPJoiWcYAC+vDrZ1m5qE++y1TLdYUenwV84vpAaV3wTG*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGUCMDkTn0MhRiG0OfbAbnyXRgM8XSV8vjm5w0olX5qoL94LEiJ7zS4ZmdxvSNHp5luK5QIxAPlQRvcIBq8vvKgkzQCjsbZ/jEAKh1Gx2JKSyj4HRfLWRar4KbGbMm+GbyU7N/SZYQ==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
 // clang-format on
 
 // |expires| (1518497142) is more than 7 days (604800 seconds) after |date|
@@ -255,10 +255,9 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyRSA) {
   envelope.set_request_url(GURL("https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
   envelope.AddResponseHeader(
-      "mi-draft2",
-      "mi-sha256-draft2=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
+      "digest", "mi-sha256-03=wmp4dRMYgxP3tSMCwV/I0CWOCiHZpAihKZk19bsN9RI=");
   envelope.SetSignatureForTesting((*signature)[0]);
 
   EXPECT_EQ(SignedExchangeSignatureVerifier::Result::kErrUnsupportedCertType,
@@ -284,10 +283,9 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   envelope.set_request_url(GURL("https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
   envelope.AddResponseHeader(
-      "mi-draft2",
-      "mi-sha256-draft2=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RI");
+      "digest", "mi-sha256-03=wmp4dRMYgxP3tSMCwV/I0CWOCiHZpAihKZk19bsN9RI=");
 
   envelope.SetSignatureForTesting((*signature)[0]);
 
@@ -311,10 +309,9 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP384) {
   envelope.set_request_url(GURL("https://test.example.org/test/"));
   envelope.set_response_code(net::HTTP_OK);
   envelope.AddResponseHeader("content-type", "text/html; charset=utf-8");
-  envelope.AddResponseHeader("content-encoding", "mi-sha256-draft2");
+  envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
   envelope.AddResponseHeader(
-      "mi-draft2",
-      "mi-sha256-draft2=wmp4dRMYgxP3tSMCwV_I0CWOCiHZpAihKZk19bsN9RIG");
+      "digest", "mi-sha256-03=wmp4dRMYgxP3tSMCwV/I0CWOCiHZpAihKZk19bsN9RIG=");
 
   envelope.SetSignatureForTesting((*signature)[0]);
 
