@@ -165,12 +165,19 @@ void AssistantSetup::OnGetSettingsResponse(const std::string& settings) {
   }
 
   auto consent_status = settings_ui.consent_flow_ui().consent_status();
+  auto& consent_ui = settings_ui.consent_flow_ui().consent_ui();
   Profile* profile = ProfileManager::GetActiveUserProfile();
   PrefService* prefs = profile->GetPrefs();
   switch (consent_status) {
     case ConsentFlowUi::ASK_FOR_CONSENT:
-      prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                        false);
+      if (consent_ui.has_activity_control_ui() &&
+          consent_ui.activity_control_ui().setting_zippy().size()) {
+        prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                          false);
+      } else {
+        prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
+                          true);
+      }
       break;
     case ConsentFlowUi::ALREADY_CONSENTED:
       prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
