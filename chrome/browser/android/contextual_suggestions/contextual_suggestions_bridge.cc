@@ -166,8 +166,11 @@ void ContextualSuggestionsBridge::ReportEvent(
       static_cast<contextual_suggestions::ContextualSuggestionsEvent>(
           j_event_id);
 
+  const content::NavigationEntry* navigation_entry =
+      web_contents->GetController().GetVisibleEntry();
   const std::string& referrer_url =
-      web_contents->GetController().GetActiveEntry()->GetReferrer().url.spec();
+      navigation_entry == nullptr ? ""
+                                  : navigation_entry->GetReferrer().url.spec();
   ArticleSource article_source = ArticleSource::OTHER;
   if (referrer_url == kContextualSuggestionsReferrerURL) {
     article_source = ArticleSource::CONTEXTUAL_SUGGESTIONS;
