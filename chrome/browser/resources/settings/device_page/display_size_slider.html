@@ -143,14 +143,12 @@
 
       .slider-knob-inner {
         background-color: var(--google-blue-600);
-        border: 2px solid var(--google-blue-600);
+        border: 0;
         border-radius: 50%;
-        box-sizing: border-box;
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
+        box-sizing: content-box;
         height: 10px;
         margin: 11px;
-        transition-duration: 180ms;
-        transition-property: transform, background-color, border;
-        transition-timing-function: ease;
         width: 10px;
       }
 
@@ -193,6 +191,8 @@
       .slider-knob-inner[disabled] {
         background-color: var(--google-grey-600);
         border: 2px solid white;
+        box-shadow: unset;
+        margin: 9px;
       }
     </style>
     <div id="sliderContainer" class$="[[getClassNames_(disabled, dragging)]]">

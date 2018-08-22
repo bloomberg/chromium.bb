@@ -4,7 +4,7 @@
 
 /**
  * @fileoverview 'cr-slider' is a wrapper around paper-slider to alter the
- * styling. The bahavior of the slider remains the same.
+ * styling. The behavior of the slider remains the same.
  */
 Polymer({
   is: 'cr-slider',
@@ -111,14 +111,22 @@ Polymer({
    */
   onDisabledChanged_: function() {
     const knob = this.$.slider.$$('.slider-knob-inner');
+    knob.style.boxSizing = 'content-box';
+    knob.style.height = '10px';
+    knob.style.transform = 'unset';
+    knob.style.transition = 'unset';
+    knob.style.width = '10px';
+    this.$.slider.$$('.bar-container').style.left = '0';
     if (this.disabled) {
-      knob.style.transform = 'scale(1.2)';
+      knob.style.backgroundColor = 'var(--google-grey-600)';
       knob.style.border = '2px solid white';
+      knob.style.boxShadow = 'unset';
+      knob.style.margin = '9px';
     } else {
+      knob.style.backgroundColor = 'var(--google-blue-600)';
+      knob.style.border = '0';
+      knob.style.boxShadow = '0 1px 3px 0 rgba(0, 0, 0, 0.4)';
       knob.style.margin = '11px';
-      knob.style.height = '10px';
-      knob.style.width = '10px';
-      knob.style.transform = 'unset';
     }
   },
 
