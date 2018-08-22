@@ -510,7 +510,7 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   const SkColor icon_color = GetDefaultColorForIconType(icon_type_);
   if (type == shill::kTypeWifi) {
     if (network->security_class() != shill::kSecurityNone &&
-        IconTypeIsDark(icon_type_)) {
+        !IsTrayIcon(icon_type_)) {
       badges->bottom_right = {&kNetworkBadgeSecureIcon, icon_color};
     }
   } else if (type == shill::kTypeWimax) {
