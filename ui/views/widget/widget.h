@@ -49,6 +49,7 @@ namespace ui {
 class Accelerator;
 class Compositor;
 class DefaultThemeProvider;
+class GestureRecognizer;
 class InputMethod;
 class Layer;
 class NativeTheme;
@@ -768,6 +769,10 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Whether the widget supports translucency.
   bool IsTranslucentWindowOpacitySupported() const;
+
+  // Returns the gesture recognizer which can handle touch/gesture events on
+  // this.
+  ui::GestureRecognizer* GetGestureRecognizer();
 
   // Called when the delegate's CanResize or CanMaximize changes.
   void OnSizeConstraintsChanged();

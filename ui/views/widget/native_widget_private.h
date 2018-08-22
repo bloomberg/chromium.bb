@@ -22,6 +22,7 @@ class Rect;
 
 namespace ui {
 class InputMethod;
+class GestureRecognizer;
 class OSExchangeData;
 }
 
@@ -227,6 +228,7 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
   virtual void SetVisibilityAnimationTransition(
       Widget::VisibilityTransition transition) = 0;
   virtual bool IsTranslucentWindowOpacitySupported() const = 0;
+  virtual ui::GestureRecognizer* GetGestureRecognizer() = 0;
   virtual void OnSizeConstraintsChanged() = 0;
 
   // Repost an unhandled event to the native widget for default OS processing.

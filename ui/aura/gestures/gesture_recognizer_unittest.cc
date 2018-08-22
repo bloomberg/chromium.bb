@@ -28,7 +28,7 @@
 #include "ui/events/event_switches.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
-#include "ui/events/gestures/gesture_recognizer_impl.h"
+#include "ui/events/gesture_detection/gesture_provider.h"
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
@@ -346,7 +346,7 @@ class QueueTouchEventDelegate : public GestureEventConsumeDelegate {
   void OnTouchEvent(ui::TouchEvent* event) override {
     event->DisableSynchronousHandling();
     if (synchronous_ack_for_next_event_ != AckState::PENDING) {
-      ui::GestureRecognizer::Get()->AckTouchEvent(
+      aura::Env::GetInstance()->gesture_recognizer()->AckTouchEvent(
           event->unique_event_id(),
           synchronous_ack_for_next_event_ == AckState::CONSUMED
               ? ui::ER_CONSUMED
@@ -462,26 +462,6 @@ class GestureEventSynthDelegate : public TestWindowDelegate {
   bool double_click_;
 
   DISALLOW_COPY_AND_ASSIGN(GestureEventSynthDelegate);
-};
-
-class ScopedGestureRecognizerSetter {
- public:
-  // Takes ownership of |new_gr|.
-  explicit ScopedGestureRecognizerSetter(ui::GestureRecognizer* new_gr)
-      : new_gr_(new_gr) {
-    original_gr_ = ui::GestureRecognizer::Get();
-    ui::SetGestureRecognizerForTesting(new_gr_.get());
-  }
-
-  virtual ~ScopedGestureRecognizerSetter() {
-    ui::SetGestureRecognizerForTesting(original_gr_);
-  }
-
- private:
-  ui::GestureRecognizer* original_gr_;
-  std::unique_ptr<ui::GestureRecognizer> new_gr_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedGestureRecognizerSetter);
 };
 
 class TimedEvents {
@@ -711,7 +691,8 @@ TEST_F(GestureRecognizerTest, TouchCancelCanDestroyWindow) {
   DispatchEventUsingWindowDispatcher(&press);
 
   // Cancel event, verify there is no crash.
-  ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+  aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouchesExcept(
+      nullptr);
 
   EXPECT_EQ(1, handler->touch_cancelled_count());
   EXPECT_EQ(nullptr, window->parent());
@@ -2220,9 +2201,9 @@ TEST_F(GestureRecognizerTest, GestureEventIgnoresDisconnectedEvents) {
 // Check that a touch is locked to the window of the closest current touch
 // within max_separation_for_gesture_touches_in_pixels
 TEST_F(GestureRecognizerTest, GestureEventTouchLockSelectsCorrectWindow) {
-  ui::GestureRecognizer* gesture_recognizer = new ui::GestureRecognizerImpl();
+  ui::GestureRecognizer* gesture_recognizer =
+      aura::Env::GetInstance()->gesture_recognizer();
   TimedEvents tes;
-  ScopedGestureRecognizerSetter gr_setter(gesture_recognizer);
 
   ui::GestureConsumer* target;
   const int kNumWindows = 4;
@@ -2349,8 +2330,10 @@ TEST_F(GestureRecognizerTest, GestureEventTouchLockIgnoresOtherScreens) {
   // The second press should not have been locked to the same target as the
   // first, as they occured on different displays.
   EXPECT_NE(
-      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press1),
-      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press2));
+      aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
+          press1),
+      aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
+          press2));
 }
 
 // Check that touch events outside the root window are still handled
@@ -2374,12 +2357,16 @@ TEST_F(GestureRecognizerTest, GestureEventOutsideRootWindowTap) {
 
   // As these presses were outside the root window, they should be
   // associated with the root window.
-  EXPECT_EQ(root_window(),
-            static_cast<aura::Window*>(
-                ui::GestureRecognizer::Get()->GetTouchLockedTarget(press1)));
-  EXPECT_EQ(root_window(),
-            static_cast<aura::Window*>(
-                ui::GestureRecognizer::Get()->GetTouchLockedTarget(press2)));
+  EXPECT_EQ(
+      root_window(),
+      static_cast<aura::Window*>(
+          aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
+              press1)));
+  EXPECT_EQ(
+      root_window(),
+      static_cast<aura::Window*>(
+          aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
+              press2)));
 }
 
 TEST_F(GestureRecognizerTest, NoTapWithPreventDefaultedRelease) {
@@ -3116,10 +3103,14 @@ TEST_F(GestureRecognizerTest, FlushAllOnHide) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId2));
   DispatchEventUsingWindowDispatcher(&press2);
   window->Hide();
-  EXPECT_EQ(NULL,
-      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press1));
-  EXPECT_EQ(NULL,
-      ui::GestureRecognizer::Get()->GetTouchLockedTarget(press2));
+  EXPECT_EQ(
+      NULL,
+      aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
+          press1));
+  EXPECT_EQ(
+      NULL,
+      aura::Env::GetInstance()->gesture_recognizer()->GetTouchLockedTarget(
+          press2));
 }
 
 TEST_F(GestureRecognizerTest, LongPressTimerStopsOnPreventDefaultedTouchMoves) {
@@ -3805,11 +3796,13 @@ TEST_F(GestureRecognizerTest, CancelAllActiveTouches) {
   delegate->Reset();
   handler->Reset();
 
-  ui::GestureRecognizer* gesture_recognizer = ui::GestureRecognizer::Get();
+  ui::GestureRecognizer* gesture_recognizer =
+      aura::Env::GetInstance()->gesture_recognizer();
   EXPECT_EQ(window.get(),
             gesture_recognizer->GetTouchLockedTarget(press));
 
-  ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+  aura::Env::GetInstance()->gesture_recognizer()->CancelActiveTouchesExcept(
+      nullptr);
 
   EXPECT_EQ(NULL, gesture_recognizer->GetTouchLockedTarget(press));
   EXPECT_4_EVENTS(delegate->events(),
@@ -4304,7 +4297,6 @@ class GestureEventDeleteWindowOnLongPress : public GestureEventConsumeDelegate {
     GestureEventConsumeDelegate::OnGestureEvent(gesture);
     if (gesture->type() != ui::ET_GESTURE_LONG_PRESS)
       return;
-    ui::GestureRecognizer::Get()->CleanupStateForConsumer(*window_);
     delete *window_;
     *window_ = NULL;
   }
@@ -4712,7 +4704,7 @@ TEST_F(GestureRecognizerTest, TransferEventsToRoutesAckCorrectly) {
   delegate_2->set_window(window_2.get());
 
   // Transfer event sequence from previous window to the new window.
-  ui::GestureRecognizer::Get()->TransferEventsTo(
+  aura::Env::GetInstance()->gesture_recognizer()->TransferEventsTo(
       window_1.get(), window_2.get(),
       ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
 

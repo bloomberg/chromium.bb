@@ -754,7 +754,7 @@ TabDragController::DragBrowserToNewTabStrip(TabStrip* target_tabstrip,
 
 #if defined(USE_AURA)
   // Only Aura windows are gesture consumers.
-  ui::GestureRecognizer::Get()->TransferEventsTo(
+  GetAttachedBrowserWidget()->GetGestureRecognizer()->TransferEventsTo(
       GetAttachedBrowserWidget()->GetNativeView(),
       target_tabstrip->GetWidget()->GetNativeView(),
       ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
@@ -1230,9 +1230,9 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
 
 #if defined(USE_AURA)
   // Only Aura windows are gesture consumers.
-  gfx::NativeView attached_native_view =
-      attached_tabstrip_->GetWidget()->GetNativeView();
-  ui::GestureRecognizer::Get()->TransferEventsTo(
+  views::Widget* attached_widget = attached_tabstrip_->GetWidget();
+  gfx::NativeView attached_native_view = attached_widget->GetNativeView();
+  attached_widget->GetGestureRecognizer()->TransferEventsTo(
       attached_native_view, dragged_widget->GetNativeView(),
       ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
 #endif
@@ -2026,8 +2026,9 @@ gfx::Point TabDragController::GetCursorScreenPoint() {
     aura::Window* widget_window = widget->GetNativeWindow();
     DCHECK(widget_window->GetRootWindow());
     gfx::PointF touch_point_f;
-    bool got_touch_point = ui::GestureRecognizer::Get()->
-        GetLastTouchPointForTarget(widget_window, &touch_point_f);
+    bool got_touch_point =
+        widget->GetGestureRecognizer()->GetLastTouchPointForTarget(
+            widget_window, &touch_point_f);
     CHECK(got_touch_point);
     gfx::Point touch_point = gfx::ToFlooredPoint(touch_point_f);
     wm::ConvertPointToScreen(widget_window->GetRootWindow(), &touch_point);

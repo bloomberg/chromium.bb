@@ -192,7 +192,6 @@ void AuraTestHelper::TearDown() {
   focus_client_.reset();
   capture_client_.reset();
 
-  ui::GestureRecognizer::Reset();
   ui::ShutdownInputMethodForTesting();
 
   if (env_) {

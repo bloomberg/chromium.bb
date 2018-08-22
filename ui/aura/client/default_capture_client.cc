@@ -5,6 +5,7 @@
 #include "ui/aura/client/default_capture_client.h"
 
 #include "ui/aura/client/capture_client_observer.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
@@ -35,7 +36,7 @@ void DefaultCaptureClient::SetCapture(Window* window) {
   if (capture_window_ == window)
     return;
   if (window)
-    ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(window);
+    window->env()->gesture_recognizer()->CancelActiveTouchesExcept(window);
 
   Window* old_capture_window = capture_window_;
   capture_window_ = window;

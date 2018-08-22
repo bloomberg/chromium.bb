@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
+#include "ui/aura/env_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/views/accessibility/ax_aura_obj_wrapper.h"
 
@@ -21,7 +23,8 @@ class Window;
 // Provides the root AX desktop node for the chrome.automation.getDesktop() API
 // call. Each top-level desktop window is a child.
 class AXRootObjWrapper : public views::AXAuraObjWrapper,
-                         display::DisplayObserver {
+                         display::DisplayObserver,
+                         aura::EnvObserver {
  public:
   AXRootObjWrapper();
   ~AXRootObjWrapper() override;
@@ -45,9 +48,13 @@ class AXRootObjWrapper : public views::AXAuraObjWrapper,
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
+  // aura::EnvObserver:
+  void OnWindowInitialized(aura::Window* window) override;
+  void OnWillDestroyEnv() override;
+
   ui::AXUniqueId unique_id_;
 
-  aura::Window* alert_window_;
+  std::unique_ptr<aura::Window> alert_window_;
 
   DISALLOW_COPY_AND_ASSIGN(AXRootObjWrapper);
 };

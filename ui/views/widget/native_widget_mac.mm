@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/lazy_instance.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -18,6 +19,7 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/gestures/gesture_recognizer_impl_mac.h"
 #include "ui/gfx/font_list.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
@@ -48,6 +50,9 @@
 
 namespace views {
 namespace {
+
+base::LazyInstance<ui::GestureRecognizerImplMac>::Leaky
+    g_gesture_recognizer_instance = LAZY_INSTANCE_INITIALIZER;
 
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
@@ -637,6 +642,10 @@ void NativeWidgetMac::SetVisibilityAnimationTransition(
 
 bool NativeWidgetMac::IsTranslucentWindowOpacitySupported() const {
   return false;
+}
+
+ui::GestureRecognizer* NativeWidgetMac::GetGestureRecognizer() {
+  return g_gesture_recognizer_instance.Pointer();
 }
 
 void NativeWidgetMac::OnSizeConstraintsChanged() {

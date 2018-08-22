@@ -23,6 +23,7 @@
 #include "ui/aura/window_port_for_shutdown.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/event_target_iterator.h"
+#include "ui/events/gestures/gesture_recognizer_impl.h"
 #include "ui/events/platform/platform_event_source.h"
 
 #if defined(USE_OZONE)
@@ -207,6 +208,7 @@ Env::Env(Mode mode)
       mouse_button_flags_(0),
       is_touch_down_(false),
       get_last_mouse_location_from_mus_(mode_ == Mode::MUS),
+      gesture_recognizer_(std::make_unique<ui::GestureRecognizerImpl>()),
       input_state_lookup_(InputStateLookup::Create()),
       context_factory_(nullptr),
       context_factory_private_(nullptr) {}

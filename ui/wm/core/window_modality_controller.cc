@@ -145,7 +145,7 @@ void WindowModalityController::OnWindowPropertyChanged(aura::Window* window,
       window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE &&
       window->IsVisible()) {
     ActivateWindow(window);
-    ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+    env_->gesture_recognizer()->CancelActiveTouchesExcept(nullptr);
   }
 }
 
@@ -154,7 +154,7 @@ void WindowModalityController::OnWindowVisibilityChanged(
     bool visible) {
   if (visible &&
       window->GetProperty(aura::client::kModalKey) != ui::MODAL_TYPE_NONE) {
-    ui::GestureRecognizer::Get()->CancelActiveTouchesExcept(nullptr);
+    env_->gesture_recognizer()->CancelActiveTouchesExcept(nullptr);
     // Make sure no other window has capture, otherwise |window| won't get mouse
     // events.
     aura::Window* capture_window = aura::client::GetCaptureWindow(window);

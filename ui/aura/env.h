@@ -36,6 +36,7 @@ class Connector;
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
+class GestureRecognizer;
 class PlatformEventSource;
 namespace mojom {
 class WindowTreeClient;
@@ -172,6 +173,10 @@ class AURA_EXPORT Env : public ui::EventTarget,
     return context_factory_private_;
   }
 
+  ui::GestureRecognizer* gesture_recognizer() {
+    return gesture_recognizer_.get();
+  }
+
   // See CreateInstance() for description.
   void SetWindowTreeClient(WindowTreeClient* window_tree_client);
   bool HasWindowTreeClient() const { return window_tree_client_ != nullptr; }
@@ -257,6 +262,8 @@ class AURA_EXPORT Env : public ui::EventTarget,
   bool is_os_exchange_data_provider_factory_ = false;
   // Whether we set ourselves as the SystemInputInjectorFactory.
   bool is_override_input_injector_factory_ = false;
+
+  std::unique_ptr<ui::GestureRecognizer> gesture_recognizer_;
 
   std::unique_ptr<InputStateLookup> input_state_lookup_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;

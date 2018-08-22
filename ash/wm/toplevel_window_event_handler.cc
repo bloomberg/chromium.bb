@@ -51,7 +51,7 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
                                       ? ::wm::WINDOW_MOVE_SOURCE_TOUCH
                                       : ::wm::WINDOW_MOVE_SOURCE_MOUSE;
   if (gesture_target) {
-    ui::GestureRecognizer::Get()->TransferEventsTo(
+    window->env()->gesture_recognizer()->TransferEventsTo(
         gesture_target, window,
         ui::GestureRecognizer::ShouldCancelTouches::DontCancel);
   }
@@ -71,8 +71,9 @@ bool ToplevelWindowEventHandler::AttemptToStartDrag(
   if (move_source == ::wm::WINDOW_MOVE_SOURCE_TOUCH &&
       Shell::Get()->aura_env()->is_touch_down()) {
     gfx::PointF drag_location_f;
-    bool has_point = ui::GestureRecognizer::Get()->GetLastTouchPointForTarget(
-        source, &drag_location_f);
+    bool has_point =
+        source->env()->gesture_recognizer()->GetLastTouchPointForTarget(
+            source, &drag_location_f);
     drag_location = gfx::ToFlooredPoint(drag_location_f);
     DCHECK(has_point);
   } else {

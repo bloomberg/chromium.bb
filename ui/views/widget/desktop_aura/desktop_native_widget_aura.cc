@@ -966,6 +966,10 @@ bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
       desktop_window_tree_host_->IsTranslucentWindowOpacitySupported();
 }
 
+ui::GestureRecognizer* DesktopNativeWidgetAura::GetGestureRecognizer() {
+  return content_window_->env()->gesture_recognizer();
+}
+
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
   int32_t behavior = ui::mojom::kResizeBehaviorNone;
   if (GetWidget()->widget_delegate())

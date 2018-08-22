@@ -1086,9 +1086,8 @@ void Window::NotifyWindowVisibilityChangedUp(aura::Window* target,
 
 bool Window::CleanupGestureState() {
   bool state_modified = false;
-  state_modified |= ui::GestureRecognizer::Get()->CancelActiveTouches(this);
-  state_modified |=
-      ui::GestureRecognizer::Get()->CleanupStateForConsumer(this);
+  state_modified |= env_->gesture_recognizer()->CancelActiveTouches(this);
+  state_modified |= env_->gesture_recognizer()->CleanupStateForConsumer(this);
   for (Window::Windows::iterator iter = children_.begin();
        iter != children_.end();
        ++iter) {
