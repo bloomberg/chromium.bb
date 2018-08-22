@@ -28,7 +28,6 @@
 #include <memory>
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_log.h"
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sql_value.h"
-#include "third_party/blink/renderer/platform/heap/safe_point.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
 #include "third_party/sqlite/sqlite3.h"
