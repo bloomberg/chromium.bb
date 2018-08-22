@@ -23,6 +23,11 @@ def RepoInitSideEffects(*_args, **kwargs):
   os.mkdir(os.path.join(kwargs['cwd'], '.repo'))
 
 
+def CopySideEffects(dest):
+  """Mimic side effects of Repository.Copy by creating .repo dir."""
+  os.mkdir(os.path.join(dest, '.repo'))
+
+
 def RepoCmdPath(repo_root):
   """Return the path to the repo command to use for the given repo root."""
   return os.path.join(repo_root, '.repo', 'repo', 'repo')
@@ -184,12 +189,14 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testSyncComplex(self):
     """Test Repository.Sync complex call."""
+    manifest_path = os.path.join(self.tempdir, 'other', 'manifest.xml')
+    osutils.Touch(manifest_path, makedirs=True)
     self.repo.Sync(
         projects=['p1', 'p2'], local_only=True, current_branch=True, jobs=9,
-        cwd=self.subdir)
+        manifest_path=manifest_path, cwd=self.subdir)
     self.AssertRepoCalled(
-        ['sync', 'p1', 'p2', '--local-only', '--current-branch', '--jobs', '9'],
-        cwd=self.subdir)
+        ['sync', 'p1', 'p2', '--local-only', '--current-branch', '--jobs', '9',
+         '--manifest-name', '../../../other/manifest.xml'], cwd=self.subdir)
 
   def testStartBranchSimple(self):
     """Test Repository.StartBranch simple call."""
@@ -245,17 +252,19 @@ class RepositoryCommandMethodTest(cros_test_lib.RunCommandTempDirTestCase):
     self.AddRepoResult(['list'], output=output, side_effect=mkdirDestRepo)
     copy = self.repo.Copy(copy_root)
     self.assertEqual(copy.root, copy_root)
+    kwargs = dict(debug_level=logging.DEBUG, capture_output=True,
+                  extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
     self.assertCommandCalled([
         'cp', '--archive', '--link', '--parents',
         '.repo/project-objects/p1.git/objects', copy_root,
-    ], cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+    ], **kwargs)
     self.assertCommandCalled([
         'cp', '--archive', '--link', '--parents',
         '.repo/project-objects/other/project.git/objects', copy_root,
-    ], cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+    ], **kwargs)
     self.assertCommandCalled([
         'cp', '--archive', '--no-clobber', '.repo', copy_root,
-    ], cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+    ], **kwargs)
 
 
 @cros_test_lib.NetworkTest()

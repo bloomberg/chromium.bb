@@ -56,6 +56,7 @@ class Repository(object):
     """
     self.root = os.path.abspath(root)
     self._repo_dir = os.path.join(self.root, '.repo')
+    self._manifests_dir = os.path.join(self._repo_dir, 'manifests')
     self._ValidateRepoDir()
 
   def _ValidateRepoDir(self):
@@ -170,7 +171,7 @@ class Repository(object):
                                      debug_level=logging.DEBUG)
 
   def Sync(self, projects=None, local_only=False, current_branch=False,
-           jobs=None, cwd=None):
+           jobs=None, manifest_path=None, cwd=None):
     """Run `repo sync`.
 
     Args:
@@ -178,6 +179,7 @@ class Repository(object):
       local_only: Only update working tree; don't fetch.
       current_branch: Fetch only the current branch.
       jobs: Number of projects to sync in parallel.
+      manifest_path: Path to a manifest XML file to use for this sync.
       cwd: The path to run the command in. Defaults to Repository root.
 
     Raises:
@@ -191,6 +193,12 @@ class Repository(object):
       args += ['--current-branch']
     if jobs is not None:
       args += ['--jobs', str(jobs)]
+
+    if manifest_path is not None:
+      # --manifest-name must be relative to .repo/manifests.
+      manifest_name = os.path.relpath(manifest_path, self._manifests_dir)
+      args += ['--manifest-name', manifest_name]
+
     self._Run(['sync'] + args, cwd=cwd)
 
   def StartBranch(self, name, projects=None, cwd=None):
@@ -288,6 +296,7 @@ class Repository(object):
           cros_build_lib.RunCommand(
               ['cp', '--archive', '--link', '--parents', objects_dir,
                dest_path],
+              debug_level=logging.DEBUG, capture_output=True,
               extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
         except cros_build_lib.RunCommandError as e:
           if 'Invalid cross-device link' in e.result.error:
@@ -299,7 +308,8 @@ class Repository(object):
       try:
         cros_build_lib.RunCommand(
             ['cp', '--archive', '--no-clobber', '.repo', dest_path],
-            cwd=self.root, extra_env={'LC_MESSAGES': 'C'})
+            debug_level=logging.DEBUG, capture_output=True,
+            extra_env={'LC_MESSAGES': 'C'}, cwd=self.root)
       except cros_build_lib.RunCommandError as e:
         # Despite the --no-clobber, `cp` still complains when trying to copy a
         # file to its existing hard link. Filter these errors from the output
