@@ -12,13 +12,19 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
+#include "components/session_manager/core/session_manager_observer.h"
+
+namespace session_manager {
+class SessionManager;
+}
 
 namespace chromeos {
 
 // Tracks global demo session state. For example, whether the demo session has
 // started, and whether the demo session offline resources have been loaded.
-class DemoSession {
+class DemoSession : public session_manager::SessionManagerObserver {
  public:
   enum class EnrollmentType {
     // Demo mode enrollment unset/unknown.
@@ -95,7 +101,7 @@ class DemoSession {
 
  private:
   DemoSession();
-  ~DemoSession();
+  ~DemoSession() override;
 
   // Called after load of a currently installed (if any) demo mode resources
   // component has finished.
@@ -108,6 +114,12 @@ class DemoSession {
   // Callback for the image loader request to load offline demo mode resources.
   // |mount_path| is the path at which the resources were loaded.
   void OnOfflineResourcesLoaded(base::Optional<base::FilePath> mounted_path);
+
+  // Loads and launches the highlights app.
+  void LoadAndLaunchHighlightsApp();
+
+  // session_manager::SessionManagerObserver:
+  void OnSessionStateChanged() override;
 
   // Whether the device was offline-enrolled into demo mode, i.e. enrolled using
   // pre-built policies. Offline enrolled demo sessions do not have working
@@ -125,6 +137,10 @@ class DemoSession {
 
   // List of pending callbacks passed to EnsureOfflineResourcesLoaded().
   std::list<base::OnceClosure> offline_resources_load_callbacks_;
+
+  ScopedObserver<session_manager::SessionManager,
+                 session_manager::SessionManagerObserver>
+      session_manager_observer_;
 
   base::WeakPtrFactory<DemoSession> weak_ptr_factory_;
 

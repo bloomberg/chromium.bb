@@ -58,6 +58,7 @@ source_set("chromeos") {
     "//chrome/app:command_ids",
     "//chrome/app/vector_icons",
     "//chrome/browser/apps/foundation/app_service:lib",
+    "//chrome/browser/apps/platform_apps",
     "//chrome/browser/chromeos/android_sms:android_sms_urls",
     "//chrome/browser/chromeos/power/ml:user_activity_ukm_logger_helpers",
     "//chrome/browser/chromeos/power/ml/smart_dim",

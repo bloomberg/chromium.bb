@@ -8,13 +8,18 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/sys_info.h"
+#include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
+#include "components/session_manager/core/session_manager.h"
 
 namespace chromeos {
 
@@ -47,6 +52,14 @@ constexpr base::FilePath::CharType kDemoAppsPath[] =
 
 constexpr base::FilePath::CharType kExternalExtensionsPrefsPath[] =
     FILE_PATH_LITERAL("demo_extensions.json");
+
+// Path relative to the path at which offline demo resources are loaded that
+// contains the highlights app.
+constexpr char kHighlightsAppPath[] = "chrome_apps/highlights/dist";
+
+// The name of the subdirectory that contains the resources for the default
+// highlights app, used when a board-specific version is not available.
+constexpr char kDefaultHighlightsAppResourcesPath[] = "default";
 
 bool IsDemoModeOfflineEnrolled() {
   DCHECK(DemoSession::IsDeviceInDemoMode());
@@ -207,7 +220,12 @@ base::FilePath DemoSession::GetOfflineResourceAbsolutePath(
 }
 
 DemoSession::DemoSession()
-    : offline_enrolled_(IsDemoModeOfflineEnrolled()), weak_ptr_factory_(this) {}
+    : offline_enrolled_(IsDemoModeOfflineEnrolled()),
+      session_manager_observer_(this),
+      weak_ptr_factory_(this) {
+  session_manager_observer_.Add(session_manager::SessionManager::Get());
+  OnSessionStateChanged();
+}
 
 DemoSession::~DemoSession() = default;
 
@@ -222,6 +240,44 @@ void DemoSession::OnOfflineResourcesLoaded(
   load_callbacks.swap(offline_resources_load_callbacks_);
   for (auto& callback : load_callbacks)
     std::move(callback).Run();
+}
+
+void DemoSession::LoadAndLaunchHighlightsApp() {
+  DCHECK(offline_resources_loaded_);
+  if (offline_resources_path_.empty()) {
+    LOG(ERROR) << "Offline resources not loaded - no highlights app available.";
+    return;
+  }
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  DCHECK(profile);
+  const std::vector<std::string> board =
+      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
+                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  const std::string board_name = board[0];
+  base::FilePath resources_path =
+      offline_resources_path_.Append(kHighlightsAppPath)
+          .Append(kDefaultHighlightsAppResourcesPath);
+  base::FilePath board_specific_resources_path =
+      offline_resources_path_.Append(kHighlightsAppPath).Append(board_name);
+  if (base::PathExists(board_specific_resources_path))
+    resources_path = board_specific_resources_path;
+
+  if (!apps::AppLoadService::Get(profile)->LoadAndLaunch(
+          resources_path, base::CommandLine(base::CommandLine::NO_PROGRAM),
+          base::FilePath() /* cur_dir */)) {
+    LOG(WARNING) << "Failed to launch highlights app!";
+  }
+}
+
+void DemoSession::OnSessionStateChanged() {
+  if (session_manager::SessionManager::Get()->session_state() !=
+          session_manager::SessionState::ACTIVE ||
+      !IsDeviceInDemoMode()) {
+    return;
+  }
+  EnsureOfflineResourcesLoaded(
+      base::BindOnce(&DemoSession::LoadAndLaunchHighlightsApp,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace chromeos

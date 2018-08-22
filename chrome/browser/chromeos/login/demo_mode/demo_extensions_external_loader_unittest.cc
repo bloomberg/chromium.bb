@@ -27,6 +27,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/external_install_info.h"
@@ -122,6 +123,7 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
     image_loader_client_ = image_loader_client.get();
     DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
         std::move(image_loader_client));
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
   }
 
   void TearDown() override {
@@ -212,6 +214,8 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
   FakeImageLoaderClient* image_loader_client_ = nullptr;
 
   base::ScopedTempDir offline_demo_resources_;
+
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoExtensionsExternalLoaderTest);
 };
@@ -444,6 +448,7 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
     user_manager_ = fake_user_manager.get();
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(fake_user_manager));
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
   }
 
   ~ShouldCreateDemoExtensionsExternalLoaderTest() override = default;
@@ -483,6 +488,7 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ShouldCreateDemoExtensionsExternalLoaderTest);
 };
