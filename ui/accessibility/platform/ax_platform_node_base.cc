@@ -292,11 +292,11 @@ bool AXPlatformNodeBase::IsRichTextField() const {
          GetData().HasState(ax::mojom::State::kRichlyEditable);
 }
 
-base::string16 AXPlatformNodeBase::GetInnerText() {
+std::string AXPlatformNodeBase::GetInnerText() {
   if (IsTextOnlyObject())
-    return GetString16Attribute(ax::mojom::StringAttribute::kName);
+    return GetStringAttribute(ax::mojom::StringAttribute::kName);
 
-  base::string16 text;
+  std::string text;
   for (int i = 0; i < GetChildCount(); ++i) {
     gfx::NativeViewAccessible child_accessible = ChildAtIndex(i);
     AXPlatformNodeBase* child = FromNativeViewAccessible(child_accessible);
@@ -554,7 +554,7 @@ bool AXPlatformNodeBase::IsVerticallyScrollable() const {
              GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
 }
 
-base::string16 AXPlatformNodeBase::GetText() {
+std::string AXPlatformNodeBase::GetText() {
   return GetInnerText();
 }
 
@@ -573,7 +573,7 @@ base::string16 AXPlatformNodeBase::GetValue() {
   // value to be set in text fields with rich content, even though the same
   // information is available on the children.
   if (value.empty() && IsRichTextField())
-    return GetInnerText();
+    return base::UTF8ToUTF16(GetInnerText());
 
   return value;
 }
