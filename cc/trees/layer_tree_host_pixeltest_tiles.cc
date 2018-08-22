@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include "build/build_config.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
@@ -224,8 +225,16 @@ TEST_F(LayerTreeHostTilesTestPartialInvalidation,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_flipped.png")));
 }
 
+// Flaky on Linux TSAN. https://crbug.com/707711
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_PartialRaster_MultiThread_OneCopy \
+  DISABLED_PartialRaster_MultiThread_OneCopy
+#else
+#define MAYBE_PartialRaster_MultiThread_OneCopy \
+  PartialRaster_MultiThread_OneCopy
+#endif
 TEST_F(LayerTreeHostTilesTestPartialInvalidation,
-       PartialRaster_MultiThread_OneCopy) {
+       MAYBE_PartialRaster_MultiThread_OneCopy) {
   RunRasterPixelTest(
       true, PARTIAL_ONE_COPY, picture_layer_,
       base::FilePath(FILE_PATH_LITERAL("blue_yellow_partial_flipped.png")));
