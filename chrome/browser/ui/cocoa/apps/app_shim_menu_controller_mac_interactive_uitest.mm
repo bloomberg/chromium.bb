@@ -110,7 +110,8 @@ class AppShimMenuControllerUITest : public extensions::PlatformAppBrowserTest {
 };
 
 // Test that switching to a packaged app changes window cycling behavior.
-IN_PROC_BROWSER_TEST_F(AppShimMenuControllerUITest, WindowCycling) {
+// Disabled due to flakiness. https://crbug.com/876623
+IN_PROC_BROWSER_TEST_F(AppShimMenuControllerUITest, DISABLED_WindowCycling) {
   EXPECT_FALSE([app1_->GetNativeWindow() isMainWindow]);
   EXPECT_TRUE(ShowAndFocusNativeWindow(app1_->GetNativeWindow()));
   ExpectActiveWithCounts(app1_->GetNativeWindow(), 1, 0, 0, 0);
