@@ -29,6 +29,17 @@ void UpdateModel::SetUpdateAvailable(mojom::UpdateSeverity severity,
   NotifyUpdateAvailable();
 }
 
+void UpdateModel::SetUpdateNotificationState(
+    mojom::NotificationStyle style,
+    const base::string16& notification_title,
+    const base::string16& notification_body) {
+  DCHECK_EQ(update_type_, mojom::UpdateType::SYSTEM);
+  notification_style_ = style;
+  notification_title_ = notification_title;
+  notification_body_ = notification_body;
+  NotifyUpdateAvailable();
+}
+
 void UpdateModel::SetUpdateOverCellularAvailable(bool available) {
   update_over_cellular_available_ = available;
   NotifyUpdateAvailable();

@@ -40,6 +40,10 @@ class SystemTrayModel : public mojom::SystemTray {
                       bool factory_reset_required,
                       bool rollback,
                       mojom::UpdateType update_type) override;
+  void SetUpdateNotificationState(
+      mojom::NotificationStyle style,
+      const base::string16& notification_title,
+      const base::string16& notification_body) override;
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;
   void ShowVolumeSliderBubble() override;
 

@@ -8,6 +8,7 @@
 #include "ash/public/interfaces/update.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/strings/string16.h"
 
 namespace ash {
 
@@ -36,6 +37,14 @@ class UpdateModel {
                           bool rollback,
                           mojom::UpdateType update_type);
 
+  // Store the state of the notification according to the RelaunchNotification
+  // policy. State persists until reboot or another call to this function.
+  // The |notification_body| changes the text of the notification, as it
+  // contains a countdown until the required reboot.
+  void SetUpdateNotificationState(mojom::NotificationStyle style,
+                                  const base::string16& notification_title,
+                                  const base::string16& notification_body);
+
   // If |available| is true, a software update is available but user's agreement
   // is required as current connection is cellular. If |available| is false, the
   // user's one time permission on update over cellular connection has been
@@ -48,6 +57,13 @@ class UpdateModel {
   bool factory_reset_required() const { return factory_reset_required_; }
   bool rollback() const { return rollback_; }
   mojom::UpdateType update_type() const { return update_type_; }
+  mojom::NotificationStyle notification_style() const {
+    return notification_style_;
+  }
+  const base::string16& notification_title() const {
+    return notification_title_;
+  }
+  const base::string16& notification_body() const { return notification_body_; }
   bool update_over_cellular_available() const {
     return update_over_cellular_available_;
   }
@@ -60,6 +76,10 @@ class UpdateModel {
   bool factory_reset_required_ = false;
   bool rollback_ = false;
   mojom::UpdateType update_type_ = mojom::UpdateType::SYSTEM;
+  mojom::NotificationStyle notification_style_ =
+      mojom::NotificationStyle::DEFAULT;
+  base::string16 notification_title_;
+  base::string16 notification_body_;
   bool update_over_cellular_available_ = false;
 
   base::ObserverList<UpdateObserver>::Unchecked observers_;

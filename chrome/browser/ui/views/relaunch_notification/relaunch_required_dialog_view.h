@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
+#include "chrome/browser/ui/views/relaunch_notification/relaunch_required_timer.h"
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
@@ -50,15 +50,6 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   int GetHeightForWidth(int width) const override;
   void Layout() override;
 
-  // Rounds |deadline_offset| to the nearest day/hour/minute/second for display
-  // in the dialog's title.
-  static base::TimeDelta ComputeDeadlineDelta(base::TimeDelta deadline_offset);
-
-  // Returns the offset from an arbitrary "now" into |deadline_offset| at which
-  // the view's title must be refreshed.
-  static base::TimeDelta ComputeNextRefreshDelta(
-      base::TimeDelta deadline_offset);
-
  protected:
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
@@ -67,16 +58,10 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   RelaunchRequiredDialogView(base::TimeTicks deadline,
                              base::RepeatingClosure on_accept);
 
-  static constexpr int kTitleIconSize = 20;
-
-  // Schedules a timer to fire the next time the title must be updated.
-  void ScheduleNextTitleRefresh();
-
   // Invoked when the timer fires to refresh the title text.
-  void OnTitleRefresh();
+  void UpdateWindowTitle();
 
-  // The time at which Chrome will be forcefully relaunched.
-  base::TimeTicks relaunch_deadline_;
+  static constexpr int kTitleIconSize = 20;
 
   // A callback to run if the user accepts the prompt to relaunch the browser.
   base::RepeatingClosure on_accept_;
@@ -84,12 +69,8 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   // The label containing the body text of the dialog.
   views::Label* body_label_;
 
-  // A timer with which title refreshes are scheduled.
-  base::OneShotTimer refresh_timer_;
-
-  // Becomes true upon the last title refresh, at which point no more refreshes
-  // are necessary.
-  bool last_refresh_;
+  // Timer that schedules title refreshes.
+  RelaunchRequiredTimer relaunch_required_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RelaunchRequiredDialogView);
 };

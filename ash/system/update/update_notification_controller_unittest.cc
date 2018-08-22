@@ -70,6 +70,13 @@ class UpdateNotificationControllerTest : public AshTestBase {
         .size();
   }
 
+  int GetNotificationPriority() {
+    return message_center::MessageCenter::Get()
+        ->FindVisibleNotificationById(
+            UpdateNotificationController::kNotificationId)
+        ->priority();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
@@ -179,6 +186,77 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterRollback) {
       " be deleted when the device is restarted.",
       GetNotificationMessage());
   EXPECT_EQ("Restart and reset", GetNotificationButton(0));
+}
+
+TEST_F(UpdateNotificationControllerTest, SetUpdateNotificationStateTest) {
+  // The system starts with no update pending, so the notification isn't
+  // visible.
+  EXPECT_FALSE(HasNotification());
+
+  // Simulate an update.
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
+      mojom::UpdateSeverity::LOW, false, false, mojom::UpdateType::SYSTEM);
+
+  // The notification is now visible.
+  ASSERT_TRUE(HasNotification());
+  EXPECT_EQ("Update available", GetNotificationTitle());
+  EXPECT_EQ("Learn more about the latest " SYSTEM_APP_NAME " update",
+            GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
+
+  const std::string recommended_notification_title(
+      SYSTEM_APP_NAME " will restart in 3 minutes");
+  const std::string recommended_notification_body(
+      "Your administrator recommended that you restart " SYSTEM_APP_NAME
+      " to apply an update");
+
+  // Simulate notification type set to recommended.
+  Shell::Get()->system_tray_model()->SetUpdateNotificationState(
+      mojom::NotificationStyle::ADMIN_RECOMMENDED,
+      base::UTF8ToUTF16(recommended_notification_title),
+      base::UTF8ToUTF16(recommended_notification_body));
+
+  // The notification's title and body have changed.
+  ASSERT_TRUE(HasNotification());
+  EXPECT_EQ(recommended_notification_title, GetNotificationTitle());
+  EXPECT_EQ(recommended_notification_body, GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
+  EXPECT_NE(message_center::NotificationPriority::SYSTEM_PRIORITY,
+            GetNotificationPriority());
+
+  const std::string required_notification_title(SYSTEM_APP_NAME
+                                                " will restart in 3 minutes");
+  const std::string required_notification_body(
+      "Your administrator required that you restart " SYSTEM_APP_NAME
+      " to apply an update");
+
+  // Simulate notification type set to required.
+  Shell::Get()->system_tray_model()->SetUpdateNotificationState(
+      mojom::NotificationStyle::ADMIN_REQUIRED,
+      base::UTF8ToUTF16(required_notification_title),
+      base::UTF8ToUTF16(required_notification_body));
+
+  // The notification's title and body have changed.
+  ASSERT_TRUE(HasNotification());
+  EXPECT_EQ(required_notification_title, GetNotificationTitle());
+  EXPECT_EQ(required_notification_body, GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
+  // The admin required relaunch notification has system priority.
+  EXPECT_EQ(message_center::NotificationPriority::SYSTEM_PRIORITY,
+            GetNotificationPriority());
+
+  // Simulate notification type set back to default.
+  Shell::Get()->system_tray_model()->SetUpdateNotificationState(
+      mojom::NotificationStyle::DEFAULT, base::string16(), base::string16());
+
+  // The notification has the default text.
+  ASSERT_TRUE(HasNotification());
+  EXPECT_EQ("Update available", GetNotificationTitle());
+  EXPECT_EQ("Learn more about the latest " SYSTEM_APP_NAME " update",
+            GetNotificationMessage());
+  EXPECT_EQ("Restart to update", GetNotificationButton(0));
+  EXPECT_NE(message_center::NotificationPriority::SYSTEM_PRIORITY,
+            GetNotificationPriority());
 }
 
 }  // namespace ash

@@ -11753,7 +11753,7 @@
         'type': 'integer',
         'enum': [ 1, 2 ],
       },
-      'caption': '''Notify a user that a browser relaunch is recommended or required''',
+      'caption': '''Notify a user that a browser relaunch or device restart is recommended or required''',
       'items': [
         {
           'name': 'Recommended',
@@ -11767,11 +11767,11 @@
         },
       ],
       'example_value': 1,
-      'desc': '''Notify users that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> must be relaunched to apply a pending update.
+      'desc': '''Notify users that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> must be relaunched or <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> must be restarted to apply a pending update.
 
-      This policy setting enables notifications to inform the user that a browser relaunch is recommended or required. If not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> indicates to the user that a relaunch is needed via subtle changes to its menu. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. This period is seven days by default, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME">RelaunchNotificationPeriod</ph> policy setting.
+      This policy setting enables notifications to inform the user that a browser relaunch or device restart is recommended or required. If not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> indicates to the user that a relaunch is needed via subtle changes to its menu, while <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> indicates such via a notification in the system tray. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. The default period is seven days for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> and four days for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME">RelaunchNotificationPeriod</ph> policy setting.
 
-      The user's session is restored following the relaunch.''',
+      The user's session is restored following the relaunch/restart.''',
     },
     {
       'id': 420,
@@ -11789,9 +11789,9 @@
       'example_value': 604800000,
       'desc': '''Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> must be relaunched or that a <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> device must be restarted to apply a pending update.
 
-      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices, a restart notification appears in the system tray when an upgrade is detected. This notification changes color once half of the notification period passes, and again once the full notification period has passed. For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes color once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy for browsers follow this same schedule.
+      Over this time period, the user will be repeatedly informed of the need for an update. For <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices, a restart notification appears in the system tray when an upgrade is detected. For <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes color once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME">RelaunchNotification</ph> policy follow this same schedule.
 
-      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices and 604800000 milliseconds (one week) for browsers.''',
+      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> devices and 604800000 milliseconds (one week) for <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.''',
     },
     {
       'name': 'VirtualMachinesAllowed',

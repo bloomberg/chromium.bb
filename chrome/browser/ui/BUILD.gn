@@ -2971,10 +2971,14 @@ jumbo_split_static_library("ui") {
       "views/permission_bubble/permission_prompt_impl.h",
       "views/relaunch_notification/relaunch_notification_controller.cc",
       "views/relaunch_notification/relaunch_notification_controller.h",
-      "views/relaunch_notification/relaunch_recommended_bubble_view.cc",
-      "views/relaunch_notification/relaunch_recommended_bubble_view.h",
-      "views/relaunch_notification/relaunch_required_dialog_view.cc",
-      "views/relaunch_notification/relaunch_required_dialog_view.h",
+      "views/relaunch_notification/relaunch_notification_metrics.cc",
+      "views/relaunch_notification/relaunch_notification_metrics.h",
+      "views/relaunch_notification/relaunch_recommended_timer.cc",
+      "views/relaunch_notification/relaunch_recommended_timer.h",
+      "views/relaunch_notification/relaunch_required_timer.cc",
+      "views/relaunch_notification/relaunch_required_timer.h",
+      "views/relaunch_notification/relaunch_required_timer_internal.cc",
+      "views/relaunch_notification/relaunch_required_timer_internal.h",
       "views/safe_browsing/password_reuse_modal_warning_dialog.cc",
       "views/safe_browsing/password_reuse_modal_warning_dialog.h",
       "views/session_crashed_bubble_view.cc",
@@ -3429,8 +3433,21 @@ jumbo_split_static_library("ui") {
       }
     }
 
-    if (!is_chromeos) {
-      sources += [ "views/screen_capture_notification_ui_views.cc" ]
+    if (is_chromeos) {
+      sources += [
+        "views/relaunch_notification/relaunch_notification_controller_platform_impl_chromeos.cc",
+        "views/relaunch_notification/relaunch_notification_controller_platform_impl_chromeos.h",
+      ]
+    } else {
+      sources += [
+        "views/relaunch_notification/relaunch_notification_controller_platform_impl_desktop.cc",
+        "views/relaunch_notification/relaunch_notification_controller_platform_impl_desktop.h",
+        "views/relaunch_notification/relaunch_recommended_bubble_view.cc",
+        "views/relaunch_notification/relaunch_recommended_bubble_view.h",
+        "views/relaunch_notification/relaunch_required_dialog_view.cc",
+        "views/relaunch_notification/relaunch_required_dialog_view.h",
+        "views/screen_capture_notification_ui_views.cc",
+      ]
     }
 
     if (is_mac) {

@@ -46,7 +46,8 @@ void UpdateNotificationController::OnUpdateAvailable() {
   }
 
   message_center::SystemNotificationWarningLevel warning_level =
-      model_->rollback()
+      (model_->rollback() ||
+       model_->notification_style() == mojom::NotificationStyle::ADMIN_REQUIRED)
           ? message_center::SystemNotificationWarningLevel::WARNING
           : message_center::SystemNotificationWarningLevel::NORMAL;
   std::unique_ptr<Notification> notification =
@@ -64,6 +65,9 @@ void UpdateNotificationController::OnUpdateAvailable() {
           model_->rollback() ? kSystemMenuRollbackIcon : kSystemMenuUpdateIcon,
           warning_level);
   notification->set_pinned(true);
+
+  if (model_->notification_style() == mojom::NotificationStyle::ADMIN_REQUIRED)
+    notification->SetSystemPriority();
 
   if (model_->update_required()) {
     std::vector<message_center::ButtonInfo> notification_actions;
@@ -94,6 +98,13 @@ base::string16 UpdateNotificationController::GetNotificationMessage() const {
     return l10n_util::GetStringFUTF16(IDS_UPDATE_NOTIFICATION_MESSAGE_POWERWASH,
                                       system_app_name);
   }
+
+  const base::string16 notification_body = model_->notification_body();
+  if (model_->update_type() == mojom::UpdateType::SYSTEM &&
+      !notification_body.empty()) {
+    return notification_body;
+  }
+
   return l10n_util::GetStringFUTF16(IDS_UPDATE_NOTIFICATION_MESSAGE_LEARN_MORE,
                                     system_app_name);
 }
@@ -105,6 +116,10 @@ base::string16 UpdateNotificationController::GetNotificationTitle() const {
         IDS_UPDATE_NOTIFICATION_TITLE_FLASH_PLAYER);
   }
 #endif
+  const base::string16 notification_title = model_->notification_title();
+  if (!notification_title.empty())
+    return notification_title;
+
   return model_->rollback()
              ? l10n_util::GetStringUTF16(IDS_ROLLBACK_NOTIFICATION_TITLE)
              : l10n_util::GetStringUTF16(IDS_UPDATE_NOTIFICATION_TITLE);

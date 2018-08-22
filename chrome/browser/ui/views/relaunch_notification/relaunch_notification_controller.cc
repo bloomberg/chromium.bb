@@ -8,18 +8,11 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view.h"
-#include "chrome/browser/ui/views/relaunch_notification/relaunch_required_dialog_view.h"
-#include "chrome/common/buildflags.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "ui/views/widget/widget.h"
 
 #if BUILDFLAG(ENABLE_BACKGROUND_MODE)
 #include "chrome/browser/background/background_mode_manager.h"
@@ -27,17 +20,19 @@
 
 namespace {
 
-constexpr char kShowResultHistogramPrefix[] = "RelaunchNotification.ShowResult";
-
 // A type represending the possible RelaunchNotification policy setting values.
 enum class RelaunchNotificationSetting {
   // Indications are via the Chrome menu only -- no work for the controller.
   kChromeMenuOnly,
 
-  // Present the relaunch recommended bubble in the last active browser window.
+  // Present the relaunch recommended bubble in the last active browser window
+  // on Chrome desktop, or the relaunch recommended notification in the unified
+  // system tray on Chrome OS.
   kRecommendedBubble,
 
-  // Present the relaunch required dialog in the last active browser window.
+  // Present the relaunch required dialog in the last active browser window on
+  // Chrome desktop, or the relaunch required notification in the unified system
+  // tray on Chrome OS.
   kRequiredDialog,
 };
 
@@ -51,41 +46,6 @@ RelaunchNotificationSetting ReadPreference() {
       return RelaunchNotificationSetting::kRequiredDialog;
   }
   return RelaunchNotificationSetting::kChromeMenuOnly;
-}
-
-// The result of an attempt to show a relaunch notification dialog. These values
-// are persisted to logs. Entries should not be renumbered and numeric values
-// should never be reused.
-enum class ShowResult {
-  kShown = 0,
-  kUnknownNotShownReason = 1,
-  kBackgroundModeNoWindows = 2,
-  kCount
-};
-
-// Returns the reason why a dialog was not shown when the conditions were ripe
-// for such.
-ShowResult GetNotShownReason() {
-#if BUILDFLAG(ENABLE_BACKGROUND_MODE)
-  BackgroundModeManager* background_mode_manager =
-      g_browser_process->background_mode_manager();
-  if (background_mode_manager &&
-      background_mode_manager->IsBackgroundWithoutWindows()) {
-    return ShowResult::kBackgroundModeNoWindows;
-  }
-#endif  // BUILDFLAG(ENABLE_BACKGROUND_MODE)
-  return ShowResult::kUnknownNotShownReason;
-}
-
-// Returns the last active tabbed browser.
-Browser* FindLastActiveTabbedBrowser() {
-  BrowserList* browser_list = BrowserList::GetInstance();
-  const auto end = browser_list->end_last_active();
-  for (auto scan = browser_list->begin_last_active(); scan != end; ++scan) {
-    if ((*scan)->is_type_tabbed())
-      return *scan;
-  }
-  return nullptr;
 }
 
 }  // namespace
@@ -110,7 +70,6 @@ RelaunchNotificationController::RelaunchNotificationController(
       tick_clock_(tick_clock),
       last_notification_style_(NotificationStyle::kNone),
       last_level_(UpgradeDetector::UPGRADE_ANNOYANCE_NONE),
-      widget_(nullptr),
       timer_(tick_clock_) {
   PrefService* local_state = g_browser_process->local_state();
   if (local_state) {
@@ -164,21 +123,6 @@ void RelaunchNotificationController::OnUpgradeRecommended() {
 
   last_level_ = current_level;
   last_high_deadline_ = current_high_deadline;
-}
-
-void RelaunchNotificationController::OnWidgetClosing(views::Widget* widget) {
-  DCHECK_EQ(widget, widget_);
-  widget->RemoveObserver(this);
-  widget_ = nullptr;
-}
-
-std::string RelaunchNotificationController::GetSuffixedHistogramName(
-    base::StringPiece base_name) {
-  DCHECK_NE(last_notification_style_, NotificationStyle::kNone);
-  return base_name.as_string().append(last_notification_style_ ==
-                                              NotificationStyle::kRecommended
-                                          ? ".Recommended"
-                                          : ".Required");
 }
 
 void RelaunchNotificationController::HandleCurrentStyle() {
@@ -252,7 +196,7 @@ void RelaunchNotificationController::ShowRelaunchNotification(
 
     // Show the dialog if there has been a level change.
     if (level != last_level_)
-      ShowRelaunchRecommendedBubble();
+      NotifyRelaunchRecommended();
   } else {
     HandleRelaunchRequiredState(level, high_deadline);
   }
@@ -273,7 +217,7 @@ void RelaunchNotificationController::CloseRelaunchNotification() {
   // forced relaunch.
   timer_.Stop();
 
-  CloseWidget();
+  Close();
 }
 
 void RelaunchNotificationController::HandleRelaunchRequiredState(
@@ -300,14 +244,14 @@ void RelaunchNotificationController::HandleRelaunchRequiredState(
   timer_.Start(FROM_HERE, deadline - now, this,
                &RelaunchNotificationController::OnRelaunchDeadlineExpired);
 
-  if (widget_) {
-    // Tell the dialog to update its title if it is showing.
-    RelaunchRequiredDialogView::FromWidget(widget_)->SetDeadline(deadline);
+  if (platform_impl_.IsRequiredNotificationShown()) {
+    // Tell the notification to update its title if it is showing.
+    platform_impl_.SetDeadline(deadline);
   } else {
     // Otherwise, show the dialog if there has been a level change or if the
     // deadline is in the past.
     if (level != last_level_ || high_deadline <= now)
-      ShowRelaunchRequiredDialog();
+      NotifyRelaunchRequired();
   }
 }
 
@@ -332,70 +276,35 @@ void RelaunchNotificationController::StartReshowTimer() {
     if (new_run_time <= now) {
       // The new delay puts the next reshow in the past. Handle it now.
       timer_.Stop();
-      OnReshowRelaunchRecommendedBubble();
+      OnReshowRelaunchRecommended();
       return;
     }
     delay = new_run_time - now;
   }
-  timer_.Start(
-      FROM_HERE, delay, this,
-      &RelaunchNotificationController::OnReshowRelaunchRecommendedBubble);
+  timer_.Start(FROM_HERE, delay, this,
+               &RelaunchNotificationController::OnReshowRelaunchRecommended);
 }
 
-void RelaunchNotificationController::OnReshowRelaunchRecommendedBubble() {
+void RelaunchNotificationController::OnReshowRelaunchRecommended() {
   DCHECK_EQ(last_notification_style_, NotificationStyle::kRecommended);
-  ShowRelaunchRecommendedBubble();
+  NotifyRelaunchRecommended();
   StartReshowTimer();
 }
 
-void RelaunchNotificationController::ShowRelaunchRecommendedBubble() {
-  // Nothing to do if the bubble is visible.
-  if (widget_)
-    return;
-
-  // Show the bubble in the most recently active browser.
-  Browser* browser = FindLastActiveTabbedBrowser();
-  base::UmaHistogramEnumeration(
-      GetSuffixedHistogramName(kShowResultHistogramPrefix),
-      browser ? ShowResult::kShown : GetNotShownReason(), ShowResult::kCount);
-  if (!browser)
-    return;
-
-  widget_ = RelaunchRecommendedBubbleView::ShowBubble(
-      browser, upgrade_detector_->upgrade_detected_time(),
-      base::BindRepeating(&chrome::AttemptRelaunch));
-
-  // Monitor the widget so that |widget_| can be cleared on close.
-  widget_->AddObserver(this);
+void RelaunchNotificationController::NotifyRelaunchRecommended() {
+  platform_impl_.NotifyRelaunchRecommended(
+      upgrade_detector_->upgrade_detected_time());
 }
 
-void RelaunchNotificationController::ShowRelaunchRequiredDialog() {
+void RelaunchNotificationController::NotifyRelaunchRequired() {
   DCHECK(timer_.IsRunning());
   DCHECK(!timer_.desired_run_time().is_null());
 
-  // Nothing to do if the dialog is visible.
-  if (widget_)
-    return;
-
-  // Show the dialog in the most recently active browser.
-  Browser* browser = FindLastActiveTabbedBrowser();
-  base::UmaHistogramEnumeration(
-      GetSuffixedHistogramName(kShowResultHistogramPrefix),
-      browser ? ShowResult::kShown : GetNotShownReason(), ShowResult::kCount);
-  if (!browser)
-    return;
-
-  widget_ = RelaunchRequiredDialogView::Show(
-      browser, timer_.desired_run_time(),
-      base::BindRepeating(&chrome::AttemptRelaunch));
-
-  // Monitor the widget so that |widget_| can be cleared on close.
-  widget_->AddObserver(this);
+  platform_impl_.NotifyRelaunchRequired(timer_.desired_run_time());
 }
 
-void RelaunchNotificationController::CloseWidget() {
-  if (widget_)
-    widget_->Close();
+void RelaunchNotificationController::Close() {
+  platform_impl_.CloseRelaunchNotification();
 }
 
 void RelaunchNotificationController::OnRelaunchDeadlineExpired() {
