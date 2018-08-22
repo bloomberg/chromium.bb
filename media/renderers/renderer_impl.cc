@@ -816,11 +816,15 @@ void RendererImpl::OnRendererEnded(DemuxerStream::Type type) {
     return;
 
   if (type == DemuxerStream::AUDIO) {
-    DCHECK(!audio_ended_);
+    // If all streams are ended, do not propagate a redundant ended event.
+    if (audio_ended_ && PlaybackHasEnded())
+      return;
     audio_ended_ = true;
   } else {
-    DCHECK(!video_ended_);
     DCHECK(video_renderer_);
+    // If all streams are ended, do not propagate a redundant ended event.
+    if (audio_ended_ && PlaybackHasEnded())
+      return;
     video_ended_ = true;
     video_renderer_->OnTimeStopped();
   }
@@ -907,7 +911,11 @@ void RendererImpl::OnVideoOpacityChange(bool opaque) {
 void RendererImpl::CleanUpTrackChange(base::RepeatingClosure on_finished,
                                       bool* ended,
                                       bool* playing) {
-  *ended = *playing = false;
+  *playing = false;
+  // If either stream is alive (i.e. hasn't reached ended state), ended can be
+  // set to false. If both streams are dead, keep ended=true.
+  if ((audio_renderer_ && !audio_ended_) || (video_renderer_ && !video_ended_))
+    *ended = false;
   std::move(on_finished).Run();
 }
 
