@@ -166,8 +166,8 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   // The description view can be nullptr.
   virtual views::View* CreateDescriptionLabel();
 
-  // Creates a description label iff the description text isn't empty.
-  views::Label* CreateDescriptionLabelInternal() const;
+  // Creates a label matching the style of the description label.
+  views::Label* CreateSecondaryLabel(const base::string16& text) const;
 
  private:
   void AddIcon(gfx::ImageSkia icon);
@@ -405,6 +405,12 @@ void AutofillPopupItemView::RefreshStyle() {
 
 views::View* AutofillPopupItemView::CreateValueLabel() {
   // TODO(crbug.com/831603): Remove elision responsibilities from controller.
+  base::string16 text =
+      popup_view_->controller()->GetElidedValueAt(line_number_);
+  if (popup_view_->controller()
+          ->GetSuggestionAt(line_number_)
+          .is_value_secondary)
+    return CreateSecondaryLabel(text);
   views::Label* text_label = new views::Label(
       popup_view_->controller()->GetElidedValueAt(line_number_),
       {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
@@ -416,24 +422,21 @@ views::View* AutofillPopupItemView::CreateValueLabel() {
 }
 
 views::View* AutofillPopupItemView::CreateDescriptionLabel() {
-  return CreateDescriptionLabelInternal();
+  base::string16 text =
+      popup_view_->controller()->GetElidedLabelAt(line_number_);
+  return text.empty() ? nullptr : CreateSecondaryLabel(text);
 }
 
-views::Label* AutofillPopupItemView::CreateDescriptionLabelInternal() const {
-  const base::string16& description_text =
-      popup_view_->controller()->GetElidedLabelAt(line_number_);
-  if (!description_text.empty()) {
-    views::Label* subtext_label = new views::Label(
-        description_text,
-        {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-                               ChromeTextStyle::STYLE_SECONDARY)});
-    subtext_label->SetEnabledColor(views::style::GetColor(
-        *this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
-        ChromeTextStyle::STYLE_SECONDARY));
+views::Label* AutofillPopupItemView::CreateSecondaryLabel(
+    const base::string16& text) const {
+  views::Label* subtext_label = new views::Label(
+      text, {views::style::GetFont(ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                                   ChromeTextStyle::STYLE_SECONDARY)});
+  subtext_label->SetEnabledColor(
+      views::style::GetColor(*this, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
+                             ChromeTextStyle::STYLE_SECONDARY));
 
-    return subtext_label;
-  }
-  return nullptr;
+  return subtext_label;
 }
 
 void AutofillPopupItemView::AddIcon(gfx::ImageSkia icon) {
@@ -496,14 +499,22 @@ PasswordPopupSuggestionView* PasswordPopupSuggestionView::Create(
 
 views::View* PasswordPopupSuggestionView::CreateValueLabel() {
   views::View* label = AutofillPopupSuggestionView::CreateValueLabel();
+  // Empty username is rendered as a secondary text. It doesn't need to be
+  // truncated.
+  if (popup_view_->controller()
+          ->GetSuggestionAt(line_number_)
+          .is_value_secondary)
+    return label;
   return new ConstrainedWidthView(label, kAutofillPopupUsernameMaxWidth);
 }
 
 views::View* PasswordPopupSuggestionView::CreateDescriptionLabel() {
-  views::Label* label = CreateDescriptionLabelInternal();
-  if (!label)
+  base::string16 text =
+      popup_view_->controller()->GetElidedLabelAt(line_number_);
+  if (text.empty())
     return nullptr;
 
+  views::Label* label = CreateSecondaryLabel(text);
   label->SetElideBehavior(gfx::TRUNCATE);
   return new ConstrainedWidthView(label, kAutofillPopupPasswordMaxWidth);
 }

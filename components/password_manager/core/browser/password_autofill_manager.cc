@@ -50,8 +50,10 @@ constexpr base::char16 kPasswordReplacementChar = 0x2022;
 
 // Returns |username| unless it is empty. For an empty |username| returns a
 // localised string saying this username is empty. Use this for displaying the
-// usernames to the user.
-base::string16 ReplaceEmptyUsername(const base::string16& username) {
+// usernames to the user. |replaced| is set to true iff |username| is empty.
+base::string16 ReplaceEmptyUsername(const base::string16& username,
+                                    bool* replaced) {
+  *replaced = username.empty();
   if (username.empty())
     return l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
   return username;
@@ -92,7 +94,10 @@ void AppendSuggestionIfMatching(
   base::string16 lower_contents = base::i18n::ToLower(field_contents);
   if (show_all || autofill::FieldIsSuggestionSubstringStartingOnTokenBoundary(
                       lower_suggestion, lower_contents, true)) {
-    autofill::Suggestion suggestion(ReplaceEmptyUsername(field_suggestion));
+    bool replaced_username;
+    autofill::Suggestion suggestion(
+        ReplaceEmptyUsername(field_suggestion, &replaced_username));
+    suggestion.is_value_secondary = replaced_username;
     suggestion.label =
         signon_realm.empty()
             ? base::string16(password_length, kPasswordReplacementChar)
