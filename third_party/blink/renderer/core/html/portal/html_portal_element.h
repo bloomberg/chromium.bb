@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_PORTAL_HTML_PORTAL_ELEMENT_H_
 
+#include "base/unguessable_token.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/node.h"
@@ -40,6 +41,10 @@ class CORE_EXPORT HTMLPortalElement : public HTMLFrameOwnerElement {
   ParsedFeaturePolicy ConstructContainerPolicy(Vector<String>*) const override {
     return ParsedFeaturePolicy();
   }
+
+  // Uniquely identifies the portal, this token is used by the browser process
+  // to reference this portal when communicating with the renderer.
+  base::UnguessableToken portal_token_;
 
   mojom::blink::PortalPtr portal_ptr_;
 };

@@ -5,7 +5,11 @@
 #ifndef CONTENT_BROWSER_PORTAL_PORTAL_H_
 #define CONTENT_BROWSER_PORTAL_PORTAL_H_
 
+#include <memory>
+
+#include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/mojom/portal/portal.mojom.h"
 
 namespace content {
@@ -19,13 +23,18 @@ class RenderFrameHostImpl;
 //
 // The Portal is owned by its mojo binding, so it is kept alive as long as the
 // other end of the pipe (typically in the renderer) exists.
-class Portal : public blink::mojom::Portal, public WebContentsObserver {
+class CONTENT_EXPORT Portal : public blink::mojom::Portal,
+                              public WebContentsObserver {
  public:
   ~Portal() override;
 
   static bool IsEnabled();
   static Portal* Create(RenderFrameHostImpl* owner_render_frame_host,
                         blink::mojom::PortalRequest request);
+
+  // blink::mojom::Portal implementation.
+  void Init(base::OnceCallback<void(const base::UnguessableToken&)> callback)
+      override;
 
   // WebContentsObserver overrides.
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -34,6 +43,15 @@ class Portal : public blink::mojom::Portal, public WebContentsObserver {
   explicit Portal(RenderFrameHostImpl* owner_render_frame_host);
 
   RenderFrameHostImpl* owner_render_frame_host_;
+
+  // Uniquely identifies the portal, this token is used by the browser process
+  // to reference this portal when communicating with the renderer.
+  base::UnguessableToken portal_token_;
+
+  // WeakPtr to StrongBinding.
+  mojo::StrongBindingPtr<blink::mojom::Portal> binding_;
+
+  std::unique_ptr<WebContents> portal_contents_;
 };
 
 }  // namespace content
