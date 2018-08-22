@@ -5,6 +5,7 @@
 #ifndef UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_BASE_H_
 #define UI_ACCESSIBILITY_PLATFORM_AX_PLATFORM_NODE_BASE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -23,6 +24,24 @@ namespace ui {
 
 struct AXNodeData;
 class AXPlatformNodeDelegate;
+
+struct AX_EXPORT AXHypertext {
+  AXHypertext();
+  AXHypertext(const AXHypertext& other);
+  ~AXHypertext();
+
+  // Maps an embedded character offset in |hypertext| to an index in
+  // |hyperlinks|.
+  std::map<int32_t, int32_t> hyperlink_offset_to_index;
+
+  // The unique id of a AXPlatformNodes for each hyperlink.
+  // TODO(nektar): Replace object IDs with child indices if we decide that
+  // we are not implementing IA2 hyperlinks for anything other than IA2
+  // Hypertext.
+  std::vector<int32_t> hyperlinks;
+
+  base::string16 hypertext;
+};
 
 class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
  public:
@@ -161,6 +180,12 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   virtual base::string16 GetValue();
 
+  // Represents a non-static text node in IAccessibleHypertext (and ATK in the
+  // future). This character is embedded in the response to
+  // IAccessibleText::get_text, indicating the position where a non-static text
+  // child object appears.
+  static const base::char16 kEmbeddedCharacter;
+
   //
   // Delegate.  This is a weak reference which owns |this|.
   //
@@ -243,6 +268,11 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   // and AT-SPI2. It's okay for input to be the same as output.
   static void SanitizeStringAttribute(const std::string& input,
                                       std::string* output);
+
+  // Compute the hypertext for this node to be exposed via IA2 (and ATK
+  // in the future). This method is responsible for properly embedding
+  // children using the special embedded element character.
+  AXHypertext ComputeHypertext();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXPlatformNodeBase);
