@@ -83,9 +83,9 @@ public class NavigationPopup extends ListPopupWindow implements AdapterView.OnIt
         mHistory = mNavigationController.getDirectedNavigationHistory(
                 isForward, MAXIMUM_HISTORY_ITEMS);
 
-        mHistory.addEntry(
-                new NavigationEntry(FULL_HISTORY_ENTRY_INDEX, UrlConstants.HISTORY_URL, null, null,
-                        mContext.getResources().getString(R.string.show_full_history), null, 0));
+        mHistory.addEntry(new NavigationEntry(FULL_HISTORY_ENTRY_INDEX, UrlConstants.HISTORY_URL,
+                null, null, mContext.getResources().getString(R.string.show_full_history), null,
+                null, 0));
 
         setBackgroundDrawable(
                 ApiCompatibilityUtils.getDrawable(mContext.getResources(), R.drawable.popup_bg));

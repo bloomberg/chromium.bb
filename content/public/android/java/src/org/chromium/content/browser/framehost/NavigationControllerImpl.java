@@ -291,9 +291,10 @@ import org.chromium.content_public.common.ResourceRequestBody;
     }
 
     @CalledByNative
-    private static NavigationEntry createNavigationEntry(int index, String url,
-            String virtualUrl, String originalUrl, String title, Bitmap favicon, int transition) {
-        return new NavigationEntry(index, url, virtualUrl, originalUrl, title, favicon, transition);
+    private static NavigationEntry createNavigationEntry(int index, String url, String virtualUrl,
+            String originalUrl, String referrerUrl, String title, Bitmap favicon, int transition) {
+        return new NavigationEntry(
+                index, url, virtualUrl, originalUrl, referrerUrl, title, favicon, transition);
     }
 
     private native boolean nativeCanGoBack(long nativeNavigationControllerAndroid);

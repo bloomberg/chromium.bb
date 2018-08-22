@@ -64,7 +64,8 @@ public class NavigationPopupTest {
     private static class TestNavigationEntry extends NavigationEntry {
         public TestNavigationEntry(int index, String url, String virtualUrl, String originalUrl,
                 String title, Bitmap favicon, int transition) {
-            super(index, url, virtualUrl, originalUrl, title, favicon, transition);
+            super(index, url, virtualUrl, originalUrl, /*referrerUrl=*/null, title, favicon,
+                    transition);
         }
     }
 
