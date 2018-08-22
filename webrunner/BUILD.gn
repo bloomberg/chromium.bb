@@ -212,6 +212,7 @@ fidl_library("fidl") {
     "fidl/context_provider.fidl",
     "fidl/frame.fidl",
     "fidl/navigation_controller.fidl",
+    "fidl/navigation_state_change_observer.fidl",
   ]
 
   public_deps = [

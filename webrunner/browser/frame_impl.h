@@ -62,17 +62,32 @@ class FrameImpl : public chromium::web::Frame,
   void Stop() override;
   void Reload(chromium::web::ReloadType type) override;
   void GetVisibleEntry(GetVisibleEntryCallback callback) override;
+  void SetNavigationEventObserver(
+      fidl::InterfaceHandle<chromium::web::NavigationEventObserver> observer)
+      override;
 
   // content::WebContentsObserver implementation.
   void DidFinishLoad(content::RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, DelayedNavigationEventAck);
+  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NavigationObserverDisconnected);
+  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, NoNavigationObserverAttached);
+  FRIEND_TEST_ALL_PREFIXES(ContextImplTest, ReloadFrame);
+
+  // Sends |pending_navigation_event_| to the observer if there are any changes
+  // to be reported.
+  void MaybeSendNavigationEvent();
+
   std::unique_ptr<aura::WindowTreeHost> window_tree_host_;
   std::unique_ptr<content::WebContents> web_contents_;
 
-  // Cached navigation event details.
+  chromium::web::NavigationEventObserverPtr navigation_observer_;
   chromium::web::NavigationEntry cached_navigation_state_;
+  chromium::web::NavigationEvent pending_navigation_event_;
+  bool waiting_for_navigation_event_ack_;
+  bool pending_navigation_event_is_dirty_;
 
   ContextImpl* context_ = nullptr;
   fidl::Binding<chromium::web::Frame> binding_;
