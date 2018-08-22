@@ -23,8 +23,8 @@ class AssistantController;
 
 // AssistantWebView is a child of AssistantBubbleView which allows Assistant UI
 // to render remotely hosted content within its bubble. It provides a CaptionBar
-// for window level controls and a WebView/RemoteViewHost for embedding web
-// contents.
+// for window level controls and a WebView/ServerRemoteViewHost for embedding
+// web contents.
 class AssistantWebView : public views::View,
                          public AssistantControllerObserver,
                          public CaptionBarDelegate {

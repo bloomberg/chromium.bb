@@ -76,6 +76,7 @@ class AppListTestViewDelegate : public AppListViewDelegate,
                                int event_flags) override {}
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
+  ui::ws2::WindowService* GetWindowService() override;
 
   // Do a bulk replacement of the items in the model.
   void ReplaceTestModel(int item_count);

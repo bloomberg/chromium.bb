@@ -112,6 +112,7 @@ component("app_list") {
     "//mojo/public/cpp/bindings",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
+    "//services/ui/ws2/remote_view_host",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",

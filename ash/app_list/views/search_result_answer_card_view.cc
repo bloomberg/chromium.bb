@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/ws2/remote_view_host/server_remote_view_host.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
@@ -25,7 +26,6 @@
 #include "ui/views/background.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-#include "ui/views/mus/remote_view/remote_view_host.h"
 
 namespace app_list {
 
@@ -33,6 +33,7 @@ namespace {
 
 // Helper to get/create answer card view by token.
 views::View* GetViewByToken(
+    ui::ws2::WindowService* window_service,
     const base::Optional<base::UnguessableToken>& token) {
   // Bail for invalid token.
   if (!token.has_value() || token->is_empty())
@@ -44,10 +45,11 @@ views::View* GetViewByToken(
   if (AnswerCardContentsRegistry::Get())
     return AnswerCardContentsRegistry::Get()->GetView(token.value());
 
-  // Use RemoteViewHost to embed the answer card contents provided in the
+  // Use ServerRemoteViewHost to embed the answer card contents provided in the
   // browser process in Mash.
-  if (!features::IsAshInBrowserProcess()) {
-    views::RemoteViewHost* view = new views::RemoteViewHost();
+  if (features::IsUsingWindowService()) {
+    ui::ws2::ServerRemoteViewHost* view =
+        new ui::ws2::ServerRemoteViewHost(window_service);
     view->EmbedUsingToken(token.value(),
                           ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
                               ui::mojom::kEmbedFlagEmbedderControlsVisibility,
@@ -122,7 +124,8 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     if (old_token != new_token) {
       RemoveAllChildViews(true /* delete_children */);
 
-      result_view = GetViewByToken(new_token);
+      result_view =
+          GetViewByToken(view_delegate_->GetWindowService(), new_token);
       if (result_view) {
         AddChildView(result_view);
         ExcludeFromEventHandlingByToken(new_token);

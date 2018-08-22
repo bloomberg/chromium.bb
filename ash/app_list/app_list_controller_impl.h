@@ -30,6 +30,10 @@
 
 namespace ui {
 class MouseWheelEvent;
+
+namespace ws2 {
+class WindowService;
+}  // namespace ws2
 }  // namespace ui
 
 namespace app_list {
@@ -54,7 +58,7 @@ class ASH_EXPORT AppListControllerImpl
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
-  AppListControllerImpl();
+  explicit AppListControllerImpl(ui::ws2::WindowService* window_service);
   ~AppListControllerImpl() override;
 
   // Binds the mojom::AppListController interface request to this object.
@@ -166,6 +170,8 @@ class ASH_EXPORT AppListControllerImpl
                                int event_flags) override;
   void ShowWallpaperContextMenu(const gfx::Point& onscreen_location,
                                 ui::MenuSourceType source_type) override;
+  ui::ws2::WindowService* GetWindowService() override;
+
   void OnVisibilityChanged(bool visible);
   void OnTargetVisibilityChanged(bool visible);
   void StartVoiceInteractionSession();
@@ -220,6 +226,8 @@ class ASH_EXPORT AppListControllerImpl
 
   // Update the visibility of Assistant functionality.
   void UpdateAssistantVisibility();
+
+  ui::ws2::WindowService* window_service_;
 
   base::string16 last_raw_query_;
 

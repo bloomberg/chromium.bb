@@ -21,7 +21,21 @@ namespace ash {
 
 WindowServiceOwner::WindowServiceOwner(
     std::unique_ptr<ui::ws2::GpuInterfaceProvider> gpu_interface_provider)
-    : gpu_interface_provider_(std::move(gpu_interface_provider)) {}
+    : window_service_delegate_(std::make_unique<WindowServiceDelegateImpl>()),
+      owned_window_service_(std::make_unique<ui::ws2::WindowService>(
+          window_service_delegate_.get(),
+          std::move(gpu_interface_provider),
+          Shell::Get()->focus_controller(),
+          features::IsAshInBrowserProcess(),
+          Shell::Get()->aura_env())),
+      window_service_(owned_window_service_.get()) {
+  window_service_->SetFrameDecorationValues(
+      NonClientFrameController::GetPreferredClientAreaInsets(),
+      NonClientFrameController::GetMaxTitleBarButtonWidth());
+  window_service_->SetDisplayForNewWindows(
+      display::Screen::GetScreen()->GetDisplayForNewWindows().id());
+  RegisterWindowProperties(window_service_->property_converter());
+}
 
 WindowServiceOwner::~WindowServiceOwner() = default;
 
@@ -32,21 +46,8 @@ void WindowServiceOwner::BindWindowService(
   // a new WindowService to be created. That should never happen.
   DCHECK(!service_context_);
 
-  window_service_delegate_ = std::make_unique<WindowServiceDelegateImpl>();
-  std::unique_ptr<ui::ws2::WindowService> window_service =
-      std::make_unique<ui::ws2::WindowService>(
-          window_service_delegate_.get(), std::move(gpu_interface_provider_),
-          Shell::Get()->focus_controller(), features::IsAshInBrowserProcess(),
-          Shell::Get()->aura_env());
-  window_service_ = window_service.get();
-  window_service_->SetFrameDecorationValues(
-      NonClientFrameController::GetPreferredClientAreaInsets(),
-      NonClientFrameController::GetMaxTitleBarButtonWidth());
-  window_service_->SetDisplayForNewWindows(
-      display::Screen::GetScreen()->GetDisplayForNewWindows().id());
-  RegisterWindowProperties(window_service_->property_converter());
   service_context_ = std::make_unique<service_manager::ServiceContext>(
-      std::move(window_service), std::move(request));
+      std::move(owned_window_service_), std::move(request));
 }
 
 }  // namespace ash

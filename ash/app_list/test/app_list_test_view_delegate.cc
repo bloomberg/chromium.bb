@@ -88,6 +88,10 @@ void AppListTestViewDelegate::ShowWallpaperContextMenu(
   ++show_wallpaper_context_menu_count_;
 }
 
+ui::ws2::WindowService* AppListTestViewDelegate::GetWindowService() {
+  return nullptr;
+}
+
 void AppListTestViewDelegate::GetSearchResultContextMenuModel(
     const std::string& result_id,
     GetContextMenuModelCallback callback) {
