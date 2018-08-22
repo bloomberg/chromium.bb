@@ -16,8 +16,12 @@ To update the production config:
   git cl upload        (yes, really) (Say Yes to removing commit-msg hook)
   repo abandon infra/config
 
-Limitations:
-  This script can only handle builds on the "master" branch.
+Notes:
+  Normal builds are scheduled based on the builder values for
+  'schedule' and 'triggered_gitiles' in config/chromeos_config.py.
+
+  Branched builds are scheduled based on the function
+  chromeos_config.BranchScheduleConfig()
 """
 
 from __future__ import print_function
