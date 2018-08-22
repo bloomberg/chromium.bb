@@ -980,7 +980,7 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        // |accelerator_ids|
        {},
        // |shortcut_key_codes|
-       {ui::VKEY_LMENU, ui::VKEY_UNKNOWN, ui::VKEY_BACK}},
+       {ui::VKEY_COMMAND, ui::VKEY_UNKNOWN, ui::VKEY_BACK}},
 
       {// |categories|
        {ShortcutCategory::kTextEditing},
