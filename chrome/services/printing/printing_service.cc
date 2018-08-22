@@ -5,6 +5,7 @@
 #include "chrome/services/printing/printing_service.h"
 
 #include "build/build_config.h"
+#include "chrome/services/printing/pdf_nup_converter.h"
 #include "chrome/services/printing/pdf_to_pwg_raster_converter.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -35,6 +36,14 @@ void OnPdfToPwgRasterConverterRequest(
                           std::move(request));
 }
 
+void OnPdfNupConverterRequest(
+    service_manager::ServiceContextRefFactory* ref_factory,
+    printing::mojom::PdfNupConverterRequest request) {
+  mojo::MakeStrongBinding(
+      std::make_unique<printing::PdfNupConverter>(ref_factory->CreateRef()),
+      std::move(request));
+}
+
 }  // namespace
 
 PrintingService::PrintingService() = default;
@@ -54,6 +63,9 @@ void PrintingService::OnStart() {
 #endif
   registry_.AddInterface(
       base::Bind(&OnPdfToPwgRasterConverterRequest, ref_factory_.get()));
+
+  registry_.AddInterface(
+      base::Bind(&OnPdfNupConverterRequest, ref_factory_.get()));
 }
 
 void PrintingService::OnBindInterface(

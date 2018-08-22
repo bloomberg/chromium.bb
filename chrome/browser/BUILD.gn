@@ -3555,6 +3555,8 @@ jumbo_split_static_library("browser") {
       sources += [
         "printing/background_printing_manager.cc",
         "printing/background_printing_manager.h",
+        "printing/pdf_nup_converter_client.cc",
+        "printing/pdf_nup_converter_client.h",
         "printing/print_dialog_cloud.cc",
         "printing/print_dialog_cloud.h",
         "printing/print_dialog_cloud_win.cc",
