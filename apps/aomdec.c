@@ -779,7 +779,7 @@ static int main_loop(int argc, const char **argv_) {
     aom_usec_timer_start(&timer);
 
     if (flush_decoder) {
-      // Flush the decoder in frame parallel decode.
+      // Flush the decoder.
       if (aom_codec_decode(&decoder, NULL, 0, NULL)) {
         warn("Failed to flush decoder: %s", aom_codec_error(&decoder));
       }

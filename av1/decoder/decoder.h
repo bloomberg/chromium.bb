@@ -169,7 +169,6 @@ typedef struct AV1Decoder {
   // the same.
   RefCntBuffer *cur_buf;  //  Current decoding frame buffer.
 
-  AVxWorker *frame_worker_owner;  // frame_worker that owns this pbi.
   AVxWorker lf_worker;
   AV1LfSync lf_row_sync;
   AV1LrSync lr_row_sync;

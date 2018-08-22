@@ -133,17 +133,6 @@ typedef struct {
   hash_table hash_table;
   uint8_t intra_only;
   FRAME_TYPE frame_type;
-  // The Following variables will only be used in frame parallel decode.
-
-  // frame_worker_owner indicates which FrameWorker owns this buffer. NULL means
-  // that no FrameWorker owns, or is decoding, this buffer.
-  AVxWorker *frame_worker_owner;
-
-  // row and col indicate which position frame has been decoded to in real
-  // pixel unit. They are reset to -1 when decoding begins and set to INT_MAX
-  // when the frame is fully decoded.
-  int row;
-  int col;
 
   // Inter frame reference frame delta for loop filter
   int8_t ref_deltas[REF_FRAMES];
@@ -156,6 +145,8 @@ typedef struct BufferPool {
 // Protect BufferPool from being accessed by several FrameWorkers at
 // the same time during frame parallel decode.
 // TODO(hkuang): Try to use atomic variable instead of locking the whole pool.
+// TODO(wtc): Remove this. See
+// https://chromium-review.googlesource.com/c/webm/libvpx/+/560630.
 #if CONFIG_MULTITHREAD
   pthread_mutex_t pool_mutex;
 #endif
