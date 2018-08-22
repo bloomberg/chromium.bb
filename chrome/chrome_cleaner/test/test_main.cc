@@ -9,6 +9,7 @@
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/crash/crash_client.h"
 #include "chrome/chrome_cleaner/ipc/sandbox.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
@@ -95,12 +96,20 @@ int main(int argc, char** argv) {
         chrome_cleaner::SandboxType::kNonSandboxed);
   }
 
+  // Some tests spawn sandbox targets using job objects. Windows 7 doesn't
+  // support nested job objects, so don't use them in the test suite. Otherwise
+  // all sandbox tests will fail as they try to create a second job object.
+  bool use_job_objects = base::win::GetVersion() >= base::win::VERSION_WIN8;
+
   // Some tests will fail if two tests try to launch test_process.exe
   // simultaneously, so run the tests serially. This will still shard them and
   // distribute the shards to different swarming bots, but tests will run
   // serially on each bot.
-  const int result = base::LaunchUnitTestsSerially(
+  const int result = base::LaunchUnitTestsWithOptions(
       argc, argv,
+      /*parallel_jobs=*/1U,        // Like LaunchUnitTestsSerially
+      /*default_batch_limit=*/10,  // Like LaunchUnitTestsSerially
+      use_job_objects,
       base::BindOnce(&base::TestSuite::Run, base::Unretained(&test_suite)));
 
   if (!IsSandboxedProcess())

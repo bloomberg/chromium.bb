@@ -21,7 +21,6 @@
 #include "base/strings/string_util.h"
 #include "base/test/multiprocess_test.h"
 #include "base/win/scoped_handle.h"
-#include "base/win/windows_version.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
 #include "chrome/chrome_cleaner/os/disk_util.h"
@@ -162,13 +161,7 @@ MULTIPROCESS_TEST_MAIN(MockSandboxProcessMain) {
 
 }  // namespace
 
-// Flaky; see http://crbug.com/874387
-TEST_F(SandboxTest, DISABLED_SpawnSandboxTarget) {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
-    // TODO(b/871924): This test is currently failing on win7. Fix and enable.
-    return;
-  }
-
+TEST_F(SandboxTest, SpawnSandboxTarget) {
   base::Process target_process;
   EXPECT_TRUE(SpawnMockSandboxProcess(&target_process));
   EXPECT_TRUE(target_process.IsValid());
