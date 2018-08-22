@@ -24,11 +24,29 @@ var onDdllogResponse = null;
 
 
 /**
+ * Whether the Most Visited and edit custom link iframes should be created while
+ * running tests. Currently the SimpleJavascriptTests are flaky due to some
+ * raciness in the creation/destruction of the iframe. crbug.com/786313.
+ * @type {boolean}
+ */
+let iframesDisabledForTesting = false;
+
+
+/**
  * Controls rendering the new tab page for InstantExtended.
  * @return {Object} A limited interface for testing the local NTP.
  */
 function LocalNTP() {
 'use strict';
+
+
+/**
+ * Called by tests to disable the creation of Most Visited and edit custom link
+ * iframes.
+ */
+function disableIframesForTesting() {
+  iframesDisabledForTesting = true;
+}
 
 
 /**
@@ -1087,8 +1105,22 @@ function init() {
     document.documentElement.classList.add(CLASSES.RTL);
   }
 
+  if (!iframesDisabledForTesting) {
+    createIframes();
+  }
+
+  document.body.classList.add(CLASSES.INITED);
+}
+
+
+/**
+ * Create the Most Visited and edit custom links iframes.
+ */
+function createIframes() {
   // Collect arguments for the most visited iframe.
   var args = [];
+
+  var searchboxApiHandle = window.chrome.embeddedSearch.searchBox;
 
   if (searchboxApiHandle.rtl)
     args.push('rtl=1');
@@ -1175,8 +1207,6 @@ function init() {
   }
 
   window.addEventListener('message', handlePostMessage);
-
-  document.body.classList.add(CLASSES.INITED);
 }
 
 
@@ -1548,7 +1578,8 @@ var applyDoodleMetadata = function() {
 
 return {
   init: init,  // Exposed for testing.
-  listen: listen
+  listen: listen,
+  disableIframesForTesting: disableIframesForTesting
 };
 
 }

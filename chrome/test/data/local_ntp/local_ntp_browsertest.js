@@ -93,6 +93,8 @@ test.localNtp.testMDNotApplied = function() {
   configData.isVoiceSearchEnabled = false;
 
   configData.isMDUIEnabled = false;
+  configData.isMDIconsEnabled = false;
+  configData.isCustomLinksEnabled = false;
   initLocalNTP(/*isGooglePage=*/true);
   assertFalse(document.body.classList.contains('md'));
 }
@@ -108,7 +110,7 @@ test.localNtp.showEditCustomBackground = function() {
   configData.isCustomBackgroundsEnabled = true;
   getThemeBackgroundInfo = () => {return {usingDefaultTheme: true};};
   initLocalNTP(/*isGooglePage=*/true);
-  assertTrue(elementIsVisible($('edit-background')));
+  assertTrue(elementIsVisible($('edit-bg')));
 }
 
 /**
@@ -121,7 +123,7 @@ test.localNtp.hideEditCustomBackgroundFlag = function() {
 
   configData.isCustomBackgroundsEnabled = false;
   initLocalNTP(/*isGooglePage=*/true);
-  assertFalse(elementIsVisible($('edit-background')));
+  assertFalse(elementIsVisible($('edit-bg')));
 }
 
 /**
@@ -134,7 +136,7 @@ test.localNtp.hideEditCustomBackgroundTheme = function() {
 
   getThemeBackgroundInfo = () => {return {usingDefaultTheme: false};};
   initLocalNTP(/*isGooglePage=*/true);
-  assertFalse(elementIsVisible($('edit-background')));
+  assertFalse(elementIsVisible($('edit-bg')));
 }
 
 // ***************************** HELPER FUNCTIONS *****************************
@@ -148,6 +150,7 @@ test.localNtp.hideEditCustomBackgroundTheme = function() {
 function initLocalNTP(isGooglePage) {
   configData.isGooglePage = isGooglePage;
   var localNTP = LocalNTP();
+  localNTP.disableIframesForTesting();
   localNTP.init();
 }
 
