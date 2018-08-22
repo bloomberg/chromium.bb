@@ -97,7 +97,8 @@ std::string PrefHashStoreImpl::ComputeMac(const std::string& path,
 std::unique_ptr<base::DictionaryValue> PrefHashStoreImpl::ComputeSplitMacs(
     const std::string& path,
     const base::DictionaryValue* split_values) {
-  DCHECK(split_values);
+  if (!split_values)
+    return std::make_unique<base::DictionaryValue>();
 
   std::string keyed_path(path);
   keyed_path.push_back('.');

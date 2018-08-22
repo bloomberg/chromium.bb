@@ -251,6 +251,8 @@ std::unique_ptr<base::DictionaryValue> MockPrefHashStore::ComputeSplitMacs(
     const std::string& path,
     const base::DictionaryValue* split_values) {
   std::unique_ptr<base::DictionaryValue> macs_dict(new base::DictionaryValue);
+  if (!split_values)
+    return macs_dict;
   for (base::DictionaryValue::Iterator it(*split_values); !it.IsAtEnd();
        it.Advance()) {
     macs_dict->SetKey(it.key(),
@@ -694,6 +696,27 @@ TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
   VerifyRecordedReset(false);
 }
 
+TEST_P(PrefHashFilterTest, FilterTrackedPrefClearing) {
+  base::DictionaryValue root_dict;
+  // We don't actually add the pref's value to root_dict to simulate that
+  // it was just cleared in the PrefStore.
+
+  // No path should be stored on FilterUpdate.
+  pref_hash_filter_->FilterUpdate(kAtomicPref);
+  ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+
+  // One path should be stored on FilterSerializeData, with no value.
+  pref_hash_filter_->FilterSerializeData(&root_dict);
+  ASSERT_EQ(1u, mock_pref_hash_store_->stored_paths_count());
+  MockPrefHashStore::ValuePtrStrategyPair stored_value =
+      mock_pref_hash_store_->stored_value(kAtomicPref);
+  ASSERT_EQ(nullptr, stored_value.first);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_value.second);
+
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
+  VerifyRecordedReset(false);
+}
+
 TEST_P(PrefHashFilterTest, ReportSuperMacValidity) {
   // Do this once just to force the histogram to be defined.
   DoFilterOnLoad(false);
@@ -747,6 +770,27 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
   MockPrefHashStore::ValuePtrStrategyPair stored_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
   ASSERT_EQ(dict_value, stored_value.first);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_value.second);
+
+  ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
+  VerifyRecordedReset(false);
+}
+
+TEST_P(PrefHashFilterTest, FilterTrackedSplitPrefClearing) {
+  base::DictionaryValue root_dict;
+  // We don't actually add the pref's value to root_dict to simulate that
+  // it was just cleared in the PrefStore.
+
+  // No path should be stored on FilterUpdate.
+  pref_hash_filter_->FilterUpdate(kSplitPref);
+  ASSERT_EQ(0u, mock_pref_hash_store_->stored_paths_count());
+
+  // One path should be stored on FilterSerializeData, with no value.
+  pref_hash_filter_->FilterSerializeData(&root_dict);
+  ASSERT_EQ(1u, mock_pref_hash_store_->stored_paths_count());
+  MockPrefHashStore::ValuePtrStrategyPair stored_value =
+      mock_pref_hash_store_->stored_value(kSplitPref);
+  ASSERT_EQ(nullptr, stored_value.first);
   ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_value.second);
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
