@@ -34,7 +34,7 @@ class EarlyPageScriptPerfTest : public PerfTest {
   }
 
   // Injects early script into WKWebView.
-  void InjectEarlyScript() { web::ExecuteJavaScript(web_view_, script_); }
+  void InjectEarlyScript() { web::test::ExecuteJavaScript(web_view_, script_); }
 
   // WKWebView to test scripts injections.
   WKWebView* web_view_;

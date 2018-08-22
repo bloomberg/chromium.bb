@@ -111,6 +111,7 @@ source_set("wk_web_view_configuration_provider") {
     "//base",
     "//ios/web/public",
     "//ios/web/web_state/js",
+    "//ios/web/web_state/js:script_util",
   ]
 
   sources = [

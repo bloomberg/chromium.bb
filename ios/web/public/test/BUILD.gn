@@ -19,6 +19,7 @@ source_set("test") {
     "//ios/web/public/test/http_server",
     "//ios/web/test:test_support",
     "//ios/web/web_state:error_translation_util",
+    "//ios/web/web_state/js:script_util",
     "//testing/gtest",
     "//ui/base",
     "//url",

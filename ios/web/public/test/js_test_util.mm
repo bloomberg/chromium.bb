@@ -7,10 +7,12 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
+#include "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/web_state/js/page_script_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -22,6 +24,7 @@ using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
 
 namespace web {
+namespace test {
 
 id ExecuteJavaScript(CRWJSInjectionManager* manager, NSString* script) {
   __block NSString* result;
@@ -94,5 +97,9 @@ bool WaitForInjectedScripts(WKWebView* web_view) {
   });
 }
 
+NSString* GetPageScript(NSString* script_file_name) {
+  return web::GetPageScript(script_file_name);
+}
+}  // namespace test
 }  // namespace web
 

@@ -29,25 +29,25 @@ class JSWindowIDManagerTest : public PlatformTest {
 TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
   // Inject the first manager.
   WKWebView* web_view = [[WKWebView alloc] init];
-  ExecuteJavaScript(web_view,
-                    GetDocumentStartScriptForAllFrames(&browser_state_));
+  test::ExecuteJavaScript(web_view,
+                          GetDocumentStartScriptForAllFrames(&browser_state_));
 
   CRWJSWindowIDManager* manager =
       [[CRWJSWindowIDManager alloc] initWithWebView:web_view];
   [manager inject];
   EXPECT_NSEQ([manager windowID],
-              ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
+              test::ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
 
   // Inject the second manager.
   WKWebView* web_view2 = [[WKWebView alloc] init];
-  ExecuteJavaScript(web_view2,
-                    GetDocumentStartScriptForAllFrames(&browser_state_));
+  test::ExecuteJavaScript(web_view2,
+                          GetDocumentStartScriptForAllFrames(&browser_state_));
 
   CRWJSWindowIDManager* manager2 =
       [[CRWJSWindowIDManager alloc] initWithWebView:web_view2];
   [manager2 inject];
   EXPECT_NSEQ([manager2 windowID],
-              ExecuteJavaScript(web_view2, @"window.__gCrWeb.windowId"));
+              test::ExecuteJavaScript(web_view2, @"window.__gCrWeb.windowId"));
 
   // Window IDs must be different.
   EXPECT_NSNE([manager windowID], [manager2 windowID]);
@@ -56,8 +56,8 @@ TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
 // Tests that injecting multiple times creates a new window ID.
 TEST_F(JSWindowIDManagerTest, MultipleInjections) {
   WKWebView* web_view = [[WKWebView alloc] init];
-  ExecuteJavaScript(web_view,
-                    GetDocumentStartScriptForAllFrames(&browser_state_));
+  test::ExecuteJavaScript(web_view,
+                          GetDocumentStartScriptForAllFrames(&browser_state_));
 
   // First injection.
   CRWJSWindowIDManager* manager =
@@ -65,12 +65,12 @@ TEST_F(JSWindowIDManagerTest, MultipleInjections) {
   [manager inject];
   NSString* windowID = [manager windowID];
   EXPECT_NSEQ(windowID,
-              ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
+              test::ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
 
   // Second injection.
   [manager inject];
   EXPECT_NSEQ([manager windowID],
-              ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
+              test::ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
 
   EXPECT_NSNE(windowID, [manager windowID]);
 }
@@ -83,13 +83,13 @@ TEST_F(JSWindowIDManagerTest, InjectionRetry) {
       [[CRWJSWindowIDManager alloc] initWithWebView:web_view];
   [manager inject];
   EXPECT_TRUE([manager windowID]);
-  EXPECT_FALSE(ExecuteJavaScript(web_view, @"window.__gCrWeb"));
+  EXPECT_FALSE(test::ExecuteJavaScript(web_view, @"window.__gCrWeb"));
 
   // Now inject window.__gCrWeb and check if window ID injection retried.
-  ExecuteJavaScript(web_view,
-                    GetDocumentStartScriptForAllFrames(&browser_state_));
+  test::ExecuteJavaScript(web_view,
+                          GetDocumentStartScriptForAllFrames(&browser_state_));
   EXPECT_NSEQ([manager windowID],
-              ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
+              test::ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
 }
 
 }  // namespace web

@@ -23,7 +23,7 @@
 @implementation JsTranslateManager (Testing)
 // Returns the time in milliseconds.
 - (double)performanceNow {
-  id result = web::ExecuteJavaScript(self.receiver, @"performance.now()");
+  id result = web::test::ExecuteJavaScript(self.receiver, @"performance.now()");
   return [result doubleValue];
 }
 @end
@@ -43,7 +43,7 @@ class JsTranslateManagerTest : public PlatformTest {
   bool IsDefined(NSString* name) {
     NSString* script =
         [NSString stringWithFormat:@"typeof %@ != 'undefined'", name];
-    return [web::ExecuteJavaScript(receiver_, script) boolValue];
+    return [web::test::ExecuteJavaScript(receiver_, script) boolValue];
   }
 
   CRWTestJSInjectionReceiver* receiver_;
@@ -80,6 +80,6 @@ TEST_F(JsTranslateManagerTest, Inject) {
   [manager_ inject];
   EXPECT_TRUE([manager_ hasBeenInjected]);
   EXPECT_EQ(nil, [manager_ script]);
-  EXPECT_NSEQ(@NO,
-              web::ExecuteJavaScript(manager_, @"cr.googleTranslate.libReady"));
+  EXPECT_NSEQ(@NO, web::test::ExecuteJavaScript(
+                       manager_, @"cr.googleTranslate.libReady"));
 }

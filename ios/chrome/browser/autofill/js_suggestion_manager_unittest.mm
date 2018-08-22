@@ -245,7 +245,7 @@ void JsSuggestionManagerTest::SequentialNavigationSkipCheck(NSString* attribute,
       completionHandler:nil];
   NSString* const kActiveElementNameJS = @"document.activeElement.name";
   EXPECT_NSEQ(@"firstname",
-              web::ExecuteJavaScript(manager_, kActiveElementNameJS));
+              web::test::ExecuteJavaScript(manager_, kActiveElementNameJS));
   [manager_ selectNextElement];
   NSString* activeElementNameJS = GetActiveElementName();
   if (shouldSkip)

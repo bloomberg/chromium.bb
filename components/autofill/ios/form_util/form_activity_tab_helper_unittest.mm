@@ -10,9 +10,18 @@
 #import "ios/web/public/test/fakes/test_web_client.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/fakes/test_web_state_observer_util.h"
+#import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #include "testing/platform_test.h"
+
+class FormTestClient : public web::TestWebClient {
+ public:
+  NSString* GetDocumentStartScriptForAllFrames(
+      web::BrowserState* browser_state) const override {
+    return web::test::GetPageScript(@"form");
+  }
+};
 
 // Test fixture for autofill::FormActivityTabHelper class.
 class FormActivityTabHelperTest
@@ -20,7 +29,7 @@ class FormActivityTabHelperTest
  public:
   FormActivityTabHelperTest()
       : web::WebJsTest<web::WebTestWithWebState>(
-            @[ @"chrome_bundle_all_frames" ]) {}
+            std::make_unique<FormTestClient>()) {}
 
   void SetUp() override {
     web::WebJsTest<web::WebTestWithWebState>::SetUp();

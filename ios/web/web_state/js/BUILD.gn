@@ -6,6 +6,7 @@ import("//ios/build/config.gni")
 
 source_set("js") {
   deps = [
+    ":script_util",
     "//base",
     "//ios/web/public",
     "//ios/web/web_state/ui:crw_wk_script_message_router",
@@ -18,6 +19,18 @@ source_set("js") {
     "crw_js_post_request_loader.mm",
     "crw_js_window_id_manager.h",
     "crw_js_window_id_manager.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("script_util") {
+  deps = [
+    "//base",
+    "//ios/web/public",
+  ]
+
+  sources = [
     "page_script_util.h",
     "page_script_util.mm",
   ]

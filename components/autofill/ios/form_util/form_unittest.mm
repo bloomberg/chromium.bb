@@ -7,9 +7,9 @@
 #import "ios/web/public/browser_state.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
 #include "ios/web/public/test/fakes/test_web_state_observer.h"
+#import "ios/web/public/test/js_test_util.h"
 #import "ios/web/public/test/web_js_test.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
-#import "ios/web/web_state/js/page_script_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,7 +20,7 @@ class FormTestClient : public web::TestWebClient {
  public:
   NSString* GetDocumentStartScriptForAllFrames(
       web::BrowserState* browser_state) const override {
-    return web::GetPageScript(@"form");
+    return web::test::GetPageScript(@"form");
   }
 };
 
