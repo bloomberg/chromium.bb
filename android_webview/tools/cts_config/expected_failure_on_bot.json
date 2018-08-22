@@ -23,12 +23,6 @@
       "_bug_id": "crbug.com/777393"
     }
   ],
-  "android.webkit.cts.WebViewClientTest": [
-    {
-      "name": "testShouldOverrideUrlLoadingOnCreateWindow",
-      "_bug_id": "crbug.com/659077"
-    }
-  ],
   "android.webkit.cts.WebChromeClientTest": [
     {
       "name": "testOnJsBeforeUnloadIsCalled",
