@@ -180,7 +180,7 @@ Widget* SystemTrayClient::CreateUnownedDialogWidget(
   // Place the dialog in the appropriate modal dialog container, either above
   // or below the lock screen, based on the login state.
   int container_id = GetDialogParentContainerId();
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsUsingWindowService()) {
     using ui::mojom::WindowManager;
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);

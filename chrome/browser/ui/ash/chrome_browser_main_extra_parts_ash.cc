@@ -143,12 +143,14 @@ ChromeBrowserMainExtraPartsAsh::~ChromeBrowserMainExtraPartsAsh() {
 
 void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsMultiProcessMash()) {
     // ash::Shell will not be created because ash is running out-of-process.
     ash::Shell::SetIsBrowserProcessWithMash();
   }
+
   if (features::IsUsingWindowService()) {
     // Start up the window service and the ash system UI service.
+    // NOTE: ash::Shell is still created below for SingleProcessMash.
     connection->GetConnector()->StartService(
         service_manager::Identity(ui::mojom::kServiceName));
     connection->GetConnector()->StartService(
@@ -180,14 +182,18 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
       std::make_unique<NetworkConnectDelegateChromeOS>();
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     ash_shell_init_ = std::make_unique<AshShellInit>();
   } else {
+    // TODO(jamescook): Sort out whether to use ImmersiveContextAsh or
+    // ImmersiveContextMus in SingleProcessMash.
     immersive_context_ = std::make_unique<ImmersiveContextMus>();
     immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryMus>();
 
     // Enterprise support in the browser can monitor user activity. Connect to
     // the UI service to monitor activity. The ash process has its own monitor.
+    // TODO(jamescook): Figure out if we need this for SingleProcessMash.
+    // https://crbug.com/626899
     user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
     ui::mojom::UserActivityMonitorPtr user_activity_monitor;
     content::ServiceManagerConnection::GetForProcess()
@@ -261,8 +267,9 @@ void ChromeBrowserMainExtraPartsAsh::PostProfileInit() {
             detector);
   }
 
-  // TODO(mash): Port TabScrubber.
-  if (features::IsAshInBrowserProcess()) {
+  // TODO(mash): Port TabScrubber. This depends on where gesture recognition
+  // happens because TabScrubber uses 3-finger scrolls. https://crbug.com/796366
+  if (!features::IsUsingWindowService()) {
     // Initialize TabScrubber after the Ash Shell has been initialized.
     TabScrubber::GetInstance();
   }

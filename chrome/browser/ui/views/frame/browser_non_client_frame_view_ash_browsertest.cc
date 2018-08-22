@@ -389,9 +389,9 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 // tablet mode being toggled.
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
                        ToggleTabletModeRelayout) {
-  // For OopAsh, this test is covered by
+  // For mash, this test is covered by
   // CustomFrameViewAshTest.ToggleTabletModeRelayout.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsUsingWindowService())
     return;
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
       static_cast<BrowserNonClientFrameViewAsh*>(
           widget->non_client_view()->frame_view());
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     ash::FrameCaptionButtonContainerView::TestApi test(
         frame_view->caption_button_container_);
     EXPECT_TRUE(test.size_button()->icon_definition_for_test());
@@ -994,9 +994,9 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, BrowserActions) {
 // Regression test for https://crbug.com/839955
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
                        ActiveStateOfButtonMatchesWidget) {
-  // The caption button part of this test is covered for OopAsh by
+  // The caption button part of this test is covered for mash by
   // NonClientFrameViewAshTest::ActiveStateOfButtonMatchesWidget.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     ash::FrameCaptionButtonContainerView::TestApi test(
         GetFrameViewAsh(browser_view_)->caption_button_container_);
     EXPECT_TRUE(test.size_button()->paint_as_active());
@@ -1004,7 +1004,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest,
   EXPECT_TRUE(GetPaintingAsActive());
 
   browser_view_->GetWidget()->Deactivate();
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     ash::FrameCaptionButtonContainerView::TestApi test(
         GetFrameViewAsh(browser_view_)->caption_button_container_);
     EXPECT_FALSE(test.size_button()->paint_as_active());
@@ -1034,7 +1034,7 @@ class BrowserNonClientFrameViewAshBackButtonTest
 IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
                        V1BackButton) {
   // Normal browser windows don't have a frame back button.
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     BrowserNonClientFrameViewAsh* frame_view =
         GetFrameViewAsh(BrowserView::GetBrowserViewForBrowser(browser()));
     EXPECT_FALSE(frame_view->back_button_);
@@ -1060,7 +1060,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
   BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
   aura::Window* app_window = frame_view->GetWidget()->GetNativeWindow();
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     ASSERT_TRUE(frame_view->back_button_);
     EXPECT_TRUE(frame_view->back_button_->visible());
     // The back button should be disabled initially.
@@ -1075,7 +1075,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
   NavigateParams nav_params(browser, kAppStartURL, ui::PAGE_TRANSITION_LINK);
   ui_test_utils::NavigateToURL(&nav_params);
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     EXPECT_TRUE(frame_view->back_button_->enabled());
   } else {
     EXPECT_EQ(ash::FrameBackButtonState::kEnabled,
@@ -1084,7 +1084,7 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshBackButtonTest,
 
   // Go back to the blank. The back button should be disabled again.
   chrome::GoBack(browser, WindowOpenDisposition::CURRENT_TAB);
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsUsingWindowService()) {
     EXPECT_FALSE(frame_view->back_button_->enabled());
   } else {
     EXPECT_EQ(ash::FrameBackButtonState::kDisabled,
@@ -1304,8 +1304,8 @@ class NonHomeLauncherBrowserNonClientFrameViewAshTest
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeBrowserCaptionButtonVisibility) {
-  // For OopAsh, this is tested by an ash unit test of the same name.
-  if (!features::IsAshInBrowserProcess())
+  // For mash, this is tested by an ash unit test of the same name.
+  if (features::IsUsingWindowService())
     return;
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
@@ -1331,8 +1331,8 @@ IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
 
 IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
                        TabletModeAppCaptionButtonVisibility) {
-  // For OopAsh, this is tested by an ash unit test of the same name.
-  if (!features::IsAshInBrowserProcess())
+  // For mash, this is tested by an ash unit test of the same name.
+  if (features::IsUsingWindowService())
     return;
 
   browser()->window()->Close();

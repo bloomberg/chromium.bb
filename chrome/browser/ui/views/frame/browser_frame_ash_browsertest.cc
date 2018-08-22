@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_P(BrowserTestParam,
   Browser* browser = new Browser(params);
   browser->window()->Show();
 
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsUsingWindowService()) {
     WidgetBoundsWatcher watch(
         BrowserView::GetBrowserViewForBrowser(browser)->GetWidget(),
         original_bounds);
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_P(BrowserTestParam,
     expectation.set_y(original_bounds.y());
   }
 
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsUsingWindowService()) {
     WidgetBoundsWatcher watch(
         BrowserView::GetBrowserViewForBrowser(browser)->GetWidget(),
         expectation);

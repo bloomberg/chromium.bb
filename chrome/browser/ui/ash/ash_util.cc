@@ -23,7 +23,7 @@ namespace ash_util {
 
 bool IsAcceleratorDeprecated(const ui::Accelerator& accelerator) {
   // When running in mash the browser doesn't handle ash accelerators.
-  if (!features::IsAshInBrowserProcess())
+  if (features::IsMultiProcessMash())
     return false;
 
   return ash::Shell::Get()->accelerator_controller()->IsDeprecated(accelerator);

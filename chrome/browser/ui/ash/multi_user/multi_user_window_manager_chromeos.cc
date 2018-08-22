@@ -713,7 +713,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   if (visible) {
     // TODO(erg): When we get rid of the classic ash, get rid of the direct
     // linkage on tablet_mode_controller() here.
-    if (!features::IsAshInBrowserProcess()) {
+    if (features::IsUsingWindowService()) {
       aura::WindowTreeHostMus::ForWindow(window)->PerformWmAction(
           ash::mojom::kAddWindowToTabletMode);
     } else {

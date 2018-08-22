@@ -26,7 +26,7 @@ MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
   DCHECK(!g_multi_user_window_manager_instance);
   // TODO(crbug.com/557406): Enable this component in Mash. The object itself
   // has direct ash dependencies.
-  if (features::IsAshInBrowserProcess() &&
+  if (!features::IsUsingWindowService() &&
       SessionControllerClient::IsMultiProfileAvailable()) {
     MultiUserWindowManagerChromeOS* manager =
         new MultiUserWindowManagerChromeOS(

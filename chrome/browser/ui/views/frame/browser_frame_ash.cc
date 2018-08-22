@@ -8,7 +8,7 @@
 
 // This file is only instantiated in classic ash/mus. It is never used in mash.
 // See native_browser_frame_factory_chromeos.cc switches on
-// features::IsAshInBrowserProcess().
+// features::IsUsingWindowService().
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/shell.h"                     // mash-ok
@@ -63,7 +63,7 @@ BrowserFrameAsh::BrowserFrameAsh(BrowserFrame* browser_frame,
                                  BrowserView* browser_view)
     : views::NativeWidgetAura(browser_frame),
       browser_view_(browser_view) {
-  DCHECK(features::IsAshInBrowserProcess());
+  DCHECK(!features::IsUsingWindowService());
   GetNativeWindow()->SetName("BrowserFrameAsh");
   Browser* browser = browser_view->browser();
   ash::wm::WindowState* window_state =
