@@ -126,10 +126,12 @@
 # Annotations:
 #   Additional information is specified under keys 'features' and
 #   'example_value'. These are used in the generated documentation and example
-#   policy configuration files. 'dynamic_refresh' controls if the generated
-#   documentation should state that the policy supports dynamic refresh or not.
-#   Supporting dynamic refresh means that Chrome respects the changes to the
-#   policy immediately, without the need for restart.
+#   policy configuration files. Examples must cover the entire schema, i.e. use
+#   every defined property at least once.
+#   'dynamic_refresh' controls if the generated documentation should state that
+#   the policy supports dynamic refresh or not. Supporting dynamic refresh means
+#   that Chrome respects the changes to the policy immediately, without the need
+#   for restart.
 #   'can_be_mandatory' Set to False to suppress the policy in the generated
 #   mandatory policy templates. The generated documentation for the policy
 #   will contain a suitable hint for administrators.
@@ -155,10 +157,14 @@
 #
 # Schemas:
 #   All policies have a key 'schema' which describes the schema of the policy.
-#   This schema supports a subset of the JSON Schema standard. For more
-#   information see //components/json_schema/json_schema_validator.h
-#   which validates the schema and //components/policy/core/common/schema.h
-#   which validates instances against the specified schema.
+#   This schema supports a subset of the JSON Schema standard
+#   (https://json-schema.org/understanding-json-schema/index.html). For more
+#   information see //components/policy/tools/schema_validator.py. This
+#   validator is also used during presubmit to validate all schemas,
+#   validation_schemas and the example_values. On the client-side we use
+#   //components/policy/core/common/schema.h to validate policy values against
+#   the provided schemas in this file. This validator supports the same subset
+#   of features supported by the python schema validator used during presubmit.
 #
 #   For many policies this is simply a type eg 'boolean' or 'string', but for
 #   'dict' policies this describes the types of not only the root object, but
@@ -2399,6 +2405,7 @@
       'schema': {
         'type': 'integer',
         'enum': [ 0, 1, 2, 3 ],
+        'id': 'ProxyServerMode',
       },
       'items': [
         {
@@ -2546,7 +2553,7 @@
           'ProxyPacUrl': { 'type': 'string' },
           'ProxyServer': { 'type': 'string' },
           'ProxyBypassList': { 'type': 'string' },
-          'ProxyServerMode': { 'type': 'string' },
+          'ProxyServerMode': { '$ref': 'ProxyServerMode' },
         },
       },
       'supported_on': [
@@ -2559,7 +2566,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': { "ProxyMode": "direct" },
+      'example_value': { "ProxyMode": "direct", "ProxyPacUrl": "https://internal.site/example.pac", "ProxyServer": "123.123.123.123:8080", "ProxyBypassList": "https://www.example1.com,https://www.example2.com,https://internalsite/", "ProxyServerMode": 2 },
       'id': 116,
       'caption': '''Proxy settings''',
       'tags': ['system-security'],
@@ -2997,14 +3004,23 @@
           'runtime_blocked_hosts': ['*://*.example.com'],
           'runtime_allowed_hosts': ['*://good.example.com'],
         },
+        'cdefghijklmnopabcdefghijklmnopab' : {
+          'installation_mode': 'blocked',
+          'blocked_install_message': 'Custom error message.',
+        },
         'update_url:https://www.example.com/update.xml': {
           'blocked_permissions': ['wallpaper'],
+          'allowed_permissions': ['downloads'],
+          'installation_mode': 'allowed',
         },
         '*': {
           'installation_mode': 'blocked',
           'blocked_permissions': ['downloads', 'bookmarks'],
           'install_sources': ['https://company-intranet/chromeapps'],
           'allowed_types': ['hosted_app'],
+          'runtime_blocked_hosts': ['*://*.example.com'],
+          'runtime_allowed_hosts': ['*://good.example.com'],
+          'blocked_install_message': 'Custom error message.',
         },
       },
       'id': 278,
@@ -3794,7 +3810,7 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': 0,
+      'example_value': 1,
       'id': 54,
       'caption': '''Default geolocation setting''',
       'tags': ['website-sharing'],
@@ -6341,7 +6357,7 @@
       'features': {
         'dynamic_refresh': True,
       },
-      'example_value': [ { "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "https://clients2.google.com/service/update2/crx" } ],
+      'example_value': [ '{ "extension-id": "khgabmflimjjbclkmljlpmgaleanedem", "update-url": "https://clients2.google.com/service/update2/crx" }' ],
       'id': 135,
       'caption': '''List of AppPack extensions''',
       'tags': [],
@@ -7838,7 +7854,13 @@
           'IdleAction': 'DoNothing'
         },
         'Battery': {
-          'IdleAction': 'DoNothing'
+          'IdleAction': 'DoNothing',
+          'Delays': {
+            'ScreenDim': 10000,
+            'ScreenOff': 20000,
+            'IdleWarning': 5000,
+            'Idle': 30000
+          }
         }
       },
       'id': 258,
@@ -7975,8 +7997,15 @@
           'IdleAction': 'DoNothing'
         },
         'Battery': {
-          'IdleAction': 'DoNothing'
-        }
+          'IdleAction': 'DoNothing',
+          'Delays': {
+            'ScreenDim': 10000,
+            'ScreenOff': 20000,
+            'Idle': 30000
+          }
+        },
+        'LidCloseAction': 'Suspend',
+        'UserActivityScreenDimDelayScale': 110
       },
       'id': 225,
       'caption': '''Power management on the login screen''',
@@ -9932,7 +9961,7 @@
         'dynamic_refresh': True,
         'per_profile': False,
       },
-      'example_value': [{'enabled': 'true', 'upload_rate_kbits': '5600', 'download_rate_kbits': '5600'}],
+      'example_value': {'enabled': True, 'upload_rate_kbits': 5600, 'download_rate_kbits': 5600},
       'tags': [],
       'id': 351,
     },
@@ -12234,7 +12263,7 @@
         'dynamic_refresh': True,
         'per_profile': True
       },
-      'example_value': [{
+      'example_value': {
         'time_window_limit': {
           'entries': [{
             'effective_day': 'WEDNESDAY',
@@ -12254,16 +12283,43 @@
             'usage_quota_mins': 120,
             'last_updated_millis': '1200000'
           },
+          'tuesday': {
+            'usage_quota_mins': 120,
+            'last_updated_millis': '1200000'
+          },
+          'wednesday': {
+            'usage_quota_mins': 120,
+            'last_updated_millis': '1200000'
+          },
+          'thursday': {
+            'usage_quota_mins': 120,
+            'last_updated_millis': '1200000'
+          },
+          'friday': {
+            'usage_quota_mins': 120,
+            'last_updated_millis': '1200000'
+          },
+          'saturday': {
+            'usage_quota_mins': 120,
+            'last_updated_millis': '1200000'
+          },
+          'sunday': {
+            'usage_quota_mins': 120,
+            'last_updated_millis': '1200000'
+          },
           'reset_at': {
             'hour': 6,
             'minute': 0
           }
         },
         'overrides': [{
-          'action': 'LOCK',
-          'created_at_millis': '1250000'
+          'action': 'UNLOCK',
+          'created_at_millis': '1250000',
+          'action_specific_data': {
+            'duration_mins': 30
+          }
         }]
-      }],
+      },
       'id': 448,
       'caption': '''Time Limit''',
       'tags': [],

@@ -144,7 +144,10 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
     ASSERT_TRUE(*next != nullptr);
     EXPECT_STREQ(*next, it.key());
     ASSERT_TRUE(it.schema().valid());
-    EXPECT_EQ(base::Value::Type::STRING, it.schema().type());
+    if (it.key() == key::kProxyServerMode)
+      EXPECT_EQ(base::Value::Type::INTEGER, it.schema().type());
+    else
+      EXPECT_EQ(base::Value::Type::STRING, it.schema().type());
   }
   EXPECT_TRUE(*next == nullptr);
 
