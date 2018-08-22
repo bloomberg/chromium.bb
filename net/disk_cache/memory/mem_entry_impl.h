@@ -174,6 +174,9 @@ class NET_EXPORT_PRIVATE MemEntryImpl final
   net::Interval<int64_t> ChildInterval(
       MemEntryImpl::EntryMap::const_iterator i);
 
+  // Compact vectors to try to avoid over-allocation due to exponential growth.
+  void Compact();
+
   std::string key_;
   std::vector<char> data_[kNumStreams];  // User data.
   int ref_count_;

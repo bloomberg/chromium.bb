@@ -163,7 +163,13 @@ void MemEntryImpl::Close() {
   if (ref_count_ == 0 && !doomed_) {
     // At this point the user is clearly done writing, so make sure there isn't
     // wastage due to exponential growth of vector for main data stream.
-    data_[1].shrink_to_fit();
+    Compact();
+    if (children_) {
+      for (const auto& child_info : *children_) {
+        if (child_info.second != this)
+          child_info.second->Compact();
+      }
+    }
   }
   DCHECK_GE(ref_count_, 0);
   if (!ref_count_ && doomed_)
@@ -632,6 +638,12 @@ net::Interval<int64_t> MemEntryImpl::ChildInterval(
   return net::Interval<int64_t>(
       child_responsibility_start + child->child_first_pos_,
       child_responsibility_start + child->GetDataSize(kSparseData));
+}
+
+void MemEntryImpl::Compact() {
+  // Stream 0 should already be fine since it's written out in a single WriteData().
+  data_[1].shrink_to_fit();
+  data_[2].shrink_to_fit();
 }
 
 }  // namespace disk_cache
