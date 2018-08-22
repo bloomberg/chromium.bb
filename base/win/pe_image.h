@@ -11,6 +11,8 @@
 #ifndef BASE_WIN_PE_IMAGE_H_
 #define BASE_WIN_PE_IMAGE_H_
 
+#include <stdint.h>
+
 #include <windows.h>
 
 #if defined(_WIN32_WINNT_WIN8)
@@ -231,11 +233,11 @@ class PEImage {
   bool VerifyMagic() const;
 
   // Converts an rva value to the appropriate address.
-  virtual PVOID RVAToAddr(DWORD rva) const;
+  virtual PVOID RVAToAddr(uintptr_t rva) const;
 
   // Converts an rva value to an offset on disk.
   // Returns true on success.
-  bool ImageRVAToOnDiskOffset(DWORD rva, DWORD *on_disk_offset) const;
+  bool ImageRVAToOnDiskOffset(uintptr_t rva, DWORD* on_disk_offset) const;
 
   // Converts an address to an offset on disk.
   // Returns true on success.
@@ -255,7 +257,7 @@ class PEImageAsData : public PEImage {
  public:
   explicit PEImageAsData(HMODULE hModule) : PEImage(hModule) {}
 
-  PVOID RVAToAddr(DWORD rva) const override;
+  PVOID RVAToAddr(uintptr_t rva) const override;
 };
 
 inline bool PEImage::IsOrdinal(LPCSTR name) {
