@@ -137,7 +137,7 @@ class DialogLauncher : public content::NotificationObserver {
 
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
     // Launch Assistant OOBE flow if Assistant is enabled.
-    if (account_supported && chromeos::switches::IsAssistantEnabled()) {
+    if (chromeos::switches::IsAssistantEnabled()) {
       chromeos::AssistantOptInDialog::Show();
       delete this;
       return;
