@@ -941,7 +941,7 @@
     },
     {
       name: "PostMessageOptions",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PreciseMemoryInfo",
