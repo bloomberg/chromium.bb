@@ -694,10 +694,10 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
                               .AppendASCII("Code Cache");
       }
 
-      // TODO(crbug.com/867552): Currently it is set to an arbitary value.
-      // Update it based on data. Also add a mechanism similar to QuotaSettings
-      // to let embedders control the size of this cache.
-      constexpr int kSizeInBytes = 10 * 1024 * 1024;
+      // TODO(crbug.com/867552): Currently we set it to 0 and let the disk_cache
+      // backend selects the size based on some heuristics. Add support to let
+      // the embedder override the default value.
+      constexpr int kSizeInBytes = 0;
       partition->GetGeneratedCodeCacheContext()->Initialize(code_cache_path,
                                                             kSizeInBytes);
     }
