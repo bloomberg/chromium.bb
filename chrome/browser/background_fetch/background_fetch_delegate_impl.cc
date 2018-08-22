@@ -26,13 +26,15 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 
-BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(Profile* profile)
+BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
+    Profile* profile,
+    const std::string& provider_namespace)
     : profile_(profile),
       offline_content_aggregator_(
           OfflineContentAggregatorFactory::GetForBrowserContext(profile)),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
-  offline_content_aggregator_->RegisterProvider("background_fetch", this);
+  offline_content_aggregator_->RegisterProvider(provider_namespace, this);
 }
 
 BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() = default;

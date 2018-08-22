@@ -39,7 +39,8 @@ class BackgroundFetchDelegateImpl
       public offline_items_collection::OfflineContentProvider,
       public KeyedService {
  public:
-  explicit BackgroundFetchDelegateImpl(Profile* profile);
+  BackgroundFetchDelegateImpl(Profile* profile,
+                              const std::string& provider_namespace);
 
   ~BackgroundFetchDelegateImpl() override;
 

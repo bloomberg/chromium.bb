@@ -20,7 +20,6 @@ OfflineContentAggregatorFactory::GetInstance() {
 offline_items_collection::OfflineContentAggregator*
 OfflineContentAggregatorFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  DCHECK(!context->IsOffTheRecord());
   return static_cast<offline_items_collection::OfflineContentAggregator*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
@@ -34,6 +33,7 @@ OfflineContentAggregatorFactory::~OfflineContentAggregatorFactory() = default;
 
 KeyedService* OfflineContentAggregatorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
+  DCHECK(!context->IsOffTheRecord());
   return new offline_items_collection::OfflineContentAggregator();
 }
 
