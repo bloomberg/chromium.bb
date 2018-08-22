@@ -134,6 +134,8 @@ class AutofillManager : public AutofillHandler,
     return download_manager_.get();
   }
 
+  FormDataImporter* form_data_importer() { return form_data_importer_.get(); }
+
   payments::FullCardRequest* GetOrCreateFullCardRequest();
 
   payments::FullCardRequest* CreateFullCardRequest(
