@@ -27,6 +27,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -162,6 +163,7 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
+    @FlakyTest(message = "crbug.com/875544")
     public void testClickSuggestion() throws InterruptedException {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
