@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/frame/frame.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
 
@@ -80,6 +82,22 @@ scoped_refptr<SerializedScriptValue> PostMessageHelper::SerializeMessageByCopy(
 
   serialized_message->UnregisterMemoryAllocatedWithCurrentScriptContext();
   return serialized_message;
+}
+
+mojom::blink::UserActivationSnapshotPtr
+PostMessageHelper::CreateUserActivationSnapshot(
+    ExecutionContext* execution_context,
+    const PostMessageOptions& options) {
+  if (!options.includeUserActivation())
+    return nullptr;
+  if (LocalDOMWindow* dom_window = execution_context->ExecutingWindow()) {
+    if (LocalFrame* frame = dom_window->GetFrame()) {
+      return mojom::blink::UserActivationSnapshot::New(
+          frame->HasBeenActivated(),
+          Frame::HasTransientUserActivation(frame, false));
+    }
+  }
+  return nullptr;
 }
 
 }  // namespace blink

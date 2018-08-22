@@ -11,5 +11,5 @@ dictionary MessageEventInit : EventInit {
     // TODO(bashi): |source| should be (WindowProxy or MessagePort)?
     EventTarget? source;
     sequence<MessagePort> ports = [];
-    [Exposed=Window, RuntimeEnabled=UserActivationAPI] UserActivation? userActivation = null;
+    [RuntimeEnabled=UserActivationAPI] UserActivation? userActivation = null;
 };

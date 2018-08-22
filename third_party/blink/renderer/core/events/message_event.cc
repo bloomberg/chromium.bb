@@ -101,7 +101,8 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
-                           MessagePortArray* ports)
+                           MessagePortArray* ports,
+                           UserActivation* user_activation)
     : Event(EventTypeNames::message, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeSerializedScriptValue),
       data_as_serialized_script_value_(
@@ -109,7 +110,8 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
       origin_(origin),
       last_event_id_(last_event_id),
       source_(source),
-      ports_(ports) {
+      ports_(ports),
+      user_activation_(user_activation) {
   DCHECK(IsValidSource(source_.Get()));
 }
 

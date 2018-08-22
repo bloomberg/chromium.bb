@@ -152,6 +152,9 @@ void DedicatedWorker::postMessage(ScriptState* script_state,
       exception_state);
   if (exception_state.HadException())
     return;
+  transferable_message.user_activation =
+      PostMessageHelper::CreateUserActivationSnapshot(GetExecutionContext(),
+                                                      options);
 
   transferable_message.sender_stack_trace_id =
       ThreadDebugger::From(script_state->GetIsolate())

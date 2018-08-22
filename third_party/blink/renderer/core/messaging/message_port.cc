@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/messaging/blink_transferable_message_struct_traits.h"
 #include "third_party/blink/renderer/core/messaging/post_message_options.h"
@@ -108,6 +109,8 @@ void MessagePort::postMessage(ScriptState* script_state,
       exception_state);
   if (exception_state.HadException())
     return;
+  msg.user_activation = PostMessageHelper::CreateUserActivationSnapshot(
+      GetExecutionContext(), options);
 
   ThreadDebugger* debugger = ThreadDebugger::From(script_state->GetIsolate());
   if (debugger)
@@ -297,7 +300,14 @@ bool MessagePort::Accept(mojo::Message* mojo_message) {
           *message.locked_agent_cluster_id)) {
     MessagePortArray* ports = MessagePort::EntanglePorts(
         *GetExecutionContext(), std::move(message.ports));
-    evt = MessageEvent::Create(ports, std::move(message.message));
+    UserActivation* user_activation = nullptr;
+    if (message.user_activation) {
+      user_activation =
+          new UserActivation(message.user_activation->has_been_active,
+                             message.user_activation->was_active);
+    }
+    evt = MessageEvent::Create(ports, std::move(message.message),
+                               user_activation);
   } else {
     evt = MessageEvent::CreateError();
   }

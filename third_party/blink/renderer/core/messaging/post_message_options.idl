@@ -6,4 +6,5 @@
 
 dictionary PostMessageOptions {
     sequence<object> transfer = [];
+    [RuntimeEnabled=UserActivationAPI] boolean includeUserActivation = false;
 };
