@@ -133,7 +133,6 @@ static_library("vr_android") {
 
 android_library("java") {
   java_files = [
-    "//chrome/android/java/src/org/chromium/chrome/browser/component_updater/VrAssetsComponentInstaller.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/AndroidUiGestureTarget.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/AndroidVSyncHelper.java",
     "//chrome/android/java/src/org/chromium/chrome/browser/vr/EmptySniffingVrViewContainer.java",
