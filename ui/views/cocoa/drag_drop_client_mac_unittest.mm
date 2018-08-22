@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ui/base/clipboard/clipboard_util_mac.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
@@ -241,6 +242,8 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
   OSExchangeData data;
   const base::string16& text = ASCIIToUTF16("text");
   data.SetString(text);
+  data.provider().SetDragImage(gfx::test::CreateImageSkia(100, 100),
+                               gfx::Vector2d());
   SetData(data);
 
   // There's no way to cleanly stop NSDraggingSession inside unit tests, so just
