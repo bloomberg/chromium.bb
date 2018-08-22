@@ -11,12 +11,15 @@
 #include "base/files/file_path.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 
+class Profile;
+
 namespace web_app {
 
 using ScanForExternalWebAppsCallback =
     base::OnceCallback<void(std::vector<web_app::PendingAppManager::AppInfo>)>;
 
-void ScanForExternalWebApps(ScanForExternalWebAppsCallback callback);
+void ScanForExternalWebApps(Profile* profile,
+                            ScanForExternalWebAppsCallback callback);
 
 // Scans the given directory (non-recursively) for *.json files that define
 // "external web apps", the Web App analogs of "external extensions", described
