@@ -25,9 +25,9 @@ namespace {
 class ControllerDelegate {
  public:
   virtual ~ControllerDelegate() = default;
-  virtual void ShowRelaunchRecommendedBubble() = 0;
-  virtual void ShowRelaunchRequiredDialog() = 0;
-  virtual void CloseWidget() = 0;
+  virtual void NotifyRelaunchRecommended() = 0;
+  virtual void NotifyRelaunchRequired() = 0;
+  virtual void Close() = 0;
   virtual void OnRelaunchDeadlineExpired() = 0;
 
  protected:
@@ -47,15 +47,15 @@ class FakeRelaunchNotificationController
   using RelaunchNotificationController::kRelaunchGracePeriod;
 
  private:
-  void ShowRelaunchRecommendedBubble() override {
-    delegate_->ShowRelaunchRecommendedBubble();
+  void NotifyRelaunchRecommended() override {
+    delegate_->NotifyRelaunchRecommended();
   }
 
-  void ShowRelaunchRequiredDialog() override {
-    delegate_->ShowRelaunchRequiredDialog();
+  void NotifyRelaunchRequired() override {
+    delegate_->NotifyRelaunchRequired();
   }
 
-  void CloseWidget() override { delegate_->CloseWidget(); }
+  void Close() override { delegate_->Close(); }
 
   void OnRelaunchDeadlineExpired() override {
     delegate_->OnRelaunchDeadlineExpired();
@@ -69,9 +69,9 @@ class FakeRelaunchNotificationController
 // A mock delegate for testing.
 class MockControllerDelegate : public ControllerDelegate {
  public:
-  MOCK_METHOD0(ShowRelaunchRecommendedBubble, void());
-  MOCK_METHOD0(ShowRelaunchRequiredDialog, void());
-  MOCK_METHOD0(CloseWidget, void());
+  MOCK_METHOD0(NotifyRelaunchRecommended, void());
+  MOCK_METHOD0(NotifyRelaunchRequired, void());
+  MOCK_METHOD0(Close, void());
   MOCK_METHOD0(OnRelaunchDeadlineExpired, void());
 };
 
@@ -204,7 +204,7 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Show for each level change, but not for repeat notifications.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -212,7 +212,7 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -220,21 +220,21 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // The timer should be running to reshow at the detector's delta.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   FastForwardBy(upgrade_detector()->GetHighAnnoyanceLevelDelta());
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   FastForwardBy(upgrade_detector()->GetHighAnnoyanceLevelDelta());
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Drop back to elevated to stop the reshows and ensure there are none.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -242,7 +242,7 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // And closed if the level drops back to very low.
-  EXPECT_CALL(mock_controller_delegate, CloseWidget());
+  EXPECT_CALL(mock_controller_delegate, Close());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_VERY_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -251,13 +251,13 @@ TEST_F(RelaunchNotificationControllerTest, RecommendedByPolicy) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Back up to elevated brings the bubble back.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // And it is closed if the level drops back to none.
-  EXPECT_CALL(mock_controller_delegate, CloseWidget());
+  EXPECT_CALL(mock_controller_delegate, Close());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -282,7 +282,7 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Show for each level change, but not for repeat notifications.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -290,7 +290,7 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -298,7 +298,7 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -306,7 +306,7 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -315,7 +315,7 @@ TEST_F(RelaunchNotificationControllerTest, RequiredByPolicy) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // And closed if the level drops back to none.
-  EXPECT_CALL(mock_controller_delegate, CloseWidget());
+  EXPECT_CALL(mock_controller_delegate, Close());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_NONE);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -371,16 +371,16 @@ TEST_F(RelaunchNotificationControllerTest, PolicyChangesWithUpgrade) {
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   SetNotificationPref(1);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, CloseWidget());
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, Close());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   SetNotificationPref(2);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
-  EXPECT_CALL(mock_controller_delegate, CloseWidget());
+  EXPECT_CALL(mock_controller_delegate, Close());
   SetNotificationPref(0);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 }
@@ -394,7 +394,7 @@ TEST_F(RelaunchNotificationControllerTest, RequiredDeadlineReached) {
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
 
   // As in the RequiredByPolicy test, the dialog should be shown.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -415,13 +415,13 @@ TEST_F(RelaunchNotificationControllerTest, RequiredDeadlineReachedNoPolicy) {
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
 
   // As in the RequiredByPolicy test, the dialog should be shown.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // And then closed if the policy is cleared.
-  EXPECT_CALL(mock_controller_delegate, CloseWidget());
+  EXPECT_CALL(mock_controller_delegate, Close());
   SetNotificationPref(0);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
@@ -498,7 +498,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRecommended) {
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
 
   // Get up to high annoyance so that the reshow timer is running.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_HIGH);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -508,7 +508,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRecommended) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // Now shorten the period dramatically and expect an immediate reshow.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   fake_upgrade_detector().BroadcastHighThresholdChange(
       fake_upgrade_detector().high_threshold() / 10);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -516,7 +516,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRecommended) {
   // And expect another reshow at the new delta.
   base::TimeDelta short_reshow_delta =
       upgrade_detector()->GetHighAnnoyanceLevelDelta();
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   FastForwardBy(short_reshow_delta);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
@@ -532,7 +532,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRecommended) {
   // Move forward the rest of the way to the new delta and expect a reshow.
   base::TimeDelta long_reshow_delta =
       upgrade_detector()->GetHighAnnoyanceLevelDelta();
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   FastForwardBy(long_reshow_delta - short_reshow_delta);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
@@ -547,7 +547,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRecommended) {
 
   // And ensure that moving forward the rest of the way to the new delta causes
   // a reshow.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRecommendedBubble());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRecommended());
   FastForwardBy(upgrade_detector()->GetHighAnnoyanceLevelDelta() -
                 long_reshow_delta * 0.1);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -562,7 +562,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRequired) {
       upgrade_detector(), GetMockTickClock(), &mock_controller_delegate);
 
   // Get up to low annoyance so that the relaunch timer is running.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -585,7 +585,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRequired) {
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
 
   // But now we enter elevated annoyance level and show the dialog.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastLevelChange(
       UpgradeDetector::UPGRADE_ANNOYANCE_ELEVATED);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);
@@ -599,7 +599,7 @@ TEST_F(RelaunchNotificationControllerTest, PeriodChangeRequired) {
 
   // Shorten the period, bringing in the deadline. Expect the dialog to show and
   // a relaunch after the grace period passes.
-  EXPECT_CALL(mock_controller_delegate, ShowRelaunchRequiredDialog());
+  EXPECT_CALL(mock_controller_delegate, NotifyRelaunchRequired());
   fake_upgrade_detector().BroadcastHighThresholdChange(
       fake_upgrade_detector().high_threshold() / 2);
   ::testing::Mock::VerifyAndClear(&mock_controller_delegate);

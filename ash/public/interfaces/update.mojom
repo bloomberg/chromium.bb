@@ -27,3 +27,10 @@ enum UpdateType {
   FLASH,
   SYSTEM,
 };
+
+// Notification style for system updates, set by different policies.
+enum NotificationStyle {
+    DEFAULT,
+    ADMIN_RECOMMENDED,  // Relaunch Notification policy
+    ADMIN_REQUIRED,     // Relaunch Notification policy
+};

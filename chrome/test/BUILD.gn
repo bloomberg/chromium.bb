@@ -1513,13 +1513,17 @@ test("browser_tests") {
         "../browser/ui/views/payments/shipping_address_editor_view_controller_browsertest.cc",
         "../browser/ui/views/payments/shipping_option_view_controller_browsertest.cc",
         "../browser/ui/views/profiles/profile_chooser_view_browsertest.cc",
-        "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
-        "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
         "../browser/ui/views/safe_browsing/password_reuse_modal_warning_dialog_browsertest.cc",
         "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
         "../browser/ui/views/translate/translate_bubble_view_browsertest.cc",
       ]
+      if (!is_chromeos) {
+        sources += [
+          "../browser/ui/views/relaunch_notification/relaunch_recommended_bubble_view_browsertest.cc",
+          "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_browsertest.cc",
+        ]
+      }
       deps += [
         "//components/payments/core:test_support",
         "//ui/views",
@@ -4398,7 +4402,7 @@ test("unit_tests") {
       "../browser/ui/views/payments/validating_textfield_unittest.cc",
       "../browser/ui/views/payments/view_stack_unittest.cc",
       "../browser/ui/views/relaunch_notification/relaunch_notification_controller_unittest.cc",
-      "../browser/ui/views/relaunch_notification/relaunch_required_dialog_view_unittest.cc",
+      "../browser/ui/views/relaunch_notification/relaunch_required_timer_internal_unittest.cc",
     ]
     if (is_chromeos) {
       sources += [ "../browser/ui/views/ime_driver/input_method_bridge_chromeos_unittest.cc" ]

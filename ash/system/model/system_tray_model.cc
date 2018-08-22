@@ -84,6 +84,14 @@ void SystemTrayModel::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                      update_type);
 }
 
+void SystemTrayModel::SetUpdateNotificationState(
+    mojom::NotificationStyle style,
+    const base::string16& notification_title,
+    const base::string16& notification_body) {
+  update_model()->SetUpdateNotificationState(style, notification_title,
+                                             notification_body);
+}
+
 void SystemTrayModel::SetUpdateOverCellularAvailableIconVisible(bool visible) {
   update_model()->SetUpdateOverCellularAvailable(visible);
 }

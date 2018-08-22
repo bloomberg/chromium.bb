@@ -8,8 +8,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
+#include "chrome/browser/ui/views/relaunch_notification/relaunch_recommended_timer.h"
 
 class Browser;
 
@@ -56,19 +56,10 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
                                 base::TimeTicks detection_time,
                                 base::RepeatingClosure on_accept);
 
-  static constexpr int kTitleIconSize = 20;
-
-  // Schedules a timer to fire the next time the title text must be updated; for
-  // example, from "...is available" to "...has been available for 1 day".
-  void ScheduleNextTitleRefresh();
-
   // Invoked when the timer fires to refresh the title text.
-  void OnTitleRefresh();
+  void UpdateWindowTitle();
 
-  // The tick count at which Chrome noticed that an update was available. This
-  // is used to write the proper string into the dialog's title and to schedule
-  // title refreshes to update said string.
-  const base::TimeTicks detection_time_;
+  static constexpr int kTitleIconSize = 20;
 
   // A callback run if the user accepts the prompt to relaunch the browser.
   base::RepeatingClosure on_accept_;
@@ -76,8 +67,8 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
   // The label containing the body text of the bubble.
   views::Label* body_label_;
 
-  // A timer with which title refreshes are scheduled.
-  base::OneShotTimer refresh_timer_;
+  // Timer that schedules title refreshes.
+  RelaunchRecommendedTimer relaunch_recommended_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RelaunchRecommendedBubbleView);
 };

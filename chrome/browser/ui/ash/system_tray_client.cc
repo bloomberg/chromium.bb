@@ -198,6 +198,16 @@ void SystemTrayClient::SetFlashUpdateAvailable() {
   HandleUpdateAvailable();
 }
 
+void SystemTrayClient::SetUpdateNotificationState(
+    ash::mojom::NotificationStyle style,
+    const base::string16& notification_title,
+    const base::string16& notification_body) {
+  update_notification_style_ = style;
+  update_notification_title_ = notification_title;
+  update_notification_body_ = notification_body;
+  HandleUpdateAvailable();
+}
+
 void SystemTrayClient::SetPrimaryTrayEnabled(bool enabled) {
   system_tray_->SetPrimaryTrayEnabled(enabled);
 }
@@ -453,6 +463,13 @@ void SystemTrayClient::HandleUpdateAvailable() {
 
   system_tray_->ShowUpdateIcon(severity, detector->is_factory_reset_required(),
                                detector->is_rollback(), update_type);
+
+  // Only overwrite title and body for system updates, not for flash updates.
+  if (update_type == ash::mojom::UpdateType::SYSTEM) {
+    system_tray_->SetUpdateNotificationState(update_notification_style_,
+                                             update_notification_title_,
+                                             update_notification_body_);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

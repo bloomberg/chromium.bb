@@ -125,9 +125,7 @@ base::string16 RelaunchRecommendedBubbleView::GetDialogButtonLabel(
 }
 
 base::string16 RelaunchRecommendedBubbleView::GetWindowTitle() const {
-  const base::TimeDelta elapsed = base::TimeTicks::Now() - detection_time_;
-  return l10n_util::GetPluralStringFUTF16(IDS_RELAUNCH_RECOMMENDED_TITLE,
-                                          elapsed.InDays());
+  return relaunch_recommended_timer_.GetWindowTitle();
 }
 
 bool RelaunchRecommendedBubbleView::ShouldShowCloseButton() const {
@@ -174,10 +172,6 @@ void RelaunchRecommendedBubbleView::Init() {
   AddChildView(body_label_);
 
   base::RecordAction(base::UserMetricsAction("RelaunchRecommendedShown"));
-
-  // Start the timer for the next time the title neeeds to be updated (e.g.,
-  // from "2 days" to "3 days").
-  ScheduleNextTitleRefresh();
 }
 
 gfx::Size RelaunchRecommendedBubbleView::CalculatePreferredSize() const {
@@ -198,34 +192,28 @@ void RelaunchRecommendedBubbleView::VisibilityChanged(
   }
 }
 
+// |relaunch_recommended_timer_| automatically starts for the next time the
+// title needs to be updated (e.g., from "2 days" to "3 days").
 RelaunchRecommendedBubbleView::RelaunchRecommendedBubbleView(
     views::Button* anchor_button,
     const gfx::Point& anchor_point,
     base::TimeTicks detection_time,
     base::RepeatingClosure on_accept)
     : LocationBarBubbleDelegateView(anchor_button, anchor_point, nullptr),
-      detection_time_(detection_time),
       on_accept_(std::move(on_accept)),
-      body_label_(nullptr) {
+      body_label_(nullptr),
+      relaunch_recommended_timer_(
+          detection_time,
+          base::BindRepeating(&RelaunchRecommendedBubbleView::UpdateWindowTitle,
+                              base::Unretained(this))) {
   chrome::RecordDialogCreation(chrome::DialogIdentifier::RELAUNCH_RECOMMENDED);
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
 }
 
-void RelaunchRecommendedBubbleView::ScheduleNextTitleRefresh() {
-  // Refresh at the next day boundary.
-  const base::TimeDelta elapsed = base::TimeTicks::Now() - detection_time_;
-  const base::TimeDelta delta =
-      base::TimeDelta::FromDays(elapsed.InDays() + 1) - elapsed;
-
-  refresh_timer_.Start(FROM_HERE, delta, this,
-                       &RelaunchRecommendedBubbleView::OnTitleRefresh);
-}
-
-void RelaunchRecommendedBubbleView::OnTitleRefresh() {
+void RelaunchRecommendedBubbleView::UpdateWindowTitle() {
   GetWidget()->UpdateWindowTitle();
   // This might update the length of the window title (for N days). Resize the
   // bubble to match the new preferred size.
   SizeToContents();
-  ScheduleNextTitleRefresh();
 }
