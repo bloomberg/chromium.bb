@@ -24,6 +24,9 @@ class JavaScriptDialogViews : public JavaScriptDialog,
  public:
   ~JavaScriptDialogViews() override;
 
+  // Creates a new JS dialog. Note the two callbacks; |dialog_callback| is for
+  // user responses, while |dialog_force_closed_callback| is for when Views
+  // forces the dialog closed without a user reply.
   static base::WeakPtr<JavaScriptDialogViews> Create(
       content::WebContents* parent_web_contents,
       content::WebContents* alerting_web_contents,
@@ -31,7 +34,8 @@ class JavaScriptDialogViews : public JavaScriptDialog,
       content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback);
+      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback,
+      base::OnceClosure dialog_force_closed_callback);
 
   // JavaScriptDialog:
   void CloseDialogWithoutCallback() override;
@@ -62,13 +66,15 @@ class JavaScriptDialogViews : public JavaScriptDialog,
       content::JavaScriptDialogType dialog_type,
       const base::string16& message_text,
       const base::string16& default_prompt_text,
-      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback);
+      content::JavaScriptDialogManager::DialogClosedCallback dialog_callback,
+      base::OnceClosure dialog_force_closed_callback);
 
   base::string16 title_;
   content::JavaScriptDialogType dialog_type_;
   base::string16 message_text_;
   base::string16 default_prompt_text_;
   content::JavaScriptDialogManager::DialogClosedCallback dialog_callback_;
+  base::OnceClosure dialog_force_closed_callback_;
 
   // The message box view whose commands we handle.
   views::MessageBoxView* message_box_view_;
