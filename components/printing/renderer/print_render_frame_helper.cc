@@ -35,8 +35,8 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/escape.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/metafile_skia.h"
 #include "printing/metafile_skia_wrapper.h"
-#include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom.h"
@@ -1302,7 +1302,7 @@ bool PrintRenderFrameHelper::CreatePreviewDocument() {
 bool PrintRenderFrameHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
-  PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
+  MetafileSkia* initial_render_metafile = print_preview_context_.metafile();
   base::TimeTicks begin_time = base::TimeTicks::Now();
   double scale_factor = GetScaleFactor(print_params.scale_factor,
                                        !print_preview_context_.IsModifiable());
@@ -1323,7 +1323,7 @@ bool PrintRenderFrameHelper::RenderPreviewPage(
   // contains the rendering for just this one page. Then the browser can update
   // the user visible print preview one page at a time, instead of waiting for
   // the entire document to be rendered.
-  std::unique_ptr<PdfMetafileSkia> metafile =
+  std::unique_ptr<MetafileSkia> metafile =
       initial_render_metafile->GetMetafileForCurrentPage(
           print_params.printed_doc_type);
   return PreviewPageRendered(page_number, std::move(metafile));
@@ -1333,7 +1333,7 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   DCHECK(!is_print_ready_metafile_sent_);
   print_preview_context_.FinalizePrintReadyDocument();
 
-  PdfMetafileSkia* metafile = print_preview_context_.metafile();
+  MetafileSkia* metafile = print_preview_context_.metafile();
   PrintHostMsg_DidPreviewDocument_Params preview_params;
 
   if (!CopyMetafileDataToReadOnlySharedMem(*metafile,
@@ -1451,7 +1451,7 @@ void PrintRenderFrameHelper::OnPrintFrameContent(
   if (!weak_this)
     return;
 
-  PdfMetafileSkia metafile(SkiaDocumentType::MSKP, params.document_cookie);
+  MetafileSkia metafile(SkiaDocumentType::MSKP, params.document_cookie);
   gfx::Size area_size = params.printable_area.size();
   // Since GetVectorCanvasForNewPage() starts a new recording, it will return
   // a valid canvas.
@@ -1694,8 +1694,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  PdfMetafileSkia metafile(print_params.printed_doc_type,
-                           print_params.document_cookie);
+  MetafileSkia metafile(print_params.printed_doc_type,
+                        print_params.document_cookie);
   CHECK(metafile.Init());
 
   PrintHostMsg_DidPrintDocument_Params page_params;
@@ -1957,7 +1957,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
     int page_count,
     double scale_factor,
     blink::WebLocalFrame* frame,
-    PdfMetafileSkia* metafile,
+    MetafileSkia* metafile,
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_area_in_dpi) {
   double css_scale_factor = scale_factor;
@@ -2031,7 +2031,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
 #endif  // !defined(OS_MACOSX)
 
 bool PrintRenderFrameHelper::CopyMetafileDataToReadOnlySharedMem(
-    const PdfMetafileSkia& metafile,
+    const MetafileSkia& metafile,
     PrintHostMsg_DidPrintContent_Params* params) {
   uint32_t buf_size = metafile.GetDataSize();
   if (buf_size == 0)
@@ -2161,7 +2161,7 @@ bool PrintRenderFrameHelper::CheckForCancel() {
 
 bool PrintRenderFrameHelper::PreviewPageRendered(
     int page_number,
-    std::unique_ptr<PdfMetafileSkia> metafile) {
+    std::unique_ptr<MetafileSkia> metafile) {
   DCHECK_GE(page_number, FIRST_PAGE_INDEX);
   DCHECK(metafile);
   DCHECK(print_preview_context_.IsModifiable());
@@ -2235,7 +2235,7 @@ bool PrintRenderFrameHelper::PrintPreviewContext::CreatePreviewDocument(
     return false;
   }
 
-  metafile_ = std::make_unique<PdfMetafileSkia>(doc_type, document_cookie);
+  metafile_ = std::make_unique<MetafileSkia>(doc_type, document_cookie);
   CHECK(metafile_->Init());
 
   current_page_index_ = 0;
@@ -2381,7 +2381,7 @@ int PrintRenderFrameHelper::PrintPreviewContext::total_page_count() const {
   return total_page_count_;
 }
 
-PdfMetafileSkia* PrintRenderFrameHelper::PrintPreviewContext::metafile() {
+MetafileSkia* PrintRenderFrameHelper::PrintPreviewContext::metafile() {
   DCHECK(IsRendering());
   return metafile_.get();
 }

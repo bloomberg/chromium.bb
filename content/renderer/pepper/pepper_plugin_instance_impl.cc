@@ -136,8 +136,8 @@
 #if BUILDFLAG(ENABLE_PRINTING)
 // nogncheck because dependency on //printing is conditional upon
 // enable_basic_printing flags.
+#include "printing/metafile_skia.h"          // nogncheck
 #include "printing/metafile_skia_wrapper.h"  // nogncheck
-#include "printing/pdf_metafile_skia.h"  // nogncheck
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -374,7 +374,7 @@ class PluginInstanceLockTarget : public MouseLockDispatcher::LockTarget {
 };
 
 void PrintPDFOutput(PP_Resource print_output,
-                    printing::PdfMetafileSkia* metafile) {
+                    printing::MetafileSkia* metafile) {
 #if BUILDFLAG(ENABLE_PRINTING)
   DCHECK(metafile);
 
@@ -2006,7 +2006,7 @@ void PepperPluginInstanceImpl::PrintPage(int page_number,
   DCHECK(plugin_print_interface_);
 
   // |canvas| should always have an associated metafile.
-  printing::PdfMetafileSkia* metafile =
+  printing::MetafileSkia* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);
   DCHECK(metafile);
 

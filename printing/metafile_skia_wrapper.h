@@ -11,23 +11,23 @@
 
 namespace printing {
 
-class PdfMetafileSkia;
+class MetafileSkia;
 
-// A wrapper class with static methods to set and retrieve a PdfMetafileSkia
+// A wrapper class with static methods to set and retrieve a MetafileSkia
 // on an SkCanvas.  The ownership of the metafile is not affected and it
 // is the caller's responsibility to ensure that the metafile remains valid
 // as long as the canvas.
 class PRINTING_EXPORT MetafileSkiaWrapper : public SkRefCnt {
  public:
   static void SetMetafileOnCanvas(cc::PaintCanvas* canvas,
-                                  PdfMetafileSkia* metafile);
+                                  MetafileSkia* metafile);
 
-  static PdfMetafileSkia* GetMetafileFromCanvas(cc::PaintCanvas* canvas);
+  static MetafileSkia* GetMetafileFromCanvas(cc::PaintCanvas* canvas);
 
  private:
-  explicit MetafileSkiaWrapper(PdfMetafileSkia* metafile);
+  explicit MetafileSkiaWrapper(MetafileSkia* metafile);
 
-  PdfMetafileSkia* metafile_;
+  MetafileSkia* metafile_;
 };
 
 }  // namespace printing

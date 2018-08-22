@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "ipc/ipc_message_utils.h"
-#include "printing/pdf_metafile_skia.h"
+#include "printing/metafile_skia.h"
 #include "printing/units.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -213,7 +213,7 @@ void MockPrinter::PrintPage(
 #if defined(OS_MACOSX)
   printing::PdfMetafileCg metafile;
 #else
-  printing::PdfMetafileSkia metafile;
+  printing::MetafileSkia metafile;
 #endif
   metafile.InitFromData(metafile_data.memory(), content.data_size);
   printing::Image image(metafile);

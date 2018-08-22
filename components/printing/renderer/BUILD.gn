@@ -19,6 +19,7 @@ static_library("renderer") {
     "//content/public/renderer",
     "//net",
     "//printing",
+    "//printing/common",
     "//third_party/blink/public:blink",
     "//third_party/blink/public/common",
     "//ui/base",

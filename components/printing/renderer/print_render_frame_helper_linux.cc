@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/metafile_skia.h"
 #include "printing/metafile_skia_wrapper.h"
 
 #if defined(OS_ANDROID)
@@ -53,8 +54,8 @@ bool PrintRenderFrameHelper::PrintPagesNative(blink::WebLocalFrame* frame,
   if (printed_pages.empty())
     return false;
 
-  PdfMetafileSkia metafile(print_params.printed_doc_type,
-                           print_params.document_cookie);
+  MetafileSkia metafile(print_params.printed_doc_type,
+                        print_params.document_cookie);
   CHECK(metafile.Init());
 
   for (int page_number : printed_pages) {

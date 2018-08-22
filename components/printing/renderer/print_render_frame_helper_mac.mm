@@ -14,6 +14,7 @@
 #include "cc/paint/paint_canvas.h"
 #include "components/printing/common/print_messages.h"
 #include "printing/buildflags/buildflags.h"
+#include "printing/metafile_skia.h"
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/page_size_margins.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -26,7 +27,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
     int page_count,
     double scale_factor,
     blink::WebLocalFrame* frame,
-    PdfMetafileSkia* metafile,
+    MetafileSkia* metafile,
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_rect_in_dpi) {
   double css_scale_factor = scale_factor;
