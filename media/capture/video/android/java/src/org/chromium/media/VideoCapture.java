@@ -62,22 +62,14 @@ public abstract class VideoCapture {
     @CalledByNative
     public abstract boolean allocate(int width, int height, int frameRate);
 
-    // Success is indicated by returning true and a callback to
-    // nativeOnStarted(), which may occur synchronously or asynchronously.
-    // Failure can be indicated by one of the following:
-    // * Returning false. In this case no callback to nativeOnStarted() is made.
-    // * Returning true, and asynchronously invoking nativeOnError. In this case
-    //   also no callback to nativeOnStarted() is made.
     @CalledByNative
-    public abstract boolean startCaptureMaybeAsync();
+    public abstract boolean startCapture();
 
-    // Blocks until it is guaranteed that no more frames are sent.
     @CalledByNative
-    public abstract boolean stopCaptureAndBlockUntilStopped();
+    public abstract boolean stopCapture();
 
-    // Replies by calling nativeOnGetPhotoCapabilitiesReply().
     @CalledByNative
-    public abstract void getPhotoCapabilitiesAsync(long callbackId);
+    public abstract PhotoCapabilities getPhotoCapabilities();
 
     /**
      * @param zoom Zoom level, should be ignored if 0.
@@ -103,9 +95,8 @@ public abstract class VideoCapture {
             boolean hasRedEyeReduction, boolean redEyeReduction, int fillLightMode,
             boolean hasTorch, boolean torch, double colorTemperature);
 
-    // Replies by calling nativeOnPhotoTaken().
     @CalledByNative
-    public abstract void takePhotoAsync(long callbackId);
+    public abstract boolean takePhoto(final long callbackId);
 
     @CalledByNative
     public abstract void deallocate();
@@ -171,12 +162,6 @@ public abstract class VideoCapture {
                 break;
         }
         return orientation;
-    }
-
-    // {@link nativeOnPhotoTaken()} needs to be called back if there's any
-    // problem after {@link takePhotoAsync()} has returned true.
-    protected void notifyTakePhotoError(long callbackId) {
-        nativeOnPhotoTaken(mNativeVideoCaptureDeviceAndroid, callbackId, null);
     }
 
     /**
@@ -245,17 +230,10 @@ public abstract class VideoCapture {
     // Method for VideoCapture implementations to signal an asynchronous error.
     public native void nativeOnError(long nativeVideoCaptureDeviceAndroid, String message);
 
-    public native void nativeOnGetPhotoCapabilitiesReply(
-            long nativeVideoCaptureDeviceAndroid, long callbackId, PhotoCapabilities result);
-
-    // Callback for calls to takePhoto(). This can indicate both success and
-    // failure. Failure is indicated by |data| being null.
+    // Method for VideoCapture implementations to send Photos back to.
     public native void nativeOnPhotoTaken(
             long nativeVideoCaptureDeviceAndroid, long callbackId, byte[] data);
 
     // Method for VideoCapture implementations to report device started event.
     public native void nativeOnStarted(long nativeVideoCaptureDeviceAndroid);
-
-    public native void nativeDCheckCurrentlyOnIncomingTaskRunner(
-            long nativeVideoCaptureDeviceAndroid);
 }
