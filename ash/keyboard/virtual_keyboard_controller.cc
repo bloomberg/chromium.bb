@@ -36,15 +36,23 @@ bool IsVirtualKeyboardEnabled() {
       keyboard::switches::kEnableVirtualKeyboard);
 }
 
-void DisableVirtualKeyboard() {
-  // Reset the accessibility keyboard settings.
-  AccessibilityController* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  if (!accessibility_controller)
-    return;
+void ResetVirtualKeyboard(bool disable_accessibility_keyboard) {
+  if (disable_accessibility_keyboard) {
+    // Reset the accessibility keyboard settings.
+    AccessibilityController* accessibility_controller =
+        Shell::Get()->accessibility_controller();
+    if (!accessibility_controller)
+      return;
 
-  DCHECK(accessibility_controller->IsVirtualKeyboardEnabled());
-  accessibility_controller->SetVirtualKeyboardEnabled(false);
+    DCHECK(accessibility_controller->IsVirtualKeyboardEnabled());
+    accessibility_controller->SetVirtualKeyboardEnabled(false);
+  }
+
+  // Reset the keyset after disabling the virtual keyboard to prevent the IME
+  // extension from accidentally loading the default keyset while it's shutting
+  // down. See https://crbug.com/875456.
+  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kNone);
 }
 
 void MoveKeyboardToDisplayInternal(const display::Display& display) {
@@ -307,16 +315,11 @@ void VirtualKeyboardController::OnKeyboardHidden(bool is_temporary_hide) {
   if (is_temporary_hide)
     return;
 
-  Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
-      chromeos::input_method::mojom::ImeKeyset::kNone);
-
-  if (keyboard_enabled_using_accessibility_prefs_) {
-    keyboard_enabled_using_accessibility_prefs_ = false;
-
-    // Posts a task to disable the virtual keyboard.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(DisableVirtualKeyboard));
-  }
+  // Post a task to reset the virtual keyboard to its original state.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(ResetVirtualKeyboard,
+                                keyboard_enabled_using_accessibility_prefs_));
+  keyboard_enabled_using_accessibility_prefs_ = false;
 }
 
 void VirtualKeyboardController::OnActiveUserSessionChanged(
