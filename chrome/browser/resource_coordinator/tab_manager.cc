@@ -546,10 +546,8 @@ void TabManager::OnMemoryPressure(
   // calling PurgeBrowserMemory() before CRITICAL is reached.
 }
 
-void TabManager::ActiveTabChanged(content::WebContents* old_contents,
-                                  content::WebContents* new_contents,
-                                  int index,
-                                  int reason) {
+void TabManager::OnActiveTabChanged(content::WebContents* old_contents,
+                                    content::WebContents* new_contents) {
   // An active tab is not purged.
   // Calling GetWebContentsData() early ensures that the WebContentsData is
   // created for |new_contents|, which |stats_collector_| expects.
@@ -571,12 +569,10 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
   ResumeTabNavigationIfNeeded(new_contents);
 }
 
-void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
-                               content::WebContents* contents,
-                               int index,
+void TabManager::OnTabInserted(content::WebContents* contents,
                                bool foreground) {
   // Only interested in background tabs, as foreground tabs get taken care of by
-  // ActiveTabChanged.
+  // OnActiveTabChanged.
   if (foreground)
     return;
 
@@ -588,11 +584,24 @@ void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
       GetTimeToPurge(min_time_to_purge_, max_time_to_purge_));
 }
 
-void TabManager::TabReplacedAt(TabStripModel* tab_strip_model,
-                               content::WebContents* old_contents,
-                               content::WebContents* new_contents,
-                               int index) {
-  WebContentsData::CopyState(old_contents, new_contents);
+void TabManager::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& delta : change.deltas()) {
+      OnTabInserted(delta.insert.contents,
+                    delta.insert.contents == selection.new_contents);
+    }
+  } else if (change.type() == TabStripModelChange::kReplaced) {
+    for (const auto& delta : change.deltas()) {
+      WebContentsData::CopyState(delta.replace.old_contents,
+                                 delta.replace.new_contents);
+    }
+  }
+
+  if (selection.active_tab_changed() && !tab_strip_model->empty())
+    OnActiveTabChanged(selection.old_contents, selection.new_contents);
 }
 
 void TabManager::OnStartTracking(content::WebContents* web_contents,

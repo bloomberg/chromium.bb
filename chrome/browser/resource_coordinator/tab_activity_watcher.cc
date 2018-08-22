@@ -424,36 +424,45 @@ void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
     web_contents_data->TabWindowActivated();
 }
 
-void TabActivityWatcher::TabInsertedAt(TabStripModel* tab_strip_model,
-                                       content::WebContents* contents,
-                                       int index,
-                                       bool foreground) {
-  // Ensure the WebContentsData is created to observe this WebContents since it
-  // may represent a newly created tab.
-  WebContentsData::CreateForWebContents(contents);
-  WebContentsData::FromWebContents(contents)->TabInserted(foreground);
-}
+void TabActivityWatcher::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  switch (change.type()) {
+    case TabStripModelChange::kInserted: {
+      for (const auto& delta : change.deltas()) {
+        // Ensure the WebContentsData is created to observe this WebContents
+        // since it may represent a newly created tab.
+        WebContentsData::CreateForWebContents(delta.insert.contents);
+        WebContentsData::FromWebContents(delta.insert.contents)
+            ->TabInserted(selection.new_contents == delta.insert.contents);
+      }
+      break;
+    }
+    case TabStripModelChange::kRemoved: {
+      for (const auto& delta : change.deltas())
+        WebContentsData::FromWebContents(delta.remove.contents)->TabDetached();
+      break;
+    }
+    case TabStripModelChange::kReplaced: {
+      for (const auto& delta : change.deltas()) {
+        WebContentsData* old_web_contents_data =
+            WebContentsData::FromWebContents(delta.replace.old_contents);
+        old_web_contents_data->WasReplaced();
 
-void TabActivityWatcher::TabDetachedAt(content::WebContents* contents,
-                                       int index,
-                                       bool was_active) {
-  WebContentsData::FromWebContents(contents)->TabDetached();
-}
+        // Ensure the WebContentsData is created to observe this WebContents
+        // since it likely hasn't been inserted into a tabstrip before.
+        WebContentsData::CreateForWebContents(delta.replace.new_contents);
 
-void TabActivityWatcher::TabReplacedAt(TabStripModel* tab_strip_model,
-                                       content::WebContents* old_contents,
-                                       content::WebContents* new_contents,
-                                       int index) {
-  WebContentsData* old_web_contents_data =
-      WebContentsData::FromWebContents(old_contents);
-  old_web_contents_data->WasReplaced();
-
-  // Ensure the WebContentsData is created to observe this WebContents since it
-  // likely hasn't been inserted into a tabstrip before.
-  WebContentsData::CreateForWebContents(new_contents);
-
-  WebContentsData::FromWebContents(new_contents)
-      ->DidReplace(*old_web_contents_data);
+        WebContentsData::FromWebContents(delta.replace.new_contents)
+            ->DidReplace(*old_web_contents_data);
+      }
+      break;
+    }
+    case TabStripModelChange::kMoved:
+    case TabStripModelChange::kSelectionOnly:
+      break;
+  }
 }
 
 void TabActivityWatcher::TabPinnedStateChanged(TabStripModel* tab_strip_model,

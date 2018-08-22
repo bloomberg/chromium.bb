@@ -154,8 +154,15 @@ void TabLifecycleUnitSource::UpdateFocusedTab() {
   TabLifecycleUnit* focused_lifecycle_unit =
       focused_web_contents ? GetTabLifecycleUnit(focused_web_contents)
                            : nullptr;
-  DCHECK(!focused_web_contents || focused_lifecycle_unit);
-  UpdateFocusedTabTo(focused_lifecycle_unit);
+
+  // TODO(sangwoo.ko) We are refactoring TabStripModel API and this is
+  // workaround to avoid DCHECK failure on Chromium os. This DCHECK is supposing
+  // that OnTabInserted() is always called before OnBrowserSetLastActive is
+  // called but it's not. After replacing old API use in BrowserView,
+  // restore this to DCHECK(!focused_web_contents || focused_lifecycle_unit);
+  // else case will be handled by following OnTabInserted().
+  if (!focused_web_contents || focused_lifecycle_unit)
+    UpdateFocusedTabTo(focused_lifecycle_unit);
 }
 
 void TabLifecycleUnitSource::UpdateFocusedTabTo(
@@ -169,9 +176,8 @@ void TabLifecycleUnitSource::UpdateFocusedTabTo(
   focused_lifecycle_unit_ = new_focused_lifecycle_unit;
 }
 
-void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
+void TabLifecycleUnitSource::OnTabInserted(TabStripModel* tab_strip_model,
                                            content::WebContents* contents,
-                                           int index,
                                            bool foreground) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
   if (lifecycle_unit) {
@@ -197,9 +203,7 @@ void TabLifecycleUnitSource::TabInsertedAt(TabStripModel* tab_strip_model,
   }
 }
 
-void TabLifecycleUnitSource::TabDetachedAt(content::WebContents* contents,
-                                           int index,
-                                           bool was_active) {
+void TabLifecycleUnitSource::OnTabDetached(content::WebContents* contents) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(contents);
   DCHECK(lifecycle_unit);
   if (focused_lifecycle_unit_ == lifecycle_unit)
@@ -207,18 +211,8 @@ void TabLifecycleUnitSource::TabDetachedAt(content::WebContents* contents,
   lifecycle_unit->SetTabStripModel(nullptr);
 }
 
-void TabLifecycleUnitSource::ActiveTabChanged(
-    content::WebContents* old_contents,
-    content::WebContents* new_contents,
-    int index,
-    int reason) {
-  UpdateFocusedTab();
-}
-
-void TabLifecycleUnitSource::TabReplacedAt(TabStripModel* tab_strip_model,
-                                           content::WebContents* old_contents,
-                                           content::WebContents* new_contents,
-                                           int index) {
+void TabLifecycleUnitSource::OnTabReplaced(content::WebContents* old_contents,
+                                           content::WebContents* new_contents) {
   auto* old_contents_holder =
       TabLifecycleUnitHolder::FromWebContents(old_contents);
   DCHECK(old_contents_holder);
@@ -231,6 +225,37 @@ void TabLifecycleUnitSource::TabReplacedAt(TabStripModel* tab_strip_model,
   new_contents_holder->set_lifecycle_unit(
       old_contents_holder->TakeTabLifecycleUnit());
   new_contents_holder->lifecycle_unit()->SetWebContents(new_contents);
+}
+
+void TabLifecycleUnitSource::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  switch (change.type()) {
+    case TabStripModelChange::kInserted: {
+      for (const auto& delta : change.deltas()) {
+        OnTabInserted(tab_strip_model, delta.insert.contents,
+                      selection.new_contents == delta.insert.contents);
+      }
+      break;
+    }
+    case TabStripModelChange::kRemoved: {
+      for (const auto& delta : change.deltas())
+        OnTabDetached(delta.remove.contents);
+      break;
+    }
+    case TabStripModelChange::kReplaced: {
+      for (const auto& delta : change.deltas())
+        OnTabReplaced(delta.replace.old_contents, delta.replace.new_contents);
+      break;
+    }
+    case TabStripModelChange::kMoved:
+    case TabStripModelChange::kSelectionOnly:
+      break;
+  }
+
+  if (selection.active_tab_changed() && !tab_strip_model->empty())
+    UpdateFocusedTab();
 }
 
 void TabLifecycleUnitSource::TabChangedAt(content::WebContents* contents,

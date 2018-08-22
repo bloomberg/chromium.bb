@@ -111,22 +111,20 @@ class TabLifecycleUnitSource : public BrowserListObserver,
   // TabInsertedAt() is called.
   void UpdateFocusedTabTo(TabLifecycleUnit* new_focused_lifecycle_unit);
 
-  // TabStripModelObserver:
-  void TabInsertedAt(TabStripModel* tab_strip_model,
+  // Methods called by OnTabStripModelChanged()
+  void OnTabInserted(TabStripModel* tab_strip_model,
                      content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
-  void TabDetachedAt(content::WebContents* contents,
-                     int index,
-                     bool was_active) override;
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
+                     bool foreground);
+  void OnTabDetached(content::WebContents* contents);
+  void OnTabReplaced(content::WebContents* old_contents,
+                     content::WebContents* new_contents);
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
+
   void TabChangedAt(content::WebContents* contents,
                     int index,
                     TabChangeType change_type) override;

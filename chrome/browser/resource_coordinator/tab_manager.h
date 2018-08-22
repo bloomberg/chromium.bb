@@ -311,19 +311,16 @@ class TabManager : public LifecycleUnitObserver,
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  // Methods called by OnTabStripModelChanged()
+  void OnActiveTabChanged(content::WebContents* old_contents,
+                          content::WebContents* new_contents);
+  void OnTabInserted(content::WebContents* contents, bool foreground);
+
   // TabStripModelObserver:
-  void ActiveTabChanged(content::WebContents* old_contents,
-                        content::WebContents* new_contents,
-                        int index,
-                        int reason) override;
-  void TabInsertedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* contents,
-                     int index,
-                     bool foreground) override;
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     content::WebContents* old_contents,
-                     content::WebContents* new_contents,
-                     int index) override;
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override;
 
   // TabLoadTracker::Observer:
   void OnStartTracking(content::WebContents* web_contents,

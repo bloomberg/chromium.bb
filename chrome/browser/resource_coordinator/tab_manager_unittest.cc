@@ -632,9 +632,7 @@ TEST_F(TabManagerTest, OnDelayedTabSelected) {
   EXPECT_TRUE(tab_manager_->IsNavigationDelayedForTest(nav_handle3_.get()));
 
   // Simulate selecting tab 3, which should start loading immediately.
-  tab_manager_->ActiveTabChanged(
-      contents1_.get(), contents3_.get(), 2,
-      TabStripModelObserver::CHANGE_REASON_USER_GESTURE);
+  tab_manager_->OnActiveTabChanged(contents1_.get(), contents3_.get());
 
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents1_.get()));
   EXPECT_TRUE(tab_manager_->IsTabLoadingForTest(contents3_.get()));
