@@ -6,9 +6,7 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/gpu/context_provider.h"
-#include "content/browser/compositor/owned_mailbox.h"
 #include "content/public/test/content_browser_test.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -61,44 +59,6 @@ IN_PROC_BROWSER_TEST_F(ImageTransportFactoryBrowserTest,
   run_loop.Run();
 
   factory->GetContextFactory()->RemoveObserver(&observer);
-}
-
-class ImageTransportFactoryTearDownBrowserTest : public ContentBrowserTest {
- public:
-  void TearDown() override {
-    // Mailbox is null if the test exited early.
-    if (mailbox_.get())
-      EXPECT_TRUE(mailbox_->mailbox().IsZero());
-    ContentBrowserTest::TearDown();
-  }
-
- protected:
-  scoped_refptr<OwnedMailbox> mailbox_;
-};
-
-// Checks that upon destruction of the ImageTransportFactory, the observer is
-// called and the created resources are reset.
-IN_PROC_BROWSER_TEST_F(ImageTransportFactoryTearDownBrowserTest,
-                       LoseOnTearDown) {
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-
-  // TODO(crbug.com/844469): Delete after OOP-D is launched because OwnedMailbox
-  // isn't used.
-  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
-    return;
-
-  // This test doesn't make sense in software compositing mode.
-  if (factory->IsGpuCompositingDisabled())
-    return;
-
-  gpu::gles2::GLES2Interface* const gl = factory->GetContextFactory()
-                                             ->SharedMainThreadContextProvider()
-                                             ->ContextGL();
-  ASSERT_TRUE(gl);
-  mailbox_ = base::MakeRefCounted<OwnedMailbox>(gl);
-  EXPECT_FALSE(mailbox_->mailbox().IsZero());
-
-  // See TearDown() for the test expectation that |mailbox_| has been reset.
 }
 
 }  // anonymous namespace
