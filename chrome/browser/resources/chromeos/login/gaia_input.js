@@ -9,7 +9,6 @@ Polymer((function() {
     is: 'gaia-input',
 
     properties: {
-      label: String,
       value: {notify: true, observer: 'updateDomainVisibility_', type: String},
 
       type: {observer: 'typeChanged_', type: String},
@@ -20,9 +19,7 @@ Polymer((function() {
 
       required: Boolean,
 
-      error: String,
-
-      isInvalid: Boolean,
+      isInvalid: {type: Boolean, notify: true},
 
       pattern: String
     },
@@ -67,6 +64,6 @@ Polymer((function() {
         }
       }
       this.updateDomainVisibility_();
-    }
+    },
   };
 })());

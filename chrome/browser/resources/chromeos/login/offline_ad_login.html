@@ -62,9 +62,9 @@ TODO(rsorokin): Switch to the new UI (see https://crbug.com/811556)
             i18n-values="button-text:adUnlockButton"
             hidden="[[!unlockPasswordStep]]">
           <gaia-input id="unlockPasswordInput" type="password" slot="inputs"
-              i18n-values="error:adUnlockIncorrectPassword;
-                           label:adUnlockPassword"
               required>
+            <div slot="label" i18n-content="adUnlockPassword"></div>
+            <div slot="error" i18n-content="adUnlockIncorrectPassword"></div>
           </gaia-input>
           <gaia-button id="skipButton" on-tap="onSkipClicked_">
             $i18n{adUnlockPasswordSkip}
@@ -85,16 +85,19 @@ TODO(rsorokin): Switch to the new UI (see https://crbug.com/811556)
             i18n-values="button-text:offlineLoginNextBtn"
             hidden="[[unlockPasswordStep]]">
           <gaia-input id="machineNameInput" required slot="inputs"
-              hidden="[[!isDomainJoin]]" error="[[machineNameError]]"
-              i18n-values="label:oauthEnrollAdMachineNameInput">
+              hidden="[[!isDomainJoin]]">
+            <div slot="label" i18n-content="oauthEnrollAdMachineNameInput">
+            </div>
+            <div slot="error">[[machineNameError]]</div>
           </gaia-input>
           <gaia-input slot="inputs" id="userInput" type="email" required
-              domain="[[userRealm]]" label="[[userNameLabel]]"
-              i18n-values="error:adLoginInvalidUsername">
+              domain="[[userRealm]]">
+            <div slot="label">[[userNameLabel]]</div>
+            <div slot="error" i18n-content="adLoginInvalidUsername"></div>
           </gaia-input>
-          <gaia-input slot="inputs" id="passwordInput" type="password" required
-              i18n-values="error:adLoginInvalidPassword;
-                           label:adLoginPassword">
+          <gaia-input slot="inputs" id="passwordInput" type="password" required>
+            <div slot="label" i18n-content="adLoginPassword"></div>
+            <div slot="error" i18n-content="adLoginInvalidPassword"></div>
           </gaia-input>
           <gaia-button id="backToUnlockButton" on-tap="onBackToUnlock_"
               type="link" hidden>
@@ -113,7 +116,8 @@ TODO(rsorokin): Switch to the new UI (see https://crbug.com/811556)
         $i18n{adJoinMoreOptions}
       </div>
       <div slot="body">
-        <gaia-input id="orgUnitInput" label="$i18n{adJoinOrgUnit}" required>
+        <gaia-input id="orgUnitInput" required>
+          <div slot="label" i18n-content="adJoinOrgUnit"></div>
         </gaia-input>
       </div>
       <div slot="body">
