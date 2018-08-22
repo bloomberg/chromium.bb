@@ -295,17 +295,28 @@ ResultCode StartSandboxTarget(const base::CommandLine& sandbox_command_line,
     return RESULT_CODE_FAILED_TO_START_SANDBOX_PROCESS;
   }
 
-  // Wait for the sandboxed process to signal it is ready, checking every now
-  // and then to see if the process crashed before it could complete it's setup.
-  int exit_code = -1;
-  while (!init_done_event->TimedWait(base::TimeDelta::FromSeconds(1))) {
-    if (process_handle.WaitForExitWithTimeout(base::TimeDelta(), &exit_code)) {
+  // Wait for the sandboxed process to signal it is ready, or for the process
+  // to exit, indicating a failure.
+  std::vector<HANDLE> wait_handles{init_done_event->handle(),
+                                   process_handle.Handle()};
+  DWORD wait_result = ::WaitForMultipleObjects(
+      wait_handles.size(), wait_handles.data(), /*bWaitAll=*/false, INFINITE);
+  // WAIT_OBJECT_0 is the first handle in the vector, so if we got any other
+  // result it is a failure.
+  if (wait_result != WAIT_OBJECT_0) {
+    if (wait_result == WAIT_OBJECT_0 + 1) {
+      DWORD exit_code = -1;
+      BOOL result = ::GetExitCodeProcess(process_handle.Handle(), &exit_code);
+      DCHECK(result);
       LOG(ERROR)
           << "Sandboxed process exited before signaling it was initialized, "
              "exit code: "
           << exit_code;
-      return RESULT_CODE_FAILED_TO_START_SANDBOX_PROCESS;
+    } else {
+      PLOG(ERROR) << "::WaitForMultipleObjects returned an unexpected error, "
+                  << wait_result;
     }
+    return RESULT_CODE_FAILED_TO_START_SANDBOX_PROCESS;
   }
 
   if (hooks) {
