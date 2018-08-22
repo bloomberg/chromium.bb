@@ -6,13 +6,10 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/hover_button.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/vector_icons/vector_icons.h"
-#include "ui/base/l10n/l10n_util.h"
+#include "chrome/browser/ui/webauthn/transport_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -22,43 +19,6 @@
 #include "ui/views/vector_icons.h"
 
 namespace {
-
-// Gets the message ID for the human readable name of |transport|.
-int GetHumanReadableTransportNameMessageId(AuthenticatorTransport transport) {
-  switch (transport) {
-    case AuthenticatorTransport::kBluetoothLowEnergy:
-      return IDS_WEBAUTHN_TRANSPORT_BLE;
-    case AuthenticatorTransport::kNearFieldCommunication:
-      return IDS_WEBAUTHN_TRANSPORT_NFC;
-    case AuthenticatorTransport::kUsb:
-      return IDS_WEBAUTHN_TRANSPORT_USB;
-    case AuthenticatorTransport::kInternal:
-      return IDS_WEBAUTHN_TRANSPORT_INTERNAL;
-    case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
-      return IDS_WEBAUTHN_TRANSPORT_CABLE;
-  }
-  NOTREACHED();
-  return 0;
-}
-
-// Gets the vector icon depicting the given |transport|.
-const gfx::VectorIcon& GetTransportVectorIcon(
-    AuthenticatorTransport transport) {
-  switch (transport) {
-    case AuthenticatorTransport::kBluetoothLowEnergy:
-      return kBluetoothIcon;
-    case AuthenticatorTransport::kNearFieldCommunication:
-      return kNfcIcon;
-    case AuthenticatorTransport::kUsb:
-      return vector_icons::kUsbIcon;
-    case AuthenticatorTransport::kInternal:
-      return kFingerprintIcon;
-    case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
-      return kSmartphoneIcon;
-  }
-  NOTREACHED();
-  return kFingerprintIcon;
-}
 
 // Creates, for a given transport, the corresponding row in the transport list,
 // containing an icon, a human-readable name, and a chevron at the right:
@@ -81,8 +41,8 @@ std::unique_ptr<HoverButton> CreateTransportListItemView(
   transport_image->SetImage(gfx::CreateVectorIcon(
       GetTransportVectorIcon(transport), kTransportIconSize, icon_color));
 
-  base::string16 transport_name = l10n_util::GetStringUTF16(
-      GetHumanReadableTransportNameMessageId(transport));
+  const base::string16 transport_name =
+      GetTransportHumanReadableName(transport);
 
   auto chevron_image = std::make_unique<views::ImageView>();
   chevron_image->SetImage(
