@@ -226,10 +226,9 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       # build to have higher priority than beta build (again higher than dev).
       try:
         cros_vers = self._run.GetVersionInfo().VersionString().split('.')
-        if not isinstance(self.suite_config.priority, (int, long)):
-          # Convert CTS/GTS priority to corresponding integer value.
-          self.suite_config.priority = constants.HWTEST_PRIORITIES_MAP[
-              self.suite_config.priority]
+        # Convert priority to corresponding integer value.
+        self.suite_config.priority = constants.HWTEST_PRIORITIES_MAP[
+            self.suite_config.priority]
         # We add 1/10 of the branch version to the priority. This results in a
         # modest priority bump the older the branch is. Typically beta priority
         # would be dev + [1..4] and stable priority dev + [5..9].

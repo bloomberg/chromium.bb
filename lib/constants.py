@@ -720,8 +720,6 @@ HWTEST_TOOLCHAIN_SUITE = 'toolchain-tests'
 HWTEST_PROVISION_SUITE = 'provision'
 HWTEST_CTS_QUAL_SUITE = 'arc-cts-qual'
 HWTEST_GTS_QUAL_SUITE = 'arc-gts-qual'
-HWTEST_CTS_PRIORITY = 11
-HWTEST_GTS_PRIORITY = HWTEST_CTS_PRIORITY
 # Non-blocking informational hardware tests for Chrome, run throughout the
 # day on tip-of-trunk Chrome rather than on the daily Chrome branch.
 HWTEST_CHROME_INFORMATIONAL = 'chrome-informational'
@@ -732,6 +730,8 @@ HWTEST_CHROME_INFORMATIONAL = 'chrome-informational'
 HWTEST_TIMEOUT_EXTENSION = 10 * 60
 
 HWTEST_WEEKLY_PRIORITY = 'Weekly'
+HWTEST_CTS_PRIORITY = 'CTS'
+HWTEST_GTS_PRIORITY = HWTEST_CTS_PRIORITY
 HWTEST_DAILY_PRIORITY = 'Daily'
 HWTEST_DEFAULT_PRIORITY = 'DEFAULT'
 HWTEST_CQ_PRIORITY = 'CQ'
@@ -741,6 +741,7 @@ HWTEST_POST_BUILD_PRIORITY = 'PostBuild'
 
 # Ordered by priority (first item being lowest).
 HWTEST_VALID_PRIORITIES = [HWTEST_WEEKLY_PRIORITY,
+                           HWTEST_CTS_PRIORITY,
                            HWTEST_DAILY_PRIORITY,
                            HWTEST_POST_BUILD_PRIORITY,
                            HWTEST_DEFAULT_PRIORITY,
@@ -750,8 +751,15 @@ HWTEST_VALID_PRIORITIES = [HWTEST_WEEKLY_PRIORITY,
 
 # Creates a mapping of priorities to make easy comparsions.
 # Use the same priorities mapping as autotest/client/common_lib/priorities.py
-HWTEST_PRIORITIES_MAP = {key: 10 + 10 * index
-                         for index, key in enumerate(HWTEST_VALID_PRIORITIES)}
+HWTEST_PRIORITIES_MAP = {
+    HWTEST_WEEKLY_PRIORITY: 10,
+    HWTEST_CTS_PRIORITY: 11,
+    HWTEST_DAILY_PRIORITY: 20,
+    HWTEST_POST_BUILD_PRIORITY: 30,
+    HWTEST_DEFAULT_PRIORITY: 40,
+    HWTEST_BUILD_PRIORITY: 50,
+    HWTEST_PFQ_PRIORITY: 60,
+    HWTEST_CQ_PRIORITY: 70}
 
 # Creates a mapping of priorities for skylab hwtest tasks. In swarming,
 # lower number means high priorities. Priority lower than 48 will be special
@@ -759,6 +767,7 @@ HWTEST_PRIORITIES_MAP = {key: 10 + 10 * index
 # Use the same priorities mapping as autotest/venv/skylab_suite/swarming_lib.py
 SKYLAB_HWTEST_PRIORITIES_MAP = {
     HWTEST_WEEKLY_PRIORITY: 230,
+    HWTEST_CTS_PRIORITY: 215,
     HWTEST_DAILY_PRIORITY: 200,
     HWTEST_POST_BUILD_PRIORITY: 170,
     HWTEST_DEFAULT_PRIORITY: 140,
