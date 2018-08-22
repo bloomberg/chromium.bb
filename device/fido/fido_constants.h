@@ -27,6 +27,8 @@ enum class FidoReturnCode : uint8_t {
   // authenticator), but none of the provided credentials were recognized by
   // the authenticator.
   kUserConsentButCredentialNotRecognized,
+  // The user explicitly refused to provide consent.
+  kUserConsentDenied,
 };
 
 enum class ProtocolVersion {

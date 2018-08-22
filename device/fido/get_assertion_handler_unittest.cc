@@ -586,4 +586,54 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectTransportType) {
   EXPECT_FALSE(get_assertion_callback().was_called());
 }
 
+// If a device with transport type kInternal returns a
+// CTAP2_ERR_OPERATION_DENIED error, the request should complete with
+// FidoReturnCode::kUserConsentDenied. Pending authenticators should be
+// cancelled.
+TEST_F(FidoGetAssertionHandlerTest,
+       TestRequestWithOperationDeniedErrorPlatform) {
+  auto platform_device = MockFidoDevice::MakeCtap(
+      ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice));
+  platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  platform_device->ExpectCtap2CommandAndRespondWithError(
+      CtapRequestCommand::kAuthenticatorGetAssertion,
+      CtapDeviceResponseCode::kCtap2ErrOperationDenied,
+      base::TimeDelta::FromMicroseconds(10));
+  EXPECT_CALL(*platform_device, GetId())
+      .WillRepeatedly(testing::Return("device0"));
+  set_mock_platform_device(std::move(platform_device));
+
+  auto other_device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  other_device->ExpectCtap2CommandAndDoNotRespond(
+      CtapRequestCommand::kAuthenticatorGetAssertion);
+  EXPECT_CALL(*other_device, Cancel);
+
+  auto request_handler = CreateGetAssertionHandlerCtap();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->AddDevice(std::move(other_device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(get_assertion_callback().was_called());
+  EXPECT_EQ(FidoReturnCode::kUserConsentDenied,
+            get_assertion_callback().status());
+}
+
+// Like |TestRequestWithOperationDeniedErrorPlatform|, but with a
+// cross-platform device. The request should not complete after the
+// CTAP2_ERR_OPERATION_DENIED error (see https://crbug/875982).
+TEST_F(FidoGetAssertionHandlerTest,
+       TestRequestWithOperationDeniedErrorCrossPlatform) {
+  auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
+  device->ExpectCtap2CommandAndRespondWithError(
+      CtapRequestCommand::kAuthenticatorGetAssertion,
+      CtapDeviceResponseCode::kCtap2ErrOperationDenied);
+
+  auto request_handler = CreateGetAssertionHandlerCtap();
+  discovery()->WaitForCallToStartAndSimulateSuccess();
+  discovery()->AddDevice(std::move(device));
+
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(get_assertion_callback().was_called());
+}
+
 }  // namespace device

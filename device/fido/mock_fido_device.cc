@@ -105,7 +105,7 @@ void MockFidoDevice::StubGetId() {
   static size_t i = 0;
   EXPECT_CALL(*this, GetId())
       .WillRepeatedly(
-          testing::Return(base::StrCat({"mockdevice", std::to_string(i)})));
+          testing::Return(base::StrCat({"mockdevice", std::to_string(i++)})));
 }
 
 void MockFidoDevice::ExpectCtap2CommandAndRespondWith(
@@ -120,6 +120,14 @@ void MockFidoDevice::ExpectCtap2CommandAndRespondWith(
 
   EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_))
       .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
+}
+
+void MockFidoDevice::ExpectCtap2CommandAndRespondWithError(
+    CtapRequestCommand command,
+    CtapDeviceResponseCode response_code,
+    base::TimeDelta delay) {
+  std::array<uint8_t, 1> data{base::strict_cast<uint8_t>(response_code)};
+  return ExpectCtap2CommandAndRespondWith(std::move(command), data, delay);
 }
 
 void MockFidoDevice::ExpectRequestAndRespondWith(
