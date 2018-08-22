@@ -61,6 +61,7 @@ LEGACY_EMBEDDED_JSON_WHITELIST = [
   'ArcPolicy',
   'AutoSelectCertificateForUrls',
   'DefaultPrinterSelection',
+  'DeviceAppPack',
   'DeviceLoginScreenAutoSelectCertificateForUrls',
   'DeviceOpenNetworkConfiguration',
   'NativePrinters',
@@ -81,6 +82,7 @@ class PolicyTemplateChecker(object):
     self.options = None
     self.features = []
     self.schema_validator = SchemaValidator()
+    self.has_schema_error = False
 
   def _Error(self, message, parent_element=None, identifier=None,
              offending_snippet=None):
@@ -188,6 +190,7 @@ class PolicyTemplateChecker(object):
 
   def _CheckPolicySchema(self, policy, policy_type):
     '''Checks that the 'schema' field matches the 'type' field.'''
+    self.has_schema_error = False
     schema = self._CheckContains(policy, 'schema', dict)
     if schema:
       schema_type = self._CheckContains(schema, 'type', str)
@@ -196,12 +199,14 @@ class PolicyTemplateChecker(object):
                     policy.get('name'))
       if not self.schema_validator.ValidateSchema(schema):
         self._Error('Schema is invalid for policy %s' % policy.get('name'))
+        self.has_schema_error = True
 
     if policy.has_key('validation_schema'):
       validation_schema = policy.get('validation_schema')
       if not self.schema_validator.ValidateSchema(validation_schema):
         self._Error('Validation schema is invalid for policy %s' %
                     policy.get('name'))
+        self.has_schema_error = True
 
     # Checks that boolean policies are not negated (which makes them harder to
     # reason about).
@@ -422,6 +427,31 @@ class PolicyTemplateChecker(object):
       else:
         raise NotImplementedError('Unimplemented policy type: %s' % policy_type)
       self._CheckContains(policy, 'example_value', value_type)
+
+      # Verify that the example complies with the schema and that all properties
+      # are used at least once, so the examples are as useful as possible for
+      # admins.
+      schema = policy.get('schema')
+      example = policy.get('example_value')
+      if not self.has_schema_error:
+        if not self.schema_validator.ValidateValue(
+            schema, example, enforce_use_entire_schema=True):
+          self._Error(('Example for policy %s does not comply to the policy\'s '
+                       'schema or does not use all properties at least once.') %
+                      policy.get('name'))
+        if policy.has_key('validation_schema'):
+          validation_schema = policy['validation_schema']
+          real_example = {}
+          if policy_type == 'string':
+            real_example = json.loads(example)
+          elif policy_type == 'list':
+            real_example = [json.loads(entry) for entry in example]
+          else:
+            self._Error('Unsupported type for legacy embedded json policy.')
+          if not self.schema_validator.ValidateValue(
+              validation_schema, real_example, enforce_use_entire_schema=True):
+            self._Error(('Example for policy %s does not comply to the ' +
+                         'policy\'s validation_schema') % policy.get('name'))
 
       # Statistics.
       self.num_policies += 1

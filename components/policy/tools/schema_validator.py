@@ -62,7 +62,7 @@ class SchemaValidator(object):
   validate values against their schema by calling ValidateValue().
   Schemas with an 'id' used as $ref link by another schema have to be passed to
   ValidateSchema() before the schema with the $ref can be used in
-  ValidateSchema() or ValidateValue(schema, value).
+  ValidateSchema() or ValidateValue().
   |schemas_by_id| is used as storage for schemas with their 'id' as key and
   their schemas as value.
   """
@@ -72,6 +72,13 @@ class SchemaValidator(object):
     self.invalid_ref_ids = set()
     self.found_ref_ids = set()
     self.num_errors = 0
+    self.enforce_use_entire_schema = False
+    self.expected_properties = {}
+    self.expected_pattern_properties = {}
+    self.expected_additional_properties = {}
+    self.used_properties = {}
+    self.used_pattern_properties = {}
+    self.used_additional_properties = {}
 
   def ValidateSchema(self, schema):
     """Checks if |schema| is a valid schema and only uses valid $ref links.
@@ -310,6 +317,214 @@ class SchemaValidator(object):
       re.compile(pattern)
     except re.error:
       self._Error("Pattern is not a valid regex: %s" % pattern)
+
+  def ValidateValue(self, schema, value, enforce_use_entire_schema=False):
+    """Validates that |value| complies to |schema|.
+
+    See _ValidateValueInternal(schema, value) for a detailed description of the
+    value validation. If |enforce_use_entire_schema| is enabled, each value and
+    its sub-values have to use every property of each used schema at least once
+    and values with schema type 'array' may not be empty.
+    Args:
+      schema (dict): The JSON schema.
+      value (any): The value being validated.
+      enforce_use_entire_schema (bool): Whether each property hsa to be used at
+        least once.
+    Returns:
+      bool: Whether the value is valid or not.
+    """
+    self.enforce_use_entire_schema = enforce_use_entire_schema
+    self.expected_properties = {}
+    self.expected_pattern_properties = {}
+    self.expected_additional_properties = {}
+    self.used_properties = {}
+    self.used_pattern_properties = {}
+    self.used_additional_properties = {}
+    self.num_errors = 0
+
+    self._ValidateValueInternal(schema, value)
+
+    # Check that all properties, patternProperties and additionalProperties were
+    # used at least once for each schema.
+    if self.enforce_use_entire_schema:
+      if self.expected_properties != self.used_properties:
+        for schema_id, expected_properties \
+        in self.expected_properties.iteritems():
+          used_properties = self.used_properties.get(schema_id, set())
+          unused_properties = expected_properties.difference(used_properties)
+          if unused_properties:
+            self._Error("Unused properties: %s" % unused_properties)
+      if self.expected_pattern_properties != self.used_pattern_properties:
+        for schema_id, expected_properties \
+        in self.expected_pattern_properties.iteritems():
+          used_properties = self.used_pattern_properties.get(schema_id, set())
+          unused_properties = expected_properties.difference(used_properties)
+          if unused_properties:
+            self._Error("Unused pattern properties: %s" % unused_properties)
+      if self.expected_additional_properties != self.used_additional_properties:
+        self._Error("Unused additional properties.")
+
+    return self.num_errors == 0
+
+  def _ValidateValueInternal(self, schema, value):
+    """Validates that |value| complies to |schema|.
+
+    This method checks if the |value|'s type is correct according to type
+    expected in |schema| and calls the associated
+    _Validate{Integer,String,Array,Object}ValueInternal(schema, value).
+    Args:
+      schema (dict): The JSON schema.
+      value (any): The value being validated.
+    """
+    # Load schema from store if it has '$ref'.
+    if '$ref' in schema:
+      ref_id = schema['$ref']
+      if ref_id not in self.schemas_by_id:
+        self._Error("Unknown $ref id: %s" % ref_id)
+      schema = self.schemas_by_id[ref_id]
+
+    schema_type = schema.get('type')
+    if schema_type == 'boolean' and isinstance(value, bool):
+      pass  # Boolean doesn't need any validation.
+    elif schema_type == 'integer' and isinstance(value, int):
+      self.ValidateIntegerValue(schema, value)
+    elif schema_type == 'string' and isinstance(value, (str, unicode)):
+      self.ValidateStringValue(schema, value)
+    elif schema_type == 'array' and isinstance(value, list):
+      self.ValidateArrayValue(schema, value)
+    elif schema_type == 'object' and isinstance(value, dict):
+      self.ValidateObjectValue(schema, value)
+    else:
+      # Type mismatch or unknown type.
+      self._Error(
+          "Type mismatch or unknown (schema_type: %s; value_type: %s): %s" %
+          (schema_type, type(value), value))
+
+  def ValidateIntegerValue(self, schema, value):
+    """Validates an integer |value| according to |schema|.
+
+    If the |schema| has an enum of possible values, check whether |value| is one
+    of them.
+    If 'minimum' and/or 'maximum' are defined in |schema|, check that
+    minimum <= value <= maximum.
+    Args:
+      schema (dict): The JSON schema.
+      value (int): The value being validated.
+    """
+    if 'enum' in schema:
+      self._ValidateEnumValue(schema['enum'], value)
+    if (('minimum' in schema and value < schema['minimum']) or
+        ('maximum' in schema and value > schema['maximum'])):
+      self._Error(
+          "Value %s not in range [%s,%s]." %
+          (value, schema.get('minimum', '-inf'), schema.get('maximum', '+inf')))
+
+  def ValidateStringValue(self, schema, value):
+    """Validates a string |value| according to |schema|.
+
+    If the |schema| has an enum of possible values, check whether |value| is one
+    of them.
+    If the |schema| has a 'pattern' attribute, check whether |value| matches the
+    pattern.
+    Args:
+      schema (dict): The JSON schema.
+      value (str): The value being validated.
+    """
+    if 'enum' in schema:
+      self._ValidateEnumValue(schema['enum'], value)
+    if 'pattern' in schema:
+      pattern = schema['pattern']
+      if not re.search(pattern, value):
+        self._Error(
+            "String value '%s' does not match pattern '%s'." % (value, pattern))
+
+  def ValidateArrayValue(self, schema, child_values):
+    """Validates an array |child_values| according to |schema|.
+
+    Validates each item in |child_values| (see _ValidateValueInternal()).
+    If |enforce_use_entire_schema| is enabled, the value must contain at least
+    one element.
+    Args:
+      schema (dict): The JSON schema.
+      child_values (list): The list of children being validated.
+    """
+    child_schema = schema.get('items')
+    for child_value in child_values:
+      self._ValidateValueInternal(child_schema, child_value)
+    if self.enforce_use_entire_schema and not child_values:
+      self._Error("Array must contain at least one item.")
+
+  def ValidateObjectValue(self, schema, value):
+    """Validates an object |value| according to |schema|.
+
+    Validates each property in |value| according to its matching schema out of
+    the |schema|'s 'properties', 'patternProperties' or 'additionalProperties'
+    properties. Also adds the property to the set of |used_*properties|.
+    If the |schema| is used for the first time in this validation, the
+    |expected_*properties| are initialized to the |schema|'s properties.
+    Args:
+      schema (dict): The JSON schema.
+      value (dict): The value being validated.
+    """
+    # Get allowed properties.
+    properties = schema.get('properties', {})
+    pattern_properties = schema.get('patternProperties', {})
+    additional_properties = schema.get('additionalProperties', {})
+
+    # If the schema hasn't been used before, store sets of expected properties,
+    # patternProperties and a bool whether we expect additionalProperties to be
+    # used. Also initialize the list of used properties and patternProperties to
+    # empty sets.
+    schema_id = id(schema)
+    if schema_id not in self.expected_properties:
+      self.expected_properties[schema_id] = set(properties.iterkeys())
+      self.expected_pattern_properties[schema_id] = set(
+          pattern_properties.iterkeys())
+      self.expected_additional_properties[schema_id] = (
+          'additionalProperties' in schema)
+      self.used_properties[schema_id] = set()
+      self.used_pattern_properties[schema_id] = set()
+      self.used_additional_properties[schema_id] = False
+
+    for property_key, property_value in value.iteritems():
+      # Find property schema from either properties, patternProperties or
+      # additionalProperties.
+      property_schema = {}
+      if properties and property_key in properties:
+        property_schema = properties[property_key]
+        self.used_properties[schema_id].add(property_key)
+      elif pattern_properties:
+        matched_pattern = next(
+            (pattern for pattern in pattern_properties.iterkeys()
+             if re.search(pattern, property_key)), "")
+        property_schema = pattern_properties.get(matched_pattern, {})
+        self.used_pattern_properties[schema_id].add(matched_pattern)
+      if not property_schema and additional_properties:
+        property_schema = additional_properties
+        self.used_additional_properties[schema_id] = True
+
+      if not property_schema:
+        self._Error("Unknown property: %s" % property_key)
+      self._ValidateValueInternal(property_schema, property_value)
+
+    # Check that all 'required' properties are existing.
+    if 'required' in schema:
+      missing_required = [
+          required_key for required_key in schema['required']
+          if required_key not in value
+      ]
+      if missing_required:
+        self._Error("Required property missing: %s" % missing_required)
+
+  def _ValidateEnumValue(self, enum, value):
+    """Validates that |value| is in |enum|.
+
+    Args:
+      enum (list): The list of allowed values.
+      value (any): The value being validated.
+    """
+    if value not in enum:
+      self._Error("Unknown enum value: %s (expected one of %s)" % (value, enum))
 
   def _Error(self, message):
     """Captures an error.
