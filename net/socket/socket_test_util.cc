@@ -1174,7 +1174,13 @@ int MockTCPClientSocket::ReadIfReadyImpl(IOBuffer* buf,
   if (read_data_.mode == ASYNC) {
     DCHECK(!callback.is_null());
     read_data_.mode = SYNCHRONOUS;
-    RunCallbackAsync(std::move(callback), result);
+    pending_read_if_ready_callback_ = std::move(callback);
+    // base::Unretained() is safe here because RunCallbackAsync will wrap it
+    // with a callback associated with a weak ptr.
+    RunCallbackAsync(
+        base::BindOnce(&MockTCPClientSocket::RunReadIfReadyCallback,
+                       base::Unretained(this)),
+        result);
     return ERR_IO_PENDING;
   }
 
@@ -1193,6 +1199,13 @@ int MockTCPClientSocket::ReadIfReadyImpl(IOBuffer* buf,
     }
   }
   return result;
+}
+
+void MockTCPClientSocket::RunReadIfReadyCallback(int result) {
+  // If ReadIfReady is already canceled, do nothing.
+  if (!pending_read_if_ready_callback_)
+    return;
+  std::move(pending_read_if_ready_callback_).Run(result);
 }
 
 MockProxyClientSocket::MockProxyClientSocket(
