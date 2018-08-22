@@ -4,13 +4,13 @@
 
 #include "content/browser/compositor/owned_mailbox.h"
 
-#include "content/browser/compositor/image_transport_factory.h"
+#include "base/bind.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 
 namespace content {
 
 OwnedMailbox::OwnedMailbox(gpu::gles2::GLES2Interface* gl)
-    : gl_(gl), texture_id_(0) {
+    : gl_(gl), texture_id_(0), weak_ptr_factory_(this) {
   DCHECK(gl_);
 
   // Create the texture.
@@ -28,36 +28,23 @@ OwnedMailbox::OwnedMailbox(gpu::gles2::GLES2Interface* gl)
   gl_->ProduceTextureDirectCHROMIUM(texture_id_, mailbox_holder_.mailbox.name);
   gl_->GenSyncTokenCHROMIUM(mailbox_holder_.sync_token.GetData());
   mailbox_holder_.texture_target = GL_TEXTURE_2D;
-
-  ImageTransportFactory::GetInstance()->GetContextFactory()->AddObserver(this);
 }
 
 OwnedMailbox::~OwnedMailbox() {
-  Destroy();
+  gl_->WaitSyncTokenCHROMIUM(mailbox_holder_.sync_token.GetConstData());
+  gl_->DeleteTextures(1, &texture_id_);
 }
 
-void OwnedMailbox::UpdateSyncToken(const gpu::SyncToken& sync_token) {
+std::unique_ptr<viz::SingleReleaseCallback>
+OwnedMailbox::GetSingleReleaseCallback() {
+  return viz::SingleReleaseCallback::Create(base::BindOnce(
+      &OwnedMailbox::UpdateSyncToken, weak_ptr_factory_.GetWeakPtr()));
+}
+
+void OwnedMailbox::UpdateSyncToken(const gpu::SyncToken& sync_token,
+                                   bool is_lost) {
   if (sync_token.HasData())
     mailbox_holder_.sync_token = sync_token;
 }
-
-void OwnedMailbox::Destroy() {
-  if (texture_id_ == 0)
-    return;
-
-  ImageTransportFactory::GetInstance()->GetContextFactory()->RemoveObserver(
-      this);
-
-  gl_->WaitSyncTokenCHROMIUM(mailbox_holder_.sync_token.GetConstData());
-  gl_->DeleteTextures(1, &texture_id_);
-  texture_id_ = 0;
-  mailbox_holder_ = gpu::MailboxHolder();
-}
-
-void OwnedMailbox::OnLostSharedContext() {
-  Destroy();
-}
-
-void OwnedMailbox::OnLostVizProcess() {}
 
 }  // namespace content
