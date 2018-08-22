@@ -37,6 +37,7 @@ _image_sets = [
   "file/ic_file_download",
   "hardware/ic_desktop_windows",
   "hardware/ic_desktop_windows_white",
+  "hardware/ic_keyboard",
   "hardware/ic_keyboard_arrow_down",
   "hardware/ic_keyboard_arrow_right",
   "hardware/ic_keyboard_arrow_up",
