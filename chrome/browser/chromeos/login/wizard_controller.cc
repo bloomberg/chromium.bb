@@ -81,14 +81,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -674,7 +672,7 @@ void WizardController::ShowArcTermsOfServiceScreen() {
           arc::prefs::kArcTermsShownInOobe, true);
     }
   } else {
-    ShowAssistantOptIn();
+    ShowUserImageScreen();
   }
 }
 
@@ -790,25 +788,6 @@ void WizardController::ShowDiscoverScreen() {
   VLOG(1) << "Showing Discover screen.";
   UpdateStatusAreaVisibilityForScreen(OobeScreen::SCREEN_DISCOVER);
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_DISCOVER));
-}
-
-void WizardController::ShowAssistantOptIn() {
-#if BUILDFLAG(ENABLE_CROS_ASSISTANT)
-  if (chromeos::switches::IsAssistantEnabled()) {
-    DCHECK(!chromeos::AssistantOptInDialog::IsActive());
-    // TODO(updowndota) Refactor Assistant opt-in code to better fit into the
-    // oobe flow logic.
-    chromeos::AssistantOptInDialog::Show(
-        base::BindOnce(&WizardController::OnAssistantOptInCompleted,
-                       weak_factory_.GetWeakPtr()));
-  }
-#else
-  ShowUserImageScreen();
-#endif
-}
-
-void WizardController::OnAssistantOptInCompleted(bool accepted) {
-  ShowUserImageScreen();
 }
 
 void WizardController::SkipToLoginForTesting(
@@ -1063,10 +1042,9 @@ void WizardController::OnArcTermsOfServiceSkipped() {
     OnOobeFlowFinished();
     return;
   }
-
   // If the user finished with the PlayStore Terms of Service, advance to the
-  // assistant opt-in flow.
-  ShowAssistantOptIn();
+  // user image screen.
+  ShowUserImageScreen();
 }
 
 void WizardController::OnArcTermsOfServiceAccepted() {
@@ -1082,11 +1060,11 @@ void WizardController::OnArcTermsOfServiceAccepted() {
 
   // If the feature flag for recommend app screen is on, show it after the user
   // finished with the PlayStore Terms of Service. Otherwise, advance to the
-  // assistant opt-in flow.
+  // user image screen.
   if (ShouldShowRecommendAppsScreen()) {
     ShowRecommendAppsScreen();
   } else {
-    ShowAssistantOptIn();
+    ShowUserImageScreen();
   }
 }
 
@@ -1097,7 +1075,7 @@ void WizardController::OnArcTermsOfServiceBack() {
 }
 
 void WizardController::OnRecommendAppsSkipped() {
-  ShowAssistantOptIn();
+  ShowUserImageScreen();
 }
 
 void WizardController::OnRecommendAppsSelected() {
@@ -1105,7 +1083,7 @@ void WizardController::OnRecommendAppsSelected() {
 }
 
 void WizardController::OnAppDownloadingFinished() {
-  ShowAssistantOptIn();
+  ShowUserImageScreen();
 }
 
 void WizardController::OnVoiceInteractionValuePropSkipped() {
