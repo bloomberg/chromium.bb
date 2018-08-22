@@ -72,7 +72,12 @@ class WTF_EXPORT MutexBase {
   void lock();
   void unlock();
 #if DCHECK_IS_ON()
-  bool Locked() { return mutex_.recursion_count_ > 0; }
+  // Deprecated in favour of AssertAcquired.
+  bool Locked() const { return mutex_.recursion_count_ > 0; }
+
+  void AssertAcquired() const { DCHECK(Locked()); }
+#else
+  void AssertAcquired() const {}
 #endif
 
  public:
@@ -91,10 +96,13 @@ class LOCKABLE WTF_EXPORT Mutex : public MutexBase {
   Mutex() : MutexBase(false) {}
   bool TryLock() EXCLUSIVE_TRYLOCK_FUNCTION(true);
 
-  // lock() and unlock() are overridden solely for the purpose of annotating
-  // them. The compiler is expected to optimize the calls away.
+  // Overridden solely for the purpose of annotating them.
+  // The compiler is expected to optimize the calls away.
   void lock() EXCLUSIVE_LOCK_FUNCTION() { MutexBase::lock(); }
   void unlock() UNLOCK_FUNCTION() { MutexBase::unlock(); }
+  void AssertAcquired() const ASSERT_EXCLUSIVE_LOCK() {
+    MutexBase::AssertAcquired();
+  }
 };
 
 class WTF_EXPORT RecursiveMutex : public MutexBase {

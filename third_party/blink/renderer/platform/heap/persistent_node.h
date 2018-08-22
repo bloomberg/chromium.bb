@@ -174,7 +174,7 @@ class CrossThreadPersistentRegion final {
                               void* self,
                               TraceCallback trace) {
 #if DCHECK_IS_ON()
-    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
     PersistentNode* node =
         persistent_region_.AllocatePersistentNode(self, trace);
@@ -204,7 +204,7 @@ class CrossThreadPersistentRegion final {
   void TracePersistentNodes(Visitor* visitor) {
 // If this assert triggers, you're tracing without being in a LockScope.
 #if DCHECK_IS_ON()
-    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+    ProcessHeap::CrossThreadPersistentMutex().AssertAcquired();
 #endif
     persistent_region_.TracePersistentNodes(
         visitor, CrossThreadPersistentRegion::ShouldTracePersistentNode);

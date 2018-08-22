@@ -100,7 +100,7 @@ class DatabaseVersionCache {
   // lifetime of the process.
   DatabaseGuid RegisterOriginAndName(const String& origin, const String& name)
       EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
-    CheckLocked();
+    mutex_.AssertAcquired();
     String string_id = origin + "/" + name;
     DCHECK(string_id.IsSafeToSendToAnotherThread());
     DatabaseGuid guid = origin_name_to_guid_.at(string_id);
@@ -116,7 +116,7 @@ class DatabaseVersionCache {
   // RegisterOriginAndName). If all uses are released, the cached version will
   // be erased from memory.
   void ReleaseGuid(DatabaseGuid guid) EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
-    CheckLocked();
+    mutex_.AssertAcquired();
     DCHECK(count_.Contains(guid));
     if (count_.erase(guid))
       guid_to_version_.erase(guid);
@@ -124,7 +124,7 @@ class DatabaseVersionCache {
 
   // The null string is returned only if the cached version has not been set.
   String GetVersion(DatabaseGuid guid) const EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
-    CheckLocked();
+    mutex_.AssertAcquired();
     return guid_to_version_.at(guid).IsolatedCopy();
   }
 
@@ -132,19 +132,13 @@ class DatabaseVersionCache {
   // The null string is treated as the empty string.
   void SetVersion(DatabaseGuid guid, const String& new_version)
       EXCLUSIVE_LOCKS_REQUIRED(mutex_) {
-    CheckLocked();
+    mutex_.AssertAcquired();
     guid_to_version_.Set(guid, new_version.IsNull()
                                    ? g_empty_string
                                    : new_version.IsolatedCopy());
   }
 
  private:
-  void CheckLocked() const ASSERT_EXCLUSIVE_LOCK(mutex_) {
-#if DCHECK_IS_ON()
-    DCHECK(mutex_.Locked());
-#endif
-  }
-
   mutable Mutex mutex_;
   HashMap<String, DatabaseGuid> origin_name_to_guid_ GUARDED_BY(mutex_);
   HashCountedSet<DatabaseGuid> count_ GUARDED_BY(mutex_);
@@ -375,9 +369,7 @@ void Database::InProgressTransactionCompleted() {
 }
 
 void Database::ScheduleTransaction() {
-#if DCHECK_IS_ON()
-  DCHECK(transaction_in_progress_mutex_.Locked());  // Locked by caller.
-#endif                                              // DCHECK_IS_ON()
+  transaction_in_progress_mutex_.AssertAcquired();
   SQLTransactionBackend* transaction = nullptr;
 
   if (is_transaction_queue_enabled_ && !transaction_queue_.IsEmpty())
