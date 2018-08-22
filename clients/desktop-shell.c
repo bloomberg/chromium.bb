@@ -756,7 +756,10 @@ background_draw(struct widget *widget, void *data)
 
 	cr = widget_cairo_create(background->widget);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
-	cairo_set_source_rgba(cr, 0.0, 0.0, 0.2, 1.0);
+	if (background->color == 0)
+		cairo_set_source_rgba(cr, 0.0, 0.0, 0.2, 1.0);
+	else
+		set_hex_color(cr, background->color);
 	cairo_paint(cr);
 
 	widget_get_allocation(widget, &allocation);
@@ -802,8 +805,6 @@ background_draw(struct widget *widget, void *data)
 		cairo_set_source(cr, pattern);
 		cairo_pattern_destroy (pattern);
 		cairo_surface_destroy(image);
-	} else {
-		set_hex_color(cr, background->color);
 	}
 
 	cairo_paint(cr);
