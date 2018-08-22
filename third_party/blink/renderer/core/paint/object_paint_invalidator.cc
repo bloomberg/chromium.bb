@@ -141,13 +141,13 @@ void ObjectPaintInvalidator::
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   SlowSetPaintingLayerNeedsRepaint();
   // This method may be used to invalidate paint of objects changing paint
-  // invalidation container. Clear previous visual rects on the original paint
-  // invalidation container to avoid under-invalidation if the visual rect on
-  // the new paint invalidation container happens to be the same as the old one.
+  // invalidation container. Visual rects don't have to be cleared, since they
+  // are relative to the transform ancestor.
+  // TODO(vmpstr): After paint containment isolation is in place, we might not
+  // have to recurse past the paint containment boundary.
   TraverseNonCompositingDescendantsInPaintOrder(
       object_, [](const LayoutObject& object) {
         SetPaintingLayerNeedsRepaintDuringTraverse(object);
-        object.GetMutableForPainting().ClearPreviousVisualRects();
       });
 }
 
