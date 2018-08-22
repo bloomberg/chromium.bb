@@ -71,7 +71,9 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture) {
     }
   }
 
-  CommandHandler.onCommand(commandData.command);
+  var command = commandData.command;
+  if (command)
+    CommandHandler.onCommand(command);
 };
 
 /** @private {boolean} */
@@ -82,6 +84,12 @@ GestureCommandHandler.init_ = function() {
   chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
       GestureCommandHandler.onAccessibilityGesture_);
 };
+
+/**
+ * The global granularity for gestures.
+ * @type {GestureGranularity}
+ */
+GestureCommandHandler.granularity = GestureGranularity.LINE;
 
 GestureCommandHandler.init_();
 
