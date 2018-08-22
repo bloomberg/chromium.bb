@@ -27,11 +27,6 @@ class TargetHandler : public DomainHandler, public Target::Backend {
                         std::string* out_target_id) override;
   Response CloseTarget(const std::string& target_id,
                        bool* out_success) override;
-  Response CreateBrowserContext(std::string* out_context_id) override;
-  Response DisposeBrowserContext(const std::string& context_id) override;
-  Response GetBrowserContexts(
-      std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids)
-      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);

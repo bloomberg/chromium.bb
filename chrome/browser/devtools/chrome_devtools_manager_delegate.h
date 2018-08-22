@@ -58,6 +58,12 @@ class ChromeDevToolsManagerDelegate : public content::DevToolsManagerDelegate {
                      NotHandledCallback callback) override;
   std::string GetTargetType(content::WebContents* web_contents) override;
   std::string GetTargetTitle(content::WebContents* web_contents) override;
+
+  std::vector<content::BrowserContext*> GetBrowserContexts() override;
+  content::BrowserContext* CreateBrowserContext() override;
+  void DisposeBrowserContext(content::BrowserContext*,
+                             DisposeCallback callback) override;
+
   bool AllowInspectingWebContents(content::WebContents* web_contents) override;
   void ClientAttached(content::DevToolsAgentHost* agent_host,
                       content::DevToolsAgentHostClient* client) override;

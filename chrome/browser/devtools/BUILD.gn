@@ -145,6 +145,8 @@ static_library("devtools") {
       "device/usb/usb_device_provider.h",
       "devtools_auto_opener.cc",
       "devtools_auto_opener.h",
+      "devtools_browser_context_manager.cc",
+      "devtools_browser_context_manager.h",
       "devtools_contents_resizing_strategy.cc",
       "devtools_contents_resizing_strategy.h",
       "devtools_embedder_message_dispatcher.cc",

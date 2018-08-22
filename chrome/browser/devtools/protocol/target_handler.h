@@ -28,7 +28,6 @@ class TargetHandler : public protocol::Target::Backend {
   protocol::Response SetRemoteLocations(
       std::unique_ptr<protocol::Array<protocol::Target::RemoteLocation>>
           in_locations) override;
-  protocol::Response CreateBrowserContext(std::string* out_context_id) override;
   protocol::Response CreateTarget(
       const std::string& url,
       protocol::Maybe<int> width,
@@ -36,12 +35,6 @@ class TargetHandler : public protocol::Target::Backend {
       protocol::Maybe<std::string> browser_context_id,
       protocol::Maybe<bool> enable_begin_frame_control,
       std::string* out_target_id) override;
-  protocol::Response GetBrowserContexts(
-      std::unique_ptr<protocol::Array<protocol::String>>* browser_context_ids)
-      override;
-  void DisposeBrowserContext(
-      const std::string& context_id,
-      std::unique_ptr<DisposeBrowserContextCallback> callback) override;
 
  private:
   RemoteLocations remote_locations_;

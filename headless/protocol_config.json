@@ -12,7 +12,7 @@
         "options": [
             {
                 "domain": "Target",
-                "include": ["createTarget", "closeTarget", "getBrowserContexts", "createBrowserContext", "disposeBrowserContext"],
+                "include": ["createTarget", "closeTarget"],
                 "include_events": []
             },
             {
