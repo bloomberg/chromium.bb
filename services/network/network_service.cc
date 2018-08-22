@@ -6,7 +6,6 @@
 
 #include <map>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -32,7 +31,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/crl_set_distributor.h"
-#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_context.h"
 #include "services/network/network_usage_accumulator.h"
@@ -432,16 +430,6 @@ void NetworkService::SetCryptConfig(mojom::CryptConfigPtr crypt_config) {
 #endif
 }
 #endif
-
-void NetworkService::AddCorbExceptionForPlugin(uint32_t process_id) {
-  DCHECK_NE(mojom::kBrowserProcessId, process_id);
-  CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
-}
-
-void NetworkService::RemoveCorbExceptionForPlugin(uint32_t process_id) {
-  DCHECK_NE(mojom::kBrowserProcessId, process_id);
-  CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
-}
 
 net::HttpAuthHandlerFactory* NetworkService::GetHttpAuthHandlerFactory() {
   if (!http_auth_handler_factory_) {

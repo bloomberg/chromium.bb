@@ -194,7 +194,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
-#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -1156,54 +1155,6 @@ void GetNetworkChangeManager(
   GetNetworkService()->GetNetworkChangeManager(std::move(request));
 }
 
-void AddCorbExceptionForPluginOnUIThread(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  RenderProcessHost* process = RenderProcessHostImpl::FromID(process_id);
-  process->CleanupCorbExceptionForPluginUponDestruction();
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    GetNetworkService()->AddCorbExceptionForPlugin(process_id);
-}
-
-// This is the entry point (i.e. this is called on the IO thread *before*
-// we post a task for AddCorbExceptionForPluginOnUIThread).
-void AddCorbExceptionForPluginOnIOThread(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Without NetworkService the exception list is stored directly in the browser
-  // process.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    network::CrossOriginReadBlocking::AddExceptionForPlugin(process_id);
-
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&AddCorbExceptionForPluginOnUIThread, process_id));
-}
-
-void RemoveCorbExceptionForPluginOnIOThread(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Without NetworkService the exception list is stored directly in the browser
-  // process.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    network::CrossOriginReadBlocking::RemoveExceptionForPlugin(process_id);
-}
-
-// This is the entry point (i.e. this is called on the UI thread *before*
-// we post a task for RemoveCorbExceptionForPluginOnIOThread).
-void RemoveCorbExceptionForPluginOnUIThread(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    GetNetworkService()->RemoveCorbExceptionForPlugin(process_id);
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&RemoveCorbExceptionForPluginOnIOThread, process_id));
-  }
-}
-
 }  // namespace
 
 // Held by the RPH and used to control an (unowned) ConnectionFilterImpl from
@@ -1587,9 +1538,6 @@ RenderProcessHostImpl::~RenderProcessHostImpl() {
   }
 
   GetMemoryDumpProvider().RemoveHost(this);
-
-  if (cleanup_corb_exception_for_plugin_upon_destruction_)
-    RemoveCorbExceptionForPluginOnUIThread(GetID());
 }
 
 bool RenderProcessHostImpl::Init() {
@@ -1955,17 +1903,6 @@ void RenderProcessHostImpl::DelayProcessShutdownForUnload(
           &RenderProcessHostImpl::CancelProcessShutdownDelayForUnload,
           weak_factory_.GetWeakPtr()),
       timeout);
-}
-
-// static
-void RenderProcessHostImpl::AddCorbExceptionForPlugin(int process_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  AddCorbExceptionForPluginOnIOThread(process_id);
-}
-
-void RenderProcessHostImpl::CleanupCorbExceptionForPluginUponDestruction() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  cleanup_corb_exception_for_plugin_upon_destruction_ = true;
 }
 
 void RenderProcessHostImpl::RegisterMojoInterfaces() {

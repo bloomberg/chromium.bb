@@ -436,8 +436,6 @@ void MockRenderProcessHost::BindCacheStorage(
   cache_storage_request_ = std::move(request);
 }
 
-void MockRenderProcessHost::CleanupCorbExceptionForPluginUponDestruction() {}
-
 void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }

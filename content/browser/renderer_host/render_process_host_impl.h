@@ -228,7 +228,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void LockToOrigin(const GURL& lock_url) override;
   void BindCacheStorage(blink::mojom::CacheStorageRequest request,
                         const url::Origin& origin) override;
-  void CleanupCorbExceptionForPluginUponDestruction() override;
 
   mojom::RouteProvider* GetRemoteRouteProvider();
 
@@ -424,11 +423,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   FileSystemManagerImpl* GetFileSystemManagerForTesting() {
     return file_system_manager_impl_.get();
   }
-
-  // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
-  // exception will be removed when the corresponding RenderProcessHostImpl is
-  // destroyed (see |cleanup_corb_exception_for_plugin_upon_destruction_|).
-  static void AddCorbExceptionForPlugin(int process_id);
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
@@ -861,8 +855,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   FrameSinkProviderImpl frame_sink_provider_;
   std::unique_ptr<mojo::Binding<viz::mojom::CompositingModeReporter>>
       compositing_mode_reporter_;
-
-  bool cleanup_corb_exception_for_plugin_upon_destruction_ = false;
 
   base::WeakPtrFactory<RenderProcessHostImpl> weak_factory_;
 
