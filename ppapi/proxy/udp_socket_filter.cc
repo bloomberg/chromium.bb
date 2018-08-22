@@ -226,11 +226,11 @@ int32_t UDPSocketFilter::RecvQueue::RequestData(
     if (static_cast<size_t>(num_bytes) < front.data.size())
       return PP_ERROR_MESSAGE_TOO_BIG;
 
+    int32_t result = static_cast<int32_t>(front.data.size());
     std::unique_ptr<std::string> data_to_pass(new std::string);
     data_to_pass->swap(front.data);
-    int32_t result =
-        SetRecvFromOutput(pp_instance_, std::move(data_to_pass), front.addr,
-                          buffer_out, num_bytes, addr_out, front.result);
+    SetRecvFromOutput(pp_instance_, std::move(data_to_pass), front.addr,
+                      buffer_out, num_bytes, addr_out, PP_OK);
     last_recvfrom_addr_ = front.addr;
     recv_buffers_.pop();
     slot_available_callback_.Run();

@@ -104,14 +104,6 @@ void TestUDPSocket::RunTests(const std::string& filter) {
   RUN_CALLBACK_TEST(TestUDPSocket, SetOption, filter);
   RUN_CALLBACK_TEST(TestUDPSocket, ParallelSend, filter);
   RUN_CALLBACK_TEST(TestUDPSocket, Multicast, filter);
-
-  // Failure tests. Generally can only be run individually, since they require
-  // specific socket failures to be injected into the UDP code.
-  RUN_CALLBACK_TEST(TestUDPSocket, BindFails, filter);
-  RUN_CALLBACK_TEST(TestUDPSocket, BroadcastBeforeBindFails, filter);
-  RUN_CALLBACK_TEST(TestUDPSocket, BroadcastAfterBindFails, filter);
-  RUN_CALLBACK_TEST(TestUDPSocket, SendToFails, filter);
-  RUN_CALLBACK_TEST(TestUDPSocket, ReadFails, filter);
 }
 
 std::string TestUDPSocket::GetLocalAddress(pp::NetAddress* address) {
@@ -522,95 +514,5 @@ std::string TestUDPSocket::TestMulticast() {
   server1.Close();
   server2.Close();
 
-  PASS();
-}
-
-std::string TestUDPSocket::TestBindFails() {
-  pp::UDPSocket socket(instance_);
-
-  PP_NetAddress_IPv4 any_ipv4_address = {0, {0, 0, 0, 0}};
-  pp::NetAddress any_address(instance_, any_ipv4_address);
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(socket.Bind(any_address, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
-  PASS();
-}
-
-std::string TestUDPSocket::TestBroadcastBeforeBindFails() {
-  pp::UDPSocket socket(instance_);
-  ASSERT_SUBTEST_SUCCESS(SetBroadcastOptions(&socket));
-
-  PP_NetAddress_IPv4 any_ipv4_address = {0, {0, 0, 0, 0}};
-  pp::NetAddress any_address(instance_, any_ipv4_address);
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(socket.Bind(any_address, callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
-  PASS();
-}
-
-std::string TestUDPSocket::TestBroadcastAfterBindFails() {
-  pp::UDPSocket socket(instance_);
-  PP_NetAddress_IPv4 any_ipv4_address = {0, {0, 0, 0, 0}};
-  pp::NetAddress any_address(instance_, any_ipv4_address);
-  ASSERT_SUBTEST_SUCCESS(BindUDPSocket(&socket, any_address));
-
-  TestCompletionCallback callback(instance_->pp_instance(), callback_type());
-  callback.WaitForResult(socket.SetOption(
-      PP_UDPSOCKET_OPTION_BROADCAST, pp::Var(true), callback.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback);
-  ASSERT_EQ(PP_ERROR_FAILED, callback.result());
-
-  // Setting broadcast again should also fail.
-  TestCompletionCallback callback_2(instance_->pp_instance(), callback_type());
-  callback_2.WaitForResult(socket.SetOption(
-      PP_UDPSOCKET_OPTION_BROADCAST, pp::Var(true), callback_2.GetCallback()));
-  CHECK_CALLBACK_BEHAVIOR(callback_2);
-  ASSERT_EQ(PP_ERROR_FAILED, callback_2.result());
-  PASS();
-}
-
-std::string TestUDPSocket::TestSendToFails() {
-  pp::UDPSocket socket(instance_);
-  PP_NetAddress_IPv4 any_ipv4_address = {0, {0, 0, 0, 0}};
-  pp::NetAddress any_address(instance_, any_ipv4_address);
-  ASSERT_SUBTEST_SUCCESS(BindUDPSocket(&socket, any_address));
-
-  std::vector<char> buffer(1);
-  buffer[0] = 1;
-  PP_NetAddress_IPv4 target_ipv4_address = {1024, {127, 0, 0, 1}};
-  pp::NetAddress target_address(instance_, target_ipv4_address);
-  // All writes should fail.
-  for (int i = 0; i < 10; ++i) {
-    TestCompletionCallbackWithOutput<pp::NetAddress> callback(
-        instance_->pp_instance(), callback_type());
-    callback.WaitForResult(
-        socket.SendTo(buffer.data(), static_cast<int32_t>(buffer.size()),
-                      target_address, callback.GetCallback()));
-    CHECK_CALLBACK_BEHAVIOR(callback);
-    ASSERT_EQ(PP_ERROR_FAILED, callback.result());
-  }
-  PASS();
-}
-
-std::string TestUDPSocket::TestReadFails() {
-  pp::UDPSocket socket(instance_);
-  PP_NetAddress_IPv4 any_ipv4_address = {0, {0, 0, 0, 0}};
-  pp::NetAddress any_address(instance_, any_ipv4_address);
-  ASSERT_SUBTEST_SUCCESS(BindUDPSocket(&socket, any_address));
-
-  std::vector<char> buffer(1);
-  // All reads should fail. Larger number of reads increases the chance that at
-  // least one read will be synchronous.
-  for (int i = 0; i < 200; ++i) {
-    TestCompletionCallbackWithOutput<pp::NetAddress> callback(
-        instance_->pp_instance(), callback_type());
-    callback.WaitForResult(socket.RecvFrom(&buffer[0],
-                                           static_cast<int32_t>(buffer.size()),
-                                           callback.GetCallback()));
-    CHECK_CALLBACK_BEHAVIOR(callback);
-    ASSERT_EQ(PP_ERROR_FAILED, callback.result());
-  }
   PASS();
 }

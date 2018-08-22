@@ -54,7 +54,7 @@ void ResourceMessageFilter::OnFilterAdded(ResourceHost* resource_host) {
 }
 
 void ResourceMessageFilter::OnFilterDestroyed() {
-  resource_host_ = nullptr;
+  resource_host_ = NULL;
 }
 
 bool ResourceMessageFilter::HandleMessage(const IPC::Message& msg,
