@@ -27,8 +27,8 @@ WebAppProvider::WebAppProvider(Profile* profile)
           std::make_unique<WebAppPolicyManager>(profile->GetPrefs(),
                                                 pending_app_manager_.get())) {
   web_app::ScanForExternalWebApps(
-      base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
-                     weak_ptr_factory_.GetWeakPtr()));
+      profile, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 WebAppProvider::~WebAppProvider() = default;
