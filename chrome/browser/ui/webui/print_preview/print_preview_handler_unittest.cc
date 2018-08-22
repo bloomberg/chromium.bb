@@ -694,7 +694,7 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   AssertWebUIEventFired(*web_ui()->call_data().back(), "page-layout-ready");
 
   // 1 page document. Modifiable so send default 100 scaling.
-  handler()->SendPageCountReady(1, preview_request_id, 100);
+  handler()->SendPageCountReady(1, 100, preview_request_id);
   AssertWebUIEventFired(*web_ui()->call_data().back(), "page-count-ready");
 
   // Page at index 0 is ready.
@@ -714,7 +714,7 @@ TEST_F(PrintPreviewHandlerTest, SendPreviewUpdates) {
   handler()->SendPageLayoutReady(base::DictionaryValue(), false,
                                  preview_request_id);
   EXPECT_EQ(message_count, web_ui()->call_data().size());
-  handler()->SendPageCountReady(1, 0, -1);
+  handler()->SendPageCountReady(1, -1, 0);
   EXPECT_EQ(message_count, web_ui()->call_data().size());
   handler()->OnPrintPreviewReady(0, 0);
   EXPECT_EQ(message_count, web_ui()->call_data().size());
