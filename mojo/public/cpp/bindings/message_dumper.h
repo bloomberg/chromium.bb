@@ -35,7 +35,7 @@ class MessageDumper : public mojo::MessageReceiver {
   static const base::FilePath& GetMessageDumpDirectory();
 
  private:
-  uint32_t identifier_;
+  uint64_t identifier_;
 };
 
 }  // namespace mojo

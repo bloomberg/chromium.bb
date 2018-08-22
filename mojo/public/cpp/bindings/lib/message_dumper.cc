@@ -22,7 +22,7 @@ base::FilePath& DumpDirectory() {
   return *dump_directory;
 }
 
-void WriteMessage(uint32_t identifier,
+void WriteMessage(uint64_t identifier,
                   const mojo::MessageDumper::MessageEntry& entry) {
   static uint64_t num = 0;
 
