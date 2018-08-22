@@ -387,13 +387,8 @@ const base::Feature kModalPermissionPrompts{"ModalPermissionPrompts",
 // Center for displaying the toasts. The feature is hardcoded to enabled for
 // Chrome OS.
 #if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS) && !defined(OS_CHROMEOS)
-#if defined(OS_MACOSX) || defined(OS_ANDROID) || defined(OS_LINUX)
 const base::Feature kNativeNotifications{"NativeNotifications",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#else
-const base::Feature kNativeNotifications{"NativeNotifications",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 #endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
 const base::Feature kNetworkPrediction{"NetworkPrediction",

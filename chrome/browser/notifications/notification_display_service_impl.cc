@@ -46,15 +46,11 @@ namespace {
 //   * Android
 //     Always uses native notifications.
 //
-//   * Mac OS X, Linux
+//   * Mac OS X, Linux, Windows 10 RS1+
 //     Uses native notifications by default, but can fall back to the message
 //     center if base::kNativeNotifications is disabled or initialization fails.
 //
-//   * Windows 10 RS1+:
-//     Uses the message center by default, but can use native notifications if
-//     base::kNativeNotifications is enabled or initialization fails.
-//
-//   * Chrome OS:
+//   * Chrome OS
 //     Always uses the message center, either through the message center
 //     notification platform bridge when base::kNativeNotifications is disabled,
 //     which means the message center runs in-process, or through the Chrome OS
