@@ -131,9 +131,9 @@ NSString* GetTextFieldForID(int categoryId) {
 // Helper to open the settings page for Autofill profiles.
 - (void)openAutofillProfilesSettings {
   [ChromeEarlGreyUI openSettingsMenu];
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
-                                          l10n_util::GetNSString(
-                                              IDS_AUTOFILL_ADDRESSES))]
+  id<GREYMatcher> addressesButton =
+      ButtonWithAccessibilityLabelId(IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE);
+  [[EarlGrey selectElementWithMatcher:addressesButton]
       performAction:grey_tap()];
 }
 

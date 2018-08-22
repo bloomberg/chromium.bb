@@ -448,27 +448,39 @@
   <message name="IDS_AUTOFILL_ADDRESSES" desc="Title for the list of addresses that chrome has saved for use in filling in forms.">
     Addresses
   </message>
+  <message name="IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_SUBLABEL" desc="Sublabel for a toggle that allows users to control whether addresses should be saved and forms should be autofilled with them.">
+    Includes information like phone numbers, email addresses, and shipping addresses
+  </message>
+  <message name="IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_SUBLABEL" desc="Sublabel for a toggle that allows users to control whether credit cards should be saved and forms should be autofilled with it.">
+    Makes it faster to pay for things online
+  </message>
   <if expr="not is_ios">
     <then>
-      <message name="IDS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms. Sentence-Cased.">
+      <message name="IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE" desc="Title for the Autofill settings page that allows user to manage their list of saved addresses and Autofill preferences for addresses. Sentence-Cased.">
+        Addresses and more
+      </message>
+      <message name="IDS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms. Also used as the title for the Autofill settings page that allows user to manage their list of saved payment methods and Autofill preferences for payment methods. Sentence-Cased.">
         Payment methods
       </message>
       <message name="IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether addresses should be saved and forms should be autofilled with them. Sentence-Cased.">
-        Save and fill addresses
+        Remember addresses and other information
       </message>
       <message name="IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether credit cards should be saved and forms should be autofilled with it. Sentence-Cased.">
-        Save and fill payment methods
+        Remember payment methods
       </message>
     </then>
     <else>
-      <message name="IDS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms. Title-Cased.">
+      <message name="IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE" desc="Title for the Autofill settings page that allows user to manage their list of saved addresses and Autofill preferences for addresses. Title-Cased.">
+        Addresses and More
+      </message>
+      <message name="IDS_AUTOFILL_PAYMENT_METHODS" desc="Title for the list of saved payment methods that can be used to fill in forms. Also used as the title for the Autofill settings page that allows user to manage their list of saved payment methods and Autofill preferences for payment methods. Title-Cased.">
         Payment Methods
       </message>
       <message name="IDS_AUTOFILL_ENABLE_PROFILES_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether addresses should be saved and forms should be autofilled with them. Title-Cased.">
-        Save and Fill Addresses
+        Remember Addresses and Other Information
       </message>
       <message name="IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL" desc="Label for a toggle that allows users to control whether credit cards should be saved and forms should be autofilled with it. Title-Cased.">
-        Save and Fill Payment Methods
+        Remember Payment Methods
       </message>
     </else>
   </if>

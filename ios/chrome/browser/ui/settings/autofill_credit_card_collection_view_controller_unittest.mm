@@ -65,15 +65,18 @@ class AutofillCreditCardCollectionViewControllerTest
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
-// Default test case of no addresses or credit cards.
+// Default test case of no credit cards.
 TEST_F(AutofillCreditCardCollectionViewControllerTest, TestInitialization) {
   CreateController();
   CheckController();
 
-  // Expect one header section.
-  EXPECT_EQ(1, NumberOfSections());
+  // Expect one header section and one subtitle section.
+  EXPECT_EQ(2, NumberOfSections());
   // Expect header section to contain one row (the credit card Autofill toggle).
   EXPECT_EQ(1, NumberOfItemsInSection(0));
+  // Expect subtitle section to contain one row (the credit card Autofill toggle
+  // subtitle).
+  EXPECT_EQ(1, NumberOfItemsInSection(1));
 }
 
 // Adding a single credit card results in a credit card section.
@@ -82,10 +85,10 @@ TEST_F(AutofillCreditCardCollectionViewControllerTest, TestOneCreditCard) {
   CreateController();
   CheckController();
 
-  // Expect two sections (header and credit cards section).
-  EXPECT_EQ(2, NumberOfSections());
-  // Expect address section to contain one row (the credit card itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  // Expect three sections (header, subtitle, and credit card section).
+  EXPECT_EQ(3, NumberOfSections());
+  // Expect credit card section to contain one row (the credit card itself).
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 }
 
 // Deleting the only credit card results in item deletion and section deletion.
@@ -95,10 +98,10 @@ TEST_F(AutofillCreditCardCollectionViewControllerTest,
   CreateController();
   CheckController();
 
-  // Expect two sections (header and credit cards section).
-  EXPECT_EQ(2, NumberOfSections());
-  // Expect address section to contain one row (the credit card itself).
-  EXPECT_EQ(1, NumberOfItemsInSection(1));
+  // Expect three sections (header, subtitle, and credit card section).
+  EXPECT_EQ(3, NumberOfSections());
+  // Expect credit card section to contain one row (the credit card itself).
+  EXPECT_EQ(1, NumberOfItemsInSection(2));
 
   AutofillCreditCardCollectionViewController* view_controller =
       base::mac::ObjCCastStrict<AutofillCreditCardCollectionViewController>(
@@ -126,14 +129,14 @@ TEST_F(AutofillCreditCardCollectionViewControllerTest,
 
   // This call cause a modification of the PersonalDataManager, so wait until
   // the asynchronous task complete in addition to waiting for the UI update.
-  delete_item_with_wait(1, 0);
+  delete_item_with_wait(2, 0);
   observer.Wait();  // Wait for completion of the asynchronous operation.
 
   // Exit 'edit' mode.
   [view_controller editButtonPressed];
 
-  // Expect one header section only.
-  EXPECT_EQ(1, NumberOfSections());
+  // Expect credit card section to have been removed.
+  EXPECT_EQ(2, NumberOfSections());
 }
 
 }  // namespace
