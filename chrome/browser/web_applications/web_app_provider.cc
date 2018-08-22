@@ -39,6 +39,13 @@ void WebAppProvider::RegisterProfilePrefs(
   WebAppPolicyManager::RegisterProfilePrefs(registry);
 }
 
+void WebAppProvider::Shutdown() {
+  // PendingAppManager is used by WebAppPolicyManager and therefore should be
+  // deleted after it.
+  web_app_policy_manager_.reset();
+  pending_app_manager_.reset();
+}
+
 void WebAppProvider::OnScanForExternalWebApps(
     std::vector<web_app::PendingAppManager::AppInfo> app_infos) {
   pending_app_manager_->InstallApps(std::move(app_infos), base::DoNothing());
