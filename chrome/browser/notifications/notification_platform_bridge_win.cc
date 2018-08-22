@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/hash.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -701,7 +702,10 @@ class NotificationPlatformBridgeWinImpl
     HRESULT error_code;
     HRESULT hr = arguments->get_ErrorCode(&error_code);
     if (SUCCEEDED(hr)) {
+      // Error code successfully obtained from the Action Center.
       LogOnFailedStatus(OnFailedStatus::SUCCESS);
+      base::UmaHistogramSparse("Notifications.Windows.DisplayFailure",
+                               error_code);
       DLOG(ERROR) << "Failed to raise the toast notification, error code: "
                   << std::hex << error_code;
     } else {
