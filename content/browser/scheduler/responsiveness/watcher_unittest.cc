@@ -8,6 +8,7 @@
 #include "base/pending_task.h"
 #include "base/run_loop.h"
 #include "base/synchronization/lock.h"
+#include "build/build_config.h"
 #include "content/browser/scheduler/responsiveness/calculator.h"
 #include "content/browser/scheduler/responsiveness/native_event_observer.h"
 #include "content/public/browser/browser_thread.h"
@@ -197,7 +198,13 @@ class ResponsivenessWatcherRealIOThreadTest : public testing::Test {
   scoped_refptr<FakeWatcher> watcher_;
 };
 
-TEST_F(ResponsivenessWatcherRealIOThreadTest, MessageLoopObserver) {
+// Flaky on Linux TSAN. https://crbug.com/876561
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_MessageLoopObserver DISABLED_MessageLoopObserver
+#else
+#define MAYBE_MessageLoopObserver MessageLoopObserver
+#endif
+TEST_F(ResponsivenessWatcherRealIOThreadTest, MAYBE_MessageLoopObserver) {
   // Post a do-nothing task onto the UI thread.
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                    base::BindOnce([]() {}));
