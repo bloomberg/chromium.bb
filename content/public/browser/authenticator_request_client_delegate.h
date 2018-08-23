@@ -94,9 +94,20 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
   void OnTransportAvailabilityEnumerated(
       device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
+  // If true, the request handler will defer dispatch of its request onto the
+  // given authenticator to the embedder. The embedder needs to call
+  // |StartAuthenticatorRequest| when it wants to initiate request dispatch.
+  //
+  // This method is invoked before |FidoAuthenticatorAdded|, and may be
+  // invoked multiple times for the same authenticator. Depending on the
+  // result, the request handler might decide not to make the authenticator
+  // available, in which case it never gets passed to
+  // |FidoAuthenticatorAdded|.
+  bool EmbedderControlsAuthenticatorDispatch(
+      const device::FidoAuthenticator& authenticator) override;
   void BluetoothAdapterPowerChanged(bool is_powered_on) override;
-  void FidoAuthenticatorAdded(const device::FidoAuthenticator& authenticator,
-                              bool* hold_off_request) override;
+  void FidoAuthenticatorAdded(
+      const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override;
 
  private:

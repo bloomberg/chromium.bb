@@ -206,22 +206,23 @@ void FidoRequestHandlerBase::AddAuthenticator(
   // If |observer_| exists, dispatching request to |authenticator_ptr| is
   // delegated to |observer_|. Else, dispatch request to |authenticator_ptr|
   // immediately.
-  bool should_delay_request = false;
-  if (observer_)
-    observer_->FidoAuthenticatorAdded(*authenticator_ptr,
-                                      &should_delay_request);
+  bool embedder_controls_dispatch = false;
+  if (observer_) {
+    embedder_controls_dispatch =
+        observer_->EmbedderControlsAuthenticatorDispatch(*authenticator_ptr);
+    observer_->FidoAuthenticatorAdded(*authenticator_ptr);
+  }
 
-  if (should_delay_request)
-    return;
-
-  // Post |InitializeAuthenticatorAndDispatchRequest| into its own task. This
-  // avoids hairpinning, even if the authenticator immediately invokes the
-  // request callback.
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest,
-          GetWeakPtr(), authenticator_ptr));
+  if (!embedder_controls_dispatch) {
+    // Post |InitializeAuthenticatorAndDispatchRequest| into its own task. This
+    // avoids hairpinning, even if the authenticator immediately invokes the
+    // request callback.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest,
+            GetWeakPtr(), authenticator_ptr));
+  }
 }
 
 void FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(

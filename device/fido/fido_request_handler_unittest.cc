@@ -77,10 +77,14 @@ class TestTransportAvailabilityObserver
     transport_availability_notification_receiver_.callback().Run(
         std::move(data));
   }
+  bool EmbedderControlsAuthenticatorDispatch(
+      const FidoAuthenticator&) override {
+    return false;
+  }
 
   void BluetoothAdapterPowerChanged(bool is_powered_on) override {}
-  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator,
-                              bool* hold_off_request) override {}
+  void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator) override {
+  }
   void FidoAuthenticatorRemoved(base::StringPiece device_id) override {}
 
  private:

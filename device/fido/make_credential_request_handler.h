@@ -43,9 +43,14 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       RegisterResponseCallback completion_callback);
   ~MakeCredentialRequestHandler() override;
 
+  // FidoRequestHandlerBase:
+  void SetPlatformAuthenticatorOrMarkUnavailable(
+      base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info)
+      override;
+
  private:
   // FidoRequestHandlerBase:
-  void DispatchRequest(FidoAuthenticator* authenticator) final;
+  void DispatchRequest(FidoAuthenticator* authenticator) override;
 
   void HandleResponse(
       FidoAuthenticator* authenticator,

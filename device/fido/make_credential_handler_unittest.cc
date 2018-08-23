@@ -106,11 +106,6 @@ class FidoMakeCredentialHandlerTest : public ::testing::Test {
     if (!base::ContainsKey(transports, Transport::kNearFieldCommunication))
       EXPECT_FALSE(nfc_discovery()->is_start_requested());
 
-    // Even with FidoTransportProtocol::kInternal allowed, unless the platform
-    // authenticator factory returns a FidoAuthenticator instance (which it will
-    // not be default), the transport will be marked `unavailable`.
-    transports.erase(Transport::kInternal);
-
     EXPECT_THAT(
         request_handler->transport_availability_info().available_transports,
         ::testing::UnorderedElementsAreArray(transports));
@@ -273,12 +268,24 @@ TEST_F(FidoMakeCredentialHandlerTest, UserVerificationRequirementNotMet) {
 // TODO(crbug.com/873710): Platform authenticators are temporarily disabled if
 // AuthenticatorAttachment is unset (kAny).
 TEST_F(FidoMakeCredentialHandlerTest, AnyAttachment) {
+  auto platform_device = MockFidoDevice::MakeCtap(
+      ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice));
+  platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  set_mock_platform_device(std::move(platform_device));
+
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
           AuthenticatorSelectionCriteria(
               AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny,
               false /* require_resident_key */,
               UserVerificationRequirement::kPreferred));
+
+  // MakeCredentialHandler will not dispatch the kAny request to the platform
+  // authenticator since the request does not get dispatched through UI. Despite
+  // setting a platform authenticator, the internal transport never becomes
+  // available.
+  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(callback().was_called());
 
   ExpectAllowedTransportsForRequestAre(
       request_handler.get(), {FidoTransportProtocol::kBluetoothLowEnergy,
@@ -302,6 +309,16 @@ TEST_F(FidoMakeCredentialHandlerTest, CrossPlatformAttachment) {
 }
 
 TEST_F(FidoMakeCredentialHandlerTest, PlatformAttachment) {
+  // Add a platform device to trigger the transport actually becoming available.
+  // We don't care about the result of the request.
+  auto platform_device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestGetInfoResponsePlatformDevice);
+  platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
+  platform_device->ExpectCtap2CommandAndDoNotRespond(
+      CtapRequestCommand::kAuthenticatorMakeCredential);
+  EXPECT_CALL(*platform_device, Cancel());
+  set_mock_platform_device(std::move(platform_device));
+
   auto request_handler =
       CreateMakeCredentialHandlerWithAuthenticatorSelectionCriteria(
           AuthenticatorSelectionCriteria(
