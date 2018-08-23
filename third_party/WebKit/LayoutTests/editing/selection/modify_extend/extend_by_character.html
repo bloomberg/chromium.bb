@@ -15,26 +15,26 @@ test(() => assert_selection(
 test(() => assert_selection(
     [
         '<div contenteditable>',
-            '|a<img src="../../resources/abe.png">new',
-            '<br>nation    <i>  </i> <img src="../../resources/abe.png">',
+            '|a<img src="../../resources/abe.png">new<br>',
+            'nation    <i>  </i> <img src="../../resources/abe.png">',
             '',
             '',
-            'conceived',
-            '<br>nation<img src="../../resources/abe.png">',
+            'conceived<br>',
+            'nation<img src="../../resources/abe.png">',
         '</div>',
     ].join(' '),
     selection => {
-        for (var i = 0; i < 33; ++i)
+        for (var i = 0; i < 31; ++i)
             selection.modify('extend', 'forward', 'character');
     },
     [
         '<div contenteditable>',
-            '^a<img src="../../resources/abe.png">new',
-            '<br>nation    <i>  </i> <img src="../../resources/abe.png">',
+            '^a<img src="../../resources/abe.png">new<br>',
+            'nation    <i>  </i> <img src="../../resources/abe.png">',
             '',
             '',
-            'conceived',
-            '<br>nation|<img src="../../resources/abe.png">',
+            'conceived<br>',
+            'nation|<img src="../../resources/abe.png">',
         '</div>',
     ].join(' ')),
     'extend forward character through image');
@@ -44,20 +44,20 @@ test(() => assert_selection(
         '<div contenteditable>',
             '<i>F    |and seven</i> years <b>  as </b>our fathers  f upon this',
             'continent, a new nation, conceived &nbsp;&nbsp; in Liberty,   and dedicated to the',
-            'proposition that all ',
-            '<br>men are created equal.',
+            'proposition that all<br>',
+            'men are created equal.',
         '</div>',
     ].join(' '),
     selection => {
-        for (var i = 0; i < 157; ++i)
+        for (var i = 0; i < 156; ++i)
             selection.modify('extend', 'forward', 'character');
     },
     [
         '<div contenteditable>',
             '<i>F    ^and seven</i> years <b>  as </b>our fathers  f upon this',
             'continent, a new nation, conceived \u{00A0}\u{00A0} in Liberty,   and dedicated to the',
-            'proposition that all ',
-            '<br>men are created equal|.',
+            'proposition that all<br>',
+            'men are created equal|.',
         '</div>',
     ].join(' ')),
     'extend forward character through multiple spaces');
@@ -65,26 +65,26 @@ test(() => assert_selection(
 test(() => assert_selection(
     [
         '<div contenteditable>',
-            'a<img src="../../resources/abe.png">new',
-            '<br>nation    <i>  </i> <img src="../../resources/abe.png">',
+            'a<img src="../../resources/abe.png">new<br>',
+            'nation    <i>  </i> <img src="../../resources/abe.png">',
             '',
             '',
-            'conceived',
-            '<br>nation|<img src="../../resources/abe.png">',
+            'conceived<br>',
+            'nation|<img src="../../resources/abe.png">',
         '</div>',
     ].join(' '),
     selection => {
-        for (var i = 0; i < 30; ++i)
+        for (var i = 0; i < 28; ++i)
             selection.modify('extend', 'backward', 'character');
     },
     [
         '<div contenteditable>',
-            'a<img src="../../resources/abe.png">n|ew',
-            '<br>nation    <i>  </i> <img src="../../resources/abe.png">',
+            'a<img src="../../resources/abe.png">n|ew<br>',
+            'nation    <i>  </i> <img src="../../resources/abe.png">',
             '',
             '',
-            'conceived',
-            '<br>nation^<img src="../../resources/abe.png">',
+            'conceived<br>',
+            'nation^<img src="../../resources/abe.png">',
         '</div>',
     ].join(' ')),
     'extend backward character through image');
@@ -94,20 +94,20 @@ test(() => assert_selection(
         '<div contenteditable>',
             '<i>F    and seven</i> years <b>  as </b>our fathers  f upon this',
             'continent, a new nation, conceived &nbsp;&nbsp; in Liberty,   and dedicated to the',
-            'proposition that all ',
-            '<br>men are created equ|al.',
+            'proposition that all<br>',
+            'men are created equ|al.',
         '</div>',
     ].join(' '),
     selection => {
-        for (var i = 0; i < 157; ++i)
+        for (var i = 0; i < 156; ++i)
             selection.modify('extend', 'backward', 'character');
     },
     [
         '<div contenteditable>',
             '<i>|F    and seven</i> years <b>  as </b>our fathers  f upon this',
             'continent, a new nation, conceived \u{00A0}\u{00A0} in Liberty,   and dedicated to the',
-            'proposition that all ',
-            '<br>men are created equ^al.',
+            'proposition that all<br>',
+            'men are created equ^al.',
         '</div>',
     ].join(' ')),
     'extend backward character through multiple spaces');
