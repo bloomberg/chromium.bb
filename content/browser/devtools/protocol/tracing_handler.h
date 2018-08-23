@@ -116,9 +116,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   CONTENT_EXPORT static base::trace_event::TraceConfig
       GetTraceConfigFromDevToolsConfig(
           const base::DictionaryValue& devtools_config);
-  void SetupProcessFilter(base::ProcessId gpu_pid, RenderFrameHost*);
-  void StartTracingWithGpuPid(std::unique_ptr<StartCallback>,
-                              base::ProcessId gpu_pid);
+  void SetupProcessFilter(RenderFrameHost*);
   void AppendProcessId(RenderFrameHost*,
                        std::unordered_set<base::ProcessId>* process_set);
   void OnProcessReady(RenderProcessHost*);
