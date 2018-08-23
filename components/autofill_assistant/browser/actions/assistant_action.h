@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_ACTION_H_
 
 #include "base/callback.h"
+#include "components/autofill_assistant/browser/assistant.pb.h"
 
 namespace autofill_assistant {
 
@@ -22,8 +23,12 @@ class AssistantAction {
   virtual void ProcessAction(AssistantActionDelegate* delegate,
                              ProcessActionCallback callback) = 0;
 
+  const AssistantActionProto& proto() const { return proto_; }
+
  protected:
-  AssistantAction() = default;
+  explicit AssistantAction(const AssistantActionProto& proto);
+
+  const AssistantActionProto proto_;
 };
 
 }  // namespace autofill_assistant.

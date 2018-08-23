@@ -16,8 +16,7 @@ namespace autofill_assistant {
 // An action to ask user to choose a local card to fill the form.
 class AssistantUseCardAction : public AssistantAction {
  public:
-  // The |selectors| specifies the card number field in the form to be filled.
-  explicit AssistantUseCardAction(const std::vector<std::string>& selectors);
+  explicit AssistantUseCardAction(const AssistantActionProto& proto);
   ~AssistantUseCardAction() override;
 
   // Overrides AssistantAction:
@@ -25,8 +24,6 @@ class AssistantUseCardAction : public AssistantAction {
                      ProcessActionCallback callback) override;
 
  private:
-  std::vector<std::string> target_element_selectors_;
-
   DISALLOW_COPY_AND_ASSIGN(AssistantUseCardAction);
 };
 

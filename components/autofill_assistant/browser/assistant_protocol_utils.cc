@@ -4,6 +4,8 @@
 
 #include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "components/autofill_assistant/browser/actions/assistant_click_action.h"
 #include "components/autofill_assistant/browser/actions/assistant_tell_action.h"
@@ -80,26 +82,30 @@ bool AssistantProtocolUtils::ParseAssistantScripts(
 // static
 std::string AssistantProtocolUtils::CreateInitialScriptActionsRequest(
     const std::string& script_path) {
-  InitialScriptActionsRequestProto::QueryProto query;
-  query.set_script_path(script_path);
-  query.set_policy(PolicyType::SCRIPT);
-
-  InitialScriptActionsRequestProto initial_request_proto;
-  initial_request_proto.set_allocated_query(&query);
+  ScriptActionRequestProto request_proto;
+  InitialScriptActionsRequestProto::QueryProto* query =
+      request_proto.mutable_initial_request()->mutable_query();
+  query->set_script_path(script_path);
+  query->set_policy(PolicyType::SCRIPT);
 
   std::string serialized_initial_request_proto;
-  bool success = initial_request_proto.SerializeToString(
-      &serialized_initial_request_proto);
+  bool success =
+      request_proto.SerializeToString(&serialized_initial_request_proto);
   DCHECK(success);
   return serialized_initial_request_proto;
 }
 
 // static
 std::string AssistantProtocolUtils::CreateNextScriptActionsRequest(
-    const std::string& previous_server_payload) {
-  NextScriptActionsRequestProto request_proto;
+    const std::string& previous_server_payload,
+    const std::vector<ProcessedAssistantActionProto>& processed_actions) {
+  ScriptActionRequestProto request_proto;
   request_proto.set_server_payload(previous_server_payload);
-
+  NextScriptActionsRequestProto* next_request =
+      request_proto.mutable_next_request();
+  for (const auto& processed_action : processed_actions) {
+    next_request->add_processed_actions()->MergeFrom(processed_action);
+  }
   std::string serialized_request_proto;
   bool success = request_proto.SerializeToString(&serialized_request_proto);
   DCHECK(success);
@@ -110,8 +116,7 @@ std::string AssistantProtocolUtils::CreateNextScriptActionsRequest(
 bool AssistantProtocolUtils::ParseAssistantActions(
     const std::string& response,
     std::string* return_server_payload,
-    std::vector<std::unique_ptr<AssistantAction>>* assistant_actions) {
-  DCHECK(!response.empty());
+    std::deque<std::unique_ptr<AssistantAction>>* assistant_actions) {
   DCHECK(assistant_actions);
 
   ActionsResponseProto response_proto;
@@ -127,66 +132,28 @@ bool AssistantProtocolUtils::ParseAssistantActions(
   for (const auto& action : response_proto.actions()) {
     switch (action.action_info_case()) {
       case AssistantActionProto::ActionInfoCase::kClick: {
-        DCHECK(action.has_click());
-        std::vector<std::string> selectors;
-        for (const auto& selector :
-             action.click().element_to_click().selectors()) {
-          selectors.emplace_back(selector);
-        }
-        DCHECK(!selectors.empty());
         assistant_actions->emplace_back(
-            std::make_unique<AssistantClickAction>(selectors));
+            std::make_unique<AssistantClickAction>(action));
         break;
       }
       case AssistantActionProto::ActionInfoCase::kTell: {
-        DCHECK(action.has_tell());
         assistant_actions->emplace_back(
-            std::make_unique<AssistantTellAction>(action.tell().message()));
+            std::make_unique<AssistantTellAction>(action));
         break;
       }
       case AssistantActionProto::ActionInfoCase::kUseAddress: {
-        DCHECK(action.has_use_address());
-        std::vector<std::string> selectors;
-        for (const auto& selector :
-             action.use_address().form_field_element().selectors()) {
-          selectors.emplace_back(selector);
-        }
-        DCHECK(!selectors.empty());
         assistant_actions->emplace_back(
-            std::make_unique<AssistantUseAddressAction>(
-                action.use_address().has_usage() ? action.use_address().usage()
-                                                 : "",
-                selectors));
+            std::make_unique<AssistantUseAddressAction>(action));
         break;
       }
       case AssistantActionProto::ActionInfoCase::kUseCard: {
-        DCHECK(action.has_use_card());
-        std::vector<std::string> selectors;
-        for (const auto& selector :
-             action.use_card().form_field_element().selectors()) {
-          selectors.emplace_back(selector);
-        }
-        DCHECK(!selectors.empty());
         assistant_actions->emplace_back(
-            std::make_unique<AssistantUseCardAction>(selectors));
+            std::make_unique<AssistantUseCardAction>(action));
         break;
       }
       case AssistantActionProto::ActionInfoCase::kWaitForDom: {
-        DCHECK(action.has_wait_for_dom());
-        std::vector<std::string> selectors;
-        for (const auto& selector :
-             action.wait_for_dom().element().selectors()) {
-          selectors.emplace_back(selector);
-        }
-        DCHECK(!selectors.empty());
         assistant_actions->emplace_back(
-            std::make_unique<AssistantWaitForDomAction>(
-                action.wait_for_dom().has_timeout_ms()
-                    ? action.wait_for_dom().timeout_ms()
-                    : 0,
-                selectors,
-                action.wait_for_dom().has_check_for_absence() &&
-                    action.wait_for_dom().check_for_absence()));
+            std::make_unique<AssistantUseCardAction>(action));
         break;
       }
       case AssistantActionProto::ActionInfoCase::ACTION_INFO_NOT_SET: {

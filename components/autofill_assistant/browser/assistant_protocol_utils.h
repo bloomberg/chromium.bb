@@ -5,13 +5,15 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_PROTOCOL_UTILS_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_PROTOCOL_UTILS_H_
 
-#include "components/autofill_assistant/browser/actions/assistant_action.h"
-#include "components/autofill_assistant/browser/assistant_script.h"
-
+#include <deque>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include "components/autofill_assistant/browser/actions/assistant_action.h"
+#include "components/autofill_assistant/browser/assistant.pb.h"
+#include "components/autofill_assistant/browser/assistant_script.h"
 
 class GURL;
 
@@ -40,7 +42,8 @@ class AssistantProtocolUtils {
 
   // Create request to get next sequence of actions for a script.
   static std::string CreateNextScriptActionsRequest(
-      const std::string& previous_server_payload);
+      const std::string& previous_server_payload,
+      const std::vector<ProcessedAssistantActionProto>& processed_actions);
 
   // Parse assistant actions from the given |response|, which should not be an
   // empty string.
@@ -51,7 +54,7 @@ class AssistantProtocolUtils {
   static bool ParseAssistantActions(
       const std::string& response,
       std::string* return_server_payload,
-      std::vector<std::unique_ptr<AssistantAction>>* assistant_actions);
+      std::deque<std::unique_ptr<AssistantAction>>* assistant_actions);
 
  private:
   // To avoid instantiate this class by accident.

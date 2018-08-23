@@ -6,6 +6,7 @@
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_WAIT_FOR_DOM_ACTION_H_
 
 #include "components/autofill_assistant/browser/actions/assistant_action.h"
+#include "components/autofill_assistant/browser/assistant.pb.h"
 
 #include <string>
 #include <vector>
@@ -18,12 +19,7 @@ namespace autofill_assistant {
 // An action to ask Chrome to wait for a DOM element to process next action.
 class AssistantWaitForDomAction : public AssistantAction {
  public:
-  // |timeout_ms| indicates waiting timeout period. |selectors| specifies the
-  // DOM element to wait. |for_absence| indicates whether waiting for absence of
-  // the element.
-  AssistantWaitForDomAction(int timeout_ms,
-                            const std::vector<std::string>& selectors,
-                            bool for_absence);
+  explicit AssistantWaitForDomAction(const AssistantActionProto& proto);
   ~AssistantWaitForDomAction() override;
 
   // Overrides AssistantAction:
@@ -38,10 +34,6 @@ class AssistantWaitForDomAction : public AssistantAction {
                             int rounds,
                             ProcessActionCallback callback,
                             bool result);
-
-  int timeout_ms_;
-  std::vector<std::string> target_element_selectors_;
-  bool for_absence_;
 
   base::WeakPtrFactory<AssistantWaitForDomAction> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(AssistantWaitForDomAction);

@@ -13,6 +13,7 @@ proto_library("proto") {
 
 jumbo_static_library("browser") {
   sources = [
+    "actions/assistant_action.cc",
     "actions/assistant_action.h",
     "actions/assistant_action_delegate.h",
     "actions/assistant_click_action.cc",
@@ -51,5 +52,28 @@ jumbo_static_library("browser") {
     "//content/public/browser",
     "//google_apis",
     "//net",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "assistant_script_executor_unittest.cc",
+    "mock_assistant_service.cc",
+    "mock_assistant_service.h",
+    "mock_assistant_ui_controller.cc",
+    "mock_assistant_ui_controller.h",
+    "mock_assistant_web_controller.cc",
+    "mock_assistant_web_controller.h",
+    "mock_run_once_callback.h",
+  ]
+
+  deps = [
+    ":browser",
+    ":proto",
+    "//base",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

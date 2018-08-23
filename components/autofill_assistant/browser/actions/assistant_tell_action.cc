@@ -3,19 +3,23 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/actions/assistant_tell_action.h"
-
 #include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
+
+#include <utility>
 
 namespace autofill_assistant {
 
-AssistantTellAction::AssistantTellAction(const std::string& message)
-    : message_(message) {}
+AssistantTellAction::AssistantTellAction(const AssistantActionProto& proto)
+    : AssistantAction(proto) {
+  DCHECK(proto_.has_tell());
+}
 
 AssistantTellAction::~AssistantTellAction() {}
 
 void AssistantTellAction::ProcessAction(AssistantActionDelegate* delegate,
                                         ProcessActionCallback callback) {
-  delegate->ShowStatusMessage(message_);
+  // tell.message in the proto is localized.
+  delegate->ShowStatusMessage(proto_.tell().message());
   std::move(callback).Run(true);
 }
 

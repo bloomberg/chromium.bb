@@ -9,8 +9,8 @@
 namespace autofill_assistant {
 
 AssistantUseCardAction::AssistantUseCardAction(
-    const std::vector<std::string>& selectors)
-    : target_element_selectors_(selectors) {}
+    const AssistantActionProto& proto)
+    : AssistantAction(proto) {}
 
 AssistantUseCardAction::~AssistantUseCardAction() {}
 

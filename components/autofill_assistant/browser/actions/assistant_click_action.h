@@ -16,9 +16,7 @@ namespace autofill_assistant {
 // An action to perform a mouse left button click on a given element on Web.
 class AssistantClickAction : public AssistantAction {
  public:
-  // CSS selectors in |selectors| are ordered from top frame to the frame
-  // contains the element and the element.
-  explicit AssistantClickAction(const std::vector<std::string>& selectors);
+  explicit AssistantClickAction(const AssistantActionProto& proto);
   ~AssistantClickAction() override;
 
   // Overrides AssistantAction:
