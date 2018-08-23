@@ -31,6 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_LOCAL_FRAME_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_LOCAL_FRAME_IMPL_H_
 
+#include <memory>
+#include <set>
+
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/web/devtools_agent.mojom-blink.h"
@@ -45,8 +48,6 @@
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-
-#include <memory>
 
 namespace blink {
 
@@ -283,6 +284,7 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebHistoryItem&,
       bool is_client_redirect,
       std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data,
+      const WebURLRequest* original_request_to_replace,
       const WebNavigationTimings& navigation_timings) override;
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;
@@ -399,7 +401,7 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   ContentSettingsClient& GetContentSettingsClient() {
     return content_settings_client_;
-  };
+  }
 
   SharedWorkerRepositoryClientImpl* SharedWorkerRepositoryClient() const {
     return shared_worker_repository_client_.get();
@@ -531,4 +533,4 @@ DEFINE_TYPE_CASTS(WebLocalFrameImpl,
 
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_WEB_LOCAL_FRAME_IMPL_H_

@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_URL_LOADER_INTERCEPTOR_H_
-#define CONTENT_PUBLIC_BROWSER_URL_LOADER_INTERCEPTOR_H_
+#ifndef CONTENT_PUBLIC_TEST_URL_LOADER_INTERCEPTOR_H_
+#define CONTENT_PUBLIC_TEST_URL_LOADER_INTERCEPTOR_H_
 
+#include <memory>
 #include <set>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
@@ -102,6 +105,12 @@ class URLLoaderInterceptor {
       const std::string* headers = nullptr,
       base::Optional<net::SSLInfo> ssl_info = base::nullopt);
 
+  // Returns an interceptor that (as long as it says alive) will intercept
+  // requests to |url| and fail them using the provided |error|.
+  static std::unique_ptr<URLLoaderInterceptor> SetupRequestFailForURL(
+      const GURL& url,
+      net::Error error);
+
  private:
   class BrowserProcessWrapper;
   class Interceptor;
@@ -169,4 +178,4 @@ class URLLoaderInterceptor {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_URL_LOADER_INTERCEPTOR_H_
+#endif  // CONTENT_PUBLIC_TEST_URL_LOADER_INTERCEPTOR_H_
