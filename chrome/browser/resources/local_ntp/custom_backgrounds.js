@@ -1069,13 +1069,6 @@ customBackgrounds.initCustomBackgrounds = function() {
     }
   };
 
-  // Clicks that happen outside of the dialog.
-  menu.onclick = function(event) {
-    if (event.target == menu) {
-      customBackgrounds.closeCollectionDialog(menu);
-    }
-  };
-
   // Interactions with the back arrow on the image selection dialog.
   var backInteraction = function(event) {
     customBackgrounds.resetSelectionDialog();
