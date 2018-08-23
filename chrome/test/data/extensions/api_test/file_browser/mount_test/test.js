@@ -179,6 +179,14 @@ function validateObject(received, expected, name) {
 
 chrome.test.runTests([
   function removeMount() {
+    chrome.fileManagerPrivate.removeMount('removable:mount_path1');
+
+    // We actually check this one on C++ side. If MountLibrary.RemoveMount
+    // doesn't get called, test will fail.
+    chrome.test.succeed();
+  },
+
+  function removeMountArchive() {
     chrome.fileManagerPrivate.removeMount('archive:archive_mount_path');
 
     // We actually check this one on C++ side. If MountLibrary.RemoveMount
