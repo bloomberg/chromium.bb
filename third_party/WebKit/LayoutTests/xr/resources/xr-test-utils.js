@@ -48,11 +48,11 @@ function xr_session_promise_test(
                         return func(session, t, fakeDeviceController);
                       })
                       .then(() => {
-                        // End the session. Silence any errors
-                        // generated if the session was already ended.
-                        // TODO(offenwanger): This throw error when a
-                        // session is already ended is not defined by
-                        // the spec.
+                        // End the session. Silence any errors generated if the
+                        // session was already ended.
+                        // TODO(bajones): Throwing an error when a session is
+                        // already ended is not defined by the spec. This
+                        // should be defined or removed.
                         testSession.end().catch(() => {});
                         fakeDeviceController.setXRPresentationFrameData(null);
                       })
@@ -210,9 +210,6 @@ function assert_matrices_significantly_not_equal(
   }
 }
 
-// TODO(offenwanger): eventSender cannot be used with WPTs. Find another way to
-// fake use gestures.
-// https://chromium.googlesource.com/chromium/src/+/lkgr/docs/testing/web_platform_tests.md#tests-that-require-testing-apis
 function runWithUserGesture(fn) {
   function thunk() {
     document.removeEventListener('keypress', thunk, false);

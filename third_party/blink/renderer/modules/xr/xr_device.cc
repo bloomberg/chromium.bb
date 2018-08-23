@@ -158,9 +158,10 @@ ScriptPromise XRDevice::requestSession(
   XRPresentationContext* output_context =
       options.hasOutputContext() ? options.outputContext() : nullptr;
 
-  // TODO(offenwanger): Once device activation is sorted out for WebXR, either
-  // pass in the value for metrics, or remove the value as soon as legacy API
-  // has been removed.
+  // TODO(http://crbug.com/826899) Once device activation is sorted out for
+  // WebXR, either pass in the correct value for metrics to know whether
+  // this was triggered by device activation, or remove the value as soon as
+  // legacy API has been removed.
   device_ptr_->RequestSession(
       std::move(session_options), false /* triggered by display activate */,
       WTF::Bind(&XRDevice::OnRequestSessionReturned, WrapWeakPersistent(this),

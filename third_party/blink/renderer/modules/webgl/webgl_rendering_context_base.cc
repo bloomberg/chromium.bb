@@ -830,7 +830,8 @@ ScriptPromise WebGLRenderingContextBase::setCompatibleXRDevice(
     compatible_xr_device_ = xr_device;
     return ScriptPromise::CastUndefined(script_state);
   } else {
-    // TODO(offenwanger): Trigger context loss and recreate on compatible GPU.
+    // TODO(http://crbug.com/876140) Trigger context loss and recreate on
+    // compatible GPU.
     return ScriptPromise::RejectWithDOMException(
         script_state,
         DOMException::Create(
@@ -1019,7 +1020,8 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       context_type_(context_type) {
   DCHECK(context_provider);
 
-  // TODO(offenwanger) Make sure this is being created on a compatible adapter.
+  // TODO(http://crbug.com/876140) Make sure this is being created on a
+  // compatible adapter.
   compatible_xr_device_ =
       static_cast<XRDevice*>(requested_attributes.compatible_xr_device.Get());
 
@@ -1113,8 +1115,8 @@ void WebGLRenderingContextBase::InitializeNewContext() {
   DCHECK(!isContextLost());
   DCHECK(GetDrawingBuffer());
 
-  // TODO(offenwanger): Check if compatible_xr_device needs to be taken into
-  // account here.
+  // TODO(http://crbug.com/876140) Does compatible_xr_device needs to be taken
+  // into account here?
 
   marked_canvas_dirty_ = false;
   animation_frame_in_progress_ = false;
@@ -1574,7 +1576,8 @@ bool WebGLRenderingContextBase::PaintRenderingResultsToCanvas(
 
 bool WebGLRenderingContextBase::ContextCreatedOnCompatibleAdapter(
     const XRDevice* device) {
-  // TODO(offenwanger): Determine if device is compatible with current context.
+  // TODO(http://crbug.com/876140) Determine if device is compatible with
+  // current context.
   return true;
 }
 

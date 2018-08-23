@@ -121,8 +121,8 @@ void VRDeviceBase::ReturnNonImmersiveSession(
 
   auto session = mojom::XRSession::New();
   session->data_provider = data_provider.PassInterface();
-  // TODO(offenwanger) Not all session will want the enviroment provider. This
-  // should be refactored so it's only passed when it's requested.
+  // TODO(http://crbug.com/876135) Not all sessions want the environment
+  // provider. This should be refactored to only be passed when requested.
   session->enviroment_provider = enviroment_provider.PassInterface();
   if (display_info_) {
     session->display_info = display_info_.Clone();
