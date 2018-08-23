@@ -76,6 +76,7 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
   EXPECT_EQ(left.enable_vulkan, right.enable_vulkan);
   EXPECT_EQ(left.enable_gpu_benchmarking_extension,
             right.enable_gpu_benchmarking_extension);
+  EXPECT_EQ(left.enable_webgpu, right.enable_webgpu);
 }
 
 }  // namespace
@@ -154,6 +155,7 @@ TEST(GpuPreferencesTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(watchdog_starts_backgrounded, true)
     GPU_PREFERENCES_FIELD(enable_vulkan, true)
     GPU_PREFERENCES_FIELD(enable_gpu_benchmarking_extension, true)
+    GPU_PREFERENCES_FIELD(enable_webgpu, true)
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

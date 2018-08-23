@@ -209,6 +209,9 @@ struct GPU_EXPORT GpuPreferences {
   // Enable the GPU benchmarking extension; used by tests only.
   bool enable_gpu_benchmarking_extension = false;
 
+  // Enable the WebGPU command buffer.
+  bool enable_webgpu = false;
+
   // Please update gpu_preferences_unittest.cc when making additions or
   // changes to this struct.
 };
