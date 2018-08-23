@@ -90,6 +90,9 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Returns total size of downloads, as indicated by the developer.
   int download_total() const { return total_downloads_size_; }
 
+  // Returns the number of requests that comprise the whole job.
+  int total_downloads() const { return total_downloads_; }
+
   base::WeakPtr<BackgroundFetchJobController> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
