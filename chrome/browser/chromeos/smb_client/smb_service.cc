@@ -320,7 +320,11 @@ void SmbService::FireMountCallback(MountResponse callback,
 
 void SmbService::RegisterHostLocators() {
   SetUpMdnsHostLocator();
-  SetUpNetBiosHostLocator();
+  if (IsNetBiosDiscoveryEnabled()) {
+    SetUpNetBiosHostLocator();
+  } else {
+    LOG(WARNING) << "SmbService: NetBios discovery disabled.";
+  }
 }
 
 void SmbService::SetUpMdnsHostLocator() {
@@ -340,6 +344,10 @@ void SmbService::SetUpNetBiosHostLocator() {
 
 bool SmbService::IsAllowedByPolicy() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kNetworkFileSharesAllowed);
+}
+
+bool SmbService::IsNetBiosDiscoveryEnabled() const {
+  return profile_->GetPrefs()->GetBoolean(prefs::kNetBiosShareDiscoveryEnabled);
 }
 
 void SmbService::RecordMountCount() const {
