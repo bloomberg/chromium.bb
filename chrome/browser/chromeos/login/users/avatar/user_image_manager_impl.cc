@@ -792,8 +792,8 @@ Profile* UserImageManagerImpl::GetBrowserProfile() {
   return ProfileHelper::Get()->GetProfileByUserUnsafe(GetUser());
 }
 
-GURL UserImageManagerImpl::GetCachedPictureURL() const {
-  return profile_image_url_;
+std::string UserImageManagerImpl::GetCachedPictureURL() const {
+  return profile_image_url_.spec();
 }
 
 bool UserImageManagerImpl::IsPreSignin() const {
@@ -855,8 +855,7 @@ void UserImageManagerImpl::OnProfileDownloadSuccess(
 
   downloaded_profile_image_ =
       gfx::ImageSkia::CreateFrom1xBitmap(downloader->GetProfilePicture());
-  profile_image_url_ = downloader->GetProfilePictureURL();
-  DCHECK(profile_image_url_.is_valid());
+  profile_image_url_ = GURL(downloader->GetProfilePictureURL());
 
   if (user->image_index() == user_manager::User::USER_IMAGE_PROFILE) {
     VLOG(1) << "Updating profile image for logged-in user.";

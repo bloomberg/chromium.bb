@@ -54,8 +54,8 @@ int CustodianProfileDownloaderService::GetDesiredImageSideLength() const {
   return 0;
 }
 
-GURL CustodianProfileDownloaderService::GetCachedPictureURL() const {
-  return GURL();
+std::string CustodianProfileDownloaderService::GetCachedPictureURL() const {
+  return std::string();
 }
 
 Profile* CustodianProfileDownloaderService::GetBrowserProfile() {

@@ -23,7 +23,6 @@
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;
 }
-class GURL;
 class ProfileDownloaderDelegate;
 
 // Downloads user profile information. The profile picture is decoded in a
@@ -77,7 +76,7 @@ class ProfileDownloader : public ImageDecoder::ImageRequest,
   // Gets the URL for the profile picture. This can be cached so that the same
   // picture is not downloaded multiple times. This value should only be used
   // when the picture status is PICTURE_SUCCESS.
-  virtual GURL GetProfilePictureURL() const;
+  virtual std::string GetProfilePictureURL() const;
 
  private:
   friend class ProfileDownloaderTest;
