@@ -167,11 +167,9 @@ class SurfaceSynchronizationTest : public testing::Test {
         surface_id);
   }
 
-  Surface* GetLatestInFlightSurface(
-      const SurfaceId& primary_surface_id,
-      const base::Optional<SurfaceId>& fallback_surface_id) {
+  Surface* GetLatestInFlightSurface(const SurfaceRange& surface_range) {
     return frame_sink_manager().surface_manager()->GetLatestInFlightSurface(
-        SurfaceRange(fallback_surface_id, primary_surface_id));
+        surface_range);
   }
 
   FakeExternalBeginFrameSource* begin_frame_source() {
@@ -2120,7 +2118,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   EXPECT_TRUE(HasTemporaryReference(child_id1));
   EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(child_id2, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id2)));
 
   parent_support().SubmitCompositorFrame(
       parent_id.local_surface_id(),
@@ -2137,7 +2135,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   EXPECT_FALSE(HasTemporaryReference(child_id1));
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(child_id2, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id2)));
 
   // Don't assign owner for temporary reference to |child_id2|.
   DisableAssignTemporaryReferences();
@@ -2153,12 +2151,12 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
 
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id3, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id3)));
 
   // If the primary surface is old, then we shouldn't return an in-flight
   // surface that is newer than the primary.
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(child_id1, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1)));
 
   // Submit a child CompositorFrame to a new SurfaceId and verify that
   // GetLatestInFlightSurface returns the right surface.
@@ -2169,12 +2167,12 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurface) {
   EXPECT_TRUE(HasTemporaryReference(child_id3));
 
   EXPECT_EQ(GetSurfaceForId(child_id3),
-            GetLatestInFlightSurface(child_id4, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id4)));
   EXPECT_THAT(GetChildReferences(parent_id), UnorderedElementsAre(child_id1));
 
   // If the primary surface is active, we return it.
   EXPECT_EQ(GetSurfaceForId(child_id3),
-            GetLatestInFlightSurface(child_id3, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id3)));
 }
 
 // This test verifies that GetLatestInFlightSurface will return nullptr
@@ -2205,11 +2203,12 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithBogusFallback) {
 
   // If primary exists and active return it regardless of the fallback.
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(child_id1, bogus_child_id));
+            GetLatestInFlightSurface(SurfaceRange(bogus_child_id, child_id1)));
 
   // If primary is not active and fallback is doesn't exist, we always return
   // nullptr.
-  EXPECT_EQ(nullptr, GetLatestInFlightSurface(child_id2, bogus_child_id));
+  EXPECT_EQ(nullptr,
+            GetLatestInFlightSurface(SurfaceRange(bogus_child_id, child_id2)));
 }
 
 // This test verifies that GetLatestInFlightSurface will return the primary or
@@ -2241,11 +2240,11 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithoutFallback) {
 
   // Verify that |child_id1| is the latest active surface.
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(child_id2, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id2)));
 
   // Fallback is not specified and |child_id1| is the latest.
   EXPECT_EQ(GetSurfaceForId(child_id1),
-            GetLatestInFlightSurface(child_id2, base::nullopt));
+            GetLatestInFlightSurface(SurfaceRange(base::nullopt, child_id2)));
 
   // Activate |child_id2|
   child_support1().SubmitCompositorFrame(child_id2.local_surface_id(),
@@ -2257,11 +2256,11 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithoutFallback) {
 
   // Verify that |child_id2| is the latest active surface.
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id2, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id2)));
 
   // Fallback is not specified but primary exists so we return it.
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id2, base::nullopt));
+            GetLatestInFlightSurface(SurfaceRange(base::nullopt, child_id2)));
 }
 
 // This test verifies that GetLatestInFlightSurface will not return null if the
@@ -2343,7 +2342,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceWithGarbageFallback) {
             nullptr);
 
   EXPECT_EQ(GetSurfaceForId(child_id3),
-            GetLatestInFlightSurface(child_id4, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id4)));
 }
 
 // This test verifies that in the case of different frame sinks
@@ -2375,7 +2374,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceDifferentFrameSinkIds) {
   // Primary's frame sink id empty and |child_id2| is the latest in fallback's
   // frame sink.
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id4, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id4)));
 
   // Activate |child_id3| which is in different frame sink.
   child_support2().SubmitCompositorFrame(child_id3.local_surface_id(),
@@ -2383,7 +2382,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceDifferentFrameSinkIds) {
 
   // |child_id3| is the latest in primary's frame sink.
   EXPECT_EQ(GetSurfaceForId(child_id3),
-            GetLatestInFlightSurface(child_id4, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id4)));
 }
 
 // This test verifies that GetLatestInFlightSurface will return the
@@ -2410,7 +2409,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceReturnPrimary) {
                                          MakeDefaultCompositorFrame());
 
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id3, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id3)));
 
   child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
                                          MakeDefaultCompositorFrame());
@@ -2418,7 +2417,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceReturnPrimary) {
   // GetLatestInFlightSurface will return the primary surface ID if it's
   // available.
   EXPECT_EQ(GetSurfaceForId(child_id3),
-            GetLatestInFlightSurface(child_id3, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id3)));
 }
 
 // This test verifies that GetLatestInFlightSurface can use persistent
@@ -2463,7 +2462,7 @@ TEST_F(SurfaceSynchronizationTest,
 
   // Verify that GetLatestInFlightSurface returns |child_id2|.
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id3, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id3)));
 }
 
 // This test verifies that GetLatestInFlightSurface will skip a surface if
@@ -2503,7 +2502,7 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceSkipDifferentNonce) {
                                          MakeDefaultCompositorFrame());
 
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id4, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id4)));
 
   child_support1().SubmitCompositorFrame(child_id3.local_surface_id(),
                                          MakeDefaultCompositorFrame());
@@ -2511,12 +2510,12 @@ TEST_F(SurfaceSynchronizationTest, LatestInFlightSurfaceSkipDifferentNonce) {
   // GetLatestInFlightSurface will return child_id3 because the nonce
   // matches that of child_id4.
   EXPECT_EQ(GetSurfaceForId(child_id3),
-            GetLatestInFlightSurface(child_id4, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id4)));
 
   // GetLatestInFlightSurface will return child_id2 because the nonce
   // doesn't match |child_id1| or |child_id5|.
   EXPECT_EQ(GetSurfaceForId(child_id2),
-            GetLatestInFlightSurface(child_id5, child_id1));
+            GetLatestInFlightSurface(SurfaceRange(child_id1, child_id5)));
 }
 
 // This test verifies that if a child submits a LocalSurfaceId newer that the
