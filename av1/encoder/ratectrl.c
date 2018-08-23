@@ -302,9 +302,9 @@ void av1_rc_init(const AV1EncoderConfig *oxcf, int pass, RATE_CONTROL *rc) {
   rc->avg_q = av1_convert_qindex_to_q(oxcf->worst_allowed_q, oxcf->bit_depth);
 
   for (i = 0; i < RATE_FACTOR_LEVELS; ++i) {
-    rc->rate_correction_factors[i] = 1.0;
+    rc->rate_correction_factors[i] = 0.7;
   }
-
+  rc->rate_correction_factors[KF_STD] = 1.0;
   rc->min_gf_interval = oxcf->min_gf_interval;
   rc->max_gf_interval = oxcf->max_gf_interval;
   if (rc->min_gf_interval == 0)
