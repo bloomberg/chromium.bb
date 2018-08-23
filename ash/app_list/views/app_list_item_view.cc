@@ -761,7 +761,9 @@ gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
     const gfx::Rect& target_bounds,
     const gfx::Size& title_size) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(0, AppListConfig::instance().grid_title_top_padding(), 0, 0);
+  rect.Inset(AppListConfig::instance().grid_title_horizontal_padding(),
+             AppListConfig::instance().grid_title_top_padding(),
+             AppListConfig::instance().grid_title_horizontal_padding(), 0);
   rect.ClampToCenteredSize(title_size);
   return rect;
 }
