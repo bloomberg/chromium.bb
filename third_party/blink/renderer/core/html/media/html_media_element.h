@@ -534,15 +534,11 @@ class CORE_EXPORT HTMLMediaElement
   DirectionOfPlayback GetDirectionOfPlayback() const;
 
   // Creates placeholder AudioTrack and/or VideoTrack objects when
-  // WebMemediaPlayer objects advertise they have audio and/or video, but don't
+  // WebMediaPlayer objects advertise they have audio and/or video, but don't
   // explicitly signal them via addAudioTrack() and addVideoTrack().
   // FIXME: Remove this once all WebMediaPlayer implementations properly report
   // their track info.
   void CreatePlaceholderTracksIfNecessary();
-
-  // Sets the selected/enabled tracks if they aren't set before we initially
-  // transition to kHaveMetadata.
-  void SelectInitialTracksIfNecessary();
 
   void SetNetworkState(NetworkState);
 
