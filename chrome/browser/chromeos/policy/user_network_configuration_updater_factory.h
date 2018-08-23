@@ -14,7 +14,9 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 namespace policy {
 
@@ -25,9 +27,11 @@ class UserNetworkConfigurationUpdaterFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   // Returns an existing or creates a new UserNetworkConfigurationUpdater for
-  // |profile|. Will return NULL if this service isn't allowed for |profile|,
-  // i.e. for all but the primary user's profile.
-  static UserNetworkConfigurationUpdater* GetForProfile(Profile* profile);
+  // |browser_context|. Will return nullptr if this service isn't allowed for
+  // |browser_context|, i.e. for all but the BrowserContext which refers to the
+  // primary user's profile.
+  static UserNetworkConfigurationUpdater* GetForBrowserContext(
+      content::BrowserContext* browser_context);
 
   static UserNetworkConfigurationUpdaterFactory* GetInstance();
 

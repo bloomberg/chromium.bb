@@ -4477,6 +4477,9 @@ test("unit_tests") {
       ]
     }
   }
+  if (use_nss_certs) {
+    sources += [ "../browser/certificate_manager_model_unittest.cc" ]
+  }
   if (!is_android && use_nss_certs) {
     sources += [ "../common/net/x509_certificate_model_nss_unittest.cc" ]
   }

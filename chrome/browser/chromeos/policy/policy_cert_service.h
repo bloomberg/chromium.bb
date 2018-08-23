@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/policy/policy_certificate_provider.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -34,9 +35,8 @@ class TempCertsCacheNSS;
 // and marking the profile's prefs if any of the trust anchors was used.
 // Except for unit tests, PolicyCertVerifier should only be created through this
 // class.
-class PolicyCertService
-    : public KeyedService,
-      public UserNetworkConfigurationUpdater::PolicyProvidedCertsObserver {
+class PolicyCertService : public KeyedService,
+                          public PolicyCertificateProvider::Observer {
  public:
   PolicyCertService(const std::string& user_id,
                     UserNetworkConfigurationUpdater* net_conf_updater,

@@ -25,6 +25,8 @@
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
 
+using chromeos::onc::OncParsedCertificates;
+
 namespace policy {
 
 UserNetworkConfigurationUpdater::~UserNetworkConfigurationUpdater() {}
@@ -52,13 +54,13 @@ void UserNetworkConfigurationUpdater::SetClientCertificateImporterForTest(
 }
 
 void UserNetworkConfigurationUpdater::AddPolicyProvidedCertsObserver(
-    PolicyProvidedCertsObserver* observer) {
+    PolicyCertificateProvider::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.AddObserver(observer);
 }
 
 void UserNetworkConfigurationUpdater::RemovePolicyProvidedCertsObserver(
-    PolicyProvidedCertsObserver* observer) {
+    PolicyCertificateProvider::Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observer_list_.RemoveObserver(observer);
 }
@@ -75,7 +77,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
                                   network_config_handler),
       allow_trusted_certificates_from_policy_(allow_trusted_certs_from_policy),
       user_(&user),
-      certs_(std::make_unique<chromeos::onc::OncParsedCertificates>()),
+      certs_(std::make_unique<OncParsedCertificates>()),
       weak_factory_(this) {
   // The updater is created with |client_certificate_importer_| unset and is
   // responsible for creating it. This requires |GetNSSCertDatabaseForProfile|
@@ -89,44 +91,40 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
 
 net::CertificateList
 UserNetworkConfigurationUpdater::GetAllServerAndAuthorityCertificates() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  net::CertificateList all_server_and_authority_certs;
-
-  for (const chromeos::onc::OncParsedCertificates::ServerOrAuthorityCertificate&
-           server_or_authority_cert :
-       certs_->server_or_authority_certificates()) {
-    all_server_and_authority_certs.push_back(
-        server_or_authority_cert.certificate());
-  }
-
-  return all_server_and_authority_certs;
+  return GetServerAndAuthorityCertificates(base::BindRepeating(
+      [](const OncParsedCertificates::ServerOrAuthorityCertificate& cert) {
+        return true;
+      }));
 }
 
 net::CertificateList
 UserNetworkConfigurationUpdater::GetWebTrustedCertificates() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
   if (!allow_trusted_certificates_from_policy_)
     return net::CertificateList();
 
-  net::CertificateList trust_anchors;
-  for (const chromeos::onc::OncParsedCertificates::ServerOrAuthorityCertificate&
-           server_or_authority_cert :
-       certs_->server_or_authority_certificates()) {
-    if (server_or_authority_cert.web_trust_requested())
-      trust_anchors.push_back(server_or_authority_cert.certificate());
-  }
+  return GetServerAndAuthorityCertificates(base::BindRepeating(
+      [](const OncParsedCertificates::ServerOrAuthorityCertificate& cert) {
+        return cert.web_trust_requested();
+      }));
+}
 
-  return trust_anchors;
+net::CertificateList
+UserNetworkConfigurationUpdater::GetCertificatesWithoutWebTrust() const {
+  if (!allow_trusted_certificates_from_policy_)
+    return GetAllServerAndAuthorityCertificates();
+
+  return GetServerAndAuthorityCertificates(base::BindRepeating(
+      [](const OncParsedCertificates::ServerOrAuthorityCertificate& cert) {
+        return !cert.web_trust_requested();
+      }));
 }
 
 void UserNetworkConfigurationUpdater::ImportCertificates(
     const base::ListValue& certificates_onc) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::unique_ptr<chromeos::onc::OncParsedCertificates> incoming_certs =
-      std::make_unique<chromeos::onc::OncParsedCertificates>(certificates_onc);
+  std::unique_ptr<OncParsedCertificates> incoming_certs =
+      std::make_unique<OncParsedCertificates>(certificates_onc);
 
   bool server_or_authority_certs_changed =
       certs_->server_or_authority_certificates() !=
@@ -221,4 +219,20 @@ void UserNetworkConfigurationUpdater::NotifyPolicyProvidedCertsChanged() {
   }
 }
 
+net::CertificateList
+UserNetworkConfigurationUpdater::GetServerAndAuthorityCertificates(
+    ServerOrAuthorityCertPredicate predicate) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  net::CertificateList certificates;
+
+  for (const OncParsedCertificates::ServerOrAuthorityCertificate&
+           server_or_authority_cert :
+       certs_->server_or_authority_certificates()) {
+    if (predicate.Run(server_or_authority_cert))
+      certificates.push_back(server_or_authority_cert.certificate());
+  }
+
+  return certificates;
+}
 }  // namespace policy

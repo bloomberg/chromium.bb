@@ -211,6 +211,10 @@ class NET_EXPORT NSSCertDatabase {
   // rejecting them.
   bool IsUntrusted(const CERTCertificate* cert) const;
 
+  // IsWebTrustAnchor returns true if |cert| is explicitly trusted for web
+  // navigations according to the trust bits stored in the database.
+  bool IsWebTrustAnchor(const CERTCertificate* cert) const;
+
   // Set trust values for certificate.
   // Returns true on success or false on failure.
   bool SetCertTrust(CERTCertificate* cert, CertType type, TrustBits trust_bits);

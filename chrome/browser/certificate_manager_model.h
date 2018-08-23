@@ -12,40 +12,124 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/scoped_nss_types.h"
 #include "net/ssl/client_cert_identity.h"
-
-namespace chromeos {
-class CertificateProvider;
-}  // namespace chromeos
 
 namespace content {
 class BrowserContext;
 class ResourceContext;
 }  // namespace content
 
+#if defined(OS_CHROMEOS)
+namespace chromeos {
+class CertificateProvider;
+}
+
+namespace policy {
+class PolicyCertificateProvider;
+}
+#endif
+
 // CertificateManagerModel provides the data to be displayed in the certificate
 // manager dialog, and processes changes from the view.
 class CertificateManagerModel {
  public:
+  // Holds information about a certificate, along with the certificate itself.
+  class CertInfo {
+   public:
+    enum class Source {
+      // This certificate is installed in the platform certificate database.
+      kPlatform,
+      // This certificate is provided by enterprise policy.
+      kPolicy,
+      // This certificate is provided by an extension.
+      kExtension
+    };
+
+    CertInfo(net::ScopedCERTCertificate cert,
+             net::CertType type,
+             base::string16 name,
+             bool read_only,
+             bool untrusted,
+             Source source,
+             bool web_trust_anchor,
+             bool hardware_backed);
+    ~CertInfo();
+
+    CERTCertificate* cert() const { return cert_.get(); }
+    net::CertType type() const { return type_; }
+    const base::string16& name() const { return name_; }
+    bool read_only() const { return read_only_; }
+    bool untrusted() const { return untrusted_; }
+    Source source() const { return source_; }
+    bool web_trust_anchor() const { return web_trust_anchor_; }
+    bool hardware_backed() const { return hardware_backed_; }
+
+    // Clones a CertInfo, duplicating the contained NSS certificate.
+    static std::unique_ptr<CertInfo> Clone(const CertInfo* cert_info);
+
+   private:
+    // The certificate itself.
+    net::ScopedCERTCertificate cert_;
+
+    // The type of the certificate. Used to filter certificates to be displayed
+    // on the tabs of the certificate manager UI.
+    net::CertType type_;
+
+    // A user readable certificate name.
+    base::string16 name_;
+
+    // true if the certificate is stored on a read-only slot or provided by
+    // enterprise policy or an extension.
+    bool read_only_;
+
+    // true if the certificate is untrusted.
+    bool untrusted_;
+
+    // Describes where this certificate originates from.
+    Source source_;
+
+    // true if the certificate is given web trust (either by its platform trust
+    // settings, or by enterprise policy).
+    bool web_trust_anchor_;
+
+    // true if the certificate is hardware-backed. Note that extension-provided
+    // certificates are not regarded as hardware-backed.
+    bool hardware_backed_;
+
+    DISALLOW_COPY_AND_ASSIGN(CertInfo);
+  };
+
+  class CertsSource;
+
+  // Holds parameters during construction.
+  struct Params {
+#if defined(OS_CHROMEOS)
+    // May be nullptr.
+    policy::PolicyCertificateProvider* policy_certs_provider = nullptr;
+    // May be nullptr.
+    std::unique_ptr<chromeos::CertificateProvider>
+        extension_certificate_provider;
+#endif
+
+    Params();
+    Params(Params&& other);
+    ~Params();
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Params);
+  };
+
   // Map from the subject organization name to the list of certs from that
   // organization.  If a cert does not have an organization name, the
   // subject's CertPrincipal::GetDisplayName() value is used instead.
-  typedef std::map<std::string, net::ScopedCERTCertificateList> OrgGroupingMap;
+  typedef std::map<std::string, std::vector<std::unique_ptr<CertInfo>>>
+      OrgGroupingMap;
 
   typedef base::Callback<void(std::unique_ptr<CertificateManagerModel>)>
       CreationCallback;
-
-  // Enumeration of the possible columns in the certificate manager tree view.
-  enum Column {
-    COL_SUBJECT_NAME,
-    COL_CERTIFICATE_STORE,
-    COL_SERIAL_NUMBER,
-    COL_EXPIRES_ON,
-  };
 
   class Observer {
    public:
@@ -53,6 +137,9 @@ class CertificateManagerModel {
     // TODO(mattm): do a more granular updating strategy?  Maybe retrieve new
     // list of certs, diff against past list, and then notify of the changes?
     virtual void CertificatesRefreshed() = 0;
+
+   protected:
+    virtual ~Observer() = default;
   };
 
   // Creates a CertificateManagerModel. The model will be passed to the callback
@@ -62,6 +149,13 @@ class CertificateManagerModel {
                      Observer* observer,
                      const CreationCallback& callback);
 
+  // Use |Create| instead to create a |CertificateManagerModel| for a
+  // |BrowserContext|.
+  CertificateManagerModel(std::unique_ptr<Params> params,
+                          Observer* observer,
+                          net::NSSCertDatabase* nss_cert_database,
+                          bool is_user_db_available,
+                          bool is_tpm_available);
   ~CertificateManagerModel();
 
   bool is_user_db_available() const { return is_user_db_available_; }
@@ -76,12 +170,9 @@ class CertificateManagerModel {
   // refresh its tree views.
   void Refresh();
 
-  // Fill |map| with the certificates matching |filter_type|.
+  // Fill |*out_org_grouping_map| with the certificates matching |filter_type|.
   void FilterAndBuildOrgGroupingMap(net::CertType filter_type,
-                                    OrgGroupingMap* map) const;
-
-  // Get the data to be displayed in |column| for the given |cert|.
-  base::string16 GetColumnText(CERTCertificate* cert, Column column) const;
+                                    OrgGroupingMap* out_org_grouping_map) const;
 
   // Import private keys and certificates from PKCS #12 encoded
   // |data|, using the given |password|. If |is_extractable| is false,
@@ -132,52 +223,43 @@ class CertificateManagerModel {
   // function returns.
   bool Delete(CERTCertificate* cert);
 
-  // IsHardwareBacked returns true if |cert| is hardware backed.
-  bool IsHardwareBacked(CERTCertificate* cert) const;
-
  private:
-  CertificateManagerModel(
-      net::NSSCertDatabase* nss_cert_database,
-      bool is_user_db_available,
-      bool is_tpm_available,
-      Observer* observer,
-      std::unique_ptr<chromeos::CertificateProvider>
-          extension_certificate_provider);
+  // Called when one of the |certs_sources_| has been updated. Will notify the
+  // |observer_| that the certificate list has been refreshed.
+  void OnCertsSourceUpdated();
+
+  // Finds the |CertsSource| which provided |cert|. Can return nullptr (e.g. if
+  // the cert has been deleted in the meantime).
+  CertsSource* FindCertsSourceForCert(CERTCertificate* cert);
 
   // Methods used during initialization, see the comment at the top of the .cc
   // file for details.
   static void DidGetCertDBOnUIThread(
+      std::unique_ptr<Params> params,
+      CertificateManagerModel::Observer* observer,
+      const CreationCallback& callback,
       net::NSSCertDatabase* cert_db,
       bool is_user_db_available,
-      bool is_tpm_available,
-      CertificateManagerModel::Observer* observer,
-      std::unique_ptr<chromeos::CertificateProvider>
-          extension_certificate_provider,
-      const CreationCallback& callback);
+      bool is_tpm_available);
   static void DidGetCertDBOnIOThread(
+      std::unique_ptr<Params> params,
       CertificateManagerModel::Observer* observer,
-      std::unique_ptr<chromeos::CertificateProvider>
-          extension_certificate_provider,
       const CreationCallback& callback,
       net::NSSCertDatabase* cert_db);
-  static void GetCertDBOnIOThread(
-      content::ResourceContext* context,
-      CertificateManagerModel::Observer* observer,
-      std::unique_ptr<chromeos::CertificateProvider>
-          extension_certificate_provider,
-      const CreationCallback& callback);
-
-  // Callback used by Refresh() for when the cert slots have been unlocked.
-  // This method does the actual refreshing.
-  void RefreshSlotsUnlocked();
-
-  // Callback used to refresh extension provided certificates. Refreshes UI.
-  void RefreshExtensionCertificates(
-      net::ClientCertIdentityList new_cert_identities);
+  static void GetCertDBOnIOThread(std::unique_ptr<Params> params,
+                                  content::ResourceContext* resource_context,
+                                  CertificateManagerModel::Observer* observer,
+                                  const CreationCallback& callback);
 
   net::NSSCertDatabase* cert_db_;
-  net::ScopedCERTCertificateList cert_list_;
-  net::ScopedCERTCertificateList extension_cert_list_;
+
+  // CertsSource instances providing certificates. The order matters - if a
+  // certificate is provided by more than one CertsSource, only the first one is
+  // accepted.
+  std::vector<std::unique_ptr<CertsSource>> certs_sources_;
+
+  bool hold_back_updates_ = false;
+
   // Whether the certificate database has a public slot associated with the
   // profile. If not set, importing certificates is not allowed with this model.
   bool is_user_db_available_;
@@ -185,12 +267,6 @@ class CertificateManagerModel {
 
   // The observer to notify when certificate list is refreshed.
   Observer* observer_;
-
-  // Certificate provider used to fetch extension provided certificates.
-  std::unique_ptr<chromeos::CertificateProvider>
-      extension_certificate_provider_;
-
-  base::WeakPtrFactory<CertificateManagerModel> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateManagerModel);
 };
