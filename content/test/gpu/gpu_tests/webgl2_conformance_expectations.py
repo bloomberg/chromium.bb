@@ -34,6 +34,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # The multiview extension is only expected to be supported through ANGLE.
     self.Skip('WebglExtension_WEBGL_multiview',
         ['win', 'no_passthrough'], bug=864524)
+    # # ANGLE's OpenGL backend supports multiview only on NVIDIA.
+    self.Skip('WebglExtension_WEBGL_multiview',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=864524)
     self.Skip('WebglExtension_EXT_disjoint_timer_query_webgl2',
         ['android'], bug=808744)
     self.Fail('WebglExtension_EXT_disjoint_timer_query_webgl2',
@@ -402,6 +405,27 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['passthrough', 'opengl', 'intel'], bug=602688)
     self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['passthrough', 'opengl', 'intel'], bug=602688)
+
+    # Passthrough command decoder / Windows / OpenGL / Intel
+    self.Fail('conformance2/textures/misc/copy-texture-image-same-texture.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=809594)
+    self.Fail('conformance2/renderbuffers/' +
+        'multisampled-depth-renderbuffer-initialization.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=2760) # ANGLE bug
+    self.Fail('conformance/uniforms/' +
+        'no-over-optimization-on-uniform-array-16.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance2/textures/misc/texture-npot.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance2/textures/misc/npot-video-sizing.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance2/glsl3/' +
+        'vector-dynamic-indexing-swizzled-lvalue.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
+        ['win', 'passthrough', 'opengl', 'intel'], bug=602688)
 
     # Passthrough command decoder / Linux / OpenGL / NVIDIA
     self.Fail('conformance/textures/image_bitmap_from_video/' +
