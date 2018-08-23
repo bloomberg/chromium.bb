@@ -2163,6 +2163,13 @@ void RenderFrameHostManager::CommitPending() {
                            render_frame_host_->GetView() &&
                            render_frame_host_->GetView()->HasFocus();
 
+  // Remove the current frame and its descendants from the set of fullscreen
+  // frames immediately. They can stay in pending deletion for some time.
+  // Removing them when they are deleted is too late.
+  // This needs to be done before updating the frame tree structure, else it
+  // will have trouble removing the descendants.
+  render_frame_delegate_->FullscreenStateChanged(current_frame_host(), false);
+
   // While the old frame is still current, remove its children from the tree.
   frame_tree_node_->ResetForNewProcess();
 

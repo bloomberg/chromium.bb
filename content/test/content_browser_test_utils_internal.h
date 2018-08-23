@@ -252,6 +252,20 @@ class ShowWidgetMessageFilter : public content::BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(ShowWidgetMessageFilter);
 };
 
+// A BrowserMessageFilter that drops SwapOut ACK messages.
+class SwapoutACKMessageFilter : public BrowserMessageFilter {
+ public:
+  SwapoutACKMessageFilter();
+
+ protected:
+  ~SwapoutACKMessageFilter() override;
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override;
+  DISALLOW_COPY_AND_ASSIGN(SwapoutACKMessageFilter);
+};
+
 }  // namespace content
 
 #endif  // CONTENT_TEST_CONTENT_BROWSER_TEST_UTILS_INTERNAL_H_

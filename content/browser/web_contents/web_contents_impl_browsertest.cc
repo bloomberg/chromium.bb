@@ -2696,15 +2696,42 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, NotifyFullscreenAcquired) {
   }
 }
 
-// TODO(beccahughes@): This test is flaking on Android. https://crbug.com/855018
-#if defined(OS_ANDROID)
-#define MAYBE_NotifyFullscreenAcquired_Navigate \
-    DISABLED_NotifyFullscreenAcquired_Navigate
-#else
-#define MAYBE_NotifyFullscreenAcquired_Navigate NotifyFullscreenAcquired_Navigate
-#endif
+// Regression test for https://crbug.com/855018.
+// RenderFrameHostImpls exit fullscreen as soon as they are swapped out.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FullscreenAfterFrameSwap) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  // 1) Navigate. There is initially no fullscreen frame.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+  EXPECT_EQ(0u, web_contents->fullscreen_frame_tree_nodes_.size());
+
+  // 2) Make it fullscreen.
+  FullscreenWebContentsObserver observer(web_contents, main_frame);
+  EXPECT_TRUE(
+      ExecuteScript(main_frame, "document.body.webkitRequestFullscreen();"));
+  observer.Wait();
+  EXPECT_EQ(1u, web_contents->fullscreen_frame_tree_nodes_.size());
+
+  // 3) Navigate cross origin. Act as if the old frame was very slow delivering
+  //    the swapout ack and stayed in pending deletion for a while. Even if the
+  //    frame is still present, it must be removed from the list of frame in
+  //    fullscreen immediately.
+  auto filter = base::MakeRefCounted<SwapoutACKMessageFilter>();
+  main_frame->GetProcess()->AddFilter(filter.get());
+  main_frame->DisableSwapOutTimerForTesting();
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  EXPECT_EQ(0u, web_contents->fullscreen_frame_tree_nodes_.size());
+}
+
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       MAYBE_NotifyFullscreenAcquired_Navigate) {
+                       NotifyFullscreenAcquired_Navigate) {
   ASSERT_TRUE(embedded_test_server()->Start());
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());

@@ -375,23 +375,6 @@ void FocusFrame(FrameTreeNode* frame) {
   focus_observer.Wait();
 }
 
-// A BrowserMessageFilter that drops SwapOut ACK messages.
-class SwapoutACKMessageFilter : public BrowserMessageFilter {
- public:
-  SwapoutACKMessageFilter() : BrowserMessageFilter(FrameMsgStart) {}
-
- protected:
-  ~SwapoutACKMessageFilter() override {}
-
- private:
-  // BrowserMessageFilter:
-  bool OnMessageReceived(const IPC::Message& message) override {
-    return message.type() == FrameHostMsg_SwapOut_ACK::ID;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(SwapoutACKMessageFilter);
-};
-
 class RenderWidgetHostVisibilityObserver : public RenderWidgetHostObserver {
  public:
   explicit RenderWidgetHostVisibilityObserver(RenderWidgetHostImpl* rwhi,
