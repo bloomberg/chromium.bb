@@ -4,6 +4,7 @@
 
 #include "storage/browser/blob/mojo_blob_reader.h"
 
+#include "base/debug/alias.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"
 #include "services/network/public/cpp/net_adapters.h"
@@ -99,16 +100,27 @@ void MojoBlobReader::DidCalculateSize(int result) {
   TRACE_EVENT_ASYNC_END2("Blob", "BlobReader::CountSize", this, "result",
                          "success", "size", blob_reader_->total_size());
 
+  // TODO(https://crbug.com/864351): Temporary diagnostics.
+  net::HttpByteRange pre_bounds_range = byte_range_;
+  base::debug::Alias(&pre_bounds_range);
+
   // Apply the range requirement.
   if (!byte_range_.ComputeBounds(blob_reader_->total_size())) {
     NotifyCompletedAndDeleteIfNeeded(net::ERR_REQUEST_RANGE_NOT_SATISFIABLE);
     return;
   }
 
+  // TODO(https://crbug.com/864351): Temporary diagnostics.
+  net::HttpByteRange post_bounds_range = byte_range_;
+  base::debug::Alias(&post_bounds_range);
+
   DCHECK_LE(byte_range_.first_byte_position(),
             byte_range_.last_byte_position() + 1);
   uint64_t length = base::checked_cast<uint64_t>(
       byte_range_.last_byte_position() - byte_range_.first_byte_position() + 1);
+
+  // TODO(https://crbug.com/864351): Temporary diagnostics.
+  base::debug::Alias(&length);
 
   if (blob_reader_->SetReadRange(byte_range_.first_byte_position(), length) !=
       BlobReader::Status::DONE) {

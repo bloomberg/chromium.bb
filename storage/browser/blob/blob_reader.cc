@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
@@ -481,7 +482,21 @@ BlobReader::Status BlobReader::ReadItem() {
 
   // Do the reading.
   const BlobDataItem& item = *items.at(current_item_index_);
+
+  // TODO(https://crbug.com/864351): Temporary diagnostics.
+  uint64_t item_offset = item.offset();
+  base::debug::Alias(&item_offset);
+  uint64_t item_length = item.length();
+  base::debug::Alias(&item_length);
+  int buf_bytes_remaining = read_buf_->BytesRemaining();
+  base::debug::Alias(&buf_bytes_remaining);
+  base::debug::Alias(&bytes_to_read);
+
   if (item.type() == BlobDataItem::Type::kBytes) {
+    // TODO(https://crbug.com/864351): Temporary diagnostics.
+    const char* item_bytes = item.bytes().data();
+    base::debug::Alias(&item_bytes);
+
     ReadBytesItem(item, bytes_to_read);
     return Status::DONE;
   }
