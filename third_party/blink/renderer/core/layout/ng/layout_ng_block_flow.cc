@@ -233,18 +233,14 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
       NGBlockNode(this), static_position,
       css_container->IsBox() ? nullptr : css_container);
 
-  NGBoxStrut scrollbar_sizes;
-  if (css_container->IsBox())
-    scrollbar_sizes =
-        NGBlockNode(ToLayoutBox(css_container)).GetScrollbarSizes();
   // We really only want to lay out ourselves here, so we pass |this| to
   // Run(). Otherwise, NGOutOfFlowLayoutPart may also lay out other objects
   // it discovers that are part of the same containing block, but those
   // should get laid out by the actual containing block.
-  NGOutOfFlowLayoutPart(&container_builder,
-                        css_container->CanContainAbsolutePositionObjects(),
-                        css_container->CanContainFixedPositionObjects(),
-                        scrollbar_sizes, *constraint_space, *container_style)
+  NGOutOfFlowLayoutPart(
+      &container_builder, css_container->CanContainAbsolutePositionObjects(),
+      css_container->CanContainFixedPositionObjects(), borders_and_scrollbars,
+      *constraint_space, *container_style)
       .Run(/* only_layout */ this);
   scoped_refptr<NGLayoutResult> result = container_builder.ToBoxFragment();
   // These are the unpositioned OOF descendants of the current OOF block.

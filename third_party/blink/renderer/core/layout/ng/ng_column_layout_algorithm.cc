@@ -71,8 +71,10 @@ NGColumnLayoutAlgorithm::NGColumnLayoutAlgorithm(NGBlockNode node,
     : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
 
 scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
-  NGBoxStrut border_scrollbar_padding =
-      CalculateBorderScrollbarPadding(ConstraintSpace(), Node());
+  NGBoxStrut borders = ComputeBorders(ConstraintSpace(), Node());
+  NGBoxStrut scrollbars = Node().GetScrollbarSizes();
+  NGBoxStrut padding = ComputePadding(ConstraintSpace(), Node());
+  NGBoxStrut border_scrollbar_padding = borders + scrollbars + padding;
   NGLogicalSize border_box_size =
       CalculateBorderBoxSize(ConstraintSpace(), Node());
   NGLogicalSize content_box_size =
@@ -170,7 +172,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
   } while (true);
 
   NGOutOfFlowLayoutPart(&container_builder_, Node().IsAbsoluteContainer(),
-                        Node().IsFixedContainer(), Node().GetScrollbarSizes(),
+                        Node().IsFixedContainer(), borders + scrollbars,
                         ConstraintSpace(), Style())
       .Run();
 
