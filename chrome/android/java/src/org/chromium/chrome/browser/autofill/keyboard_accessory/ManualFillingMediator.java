@@ -155,8 +155,13 @@ class ManualFillingMediator
             }
 
             @Override
-            public void willCloseTab(Tab tab, boolean animate) {
+            public void tabClosureCommitted(Tab tab) {
                 mModel.remove(tab);
+            }
+
+            @Override
+            public void willCloseTab(Tab tab, boolean animate) {
+                if (mActiveBrowserTab == tab) mActiveBrowserTab = null;
                 restoreCachedState(mActiveBrowserTab);
             }
         };
