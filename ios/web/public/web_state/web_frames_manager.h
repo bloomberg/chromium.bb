@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#import "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
 
@@ -19,7 +20,7 @@ class WebFrame;
 // NOTE: WebFrame objects should be used directly from this manager and not
 // stored elsewhere for later use becase WebFrames are frequently replaced.
 // For example, a navigation will invalidate the WebFrame object for that frame.
-class WebFramesManager {
+class WebFramesManager : public web::WebStateUserData<WebFramesManager> {
  public:
   // Returns a list of all the web frames associated with WebState.
   // NOTE: Due to the asynchronous nature of renderer, this list may be
@@ -31,7 +32,7 @@ class WebFramesManager {
   // this object may be outdated.
   virtual WebFrame* GetMainWebFrame() = 0;
 
-  virtual ~WebFramesManager() {}
+  ~WebFramesManager() override {}
 
  protected:
   WebFramesManager() {}

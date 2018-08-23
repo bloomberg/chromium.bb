@@ -31,7 +31,19 @@ struct FrameIdMatcher {
 
 namespace web {
 
-DEFINE_WEB_STATE_USER_DATA_KEY(WebFramesManagerImpl);
+// static
+void WebFramesManagerImpl::CreateForWebState(WebState* web_state) {
+  DCHECK(web_state);
+  if (!FromWebState(web_state))
+    web_state->SetUserData(
+        UserDataKey(), base::WrapUnique(new WebFramesManagerImpl(web_state)));
+}
+
+// static
+WebFramesManagerImpl* WebFramesManagerImpl::FromWebState(WebState* web_state) {
+  return static_cast<WebFramesManagerImpl*>(
+      WebFramesManager::FromWebState(web_state));
+}
 
 WebFramesManagerImpl::~WebFramesManagerImpl() = default;
 

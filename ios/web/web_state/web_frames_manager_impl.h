@@ -6,18 +6,18 @@
 #define IOS_WEB_WEB_STATE_WEB_FRAMES_MANAGER_IMPL_H_
 
 #include "ios/web/public/web_state/web_frames_manager.h"
-#include "ios/web/public/web_state/web_state_user_data.h"
 
 namespace web {
 
 class WebFrame;
 
-class WebFramesManagerImpl
-    : public WebFramesManager,
-      public web::WebStateUserData<WebFramesManagerImpl> {
+class WebFramesManagerImpl : public WebFramesManager {
  public:
   ~WebFramesManagerImpl() override;
   explicit WebFramesManagerImpl(web::WebState* web_state);
+
+  static void CreateForWebState(WebState* web_state);
+  static WebFramesManagerImpl* FromWebState(WebState* web_state);
 
   // Adds |frame| to the list of web frames associated with WebState.
   void AddFrame(std::unique_ptr<WebFrame> frame);
