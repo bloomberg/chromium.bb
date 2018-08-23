@@ -10,11 +10,16 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
+#include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
+
+#if defined(OS_ANDROID)
+#include "base/timer/timer.h"
+#endif
 
 class PrefService;
 
@@ -99,6 +104,12 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 #else
   std::unique_ptr<CastWindowManager> window_manager_;
 #endif  //  defined(USE_AURA)
+
+#if defined(OS_ANDROID)
+  void StartPeriodicCrashReportUpload();
+  void OnStartPeriodicCrashReportUpload();
+  std::unique_ptr<base::RepeatingTimer> crash_reporter_timer_;
+#endif
 
 #if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.

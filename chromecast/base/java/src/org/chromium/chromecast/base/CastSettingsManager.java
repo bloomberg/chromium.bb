@@ -7,7 +7,6 @@ package org.chromium.chromecast.base;
 import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.ContentObserver;
 import android.os.Build;
 import android.os.Handler;
@@ -23,12 +22,6 @@ public final class CastSettingsManager {
 
     private static final String PREFS_FILE_NAME = "CastSettings";
 
-    /** Key for the "send usage stats" boolean setting. */
-    private static final String SEND_USAGE_STATS_SETTING = "developer_support";
-
-    /** The default value for the "send usage stats" setting. */
-    private static final boolean SEND_USAGE_STATS_SETTING_DEFAULT = true;
-
     /** The default device name, which is the model name. */
     private static final String DEFAULT_DEVICE_NAME = Build.MODEL;
 
@@ -38,8 +31,6 @@ public final class CastSettingsManager {
     private static final String DEVICE_PROVISIONED_SETTING_KEY = Settings.Global.DEVICE_PROVISIONED;
 
     private final ContentResolver mContentResolver;
-    private final SharedPreferences mSettings;
-    private SharedPreferences.OnSharedPreferenceChangeListener mSharedPreferenceListener;
     private ContentObserver mDeviceNameObserver;
     private ContentObserver mIsDeviceProvisionedObserver;
 
@@ -49,7 +40,6 @@ public final class CastSettingsManager {
      */
     public static class OnSettingChangedListener {
         public void onCastEnabledChanged(boolean enabled) {}
-        public void onSendUsageStatsChanged(boolean enabled) {}
         public void onDeviceNameChanged(String deviceName) {}
     }
 
@@ -62,33 +52,14 @@ public final class CastSettingsManager {
     public static CastSettingsManager createCastSettingsManager(
             Context context, OnSettingChangedListener listener) {
         ContentResolver contentResolver = context.getContentResolver();
-        SharedPreferences settings = context.getSharedPreferences(PREFS_FILE_NAME, 0);
-        return new CastSettingsManager(contentResolver, listener, settings);
+        return new CastSettingsManager(contentResolver, listener);
     }
 
     @SuppressLint("NewApi")
     private CastSettingsManager(
-            ContentResolver contentResolver,
-            OnSettingChangedListener listener,
-            SharedPreferences settings) {
+            ContentResolver contentResolver, OnSettingChangedListener listener) {
         mContentResolver = contentResolver;
-        mSettings = settings;
         mListener = listener;
-
-        mSharedPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-            @Override
-            public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                if (mListener == null) {
-                    return;
-                }
-
-                if (key.equals(SEND_USAGE_STATS_SETTING)) {
-                    mListener.onSendUsageStatsChanged(prefs.getBoolean(key,
-                                    SEND_USAGE_STATS_SETTING_DEFAULT));
-                }
-            }
-        };
-        mSettings.registerOnSharedPreferenceChangeListener(mSharedPreferenceListener);
 
         mDeviceNameObserver = new ContentObserver(new Handler()) {
             @Override
@@ -116,8 +87,6 @@ public final class CastSettingsManager {
     }
 
     public void dispose() {
-        mSettings.unregisterOnSharedPreferenceChangeListener(mSharedPreferenceListener);
-        mSharedPreferenceListener = null;
         mContentResolver.unregisterContentObserver(mDeviceNameObserver);
         mDeviceNameObserver = null;
 
@@ -133,14 +102,6 @@ public final class CastSettingsManager {
         // TODO(crbug.com/635567): Fix lint properly.
         return Settings.Global.getInt(
                 mContentResolver, DEVICE_PROVISIONED_SETTING_KEY, 0) == 1;
-    }
-
-    public boolean isSendUsageStatsEnabled() {
-        return mSettings.getBoolean(SEND_USAGE_STATS_SETTING, SEND_USAGE_STATS_SETTING_DEFAULT);
-    }
-
-    public void setSendUsageStatsEnabled(boolean enabled) {
-        mSettings.edit().putBoolean(SEND_USAGE_STATS_SETTING, enabled).apply();
     }
 
     @SuppressLint("NewApi")

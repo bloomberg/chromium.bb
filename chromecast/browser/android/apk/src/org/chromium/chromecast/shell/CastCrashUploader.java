@@ -62,21 +62,13 @@ public final class CastCrashUploader {
                 : "https://clients2.google.com/cr/report";
     }
 
-    /** Sets up a periodic uploader, that checks for new dumps to upload every 20 minutes */
-    @SuppressWarnings("FutureReturnValueIgnored")
-    public void startPeriodicUpload() {
-        mExecutorService.scheduleWithFixedDelay(mQueueAllCrashDumpUploadsRunnable,
-                0, // Do first run immediately
-                20, // Run once every 20 minutes
-                TimeUnit.MINUTES);
-    }
-
     @SuppressWarnings("FutureReturnValueIgnored")
     public void uploadOnce() {
         mExecutorService.schedule(mQueueAllCrashDumpUploadsRunnable, 0, TimeUnit.MINUTES);
     }
 
     public void removeCrashDumps() {
+        Log.i(TAG, "Remove crash dumps");
         File crashDumpDirectory = new File(mCrashDumpPath);
         for (File potentialDump : crashDumpDirectory.listFiles()) {
             if (potentialDump.getName().matches(DUMP_FILE_REGEX)) {
@@ -94,6 +86,7 @@ public final class CastCrashUploader {
      */
     private void checkForCrashDumps() {
         if (mCrashDumpPath == null) return;
+
         Log.i(TAG, "Checking for crash dumps");
         File crashDumpDirectory = new File(mCrashDumpPath);
 

@@ -55,8 +55,6 @@ cast_source_set("base") {
     "cast_paths.h",
     "cast_resource.cc",
     "cast_resource.h",
-    "chromecast_config_android.cc",
-    "chromecast_config_android.h",
     "device_capabilities.h",
     "device_capabilities_impl.cc",
     "device_capabilities_impl.h",
@@ -103,6 +101,18 @@ cast_source_set("base") {
     sources += [ "cast_features_internal.cc" ]
   } else {
     deps += [ "//chromecast/internal/base:cast_internal_features" ]
+  }
+
+  if (is_android) {
+    sources += [ "chromecast_config_android.h" ]
+    if (chromecast_branding == "public") {
+      sources += [ "chromecast_config_android_dummy.cc" ]
+    } else {
+      sources +=
+          [ "//chromecast/internal/base/chromecast_config_android_internal.cc" ]
+      deps +=
+          [ "//chromecast/internal/base:chromecast_config_android_jni_headers" ]
+    }
   }
 }
 
@@ -289,7 +299,6 @@ process_version("cast_version") {
 if (is_android) {
   generate_jni("jni_headers") {
     sources = [
-      "java/src/org/chromium/chromecast/base/ChromecastConfigAndroid.java",
       "java/src/org/chromium/chromecast/base/DumpstateWriter.java",
       "java/src/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]
@@ -320,7 +329,6 @@ if (is_android) {
       # TODO(sanfin): Move these files to another target.
       "$java_src_dir/org/chromium/chromecast/base/CastSettingsManager.java",
       "$java_src_dir/org/chromium/chromecast/base/CastSwitches.java",
-      "$java_src_dir/org/chromium/chromecast/base/ChromecastConfigAndroid.java",
       "$java_src_dir/org/chromium/chromecast/base/DumpstateWriter.java",
       "$java_src_dir/org/chromium/chromecast/base/SystemTimeChangeNotifierAndroid.java",
     ]

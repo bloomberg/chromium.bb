@@ -28,8 +28,7 @@ class CrashHandler {
   static bool GetCrashDumpLocation(base::FilePath* crash_dir);
   static void UploadDumps(const base::FilePath& crash_dump_path,
                           const std::string& uuid,
-                          const std::string& application_feedback,
-                          bool periodic_upload);
+                          const std::string& application_feedback);
 
  private:
   CrashHandler(const std::string& process_type,
@@ -37,9 +36,6 @@ class CrashHandler {
   ~CrashHandler();
 
   void Initialize();
-
-  // Starts a thread to periodically check for uploads
-  void InitializeUploader();
 
   // Path to the current process's log file.
   base::FilePath log_file_path_;
