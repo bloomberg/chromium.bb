@@ -12,6 +12,8 @@
 #include "third_party/blink/renderer/core/html/media/html_audio_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/media/media_error.h"
+#include "third_party/blink/renderer/core/html/track/audio_track_list.h"
+#include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -26,8 +28,12 @@ namespace blink {
 
 class MockWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
+  MOCK_CONST_METHOD0(HasAudio, bool());
+  MOCK_CONST_METHOD0(HasVideo, bool());
   MOCK_CONST_METHOD0(Duration, double());
   MOCK_CONST_METHOD0(CurrentTime, double());
+  MOCK_METHOD1(EnabledAudioTracksChanged, void(const WebVector<TrackId>&));
+  MOCK_METHOD1(SelectedVideoTrackChanged, void(TrackId*));
   MOCK_METHOD3(
       Load,
       WebMediaPlayer::LoadTiming(LoadType load_type,
@@ -69,7 +75,15 @@ class HTMLMediaElementTest : public testing::TestWithParam<MediaTestParam> {
 
     // Most tests do not care about this call, nor its return value. Those that
     // do will clear this expectation and set custom expectations/returns.
-    EXPECT_CALL(*MockMediaPlayer(), Load(_, _, _))
+    EXPECT_CALL(*mock_media_player, HasAudio())
+        .WillRepeatedly(testing::Return(true));
+    EXPECT_CALL(*mock_media_player, HasVideo())
+        .WillRepeatedly(testing::Return(true));
+    EXPECT_CALL(*mock_media_player, Duration())
+        .WillRepeatedly(testing::Return(1.0));
+    EXPECT_CALL(*mock_media_player, CurrentTime())
+        .WillRepeatedly(testing::Return(0));
+    EXPECT_CALL(*mock_media_player, Load(_, _, _))
         .Times(AnyNumber())
         .WillRepeatedly(Return(WebMediaPlayer::LoadTiming::kImmediate));
 
@@ -235,8 +249,6 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToEnded) {
   MockWebMediaPlayer* mock_wmpi =
       reinterpret_cast<MockWebMediaPlayer*>(Media()->GetWebMediaPlayer());
   EXPECT_NE(mock_wmpi, nullptr);
-  EXPECT_CALL(*mock_wmpi, Duration()).WillRepeatedly(testing::Return(1.0));
-  EXPECT_CALL(*mock_wmpi, CurrentTime()).WillRepeatedly(testing::Return(0));
   EXPECT_TRUE(CouldPlayIfEnoughData());
 
   // Playback can only end once the ready state is above kHaveMetadata.
@@ -262,8 +274,6 @@ TEST_P(HTMLMediaElementTest, CouldPlayIfEnoughDataRespondsToError) {
   MockWebMediaPlayer* mock_wmpi =
       reinterpret_cast<MockWebMediaPlayer*>(Media()->GetWebMediaPlayer());
   EXPECT_NE(mock_wmpi, nullptr);
-  EXPECT_CALL(*mock_wmpi, Duration()).WillRepeatedly(testing::Return(1.0));
-  EXPECT_CALL(*mock_wmpi, CurrentTime()).WillRepeatedly(testing::Return(0));
   EXPECT_TRUE(CouldPlayIfEnoughData());
 
   SetReadyState(HTMLMediaElement::kHaveMetadata);
@@ -417,6 +427,21 @@ TEST_P(HTMLMediaElementTest, ImmediateMediaPlayerLoadDoesDelayWindowLoadEvent) {
 
   // Still delayed because WMP loading is not deferred.
   EXPECT_TRUE(ShouldDelayLoadEvent());
+}
+
+TEST_P(HTMLMediaElementTest, DefaultTracksAreEnabled) {
+  // Default tracks should start enabled, not be created then enabled.
+  EXPECT_CALL(*MockMediaPlayer(), EnabledAudioTracksChanged(_)).Times(0);
+  EXPECT_CALL(*MockMediaPlayer(), SelectedVideoTrackChanged(_)).Times(0);
+
+  Media()->SetSrc(SrcSchemeToURL(TestURLScheme::kHttp));
+  test::RunPendingTasks();
+  SetReadyState(HTMLMediaElement::kHaveFutureData);
+
+  ASSERT_EQ(1u, Media()->audioTracks().length());
+  ASSERT_EQ(1u, Media()->videoTracks().length());
+  EXPECT_TRUE(Media()->audioTracks().AnonymousIndexedGetter(0)->enabled());
+  EXPECT_TRUE(Media()->videoTracks().AnonymousIndexedGetter(0)->selected());
 }
 
 }  // namespace blink

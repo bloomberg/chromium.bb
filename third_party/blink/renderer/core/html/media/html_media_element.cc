@@ -1828,8 +1828,6 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
   if (ready_state_ >= kHaveMetadata && old_state < kHaveMetadata) {
     CreatePlaceholderTracksIfNecessary();
 
-    SelectInitialTracksIfNecessary();
-
     MediaFragmentURIParser fragment_parser(current_src_);
     fragment_end_time_ = fragment_parser.EndTime();
 
@@ -3981,28 +3979,15 @@ void HTMLMediaElement::CreatePlaceholderTracksIfNecessary() {
   // didn't explicitly announce the tracks.
   if (HasAudio() && !audioTracks().length()) {
     AddAudioTrack("audio", WebMediaPlayerClient::kAudioTrackKindMain,
-                  "Audio Track", "", false);
+                  "Audio Track", "", true);
   }
 
   // Create a placeholder video track if the player says it has video but it
   // didn't explicitly announce the tracks.
   if (HasVideo() && !videoTracks().length()) {
     AddVideoTrack("video", WebMediaPlayerClient::kVideoTrackKindMain,
-                  "Video Track", "", false);
+                  "Video Track", "", true);
   }
-}
-
-void HTMLMediaElement::SelectInitialTracksIfNecessary() {
-  if (!MediaTracksEnabledInternally())
-    return;
-
-  // Enable the first audio track if an audio track hasn't been enabled yet.
-  if (audioTracks().length() > 0 && !audioTracks().HasEnabledTrack())
-    audioTracks().AnonymousIndexedGetter(0)->setEnabled(true);
-
-  // Select the first video track if a video track hasn't been selected yet.
-  if (videoTracks().length() > 0 && videoTracks().selectedIndex() == -1)
-    videoTracks().AnonymousIndexedGetter(0)->setSelected(true);
 }
 
 void HTMLMediaElement::SetNetworkState(NetworkState state) {
