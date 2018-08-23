@@ -104,8 +104,8 @@ class ObserverList : public SupportsWeakPtr<ObserverList<ObserverType,
  public:
   // Allow declaring an ObserverList<...>::Unchecked that replaces the default
   // ObserverStorageType to use raw pointers. This is required to support legacy
-  // observers that do not inherit from CheckedObserver. The majority of NEW
-  // CODE SHOULD NOT USE THIS, but it may be suited for performance-critical
+  // observers that do not inherit from CheckedObserver. The majority of new
+  // code should not use this, but it may be suited for performance-critical
   // situations to avoid overheads of a CHECK(). Note the type can't be chosen
   // based on ObserverType's definition because ObserverLists are often declared
   // in headers using a forward-declare of ObserverType.
@@ -285,8 +285,8 @@ class ObserverList : public SupportsWeakPtr<ObserverList<ObserverType,
   // Determine whether a particular observer is in the list.
   bool HasObserver(const ObserverType* obs) const {
     // Client code passing null could be confused by the treatment of observers
-    // removed mid-iteration. TODO(tapted): This should probably DCHECK, but
-    // some client code currently does pass null to HasObserver().
+    // removed mid-iteration. TODO(https://crbug.com/876588): This should
+    // probably DCHECK, but some client code currently does pass null.
     if (obs == nullptr)
       return false;
     return std::find_if(observers_.begin(), observers_.end(),

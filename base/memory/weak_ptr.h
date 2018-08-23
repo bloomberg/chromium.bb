@@ -270,7 +270,7 @@ class WeakPtr : public internal::WeakPtrBase {
 
   // Returns whether the object |this| points to has been invalidated. This can
   // be used to distinguish a WeakPtr to a destroyed object from one that has
-  // been explicitly set to null. A null WeakPtr is always valid.
+  // been explicitly set to null.
   bool WasInvalidated() const { return ptr_ && !ref_.IsValid(); }
 
  private:
