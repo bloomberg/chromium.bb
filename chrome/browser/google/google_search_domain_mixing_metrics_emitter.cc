@@ -4,6 +4,7 @@
 
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter.h"
 
+#include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/domain_mixing_metrics.h"
 #include "components/history/core/browser/history_backend.h"
@@ -52,7 +53,9 @@ GoogleSearchDomainMixingMetricsEmitter::GoogleSearchDomainMixingMetricsEmitter(
     : prefs_(prefs),
       history_service_(history_service),
       ui_thread_task_runner_(content::BrowserThread::GetTaskRunnerForThread(
-          content::BrowserThread::UI)) {}
+          content::BrowserThread::UI)) {
+  DCHECK(history_service_);
+}
 
 GoogleSearchDomainMixingMetricsEmitter::
     ~GoogleSearchDomainMixingMetricsEmitter() {}
