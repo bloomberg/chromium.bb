@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/sys_info.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
 #include "components/session_manager/core/session_manager.h"
@@ -34,16 +36,6 @@ DemoSession::EnrollmentType g_force_enrollment_type =
 
 // The name of the offline demo resource image loader component.
 constexpr char kDemoResourcesComponentName[] = "demo-mode-resources";
-
-// The path from which the offline demo mode resources component should be
-// loaded by the image loader service.
-constexpr base::FilePath::CharType kPreInstalledDemoResourcesComponentPath[] =
-    FILE_PATH_LITERAL(
-        "/mnt/stateful_partition/unencrypted/demo_mode_resources");
-
-// Can be set in test to override location of preinstalled offline resources
-// component path.
-const base::FilePath* g_pre_installed_demo_resources_path_override = nullptr;
 
 // Path relative to the path at which offline demo resources are loaded that
 // contains image with demo Android apps.
@@ -71,15 +63,11 @@ bool IsDemoModeOfflineEnrolled() {
 
 // static
 base::FilePath DemoSession::GetPreInstalledDemoResourcesPath() {
-  if (g_pre_installed_demo_resources_path_override)
-    return *g_pre_installed_demo_resources_path_override;
-  return base::FilePath(kPreInstalledDemoResourcesComponentPath);
-}
-
-// static
-void DemoSession::OverridePreInstalledDemoResourcesPathForTesting(
-    base::FilePath* overriden_path) {
-  g_pre_installed_demo_resources_path_override = overriden_path;
+  base::FilePath preinstalled_components_root;
+  base::PathService::Get(DIR_PREINSTALLED_COMPONENTS,
+                         &preinstalled_components_root);
+  return preinstalled_components_root.AppendASCII("cros-components")
+      .AppendASCII(kDemoResourcesComponentName);
 }
 
 // static
