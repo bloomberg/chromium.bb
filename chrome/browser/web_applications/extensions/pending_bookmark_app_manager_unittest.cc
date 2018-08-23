@@ -53,8 +53,11 @@ web_app::PendingAppManager::AppInfo GetQuxAppInfo() {
 
 class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
  public:
-  TestBookmarkAppInstallationTask(Profile* profile, bool succeeds)
-      : BookmarkAppInstallationTask(profile), succeeds_(succeeds) {}
+  TestBookmarkAppInstallationTask(Profile* profile,
+                                  web_app::PendingAppManager::AppInfo app_info,
+                                  bool succeeds)
+      : BookmarkAppInstallationTask(profile, std::move(app_info)),
+        succeeds_(succeeds) {}
   ~TestBookmarkAppInstallationTask() override = default;
 
   void InstallWebAppOrShortcutFromWebContents(
@@ -110,13 +113,17 @@ class PendingBookmarkAppManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateSuccessfulInstallationTask(
-      Profile* profile) {
-    return std::make_unique<TestBookmarkAppInstallationTask>(profile, true);
+      Profile* profile,
+      web_app::PendingAppManager::AppInfo app_info) {
+    return std::make_unique<TestBookmarkAppInstallationTask>(
+        profile, std::move(app_info), true);
   }
 
   std::unique_ptr<BookmarkAppInstallationTask> CreateFailingInstallationTask(
-      Profile* profile) {
-    return std::make_unique<TestBookmarkAppInstallationTask>(profile, false);
+      Profile* profile,
+      web_app::PendingAppManager::AppInfo app_info) {
+    return std::make_unique<TestBookmarkAppInstallationTask>(
+        profile, std::move(app_info), false);
   }
 
   void InstallCallback(const GURL& url, const std::string& app_id) {

@@ -38,9 +38,8 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
  public:
   using WebContentsFactory =
       base::RepeatingCallback<std::unique_ptr<content::WebContents>(Profile*)>;
-  using TaskFactory =
-      base::RepeatingCallback<std::unique_ptr<BookmarkAppInstallationTask>(
-          Profile*)>;
+  using TaskFactory = base::RepeatingCallback<
+      std::unique_ptr<BookmarkAppInstallationTask>(Profile*, AppInfo)>;
 
   explicit PendingBookmarkAppManager(Profile* profile);
   ~PendingBookmarkAppManager() override;
@@ -56,7 +55,7 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
   void SetTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
  private:
-  struct Installation;
+  struct TaskAndCallback;
 
   void MaybeStartNextInstallation();
 
@@ -84,10 +83,9 @@ class PendingBookmarkAppManager final : public web_app::PendingAppManager,
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<base::OneShotTimer> timer_;
 
-  std::unique_ptr<Installation> current_installation_;
-  std::unique_ptr<BookmarkAppInstallationTask> current_installation_task_;
+  std::unique_ptr<TaskAndCallback> current_task_and_callback_;
 
-  std::deque<std::unique_ptr<Installation>> installation_queue_;
+  std::deque<std::unique_ptr<TaskAndCallback>> pending_tasks_and_callbacks_;
 
   base::WeakPtrFactory<PendingBookmarkAppManager> weak_ptr_factory_{this};
 

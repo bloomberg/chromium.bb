@@ -278,9 +278,15 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationSucceeds) {
-  auto task = std::make_unique<BookmarkAppInstallationTask>(profile());
+  const GURL app_url(kWebAppUrl);
+
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(),
+      web_app::PendingAppManager::AppInfo(
+          app_url, web_app::PendingAppManager::LaunchContainer::kWindow));
+
   WebApplicationInfo info;
-  info.app_url = GURL(kWebAppUrl);
+  info.app_url = app_url;
   info.title = base::UTF8ToUTF16(kWebAppTitle);
   task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
       std::make_unique<WebApplicationInfo>(std::move(info))));
@@ -303,9 +309,15 @@ TEST_F(BookmarkAppInstallationTaskTest,
 
 TEST_F(BookmarkAppInstallationTaskTest,
        WebAppOrShortcutFromContents_InstallationFails) {
-  auto task = std::make_unique<BookmarkAppInstallationTask>(profile());
+  const GURL app_url(kWebAppUrl);
+
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(),
+      web_app::PendingAppManager::AppInfo(
+          app_url, web_app::PendingAppManager::LaunchContainer::kWindow));
+
   WebApplicationInfo info;
-  info.app_url = GURL(kWebAppUrl);
+  info.app_url = app_url;
   info.title = base::UTF8ToUTF16(kWebAppTitle);
   task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
       std::make_unique<WebApplicationInfo>(std::move(info))));
