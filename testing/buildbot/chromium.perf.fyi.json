@@ -124,6 +124,7 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
+              "gpu": "10de:1cb3",
               "id": "build186-b7",
               "pool": "chrome.tests.perf-fyi"
             }
