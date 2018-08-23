@@ -303,6 +303,8 @@ component("base") {
     "win/foreground_helper.h",
     "win/hidden_window.cc",
     "win/hidden_window.h",
+    "win/hwnd_metrics.cc",
+    "win/hwnd_metrics.h",
     "win/hwnd_subclass.cc",
     "win/hwnd_subclass.h",
     "win/internal_constants.cc",
