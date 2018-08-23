@@ -59,7 +59,7 @@ struct XRSessionOptions {
 // XRFrameDataProvider. It must always be present. Other interfaces are set as
 // apropriate based on the session creation options. (for example, an immersive
 // session ought to have a XRPresentationConnection to submit the frames to the
-// immersive enviroment).
+// immersive environment).
 // The XRSessionClient request must be fulfilled for the session to get
 // information about the device it is connected to, such as focus and blur
 // events, changes to view or stage parameters, or exit present calls initiated
@@ -73,7 +73,7 @@ struct XRSession {
   // info to more sensible places so that this doesn't need to be sent here.
   VRDisplayInfo display_info;
   XRPresentationConnection? submit_frame_sink;
-  XREnviromentIntegrationProvider? enviroment_provider;
+  XREnvironmentIntegrationProvider? environment_provider;
 };
 
 // This structure contains the infomation and interfaces needed to create a two
@@ -314,14 +314,14 @@ interface XRFrameDataProvider {
   GetFrameData() => (XRFrameData? frame_data);
 };
 
-// Provides functionality for integrating enviroment information into an
+// Provides functionality for integrating environment information into an
 // XRSession. For example, some AR sessions would implement hit test to allow
 // developers to get the information about the world that its sensors supply.
-interface XREnviromentIntegrationProvider {
+interface XREnvironmentIntegrationProvider {
   // Different devices can have different native orientations - 0 is the native
   // orientation, and then increments of 90 degrees from there. Session geometry
-  // is needed by the device when integrating enviroment image data, i.e. camera
-  // feeds, into a session.
+  // is needed by the device when integrating environment image data, i.e.
+  // camera feeds, into a session.
   UpdateSessionGeometry(
       gfx.mojom.Size frame_size,
       display.mojom.Rotation display_rotation);

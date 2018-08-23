@@ -18,9 +18,9 @@ Immersive sessions are where the site wishes to request poses, then render
 content back to a display other than chrome. The common case for this is Head
 Mounted Displays (HMD), like Vive, Oculus, or Daydream.
 
-## Enviroment Integration
-This type of session allows for enviroment integration by providing functions
-that allow the site to query the enviroment, such as HitTest. A Enviroment
+## Environment Integration
+This type of session allows for environment integration by providing functions
+that allow the site to query the environment, such as HitTest. A Environment
 Integration session may also supply data in addition to the pose, such as a
 camera frame.
 

@@ -18,10 +18,10 @@ namespace device {
 VRDisplayImpl::VRDisplayImpl(
     VRDeviceBase* device,
     mojom::XRFrameDataProviderRequest magic_window_request,
-    mojom::XREnviromentIntegrationProviderRequest enviroment_request,
+    mojom::XREnvironmentIntegrationProviderRequest environment_request,
     mojom::XRSessionControllerRequest session_request)
     : magic_window_binding_(this, std::move(magic_window_request)),
-      enviroment_binding_(this, std::move(enviroment_request)),
+      environment_binding_(this, std::move(environment_request)),
       session_controller_binding_(this, std::move(session_request)),
       device_(device) {
   // Unretained is safe because the binding will close when we are destroyed,
@@ -62,7 +62,7 @@ void VRDisplayImpl::UpdateSessionGeometry(const gfx::Size& frame_size,
 
 void VRDisplayImpl::RequestHitTest(
     mojom::XRRayPtr ray,
-    mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback) {
+    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
   if (restrict_frame_data_) {
     std::move(callback).Run(base::nullopt);
     return;

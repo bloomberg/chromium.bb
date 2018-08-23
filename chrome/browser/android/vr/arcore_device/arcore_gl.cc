@@ -82,7 +82,7 @@ struct ARCoreHitTestRequest {
   ARCoreHitTestRequest() = default;
   ~ARCoreHitTestRequest() = default;
   mojom::XRRayPtr ray;
-  mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback;
+  mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ARCoreHitTestRequest);
@@ -251,7 +251,7 @@ void ARCoreGl::ProduceFrame(
 
 void ARCoreGl::RequestHitTest(
     mojom::XRRayPtr ray,
-    mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback) {
+    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
   DCHECK(IsOnGlThread());
   DCHECK(is_initialized_);
 

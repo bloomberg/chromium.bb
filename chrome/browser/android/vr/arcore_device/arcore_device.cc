@@ -312,7 +312,7 @@ void ARCoreDevice::OnMagicWindowFrameDataRequest(
 
 void ARCoreDevice::RequestHitTest(
     mojom::XRRayPtr ray,
-    mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback) {
+    mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback) {
   DCHECK(IsOnMainThread());
 
   PostTaskToGlThread(base::BindOnce(
@@ -442,15 +442,16 @@ void ARCoreDevice::OnARCoreGlInitializationComplete(
   }
 
   mojom::XRFrameDataProviderPtr data_provider;
-  mojom::XREnviromentIntegrationProviderPtr enviroment_provider;
+  mojom::XREnvironmentIntegrationProviderPtr environment_provider;
   mojom::XRSessionControllerPtr controller;
-  magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
-      this, mojo::MakeRequest(&data_provider),
-      mojo::MakeRequest(&enviroment_provider), mojo::MakeRequest(&controller)));
+  magic_window_sessions_.push_back(
+      std::make_unique<VRDisplayImpl>(this, mojo::MakeRequest(&data_provider),
+                                      mojo::MakeRequest(&environment_provider),
+                                      mojo::MakeRequest(&controller)));
 
   auto session = mojom::XRSession::New();
   session->data_provider = data_provider.PassInterface();
-  session->enviroment_provider = enviroment_provider.PassInterface();
+  session->environment_provider = environment_provider.PassInterface();
   session->display_info = display_info_.Clone();
 
   std::move(callback).Run(std::move(session), std::move(controller));
