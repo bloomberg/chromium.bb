@@ -162,10 +162,6 @@ class NET_EXPORT CertVerifyProc
   // (i.e. by 1 July 2019).
   static bool HasTooLongValidity(const X509Certificate& cert);
 
-  // Emergency kill-switch for SHA-1 deprecation. Disabled by default.
-  static const base::Feature kSHA1LegacyMode;
-  const bool sha1_legacy_mode_enabled;
-
   // Feature flag affecting the Legacy Symantec PKI deprecation, documented
   // at https://g.co/chrome/symantecpkicerts
   static const base::Feature kLegacySymantecPKIEnforcement;
