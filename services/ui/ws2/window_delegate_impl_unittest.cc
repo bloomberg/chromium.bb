@@ -4,6 +4,7 @@
 
 #include "services/ui/ws2/window_delegate_impl.h"
 
+#include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/test_window_service_delegate.h"
 #include "services/ui/ws2/window_service_test_setup.h"
 #include "services/ui/ws2/window_tree_test_helper.h"
@@ -32,6 +33,61 @@ TEST(WindowDeleteImplTest, GetCursorTopLevel) {
   setup.window_tree_test_helper()->SetCursor(top_level, help_cursor);
   EXPECT_EQ(help_cursor.cursor_type(),
             top_level->GetCursor(gfx::Point()).native_type());
+}
+
+TEST(WindowDeleteImplTest, GetCursorForEmbedding) {
+  WindowServiceTestSetup setup;
+  // WindowDelegateImpl deletes itself when the window is deleted.
+  WindowDelegateImpl* delegate = new WindowDelegateImpl();
+  setup.delegate()->set_delegate_for_next_top_level(delegate);
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  delegate->set_window(top_level);
+
+  // Create an embedding.
+  aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(embed_window);
+  top_level->AddChild(embed_window);
+  std::unique_ptr<EmbeddingHelper> embedding_helper =
+      setup.CreateEmbedding(embed_window);
+
+  // Set a cursor on the embedded window from the embedded client and ensure we
+  // get it back.
+  const ui::CursorData help_cursor(ui::CursorType::kHelp);
+  embedding_helper->window_tree_test_helper->SetCursor(embed_window,
+                                                       help_cursor);
+  EXPECT_EQ(help_cursor.cursor_type(),
+            embed_window->GetCursor(gfx::Point()).native_type());
+}
+
+TEST(WindowDeleteImplTest, GetCursorForEmbeddingInterceptsEvents) {
+  WindowServiceTestSetup setup;
+  // WindowDelegateImpl deletes itself when the window is deleted.
+  WindowDelegateImpl* delegate = new WindowDelegateImpl();
+  setup.delegate()->set_delegate_for_next_top_level(delegate);
+  aura::Window* top_level =
+      setup.window_tree_test_helper()->NewTopLevelWindow();
+  delegate->set_window(top_level);
+
+  // Set a cursor on |top_level|.
+  const ui::CursorData help_cursor(ui::CursorType::kHelp);
+  setup.window_tree_test_helper()->SetCursor(top_level, help_cursor);
+
+  // Create an embedding.
+  aura::Window* embed_window = setup.window_tree_test_helper()->NewWindow();
+  ASSERT_TRUE(embed_window);
+  top_level->AddChild(embed_window);
+  std::unique_ptr<EmbeddingHelper> embedding_helper = setup.CreateEmbedding(
+      embed_window, ui::mojom::kEmbedFlagEmbedderInterceptsEvents);
+
+  // Set a cursor on the embedding. Because the embedding was created with
+  // kEmbedFlagEmbedderInterceptsEvents the cursor should come from the parent
+  // (|top_level|).
+  const ui::CursorData ibeam_cursor(ui::CursorType::kIBeam);
+  embedding_helper->window_tree_test_helper->SetCursor(embed_window,
+                                                       ibeam_cursor);
+  EXPECT_EQ(help_cursor.cursor_type(),
+            embed_window->GetCursor(gfx::Point()).native_type());
 }
 
 }  // namespace ws2
