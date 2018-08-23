@@ -365,8 +365,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-do-not-overhang-from-block-formatting-context.html [ Failure ]
 crbug.com/635619 [ Mac ] virtual/layout_ng/fast/block/float/intruding-painted-twice.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Pass Crash Timeout ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-on-element-avoiding-floats-with-margin-on-parent.html [ Failure ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/negative-margin-on-element-avoiding-floats.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction.html [ Failure ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/nopaint-after-layer-destruction2.html [ Failure ]
 crbug.com/810370 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block.html [ Failure ]
@@ -401,9 +399,6 @@ crbug.com/836300 fast/css3-text/css3-text-decoration/text-decoration-skip-ink-li
 # Maybe a Mac-specific rebaselining issue.
 crbug.com/846557 [ Mac ] virtual/layout_ng_experimental/css3/flexbox/button.html [ Skip ]
 
-### Crash site: ContainerNode.cpp
-crbug.com/714962 virtual/layout_ng/fast/inline/inline-with-empty-inline-children.html [ Crash Failure ]
-
 ### Crash site: layout_ng_block_flow.cc
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-offsetLeft-relpos.html [ Crash Failure ]
 
@@ -414,9 +409,7 @@ crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass
 
 ### Image/text failures
 #crbug.com/714962 virtual/layout_ng/fast/inline/001.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/absolute-positioned-block-in-centred-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers-2.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/emptyInlinesWithinLists.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-long-image.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/inline-box-background-repeat-x.html [ Failure ]
@@ -427,6 +420,8 @@ crbug.com/714962 virtual/layout_ng/fast/inline/justify-emphasis-inline-box.html 
 crbug.com/714962 virtual/layout_ng/fast/inline/outline-offset.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/inline/br-text-decoration.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/inline/drawStyledEmptyInlines.html [ Failure ]
+crbug.com/714962 [ Mac ] virtual/layout_ng/fast/inline/drawStyledEmptyInlinesWithWS.html [ Failure ]
+
 ### Image/text failures also on LayoutNG
 crbug.com/714962 virtual/layout_ng/fast/inline/absolute-positioned-inline-in-centred-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/inline/continuation-outlines-with-layers.html [ Failure ]
@@ -454,13 +449,10 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/fast/block/float/trailing-float-with-
 ### virtual/layout_ng/fast/writing-mode/
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/auto-sizing-orthogonal-flows.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/background-vertical-lr.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/background-vertical-rl.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/basic-vertical-line.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-image-vertical-lr.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-image-vertical-rl.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-radius-clipping-vertical-lr.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-styles-vertical-lr.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/border-styles-vertical-rl.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/broken-ideograph-small-caps.html [ Failure ]
@@ -474,9 +466,6 @@ crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/margins.html [ Fail
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/orthogonal-inline-block.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/orthogonal-writing-modes-available-width-absolute-crash.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/percentage-height-orthogonal-writing-modes.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/text-combine-justify.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/text-combine-line-break.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/text-combine-various-fonts.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-align-table-baseline.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
 crbug.com/714962 [ Mac ] virtual/layout_ng/fast/writing-mode/vertical-font-fallback.html [ Failure ]
@@ -1930,7 +1919,6 @@ crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphens-orphaned-word.html [ Sk
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/midword-break-priority.html [ Skip ]
 
 crbug.com/405389 external/wpt/css/css-shapes/shape-outside/supported-shapes/polygon/shape-outside-polygon-017.html [ Failure ]
-crbug.com/424365 external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-010.html [ Failure ]
 crbug.com/424365 external/wpt/css/css-shapes/shape-outside/shape-image/shape-image-024.html [ Failure ]
 crbug.com/441840 [ Win ] external/wpt/css/css-shapes/shape-outside/values/shape-margin-001.html [ Failure ]
 crbug.com/441840 external/wpt/css/css-shapes/shape-outside/values/shape-outside-circle-004.html [ Failure ]
@@ -2880,7 +2868,6 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/domxpath/xml_xpath_runner.html [ Time
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-024.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-048.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-026.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-020.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-055.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-051.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-037.html [ Failure ]
@@ -2889,7 +2876,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-margin-box-border-radius-003.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-009.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-margin-box-border-radius-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-021.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-050.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-050.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-012.html [ Failure ]
@@ -2905,8 +2891,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-021.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-025.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-027.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-polygon-022.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-020.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-046.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-042.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-ellipse-039.html [ Failure ]
@@ -2917,7 +2901,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-054.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-004.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-circle-048.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-022.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-inset-025.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/shape-outside-border-box-border-radius-007.html [ Failure ]
@@ -3203,7 +3186,6 @@ crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/descriptor-symbols.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/system-extends-invalid.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/counter-styles-3/redefine-builtin.html [ Failure ]
-crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-006v.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-fonts/font-variant-06.xht [ Failure ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-001v.html [ Failure ]
