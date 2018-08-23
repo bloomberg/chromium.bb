@@ -220,6 +220,8 @@ dist_yaml_TESTS =			  \
 	yaml/issue-479.yaml		  \
 	yaml/issue-498.yaml		  \
 	yaml/issue-537.yaml		  \
+	yaml/issue-583.yaml		  \
+	yaml/issue-584.yaml		  \
 	yaml/issue-77.yaml 		  \
 	yaml/letterDefTest_harness.yaml	  \
 	yaml/multipass-backward.yaml	  \
