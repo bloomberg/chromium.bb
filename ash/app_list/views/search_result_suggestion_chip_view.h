@@ -26,6 +26,7 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
 
   SearchResult* result() { return item_; }
   void SetSearchResult(SearchResult* item);
+  void SetIndexInSuggestionChipContainer(size_t index);
 
   // SearchResultObserver:
   void OnMetadataChanged() override;
@@ -54,6 +55,9 @@ class APP_LIST_EXPORT SearchResultSuggestionChipView
   // The view that actually shows the icon and title.
   SuggestionChipView* suggestion_chip_view_ = nullptr;
 
+  // The index of this view in the suggestion_chip_container, only used for uma
+  // logging.
+  int index_in_suggestion_chip_container_ = -1;
   base::WeakPtrFactory<SearchResultSuggestionChipView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultSuggestionChipView);

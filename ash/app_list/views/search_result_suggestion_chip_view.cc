@@ -11,6 +11,7 @@
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -22,9 +23,14 @@ namespace app_list {
 namespace {
 
 // Records an app being launched.
-void LogAppLaunch() {
+void LogAppLaunch(int index_in_suggestion_chip_container) {
+  DCHECK_GE(index_in_suggestion_chip_container, 0);
+  base::UmaHistogramSparse("Apps.AppListSuggestedChipLaunched",
+                           index_in_suggestion_chip_container);
+
   UMA_HISTOGRAM_BOOLEAN(kAppListAppLaunchedFullscreen,
                         true /* suggested app */);
+
   base::RecordAction(base::UserMetricsAction("AppList_OpenSuggestedApp"));
 }
 
@@ -52,6 +58,11 @@ void SearchResultSuggestionChipView::SetSearchResult(SearchResult* item) {
   UpdateSuggestionChipView();
 }
 
+void SearchResultSuggestionChipView::SetIndexInSuggestionChipContainer(
+    size_t index) {
+  index_in_suggestion_chip_container_ = index;
+}
+
 void SearchResultSuggestionChipView::OnMetadataChanged() {
   UpdateSuggestionChipView();
 }
@@ -63,7 +74,7 @@ void SearchResultSuggestionChipView::OnResultDestroying() {
 void SearchResultSuggestionChipView::ButtonPressed(views::Button* sender,
                                                    const ui::Event& event) {
   DCHECK(item_);
-  LogAppLaunch();
+  LogAppLaunch(index_in_suggestion_chip_container_);
   RecordSearchResultOpenSource(item_, view_delegate_->GetModel(),
                                view_delegate_->GetSearchModel());
   view_delegate_->OpenSearchResult(item_->id(), event.flags());

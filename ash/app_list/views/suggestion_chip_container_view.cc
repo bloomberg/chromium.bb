@@ -62,10 +62,12 @@ int SuggestionChipContainerView::DoUpdate() {
 
   // Create a suggestion chip for each search result, but wait until layout to
   // add them as child views when we know this view's bounds.
-  for (auto* result : display_results) {
+  for (size_t i = 0; i < display_results.size(); ++i) {
+    auto* result = display_results[i];
     SearchResultSuggestionChipView* chip =
         new SearchResultSuggestionChipView(view_delegate_);
     chip->SetSearchResult(result);
+    chip->SetIndexInSuggestionChipContainer(i);
     suggestion_chip_views_.emplace_back(chip);
   }
 
