@@ -107,6 +107,7 @@
 #include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/grit/extensions_browser_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -116,6 +117,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -313,6 +315,35 @@ class TestShelfController : public ash::mojom::ShelfController {
     set_delegate_count_++;
   }
 
+  // Helper that waits for idle and extracts the non-default bitmap from the
+  // last updated item in shelf controller.
+  SkBitmap GetLastItemImage() {
+    if (default_app_image_.isNull()) {
+      default_app_image_ =
+          *gfx::ImageSkiaOperations::CreateResizedImage(
+               *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+                   IDR_APP_DEFAULT_ICON),
+               skia::ImageOperations::RESIZE_BEST,
+               gfx::Size(extension_misc::EXTENSION_ICON_SMALL,
+                         extension_misc::EXTENSION_ICON_SMALL))
+               .bitmap();
+    }
+
+    // Loading icon is multistep process. At first step default app icon is
+    // loaded while real icon is requested and decoded.
+    // base::RunLoop().RunUntilIdle() hides these steps and in most cases real
+    // icon is returned afterward. However in rare cases default icon is left
+    // after base::RunLoop().RunUntilIdle(). So make sure we don't return
+    // default icon that may fail test expectations.
+    while (true) {
+      base::RunLoop().RunUntilIdle();
+      const SkBitmap* bitmap = last_item().image.bitmap();
+      CHECK(bitmap);
+      if (!gfx::test::AreBitmapsEqual(default_app_image_, *bitmap))
+        return *bitmap;
+    }
+  }
+
  private:
   size_t added_count_ = 0;
   size_t removed_count_ = 0;
@@ -322,6 +353,9 @@ class TestShelfController : public ash::mojom::ShelfController {
 
   ash::mojom::ShelfObserverAssociatedPtr observer_;
   mojo::Binding<ash::mojom::ShelfController> binding_;
+
+  // Used to cache default app image.
+  SkBitmap default_app_image_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfController);
 };
@@ -333,15 +367,6 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
       ui::EF_NONE, 0);
   delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
                          ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
-}
-
-// Helper that waits for idle and extracts the bitmap from the last updated item
-// in shelf controller.
-SkBitmap GetLastItemImage(TestShelfController* shelf_controller) {
-  base::RunLoop().RunUntilIdle();
-  const SkBitmap* bitmap = shelf_controller->last_item().image.bitmap();
-  CHECK(bitmap);
-  return *bitmap;
 }
 
 // Creates a window with TYPE_APP shelf item type and the given app_id.
@@ -2409,7 +2434,7 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
             GetPinnedAppStatus());
 }
 
-TEST_P(ChromeLauncherControllerWithArcTest, DISABLED_ArcCustomAppIcon) {
+TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   InitLauncherController();
 
   TestShelfController* shelf_controller =
@@ -2450,55 +2475,55 @@ TEST_P(ChromeLauncherControllerWithArcTest, DISABLED_ArcCustomAppIcon) {
       model_->GetShelfItemDelegate(ash::ShelfID(arc_app_id));
   ASSERT_TRUE(item_delegate);
   base::RunLoop().RunUntilIdle();
-  const SkBitmap default_icon = GetLastItemImage(shelf_controller);
+  const SkBitmap default_icon = shelf_controller->GetLastItemImage();
 
   // No custom icon set. Acitivating windows should not change icon.
   window1->Activate();
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
   window2->Activate();
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
 
   // Set custom icon on active item. Icon should change to custom.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
-  const SkBitmap custom_icon = GetLastItemImage(shelf_controller);
+  const SkBitmap custom_icon = shelf_controller->GetLastItemImage();
   EXPECT_FALSE(gfx::test::AreBitmapsEqual(default_icon, custom_icon));
 
   // Switch back to the item without custom icon. Icon should be changed to
   // default.
   window1->Activate();
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
 
   // Test that setting an invalid icon should not change custom icon.
   arc_test_.app_instance()->SendTaskDescription(1, std::string(), png_data);
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
   arc_test_.app_instance()->SendTaskDescription(1, std::string(),
                                                 invalid_png_data);
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
 
   // Check window removing with active custom icon. Reseting custom icon of
   // inactive window doesn't reset shelf icon.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(),
                                                 std::string());
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
   // Set custom icon back to validate closing active window later.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
 
   // Reseting custom icon of active window resets shelf icon.
   arc_test_.app_instance()->SendTaskDescription(1, std::string(),
                                                 std::string());
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
   window1->CloseNow();
   EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
-                                         GetLastItemImage(shelf_controller)));
+                                         shelf_controller->GetLastItemImage()));
 }
 
 // Check that with multi profile V1 apps are properly added / removed from the
