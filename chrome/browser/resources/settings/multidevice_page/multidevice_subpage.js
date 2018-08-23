@@ -82,7 +82,7 @@ Polymer({
 
   /** @private */
   handleForgetDeviceClick_: function() {
-    // TODO(jordynass): Have this navigate to the route for dialog once it is
+    // TODO(khorimoto): Have this navigate to the route for dialog once it is
     // built.
   },
 

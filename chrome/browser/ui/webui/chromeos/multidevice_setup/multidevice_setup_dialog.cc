@@ -32,8 +32,6 @@ constexpr int kDialogHeightPx = 640;
 constexpr int kDialogWidthPx = 768;
 
 void AddMultiDeviceSetupStrings(content::WebUIDataSource* html_source) {
-  // TODO(jordynass): Translate the newly added strings from
-  // //chrome/app/chromeos_strings.grdp.
   static constexpr struct {
     const char* name;
     int id;
