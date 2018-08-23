@@ -3054,7 +3054,7 @@ ScriptPromise Internals::addOneToPromise(ScriptState* script_state,
 ScriptPromise Internals::promiseCheck(ScriptState* script_state,
                                       long arg1,
                                       bool arg2,
-                                      const Dictionary& arg3,
+                                      const ScriptValue& arg3,
                                       const String& arg4,
                                       const Vector<String>& arg5,
                                       ExceptionState& exception_state) {
@@ -3068,7 +3068,7 @@ ScriptPromise Internals::promiseCheck(ScriptState* script_state,
 
 ScriptPromise Internals::promiseCheckWithoutExceptionState(
     ScriptState* script_state,
-    const Dictionary& arg1,
+    const ScriptValue& arg1,
     const String& arg2,
     const Vector<String>& arg3) {
   return ScriptPromise::Cast(script_state,
