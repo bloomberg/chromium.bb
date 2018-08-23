@@ -31,6 +31,9 @@ namespace previews {
 
 namespace {
 
+using page_load_metrics::mojom::ResourceDataUpdate;
+using page_load_metrics::mojom::ResourceDataUpdatePtr;
+
 const char kDefaultTestUrl[] = "https://www.google.com";
 
 class TestNoScriptPreviewPageLoadMetricsObserver
@@ -263,10 +266,19 @@ TEST_F(NoScriptPreviewPageLoadMetricsObserverTest, DataSavings) {
 
   int64_t data_use = 0;
   NavigateAndCommitWithPreviewsState(content::NOSCRIPT_ON);
-  SimulatePageLoadDataUseUpdate({5 * 1024, 0});
+  std::vector<ResourceDataUpdatePtr> resources;
+  auto resource_data_update = ResourceDataUpdate::New();
+  resource_data_update->delta_bytes = 5 * 1024;
+  resources.push_back(std::move(resource_data_update));
+  SimulateResourceDataUseUpdate(resources);
   data_use += (5 * 1024);
 
-  SimulatePageLoadDataUseUpdate({20 * 1024, 13});
+  resources.clear();
+
+  resource_data_update = ResourceDataUpdate::New();
+  resource_data_update->delta_bytes = 20 * 1024;
+  resources.push_back(std::move(resource_data_update));
+  SimulateResourceDataUseUpdate(resources);
   data_use += (20 * 1024);
 
   SimulateTimingUpdate(timing_);
