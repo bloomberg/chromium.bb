@@ -79,6 +79,21 @@ struct URLRequestContextConfig {
     DISALLOW_COPY_AND_ASSIGN(Pkp);
   };
 
+  // Simulated headers, used to preconfigure the Reporting API and Network Error
+  // Logging before receiving those actual configuration headers from the
+  // origins.
+  struct PreloadedNelAndReportingHeader {
+    PreloadedNelAndReportingHeader(const url::Origin& origin,
+                                   std::string value);
+    ~PreloadedNelAndReportingHeader();
+
+    // Origin that is "sending" this header.
+    const url::Origin origin;
+
+    // Value of the header that is "sent".
+    const std::string value;
+  };
+
   URLRequestContextConfig(
       // Enable QUIC.
       bool enable_quic,
@@ -168,6 +183,12 @@ struct URLRequestContextConfig {
   // type.
   base::Optional<net::EffectiveConnectionType>
       nqe_forced_effective_connection_type;
+
+  // Preloaded Report-To headers, to preconfigure the Reporting API.
+  std::vector<PreloadedNelAndReportingHeader> preloaded_report_to_headers;
+
+  // Preloaded NEL headers, to preconfigure Network Error Logging.
+  std::vector<PreloadedNelAndReportingHeader> preloaded_nel_headers;
 
  private:
   // Parses experimental options and makes appropriate changes to settings in

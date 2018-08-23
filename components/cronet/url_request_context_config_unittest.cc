@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "base/json/json_writer.h"
+#include "base/strings/string_piece.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/cert/cert_verifier.h"
@@ -21,7 +23,36 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_service.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
 namespace cronet {
+
+namespace {
+
+base::Value ParseJson(base::StringPiece json) {
+  return std::move(*base::test::ParseJson(json));
+}
+
+std::string WrapJsonHeader(base::StringPiece value) {
+  std::string result;
+  result.reserve(value.size() + 2);
+  result.push_back('[');
+  value.AppendToString(&result);
+  result.push_back(']');
+  return result;
+}
+
+// Returns whether two JSON-encoded headers contain the same content, ignoring
+// irrelevant encoding issues like whitespace and map element ordering.
+bool JsonHeaderEquals(base::StringPiece expected, base::StringPiece actual) {
+  return ParseJson(WrapJsonHeader(expected)) ==
+         ParseJson(WrapJsonHeader(actual));
+}
+
+}  // namespace
 
 TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   base::test::ScopedTaskEnvironment scoped_task_environment_(
@@ -39,6 +70,66 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   options.SetPath({"QUIC", "connection_options"}, base::Value("TIME,TBBR,REJ"));
   options.SetPath({"AsyncDNS", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "enable"}, base::Value(true));
+  options.SetPath({"NetworkErrorLogging", "preloaded_report_to_headers"},
+                  ParseJson(R"json(
+                  [
+                    {
+                      "origin": "https://test-origin/",
+                      "value": {
+                        "group": "test-group",
+                        "max_age": 86400,
+                        "endpoints": [
+                          {"url": "https://test-endpoint/"},
+                        ],
+                      },
+                    },
+                    {
+                      "origin": "https://test-origin-2/",
+                      "value": [
+                        {
+                          "group": "test-group-2",
+                          "max_age": 86400,
+                          "endpoints": [
+                            {"url": "https://test-endpoint-2/"},
+                          ],
+                        },
+                        {
+                          "group": "test-group-3",
+                          "max_age": 86400,
+                          "endpoints": [
+                            {"url": "https://test-endpoint-3/"},
+                          ],
+                        },
+                      ],
+                    },
+                    {
+                      "origin": "https://value-is-missing/",
+                    },
+                    {
+                      "value": "origin is missing",
+                    },
+                    {
+                      "origin": 123,
+                      "value": "origin is not a string",
+                    },
+                    {
+                      "origin": "this is not a URL",
+                      "value": "origin not a URL",
+                    },
+                  ]
+                  )json"));
+  options.SetPath({"NetworkErrorLogging", "preloaded_nel_headers"},
+                  ParseJson(R"json(
+                  [
+                    {
+                      "origin": "https://test-origin/",
+                      "value": {
+                        "report_to": "test-group",
+                        "max_age": 86400,
+                      },
+                    },
+                  ]
+                  )json"));
   options.SetPath({"UnknownOption", "foo"}, base::Value(true));
   options.SetPath({"HostResolverRules", "host_resolver_rules"},
                   base::Value("MAP * 127.0.0.1"));
@@ -125,6 +216,54 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_TRUE(context->reporting_service());
   EXPECT_TRUE(context->network_error_logging_service());
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+  ASSERT_EQ(2u, config.preloaded_report_to_headers.size());
+  EXPECT_EQ(url::Origin::CreateFromNormalizedTuple("https", "test-origin", 443),
+            config.preloaded_report_to_headers[0].origin);
+  EXPECT_TRUE(JsonHeaderEquals(  //
+      R"json(
+      {
+        "group": "test-group",
+        "max_age": 86400,
+        "endpoints": [
+          {"url": "https://test-endpoint/"},
+        ],
+      }
+      )json",
+      config.preloaded_report_to_headers[0].value));
+  EXPECT_EQ(
+      url::Origin::CreateFromNormalizedTuple("https", "test-origin-2", 443),
+      config.preloaded_report_to_headers[1].origin);
+  EXPECT_TRUE(JsonHeaderEquals(  //
+      R"json(
+      {
+        "group": "test-group-2",
+        "max_age": 86400,
+        "endpoints": [
+          {"url": "https://test-endpoint-2/"},
+        ],
+      },
+      {
+        "group": "test-group-3",
+        "max_age": 86400,
+        "endpoints": [
+          {"url": "https://test-endpoint-3/"},
+        ],
+      }
+      )json",
+      config.preloaded_report_to_headers[1].value));
+
+  ASSERT_EQ(1u, config.preloaded_nel_headers.size());
+  EXPECT_EQ(url::Origin::CreateFromNormalizedTuple("https", "test-origin", 443),
+            config.preloaded_nel_headers[0].origin);
+  EXPECT_TRUE(JsonHeaderEquals(  //
+      R"json(
+      {
+        "report_to": "test-group",
+        "max_age": 86400,
+      }
+      )json",
+      config.preloaded_nel_headers[0].value));
 
   // Check IPv6 is disabled when on wifi.
   EXPECT_TRUE(context->host_resolver()->GetNoIPv6OnWifi());
