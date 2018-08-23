@@ -968,9 +968,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # Linux Intel
-    self.Fail('conformance2/extensions/ext-color-buffer-float.html',
-        ['linux', 'intel'], bug=640389)
-
     # See https://bugs.freedesktop.org/show_bug.cgi?id=94477
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
         ['linux', 'intel'], bug=540543)  # GPU timeout
