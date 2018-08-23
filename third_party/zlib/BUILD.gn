@@ -78,7 +78,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
   source_set("zlib_arm_crc32") {
     visibility = [ ":*" ]
 
-    if (!is_ios && !is_chromeos && !is_fuchsia) {
+    if (is_clang && (!is_ios && !is_chromeos && !is_fuchsia)) {
       include_dirs = [ "." ]
 
       if (is_android) {
@@ -96,10 +96,6 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
         "crc32_simd.c",
         "crc32_simd.h",
       ]
-
-      if (!is_win || is_clang) {
-        cflags_c = [ "-march=armv8-a+crc" ]
-      }
 
       if (!is_debug) {
         configs -= [ "//build/config/compiler:default_optimization" ]

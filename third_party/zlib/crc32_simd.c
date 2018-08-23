@@ -160,8 +160,34 @@ uint32_t ZLIB_INTERNAL crc32_sse42_simd_(  /* SSE4.2+PCLMUL */
  *
  * TODO: implement a version using the PMULL instruction.
  */
-#include <arm_acle.h>
 
+/* CRC32 intrinsics are #ifdef'ed out of arm_acle.h unless we build with an
+ * armv8 target, which is incompatible with ThinLTO optimizations on Android.
+ * (Namely, mixing and matching different module-level targets makes ThinLTO
+ * warn, and Android defaults to armv7-a. This restriction does not apply to
+ * function-level `target`s, however.)
+ *
+ * Since we only need three crc intrinsics, and since clang's implementation of
+ * those are just wrappers around compiler builtins, it's simplest to #define
+ * those builtins directly. If this #define list grows too much (or we depend on
+ * an intrinsic that isn't a trivial wrapper), we may have to find a better way
+ * to go about this.
+ *
+ * NOTE: clang currently complains that "'+soft-float-abi' is not a recognized
+ * feature for this target (ignoring feature)." This appears to be a harmless
+ * bug in clang.
+ */
+#define __crc32b __builtin_arm_crc32b
+#define __crc32d __builtin_arm_crc32d
+#define __crc32w __builtin_arm_crc32w
+
+#if defined(__aarch64__)
+#define TARGET_ARMV8_WITH_CRC __attribute__((target("crc")))
+#else
+#define TARGET_ARMV8_WITH_CRC __attribute__((target("armv8-a,crc")))
+#endif
+
+TARGET_ARMV8_WITH_CRC
 uint32_t ZLIB_INTERNAL armv8_crc32_little(unsigned long crc,
                                           const unsigned char *buf,
                                           z_size_t len)
@@ -202,6 +228,7 @@ uint32_t ZLIB_INTERNAL armv8_crc32_little(unsigned long crc,
     return ~c;
 }
 
+TARGET_ARMV8_WITH_CRC
 Pos ZLIB_INTERNAL insert_string_arm(deflate_state *const s, const Pos str)
 {
     Pos ret;
