@@ -799,7 +799,7 @@ tests:
   - ["⠠⠖⠨⠖", "!Fra"]
   - ["⠖⠋⠗⠁", "!fra"]
   - ["⠈⠨⠴", "'Af"]
-  - ["⠈⠁⠋", "\'af"]
+  - ["⠈⠁⠋", "'af"]
 
 # No single cell contractions before or after dashes
 
