@@ -16,7 +16,7 @@ function onEventInFrame(e) {
     if (e.type == removalEventType) {
         debug('Removing iframe');
         target.parentNode.removeChild(target);
-        internals.gc();
+        gc();
     }
 }
 
