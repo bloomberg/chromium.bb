@@ -194,7 +194,7 @@ function run() {
     var sortedVolumeMetadataList = volumeMetadataList.filter(function(volume) {
       return possibleVolumeTypes.indexOf(volume.volumeType) != -1;
     }).sort(function(volumeA, volumeB) {
-      return possibleVolumeTypes.indexOf(volumeA.volumeType) >
+      return possibleVolumeTypes.indexOf(volumeA.volumeType) -
              possibleVolumeTypes.indexOf(volumeB.volumeType);
     });
     if (sortedVolumeMetadataList.length == 0) {
