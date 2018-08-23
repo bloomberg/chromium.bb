@@ -15,7 +15,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
 #include "base/values.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
@@ -23,6 +22,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -40,6 +40,26 @@ namespace policy {
 
 namespace {
 
+// If the |json_string| can be decoded and validated against the schema
+// identified by |policy_name| in policy_templates.json, the policy
+// |policy_name| in |policies| will be set to the decoded base::Value.
+// Otherwise, the policy will be set to a base::Value of the original
+// |json_string|. This way, the faulty value can still be seen in
+// chrome://policy along with any errors/warnings.
+void SetJsonDevicePolicy(const std::string& policy_name,
+                         const std::string& json_string,
+                         PolicyMap* policies) {
+  std::string error;
+  std::unique_ptr<base::Value> decoded_json =
+      DecodeJsonStringAndNormalize(json_string, policy_name, &error);
+  auto value_to_set = decoded_json ? std::move(decoded_json)
+                                   : std::make_unique<base::Value>(json_string);
+  policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
+                POLICY_SOURCE_CLOUD, std::move(value_to_set), nullptr);
+  if (!error.empty())
+    policies->SetError(policy_name, error);
+}
+
 // Decodes a protobuf integer to an IntegerValue. Returns NULL in case the input
 // value is out of bounds.
 std::unique_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
@@ -51,50 +71,6 @@ std::unique_ptr<base::Value> DecodeIntegerValue(google::protobuf::int64 value) {
   }
 
   return std::unique_ptr<base::Value>(new base::Value(static_cast<int>(value)));
-}
-
-// Decodes a JSON string to a base::Value, and drops unknown properties
-// according to a policy schema. |policy_name| is the name of a policy schema
-// defined in policy_templates.json. Returns NULL in case the input is not a
-// valid JSON string.
-std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
-    const std::string& json_string,
-    const std::string& policy_name) {
-  std::string error;
-  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
-      json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &error);
-
-  if (!root) {
-    LOG(WARNING) << "Invalid JSON string: " << error << ", ignoring.";
-    return std::unique_ptr<base::Value>();
-  }
-
-  const Schema& schema = g_browser_process->browser_policy_connector()
-                             ->GetChromeSchema()
-                             .GetKnownProperty(policy_name);
-
-  if (schema.valid()) {
-    std::string error_path;
-    bool changed = false;
-
-    if (!schema.Normalize(root.get(), SCHEMA_ALLOW_UNKNOWN, &error_path, &error,
-                          &changed)) {
-      LOG(WARNING) << "Invalid policy value for " << policy_name << ": "
-                   << error << " at " << error_path << ".";
-      return std::unique_ptr<base::Value>();
-    }
-
-    if (changed) {
-      LOG(WARNING) << "Some properties in " << policy_name
-                   << " were dropped: " << error << " at " << error_path << ".";
-    }
-  } else {
-    LOG(WARNING) << "Unknown or invalid policy schema for " << policy_name
-                 << ".";
-    return std::unique_ptr<base::Value>();
-  }
-
-  return root;
 }
 
 std::unique_ptr<base::Value> DecodeConnectionType(int value) {
@@ -335,15 +311,8 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::LoginScreenPowerManagementProto& container(
         policy.login_screen_power_management());
     if (container.has_login_screen_power_management()) {
-      std::unique_ptr<base::Value> decoded_json;
-      decoded_json = DecodeJsonStringAndDropUnknownBySchema(
-          container.login_screen_power_management(),
-          key::kDeviceLoginScreenPowerManagement);
-      if (decoded_json) {
-        policies->Set(key::kDeviceLoginScreenPowerManagement,
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_CLOUD, std::move(decoded_json), nullptr);
-      }
+      SetJsonDevicePolicy(key::kDeviceLoginScreenPowerManagement,
+                          container.login_screen_power_management(), policies);
     }
   }
 
@@ -674,28 +643,13 @@ void DecodeAutoUpdatePolicies(const em::ChromeDeviceSettingsProto& policy,
     }
 
     if (container.has_disallowed_time_intervals()) {
-      std::unique_ptr<base::Value> decoded_json =
-          DecodeJsonStringAndDropUnknownBySchema(
-              container.disallowed_time_intervals(),
-              key::kDeviceAutoUpdateTimeRestrictions);
-      if (decoded_json && !decoded_json->is_none()) {
-        policies->Set(key::kDeviceAutoUpdateTimeRestrictions,
-                      POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
-                      POLICY_SOURCE_CLOUD, std::move(decoded_json), nullptr);
-      }
+      SetJsonDevicePolicy(key::kDeviceAutoUpdateTimeRestrictions,
+                          container.disallowed_time_intervals(), policies);
     }
 
     if (container.has_staging_schedule()) {
-      std::unique_ptr<base::Value> staging_percent_of_fleet_per_week_policy =
-          DecodeJsonStringAndDropUnknownBySchema(
-              container.staging_schedule(), key::kDeviceUpdateStagingSchedule);
-
-      if (staging_percent_of_fleet_per_week_policy) {
-        policies->Set(key::kDeviceUpdateStagingSchedule, POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                      std::move(staging_percent_of_fleet_per_week_policy),
-                      nullptr);
-      }
+      SetJsonDevicePolicy(key::kDeviceUpdateStagingSchedule,
+                          container.staging_schedule(), policies);
     }
   }
 
@@ -933,17 +887,8 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceWallpaperImageProto& container(
         policy.device_wallpaper_image());
     if (container.has_device_wallpaper_image()) {
-      std::unique_ptr<base::DictionaryValue> dict_val =
-          base::DictionaryValue::From(
-              base::JSONReader::Read(container.device_wallpaper_image()));
-      if (dict_val) {
-        policies->Set(key::kDeviceWallpaperImage, POLICY_LEVEL_MANDATORY,
-                      POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                      std::move(dict_val), nullptr);
-      } else {
-        SYSLOG(ERROR) << "Value of wallpaper policy has invalid format: "
-                      << container.device_wallpaper_image();
-      }
+      SetJsonDevicePolicy(key::kDeviceWallpaperImage,
+                          container.device_wallpaper_image(), policies);
     }
   }
 
@@ -977,12 +922,8 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     const em::DeviceNativePrintersProto& container(
         policy.native_device_printers());
     if (container.has_external_policy()) {
-      std::unique_ptr<base::DictionaryValue> dict_val =
-          base::DictionaryValue::From(
-              base::JSONReader::Read(container.external_policy()));
-      policies->Set(key::kDeviceNativePrinters, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-                    std::move(dict_val), nullptr);
+      SetJsonDevicePolicy(key::kDeviceNativePrinters,
+                          container.external_policy(), policies);
     }
   }
 
@@ -1111,6 +1052,43 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 }
 
 }  // namespace
+
+std::unique_ptr<base::Value> DecodeJsonStringAndNormalize(
+    const std::string& json_string,
+    const std::string& policy_name,
+    std::string* error) {
+  std::string json_error;
+  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
+      json_string, base::JSON_ALLOW_TRAILING_COMMAS, NULL, &json_error);
+  if (!root) {
+    *error = "Invalid JSON string: " + json_error;
+    return nullptr;
+  }
+
+  const Schema& schema =
+      policy::GetChromeSchema().GetKnownProperty(policy_name);
+  CHECK(schema.valid());
+
+  std::string schema_error;
+  std::string error_path;
+  bool changed = false;
+  if (!schema.Normalize(root.get(), SCHEMA_ALLOW_UNKNOWN, &error_path,
+                        &schema_error, &changed)) {
+    std::ostringstream msg;
+    msg << "Invalid policy value: " << schema_error << " (at "
+        << (error_path.empty() ? "toplevel" : error_path) << ")";
+    *error = msg.str();
+    return nullptr;
+  }
+  if (changed) {
+    std::ostringstream msg;
+    msg << "Dropped unknown properties: " << schema_error << " (at "
+        << (error_path.empty() ? "toplevel" : error_path) << ")";
+    *error = msg.str();
+  }
+
+  return root;
+}
 
 void DecodeDevicePolicy(const em::ChromeDeviceSettingsProto& policy,
                         PolicyMap* policies) {
