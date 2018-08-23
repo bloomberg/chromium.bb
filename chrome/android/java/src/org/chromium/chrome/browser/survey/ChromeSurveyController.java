@@ -18,6 +18,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainerLayout.Item;
@@ -31,7 +32,6 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
 
 import java.lang.annotation.Retention;
@@ -142,8 +142,10 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
             }
         };
 
-        String siteContext = String.format(
-                "Is Modern Design Enabled? %s", FeatureUtilities.isChromeModernDesignEnabled());
+        String siteContext =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
+                ? "HorizontalTabSwitcher"
+                : "NotHorizontalTabSwitcher";
         surveyController.downloadSurvey(context, siteId, onSuccessRunnable, siteContext);
     }
 
@@ -321,6 +323,20 @@ public class ChromeSurveyController implements InfoBarContainer.InfoBarAnimation
         }
 
         int maxNumber = getMaxNumber();
+
+        int maxForHorizontalTabSwitcher = -1;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)) {
+            maxForHorizontalTabSwitcher = ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, MAX_NUMBER, -1);
+        }
+        if (maxForHorizontalTabSwitcher != -1) {
+            if (maxNumber == -1) {
+                maxNumber = maxForHorizontalTabSwitcher;
+            } else {
+                maxNumber = Math.min(maxNumber, maxForHorizontalTabSwitcher);
+            }
+        }
+
         if (maxNumber == -1) {
             recordSurveyFilteringResult(FilteringResult.MAX_NUMBER_MISSING);
             return false;

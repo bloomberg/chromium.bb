@@ -11,6 +11,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.content.SharedPreferences;
+import android.util.ArrayMap;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,9 +25,12 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.Map;
 
 /**
  * Unit tests for ChromeSurveyController.java.
@@ -34,6 +38,9 @@ import org.chromium.content_public.browser.WebContents;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ChromeSurveyControllerTest {
+    private static final String STUDY_NAME = "HorizontalTabSwitcherStudyName";
+    private static final String GROUP_NAME = "HorizontalTabSwitcherGroupName";
+
     private TestChromeSurveyController mTestController;
     private RiggedSurveyController mRiggedController;
     private SharedPreferences mSharedPreferences;
@@ -57,6 +64,9 @@ public class ChromeSurveyControllerTest {
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
         mSharedPreferences.edit().clear().apply();
         Assert.assertNull("Tab should be null", mTestController.getLastTabInfobarShown());
+        Map<String, Boolean> featureMap = new ArrayMap<>();
+        featureMap.put(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID, true);
+        ChromeFeatureList.setTestFeatures(featureMap);
     }
 
     @After
