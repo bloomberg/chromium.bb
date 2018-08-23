@@ -142,9 +142,11 @@ void InputMethodBase::RemoveObserver(InputMethodObserver* observer) {
 
 InputMethodKeyboardController*
 InputMethodBase::GetInputMethodKeyboardController() {
-  if (!keyboard_controller_)
+  if (!keyboard_controller_) {
+    NOTIMPLEMENTED() << "Using InputMethodKeyboardControllerStub";
     keyboard_controller_ =
         std::make_unique<InputMethodKeyboardControllerStub>();
+  }
   return keyboard_controller_.get();
 }
 

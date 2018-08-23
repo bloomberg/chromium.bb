@@ -47,6 +47,7 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   void CancelComposition(const ui::TextInputClient* client) override;
   void OnInputLocaleChanged() override;
   bool IsCandidatePopupOpen() const override;
+  void ShowVirtualKeyboardIfEnabled() override;
 
  private:
   friend class InputMethodMusTestApi;

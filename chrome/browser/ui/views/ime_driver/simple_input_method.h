@@ -22,6 +22,7 @@ class SimpleInputMethod : public ui::mojom::InputMethod {
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        ProcessKeyEventCallback callback) override;
   void CancelComposition() override;
+  void ShowVirtualKeyboardIfEnabled() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SimpleInputMethod);

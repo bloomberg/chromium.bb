@@ -114,12 +114,19 @@ void InputMethodMus::CancelComposition(const ui::TextInputClient* client) {
 void InputMethodMus::OnInputLocaleChanged() {
   // TODO(moshayedi): crbug.com/637418. Not supported in ChromeOS. Investigate
   // whether we want to support this or not.
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 bool InputMethodMus::IsCandidatePopupOpen() const {
   // TODO(moshayedi): crbug.com/637416. Implement this properly when we have a
   // mean for displaying candidate list popup.
+  NOTIMPLEMENTED_LOG_ONCE();
   return false;
+}
+
+void InputMethodMus::ShowVirtualKeyboardIfEnabled() {
+  if (input_method_)
+    input_method_->ShowVirtualKeyboardIfEnabled();
 }
 
 ui::EventDispatchDetails InputMethodMus::SendKeyEventToInputMethod(

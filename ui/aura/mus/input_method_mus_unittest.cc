@@ -57,6 +57,9 @@ class TestInputMethod : public ui::mojom::InputMethod {
     process_key_event_callbacks_.push_back(std::move(callback));
   }
   void CancelComposition() override { was_cancel_composition_called_ = true; }
+  void ShowVirtualKeyboardIfEnabled() override {
+    was_show_virtual_keyboard_if_enabled_called_ = true;
+  }
 
   bool was_on_text_input_type_changed_called() {
     return was_on_text_input_type_changed_called_;
@@ -70,10 +73,15 @@ class TestInputMethod : public ui::mojom::InputMethod {
     return was_cancel_composition_called_;
   }
 
+  bool was_show_virtual_keyboard_if_enabled_called() {
+    return was_show_virtual_keyboard_if_enabled_called_;
+  }
+
  private:
   bool was_on_text_input_type_changed_called_ = false;
   bool was_on_caret_bounds_changed_called_ = false;
   bool was_cancel_composition_called_ = false;
+  bool was_show_virtual_keyboard_if_enabled_called_ = false;
   ProcessKeyEventCallbacks process_key_event_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
@@ -296,6 +304,17 @@ TEST_F(InputMethodMusTest, CancelCompositionFromUnfocusedClient) {
                                                &unfocused_input_client);
 
   EXPECT_FALSE(test_input_method.was_cancel_composition_called());
+}
+
+// Calling ShowVirtualKeyboardIfEnabled should notify the mus side.
+TEST_F(InputMethodMusTest, ShowVirtualKeyboardIfEnabled) {
+  TestInputMethodDelegate input_method_delegate;
+  InputMethodMus input_method_mus(&input_method_delegate, nullptr);
+  TestInputMethod test_input_method;
+  InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
+  EXPECT_FALSE(test_input_method.was_show_virtual_keyboard_if_enabled_called());
+  input_method_mus.ShowVirtualKeyboardIfEnabled();
+  EXPECT_TRUE(test_input_method.was_show_virtual_keyboard_if_enabled_called());
 }
 
 }  // namespace aura

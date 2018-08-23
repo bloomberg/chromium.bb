@@ -32,6 +32,7 @@ class InputMethodBridge : public ui::mojom::InputMethod {
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                        ProcessKeyEventCallback callback) override;
   void CancelComposition() override;
+  void ShowVirtualKeyboardIfEnabled() override;
 
  private:
   std::unique_ptr<RemoteTextInputClient> client_;

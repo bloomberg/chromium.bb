@@ -155,6 +155,9 @@ interface InputMethod {
   ProcessKeyEvent(ui.mojom.Event key_event) => (bool handled);
 
   CancelComposition();
+
+  // Plumbs requests to show the virtual keyboard.
+  ShowVirtualKeyboardIfEnabled();
 };
 
 // IME drivers send updates to clients using the TextInputClient interface.
