@@ -213,12 +213,12 @@ bool GetBookmarkOverrideCommand(Profile* profile,
 #endif
 
 // Based on |disposition|, creates a new tab as necessary, and returns the
-// appropriate tab to navigate.  If that tab is the current tab, reverts the
+// appropriate tab to navigate.  If that tab is the |current_tab|, reverts the
 // location bar contents, since all browser-UI-triggered navigations should
-// revert any omnibox edits in the current tab.
-WebContents* GetTabAndRevertIfNecessary(Browser* browser,
-                                        WindowOpenDisposition disposition) {
-  WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
+// revert any omnibox edits in the |current_tab|.
+WebContents* GetTabAndRevertIfNecessaryHelper(Browser* browser,
+                                              WindowOpenDisposition disposition,
+                                              WebContents* current_tab) {
   switch (disposition) {
     case WindowOpenDisposition::NEW_FOREGROUND_TAB:
     case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
@@ -250,27 +250,48 @@ WebContents* GetTabAndRevertIfNecessary(Browser* browser,
   }
 }
 
+// Like the above, but auto-computes the current tab
+WebContents* GetTabAndRevertIfNecessary(Browser* browser,
+                                        WindowOpenDisposition disposition) {
+  WebContents* activate_tab =
+      browser->tab_strip_model()->GetActiveWebContents();
+  return GetTabAndRevertIfNecessaryHelper(browser, disposition, activate_tab);
+}
+
 void ReloadInternal(Browser* browser,
                     WindowOpenDisposition disposition,
                     bool bypass_cache) {
-  // As this is caused by a user action, give the focus to the page.
-  //
-  // Also notify RenderViewHostDelegate of the user gesture; this is
-  // normally done in Browser::Navigate, but a reload bypasses Navigate.
-  WebContents* new_tab = GetTabAndRevertIfNecessary(browser, disposition);
-  new_tab->NavigatedByUser();
-  if (!new_tab->FocusLocationBarByDefault())
-    new_tab->Focus();
+  const WebContents* active_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  const auto& selected_indices =
+      browser->tab_strip_model()->selection_model().selected_indices();
+  for (int index : selected_indices) {
+    WebContents* selected_tab =
+        browser->tab_strip_model()->GetWebContentsAt(index);
+    WebContents* new_tab =
+        GetTabAndRevertIfNecessaryHelper(browser, disposition, selected_tab);
 
-  DevToolsWindow* devtools =
-      DevToolsWindow::GetInstanceForInspectedWebContents(new_tab);
-  if (devtools && devtools->ReloadInspectedWebContents(bypass_cache))
-    return;
+    // Notify RenderViewHostDelegate of the user gesture; this is
+    // normally done in Browser::Navigate, but a reload bypasses Navigate.
+    new_tab->NavigatedByUser();
 
-  new_tab->GetController().Reload(bypass_cache
-                                      ? content::ReloadType::BYPASSING_CACHE
-                                      : content::ReloadType::NORMAL,
-                                  true);
+    // If the selected_tab is the activated page, give the focus to it, as this
+    // is caused by a user action
+    if (selected_tab == active_contents &&
+        !new_tab->FocusLocationBarByDefault()) {
+      new_tab->Focus();
+    }
+
+    DevToolsWindow* devtools =
+        DevToolsWindow::GetInstanceForInspectedWebContents(new_tab);
+    constexpr content::ReloadType kBypassingType =
+        content::ReloadType::BYPASSING_CACHE;
+    constexpr content::ReloadType kNormalType = content::ReloadType::NORMAL;
+    if (!devtools || !devtools->ReloadInspectedWebContents(bypass_cache)) {
+      new_tab->GetController().Reload(
+          bypass_cache ? kBypassingType : kNormalType, true);
+    }
+  }
 }
 
 bool IsShowingWebContentsModalDialog(Browser* browser) {
