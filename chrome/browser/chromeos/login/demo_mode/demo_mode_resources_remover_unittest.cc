@@ -13,15 +13,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
-#include "chrome/browser/extensions/external_policy_loader.h"
-#include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_cryptohome_client.h"
 #include "components/prefs/testing_pref_service.h"
@@ -67,10 +66,11 @@ class DemoModeResourcesRemoverTest : public testing::Test {
         std::move(cryptohome_client));
 
     ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
-    demo_resources_path_ =
-        scoped_temp_dir_.GetPath().AppendASCII("demo-mode-resources");
-    DemoSession::OverridePreInstalledDemoResourcesPathForTesting(
-        &demo_resources_path_);
+    components_path_override_ = std::make_unique<base::ScopedPathOverride>(
+        chromeos::DIR_PREINSTALLED_COMPONENTS, scoped_temp_dir_.GetPath());
+    demo_resources_path_ = scoped_temp_dir_.GetPath()
+                               .AppendASCII("cros-components")
+                               .AppendASCII("demo-mode-resources");
 
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeChromeUserManager>());
@@ -83,7 +83,6 @@ class DemoModeResourcesRemoverTest : public testing::Test {
 
   void TearDown() override {
     DemoSession::ShutDownIfInitialized();
-    DemoSession::OverridePreInstalledDemoResourcesPathForTesting(nullptr);
     DemoSession::SetDemoModeEnrollmentTypeForTesting(
         DemoSession::EnrollmentType::kNone);
     chromeos::DBusThreadManager::Shutdown();
@@ -190,6 +189,7 @@ class DemoModeResourcesRemoverTest : public testing::Test {
   std::unique_ptr<ScopedStubInstallAttributes> install_attributes_;
 
   base::ScopedTempDir scoped_temp_dir_;
+  std::unique_ptr<base::ScopedPathOverride> components_path_override_;
   base::FilePath demo_resources_path_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
