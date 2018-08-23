@@ -22,6 +22,9 @@ issues]].
   Symbols, consonants and vowels and the tones are included in vowels.
 
 ** Other changes
+- Test suite improvements: In addition to checking the translation the
+  tests now also check if the provided ~inlen~ is the same as the
+  returned ~inlen~ and retry the test with a larger output buffer.
 ** Deprecation notice
 ** Backwards incompatible changes
 ** New, renamed or removed tables
