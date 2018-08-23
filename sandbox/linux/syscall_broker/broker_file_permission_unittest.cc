@@ -260,6 +260,30 @@ TEST(BrokerFilePermission, ReadWriteCreateTemporaryRecursive) {
   // expected.
 }
 
+TEST(BrokerFilePermission, StatOnlyWithIntermediateDirs) {
+  const char kPath[] = "/tmp/good/path";
+  const char kLeading1[] = "/";
+  const char kLeading2[] = "/tmp";
+  const char kLeading3[] = "/tmp/good/path";
+  const char kTrailing[] = "/tmp/good/path/bad";
+
+  BrokerFilePermission perm =
+      BrokerFilePermission::StatOnlyWithIntermediateDirs(kPath);
+  // No open or access permission.
+  ASSERT_FALSE(perm.CheckOpen(kPath, O_RDONLY, NULL, NULL));
+  ASSERT_FALSE(perm.CheckOpen(kPath, O_WRONLY, NULL, NULL));
+  ASSERT_FALSE(perm.CheckOpen(kPath, O_RDWR, NULL, NULL));
+  ASSERT_FALSE(perm.CheckAccess(kPath, R_OK, NULL));
+  ASSERT_FALSE(perm.CheckAccess(kPath, W_OK, NULL));
+
+  // Stat for all leading paths, but not trailing paths.
+  ASSERT_TRUE(perm.CheckStat(kPath, NULL));
+  ASSERT_TRUE(perm.CheckStat(kLeading1, NULL));
+  ASSERT_TRUE(perm.CheckStat(kLeading2, NULL));
+  ASSERT_TRUE(perm.CheckStat(kLeading3, NULL));
+  ASSERT_FALSE(perm.CheckStat(kTrailing, NULL));
+}
+
 TEST(BrokerFilePermission, ValidatePath) {
   EXPECT_TRUE(BrokerFilePermissionTester::ValidatePath("/path"));
   EXPECT_TRUE(BrokerFilePermissionTester::ValidatePath("/"));

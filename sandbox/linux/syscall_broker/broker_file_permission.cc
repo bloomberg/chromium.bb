@@ -204,8 +204,8 @@ bool BrokerFilePermission::CheckStat(const char* requested_filename,
   if (CheckAccessInternal(requested_filename, F_OK, file_to_access))
     return true;
 
-  // Allow stat() on leading directories if have create permission.
-  if (!allow_create_)
+  // Allow stat() on leading directories if have create or stat() permission.
+  if (!(allow_create_ || allow_stat_with_intermediates_))
     return false;
 
   // NOTE: ValidatePath proved requested_length != 0;
@@ -214,7 +214,10 @@ bool BrokerFilePermission::CheckStat(const char* requested_filename,
 
   // Special case for root: only one slash, otherwise must have a second
   // slash in the right spot to avoid substring matches.
+  // |allow_stat_with_intermediates_| can match on the full path, and
+  // |allow_create_| only matches a leading directory.
   if ((requested_length == 1 && requested_filename[0] == '/') ||
+      (allow_stat_with_intermediates_ && path_ == requested_filename) ||
       (requested_length < path_.length() &&
        memcmp(path_.c_str(), requested_filename, requested_length) == 0 &&
        path_.c_str()[requested_length] == '/')) {
@@ -236,13 +239,15 @@ BrokerFilePermission::BrokerFilePermission(const std::string& path,
                                            bool temporary_only,
                                            bool allow_read,
                                            bool allow_write,
-                                           bool allow_create)
+                                           bool allow_create,
+                                           bool allow_stat_with_intermediates)
     : path_(path),
       recursive_(recursive),
       temporary_only_(temporary_only),
       allow_read_(allow_read),
       allow_write_(allow_write),
-      allow_create_(allow_create) {
+      allow_create_(allow_create),
+      allow_stat_with_intermediates_(allow_stat_with_intermediates) {
   // Must have enough length for a '/'
   CHECK(path_.length() > 0) << GetErrorMessageForTests();
 
