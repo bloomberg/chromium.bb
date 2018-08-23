@@ -57,8 +57,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   if (reader.num_bytes_read() != static_cast<int64_t>(remaining_bytes.size()))
     return 0;
 
-  CHECK(subresource_filter::IndexedRulesetMatcher::Verify(indexer.data(),
-                                                          indexer.size()));
+  CHECK(subresource_filter::IndexedRulesetMatcher::Verify(
+      indexer.data(), indexer.size(), indexer.GetChecksum()));
 
   // Lastly, read into the indexed ruleset by matching the URL from the
   // beginning of the fuzzed data.

@@ -113,7 +113,8 @@ class SubresourceFilterComponentInstallerTest : public PlatformTest {
         &pref_service_, base::ThreadTaskRunnerHandle::Get(),
         content_service.get(), ruleset_service_dir_.GetPath());
     test_ruleset_service_ = test_ruleset_service.get();
-    content_service->set_ruleset_service(std::move(test_ruleset_service));
+    content_service->SetAndInitializeRulesetService(
+        std::move(test_ruleset_service));
 
     TestingBrowserProcess::GetGlobal()->SetRulesetService(
         std::move(content_service));

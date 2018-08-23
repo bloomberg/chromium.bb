@@ -59,13 +59,16 @@ class VerifiedRulesetDealer : public RulesetDealer {
   // |base::File| in the case of file opened and set. Returns invalid
   // |base::File| in the case of file open error. In the case of error
   // ruleset dealer continues to use the previous file (if any).
-  base::File OpenAndSetRulesetFile(const base::FilePath& file_path);
+  base::File OpenAndSetRulesetFile(int expected_checksum,
+                                   const base::FilePath& file_path);
 
   // For tests only.
   RulesetVerificationStatus status() const { return status_; }
 
  private:
   RulesetVerificationStatus status_ = RulesetVerificationStatus::kNotVerified;
+  // Associated with the current |ruleset_file_|;
+  int expected_checksum_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(VerifiedRulesetDealer);
 };
@@ -94,6 +97,7 @@ class VerifiedRulesetDealer::Handle {
   // error an invalid |base::File| is passed to |callback| and dealer continues
   // to use previous ruleset file (if any).
   void TryOpenAndSetRulesetFile(const base::FilePath& path,
+                                int expected_checksum,
                                 base::OnceCallback<void(base::File)> callback);
 
  private:

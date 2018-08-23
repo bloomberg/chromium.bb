@@ -140,6 +140,7 @@ class ContentSubresourceFilterThrottleManagerTest
     dealer_handle_ = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoopCurrent::Get()->task_runner());
     dealer_handle_->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
+                                             /*expected_checksum=*/0,
                                              base::DoNothing());
 
     throttle_manager_ =

@@ -55,6 +55,9 @@ class RulesetIndexer {
   // Finalizes construction of the data structures.
   void Finish();
 
+  // Returns the checksum for the data buffer.
+  int GetChecksum() const;
+
   // Returns a pointer to the buffer containing the serialized flat data
   // structures. Should only be called after Finish().
   const uint8_t* data() const { return builder_.GetBufferPointer(); }
@@ -77,7 +80,7 @@ class IndexedRulesetMatcher {
  public:
   // Returns whether the |buffer| of the given |size| contains a valid
   // flat::IndexedRuleset FlatBuffer.
-  static bool Verify(const uint8_t* buffer, size_t size);
+  static bool Verify(const uint8_t* buffer, size_t size, int expected_checksum);
 
   // Creates an instance that matches URLs against the flat::IndexedRuleset
   // provided as the root object of serialized data in the |buffer| of the given

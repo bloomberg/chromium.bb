@@ -300,10 +300,73 @@ TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
                                        RulesetVerificationStatus::kIntact, 1);
 }
 
+// Check that without the checksum parameter to OpenAndSetRulesetFile,
+// the corrupted file is seen as valid.
+TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
+       OpenAndSetRulesetFileValidNoChecksum) {
+  // See also SubresourceFilterBrowserTest.InvalidRuleset_Checksum, corrupting
+  // in this manner doesn't invalidate the Flatbuffer Verifier check.
+  testing::TestRuleset::CorruptByFilling(rulesets().indexed_1(), 28250, 28251,
+                                         32);
+  base::File file = ruleset_dealer()->OpenAndSetRulesetFile(
+      /*expected_checksum=*/0, rulesets().indexed_1().path);
+
+  // Check the required file is opened.
+  ASSERT_TRUE(file.IsValid());
+
+  // Check |OpenAndSetRulesetFile| forwards call to |SetRulesetFile| on success.
+  EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
+  EXPECT_FALSE(has_cached_ruleset());
+  EXPECT_EQ(RulesetVerificationStatus::kNotVerified,
+            ruleset_dealer()->status());
+  histogram_tester().ExpectTotalCount(kVerificationHistogram, 0);
+
+  // Check that after getting the ruleset the expected values are present.
+  scoped_refptr<const MemoryMappedRuleset> ref_to_ruleset =
+      ruleset_dealer()->GetRuleset();
+  EXPECT_TRUE(ref_to_ruleset);
+  EXPECT_EQ(RulesetVerificationStatus::kIntact, ruleset_dealer()->status());
+  histogram_tester().ExpectUniqueSample(kVerificationHistogram,
+                                        RulesetVerificationStatus::kIntact, 1);
+}
+
+// Check that when adding the checksum parameter to OpenAndSetRulesetFile,
+// the corrupted file is detected as invalid.
+TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
+       OpenAndSetRulesetFileInvalidChecksum) {
+  int expected_checksum =
+      base::PersistentHash(&(rulesets().indexed_1().contents[0]),
+                           rulesets().indexed_1().contents.size());
+  // See also SubresourceFilterBrowserTest.InvalidRuleset_Checksum, corrupting
+  // in this manner doesn't invalidate the Flatbuffer Verifier check.
+  testing::TestRuleset::CorruptByFilling(rulesets().indexed_1(), 28250, 28251,
+                                         32);
+  base::File file = ruleset_dealer()->OpenAndSetRulesetFile(
+      expected_checksum, rulesets().indexed_1().path);
+
+  // Check the required file is opened.
+  ASSERT_TRUE(file.IsValid());
+
+  // Check |OpenAndSetRulesetFile| forwards call to |SetRulesetFile| on success.
+  EXPECT_TRUE(ruleset_dealer()->IsRulesetFileAvailable());
+  EXPECT_FALSE(has_cached_ruleset());
+  EXPECT_EQ(RulesetVerificationStatus::kNotVerified,
+            ruleset_dealer()->status());
+  histogram_tester().ExpectTotalCount(kVerificationHistogram, 0);
+
+  // Check that after getting the ruleset the expected values are present.
+  scoped_refptr<const MemoryMappedRuleset> ref_to_ruleset =
+      ruleset_dealer()->GetRuleset();
+  EXPECT_FALSE(ref_to_ruleset);
+  EXPECT_EQ(RulesetVerificationStatus::kCorrupt, ruleset_dealer()->status());
+  histogram_tester().ExpectUniqueSample(kVerificationHistogram,
+                                        RulesetVerificationStatus::kCorrupt, 1);
+}
+
 TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
        OpenAndSetRulesetFileReturnsCorrectFileOnSuccess) {
-  base::File file =
-      ruleset_dealer()->OpenAndSetRulesetFile(rulesets().indexed_1().path);
+  base::File file = ruleset_dealer()->OpenAndSetRulesetFile(
+      /*expected_checksum=*/0, rulesets().indexed_1().path);
 
   // Check the required file is opened.
   ASSERT_TRUE(file.IsValid());
@@ -320,6 +383,7 @@ TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
 TEST_F(SubresourceFilterVerifiedRulesetDealerTest,
        OpenAndSetRulesetFileReturnsNullFileOnFailure) {
   base::File file = ruleset_dealer()->OpenAndSetRulesetFile(
+      /*expected_checksum=*/0,
       base::FilePath::FromUTF8Unsafe("non_existent_file"));
 
   EXPECT_FALSE(file.IsValid());
@@ -419,6 +483,7 @@ TEST_F(SubresourceFilterVerifiedRulesetDealerHandleTest,
       new VerifiedRulesetDealer::Handle(task_runner()));
   dealer_handle->GetDealerAsync(before_set_ruleset.GetCallback());
   dealer_handle->TryOpenAndSetRulesetFile(rulesets().indexed_1().path,
+                                          /*expected_checksum=*/0,
                                           base::DoNothing());
   dealer_handle->GetDealerAsync(after_set_ruleset.GetCallback());
   dealer_handle->GetDealerAsync(after_warm_up.GetCallback());
@@ -439,13 +504,13 @@ TEST_F(SubresourceFilterVerifiedRulesetDealerHandleTest, RulesetFileIsUpdated) {
   std::unique_ptr<VerifiedRulesetDealer::Handle> dealer_handle(
       new VerifiedRulesetDealer::Handle(task_runner()));
 
-  dealer_handle->TryOpenAndSetRulesetFile(rulesets().indexed_1().path,
-                                          base::DoNothing());
+  dealer_handle->TryOpenAndSetRulesetFile(
+      rulesets().indexed_1().path, /*expected_checksum=*/0, base::DoNothing());
   dealer_handle->GetDealerAsync(after_set_ruleset_1.GetCallback());
   dealer_handle->GetDealerAsync(read_ruleset_1.GetCallback());
 
-  dealer_handle->TryOpenAndSetRulesetFile(rulesets().indexed_2().path,
-                                          base::DoNothing());
+  dealer_handle->TryOpenAndSetRulesetFile(
+      rulesets().indexed_2().path, /*expected_checksum=*/0, base::DoNothing());
   dealer_handle->GetDealerAsync(after_set_ruleset_2.GetCallback());
   dealer_handle->GetDealerAsync(read_ruleset_2.GetCallback());
 
@@ -468,13 +533,14 @@ TEST_F(SubresourceFilterVerifiedRulesetDealerHandleTest,
   auto dealer_handle =
       std::make_unique<VerifiedRulesetDealer::Handle>(task_runner());
 
-  dealer_handle->TryOpenAndSetRulesetFile(rulesets().indexed_1().path,
-                                          base::DoNothing());
+  dealer_handle->TryOpenAndSetRulesetFile(
+      rulesets().indexed_1().path, /*expected_checksum=*/0, base::DoNothing());
   dealer_handle->GetDealerAsync(after_set_ruleset_1.GetCallback());
   dealer_handle->GetDealerAsync(read_ruleset_1.GetCallback());
 
   dealer_handle->TryOpenAndSetRulesetFile(
       base::FilePath::FromUTF8Unsafe("non_existent_file"),
+      /*expected_checksum=*/0,
       base::BindOnce([](base::File file) { EXPECT_FALSE(file.IsValid()); }));
   dealer_handle->GetDealerAsync(after_set_ruleset_2.GetCallback());
   dealer_handle->GetDealerAsync(read_ruleset_2.GetCallback());
@@ -575,7 +641,7 @@ TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
   TestVerifiedRulesetDealerClient deleted_handle;
 
   dealer_handle()->TryOpenAndSetRulesetFile(
-      rulesets().indexed_1().path,
+      rulesets().indexed_1().path, /*expected_checksum=*/0,
       base::BindOnce([](base::File file) { EXPECT_TRUE(file.IsValid()); }));
 
   auto ruleset_handle = CreateRulesetHandle();
@@ -600,7 +666,7 @@ TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
   TestVerifiedRulesetDealerClient deleted_both_handles;
 
   dealer_handle()->TryOpenAndSetRulesetFile(
-      rulesets().indexed_1().path,
+      rulesets().indexed_1().path, /*expected_checksum=*/0,
       base::BindOnce([](base::File file) { EXPECT_TRUE(file.IsValid()); }));
 
   auto ruleset_handle_1 = CreateRulesetHandle();
@@ -643,15 +709,15 @@ TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
   TestVerifiedRulesetDealerClient deleted_all_handles;
 
   dealer_handle()->TryOpenAndSetRulesetFile(
-      rulesets().indexed_1().path,
+      rulesets().indexed_1().path, /*expected_checksum=*/0,
       base::BindOnce([](base::File file) { EXPECT_TRUE(file.IsValid()); }));
 
   auto ruleset_handle_1 = CreateRulesetHandle();
   dealer_handle()->GetDealerAsync(created_handle_1.GetCallback());
   ruleset_handle_1->GetRulesetAsync(read_from_handle_1.GetCallback());
 
-  dealer_handle()->TryOpenAndSetRulesetFile(rulesets().indexed_2().path,
-                                            base::DoNothing());
+  dealer_handle()->TryOpenAndSetRulesetFile(
+      rulesets().indexed_2().path, /*expected_checksum=*/0, base::DoNothing());
   auto ruleset_handle_2 = CreateRulesetHandle();
   dealer_handle()->GetDealerAsync(created_handle_2_after_update.GetCallback());
   ruleset_handle_2->GetRulesetAsync(read_from_handle_2.GetCallback());
@@ -692,7 +758,7 @@ TEST_F(SubresourceFilterVerifiedRulesetHandleTest,
 
   testing::TestRuleset::CorruptByTruncating(rulesets().indexed_1(), 4096);
   dealer_handle()->TryOpenAndSetRulesetFile(
-      rulesets().indexed_1().path,
+      rulesets().indexed_1().path, /*expected_checksum=*/0,
       base::BindOnce([](base::File file) { EXPECT_TRUE(file.IsValid()); }));
 
   auto ruleset_handle = CreateRulesetHandle();
