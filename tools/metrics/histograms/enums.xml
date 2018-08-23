@@ -14242,6 +14242,7 @@ Called by update_net_error_codes.py.-->
   <int value="465" label="PowerSmartDimEnabled"/>
   <int value="466" label="CoalesceH2ConnectionsWithClientCertificatesForHosts"/>
   <int value="467" label="NetBiosDiscoveryEnabled"/>
+  <int value="468" label="WebAppInstallForceList"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

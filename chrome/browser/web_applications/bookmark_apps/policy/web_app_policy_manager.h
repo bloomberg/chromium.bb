@@ -13,6 +13,7 @@
 #include "url/gurl.h"
 
 class PrefService;
+class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -33,6 +34,8 @@ class WebAppPolicyManager {
   ~WebAppPolicyManager();
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  static bool ShouldEnableForProfile(Profile* profile);
 
  private:
   void RefreshPolicyInstalledApps();
