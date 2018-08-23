@@ -189,17 +189,45 @@ const HeapVector<Member<Element>> HTMLSlotElement::AssignedElementsForBinding(
   return elements;
 }
 
+bool HTMLSlotElement::IsAssignedNodeSameWithBefore(
+    HeapVector<Member<Node>>& new_assigned_nodes,
+    HeapHashSet<Member<Node>>& old_assigned_nodes) {
+  if (new_assigned_nodes.size() != old_assigned_nodes.size())
+    return false;
+  for (auto node : old_assigned_nodes) {
+    if (!new_assigned_nodes.Contains(*node))
+      return false;
+  }
+  return true;
+}
+
 void HTMLSlotElement::assign(HeapVector<Member<Node>> nodes) {
-  ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
+  if (ContainingShadowRoot()) {
+    SlotChangeType slot_change_type =
+        IsAssignedNodeSameWithBefore(nodes, assigned_nodes_candidates_)
+            ? SlotChangeType::kSuppressSlotChangeEvent
+            : SlotChangeType::kSignalSlotChangeEvent;
+    DidSlotChange(slot_change_type);
+  }
   assigned_nodes_candidates_.clear();
   for (Member<Node> child : nodes) {
     assigned_nodes_candidates_.insert(child);
+  }
+  if (ContainingShadowRoot()) {
+    ContainingShadowRoot()->GetSlotAssignment().CallSlotChangeIfNeeded(*this);
+    // TODO(crbug.com/869308): Don't call SetNeedsAssignmentRecalc if we can
+    // detect all possible slotchange surely
+    ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
   }
 }
 
 bool HTMLSlotElement::ContainsInAssignedNodesCandidates(
     Node& host_child) const {
   return assigned_nodes_candidates_.Contains(&host_child);
+}
+
+void HTMLSlotElement::SignalSlotChange() {
+  DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
 }
 
 const HeapVector<Member<Node>>& HTMLSlotElement::GetDistributedNodes() {

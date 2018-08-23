@@ -76,6 +76,10 @@ function createTestTree(node) {
     if (template.getAttribute('data-mode') === 'v0') {
       // For legacy Shadow DOM
       shadowRoot = parent.createShadowRoot();
+    } else if (template.getAttribute('data-slotting') === 'manual') {
+       shadowRoot =
+          parent.attachShadow({mode: template.getAttribute('data-mode'),
+                               slotting: 'manual'});
     } else {
       shadowRoot =
           parent.attachShadow({mode: template.getAttribute('data-mode')});
