@@ -375,11 +375,19 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Mount) {
   // check that UnmountPath is really called with the same value.
   EXPECT_CALL(*disk_mount_manager_mock_, UnmountPath(_, _, _))
       .Times(0);
+  EXPECT_CALL(
+      *disk_mount_manager_mock_,
+      UnmountPath(chromeos::CrosDisksClient::GetRemovableDiskMountPoint()
+                      .AppendASCII("mount_path1")
+                      .AsUTF8Unsafe(),
+                  chromeos::UNMOUNT_OPTIONS_NONE, _))
+      .Times(1);
   EXPECT_CALL(*disk_mount_manager_mock_,
-              UnmountPath(
-                  chromeos::CrosDisksClient::GetArchiveMountPoint().AppendASCII(
-                      "archive_mount_path").AsUTF8Unsafe(),
-                  chromeos::UNMOUNT_OPTIONS_NONE, _)).Times(1);
+              UnmountPath(chromeos::CrosDisksClient::GetArchiveMountPoint()
+                              .AppendASCII("archive_mount_path")
+                              .AsUTF8Unsafe(),
+                          chromeos::UNMOUNT_OPTIONS_LAZY, _))
+      .Times(1);
 
   ASSERT_TRUE(RunComponentExtensionTest("file_browser/mount_test"))
       << message_;
