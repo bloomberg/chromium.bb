@@ -147,4 +147,10 @@ Polymer({
     var actionMenu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
     actionMenu.showAt(this.$.dots);
   },
+
+  /** @private */
+  getPolicyIndicatorType_: function(model) {
+    return model.policy ? CrPolicyIndicatorType.USER_POLICY :
+                          CrPolicyIndicatorType.NONE;
+  },
 });

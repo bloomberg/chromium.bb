@@ -10,7 +10,7 @@ Polymer({
   is: 'certificate-list',
 
   properties: {
-    /** @type {!Array<!Certificate>} */
+    /** @type {!Array<!CertificatesOrgGroup>} */
     certificates: {
       type: Array,
       value: function() {

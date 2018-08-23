@@ -17,7 +17,7 @@ Polymer({
       value: 0,
     },
 
-    /** @type {!Array<!Certificate>} */
+    /** @type {!Array<!CertificatesOrgGroup>} */
     personalCerts: {
       type: Array,
       value: function() {
@@ -25,7 +25,7 @@ Polymer({
       },
     },
 
-    /** @type {!Array<!Certificate>} */
+    /** @type {!Array<!CertificatesOrgGroup>} */
     serverCerts: {
       type: Array,
       value: function() {
@@ -33,7 +33,7 @@ Polymer({
       },
     },
 
-    /** @type {!Array<!Certificate>} */
+    /** @type {!Array<!CertificatesOrgGroup>} */
     caCerts: {
       type: Array,
       value: function() {
@@ -41,7 +41,7 @@ Polymer({
       },
     },
 
-    /** @type {!Array<!Certificate>} */
+    /** @type {!Array<!CertificatesOrgGroup>} */
     otherCerts: {
       type: Array,
       value: function() {

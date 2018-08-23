@@ -11,7 +11,7 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    /** @type {!Certificate} */
+    /** @type {!CertificatesOrgGroup} */
     model: Object,
 
     /** @type {!CertificateType} */
@@ -25,5 +25,10 @@ Polymer({
    */
   isLast_: function(index) {
     return index == this.model.subnodes.length - 1;
+  },
+
+  getPolicyIndicatorType_() {
+    return this.model.containsPolicyCerts ? CrPolicyIndicatorType.USER_POLICY :
+                                            CrPolicyIndicatorType.NONE;
   },
 });

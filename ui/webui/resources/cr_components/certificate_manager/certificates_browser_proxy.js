@@ -31,14 +31,19 @@ var CertificateSubnode;
 var NewCertificateSubNode;
 
 /**
+ * Top-level grouping node in a certificate list, representing an organization
+ * and containing certs that belong to the organization in |subnodes|. If a
+ * certificate does not have an organization name, it will be grouped under its
+ * own CertificatesOrgGroup with |name| set to its display name.
  * @typedef {{
  *   id: string,
  *   name: string,
+ *   containsPolicyCerts: boolean,
  *   subnodes: !Array<!CertificateSubnode>
  * }}
  * @see chrome/browser/ui/webui/settings/certificates_handler.cc
  */
-var Certificate;
+var CertificatesOrgGroup;
 
 /**
  * @typedef {{
