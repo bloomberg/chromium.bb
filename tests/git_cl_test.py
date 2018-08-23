@@ -1327,7 +1327,7 @@ class TestGitCl(TestCase):
     if squash:
       calls += [
           (('AddReviewers',
-            'chromium-review.googlesource.com', 'my%2Frepo~123456',
+            'chromium-review.googlesource.com', '123456',
             sorted(reviewers),
             ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
             cc, notify), ''),
@@ -1351,7 +1351,7 @@ class TestGitCl(TestCase):
           }),
         (('SetReview',
           'chromium-review.googlesource.com',
-          'my%2Frepo~123456',
+          '123456',
           'Self-approving for TBR',
           {'Code-Review': 2}, None), ''),
       ]

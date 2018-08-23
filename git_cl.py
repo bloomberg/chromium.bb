@@ -2419,8 +2419,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     Not to be confused by value of "Change-Id:" footer.
     """
-    return gerrit_util.ChangeIdentifier(
-        self._GetGerritProject(), self.GetIssue())
+    # TODO(tandrii): undo this once a fix is in place for crbug/876964.
+    # return gerrit_util.ChangeIdentifier(
+    #     self._GetGerritProject(), self.GetIssue())
+    return str(self.GetIssue())
 
   @classmethod
   def IssueConfigKey(cls):
