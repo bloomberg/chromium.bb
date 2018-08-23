@@ -1166,7 +1166,7 @@ General fixes and stability improvements.
       <message desc="Label for button to reconnect to the previous Me2Me host. This button appears on the 'session-finished' page." name="IDS_RECONNECT">
         Reconnect
       </message>
-      <message desc="Button for enabling or disabling the 'resize-to-client' functionality, whereby the host desktop is resized to match the client size as closely as possible." name="IDS_RESIZE_TO_CLIENT">
+      <message desc="Button for enabling or disabling the 'resize-to-client' functionality, whereby the host desktop is resized to match the client size as closely as possible." name="IDS_RESIZE_TO_CLIENT" formatter_data="android_java">
         Resize desktop to fit
       </message>
       <message desc="Label for button to retry connecting to a Me2Me host, after failing to connect to that host. This button appears on the 'session-finished' page." name="IDS_RETRY">

@@ -15,6 +15,7 @@ import android.os.Handler;
 import android.support.v7.app.ActionBar.OnMenuVisibilityListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.DisplayCutout;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -55,6 +56,7 @@ public class Desktop
 
     /** Preference used to track the last input mode selected by the user. */
     private static final String PREFERENCE_INPUT_MODE = "input_mode";
+    private static final String PREFERENCE_RESIZE_TO_CLIENT = "resize_to_client";
 
     /** The amount of time to wait to hide the ActionBar after user input is seen. */
     private static final int ACTIONBAR_AUTO_HIDE_DELAY_MS = 3000;
@@ -75,6 +77,9 @@ public class Desktop
 
     /** Indicates whether a Soft Input UI (such as a keyboard) is visible. */
     private boolean mSoftInputVisible = false;
+
+    /** Indicates whether resize-to-client is enabled. */
+    private boolean mResizeToClientEnabled = false;
 
     /** Holds the scheduled task object which will be called to hide the ActionBar. */
     private Runnable mActionBarAutoHideTask;
@@ -154,6 +159,7 @@ public class Desktop
         mActivityLifecycleListener.onActivityCreated(this, savedInstanceState);
 
         mInputMode = getInitialInputModeValue();
+        mResizeToClientEnabled = getStoredResizeToClientEnabled();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             attachSystemUiResizeListener();
@@ -283,6 +289,8 @@ public class Desktop
         // Wait to set the input mode until after the default tinting has been applied.
         setInputMode(mInputMode);
 
+        setResizeToClientEnabled(mResizeToClientEnabled);
+
         // Keyboard state must be set after the keyboard icon has been added to the menu.
         setKeyboardState(getResources().getConfiguration());
 
@@ -350,6 +358,26 @@ public class Desktop
 
         mOnInputModeChanged.raise(
                 new InputModeChangedEventParameter(mInputMode, mHostTouchCapability));
+    }
+
+    private boolean getStoredResizeToClientEnabled() {
+        return getPreferences(MODE_PRIVATE).getBoolean(PREFERENCE_RESIZE_TO_CLIENT, false);
+    }
+
+    private void setResizeToClientEnabled(boolean resizeToClientEnabled) {
+        mResizeToClientEnabled = resizeToClientEnabled;
+        Menu menu = mToolbar.getMenu();
+        MenuItem resizeToClientMenuItem = menu.findItem(R.id.resize_to_client);
+        resizeToClientMenuItem.setChecked(mResizeToClientEnabled);
+        if (mResizeToClientEnabled != getStoredResizeToClientEnabled()) {
+            getPreferences(MODE_PRIVATE)
+                    .edit()
+                    .putBoolean(PREFERENCE_RESIZE_TO_CLIENT, mResizeToClientEnabled)
+                    .apply();
+        }
+        if (mResizeToClientEnabled) {
+            sendPreferredHostResolution();
+        }
     }
 
     @Override
@@ -600,6 +628,9 @@ public class Desktop
             mInjector.sendCtrlAltDel();
             return true;
         }
+        if (id == R.id.resize_to_client) {
+            setResizeToClientEnabled(!item.isChecked());
+        }
         if (id == R.id.actionbar_help) {
             HelpSingleton.getInstance().launchHelp(this, HelpContext.DESKTOP);
             return true;
@@ -667,6 +698,25 @@ public class Desktop
                 }
             }
         });
+    }
+
+    /**
+     * Sends preferred resolution to the host that matches the aspect ratio of the screen. This is
+     * calculated by the size of the DesktopView minus the safe insets.
+     * This method does nothing if resize-to-client has not been enabled by the user.
+     */
+    public void sendPreferredHostResolution() {
+        if (!mResizeToClientEnabled) {
+            return;
+        }
+
+        Rect safeInsets = getSafeInsets();
+        int safeAreaWidth = mRemoteHostDesktop.getWidth() - safeInsets.left - safeInsets.right;
+        int safeAreaHeight = mRemoteHostDesktop.getHeight() - safeInsets.top - safeInsets.bottom;
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        safeAreaWidth = ChromotingUtil.pxToDp(metrics, safeAreaWidth);
+        safeAreaHeight = ChromotingUtil.pxToDp(metrics, safeAreaHeight);
+        mClient.sendClientResolution(safeAreaWidth, safeAreaHeight, metrics.density);
     }
 
     /**

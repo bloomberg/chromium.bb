@@ -287,6 +287,15 @@ void JniClient::SendExtensionMessage(
                               ConvertJavaStringToUTF8(env, data));
 }
 
+void JniClient::SendClientResolution(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& caller,
+    jint dips_width,
+    jint dips_height,
+    jfloat scale) {
+  session_->SendClientResolution(dips_width, dips_height, scale);
+}
+
 void JniClient::Destroy(JNIEnv* env, const JavaParamRef<jobject>& caller) {
   delete this;
 }
