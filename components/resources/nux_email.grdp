@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grit-part>
+  <include name="IDR_NUX_EMAIL_HTML" file="../nux/email/resources/nux_email.html" type="BINDATA" />
+</grit-part>
