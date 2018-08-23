@@ -40,6 +40,13 @@ camera.views.Camera = function(context, router, model) {
   this.preview_ = new camera.views.camera.Preview();
 
   /**
+   * Layout handler for the camera view.
+   * @type {camera.views.camera.Layout}
+   * @private
+   */
+  this.layout_ = new camera.views.camera.Layout(this.preview_);
+
+  /**
    * Current camera stream.
    * @type {MediaStream}
    * @private
@@ -122,23 +129,6 @@ camera.views.Camera = function(context, router, model) {
   this.shutterButton_ = document.querySelector('#shutter');
 
   /**
-   * CSS sylte of the shifted right-stripe.
-   * @type {CSSStyleDeclaration}
-   * @private
-   */
-  this.rightStripe_ = camera.views.Camera.cssStyle_(
-      'body.shift-right-strip .right-stripe, ' +
-      'body.shift-right-strip.tablet-landscape .actions-group');
-
-  /**
-   * CSS sylte of the shifted bottom-stripe.
-   * @type {CSSStyleDeclaration}
-   * @private
-   */
-  this.bottomStripe_ = camera.views.Camera.cssStyle_(
-      'body.shift-bottom-strip .bottom-stripe, ' +
-      'body.shift-bottom-strip:not(.tablet-landscape) .actions-group');
-  /**
    * @type {string}
    * @private
    */
@@ -170,26 +160,6 @@ camera.views.Camera = function(context, router, model) {
 
   this.shutterButton_.addEventListener('click',
       this.onShutterButtonClicked_.bind(this));
-};
-
-/**
- * CSS rules.
- * @type {Array.<CSSRule>}
- * @private
- */
-camera.views.Camera.cssRules_ = [].slice.call(document.styleSheets[0].cssRules);
-
-/**
- * Gets the CSS style by the given selector.
- * @param {string} selector Selector text.
- * @return {CSSStyleDeclaration}
- * @private
- */
-camera.views.Camera.cssStyle_ = function(selector) {
-  var rule = camera.views.Camera.cssRules_.find(rule => {
-    return rule.selectorText == selector;
-  });
-  return rule.style;
 };
 
 /**
@@ -308,7 +278,7 @@ camera.views.Camera.prototype.updateShutterLabel_ = function() {
  * @override
  */
 camera.views.Camera.prototype.onResize = function() {
-  this.updateLayout_();
+  this.layout_.update();
 };
 
 /**
@@ -515,7 +485,7 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
   navigator.mediaDevices.getUserMedia(constraints).then(stream => {
     return this.preview_.setSource(stream, () => {
       this.context_.onAspectRatio(this.preview_.aspectRatio);
-      this.updateLayout_();
+      this.layout_.update();
     });
   }).then(stream => {
     // Use a watchdog since the stream.onended event is unreliable in the
@@ -536,49 +506,6 @@ camera.views.Camera.prototype.startWithConstraints_ = function(
     onSuccess();
   }).catch(onFailure);
 };
-
-/**
- * Updates the layout for video-size or window-size changes.
- * @private
- */
-camera.views.Camera.prototype.updateLayout_ = function() {
-  this.preview_.layoutElementSize();
-
-  // TODO(yuli): Check if the app runs on a tablet display.
-  var fullWindow = camera.util.isWindowFullSize();
-  var tabletLandscape = fullWindow && (window.innerWidth > window.innerHeight);
-  document.body.classList.toggle('tablet-landscape', tabletLandscape);
-
-  // Shift video-element to top/left for aligning buttons in small letterbox.
-  var [letterboxW, letterboxH] = this.preview_.letterboxSize;
-  var shiftPreview = (measure) => {
-    return measure > 1 && measure < 160;
-  };
-  document.body.classList.toggle('shift-preview',
-       fullWindow && (shiftPreview(letterboxW) || shiftPreview(letterboxH)));
-
-  // Shift buttons' stripes if right/bottom letterbox of shifted video-element
-  // still couldn't properly accommodate them. Buttons are either fully in
-  // letterbox or video-content while keeping the shutter or gallery button
-  // having minimum margin to either edges.
-  var shiftStripe = (measure, shutter) => {
-    return shutter ? (measure > 12 && measure < 100) :
-        (measure > 8 && measure < 72);
-  };
-  var calcSpace = (measure, shutter) => {
-    return measure + (shutter ? 44 : 32);
-  };
-  if (document.body.classList.toggle('shift-right-strip',
-      shiftStripe(letterboxW, tabletLandscape))) {
-    this.rightStripe_.setProperty('right',
-        calcSpace(letterboxW, tabletLandscape) + 'px');
-  }
-  if (document.body.classList.toggle('shift-bottom-strip',
-      shiftStripe(letterboxH, !tabletLandscape))) {
-    this.bottomStripe_.setProperty('bottom',
-        calcSpace(letterboxH, !tabletLandscape) + 'px');
-  }
-}
 
 /**
  * Stop handler when the camera stream is stopped.

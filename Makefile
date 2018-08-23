@@ -108,6 +108,7 @@ SRC_RESOURCES= \
 	src/js/views/browser.js \
 	src/js/views/camera.js \
         src/js/views/camera/gallerybutton.js \
+        src/js/views/camera/layout.js \
         src/js/views/camera/options.js \
         src/js/views/camera/preview.js \
         src/js/views/camera/recordtime.js \
