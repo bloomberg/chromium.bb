@@ -12,7 +12,6 @@ mojom("interfaces") {
     "display_mode.mojom",
     "display_snapshot.mojom",
     "gamma_ramp_rgb_entry.mojom",
-    "native_display_delegate.mojom",
   ]
 
   public_deps = [

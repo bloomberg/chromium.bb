@@ -25,10 +25,6 @@ namespace content {
 class BlinkTestController;
 }
 
-namespace display {
-class ForwardingDisplayDelegate;
-}
-
 namespace leveldb {
 class LevelDBMojoProxy;
 }
@@ -106,13 +102,6 @@ class MOJO_CPP_BINDINGS_EXPORT SyncCallRestrictions {
   // (https://crbug.com/811945)
   friend class ui::HostContextFactoryPrivate;
   // END ALLOWED USAGE.
-
-  // BEGIN USAGE THAT NEEDS TO BE FIXED.
-  // In ash::Shell::Init() it assumes that NativeDisplayDelegate will be
-  // synchronous at first. In mushrome ForwardingDisplayDelegate uses a
-  // synchronous call to get the display snapshots as a workaround.
-  friend class display::ForwardingDisplayDelegate;
-  // END USAGE THAT NEEDS TO BE FIXED.
 
 #if ENABLE_SYNC_CALL_RESTRICTIONS
   static void IncreaseScopedAllowCount();

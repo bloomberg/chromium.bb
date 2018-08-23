@@ -1056,8 +1056,6 @@ component("ash") {
     "touch/touch_devices_controller.cc",
     "touch/touch_devices_controller.h",
     "touch/touch_observer_hud.cc",
-    "touch/touch_transform_setter_mus.cc",
-    "touch/touch_transform_setter_mus.h",
     "touch/touch_uma.cc",
     "touch/touch_uma.h",
     "tray_action/tray_action.cc",
