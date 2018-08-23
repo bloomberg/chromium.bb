@@ -58,10 +58,14 @@ bool IsCallbackFunctionRunnable(
   // the incumbent context which originally schedules the currently-running
   // callback to see whether the script setting is disabled before invoking
   // the callback.
+  // TODO(crbug.com/608641): move IsMainWorld check into
+  // ExecutionContext::CanExecuteScripts()
   return incumbent_execution_context &&
          !incumbent_execution_context->IsContextPaused() &&
          !incumbent_execution_context->IsContextDestroyed() &&
-         incumbent_execution_context->CanExecuteScripts(kAboutToExecuteScript);
+         (!incumbent_script_state->World().IsMainWorld() ||
+          incumbent_execution_context->CanExecuteScripts(
+              kAboutToExecuteScript));
 }
 
 }  // namespace blink
