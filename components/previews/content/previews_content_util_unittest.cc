@@ -223,7 +223,8 @@ TEST_F(PreviewsContentUtilTest, DetermineCommittedClientPreviewsState) {
 TEST_F(PreviewsContentUtilTest,
        DetermineCommittedClientPreviewsStateNoScriptCheckIfStillAllowed) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi", std::string());
+  scoped_feature_list.InitFromCommandLine("Previews,ClientLoFi",
+                                          "NoScriptPreviews");
   // NoScript not allowed at commit time so Client LoFi chosen:
   EXPECT_EQ(content::PREVIEWS_OFF,
             previews::DetermineCommittedClientPreviewsState(

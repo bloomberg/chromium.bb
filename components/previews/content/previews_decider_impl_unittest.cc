@@ -27,6 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_item.h"
@@ -836,7 +837,7 @@ TEST_F(PreviewsDeciderImplTest, ClientLoFiObeysHostBlackListFromServer) {
   }
 }
 
-TEST_F(PreviewsDeciderImplTest, NoScriptDisallowedByDefault) {
+TEST_F(PreviewsDeciderImplTest, NoScriptFeatureDefaultBehavior) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(features::kPreviews);
   InitializeUIService();
@@ -850,13 +851,25 @@ TEST_F(PreviewsDeciderImplTest, NoScriptDisallowedByDefault) {
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::NOSCRIPT),
       std::vector<std::string>(), false));
+#if defined(OS_ANDROID)
+  // Enabled by default on Android but no server whitelist.
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 1);
+  histogram_tester.ExpectUniqueSample(
+      "Previews.EligibilityReason.NoScript",
+      static_cast<int>(
+          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      1);
+#else   // !defined(OS_ANDROID)
+  // Disabled by default on non-Android.
   histogram_tester.ExpectTotalCount("Previews.EligibilityReason.NoScript", 0);
+#endif  // defined(OS_ANDROID)
 }
 
 TEST_F(PreviewsDeciderImplTest, NoScriptAllowedByFeature) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kNoScriptPreviews}, {});
+      {features::kPreviews, features::kNoScriptPreviews},
+      {features::kOptimizationHints});
   InitializeUIService();
 
   const struct {
@@ -999,7 +1012,8 @@ TEST_F(PreviewsDeciderImplTest,
        ResourceLoadingHintsDisallowedWithoutOptimizationHints) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kResourceLoadingHints}, {});
+      {features::kPreviews, features::kResourceLoadingHints},
+      {features::kOptimizationHints});
   InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
@@ -1314,7 +1328,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeBlacklistStatusesDefault) {
 TEST_F(PreviewsDeciderImplTest, IsURLAllowedForPreviewBlacklistStatuses) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kNoScriptPreviews}, {});
+      {features::kPreviews, features::kNoScriptPreviews},
+      {features::kOptimizationHints});
   InitializeUIService();
   auto expected_type = PreviewsType::NOSCRIPT;
 
