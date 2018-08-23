@@ -17,6 +17,7 @@ AppListConfig::AppListConfig()
       grid_icon_dimension_(48),
       grid_icon_bottom_padding_(3),
       grid_title_top_padding_(86),
+      grid_title_horizontal_padding_(8),
       grid_title_width_(80),
       grid_title_color_(SK_ColorWHITE),
       grid_focus_dimension_(64),

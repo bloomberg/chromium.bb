@@ -31,6 +31,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int grid_icon_dimension() const { return grid_icon_dimension_; }
   int grid_icon_bottom_padding() const { return grid_icon_bottom_padding_; }
   int grid_title_top_padding() const { return grid_title_top_padding_; }
+  int grid_title_horizontal_padding() const {
+    return grid_title_horizontal_padding_;
+  }
   int grid_title_width() const { return grid_title_width_; }
   int grid_focus_dimension() const { return grid_focus_dimension_; }
   int grid_focus_corner_radius() const { return grid_focus_corner_radius_; }
@@ -147,8 +150,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The icon bottom padding in tile views in apps grid view.
   int grid_icon_bottom_padding_;
 
-  // The title top padding in tile views in apps grid view.
+  // The title top and horizontal padding in tile views in apps grid view.
   int grid_title_top_padding_;
+  int grid_title_horizontal_padding_;
 
   // The title width and color of tile views in apps grid view.
   int grid_title_width_;
