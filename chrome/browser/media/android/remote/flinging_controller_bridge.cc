@@ -88,8 +88,13 @@ void FlingingControllerBridge::OnMediaStatusUpdated(
 }
 
 base::TimeDelta FlingingControllerBridge::GetApproximateCurrentTime() {
-  // TODO(https://crbug.com/830871): Implement this method.
-  return base::TimeDelta();
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+
+  long time_in_ms = Java_FlingingControllerBridge_getApproximateCurrentTime(
+      env, j_flinging_controller_bridge_);
+
+  return base::TimeDelta::FromMilliseconds(time_in_ms);
 }
 
 }  // namespace media_router

@@ -81,7 +81,6 @@ void FlingingRenderer::Flush(const base::Closure& flush_cb) {
 void FlingingRenderer::StartPlayingFrom(base::TimeDelta time) {
   DVLOG(2) << __func__;
   controller_->GetMediaController()->Seek(time);
-  controller_->GetMediaController()->Play();
 }
 
 void FlingingRenderer::SetPlaybackRate(double playback_rate) {
@@ -98,8 +97,7 @@ void FlingingRenderer::SetVolume(float volume) {
 }
 
 base::TimeDelta FlingingRenderer::GetMediaTime() {
-  // TODO(https://crbug.com/830871): return correct media time.
-  return base::TimeDelta();
+  return controller_->GetApproximateCurrentTime();
 }
 
 void FlingingRenderer::OnMediaStatusUpdated(const media::MediaStatus& status) {
