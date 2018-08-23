@@ -15,8 +15,7 @@ namespace autofill_assistant {
 // An action to display a message.
 class AssistantTellAction : public AssistantAction {
  public:
-  // The |message| is a localized text message from the server to show user.
-  explicit AssistantTellAction(const std::string& message);
+  explicit AssistantTellAction(const AssistantActionProto& proto);
   ~AssistantTellAction() override;
 
   // Overrides AssistantAction:
@@ -24,8 +23,6 @@ class AssistantTellAction : public AssistantAction {
                      ProcessActionCallback callback) override;
 
  private:
-  std::string message_;
-
   DISALLOW_COPY_AND_ASSIGN(AssistantTellAction);
 };
 

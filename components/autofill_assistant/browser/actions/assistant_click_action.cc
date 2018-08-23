@@ -2,21 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
+#include <utility>
 
 #include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
+#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
 
 namespace autofill_assistant {
 
-AssistantClickAction::AssistantClickAction(
-    const std::vector<std::string>& selectors)
-    : target_element_selectors_(selectors) {}
+AssistantClickAction::AssistantClickAction(const AssistantActionProto& proto)
+    : AssistantAction(proto) {
+  DCHECK(proto_.has_click());
+}
 
 AssistantClickAction::~AssistantClickAction() {}
 
 void AssistantClickAction::ProcessAction(AssistantActionDelegate* delegate,
                                          ProcessActionCallback callback) {
-  delegate->ClickElement(target_element_selectors_, std::move(callback));
+  std::vector<std::string> selectors;
+  for (const auto& selector : proto_.click().element_to_click().selectors()) {
+    selectors.emplace_back(selector);
+  }
+  DCHECK(!selectors.empty());
+  delegate->ClickElement(selectors, std::move(callback));
 }
 
 }  // namespace autofill_assistant.

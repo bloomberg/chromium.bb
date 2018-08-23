@@ -5,10 +5,16 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_SCRIPT_EXECUTOR_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ASSISTANT_SCRIPT_EXECUTOR_H_
 
+#include <deque>
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/assistant_action.h"
 #include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
+#include "components/autofill_assistant/browser/assistant.pb.h"
 #include "components/autofill_assistant/browser/assistant_script.h"
 #include "components/autofill_assistant/browser/assistant_script_executor_delegate.h"
 
@@ -34,15 +40,16 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
 
  private:
   void OnGetAssistantActions(bool result, const std::string& response);
-  void ProcessActions(size_t index);
+  void ProcessNextAction();
   void GetNextAssistantActions();
-  void OnProcessedAction(size_t index, bool status);
+  void OnProcessedAction(std::unique_ptr<AssistantAction> action, bool status);
 
   AssistantScript* script_;
   AssistantScriptExecutorDelegate* delegate_;
   RunScriptCallback callback_;
 
-  std::vector<std::unique_ptr<AssistantAction>> actions_;
+  std::deque<std::unique_ptr<AssistantAction>> actions_;
+  std::vector<ProcessedAssistantActionProto> processed_actions_;
   std::string last_server_payload_;
 
   base::WeakPtrFactory<AssistantScriptExecutor> weak_ptr_factory_;

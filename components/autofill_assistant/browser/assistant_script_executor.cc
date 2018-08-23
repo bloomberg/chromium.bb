@@ -4,6 +4,9 @@
 
 #include "components/autofill_assistant/browser/assistant_script_executor.h"
 
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "components/autofill_assistant/browser/assistant_protocol_utils.h"
@@ -12,6 +15,7 @@
 #include "components/autofill_assistant/browser/assistant_web_controller.h"
 
 namespace autofill_assistant {
+
 AssistantScriptExecutor::AssistantScriptExecutor(
     AssistantScript* script,
     AssistantScriptExecutorDelegate* delegate)
@@ -56,8 +60,9 @@ void AssistantScriptExecutor::OnGetAssistantActions(
     std::move(callback_).Run(false);
     return;
   }
+  processed_actions_.clear();
+  actions_.clear();
 
-  DCHECK(!response.empty());
   bool parse_result = AssistantProtocolUtils::ParseAssistantActions(
       response, &last_server_payload_, &actions_);
   if (!parse_result) {
@@ -68,30 +73,48 @@ void AssistantScriptExecutor::OnGetAssistantActions(
   if (actions_.empty()) {
     // Finished executing the script if there are no more actions.
     std::move(callback_).Run(true);
+    return;
   }
+  ProcessNextAction();
 }
 
-void AssistantScriptExecutor::ProcessActions(size_t index) {
-  // Request next sequence of actions after process current sequence of actions.
-  if (index >= actions_.size()) {
+void AssistantScriptExecutor::ProcessNextAction() {
+  if (actions_.empty()) {
+    // Request more actions to execute.
     GetNextAssistantActions();
     return;
   }
 
-  actions_[index]->ProcessAction(
+  std::unique_ptr<AssistantAction> action = std::move(actions_.front());
+  actions_.pop_front();
+  AssistantAction* action_ptr = action.get();
+  action_ptr->ProcessAction(
       this, base::BindOnce(&AssistantScriptExecutor::OnProcessedAction,
-                           weak_ptr_factory_.GetWeakPtr(), index));
+                           weak_ptr_factory_.GetWeakPtr(), std::move(action)));
 }
 
-void AssistantScriptExecutor::GetNextAssistantActions() {}
+void AssistantScriptExecutor::GetNextAssistantActions() {
+  delegate_->GetAssistantService()->GetNextAssistantActions(
+      last_server_payload_, processed_actions_,
+      base::BindOnce(&AssistantScriptExecutor::OnGetAssistantActions,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
-void AssistantScriptExecutor::OnProcessedAction(size_t index, bool status) {
-  if (!status) {
-    std::move(callback_).Run(false);
+void AssistantScriptExecutor::OnProcessedAction(
+    std::unique_ptr<AssistantAction> action,
+    bool success) {
+  processed_actions_.emplace_back();
+  ProcessedAssistantActionProto* proto = &processed_actions_.back();
+  proto->mutable_action()->MergeFrom(action->proto());
+  proto->set_status(success
+                        ? ProcessedAssistantActionStatus::ACTION_APPLIED
+                        : ProcessedAssistantActionStatus::OTHER_ACTION_STATUS);
+  if (!success) {
+    // Report error immediately, interrupting action processing.
+    GetNextAssistantActions();
     return;
   }
-
-  ProcessActions(index++);
+  ProcessNextAction();
 }
 
 }  // namespace autofill_assistant

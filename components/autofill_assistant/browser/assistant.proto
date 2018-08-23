@@ -55,6 +55,18 @@ enum PolicyType {
   TRACE = 4;
 }
 
+message ScriptActionRequestProto {
+  optional ClientContextProto client_context = 7;
+
+  // The server payload received from the previous response.
+  optional bytes server_payload = 1;
+
+  oneof request {
+    InitialScriptActionsRequestProto initial_request = 4;
+    NextScriptActionsRequestProto next_request = 5;
+  }
+}
+
 // Initial request to get a script's actions.
 message InitialScriptActionsRequestProto {
   message QueryProto {
@@ -66,8 +78,10 @@ message InitialScriptActionsRequestProto {
 
 // Next request to get a script's actions.
 message NextScriptActionsRequestProto {
-  // The server payload received from the previous response.
-  required bytes server_payload = 1;
+  // The result of processing each AssistantActionProto from the previous
+  // response. This field must be in the same order as the actions in the
+  // original response. It may have less actions in case of failure.
+  repeated ProcessedAssistantActionProto processed_actions = 1;
 }
 
 // Response of a script's actions.
@@ -83,14 +97,31 @@ message ActionsResponseProto {
 
 // An assistant action could be performed.
 message AssistantActionProto {
-  // Next action id: 3.
+  // Opaque data that should not be interpreted by the client. The client must
+  // pass this back unchanged in the next request
+  optional bytes server_payload = 4;
+
   oneof action_info {
-    ClickProto click = 1;
-    TellProto tell = 2;
-    UseAddressProto use_address = 3;
-    UseCreditCardProto use_card = 4;
-    WaitForDomProto wait_for_dom = 5;
+    ClickProto click = 5;
+    TellProto tell = 11;
+    WaitForDomProto wait_for_dom = 19;
+    UseCreditCardProto use_card = 28;
+    UseAddressProto use_address = 29;
   }
+}
+
+message ProcessedAssistantActionProto {
+  // The action that was processed.
+  optional AssistantActionProto action = 1;
+
+  optional ProcessedAssistantActionStatus status = 2;
+}
+
+enum ProcessedAssistantActionStatus {
+  UNKNOWN_ACTION_STATUS = 0;
+  ELEMENT_RESOLUTION_FAILED = 1;
+  ACTION_APPLIED = 2;
+  OTHER_ACTION_STATUS = 3;
 }
 
 // A reference to an unique element on the page, possibly nested in frames.
@@ -108,7 +139,7 @@ message ClickProto {
   required ElementReferenceProto element_to_click = 1;
 }
 
-// Contain a message to tell the user.
+// Contain a localized text message from the server to show to the user.
 message TellProto {
   required string message = 1;
 }

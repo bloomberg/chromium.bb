@@ -4,6 +4,10 @@
 
 #include "components/autofill_assistant/browser/assistant_service.h"
 
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/strings/strcat.h"
 #include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 #include "content/public/browser/browser_context.h"
@@ -92,6 +96,7 @@ void AssistantService::GetAssistantActions(const std::string& script_path,
 
 void AssistantService::GetNextAssistantActions(
     const std::string& previous_server_payload,
+    const std::vector<ProcessedAssistantActionProto>& processed_actions,
     ResponseCallback callback) {
   DCHECK(!previous_server_payload.empty());
 
@@ -101,7 +106,7 @@ void AssistantService::GetNextAssistantActions(
   assistant_loader->loader = CreateAndStartLoader(
       assistant_script_action_server_url_,
       AssistantProtocolUtils::CreateNextScriptActionsRequest(
-          previous_server_payload),
+          previous_server_payload, processed_actions),
       assistant_loader.get());
   assistant_loaders_[assistant_loader.get()] = std::move(assistant_loader);
 }

@@ -16,11 +16,8 @@ namespace autofill_assistant {
 // An action to ask user to choose a local address to fill the form.
 class AssistantUseAddressAction : public AssistantAction {
  public:
-  // The |usage_message| indicates the usage of the address, like billing
-  // address or shipping address. The |selectors| specifies an element in the
-  // form to be filled.
-  AssistantUseAddressAction(const std::string& usage_message,
-                            const std::vector<std::string>& selectors);
+  explicit AssistantUseAddressAction(const AssistantActionProto& proto);
+
   ~AssistantUseAddressAction() override;
 
   // Overrides AssistantAction:
@@ -28,9 +25,6 @@ class AssistantUseAddressAction : public AssistantAction {
                      ProcessActionCallback callback) override;
 
  private:
-  std::string usage_message_;
-  std::vector<std::string> target_element_selectors_;
-
   DISALLOW_COPY_AND_ASSIGN(AssistantUseAddressAction);
 };
 

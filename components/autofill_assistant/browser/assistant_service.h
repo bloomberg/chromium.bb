@@ -7,8 +7,11 @@
 
 #include <map>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
+#include "components/autofill_assistant/browser/assistant.pb.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -21,22 +24,25 @@ namespace autofill_assistant {
 // client actions.
 class AssistantService {
  public:
-  AssistantService(content::BrowserContext* context);
-  ~AssistantService();
+  explicit AssistantService(content::BrowserContext* context);
+  virtual ~AssistantService();
 
   using ResponseCallback =
       base::OnceCallback<void(bool result, const std::string&)>;
   // Get assistant scripts for a given |url|, which should be a valid URL.
-  void GetAssistantScriptsForUrl(const GURL& url, ResponseCallback callback);
+  virtual void GetAssistantScriptsForUrl(const GURL& url,
+                                         ResponseCallback callback);
 
   // Get assistant actions.
-  void GetAssistantActions(const std::string& script_path,
-                           ResponseCallback callback);
+  virtual void GetAssistantActions(const std::string& script_path,
+                                   ResponseCallback callback);
 
   // Get next sequence of assistant actions according to server payload in
   // previous reponse.
-  void GetNextAssistantActions(const std::string& previous_server_payload,
-                               ResponseCallback callback);
+  virtual void GetNextAssistantActions(
+      const std::string& previous_server_payload,
+      const std::vector<ProcessedAssistantActionProto>& processed_actions,
+      ResponseCallback callback);
 
  private:
   // Struct to store assistant scripts and actions request.

@@ -22,21 +22,18 @@ int kDefaultCheckRounds = 150;
 namespace autofill_assistant {
 
 AssistantWaitForDomAction::AssistantWaitForDomAction(
-    int timeout_ms,
-    const std::vector<std::string>& selectors,
-    bool for_absence)
-    : timeout_ms_(timeout_ms),
-      target_element_selectors_(selectors),
-      for_absence_(for_absence),
-      weak_ptr_factory_(this) {}
+    const AssistantActionProto& proto)
+    : AssistantAction(proto), weak_ptr_factory_(this) {}
 
 AssistantWaitForDomAction::~AssistantWaitForDomAction() {}
 
 void AssistantWaitForDomAction::ProcessAction(AssistantActionDelegate* delegate,
                                               ProcessActionCallback callback) {
   int check_rounds = kDefaultCheckRounds;
-  if (timeout_ms_ > 0)
-    check_rounds = std::ceil(timeout_ms_ / kCheckPeriodInMilliseconds);
+
+  int timeout_ms = proto_.wait_for_dom().timeout_ms();
+  if (timeout_ms > 0)
+    check_rounds = std::ceil(timeout_ms / kCheckPeriodInMilliseconds);
 
   CheckElementExists(delegate, check_rounds, std::move(callback));
 }
@@ -46,9 +43,12 @@ void AssistantWaitForDomAction::CheckElementExists(
     int rounds,
     ProcessActionCallback callback) {
   DCHECK(rounds > 0);
-
+  std::vector<std::string> selectors;
+  for (const auto& selector : proto_.wait_for_dom().element().selectors()) {
+    selectors.emplace_back(selector);
+  }
   delegate->ElementExists(
-      target_element_selectors_,
+      selectors,
       base::BindOnce(&AssistantWaitForDomAction::OnCheckElementExists,
                      weak_ptr_factory_.GetWeakPtr(), delegate, rounds,
                      std::move(callback)));
@@ -59,12 +59,13 @@ void AssistantWaitForDomAction::OnCheckElementExists(
     int rounds,
     ProcessActionCallback callback,
     bool result) {
-  if (for_absence_ && !result) {
+  bool for_absence = proto_.wait_for_dom().check_for_absence();
+  if (for_absence && !result) {
     std::move(callback).Run(true);
     return;
   }
 
-  if (!for_absence_ && result) {
+  if (!for_absence && result) {
     std::move(callback).Run(true);
     return;
   }

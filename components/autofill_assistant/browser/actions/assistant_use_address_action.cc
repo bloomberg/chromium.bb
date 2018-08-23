@@ -9,9 +9,8 @@
 namespace autofill_assistant {
 
 AssistantUseAddressAction::AssistantUseAddressAction(
-    const std::string& usage_message,
-    const std::vector<std::string>& selectors)
-    : usage_message_(usage_message), target_element_selectors_(selectors) {}
+    const AssistantActionProto& proto)
+    : AssistantAction(proto) {}
 
 AssistantUseAddressAction::~AssistantUseAddressAction() {}
 
