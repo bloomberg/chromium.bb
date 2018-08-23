@@ -22,7 +22,8 @@ Embedding::Embedding(WindowTree* embedding_tree,
       window_(window),
       embedding_tree_intercepts_events_(embedding_tree_intercepts_events) {
   DCHECK(window_);
-}  // namespace ws2
+  DCHECK(!embedding_tree_intercepts_events_ || embedding_tree_);
+}
 
 Embedding::~Embedding() {
   if (!binding_ && embedded_tree_)

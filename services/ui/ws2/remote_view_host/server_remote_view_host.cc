@@ -27,6 +27,13 @@ void ServerRemoteViewHost::EmbedUsingToken(
   embed_flags_ = embed_flags;
   embed_callback_ = std::move(callback);
 
+  embedding_root_ = std::make_unique<aura::Window>(
+      nullptr, aura::client::WINDOW_TYPE_UNKNOWN, window_service_->env());
+  embedding_root_->set_owned_by_parent(false);
+  embedding_root_->SetName("ServerRemoteViewHostWindow");
+  embedding_root_->SetType(aura::client::WINDOW_TYPE_CONTROL);
+  embedding_root_->Init(ui::LAYER_NOT_DRAWN);
+
   // TODO(sky): having to wait for being parented is a bit of a hassle. Fix
   // this.
   if (GetWidget())
@@ -39,13 +46,6 @@ void ServerRemoteViewHost::EmbedImpl() {
 
   // There is a pending embed request.
   DCHECK(!embed_token_.is_empty());
-
-  embedding_root_ = std::make_unique<aura::Window>(
-      nullptr, aura::client::WINDOW_TYPE_UNKNOWN, window_service_->env());
-  embedding_root_->set_owned_by_parent(false);
-  embedding_root_->SetName("ServerRemoteViewHostWindow");
-  embedding_root_->SetType(aura::client::WINDOW_TYPE_CONTROL);
-  embedding_root_->Init(ui::LAYER_NOT_DRAWN);
 
   // TODO(sky): fix this, only necessary because of restrictions in WindowTree.
   // Must happen before EmbedUsingToken call for window server to figure out
@@ -62,7 +62,7 @@ void ServerRemoteViewHost::EmbedImpl() {
 }
 
 void ServerRemoteViewHost::AddedToWidget() {
-  if (!native_view() && !embedding_root_)
+  if (!native_view())
     EmbedImpl();
 }
 

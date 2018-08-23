@@ -142,10 +142,12 @@ bool WindowService::CompleteScheduleEmbedForExistingClient(
   if (!tree_and_id.tree)
     return false;
 
+  // Event interception is not supported for embedding without a client.
+  DCHECK(!(embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents));
+  const bool owner_intercept_events = false;
+
   ServerWindow* server_window =
       GetServerWindowForWindowCreateIfNecessary(window);
-  const bool owner_intercept_events =
-      (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
   tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
       window, tree_and_id.id, embed_token);
   std::unique_ptr<Embedding> embedding =
