@@ -85,11 +85,10 @@ struct NavigationEventList {
                                        const GURL& target_main_frame_url,
                                        SessionID target_tab_id);
 
-  // Finds the most recent retargeting NavigationEvent that satisfies
-  // |target_url|, and |target_tab_id|.
+  // Finds the most recent retargeting NavigationEvent that satisfies the
+  // |target_tab_id|.
   NavigationEvent* FindRetargetingNavigationEvent(
       const base::Time& last_event_timestamp,
-      const GURL& target_url,
       SessionID target_tab_id);
 
   void RecordNavigationEvent(std::unique_ptr<NavigationEvent> nav_event);

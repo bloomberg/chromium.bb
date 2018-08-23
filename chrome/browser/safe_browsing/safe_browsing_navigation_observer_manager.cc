@@ -150,8 +150,7 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
       if (nav_event->source_url.is_empty() &&
           nav_event->source_main_frame_url.is_empty()) {
         NavigationEvent* retargeting_nav_event = FindRetargetingNavigationEvent(
-            nav_event->last_updated, nav_event->original_request_url,
-            nav_event->target_tab_id);
+            nav_event->last_updated, nav_event->target_tab_id);
         if (!retargeting_nav_event)
           return nav_event;
         // If there is a server redirection immediately after retargeting, we
@@ -172,11 +171,7 @@ NavigationEvent* NavigationEventList::FindNavigationEvent(
 
 NavigationEvent* NavigationEventList::FindRetargetingNavigationEvent(
     const base::Time& last_event_timestamp,
-    const GURL& target_url,
     SessionID target_tab_id) {
-  if (target_url.is_empty())
-    return nullptr;
-
   // Since navigation events are recorded in chronological order, we traverse
   // the vector in reverse order to get the latest match.
   for (auto rit = navigation_events_.rbegin(); rit != navigation_events_.rend();
@@ -189,8 +184,7 @@ NavigationEvent* NavigationEventList::FindRetargetingNavigationEvent(
 
     // In addition to url and tab_id checking, we need to compare the
     // source_tab_id and target_tab_id to make sure it is a retargeting event.
-    if (nav_event->original_request_url == target_url &&
-        nav_event->target_tab_id == target_tab_id &&
+    if (nav_event->target_tab_id == target_tab_id &&
         nav_event->source_tab_id != nav_event->target_tab_id) {
       return nav_event;
     }
