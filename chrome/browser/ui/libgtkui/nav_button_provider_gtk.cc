@@ -130,8 +130,13 @@ gfx::Size GetMinimumWidgetSize(gfx::Size content_size,
     widget_rect.Inset(-MarginFromStyleContext(content_context, state));
   if (GtkVersionCheck(3, 20)) {
     int min_width, min_height;
+#if GTK_CHECK_VERSION(3, 90, 0)
+    gtk_style_context_get(widget_context, "min-width", &min_width, "min-height",
+                          &min_height, nullptr);
+#else
     gtk_style_context_get(widget_context, state, "min-width", &min_width,
-                          "min-height", &min_height, NULL);
+                          "min-height", &min_height, nullptr);
+#endif
     widget_rect.set_width(std::max(widget_rect.width(), min_width));
     widget_rect.set_height(std::max(widget_rect.height(), min_height));
   }
@@ -232,9 +237,14 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
     // "contain" if clipping would occur.
     cairo_pattern_t* cr_pattern = nullptr;
     cairo_surface_t* cr_surface = nullptr;
+#if GTK_CHECK_VERSION(3, 90, 0)
+    gtk_style_context_get(button_context, GTK_STYLE_PROPERTY_BACKGROUND_IMAGE,
+                          &cr_pattern, nullptr);
+#else
     gtk_style_context_get(button_context, button_state,
                           GTK_STYLE_PROPERTY_BACKGROUND_IMAGE, &cr_pattern,
                           nullptr);
+#endif
     if (cr_pattern &&
         cairo_pattern_get_surface(cr_pattern, &cr_surface) ==
             CAIRO_STATUS_SUCCESS &&
@@ -434,8 +444,13 @@ void NavButtonProviderGtk::CalculateCaptionButtonLayout(
   float content_height = content_size.height();
   if (GtkVersionCheck(3, 20)) {
     int min_width, min_height;
+#if GTK_CHECK_VERSION(3, 90, 0)
+    gtk_style_context_get(button_context, "min-width", &min_width, "min-height",
+                          &min_height, nullptr);
+#else
     gtk_style_context_get(button_context, GTK_STATE_FLAG_NORMAL, "min-width",
-                          &min_width, "min-height", &min_height, NULL);
+                          &min_width, "min-height", &min_height, nullptr);
+#endif
     content_width = std::max(content_width, static_cast<float>(min_width));
     content_height = std::max(content_height, static_cast<float>(min_height));
   }

@@ -607,13 +607,14 @@ SkColor GetSeparatorColor(const std::string& css_selector) {
 
   auto context = GetStyleContextFromCss(css_selector);
   int w = 1, h = 1;
-  gtk_style_context_get(context, gtk_style_context_get_state(context),
-                        "min-width", &w, "min-height", &h, nullptr);
   GtkBorder border, padding;
 #if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get(context, "min-width", &w, "min-height", &h, nullptr);
   gtk_style_context_get_border(context, &border);
   gtk_style_context_get_padding(context, &padding);
 #else
+  gtk_style_context_get(context, gtk_style_context_get_state(context),
+                        "min-width", &w, "min-height", &h, nullptr);
   GtkStateFlags state = gtk_style_context_get_state(context);
   gtk_style_context_get_border(context, state, &border);
   gtk_style_context_get_padding(context, state, &padding);
