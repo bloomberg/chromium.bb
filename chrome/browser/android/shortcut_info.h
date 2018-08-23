@@ -16,6 +16,19 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
+// https://wicg.github.io/web-share-target/#dom-sharetargetparams
+struct ShareTargetParams {
+  base::string16 title;
+  base::string16 text;
+  base::string16 url;
+};
+
+// https://wicg.github.io/web-share-target/#dom-sharetarget
+struct ShareTarget {
+  GURL action;
+  ShareTargetParams params;
+};
+
 // Information needed to create a shortcut via ShortcutHelper.
 struct ShortcutInfo {
 
@@ -96,7 +109,7 @@ struct ShortcutInfo {
   GURL best_primary_icon_url;
   GURL best_badge_icon_url;
   std::vector<std::string> icon_urls;
-  GURL share_target_url_template;
+  base::Optional<ShareTarget> share_target;
 };
 
 #endif  // CHROME_BROWSER_ANDROID_SHORTCUT_INFO_H_

@@ -95,7 +95,6 @@ message WebAppManifest {
 }
 
 message Image {
-
   enum Usage {
     PRIMARY_ICON = 1;
     BADGE_ICON = 2;
@@ -118,8 +117,25 @@ message Image {
   reserved 2, 3, 4, 7;
 }
 
+// A proto representing ShareTargetParams
+// https://wicg.github.io/web-share-target/#dom-sharetargetparams
+// Each field corresponds to key in ShareData. These are the query parameter
+// keys to be used for the data supplied in a ShareData instance.
+// ShareData: https://wicg.github.io/web-share#dom-sharedata
+message ShareTargetParams {
+  optional string title = 1;
+  optional string text = 2;
+  optional string url = 3;
+}
+
+// A proto representing a ShareTarget.
+// https://wicg.github.io/web-share-target/#dom-sharetarget
 message ShareTarget {
-  // The URL template that contains placeholders to be replaced with shared
-  // data.
-  optional string url_template = 1;
+  // The URL to be resolved when sharing.
+  optional string action = 2;
+  optional ShareTargetParams params = 3;
+  // TODO(ckitagawa):
+  // Add method and enctype for POST (GET by default).
+
+  reserved 1;
 }
