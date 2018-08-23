@@ -51,9 +51,9 @@ class AssistantService {
     ~AssistantLoader();
 
     ResponseCallback callback;
-    std::unique_ptr<network::SimpleURLLoader> loader;
+    std::unique_ptr<::network::SimpleURLLoader> loader;
   };
-  std::unique_ptr<network::SimpleURLLoader> CreateAndStartLoader(
+  std::unique_ptr<::network::SimpleURLLoader> CreateAndStartLoader(
       const GURL& server_url,
       const std::string& request,
       AssistantLoader* loader);
