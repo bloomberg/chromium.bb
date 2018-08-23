@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/core/fileapi/file_error.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -67,9 +68,7 @@ void FileSystemWriter::WriteComplete(base::File::Error result,
   if (result == base::File::FILE_OK) {
     pending_operation_->Resolve();
   } else {
-    // TODO(mek): Take actual error code into account.
-    pending_operation_->Reject(
-        DOMException::Create(DOMExceptionCode::kAbortError));
+    pending_operation_->Reject(FileError::CreateDOMException(result));
   }
 }
 
@@ -78,9 +77,7 @@ void FileSystemWriter::TruncateComplete(base::File::Error result) {
   if (result == base::File::FILE_OK) {
     pending_operation_->Resolve();
   } else {
-    // TODO(mek): Take actual error code into account.
-    pending_operation_->Reject(
-        DOMException::Create(DOMExceptionCode::kAbortError));
+    pending_operation_->Reject(FileError::CreateDOMException(result));
   }
 }
 

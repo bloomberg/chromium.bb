@@ -143,6 +143,88 @@ const char* ErrorCodeToMessage(ErrorCode code) {
   }
 }
 
+DOMExceptionCode FileErrorToExceptionCode(base::File::Error code) {
+  switch (code) {
+    case base::File::FILE_OK:
+      return DOMExceptionCode::kNoError;
+    case base::File::FILE_ERROR_FAILED:
+      return DOMExceptionCode::kInvalidStateError;
+    case base::File::FILE_ERROR_EXISTS:
+      return DOMExceptionCode::kPathExistsError;
+    case base::File::FILE_ERROR_NOT_EMPTY:
+    case base::File::FILE_ERROR_INVALID_OPERATION:
+      return DOMExceptionCode::kInvalidModificationError;
+    case base::File::FILE_ERROR_TOO_MANY_OPENED:
+    case base::File::FILE_ERROR_NO_MEMORY:
+      return DOMExceptionCode::kUnknownError;
+    case base::File::FILE_ERROR_NOT_FOUND:
+      return DOMExceptionCode::kNotFoundError;
+    case base::File::FILE_ERROR_IN_USE:
+    case base::File::FILE_ERROR_ACCESS_DENIED:
+      return DOMExceptionCode::kNoModificationAllowedError;
+    case base::File::FILE_ERROR_NO_SPACE:
+      return DOMExceptionCode::kQuotaExceededError;
+    case base::File::FILE_ERROR_NOT_A_DIRECTORY:
+    case base::File::FILE_ERROR_NOT_A_FILE:
+      return DOMExceptionCode::kTypeMismatchError;
+    case base::File::FILE_ERROR_ABORT:
+      return DOMExceptionCode::kAbortError;
+    case base::File::FILE_ERROR_SECURITY:
+      return DOMExceptionCode::kSecurityError;
+    case base::File::FILE_ERROR_INVALID_URL:
+      return DOMExceptionCode::kEncodingError;
+    case base::File::FILE_ERROR_IO:
+      return DOMExceptionCode::kNotReadableError;
+    case base::File::FILE_ERROR_MAX:
+      NOTREACHED();
+      return DOMExceptionCode::kUnknownError;
+  }
+  NOTREACHED();
+  return DOMExceptionCode::kUnknownError;
+}
+
+const char* FileErrorToMessage(base::File::Error code) {
+  // Note that some of these do not set message. If message is null then the
+  // default message is used.
+  switch (code) {
+    case base::File::FILE_ERROR_NOT_FOUND:
+      return kNotFoundErrorMessage;
+    case base::File::FILE_ERROR_ACCESS_DENIED:
+      return kNoModificationAllowedErrorMessage;
+    case base::File::FILE_ERROR_FAILED:
+      return kInvalidStateErrorMessage;
+    case base::File::FILE_ERROR_ABORT:
+      return kAbortErrorMessage;
+    case base::File::FILE_ERROR_SECURITY:
+      return kSecurityErrorMessage;
+    case base::File::FILE_ERROR_NO_SPACE:
+      return kQuotaExceededErrorMessage;
+    case base::File::FILE_ERROR_INVALID_URL:
+      return kEncodingErrorMessage;
+    case base::File::FILE_ERROR_IO:
+      return kNotReadableErrorMessage;
+    case base::File::FILE_ERROR_EXISTS:
+      return kPathExistsErrorMessage;
+    case base::File::FILE_ERROR_NOT_A_DIRECTORY:
+    case base::File::FILE_ERROR_NOT_A_FILE:
+      return kTypeMismatchErrorMessage;
+    case base::File::FILE_OK:
+    case base::File::FILE_ERROR_INVALID_OPERATION:
+    case base::File::FILE_ERROR_NOT_EMPTY:
+    case base::File::FILE_ERROR_NO_MEMORY:
+    case base::File::FILE_ERROR_TOO_MANY_OPENED:
+    case base::File::FILE_ERROR_IN_USE:
+      // TODO(mek): More specific error messages for at least some of these
+      // errors.
+      return nullptr;
+    case base::File::FILE_ERROR_MAX:
+      NOTREACHED();
+      return nullptr;
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 }  // namespace
 
 void ThrowDOMException(ExceptionState& exception_state,
@@ -169,6 +251,12 @@ DOMException* CreateDOMException(ErrorCode code) {
   DCHECK_NE(code, kOK);
   return DOMException::Create(ErrorCodeToExceptionCode(code),
                               ErrorCodeToMessage(code));
+}
+
+DOMException* CreateDOMException(base::File::Error code) {
+  DCHECK_NE(code, base::File::FILE_OK);
+  return DOMException::Create(FileErrorToExceptionCode(code),
+                              FileErrorToMessage(code));
 }
 
 STATIC_ASSERT_ENUM(kWebFileErrorNotFound, kNotFoundErr);
