@@ -212,9 +212,7 @@ void BookmarkAppNavigationBrowserTest::ClickLinkWithModifiersAndWait(
 }
 
 BookmarkAppNavigationBrowserTest::BookmarkAppNavigationBrowserTest()
-    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-      mock_cert_verifier_(),
-      cert_verifier_(&mock_cert_verifier_) {}
+    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
 BookmarkAppNavigationBrowserTest::~BookmarkAppNavigationBrowserTest() = default;
 
@@ -241,24 +239,24 @@ void BookmarkAppNavigationBrowserTest::SetUp() {
 
 void BookmarkAppNavigationBrowserTest::SetUpInProcessBrowserTestFixture() {
   ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-  ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+  cert_verifier_.SetUpInProcessBrowserTestFixture();
 }
 
 void BookmarkAppNavigationBrowserTest::TearDownInProcessBrowserTestFixture() {
   ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
-  ProfileIOData::SetCertVerifierForTesting(nullptr);
+  cert_verifier_.TearDownInProcessBrowserTestFixture();
 }
 
 void BookmarkAppNavigationBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+  cert_verifier_.SetUpCommandLine(command_line);
 }
 
 void BookmarkAppNavigationBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
   host_resolver()->AddRule("*", "127.0.0.1");
   // By default, all SSL cert checks are valid. Can be overriden in tests.
-  cert_verifier_.set_default_result(net::OK);
+  cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 }
 
 void BookmarkAppNavigationBrowserTest::InstallTestBookmarkApp() {

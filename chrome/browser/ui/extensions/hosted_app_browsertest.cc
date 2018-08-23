@@ -62,7 +62,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/base/host_port_pair.h"
-#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -260,9 +259,7 @@ class HostedAppTest
   HostedAppTest()
       : app_browser_(nullptr),
         app_(nullptr),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        mock_cert_verifier_(),
-        cert_verifier_(&mock_cert_verifier_) {}
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
   ~HostedAppTest() override {}
 
   void SetUp() override {
@@ -363,26 +360,26 @@ class HostedAppTest
 
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+    cert_verifier_.SetUpInProcessBrowserTestFixture();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
     extensions::ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
-    ProfileIOData::SetCertVerifierForTesting(nullptr);
+    cert_verifier_.TearDownInProcessBrowserTestFixture();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     // Browser will both run and display insecure content.
     command_line->AppendSwitch(switches::kAllowRunningInsecureContent);
-    command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+    cert_verifier_.SetUpCommandLine(command_line);
   }
 
   void SetUpOnMainThread() override {
     extensions::ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     // By default, all SSL cert checks are valid. Can be overriden in tests.
-    cert_verifier_.set_default_result(net::OK);
+    cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
   }
 
   // Tests that performing |action| results in a new foreground tab
@@ -428,8 +425,8 @@ class HostedAppTest
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
-  CertVerifierBrowserTest::CertVerifier* cert_verifier() {
-    return &cert_verifier_;
+  content::ContentMockCertVerifier::CertVerifier* cert_verifier() {
+    return cert_verifier_.mock_cert_verifier();
   }
 
  private:
@@ -447,11 +444,10 @@ class HostedAppTest
   AppType app_type_;
 
   net::EmbeddedTestServer https_server_;
-  net::MockCertVerifier mock_cert_verifier_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService. This is needed for when tests run with
   // the NetworkService enabled.
-  CertVerifierBrowserTest::CertVerifier cert_verifier_;
+  ChromeMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppTest);
 };

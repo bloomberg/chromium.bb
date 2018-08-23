@@ -47,6 +47,41 @@
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace content {
+namespace {
+
+net::CertVerifier* g_cert_verifier_for_testing = nullptr;
+
+// A CertVerifier that forwards all requests to
+// |g_cert_verifier_for_profile_io_data_testing|. This is used to allow
+// BrowserContexts to have their own std::unique_ptr<net::CertVerifier> while
+// forwarding calls to the shared verifier.
+class WrappedCertVerifierForTesting : public net::CertVerifier {
+ public:
+  WrappedCertVerifierForTesting() = default;
+  ~WrappedCertVerifierForTesting() override = default;
+
+  // CertVerifier implementation
+  int Verify(const RequestParams& params,
+             net::CertVerifyResult* verify_result,
+             net::CompletionOnceCallback callback,
+             std::unique_ptr<Request>* out_req,
+             const net::NetLogWithSource& net_log) override {
+    verify_result->Reset();
+    if (!g_cert_verifier_for_testing)
+      return net::ERR_FAILED;
+    return g_cert_verifier_for_testing->Verify(
+        params, verify_result, std::move(callback), out_req, net_log);
+  }
+  void SetConfig(const Config& config) override {
+    if (!g_cert_verifier_for_testing)
+      return;
+    return g_cert_verifier_for_testing->SetConfig(config);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WrappedCertVerifierForTesting);
+};
+}  // namespace
 
 ShellURLRequestContextGetter::ShellURLRequestContextGetter(
     bool ignore_certificate_errors,
@@ -87,6 +122,11 @@ std::string ShellURLRequestContextGetter::GetAcceptLanguages() {
   return "en-us,en";
 }
 
+void ShellURLRequestContextGetter::SetCertVerifierForTesting(
+    net::CertVerifier* cert_verifier) {
+  g_cert_verifier_for_testing = cert_verifier;
+}
+
 std::unique_ptr<net::NetworkDelegate>
 ShellURLRequestContextGetter::CreateNetworkDelegate() {
   return std::make_unique<ShellNetworkDelegate>();
@@ -94,6 +134,8 @@ ShellURLRequestContextGetter::CreateNetworkDelegate() {
 
 std::unique_ptr<net::CertVerifier>
 ShellURLRequestContextGetter::GetCertVerifier() {
+  if (g_cert_verifier_for_testing)
+    return std::make_unique<WrappedCertVerifierForTesting>();
   return net::CertVerifier::CreateDefault();
 }
 

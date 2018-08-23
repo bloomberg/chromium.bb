@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "extensions/common/extension.h"
-#include "net/cert/mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -196,8 +195,8 @@ class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
 
   const net::EmbeddedTestServer& https_server() { return https_server_; }
 
-  CertVerifierBrowserTest::CertVerifier& mock_cert_verifier() {
-    return cert_verifier_;
+  content::ContentMockCertVerifier::CertVerifier& mock_cert_verifier() {
+    return *cert_verifier_.mock_cert_verifier();
   }
 
  private:
@@ -206,7 +205,7 @@ class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService. This is needed for when tests run with
   // the NetworkService enabled.
-  CertVerifierBrowserTest::CertVerifier cert_verifier_;
+  ChromeMockCertVerifier cert_verifier_;
   const Extension* test_bookmark_app_;
   base::HistogramTester histogram_tester_;
 };

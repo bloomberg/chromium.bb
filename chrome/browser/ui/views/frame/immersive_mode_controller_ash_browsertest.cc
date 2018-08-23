@@ -46,15 +46,13 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     : public extensions::ExtensionBrowserTest {
  public:
   ImmersiveModeControllerAshHostedAppBrowserTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        mock_cert_verifier_(),
-        cert_verifier_(&mock_cert_verifier_) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   ~ImmersiveModeControllerAshHostedAppBrowserTest() override = default;
 
   // InProcessBrowserTest override:
   void SetUpOnMainThread() override {
-    cert_verifier_.set_default_result(net::OK);
+    cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     https_server_.AddDefaultHandlers(
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
     ASSERT_TRUE(https_server_.Start());
@@ -89,17 +87,17 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
 
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
-    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+    cert_verifier_.SetUpInProcessBrowserTestFixture();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    ProfileIOData::SetCertVerifierForTesting(nullptr);
+    cert_verifier_.TearDownInProcessBrowserTestFixture();
     extensions::ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+    cert_verifier_.SetUpCommandLine(command_line);
   }
 
   // Returns the bounds of |view| in widget coordinates.
@@ -153,11 +151,10 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
   std::unique_ptr<ImmersiveRevealedLock> revealed_lock_;
 
   net::EmbeddedTestServer https_server_;
-  net::MockCertVerifier mock_cert_verifier_;
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService. This is needed for when tests run with
   // the NetworkService enabled.
-  CertVerifierBrowserTest::CertVerifier cert_verifier_;
+  ChromeMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveModeControllerAshHostedAppBrowserTest);
 };
