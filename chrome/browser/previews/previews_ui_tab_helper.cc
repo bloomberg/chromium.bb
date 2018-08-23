@@ -6,6 +6,8 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -21,6 +23,7 @@
 #include "components/previews/content/previews_content_util.h"
 #include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -68,15 +71,21 @@ void PreviewsUITabHelper::ShowUIElement(
   previews::PreviewsUIService* previews_ui_service =
       previews_service ? previews_service->previews_ui_service() : nullptr;
 
+#if defined(OS_ANDROID)
+  if (base::FeatureList::IsEnabled(
+          previews::features::kAndroidOmniboxPreviewsBadge)) {
+    should_display_android_omnibox_badge_ = true;
+    return;
+  }
+#endif
+
   PreviewsInfoBarDelegate::Create(
       web_contents(), previews_type, previews_freshness, is_data_saver_user,
       is_reload, std::move(on_dismiss_callback), previews_ui_service);
 }
 
 PreviewsUITabHelper::PreviewsUITabHelper(content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents),
-      displayed_preview_ui_(false),
-      displayed_preview_timestamp_(false) {
+    : content::WebContentsObserver(web_contents) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -88,6 +97,7 @@ void PreviewsUITabHelper::DidFinishNavigation(
     return;
 
   previews_user_data_.reset();
+  should_display_android_omnibox_badge_ = false;
   // Store Previews information for this navigation.
   ChromeNavigationData* nav_data = static_cast<ChromeNavigationData*>(
       navigation_handle->GetNavigationData());

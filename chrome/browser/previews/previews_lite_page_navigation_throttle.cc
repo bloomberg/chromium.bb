@@ -127,7 +127,8 @@ bool PreviewsLitePageNavigationThrottle::GetOriginalURL(
   if (!net::GetValueForKeyInQuery(url, "u", &original_url_query_param))
     return false;
 
-  *original_url = original_url_query_param;
+  if (original_url)
+    *original_url = original_url_query_param;
   return true;
 }
 

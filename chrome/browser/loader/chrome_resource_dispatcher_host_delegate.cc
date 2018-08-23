@@ -32,6 +32,7 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 #include "chrome/browser/prerender/prerender_util.h"
+#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -797,6 +798,13 @@ ChromeResourceDispatcherHostDelegate::DetermineCommittedPreviews(
   content::PreviewsState previews_state =
       data_reduction_proxy::ContentLoFiDecider::
           DetermineCommittedServerPreviewsState(*request, initial_state);
+
+  // TODO(crbug.com/842233): This should be removed in the previews s13n work.
+  if (PreviewsLitePageNavigationThrottle::GetOriginalURL(
+          request->url(), nullptr /* original_url */)) {
+    previews_state = previews_state & content::LITE_PAGE_REDIRECT_ON;
+  }
+
   return previews::DetermineCommittedClientPreviewsState(
       *request, previews_state, previews_decider);
 }
