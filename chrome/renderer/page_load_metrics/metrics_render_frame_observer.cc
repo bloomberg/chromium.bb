@@ -42,12 +42,11 @@ class MojoPageTimingSender : public PageTimingSender {
       const mojom::PageLoadTimingPtr& timing,
       const mojom::PageLoadMetadataPtr& metadata,
       mojom::PageLoadFeaturesPtr new_features,
-      mojom::PageLoadDataUsePtr new_data_use,
       std::vector<mojom::ResourceDataUpdatePtr> resources) override {
     DCHECK(page_load_metrics_);
-    page_load_metrics_->UpdateTiming(
-        timing->Clone(), metadata->Clone(), std::move(new_features),
-        std::move(new_data_use), std::move(resources));
+    page_load_metrics_->UpdateTiming(timing->Clone(), metadata->Clone(),
+                                     std::move(new_features),
+                                     std::move(resources));
   }
 
  private:
@@ -111,8 +110,7 @@ void MetricsRenderFrameObserver::DidCompleteResponse(
     const network::URLLoaderCompletionStatus& status) {
   if (provisional_frame_resource_data_use_ &&
       provisional_frame_resource_data_use_->resource_id() == request_id) {
-    provisional_frame_resource_data_use_->DidCompleteResponse(
-        status, provisional_delta_data_use_.get());
+    provisional_frame_resource_data_use_->DidCompleteResponse(status);
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidCompleteResponse(request_id, status);
   }
@@ -133,7 +131,7 @@ void MetricsRenderFrameObserver::DidReceiveTransferSizeUpdate(
   if (provisional_frame_resource_data_use_ &&
       provisional_frame_resource_data_use_->resource_id() == request_id) {
     provisional_frame_resource_data_use_->DidReceiveTransferSizeUpdate(
-        received_data_length, provisional_delta_data_use_.get());
+        received_data_length);
   } else if (page_timing_metrics_sender_) {
     page_timing_metrics_sender_->DidReceiveTransferSizeUpdate(
         request_id, received_data_length);
@@ -149,14 +147,12 @@ void MetricsRenderFrameObserver::DidStartProvisionalLoad(
   // Create a new data use tracker for the new provisional load.
   provisional_frame_resource_data_use_ =
       std::make_unique<PageResourceDataUse>();
-  provisional_delta_data_use_ = mojom::PageLoadDataUse::New();
 }
 
 void MetricsRenderFrameObserver::DidFailProvisionalLoad(
     const blink::WebURLError& error) {
   // Clear the data use tracker for the provisional navigation that started.
   provisional_frame_resource_data_use_.reset();
-  provisional_delta_data_use_.reset();
 }
 
 void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
@@ -178,8 +174,7 @@ void MetricsRenderFrameObserver::DidCommitProvisionalLoad(
 
   page_timing_metrics_sender_ = std::make_unique<PageTimingMetricsSender>(
       CreatePageTimingSender(), CreateTimer(), GetTiming(),
-      std::move(provisional_frame_resource_data_use_),
-      std::move(provisional_delta_data_use_));
+      std::move(provisional_frame_resource_data_use_));
 }
 
 void MetricsRenderFrameObserver::SendMetrics() {

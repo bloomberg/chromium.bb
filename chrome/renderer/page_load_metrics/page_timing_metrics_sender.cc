@@ -29,14 +29,12 @@ PageTimingMetricsSender::PageTimingMetricsSender(
     std::unique_ptr<PageTimingSender> sender,
     std::unique_ptr<base::OneShotTimer> timer,
     mojom::PageLoadTimingPtr initial_timing,
-    std::unique_ptr<PageResourceDataUse> initial_request,
-    mojom::PageLoadDataUsePtr initial_data_use)
+    std::unique_ptr<PageResourceDataUse> initial_request)
     : sender_(std::move(sender)),
       timer_(std::move(timer)),
       last_timing_(std::move(initial_timing)),
       metadata_(mojom::PageLoadMetadata::New()),
       new_features_(mojom::PageLoadFeatures::New()),
-      new_data_use_(std::move(initial_data_use)),
       buffer_timer_delay_ms_(kBufferTimerDelayMillis) {
   page_resource_data_use_.emplace(
       std::piecewise_construct,
@@ -115,8 +113,7 @@ void PageTimingMetricsSender::DidReceiveTransferSizeUpdate(
     return;
   }
 
-  resource_it->second.DidReceiveTransferSizeUpdate(received_data_length,
-                                                   new_data_use_.get());
+  resource_it->second.DidReceiveTransferSizeUpdate(received_data_length);
   modified_resources_.insert(&resource_it->second);
   EnsureSendTimer();
 }
@@ -136,7 +133,7 @@ void PageTimingMetricsSender::DidCompleteResponse(
     resource_it = new_resource_it.first;
   }
 
-  if (resource_it->second.DidCompleteResponse(status, new_data_use_.get())) {
+  if (resource_it->second.DidCompleteResponse(status)) {
     EnsureSendTimer();
   }
   modified_resources_.insert(&resource_it->second);
@@ -189,9 +186,8 @@ void PageTimingMetricsSender::SendNow() {
     }
   }
   sender_->SendTiming(last_timing_, metadata_, std::move(new_features_),
-                      std::move(new_data_use_), std::move(resources));
+                      std::move(resources));
   new_features_ = mojom::PageLoadFeatures::New();
-  new_data_use_ = mojom::PageLoadDataUse::New();
   modified_resources_.clear();
 }
 
