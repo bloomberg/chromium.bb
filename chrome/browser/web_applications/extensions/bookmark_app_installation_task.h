@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/web_applications/components/pending_app_manager.h"
 
 class Profile;
 enum class WebappInstallSource;
@@ -60,13 +61,21 @@ class BookmarkAppInstallationTask {
   // Ensures the tab helpers necessary for installing an app are present.
   static void CreateTabHelpers(content::WebContents* web_contents);
 
-  explicit BookmarkAppInstallationTask(Profile* profile);
+  // Constructs a task that will install a BookmarkApp-based Shortcut or Web App
+  // for |profile|. |app_info| will be used to decide some of the
+  // properties of the installed app e.g. open in a tab vs. window, installed by
+  // policy, etc.
+  explicit BookmarkAppInstallationTask(
+      Profile* profile,
+      web_app::PendingAppManager::AppInfo app_info);
 
   virtual ~BookmarkAppInstallationTask();
 
   virtual void InstallWebAppOrShortcutFromWebContents(
       content::WebContents* web_contents,
       ResultCallback callback);
+
+  const web_app::PendingAppManager::AppInfo& app_info() { return app_info_; }
 
   void SetBookmarkAppHelperFactoryForTesting(
       BookmarkAppHelperFactory helper_factory);
@@ -88,6 +97,8 @@ class BookmarkAppInstallationTask {
                    const WebApplicationInfo& web_app_info);
 
   Profile* profile_;
+
+  const web_app::PendingAppManager::AppInfo app_info_;
 
   // We temporarily use a BookmarkAppHelper until the WebApp and WebShortcut
   // installation tasks reach feature parity with BookmarkAppHelper.

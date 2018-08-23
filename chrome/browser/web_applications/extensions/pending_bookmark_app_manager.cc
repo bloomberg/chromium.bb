@@ -28,18 +28,21 @@ std::unique_ptr<content::WebContents> WebContentsCreateWrapper(
 }
 
 std::unique_ptr<BookmarkAppInstallationTask> InstallationTaskCreateWrapper(
-    Profile* profile) {
-  return std::make_unique<BookmarkAppInstallationTask>(profile);
+    Profile* profile,
+    web_app::PendingAppManager::AppInfo app_info) {
+  return std::make_unique<BookmarkAppInstallationTask>(profile,
+                                                       std::move(app_info));
 }
 
 }  // namespace
 
-struct PendingBookmarkAppManager::Installation {
-  Installation(AppInfo info, OnceInstallCallback callback)
-      : info(std::move(info)), callback(std::move(callback)) {}
-  ~Installation() = default;
+struct PendingBookmarkAppManager::TaskAndCallback {
+  TaskAndCallback(std::unique_ptr<BookmarkAppInstallationTask> task,
+                  OnceInstallCallback callback)
+      : task(std::move(task)), callback(std::move(callback)) {}
+  ~TaskAndCallback() = default;
 
-  AppInfo info;
+  std::unique_ptr<BookmarkAppInstallationTask> task;
   OnceInstallCallback callback;
 };
 
@@ -54,19 +57,21 @@ PendingBookmarkAppManager::~PendingBookmarkAppManager() = default;
 void PendingBookmarkAppManager::Install(AppInfo app_to_install,
                                         OnceInstallCallback callback) {
   // Check that we are not already installing the same app.
-  if (current_installation_ && current_installation_->info == app_to_install) {
+  if (current_task_and_callback_ &&
+      current_task_and_callback_->task->app_info() == app_to_install) {
     std::move(callback).Run(app_to_install.url, std::string());
     return;
   }
-  for (const auto& installation : installation_queue_) {
-    if (installation->info == app_to_install) {
+  for (const auto& installation : pending_tasks_and_callbacks_) {
+    if (installation->task->app_info() == app_to_install) {
       std::move(callback).Run(app_to_install.url, std::string());
       return;
     }
   }
 
-  installation_queue_.push_front(std::make_unique<Installation>(
-      std::move(app_to_install), std::move(callback)));
+  pending_tasks_and_callbacks_.push_front(std::make_unique<TaskAndCallback>(
+      task_factory_.Run(profile_, std::move(app_to_install)),
+      std::move(callback)));
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -78,8 +83,8 @@ void PendingBookmarkAppManager::InstallApps(
     std::vector<AppInfo> apps_to_install,
     const RepeatingInstallCallback& callback) {
   for (auto& app_to_install : apps_to_install) {
-    installation_queue_.push_back(
-        std::make_unique<Installation>(std::move(app_to_install), callback));
+    pending_tasks_and_callbacks_.push_back(std::make_unique<TaskAndCallback>(
+        task_factory_.Run(profile_, std::move(app_to_install)), callback));
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -101,22 +106,22 @@ void PendingBookmarkAppManager::SetTimerForTesting(
 }
 
 void PendingBookmarkAppManager::MaybeStartNextInstallation() {
-  if (current_installation_)
+  if (current_task_and_callback_)
     return;
 
-  if (installation_queue_.empty()) {
+  if (pending_tasks_and_callbacks_.empty()) {
     web_contents_.reset();
     return;
   }
 
-  current_installation_ = std::move(installation_queue_.front());
-  installation_queue_.pop_front();
+  current_task_and_callback_ = std::move(pending_tasks_and_callbacks_.front());
+  pending_tasks_and_callbacks_.pop_front();
 
   CreateWebContentsIfNecessary();
   Observe(web_contents_.get());
 
   content::NavigationController::LoadURLParams load_params(
-      current_installation_->info.url);
+      current_task_and_callback_->task->app_info().url);
   load_params.transition_type = ui::PAGE_TRANSITION_GENERATED;
   web_contents_->GetController().LoadURLWithParams(load_params);
   timer_->Start(
@@ -155,9 +160,10 @@ void PendingBookmarkAppManager::CurrentInstallationFinished(
       base::BindOnce(&PendingBookmarkAppManager::MaybeStartNextInstallation,
                      weak_ptr_factory_.GetWeakPtr()));
 
-  std::unique_ptr<Installation> installation;
-  installation.swap(current_installation_);
-  std::move(installation->callback).Run(installation->info.url, app_id);
+  std::unique_ptr<TaskAndCallback> task_and_callback;
+  task_and_callback.swap(current_task_and_callback_);
+  std::move(task_and_callback->callback)
+      .Run(task_and_callback->task->app_info().url, app_id);
 }
 
 void PendingBookmarkAppManager::DidFinishLoad(
@@ -168,14 +174,13 @@ void PendingBookmarkAppManager::DidFinishLoad(
     return;
   }
 
-  if (validated_url != current_installation_->info.url) {
+  if (validated_url != current_task_and_callback_->task->app_info().url) {
     CurrentInstallationFinished(std::string());
     return;
   }
 
   Observe(nullptr);
-  current_installation_task_ = task_factory_.Run(profile_);
-  current_installation_task_->InstallWebAppOrShortcutFromWebContents(
+  current_task_and_callback_->task->InstallWebAppOrShortcutFromWebContents(
       web_contents_.get(),
       base::BindOnce(&PendingBookmarkAppManager::OnInstalled,
                      // Safe because the installation task will not run its

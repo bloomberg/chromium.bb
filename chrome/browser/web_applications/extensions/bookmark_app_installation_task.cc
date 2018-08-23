@@ -52,8 +52,11 @@ void BookmarkAppInstallationTask::CreateTabHelpers(
   favicon::CreateContentFaviconDriverForWebContents(web_contents);
 }
 
-BookmarkAppInstallationTask::BookmarkAppInstallationTask(Profile* profile)
+BookmarkAppInstallationTask::BookmarkAppInstallationTask(
+    Profile* profile,
+    web_app::PendingAppManager::AppInfo app_info)
     : profile_(profile),
+      app_info_(std::move(app_info)),
       helper_factory_(base::BindRepeating(&BookmarkAppHelperCreateWrapper)),
       data_retriever_(std::make_unique<BookmarkAppDataRetriever>()),
       installer_(std::make_unique<BookmarkAppInstaller>(profile)) {}

@@ -20,7 +20,15 @@ namespace extensions {
 
 BookmarkAppShortcutInstallationTask::BookmarkAppShortcutInstallationTask(
     Profile* profile)
-    : BookmarkAppInstallationTask(profile) {}
+    : BookmarkAppInstallationTask(
+          profile,
+          // Pass an empty AppInfo since it doesn't influence the installation
+          // right now.
+          // TODO(crbug.com/864904): Take an AppInfo object once the installer
+          // can use the information.
+          web_app::PendingAppManager::AppInfo(
+              GURL(),
+              web_app::PendingAppManager::LaunchContainer::kTab)) {}
 
 BookmarkAppShortcutInstallationTask::~BookmarkAppShortcutInstallationTask() =
     default;
