@@ -47,7 +47,6 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_features_service_provider.h"
 #include "chrome/browser/chromeos/dbus/chrome_proxy_resolution_service_provider_delegate.h"
-#include "chrome/browser/chromeos/dbus/chrome_virtual_file_request_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/component_updater_service_provider.h"
 #include "chrome/browser/chromeos/dbus/drive_file_stream_service_provider.h"
 #include "chrome/browser/chromeos/dbus/kiosk_info_service_provider.h"
@@ -347,9 +346,7 @@ class DBusServices {
         kVirtualFileRequestServiceName,
         dbus::ObjectPath(kVirtualFileRequestServicePath),
         CrosDBusService::CreateServiceProviderList(
-            std::make_unique<VirtualFileRequestServiceProvider>(
-                std::make_unique<
-                    ChromeVirtualFileRequestServiceProviderDelegate>())));
+            std::make_unique<VirtualFileRequestServiceProvider>()));
 
     component_updater_service_ = CrosDBusService::Create(
         kComponentUpdaterServiceName,

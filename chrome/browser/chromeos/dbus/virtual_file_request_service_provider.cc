@@ -4,17 +4,37 @@
 
 #include "chrome/browser/chromeos/dbus/virtual_file_request_service_provider.h"
 
+#include <stdint.h>
+
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/files/scoped_file.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
+#include "chrome/browser/profiles/profile.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+namespace {
 
-VirtualFileRequestServiceProvider::VirtualFileRequestServiceProvider(
-    std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)), weak_ptr_factory_(this) {}
+arc::ArcFileSystemBridge* GetArcFileSystemBridge() {
+  arc::ArcSessionManager* session_manager = arc::ArcSessionManager::Get();
+  if (!session_manager)
+    return nullptr;
+  Profile* profile = session_manager->profile();
+  if (!profile)
+    return nullptr;
+  return arc::ArcFileSystemBridge::GetForBrowserContext(profile);
+}
+
+}  // namespace
+
+VirtualFileRequestServiceProvider::VirtualFileRequestServiceProvider()
+    : weak_ptr_factory_(this) {}
 
 VirtualFileRequestServiceProvider::~VirtualFileRequestServiceProvider() =
     default;
@@ -57,13 +77,15 @@ void VirtualFileRequestServiceProvider::HandleReadRequest(
         method_call, DBUS_ERROR_INVALID_ARGS, std::string()));
     return;
   }
-  if (!delegate_->HandleReadRequest(id, offset, size,
-                                    std::move(pipe_write_end))) {
+
+  arc::ArcFileSystemBridge* bridge = GetArcFileSystemBridge();
+  if (bridge &&
+      bridge->HandleReadRequest(id, offset, size, std::move(pipe_write_end))) {
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  } else {
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(
         method_call, DBUS_ERROR_FAILED, std::string()));
-    return;
   }
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
 void VirtualFileRequestServiceProvider::HandleIdReleased(
@@ -76,12 +98,14 @@ void VirtualFileRequestServiceProvider::HandleIdReleased(
         method_call, DBUS_ERROR_INVALID_ARGS, std::string()));
     return;
   }
-  if (!delegate_->HandleIdReleased(id)) {
+
+  arc::ArcFileSystemBridge* bridge = GetArcFileSystemBridge();
+  if (bridge && bridge->HandleIdReleased(id)) {
+    response_sender.Run(dbus::Response::FromMethodCall(method_call));
+  } else {
     response_sender.Run(dbus::ErrorResponse::FromMethodCall(
         method_call, DBUS_ERROR_FAILED, std::string()));
-    return;
   }
-  response_sender.Run(dbus::Response::FromMethodCall(method_call));
 }
 
 }  // namespace chromeos
