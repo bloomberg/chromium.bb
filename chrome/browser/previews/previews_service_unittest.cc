@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/default_clock.h"
+#include "build/build_config.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/previews/content/previews_decider_impl.h"
@@ -187,8 +188,12 @@ TEST_F(PreviewsServiceTest, TestLitePageProxyDecidesTransform) {
 }
 
 TEST_F(PreviewsServiceTest, TestNoScriptPreviewsEnabledByFeature) {
+#if !defined(OS_ANDROID)
+  // For non-android, default is disabled.
   EXPECT_FALSE(previews_decider_impl()->IsPreviewEnabled(
       previews::PreviewsType::NOSCRIPT));
+#endif  // defined(OS_ANDROID)
+
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       previews::features::kNoScriptPreviews);

@@ -37,8 +37,14 @@ const base::Feature kClientLoFi {
 };
 
 // Enables the NoScript previews for Android.
-const base::Feature kNoScriptPreviews{"NoScriptPreviews",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kNoScriptPreviews {
+  "NoScriptPreviews",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // !defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID)
+};
 
 // Enables the Stale Previews timestamp on Previews infobars.
 const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
@@ -46,8 +52,14 @@ const base::Feature kStalePreviewsTimestamp{"StalePreviewsTimestamp",
 
 // Enables the syncing of the Optimization Hints component, which provides
 // hints for what Previews can be applied on a page load.
-const base::Feature kOptimizationHints{"OptimizationHints",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kOptimizationHints {
+  "OptimizationHints",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else   // !defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif  // defined(OS_ANDROID)
+};
 
 // Enables Optimization Hints that are marked as experimental. Optimizations are
 // marked experimental by setting an experiment name in the "experiment_name"
