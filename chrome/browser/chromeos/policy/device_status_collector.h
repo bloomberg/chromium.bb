@@ -92,14 +92,17 @@ class DeviceStatusCollector {
   // testing. A null callback can be passed for any *Fetcher parameter, to use
   // the default implementation. These callbacks are always executed on Blocking
   // Pool. Caller is responsible for passing already initialized |pref_service|.
-  // If |is_enterprise_device| additional enterprise relevant status data will
-  // be reported.
+  // |activity_day_start| indicates what time does the new day start for
+  // activity reporting daily data aggregation. It is represented by the
+  // distance from midnight. If |is_enterprise_device| additional enterprise
+  // relevant status data will be reported.
   DeviceStatusCollector(PrefService* pref_service,
                         chromeos::system::StatisticsProvider* provider,
                         const VolumeInfoFetcher& volume_info_fetcher,
                         const CPUStatisticsFetcher& cpu_statistics_fetcher,
                         const CPUTempFetcher& cpu_temp_fetcher,
                         const AndroidStatusFetcher& android_status_fetcher,
+                        base::TimeDelta activity_day_start,
                         bool is_enterprise_reporting);
   virtual ~DeviceStatusCollector();
 

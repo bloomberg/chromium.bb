@@ -36,6 +36,9 @@ constexpr const char* kTimeLimitWeekdays[] = {
     "sunday",   "monday", "tuesday", "wednesday",
     "thursday", "friday", "saturday"};
 
+// Defaults to midnight.
+constexpr base::TimeDelta kDefaultUsageLimitResetTime;
+
 // Whether a timestamp is inside a window.
 bool ContainsTime(base::Time start, base::Time end, base::Time now) {
   return now >= start && now < end;
@@ -51,6 +54,15 @@ bool IsBefore(base::Time a, base::Time b) {
 Weekday WeekdayShift(Weekday current_day, int shift) {
   return static_cast<Weekday>((static_cast<int>(current_day) + shift) %
                               static_cast<int>(Weekday::kCount));
+}
+
+// Returns usage limit reset time or default value if |time_usage_limit| is
+// invalid.
+base::TimeDelta GetUsageLimitResetTime(
+    const base::Optional<internal::TimeUsageLimit>& time_usage_limit) {
+  if (time_usage_limit)
+    return time_usage_limit->resets_at;
+  return kDefaultUsageLimitResetTime;
 }
 
 // Helper class to process the UsageTimeLimit policy.
@@ -737,9 +749,7 @@ bool UsageTimeLimitProcessor::IsTodayTimeWindowLimitActive() {
 }
 
 base::TimeDelta UsageTimeLimitProcessor::UsageLimitResetTime() {
-  if (time_usage_limit_)
-    return time_usage_limit_->resets_at;
-  return base::TimeDelta::FromMinutes(0);
+  return GetUsageLimitResetTime(time_usage_limit_);
 }
 
 base::TimeDelta UsageTimeLimitProcessor::LockOverrideResetTime() {
@@ -1047,6 +1057,11 @@ base::Time GetExpectedResetTime(
              std::move(time_limit_override), base::TimeDelta::FromMinutes(0),
              base::Time(), current_time, time_zone, base::nullopt)
       .GetExpectedResetTime();
+}
+
+base::TimeDelta GetTimeUsageLimitResetTime(
+    const std::unique_ptr<base::DictionaryValue>& time_limit) {
+  return internal::GetUsageLimitResetTime(TimeUsageLimitFromPolicy(time_limit));
 }
 
 }  // namespace usage_time_limit
