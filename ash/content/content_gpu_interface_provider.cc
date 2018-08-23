@@ -10,7 +10,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/gpu_client.h"
 #include "content/public/browser/gpu_service_registry.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 
 namespace ash {
 

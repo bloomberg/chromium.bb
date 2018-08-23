@@ -22,7 +22,7 @@ source_set("lib") {
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//ui/aura",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",

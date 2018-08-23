@@ -8,7 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 
 namespace ui {
 

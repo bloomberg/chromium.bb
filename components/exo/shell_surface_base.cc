@@ -28,7 +28,7 @@
 #include "cc/trees/layer_tree_frame_sink.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"

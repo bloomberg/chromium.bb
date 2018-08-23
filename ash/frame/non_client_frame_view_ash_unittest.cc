@@ -30,7 +30,7 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/test/scoped_feature_list.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/interfaces/ime/ime_struct_traits.h"
+#include "services/ws/public/mojom/ime/ime_struct_traits.h"
 
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "ui/gfx/range/mojo/range_struct_traits.h"

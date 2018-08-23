@@ -40,7 +40,7 @@ component("cpp") {
 
     if (enable_remote_navigable_contents_view) {
       deps += [
-        "//services/ui/public/interfaces",
+        "//services/ws/public/mojom",
         "//ui/views/mus/remote_view:remote_view_host",
       ]
     }

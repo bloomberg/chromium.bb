@@ -10,7 +10,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
-#include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
+#include "services/ws/public/mojom/input_devices/input_device_server.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/device_hotplug_event_observer.h"

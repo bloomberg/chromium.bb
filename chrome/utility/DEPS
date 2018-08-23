@@ -43,6 +43,7 @@ include_rules = [
   "+services/proxy_resolver",
   "+services/ui/public",
   "+services/ui/service.h",
+  "+services/ws/public",
   "+skia/ext",
   "+third_party/libxml",
   "+third_party/zlib/google",
@@ -62,5 +63,6 @@ specific_include_rules = {
     "+ash/window_manager_service.h",
     "+services/ui/public",
     "+services/ui/service.h",
+    "+services/ws/public",
   ],
 }

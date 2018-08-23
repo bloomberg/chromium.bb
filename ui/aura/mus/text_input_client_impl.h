@@ -6,7 +6,7 @@
 #define UI_AURA_MUS_TEXT_INPUT_CLIENT_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/input_method_delegate.h"
 

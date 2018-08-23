@@ -11,10 +11,10 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/ids.h"
 #include "services/ui/ws2/window_tree.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace aura {

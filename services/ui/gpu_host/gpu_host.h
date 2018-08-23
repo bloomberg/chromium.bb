@@ -15,12 +15,12 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_host.mojom.h"
 #include "services/viz/privileged/interfaces/gl/gpu_service.mojom.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 
 #if defined(OS_CHROMEOS)
-#include "services/ui/public/interfaces/arc.mojom.h"
+#include "services/ws/public/mojom/arc.mojom.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace discardable_memory {

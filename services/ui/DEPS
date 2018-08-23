@@ -9,6 +9,7 @@ include_rules = [
   "+mojo/public",
   "+services/catalog/public",
   "+services/service_manager",
+  "+services/ws/public/mojom",
   "+third_party/skia/include",
   "+ui",
 ]

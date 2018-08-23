@@ -15,7 +15,7 @@
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {

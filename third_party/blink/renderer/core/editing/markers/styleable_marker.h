@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_STYLEABLE_MARKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_MARKERS_STYLEABLE_MARKER_H_
 
-#include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
+#include "services/ws/public/mojom/ime/ime.mojom-shared.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker.h"
 
 namespace blink {

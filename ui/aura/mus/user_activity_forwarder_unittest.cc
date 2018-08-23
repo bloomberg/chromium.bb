@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/ui/common/task_runner_test_base.h"
-#include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
+#include "services/ws/public/mojom/user_activity_monitor.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 

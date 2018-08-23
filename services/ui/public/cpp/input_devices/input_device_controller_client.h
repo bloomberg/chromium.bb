@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/input_devices/input_device_controller.mojom.h"
+#include "services/ws/public/mojom/input_devices/input_device_controller.mojom.h"
 
 namespace base {
 class FilePath;

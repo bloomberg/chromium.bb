@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "components/viz/common/surfaces/frame_sink_id.h"
-#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
+#include "services/ws/public/mojom/window_manager_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 
 namespace aura {

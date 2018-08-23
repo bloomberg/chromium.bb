@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_WS2_WINDOW_SERVER_TEST_IMPL_H_
 #define SERVICES_UI_WS2_WINDOW_SERVER_TEST_IMPL_H_
 
-#include "services/ui/public/interfaces/window_server_test.mojom.h"
+#include "services/ws/public/mojom/window_server_test.mojom.h"
 
 namespace ui {
 namespace ws2 {

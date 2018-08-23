@@ -28,9 +28,9 @@ source_set("gpu_host") {
   ]
 
   public_deps = [
-    "//services/ui/public/interfaces",
     "//services/viz/privileged/interfaces",
     "//services/viz/public/interfaces",
+    "//services/ws/public/mojom",
   ]
 
   if (is_chromeos) {
@@ -89,7 +89,7 @@ source_set("tests") {
     "//services/ui/common:mus_common",
     "//services/ui/common:task_runner_test_base",
     "//services/ui/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//testing/gtest",
     "//third_party/mesa_headers",
     "//ui/aura",

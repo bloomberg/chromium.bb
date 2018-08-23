@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_PUBLIC_INTERFACES_IME_IME_STRUCT_TRAITS_H_
-#define SERVICES_UI_PUBLIC_INTERFACES_IME_IME_STRUCT_TRAITS_H_
+#ifndef SERVICES_WS_PUBLIC_MOJOM_IME_IME_STRUCT_TRAITS_H_
+#define SERVICES_WS_PUBLIC_MOJOM_IME_IME_STRUCT_TRAITS_H_
 
-#include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
+#include "services/ws/public/mojom/ime/ime.mojom-shared.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_text_span.h"
@@ -140,4 +140,4 @@ struct EnumTraits<ui::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness> {
 
 }  // namespace mojo
 
-#endif  // SERVICES_UI_PUBLIC_INTERFACES_IME_IME_STRUCT_TRAITS_H_
+#endif  // SERVICES_WS_PUBLIC_MOJOM_IME_IME_STRUCT_TRAITS_H_

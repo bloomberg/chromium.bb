@@ -10,7 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_tree_client.h"
 

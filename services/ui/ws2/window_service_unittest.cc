@@ -9,12 +9,12 @@
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
 #include "services/ui/ws2/window_service_test_setup.h"
 #include "services/ui/ws2/window_tree.h"
 #include "services/ui/ws2/window_tree_test_helper.h"
+#include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui {

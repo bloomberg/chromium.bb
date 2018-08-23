@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
+#include "services/ws/public/mojom/input_devices/input_device_server.mojom.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ui {

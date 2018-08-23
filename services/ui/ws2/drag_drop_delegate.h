@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/drag_drop_delegate.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 

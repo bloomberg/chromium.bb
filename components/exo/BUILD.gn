@@ -80,7 +80,7 @@ source_set("exo") {
     "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",
     "//ui/base/ime",

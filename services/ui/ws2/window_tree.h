@@ -16,9 +16,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/focus_handler.h"
 #include "services/ui/ws2/ids.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
 

@@ -14,7 +14,7 @@
 #include "base/timer/timer.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
+#include "services/ws/public/mojom/user_activity_monitor.mojom.h"
 #include "ui/events/event_handler.h"
 
 namespace aura {

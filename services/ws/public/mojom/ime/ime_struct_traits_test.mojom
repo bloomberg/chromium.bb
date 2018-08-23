@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "services/ui/public/interfaces/ime/ime.mojom";
+import "services/ws/public/mojom/ime/ime.mojom";
 import "ui/platform_window/mojo/text_input_state.mojom";
 
 interface IMEStructTraitsTest {

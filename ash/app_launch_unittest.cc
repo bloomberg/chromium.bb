@@ -8,8 +8,8 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/service_test.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/window_server_test.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/window_server_test.mojom.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/layout/layout_provider.h"
 

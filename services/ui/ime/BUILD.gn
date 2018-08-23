@@ -20,7 +20,7 @@ source_set("lib") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
   ]
 }
 
@@ -36,7 +36,7 @@ source_set("tests") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/ime/test_ime_driver/public/mojom",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
   ]
 
   data_deps = [

@@ -80,6 +80,7 @@ include_rules = [
   "+services/ui/common",
   "+services/ui/public",
   "+services/ui/service.h",
+  "+services/ws/public",
   "+services/video_capture/public",
   "+services/viz/privileged",
   "+skia/ext",

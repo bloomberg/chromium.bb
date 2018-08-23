@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/remoting_event_injector.mojom.h"
+#include "services/ws/public/mojom/remoting_event_injector.mojom.h"
 
 namespace ui {
 

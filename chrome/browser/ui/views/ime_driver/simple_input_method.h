@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_IME_DRIVER_SIMPLE_INPUT_METHOD_H_
 #define CHROME_BROWSER_UI_VIEWS_IME_DRIVER_SIMPLE_INPUT_METHOD_H_
 
-#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 
 // This is to be used on platforms where a proper implementation of
 // ui::mojom::InputMethod is missing. It doesn't handle any events and calls

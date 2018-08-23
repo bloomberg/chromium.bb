@@ -10,7 +10,7 @@
 #include "components/viz/host/gpu_client_delegate.h"
 #include "components/viz/host/viz_host_export.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 
 namespace viz {
 

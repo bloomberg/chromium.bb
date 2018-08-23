@@ -13,7 +13,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "services/ui/common/types.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"

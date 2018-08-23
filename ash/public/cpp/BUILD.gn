@@ -104,7 +104,7 @@ component("cpp") {
   deps = [
     "//chromeos:power_manager_proto",
     "//components/prefs",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//skia/public/interfaces",
     "//ui/aura",
     "//ui/chromeos/strings",

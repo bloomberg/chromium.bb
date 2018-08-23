@@ -12,9 +12,9 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/test_change_tracker.h"
 #include "services/ui/ws2/test_screen_provider_observer.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 
 namespace ui {
 namespace ws2 {

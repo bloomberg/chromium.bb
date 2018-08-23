@@ -20,7 +20,7 @@ service("views_examples") {
     "//mash/public/mojom",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//skia",
     "//ui/gfx",
     "//ui/gfx/geometry",

@@ -11,7 +11,7 @@ interface WindowManager {
   // . Properties that are used at creation time only and not persisted.
   // . Long lived properties. These properties may be changed at any time and
   //   are mapped to aura::Window properties. aura::PropertyConverter defines
-  //   the mapping between the property defined here and the corresonding
+  //   the mapping between the property defined here and the corresponding
   //   aura property. For properties defined in PropertyConverter any change to
   //   to the aura property is mapped to the property defined here and sent to
   //   all clients that know about the window (which is generally just the owner

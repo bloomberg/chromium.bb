@@ -3087,8 +3087,8 @@ jumbo_split_static_library("browser") {
       "//components/services/font/public/interfaces",
       "//services/ui/public/cpp/input_devices",
       "//services/ui/public/cpp/input_devices:input_device_controller",
-      "//services/ui/public/interfaces",
       "//services/ui/ws2:lib",
+      "//services/ws/public/mojom",
       "//ui/ozone",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]

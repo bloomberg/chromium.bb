@@ -17,7 +17,7 @@ source_set("input_devices") {
   ]
 
   public_deps = [
-    "//services/ui/public/interfaces/input_devices",
+    "//services/ws/public/mojom/input_devices",
   ]
 }
 
@@ -35,7 +35,7 @@ source_set("tests") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
     "//services/ui/public/cpp/input_devices",
-    "//services/ui/public/interfaces/input_devices",
+    "//services/ws/public/mojom/input_devices",
     "//testing/gtest",
     "//ui/events/devices",
   ]

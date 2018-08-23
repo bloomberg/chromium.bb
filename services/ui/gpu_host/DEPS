@@ -11,6 +11,7 @@ include_rules = [
   "+services/ui/gpu_host",
   "+services/viz/privileged/interfaces",
   "+services/viz/public/interfaces",
+  "+services/ws/public",
   "+ui",
 ]
 

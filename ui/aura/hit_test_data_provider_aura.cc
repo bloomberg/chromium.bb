@@ -6,7 +6,7 @@
 
 #include "base/containers/adapters.h"
 #include "components/viz/common/hit_test/hit_test_region_list.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 

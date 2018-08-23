@@ -11,9 +11,9 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/screen_provider_observer.mojom.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/window_tree_binding.h"
+#include "services/ws/public/mojom/screen_provider_observer.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 
 namespace aura {
 class Window;

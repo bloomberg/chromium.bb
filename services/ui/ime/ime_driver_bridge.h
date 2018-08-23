@@ -9,7 +9,7 @@
 
 #include "base/containers/queue.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 
 namespace service_manager {
 class Connector;

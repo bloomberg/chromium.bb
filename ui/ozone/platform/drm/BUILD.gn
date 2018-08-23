@@ -130,7 +130,7 @@ source_set("gbm") {
     "//ipc",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/interfaces:constants",
+    "//services/ws/public/mojom:constants",
     "//skia",
     "//third_party/libdrm",
     "//third_party/libsync",

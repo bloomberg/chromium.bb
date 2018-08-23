@@ -14,7 +14,7 @@
 #include "components/viz/client/local_surface_id_provider.h"
 #include "content/renderer/mus/renderer_window_tree_client.h"
 #include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ws/public/mojom/window_manager.mojom.h"
 
 namespace content {
 namespace {

@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_UI_VIEWS_IME_DRIVER_INPUT_METHOD_BRIDGE_CHROMEOS_H_
 
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
-#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 
 class AccessibilityInputMethodObserver;
 

@@ -53,9 +53,9 @@ viz_component("host") {
   public_deps = [
     "//gpu/command_buffer/client",
     "//gpu/ipc/host",
-    "//services/ui/public/interfaces",
     "//services/viz/privileged/interfaces/compositing",
     "//services/viz/public/interfaces",
+    "//services/ws/public/mojom",
     "//ui/gfx/geometry",
   ]
 

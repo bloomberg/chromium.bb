@@ -20,7 +20,7 @@ source_set("cpp") {
     "//services/service_manager/public/mojom",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp/gpu",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
   ]
 
   deps = [
@@ -28,7 +28,7 @@ source_set("cpp") {
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_interface",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//ui/display",
     "//ui/events",
     "//ui/gfx/geometry",
@@ -58,7 +58,7 @@ source_set("internal") {
     "//services/service_manager/public/mojom",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp/gpu",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//skia/public/interfaces",
     "//ui/display",
     "//ui/events",

@@ -12,7 +12,7 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
 #include "services/ui/gpu_host/gpu_host_delegate.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 
 namespace aura {
 class Env;

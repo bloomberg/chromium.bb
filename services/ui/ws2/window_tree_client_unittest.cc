@@ -15,11 +15,11 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/common/util.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
 #include "services/ui/ws2/test_window_tree_client.h"
 #include "services/ui/ws2/window_server_service_test_base.h"
+#include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/base/cursor/cursor.h"
 
 using mojo::InterfaceRequest;

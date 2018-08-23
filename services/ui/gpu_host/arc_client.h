@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_GPU_HOST_ARC_CLIENT_H_
 #define SERVICES_UI_GPU_HOST_ARC_CLIENT_H_
 
-#include "services/ui/public/interfaces/arc.mojom.h"
+#include "services/ws/public/mojom/arc.mojom.h"
 
 namespace viz {
 namespace mojom {
