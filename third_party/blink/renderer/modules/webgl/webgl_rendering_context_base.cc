@@ -5444,6 +5444,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
   // cause precision lost. So, uploading such video texture to half float or
   // float texture can not use GPU-GPU path.
   if (use_copyTextureCHROMIUM) {
+    DCHECK(Extensions3DUtil::CanUseCopyTextureCHROMIUM(target));
     DCHECK_EQ(xoffset, 0);
     DCHECK_EQ(yoffset, 0);
     DCHECK_EQ(zoffset, 0);
@@ -5452,6 +5453,17 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     // SW path.
 
     if (video->CopyVideoTextureToPlatformTexture(
+            ContextGL(), target, texture->Object(), internalformat, format,
+            type, level, unpack_premultiply_alpha_, unpack_flip_y_,
+            already_uploaded_id, frame_metadata_ptr)) {
+      texture->UpdateLastUploadedFrame(frame_metadata);
+      return;
+    }
+
+    // For certain video frame formats (e.g. I420/YUV), if they start on the CPU
+    // (e.g. video camera frames): upload them to the GPU, do a GPU decode, and
+    // then copy into the target texture.
+    if (video->CopyVideoYUVDataToPlatformTexture(
             ContextGL(), target, texture->Object(), internalformat, format,
             type, level, unpack_premultiply_alpha_, unpack_flip_y_,
             already_uploaded_id, frame_metadata_ptr)) {
@@ -5474,49 +5486,6 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
                 unpack_colorspace_conversion_ == GL_NONE)) {
       texture->ClearLastUploadedFrame();
       return;
-    }
-  }
-
-  if (use_copyTextureCHROMIUM) {
-    // Try using an accelerated image buffer, this allows YUV conversion to be
-    // done on the GPU.
-    std::unique_ptr<CanvasResourceProvider> resource_provider =
-        CanvasResourceProvider::Create(
-            IntSize(video->videoWidth(), video->videoHeight()),
-            CanvasResourceProvider::kAcceleratedResourceUsage,
-            SharedGpuContext::ContextProviderWrapper(),
-            0 /* msaa_sample_count */, CanvasColorParams(),
-            CanvasResourceProvider::kDefaultPresentationMode,
-            nullptr /* canvas_resource_dispatcher */, is_origin_top_left_);
-    if (resource_provider && resource_provider->IsValid()) {
-      // The video element paints an RGBA frame into our surface here. By
-      // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
-      // implementation to do any necessary color space conversion on the GPU
-      // (though it may still do a CPU conversion and upload the results).
-      video->PaintCurrentFrame(
-          resource_provider->Canvas(),
-          IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr,
-          already_uploaded_id, frame_metadata_ptr);
-
-      // This is a straight GPU-GPU copy, any necessary color space conversion
-      // was handled in the paintCurrentFrameInContext() call.
-
-      // Note that copyToPlatformTexture no longer allocates the destination
-      // texture.
-      TexImage2DBase(target, level, internalformat, video->videoWidth(),
-                     video->videoHeight(), 0, format, type, nullptr);
-
-      if (Extensions3DUtil::CanUseCopyTextureCHROMIUM(target)) {
-        scoped_refptr<StaticBitmapImage> image = resource_provider->Snapshot();
-        if (!!image &&
-            image->CopyToTexture(
-                ContextGL(), target, texture->Object(),
-                unpack_premultiply_alpha_, unpack_flip_y_, IntPoint(0, 0),
-                IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
-          texture->UpdateLastUploadedFrame(frame_metadata);
-          return;
-        }
-      }
     }
   }
 
