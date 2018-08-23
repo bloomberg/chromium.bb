@@ -33,11 +33,14 @@ namespace quic {
 
 struct QUIC_EXPORT_PRIVATE QuicFrame {
   QuicFrame();
+  // Please keep the constructors in the same order as the union below.
   explicit QuicFrame(QuicPaddingFrame padding_frame);
   explicit QuicFrame(QuicMtuDiscoveryFrame frame);
   explicit QuicFrame(QuicPingFrame frame);
+  explicit QuicFrame(QuicMaxStreamIdFrame frame);
+  explicit QuicFrame(QuicStreamIdBlockedFrame frame);
+  explicit QuicFrame(QuicStreamFrame stream_frame);
 
-  explicit QuicFrame(QuicStreamFrame* stream_frame);
   explicit QuicFrame(QuicAckFrame* frame);
   explicit QuicFrame(QuicRstStreamFrame* frame);
   explicit QuicFrame(QuicConnectionCloseFrame* frame);
@@ -47,8 +50,6 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
   explicit QuicFrame(QuicBlockedFrame* frame);
   explicit QuicFrame(QuicApplicationCloseFrame* frame);
   explicit QuicFrame(QuicNewConnectionIdFrame* frame);
-  explicit QuicFrame(QuicMaxStreamIdFrame frame);
-  explicit QuicFrame(QuicStreamIdBlockedFrame frame);
   explicit QuicFrame(QuicPathResponseFrame* frame);
   explicit QuicFrame(QuicPathChallengeFrame* frame);
   explicit QuicFrame(QuicStopSendingFrame* frame);
@@ -57,16 +58,21 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
                                                       const QuicFrame& frame);
 
   QuicFrameType type;
+
+  // TODO(wub): These frames can also be inlined without increasing the size of
+  // QuicFrame: QuicStopWaitingFrame, QuicRstStreamFrame, QuicWindowUpdateFrame,
+  // QuicBlockedFrame, QuicPathResponseFrame, QuicPathChallengeFrame and
+  // QuicStopSendingFrame.
   union {
-    // Frames smaller than a pointer are inline.
+    // Inlined frames.
     QuicPaddingFrame padding_frame;
     QuicMtuDiscoveryFrame mtu_discovery_frame;
     QuicPingFrame ping_frame;
     QuicMaxStreamIdFrame max_stream_id_frame;
     QuicStreamIdBlockedFrame stream_id_blocked_frame;
+    QuicStreamFrame stream_frame;
 
-    // Frames larger than a pointer.
-    QuicStreamFrame* stream_frame;
+    // Out of line frames.
     QuicAckFrame* ack_frame;
     QuicStopWaitingFrame* stop_waiting_frame;
     QuicRstStreamFrame* rst_stream_frame;
@@ -81,9 +87,9 @@ struct QUIC_EXPORT_PRIVATE QuicFrame {
     QuicStopSendingFrame* stop_sending_frame;
   };
 };
-// QuicFrameType consumes 8 bytes with padding.
-static_assert(sizeof(QuicFrame) <= 16,
-              "Frames larger than 8 bytes should be referenced by pointer.");
+// In QuicFrame, QuicFrameType consumes 8 bytes with padding.
+static_assert(sizeof(QuicFrame) <= 32,
+              "Frames larger than 24 bytes should be referenced by pointer.");
 
 typedef std::vector<QuicFrame> QuicFrames;
 

@@ -196,6 +196,7 @@ class QuicDispatcherTest : public QuicTest {
         crypto_config_(QuicCryptoServerConfig::TESTING,
                        QuicRandom::GetInstance(),
                        std::move(proof_source),
+                       KeyExchangeSource::Default(),
                        TlsServerHandshaker::CreateSslCtx()),
         dispatcher_(new NiceMock<TestDispatcher>(config_,
                                                  &crypto_config_,
@@ -635,9 +636,9 @@ TEST_F(QuicDispatcherTest, TooBigSeqNoPacketToTimeWaitListManager) {
 }
 
 TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
-  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 7u,
+  static_assert(QUIC_ARRAYSIZE(kSupportedTransportVersions) == 5u,
                 "Supported versions out of sync");
-  SetQuicReloadableFlag(quic_disable_version_41_2, false);
+  SetQuicReloadableFlag(quic_disable_version_35, false);
   SetQuicReloadableFlag(quic_enable_version_43, true);
   SetQuicReloadableFlag(quic_enable_version_44, true);
   SetQuicFlag(&FLAGS_quic_enable_version_99, true);
@@ -758,19 +759,19 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_4BYTE_PACKET_NUMBER, 1);
 
-  // Turn off version 41.
-  SetQuicReloadableFlag(quic_disable_version_41_2, true);
+  // Turn off version 35.
+  SetQuicReloadableFlag(quic_disable_version_35, true);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))
       .Times(0);
   ProcessPacket(client_address, connection_id, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_41),
+                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_35),
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_4BYTE_PACKET_NUMBER, 1);
 
-  // Turn on version 41.
-  SetQuicReloadableFlag(quic_disable_version_41_2, false);
+  // Turn on version 35.
+  SetQuicReloadableFlag(quic_disable_version_35, false);
   ++connection_id;
   EXPECT_CALL(*dispatcher_, CreateQuicSession(connection_id, client_address,
                                               QuicStringPiece("hq")))
@@ -787,7 +788,7 @@ TEST_F(QuicDispatcherTest, SupportedTransportVersionsChangeInFlight) {
   EXPECT_CALL(*dispatcher_,
               ShouldCreateOrBufferPacketForConnection(connection_id));
   ProcessPacket(client_address, connection_id, true,
-                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_41),
+                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_35),
                 SerializeCHLO(), PACKET_8BYTE_CONNECTION_ID,
                 PACKET_4BYTE_PACKET_NUMBER, 1);
 }
@@ -2381,6 +2382,8 @@ TEST_F(AsyncGetProofTest, DispatcherFailedToPickUpVersionForAsyncProof) {
   // When dispatcher sends SREJ, the SREJ frame can be serialized in
   // different endianness which causes the client to close the connection
   // because of QUIC_INVALID_STREAM_DATA.
+
+  SetQuicReloadableFlag(quic_disable_version_35, false);
 
   // Send a CHLO with v39. Dispatcher framer's version is set to v39.
   ProcessPacket(client_addr_, 1, true,

@@ -25,7 +25,6 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
                   bool fin,
                   QuicStreamOffset offset,
                   QuicPacketLength data_length);
-  ~QuicStreamFrame();
 
   friend QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                                       const QuicStreamFrame& s);
@@ -33,7 +32,7 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamId stream_id;
   bool fin;
   QuicPacketLength data_length;
-  const char* data_buffer;
+  const char* data_buffer;  // Not owned.
   QuicStreamOffset offset;  // Location of this data in the stream.
 
   QuicStreamFrame(QuicStreamId stream_id,
@@ -41,8 +40,6 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
                   QuicStreamOffset offset,
                   const char* data_buffer,
                   QuicPacketLength data_length);
-  QuicStreamFrame(const QuicStreamFrame&) = delete;
-  QuicStreamFrame& operator=(const QuicStreamFrame&) = delete;
 };
 static_assert(sizeof(QuicStreamFrame) <= 64,
               "Keep the QuicStreamFrame size to a cacheline.");

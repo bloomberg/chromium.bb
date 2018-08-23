@@ -131,14 +131,14 @@ enum TransmissionType : int8_t {
   LAST_TRANSMISSION_TYPE = PROBING_RETRANSMISSION,
 };
 
-enum HasRetransmittableData : int8_t {
+enum HasRetransmittableData : uint8_t {
   NO_RETRANSMITTABLE_DATA,
   HAS_RETRANSMITTABLE_DATA,
 };
 
-enum IsHandshake : int8_t { NOT_HANDSHAKE, IS_HANDSHAKE };
+enum IsHandshake : uint8_t { NOT_HANDSHAKE, IS_HANDSHAKE };
 
-enum class Perspective { IS_SERVER, IS_CLIENT };
+enum class Perspective : uint8_t { IS_SERVER, IS_CLIENT };
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
                                              const Perspective& s);
 
@@ -152,7 +152,7 @@ enum class ConnectionCloseBehavior {
   SEND_CONNECTION_CLOSE_PACKET_WITH_NO_ACK
 };
 
-enum QuicFrameType : int8_t {
+enum QuicFrameType : uint8_t {
   // Regular frame types. The values set here cannot change without the
   // introduction of a new QUIC version.
   PADDING_FRAME = 0,
@@ -234,7 +234,7 @@ enum QuicConnectionIdLength {
   PACKET_8BYTE_CONNECTION_ID = 8
 };
 
-enum QuicPacketNumberLength : int8_t {
+enum QuicPacketNumberLength : uint8_t {
   PACKET_1BYTE_PACKET_NUMBER = 1,
   PACKET_2BYTE_PACKET_NUMBER = 2,
   PACKET_4BYTE_PACKET_NUMBER = 4,
@@ -308,7 +308,7 @@ enum QuicPacketPrivateFlags {
 // (Reno and Cubic are the classic example for that).
 enum CongestionControlType { kCubicBytes, kRenoBytes, kBBR, kPCC };
 
-enum LossDetectionType {
+enum LossDetectionType : uint8_t {
   kNack,          // Used to mimic TCP's loss detection.
   kTime,          // Time based loss detection.
   kAdaptiveTime,  // Adaptive time based loss detection.
@@ -327,7 +327,7 @@ enum EncryptionLevel : int8_t {
   NUM_ENCRYPTION_LEVELS,
 };
 
-enum AddressChangeType {
+enum AddressChangeType : uint8_t {
   // IP address and port remain unchanged.
   NO_CHANGE,
   // Port changed, but IP address remains unchanged.
@@ -440,7 +440,7 @@ enum QuicIetfTransportErrorCodes : uint16_t {
   FRAME_ERROR_base = 0x100,  // add frame type to this base
 };
 
-enum QuicIetfPacketHeaderForm {
+enum QuicIetfPacketHeaderForm : uint8_t {
   // Long header is used for packets that are sent prior to the completion of
   // version negotiation and establishment of 1-RTT keys.
   LONG_HEADER,

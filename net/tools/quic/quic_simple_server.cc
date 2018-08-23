@@ -55,6 +55,7 @@ QuicSimpleServer::QuicSimpleServer(
       crypto_config_(kSourceAddressTokenSecret,
                      quic::QuicRandom::GetInstance(),
                      std::move(proof_source),
+                     quic::KeyExchangeSource::Default(),
                      quic::TlsServerHandshaker::CreateSslCtx()),
       read_pending_(false),
       synchronous_read_count_(0),

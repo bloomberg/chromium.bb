@@ -151,6 +151,7 @@ class QuicServerDispatchPacketTest : public QuicTest {
       : crypto_config_("blah",
                        QuicRandom::GetInstance(),
                        crypto_test_utils::ProofSourceForTesting(),
+                       KeyExchangeSource::Default(),
                        TlsServerHandshaker::CreateSslCtx()),
         version_manager_(AllSupportedVersions()),
         dispatcher_(

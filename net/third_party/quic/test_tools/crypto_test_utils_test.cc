@@ -113,7 +113,7 @@ TEST(CryptoTestUtilsTest, TestGenerateFullCHLO) {
   MockClock clock;
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
-      crypto_test_utils::ProofSourceForTesting(),
+      crypto_test_utils::ProofSourceForTesting(), KeyExchangeSource::Default(),
       TlsServerHandshaker::CreateSslCtx());
   QuicSocketAddress server_addr;
   QuicSocketAddress client_addr(QuicIpAddress::Loopback4(), 1);

@@ -324,12 +324,12 @@ QuicConnection::QuicConnection(
       processing_ack_frame_(false),
       supports_release_time_(writer->SupportsReleaseTime()),
       release_time_into_future_(QuicTime::Delta::Zero()),
-      add_to_blocked_list_if_writer_blocked_(
-          GetQuicReloadableFlag(quic_add_to_blocked_list_if_writer_blocked)),
       ack_reordered_packets_(GetQuicReloadableFlag(quic_ack_reordered_packets)),
       retransmissions_app_limited_(
           GetQuicReloadableFlag(quic_retransmissions_app_limited)),
-      donot_retransmit_old_window_updates_(false) {
+      donot_retransmit_old_window_updates_(false),
+      notify_debug_visitor_on_connectivity_probing_sent_(GetQuicReloadableFlag(
+          quic_notify_debug_visitor_on_connectivity_probing_sent)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
@@ -1419,12 +1419,7 @@ bool QuicConnection::HandleWriteBlocked() {
     return false;
   }
 
-  if (add_to_blocked_list_if_writer_blocked_) {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked, 2, 2);
-    visitor_->OnWriteBlocked();
-  }
-
+  visitor_->OnWriteBlocked();
   return true;
 }
 
@@ -1436,9 +1431,7 @@ void QuicConnection::MaybeSendInResponseToPacket() {
   // If the writer is blocked, don't attempt to send packets now or in the send
   // alarm. When the writer unblocks, OnCanWrite() will be called for this
   // connection to send.
-  if (add_to_blocked_list_if_writer_blocked_ && HandleWriteBlocked()) {
-    QUIC_FLAG_COUNT_N(
-        quic_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked, 1, 2);
+  if (HandleWriteBlocked()) {
     return;
   }
 
@@ -1454,15 +1447,8 @@ void QuicConnection::MaybeSendInResponseToPacket() {
 void QuicConnection::SendVersionNegotiationPacket() {
   pending_version_negotiation_packet_ = true;
 
-  if (add_to_blocked_list_if_writer_blocked_) {
-    if (HandleWriteBlocked()) {
-      return;
-    }
-  } else {
-    if (writer_->IsWriteBlocked()) {
-      visitor_->OnWriteBlocked();
-      return;
-    }
+  if (HandleWriteBlocked()) {
+    return;
   }
 
   QUIC_DLOG(INFO) << ENDPOINT << "Sending version negotiation packet: {"
@@ -1965,15 +1951,8 @@ bool QuicConnection::CanWrite(HasRetransmittableData retransmittable) {
     return true;
   }
 
-  if (add_to_blocked_list_if_writer_blocked_) {
-    if (HandleWriteBlocked()) {
-      return false;
-    }
-  } else {
-    if (writer_->IsWriteBlocked()) {
-      visitor_->OnWriteBlocked();
-      return false;
-    }
+  if (HandleWriteBlocked()) {
+    return false;
   }
 
   // Allow acks to be sent immediately.
@@ -2044,15 +2023,8 @@ bool QuicConnection::WritePacket(SerializedPacket* packet) {
         new QuicEncryptedPacket(buffer_copy, encrypted_length, true));
     // This assures we won't try to write *forced* packets when blocked.
     // Return true to stop processing.
-    if (add_to_blocked_list_if_writer_blocked_) {
-      if (HandleWriteBlocked()) {
-        return true;
-      }
-    } else {
-      if (writer_->IsWriteBlocked()) {
-        visitor_->OnWriteBlocked();
-        return true;
-      }
+    if (HandleWriteBlocked()) {
+      return true;
     }
   }
 
@@ -2846,7 +2818,7 @@ bool QuicConnection::IsTerminationPacket(const SerializedPacket& packet) {
     }
     if (save_crypto_packets_as_termination_packets_ &&
         frame.type == STREAM_FRAME &&
-        frame.stream_frame->stream_id == kCryptoStreamId) {
+        frame.stream_frame.stream_id == kCryptoStreamId) {
       return true;
     }
   }
@@ -2937,6 +2909,15 @@ bool QuicConnection::SendConnectivityProbingPacket(
     QUIC_DLOG(INFO) << ENDPOINT << "Write probing packet failed with error = "
                     << result.error_code;
     return false;
+  }
+
+  if (notify_debug_visitor_on_connectivity_probing_sent_ &&
+      debug_visitor_ != nullptr) {
+    QUIC_FLAG_COUNT(
+        quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent);  // NOLINT
+    debug_visitor_->OnPacketSent(
+        *probing_packet, probing_packet->original_packet_number,
+        probing_packet->transmission_type, packet_send_time);
   }
 
   // Call OnPacketSent regardless of the write result.
@@ -3156,7 +3137,7 @@ void QuicConnection::MaybeEnableSessionDecidesWhatToWrite() {
   // Only enable session decides what to write code path for version 42+,
   // because it needs the receiver to allow receiving overlapping stream data.
   const bool enable_session_decides_what_to_write =
-      transport_version() > QUIC_VERSION_41;
+      transport_version() > QUIC_VERSION_39;
   sent_packet_manager_.SetSessionDecideWhatToWrite(
       enable_session_decides_what_to_write);
   packet_generator_.SetCanSetTransmissionType(

@@ -124,6 +124,9 @@ struct TestParams {
 // Constructs various test permutations.
 std::vector<TestParams> GetTestParams(bool use_tls_handshake,
                                       bool test_stateless_rejects) {
+  // Version 99 is default disabled, but should be exercised in EndToEnd tests
+  QuicFlagSaver flags;
+  FLAGS_quic_enable_version_99 = true;
   // Divide the versions into buckets in which the intra-frame format
   // is compatible. When clients encounter QUIC version negotiation
   // they simply retransmit all packets using the new version's
@@ -274,6 +277,8 @@ class EndToEndTest : public QuicTestWithParam<TestParams> {
         chlo_multiplier_(0),
         stream_factory_(nullptr),
         support_server_push_(false) {
+    // Version 99 is default disabled, but should be exercised in EndToEnd tests
+    FLAGS_quic_enable_version_99 = true;
     FLAGS_quic_supports_tls_handshake = true;
     client_supported_versions_ = GetParam().client_supported_versions;
     server_supported_versions_ = GetParam().server_supported_versions;
@@ -2860,7 +2865,7 @@ TEST_P(EndToEndTestServerPush, ServerPushOverLimitWithBlocking) {
   // sending requests for them.
   EXPECT_EQ(1u, client_->num_requests());
   // Including response to original request, 12 responses in total were
-  // recieved.
+  // received.
   EXPECT_EQ(12u, client_->num_responses());
 }
 
@@ -3193,6 +3198,22 @@ TEST_P(EndToEndTest, RequestAndStreamRstInOnePacket) {
 
   // The real expectation is the test does not crash or timeout.
   EXPECT_EQ(QUIC_NO_ERROR, client_->connection_error());
+}
+
+TEST_P(EndToEndTest, ResetStreamOnTtlExpires) {
+  ASSERT_TRUE(Initialize());
+  EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
+  SetPacketLossPercentage(30);
+
+  QuicSpdyClientStream* stream = client_->GetOrCreateStream();
+  // Set a TTL which expires immediately.
+  stream->MaybeSetTtl(QuicTime::Delta::FromMicroseconds(1));
+
+  // 1 MB body.
+  QuicString body(1024 * 1024, 'a');
+  stream->WriteOrBufferBody(body, true, nullptr);
+  client_->WaitForResponse();
+  EXPECT_EQ(QUIC_STREAM_TTL_EXPIRED, client_->stream_error());
 }
 
 class EndToEndPacketReorderingTest : public EndToEndTest {

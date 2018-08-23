@@ -58,10 +58,6 @@ QuicVersionLabel CreateQuicVersionLabel(ParsedQuicVersion parsed_version) {
       return MakeVersionLabel(proto, '0', '3', '5');
     case QUIC_VERSION_39:
       return MakeVersionLabel(proto, '0', '3', '9');
-    case QUIC_VERSION_41:
-      return MakeVersionLabel(proto, '0', '4', '1');
-    case QUIC_VERSION_42:
-      return MakeVersionLabel(proto, '0', '4', '2');
     case QUIC_VERSION_43:
       return MakeVersionLabel(proto, '0', '4', '3');
     case QUIC_VERSION_44:
@@ -172,12 +168,8 @@ ParsedQuicVersionVector FilterSupportedVersions(
       if (GetQuicReloadableFlag(quic_enable_version_43)) {
         filtered_versions.push_back(version);
       }
-    } else if (version.transport_version == QUIC_VERSION_42) {
-      if (!GetQuicReloadableFlag(quic_disable_version_42)) {
-        filtered_versions.push_back(version);
-      }
-    } else if (version.transport_version == QUIC_VERSION_41) {
-      if (!GetQuicReloadableFlag(quic_disable_version_41_2)) {
+    } else if (version.transport_version == QUIC_VERSION_35) {
+      if (!GetQuicReloadableFlag(quic_disable_version_35)) {
         filtered_versions.push_back(version);
       }
     } else {
@@ -271,8 +263,6 @@ QuicString QuicVersionToString(QuicTransportVersion transport_version) {
   switch (transport_version) {
     RETURN_STRING_LITERAL(QUIC_VERSION_35);
     RETURN_STRING_LITERAL(QUIC_VERSION_39);
-    RETURN_STRING_LITERAL(QUIC_VERSION_41);
-    RETURN_STRING_LITERAL(QUIC_VERSION_42);
     RETURN_STRING_LITERAL(QUIC_VERSION_43);
     RETURN_STRING_LITERAL(QUIC_VERSION_44);
     RETURN_STRING_LITERAL(QUIC_VERSION_99);

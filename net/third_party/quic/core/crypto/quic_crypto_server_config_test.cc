@@ -32,6 +32,7 @@ TEST_F(QuicCryptoServerConfigTest, ServerConfig) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
                                 crypto_test_utils::ProofSourceForTesting(),
+                                KeyExchangeSource::Default(),
                                 TlsServerHandshaker::CreateSslCtx());
   MockClock clock;
 
@@ -53,6 +54,7 @@ TEST_F(QuicCryptoServerConfigTest, CompressCerts) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
                                 crypto_test_utils::ProofSourceForTesting(),
+                                KeyExchangeSource::Default(),
                                 TlsServerHandshaker::CreateSslCtx());
   QuicCryptoServerConfigPeer peer(&server);
 
@@ -73,6 +75,7 @@ TEST_F(QuicCryptoServerConfigTest, CompressSameCertsTwice) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
                                 crypto_test_utils::ProofSourceForTesting(),
+                                KeyExchangeSource::Default(),
                                 TlsServerHandshaker::CreateSslCtx());
   QuicCryptoServerConfigPeer peer(&server);
 
@@ -103,6 +106,7 @@ TEST_F(QuicCryptoServerConfigTest, CompressDifferentCerts) {
   QuicRandom* rand = QuicRandom::GetInstance();
   QuicCryptoServerConfig server(QuicCryptoServerConfig::TESTING, rand,
                                 crypto_test_utils::ProofSourceForTesting(),
+                                KeyExchangeSource::Default(),
                                 TlsServerHandshaker::CreateSslCtx());
   QuicCryptoServerConfigPeer peer(&server);
 
@@ -147,6 +151,7 @@ class SourceAddressTokenTest : public QuicTest {
         server_(QuicCryptoServerConfig::TESTING,
                 rand_,
                 crypto_test_utils::ProofSourceForTesting(),
+                KeyExchangeSource::Default(),
                 TlsServerHandshaker::CreateSslCtx()),
         peer_(&server_) {
     // Advance the clock to some non-zero time.
@@ -288,6 +293,7 @@ class CryptoServerConfigsTest : public QuicTest {
         config_(QuicCryptoServerConfig::TESTING,
                 rand_,
                 crypto_test_utils::ProofSourceForTesting(),
+                KeyExchangeSource::Default(),
                 TlsServerHandshaker::CreateSslCtx()),
         test_peer_(&config_) {}
 

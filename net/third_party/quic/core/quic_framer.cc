@@ -49,7 +49,6 @@ const int kIetfAckTimestampShift = 3;
 // edge of the header.
 const uint8_t kPublicHeaderSequenceNumberShift = 4;
 
-// New Frame Types, QUIC v. >= 10:
 // There are two interpretations for the Frame Type byte in the QUIC protocol,
 // resulting in two Frame Types: Special Frame Types and Regular Frame Types.
 //
@@ -65,10 +64,8 @@ const uint8_t kPublicHeaderSequenceNumberShift = 4;
 // Special Frame Types encode both a Frame Type and corresponding flags
 // all in the Frame Type byte. Currently defined Special Frame Types
 // are:
-// Stream             : 0b 11xxxxxx   versions other than 41
-// Ack                : 0b 101xxxxx   versions other than 41
-// Stream             : 0b 1xxxxxxx   version 41
-// Ack                : 0b 01xxxxxx   version 41
+// Stream             : 0b 11xxxxxx
+// Ack                : 0b 101xxxxx
 //
 // Semantics of the flag bits above (the x bits) depends on the frame type.
 
@@ -76,13 +73,9 @@ const uint8_t kPublicHeaderSequenceNumberShift = 4;
 // and for specific special frame types.
 const uint8_t kQuicFrameTypeSpecialMask = 0xE0;  // 0b 11100000
 const uint8_t kQuicFrameTypeStreamMask = 0x80;
-const uint8_t kQuicFrameTypeStreamMask_v41 = 0xC0;
 const uint8_t kQuicFrameTypeAckMask = 0x40;
-const uint8_t kQuicFrameTypeAckMask_v41 = 0xA0;
 
-// For version 41 the stream type format is 11FSSOOD.
-// For versions other than 41 the stream type format is 1FDOOOSS
-// Where
+// The stream type format is 1FDOOOSS, where
 //    F is the fin bit.
 //    D is the data length bit (0 or 2 bytes).
 //    OO/OOO are the size of the offset.
@@ -93,28 +86,20 @@ const uint8_t kQuicFrameTypeAckMask_v41 = 0xA0;
 // StreamID may be 1, 2, 3, or 4 bytes.
 const uint8_t kQuicStreamIdShift = 2;
 const uint8_t kQuicStreamIDLengthMask = 0x03;
-const uint8_t kQuicStreamIDLengthShift_v41 = 3;
-const uint8_t kQuicStreamIDLengthNumBits = 2;
 
 // Offset may be 0, 2, 4, or 8 bytes.
 const uint8_t kQuicStreamShift = 3;
 const uint8_t kQuicStreamOffsetMask = 0x07;
-const uint8_t kQuicStreamOffsetNumBits = 2;
-const uint8_t kQuicStreamOffsetShift_v41 = 1;
 
 // Data length may be 0 or 2 bytes.
 const uint8_t kQuicStreamDataLengthShift = 1;
 const uint8_t kQuicStreamDataLengthMask = 0x01;
-const uint8_t kQuicStreamDataLengthShift_v41 = 0;
 
 // Fin bit may be set or not.
 const uint8_t kQuicStreamFinShift = 1;
 const uint8_t kQuicStreamFinMask = 0x01;
-const uint8_t kQuicStreamFinShift_v41 = 5;
 
-// For version 41 the format of the ACK type byte is 101MLLOO
-// For other versions, the format is 01M0LLOO
-// Where
+// The format is 01M0LLOO, where
 //   M if set, there are multiple ack blocks in the frame.
 //  LL is the size of the largest ack field.
 //  OO is the size of the ack blocks offset field.
@@ -125,7 +110,6 @@ const uint8_t kLargestAckedOffset = 2;
 
 // Acks may have only one ack block.
 const uint8_t kQuicHasMultipleAckBlocksOffset = 5;
-const uint8_t kQuicHasMultipleAckBlocksOffset_v41 = 4;
 
 // Maximum length of encoded error strings.
 const int kMaxErrorStringLength = 256;
@@ -172,8 +156,7 @@ QuicPacketNumberLength ReadAckPacketNumberLength(QuicTransportVersion version,
                                                  uint8_t flags) {
   switch (flags & PACKET_FLAGS_8BYTE_PACKET) {
     case PACKET_FLAGS_8BYTE_PACKET:
-      return version != QUIC_VERSION_41 ? PACKET_6BYTE_PACKET_NUMBER
-                                        : PACKET_8BYTE_PACKET_NUMBER;
+      return PACKET_6BYTE_PACKET_NUMBER;
     case PACKET_FLAGS_4BYTE_PACKET:
       return PACKET_4BYTE_PACKET_NUMBER;
     case PACKET_FLAGS_2BYTE_PACKET:
@@ -499,30 +482,19 @@ size_t QuicFramer::GetStreamIdSize(QuicStreamId stream_id) {
 // static
 size_t QuicFramer::GetStreamOffsetSize(QuicTransportVersion version,
                                        QuicStreamOffset offset) {
-  if (version != QUIC_VERSION_41) {
-    // 0 is a special case.
-    if (offset == 0) {
-      return 0;
-    }
-    // 2 through 8 are the remaining sizes.
-    offset >>= 8;
-    for (int i = 2; i <= 8; ++i) {
-      offset >>= 8;
-      if (offset == 0) {
-        return i;
-      }
-    }
-    QUIC_BUG << "Failed to determine StreamOffsetSize.";
-    return 8;
+  // 0 is a special case.
+  if (offset == 0) {
+    return 0;
   }
-  // try 0, 2 and 4.
-  for (int i = 0; i <= 4; i += 2) {
-    if ((offset >> (8 * i)) == 0) {
+  // 2 through 8 are the remaining sizes.
+  offset >>= 8;
+  for (int i = 2; i <= 8; ++i) {
+    offset >>= 8;
+    if (offset == 0) {
       return i;
     }
   }
-
-  // 8 is the only remaining valid value and will contain any 64bit offset.
+  QUIC_BUG << "Failed to determine StreamOffsetSize.";
   return 8;
 }
 
@@ -567,11 +539,10 @@ size_t QuicFramer::GetSerializedFrameLength(
     bool last_frame,
     QuicPacketNumberLength packet_number_length) {
   // Prevent a rare crash reported in b/19458523.
-  if ((frame.type == STREAM_FRAME || frame.type == ACK_FRAME) &&
-      frame.stream_frame == nullptr) {
-    QUIC_BUG << "Cannot compute the length of a null frame. "
-             << "type:" << frame.type << "free_bytes:" << free_bytes
-             << " first_frame:" << first_frame << " last_frame:" << last_frame
+  if (frame.type == ACK_FRAME && frame.ack_frame == nullptr) {
+    QUIC_BUG << "Cannot compute the length of a null ack frame. free_bytes:"
+             << free_bytes << " first_frame:" << first_frame
+             << " last_frame:" << last_frame
              << " seq num length:" << packet_number_length;
     RecordInternalErrorLocation(QUIC_FRAMER);
     set_error(QUIC_INTERNAL_ERROR);
@@ -654,7 +625,7 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         }
         break;
       case STREAM_FRAME:
-        if (!AppendStreamFrame(*frame.stream_frame, no_stream_frame_length,
+        if (!AppendStreamFrame(frame.stream_frame, no_stream_frame_length,
                                &writer)) {
           QUIC_BUG << "AppendStreamFrame failed";
           return 0;
@@ -778,7 +749,7 @@ size_t QuicFramer::BuildIetfDataPacket(const QuicPacketHeader& header,
         }
         break;
       case STREAM_FRAME:
-        if (!AppendStreamFrame(*frame.stream_frame, no_stream_frame_length,
+        if (!AppendStreamFrame(frame.stream_frame, no_stream_frame_length,
                                &writer)) {
           QUIC_BUG << "AppendStreamFrame failed";
           return 0;
@@ -975,7 +946,12 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
     QuicConnectionId connection_id,
     QuicUint128 stateless_reset_token) {
   QUIC_DVLOG(1) << "Building IETF stateless reset packet.";
-  size_t len = kPacketHeaderTypeSize + PACKET_1BYTE_PACKET_NUMBER +
+  const bool quic_more_random_bytes =
+      GetQuicReloadableFlag(quic_more_random_bytes_in_stateless_reset);
+  const size_t random_bytes_length = quic_more_random_bytes
+                                         ? kMinRandomBytesLengthInStatelessReset
+                                         : PACKET_1BYTE_PACKET_NUMBER;
+  size_t len = kPacketHeaderTypeSize + random_bytes_length +
                sizeof(stateless_reset_token);
   std::unique_ptr<char[]> buffer(new char[len]);
   QuicDataWriter writer(len, buffer.get(), NETWORK_BYTE_ORDER);
@@ -989,15 +965,21 @@ std::unique_ptr<QuicEncryptedPacket> QuicFramer::BuildIetfStatelessResetPacket(
   if (!writer.WriteUInt8(type)) {
     return nullptr;
   }
-  // Append an random packet number.
-  QuicPacketNumber random_packet_number =
-      QuicRandom::GetInstance()->RandUint64() % 255 + 1;
-  if (!AppendPacketNumber(PACKET_1BYTE_PACKET_NUMBER, random_packet_number,
-                          &writer)) {
-    return nullptr;
+  if (quic_more_random_bytes) {
+    // Append random bytes.
+    if (!writer.WriteRandomBytes(QuicRandom::GetInstance(),
+                                 random_bytes_length)) {
+      return nullptr;
+    }
+  } else {
+    // Append an random packet number.
+    QuicPacketNumber random_packet_number =
+        QuicRandom::GetInstance()->RandUint64() % 255 + 1;
+    if (!AppendPacketNumber(PACKET_1BYTE_PACKET_NUMBER, random_packet_number,
+                            &writer)) {
+      return nullptr;
+    }
   }
-
-  // TODO(fayang): Append random number of random bytes after packet number.
 
   // Append stateless reset token.
   if (!writer.WriteBytes(&stateless_reset_token,
@@ -1663,8 +1645,7 @@ QuicPacketNumberLength QuicFramer::GetMinPacketNumberLength(
   } else if (packet_number < UINT64_C(1) << (PACKET_4BYTE_PACKET_NUMBER * 8)) {
     return PACKET_4BYTE_PACKET_NUMBER;
   } else {
-    return version != QUIC_VERSION_41 ? PACKET_6BYTE_PACKET_NUMBER
-                                      : PACKET_8BYTE_PACKET_NUMBER;
+    return PACKET_6BYTE_PACKET_NUMBER;
   }
 }
 
@@ -1904,11 +1885,7 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
 
     if (frame_type & kQuicFrameTypeSpecialMask) {
       // Stream Frame
-      if ((version_.transport_version != QUIC_VERSION_41 &&
-           (frame_type & kQuicFrameTypeStreamMask)) ||
-          (version_.transport_version >= QUIC_VERSION_41 &&
-           ((frame_type & kQuicFrameTypeStreamMask_v41) ==
-            kQuicFrameTypeStreamMask_v41))) {
+      if (frame_type & kQuicFrameTypeStreamMask) {
         QuicStreamFrame frame;
         if (!ProcessStreamFrame(reader, frame_type, &frame)) {
           return RaiseError(QUIC_INVALID_STREAM_DATA);
@@ -1923,11 +1900,7 @@ bool QuicFramer::ProcessFrameData(QuicDataReader* reader,
       }
 
       // Ack Frame
-      if ((version_.transport_version != QUIC_VERSION_41 &&
-           (frame_type & kQuicFrameTypeAckMask)) ||
-          (version_.transport_version >= QUIC_VERSION_41 &&
-           ((frame_type & kQuicFrameTypeSpecialMask) ==
-            kQuicFrameTypeAckMask_v41))) {
+      if (frame_type & kQuicFrameTypeAckMask) {
         if (!ProcessAckFrame(reader, frame_type)) {
           return RaiseError(QUIC_INVALID_ACK_DATA);
         }
@@ -2326,43 +2299,24 @@ bool QuicFramer::ProcessStreamFrame(QuicDataReader* reader,
   uint8_t stream_id_length = 0;
   uint8_t offset_length = 4;
   bool has_data_length = true;
-  if (version_.transport_version != QUIC_VERSION_41) {
-    stream_flags &= ~kQuicFrameTypeStreamMask;
+  stream_flags &= ~kQuicFrameTypeStreamMask;
 
-    // Read from right to left: StreamID, Offset, Data Length, Fin.
-    stream_id_length = (stream_flags & kQuicStreamIDLengthMask) + 1;
-    stream_flags >>= kQuicStreamIdShift;
+  // Read from right to left: StreamID, Offset, Data Length, Fin.
+  stream_id_length = (stream_flags & kQuicStreamIDLengthMask) + 1;
+  stream_flags >>= kQuicStreamIdShift;
 
-    offset_length = (stream_flags & kQuicStreamOffsetMask);
-    // There is no encoding for 1 byte, only 0 and 2 through 8.
-    if (offset_length > 0) {
-      offset_length += 1;
-    }
-    stream_flags >>= kQuicStreamShift;
-
-    has_data_length =
-        (stream_flags & kQuicStreamDataLengthMask) == kQuicStreamDataLengthMask;
-    stream_flags >>= kQuicStreamDataLengthShift;
-
-    frame->fin = (stream_flags & kQuicStreamFinMask) == kQuicStreamFinShift;
-
-  } else {
-    stream_flags &= ~kQuicFrameTypeStreamMask_v41;
-
-    stream_id_length = 1 + ExtractBits(stream_flags, kQuicStreamIDLengthNumBits,
-                                       kQuicStreamIDLengthShift_v41);
-
-    offset_length = 1 << ExtractBits(stream_flags, kQuicStreamOffsetNumBits,
-                                     kQuicStreamOffsetShift_v41);
-
-    if (offset_length == 1) {
-      offset_length = 0;
-    }
-
-    has_data_length = ExtractBit(stream_flags, kQuicStreamDataLengthShift_v41);
-
-    frame->fin = ExtractBit(stream_flags, kQuicStreamFinShift_v41);
+  offset_length = (stream_flags & kQuicStreamOffsetMask);
+  // There is no encoding for 1 byte, only 0 and 2 through 8.
+  if (offset_length > 0) {
+    offset_length += 1;
   }
+  stream_flags >>= kQuicStreamShift;
+
+  has_data_length =
+      (stream_flags & kQuicStreamDataLengthMask) == kQuicStreamDataLengthMask;
+  stream_flags >>= kQuicStreamDataLengthShift;
+
+  frame->fin = (stream_flags & kQuicStreamFinMask) == kQuicStreamFinShift;
 
   uint64_t stream_id;
   if (!reader->ReadBytesToUInt64(stream_id_length, &stream_id)) {
@@ -2452,23 +2406,10 @@ bool QuicFramer::ProcessIetfStreamFrame(QuicDataReader* reader,
 }
 
 bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
-  bool has_ack_blocks =
-      ExtractBit(frame_type, version_.transport_version != QUIC_VERSION_41
-                                 ? kQuicHasMultipleAckBlocksOffset
-                                 : kQuicHasMultipleAckBlocksOffset_v41);
+  const bool has_ack_blocks =
+      ExtractBit(frame_type, kQuicHasMultipleAckBlocksOffset);
   uint8_t num_ack_blocks = 0;
   uint8_t num_received_packets = 0;
-
-  if (version_.transport_version == QUIC_VERSION_41) {
-    if (has_ack_blocks && !reader->ReadUInt8(&num_ack_blocks)) {
-      set_detailed_error("Unable to read num of ack blocks.");
-      return false;
-    }
-    if (!reader->ReadUInt8(&num_received_packets)) {
-      set_detailed_error("Unable to read num received packets.");
-      return false;
-    }
-  }
 
   // Determine the two lengths from the frame type: largest acked length,
   // ack block length.
@@ -2505,12 +2446,9 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
     return false;
   }
 
-  if (has_ack_blocks) {
-    if (version_.transport_version != QUIC_VERSION_41 &&
-        !reader->ReadUInt8(&num_ack_blocks)) {
-      set_detailed_error("Unable to read num of ack blocks.");
-      return false;
-    }
+  if (has_ack_blocks && !reader->ReadUInt8(&num_ack_blocks)) {
+    set_detailed_error("Unable to read num of ack blocks.");
+    return false;
   }
 
   uint64_t first_block_length;
@@ -2587,8 +2525,7 @@ bool QuicFramer::ProcessAckFrame(QuicDataReader* reader, uint8_t frame_type) {
     }
   }
 
-  if (version_.transport_version != QUIC_VERSION_41 &&
-      !reader->ReadUInt8(&num_received_packets)) {
+  if (!reader->ReadUInt8(&num_received_packets)) {
     set_detailed_error("Unable to read num received packets.");
     return false;
   }
@@ -2793,11 +2730,9 @@ bool QuicFramer::ProcessRstStreamFrame(QuicDataReader* reader,
     return false;
   }
 
-  if (version_.transport_version != QUIC_VERSION_41) {
-    if (!reader->ReadUInt64(&frame->byte_offset)) {
-      set_detailed_error("Unable to read rst stream sent byte offset.");
-      return false;
-    }
+  if (!reader->ReadUInt64(&frame->byte_offset)) {
+    set_detailed_error("Unable to read rst stream sent byte offset.");
+    return false;
   }
 
   uint32_t error_code;
@@ -2812,13 +2747,6 @@ bool QuicFramer::ProcessRstStreamFrame(QuicDataReader* reader,
   }
 
   frame->error_code = static_cast<QuicRstStreamErrorCode>(error_code);
-
-  if (version_.transport_version == QUIC_VERSION_41) {
-    if (!reader->ReadUInt64(&frame->byte_offset)) {
-      set_detailed_error("Unable to read rst stream sent byte offset.");
-      return false;
-    }
-  }
 
   return true;
 }
@@ -3218,10 +3146,10 @@ size_t QuicFramer::ComputeFrameLength(
   switch (frame.type) {
     case STREAM_FRAME:
       return GetMinStreamFrameSize(
-                 version_.transport_version, frame.stream_frame->stream_id,
-                 frame.stream_frame->offset, last_frame_in_packet,
-                 frame.stream_frame->data_length) +
-             frame.stream_frame->data_length;
+                 version_.transport_version, frame.stream_frame.stream_id,
+                 frame.stream_frame.offset, last_frame_in_packet,
+                 frame.stream_frame.data_length) +
+             frame.stream_frame.data_length;
     case ACK_FRAME: {
       return GetAckFrameSize(*frame.ack_frame, packet_number_length);
     }
@@ -3249,65 +3177,25 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
   uint8_t type_byte = 0;
   switch (frame.type) {
     case STREAM_FRAME: {
-      if (frame.stream_frame == nullptr) {
-        QUIC_BUG << "Failed to append STREAM frame with no stream_frame.";
+      // Fin bit.
+      type_byte |= frame.stream_frame.fin ? kQuicStreamFinMask : 0;
+
+      // Data Length bit.
+      type_byte <<= kQuicStreamDataLengthShift;
+      type_byte |= no_stream_frame_length ? 0 : kQuicStreamDataLengthMask;
+
+      // Offset 3 bits.
+      type_byte <<= kQuicStreamShift;
+      const size_t offset_len = GetStreamOffsetSize(version_.transport_version,
+                                                    frame.stream_frame.offset);
+      if (offset_len > 0) {
+        type_byte |= offset_len - 1;
       }
-      if (version_.transport_version != QUIC_VERSION_41) {
-        // Fin bit.
-        type_byte |= frame.stream_frame->fin ? kQuicStreamFinMask : 0;
 
-        // Data Length bit.
-        type_byte <<= kQuicStreamDataLengthShift;
-        type_byte |= no_stream_frame_length ? 0 : kQuicStreamDataLengthMask;
-
-        // Offset 3 bits.
-        type_byte <<= kQuicStreamShift;
-        const size_t offset_len = GetStreamOffsetSize(
-            version_.transport_version, frame.stream_frame->offset);
-        if (offset_len > 0) {
-          type_byte |= offset_len - 1;
-        }
-
-        // stream id 2 bits.
-        type_byte <<= kQuicStreamIdShift;
-        type_byte |= GetStreamIdSize(frame.stream_frame->stream_id) - 1;
-        type_byte |= kQuicFrameTypeStreamMask;  // Set Stream Frame Type to 1.
-      } else {
-        // Fin bit.
-        SetBit(&type_byte, frame.stream_frame->fin, kQuicStreamFinShift_v41);
-
-        // Data Length bit.
-        SetBit(&type_byte, !no_stream_frame_length,
-               kQuicStreamDataLengthShift_v41);
-
-        // Offset 2 bits.
-        uint8_t offset_len_encode = 3;
-        switch (GetStreamOffsetSize(version_.transport_version,
-                                    frame.stream_frame->offset)) {
-          case 0:
-            offset_len_encode = 0;
-            break;
-          case 2:
-            offset_len_encode = 1;
-            break;
-          case 4:
-            offset_len_encode = 2;
-            break;
-          case 8:
-            offset_len_encode = 3;
-            break;
-          default:
-            QUIC_BUG << "Invalid offset_length.";
-        }
-        SetBits(&type_byte, offset_len_encode, kQuicStreamOffsetNumBits,
-                kQuicStreamOffsetShift_v41);
-
-        // stream id 2 bits.
-        SetBits(&type_byte, GetStreamIdSize(frame.stream_frame->stream_id) - 1,
-                kQuicStreamIDLengthNumBits, kQuicStreamIDLengthShift_v41);
-        type_byte |=
-            kQuicFrameTypeStreamMask_v41;  // Set Stream Frame Type to 1.
-      }
+      // stream id 2 bits.
+      type_byte <<= kQuicStreamIdShift;
+      type_byte |= GetStreamIdSize(frame.stream_frame.stream_id) - 1;
+      type_byte |= kQuicFrameTypeStreamMask;  // Set Stream Frame Type to 1.
       break;
     }
     case ACK_FRAME:
@@ -3399,10 +3287,10 @@ bool QuicFramer::AppendIetfTypeByte(const QuicFrame& frame,
       if (!last_frame_in_packet) {
         type_byte |= IETF_STREAM_FRAME_LEN_BIT;
       }
-      if (frame.stream_frame->offset != 0) {
+      if (frame.stream_frame.offset != 0) {
         type_byte |= IETF_STREAM_FRAME_OFF_BIT;
       }
-      if (frame.stream_frame->fin) {
+      if (frame.stream_frame.fin) {
         type_byte |= IETF_STREAM_FRAME_FIN_BIT;
       }
       break;
@@ -3634,9 +3522,7 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   // Whether there are multiple ack blocks.
   uint8_t type_byte = 0;
   SetBit(&type_byte, new_ack_info.num_ack_blocks != 0,
-         version_.transport_version != QUIC_VERSION_41
-             ? kQuicHasMultipleAckBlocksOffset
-             : kQuicHasMultipleAckBlocksOffset_v41);
+         kQuicHasMultipleAckBlocksOffset);
 
   SetBits(&type_byte, GetPacketNumberFlags(largest_acked_length),
           kQuicSequenceNumberLengthNumBits, kLargestAckedOffset);
@@ -3644,17 +3530,12 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   SetBits(&type_byte, GetPacketNumberFlags(ack_block_length),
           kQuicSequenceNumberLengthNumBits, kActBlockLengthOffset);
 
-  if (version_.transport_version != QUIC_VERSION_41) {
-    type_byte |= kQuicFrameTypeAckMask;
-  } else {
-    type_byte |= kQuicFrameTypeAckMask_v41;
-  }
+  type_byte |= kQuicFrameTypeAckMask;
 
   if (!writer->WriteUInt8(type_byte)) {
     return false;
   }
 
-  size_t num_timestamps_offset = 0;
   size_t max_num_ack_blocks = available_timestamp_and_ack_block_bytes /
                               (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
 
@@ -3663,20 +3544,6 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
       std::min(new_ack_info.num_ack_blocks, max_num_ack_blocks);
   if (num_ack_blocks > std::numeric_limits<uint8_t>::max()) {
     num_ack_blocks = std::numeric_limits<uint8_t>::max();
-  }
-
-  if (version_.transport_version == QUIC_VERSION_41) {
-    if (num_ack_blocks > 0 && !writer->WriteBytes(&num_ack_blocks, 1)) {
-      return false;
-    }
-
-    // Write a placeholder for the number of timestamps which will be
-    // overwritten after the ack blocks have been written.
-    num_timestamps_offset = writer->length();
-    uint8_t num_timestamps = 0;
-    if (!writer->WriteUInt8(num_timestamps)) {
-      return false;
-    }
   }
 
   // Largest acked.
@@ -3694,11 +3561,9 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
     return false;
   }
 
-  if (version_.transport_version != QUIC_VERSION_41) {
-    if (num_ack_blocks > 0) {
-      if (!writer->WriteBytes(&num_ack_blocks, 1)) {
-        return false;
-      }
+  if (num_ack_blocks > 0) {
+    if (!writer->WriteBytes(&num_ack_blocks, 1)) {
+      return false;
     }
   }
 
@@ -3766,11 +3631,9 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
   // Timestamps.
   // If we don't have enough available space to append all the timestamps, don't
   // append any of them.
-  if (transport_version() != QUIC_VERSION_41) {
-    uint8_t num_received_packets = 0;
-    if (!writer->WriteBytes(&num_received_packets, 1)) {
-      return false;
-    }
+  uint8_t num_received_packets = 0;
+  if (!writer->WriteBytes(&num_received_packets, 1)) {
+    return false;
   }
 
   return true;
@@ -3965,21 +3828,13 @@ bool QuicFramer::AppendRstStreamFrame(const QuicRstStreamFrame& frame,
     return false;
   }
 
-  if (version_.transport_version != QUIC_VERSION_41) {
-    if (!writer->WriteUInt64(frame.byte_offset)) {
-      return false;
-    }
+  if (!writer->WriteUInt64(frame.byte_offset)) {
+    return false;
   }
 
   uint32_t error_code = static_cast<uint32_t>(frame.error_code);
   if (!writer->WriteUInt32(error_code)) {
     return false;
-  }
-
-  if (version_.transport_version == QUIC_VERSION_41) {
-    if (!writer->WriteUInt64(frame.byte_offset)) {
-      return false;
-    }
   }
 
   return true;

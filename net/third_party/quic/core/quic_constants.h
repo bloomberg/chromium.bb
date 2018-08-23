@@ -220,6 +220,9 @@ const size_t kPacketHeaderTypeSize = 1;
 // Number of bytes reserved for connection ID length.
 const size_t kConnectionIdLengthSize = 1;
 
+// Minimum length of random bytes in IETF stateless reset packet.
+const size_t kMinRandomBytesLengthInStatelessReset = 20;
+
 }  // namespace quic
 
 #endif  // NET_THIRD_PARTY_QUIC_CORE_QUIC_CONSTANTS_H_

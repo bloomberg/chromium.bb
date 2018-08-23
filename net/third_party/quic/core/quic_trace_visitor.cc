@@ -115,10 +115,10 @@ void QuicTraceVisitor::PopulateFrameInfo(const QuicFrame& frame,
 
       quic_trace::StreamFrameInfo* info =
           frame_record->mutable_stream_frame_info();
-      info->set_stream_id(frame.stream_frame->stream_id);
-      info->set_fin(frame.stream_frame->fin);
-      info->set_offset(frame.stream_frame->offset);
-      info->set_length(frame.stream_frame->data_length);
+      info->set_stream_id(frame.stream_frame.stream_id);
+      info->set_fin(frame.stream_frame.fin);
+      info->set_offset(frame.stream_frame.offset);
+      info->set_length(frame.stream_frame.data_length);
       break;
     }
 

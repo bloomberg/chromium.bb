@@ -183,17 +183,16 @@ class QuicPacketCreatorTest : public QuicTestWithParam<TestParams> {
                         QuicStreamOffset offset,
                         bool fin) {
     EXPECT_EQ(STREAM_FRAME, frame.type);
-    ASSERT_TRUE(frame.stream_frame);
-    EXPECT_EQ(stream_id, frame.stream_frame->stream_id);
+    EXPECT_EQ(stream_id, frame.stream_frame.stream_id);
     char buf[kMaxPacketSize];
     QuicDataWriter writer(kMaxPacketSize, buf, HOST_BYTE_ORDER);
-    if (frame.stream_frame->data_length > 0) {
-      producer_.WriteStreamData(stream_id, frame.stream_frame->offset,
-                                frame.stream_frame->data_length, &writer);
+    if (frame.stream_frame.data_length > 0) {
+      producer_.WriteStreamData(stream_id, frame.stream_frame.offset,
+                                frame.stream_frame.data_length, &writer);
     }
-    EXPECT_EQ(data, QuicStringPiece(buf, frame.stream_frame->data_length));
-    EXPECT_EQ(offset, frame.stream_frame->offset);
-    EXPECT_EQ(fin, frame.stream_frame->fin);
+    EXPECT_EQ(data, QuicStringPiece(buf, frame.stream_frame.data_length));
+    EXPECT_EQ(offset, frame.stream_frame.offset);
+    EXPECT_EQ(fin, frame.stream_frame.fin);
   }
 
   // Returns the number of bytes consumed by the header of packet, including
@@ -267,14 +266,12 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
     creator_.set_encryption_level(level);
     frames_.push_back(QuicFrame(new QuicAckFrame()));
     frames_.push_back(QuicFrame(
-        new QuicStreamFrame(kCryptoStreamId, false, 0u, QuicStringPiece())));
+        QuicStreamFrame(kCryptoStreamId, false, 0u, QuicStringPiece())));
     frames_.push_back(QuicFrame(
-        new QuicStreamFrame(kCryptoStreamId, true, 0u, QuicStringPiece())));
+        QuicStreamFrame(kCryptoStreamId, true, 0u, QuicStringPiece())));
     SerializedPacket serialized = SerializeAllFrames(frames_);
     EXPECT_EQ(level, serialized.encryption_level);
     delete frames_[0].ack_frame;
-    delete frames_[1].stream_frame;
-    delete frames_[2].stream_frame;
     frames_.clear();
 
     {
@@ -318,8 +315,8 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   // retransmit must sent with the original length and the others do not change.
   QuicPacketCreatorPeer::SetPacketNumberLength(&creator_,
                                                PACKET_2BYTE_PACKET_NUMBER);
-  QuicStreamFrame* stream_frame = new QuicStreamFrame(
-      kCryptoStreamId, /*fin=*/false, 0u, QuicStringPiece());
+  QuicStreamFrame stream_frame(kCryptoStreamId, /*fin=*/false, 0u,
+                               QuicStringPiece());
   QuicFrames frames;
   frames.push_back(QuicFrame(stream_frame));
   char buffer[kMaxPacketSize];
@@ -348,12 +345,11 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
   }
   ProcessPacket(serialized_packet_);
-  delete stream_frame;
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeCryptoFrameWithForwardSecurity) {
-  QuicStreamFrame* stream_frame = new QuicStreamFrame(
-      kCryptoStreamId, /*fin=*/false, 0u, QuicStringPiece());
+  QuicStreamFrame stream_frame(kCryptoStreamId, /*fin=*/false, 0u,
+                               QuicStringPiece());
   QuicFrames frames;
   frames.push_back(QuicFrame(stream_frame));
   creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
@@ -366,12 +362,10 @@ TEST_P(QuicPacketCreatorTest, ReserializeCryptoFrameWithForwardSecurity) {
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
   EXPECT_EQ(ENCRYPTION_NONE, serialized_packet_.encryption_level);
-  delete stream_frame;
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeFrameWithForwardSecurity) {
-  QuicStreamFrame* stream_frame =
-      new QuicStreamFrame(0u, /*fin=*/false, 0u, QuicStringPiece());
+  QuicStreamFrame stream_frame(0u, /*fin=*/false, 0u, QuicStringPiece());
   QuicFrames frames;
   frames.push_back(QuicFrame(stream_frame));
   creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
@@ -384,7 +378,6 @@ TEST_P(QuicPacketCreatorTest, ReserializeFrameWithForwardSecurity) {
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
   EXPECT_EQ(ENCRYPTION_FORWARD_SECURE, serialized_packet_.encryption_level);
-  delete stream_frame;
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPadding) {
@@ -404,7 +397,6 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPadding) {
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
   EXPECT_EQ(kDefaultMaxPacketSize, serialized_packet_.encrypted_length);
-  delete frame.stream_frame;
 }
 
 TEST_P(QuicPacketCreatorTest, DoNotRetransmitPendingPadding) {
@@ -457,7 +449,6 @@ TEST_P(QuicPacketCreatorTest, DoNotRetransmitPendingPadding) {
   creator_.ReserializeAllFrames(retransmission, buffer, kMaxPacketSize);
 
   EXPECT_EQ(packet_size, serialized_packet_.encrypted_length);
-  delete frame.stream_frame;
 }
 
 TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
@@ -498,7 +489,6 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
       EXPECT_EQ(kDefaultMaxPacketSize, serialized_packet_.encrypted_length);
     }
 
-    delete frame.stream_frame;
     frames_.clear();
   }
 }
@@ -532,8 +522,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeData) {
   MakeIOVector("test", &iov_);
   ASSERT_TRUE(creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u,
                                    0u, false, false, &frame));
-  ASSERT_TRUE(frame.stream_frame);
-  size_t consumed = frame.stream_frame->data_length;
+  size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(frame, 1u, "test", 0u, false);
   EXPECT_TRUE(creator_.HasPendingFrames());
@@ -544,8 +533,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataFin) {
   MakeIOVector("test", &iov_);
   ASSERT_TRUE(creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u,
                                    0u, true, false, &frame));
-  ASSERT_TRUE(frame.stream_frame);
-  size_t consumed = frame.stream_frame->data_length;
+  size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(frame, 1u, "test", 0u, true);
   EXPECT_TRUE(creator_.HasPendingFrames());
@@ -555,8 +543,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataFinOnly) {
   QuicFrame frame;
   ASSERT_TRUE(creator_.ConsumeData(kCryptoStreamId, nullptr, 0u, 0u, 0u, 0u,
                                    true, false, &frame));
-  ASSERT_TRUE(frame.stream_frame);
-  size_t consumed = frame.stream_frame->data_length;
+  size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(0u, consumed);
   CheckStreamFrame(frame, 1u, QuicString(), 0u, true);
   EXPECT_TRUE(creator_.HasPendingFrames());
@@ -584,8 +571,7 @@ TEST_P(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
       ASSERT_TRUE(creator_.ConsumeData(kGetNthClientInitiatedStreamId1, &iov_,
                                        1u, iov_.iov_len, 0u, kOffset, false,
                                        false, &frame));
-      ASSERT_TRUE(frame.stream_frame);
-      size_t bytes_consumed = frame.stream_frame->data_length;
+      size_t bytes_consumed = frame.stream_frame.data_length;
       EXPECT_LT(0u, bytes_consumed);
       creator_.Flush();
     }
@@ -609,7 +595,6 @@ TEST_P(QuicPacketCreatorTest, StreamFrameConsumption) {
     ASSERT_TRUE(creator_.ConsumeData(kGetNthClientInitiatedStreamId1, &iov_, 1u,
                                      iov_.iov_len, 0u, kOffset, false, false,
                                      &frame));
-    ASSERT_TRUE(frame.stream_frame);
 
     // BytesFree() returns bytes available for the next frame, which will
     // be two bytes smaller since the stream frame would need to be grown.
@@ -644,8 +629,7 @@ TEST_P(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
             Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
     ASSERT_TRUE(creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len,
                                      0u, kOffset, false, true, &frame));
-    ASSERT_TRUE(frame.stream_frame);
-    size_t bytes_consumed = frame.stream_frame->data_length;
+    size_t bytes_consumed = frame.stream_frame.data_length;
     EXPECT_LT(0u, bytes_consumed);
     creator_.Flush();
     ASSERT_TRUE(serialized_packet_.encrypted_buffer);
@@ -683,8 +667,7 @@ TEST_P(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
     ASSERT_TRUE(creator_.ConsumeData(kGetNthClientInitiatedStreamId1, &iov_, 1u,
                                      iov_.iov_len, 0u, kOffset, false, false,
                                      &frame));
-    ASSERT_TRUE(frame.stream_frame);
-    size_t bytes_consumed = frame.stream_frame->data_length;
+    size_t bytes_consumed = frame.stream_frame.data_length;
     EXPECT_LT(0u, bytes_consumed);
     creator_.Flush();
     ASSERT_TRUE(serialized_packet_.encrypted_buffer);
@@ -769,13 +752,8 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthLeastAwaiting) {
   QuicPacketCreatorPeer::SetPacketNumber(&creator_,
                                          UINT64_C(64) * 256 * 256 * 256 * 256);
   creator_.UpdatePacketNumberLength(2, 10000 / kDefaultMaxPacketSize);
-  if (GetParam().version.transport_version != QUIC_VERSION_41) {
-    EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
-              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
-  } else {
-    EXPECT_EQ(PACKET_8BYTE_PACKET_NUMBER,
-              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
-  }
+  EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 }
 
 TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
@@ -803,13 +781,8 @@ TEST_P(QuicPacketCreatorTest, UpdatePacketSequenceNumberLengthCwnd) {
 
   creator_.UpdatePacketNumberLength(
       1, UINT64_C(1000) * 256 * 256 * 256 * 256 / kDefaultMaxPacketSize);
-  if (GetParam().version.transport_version != QUIC_VERSION_41) {
-    EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
-              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
-  } else {
-    EXPECT_EQ(PACKET_8BYTE_PACKET_NUMBER,
-              QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
-  }
+  EXPECT_EQ(PACKET_6BYTE_PACKET_NUMBER,
+            QuicPacketCreatorPeer::GetPacketNumberLength(&creator_));
 }
 
 TEST_P(QuicPacketCreatorTest, SerializeFrame) {
@@ -817,9 +790,8 @@ TEST_P(QuicPacketCreatorTest, SerializeFrame) {
     creator_.StopSendingVersion();
   }
   frames_.push_back(QuicFrame(
-      new QuicStreamFrame(kCryptoStreamId, false, 0u, QuicStringPiece())));
+      QuicStreamFrame(kCryptoStreamId, false, 0u, QuicStringPiece())));
   SerializedPacket serialized = SerializeAllFrames(frames_);
-  delete frames_[0].stream_frame;
 
   QuicPacketHeader header;
   {
@@ -858,8 +830,7 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataLargerThanOneStreamFrame) {
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   ASSERT_TRUE(creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u,
                                    0u, true, false, &frame));
-  ASSERT_TRUE(frame.stream_frame);
-  size_t consumed = frame.stream_frame->data_length;
+  size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(payload_length, consumed);
   const QuicString payload(payload_length, 'a');
   CheckStreamFrame(frame, 1u, payload, 0u, false);
@@ -895,8 +866,7 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   MakeIOVector("test", &iov_);
   ASSERT_TRUE(creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u,
                                    0u, false, false, &frame));
-  ASSERT_TRUE(frame.stream_frame);
-  size_t consumed = frame.stream_frame->data_length;
+  size_t consumed = frame.stream_frame.data_length;
   EXPECT_EQ(4u, consumed);
   EXPECT_TRUE(creator_.HasPendingFrames());
   EXPECT_TRUE(creator_.HasPendingStreamFramesOfStream(kCryptoStreamId));
@@ -917,7 +887,6 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndFlush) {
   const QuicFrames& retransmittable = serialized_packet_.retransmittable_frames;
   ASSERT_EQ(1u, retransmittable.size());
   EXPECT_EQ(STREAM_FRAME, retransmittable[0].type);
-  ASSERT_TRUE(retransmittable[0].stream_frame);
   EXPECT_TRUE(serialized_packet_.has_ack);
   EXPECT_EQ(10u, serialized_packet_.largest_acked);
   DeleteSerializedPacket();
@@ -956,7 +925,6 @@ TEST_P(QuicPacketCreatorTest, SerializeAndSendStreamFrame) {
   const QuicFrames& retransmittable = serialized_packet_.retransmittable_frames;
   ASSERT_EQ(1u, retransmittable.size());
   EXPECT_EQ(STREAM_FRAME, retransmittable[0].type);
-  ASSERT_TRUE(retransmittable[0].stream_frame);
   DeleteSerializedPacket();
 
   EXPECT_FALSE(creator_.HasPendingFrames());
@@ -972,7 +940,7 @@ TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
   EXPECT_CALL(delegate_, OnUnrecoverableError(_, _, _));
   QuicStreamFrame stream_frame(kHeadersStreamId, /*fin=*/false, 0u,
                                QuicStringPiece());
-  EXPECT_QUIC_BUG(creator_.AddSavedFrame(QuicFrame(&stream_frame)),
+  EXPECT_QUIC_BUG(creator_.AddSavedFrame(QuicFrame(stream_frame)),
                   "Cannot send stream data without encryption.");
 }
 
@@ -1042,8 +1010,8 @@ TEST_P(QuicPacketCreatorTest, FullPaddingDoesNotConsumePendingPadding) {
 }
 
 TEST_P(QuicPacketCreatorTest, SendPendingPaddingInRetransmission) {
-  QuicStreamFrame* stream_frame = new QuicStreamFrame(
-      kCryptoStreamId, /*fin=*/false, 0u, QuicStringPiece());
+  QuicStreamFrame stream_frame(kCryptoStreamId, /*fin=*/false, 0u,
+                               QuicStringPiece());
   QuicFrames frames;
   frames.push_back(QuicFrame(stream_frame));
   char buffer[kMaxPacketSize];
@@ -1067,7 +1035,6 @@ TEST_P(QuicPacketCreatorTest, SendPendingPaddingInRetransmission) {
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
   }
   ProcessPacket(serialized_packet_);
-  delete stream_frame;
 }
 
 TEST_P(QuicPacketCreatorTest, SendPacketAfterFullPaddingRetransmission) {
@@ -1103,7 +1070,6 @@ TEST_P(QuicPacketCreatorTest, SendPacketAfterFullPaddingRetransmission) {
     EXPECT_CALL(framer_visitor_, OnPacketComplete());
   }
   ProcessPacket(serialized_packet_);
-  delete frame.stream_frame;
 
   creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u, 0u, false,
                        false, &frame);
@@ -1147,7 +1113,6 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataAndRandomPadding) {
   creator_.ConsumeData(kCryptoStreamId, &iov_, 1u, iov_.iov_len, 0u, 0u, false,
                        false, &frame);
   creator_.Flush();
-  delete frame.stream_frame;
   // 1 byte padding is sent.
   EXPECT_EQ(pending_padding_bytes - 1, creator_.pending_padding_bytes());
   // Send stream frame of size kStreamFramePayloadSize + 1.
@@ -1156,7 +1121,6 @@ TEST_P(QuicPacketCreatorTest, ConsumeDataAndRandomPadding) {
                        kStreamFramePayloadSize, false, false, &frame);
   // No padding is sent.
   creator_.Flush();
-  delete frame.stream_frame;
   EXPECT_EQ(pending_padding_bytes - 1, creator_.pending_padding_bytes());
   // Flush all paddings.
   while (creator_.pending_padding_bytes() > 0) {

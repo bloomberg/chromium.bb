@@ -588,9 +588,9 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataFastPath) {
   SerializedPacket packet = packets_.back();
   EXPECT_TRUE(!packet.retransmittable_frames.empty());
   EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
-  QuicStreamFrame* stream_frame =
+  const QuicStreamFrame& stream_frame =
       packet.retransmittable_frames.front().stream_frame;
-  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
+  EXPECT_EQ(10000u, stream_frame.data_length + stream_frame.offset);
 }
 
 TEST_F(QuicPacketGeneratorTest, ConsumeDataLarge) {
@@ -614,9 +614,9 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataLarge) {
   SerializedPacket packet = packets_.back();
   EXPECT_TRUE(!packet.retransmittable_frames.empty());
   EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
-  QuicStreamFrame* stream_frame =
+  const QuicStreamFrame& stream_frame =
       packet.retransmittable_frames.front().stream_frame;
-  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
+  EXPECT_EQ(10000u, stream_frame.data_length + stream_frame.offset);
 }
 
 TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckFalse) {
@@ -649,9 +649,9 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckFalse) {
   SerializedPacket packet = packets_.back();
   EXPECT_TRUE(!packet.retransmittable_frames.empty());
   EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
-  QuicStreamFrame* stream_frame =
+  const QuicStreamFrame& stream_frame =
       packet.retransmittable_frames.front().stream_frame;
-  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
+  EXPECT_EQ(10000u, stream_frame.data_length + stream_frame.offset);
 }
 
 TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckTrue) {
@@ -688,9 +688,9 @@ TEST_F(QuicPacketGeneratorTest, ConsumeDataLargeSendAckTrue) {
   SerializedPacket packet = packets_.back();
   EXPECT_TRUE(!packet.retransmittable_frames.empty());
   EXPECT_EQ(STREAM_FRAME, packet.retransmittable_frames.front().type);
-  QuicStreamFrame* stream_frame =
+  const QuicStreamFrame& stream_frame =
       packet.retransmittable_frames.front().stream_frame;
-  EXPECT_EQ(10000u, stream_frame->data_length + stream_frame->offset);
+  EXPECT_EQ(10000u, stream_frame.data_length + stream_frame.offset);
 }
 
 TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {

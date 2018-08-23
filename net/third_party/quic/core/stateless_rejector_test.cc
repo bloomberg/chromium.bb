@@ -82,6 +82,7 @@ class StatelessRejectorTest : public QuicTestWithParam<TestParams> {
         config_(QuicCryptoServerConfig::TESTING,
                 QuicRandom::GetInstance(),
                 crypto_test_utils::ProofSourceForTesting(),
+                KeyExchangeSource::Default(),
                 TlsServerHandshaker::CreateSslCtx()),
         config_peer_(&config_),
         compressed_certs_cache_(

@@ -39,16 +39,16 @@ TEST(QuicHttpUtilsTest, ConvertQuicPriorityToRequestPriority) {
 
 TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
   quic::QuicTransportVersionVector supported_versions = {
-      quic::QUIC_VERSION_35, quic::QUIC_VERSION_39, quic::QUIC_VERSION_41};
+      quic::QUIC_VERSION_35, quic::QUIC_VERSION_39, quic::QUIC_VERSION_44};
 
-  std::vector<uint32_t> alt_svc_versions_google = {quic::QUIC_VERSION_41,
-                                                   quic::QUIC_VERSION_42};
+  std::vector<uint32_t> alt_svc_versions_google = {quic::QUIC_VERSION_44,
+                                                   quic::QUIC_VERSION_43};
   std::vector<uint32_t> alt_svc_versions_ietf = {
-      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_41),
-      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_42)};
+      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_44),
+      QuicVersionToQuicVersionLabel(quic::QUIC_VERSION_43)};
 
   quic::QuicTransportVersionVector supported_alt_svc_versions = {
-      quic::QUIC_VERSION_41};
+      quic::QUIC_VERSION_44};
   spdy::SpdyAltSvcWireFormat::AlternativeService altsvc;
 
   altsvc.protocol_id = "quic";

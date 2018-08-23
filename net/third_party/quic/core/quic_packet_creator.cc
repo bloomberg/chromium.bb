@@ -130,21 +130,19 @@ bool QuicPacketCreator::ConsumeData(QuicStreamId id,
   CreateStreamFrame(id, write_length, iov_offset, offset, fin, frame);
   // Explicitly disallow multi-packet CHLOs.
   if (FLAGS_quic_enforce_single_packet_chlo &&
-      StreamFrameStartsWithChlo(*frame->stream_frame) &&
-      frame->stream_frame->data_length < write_length) {
+      StreamFrameStartsWithChlo(frame->stream_frame) &&
+      frame->stream_frame.data_length < write_length) {
     const QuicString error_details =
         "Client hello won't fit in a single packet.";
     QUIC_BUG << error_details << " Constructed stream frame length: "
-             << frame->stream_frame->data_length
+             << frame->stream_frame.data_length
              << " CHLO length: " << write_length;
     delegate_->OnUnrecoverableError(QUIC_CRYPTO_CHLO_TOO_LARGE, error_details,
                                     ConnectionCloseSource::FROM_SELF);
-    delete frame->stream_frame;
     return false;
   }
   if (!AddFrame(*frame, /*save_retransmittable_frames=*/true)) {
     // Fails if we try to write unencrypted stream data.
-    delete frame->stream_frame;
     return false;
   }
   if (needs_full_padding) {
@@ -227,8 +225,7 @@ void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   if (iov_offset == write_length) {
     QUIC_BUG_IF(!fin) << "Creating a stream frame with no data or fin.";
     // Create a new packet for the fin, if necessary.
-    *frame =
-        QuicFrame(new QuicStreamFrame(id, true, offset, QuicStringPiece()));
+    *frame = QuicFrame(QuicStreamFrame(id, true, offset, QuicStringPiece()));
     return;
   }
 
@@ -239,7 +236,7 @@ void QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
       std::min<size_t>(BytesFree() - min_frame_size, data_size);
 
   bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
-  *frame = QuicFrame(new QuicStreamFrame(id, set_fin, offset, bytes_consumed));
+  *frame = QuicFrame(QuicStreamFrame(id, set_fin, offset, bytes_consumed));
 }
 
 void QuicPacketCreator::ReserializeAllFrames(
@@ -369,19 +366,17 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
       std::min<size_t>(available_size, remaining_data_size);
 
   const bool set_fin = fin && (bytes_consumed == remaining_data_size);
-  std::unique_ptr<QuicStreamFrame> frame;
-  frame = QuicMakeUnique<QuicStreamFrame>(id, set_fin, stream_offset,
-                                          bytes_consumed);
-  QUIC_DVLOG(1) << ENDPOINT << "Adding frame: " << *frame;
+  QuicStreamFrame frame(id, set_fin, stream_offset, bytes_consumed);
+  QUIC_DVLOG(1) << ENDPOINT << "Adding frame: " << frame;
 
   // TODO(ianswett): AppendTypeByte and AppendStreamFrame could be optimized
   // into one method that takes a QuicStreamFrame, if warranted.
-  if (!framer_->AppendTypeByte(QuicFrame(frame.get()),
+  if (!framer_->AppendTypeByte(QuicFrame(frame),
                                /* no stream frame length */ true, &writer)) {
     QUIC_BUG << "AppendTypeByte failed";
     return;
   }
-  if (!framer_->AppendStreamFrame(*frame, /* no stream frame length */ true,
+  if (!framer_->AppendStreamFrame(frame, /* no stream frame length */ true,
                                   &writer)) {
     QUIC_BUG << "AppendStreamFrame failed";
     return;
@@ -401,7 +396,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   packet_size_ = 0;
   packet_.encrypted_buffer = encrypted_buffer;
   packet_.encrypted_length = encrypted_length;
-  packet_.retransmittable_frames.push_back(QuicFrame(frame.release()));
+  packet_.retransmittable_frames.push_back(QuicFrame(frame));
   OnSerializedPacket();
 }
 
@@ -415,7 +410,7 @@ bool QuicPacketCreator::HasPendingRetransmittableFrames() const {
 
 bool QuicPacketCreator::HasPendingStreamFramesOfStream(QuicStreamId id) const {
   for (const auto& frame : packet_.retransmittable_frames) {
-    if (frame.type == STREAM_FRAME && frame.stream_frame->stream_id == id) {
+    if (frame.type == STREAM_FRAME && frame.stream_frame.stream_id == id) {
       return true;
     }
   }
@@ -432,7 +427,7 @@ size_t QuicPacketCreator::ExpansionOnNewFrame() const {
   }
   if (framer_->transport_version() == QUIC_VERSION_99) {
     return QuicDataWriter::GetVarInt62Len(
-        queued_frames_.back().stream_frame->data_length);
+        queued_frames_.back().stream_frame.data_length);
   }
   return kQuicStreamPayloadLengthSize;
 }
@@ -624,7 +619,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
                                  bool save_retransmittable_frames) {
   QUIC_DVLOG(1) << ENDPOINT << "Adding frame: " << frame;
   if (frame.type == STREAM_FRAME &&
-      frame.stream_frame->stream_id != kCryptoStreamId &&
+      frame.stream_frame.stream_id != kCryptoStreamId &&
       packet_.encryption_level == ENCRYPTION_NONE) {
     const QuicString error_details =
         "Cannot send stream data without encryption.";
@@ -653,7 +648,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
     packet_.retransmittable_frames.push_back(frame);
     queued_frames_.push_back(frame);
     if (frame.type == STREAM_FRAME &&
-        frame.stream_frame->stream_id == kCryptoStreamId) {
+        frame.stream_frame.stream_id == kCryptoStreamId) {
       packet_.has_crypto_handshake = IS_HANDSHAKE;
     }
   } else {

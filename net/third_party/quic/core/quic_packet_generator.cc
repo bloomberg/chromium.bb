@@ -100,7 +100,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     }
 
     // A stream frame is created and added.
-    size_t bytes_consumed = frame.stream_frame->data_length;
+    size_t bytes_consumed = frame.stream_frame.data_length;
     total_bytes_consumed += bytes_consumed;
     fin_consumed = fin && total_bytes_consumed == write_length;
     if (fin_consumed && state == FIN_AND_PADDING) {

@@ -5678,7 +5678,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
           false, GetRequestHeaders("GET", "https", "/pushed.jpg"),
           &server_header_offset, &server_maker_));
   if (client_headers_include_h2_stream_dependency_ &&
-      version_ > quic::QUIC_VERSION_42) {
+      version_ >= quic::QUIC_VERSION_43) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(client_packet_number++, false,
@@ -5766,7 +5766,7 @@ TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
           false, GetRequestHeaders("GET", "https", "/pushed.jpg"),
           &server_header_offset, &server_maker_));
   if (client_headers_include_h2_stream_dependency_ &&
-      version_ > quic::QUIC_VERSION_42) {
+      version_ >= quic::QUIC_VERSION_43) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(client_packet_number++, false,
@@ -6000,7 +6000,7 @@ TEST_P(QuicNetworkTransactionTest, RawHeaderSizeSuccessfullPushHeadersFirst) {
           &server_header_offset, &server_maker_));
 
   if (client_headers_include_h2_stream_dependency_ &&
-      version_ > quic::QUIC_VERSION_42) {
+      version_ >= quic::QUIC_VERSION_43) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(client_packet_number++, false,
@@ -6640,7 +6640,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushMatchesRequestWithBody) {
           false, GetRequestHeaders("GET", "https", "/pushed.jpg"),
           &server_header_offset, &server_maker_));
   if (client_headers_include_h2_stream_dependency_ &&
-      version_ > quic::QUIC_VERSION_42) {
+      version_ >= quic::QUIC_VERSION_43) {
     mock_quic_data.AddWrite(
         SYNCHRONOUS,
         ConstructClientPriorityPacket(client_packet_number++, false,
@@ -7638,7 +7638,7 @@ TEST_P(QuicNetworkTransactionTest, QuicProxyAuth) {
 TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
   // Only run this test if HTTP/2 stream dependency info is sent by client (sent
   // in HEADERS frames for requests and PRIORITY frames).
-  if (version_ <= quic::QUIC_VERSION_42 ||
+  if (version_ < quic::QUIC_VERSION_43 ||
       !client_headers_include_h2_stream_dependency_) {
     return;
   }

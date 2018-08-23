@@ -116,7 +116,7 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
   if (session_notifier_ != nullptr) {
     for (const QuicFrame& frame : *frames) {
       if (frame.type == STREAM_FRAME) {
-        session_notifier_->OnStreamFrameRetransmitted(*frame.stream_frame);
+        session_notifier_->OnStreamFrameRetransmitted(frame.stream_frame);
       }
     }
   }
@@ -126,10 +126,6 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
   info->has_crypto_handshake = transmission_info->has_crypto_handshake;
   transmission_info->has_crypto_handshake = false;
   info->num_padding_bytes = transmission_info->num_padding_bytes;
-
-  QUIC_BUG_IF(frames == nullptr)
-      << "Attempt to retransmit packet with no "
-      << "retransmittable frames: " << old_packet_number;
 
   // Don't link old transmissions to new ones when version or
   // encryption changes.
@@ -420,13 +416,13 @@ void QuicUnackedPacketMap::MaybeAggregateAckedStreamFrame(
     // Determine whether acked stream frame can be aggregated.
     const bool can_aggregate =
         frame.type == STREAM_FRAME &&
-        frame.stream_frame->stream_id == aggregated_stream_frame_.stream_id &&
-        frame.stream_frame->offset == aggregated_stream_frame_.offset +
-                                          aggregated_stream_frame_.data_length;
+        frame.stream_frame.stream_id == aggregated_stream_frame_.stream_id &&
+        frame.stream_frame.offset == aggregated_stream_frame_.offset +
+                                         aggregated_stream_frame_.data_length;
     if (can_aggregate) {
       // Aggregate stream frame.
-      aggregated_stream_frame_.data_length += frame.stream_frame->data_length;
-      aggregated_stream_frame_.fin = frame.stream_frame->fin;
+      aggregated_stream_frame_.data_length += frame.stream_frame.data_length;
+      aggregated_stream_frame_.fin = frame.stream_frame.fin;
       if (aggregated_stream_frame_.fin) {
         // Notify session notifier aggregated stream frame gets acked if fin is
         // acked.
@@ -436,17 +432,17 @@ void QuicUnackedPacketMap::MaybeAggregateAckedStreamFrame(
     }
 
     NotifyAggregatedStreamFrameAcked(ack_delay);
-    if (frame.type != STREAM_FRAME || frame.stream_frame->fin) {
+    if (frame.type != STREAM_FRAME || frame.stream_frame.fin) {
       session_notifier_->OnFrameAcked(frame, ack_delay);
       continue;
     }
 
     // Delay notifying session notifier stream frame gets acked in case it can
     // be aggregated with following acked ones.
-    aggregated_stream_frame_.stream_id = frame.stream_frame->stream_id;
-    aggregated_stream_frame_.offset = frame.stream_frame->offset;
-    aggregated_stream_frame_.data_length = frame.stream_frame->data_length;
-    aggregated_stream_frame_.fin = frame.stream_frame->fin;
+    aggregated_stream_frame_.stream_id = frame.stream_frame.stream_id;
+    aggregated_stream_frame_.offset = frame.stream_frame.offset;
+    aggregated_stream_frame_.data_length = frame.stream_frame.data_length;
+    aggregated_stream_frame_.fin = frame.stream_frame.fin;
   }
 }
 
@@ -457,7 +453,7 @@ void QuicUnackedPacketMap::NotifyAggregatedStreamFrameAcked(
     // Aggregated stream frame is empty.
     return;
   }
-  session_notifier_->OnFrameAcked(QuicFrame(&aggregated_stream_frame_),
+  session_notifier_->OnFrameAcked(QuicFrame(aggregated_stream_frame_),
                                   ack_delay);
   // Clear aggregated stream frame.
   aggregated_stream_frame_.stream_id = kInvalidStreamId;

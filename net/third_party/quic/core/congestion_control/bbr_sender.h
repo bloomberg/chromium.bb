@@ -91,32 +91,13 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
     QuicPacketNumber end_of_app_limited_phase;
   };
 
-  template <typename BandwidthSamplerT = BandwidthSampler>
-  static BbrSender* Create(const RttStats* rtt_stats,
-                           const QuicUnackedPacketMap* unacked_packets,
-                           QuicPacketCount initial_tcp_congestion_window,
-                           QuicPacketCount max_tcp_congestion_window,
-                           QuicRandom* random) {
-    struct SenderSamplerBundle : public BbrSender {
-      SenderSamplerBundle(const RttStats* rtt_stats,
-                          const QuicUnackedPacketMap* unacked_packets,
-                          QuicPacketCount initial_tcp_congestion_window,
-                          QuicPacketCount max_tcp_congestion_window,
-                          QuicRandom* random)
-          : BbrSender(rtt_stats,
-                      unacked_packets,
-                      initial_tcp_congestion_window,
-                      max_tcp_congestion_window,
-                      random,
-                      &sampler) {}
-      BandwidthSamplerT sampler;
-    };
-
-    return new SenderSamplerBundle(rtt_stats, unacked_packets,
-                                   initial_tcp_congestion_window,
-                                   max_tcp_congestion_window, random);
-  }
-
+  BbrSender(const RttStats* rtt_stats,
+            const QuicUnackedPacketMap* unacked_packets,
+            QuicPacketCount initial_tcp_congestion_window,
+            QuicPacketCount max_tcp_congestion_window,
+            QuicRandom* random);
+  BbrSender(const BbrSender&) = delete;
+  BbrSender& operator=(const BbrSender&) = delete;
   ~BbrSender() override;
 
   // Start implementation of SendAlgorithmInterface.
@@ -185,16 +166,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   }
 
   DebugState ExportDebugState() const;
-
- protected:
-  BbrSender(const RttStats* rtt_stats,
-            const QuicUnackedPacketMap* unacked_packets,
-            QuicPacketCount initial_tcp_congestion_window,
-            QuicPacketCount max_tcp_congestion_window,
-            QuicRandom* random,
-            BandwidthSamplerInterface* sampler);
-  BbrSender(const BbrSender&) = delete;
-  BbrSender& operator=(const BbrSender&) = delete;
 
  private:
   typedef WindowedFilter<QuicBandwidth,
@@ -281,7 +252,7 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
 
   // Bandwidth sampler provides BBR with the bandwidth measurements at
   // individual points.
-  BandwidthSamplerInterface* sampler_;  // Not owned.
+  std::unique_ptr<BandwidthSamplerInterface> sampler_;
 
   // The number of the round trips that have occurred during the connection.
   QuicRoundTripCount round_trip_count_;

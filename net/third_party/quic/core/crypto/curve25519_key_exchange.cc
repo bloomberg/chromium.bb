@@ -87,6 +87,13 @@ bool Curve25519KeyExchange::CalculateSharedKey(
   return true;
 }
 
+void Curve25519KeyExchange::CalculateSharedKey(
+    QuicStringPiece peer_public_value,
+    QuicString* shared_key,
+    std::unique_ptr<Callback> callback) const {
+  callback->Run(CalculateSharedKey(peer_public_value, shared_key));
+}
+
 QuicStringPiece Curve25519KeyExchange::public_value() const {
   return QuicStringPiece(reinterpret_cast<const char*>(public_key_),
                          sizeof(public_key_));

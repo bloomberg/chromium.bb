@@ -858,7 +858,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   typedef std::list<SerializedPacket> QueuedPacketList;
 
-  enum PacketContent {
+  enum PacketContent : uint8_t {
     NO_FRAMES_RECEIVED,
     FIRST_FRAME_IS_PING,
     SECOND_FRAME_IS_PADDING,
@@ -1298,10 +1298,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Time this connection can release packets into the future.
   QuicTime::Delta release_time_into_future_;
 
-  // Latched value of
-  // gfe2_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked.
-  const bool add_to_blocked_list_if_writer_blocked_;
-
   // Latched value of quic_reloadable_flag_quic_ack_reordered_packets.
   const bool ack_reordered_packets_;
 
@@ -1311,6 +1307,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of
   // quic_reloadable_flag_quic_donot_retransmit_old_window_update.
   bool donot_retransmit_old_window_updates_;
+
+  // Latched value of
+  // quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent
+  const bool notify_debug_visitor_on_connectivity_probing_sent_;
 };
 
 }  // namespace quic

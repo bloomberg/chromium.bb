@@ -162,10 +162,10 @@ class StatelessConnectionTerminator {
         QUIC_BUG << "Unable to consume data into an empty packet.";
         return;
       }
-      offset += frame.stream_frame->data_length;
+      offset += frame.stream_frame.data_length;
       if (offset < reject.length()) {
-        DCHECK(!creator_.HasRoomForStreamFrame(
-            kCryptoStreamId, offset, frame.stream_frame->data_length));
+        DCHECK(!creator_.HasRoomForStreamFrame(kCryptoStreamId, offset,
+                                               frame.stream_frame.data_length));
       }
       creator_.Flush();
     }

@@ -1015,16 +1015,16 @@ TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
 
   EXPECT_CALL(*ack_listener1, OnPacketAcked(7, _));
   EXPECT_TRUE(
-      session_->OnFrameAcked(QuicFrame(&frame1), QuicTime::Delta::Zero()));
+      session_->OnFrameAcked(QuicFrame(frame1), QuicTime::Delta::Zero()));
   EXPECT_CALL(*ack_listener1, OnPacketAcked(5, _));
   EXPECT_TRUE(
-      session_->OnFrameAcked(QuicFrame(&frame2), QuicTime::Delta::Zero()));
+      session_->OnFrameAcked(QuicFrame(frame2), QuicTime::Delta::Zero()));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(7, _));
   EXPECT_TRUE(
-      session_->OnFrameAcked(QuicFrame(&frame3), QuicTime::Delta::Zero()));
+      session_->OnFrameAcked(QuicFrame(frame3), QuicTime::Delta::Zero()));
   EXPECT_CALL(*ack_listener2, OnPacketAcked(5, _));
   EXPECT_TRUE(
-      session_->OnFrameAcked(QuicFrame(&frame4), QuicTime::Delta::Zero()));
+      session_->OnFrameAcked(QuicFrame(frame4), QuicTime::Delta::Zero()));
 }
 
 TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {

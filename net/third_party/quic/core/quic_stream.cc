@@ -79,7 +79,8 @@ QuicStream::QuicStream(QuicStreamId id, QuicSession* session, bool is_static)
       send_buffer_(
           session->connection()->helper()->GetStreamSendBufferAllocator()),
       buffered_data_threshold_(GetQuicFlag(FLAGS_quic_buffered_data_threshold)),
-      is_static_(is_static) {
+      is_static_(is_static),
+      deadline_(QuicTime::Zero()) {
   SetFromConfig();
   session_->RegisterStreamPriority(id, is_static_, priority_);
 }
@@ -281,6 +282,10 @@ void QuicStream::WriteOrBufferData(
 }
 
 void QuicStream::OnCanWrite() {
+  if (HasDeadlinePassed()) {
+    OnDeadlinePassed();
+    return;
+  }
   if (HasPendingRetransmission()) {
     WritePendingRetransmission();
     // Exit early to allow other streams to write pending retransmissions if
@@ -645,6 +650,10 @@ void QuicStream::OnStreamFrameLost(QuicStreamOffset offset,
 bool QuicStream::RetransmitStreamData(QuicStreamOffset offset,
                                       QuicByteCount data_length,
                                       bool fin) {
+  if (HasDeadlinePassed()) {
+    OnDeadlinePassed();
+    return true;
+  }
   QuicIntervalSet<QuicStreamOffset> retransmission(offset,
                                                    offset + data_length);
   retransmission.Difference(bytes_acked());
@@ -847,6 +856,43 @@ void QuicStream::WritePendingRetransmission() {
       }
     }
   }
+}
+
+bool QuicStream::MaybeSetTtl(QuicTime::Delta ttl) {
+  if (is_static_) {
+    QUIC_BUG << "Cannot set TTL of a static stream.";
+    return false;
+  }
+  if (deadline_.IsInitialized()) {
+    QUIC_DLOG(WARNING) << "Deadline has already been set.";
+    return false;
+  }
+  if (!session()->session_decides_what_to_write()) {
+    QUIC_DLOG(WARNING) << "This session does not support stream TTL yet.";
+    return false;
+  }
+  QuicTime now = session()->connection()->clock()->ApproximateNow();
+  deadline_ = now + ttl;
+  return true;
+}
+
+bool QuicStream::HasDeadlinePassed() const {
+  if (!deadline_.IsInitialized()) {
+    // No deadline has been set.
+    return false;
+  }
+  DCHECK(session()->session_decides_what_to_write());
+  QuicTime now = session()->connection()->clock()->ApproximateNow();
+  if (now < deadline_) {
+    return false;
+  }
+  // TTL expired.
+  QUIC_DVLOG(1) << "stream " << id() << " deadline has passed";
+  return true;
+}
+
+void QuicStream::OnDeadlinePassed() {
+  Reset(QUIC_STREAM_TTL_EXPIRED);
 }
 
 }  // namespace quic

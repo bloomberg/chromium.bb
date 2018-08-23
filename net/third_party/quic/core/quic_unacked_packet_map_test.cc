@@ -44,8 +44,8 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
       QuicStreamId stream_id) {
     SerializedPacket packet(packet_number, PACKET_1BYTE_PACKET_NUMBER, nullptr,
                             kDefaultLength, false, false);
-    QuicStreamFrame* frame = new QuicStreamFrame();
-    frame->stream_id = stream_id;
+    QuicStreamFrame frame;
+    frame.stream_id = stream_id;
     packet.retransmittable_frames.push_back(QuicFrame(frame));
     return packet;
   }
@@ -137,7 +137,7 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
     QuicStreamId stream_id = kHeadersStreamId;
     for (const auto& frame : info->retransmittable_frames) {
       if (frame.type == STREAM_FRAME) {
-        stream_id = frame.stream_frame->stream_id;
+        stream_id = frame.stream_frame.stream_id;
         break;
       }
     }
@@ -513,19 +513,19 @@ TEST_P(QuicUnackedPacketMapTest, AggregateContiguousAckedStreamFrames) {
 
   QuicTransmissionInfo info1;
   QuicStreamFrame stream_frame1(3, false, 0, 100);
-  info1.retransmittable_frames.push_back(QuicFrame(&stream_frame1));
+  info1.retransmittable_frames.push_back(QuicFrame(stream_frame1));
 
   QuicTransmissionInfo info2;
   QuicStreamFrame stream_frame2(3, false, 100, 100);
-  info2.retransmittable_frames.push_back(QuicFrame(&stream_frame2));
+  info2.retransmittable_frames.push_back(QuicFrame(stream_frame2));
 
   QuicTransmissionInfo info3;
   QuicStreamFrame stream_frame3(3, false, 200, 100);
-  info3.retransmittable_frames.push_back(QuicFrame(&stream_frame3));
+  info3.retransmittable_frames.push_back(QuicFrame(stream_frame3));
 
   QuicTransmissionInfo info4;
   QuicStreamFrame stream_frame4(3, true, 300, 0);
-  info4.retransmittable_frames.push_back(QuicFrame(&stream_frame4));
+  info4.retransmittable_frames.push_back(QuicFrame(stream_frame4));
 
   // Verify stream frames are aggregated.
   EXPECT_CALL(notifier_, OnFrameAcked(_, _)).Times(0);
@@ -554,8 +554,8 @@ TEST_P(QuicUnackedPacketMapTest, CannotAggregateAckedControlFrames) {
 
   QuicTransmissionInfo info1;
   info1.retransmittable_frames.push_back(QuicFrame(&window_update));
-  info1.retransmittable_frames.push_back(QuicFrame(&stream_frame1));
-  info1.retransmittable_frames.push_back(QuicFrame(&stream_frame2));
+  info1.retransmittable_frames.push_back(QuicFrame(stream_frame1));
+  info1.retransmittable_frames.push_back(QuicFrame(stream_frame2));
 
   QuicTransmissionInfo info2;
   info2.retransmittable_frames.push_back(QuicFrame(&blocked));
