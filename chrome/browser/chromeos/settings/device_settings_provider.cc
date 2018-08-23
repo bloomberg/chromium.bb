@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "chrome/browser/chromeos/policy/device_policy_decoder_chromeos.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_proto_parser.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_cache.h"
@@ -35,6 +36,7 @@
 #include "components/policy/core/common/chrome_schema.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/schema.h"
+#include "components/policy/policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 
@@ -121,49 +123,23 @@ const char* const kKnownSettings[] = {
     kDeviceAutoUpdateTimeRestrictions,
 };
 
-// Decodes a JSON string to a base::Value, and drops unknown properties
-// according to a policy schema. |policy_name| is the name of a policy schema
-// defined in policy_templates.json. Returns null in case the input is not a
-// valid JSON string.
-std::unique_ptr<base::Value> DecodeJsonStringAndDropUnknownBySchema(
-    const std::string& json_string,
-    const std::string& policy_name) {
+// Re-use the DecodeJsonStringAndNormalize from device_policy_decoder_chromeos.h
+// here to decode the json string and validate it against |policy_name|'s
+// schema. If the json string is valid, the decoded base::Value will be stored
+// as |setting_name| in |pref_value_map|. The error can be ignored here since it
+// is already reported during decoding in device_policy_decoder_chromeos.cc.
+void SetJsonDeviceSetting(const std::string& setting_name,
+                          const std::string& policy_name,
+                          const std::string& json_string,
+                          PrefValueMap* pref_value_map) {
   std::string error;
-  std::unique_ptr<base::Value> root = base::JSONReader::ReadAndReturnError(
-      json_string, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
-
-  if (!root) {
-    LOG(WARNING) << "Invalid JSON string: " << error << ", ignoring.";
-    return nullptr;
-  }
-
-  const policy::Schema& schema =
-      policy::GetChromeSchema().GetKnownProperty(policy_name);
-
-  if (!schema.valid()) {
-    LOG(WARNING) << "Unknown or invalid policy schema for " << policy_name
-                 << ".";
-    return nullptr;
-  }
-
-  std::string error_path;
-  bool changed = false;
-  if (!schema.Normalize(root.get(), policy::SCHEMA_ALLOW_UNKNOWN, &error_path,
-                        &error, &changed)) {
-    LOG(WARNING) << "Invalid policy value for " << policy_name << ": " << error
-                 << " at " << error_path << ".";
-    return nullptr;
-  }
-  if (changed) {
-    LOG(WARNING) << "Some properties in " << policy_name
-                 << " were dropped: " << error << " at " << error_path << ".";
-  }
-
-  return root;
+  std::unique_ptr<base::Value> decoded_json =
+      policy::DecodeJsonStringAndNormalize(json_string, policy_name, &error);
+  if (decoded_json)
+    pref_value_map->SetValue(setting_name, std::move(decoded_json));
 }
 
 void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
-                         bool is_enterprise_managed,
                          PrefValueMap* new_values_cache) {
   // For all our boolean settings the following is applicable:
   // true is default permissive value and false is safe prohibitive value.
@@ -202,7 +178,7 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       policy.guest_mode_enabled().guest_mode_enabled());
 
   bool supervised_users_enabled = false;
-  if (is_enterprise_managed) {
+  if (InstallAttributes::Get()->IsEnterpriseManaged()) {
     supervised_users_enabled =
         policy.has_supervised_users_settings() &&
         policy.supervised_users_settings().has_supervised_users_enabled() &&
@@ -444,14 +420,10 @@ void DecodeAutoUpdatePolicies(
     }
 
     if (au_settings_proto.has_disallowed_time_intervals()) {
-      std::unique_ptr<base::Value> decoded_intervals =
-          DecodeJsonStringAndDropUnknownBySchema(
-              au_settings_proto.disallowed_time_intervals(),
-              "DeviceAutoUpdateTimeRestrictions");
-      if (decoded_intervals) {
-        new_values_cache->SetValue(kDeviceAutoUpdateTimeRestrictions,
-                                   std::move(decoded_intervals));
-      }
+      SetJsonDeviceSetting(kDeviceAutoUpdateTimeRestrictions,
+                           policy::key::kDeviceAutoUpdateTimeRestrictions,
+                           au_settings_proto.disallowed_time_intervals(),
+                           new_values_cache);
     }
   }
 }
@@ -534,7 +506,6 @@ void DecodeHeartbeatPolicies(
 }
 
 void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
-                           bool is_enterprise_managed,
                            PrefValueMap* new_values_cache) {
   if (policy.has_metrics_enabled() &&
       policy.metrics_enabled().has_metrics_enabled()) {
@@ -543,7 +514,8 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   } else {
     // If the policy is missing, default to reporting enabled on enterprise-
     // enrolled devices, c.f. crbug/456186.
-    new_values_cache->SetBoolean(kStatsReportingPref, is_enterprise_managed);
+    new_values_cache->SetBoolean(
+        kStatsReportingPref, InstallAttributes::Get()->IsEnterpriseManaged());
   }
 
   if (!policy.has_release_channel() ||
@@ -637,16 +609,10 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
 
   if (policy.has_device_wallpaper_image() &&
       policy.device_wallpaper_image().has_device_wallpaper_image()) {
-    const std::string& wallpaper_policy(
-        policy.device_wallpaper_image().device_wallpaper_image());
-    std::unique_ptr<base::DictionaryValue> dict_val =
-        base::DictionaryValue::From(base::JSONReader::Read(wallpaper_policy));
-    if (dict_val) {
-      new_values_cache->SetValue(kDeviceWallpaperImage, std::move(dict_val));
-    } else {
-      SYSLOG(ERROR) << "Value of wallpaper policy has invalid format: "
-                    << wallpaper_policy;
-    }
+    SetJsonDeviceSetting(
+        kDeviceWallpaperImage, policy::key::kDeviceWallpaperImage,
+        policy.device_wallpaper_image().device_wallpaper_image(),
+        new_values_cache);
   }
 
   if (policy.has_device_off_hours()) {
@@ -704,7 +670,7 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
   } else {
     // If the policy is missing, default to false on enterprise-enrolled
     // devices.
-    if (is_enterprise_managed) {
+    if (InstallAttributes::Get()->IsEnterpriseManaged()) {
       new_values_cache->SetBoolean(kVirtualMachinesAllowed, false);
     }
   }
@@ -772,14 +738,12 @@ bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
 void DeviceSettingsProvider::DecodePolicies(
     const em::ChromeDeviceSettingsProto& policy,
     PrefValueMap* new_values_cache) {
-  bool is_enterprise_managed = InstallAttributes::Get()->IsEnterpriseManaged();
-
-  DecodeLoginPolicies(policy, is_enterprise_managed, new_values_cache);
+  DecodeLoginPolicies(policy, new_values_cache);
   DecodeNetworkPolicies(policy, new_values_cache);
   DecodeAutoUpdatePolicies(policy, new_values_cache);
   DecodeReportingPolicies(policy, new_values_cache);
   DecodeHeartbeatPolicies(policy, new_values_cache);
-  DecodeGenericPolicies(policy, is_enterprise_managed, new_values_cache);
+  DecodeGenericPolicies(policy, new_values_cache);
   DecodeLogUploadPolicies(policy, new_values_cache);
 }
 

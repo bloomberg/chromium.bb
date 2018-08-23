@@ -604,7 +604,7 @@ TEST_F(DeviceSettingsProviderTest, SetWallpaperSettings) {
   EXPECT_EQ(nullptr, provider_->Get(kDeviceWallpaperImage));
 
   // Set with valid json format.
-  const std::string valid_format("{\"type\":\"object\"}");
+  const std::string valid_format(R"({"url":"foo", "hash": "bar"})");
   SetWallpaperSettings(valid_format);
   std::unique_ptr<base::DictionaryValue> expected_value =
       base::DictionaryValue::From(base::JSONReader::Read(valid_format));
