@@ -7,7 +7,6 @@
 var GuestViewAttributes = require('guestViewAttributes').GuestViewAttributes;
 var ExtensionOptionsConstants =
     require('extensionOptionsConstants').ExtensionOptionsConstants;
-var ExtensionOptionsImpl = require('extensionOptions').ExtensionOptionsImpl;
 
 // -----------------------------------------------------------------------------
 // ExtensionAttribute object.
@@ -35,10 +34,7 @@ ExtensionAttribute.prototype.handleMutation = function(oldValue, newValue) {
   this.view.createGuest();
 };
 
-// -----------------------------------------------------------------------------
+var ExtensionOptionsAttributes = {ExtensionAttribute: ExtensionAttribute};
 
-// Sets up all of the extensionoptions attributes.
-ExtensionOptionsImpl.prototype.setupAttributes = function() {
-  this.attributes[ExtensionOptionsConstants.ATTRIBUTE_EXTENSION] =
-      new ExtensionAttribute(this);
-};
+// Exports.
+exports.$set('ExtensionOptionsAttributes', ExtensionOptionsAttributes);

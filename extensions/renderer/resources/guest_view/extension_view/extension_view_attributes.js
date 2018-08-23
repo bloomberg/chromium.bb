@@ -7,10 +7,6 @@
 var GuestViewAttributes = require('guestViewAttributes').GuestViewAttributes;
 var ExtensionViewConstants =
     require('extensionViewConstants').ExtensionViewConstants;
-var ExtensionViewImpl = require('extensionView').ExtensionViewImpl;
-var ExtensionViewInternal = getInternalApi ?
-    getInternalApi('extensionViewInternal') :
-    require('extensionViewInternal').ExtensionViewInternal;
 
 // -----------------------------------------------------------------------------
 // ExtensionAttribute object.
@@ -45,14 +41,12 @@ SrcAttribute.prototype.handleMutation = function(oldValue, newValue) {
   console.log('src is read only. Use .load(url) to navigate to a new ' +
       'extension page.');
   this.setValueIgnoreMutation(oldValue);
-}
-
-// -----------------------------------------------------------------------------
-
-// Sets up all of the extensionview attributes.
-ExtensionViewImpl.prototype.setupAttributes = function() {
-  this.attributes[ExtensionViewConstants.ATTRIBUTE_EXTENSION] =
-      new ExtensionAttribute(this);
-  this.attributes[ExtensionViewConstants.ATTRIBUTE_SRC] =
-      new SrcAttribute(this);
 };
+
+var ExtensionViewAttributes = {
+  ExtensionAttribute: ExtensionAttribute,
+  SrcAttribute: SrcAttribute
+};
+
+// Exports.
+exports.$set('ExtensionViewAttributes', ExtensionViewAttributes);
