@@ -262,6 +262,36 @@ public class ManualFillingControllerTest {
     }
 
     @Test
+    public void testPasswordTabRestoredWhenClosingTabIsUndone() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+        KeyboardAccessoryModel keyboardAccessoryModel =
+                mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+
+        // Create a new tab with a passwords tab:
+        Tab tab = addTab(mediator, 1111, null);
+        mController.registerPasswordProvider(new PropertyProvider<>());
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+
+        // Simulate closing the tab:
+        mediator.getTabModelObserverForTesting().willCloseTab(tab, false);
+        mediator.getTabObserverForTesting().onHidden(tab);
+        // Temporary removes the tab, but keeps it in memory so it can be brought back on undo:
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+
+        // Simulate undo closing the tab and selecting it:
+        mediator.getTabModelObserverForTesting().tabClosureUndone(tab);
+        switchTab(mediator, null, tab);
+        // There should still be a tab in the accessory:
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(1));
+
+        // Simulate closing the tab and committing to it (i.e. wait out undo message):
+        closeTab(mediator, tab, null);
+        mediator.getTabModelObserverForTesting().tabClosureCommitted(tab);
+        assertThat(keyboardAccessoryModel.getTabList().size(), is(0));
+    }
+
+    @Test
     public void testRecoversFromInvalidState() {
         ManualFillingMediator mediator = mController.getMediatorForTesting();
 
