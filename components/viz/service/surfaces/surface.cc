@@ -46,6 +46,10 @@ Surface::~Surface() {
   UnrefFrameResourcesAndRunCallbacks(std::move(pending_frame_data_));
   UnrefFrameResourcesAndRunCallbacks(std::move(active_frame_data_));
 
+  // Remove this surface as an observer.
+  for (const FrameSinkId& sink_id : observed_sinks_)
+    surface_manager_->RemoveActivationObserver(sink_id, surface_info_.id());
+
   if (deadline_)
     deadline_->Cancel();
 
