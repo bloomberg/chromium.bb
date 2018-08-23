@@ -10,6 +10,8 @@ component("cpp") {
   sources = [
     "cors/cors.cc",
     "cors/cors.h",
+    "cors/origin_access_entry.cc",
+    "cors/origin_access_entry.h",
     "cors/preflight_cache.cc",
     "cors/preflight_cache.h",
     "cors/preflight_result.cc",
@@ -140,6 +142,7 @@ source_set("tests") {
 
   sources = [
     "cors/cors_unittest.cc",
+    "cors/origin_access_entry_unittest.cc",
     "cors/preflight_cache_unittest.cc",
     "cors/preflight_result_unittest.cc",
     "cross_thread_shared_url_loader_factory_info_unittest.cc",

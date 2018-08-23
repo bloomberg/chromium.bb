@@ -32,6 +32,7 @@
 #include <memory>
 
 #include "base/auto_reset.h"
+#include "base/optional.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -5059,7 +5060,7 @@ const OriginAccessEntry& Document::AccessEntryFromURL() {
   if (!access_entry_from_url_) {
     access_entry_from_url_ = std::make_unique<OriginAccessEntry>(
         Url().Protocol(), Url().Host(),
-        OriginAccessEntry::kAllowRegisterableDomains);
+        network::cors::OriginAccessEntry::kAllowRegisterableDomains);
   }
   return *access_entry_from_url_;
 }
@@ -5347,17 +5348,19 @@ void Document::setDomain(const String& raw_domain,
   // string "null". https://crbug.com/733150
   if (!RuntimeEnabledFeatures::NullableDocumentDomainEnabled() ||
       new_domain != "null") {
-    OriginAccessEntry access_entry(GetSecurityOrigin()->Protocol(), new_domain,
-                                   OriginAccessEntry::kAllowSubdomains);
-    OriginAccessEntry::MatchResult result =
+    OriginAccessEntry access_entry(
+        GetSecurityOrigin()->Protocol(), new_domain,
+        network::cors::OriginAccessEntry::kAllowSubdomains);
+    network::cors::OriginAccessEntry::MatchResult result =
         access_entry.MatchesOrigin(*GetSecurityOrigin());
-    if (result == OriginAccessEntry::kDoesNotMatchOrigin) {
+    if (result == network::cors::OriginAccessEntry::kDoesNotMatchOrigin) {
       exception_state.ThrowSecurityError(
           "'" + new_domain + "' is not a suffix of '" + domain() + "'.");
       return;
     }
 
-    if (result == OriginAccessEntry::kMatchesOriginButIsPublicSuffix) {
+    if (result ==
+        network::cors::OriginAccessEntry::kMatchesOriginButIsPublicSuffix) {
       exception_state.ThrowSecurityError("'" + new_domain +
                                          "' is a top-level domain.");
       return;
@@ -5442,12 +5445,16 @@ const KURL Document::SiteForCookies() const {
   // document's SecurityOrigin. A sandboxed document has a unique opaque
   // origin, but that shouldn't affect first-/third-party status for cookies
   // and site data.
+  base::Optional<OriginAccessEntry> remote_entry;
+  if (!top.IsLocalFrame()) {
+    remote_entry.emplace(
+        top_document_url.Protocol(), top_document_url.Host(),
+        network::cors::OriginAccessEntry::kAllowRegisterableDomains);
+  }
   const OriginAccessEntry& access_entry =
-      top.IsLocalFrame()
-          ? ToLocalFrame(top).GetDocument()->AccessEntryFromURL()
-          : OriginAccessEntry(top_document_url.Protocol(),
-                              top_document_url.Host(),
-                              OriginAccessEntry::kAllowRegisterableDomains);
+      remote_entry ? *remote_entry
+                   : ToLocalFrame(top).GetDocument()->AccessEntryFromURL();
+
   const Frame* current_frame = GetFrame();
   while (current_frame) {
     // Skip over srcdoc documents, as they are always same-origin with their
@@ -5458,11 +5465,10 @@ const KURL Document::SiteForCookies() const {
     DCHECK(current_frame);
 
     // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS
-    // login forms
-    // into HTTP pages; we should allow this kind of upgrade.
+    // login forms into HTTP pages; we should allow this kind of upgrade.
     if (access_entry.MatchesDomain(
             *current_frame->GetSecurityContext()->GetSecurityOrigin()) ==
-        OriginAccessEntry::kDoesNotMatchOrigin)
+        network::cors::OriginAccessEntry::kDoesNotMatchOrigin)
       return SecurityOrigin::UrlWithUniqueOpaqueOrigin();
 
     current_frame = current_frame->Tree().Parent();

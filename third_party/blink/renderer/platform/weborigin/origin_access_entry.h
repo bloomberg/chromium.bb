@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_ORIGIN_ACCESS_ENTRY_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WEBORIGIN_ORIGIN_ACCESS_ENTRY_H_
 
+#include "services/network/public/cpp/cors/origin_access_entry.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -39,66 +40,34 @@ namespace blink {
 
 class SecurityOrigin;
 
+// A class to wrap network::cors::OriginAccessEntry to use with Blink types.
 class PLATFORM_EXPORT OriginAccessEntry {
   USING_FAST_MALLOC(OriginAccessEntry);
 
  public:
-  enum SubdomainSetting {
-    // 'www.example.com' matches an OriginAccessEntry for 'example.com'
-    kAllowSubdomains,
-
-    // 'www.example.com' matches an OriginAccessEntry for 'not-www.example.com'
-    kAllowRegisterableDomains,
-
-    // 'www.example.com' does not match an OriginAccessEntry for 'example.com'
-    kDisallowSubdomains
-  };
-
-  enum MatchResult {
-    kMatchesOrigin,
-    kMatchesOriginButIsPublicSuffix,
-    kDoesNotMatchOrigin
-  };
-
-  // If host is empty string and SubdomainSetting is not DisallowSubdomains, the
-  // entry will match all domains in the specified protocol.
+  // If host is empty string and MatchMode is not DisallowSubdomains, the entry
+  // will match all domains in the specified protocol.
   // IPv6 addresses must include brackets (e.g.
   // '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
   OriginAccessEntry(const String& protocol,
                     const String& host,
-                    SubdomainSetting);
+                    network::cors::OriginAccessEntry::MatchMode);
+  OriginAccessEntry(OriginAccessEntry&& from);
 
   // 'matchesOrigin' requires a protocol match (e.g. 'http' != 'https').
   // 'matchesDomain' relaxes this constraint.
-  MatchResult MatchesOrigin(const SecurityOrigin&) const;
-  MatchResult MatchesDomain(const SecurityOrigin&) const;
+  network::cors::OriginAccessEntry::MatchResult MatchesOrigin(
+      const SecurityOrigin&) const;
+  network::cors::OriginAccessEntry::MatchResult MatchesDomain(
+      const SecurityOrigin&) const;
 
-  const String& Protocol() const { return protocol_; }
-  const String& Host() const { return host_; }
-  SubdomainSetting SubdomainSettings() const { return subdomain_settings_; }
-  bool HostIsIPAddress() const { return host_is_ip_address_; }
-  const String& Registerable() const { return registerable_domain_; }
+  bool HostIsIPAddress() const;
 
  private:
-  String protocol_;
-  String host_;
-  String registerable_domain_;
-  SubdomainSetting subdomain_settings_;
-  bool host_is_ip_address_;
-  bool host_is_public_suffix_;
+  network::cors::OriginAccessEntry private_;
+
+  DISALLOW_COPY_AND_ASSIGN(OriginAccessEntry);
 };
-
-PLATFORM_EXPORT inline bool operator==(const OriginAccessEntry& a,
-                                       const OriginAccessEntry& b) {
-  return EqualIgnoringASCIICase(a.Protocol(), b.Protocol()) &&
-         EqualIgnoringASCIICase(a.Host(), b.Host()) &&
-         a.SubdomainSettings() == b.SubdomainSettings();
-}
-
-PLATFORM_EXPORT inline bool operator!=(const OriginAccessEntry& a,
-                                       const OriginAccessEntry& b) {
-  return !(a == b);
-}
 
 }  // namespace blink
 

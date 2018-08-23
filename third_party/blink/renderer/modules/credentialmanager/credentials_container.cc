@@ -154,8 +154,9 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
 
   // TODO(crbug.com/803077): Avoid constructing an OriginAccessEntry just
   // for the IP address check.
-  OriginAccessEntry access_entry(origin->Protocol(), effective_domain,
-                                 blink::OriginAccessEntry::kAllowSubdomains);
+  OriginAccessEntry access_entry(
+      origin->Protocol(), effective_domain,
+      network::cors::OriginAccessEntry::MatchMode::kAllowSubdomains);
   if (effective_domain.IsEmpty() || access_entry.HostIsIPAddress()) {
     resolver->Reject(
         DOMException::Create(DOMExceptionCode::kSecurityError,
@@ -167,11 +168,12 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
   // https://w3c.github.io/webauthn/#CreateCred-DetermineRpId and
   // https://w3c.github.io/webauthn/#GetAssn-DetermineRpId.
   if (!relying_party_id.IsNull()) {
-    OriginAccessEntry access_entry(origin->Protocol(), relying_party_id,
-                                   blink::OriginAccessEntry::kAllowSubdomains);
+    OriginAccessEntry access_entry(
+        origin->Protocol(), relying_party_id,
+        network::cors::OriginAccessEntry::kAllowSubdomains);
     if (relying_party_id.IsEmpty() ||
         access_entry.MatchesDomain(*origin) !=
-            blink::OriginAccessEntry::kMatchesOrigin) {
+            network::cors::OriginAccessEntry::kMatchesOrigin) {
       resolver->Reject(DOMException::Create(
           DOMExceptionCode::kSecurityError,
           "The relying party ID '" + relying_party_id +

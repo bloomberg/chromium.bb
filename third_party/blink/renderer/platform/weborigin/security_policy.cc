@@ -85,8 +85,9 @@ static void AddOriginAccessEntry(const SecurityOrigin& source_origin,
   OriginAccessList* list = result.stored_value->value.get();
   list->push_back(OriginAccessEntry(
       destination_protocol, destination_domain,
-      allow_destination_subdomains ? OriginAccessEntry::kAllowSubdomains
-                                   : OriginAccessEntry::kDisallowSubdomains));
+      allow_destination_subdomains
+          ? network::cors::OriginAccessEntry::kAllowSubdomains
+          : network::cors::OriginAccessEntry::kDisallowSubdomains));
 }
 
 static void RemoveAllOriginAccessEntriesForOrigin(
@@ -106,7 +107,7 @@ static bool IsOriginPairInAccessMap(const SecurityOrigin* active_origin,
   if (OriginAccessList* list = access_map.at(active_origin->ToString())) {
     for (size_t i = 0; i < list->size(); ++i) {
       if (list->at(i).MatchesOrigin(*target_origin) !=
-          OriginAccessEntry::kDoesNotMatchOrigin)
+          network::cors::OriginAccessEntry::kDoesNotMatchOrigin)
         return true;
     }
   }
