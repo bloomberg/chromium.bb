@@ -153,7 +153,7 @@ class DiceResponseHandlerTest : public testing::Test,
         &token_service_, &signin_manager_, &signin_client_, nullptr,
         std::move(account_reconcilor_delegate));
     about_signin_internals_.Initialize(&signin_client_);
-    account_tracker_service_.Initialize(&signin_client_);
+    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
     account_reconcilor_->AddObserver(this);
   }
 

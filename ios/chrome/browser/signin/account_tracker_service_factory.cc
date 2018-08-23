@@ -10,7 +10,6 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/signin/signin_client_factory.h"
 
 namespace ios {
 
@@ -18,7 +17,6 @@ AccountTrackerServiceFactory::AccountTrackerServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "AccountTrackerService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(SigninClientFactory::GetInstance());
 }
 
 AccountTrackerServiceFactory::~AccountTrackerServiceFactory() {}
@@ -46,8 +44,7 @@ AccountTrackerServiceFactory::BuildServiceInstanceFor(
   ios::ChromeBrowserState* chrome_browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
   std::unique_ptr<AccountTrackerService> service(new AccountTrackerService());
-  service->Initialize(
-      SigninClientFactory::GetForBrowserState(chrome_browser_state));
+  service->Initialize(chrome_browser_state->GetPrefs(), base::FilePath());
   return service;
 }
 

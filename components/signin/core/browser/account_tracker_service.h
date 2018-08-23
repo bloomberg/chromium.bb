@@ -22,7 +22,6 @@
 #include "ui/gfx/image/image.h"
 
 class PrefService;
-class SigninClient;
 
 namespace base {
 class DictionaryValue;
@@ -89,13 +88,10 @@ class AccountTrackerService : public KeyedService {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // Take a SigninClient rather than a PrefService and a URLRequestContextGetter
-  // since RequestContext cannot be created at startup.
-  // (see http://crbug.com/171406)
-  // If |user_data_dir| is empty, images will not be saved to or loaded from
-  // disk.
-  void Initialize(SigninClient* signin_client,
-                  const base::FilePath& user_data_dir = base::FilePath());
+  // Initializes the list of accounts from |pref_service| and load images from
+  // |user_data_dir|. If |user_data_dir| is empty, images will not be saved to
+  // nor loaded from disk.
+  void Initialize(PrefService* pref_service, base::FilePath user_data_dir);
 
   // Returns the list of known accounts and for which gaia IDs
   // have been fetched.
@@ -186,7 +182,7 @@ class AccountTrackerService : public KeyedService {
   void MigrateToGaiaId();
   void SetMigrationState(AccountIdMigrationState state);
 
-  SigninClient* signin_client_;  // Not owned.
+  PrefService* pref_service_ = nullptr;  // Not owned.
   std::map<std::string, AccountState> accounts_;
   base::ObserverList<Observer>::Unchecked observer_list_;
 

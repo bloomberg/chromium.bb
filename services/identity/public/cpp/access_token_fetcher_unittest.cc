@@ -49,7 +49,7 @@ class AccessTokenFetcherTest : public testing::Test,
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
 
     account_tracker_ = std::make_unique<AccountTrackerService>();
-    account_tracker_->Initialize(&signin_client_);
+    account_tracker_->Initialize(&pref_service_, base::FilePath());
 
     token_service_.AddDiagnosticsObserver(this);
   }

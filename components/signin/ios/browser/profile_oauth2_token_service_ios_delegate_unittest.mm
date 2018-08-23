@@ -53,7 +53,7 @@ class ProfileOAuth2TokenServiceIOSDelegateTest
     prefs_.registry()->RegisterIntegerPref(
         prefs::kAccountIdMigrationState,
         AccountTrackerService::MIGRATION_NOT_STARTED);
-    account_tracker_.Initialize(&client_);
+    account_tracker_.Initialize(&prefs_, base::FilePath());
 
     prefs_.registry()->RegisterBooleanPref(
         prefs::kTokenServiceExcludeAllSecondaryAccounts, false);

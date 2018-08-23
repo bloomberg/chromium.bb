@@ -271,7 +271,7 @@ ProfileSyncServiceBundle::ProfileSyncServiceBundle()
           base::ThreadTaskRunnerHandle::Get())) {
   RegisterPrefsForProfileSyncService(pref_service_.registry());
   auth_service_.set_auto_post_fetch_response_on_message_loop(true);
-  account_tracker_.Initialize(&signin_client_);
+  account_tracker_.Initialize(&pref_service_, base::FilePath());
   signin_manager_.Initialize(&pref_service_);
   local_session_event_router_ = std::make_unique<DummyRouter>();
   ON_CALL(sync_sessions_client_, GetLocalSessionEventRouter())

@@ -79,7 +79,7 @@ IdentityTestEnvironmentInternal::IdentityTestEnvironmentInternal()
   SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
   SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
-  account_tracker_.Initialize(&signin_client_);
+  account_tracker_.Initialize(&pref_service_, base::FilePath());
 
   identity_manager_.reset(new IdentityManager(&signin_manager_, &token_service_,
                                               &account_tracker_,

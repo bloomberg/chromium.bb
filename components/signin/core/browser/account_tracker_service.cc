@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "components/signin/core/browser/signin_client.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
@@ -104,8 +103,7 @@ const char AccountTrackerService::kNoPictureURLFound[] = "NO_PICTURE_URL";
 const char AccountTrackerService::kAccountsFolder[] = "Accounts";
 const char AccountTrackerService::kAvatarImagesFolder[] = "Avatar Images";
 
-AccountTrackerService::AccountTrackerService()
-    : signin_client_(nullptr), weak_factory_(this) {}
+AccountTrackerService::AccountTrackerService() : weak_factory_(this) {}
 
 AccountTrackerService::~AccountTrackerService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -119,13 +117,13 @@ void AccountTrackerService::RegisterPrefs(
                                 AccountTrackerService::MIGRATION_NOT_STARTED);
 }
 
-void AccountTrackerService::Initialize(SigninClient* signin_client,
-                                       const base::FilePath& user_data_dir) {
-  DCHECK(signin_client);
-  DCHECK(!signin_client_);
-  signin_client_ = signin_client;
+void AccountTrackerService::Initialize(PrefService* pref_service,
+                                       base::FilePath user_data_dir) {
+  DCHECK(pref_service);
+  DCHECK(!pref_service_);
+  pref_service_ = pref_service;
   LoadFromPrefs();
-  user_data_dir_ = user_data_dir;
+  user_data_dir_ = std::move(user_data_dir);
   if (!user_data_dir_.empty()) {
     // |image_storage_task_runner_| is a sequenced runner because we want to
     // avoid read and write operations to the same file at the same time.
@@ -137,7 +135,7 @@ void AccountTrackerService::Initialize(SigninClient* signin_client,
 }
 
 void AccountTrackerService::Shutdown() {
-  signin_client_ = nullptr;
+  pref_service_ = nullptr;
   accounts_.clear();
 }
 
@@ -212,12 +210,11 @@ gfx::Image AccountTrackerService::GetAccountImage(
 
 AccountTrackerService::AccountIdMigrationState
 AccountTrackerService::GetMigrationState() const {
-  return GetMigrationState(signin_client_->GetPrefs());
+  return GetMigrationState(pref_service_);
 }
 
 void AccountTrackerService::SetMigrationState(AccountIdMigrationState state) {
-  signin_client_->GetPrefs()->SetInteger(prefs::kAccountIdMigrationState,
-                                         state);
+  pref_service_->SetInteger(prefs::kAccountIdMigrationState, state);
 }
 
 void AccountTrackerService::SetMigrationDone() {
@@ -450,8 +447,7 @@ void AccountTrackerService::RemoveAccountImageFromDisk(
 }
 
 void AccountTrackerService::LoadFromPrefs() {
-  const base::ListValue* list =
-      signin_client_->GetPrefs()->GetList(kAccountInfoPref);
+  const base::ListValue* list = pref_service_->GetList(kAccountInfoPref);
   std::set<std::string> to_remove;
   bool contains_deprecated_service_flags = false;
   for (size_t i = 0; i < list->GetSize(); ++i) {
@@ -518,7 +514,7 @@ void AccountTrackerService::LoadFromPrefs() {
   }
 
   if (contains_deprecated_service_flags)
-    RemoveDeprecatedServiceFlags(signin_client_->GetPrefs());
+    RemoveDeprecatedServiceFlags(pref_service_);
 
   // Remove any obsolete prefs.
   for (auto account_id : to_remove) {
@@ -541,12 +537,12 @@ void AccountTrackerService::LoadFromPrefs() {
 }
 
 void AccountTrackerService::SaveToPrefs(const AccountState& state) {
-  if (!signin_client_->GetPrefs())
+  if (!pref_service_)
     return;
 
   base::DictionaryValue* dict = nullptr;
   base::string16 account_id_16 = base::UTF8ToUTF16(state.info.account_id);
-  ListPrefUpdate update(signin_client_->GetPrefs(), kAccountInfoPref);
+  ListPrefUpdate update(pref_service_, kAccountInfoPref);
   for (size_t i = 0; i < update->GetSize(); ++i, dict = nullptr) {
     if (update->GetDictionary(i, &dict)) {
       base::string16 value;
@@ -576,11 +572,11 @@ void AccountTrackerService::SaveToPrefs(const AccountState& state) {
 }
 
 void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
-  if (!signin_client_->GetPrefs())
+  if (!pref_service_)
     return;
 
   base::string16 account_id_16 = base::UTF8ToUTF16(state.info.account_id);
-  ListPrefUpdate update(signin_client_->GetPrefs(), kAccountInfoPref);
+  ListPrefUpdate update(pref_service_, kAccountInfoPref);
   for(size_t i = 0; i < update->GetSize(); ++i) {
     base::DictionaryValue* dict = nullptr;
     if (update->GetDictionary(i, &dict)) {
@@ -596,7 +592,7 @@ void AccountTrackerService::RemoveFromPrefs(const AccountState& state) {
 std::string AccountTrackerService::PickAccountIdForAccount(
     const std::string& gaia,
     const std::string& email) const {
-  return PickAccountIdForAccount(signin_client_->GetPrefs(), gaia, email);
+  return PickAccountIdForAccount(pref_service_, gaia, email);
 }
 
 // static

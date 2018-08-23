@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 
@@ -15,7 +14,6 @@ AccountTrackerServiceFactory::AccountTrackerServiceFactory()
     : BrowserContextKeyedServiceFactory(
         "AccountTrackerServiceFactory",
         BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(ChromeSigninClientFactory::GetInstance());
 }
 
 AccountTrackerServiceFactory::~AccountTrackerServiceFactory() {
@@ -42,7 +40,6 @@ KeyedService* AccountTrackerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = static_cast<Profile*>(context);
   AccountTrackerService* service = new AccountTrackerService();
-  service->Initialize(ChromeSigninClientFactory::GetForProfile(profile),
-                      profile->GetPath());
+  service->Initialize(profile->GetPrefs(), profile->GetPath());
   return service;
 }

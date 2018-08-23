@@ -323,7 +323,7 @@ AccountReconcilorTest::AccountReconcilorTest()
       GaiaUrls::GetInstance()->GetCheckConnectionInfoURLWithSource(
           GaiaConstants::kChromeSource);
 
-  account_tracker_.Initialize(&test_signin_client_);
+  account_tracker_.Initialize(&pref_service_, base::FilePath());
   cookie_manager_service_.SetListAccountsResponseHttpNotFound();
   signin_manager_.Initialize(nullptr);
 

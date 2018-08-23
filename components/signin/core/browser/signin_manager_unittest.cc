@@ -90,7 +90,7 @@ class SigninManagerTest : public testing::Test {
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
     SigninManagerBase::RegisterProfilePrefs(user_prefs_.registry());
     SigninManagerBase::RegisterPrefs(local_state_.registry());
-    account_tracker_.Initialize(&test_signin_client_);
+    account_tracker_.Initialize(&user_prefs_, base::FilePath());
     account_fetcher_.Initialize(&test_signin_client_, &token_service_,
                                 &account_tracker_,
                                 std::make_unique<TestImageDecoder>());
@@ -112,6 +112,7 @@ class SigninManagerTest : public testing::Test {
 
   AccountTrackerService* account_tracker() { return &account_tracker_; }
   FakeAccountFetcherService* account_fetcher() { return &account_fetcher_; }
+  PrefService* prefs() { return &user_prefs_; }
 
   // Seed the account tracker with information from logged in user.  Normally
   // this is done by UI code before calling SigninManager.  Returns the string
@@ -513,7 +514,7 @@ TEST_F(SigninManagerTest, GaiaIdMigration) {
     update->Append(std::move(dict));
 
     account_tracker()->Shutdown();
-    account_tracker()->Initialize(signin_client());
+    account_tracker()->Initialize(prefs(), base::FilePath());
 
     client_prefs->SetString(prefs::kGoogleServicesAccountId, email);
 
@@ -543,7 +544,7 @@ TEST_F(SigninManagerTest, VeryOldProfileGaiaIdMigration) {
     update->Append(std::move(dict));
 
     account_tracker()->Shutdown();
-    account_tracker()->Initialize(signin_client());
+    account_tracker()->Initialize(prefs(), base::FilePath());
 
     client_prefs->ClearPref(prefs::kGoogleServicesAccountId);
     client_prefs->SetString(prefs::kGoogleServicesUsername, email);
@@ -573,7 +574,7 @@ TEST_F(SigninManagerTest, GaiaIdMigrationCrashInTheMiddle) {
     update->Append(std::move(dict));
 
     account_tracker()->Shutdown();
-    account_tracker()->Initialize(signin_client());
+    account_tracker()->Initialize(prefs(), base::FilePath());
 
     client_prefs->SetString(prefs::kGoogleServicesAccountId, gaia_id);
 

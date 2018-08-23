@@ -104,7 +104,7 @@ class IdentityManagerImplTest : public service_manager::test::ServiceTest {
     SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
     SigninManagerBase::RegisterPrefs(pref_service_.registry());
 
-    account_tracker_.Initialize(&signin_client_);
+    account_tracker_.Initialize(&pref_service_, base::FilePath());
   }
 
   void TearDown() override {

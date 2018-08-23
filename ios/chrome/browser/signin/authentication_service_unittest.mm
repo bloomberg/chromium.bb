@@ -565,8 +565,7 @@ TEST_F(AuthenticationServiceTest, MigrateAccountsStoredInPref) {
   // Migrate the accounts (this actually requires a shutdown and re-initialize
   // of the account tracker).
   account_tracker->Shutdown();
-  account_tracker->Initialize(
-      SigninClientFactory::GetForBrowserState(browser_state_.get()));
+  account_tracker->Initialize(browser_state_->GetPrefs(), base::FilePath());
   account_tracker->SetMigrationDone();
 
   // Actually migrate the accounts in prefs.

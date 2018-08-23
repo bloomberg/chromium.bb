@@ -110,7 +110,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     client_->test_url_loader_factory()->AddResponse(
         GaiaUrls::GetInstance()->oauth2_revoke_url().spec(), "");
     LoadTokenDatabase();
-    account_tracker_service_.Initialize(client_.get());
+    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
   }
 
   void TearDown() override {
@@ -1045,7 +1045,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GaiaIdMigration) {
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id));
     update->Append(std::move(dict));
     account_tracker_service_.Shutdown();
-    account_tracker_service_.Initialize(client_.get());
+    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
 
     AddAuthTokenManually("AccountId-" + email, "refresh_token");
     oauth2_service_delegate_->LoadCredentials(gaia_id);
@@ -1108,7 +1108,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
     dict->SetString("gaia", base::UTF8ToUTF16(gaia_id2));
     update->Append(std::move(dict));
     account_tracker_service_.Shutdown();
-    account_tracker_service_.Initialize(client_.get());
+    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
 
     AddAuthTokenManually("AccountId-" + email1, "refresh_token");
     AddAuthTokenManually("AccountId-" + email2, "refresh_token");
