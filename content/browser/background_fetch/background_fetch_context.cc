@@ -168,11 +168,14 @@ void BackgroundFetchContext::GetPermissionForOrigin(
     GetPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  ResourceRequestInfo::WebContentsGetter wc_getter =
-      render_frame_host
-          ? base::BindRepeating(&WebContents::FromFrameTreeNodeId,
-                                render_frame_host->GetFrameTreeNodeId())
-          : base::NullCallback();
+  ResourceRequestInfo::WebContentsGetter wc_getter = base::NullCallback();
+
+  // Permissions need to go through the DownloadRequestLimiter if the fetch
+  // is started from a top-level frame.
+  if (render_frame_host && !render_frame_host->GetParent()) {
+    wc_getter = base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                                    render_frame_host->GetFrameTreeNodeId());
+  }
 
   delegate_proxy_.GetPermissionForOrigin(origin, std::move(wc_getter),
                                          std::move(callback));

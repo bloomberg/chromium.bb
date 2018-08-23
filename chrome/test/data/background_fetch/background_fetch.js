@@ -139,3 +139,9 @@ function StartFetchFromServiceWorker() {
     navigator.serviceWorker.controller.postMessage('fetch');
   });
 }
+
+function StartFetchFromIframe() {
+  const iframe = document.createElement('iframe');
+  iframe.src = '/background_fetch/background_fetch_iframe.html';
+  document.body.appendChild(iframe);
+}

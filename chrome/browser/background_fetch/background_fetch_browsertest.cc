@@ -580,3 +580,23 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromServiceWorker) {
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "StartFetchFromServiceWorker()", "permissionerror"));
 }
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       FetchFromChildFrameWithPermissions) {
+  // Give the needed permissions.
+  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+                CONTENT_SETTING_ALLOW);
+  SetPermission(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, CONTENT_SETTING_ALLOW);
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "StartFetchFromIframe()", "backgroundfetchsuccess"));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       FetchFromChildFrameWithMissingPermissions) {
+  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+                CONTENT_SETTING_ALLOW);
+  // Revoke Background Sync permission.
+  SetPermission(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, CONTENT_SETTING_BLOCK);
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "StartFetchFromIframe()", "permissionerror"));
+}
