@@ -17,6 +17,28 @@ ExtensionsBrowserClient* g_extension_browser_client = NULL;
 
 }  // namespace
 
+ExtensionsBrowserClient::ExtensionsBrowserClient() {}
+ExtensionsBrowserClient::~ExtensionsBrowserClient() = default;
+
+ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
+  return g_extension_browser_client;
+}
+
+void ExtensionsBrowserClient::Set(ExtensionsBrowserClient* client) {
+  g_extension_browser_client = client;
+}
+
+void ExtensionsBrowserClient::RegisterExtensionFunctions(
+    ExtensionFunctionRegistry* registry) {
+  for (const auto& provider : providers_)
+    provider->RegisterExtensionFunctions(registry);
+}
+
+void ExtensionsBrowserClient::AddAPIProvider(
+    std::unique_ptr<ExtensionsBrowserAPIProvider> provider) {
+  providers_.push_back(std::move(provider));
+}
+
 scoped_refptr<update_client::UpdateClient>
 ExtensionsBrowserClient::CreateUpdateClient(content::BrowserContext* context) {
   return scoped_refptr<update_client::UpdateClient>(nullptr);
@@ -69,14 +91,6 @@ bool ExtensionsBrowserClient::IsExtensionEnabled(
 bool ExtensionsBrowserClient::IsWebUIAllowedToMakeNetworkRequests(
     const url::Origin& origin) {
   return false;
-}
-
-ExtensionsBrowserClient* ExtensionsBrowserClient::Get() {
-  return g_extension_browser_client;
-}
-
-void ExtensionsBrowserClient::Set(ExtensionsBrowserClient* client) {
-  g_extension_browser_client = client;
 }
 
 }  // namespace extensions

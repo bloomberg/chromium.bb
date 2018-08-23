@@ -15,13 +15,12 @@
 #include "chrome/browser/extensions/activity_log/activity_log.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
-#include "chrome/browser/extensions/api/generated_api_registration.h"
-#include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 #include "chrome/browser/extensions/chrome_extension_api_frame_id_map_helper.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
+#include "chrome/browser/extensions/chrome_extensions_browser_api_provider.h"
 #include "chrome/browser/extensions/chrome_extensions_interface_registration.h"
 #include "chrome/browser/extensions/chrome_kiosk_delegate.h"
 #include "chrome/browser/extensions/chrome_process_manager_delegate.h"
@@ -51,8 +50,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
-#include "extensions/browser/api/generated_api_registration.h"
-#include "extensions/browser/extension_function_registry.h"
+#include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
@@ -88,6 +86,9 @@ bool ExtensionsDisabled(const base::CommandLine& command_line) {
 }  // namespace
 
 ChromeExtensionsBrowserClient::ChromeExtensionsBrowserClient() {
+  AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
+  AddAPIProvider(std::make_unique<ChromeExtensionsBrowserAPIProvider>());
+
   process_manager_delegate_.reset(new ChromeProcessManagerDelegate);
   api_client_.reset(new ChromeExtensionsAPIClient);
   SetCurrentChannel(chrome::GetChannel());
@@ -322,20 +323,6 @@ bool ChromeExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
 ExtensionSystemProvider*
 ChromeExtensionsBrowserClient::GetExtensionSystemFactory() {
   return ExtensionSystemFactory::GetInstance();
-}
-
-void ChromeExtensionsBrowserClient::RegisterExtensionFunctions(
-    ExtensionFunctionRegistry* registry) const {
-  // Preferences.
-  registry->RegisterFunction<GetPreferenceFunction>();
-  registry->RegisterFunction<SetPreferenceFunction>();
-  registry->RegisterFunction<ClearPreferenceFunction>();
-
-  // Generated APIs from lower-level modules.
-  api::GeneratedFunctionRegistry::RegisterAll(registry);
-
-  // Generated APIs from Chrome.
-  api::ChromeGeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 void ChromeExtensionsBrowserClient::RegisterExtensionInterfaces(

@@ -14,21 +14,20 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/api/extensions_api_client.h"
-#include "extensions/browser/api/generated_api_registration.h"
+#include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/mojo/interface_registration.h"
 #include "extensions/browser/null_app_sorting.h"
 #include "extensions/browser/updater/null_extension_cache.h"
 #include "extensions/browser/url_request_util.h"
 #include "extensions/common/features/feature_channel.h"
-#include "extensions/shell/browser/api/generated_api_registration.h"
 #include "extensions/shell/browser/api/runtime/shell_runtime_api_delegate.h"
 #include "extensions/shell/browser/delegates/shell_kiosk_delegate.h"
 #include "extensions/shell/browser/shell_extension_host_delegate.h"
 #include "extensions/shell/browser/shell_extension_system_factory.h"
 #include "extensions/shell/browser/shell_extension_web_contents_observer.h"
 #include "extensions/shell/browser/shell_extensions_api_client.h"
+#include "extensions/shell/browser/shell_extensions_browser_api_provider.h"
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 
 #if defined(OS_CHROMEOS)
@@ -46,6 +45,9 @@ ShellExtensionsBrowserClient::ShellExtensionsBrowserClient()
   // app_shell does not have a concept of channel yet, so leave UNKNOWN to
   // enable all channel-dependent extension APIs.
   SetCurrentChannel(version_info::Channel::UNKNOWN);
+
+  AddAPIProvider(std::make_unique<CoreExtensionsBrowserAPIProvider>());
+  AddAPIProvider(std::make_unique<ShellExtensionsBrowserAPIProvider>());
 }
 
 ShellExtensionsBrowserClient::~ShellExtensionsBrowserClient() {
@@ -211,15 +213,6 @@ bool ShellExtensionsBrowserClient::IsLoggedInAsPublicAccount() {
 ExtensionSystemProvider*
 ShellExtensionsBrowserClient::GetExtensionSystemFactory() {
   return ShellExtensionSystemFactory::GetInstance();
-}
-
-void ShellExtensionsBrowserClient::RegisterExtensionFunctions(
-    ExtensionFunctionRegistry* registry) const {
-  // Register core extension-system APIs.
-  api::GeneratedFunctionRegistry::RegisterAll(registry);
-
-  // app_shell-only APIs.
-  shell::api::ShellGeneratedFunctionRegistry::RegisterAll(registry);
 }
 
 void ShellExtensionsBrowserClient::RegisterExtensionInterfaces(

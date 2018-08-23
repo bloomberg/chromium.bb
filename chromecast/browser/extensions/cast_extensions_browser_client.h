@@ -88,8 +88,6 @@ class CastExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsAppModeForcedForApp(const ExtensionId& id) override;
   bool IsLoggedInAsPublicAccount() override;
   ExtensionSystemProvider* GetExtensionSystemFactory() override;
-  void RegisterExtensionFunctions(
-      ExtensionFunctionRegistry* registry) const override;
   void RegisterExtensionInterfaces(service_manager::BinderRegistryWithArgs<
                                        content::RenderFrameHost*>* registry,
                                    content::RenderFrameHost* render_frame_host,

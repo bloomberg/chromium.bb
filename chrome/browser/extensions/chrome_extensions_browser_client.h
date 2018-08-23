@@ -105,8 +105,6 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
   bool IsAppModeForcedForApp(const ExtensionId& extension_id) override;
   bool IsLoggedInAsPublicAccount() override;
   ExtensionSystemProvider* GetExtensionSystemFactory() override;
-  void RegisterExtensionFunctions(
-      ExtensionFunctionRegistry* registry) const override;
   void RegisterExtensionInterfaces(service_manager::BinderRegistryWithArgs<
                                        content::RenderFrameHost*>* registry,
                                    content::RenderFrameHost* render_frame_host,

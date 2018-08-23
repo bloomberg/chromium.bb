@@ -5,7 +5,6 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 
 #include "base/lazy_instance.h"
-#include "chrome/browser/extensions/api/content_settings/content_settings_store.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_scope.h"
 #include "extensions/browser/pref_names.h"

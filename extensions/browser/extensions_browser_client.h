@@ -15,6 +15,7 @@
 #include "content/public/common/resource_type.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_prefs_observer.h"
+#include "extensions/browser/extensions_browser_api_provider.h"
 #include "extensions/common/extension_id.h"
 #include "extensions/common/view_type.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -76,7 +77,23 @@ class RuntimeAPIDelegate;
 // they are only used in the browser process.
 class ExtensionsBrowserClient {
  public:
-  virtual ~ExtensionsBrowserClient() {}
+  ExtensionsBrowserClient();
+  virtual ~ExtensionsBrowserClient();
+
+  // Returns the single instance of |this|.
+  static ExtensionsBrowserClient* Get();
+
+  // Sets and initializes the single instance.
+  static void Set(ExtensionsBrowserClient* client);
+
+  // Registers all extension functions.
+  void RegisterExtensionFunctions(ExtensionFunctionRegistry* registry);
+
+  // Adds a new API provider to the client.
+  void AddAPIProvider(std::unique_ptr<ExtensionsBrowserAPIProvider> provider);
+
+  /////////////////////////////////////////////////////////////////////////////
+  // Virtual Methods
 
   // Returns true if the embedder has started shutting down.
   virtual bool IsShuttingDown() = 0;
@@ -218,10 +235,6 @@ class ExtensionsBrowserClient {
   // ExtensionSystem::Get.
   virtual ExtensionSystemProvider* GetExtensionSystemFactory() = 0;
 
-  // Registers extension functions not belonging to the core extensions APIs.
-  virtual void RegisterExtensionFunctions(
-      ExtensionFunctionRegistry* registry) const = 0;
-
   // Registers additional interfaces to expose to a RenderFrame.
   virtual void RegisterExtensionInterfaces(
       service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
@@ -334,11 +347,10 @@ class ExtensionsBrowserClient {
   // code instead.
   virtual bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin);
 
-  // Returns the single instance of |this|.
-  static ExtensionsBrowserClient* Get();
+ private:
+  std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;
 
-  // Initialize the single instance.
-  static void Set(ExtensionsBrowserClient* client);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionsBrowserClient);
 };
 
 }  // namespace extensions
