@@ -140,11 +140,23 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
   base::AutoReset<bool> processing_changes(&is_processing_sync_changes_, true);
   syncer::SyncMergeResult merge_result(type);
 
-  // On MacOS it may happen that some passwords cannot be decrypted due to
-  // modification of encryption key in Keychain (https://crbug.com/730625).
-  // Delete those logins from the store, they should be automatically updated
-  // with Sync data.
-  if (base::FeatureList::IsEnabled(features::kDeleteUndecryptableLogins)) {
+  // We add all the db entries as |new_local_entries| initially. During model
+  // association entries that match a sync entry will be removed and this list
+  // will only contain entries that are not in sync.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries;
+  PasswordEntryMap new_local_entries;
+  if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
+    if (!base::FeatureList::IsEnabled(features::kDeleteUndecryptableLogins)) {
+      merge_result.set_error(sync_error_factory->CreateAndUploadError(
+          FROM_HERE, "Failed to get passwords from store."));
+      metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
+      return merge_result;
+    }
+
+    // On MacOS it may happen that some passwords cannot be decrypted due to
+    // modification of encryption key in Keychain (https://crbug.com/730625).
+    // Delete those logins from the store, they should be automatically updated
+    // with Sync data.
     DatabaseCleanupResult cleanup_result =
         password_store_->DeleteUndecryptableLogins();
 
@@ -163,18 +175,17 @@ syncer::SyncMergeResult PasswordSyncableService::MergeDataAndStartSyncing(
           metrics_util::NOT_SYNCING_FAILED_CLEANUP);
       return merge_result;
     }
-  }
 
-  // We add all the db entries as |new_local_entries| initially. During model
-  // association entries that match a sync entry will be removed and this list
-  // will only contain entries that are not in sync.
-  std::vector<std::unique_ptr<autofill::PasswordForm>> password_entries;
-  PasswordEntryMap new_local_entries;
-  if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
-    merge_result.set_error(sync_error_factory->CreateAndUploadError(
-        FROM_HERE, "Failed to get passwords from store."));
-    metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
-    return merge_result;
+    // Try to read all entries again. If deletion of passwords which couldn't
+    // be deleted didn't help, return an error.
+    password_entries.clear();
+    new_local_entries.clear();
+    if (!ReadFromPasswordStore(&password_entries, &new_local_entries)) {
+      merge_result.set_error(sync_error_factory->CreateAndUploadError(
+          FROM_HERE, "Failed to get passwords from store."));
+      metrics_util::LogPasswordSyncState(metrics_util::NOT_SYNCING_FAILED_READ);
+      return merge_result;
+    }
   }
 
   if (password_entries.size() != new_local_entries.size()) {
