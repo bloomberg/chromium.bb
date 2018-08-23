@@ -1346,7 +1346,6 @@ bool PrintRenderFrameHelper::FinalizePrintReadyDocument() {
   preview_params.document_cookie = print_pages_params_->params.document_cookie;
   preview_params.expected_pages_count =
       print_preview_context_.total_page_count();
-  preview_params.modifiable = print_preview_context_.IsModifiable();
 
   PrintHostMsg_PreviewIds ids(print_pages_params_->params.preview_request_id,
                               print_pages_params_->params.preview_ui_id);
