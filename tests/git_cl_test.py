@@ -1327,7 +1327,7 @@ class TestGitCl(TestCase):
     if squash:
       calls += [
           (('AddReviewers',
-            'chromium-review.googlesource.com', '123456',
+            'chromium-review.googlesource.com', 'my%2Frepo~123456',
             sorted(reviewers),
             ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
             cc, notify), ''),
@@ -1351,7 +1351,7 @@ class TestGitCl(TestCase):
           }),
         (('SetReview',
           'chromium-review.googlesource.com',
-          '123456',
+          'my%2Frepo~123456',
           'Self-approving for TBR',
           {'Code-Review': 2}, None), ''),
       ]
@@ -3449,6 +3449,17 @@ class TestGitCl(TestCase):
     cl = git_cl.Changelist(codereview='gerrit', issue=1)
     self.assertEqual(cl.GetRemoteUrl(), url)
     self.assertEqual(cl.GetRemoteUrl(), url)  # Must be cached.
+
+  def test_gerrit_project_detection(self):
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       'https://chromium.googlesource.com/a/my/repo.git/'),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    self.assertEqual(cl._GetGerritProject(), 'my/repo')
 
 
 if __name__ == '__main__':

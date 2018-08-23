@@ -2412,6 +2412,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     project = urlparse.urlparse(remote_url).path.strip('/')
     if project.endswith('.git'):
       project = project[:-len('.git')]
+    # *.googlesource.com hosts ensure that Git/Gerrit projects don't start with
+    # 'a/' prefix, because 'a/' prefix is used to force authentication in
+    # gitiles/git-over-https protocol. E.g.,
+    # https://chromium.googlesource.com/a/v8/v8 refers to the same repo/project
+    # as
+    # https://chromium.googlesource.com/v8/v8
+    if project.startswith('a/'):
+      project = project[len('a/'):]
     return project
 
   def _GerritChangeIdentifier(self):
@@ -2419,10 +2427,8 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
 
     Not to be confused by value of "Change-Id:" footer.
     """
-    # TODO(tandrii): undo this once a fix is in place for crbug/876964.
-    # return gerrit_util.ChangeIdentifier(
-    #     self._GetGerritProject(), self.GetIssue())
-    return str(self.GetIssue())
+    return gerrit_util.ChangeIdentifier(
+        self._GetGerritProject(), self.GetIssue())
 
   @classmethod
   def IssueConfigKey(cls):
