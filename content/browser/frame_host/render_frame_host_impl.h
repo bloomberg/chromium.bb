@@ -850,6 +850,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
                            SwapOutACKArrivesPriorToProcessShutdownRequest);
   FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
                            AttemptDuplicateRenderViewHost);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           FullscreenAfterFrameSwap);
 
   class DroppedInterfaceRequestLogger;
 

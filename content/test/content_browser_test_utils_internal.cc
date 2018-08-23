@@ -456,4 +456,13 @@ void ShowWidgetMessageFilter::OnShowWidgetOnUI(int route_id,
   message_loop_runner_->Quit();
 }
 
+SwapoutACKMessageFilter::SwapoutACKMessageFilter()
+    : BrowserMessageFilter(FrameMsgStart) {}
+
+SwapoutACKMessageFilter::~SwapoutACKMessageFilter() {}
+
+bool SwapoutACKMessageFilter::OnMessageReceived(const IPC::Message& message) {
+  return message.type() == FrameHostMsg_SwapOut_ACK::ID;
+}
+
 }  // namespace content
