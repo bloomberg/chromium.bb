@@ -24,6 +24,7 @@ class MockPaymentRequestDelegate : public PaymentRequestDelegate {
   MockPaymentRequestDelegate() {}
   ~MockPaymentRequestDelegate() override {}
   MOCK_METHOD1(ShowDialog, void(PaymentRequest* request));
+  MOCK_METHOD0(RetryDialog, void());
   MOCK_METHOD0(CloseDialog, void());
   MOCK_METHOD0(ShowErrorMessage, void());
   MOCK_METHOD0(ShowProcessingSpinner, void());

@@ -14,6 +14,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_options_provider.h"
 #include "third_party/blink/public/platform/modules/payments/payment_request.mojom.h"
@@ -40,6 +41,7 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
     NONE,
     SHIPPING_OPTION,
     SHIPPING_ADDRESS,
+    RETRY,
   };
 
   // Any class call add itself as Observer via AddObserver() and receive
@@ -68,6 +70,25 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // Called when the merchant has new PaymentDetails. Will recompute every spec
   // state that depends on |details|.
   void UpdateWith(mojom::PaymentDetailsPtr details);
+
+  // Called when the merchant calls updateWith() or retry().
+  void UpdateShippingAddressErrors(mojom::AddressErrorsPtr errors);
+
+  // Called when the merchant calls retry().
+  void UpdatePayerErrors(mojom::PayerErrorFieldsPtr errors);
+
+  // Gets the display string for the shipping address error for the given
+  // |type|.
+  base::string16 GetShippingAddressError(autofill::ServerFieldType type);
+
+  // Gets the display string for the payer error for the given |type|.
+  base::string16 GetPayerError(autofill::ServerFieldType type);
+
+  // Returns whether there is a shipping address error message set by merchant.
+  bool has_shipping_address_error() const;
+
+  // Returns whether there is a payer error message set by merchant.
+  bool has_payer_error() const;
 
   // Recomputes spec based on details.
   void RecomputeSpecForDetails();
@@ -218,6 +239,9 @@ class PaymentRequestSpec : public PaymentOptionsProvider {
   // The |observer_for_testing_| will fire after all the |observers_| have been
   // notified.
   base::ObserverList<Observer>::Unchecked observers_;
+
+  mojom::AddressErrorsPtr shipping_address_errors_;
+  mojom::PayerErrorFieldsPtr payer_errors_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSpec);
 };

@@ -208,6 +208,8 @@ class PaymentRequestBrowserTestBase
   void PayWithCreditCardAndWait(const base::string16& cvc);
   void PayWithCreditCardAndWait(const base::string16& cvc,
                                 PaymentRequestDialogView* dialog_view);
+  void PayWithCreditCard(const base::string16& cvc);
+  void RetryPaymentRequest(const std::string& validation_errors);
 
   // Getting/setting the |value| in the textfield of a given |type|.
   base::string16 GetEditorTextfieldValue(autofill::ServerFieldType type);

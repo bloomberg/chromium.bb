@@ -82,40 +82,7 @@ ShippingAddressEditorViewController::GetFieldDefinitions() {
 
 base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
-  if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
-    return autofill::i18n::GetFormattedPhoneNumberForDisplay(
-        temporary_profile_, state()->GetApplicationLocale());
-  }
-
-  if (type == autofill::ADDRESS_HOME_STATE && region_model_) {
-    // For the state, check if the inital value matches either a region code or
-    // a region name.
-    base::string16 initial_region =
-        temporary_profile_.GetInfo(type, state()->GetApplicationLocale());
-    autofill::l10n::CaseInsensitiveCompare compare;
-
-    for (const auto& region : region_model_->GetRegions()) {
-      if (compare.StringsEqual(initial_region,
-                               base::UTF8ToUTF16(region.first)) ||
-          compare.StringsEqual(initial_region,
-                               base::UTF8ToUTF16(region.second))) {
-        return base::UTF8ToUTF16(region.second);
-      }
-    }
-
-    return initial_region;
-  }
-
-  if (type == autofill::ADDRESS_HOME_STREET_ADDRESS) {
-    std::string street_address_line;
-    i18n::addressinput::GetStreetAddressLinesAsSingleLine(
-        *autofill::i18n::CreateAddressDataFromAutofillProfile(
-            temporary_profile_, state()->GetApplicationLocale()),
-        &street_address_line);
-    return base::UTF8ToUTF16(street_address_line);
-  }
-
-  return temporary_profile_.GetInfo(type, state()->GetApplicationLocale());
+  return GetValueForType(temporary_profile_, type);
 }
 
 bool ShippingAddressEditorViewController::ValidateModelAndSave() {
@@ -318,6 +285,18 @@ void ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
 
 bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
     ValidateValue(const base::string16& value, base::string16* error_message) {
+  // Show errors from merchant's retry() call. Note that changing the selected
+  // shipping address will clear the validation errors from retry().
+  autofill::AutofillProfile* invalid_shipping_profile =
+      controller_->state()->invalid_shipping_profile();
+  if (invalid_shipping_profile && error_message &&
+      value == controller_->GetValueForType(*invalid_shipping_profile,
+                                            field_.type)) {
+    *error_message = controller_->spec()->GetShippingAddressError(field_.type);
+    if (!error_message->empty())
+      return false;
+  }
+
   if (!value.empty()) {
     if (field_.type == autofill::PHONE_HOME_WHOLE_NUMBER &&
         controller_->chosen_country_index_ < controller_->countries_.size() &&
@@ -345,6 +324,45 @@ bool ShippingAddressEditorViewController::ShippingAddressValidationDelegate::
         IDS_PREF_EDIT_DIALOG_FIELD_REQUIRED_VALIDATION_MESSAGE);
   }
   return !field_.required;
+}
+
+base::string16 ShippingAddressEditorViewController::GetValueForType(
+    const autofill::AutofillProfile& profile,
+    autofill::ServerFieldType type) {
+  if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
+    return autofill::i18n::GetFormattedPhoneNumberForDisplay(
+        profile, state()->GetApplicationLocale());
+  }
+
+  if (type == autofill::ADDRESS_HOME_STATE && region_model_) {
+    // For the state, check if the initial value matches either a region code or
+    // a region name.
+    base::string16 initial_region =
+        profile.GetInfo(type, state()->GetApplicationLocale());
+    autofill::l10n::CaseInsensitiveCompare compare;
+
+    for (const auto& region : region_model_->GetRegions()) {
+      if (compare.StringsEqual(initial_region,
+                               base::UTF8ToUTF16(region.first)) ||
+          compare.StringsEqual(initial_region,
+                               base::UTF8ToUTF16(region.second))) {
+        return base::UTF8ToUTF16(region.second);
+      }
+    }
+
+    return initial_region;
+  }
+
+  if (type == autofill::ADDRESS_HOME_STREET_ADDRESS) {
+    std::string street_address_line;
+    i18n::addressinput::GetStreetAddressLinesAsSingleLine(
+        *autofill::i18n::CreateAddressDataFromAutofillProfile(
+            profile, state()->GetApplicationLocale()),
+        &street_address_line);
+    return base::UTF8ToUTF16(street_address_line);
+  }
+
+  return profile.GetInfo(type, state()->GetApplicationLocale());
 }
 
 bool ShippingAddressEditorViewController::GetSheetId(DialogViewID* sheet_id) {

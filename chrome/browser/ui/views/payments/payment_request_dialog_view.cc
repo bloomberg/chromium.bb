@@ -187,6 +187,35 @@ void PaymentRequestDialogView::ShowPaymentHandlerScreen(
   HideProcessingSpinner();
 }
 
+void PaymentRequestDialogView::RetryDialog() {
+  HideProcessingSpinner();
+  ShowInitialPaymentSheet();
+
+  if (request_->spec()->has_shipping_address_error()) {
+    autofill::AutofillProfile* profile =
+        request_->state()->invalid_shipping_profile();
+    ShowShippingAddressEditor(
+        BackNavigationType::kOneStep,
+        /*on_edited=*/
+        base::BindOnce(&PaymentRequestState::SetSelectedShippingProfile,
+                       base::Unretained(request_->state()), profile),
+        /*on_added=*/
+        base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
+  }
+
+  if (request_->spec()->has_payer_error()) {
+    autofill::AutofillProfile* profile =
+        request_->state()->invalid_contact_profile();
+    ShowContactInfoEditor(
+        BackNavigationType::kOneStep,
+        /*on_edited=*/
+        base::BindOnce(&PaymentRequestState::SetSelectedContactProfile,
+                       base::Unretained(request_->state()), profile),
+        /*on_added=*/
+        base::OnceCallback<void(const autofill::AutofillProfile&)>(), profile);
+  }
+}
+
 void PaymentRequestDialogView::OnStartUpdating(
     PaymentRequestSpec::UpdateReason reason) {
   ShowProcessingSpinner();

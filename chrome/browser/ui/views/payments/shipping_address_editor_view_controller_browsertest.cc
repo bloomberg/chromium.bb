@@ -26,6 +26,8 @@
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
 
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
+
 namespace payments {
 
 namespace {
@@ -1261,6 +1263,74 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
             profile->GetRawInfo(autofill::ADDRESS_HOME_STATE));
   ExpectExistingRequiredFields(/*unset_types=*/nullptr,
                                /*accept_empty_phone_number=*/false);
+}
+
+// Tests that there is error label for an impossible
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       RetryWithShippingAddressErrors) {
+  NavigateTo("/payment_request_retry_with_shipping_address_errors.html");
+
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  AddAutofillProfile(address);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(address.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  RetryPaymentRequest(
+      "{"
+      "  shippingAddress: {"
+      "    addressLine: 'ADDRESS LINE ERROR',"
+      "    city: 'CITY ERROR'"
+      "  }"
+      "}");
+  WaitForObservedEvent();
+
+  EXPECT_EQ(base::ASCIIToUTF16("ADDRESS LINE ERROR"),
+            GetErrorLabelForType(autofill::ADDRESS_HOME_STREET_ADDRESS));
+  EXPECT_EQ(base::ASCIIToUTF16("CITY ERROR"),
+            GetErrorLabelForType(autofill::ADDRESS_HOME_CITY));
+}
+
+// Tests that there is error label for an impossible
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestShippingAddressEditorTest,
+    RetryWithShippingAddressErrors_HasSameValueButDifferentErrorsShown) {
+  NavigateTo("/payment_request_retry_with_shipping_address_errors.html");
+
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  // Set the same value in both of address line and city field.
+  address.SetRawInfo(autofill::ADDRESS_HOME_STREET_ADDRESS,
+                     base::ASCIIToUTF16("Elysium"));
+  address.SetRawInfo(autofill::ADDRESS_HOME_CITY,
+                     base::ASCIIToUTF16("Elysium"));
+  AddAutofillProfile(address);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(address.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+
+  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  RetryPaymentRequest(
+      "{"
+      "  shippingAddress: {"
+      "    addressLine: 'ADDRESS LINE ERROR',"
+      "    city: 'CITY ERROR'"
+      "  }"
+      "}");
+  WaitForObservedEvent();
+
+  EXPECT_EQ(base::ASCIIToUTF16("ADDRESS LINE ERROR"),
+            GetErrorLabelForType(autofill::ADDRESS_HOME_STREET_ADDRESS));
+  EXPECT_EQ(base::ASCIIToUTF16("CITY ERROR"),
+            GetErrorLabelForType(autofill::ADDRESS_HOME_CITY));
 }
 
 }  // namespace payments

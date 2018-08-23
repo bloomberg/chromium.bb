@@ -29,6 +29,7 @@ class TestPaymentRequestDelegate : public PaymentRequestDelegate {
 
   // PaymentRequestDelegate
   void ShowDialog(PaymentRequest* request) override {}
+  void RetryDialog() override {}
   void CloseDialog() override {}
   void ShowErrorMessage() override {}
   void ShowProcessingSpinner() override {}

@@ -67,6 +67,11 @@ void ChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   shown_dialog_->ShowDialog();
 }
 
+void ChromePaymentRequestDelegate::RetryDialog() {
+  if (shown_dialog_)
+    shown_dialog_->RetryDialog();
+}
+
 void ChromePaymentRequestDelegate::CloseDialog() {
   if (shown_dialog_) {
     shown_dialog_->CloseDialog();
