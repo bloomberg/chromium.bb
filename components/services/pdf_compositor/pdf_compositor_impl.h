@@ -166,7 +166,7 @@ class PdfCompositorImpl : public mojom::PdfCompositor {
       base::ReadOnlySharedMemoryRegion* region);
 
   // Composite the content of a subframe.
-  sk_sp<SkPicture> CompositeSubframe(uint64_t frame_guid);
+  void CompositeSubframe(FrameInfo* frame_info);
 
   DeserializationContext GetDeserializationContext(
       const ContentToFrameMap& subframe_content_map);
