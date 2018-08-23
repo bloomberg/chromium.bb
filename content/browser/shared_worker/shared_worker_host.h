@@ -21,6 +21,7 @@
 #include "content/common/shared_worker/shared_worker_client.mojom.h"
 #include "content/common/shared_worker/shared_worker_factory.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
+#include "content/public/browser/global_routing_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -132,8 +133,8 @@ class CONTENT_EXPORT SharedWorkerHost
   void OnScriptLoadFailed() override;
   void OnFeatureUsed(blink::mojom::WebFeature feature) override;
 
-  // Return a vector of all the render process/render frame IDs.
-  std::vector<std::pair<int, int>> GetRenderFrameIDsForWorker();
+  // Returns the frame ids of this worker's clients.
+  std::vector<GlobalFrameRoutingId> GetRenderFrameIDsForWorker();
 
   void AllowFileSystemResponse(base::OnceCallback<void(bool)> callback,
                                bool allowed);

@@ -1261,8 +1261,7 @@ void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
 
 mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
     RenderFrameHost* frame) {
-  auto key = std::make_pair<int, int>(frame->GetProcess()->GetID(),
-                                      frame->GetRoutingID());
+  GlobalFrameRoutingId key(frame->GetProcess()->GetID(), frame->GetRoutingID());
   if (layout_test_control_map_.find(key) == layout_test_control_map_.end()) {
     mojom::LayoutTestControlAssociatedPtr& new_ptr =
         layout_test_control_map_[key];
@@ -1276,7 +1275,7 @@ mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(
 }
 
 void BlinkTestController::HandleLayoutTestControlError(
-    const std::pair<int, int>& key) {
+    const GlobalFrameRoutingId& key) {
   layout_test_control_map_.erase(key);
 }
 

@@ -11,6 +11,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 
@@ -76,8 +77,7 @@ class AwResourceDispatcherHostDelegate
                                content::ResourceContext* resource_context);
 
   // Pair of render_process_id and render_frame_id.
-  typedef std::pair<int, int> FrameRouteIDPair;
-  typedef std::map<FrameRouteIDPair, IoThreadClientThrottle*>
+  typedef std::map<content::GlobalFrameRoutingId, IoThreadClientThrottle*>
       PendingThrottleMap;
 
   // Only accessed on the IO thread.

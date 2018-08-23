@@ -21,6 +21,7 @@
 #include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/global_routing_id.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -205,13 +206,14 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   // Map from RenderFrameHost to the MainRenderFrameEntry which contains all
   // details of the main frame. New entry is added on main render frame creation
   // and removed on its deletion.
-  std::map<RenderFrameHostID, MainRenderFrameEntry>
+  std::map<content::GlobalFrameRoutingId, MainRenderFrameEntry>
       main_render_frame_entry_map_;
 
   // Maps subframe IDs to the mainframe ID, so the mainframe lifetime can have
   // ownership over the lifetime of entries in |data_use_recorders_|. Mainframes
   // are mapped to themselves.
-  std::map<RenderFrameHostID, RenderFrameHostID> subframe_to_mainframe_map_;
+  std::map<content::GlobalFrameRoutingId, content::GlobalFrameRoutingId>
+      subframe_to_mainframe_map_;
 
   // Map from pending navigations to the DataUseRecorderEntry in
   // |data_use_recorders_| that the navigation ascribes data use to.

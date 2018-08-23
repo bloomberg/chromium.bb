@@ -40,8 +40,6 @@ using testing::Invoke;
 
 namespace {
 
-using RenderFrameHostId = std::pair<int, int>;
-
 constexpr char kPresentationId[] = "test_id";
 const base::FilePath::StringPieceType kResourcePath =
     FILE_PATH_LITERAL("media/router/");
@@ -294,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(PresentationReceiverWindowControllerBrowserTest,
       browser()->profile())
       ->RegisterLocalPresentationController(
           blink::mojom::PresentationInfo(presentation_url, kPresentationId),
-          RenderFrameHostId(0, 0), std::move(controller_ptr),
+          content::GlobalFrameRoutingId(0, 0), std::move(controller_ptr),
           controller_connection.MakeConnectionRequest(),
           media_router::MediaRoute("route",
                                    media_router::MediaSource(presentation_url),

@@ -41,7 +41,7 @@ void AllowFileSystemOnIOThreadResponse(base::OnceCallback<void(bool)> callback,
 
 void AllowFileSystemOnIOThread(const GURL& url,
                                ResourceContext* resource_context,
-                               std::vector<std::pair<int, int>> render_frames,
+                               std::vector<GlobalFrameRoutingId> render_frames,
                                base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   GetContentClient()->browser()->AllowWorkerFileSystem(
@@ -52,7 +52,7 @@ void AllowFileSystemOnIOThread(const GURL& url,
 bool AllowIndexedDBOnIOThread(const GURL& url,
                               const base::string16& name,
                               ResourceContext* resource_context,
-                              std::vector<std::pair<int, int>> render_frames) {
+                              std::vector<GlobalFrameRoutingId> render_frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   return GetContentClient()->browser()->AllowWorkerIndexedDB(
       url, name, resource_context, render_frames);
@@ -372,11 +372,12 @@ void SharedWorkerHost::OnFeatureUsed(blink::mojom::WebFeature feature) {
     info.client->OnFeatureUsed(feature);
 }
 
-std::vector<std::pair<int, int>>
+std::vector<GlobalFrameRoutingId>
 SharedWorkerHost::GetRenderFrameIDsForWorker() {
-  std::vector<std::pair<int, int>> result;
+  std::vector<GlobalFrameRoutingId> result;
+  result.reserve(clients_.size());
   for (const ClientInfo& info : clients_)
-    result.push_back(std::make_pair(info.process_id, info.frame_id));
+    result.push_back(GlobalFrameRoutingId(info.process_id, info.frame_id));
   return result;
 }
 

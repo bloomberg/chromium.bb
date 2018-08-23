@@ -2408,7 +2408,7 @@ void ChromeContentBrowserClient::OnCookieChange(
 void ChromeContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames,
+    const std::vector<content::GlobalFrameRoutingId>& render_frames,
     base::Callback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
@@ -2426,22 +2426,21 @@ void ChromeContentBrowserClient::AllowWorkerFileSystem(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void ChromeContentBrowserClient::GuestPermissionRequestHelper(
     const GURL& url,
-    const std::vector<std::pair<int, int> >& render_frames,
+    const std::vector<content::GlobalFrameRoutingId>& render_frames,
     base::Callback<void(bool)> callback,
     bool allow) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::vector<std::pair<int, int> >::const_iterator i;
   std::map<int, int> process_map;
   std::map<int, int>::const_iterator it;
   bool has_web_view_guest = false;
   // Record access to file system for potential display in UI.
-  for (i = render_frames.begin(); i != render_frames.end(); ++i) {
-    if (process_map.find(i->first) != process_map.end())
+  for (const auto& it : render_frames) {
+    if (process_map.find(it.child_id) != process_map.end())
       continue;
 
-    process_map.insert(std::pair<int, int>(i->first, i->second));
+    process_map.insert(std::pair<int, int>(it.child_id, it.frame_routing_id));
 
-    if (extensions::WebViewRendererState::GetInstance()->IsGuest(i->first))
+    if (extensions::WebViewRendererState::GetInstance()->IsGuest(it.child_id))
       has_web_view_guest = true;
   }
   if (!has_web_view_guest) {
@@ -2480,16 +2479,15 @@ void ChromeContentBrowserClient::RequestFileSystemPermissionOnUIThread(
 
 void ChromeContentBrowserClient::FileSystemAccessed(
     const GURL& url,
-    const std::vector<std::pair<int, int> >& render_frames,
+    const std::vector<content::GlobalFrameRoutingId>& render_frames,
     base::Callback<void(bool)> callback,
     bool allow) {
   // Record access to file system for potential display in UI.
-  std::vector<std::pair<int, int> >::const_iterator i;
-  for (i = render_frames.begin(); i != render_frames.end(); ++i) {
+  for (const auto& it : render_frames) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&TabSpecificContentSettings::FileSystemAccessed,
-                       i->first, i->second, url, !allow));
+                       it.child_id, it.frame_routing_id, url, !allow));
   }
   callback.Run(allow);
 }
@@ -2498,7 +2496,7 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
     const base::string16& name,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames) {
+    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
   content_settings::CookieSettings* cookie_settings =
@@ -2506,12 +2504,11 @@ bool ChromeContentBrowserClient::AllowWorkerIndexedDB(
   bool allow = cookie_settings->IsCookieAccessAllowed(url, url);
 
   // Record access to IndexedDB for potential display in UI.
-  std::vector<std::pair<int, int> >::const_iterator i;
-  for (i = render_frames.begin(); i != render_frames.end(); ++i) {
+  for (const auto& it : render_frames) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed, i->first,
-                       i->second, url, name, !allow));
+        base::BindOnce(&TabSpecificContentSettings::IndexedDBAccessed,
+                       it.child_id, it.frame_routing_id, url, name, !allow));
   }
 
   return allow;

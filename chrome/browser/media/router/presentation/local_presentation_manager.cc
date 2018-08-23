@@ -36,12 +36,13 @@ LocalPresentationManager::GetOrCreateLocalPresentation(
 
 void LocalPresentationManager::RegisterLocalPresentationController(
     const PresentationInfo& presentation_info,
-    const RenderFrameHostId& render_frame_host_id,
+    const content::GlobalFrameRoutingId& render_frame_host_id,
     content::PresentationConnectionPtr controller_connection_ptr,
     content::PresentationConnectionRequest receiver_connection_request,
     const MediaRoute& route) {
   DVLOG(2) << __func__ << " [presentation_id]: " << presentation_info.id
-           << ", [render_frame_host_id]: " << render_frame_host_id.second;
+           << ", [render_frame_host_id]: "
+           << render_frame_host_id.frame_routing_id;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto* presentation = GetOrCreateLocalPresentation(presentation_info);
@@ -52,9 +53,10 @@ void LocalPresentationManager::RegisterLocalPresentationController(
 
 void LocalPresentationManager::UnregisterLocalPresentationController(
     const std::string& presentation_id,
-    const RenderFrameHostId& render_frame_host_id) {
+    const content::GlobalFrameRoutingId& render_frame_host_id) {
   DVLOG(2) << __func__ << " [presentation_id]: " << presentation_id
-           << ", [render_frame_host_id]: " << render_frame_host_id.second;
+           << ", [render_frame_host_id]: "
+           << render_frame_host_id.frame_routing_id;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   auto it = local_presentations_.find(presentation_id);
@@ -108,7 +110,7 @@ LocalPresentationManager::LocalPresentation::LocalPresentation(
 LocalPresentationManager::LocalPresentation::~LocalPresentation() {}
 
 void LocalPresentationManager::LocalPresentation::RegisterController(
-    const RenderFrameHostId& render_frame_host_id,
+    const content::GlobalFrameRoutingId& render_frame_host_id,
     content::PresentationConnectionPtr controller_connection_ptr,
     content::PresentationConnectionRequest receiver_connection_request,
     const MediaRoute& route) {
@@ -127,7 +129,7 @@ void LocalPresentationManager::LocalPresentation::RegisterController(
 }
 
 void LocalPresentationManager::LocalPresentation::UnregisterController(
-    const RenderFrameHostId& render_frame_host_id) {
+    const content::GlobalFrameRoutingId& render_frame_host_id) {
   pending_controllers_.erase(render_frame_host_id);
 }
 

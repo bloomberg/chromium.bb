@@ -20,6 +20,7 @@
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "content/public/browser/global_routing_id.h"
 
 namespace extensions {
 
@@ -76,7 +77,7 @@ class WebViewRendererState {
   friend class WebViewGuest;
   friend struct base::DefaultSingletonTraits<WebViewRendererState>;
 
-  using RenderId = std::pair<int, int>;
+  using RenderId = content::GlobalRoutingID;
   using WebViewInfoMap = std::map<RenderId, WebViewInfo>;
 
   struct WebViewPartitionInfo {

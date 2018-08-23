@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_PRESENTATION_PRESENTATION_SERVICE_DELEGATE_IMPL_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_PRESENTATION_PRESENTATION_SERVICE_DELEGATE_IMPL_H_
 
-#include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_observers.h"
-#include "chrome/browser/media/router/presentation/render_frame_host_id.h"
 #include "chrome/common/media_router/media_source.h"
 #include "content/public/browser/presentation_request.h"
 #include "content/public/browser/presentation_service_delegate.h"
@@ -179,10 +178,10 @@ class PresentationServiceDelegateImpl
   explicit PresentationServiceDelegateImpl(content::WebContents* web_contents);
 
   PresentationFrame* GetOrAddPresentationFrame(
-      const RenderFrameHostId& render_frame_host_id);
+      const content::GlobalFrameRoutingId& render_frame_host_id);
 
   void OnJoinRouteResponse(
-      const RenderFrameHostId& render_frame_host_id,
+      const content::GlobalFrameRoutingId& render_frame_host_id,
       const GURL& presentation_url,
       const std::string& presentation_id,
       content::PresentationConnectionCallback success_cb,
@@ -190,7 +189,7 @@ class PresentationServiceDelegateImpl
       const RouteRequestResult& result);
 
   void OnStartPresentationSucceeded(
-      const RenderFrameHostId& render_frame_host_id,
+      const content::GlobalFrameRoutingId& render_frame_host_id,
       content::PresentationConnectionCallback success_cb,
       const blink::mojom::PresentationInfo& new_presentation_info,
       const MediaRoute& route);
@@ -199,14 +198,16 @@ class PresentationServiceDelegateImpl
   // presentation and its corresponding MediaRoute has been created.
   // The PresentationFrame will be created if it does not already exist.
   // This must be called before |ConnectToPresentation()|.
-  void AddPresentation(const RenderFrameHostId& render_frame_host_id,
-                       const blink::mojom::PresentationInfo& presentation_info,
-                       const MediaRoute& route);
+  void AddPresentation(
+      const content::GlobalFrameRoutingId& render_frame_host_id,
+      const blink::mojom::PresentationInfo& presentation_info,
+      const MediaRoute& route);
 
   // Notifies the PresentationFrame of |render_frame_host_id| that a
   // presentation and its corresponding MediaRoute has been removed.
-  void RemovePresentation(const RenderFrameHostId& render_frame_host_id,
-                          const std::string& presentation_id);
+  void RemovePresentation(
+      const content::GlobalFrameRoutingId& render_frame_host_id,
+      const std::string& presentation_id);
 
   // Clears the default presentation request for the owning WebContents and
   // notifies observers of changes. Also resets
@@ -215,8 +216,9 @@ class PresentationServiceDelegateImpl
 
   // Returns the ID of the route corresponding to |presentation_id| in the given
   // frame, or empty if no such route exist.
-  MediaRoute::Id GetRouteId(const RenderFrameHostId& render_frame_host_id,
-                            const std::string& presentation_id) const;
+  MediaRoute::Id GetRouteId(
+      const content::GlobalFrameRoutingId& render_frame_host_id,
+      const std::string& presentation_id) const;
 
 #if !defined(OS_ANDROID)
   // Returns true if auto-join requests should be cancelled for |origin|.
@@ -242,9 +244,9 @@ class PresentationServiceDelegateImpl
 
   // Maps a frame identifier to a PresentationFrame object for frames
   // that are using Presentation API.
-  std::unordered_map<RenderFrameHostId,
+  std::unordered_map<content::GlobalFrameRoutingId,
                      std::unique_ptr<PresentationFrame>,
-                     RenderFrameHostIdHasher>
+                     content::GlobalFrameRoutingIdHasher>
       presentation_frames_;
 
   PresentationServiceDelegateObservers observers_;

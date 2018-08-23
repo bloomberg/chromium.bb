@@ -5,9 +5,9 @@
 #include "content/browser/loader/loader_io_thread_notifier.h"
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/browser/loader/global_routing_id.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 
 namespace content {
 

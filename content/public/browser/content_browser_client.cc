@@ -327,7 +327,7 @@ void ContentBrowserClient::OnCookieChange(int process_id,
 void ContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames,
+    const std::vector<GlobalFrameRoutingId>& render_frames,
     base::Callback<void(bool)> callback) {
   std::move(callback).Run(true);
 }
@@ -336,7 +336,7 @@ bool ContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
     const base::string16& name,
     ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames) {
+    const std::vector<GlobalFrameRoutingId>& render_frames) {
   return true;
 }
 

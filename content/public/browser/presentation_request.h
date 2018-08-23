@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "content/public/browser/global_routing_id.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -19,7 +20,7 @@ namespace content {
 // frame.
 struct CONTENT_EXPORT PresentationRequest {
  public:
-  PresentationRequest(const std::pair<int, int>& render_frame_host_id,
+  PresentationRequest(const GlobalFrameRoutingId& render_frame_host_id,
                       const std::vector<GURL>& presentation_urls,
                       const url::Origin& frame_origin);
   ~PresentationRequest();
@@ -28,7 +29,7 @@ struct CONTENT_EXPORT PresentationRequest {
   PresentationRequest& operator=(const PresentationRequest& other);
 
   // ID of RenderFrameHost that initiated the request.
-  std::pair<int, int> render_frame_host_id;
+  GlobalFrameRoutingId render_frame_host_id;
 
   // URLs of presentation.
   std::vector<GURL> presentation_urls;

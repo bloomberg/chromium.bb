@@ -133,6 +133,7 @@ jumbo_source_set("browser_sources") {
     "font_list_async.h",
     "frame_service_base.h",
     "global_request_id.h",
+    "global_routing_id.h",
     "gpu_client.h",
     "gpu_data_manager.h",
     "gpu_data_manager_observer.h",

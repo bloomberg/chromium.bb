@@ -152,7 +152,7 @@ ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
     // render frames don't have a record. However, this can also be caused by
     // URLRequests racing the frame create events.
     // TODO(kundaji): Add UMA.
-    RenderFrameHostID frame_key(render_process_id, render_frame_id);
+    content::GlobalFrameRoutingId frame_key(render_process_id, render_frame_id);
     const auto main_frame_key_iter = subframe_to_mainframe_map_.find(frame_key);
     if (main_frame_key_iter == subframe_to_mainframe_map_.end()) {
       return data_use_recorders_.end();
@@ -307,14 +307,14 @@ void ChromeDataUseAscriber::RenderFrameCreated(int render_process_id,
     return;
 
   const auto render_frame =
-      RenderFrameHostID(render_process_id, render_frame_id);
+      content::GlobalFrameRoutingId(render_process_id, render_frame_id);
 
   if (main_render_process_id != -1 && main_render_frame_id != -1) {
     // Create an entry in |subframe_to_mainframe_map_| for this frame mapped to
     // it's parent frame.
     subframe_to_mainframe_map_.insert(std::make_pair(
-        render_frame,
-        RenderFrameHostID(main_render_process_id, main_render_frame_id)));
+        render_frame, content::GlobalFrameRoutingId(main_render_process_id,
+                                                    main_render_frame_id)));
   } else {
     subframe_to_mainframe_map_.insert(
         std::make_pair(render_frame, render_frame));
@@ -338,7 +338,7 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
   if (IsDisabled())
     return;
 
-  RenderFrameHostID key(render_process_id, render_frame_id);
+  content::GlobalFrameRoutingId key(render_process_id, render_frame_id);
 
   if (main_render_process_id == -1 && main_render_frame_id == -1) {
     auto main_frame_it = main_render_frame_entry_map_.find(key);
@@ -396,7 +396,7 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
     return;
 
   main_render_frame_entry_map_
-      .find(RenderFrameHostID(render_process_id, render_frame_id))
+      .find(content::GlobalFrameRoutingId(render_process_id, render_frame_id))
       ->second.pending_navigation_global_request_id = global_request_id;
 }
 
@@ -411,7 +411,7 @@ void ChromeDataUseAscriber::DidFinishMainFrameNavigation(
   if (IsDisabled())
     return;
 
-  RenderFrameHostID main_frame(render_process_id, render_frame_id);
+  content::GlobalFrameRoutingId main_frame(render_process_id, render_frame_id);
 
   auto main_frame_it = main_render_frame_entry_map_.find(main_frame);
   if (main_frame_it == main_render_frame_entry_map_.end())
@@ -547,7 +547,7 @@ void ChromeDataUseAscriber::DidFinishLoad(int render_process_id,
   if (!validated_url.SchemeIsHTTPOrHTTPS())
     return;
 
-  RenderFrameHostID main_frame(render_process_id, render_frame_id);
+  content::GlobalFrameRoutingId main_frame(render_process_id, render_frame_id);
 
   auto main_frame_it = main_render_frame_entry_map_.find(main_frame);
   if (main_frame_it == main_render_frame_entry_map_.end())
@@ -609,8 +609,9 @@ void ChromeDataUseAscriber::WasShownOrHidden(int main_render_process_id,
   if (IsDisabled())
     return;
 
-  auto main_frame_it = main_render_frame_entry_map_.find(
-      RenderFrameHostID(main_render_process_id, main_render_frame_id));
+  auto main_frame_it =
+      main_render_frame_entry_map_.find(content::GlobalFrameRoutingId(
+          main_render_process_id, main_render_frame_id));
   if (main_frame_it != main_render_frame_entry_map_.end()) {
     main_frame_it->second.is_visible = visible;
     if (main_frame_it->second.data_use_recorder != data_use_recorders_.end())
@@ -626,8 +627,9 @@ void ChromeDataUseAscriber::RenderFrameHostChanged(int old_render_process_id,
   if (IsDisabled())
     return;
 
-  auto old_frame_iter = main_render_frame_entry_map_.find(
-      RenderFrameHostID(old_render_process_id, old_render_frame_id));
+  auto old_frame_iter =
+      main_render_frame_entry_map_.find(content::GlobalFrameRoutingId(
+          old_render_process_id, old_render_frame_id));
 
   if (old_frame_iter != main_render_frame_entry_map_.end()) {
     WasShownOrHidden(new_render_process_id, new_render_frame_id, true);
@@ -636,7 +638,8 @@ void ChromeDataUseAscriber::RenderFrameHostChanged(int old_render_process_id,
       // Transfer the pending navigation global request ID from old to new main
       // frame.
       main_render_frame_entry_map_
-          .find(RenderFrameHostID(new_render_process_id, new_render_frame_id))
+          .find(content::GlobalFrameRoutingId(new_render_process_id,
+                                              new_render_frame_id))
           ->second.pending_navigation_global_request_id =
           old_frame_iter->second.pending_navigation_global_request_id;
       old_frame_iter->second.pending_navigation_global_request_id =

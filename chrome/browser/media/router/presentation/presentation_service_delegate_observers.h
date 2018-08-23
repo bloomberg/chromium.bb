@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "chrome/browser/media/router/presentation/render_frame_host_id.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
 
 namespace media_router {
@@ -33,7 +33,8 @@ class PresentationServiceDelegateObservers {
   virtual void RemoveObserver(int render_process_id, int render_frame_id);
 
  private:
-  std::map<RenderFrameHostId, content::PresentationServiceDelegate::Observer*>
+  std::map<content::GlobalFrameRoutingId,
+           content::PresentationServiceDelegate::Observer*>
       observers_;
 };
 

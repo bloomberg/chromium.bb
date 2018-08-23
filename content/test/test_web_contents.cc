@@ -368,7 +368,7 @@ void TestWebContents::SetOpener(WebContents* opener) {
 void TestWebContents::AddPendingContents(
     std::unique_ptr<WebContents> contents) {
   // This is normally only done in WebContentsImpl::CreateNewWindow.
-  ProcessRoutingIdPair key(
+  GlobalRoutingID key(
       contents->GetRenderViewHost()->GetProcess()->GetID(),
       contents->GetRenderViewHost()->GetWidget()->GetRoutingID());
   WebContentsImpl* raw_contents = static_cast<WebContentsImpl*>(contents.get());
