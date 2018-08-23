@@ -19,20 +19,3 @@ mojom("engine_sandbox_interface") {
     "//mojo/public/mojom/base",
   ]
 }
-
-mojom("json_parser_interface") {
-  sources = [
-    "json_parser.mojom",
-  ]
-  deps = [
-    "//mojo/public/mojom/base",
-  ]
-}
-
-mojom("mojo_sandbox_hooks_test_interface") {
-  testonly = true
-
-  sources = [
-    "test_mojo_sandbox_hooks.mojom",
-  ]
-}
