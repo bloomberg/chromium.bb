@@ -226,26 +226,29 @@ class FadeInAnimationDelegate : public gfx::AnimationDelegate {
 };
 
 void ReflectItemStatus(const ShelfItem& item, ShelfButton* button) {
+  ShelfID active_id = Shell::Get()->shelf_model()->active_shelf_id();
+  if (!active_id.IsNull() && item.id == active_id) {
+    // The active status trumps all other statuses.
+    button->AddState(ShelfButton::STATE_ACTIVE);
+    button->ClearState(ShelfButton::STATE_RUNNING);
+    button->ClearState(ShelfButton::STATE_ATTENTION);
+    return;
+  }
+
+  button->ClearState(ShelfButton::STATE_ACTIVE);
+
   switch (item.status) {
     case STATUS_CLOSED:
       button->ClearState(ShelfButton::STATE_RUNNING);
-      button->ClearState(ShelfButton::STATE_ACTIVE);
-      button->ClearState(ShelfButton::STATE_ATTENTION);
-      break;
-    case STATUS_ACTIVE:
-      button->AddState(ShelfButton::STATE_ACTIVE);
-      button->AddState(ShelfButton::STATE_RUNNING);
       button->ClearState(ShelfButton::STATE_ATTENTION);
       break;
     case STATUS_RUNNING:
       button->AddState(ShelfButton::STATE_RUNNING);
-      button->ClearState(ShelfButton::STATE_ACTIVE);
       button->ClearState(ShelfButton::STATE_ATTENTION);
       break;
     case STATUS_ATTENTION:
       button->ClearState(ShelfButton::STATE_RUNNING);
       button->AddState(ShelfButton::STATE_ATTENTION);
-      button->ClearState(ShelfButton::STATE_ACTIVE);
       break;
   }
 
@@ -1955,6 +1958,20 @@ void ShelfView::ShelfItemMoved(int start_index, int target_index) {
 void ShelfView::ShelfItemDelegateChanged(const ShelfID& id,
                                          ShelfItemDelegate* old_delegate,
                                          ShelfItemDelegate* delegate) {}
+
+void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
+  int index = model_->ItemIndexByID(id);
+  if (index < 0)
+    return;
+
+  const ShelfItem item = model_->items()[index];
+  views::View* view = view_model_->view_at(index);
+  CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
+  // TODO(manucornet): Add a helper to get the button.
+  ShelfButton* button = static_cast<ShelfButton*>(view);
+  ReflectItemStatus(item, button);
+  button->SchedulePaint();
+}
 
 void ShelfView::AfterItemSelected(
     const ShelfItem& item,

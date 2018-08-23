@@ -185,6 +185,24 @@ void ShelfModel::Set(int index, const ShelfItem& item) {
   }
 }
 
+// TODO(manucornet): Add some simple unit tests for this method.
+void ShelfModel::SetActiveShelfID(const ShelfID& shelf_id) {
+  if (active_shelf_id_ == shelf_id)
+    return;
+
+  ShelfID old_active_id = active_shelf_id_;
+  active_shelf_id_ = shelf_id;
+  if (!old_active_id.IsNull())
+    OnItemStatusChanged(old_active_id);
+  if (!active_shelf_id_.IsNull())
+    OnItemStatusChanged(active_shelf_id_);
+}
+
+void ShelfModel::OnItemStatusChanged(const ShelfID& id) {
+  for (auto& observer : observers_)
+    observer.ShelfItemStatusChanged(id);
+}
+
 void ShelfModel::RemoveNotificationRecord(const std::string& notification_id) {
   auto notification_id_it = notification_id_to_app_id_.find(notification_id);
 

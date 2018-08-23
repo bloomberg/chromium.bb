@@ -401,6 +401,7 @@ class ASH_EXPORT ShelfView : public views::View,
   void ShelfItemDelegateChanged(const ShelfID& id,
                                 ShelfItemDelegate* old_delegate,
                                 ShelfItemDelegate* delegate) override;
+  void ShelfItemStatusChanged(const ShelfID& id) override;
 
   // Handles the result when querying ShelfItemDelegates for context menu items.
   // Shows a default shelf context menu with optional extra custom |menu_items|.

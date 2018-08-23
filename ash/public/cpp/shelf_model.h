@@ -65,6 +65,17 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   // Resets the item at the specified index. The item's id should not change.
   void Set(int index, const ShelfItem& item);
 
+  // Returns the ID of the currently active item, or an empty ShelfID if
+  // nothing is currently active.
+  const ShelfID& active_shelf_id() const { return active_shelf_id_; }
+
+  // Sets |shelf_id| to be the newly active shelf item.
+  void SetActiveShelfID(const ShelfID& shelf_id);
+
+  // Notifies observers that the status of the item corresponding to |id|
+  // has changed.
+  void OnItemStatusChanged(const ShelfID& id);
+
   // Adds a record of the notification with this app id and notifies observers.
   void AddNotificationRecord(const std::string& app_id,
                              const std::string& notification_id);
@@ -122,6 +133,10 @@ class ASH_PUBLIC_EXPORT ShelfModel {
   void UpdateItemNotificationsAndNotifyObservers(const std::string& app_id);
 
   ShelfItems items_;
+
+  // The shelf ID of the currently active shelf item, or an empty ID if
+  // nothing is active.
+  ShelfID active_shelf_id_;
 
   // Maps one app id to a set of all matching notification ids.
   std::map<std::string, std::set<std::string>> app_id_to_notification_id_;
