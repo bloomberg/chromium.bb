@@ -2497,17 +2497,21 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   ASSERT_TRUE(current_grid);
   EXPECT_EQ(1u, current_grid->window_list().size());
 
-  WindowSelectorItem* new_selector_item = current_grid->GetNewSelectorItem();
-  ASSERT_TRUE(new_selector_item);
-  const gfx::Rect new_selector_bounds = new_selector_item->target_bounds();
-  DragWindowTo(resizer.get(), new_selector_bounds.CenterPoint());
+  WindowSelectorItem* selector_item = current_grid->GetNewSelectorItem();
+  ASSERT_TRUE(selector_item);
+  const gfx::Rect item_bounds_during_drag = selector_item->target_bounds();
+  DragWindowTo(resizer.get(), item_bounds_during_drag.CenterPoint());
 
   CompleteDrag(std::move(resizer));
   // |window1| should have been merged into overview.
   EXPECT_EQ(current_grid->window_list().size(), 1u);
   EXPECT_TRUE(window_selector->IsWindowInOverview(window1.get()));
-  // |wiindow1|'s bounds should have been updated to its tablet mode bounds.
+  // |window1|'s bounds should have been updated to its tablet mode bounds.
   EXPECT_EQ(tablet_mode_bounds, window1->bounds());
+  selector_item = current_grid->window_list().front().get();
+  // The new window selector item's bounds should be the same during drag and
+  // after drag.
+  EXPECT_EQ(item_bounds_during_drag, selector_item->target_bounds());
 }
 
 // Tests that a dragged window should have the active window shadow during
