@@ -85,9 +85,9 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
       const IntRect&,
       const cc::PaintFlags*,
       int already_uploaded_id = -1,
-      WebMediaPlayer::VideoFrameUploadMetadata* = nullptr) const;
+      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata = nullptr) const;
 
-  // Used by WebGL to do GPU-GPU textures copy if possible.
+  // Used by WebGL to do GPU-GPU texture copy if possible.
   bool CopyVideoTextureToPlatformTexture(
       gpu::gles2::GLES2Interface*,
       GLenum target,
@@ -98,8 +98,22 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
       GLint level,
       bool premultiply_alpha,
       bool flip_y,
-      int already_uploaded_id = -1,
-      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata = nullptr);
+      int already_uploaded_id,
+      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata);
+
+  // Used by WebGL to do YUV-RGB, CPU-GPU texture copy if possible.
+  bool CopyVideoYUVDataToPlatformTexture(
+      gpu::gles2::GLES2Interface*,
+      GLenum target,
+      GLuint texture,
+      GLenum internal_format,
+      GLenum format,
+      GLenum type,
+      GLint level,
+      bool premultiply_alpha,
+      bool flip_y,
+      int already_uploaded_id,
+      WebMediaPlayer::VideoFrameUploadMetadata* out_metadata);
 
   // Used by WebGL to do CPU-GPU texture upload if possible.
   bool TexImageImpl(WebMediaPlayer::TexImageFunctionID,

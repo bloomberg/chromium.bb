@@ -79,6 +79,28 @@ class SyncTokenClientImpl : public VideoFrame::SyncTokenClient {
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncTokenClientImpl);
 };
 
+sk_sp<SkImage> YUVGrBackendTexturesToSkImage(GrContext* gr_context,
+                                             gfx::ColorSpace video_color_space,
+                                             VideoPixelFormat video_format,
+                                             GrBackendTexture* textures) {
+  // TODO(hubbe): This should really default to rec709.
+  // https://crbug.com/828599
+  SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
+  video_color_space.ToSkYUVColorSpace(&color_space);
+
+  switch (video_format) {
+    case PIXEL_FORMAT_NV12:
+      return SkImage::MakeFromNV12TexturesCopy(
+          gr_context, color_space, textures, kTopLeft_GrSurfaceOrigin);
+    case PIXEL_FORMAT_I420:
+      return SkImage::MakeFromYUVTexturesCopy(gr_context, color_space, textures,
+                                              kTopLeft_GrSurfaceOrigin);
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
     const VideoFrame* video_frame,
     const Context3D& context_3d) {
@@ -145,19 +167,10 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
                        GrMipMapped::kNo, source_textures[2]),
   };
 
-  // TODO(hubbe): This should really default to rec709.
-  // https://crbug.com/828599
-  SkYUVColorSpace color_space = kRec601_SkYUVColorSpace;
-  video_frame->ColorSpace().ToSkYUVColorSpace(&color_space);
+  sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
+      context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
+      textures);
 
-  sk_sp<SkImage> img;
-  if (video_frame->format() == PIXEL_FORMAT_NV12) {
-    img = SkImage::MakeFromNV12TexturesCopy(context_3d.gr_context, color_space,
-                                            textures, kTopLeft_GrSurfaceOrigin);
-  } else {
-    img = SkImage::MakeFromYUVTexturesCopy(context_3d.gr_context, color_space,
-                                           textures, kTopLeft_GrSurfaceOrigin);
-  }
   for (size_t i = 0; i < video_frame->NumTextures(); ++i) {
     gl->BindTexture(source_textures[i].fTarget, source_textures[i].fID);
     gl->TexParameteri(source_textures[i].fTarget, GL_TEXTURE_MIN_FILTER,
@@ -220,6 +233,46 @@ sk_sp<SkImage> NewSkImageFromVideoFrameNative(VideoFrame* video_frame,
   return SkImage::MakeFromAdoptedTexture(
       context_3d.gr_context, source_backend_texture, kTopLeft_GrSurfaceOrigin,
       kRGBA_8888_SkColorType);
+}
+
+void VideoFrameCopyTextureOrSubTexture(gpu::gles2::GLES2Interface* gl,
+                                       const gfx::Size& coded_size,
+                                       const gfx::Rect& visible_rect,
+                                       GLuint source_texture,
+                                       unsigned int target,
+                                       unsigned int texture,
+                                       unsigned int internal_format,
+                                       unsigned int format,
+                                       unsigned int type,
+                                       int level,
+                                       bool premultiply_alpha,
+                                       bool flip_y) {
+  // The video is stored in a unmultiplied format, so premultiply if necessary.
+  // Application itself needs to take care of setting the right |flip_y|
+  // value down to get the expected result.
+  // "flip_y == true" means to reverse the video orientation while
+  // "flip_y == false" means to keep the intrinsic orientation.
+  if (visible_rect != gfx::Rect(coded_size)) {
+    // Must reallocate the destination texture and copy only a sub-portion.
+
+    // There should always be enough data in the source texture to
+    // cover this copy.
+    DCHECK_LE(visible_rect.width(), coded_size.width());
+    DCHECK_LE(visible_rect.height(), coded_size.height());
+
+    gl->BindTexture(target, texture);
+    gl->TexImage2D(target, level, internal_format, visible_rect.width(),
+                   visible_rect.height(), 0, format, type, nullptr);
+    gl->CopySubTextureCHROMIUM(source_texture, 0, target, texture, level, 0, 0,
+                               visible_rect.x(), visible_rect.y(),
+                               visible_rect.width(), visible_rect.height(),
+                               flip_y, premultiply_alpha, false);
+
+  } else {
+    gl->CopyTextureCHROMIUM(source_texture, 0, target, texture, level,
+                            internal_format, type, flip_y, premultiply_alpha,
+                            false);
+  }
 }
 
 }  // anonymous namespace
@@ -842,36 +895,10 @@ void PaintCanvasVideoRenderer::CopyVideoFrameSingleTextureToGLTexture(
   gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
   uint32_t source_texture =
       gl->CreateAndConsumeTextureCHROMIUM(mailbox_holder.mailbox.name);
-
-  // The video is stored in a unmultiplied format, so premultiply
-  // if necessary.
-  // Application itself needs to take care of setting the right |flip_y|
-  // value down to get the expected result.
-  // "flip_y == true" means to reverse the video orientation while
-  // "flip_y == false" means to keep the intrinsic orientation.
-  if (video_frame->visible_rect().size() != video_frame->coded_size()) {
-    // Must reallocate the destination texture and copy only a sub-portion.
-    gfx::Rect dest_rect = video_frame->visible_rect();
-#if DCHECK_IS_ON()
-    // There should always be enough data in the source texture to
-    // cover this copy.
-    DCHECK_LE(dest_rect.width(), video_frame->coded_size().width());
-    DCHECK_LE(dest_rect.height(), video_frame->coded_size().height());
-#endif
-    gl->BindTexture(target, texture);
-    gl->TexImage2D(target, level, internal_format, dest_rect.width(),
-                   dest_rect.height(), 0, format, type, nullptr);
-    gl->CopySubTextureCHROMIUM(source_texture, 0, target, texture, level, 0, 0,
-                               dest_rect.x(), dest_rect.y(), dest_rect.width(),
-                               dest_rect.height(), flip_y, premultiply_alpha,
-                               false);
-
-  } else {
-    gl->CopyTextureCHROMIUM(source_texture, 0, target, texture, level,
-                            internal_format, type, flip_y, premultiply_alpha,
-                            false);
-  }
-
+  VideoFrameCopyTextureOrSubTexture(gl, video_frame->coded_size(),
+                                    video_frame->visible_rect(), source_texture,
+                                    target, texture, internal_format, format,
+                                    type, level, premultiply_alpha, flip_y);
   gl->DeleteTextures(1, &source_texture);
   gl->Flush();
 
@@ -945,6 +972,119 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
         format, type, level, premultiply_alpha, flip_y);
   }
 
+  return true;
+}
+
+bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
+    const Context3D& context_3d,
+    gpu::gles2::GLES2Interface* destination_gl,
+    const scoped_refptr<VideoFrame>& video_frame,
+    unsigned int target,
+    unsigned int texture,
+    unsigned int internal_format,
+    unsigned int format,
+    unsigned int type,
+    int level,
+    bool premultiply_alpha,
+    bool flip_y) {
+  if (!context_3d.gr_context) {
+    return false;
+  }
+
+  if (!video_frame || !video_frame->IsMappable()) {
+    return false;
+  }
+
+  if (video_frame->format() != media::PIXEL_FORMAT_I420) {
+    return false;
+  }
+  // Could handle NV12 here as well. See NewSkImageFromVideoFrameYUVTextures.
+
+  static constexpr size_t kNumPlanes = 3;
+  DCHECK_EQ(video_frame->NumPlanes(video_frame->format()), kNumPlanes);
+  // Y,U,V GPU-side SkImages. (These must outlive the yuv_textures).
+  sk_sp<SkImage> yuv_images[kNumPlanes]{};
+  // Y,U,V GPU textures from those SkImages.
+  // (A GrBackendTexture is a non-owned reference to the SkImage's texture.)
+  GrBackendTexture yuv_textures[kNumPlanes]{};
+
+  // Upload the whole coded image area (not visible rect).
+  gfx::Size y_tex_size = video_frame->coded_size();
+  gfx::Size uv_tex_size((y_tex_size.width() + 1) / 2,
+                        (y_tex_size.height() + 1) / 2);
+
+  for (size_t plane = 0; plane < kNumPlanes; ++plane) {
+    const uint8_t* data = video_frame->data(plane);
+    int plane_stride = video_frame->stride(plane);
+
+    bool is_y_plane = plane == media::VideoFrame::kYPlane;
+    gfx::Size tex_size = is_y_plane ? y_tex_size : uv_tex_size;
+    int data_size = plane_stride * (tex_size.height() - 1) + tex_size.width();
+
+    // Create a CPU-side SkImage from the channel.
+    sk_sp<SkData> sk_data = SkData::MakeWithoutCopy(data, data_size);
+    DCHECK(sk_data);
+    SkImageInfo image_info =
+        SkImageInfo::Make(tex_size.width(), tex_size.height(),
+                          kGray_8_SkColorType, kUnknown_SkAlphaType);
+    sk_sp<SkImage> plane_image_cpu =
+        SkImage::MakeRasterData(image_info, sk_data, plane_stride);
+    DCHECK(plane_image_cpu);
+
+    // Upload the CPU-side SkImage into a GPU-side SkImage.
+    // (Note the original video_frame data is no longer used after this point.)
+    yuv_images[plane] =
+        plane_image_cpu->makeTextureImage(context_3d.gr_context, nullptr);
+    DCHECK(yuv_images[plane]);
+
+    // Extract the backend texture from the GPU-side image.
+    yuv_textures[plane] = yuv_images[plane]->getBackendTexture(false);
+  }
+
+  // Decode 3 GPU-side Y,U,V SkImages into a GPU-side RGB SkImage.
+  sk_sp<SkImage> yuv_image = YUVGrBackendTexturesToSkImage(
+      context_3d.gr_context, video_frame->ColorSpace(), video_frame->format(),
+      yuv_textures);
+  if (!yuv_image) {
+    return false;
+  }
+
+  GrGLTextureInfo src_texture_info{};
+  yuv_image->getBackendTexture(false).getGLTextureInfo(&src_texture_info);
+
+  gpu::gles2::GLES2Interface* source_gl = context_3d.gl;
+  gpu::MailboxHolder mailbox_holder;
+  mailbox_holder.texture_target = src_texture_info.fTarget;
+  source_gl->ProduceTextureDirectCHROMIUM(src_texture_info.fID,
+                                          mailbox_holder.mailbox.name);
+
+  // Wait for mailbox creation on source context before consuming it and
+  // copying from it on the consumer context.
+  source_gl->GenUnverifiedSyncTokenCHROMIUM(
+      mailbox_holder.sync_token.GetData());
+
+  destination_gl->WaitSyncTokenCHROMIUM(
+      mailbox_holder.sync_token.GetConstData());
+  uint32_t intermediate_texture =
+      destination_gl->CreateAndConsumeTextureCHROMIUM(
+          mailbox_holder.mailbox.name);
+  VideoFrameCopyTextureOrSubTexture(
+      destination_gl, video_frame->coded_size(), video_frame->visible_rect(),
+      intermediate_texture, target, texture, internal_format, format, type,
+      level, premultiply_alpha, flip_y);
+  destination_gl->DeleteTextures(1, &intermediate_texture);
+
+  // Wait for destination context to consume mailbox before deleting it in
+  // source context.
+  gpu::SyncToken dest_sync_token;
+  destination_gl->GenUnverifiedSyncTokenCHROMIUM(dest_sync_token.GetData());
+  source_gl->WaitSyncTokenCHROMIUM(dest_sync_token.GetConstData());
+
+  // video_frame->UpdateReleaseSyncToken is not necessary since the video frame
+  // data we used was CPU-side (IsMappable) to begin with. If there were any
+  // textures, we didn't use them.
+
+  // The temporary SkImages should be automatically cleaned up here.
   return true;
 }
 

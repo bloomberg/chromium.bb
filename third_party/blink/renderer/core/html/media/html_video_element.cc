@@ -369,6 +369,26 @@ bool HTMLVideoElement::CopyVideoTextureToPlatformTexture(
       premultiply_alpha, flip_y, already_uploaded_id, out_metadata);
 }
 
+bool HTMLVideoElement::CopyVideoYUVDataToPlatformTexture(
+    gpu::gles2::GLES2Interface* gl,
+    GLenum target,
+    GLuint texture,
+    GLenum internal_format,
+    GLenum format,
+    GLenum type,
+    GLint level,
+    bool premultiply_alpha,
+    bool flip_y,
+    int already_uploaded_id,
+    WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
+  if (!GetWebMediaPlayer())
+    return false;
+
+  return GetWebMediaPlayer()->CopyVideoYUVDataToPlatformTexture(
+      gl, target, texture, internal_format, format, type, level,
+      premultiply_alpha, flip_y, already_uploaded_id, out_metadata);
+}
+
 bool HTMLVideoElement::TexImageImpl(
     WebMediaPlayer::TexImageFunctionID function_id,
     GLenum target,
