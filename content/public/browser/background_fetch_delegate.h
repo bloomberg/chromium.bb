@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/resource_request_info.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GURL;
@@ -27,6 +28,10 @@ namespace net {
 class HttpRequestHeaders;
 struct NetworkTrafficAnnotationTag;
 }  // namespace net
+
+namespace url {
+class Origin;
+}  // namespace url
 
 namespace content {
 struct BackgroundFetchResponse;
@@ -50,6 +55,7 @@ enum class BackgroundFetchReasonToAbort {
 class CONTENT_EXPORT BackgroundFetchDelegate {
  public:
   using GetIconDisplaySizeCallback = base::OnceCallback<void(const gfx::Size&)>;
+  using GetPermissionForOriginCallback = base::OnceCallback<void(bool)>;
 
   // Client interface that a BackgroundFetchDelegate would use to signal the
   // progress of a background fetch.
@@ -97,6 +103,13 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
 
   // Gets size of the icon to display with the Background Fetch UI.
   virtual void GetIconDisplaySize(GetIconDisplaySizeCallback callback) = 0;
+
+  // Checks whether |origin| has permission to start a Background Fetch.
+  // |wc_getter| can be null, which means this is running from a worker context.
+  virtual void GetPermissionForOrigin(
+      const url::Origin& origin,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      GetPermissionForOriginCallback callback) = 0;
 
   // Creates a new download grouping identified by |job_unique_id|. Further
   // downloads started by DownloadUrl will also use this |job_unique_id| so that

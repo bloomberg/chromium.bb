@@ -52,6 +52,10 @@ class BackgroundFetchDelegateImpl
 
   // BackgroundFetchDelegate implementation:
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
+  void GetPermissionForOrigin(
+      const url::Origin& origin,
+      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      GetPermissionForOriginCallback callback) override;
   void CreateDownloadJob(std::unique_ptr<content::BackgroundFetchDescription>
                              fetch_description) override;
   void DownloadUrl(const std::string& job_unique_id,

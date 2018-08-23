@@ -65,6 +65,10 @@ class MockBackgroundFetchDelegate : public BackgroundFetchDelegate {
   ~MockBackgroundFetchDelegate() override;
 
   // BackgroundFetchDelegate implementation:
+  void GetPermissionForOrigin(
+      const url::Origin& origin,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      GetPermissionForOriginCallback callback) override;
   void GetIconDisplaySize(
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) override;
   void CreateDownloadJob(

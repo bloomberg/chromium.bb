@@ -330,6 +330,11 @@ void BackgroundFetchManager::DidFetch(
           script_state->GetIsolate(),
           "There already is a registration for the given id."));
       return;
+    case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
+      resolver->Reject(V8ThrowException::CreateTypeError(
+          script_state->GetIsolate(),
+          "This origin does not have permission to start a fetch."));
+      return;
     case mojom::blink::BackgroundFetchError::STORAGE_ERROR:
       DCHECK(!registration);
       resolver->Reject(V8ThrowException::CreateTypeError(
@@ -468,6 +473,7 @@ void BackgroundFetchManager::DidGetRegistration(
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
+    case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
       // Not applicable for this callback.
       break;
@@ -517,6 +523,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
     case mojom::blink::BackgroundFetchError::DUPLICATED_DEVELOPER_ID:
     case mojom::blink::BackgroundFetchError::INVALID_ARGUMENT:
     case mojom::blink::BackgroundFetchError::INVALID_ID:
+    case mojom::blink::BackgroundFetchError::PERMISSION_DENIED:
     case mojom::blink::BackgroundFetchError::SERVICE_WORKER_UNAVAILABLE:
     case mojom::blink::BackgroundFetchError::QUOTA_EXCEEDED:
       // Not applicable for this callback.

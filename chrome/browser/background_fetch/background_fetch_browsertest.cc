@@ -12,6 +12,8 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -149,6 +151,8 @@ class OfflineContentProviderObserver : public OfflineContentProvider::Observer {
   DISALLOW_COPY_AND_ASSIGN(OfflineContentProviderObserver);
 };
 
+}  // namespace
+
 class BackgroundFetchBrowserTest : public InProcessBrowserTest {
  public:
   BackgroundFetchBrowserTest()
@@ -223,13 +227,13 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
   }
 
-  // Runs the |script| and waits for a background fetch event.
+  // Runs the |script| and waits for a message.
   // Wrap in ASSERT_NO_FATAL_FAILURE().
-  void RunScriptAndCheckResultingEvent(const std::string& script,
-                                       const std::string& expected_event) {
+  void RunScriptAndCheckResultingMessage(const std::string& script,
+                                         const std::string& expected_message) {
     std::string result;
     ASSERT_NO_FATAL_FAILURE(RunScript(script, &result));
-    ASSERT_EQ(expected_event, result);
+    ASSERT_EQ(expected_message, result);
   }
 
   void GetVisualsForOfflineItemSync(
@@ -290,6 +294,17 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
     DCHECK(out_item);
     *out_item = processed_item;
     std::move(quit_closure).Run();
+  }
+
+  void RevokeDownloadPermission() {
+    content::WebContents* web_contents =
+        browser()->tab_strip_model()->GetActiveWebContents();
+    DownloadRequestLimiter::TabDownloadState* tab_download_state =
+        g_browser_process->download_request_limiter()->GetDownloadState(
+            web_contents, web_contents, true /* create */);
+    tab_download_state->set_download_seen();
+    tab_download_state->SetDownloadStatusAndNotify(
+        DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
   }
 
  protected:
@@ -492,7 +507,7 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchesRunToCompletionAndUpdateTitle_Fetched) {
-  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingEvent(
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "RunFetchTillCompletion()", "backgroundfetchsuccess"));
   base::RunLoop().RunUntilIdle();  // Give `updateUI` a chance to propagate.
   EXPECT_TRUE(
@@ -502,7 +517,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        FetchesRunToCompletionAndUpdateTitle_Failed) {
-  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingEvent(
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "RunFetchTillCompletionWithMissingResource()", "backgroundfetchfail"));
   base::RunLoop().RunUntilIdle();  // Give `updateUI` a chance to propagate.
   EXPECT_TRUE(
@@ -510,4 +525,10 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
                        "New Failed Title!", base::CompareCase::SENSITIVE));
 }
 
-}  // namespace
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
+                       FetchRejectedWithoutPermission) {
+  RevokeDownloadPermission();
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "RunFetchAnExpectAnException()",
+      "This origin does not have permission to start a fetch."));
+}

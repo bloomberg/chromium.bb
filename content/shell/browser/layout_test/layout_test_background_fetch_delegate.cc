@@ -173,6 +173,14 @@ void LayoutTestBackgroundFetchDelegate::GetIconDisplaySize(
   std::move(callback).Run(gfx::Size(192, 192));
 }
 
+void LayoutTestBackgroundFetchDelegate::GetPermissionForOrigin(
+    const url::Origin& origin,
+    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    GetPermissionForOriginCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  std::move(callback).Run(true /* has_permission */);
+}
+
 void LayoutTestBackgroundFetchDelegate::CreateDownloadJob(
     std::unique_ptr<BackgroundFetchDescription> fetch_description) {}
 
