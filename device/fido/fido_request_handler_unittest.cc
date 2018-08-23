@@ -467,6 +467,9 @@ TEST_F(FidoRequestHandlerTest, TestSetPlatformAuthenticator) {
   // the authenticator gets injected and used.
   auto device = MockFidoDevice::MakeCtap();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponsePlatformDevice);
   // Device returns success response.
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
@@ -500,6 +503,9 @@ TEST_F(FidoRequestHandlerTest,
   auto device = MockFidoDevice::MakeCtap();
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   // Device returns success response.
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
   device->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                       CreateFakeSuccessDeviceResponse());
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
