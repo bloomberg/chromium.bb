@@ -33,7 +33,7 @@ class CustodianProfileDownloaderService : public KeyedService,
   // ProfileDownloaderDelegate:
   bool NeedsProfilePicture() const override;
   int GetDesiredImageSideLength() const override;
-  std::string GetCachedPictureURL() const override;
+  GURL GetCachedPictureURL() const override;
   Profile* GetBrowserProfile() override;
   bool IsPreSignin() const override;
   void OnProfileDownloadSuccess(ProfileDownloader* downloader) override;
