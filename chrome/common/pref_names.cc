@@ -1548,11 +1548,6 @@ const char kDevToolsTCPDiscoveryConfig[] = "devtools.tcp_discovery_config";
 // A dictionary with generic DevTools settings.
 const char kDevToolsPreferences[] = "devtools.preferences";
 
-#if defined(OS_ANDROID)
-// A boolean specifying whether remote dev tools debugging is enabled.
-const char kDevToolsRemoteEnabled[] = "devtools.remote_enabled";
-#endif
-
 // Local hash of authentication password, used for off-line authentication
 // when on-line authentication is not available.
 const char kGoogleServicesPasswordHash[] = "google.services.password_hash";
