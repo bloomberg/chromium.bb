@@ -611,6 +611,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
+    @DisabledTest(message = "Needs updates for SurfaceSynchronization - crbug.com/876943")
     public void testPeekWithPageScrollPercentage() throws Exception {
         // Set the screen orientation to portrait since we scroll the web contents in absolute
         // pixels in the test.
