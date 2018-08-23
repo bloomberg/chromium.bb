@@ -1363,8 +1363,8 @@ TEST_P(CleanerLoggingServiceTest, UpdateRemovalStatus_UnknownUwS) {
 
 TEST_P(CleanerLoggingServiceTest, AllExpectedRemovalsConfirmed) {
   const base::FilePath kFile1(L"C:\\Program Files\\uws.exe");
-  const base::FilePath kFile2(L"C:\\Program Files\\virus.exe");
-  const base::FilePath kFile3(L"C:\\Program Files\\malware.exe");
+  const base::FilePath kFile2(L"C:\\Program Files\\persistant.exe");
+  const base::FilePath kFile3(L"C:\\Program Files\\another_uws.exe");
   const base::FilePath kFile4(L"C:\\Program Files\\inactive.txt");
 
   logging_service_->EnableUploads(true, registry_logger_.get());
