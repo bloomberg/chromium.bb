@@ -167,6 +167,7 @@ source_set("context_menu") {
 source_set("web_frame") {
   deps = [
     "//base",
+    "//crypto",
     "//ios/web/public",
     "//url",
   ]

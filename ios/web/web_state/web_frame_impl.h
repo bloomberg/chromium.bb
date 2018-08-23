@@ -19,8 +19,12 @@ class WebState;
 
 class WebFrameImpl : public WebFrame {
  public:
+  // Creates a new WebFrame. |initial_message_id| will be used as the message ID
+  // of the next message sent to the frame with the |CallJavaScriptFunction|
+  // API.
   WebFrameImpl(const std::string& frame_id,
                std::unique_ptr<crypto::SymmetricKey> frame_key,
+               int initial_message_id,
                bool is_main_frame,
                GURL security_origin,
                web::WebState* web_state);
@@ -34,6 +38,10 @@ class WebFrameImpl : public WebFrame {
   bool IsMainFrame() const override;
   GURL GetSecurityOrigin() const override;
 
+  bool CallJavaScriptFunction(
+      const std::string& name,
+      const std::vector<base::Value>& parameters) override;
+
  private:
   // The frame identifier which uniquely identifies this frame across the
   // application's lifetime.
@@ -41,6 +49,8 @@ class WebFrameImpl : public WebFrame {
   // The symmetric encryption key used to encrypt messages addressed to the
   // frame. Stored in a base64 encoded string.
   std::unique_ptr<crypto::SymmetricKey> frame_key_;
+  // The message ID of the next JavaScript message to be sent.
+  int next_message_id_ = 0;
   // Whether or not the receiver represents the main frame.
   bool is_main_frame_ = false;
   // The security origin associated with this frame.

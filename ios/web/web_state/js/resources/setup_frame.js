@@ -32,6 +32,17 @@ window.addEventListener('message', function(message) {
   if (payload.hasOwnProperty('type') &&
     payload.type == 'org.chromium.registerForFrameMessaging') {
     __gCrWeb.frameMessaging['getExistingFrames']();
+  } else if (payload.hasOwnProperty('type') &&
+      payload.type == 'org.chromium.encryptedMessage') {
+    if (message.hasOwnProperty('payload') &&
+        message.hasOwnProperty('iv') &&
+        message.hasOwnProperty('target_frame_id')) {
+      __gCrWeb.frameMessaging['routeMessage'](
+        message['payload'],
+        message['iv'],
+        message['target_frame_id']
+      );
+    }
   }
 });
 

@@ -10,6 +10,7 @@
 #include <stddef.h>
 
 #include <cmath>
+#include <limits>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -2454,7 +2455,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
   if (_isBeingDestroyed || ![message.body isKindOfClass:[NSDictionary class]] ||
       ![message.body[@"crwFrameId"] isKindOfClass:[NSString class]] ||
       ![message.body[@"crwFrameKey"] isKindOfClass:[NSString class]] ||
-      [message.body[@"crwFrameKey"] length] == 0) {
+      [message.body[@"crwFrameKey"] length] == 0 ||
+      ![message.body[@"crwFrameLastReceivedMessageId"]
+          isKindOfClass:[NSNumber class]]) {
     // WebController is being destroyed, message is invalid, or frame does not
     // have a key.
     return;
@@ -2466,6 +2469,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   std::string frameID = base::SysNSStringToUTF8(message.body[@"crwFrameId"]);
   std::string encodedFrameKeyString =
       base::SysNSStringToUTF8(message.body[@"crwFrameKey"]);
+  NSNumber* lastSentMessageID = message.body[@"crwFrameLastReceivedMessageId"];
   if (!framesManager->GetFrameWithId(frameID)) {
     GURL messageFrameOrigin =
         web::GURLOriginWithWKSecurityOrigin(message.frameInfo.securityOrigin);
@@ -2476,9 +2480,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
         crypto::SymmetricKey::Import(crypto::SymmetricKey::Algorithm::AES,
                                      decodedFrameKeyString);
     if (frameKey) {
+      int initialMessageID = lastSentMessageID.intValue == INT_MAX
+                                 ? 0
+                                 : lastSentMessageID.intValue + 1;
       auto newFrame = std::make_unique<web::WebFrameImpl>(
-          frameID, std::move(frameKey), message.frameInfo.mainFrame,
-          messageFrameOrigin, self.webState);
+          frameID, std::move(frameKey), initialMessageID,
+          message.frameInfo.mainFrame, messageFrameOrigin, self.webState);
       framesManager->AddFrame(std::move(newFrame));
     }
   }
