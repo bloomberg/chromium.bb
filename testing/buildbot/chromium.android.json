@@ -17103,6 +17103,7 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -17141,6 +17142,7 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--annotation=Restriction=VR_Settings_Service",
           "--vr-settings-service-enabled",
           "--gs-results-bucket=chromium-result-details",
@@ -17276,6 +17278,7 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices"
         ],
@@ -17322,6 +17325,7 @@
         "args": [
           "--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json",
           "--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk",
+          "--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk",
           "--annotation=Restriction=VR_Settings_Service",
           "--vr-settings-service-enabled",
           "--gs-results-bucket=chromium-result-details",

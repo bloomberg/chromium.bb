@@ -289,15 +289,37 @@ public class VrBrowserDialogTest {
         mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
+    /**
+     * Tests that the keyboard appears when clicking on the URL bar.
+     * Also contains a regression test for https://crbug.com/874671 where inputting text into the
+     * URL bar would cause a browser crash.
+     */
     @Test
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
     public void testKeyboardAppearsOnUrlBarClick() throws InterruptedException, TimeoutException {
         clickElement("test_navigation_2d_page", UserFriendlyElementName.URL);
         captureScreen("KeyboardAppearsOnUrlBarClick_Visible");
+        // Regression test for https://crbug.com/874671
+        // We need to use the VrCore-side emulated controller because the keyboard isn't a UI
+        // element, meaning we can't specify it as a click target for the Chrome-side controller.
+        // We also can't use the MockBrowserKeyboardInterface like we do for web input testing, as
+        // that does not seem to work with the omnibox.
+        NativeUiUtils.revertToRealController();
+        // Point at the keyboard and click an arbitrary key
+        EmulatedVrController controller = new EmulatedVrController(mVrTestRule.getActivity());
+        controller.recenterView();
+        controller.moveControllerInstant(0.0f, -0.259f, -0.996f, -0.0f);
+        // Spam clicks to ensure we're getting one in.
+        for (int i = 0; i < 5; i++) {
+            controller.performControllerClick();
+        }
         mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
+    /**
+     * Tests that the overflow menu appears when the overflow menu button is clicked.
+     */
     @Test
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
@@ -307,6 +329,9 @@ public class VrBrowserDialogTest {
         mVrBrowserTestFramework.assertNoJavaScriptErrors();
     }
 
+    /**
+     * Tests that the page info popup appears when the security token in the URL bar is clicked.
+     */
     @Test
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)

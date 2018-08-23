@@ -106,6 +106,7 @@
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
       ],
       'swarming': {
         'dimension_sets': [
@@ -122,6 +123,7 @@
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
         '--annotation=Restriction=VR_Settings_Service',
         '--vr-settings-service-enabled',
       ],
@@ -177,6 +179,7 @@
       'args': [
         '--shared-prefs-file=src/chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/daydream_home/daydream_home_current.apk',
       ],
       'test': 'chrome_public_test_vr_apk',
@@ -185,6 +188,7 @@
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete_o2.json',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/daydream_home/daydream_home_current.apk',
       ],
       'test': 'chrome_public_test_vr_apk',
@@ -193,6 +197,7 @@
       'args': [
         '--shared-prefs-file=src/chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
         '--additional-apk=src/third_party/gvr-android-sdk/test-apks/daydream_home/daydream_home_current.apk',
         '--annotation=Restriction=VR_Settings_Service',
         '--vr-settings-service-enabled',
@@ -220,7 +225,8 @@
     'chrome_public_test_vr_apk-ddready-ddview': {
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_ddview_skipdon_setupcomplete.json',
-        '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk'
+        '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
       ],
       'test': 'chrome_public_test_vr_apk',
     },
@@ -228,6 +234,7 @@
       'args': [
         '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_enable_vr_settings_service.json',
         '--replace-system-package=com.google.vr.vrcore,//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_keyboard/vr_keyboard_current.apk',
         '--annotation=Restriction=VR_Settings_Service',
         '--vr-settings-service-enabled',
       ],
