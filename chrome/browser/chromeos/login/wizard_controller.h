@@ -148,7 +148,7 @@ class WizardController : public BaseScreenDelegate,
   BaseScreen* GetScreen(OobeScreen screen);
 
   // Returns the current ScreenManager instance.
-  ScreenManager* screen_manager() { return screen_manager_.get(); }
+  ScreenManager* screen_manager() const { return screen_manager_.get(); }
 
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
