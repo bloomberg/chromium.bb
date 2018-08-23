@@ -46,6 +46,11 @@ public class FlingingControllerBridge implements MediaStatusObserver {
         mFlingingController.getMediaController().seek(positionInMs);
     }
 
+    @CalledByNative
+    public long getApproximateCurrentTime() {
+        return mFlingingController.getApproximateCurrentTime();
+    }
+
     // MediaStatusObserver implementation.
     @Override
     public void onMediaStatusUpdate(MediaStatusBridge status) {
