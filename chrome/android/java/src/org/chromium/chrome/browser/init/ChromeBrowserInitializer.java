@@ -272,12 +272,16 @@ public class ChromeBrowserInitializer {
                     + "ChromeBrowserInitializer.postInflationStartup has been run.");
         }
         final ChainedTasks tasks = new ChainedTasks();
-        tasks.add(new Runnable() {
-            @Override
-            public void run() {
-                ProcessInitializationHandler.getInstance().initializePostNative();
-            }
-        });
+        // If full browser process is not going to be launched, it is up to individual service to
+        // launch its required components.
+        if (!delegate.startServiceManagerOnly()) {
+            tasks.add(new Runnable() {
+                @Override
+                public void run() {
+                    ProcessInitializationHandler.getInstance().initializePostNative();
+                }
+            });
+        }
 
         tasks.add(new Runnable() {
             @Override
