@@ -168,13 +168,22 @@ bool LevelDB::Load(std::vector<std::string>* entries) {
 
 bool LevelDB::LoadWithFilter(const KeyFilter& filter,
                              std::vector<std::string>* entries) {
+  return LoadWithFilter(filter, entries, leveldb::ReadOptions(), std::string());
+}
+
+bool LevelDB::LoadWithFilter(const KeyFilter& filter,
+                             std::vector<std::string>* entries,
+                             const leveldb::ReadOptions& options,
+                             const std::string& target_prefix) {
   DFAKE_SCOPED_LOCK(thread_checker_);
   if (!db_)
     return false;
 
-  leveldb::ReadOptions options;
   std::unique_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
-  for (db_iterator->SeekToFirst(); db_iterator->Valid(); db_iterator->Next()) {
+  leveldb::Slice target(target_prefix);
+  for (db_iterator->Seek(target);
+       db_iterator->Valid() && db_iterator->key().starts_with(target);
+       db_iterator->Next()) {
     if (!filter.is_null()) {
       leveldb::Slice key_slice = db_iterator->key();
       if (!filter.Run(std::string(key_slice.data(), key_slice.size())))

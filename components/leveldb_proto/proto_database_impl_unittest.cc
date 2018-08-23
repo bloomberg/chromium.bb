@@ -57,6 +57,11 @@ class MockDB : public LevelDB {
   MOCK_METHOD1(Load, bool(std::vector<std::string>*));
   MOCK_METHOD2(LoadWithFilter,
                bool(const KeyFilter&, std::vector<std::string>*));
+  MOCK_METHOD4(LoadWithFilter,
+               bool(const KeyFilter&,
+                    std::vector<std::string>*,
+                    const leveldb::ReadOptions&,
+                    const std::string&));
   MOCK_METHOD3(Get, bool(const std::string&, bool*, std::string*));
   MOCK_METHOD0(Destroy, bool());
 
@@ -282,7 +287,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadSuccess) {
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, LoadWithFilter(_, _))
+  EXPECT_CALL(*mock_db, LoadWithFilter(_, _, _, _))
       .WillOnce(AppendLoadEntries(model));
   EXPECT_CALL(caller, LoadCallback1(true, _))
       .WillOnce(VerifyLoadEntries(testing::ByRef(model)));
@@ -304,7 +309,7 @@ TEST_F(ProtoDatabaseImplTest, TestDBLoadFailure) {
                         base::BindOnce(&MockDatabaseCaller::InitCallback,
                                        base::Unretained(&caller)));
 
-  EXPECT_CALL(*mock_db, LoadWithFilter(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(*mock_db, LoadWithFilter(_, _, _, _)).WillOnce(Return(false));
   EXPECT_CALL(caller, LoadCallback1(false, _));
   db_->LoadEntries(base::BindOnce(&MockDatabaseCaller::LoadCallback,
                                   base::Unretained(&caller)));

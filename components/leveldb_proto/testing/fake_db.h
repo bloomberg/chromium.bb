@@ -48,6 +48,11 @@ class FakeDB : public ProtoDatabase<T> {
   void LoadEntriesWithFilter(
       const LevelDB::KeyFilter& key_filter,
       typename ProtoDatabase<T>::LoadCallback callback) override;
+  void LoadEntriesWithFilter(
+      const LevelDB::KeyFilter& filter,
+      const leveldb::ReadOptions& options,
+      const std::string& target_prefix,
+      typename ProtoDatabase<T>::LoadCallback callback) override;
   void LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) override;
   void GetEntry(const std::string& key,
                 typename ProtoDatabase<T>::GetCallback callback) override;
@@ -152,10 +157,22 @@ template <typename T>
 void FakeDB<T>::LoadEntriesWithFilter(
     const LevelDB::KeyFilter& key_filter,
     typename ProtoDatabase<T>::LoadCallback callback) {
+  LoadEntriesWithFilter(key_filter, leveldb::ReadOptions(), std::string(),
+                        std::move(callback));
+}
+
+template <typename T>
+void FakeDB<T>::LoadEntriesWithFilter(
+    const LevelDB::KeyFilter& key_filter,
+    const leveldb::ReadOptions& options,
+    const std::string& target_prefix,
+    typename ProtoDatabase<T>::LoadCallback callback) {
   std::unique_ptr<std::vector<T>> entries(new std::vector<T>());
   for (const auto& pair : *db_) {
-    if (key_filter.is_null() || key_filter.Run(pair.first))
-      entries->push_back(pair.second);
+    if (key_filter.is_null() || key_filter.Run(pair.first)) {
+      if (pair.first.compare(0, target_prefix.length(), target_prefix) == 0)
+        entries->push_back(pair.second);
+    }
   }
 
   load_callback_ =
