@@ -196,6 +196,10 @@ body.has-error #error {
   -webkit-transform: translateY(-50%);
 }
 
+body.shift-top-stripe .top-stripe {
+  top: 0px;  /* Calculate at runtime. */
+}
+
 .bottom-stripe,
 body:not(.tablet-landscape) .actions-group {
   position: absolute;
@@ -207,8 +211,8 @@ body.tablet-landscape .bottom-stripe {
   bottom: 40px;
 }
 
-body.shift-bottom-strip .bottom-stripe,
-body.shift-bottom-strip:not(.tablet-landscape) .actions-group {
+body.shift-bottom-stripe .bottom-stripe,
+body.shift-bottom-stripe:not(.tablet-landscape) .actions-group {
   bottom: 0px;  /* Calculate at runtime. */
 }
 
@@ -216,6 +220,11 @@ body.shift-bottom-strip:not(.tablet-landscape) .actions-group {
   position: absolute;
   left: 40px;
   -webkit-transform: translateX(-50%);
+}
+
+
+body.shift-left-stripe .left-stripe {
+  left: 0px;  /* Calculate at runtime. */
 }
 
 .right-stripe,
@@ -229,8 +238,8 @@ body:not(.tablet-landscape) .right-stripe {
   right: 40px;
 }
 
-body.shift-right-strip .right-stripe,
-body.shift-right-strip.tablet-landscape .actions-group {
+body.shift-right-stripe .right-stripe,
+body.shift-right-stripe.tablet-landscape .actions-group {
   right: 0px;  /* Calculate at runtime. */
 }
 
@@ -458,9 +467,13 @@ body.browser #browser {
   overflow: hidden;
 }
 
-body.shift-preview #preview-wrapper {
+body.shift-preview-top #preview-wrapper {
   position: absolute;
   top: 0;
+}
+
+body.shift-preview-left #preview-wrapper {
+  position: absolute;
   left: 0;
 }
 
