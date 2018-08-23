@@ -68,7 +68,8 @@ bool LocalCardMigrationManager::ShouldOfferLocalCardMigration(
           !migratable_credit_cards_.empty());
 }
 
-void LocalCardMigrationManager::AttemptToOfferLocalCardMigration() {
+void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
+    bool is_from_settings_page) {
   // Abort the migration if |payments_client_| is nullptr.
   if (!payments_client_)
     return;
@@ -88,21 +89,26 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration() {
       /*pan_first_six=*/std::string(), upload_request_.active_experiments,
       app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
-                     weak_ptr_factory_.GetWeakPtr()),
+                     weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),
       payments::kMigrateCardBillableServiceNumber);
 }
 
-// TODO(crbug.com/852904): Pops up a larger, modal dialog showing the local
-// cards to be uploaded. Pass the reference of vector<MigratableCreditCard> and
-// the callback function is OnConfirmLocalCardsMigration().
+// Callback function when user agrees to migration on the intermediate dialog.
+// Call ShowMainMigrationDialog() to pop up a larger, modal dialog showing the
+// local cards to be uploaded.
 void LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog() {
-  user_accepted_main_migration_dialog_ = false;
-  // Pops up a larger, modal dialog showing the local cards to be uploaded.
-  client_->ConfirmMigrateLocalCardToCloud(
-      migratable_credit_cards_,
-      base::BindOnce(
-          &LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog,
-          weak_ptr_factory_.GetWeakPtr()));
+  ShowMainMigrationDialog();
+}
+
+// Send the migration request once risk data is available.
+void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
+  user_accepted_main_migration_dialog_ = true;
+  // Populating risk data and offering migration two-round pop-ups occur
+  // asynchronously. If |migration_risk_data_| has already been loaded, send the
+  // migrate local cards request. Otherwise, continue to wait and let
+  // OnDidGetUploadRiskData handle it.
+  if (!migration_risk_data_.empty())
+    SendMigrateLocalCardsRequest();
 }
 
 bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
@@ -122,24 +128,61 @@ bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
 }
 
 void LocalCardMigrationManager::OnDidGetUploadDetails(
+    bool is_from_settings_page,
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
     std::unique_ptr<base::DictionaryValue> legal_message) {
   if (result == AutofillClient::SUCCESS) {
     upload_request_.context_token = context_token;
     legal_message_ = std::move(legal_message);
+    migration_risk_data_.clear();
     // If we successfully received the legal docs, trigger the offer-to-migrate
-    // dialog.
-    client_->ShowLocalCardMigrationDialog(base::BindOnce(
-        &LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog,
+    // dialog. If triggered from settings page, we pop-up the main prompt
+    // directly. If not, we pop up the intermediate bubble.
+    if (is_from_settings_page) {
+      // Pops up a larger, modal dialog showing the local cards to be uploaded.
+      ShowMainMigrationDialog();
+    } else {
+      client_->ShowLocalCardMigrationDialog(base::BindOnce(
+          &LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog,
+          weak_ptr_factory_.GetWeakPtr()));
+    }
+    // TODO(crbug.com/876895): Clean up the LoadRiskData Bind/BindRepeating
+    // usages
+    client_->LoadRiskData(base::BindRepeating(
+        &LocalCardMigrationManager::OnDidGetMigrationRiskData,
         weak_ptr_factory_.GetWeakPtr()));
-    // TODO(crbug.com/852904): Call the client LoadRiskData()
   }
 }
 
-// TODO(crbug.com/852904): Send the upload request once risk data is available.
-void LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
-  user_accepted_main_migration_dialog_ = true;
+void LocalCardMigrationManager::OnDidGetMigrationRiskData(
+    const std::string& risk_data) {
+  migration_risk_data_ = risk_data;
+  // Populating risk data and offering migration two-round pop-ups occur
+  // asynchronously. If the main migration dialog has already been accepted,
+  // send the migrate local cards request. Otherwise, continue to wait for the
+  // user to accept the two round dialog.
+  if (user_accepted_main_migration_dialog_)
+    SendMigrateLocalCardsRequest();
+}
+
+// TODO(crbug.com/852904): Send the migration request. Will call payments_client
+// to create a new PaymentsRequest. Also create a new callback function
+// OnDidMigrateLocalCards.
+void LocalCardMigrationManager::SendMigrateLocalCardsRequest() {}
+
+// Pops up a larger, modal dialog showing the local cards to be uploaded. Pass
+// the reference of vector<MigratableCreditCard> and the callback function is
+// OnUserAcceptedMainMigrationDialog(). Can be called when user agrees to
+// migration on the intermediate dialog or directly from settings page.
+void LocalCardMigrationManager::ShowMainMigrationDialog() {
+  user_accepted_main_migration_dialog_ = false;
+  // Pops up a larger, modal dialog showing the local cards to be uploaded.
+  client_->ConfirmMigrateLocalCardToCloud(
+      migratable_credit_cards_,
+      base::BindOnce(
+          &LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog,
+          weak_ptr_factory_.GetWeakPtr()));
 }
 
 int LocalCardMigrationManager::GetDetectedValues() const {
