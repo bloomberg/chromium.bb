@@ -43,9 +43,12 @@ KeyedService*
 GoogleSearchDomainMixingMetricsEmitterFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
+  auto* history_service = HistoryServiceFactory::GetInstance()->GetForProfile(
+      profile, ServiceAccessType::IMPLICIT_ACCESS);
+  if (history_service == nullptr)
+    return nullptr;
   auto emitter = std::make_unique<GoogleSearchDomainMixingMetricsEmitter>(
-      profile->GetPrefs(), HistoryServiceFactory::GetInstance()->GetForProfile(
-                               profile, ServiceAccessType::IMPLICIT_ACCESS));
+      profile->GetPrefs(), history_service);
   emitter->Start();
   return emitter.release();
 }
