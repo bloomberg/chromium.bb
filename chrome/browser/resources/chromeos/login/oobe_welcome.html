@@ -176,6 +176,21 @@
             [[i18nDynamic(locale, 'screenMagnifierOptionOff')]]
           </span>
         </oobe-a11y-option>
+        <oobe-a11y-option checked="[[a11yStatus.selectToSpeakEnabled]]"
+            on-change="onA11yOptionChanged_"
+            chrome-message="enableSelectToSpeak"
+            label-for-aria="[[i18nDynamic(locale, 'selectToSpeakOption')]]"
+            id="selectToSpeakOobeOption">
+          <span slot="title">
+            [[i18nDynamic(locale, 'selectToSpeakOption')]]
+          </span>
+          <span slot="checked-value">
+            [[i18nDynamic(locale, 'selectToSpeakOptionOn')]]
+          </span>
+          <span slot="unchecked-value">
+            [[i18nDynamic(locale, 'selectToSpeakOptionOff')]]
+          </span>
+        </oobe-a11y-option>
         <oobe-a11y-option checked="[[a11yStatus.virtualKeyboardEnabled]]"
             on-change="onA11yOptionChanged_"
             chrome-message="enableVirtualKeyboard"
