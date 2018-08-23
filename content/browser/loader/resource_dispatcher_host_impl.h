@@ -597,6 +597,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       ResourceContext* resource_context,
       network::mojom::FetchRequestMode fetch_request_mode,
       RequestContextType fetch_request_context_type,
+      uint32_t url_loader_options,
       AppCacheService* appcache_service,
       int child_id,
       int route_id,

@@ -149,7 +149,8 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId,
-      network::mojom::kURLLoadOptionNone, request, client.CreateInterfacePtr(),
+      network::mojom::kURLLoadOptionSniffMimeType, request,
+      client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   ASSERT_FALSE(client.has_received_response());
@@ -224,8 +225,9 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, network::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
+      mojo::MakeRequest(&loader), 2, 1,
+      network::mojom::kURLLoadOptionSniffMimeType, request,
+      client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
@@ -253,8 +255,9 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, network::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
+      mojo::MakeRequest(&loader), 2, 1,
+      network::mojom::kURLLoadOptionSniffMimeType, request,
+      client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
@@ -281,8 +284,9 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   request.request_initiator = url::Origin::Create(request.url);
   ASSERT_FALSE(request.url.is_valid());
   factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, network::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
+      mojo::MakeRequest(&loader), 2, 1,
+      network::mojom::kURLLoadOptionSniffMimeType, request,
+      client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
@@ -310,8 +314,9 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   // Need to set same-site |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
-      mojo::MakeRequest(&loader), 2, 1, network::mojom::kURLLoadOptionNone,
-      request, client.CreateInterfacePtr(),
+      mojo::MakeRequest(&loader), 2, 1,
+      network::mojom::kURLLoadOptionSniffMimeType, request,
+      client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
@@ -343,7 +348,8 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   request.report_raw_headers = true;
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId,
-      network::mojom::kURLLoadOptionNone, request, client.CreateInterfacePtr(),
+      network::mojom::kURLLoadOptionSniffMimeType, request,
+      client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
@@ -403,7 +409,8 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   request.request_initiator = url::Origin::Create(request.url);
   factory_->CreateLoaderAndStart(
       mojo::MakeRequest(&loader), kRoutingId, kRequestId,
-      network::mojom::kURLLoadOptionNone, request, client.CreateInterfacePtr(),
+      network::mojom::kURLLoadOptionSniffMimeType, request,
+      client.CreateInterfacePtr(),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   base::RunLoop().RunUntilIdle();

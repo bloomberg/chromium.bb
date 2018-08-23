@@ -899,7 +899,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithRenderFrame(
   request.render_frame_id = render_frame_id;
   filter_->CreateLoaderAndStart(
       std::move(loader_request), render_view_id, request_id,
-      network::mojom::kURLLoadOptionNone, request, std::move(client),
+      network::mojom::kURLLoadOptionSniffMimeType, request, std::move(client),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 
@@ -914,7 +914,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
   network::ResourceRequest request = CreateResourceRequest("GET", type, url);
   filter->CreateLoaderAndStart(
       std::move(loader_request), render_view_id, request_id,
-      network::mojom::kURLLoadOptionNone, request, std::move(client),
+      network::mojom::kURLLoadOptionSniffMimeType, request, std::move(client),
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 }
 

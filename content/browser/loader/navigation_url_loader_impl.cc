@@ -380,6 +380,10 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   static uint32_t GetURLLoaderOptions(bool is_main_frame) {
     uint32_t options = network::mojom::kURLLoadOptionNone;
+
+    // Ensure that Mime sniffing works.
+    options |= network::mojom::kURLLoadOptionSniffMimeType;
+
     if (is_main_frame) {
       // SSLInfo is not needed on subframe responses because users can inspect
       // only the certificate for the main frame when using the info bubble.
@@ -387,9 +391,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       options |= network::mojom::kURLLoadOptionSendSSLInfoForCertificateError;
     }
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      options |= network::mojom::kURLLoadOptionSniffMimeType;
-    } else {
+    if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       // TODO(arthursonzogni): This is a temporary option. Remove this as soon
       // as the InterceptingResourceHandler is removed.
       // See https://crbug.com/791049.

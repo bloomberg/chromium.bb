@@ -1079,8 +1079,8 @@ ResourceDispatcherHostImpl::CreateResourceHandler(
       request, static_cast<ResourceType>(request_data.resource_type),
       resource_context, request_data.fetch_request_mode,
       static_cast<RequestContextType>(request_data.fetch_request_context_type),
-      requester_info->appcache_service(), child_id, route_id,
-      std::move(handler));
+      url_loader_options, requester_info->appcache_service(), child_id,
+      route_id, std::move(handler));
 }
 
 std::unique_ptr<ResourceHandler>
@@ -1090,6 +1090,7 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
     ResourceContext* resource_context,
     network::mojom::FetchRequestMode fetch_request_mode,
     RequestContextType fetch_request_context_type,
+    uint32_t url_loader_options,
     AppCacheService* appcache_service,
     int child_id,
     int route_id,
@@ -1158,9 +1159,11 @@ ResourceDispatcherHostImpl::AddStandardHandlers(
   // Note: all ResourceHandler following the MimeSniffingResourceHandler
   // should expect OnWillRead to be called *before* OnResponseStarted as
   // part of the mime sniffing process.
-  handler.reset(new MimeSniffingResourceHandler(
-      std::move(handler), this, plugin_service, intercepting_handler, request,
-      fetch_request_context_type));
+  if (url_loader_options & network::mojom::kURLLoadOptionSniffMimeType) {
+    handler.reset(new MimeSniffingResourceHandler(
+        std::move(handler), this, plugin_service, intercepting_handler, request,
+        fetch_request_context_type));
+  }
 
   // Add the pre mime sniffing throttles.
   handler.reset(new ThrottlingResourceHandler(
@@ -1612,7 +1615,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   handler = AddStandardHandlers(
       new_request.get(), resource_type, resource_context,
       network::mojom::FetchRequestMode::kNoCORS,
-      info.begin_params->request_context_type,
+      info.begin_params->request_context_type, url_loader_options,
       appcache_handle_core ? appcache_handle_core->GetAppCacheService()
                            : nullptr,
       -1,  // child_id
