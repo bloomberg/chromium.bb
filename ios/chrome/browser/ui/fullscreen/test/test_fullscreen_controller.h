@@ -7,10 +7,14 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 
+#include "base/observer_list.h"
+
 class FullscreenModel;
 
-// Test version of FullscreenController that enables and disabled the
-// FullscreenModel passed on initialization.
+// Test version of FullscreenController with limited functionality:
+// - Enables/disables a FullscreenModel.
+// - Exposes a broadcaster.
+// - Supports FullscreenControllerObserver::FullscreenControllerWillShutDown().
 class TestFullscreenController : public FullscreenController {
  public:
   explicit TestFullscreenController(FullscreenModel* model);
@@ -27,9 +31,16 @@ class TestFullscreenController : public FullscreenController {
   CGFloat GetProgress() const override;
   void ResetModel() override;
 
+  // KeyedService:
+  void Shutdown() override;
+
  private:
   // The model.
-  FullscreenModel* model_;
+  FullscreenModel* model_ = nullptr;
+  // The broadcaster.
+  ChromeBroadcaster* broadcaster_ = nil;
+  // The observers.
+  base::ObserverList<FullscreenControllerObserver>::Unchecked observers_;
 };
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_TEST_TEST_FULLSCREEN_CONTROLLER_H_

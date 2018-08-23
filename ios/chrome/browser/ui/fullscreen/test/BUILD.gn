@@ -20,6 +20,8 @@ source_set("test") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
+    "//base",
+    "//ios/chrome/browser/ui/broadcaster",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:internal",
     "//ios/chrome/browser/ui/fullscreen:ui",
