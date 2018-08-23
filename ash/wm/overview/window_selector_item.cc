@@ -736,8 +736,11 @@ void WindowSelectorItem::UpdateBackdropBounds() {
 }
 
 gfx::Rect WindowSelectorItem::GetBoundsOfSelectedItem() {
+  gfx::Rect original_bounds = target_bounds();
   ScaleUpSelectedItem(OVERVIEW_ANIMATION_NONE);
-  return transform_window_.GetTransformedBounds();
+  gfx::Rect selected_bounds = transform_window_.GetTransformedBounds();
+  SetBounds(original_bounds, OVERVIEW_ANIMATION_NONE);
+  return selected_bounds;
 }
 
 void WindowSelectorItem::ScaleUpSelectedItem(
