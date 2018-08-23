@@ -25,14 +25,6 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 
 }  // namespace
 
-@interface CRWWebViewContentView ()
-
-// Changes web view frame to match |self.bounds| and optionally accommodates for
-// |contentInset|.
-- (void)updateWebViewFrame;
-
-@end
-
 @implementation CRWWebViewContentView
 @synthesize contentOffset = _contentOffset;
 @synthesize contentInset = _contentInset;
@@ -84,25 +76,15 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   return [_webView becomeFirstResponder];
 }
 
-- (void)setFrame:(CGRect)frame {
-  if (CGRectEqualToRect(self.frame, frame))
-    return;
-  [super setFrame:frame];
-  [self updateWebViewFrame];
-}
-
-- (void)setBounds:(CGRect)bounds {
-  if (CGRectEqualToRect(self.bounds, bounds))
-    return;
-  [super setBounds:bounds];
-  [self updateWebViewFrame];
-}
-
 #pragma mark Layout
 
 - (void)layoutSubviews {
   [super layoutSubviews];
-  [self updateWebViewFrame];
+
+  CGRect frame = self.bounds;
+  frame = UIEdgeInsetsInsetRect(frame, _contentInset);
+  frame = CGRectOffset(frame, _contentOffset.x, _contentOffset.y);
+  self.webView.frame = frame;
 }
 
 - (BOOL)isViewAlive {
@@ -113,7 +95,7 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   if (CGPointEqualToPoint(_contentOffset, contentOffset))
     return;
   _contentOffset = contentOffset;
-  [self updateWebViewFrame];
+  [self setNeedsLayout];
 }
 
 - (UIEdgeInsets)contentInset {
@@ -158,7 +140,8 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   contentOffset.y += topPaddingChange;
   [_scrollView setContentOffset:contentOffset];
   // Update web view frame immediately to make |contentInset| animatable.
-  [self updateWebViewFrame];
+  [self setNeedsLayout];
+  [self layoutIfNeeded];
   // Setting WKWebView frame can mistakenly reset contentOffset. Change it
   // back to the initial value if necessary.
   // TODO(crbug.com/645857): Remove this workaround once WebKit bug is
@@ -166,13 +149,6 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
   if ([_scrollView contentOffset].y != contentOffset.y) {
     [_scrollView setContentOffset:contentOffset];
   }
-}
-
-- (void)updateWebViewFrame {
-  CGRect frame = self.bounds;
-  frame = UIEdgeInsetsInsetRect(frame, _contentInset);
-  frame = CGRectOffset(frame, _contentOffset.x, _contentOffset.y);
-  self.webView.frame = frame;
 }
 
 @end
