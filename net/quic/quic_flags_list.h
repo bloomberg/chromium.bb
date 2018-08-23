@@ -93,8 +93,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, true)
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_41_2, true)
-
 // When true, set the initial congestion control window from connection options
 // in QuicSentPacketManager rather than TcpCubicSenderBytes.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
@@ -122,26 +120,9 @@ QUIC_FLAG(double, FLAGS_quic_pace_time_into_future_srtt_fraction, 0.125f)
 // If true, enable QUIC v44.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_44, true)
 
-// If true, QuicConnection::ProcessPacket will add the connection to write
-// blocked list if it is write blocked, and will not attempt to write before the
-// writer unblocks.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked,
-          true)
-
 // Only send an ack immediately when a previously missing packet is received if
 // an ack with a larger largest acked has already been sent.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_reordered_packets, true)
-
-// If true, QuicWriteBlockedList will use StaticStreamCollection to speed up
-// operations on static streams.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_use_static_stream_collection_in_write_blocked_list,
-    true)
-
-// If true, disables QUIC v42.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_42, true)
 
 // Stop checking QuicUnackedPacketMap::HasUnackedRetransmittableFrames and
 // instead rely on the existing check that bytes_in_flight > 0
@@ -219,4 +200,22 @@ QUIC_FLAG(bool,
 // IsPacketUsefulForRetransmittableData.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_fix_is_useful_for_retrans,
+          false)
+
+// If true, QUIC connection will notify the debug visitor after a connectivity
+// probing is sent.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_notify_debug_visitor_on_connectivity_probing_sent,
+    false)
+
+// If true, disable QUIC version 35.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_35, false)
+// If true, then QuicCryptoServerConfig::ProcessClientHelloAfterGetProof() will
+// use the async interface to KeyExchange::CalculateSharedKeys.
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_async_key_exchange, false)
+
+// If true, increase size of random bytes in IETF stateless reset packet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_more_random_bytes_in_stateless_reset,
           false)

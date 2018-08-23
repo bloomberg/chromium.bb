@@ -754,7 +754,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       ignore_read_error_(false),
       headers_include_h2_stream_dependency_(
           headers_include_h2_stream_dependency &&
-          this->connection()->transport_version() > quic::QUIC_VERSION_42),
+          this->connection()->transport_version() >= quic::QUIC_VERSION_43),
       weak_factory_(this) {
   // Make sure connection migration and goaway on path degrading are not turned
   // on at the same time.

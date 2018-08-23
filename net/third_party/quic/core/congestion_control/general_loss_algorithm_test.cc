@@ -31,8 +31,8 @@ class GeneralLossAlgorithmTest : public QuicTest {
   ~GeneralLossAlgorithmTest() override {}
 
   void SendDataPacket(QuicPacketNumber packet_number) {
-    QuicStreamFrame* frame = new QuicStreamFrame();
-    frame->stream_id = kHeadersStreamId;
+    QuicStreamFrame frame;
+    frame.stream_id = kHeadersStreamId;
     SerializedPacket packet(packet_number, PACKET_1BYTE_PACKET_NUMBER, nullptr,
                             kDefaultLength, false, false);
     packet.retransmittable_frames.push_back(QuicFrame(frame));

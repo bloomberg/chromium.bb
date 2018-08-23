@@ -72,6 +72,7 @@ QuicServer::QuicServer(
       crypto_config_(kSourceAddressTokenSecret,
                      QuicRandom::GetInstance(),
                      std::move(proof_source),
+                     KeyExchangeSource::Default(),
                      TlsServerHandshaker::CreateSslCtx()),
       crypto_config_options_(crypto_config_options),
       version_manager_(supported_versions),

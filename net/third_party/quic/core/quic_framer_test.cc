@@ -1431,33 +1431,6 @@ TEST_P(QuicFramerTest, NewPaddingFrame) {
     0x00, 0x00,
   };
 
-  unsigned char packet41[] = {
-    // public flags (8 byte connection_id)
-    0x28,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // paddings
-    0x00, 0x00,
-    // frame type (stream frame with fin)
-    0xFF,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // offset
-    0x3A, 0x98, 0xFE, 0xDC,
-    0x32, 0x10, 0x76, 0x54,
-    // data length
-    0x00, 0x0c,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-    // paddings
-    0x00, 0x00,
-  };
-
   unsigned char packet44[] = {
     // type (short header, 4 byte packet number)
     0x32,
@@ -1525,8 +1498,6 @@ TEST_P(QuicFramerTest, NewPaddingFrame) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -1583,36 +1554,6 @@ TEST_P(QuicFramerTest, StreamFrame) {
   };
 
   PacketFragments packet39 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x28}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (stream frame with fin)
-      {"",
-       {0xFF}},
-      // stream id
-      {"Unable to read stream_id.",
-       {0x01, 0x02, 0x03, 0x04}},
-      // offset
-      {"Unable to read offset.",
-       {0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54}},
-      {"Unable to read frame data.",
-       {
-         // data length
-         0x00, 0x0c,
-         // data
-         'h',  'e',  'l',  'l',
-         'o',  ' ',  'w',  'o',
-         'r',  'l',  'd',  '!'}},
-  };
-
-  PacketFragments packet41 = {
       // public flags (8 byte connection_id)
       {"",
        {0x28}},
@@ -1708,11 +1649,8 @@ TEST_P(QuicFramerTest, StreamFrame) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -1788,29 +1726,6 @@ TEST_P(QuicFramerTest, MissingDiversificationNonce) {
         'r',  'l',  'd',  '!',
     };
 
-  unsigned char packet41[] = {
-        // public flags (8 byte connection_id)
-        0x28,
-        // connection_id
-        0x10, 0x32, 0x54, 0x76, 0x98, 0xBA, 0xDC, 0xFE,
-        // packet number
-        0x12, 0x34, 0x56, 0x78,
-
-        // frame type (stream frame with fin)
-        0xFF,
-        // stream id
-        0x01, 0x02, 0x03, 0x04,
-        // offset
-        0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54,
-        // data length
-        0x00, 0x0c,
-        // data
-        'h',  'e',  'l',  'l',
-        'o',  ' ',  'w',  'o',
-        'r',  'l',  'd',  '!',
-    };
-
   unsigned char packet44[] = {
         // type (long header with packet type ZERO_RTT_PROTECTED)
         0xFC,
@@ -1842,8 +1757,6 @@ TEST_P(QuicFramerTest, MissingDiversificationNonce) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -1926,43 +1839,10 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
          'o',  ' ',  'w',  'o',
          'r',  'l',  'd',  '!'}},
   };
-
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x28}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (stream frame with fin)
-      {"",
-       {0xF7}},
-      // stream id
-      {"Unable to read stream_id.",
-       {0x02, 0x03, 0x04}},
-      // offset
-      {"Unable to read offset.",
-       {0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54}},
-      {"Unable to read frame data.",
-       {
-         // data length
-         0x00, 0x0c,
-         // data
-         'h',  'e',  'l',  'l',
-         'o',  ' ',  'w',  'o',
-         'r',  'l',  'd',  '!'}},
-  };
   // clang-format on
 
   PacketFragments& fragments =
-      framer_.transport_version() == QUIC_VERSION_41
-          ? packet41
-          : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
-                                                            : packet);
+      framer_.transport_version() != QUIC_VERSION_35 ? packet39 : packet;
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -2046,36 +1926,6 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
          'r',  'l',  'd',  '!'}},
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x28}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (stream frame with fin)
-      {"",
-       {0xEF}},
-      // stream id
-      {"Unable to read stream_id.",
-       {0x03, 0x04}},
-      // offset
-      {"Unable to read offset.",
-       {0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54}},
-      {"Unable to read frame data.",
-       {
-         // data length
-         0x00, 0x0c,
-         // data
-         'h',  'e',  'l',  'l',
-         'o',  ' ',  'w',  'o',
-         'r',  'l',  'd',  '!'}},
-  };
-
   PacketFragments packet44 = {
       // type (short header, 4 byte packet number)
       {"",
@@ -2142,11 +1992,8 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -2230,36 +2077,6 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
          'r',  'l',  'd',  '!'}},
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x28}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (stream frame with fin)
-      {"",
-       {0xE7}},
-      // stream id
-      {"Unable to read stream_id.",
-       {0x04}},
-      // offset
-      {"Unable to read offset.",
-       {0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54}},
-      {"Unable to read frame data.",
-       {
-         // data length
-         0x00, 0x0c,
-         // data
-         'h',  'e',  'l',  'l',
-         'o',  ' ',  'w',  'o',
-         'r',  'l',  'd',  '!'}},
-  };
-
   PacketFragments packet44 = {
       // type (short header, 4 byte packet number)
       {"",
@@ -2326,11 +2143,8 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -2403,39 +2217,6 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
       // frame type (stream frame with fin)
       {"",
        {0xFE}},
-      // stream id
-      {"Unable to read stream_id.",
-       {0x02, 0x03, 0x04}},
-      // offset
-      {"Unable to read offset.",
-       {0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54}},
-      {"Unable to read frame data.",
-       {
-         // data length
-         0x00, 0x0c,
-         // data
-         'h',  'e',  'l',  'l',
-         'o',  ' ',  'w',  'o',
-         'r',  'l',  'd',  '!'}},
-  };
-
-  PacketFragments packet41 = {
-      // public flags (version, 8 byte connection_id)
-      {"",
-       {0x29}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // version tag
-      {"",
-       {QUIC_VERSION_BYTES}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (stream frame with fin)
-      {"",
-       {0xF7}},
       // stream id
       {"Unable to read stream_id.",
        {0x02, 0x03, 0x04}},
@@ -2531,11 +2312,8 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -2607,29 +2385,6 @@ TEST_P(QuicFramerTest, RejectPacket) {
       'r',  'l',  'd',  '!',
   };
 
-  unsigned char packet41[] = {
-      // public flags (8 byte connection_id)
-      0x28,
-      // connection_id
-      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-      // packet number
-      0x12, 0x34, 0x56, 0x78,
-
-      // frame type (stream frame with fin)
-      0xFF,
-      // stream id
-      0x01, 0x02, 0x03, 0x04,
-      // offset
-      0x3A, 0x98, 0xFE, 0xDC,
-      0x32, 0x10, 0x76, 0x54,
-      // data length
-      0x00, 0x0c,
-      // data
-      'h',  'e',  'l',  'l',
-      'o',  ' ',  'w',  'o',
-      'r',  'l',  'd',  '!',
-  };
-
   unsigned char packet44[] = {
       // type (short header, 4 byte packet number)
       0x32,
@@ -2657,8 +2412,6 @@ TEST_P(QuicFramerTest, RejectPacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -2771,34 +2524,6 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
        {0x00}}
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x2C}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (ack frame)
-      // (one ack block, 2 byte largest observed, 2 byte block length)
-      {"",
-       {0xA5}},
-      // num timestamps.
-      {"Unable to read num received packets.",
-       {0x00}},
-      // largest acked
-      {"Unable to read largest acked.",
-       {0x12, 0x34}},
-      // Zero delta time.
-      {"Unable to read ack delay time.",
-       {0x00, 0x00}},
-      // first ack block length.
-      {"Unable to read first ack block length.",
-       {0x12, 0x34}},
-  };
-
   PacketFragments packet44 = {
       // type (short packet, 4 byte packet number)
       {"",
@@ -2868,11 +2593,8 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -2953,34 +2675,6 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
        {0x00}}
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x2C}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (ack frame)
-      // (one ack block, 2 byte largest observed, 2 byte block length)
-      {"",
-       {0xA5}},
-      // num timestamps.
-      {"Unable to read num received packets.",
-       {0x00}},
-      // largest acked
-      {"Unable to read largest acked.",
-       {0x12, 0x34}},
-      // Zero delta time.
-      {"Unable to read ack delay time.",
-       {0x00, 0x00}},
-      // first ack block length.
-      {"Unable to read first ack block length.",
-       {0x88, 0x88}},
-  };
-
   PacketFragments packet44 = {
       // type (short header, 4 byte packet number)
       {"",
@@ -3042,11 +2736,8 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_FALSE(framer_.ProcessPacket(*encrypted));
@@ -3412,46 +3103,6 @@ TEST_P(QuicFramerTest, AckFrameFirstAckBlockLengthZero) {
         { 0x00 }},
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       { 0x2C }},
-      // connection_id
-      {"",
-       { 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10 }},
-      // packet number
-      {"",
-       { 0x12, 0x34, 0x56, 0x78 }},
-
-      // frame type (ack frame)
-      // (more than one ack block, 2 byte largest observed, 2 byte block length)
-      {"",
-       { 0xB5 }},
-      // num ack blocks ranges.
-      {"Unable to read num of ack blocks.",
-       { 0x01 }},
-      // Number of timestamps.
-      { "Unable to read num received packets.",
-        { 0x00 }},
-      // largest acked
-      {"Unable to read largest acked.",
-       { 0x12, 0x34 }},
-      // Zero delta time.
-      {"Unable to read ack delay time.",
-       { 0x00, 0x00 }},
-      // first ack block length.
-      {"Unable to read first ack block length.",
-       { 0x00, 0x00 }},
-      // gap to next block.
-      { "First block length is zero but ACK is not empty. "
-        "largest acked is 4660, num ack blocks is 1.",
-        { 0x01 }},
-      // ack block length.
-      { "First block length is zero but ACK is not empty. "
-        "largest acked is 4660, num ack blocks is 1.",
-        { 0x0e, 0xaf }},
-  };
-
   PacketFragments packet44 = {
       // type (short header, 4 byte packet number)
       {"",
@@ -3497,10 +3148,8 @@ TEST_P(QuicFramerTest, AckFrameFirstAckBlockLengthZero) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() == QUIC_VERSION_41
-                 ? packet41
-                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
-                                                                   : packet));
+          : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                            : packet);
 
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -3577,34 +3226,6 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlockMaxLength) {
        {0x00}}
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x2C}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (ack frame)
-      // (one ack block, 4 byte largest observed, 2 byte block length)
-      {"",
-       {0xA9}},
-      // num timestamps.
-      {"Unable to read num received packets.",
-       {0x00}},
-      // largest acked
-      {"Unable to read largest acked.",
-       {0x12, 0x34, 0x56, 0x78}},
-      // Zero delta time.
-      {"Unable to read ack delay time.",
-       {0x00, 0x00}},
-      // first ack block length.
-      {"Unable to read first ack block length.",
-       {0x12, 0x34}},
-  };
-
   PacketFragments packet44 = {
       // type (short header, 4 byte packet number)
       {"",
@@ -3666,11 +3287,8 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlockMaxLength) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -3830,74 +3448,6 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
         { 0x32, 0x10 }},
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       { 0x2C }},
-      // connection_id
-      {"",
-       { 0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10 }},
-      // packet number
-      {"",
-       { 0x12, 0x34, 0x56, 0x78 }},
-
-      // frame type (ack frame)
-      // (more than one ack block, 2 byte largest observed, 2 byte block length)
-      {"",
-       { 0xB5 }},
-      // num ack blocks ranges.
-      {"Unable to read num of ack blocks.",
-       { 0x04 }},
-      // Number of timestamps.
-      { "Unable to read num received packets.",
-        { 0x02 }},
-      // largest acked
-      {"Unable to read largest acked.",
-       { 0x12, 0x34 }},
-      // Zero delta time.
-      {"Unable to read ack delay time.",
-       { 0x00, 0x00 }},
-      // first ack block length.
-      {"Unable to read first ack block length.",
-       { 0x00, 0x01 }},
-      // gap to next block.
-      { "Unable to read gap to next ack block.",
-        { 0x01 }},
-      // ack block length.
-      { "Unable to ack block length.",
-        { 0x0e, 0xaf }},
-      // gap to next block.
-      { "Unable to read gap to next ack block.",
-        { 0xff }},
-      // ack block length.
-      { "Unable to ack block length.",
-        { 0x00, 0x00 }},
-      // gap to next block.
-      { "Unable to read gap to next ack block.",
-        { 0x91 }},
-      // ack block length.
-      { "Unable to ack block length.",
-        { 0x01, 0xea }},
-      // gap to next block.
-      { "Unable to read gap to next ack block.",
-        { 0x05 }},
-      // ack block length.
-      { "Unable to ack block length.",
-        { 0x00, 0x04 }},
-      // Delta from largest observed.
-      { "Unable to read sequence delta in received packets.",
-        { 0x01 }},
-      // Delta time.
-      { "Unable to read time delta in received packets.",
-        { 0x76, 0x54, 0x32, 0x10 }},
-      // Delta from largest observed.
-      { "Unable to read sequence delta in received packets.",
-        { 0x02 }},
-      // Delta time.
-      { "Unable to read incremental time delta in received packets.",
-        { 0x32, 0x10 }},
-  };
-
   PacketFragments packet44 = {
       // type (short header, 4 byte packet number)
       {"",
@@ -4028,11 +3578,8 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
 
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -4250,31 +3797,6 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
        {0x00, 0x00, 0x00, 0x01}}
   };
 
-  PacketFragments packet41 = {
-      // public flags (8 byte connection_id)
-      {"",
-       {0x28}},
-      // connection_id
-      {"",
-       {0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10}},
-      // packet number
-      {"",
-       {0x12, 0x34, 0x56, 0x78}},
-      // frame type (rst stream frame)
-      {"",
-       {0x01}},
-      // stream id
-      {"Unable to read stream_id.",
-       {0x01, 0x02, 0x03, 0x04}},
-      // error code
-      {"Unable to read rst stream error code.",
-       {0x00, 0x00, 0x00, 0x01}},
-      // sent byte offset
-      {"Unable to read rst stream sent byte offset.",
-       {0x3A, 0x98, 0xFE, 0xDC,
-        0x32, 0x10, 0x76, 0x54}},
-  };
-
   PacketFragments packet44 = {
       // type (short header, 4 byte packet number)
       {"",
@@ -4330,11 +3852,8 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() == QUIC_VERSION_41
-                        ? packet41
-                        : (framer_.transport_version() != QUIC_VERSION_35
-                               ? packet39
-                               : packet)));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -5470,7 +4989,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                QuicStringPiece("hello world!"));
   QuicPaddingFrame padding_frame(2);
-  QuicFrames frames = {QuicFrame(padding_frame), QuicFrame(&stream_frame),
+  QuicFrames frames = {QuicFrame(padding_frame), QuicFrame(stream_frame),
                        QuicFrame(padding_frame)};
 
   // clang-format off
@@ -5502,33 +5021,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
   };
 
   unsigned char packet39[] = {
-    // public flags (8 byte connection_id)
-    0x28,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // paddings
-    0x00, 0x00,
-    // frame type (stream frame with fin)
-    0xFF,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // offset
-    0x3A, 0x98, 0xFE, 0xDC,
-    0x32, 0x10, 0x76, 0x54,
-    // data length
-    0x00, 0x0c,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-    // paddings
-    0x00, 0x00,
-  };
-
-  unsigned char packet41[] = {
     // public flags (8 byte connection_id)
     0x28,
     // connection_id
@@ -5621,8 +5113,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -5846,7 +5336,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                QuicStringPiece("hello world!"));
 
-  QuicFrames frames = {QuicFrame(&stream_frame)};
+  QuicFrames frames = {QuicFrame(stream_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -5880,27 +5370,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
 
     // frame type (stream frame with fin and no length)
     0xDF,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // offset
-    0x3A, 0x98, 0xFE, 0xDC,
-    0x32, 0x10, 0x76, 0x54,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
-
-  unsigned char packet41[] = {
-    // public flags (8 byte connection_id)
-    0x28,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // frame type (stream frame with fin and no length)
-    0xFE,
     // stream id
     0x01, 0x02, 0x03, 0x04,
     // offset
@@ -5966,8 +5435,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -5987,7 +5454,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                QuicStringPiece("hello world!"));
-  QuicFrames frames = {QuicFrame(&stream_frame)};
+  QuicFrames frames = {QuicFrame(stream_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -6022,26 +5489,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
 
       // frame type (stream frame with fin and no length)
       0xDF,
-      // stream id
-      0x01, 0x02, 0x03, 0x04,
-      // offset
-      0x3A, 0x98, 0xFE, 0xDC, 0x32, 0x10, 0x76, 0x54,
-      // data
-      'h',  'e',  'l',  'l',  'o',  ' ',  'w',  'o',  'r', 'l', 'd', '!',
-  };
-
-  unsigned char packet41[] = {
-      // public flags (version, 8 byte connection_id)
-      0x2D,
-      // connection_id
-      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-      // version tag
-      QUIC_VERSION_BYTES,
-      // packet number
-      0x12, 0x34, 0x56, 0x78,
-
-      // frame type (stream frame with fin and no length)
-      0xFE,
       // stream id
       0x01, 0x02, 0x03, 0x04,
       // offset
@@ -6107,9 +5554,6 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
-    p_size = QUIC_ARRAYSIZE(packet41);
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -6212,27 +5656,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
       0x00,
   };
 
-  unsigned char packet41[] = {
-      // public flags (8 byte connection_id)
-      0x28,
-      // connection_id
-      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-      // packet number
-      0x12, 0x34, 0x56, 0x78,
-
-      // frame type (ack frame)
-      // (no ack blocks, 2 byte largest observed, 2 byte block length)
-      0xA5,
-      // num timestamps.
-      0x00,
-      // largest acked
-      0x12, 0x34,
-      // Zero delta time.
-      0x00, 0x00,
-      // first ack block length.
-      0x12, 0x34,
-  };
-
   unsigned char packet44[] = {
       // type (short header, 4 byte packet number)
       0x32,
@@ -6282,8 +5705,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -6349,27 +5770,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlockMaxLength) {
       0x00,
   };
 
-  unsigned char packet41[] = {
-      // public flags (8 byte connection_id)
-      0x28,
-      // connection_id
-      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-      // packet number
-      0x12, 0x34, 0x56, 0x78,
-
-      // frame type (ack frame)
-      // (no ack blocks, 4 byte largest observed, 4 byte block length)
-      0xAA,
-      // num timestamps.
-      0x00,
-      // largest acked
-      0x12, 0x34, 0x56, 0x78,
-      // Zero delta time.
-      0x00, 0x00,
-      // first ack block length.
-      0x12, 0x34, 0x56, 0x78,
-  };
-
   unsigned char packet44[] = {
       // type (short header, 4 byte packet number)
       0x32,
@@ -6420,8 +5820,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlockMaxLength) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -6528,45 +5926,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
       0x00,
   };
 
-  unsigned char packet41[] = {
-      // public flags (8 byte connection_id)
-      0x28,
-      // connection_id
-      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-      // packet number
-      0x12, 0x34, 0x56, 0x78,
-
-      // frame type (ack frame)
-      // (has ack blocks, 2 byte largest observed, 2 byte block length)
-      0xB5,
-      // num ack blocks ranges.
-      0x04,
-      // num timestamps.
-      0x00,
-      // largest acked
-      0x12, 0x34,
-      // Zero delta time.
-      0x00, 0x00,
-      // first ack block length.
-      0x00, 0x01,
-      // gap to next block.
-      0x01,
-      // ack block length.
-      0x0e, 0xaf,
-      // gap to next block.
-      0xff,
-      // ack block length.
-      0x00, 0x00,
-      // gap to next block.
-      0x91,
-      // ack block length.
-      0x01, 0xea,
-      // gap to next block.
-      0x05,
-      // ack block length.
-      0x00, 0x04,
-  };
-
   unsigned char packet44[] = {
       // type (short header, 4 byte packet number)
       0x32,
@@ -6649,8 +6008,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -6868,99 +6225,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
       0x00,
   };
 
-  unsigned char packet41[] = {
-      // public flags (8 byte connection_id)
-      0x28,
-      // connection_id
-      0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-      // packet number
-      0x12, 0x34, 0x56, 0x78,
-      // frame type (ack frame)
-      // (has ack blocks, 2 byte largest observed, 2 byte block length)
-      0xB5,
-      // num ack blocks ranges.
-      0xff,
-      // num timestamps.
-      0x00,
-      // largest acked
-      0x12, 0x34,
-      // Zero delta time.
-      0x00, 0x00,
-      // first ack block length.
-      0x0f, 0xdd,
-      // 255 = 4 * 63 + 3
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-      0x01, 0x00, 0x01, 0x01, 0x00, 0x01, 0x01, 0x00, 0x01,
-  };
-
   unsigned char packet44[] = {
       // type (short header, 4 byte packet number)
       0x32,
@@ -7147,8 +6411,6 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -7275,25 +6537,6 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
     0x05, 0x06, 0x07, 0x08,
   };
 
-  unsigned char packet41[] = {
-    // public flags (8 byte connection_id)
-    0x28,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // frame type (rst stream frame)
-    0x01,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // error code
-    0x05, 0x06, 0x07, 0x08,
-    // sent byte offset
-    0x08, 0x07, 0x06, 0x05,
-    0x04, 0x03, 0x02, 0x01,
-  };
-
   unsigned char packet44[] = {
     // type (short packet, 4 byte packet number)
     0x32,
@@ -7345,8 +6588,6 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -8726,9 +7967,21 @@ TEST_P(QuicFramerTest, BuildIetfStatelessResetPacket) {
   // Skip packet number byte which is random in stateless reset packet.
   test::CompareCharArraysWithHexError("constructed packet", data->data(), 1,
                                       AsChars(packet), 1);
-  test::CompareCharArraysWithHexError("constructed packet", data->data() + 2,
-                                      data->length() - 2, AsChars(packet) + 2,
-                                      QUIC_ARRAYSIZE(packet) - 2);
+  const size_t random_bytes_length =
+      data->length() - kPacketHeaderTypeSize - sizeof(kTestStatelessResetToken);
+  if (GetQuicReloadableFlag(quic_more_random_bytes_in_stateless_reset)) {
+    EXPECT_EQ(kMinRandomBytesLengthInStatelessReset, random_bytes_length);
+  } else {
+    EXPECT_EQ(1u, random_bytes_length);
+  }
+  // Verify stateless reset token is correct.
+  test::CompareCharArraysWithHexError(
+      "constructed packet",
+      data->data() + data->length() - sizeof(kTestStatelessResetToken),
+      sizeof(kTestStatelessResetToken),
+      AsChars(packet) + QUIC_ARRAYSIZE(packet) -
+          sizeof(kTestStatelessResetToken),
+      sizeof(kTestStatelessResetToken));
 }
 
 TEST_P(QuicFramerTest, EncryptPacket) {
@@ -9078,43 +8331,6 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
     0x9A, 0xBE,
   };
 
-  unsigned char packet41[] = {
-    // public flags (8 byte connection_id)
-    0x28,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-
-    // frame type (stream frame with fin)
-    0xFF,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // offset
-    0x3A, 0x98, 0xFE, 0xDC,
-    0x32, 0x10, 0x76, 0x54,
-    // data length
-    0x00, 0x0c,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-
-    // frame type (ack frame)
-    0xA0,
-    // least packet number awaiting an ack
-    0x12, 0x34, 0x56, 0x78,
-    0x9A, 0xA0,
-    // largest observed packet number
-    0x12, 0x34, 0x56, 0x78,
-    0x9A, 0xBF,
-    // num missing packets
-    0x01,
-    // missing packet
-    0x12, 0x34, 0x56, 0x78,
-    0x9A, 0xBE,
-  };
-
   unsigned char packet44[] = {
     // type (short header, 4 byte packet number)
     0x32,
@@ -9209,8 +8425,6 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
@@ -9384,31 +8598,6 @@ TEST_P(QuicFramerTest, FramerFuzzTest) {
     'r',  'l',  'd',  '!',
   };
 
-  unsigned char packet41[] = {
-    // public flags (8 byte connection_id)
-    0x2C,
-    // connection_id
-    0xFE, 0xDC, 0xBA, 0x98, 0x76, 0x54, 0x32, 0x10,
-    // packet number
-    0x12, 0x34, 0x56, 0x78,
-    // private flags
-    0x00,
-
-    // frame type (stream frame with fin)
-    0xFF,
-    // stream id
-    0x01, 0x02, 0x03, 0x04,
-    // offset
-    0x3A, 0x98, 0xFE, 0xDC,
-    0x32, 0x10, 0x76, 0x54,
-    // data length
-    0x00, 0x0c,
-    // data
-    'h',  'e',  'l',  'l',
-    'o',  ' ',  'w',  'o',
-    'r',  'l',  'd',  '!',
-  };
-
   unsigned char packet44[] = {
     // type (short header, 4 byte packet number)
     0x32,
@@ -9434,8 +8623,6 @@ TEST_P(QuicFramerTest, FramerFuzzTest) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() == QUIC_VERSION_41) {
-    p = packet41;
   } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }

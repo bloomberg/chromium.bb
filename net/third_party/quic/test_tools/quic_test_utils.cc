@@ -779,8 +779,7 @@ QuicEncryptedPacket* ConstructEncryptedPacket(
   header.reset_flag = reset_flag;
   header.packet_number_length = packet_number_length;
   header.packet_number = packet_number;
-  QuicStreamFrame stream_frame(1, false, 0, QuicStringPiece(data));
-  QuicFrame frame(&stream_frame);
+  QuicFrame frame(QuicStreamFrame(1, false, 0, QuicStringPiece(data)));
   QuicFrames frames;
   frames.push_back(frame);
   QuicFramer framer(
@@ -827,8 +826,7 @@ QuicEncryptedPacket* ConstructMisFramedEncryptedPacket(
   header.reset_flag = reset_flag;
   header.packet_number_length = packet_number_length;
   header.packet_number = packet_number;
-  QuicStreamFrame stream_frame(1, false, 0, QuicStringPiece(data));
-  QuicFrame frame(&stream_frame);
+  QuicFrame frame(QuicStreamFrame(1, false, 0, QuicStringPiece(data)));
   QuicFrames frames;
   frames.push_back(frame);
   QuicFramer framer(versions != nullptr ? *versions : AllSupportedVersions(),

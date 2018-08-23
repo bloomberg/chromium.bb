@@ -113,7 +113,7 @@ TEST_F(SimpleSessionNotifierTest, NeuterUnencryptedData) {
   notifier_.WriteOrBufferData(1, 1024, NO_FIN);
   // Ack [1024, 2048).
   QuicStreamFrame stream_frame(1, false, 1024, 1024);
-  notifier_.OnFrameAcked(QuicFrame(&stream_frame), QuicTime::Delta::Zero());
+  notifier_.OnFrameAcked(QuicFrame(stream_frame), QuicTime::Delta::Zero());
   EXPECT_TRUE(notifier_.StreamIsWaitingForAcks(1));
   // Neuters unencrypted data.
   notifier_.NeuterUnencryptedData();
@@ -146,8 +146,8 @@ TEST_F(SimpleSessionNotifierTest, OnCanWrite) {
   // Lost crypto data [500, 1500) and stream 3 [0, 512).
   QuicStreamFrame frame1(1, false, 500, 1000);
   QuicStreamFrame frame2(3, false, 0, 512);
-  notifier_.OnFrameLost(QuicFrame(&frame1));
-  notifier_.OnFrameLost(QuicFrame(&frame2));
+  notifier_.OnFrameLost(QuicFrame(frame1));
+  notifier_.OnFrameLost(QuicFrame(frame2));
 
   // Connection becomes writable.
   // Lost crypto data gets retransmitted as [500, 1024) and [1024, 1500), as
@@ -189,16 +189,16 @@ TEST_F(SimpleSessionNotifierTest, RetransmitFrames) {
   // Ack stream 3 [3, 7), and stream 5 [8, 10).
   QuicStreamFrame ack_frame1(3, false, 3, 4);
   QuicStreamFrame ack_frame2(5, false, 8, 2);
-  notifier_.OnFrameAcked(QuicFrame(&ack_frame1), QuicTime::Delta::Zero());
-  notifier_.OnFrameAcked(QuicFrame(&ack_frame2), QuicTime::Delta::Zero());
+  notifier_.OnFrameAcked(QuicFrame(ack_frame1), QuicTime::Delta::Zero());
+  notifier_.OnFrameAcked(QuicFrame(ack_frame2), QuicTime::Delta::Zero());
   EXPECT_FALSE(notifier_.WillingToWrite());
 
   // Force to send.
   QuicRstStreamFrame rst_stream(1, 5, QUIC_STREAM_NO_ERROR, 10);
   QuicFrames frames;
-  frames.push_back(QuicFrame(&frame2));
+  frames.push_back(QuicFrame(frame2));
   frames.push_back(QuicFrame(&rst_stream));
-  frames.push_back(QuicFrame(&frame1));
+  frames.push_back(QuicFrame(frame1));
   // stream 5 data [0, 8), fin only are retransmitted.
   EXPECT_CALL(connection_, SendStreamData(5, 8, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(8, false)));

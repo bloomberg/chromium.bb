@@ -60,7 +60,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
                              HAS_RETRANSMITTABLE_DATA));
     SerializedPacket packet(CreatePacket(packet_number, false));
     packet.retransmittable_frames.push_back(
-        QuicFrame(new QuicStreamFrame(1, false, 0, QuicStringPiece())));
+        QuicFrame(QuicStreamFrame(1, false, 0, QuicStringPiece())));
     packet.has_crypto_handshake = IS_HANDSHAKE;
     manager_.OnPacketSent(&packet, 0, clock_.Now(), HANDSHAKE_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);
@@ -252,8 +252,8 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
     SerializedPacket packet(packet_number, PACKET_4BYTE_PACKET_NUMBER, nullptr,
                             kDefaultLength, false, false);
     if (retransmittable) {
-      packet.retransmittable_frames.push_back(QuicFrame(
-          new QuicStreamFrame(kStreamId, false, 0, QuicStringPiece())));
+      packet.retransmittable_frames.push_back(
+          QuicFrame(QuicStreamFrame(kStreamId, false, 0, QuicStringPiece())));
     }
     return packet;
   }
@@ -272,7 +272,7 @@ class QuicSentPacketManagerTest : public QuicTestWithParam<bool> {
                              HAS_RETRANSMITTABLE_DATA));
     SerializedPacket packet(CreatePacket(packet_number, false));
     packet.retransmittable_frames.push_back(
-        QuicFrame(new QuicStreamFrame(1, false, 0, QuicStringPiece())));
+        QuicFrame(QuicStreamFrame(1, false, 0, QuicStringPiece())));
     packet.has_crypto_handshake = IS_HANDSHAKE;
     manager_.OnPacketSent(&packet, 0, clock_.Now(), NOT_RETRANSMISSION,
                           HAS_RETRANSMITTABLE_DATA);

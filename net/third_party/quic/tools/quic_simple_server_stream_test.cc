@@ -182,6 +182,7 @@ class QuicSimpleServerStreamTest : public QuicTestWithParam<ParsedQuicVersion> {
             QuicCryptoServerConfig::TESTING,
             QuicRandom::GetInstance(),
             crypto_test_utils::ProofSourceForTesting(),
+            KeyExchangeSource::Default(),
             TlsServerHandshaker::CreateSslCtx())),
         compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),

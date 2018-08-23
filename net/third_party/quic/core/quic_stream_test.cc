@@ -1262,6 +1262,50 @@ TEST_F(QuicStreamTest, RetransmitStreamData) {
   EXPECT_TRUE(stream_->RetransmitStreamData(0, 8, true));
 }
 
+TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresRetransmitLostData) {
+  Initialize(kShouldProcessData);
+
+  EXPECT_CALL(*session_, WritevData(_, stream_->id(), 200, 0, FIN))
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
+  QuicString body(200, 'a');
+  stream_->WriteOrBufferData(body, true, nullptr);
+
+  EXPECT_TRUE(session_->connection()->clock()->WallNow().IsZero());
+  // Set TTL to be 1 s.
+  QuicTime::Delta ttl = QuicTime::Delta::FromSeconds(1);
+  ASSERT_TRUE(stream_->MaybeSetTtl(ttl));
+  // Verify data gets retransmitted because TTL does not expire.
+  EXPECT_CALL(*session_, WritevData(_, stream_->id(), 100, 0, NO_FIN))
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
+  EXPECT_TRUE(stream_->RetransmitStreamData(0, 100, false));
+  stream_->OnStreamFrameLost(100, 100, true);
+  EXPECT_TRUE(stream_->HasPendingRetransmission());
+
+  connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+  // Verify stream gets reset because TTL expires.
+  EXPECT_CALL(*session_, SendRstStream(_, QUIC_STREAM_TTL_EXPIRED, _)).Times(1);
+  stream_->OnCanWrite();
+}
+
+TEST_F(QuicStreamTest, ResetStreamOnTtlExpiresEarlyRetransmitData) {
+  Initialize(kShouldProcessData);
+
+  EXPECT_CALL(*session_, WritevData(_, stream_->id(), 200, 0, FIN))
+      .WillOnce(Invoke(MockQuicSession::ConsumeData));
+  QuicString body(200, 'a');
+  stream_->WriteOrBufferData(body, true, nullptr);
+
+  EXPECT_TRUE(session_->connection()->clock()->WallNow().IsZero());
+  // Set TTL to be 1 s.
+  QuicTime::Delta ttl = QuicTime::Delta::FromSeconds(1);
+  ASSERT_TRUE(stream_->MaybeSetTtl(ttl));
+
+  connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+  // Verify stream gets reset because TTL expires.
+  EXPECT_CALL(*session_, SendRstStream(_, QUIC_STREAM_TTL_EXPIRED, _)).Times(1);
+  stream_->RetransmitStreamData(0, 100, false);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

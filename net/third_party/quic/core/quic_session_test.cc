@@ -1290,9 +1290,9 @@ TEST_P(QuicSessionTestServer, OnStreamFrameLost) {
   EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
       .WillOnce(Return(true));
   EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
-  session_.OnFrameLost(QuicFrame(&frame3));
-  session_.OnFrameLost(QuicFrame(&frame1));
-  session_.OnFrameLost(QuicFrame(&frame2));
+  session_.OnFrameLost(QuicFrame(frame3));
+  session_.OnFrameLost(QuicFrame(frame1));
+  session_.OnFrameLost(QuicFrame(frame2));
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // Mark streams 2 and 4 write blocked.
@@ -1347,9 +1347,9 @@ TEST_P(QuicSessionTestServer, DonotRetransmitDataOfClosedStreams) {
   EXPECT_CALL(*stream6, HasPendingRetransmission()).WillOnce(Return(true));
   EXPECT_CALL(*stream4, HasPendingRetransmission()).WillOnce(Return(true));
   EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
-  session_.OnFrameLost(QuicFrame(&frame3));
-  session_.OnFrameLost(QuicFrame(&frame2));
-  session_.OnFrameLost(QuicFrame(&frame1));
+  session_.OnFrameLost(QuicFrame(frame3));
+  session_.OnFrameLost(QuicFrame(frame2));
+  session_.OnFrameLost(QuicFrame(frame1));
 
   session_.MarkConnectionLevelWriteBlocked(stream2->id());
   session_.MarkConnectionLevelWriteBlocked(stream4->id());
@@ -1390,10 +1390,10 @@ TEST_P(QuicSessionTestServer, RetransmitFrames) {
   QuicStreamFrame frame3(stream6->id(), false, 0, 9);
   QuicWindowUpdateFrame window_update(1, stream2->id(), 9);
   QuicFrames frames;
-  frames.push_back(QuicFrame(&frame1));
+  frames.push_back(QuicFrame(frame1));
   frames.push_back(QuicFrame(&window_update));
-  frames.push_back(QuicFrame(&frame2));
-  frames.push_back(QuicFrame(&frame3));
+  frames.push_back(QuicFrame(frame2));
+  frames.push_back(QuicFrame(frame3));
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
 
   EXPECT_CALL(*stream2, RetransmitStreamData(_, _, _)).WillOnce(Return(true));
@@ -1417,7 +1417,7 @@ TEST_P(QuicSessionTestServer, RetransmitLostDataCausesConnectionClose) {
       .Times(2)
       .WillOnce(Return(true))
       .WillOnce(Return(false));
-  session_.OnFrameLost(QuicFrame(&frame));
+  session_.OnFrameLost(QuicFrame(frame));
   // Retransmit stream data causes connection close. Stream has not sent fin
   // yet, so an RST is sent.
   EXPECT_CALL(*stream, OnCanWrite())

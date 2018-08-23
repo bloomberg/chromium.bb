@@ -35,6 +35,9 @@ class QUIC_EXPORT_PRIVATE P256KeyExchange : public KeyExchange {
   const Factory& GetFactory() const override;
   bool CalculateSharedKey(QuicStringPiece peer_public_value,
                           QuicString* shared_key) const override;
+  void CalculateSharedKey(QuicStringPiece peer_public_value,
+                          QuicString* shared_key,
+                          std::unique_ptr<Callback> callback) const override;
   QuicStringPiece public_value() const override;
 
  private:

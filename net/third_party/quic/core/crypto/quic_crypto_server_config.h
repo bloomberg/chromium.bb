@@ -16,6 +16,7 @@
 #include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/crypto/crypto_secret_boxer.h"
+#include "net/third_party/quic/core/crypto/key_exchange.h"
 #include "net/third_party/quic/core/crypto/proof_source.h"
 #include "net/third_party/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/third_party/quic/core/crypto/quic_crypto_proof.h"
@@ -34,7 +35,6 @@ namespace quic {
 
 class CryptoHandshakeMessage;
 class EphemeralKeySource;
-class KeyExchange;
 class ProofSource;
 class QuicClock;
 class QuicRandom;
@@ -154,6 +154,20 @@ class RejectionObserver {
                                 CryptoHandshakeMessage* out) const = 0;
 };
 
+// Factory for creating KeyExchange objects.
+class QUIC_EXPORT_PRIVATE KeyExchangeSource {
+ public:
+  virtual ~KeyExchangeSource() = default;
+
+  // Returns the default KeyExchangeSource.
+  static std::unique_ptr<KeyExchangeSource> Default();
+
+  // Create a new KeyExchange of the specified type using the specified
+  // private key.
+  virtual std::unique_ptr<KeyExchange> Create(QuicTag type,
+                                              QuicStringPiece private_key) = 0;
+};
+
 // QuicCryptoServerConfig contains the crypto configuration of a QUIC server.
 // Unlike a client, a QUIC server can have multiple configurations active in
 // order to support clients resuming with a previous configuration.
@@ -201,6 +215,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   QuicCryptoServerConfig(QuicStringPiece source_address_token_secret,
                          QuicRandom* server_nonce_entropy,
                          std::unique_ptr<ProofSource> proof_source,
+                         std::unique_ptr<KeyExchangeSource> key_exchange_source,
                          bssl::UniquePtr<SSL_CTX> ssl_ctx);
   QuicCryptoServerConfig(const QuicCryptoServerConfig&) = delete;
   QuicCryptoServerConfig& operator=(const QuicCryptoServerConfig&) = delete;
@@ -557,6 +572,30 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
       const QuicReferenceCountedPointer<Config>& primary_config,
       std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const;
 
+  // Callback class for bridging between ProcessClientHelloAfterGetProof and
+  // ProcessClientHelloAfterCalculateSharedKeys.
+  class ProcessClientHelloAfterGetProofCallback;
+  friend class ProcessClientHelloAfterGetProofCallback;
+
+  // Portion of ProcessClientHello which executes after CalculateSharedKeys.
+  void ProcessClientHelloAfterCalculateSharedKeys(
+      bool found_error,
+      std::unique_ptr<ProofSource::Details> proof_source_details,
+      const KeyExchange::Factory& key_exchange_factory,
+      std::unique_ptr<CryptoHandshakeMessage> out,
+      QuicStringPiece public_value,
+      const ValidateClientHelloResultCallback::Result& validate_chlo_result,
+      QuicConnectionId connection_id,
+      const QuicSocketAddress& client_address,
+      const ParsedQuicVersionVector& supported_versions,
+      const QuicClock* clock,
+      QuicRandom* rand,
+      QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params,
+      QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
+      const QuicReferenceCountedPointer<Config>& requested_config,
+      const QuicReferenceCountedPointer<Config>& primary_config,
+      std::unique_ptr<ProcessClientHelloResultCallback> done_cb) const;
+
   // BuildRejection sets |out| to be a REJ message in reply to |client_hello|.
   void BuildRejection(
       QuicTransportVersion version,
@@ -754,6 +793,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
   // proof_source_ contains an object that can provide certificate chains and
   // signatures.
   std::unique_ptr<ProofSource> proof_source_;
+
+  // key_exchange_source_ contains an object that can provide key exchange
+  // objects.
+  std::unique_ptr<KeyExchangeSource> key_exchange_source_;
 
   // ssl_ctx_ contains the server configuration for doing TLS handshakes.
   bssl::UniquePtr<SSL_CTX> ssl_ctx_;

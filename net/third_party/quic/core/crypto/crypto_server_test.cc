@@ -111,6 +111,7 @@ class CryptoServerTest : public QuicTestWithParam<TestParams> {
         config_(QuicCryptoServerConfig::TESTING,
                 rand_,
                 crypto_test_utils::ProofSourceForTesting(),
+                KeyExchangeSource::Default(),
                 TlsServerHandshaker::CreateSslCtx()),
         peer_(&config_),
         compressed_certs_cache_(
@@ -1006,9 +1007,11 @@ TEST_F(CryptoServerConfigGenerationTest, Determinism) {
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
                            crypto_test_utils::ProofSourceForTesting(),
+                           KeyExchangeSource::Default(),
                            TlsServerHandshaker::CreateSslCtx());
   QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
                            crypto_test_utils::ProofSourceForTesting(),
+                           KeyExchangeSource::Default(),
                            TlsServerHandshaker::CreateSslCtx());
   std::unique_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
@@ -1029,10 +1032,12 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDVaries) {
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
                            crypto_test_utils::ProofSourceForTesting(),
+                           KeyExchangeSource::Default(),
                            TlsServerHandshaker::CreateSslCtx());
   rand_b.ChangeValue();
   QuicCryptoServerConfig b(QuicCryptoServerConfig::TESTING, &rand_b,
                            crypto_test_utils::ProofSourceForTesting(),
+                           KeyExchangeSource::Default(),
                            TlsServerHandshaker::CreateSslCtx());
   std::unique_ptr<CryptoHandshakeMessage> scfg_a(
       a.AddDefaultConfig(&rand_a, &clock, options));
@@ -1053,6 +1058,7 @@ TEST_F(CryptoServerConfigGenerationTest, SCIDIsHashOfServerConfig) {
 
   QuicCryptoServerConfig a(QuicCryptoServerConfig::TESTING, &rand_a,
                            crypto_test_utils::ProofSourceForTesting(),
+                           KeyExchangeSource::Default(),
                            TlsServerHandshaker::CreateSslCtx());
   std::unique_ptr<CryptoHandshakeMessage> scfg(
       a.AddDefaultConfig(&rand_a, &clock, options));

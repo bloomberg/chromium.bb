@@ -2215,7 +2215,7 @@ TEST_P(QuicHttpStreamTest, ServerPushVaryCheckFail) {
 
   quic::QuicPacketNumber client_packet_number = 2;
   if (client_headers_include_h2_stream_dependency_ &&
-      version_ > quic::QUIC_VERSION_42) {
+      version_ >= quic::QUIC_VERSION_43) {
     AddWrite(ConstructClientPriorityPacket(
         client_packet_number++, kIncludeVersion, promise_id_, 0,
         DEFAULT_PRIORITY, &header_stream_offset));

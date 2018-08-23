@@ -391,7 +391,8 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
 
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
-      ProofSourceForTesting(), TlsServerHandshaker::CreateSslCtx());
+      ProofSourceForTesting(), KeyExchangeSource::Default(),
+      TlsServerHandshaker::CreateSslCtx());
   QuicCompressedCertsCache compressed_certs_cache(
       QuicCompressedCertsCache::kQuicCompressedCertsCacheSize);
   SetupCryptoServerConfigForTest(server_conn->clock(),

@@ -1415,7 +1415,7 @@ TEST_P(QuicSpdySessionTestClient, WritePriority) {
 
   QuicStreamSendBuffer& send_buffer =
       QuicStreamPeer::SendBuffer(headers_stream);
-  if (transport_version() > QUIC_VERSION_42) {
+  if (transport_version() > QUIC_VERSION_39) {
     ASSERT_EQ(1u, send_buffer.size());
 
     SpdyPriorityIR priority_frame(
@@ -1470,9 +1470,9 @@ TEST_P(QuicSpdySessionTestServer, OnStreamFrameLost) {
   EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
       .WillOnce(Return(true));
   EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
-  session_.OnFrameLost(QuicFrame(&frame3));
-  session_.OnFrameLost(QuicFrame(&frame1));
-  session_.OnFrameLost(QuicFrame(&frame2));
+  session_.OnFrameLost(QuicFrame(frame3));
+  session_.OnFrameLost(QuicFrame(frame1));
+  session_.OnFrameLost(QuicFrame(frame2));
   EXPECT_TRUE(session_.WillingAndAbleToWrite());
 
   // Mark streams 2 and 4 write blocked.
@@ -1527,9 +1527,9 @@ TEST_P(QuicSpdySessionTestServer, DonotRetransmitDataOfClosedStreams) {
   EXPECT_CALL(*stream6, HasPendingRetransmission()).WillOnce(Return(true));
   EXPECT_CALL(*stream4, HasPendingRetransmission()).WillOnce(Return(true));
   EXPECT_CALL(*stream2, HasPendingRetransmission()).WillOnce(Return(true));
-  session_.OnFrameLost(QuicFrame(&frame3));
-  session_.OnFrameLost(QuicFrame(&frame2));
-  session_.OnFrameLost(QuicFrame(&frame1));
+  session_.OnFrameLost(QuicFrame(frame3));
+  session_.OnFrameLost(QuicFrame(frame2));
+  session_.OnFrameLost(QuicFrame(frame1));
 
   session_.MarkConnectionLevelWriteBlocked(stream2->id());
   session_.MarkConnectionLevelWriteBlocked(stream4->id());
@@ -1570,10 +1570,10 @@ TEST_P(QuicSpdySessionTestServer, RetransmitFrames) {
   QuicStreamFrame frame3(stream6->id(), false, 0, 9);
   QuicWindowUpdateFrame window_update(1, stream2->id(), 9);
   QuicFrames frames;
-  frames.push_back(QuicFrame(&frame1));
+  frames.push_back(QuicFrame(frame1));
   frames.push_back(QuicFrame(&window_update));
-  frames.push_back(QuicFrame(&frame2));
-  frames.push_back(QuicFrame(&frame3));
+  frames.push_back(QuicFrame(frame2));
+  frames.push_back(QuicFrame(frame3));
   EXPECT_FALSE(session_.WillingAndAbleToWrite());
 
   EXPECT_CALL(*stream2, RetransmitStreamData(_, _, _)).WillOnce(Return(true));

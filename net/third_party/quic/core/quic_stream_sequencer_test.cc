@@ -652,6 +652,40 @@ TEST_F(QuicStreamSequencerTest, OnStreamFrameWithNullSource) {
   sequencer_->OnStreamFrame(frame);
 }
 
+TEST_F(QuicStreamSequencerTest, ReadSingleFrame) {
+  EXPECT_CALL(stream_, OnDataAvailable());
+  OnFrame(0u, "abc");
+  QuicString actual;
+  sequencer_->Read(&actual);
+  EXPECT_EQ("abc", actual);
+  EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
+  EXPECT_EQ(3u, stream_.flow_controller()->bytes_consumed());
+}
+
+TEST_F(QuicStreamSequencerTest, ReadMultipleFramesWithMissingFrame) {
+  EXPECT_CALL(stream_, OnDataAvailable());
+  OnFrame(0u, "abc");
+  OnFrame(3u, "def");
+  OnFrame(6u, "ghi");
+  OnFrame(10u, "xyz");  // Byte 9 is missing.
+  QuicString actual;
+  sequencer_->Read(&actual);
+  EXPECT_EQ("abcdefghi", actual);
+  EXPECT_EQ(3u, sequencer_->NumBytesBuffered());
+  EXPECT_EQ(9u, stream_.flow_controller()->bytes_consumed());
+}
+
+TEST_F(QuicStreamSequencerTest, ReadAndAppendToString) {
+  EXPECT_CALL(stream_, OnDataAvailable());
+  OnFrame(0u, "def");
+  OnFrame(3u, "ghi");
+  QuicString actual = "abc";
+  sequencer_->Read(&actual);
+  EXPECT_EQ("abcdefghi", actual);
+  EXPECT_EQ(0u, sequencer_->NumBytesBuffered());
+  EXPECT_EQ(6u, stream_.flow_controller()->bytes_consumed());
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

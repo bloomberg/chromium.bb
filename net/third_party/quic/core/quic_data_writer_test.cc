@@ -942,6 +942,20 @@ TEST_P(QuicDataWriterTest, StreamId1) {
   EncodeDecodeStreamId(UINT64_C(0x3fffffffffffffff), false);
 }
 
+TEST_P(QuicDataWriterTest, WriteRandomBytes) {
+  char buffer[20];
+  char expected[20];
+  for (size_t i = 0; i < 20; ++i) {
+    expected[i] = 'r';
+  }
+  MockRandom random;
+  QuicDataWriter writer(20, buffer, GetParam().endianness);
+  EXPECT_FALSE(writer.WriteRandomBytes(&random, 30));
+
+  EXPECT_TRUE(writer.WriteRandomBytes(&random, 20));
+  test::CompareCharArraysWithHexError("random", buffer, 20, expected, 20);
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace quic

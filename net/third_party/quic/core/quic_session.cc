@@ -1060,12 +1060,12 @@ bool QuicSession::OnFrameAcked(const QuicFrame& frame,
     return control_frame_manager_.OnControlFrameAcked(frame);
   }
   bool new_stream_data_acked = false;
-  QuicStream* stream = GetStream(frame.stream_frame->stream_id);
+  QuicStream* stream = GetStream(frame.stream_frame.stream_id);
   // Stream can already be reset when sent frame gets acked.
   if (stream != nullptr) {
     new_stream_data_acked = stream->OnStreamFrameAcked(
-        frame.stream_frame->offset, frame.stream_frame->data_length,
-        frame.stream_frame->fin, ack_delay_time);
+        frame.stream_frame.offset, frame.stream_frame.data_length,
+        frame.stream_frame.fin, ack_delay_time);
     if (!stream->HasPendingRetransmission()) {
       streams_with_pending_retransmission_.erase(stream->id());
     }
@@ -1093,18 +1093,18 @@ void QuicSession::OnFrameLost(const QuicFrame& frame) {
     control_frame_manager_.OnControlFrameLost(frame);
     return;
   }
-  QuicStream* stream = GetStream(frame.stream_frame->stream_id);
+  QuicStream* stream = GetStream(frame.stream_frame.stream_id);
   if (stream == nullptr) {
     return;
   }
-  stream->OnStreamFrameLost(frame.stream_frame->offset,
-                            frame.stream_frame->data_length,
-                            frame.stream_frame->fin);
+  stream->OnStreamFrameLost(frame.stream_frame.offset,
+                            frame.stream_frame.data_length,
+                            frame.stream_frame.fin);
   if (stream->HasPendingRetransmission() &&
       !QuicContainsKey(streams_with_pending_retransmission_,
-                       frame.stream_frame->stream_id)) {
+                       frame.stream_frame.stream_id)) {
     streams_with_pending_retransmission_.insert(
-        std::make_pair(frame.stream_frame->stream_id, true));
+        std::make_pair(frame.stream_frame.stream_id, true));
   }
 }
 
@@ -1120,11 +1120,11 @@ void QuicSession::RetransmitFrames(const QuicFrames& frames,
       }
       continue;
     }
-    QuicStream* stream = GetStream(frame.stream_frame->stream_id);
+    QuicStream* stream = GetStream(frame.stream_frame.stream_id);
     if (stream != nullptr &&
-        !stream->RetransmitStreamData(frame.stream_frame->offset,
-                                      frame.stream_frame->data_length,
-                                      frame.stream_frame->fin)) {
+        !stream->RetransmitStreamData(frame.stream_frame.offset,
+                                      frame.stream_frame.data_length,
+                                      frame.stream_frame.fin)) {
       break;
     }
   }
@@ -1134,11 +1134,11 @@ bool QuicSession::IsFrameOutstanding(const QuicFrame& frame) const {
   if (frame.type != STREAM_FRAME) {
     return control_frame_manager_.IsControlFrameOutstanding(frame);
   }
-  QuicStream* stream = GetStream(frame.stream_frame->stream_id);
+  QuicStream* stream = GetStream(frame.stream_frame.stream_id);
   return stream != nullptr &&
-         stream->IsStreamFrameOutstanding(frame.stream_frame->offset,
-                                          frame.stream_frame->data_length,
-                                          frame.stream_frame->fin);
+         stream->IsStreamFrameOutstanding(frame.stream_frame.offset,
+                                          frame.stream_frame.data_length,
+                                          frame.stream_frame.fin);
 }
 
 bool QuicSession::HasPendingCryptoData() const {

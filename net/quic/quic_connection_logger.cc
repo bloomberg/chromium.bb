@@ -94,13 +94,13 @@ std::unique_ptr<base::Value> NetLogQuicPacketHeaderCallback(
 }
 
 std::unique_ptr<base::Value> NetLogQuicStreamFrameCallback(
-    const quic::QuicStreamFrame* frame,
+    const quic::QuicStreamFrame& frame,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("stream_id", frame->stream_id);
-  dict->SetBoolean("fin", frame->fin);
-  dict->SetString("offset", base::NumberToString(frame->offset));
-  dict->SetInteger("length", frame->data_length);
+  dict->SetInteger("stream_id", frame.stream_id);
+  dict->SetBoolean("fin", frame.fin);
+  dict->SetString("offset", base::NumberToString(frame.offset));
+  dict->SetInteger("length", frame.data_length);
   return std::move(dict);
 }
 
@@ -574,7 +574,7 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
   if (!net_log_is_capturing_)
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STREAM_FRAME_RECEIVED,
-                    base::Bind(&NetLogQuicStreamFrameCallback, &frame));
+                    base::Bind(&NetLogQuicStreamFrameCallback, frame));
 }
 
 void QuicConnectionLogger::OnAckFrame(const quic::QuicAckFrame& frame) {

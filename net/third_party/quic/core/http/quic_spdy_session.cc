@@ -235,7 +235,7 @@ class QuicSpdySession::SpdyFramerVisitor
                   SpdyStreamId parent_id,
                   int weight,
                   bool exclusive) override {
-    if (session_->connection()->transport_version() <= QUIC_VERSION_42) {
+    if (session_->connection()->transport_version() <= QUIC_VERSION_39) {
       CloseConnection("SPDY PRIORITY frame received.",
                       QUIC_INVALID_HEADERS_STREAM_DATA);
       return;
@@ -446,7 +446,7 @@ size_t QuicSpdySession::WritePriority(QuicStreamId id,
                                       QuicStreamId parent_stream_id,
                                       int weight,
                                       bool exclusive) {
-  if (connection()->transport_version() <= QUIC_VERSION_42) {
+  if (connection()->transport_version() <= QUIC_VERSION_39) {
     return 0;
   }
   SpdyPriorityIR priority_frame(id, parent_stream_id, weight, exclusive);

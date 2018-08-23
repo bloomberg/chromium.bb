@@ -16,7 +16,7 @@ QuicFrame::QuicFrame() {}
 QuicFrame::QuicFrame(QuicPaddingFrame padding_frame)
     : type(PADDING_FRAME), padding_frame(padding_frame) {}
 
-QuicFrame::QuicFrame(QuicStreamFrame* stream_frame)
+QuicFrame::QuicFrame(QuicStreamFrame stream_frame)
     : type(STREAM_FRAME), stream_frame(stream_frame) {}
 
 QuicFrame::QuicFrame(QuicAckFrame* frame) : type(ACK_FRAME), ack_frame(frame) {}
@@ -81,9 +81,7 @@ void DeleteFrame(QuicFrame* frame) {
     case PING_FRAME:
     case MAX_STREAM_ID_FRAME:
     case STREAM_ID_BLOCKED_FRAME:
-      break;
     case STREAM_FRAME:
-      delete frame->stream_frame;
       break;
     case ACK_FRAME:
       delete frame->ack_frame;
@@ -130,11 +128,10 @@ void DeleteFrame(QuicFrame* frame) {
 void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id) {
   QuicFrames::iterator it = frames->begin();
   while (it != frames->end()) {
-    if (it->type != STREAM_FRAME || it->stream_frame->stream_id != stream_id) {
+    if (it->type != STREAM_FRAME || it->stream_frame.stream_id != stream_id) {
       ++it;
       continue;
     }
-    delete it->stream_frame;
     it = frames->erase(it);
   }
 }
@@ -258,7 +255,7 @@ std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
       break;
     }
     case STREAM_FRAME: {
-      os << "type { STREAM_FRAME } " << *(frame.stream_frame);
+      os << "type { STREAM_FRAME } " << frame.stream_frame;
       break;
     }
     case ACK_FRAME: {

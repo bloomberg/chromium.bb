@@ -38,8 +38,8 @@ class QuicConnection;
 class QuicStream;
 }  // namespace quic
 
-using testing::NiceMock;
 using testing::_;
+using testing::NiceMock;
 
 namespace quic {
 namespace test {
@@ -67,6 +67,7 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
       : server_crypto_config_(QuicCryptoServerConfig::TESTING,
                               QuicRandom::GetInstance(),
                               std::move(proof_source),
+                              KeyExchangeSource::Default(),
                               TlsServerHandshaker::CreateSslCtx()),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),

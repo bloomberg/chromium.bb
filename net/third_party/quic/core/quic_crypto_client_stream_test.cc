@@ -259,7 +259,7 @@ TEST_F(QuicCryptoClientStreamTest, ServerConfigUpdateWithCert) {
   // Build a server config update message with certificates
   QuicCryptoServerConfig crypto_config(
       QuicCryptoServerConfig::TESTING, QuicRandom::GetInstance(),
-      crypto_test_utils::ProofSourceForTesting(),
+      crypto_test_utils::ProofSourceForTesting(), KeyExchangeSource::Default(),
       TlsServerHandshaker::CreateSslCtx());
   crypto_test_utils::FakeServerOptions options;
   crypto_test_utils::SetupCryptoServerConfigForTest(
@@ -384,6 +384,7 @@ class QuicCryptoClientStreamStatelessTest : public QuicTest {
         server_crypto_config_(QuicCryptoServerConfig::TESTING,
                               QuicRandom::GetInstance(),
                               crypto_test_utils::ProofSourceForTesting(),
+                              KeyExchangeSource::Default(),
                               TlsServerHandshaker::CreateSslCtx()),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),

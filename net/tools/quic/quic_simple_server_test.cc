@@ -28,6 +28,7 @@ class QuicChromeServerDispatchPacketTest : public QuicTest {
       : crypto_config_("blah",
                        quic::QuicRandom::GetInstance(),
                        quic::test::crypto_test_utils::ProofSourceForTesting(),
+                       quic::KeyExchangeSource::Default(),
                        quic::TlsServerHandshaker::CreateSslCtx()),
         version_manager_(quic::AllSupportedVersions()),
         dispatcher_(config_,

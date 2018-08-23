@@ -128,6 +128,13 @@ bool P256KeyExchange::CalculateSharedKey(QuicStringPiece peer_public_value,
   return true;
 }
 
+void P256KeyExchange::CalculateSharedKey(
+    QuicStringPiece peer_public_value,
+    QuicString* shared_key,
+    std::unique_ptr<Callback> callback) const {
+  callback->Run(CalculateSharedKey(peer_public_value, shared_key));
+}
+
 QuicStringPiece P256KeyExchange::public_value() const {
   return QuicStringPiece(reinterpret_cast<const char*>(public_key_),
                          sizeof(public_key_));

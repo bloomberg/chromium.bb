@@ -149,7 +149,7 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
     quic_crypto_server_config_ = QuicMakeUnique<QuicCryptoServerConfig>(
         QuicString(source_address_token_secret, kInputKeyingMaterialLength),
         helper_->GetRandomGenerator(), std::move(proof_source),
-        TlsServerHandshaker::CreateSslCtx());
+        KeyExchangeSource::Default(), TlsServerHandshaker::CreateSslCtx());
     // Provide server with serialized config string to prove ownership.
     QuicCryptoServerConfig::ConfigOptions options;
     // The |message| is used to handle the return value of AddDefaultConfig

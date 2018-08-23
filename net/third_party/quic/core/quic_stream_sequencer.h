@@ -59,7 +59,7 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencer {
   // to do zero-copy reads.
   void MarkConsumed(size_t num_bytes);
 
-  // Copies all of the readable data into |buffer| and marks all of the copied
+  // Appends all of the readable data to |buffer| and marks all of the appended
   // data as consumed.
   void Read(QuicString* buffer);
 
