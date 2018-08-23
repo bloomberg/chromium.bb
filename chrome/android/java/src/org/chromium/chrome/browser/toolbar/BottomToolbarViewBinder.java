@@ -115,10 +115,9 @@ public class BottomToolbarViewBinder
     private static void updateButton(
             TintedImageButton button, ToolbarButtonData buttonData, boolean useLightIcons) {
         if (buttonData == null) {
-            button.setVisibility(View.INVISIBLE);
+            ToolbarButtonData.clearButton(button);
         } else {
             buttonData.updateButton(button, useLightIcons);
-            button.setVisibility(View.VISIBLE);
         }
     }
 
