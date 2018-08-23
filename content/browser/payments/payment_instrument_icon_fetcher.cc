@@ -4,6 +4,8 @@
 
 #include "content/browser/payments/payment_instrument_icon_fetcher.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind_helpers.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -99,12 +101,12 @@ void DownloadBestMatchingIcon(
 
 WebContents* GetWebContentsFromProviderHostIds(
     const GURL& scope,
-    std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts) {
+    std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   for (const auto& host : *provider_hosts) {
     RenderFrameHostImpl* render_frame_host =
-        RenderFrameHostImpl::FromID(host.first, host.second);
+        RenderFrameHostImpl::FromID(host.child_id, host.frame_routing_id);
     if (!render_frame_host)
       continue;
 
@@ -122,7 +124,7 @@ WebContents* GetWebContentsFromProviderHostIds(
 
 void StartOnUI(
     const GURL& scope,
-    std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts,
+    std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts,
     const std::vector<blink::Manifest::ImageResource>& icons,
     PaymentInstrumentIconFetcher::PaymentInstrumentIconFetcherCallback
         callback) {
@@ -138,7 +140,7 @@ void StartOnUI(
 // static
 void PaymentInstrumentIconFetcher::Start(
     const GURL& scope,
-    std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts,
+    std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts,
     const std::vector<blink::Manifest::ImageResource>& icons,
     PaymentInstrumentIconFetcherCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);

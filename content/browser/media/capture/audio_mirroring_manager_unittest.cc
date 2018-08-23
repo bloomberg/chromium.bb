@@ -5,6 +5,7 @@
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -44,8 +45,6 @@ class MockDiverter : public AudioMirroringManager::Diverter {
 class MockMirroringDestination
     : public AudioMirroringManager::MirroringDestination {
  public:
-  typedef AudioMirroringManager::SourceFrameRef SourceFrameRef;
-
   MockMirroringDestination(int render_process_id,
                            int render_frame_id,
                            bool is_duplication)
@@ -54,27 +53,34 @@ class MockMirroringDestination
         query_count_(0),
         is_duplication_(is_duplication) {}
 
-  MOCK_METHOD2(QueryForMatches,
-               void(const std::set<SourceFrameRef>& candidates,
-                    const MatchesCallback& results_callback));
+  void QueryForMatches(const std::set<GlobalFrameRoutingId>& candidates,
+                       MatchesCallback results_callback) override {
+    // The indirection is needed, because gmock has trouble with move-only
+    // parameters (like |results_callback|).
+    MockedQueryForMatches(candidates, &results_callback);
+  }
+  MOCK_METHOD2(MockedQueryForMatches,
+               void(const std::set<GlobalFrameRoutingId>& candidates,
+                    MatchesCallback* results_callback));
+
   MOCK_METHOD1(AddInput,
                media::AudioOutputStream*(const media::AudioParameters& params));
 
   MOCK_METHOD1(AddPushInput,
                media::AudioPushSink*(const media::AudioParameters& params));
 
-  void SimulateQuery(const std::set<SourceFrameRef>& candidates,
-                     const MatchesCallback& results_callback) {
+  void SimulateQuery(const std::set<GlobalFrameRoutingId>& candidates,
+                     MatchesCallback* results_callback) {
     ++query_count_;
 
-    std::set<SourceFrameRef> result;
-    if (candidates.find(SourceFrameRef(render_process_id_, render_frame_id_)) !=
-            candidates.end()) {
-      result.insert(SourceFrameRef(render_process_id_, render_frame_id_));
+    std::set<GlobalFrameRoutingId> result;
+    if (candidates.find(GlobalFrameRoutingId(
+            render_process_id_, render_frame_id_)) != candidates.end()) {
+      result.insert(GlobalFrameRoutingId(render_process_id_, render_frame_id_));
     }
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(results_callback, std::move(result), is_duplication_));
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(std::move(*results_callback),
+                                           std::move(result), is_duplication_));
   }
 
   media::AudioOutputStream* SimulateAddInput(
@@ -157,9 +163,9 @@ class AudioMirroringManagerTest : public testing::Test {
   void StartMirroringTo(const std::unique_ptr<MockMirroringDestination>& dest,
                         int expected_inputs_added,
                         int expected_push_inputs_added) {
-    EXPECT_CALL(*dest, QueryForMatches(_, _))
-        .WillRepeatedly(Invoke(dest.get(),
-                               &MockMirroringDestination::SimulateQuery));
+    EXPECT_CALL(*dest, MockedQueryForMatches(_, _))
+        .WillRepeatedly(
+            Invoke(dest.get(), &MockMirroringDestination::SimulateQuery));
     if (expected_inputs_added > 0) {
       EXPECT_CALL(*dest, AddInput(Ref(params_)))
           .Times(expected_inputs_added)

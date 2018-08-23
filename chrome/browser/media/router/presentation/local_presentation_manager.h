@@ -13,9 +13,9 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
-#include "chrome/browser/media/router/presentation/render_frame_host_id.h"
 #include "chrome/common/media_router/media_route.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/presentation_service_delegate.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 
@@ -114,7 +114,7 @@ class LocalPresentationManager : public KeyedService {
   // |receiver_callback| passed below.
   virtual void RegisterLocalPresentationController(
       const blink::mojom::PresentationInfo& presentation_info,
-      const RenderFrameHostId& render_frame_id,
+      const content::GlobalFrameRoutingId& render_frame_id,
       content::PresentationConnectionPtr controller_connection_ptr,
       content::PresentationConnectionRequest receiver_connection_request,
       const MediaRoute& route);
@@ -126,7 +126,7 @@ class LocalPresentationManager : public KeyedService {
   // and any other pending controller.
   virtual void UnregisterLocalPresentationController(
       const std::string& presentation_id,
-      const RenderFrameHostId& render_frame_id);
+      const content::GlobalFrameRoutingId& render_frame_id);
 
   // Registers |receiver_callback| to presentation with |presentation_info|.
   virtual void OnLocalPresentationReceiverCreated(
@@ -165,14 +165,15 @@ class LocalPresentationManager : public KeyedService {
     // |receiver_connection_request|, and store it in |pending_controllers_|
     // map.
     void RegisterController(
-        const RenderFrameHostId& render_frame_id,
+        const content::GlobalFrameRoutingId& render_frame_id,
         content::PresentationConnectionPtr controller_connection_ptr,
         content::PresentationConnectionRequest receiver_connection_request,
         const MediaRoute& route);
 
     // Unregister controller with |render_frame_id|. Do nothing if there is no
     // pending controller with |render_frame_id|.
-    void UnregisterController(const RenderFrameHostId& render_frame_id);
+    void UnregisterController(
+        const content::GlobalFrameRoutingId& render_frame_id);
 
     // Register |receiver_callback| to current local_presentation object.
     // For each controller in |pending_controllers_| map, invoke
@@ -213,9 +214,9 @@ class LocalPresentationManager : public KeyedService {
 
     // Contains ControllerConnection objects registered via
     // |RegisterController()| before |receiver_callback_| is set.
-    std::unordered_map<RenderFrameHostId,
+    std::unordered_map<content::GlobalFrameRoutingId,
                        std::unique_ptr<ControllerConnection>,
-                       RenderFrameHostIdHasher>
+                       content::GlobalFrameRoutingIdHasher>
         pending_controllers_;
 
     DISALLOW_COPY_AND_ASSIGN(LocalPresentation);

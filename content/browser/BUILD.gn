@@ -1008,7 +1008,6 @@ jumbo_source_set("browser") {
     "loader/detachable_resource_handler.h",
     "loader/download_utils_impl.cc",
     "loader/download_utils_impl.h",
-    "loader/global_routing_id.h",
     "loader/intercepting_resource_handler.cc",
     "loader/intercepting_resource_handler.h",
     "loader/layered_resource_handler.cc",

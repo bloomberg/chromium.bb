@@ -5,12 +5,14 @@
 #ifndef CONTENT_BROWSER_PAYMENTS_PAYMENT_INSTRUMENT_ICON_FETCHER_H_
 #define CONTENT_BROWSER_PAYMENTS_PAYMENT_INSTRUMENT_ICON_FETCHER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "content/public/browser/global_routing_id.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/platform/modules/payments/payment_app.mojom.h"
 
@@ -24,7 +26,7 @@ class PaymentInstrumentIconFetcher {
   // Should be called on IO thread.
   static void Start(
       const GURL& scope,
-      std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts,
+      std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts,
       const std::vector<blink::Manifest::ImageResource>& icons,
       PaymentInstrumentIconFetcherCallback callback);
 

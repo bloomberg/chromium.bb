@@ -232,13 +232,13 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   void AllowWorkerFileSystem(
       const GURL& url,
       content::ResourceContext* context,
-      const std::vector<std::pair<int, int>>& render_frames,
+      const std::vector<content::GlobalFrameRoutingId>& render_frames,
       base::Callback<void(bool)> callback) override;
   bool AllowWorkerIndexedDB(
       const GURL& url,
       const base::string16& name,
       content::ResourceContext* context,
-      const std::vector<std::pair<int, int>>& render_frames) override;
+      const std::vector<content::GlobalFrameRoutingId>& render_frames) override;
   AllowWebBluetoothResult AllowWebBluetooth(
       content::BrowserContext* browser_context,
       const url::Origin& requesting_origin,
@@ -516,14 +516,14 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   void FileSystemAccessed(
       const GURL& url,
-      const std::vector<std::pair<int, int> >& render_frames,
+      const std::vector<content::GlobalFrameRoutingId>& render_frames,
       base::Callback<void(bool)> callback,
       bool allow);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   void GuestPermissionRequestHelper(
       const GURL& url,
-      const std::vector<std::pair<int, int> >& render_frames,
+      const std::vector<content::GlobalFrameRoutingId>& render_frames,
       base::Callback<void(bool)> callback,
       bool allow);
 

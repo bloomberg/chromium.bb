@@ -5,6 +5,7 @@
 #include "android_webview/browser/aw_content_browser_client.h"
 
 #include <utility>
+#include <vector>
 
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_browser_main_parts.h"
@@ -354,7 +355,7 @@ bool AwContentBrowserClient::AllowSetCookie(const GURL& url,
 void AwContentBrowserClient::AllowWorkerFileSystem(
     const GURL& url,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames,
+    const std::vector<content::GlobalFrameRoutingId>& render_frames,
     base::Callback<void(bool)> callback) {
   callback.Run(true);
 }
@@ -363,7 +364,7 @@ bool AwContentBrowserClient::AllowWorkerIndexedDB(
     const GURL& url,
     const base::string16& name,
     content::ResourceContext* context,
-    const std::vector<std::pair<int, int> >& render_frames) {
+    const std::vector<content::GlobalFrameRoutingId>& render_frames) {
   return true;
 }
 

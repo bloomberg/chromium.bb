@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/service_worker_context.h"
 
 namespace base {
@@ -151,10 +152,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void HasMainFrameProviderHost(const GURL& origin,
                                 BoolCallback callback) const;
 
-  // Returns all render process ids and frame ids for the given |origin|.
-  std::unique_ptr<
-      std::vector<std::pair<int /* render process id */, int /* frame id */>>>
-  GetProviderHostIds(const GURL& origin) const;
+  // Returns all frame ids for the given |origin|.
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>> GetProviderHostIds(
+      const GURL& origin) const;
 
   // Returns the registration whose scope longest matches |document_url|. It is
   // guaranteed that the returned registration has the activated worker.

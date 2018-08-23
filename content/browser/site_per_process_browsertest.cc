@@ -7783,10 +7783,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // At this point, we should have two pending WebContents.
   EXPECT_TRUE(base::ContainsKey(
       web_contents()->pending_contents_,
-      std::make_pair(process1->GetID(), filter1->routing_id())));
+      GlobalRoutingID(process1->GetID(), filter1->routing_id())));
   EXPECT_TRUE(base::ContainsKey(
       web_contents()->pending_contents_,
-      std::make_pair(process2->GetID(), filter2->routing_id())));
+      GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 
   // Both subframes were set up in the same way, so the next routing ID for the
   // new popup windows should match up (this led to the collision in the
@@ -7861,10 +7861,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // At this point, we should have two pending widgets.
   EXPECT_TRUE(base::ContainsKey(
       web_contents()->pending_widget_views_,
-      std::make_pair(process1->GetID(), filter1->routing_id())));
+      GlobalRoutingID(process1->GetID(), filter1->routing_id())));
   EXPECT_TRUE(base::ContainsKey(
       web_contents()->pending_widget_views_,
-      std::make_pair(process2->GetID(), filter2->routing_id())));
+      GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 
   // Both subframes were set up in the same way, so the next routing ID for the
   // new popup widgets should match up (this led to the collision in the
@@ -7878,10 +7878,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                                     false, gfx::Rect());
   EXPECT_FALSE(base::ContainsKey(
       web_contents()->pending_widget_views_,
-      std::make_pair(process1->GetID(), filter1->routing_id())));
+      GlobalRoutingID(process1->GetID(), filter1->routing_id())));
   EXPECT_FALSE(base::ContainsKey(
       web_contents()->pending_widget_views_,
-      std::make_pair(process2->GetID(), filter2->routing_id())));
+      GlobalRoutingID(process2->GetID(), filter2->routing_id())));
 }
 #endif
 

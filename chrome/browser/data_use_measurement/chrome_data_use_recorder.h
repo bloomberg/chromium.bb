@@ -10,19 +10,18 @@
 #include "base/macros.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/global_routing_id.h"
 
 namespace data_use_measurement {
-
-typedef std::pair<int, int> RenderFrameHostID;
 
 class ChromeDataUseRecorder : public DataUseRecorder {
  public:
   explicit ChromeDataUseRecorder(DataUse::TrafficType traffic_type);
   ~ChromeDataUseRecorder() override;
 
-  RenderFrameHostID main_frame_id() const { return main_frame_id_; }
+  content::GlobalFrameRoutingId main_frame_id() const { return main_frame_id_; }
 
-  void set_main_frame_id(RenderFrameHostID frame_id) {
+  void set_main_frame_id(content::GlobalFrameRoutingId frame_id) {
     main_frame_id_ = frame_id;
   }
 
@@ -37,7 +36,7 @@ class ChromeDataUseRecorder : public DataUseRecorder {
  private:
   // Identifier for the main frame for the page load this recorder is tracking.
   // Only valid if the data use is associated with a page load.
-  RenderFrameHostID main_frame_id_;
+  content::GlobalFrameRoutingId main_frame_id_;
 
   // Identifier for the MAIN_FRAME request for this page load. Only valid if
   // the data use is associated with a page load.

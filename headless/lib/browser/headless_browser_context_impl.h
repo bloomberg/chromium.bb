@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/unguessable_token.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/resource_context.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_conditions.h"
@@ -139,7 +140,7 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   // TODO(alexclarke): Remove if we can add DevTools frame token ID to
   // ResourceRequestInfo. See https://crbug.com/715541
   mutable base::Lock devtools_frame_token_map_lock_;
-  base::flat_map<std::pair<int, int>, base::UnguessableToken>
+  base::flat_map<content::GlobalFrameRoutingId, base::UnguessableToken>
       devtools_frame_token_map_;
   base::flat_map<int, base::UnguessableToken>
       frame_tree_node_id_to_devtools_frame_token_map_;

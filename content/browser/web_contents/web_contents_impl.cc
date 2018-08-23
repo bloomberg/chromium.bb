@@ -2670,8 +2670,8 @@ void WebContentsImpl::CreateNewWindow(
     // FrameTreeNode id instead of the routing id of the Widget for the main
     // frame.  https://crbug.com/545684
     DCHECK_NE(MSG_ROUTING_NONE, main_frame_widget_route_id);
-    pending_contents_[std::make_pair(render_process_id,
-                                     main_frame_widget_route_id)] =
+    pending_contents_[GlobalRoutingID(render_process_id,
+                                      main_frame_widget_route_id)] =
         std::move(new_contents);
     AddDestructionObserver(raw_new_contents);
   }
@@ -2773,7 +2773,7 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
     widget_view->SetPopupType(popup_type);
   }
   // Save the created widget associated with the route so we can show it later.
-  pending_widget_views_[std::make_pair(render_process_id, route_id)] =
+  pending_widget_views_[GlobalRoutingID(render_process_id, route_id)] =
       widget_view;
 }
 
@@ -2866,7 +2866,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
 std::unique_ptr<WebContents> WebContentsImpl::GetCreatedWindow(
     int process_id,
     int main_frame_widget_route_id) {
-  auto key = std::make_pair(process_id, main_frame_widget_route_id);
+  auto key = GlobalRoutingID(process_id, main_frame_widget_route_id);
   auto iter = pending_contents_.find(key);
 
   // Certain systems can block the creation of new windows. If we didn't succeed
@@ -2894,14 +2894,14 @@ std::unique_ptr<WebContents> WebContentsImpl::GetCreatedWindow(
 
 RenderWidgetHostView* WebContentsImpl::GetCreatedWidget(int process_id,
                                                         int route_id) {
-  auto iter = pending_widget_views_.find(std::make_pair(process_id, route_id));
+  auto iter = pending_widget_views_.find(GlobalRoutingID(process_id, route_id));
   if (iter == pending_widget_views_.end()) {
     DCHECK(false);
     return nullptr;
   }
 
   RenderWidgetHostView* widget_host_view = iter->second;
-  pending_widget_views_.erase(std::make_pair(process_id, route_id));
+  pending_widget_views_.erase(GlobalRoutingID(process_id, route_id));
 
   RenderWidgetHost* widget_host = widget_host_view->GetRenderWidgetHost();
   if (!widget_host->GetProcess()->IsInitializedAndNotDead()) {

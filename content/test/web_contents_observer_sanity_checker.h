@@ -5,12 +5,14 @@
 #ifndef CONTENT_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
 #define CONTENT_TEST_WEB_CONTENTS_OBSERVER_SANITY_CHECKER_H_
 
+#include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "content/browser/loader/global_routing_id.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {

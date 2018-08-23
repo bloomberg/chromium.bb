@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -67,7 +68,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
         render_frame_host_id_, std::move(controller));
   }
 
-  void RegisterController(const RenderFrameHostId& render_frame_id,
+  void RegisterController(const content::GlobalFrameRoutingId& render_frame_id,
                           content::PresentationConnectionPtr controller) {
     RegisterController(presentation_info_, render_frame_id,
                        std::move(controller));
@@ -79,7 +80,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
   }
 
   void RegisterController(const PresentationInfo& presentation_info,
-                          const RenderFrameHostId& render_frame_id,
+                          const content::GlobalFrameRoutingId& render_frame_id,
                           content::PresentationConnectionPtr controller) {
     content::PresentationConnectionRequest receiver_conn_request;
     manager()->RegisterLocalPresentationController(
@@ -102,7 +103,8 @@ class LocalPresentationManagerTest : public ::testing::Test {
                             base::Unretained(&receiver_callback)));
   }
 
-  void UnregisterController(const RenderFrameHostId& render_frame_id) {
+  void UnregisterController(
+      const content::GlobalFrameRoutingId& render_frame_id) {
     manager()->UnregisterLocalPresentationController(kPresentationId,
                                                      render_frame_id);
   }
@@ -117,7 +119,7 @@ class LocalPresentationManagerTest : public ::testing::Test {
   }
 
  private:
-  const RenderFrameHostId render_frame_host_id_;
+  const content::GlobalFrameRoutingId render_frame_host_id_;
   const PresentationInfo presentation_info_;
   LocalPresentationManager manager_;
   MediaRoute route_;
@@ -152,9 +154,11 @@ TEST_F(LocalPresentationManagerTest, UnregisterNonexistentReceiver) {
 TEST_F(LocalPresentationManagerTest,
        RegisterMultipleControllersSamePresentation) {
   content::PresentationConnectionPtr controller1;
-  RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
+  RegisterController(content::GlobalFrameRoutingId(1, 1),
+                     std::move(controller1));
   content::PresentationConnectionPtr controller2;
-  RegisterController(RenderFrameHostId(1, 2), std::move(controller2));
+  RegisterController(content::GlobalFrameRoutingId(1, 2),
+                     std::move(controller2));
   VerifyPresentationsSize(1);
 }
 
@@ -244,9 +248,11 @@ TEST_F(LocalPresentationManagerTest,
 TEST_F(LocalPresentationManagerTest,
        RegisterTwoControllersThenReceiverInvokesCallbackTwice) {
   content::PresentationConnectionPtr controller1;
-  RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
+  RegisterController(content::GlobalFrameRoutingId(1, 1),
+                     std::move(controller1));
   content::PresentationConnectionPtr controller2;
-  RegisterController(RenderFrameHostId(1, 2), std::move(controller2));
+  RegisterController(content::GlobalFrameRoutingId(1, 2),
+                     std::move(controller2));
 
   MockReceiverConnectionAvailableCallback receiver_callback;
   EXPECT_CALL(receiver_callback, OnReceiverConnectionAvailableRaw(_, _))
@@ -257,7 +263,8 @@ TEST_F(LocalPresentationManagerTest,
 TEST_F(LocalPresentationManagerTest,
        RegisterControllerReceiverConontrollerInvokesCallbackTwice) {
   content::PresentationConnectionPtr controller1;
-  RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
+  RegisterController(content::GlobalFrameRoutingId(1, 1),
+                     std::move(controller1));
 
   MockReceiverConnectionAvailableCallback receiver_callback;
   EXPECT_CALL(receiver_callback, OnReceiverConnectionAvailableRaw(_, _))
@@ -265,22 +272,25 @@ TEST_F(LocalPresentationManagerTest,
   RegisterReceiver(receiver_callback);
 
   content::PresentationConnectionPtr controller2;
-  RegisterController(RenderFrameHostId(1, 2), std::move(controller2));
+  RegisterController(content::GlobalFrameRoutingId(1, 2),
+                     std::move(controller2));
 }
 
 TEST_F(LocalPresentationManagerTest,
        UnregisterFirstControllerFromeConnectedPresentation) {
   content::PresentationConnectionPtr controller1;
-  RegisterController(RenderFrameHostId(1, 1), std::move(controller1));
+  RegisterController(content::GlobalFrameRoutingId(1, 1),
+                     std::move(controller1));
   content::PresentationConnectionPtr controller2;
-  RegisterController(RenderFrameHostId(1, 2), std::move(controller2));
+  RegisterController(content::GlobalFrameRoutingId(1, 2),
+                     std::move(controller2));
 
   MockReceiverConnectionAvailableCallback receiver_callback;
   EXPECT_CALL(receiver_callback, OnReceiverConnectionAvailableRaw(_, _))
       .Times(2);
   RegisterReceiver(receiver_callback);
-  UnregisterController(RenderFrameHostId(1, 1));
-  UnregisterController(RenderFrameHostId(1, 1));
+  UnregisterController(content::GlobalFrameRoutingId(1, 1));
+  UnregisterController(content::GlobalFrameRoutingId(1, 1));
 
   VerifyPresentationsSize(1);
 }

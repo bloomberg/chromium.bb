@@ -4,12 +4,15 @@
 
 #include "content/browser/payments/payment_app_info_fetcher.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind_helpers.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/common/console_message_level.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
@@ -28,7 +31,7 @@ void PaymentAppInfoFetcher::Start(
     PaymentAppInfoFetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::unique_ptr<std::vector<std::pair<int, int>>> provider_hosts =
+  std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts =
       service_worker_context->GetProviderHostIds(context_url.GetOrigin());
 
   BrowserThread::PostTask(
@@ -39,7 +42,7 @@ void PaymentAppInfoFetcher::Start(
 
 void PaymentAppInfoFetcher::StartOnUI(
     const GURL& context_url,
-    const std::unique_ptr<std::vector<std::pair<int, int>>>& provider_hosts,
+    const std::unique_ptr<std::vector<GlobalFrameRoutingId>>& provider_hosts,
     PaymentAppInfoFetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -70,7 +73,7 @@ PaymentAppInfoFetcher::SelfDeleteFetcher::~SelfDeleteFetcher() {
 
 void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
     const GURL& context_url,
-    const std::unique_ptr<std::vector<std::pair<int, int>>>& provider_hosts) {
+    const std::unique_ptr<std::vector<GlobalFrameRoutingId>>& provider_hosts) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (provider_hosts->size() == 0U) {
@@ -81,7 +84,7 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
   for (const auto& frame : *provider_hosts) {
     // Find out the render frame host registering the payment app.
     RenderFrameHostImpl* render_frame_host =
-        RenderFrameHostImpl::FromID(frame.first, frame.second);
+        RenderFrameHostImpl::FromID(frame.child_id, frame.frame_routing_id);
     if (!render_frame_host ||
         context_url.spec().compare(
             render_frame_host->GetLastCommittedURL().spec()) != 0) {
