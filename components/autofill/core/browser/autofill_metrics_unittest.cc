@@ -7402,7 +7402,13 @@ TEST_F(AutofillMetricsTest, RecordCardUploadDecisionMetric_NoUkmService) {
 }
 
 // Test the ukm recorded when Suggestion is shown.
-TEST_F(AutofillMetricsTest, AutofillSuggestionShownTest) {
+// Flaky on Win.  http://crbug.com/876954
+#if defined(OS_WIN)
+#define MAYBE_AutofillSuggestionShownTest DISABLED_AutofillSuggestionShownTest
+#else
+#define MAYBE_AutofillSuggestionShownTest AutofillSuggestionShownTest
+#endif
+TEST_F(AutofillMetricsTest, MAYBE_AutofillSuggestionShownTest) {
   RecreateCreditCards(true /* include_local_credit_card */,
                       false /* include_masked_server_credit_card */,
                       false /* include_full_server_credit_card */);
