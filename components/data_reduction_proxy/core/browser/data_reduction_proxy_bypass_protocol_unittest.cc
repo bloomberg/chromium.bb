@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/span.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -1090,6 +1091,179 @@ TEST_F(DataReductionProxyProtocolTest,
 
   // We should have no entries in our bad proxy list.
   TestBadProxies(0, -1, "", "");
+}
+
+class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
+ public:
+  DataReductionProxyBypassProtocolEndToEndTest() {}
+
+  void ResetDependencies() {
+    drp_test_context_.reset();
+    mock_socket_factory_.reset();
+    storage_.reset();
+
+    context_.reset(new net::TestURLRequestContext(true));
+    storage_.reset(new net::URLRequestContextStorage(context_.get()));
+    mock_socket_factory_.reset(new net::MockClientSocketFactory());
+    context_->set_client_socket_factory(mock_socket_factory_.get());
+    drp_test_context_ =
+        DataReductionProxyTestContext::Builder()
+            .WithMockClientSocketFactory(mock_socket_factory_.get())
+            .WithURLRequestContext(context_.get())
+            .Build();
+  }
+
+  void AttachToContextAndInit() {
+    drp_test_context_->AttachToURLRequestContext(storage_.get());
+    context_->set_proxy_delegate(
+        drp_test_context_->io_data()->proxy_delegate());
+    context_->Init();
+  }
+
+  net::TestURLRequestContext* context() { return context_.get(); }
+  net::URLRequestContextStorage* storage() { return storage_.get(); }
+  net::MockClientSocketFactory* mock_socket_factory() {
+    return mock_socket_factory_.get();
+  }
+  DataReductionProxyTestContext* drp_test_context() {
+    return drp_test_context_.get();
+  }
+
+ private:
+  base::MessageLoopForIO loop_;
+  std::unique_ptr<net::TestURLRequestContext> context_;
+  std::unique_ptr<net::URLRequestContextStorage> storage_;
+  std::unique_ptr<net::MockClientSocketFactory> mock_socket_factory_;
+  std::unique_ptr<DataReductionProxyTestContext> drp_test_context_;
+
+  DISALLOW_COPY_AND_ASSIGN(DataReductionProxyBypassProtocolEndToEndTest);
+};
+
+TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
+       BypassLogicAlwaysAppliesWhenViaHeaderPresent) {
+  const struct {
+    const char* first_response;
+    bool expected_retry;
+    bool expected_bad_proxy;
+    DataReductionProxyBypassType expected_bypass_type;
+  } test_cases[] = {
+      {"HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, true, BYPASS_EVENT_TYPE_MEDIUM},
+      {"HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: bypass=0\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, true, BYPASS_EVENT_TYPE_MEDIUM},
+      {"HTTP/1.1 502 Bad Gateway\r\n"
+       "Server: proxy\r\n"
+       "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       true, true, BYPASS_EVENT_TYPE_STATUS_502_HTTP_BAD_GATEWAY},
+      {"HTTP/1.1 200 OK\r\n"
+       "Server: proxy\r\n"
+       "Chrome-Proxy: block=0\r\n\r\n",
+       false, false, BYPASS_EVENT_TYPE_MAX},
+      {"HTTP/1.1 502 Bad Gateway\r\n"
+       "Server: proxy\r\n\r\n",
+       false, false, BYPASS_EVENT_TYPE_MAX},
+  };
+
+  for (const auto& test : test_cases) {
+    const std::string kPrimary = "https://unrecognized-drp.net:443";
+
+    ResetDependencies();
+    storage()->set_proxy_resolution_service(ProxyResolutionService::CreateFixed(
+        kPrimary + ",direct://", TRAFFIC_ANNOTATION_FOR_TESTS));
+    AttachToContextAndInit();
+
+    // The proxy is an HTTPS proxy, so set up the fake SSL socket data.
+    net::SSLSocketDataProvider ssl_socket(net::ASYNC, net::OK);
+    mock_socket_factory()->AddSSLSocketDataProvider(&ssl_socket);
+
+    MockRead first_reads[] = {MockRead(test.first_response), MockRead(""),
+                              MockRead(net::SYNCHRONOUS, net::OK)};
+    net::StaticSocketDataProvider first_socket(first_reads,
+                                               base::span<MockWrite>());
+    mock_socket_factory()->AddSocketDataProvider(&first_socket);
+
+    MockRead retry_reads[] = {MockRead("HTTP/1.1 200 OK\n\r\n\r"), MockRead(""),
+                              MockRead(net::SYNCHRONOUS, net::OK)};
+    net::StaticSocketDataProvider retry_socket(retry_reads,
+                                               base::span<MockWrite>());
+    if (test.expected_retry)
+      mock_socket_factory()->AddSocketDataProvider(&retry_socket);
+
+    net::TestDelegate delegate;
+    std::unique_ptr<net::URLRequest> url_request(
+        context()->CreateRequest(GURL("http://www.google.com"), net::IDLE,
+                                 &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    url_request->Start();
+    drp_test_context()->RunUntilIdle();
+
+    EXPECT_EQ(test.expected_bypass_type,
+              drp_test_context()->io_data()->bypass_stats()->GetBypassType());
+    // Check the bad proxy list.
+    EXPECT_EQ(test.expected_bad_proxy,
+              base::ContainsKey(
+                  context()->proxy_resolution_service()->proxy_retry_info(),
+                  kPrimary));
+  }
+}
+
+TEST_F(DataReductionProxyBypassProtocolEndToEndTest,
+       ResponseProxyServerStateHistogram) {
+  const struct {
+    const char* proxy_rules;
+    bool enable_data_reduction_proxy;
+    const char* response_headers;
+    // |RESPONSE_PROXY_SERVER_STATUS_MAX| indicates no expected value.
+    DataReductionProxyBypassProtocol::ResponseProxyServerStatus expected_status;
+  } test_cases[] = {
+      {"direct://", false, "HTTP/1.1 200 OK\r\n\r\n",
+       DataReductionProxyBypassProtocol::RESPONSE_PROXY_SERVER_STATUS_EMPTY},
+      {"direct://", true,
+       "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       DataReductionProxyBypassProtocol::RESPONSE_PROXY_SERVER_STATUS_DRP},
+      {"unrecognized-drp.net", false, "HTTP/1.1 200 OK\r\n\r\n",
+       DataReductionProxyBypassProtocol::
+           RESPONSE_PROXY_SERVER_STATUS_NON_DRP_NO_VIA},
+      {"unrecognized-drp.net", false,
+       "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+       DataReductionProxyBypassProtocol::
+           RESPONSE_PROXY_SERVER_STATUS_NON_DRP_WITH_VIA},
+  };
+
+  for (const auto& test : test_cases) {
+    ResetDependencies();
+    storage()->set_proxy_resolution_service(
+        net::ProxyResolutionService::CreateFixed(test.proxy_rules,
+                                                 TRAFFIC_ANNOTATION_FOR_TESTS));
+    AttachToContextAndInit();
+    if (test.enable_data_reduction_proxy) {
+      drp_test_context()->DisableWarmupURLFetch();
+      drp_test_context()->EnableDataReductionProxyWithSecureProxyCheckSuccess();
+    }
+    drp_test_context()->config()->test_params()->UseNonSecureProxiesForHttp();
+
+    MockRead reads[] = {MockRead(test.response_headers), MockRead(""),
+                        MockRead(net::SYNCHRONOUS, net::OK)};
+    net::StaticSocketDataProvider socket(reads, base::span<MockWrite>());
+    mock_socket_factory()->AddSocketDataProvider(&socket);
+
+    base::HistogramTester histogram_tester;
+    net::TestDelegate delegate;
+    std::unique_ptr<net::URLRequest> request(
+        context()->CreateRequest(GURL("http://google.com"), net::IDLE,
+                                 &delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
+    request->Start();
+    drp_test_context()->RunUntilIdle();
+
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.ResponseProxyServerStatus", test.expected_status,
+        1);
+  }
 }
 
 }  // namespace data_reduction_proxy

@@ -6,6 +6,7 @@
 #define COMPONENTS_DATA_REDUCTION_PROXY_CORE_BROWSER_DATA_REDUCTION_PROXY_BYPASS_PROTOCOL_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 
@@ -16,12 +17,25 @@ class URLRequest;
 namespace data_reduction_proxy {
 
 class DataReductionProxyConfig;
+struct DataReductionProxyTypeInfo;
 
 // Class responsible for determining when a response should or should not cause
 // the data reduction proxy to be bypassed, and to what degree. Owned by the
 // DataReductionProxyInterceptor.
 class DataReductionProxyBypassProtocol {
  public:
+  // Enum values that can be reported for the
+  // DataReductionProxy.ResponseProxyServerStatus histogram. These values must
+  // be kept in sync with their counterparts in histograms.xml. Visible here for
+  // testing purposes.
+  enum ResponseProxyServerStatus {
+    RESPONSE_PROXY_SERVER_STATUS_EMPTY = 0,
+    RESPONSE_PROXY_SERVER_STATUS_DRP,
+    RESPONSE_PROXY_SERVER_STATUS_NON_DRP_NO_VIA,
+    RESPONSE_PROXY_SERVER_STATUS_NON_DRP_WITH_VIA,
+    RESPONSE_PROXY_SERVER_STATUS_MAX
+  };
+
   // Constructs a DataReductionProxyBypassProtocol object. |config| must be
   // non-NULL and outlive |this|.
   DataReductionProxyBypassProtocol(DataReductionProxyConfig* config);
@@ -46,6 +60,8 @@ class DataReductionProxyBypassProtocol {
   // response headers.
   bool HandleInvalidResponseHeadersCase(
       const net::URLRequest& request,
+      const base::Optional<DataReductionProxyTypeInfo>&
+          data_reduction_proxy_type_info,
       DataReductionProxyInfo* data_reduction_proxy_info,
       DataReductionProxyBypassType* bypass_type) const;
 
@@ -55,6 +71,7 @@ class DataReductionProxyBypassProtocol {
   // non-null response headers.
   bool HandleValidResponseHeadersCase(
       const net::URLRequest& request,
+      const DataReductionProxyTypeInfo& data_reduction_proxy_type_info,
       DataReductionProxyBypassType* proxy_bypass_type,
       DataReductionProxyInfo* data_reduction_proxy_info,
       DataReductionProxyBypassType* bypass_type) const;
