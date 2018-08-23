@@ -601,7 +601,7 @@ TEST_F(CameraDeviceDelegateTest, FailToOpenDevice) {
                                   &CameraDeviceDelegateTest::QuitRunLoop,
                                   base::Unretained(this)))));
   };
-  EXPECT_CALL(*mock_client, OnError(_, _))
+  EXPECT_CALL(*mock_client, OnError(_, _, _))
       .Times(AtLeast(1))
       .WillOnce(InvokeWithoutArgs(stop_on_error));
 

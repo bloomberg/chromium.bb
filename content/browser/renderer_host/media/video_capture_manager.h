@@ -97,7 +97,7 @@ class CONTENT_EXPORT VideoCaptureManager
   void DisconnectClient(VideoCaptureController* controller,
                         VideoCaptureControllerID client_id,
                         VideoCaptureControllerEventHandler* client_handler,
-                        bool aborted_due_to_error);
+                        media::VideoCaptureError error);
 
   // Called by VideoCaptureHost to pause to update video buffer specified by
   // |client_id| and |client_handler|. If all clients of |controller| are
@@ -179,7 +179,8 @@ class CONTENT_EXPORT VideoCaptureManager
 
   // VideoCaptureDeviceLaunchObserver implementation:
   void OnDeviceLaunched(VideoCaptureController* controller) override;
-  void OnDeviceLaunchFailed(VideoCaptureController* controller) override;
+  void OnDeviceLaunchFailed(VideoCaptureController* controller,
+                            media::VideoCaptureError error) override;
   void OnDeviceLaunchAborted() override;
   void OnDeviceConnectionLost(VideoCaptureController* controller) override;
 

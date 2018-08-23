@@ -33,7 +33,8 @@ typedef int VideoCaptureControllerID;
 class CONTENT_EXPORT VideoCaptureControllerEventHandler {
  public:
   // An Error has occurred in the VideoCaptureDevice.
-  virtual void OnError(VideoCaptureControllerID id) = 0;
+  virtual void OnError(VideoCaptureControllerID id,
+                       media::VideoCaptureError error) = 0;
 
   virtual void OnNewBuffer(VideoCaptureControllerID id,
                            media::mojom::VideoBufferHandlePtr buffer_handle,

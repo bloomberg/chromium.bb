@@ -261,7 +261,9 @@ void InProcessVideoCaptureDeviceLauncher::OnDeviceStarted(
   if (!device) {
     switch (state_copy) {
       case State::DEVICE_START_IN_PROGRESS:
-        callbacks->OnDeviceLaunchFailed();
+        callbacks->OnDeviceLaunchFailed(
+            media::VideoCaptureError::
+                kInProcessDeviceLauncherFailedToCreateDeviceInstance);
         base::ResetAndReturn(&done_cb).Run();
         return;
       case State::DEVICE_START_ABORTING:

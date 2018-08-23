@@ -52,7 +52,7 @@ class FileVideoCaptureDeviceTest : public ::testing::Test {
   FileVideoCaptureDeviceTest() : client_(new MockVideoCaptureDeviceClient()) {}
 
   void SetUp() override {
-    EXPECT_CALL(*client_, OnError(_, _)).Times(0);
+    EXPECT_CALL(*client_, OnError(_, _, _)).Times(0);
     EXPECT_CALL(*client_, OnStarted());
     device_ = std::make_unique<FileVideoCaptureDevice>(
         GetTestDataFilePath("bear.mjpeg"));

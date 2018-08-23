@@ -64,7 +64,9 @@ void DeviceMediaToMojoAdapter::Start(
       requested_settings.buffer_type !=
           media::VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor) {
     // Buffer types other than shared memory are not supported.
-    media_receiver->OnError();
+    media_receiver->OnError(
+        media::VideoCaptureError::
+            kDeviceMediaToMojoAdapterEncounteredUnsupportedBufferType);
     return;
   }
 

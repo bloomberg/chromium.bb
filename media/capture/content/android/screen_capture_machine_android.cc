@@ -191,14 +191,20 @@ void ScreenCaptureMachineAndroid::OnActivityResult(JNIEnv* env,
                                                    const JavaRef<jobject>& obj,
                                                    jboolean result) {
   if (!result) {
-    oracle_proxy_->ReportError(FROM_HERE, "The user denied screen capture");
+    oracle_proxy_->ReportError(
+        media::VideoCaptureError::
+            kAndroidScreenCaptureTheUserDeniedScreenCapture,
+        FROM_HERE, "The user denied screen capture");
     return;
   }
 
   if (Java_ScreenCapture_startCapture(env, obj))
     oracle_proxy_->ReportStarted();
   else
-    oracle_proxy_->ReportError(FROM_HERE, "Failed to start Screen Capture");
+    oracle_proxy_->ReportError(
+        media::VideoCaptureError::
+            kAndroidScreenCaptureFailedToStartScreenCapture,
+        FROM_HERE, "Failed to start Screen Capture");
 }
 
 void ScreenCaptureMachineAndroid::OnOrientationChange(

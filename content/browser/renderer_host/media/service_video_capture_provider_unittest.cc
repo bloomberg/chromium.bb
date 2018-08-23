@@ -103,7 +103,7 @@ class MockVideoCaptureDeviceLauncherCallbacks
 
   MOCK_METHOD1(DoOnDeviceLaunched,
                void(std::unique_ptr<LaunchedVideoCaptureDevice>* device));
-  MOCK_METHOD0(OnDeviceLaunchFailed, void());
+  MOCK_METHOD1(OnDeviceLaunchFailed, void(media::VideoCaptureError error));
   MOCK_METHOD0(OnDeviceLaunchAborted, void());
 };
 

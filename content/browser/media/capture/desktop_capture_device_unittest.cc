@@ -271,7 +271,7 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
 
   std::unique_ptr<media::MockVideoCaptureDeviceClient> client(
       CreateMockVideoCaptureDeviceClient());
-  EXPECT_CALL(*client, OnError(_, _)).Times(0);
+  EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
@@ -310,7 +310,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
 
   std::unique_ptr<media::MockVideoCaptureDeviceClient> client(
       CreateMockVideoCaptureDeviceClient());
-  EXPECT_CALL(*client, OnError(_, _)).Times(0);
+  EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
@@ -356,7 +356,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeFixedAspectRatio) {
 
   std::unique_ptr<media::MockVideoCaptureDeviceClient> client(
       CreateMockVideoCaptureDeviceClient());
-  EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
@@ -406,7 +406,7 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
 
   std::unique_ptr<media::MockVideoCaptureDeviceClient> client(
       CreateMockVideoCaptureDeviceClient());
-  EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
@@ -458,7 +458,7 @@ TEST_F(DesktopCaptureDeviceTest, UnpackedFrame) {
 
   std::unique_ptr<media::MockVideoCaptureDeviceClient> client(
       CreateMockVideoCaptureDeviceClient());
-  EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
@@ -507,7 +507,7 @@ TEST_F(DesktopCaptureDeviceTest, InvertedFrame) {
 
   std::unique_ptr<media::MockVideoCaptureDeviceClient> client(
       CreateMockVideoCaptureDeviceClient());
-  EXPECT_CALL(*client, OnError(_,_)).Times(0);
+  EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
   EXPECT_CALL(*client, OnStarted());
   EXPECT_CALL(*client, OnIncomingCapturedData(_, _, _, _, _, _, _))
       .WillRepeatedly(
@@ -563,7 +563,7 @@ class DesktopCaptureDeviceThrottledTest : public DesktopCaptureDeviceTest {
 
     std::unique_ptr<media::MockVideoCaptureDeviceClient> client(
         CreateMockVideoCaptureDeviceClient());
-    EXPECT_CALL(*client, OnError(_, _)).Times(0);
+    EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
     // On started is called from the capture thread.
     EXPECT_CALL(*client, OnStarted())
         .WillOnce(InvokeWithoutArgs([this, &task_runner] {

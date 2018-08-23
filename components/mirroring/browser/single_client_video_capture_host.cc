@@ -30,9 +30,9 @@ class DeviceLauncherCallbacks final
       video_capture_host_->OnDeviceLaunched(std::move(device));
   }
 
-  void OnDeviceLaunchFailed() override {
+  void OnDeviceLaunchFailed(media::VideoCaptureError error) override {
     if (video_capture_host_)
-      video_capture_host_->OnDeviceLaunchFailed();
+      video_capture_host_->OnDeviceLaunchFailed(error);
   }
 
   void OnDeviceLaunchAborted() override {
@@ -86,7 +86,9 @@ void SingleClientVideoCaptureHost::Start(
   launcher->LaunchDeviceAsync(
       device_id_, type_, params, weak_factory_.GetWeakPtr(),
       base::BindOnce(&SingleClientVideoCaptureHost::OnError,
-                     weak_factory_.GetWeakPtr()),
+                     weak_factory_.GetWeakPtr(),
+                     media::VideoCaptureError::
+                         kSingleClientVideoCaptureHostLostConnectionToDevice),
       callbacks,
       // The |device_launcher| and |device_launcher_callbacks| must be kept
       // alive until the device launching completes.
@@ -221,7 +223,7 @@ void SingleClientVideoCaptureHost::OnBufferRetired(int buffer_id) {
   }
 }
 
-void SingleClientVideoCaptureHost::OnError() {
+void SingleClientVideoCaptureHost::OnError(media::VideoCaptureError) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   if (observer_)
@@ -251,16 +253,18 @@ void SingleClientVideoCaptureHost::OnDeviceLaunched(
   launched_device_ = std::move(device);
 }
 
-void SingleClientVideoCaptureHost::OnDeviceLaunchFailed() {
+void SingleClientVideoCaptureHost::OnDeviceLaunchFailed(
+    media::VideoCaptureError error) {
   DVLOG(1) << __func__;
   launched_device_ = nullptr;
-  OnError();
+  OnError(error);
 }
 
 void SingleClientVideoCaptureHost::OnDeviceLaunchAborted() {
   DVLOG(1) << __func__;
   launched_device_ = nullptr;
-  OnError();
+  OnError(
+      media::VideoCaptureError::kSingleClientVideoCaptureDeviceLaunchAborted);
 }
 
 void SingleClientVideoCaptureHost::OnFinishedConsumingBuffer(

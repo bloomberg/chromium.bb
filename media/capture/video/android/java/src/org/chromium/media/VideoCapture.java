@@ -228,7 +228,8 @@ public abstract class VideoCapture {
             long timestamp);
 
     // Method for VideoCapture implementations to signal an asynchronous error.
-    public native void nativeOnError(long nativeVideoCaptureDeviceAndroid, String message);
+    public native void nativeOnError(
+            long nativeVideoCaptureDeviceAndroid, int androidVideoCaptureError, String message);
 
     // Method for VideoCapture implementations to send Photos back to.
     public native void nativeOnPhotoTaken(

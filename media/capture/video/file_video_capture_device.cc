@@ -393,7 +393,9 @@ void FileVideoCaptureDevice::OnAllocateAndStart(
   DCHECK(!file_parser_);
   file_parser_ = GetVideoFileParser(file_path_, &capture_format_);
   if (!file_parser_) {
-    client_->OnError(FROM_HERE, "Could not open Video file");
+    client_->OnError(
+        VideoCaptureError::kFileVideoCaptureDeviceCouldNotOpenVideoFile,
+        FROM_HERE, "Could not open Video file");
     return;
   }
 

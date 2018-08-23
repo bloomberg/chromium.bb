@@ -325,7 +325,8 @@ void VideoCaptureDeviceMac::AllocateAndStart(
 
   NSString* errorMessage = nil;
   if (![capture_device_ setCaptureDevice:deviceId errorMessage:&errorMessage]) {
-    SetErrorState(FROM_HERE, base::SysNSStringToUTF8(errorMessage));
+    SetErrorState(VideoCaptureError::kMacSetCaptureDeviceFailed, FROM_HERE,
+                  base::SysNSStringToUTF8(errorMessage));
     return;
   }
 
@@ -358,7 +359,8 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   }
 
   if (![capture_device_ startCapture]) {
-    SetErrorState(FROM_HERE, "Could not start capture device.");
+    SetErrorState(VideoCaptureError::kMacCouldNotStartCaptureDevice, FROM_HERE,
+                  "Could not start capture device.");
     return;
   }
 
@@ -444,7 +446,8 @@ void VideoCaptureDeviceMac::ReceiveFrame(const uint8_t* video_frame,
                                          int aspect_denominator,
                                          base::TimeDelta timestamp) {
   if (capture_format_.frame_size != frame_format.frame_size) {
-    ReceiveError(FROM_HERE,
+    ReceiveError(VideoCaptureError::kMacReceivedFrameWithUnexpectedResolution,
+                 FROM_HERE,
                  "Captured resolution " + frame_format.frame_size.ToString() +
                      ", and expected " + capture_format_.frame_size.ToString());
     return;
@@ -474,11 +477,13 @@ void VideoCaptureDeviceMac::OnPhotoError() {
   photo_callback_.Reset();
 }
 
-void VideoCaptureDeviceMac::ReceiveError(const base::Location& from_here,
+void VideoCaptureDeviceMac::ReceiveError(VideoCaptureError error,
+                                         const base::Location& from_here,
                                          const std::string& reason) {
   task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoCaptureDeviceMac::SetErrorState,
-                            weak_factory_.GetWeakPtr(), from_here, reason));
+      FROM_HERE,
+      base::BindOnce(&VideoCaptureDeviceMac::SetErrorState,
+                     weak_factory_.GetWeakPtr(), error, from_here, reason));
 }
 
 void VideoCaptureDeviceMac::LogMessage(const std::string& message) {
@@ -511,18 +516,20 @@ std::string VideoCaptureDeviceMac::GetDeviceModelId(
   return id_vendor + ":" + id_product;
 }
 
-void VideoCaptureDeviceMac::SetErrorState(const base::Location& from_here,
+void VideoCaptureDeviceMac::SetErrorState(VideoCaptureError error,
+                                          const base::Location& from_here,
                                           const std::string& reason) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   state_ = kError;
-  client_->OnError(from_here, reason);
+  client_->OnError(error, from_here, reason);
 }
 
 bool VideoCaptureDeviceMac::UpdateCaptureResolution() {
   if (![capture_device_ setCaptureHeight:capture_format_.frame_size.height()
                                    width:capture_format_.frame_size.width()
                                frameRate:capture_format_.frame_rate]) {
-    ReceiveError(FROM_HERE, "Could not configure capture device.");
+    ReceiveError(VideoCaptureError::kMacUpdateCaptureResolutionFailed,
+                 FROM_HERE, "Could not configure capture device.");
     return false;
   }
   return true;

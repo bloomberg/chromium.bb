@@ -48,7 +48,8 @@ class MockVideoCaptureControllerEventHandler
                     const media::mojom::VideoFrameInfoPtr& frame_info));
   MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID));
   MOCK_METHOD1(OnEnded, void(VideoCaptureControllerID));
-  MOCK_METHOD1(OnError, void(VideoCaptureControllerID));
+  MOCK_METHOD2(OnError,
+               void(VideoCaptureControllerID, media::VideoCaptureError));
   MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID));
   MOCK_METHOD1(OnStoppedUsingGpuDecode, void(VideoCaptureControllerID));
 
@@ -148,7 +149,7 @@ class VideoCaptureBrowserTest : public ContentBrowserTest,
 
     video_capture_manager_->DisconnectClient(controller_.get(), stub_client_id_,
                                              &mock_controller_event_handler_,
-                                             false);
+                                             media::VideoCaptureError::kNone);
 
     EXPECT_CALL(mock_stream_provider_listener_, Closed(_, _))
         .WillOnce(InvokeWithoutArgs([continuation]() { continuation.Run(); }));

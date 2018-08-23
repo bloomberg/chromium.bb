@@ -14,7 +14,7 @@ namespace media {
 namespace unittest_internal {
 
 MockVideoCaptureClient::MockVideoCaptureClient() {
-  ON_CALL(*this, OnError(_, _))
+  ON_CALL(*this, OnError(_, _, _))
       .WillByDefault(Invoke(this, &MockVideoCaptureClient::DumpError));
 }
 
@@ -32,7 +32,8 @@ void MockVideoCaptureClient::SetQuitCb(base::OnceClosure quit_cb) {
   quit_cb_ = std::move(quit_cb);
 }
 
-void MockVideoCaptureClient::DumpError(const base::Location& location,
+void MockVideoCaptureClient::DumpError(media::VideoCaptureError,
+                                       const base::Location& location,
                                        const std::string& message) {
   DPLOG(ERROR) << location.ToString() << " " << message;
 }

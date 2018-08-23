@@ -89,7 +89,8 @@ VideoCaptureHost::~VideoCaptureHost() {
     if (controller) {
       const VideoCaptureControllerID controller_id(it->first);
       media_stream_manager_->video_capture_manager()->DisconnectClient(
-          controller.get(), controller_id, this, false);
+          controller.get(), controller_id, this,
+          media::VideoCaptureError::kNone);
       ++it;
     } else {
       // Remove the entry for this controller_id so that when the controller
@@ -104,13 +105,14 @@ VideoCaptureHost::~VideoCaptureHost() {
                             render_process_host_delegate_.release());
 }
 
-void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id) {
+void VideoCaptureHost::OnError(VideoCaptureControllerID controller_id,
+                               media::VideoCaptureError error) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&VideoCaptureHost::DoError, weak_factory_.GetWeakPtr(),
-                     controller_id));
+                     controller_id, error));
 }
 
 void VideoCaptureHost::OnNewBuffer(
@@ -216,7 +218,7 @@ void VideoCaptureHost::Stop(int32_t device_id) {
   }
   device_id_to_observer_map_.erase(controller_id);
 
-  DeleteVideoCaptureController(controller_id, false);
+  DeleteVideoCaptureController(controller_id, media::VideoCaptureError::kNone);
   NotifyStreamRemoved();
 }
 
@@ -316,7 +318,8 @@ void VideoCaptureHost::GetDeviceFormatsInUse(
   std::move(callback).Run(formats_in_use);
 }
 
-void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
+void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id,
+                               media::VideoCaptureError error) {
   DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (controllers_.find(controller_id) == controllers_.end())
@@ -327,7 +330,7 @@ void VideoCaptureHost::DoError(VideoCaptureControllerID controller_id) {
         media::mojom::VideoCaptureState::FAILED);
   }
 
-  DeleteVideoCaptureController(controller_id, true);
+  DeleteVideoCaptureController(controller_id, error);
   NotifyStreamRemoved();
 }
 
@@ -342,7 +345,7 @@ void VideoCaptureHost::DoEnded(VideoCaptureControllerID controller_id) {
         media::mojom::VideoCaptureState::ENDED);
   }
 
-  DeleteVideoCaptureController(controller_id, false);
+  DeleteVideoCaptureController(controller_id, media::VideoCaptureError::kNone);
   NotifyStreamRemoved();
 }
 
@@ -355,7 +358,8 @@ void VideoCaptureHost::OnControllerAdded(
   if (it == controllers_.end()) {
     if (controller) {
       media_stream_manager_->video_capture_manager()->DisconnectClient(
-          controller.get(), controller_id, this, false);
+          controller.get(), controller_id, this,
+          media::VideoCaptureError::kNone);
     }
     return;
   }
@@ -374,7 +378,8 @@ void VideoCaptureHost::OnControllerAdded(
 }
 
 void VideoCaptureHost::DeleteVideoCaptureController(
-    VideoCaptureControllerID controller_id, bool on_error) {
+    VideoCaptureControllerID controller_id,
+    media::VideoCaptureError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   auto it = controllers_.find(controller_id);
@@ -387,7 +392,7 @@ void VideoCaptureHost::DeleteVideoCaptureController(
     return;
 
   media_stream_manager_->video_capture_manager()->DisconnectClient(
-      controller.get(), controller_id, this, on_error);
+      controller.get(), controller_id, this, error);
 }
 
 void VideoCaptureHost::NotifyStreamAdded() {

@@ -185,7 +185,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 #if DCHECK_IS_ON()
   dropped_frame_counter_ = buffer.is_valid() ? 0 : dropped_frame_counter_ + 1;
   if (dropped_frame_counter_ >= kMaxDroppedFrames)
-    OnError(FROM_HERE, "Too many frames dropped");
+    OnError(media::VideoCaptureError::kDeviceClientTooManyFramesDropped,
+            FROM_HERE, "Too many frames dropped");
 #endif
   // Failed to reserve I420 output buffer, so drop the frame.
   if (!buffer.is_valid())
@@ -478,7 +479,8 @@ VideoCaptureDeviceClient::ResurrectLastOutputBuffer(const gfx::Size& dimensions,
   return MakeBufferStruct(buffer_pool_, buffer_id, new_frame_feedback_id);
 }
 
-void VideoCaptureDeviceClient::OnError(const base::Location& from_here,
+void VideoCaptureDeviceClient::OnError(VideoCaptureError error,
+                                       const base::Location& from_here,
                                        const std::string& reason) {
   const std::string log_message = base::StringPrintf(
       "error@ %s, %s, OS message: %s", from_here.ToString().c_str(),
@@ -487,7 +489,7 @@ void VideoCaptureDeviceClient::OnError(const base::Location& from_here,
           .c_str());
   DLOG(ERROR) << log_message;
   OnLog(log_message);
-  receiver_->OnError();
+  receiver_->OnError(error);
 }
 
 void VideoCaptureDeviceClient::OnLog(const std::string& message) {
@@ -517,7 +519,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
 #if DCHECK_IS_ON()
   dropped_frame_counter_ = buffer.is_valid() ? 0 : dropped_frame_counter_ + 1;
   if (dropped_frame_counter_ >= kMaxDroppedFrames)
-    OnError(FROM_HERE, "Too many frames dropped");
+    OnError(media::VideoCaptureError::kDeviceClientTooManyFramesDroppedY16,
+            FROM_HERE, "Too many frames dropped");
 #endif
   // Failed to reserve output buffer, so drop the frame.
   if (!buffer.is_valid())

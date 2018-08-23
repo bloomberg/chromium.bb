@@ -49,6 +49,12 @@ void LogVideoCaptureEvent(VideoCaptureEvent event) {
                             NUM_VIDEO_CAPTURE_EVENT);
 }
 
+void LogVideoCaptureError(media::VideoCaptureError error) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.VideoCapture.Error", error,
+      static_cast<int>(media::VideoCaptureError::kMaxValue) + 1);
+}
+
 const media::VideoCaptureSessionId kFakeSessionId = -1;
 
 }  // namespace
@@ -263,7 +269,10 @@ void VideoCaptureManager::ProcessDeviceStartRequestQueue() {
     const media::VideoCaptureDeviceInfo* device_info =
         GetDeviceInfoById(controller->device_id());
     if (!device_info) {
-      OnDeviceLaunchFailed(controller);
+      OnDeviceLaunchFailed(
+          controller,
+          media::VideoCaptureError::
+              kVideoCaptureManagerProcessDeviceStartQueueDeviceInfoNotFound);
       return;
     }
     for (auto& observer : capture_observers_)
@@ -318,12 +327,13 @@ void VideoCaptureManager::OnDeviceLaunched(VideoCaptureController* controller) {
 }
 
 void VideoCaptureManager::OnDeviceLaunchFailed(
-    VideoCaptureController* controller) {
+    VideoCaptureController* controller,
+    media::VideoCaptureError error) {
   std::ostringstream string_stream;
   string_stream << "Launching device has failed. device_id = "
                 << controller->device_id();
   EmitLogMessage(string_stream.str(), 1);
-  controller->OnError();
+  controller->OnError(error);
 
   device_start_request_queue_.pop_front();
   ProcessDeviceStartRequestQueue();
@@ -341,7 +351,8 @@ void VideoCaptureManager::OnDeviceConnectionLost(
   string_stream << "Lost connection to device. device_id = "
                 << controller->device_id();
   EmitLogMessage(string_stream.str(), 1);
-  controller->OnError();
+  controller->OnError(
+      media::VideoCaptureError::kVideoCaptureManagerDeviceConnectionLost);
 }
 
 void VideoCaptureManager::ConnectClient(
@@ -387,7 +398,7 @@ void VideoCaptureManager::DisconnectClient(
     VideoCaptureController* controller,
     VideoCaptureControllerID client_id,
     VideoCaptureControllerEventHandler* client_handler,
-    bool aborted_due_to_error) {
+    media::VideoCaptureError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(controller);
   DCHECK(client_handler);
@@ -396,7 +407,7 @@ void VideoCaptureManager::DisconnectClient(
     NOTREACHED();
     return;
   }
-  if (!aborted_due_to_error) {
+  if (error == media::VideoCaptureError::kNone) {
     if (controller->has_received_frames()) {
       LogVideoCaptureEvent(VIDEO_CAPTURE_STOP_CAPTURE_OK);
     } else if (controller->stream_type() == MEDIA_DEVICE_VIDEO_CAPTURE) {
@@ -408,6 +419,11 @@ void VideoCaptureManager::DisconnectClient(
     }
   } else {
     LogVideoCaptureEvent(VIDEO_CAPTURE_STOP_CAPTURE_DUE_TO_ERROR);
+    LogVideoCaptureError(error);
+    std::ostringstream string_stream;
+    string_stream << "Video capture session stopped with error code "
+                  << static_cast<int>(error);
+    EmitLogMessage(string_stream.str(), 1);
     for (auto it : sessions_) {
       if (it.second.type == controller->stream_type() &&
           it.second.id == controller->device_id()) {

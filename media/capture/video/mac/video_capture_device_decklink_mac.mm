@@ -73,7 +73,8 @@ class DeckLinkCaptureDelegate
   ULONG Release() override;
 
   // Forwarder to VideoCaptureDeviceDeckLinkMac::SendErrorString().
-  void SendErrorString(const base::Location& from_here,
+  void SendErrorString(media::VideoCaptureError error,
+                       const base::Location& from_here,
                        const std::string& reason);
 
   // Forwarder to VideoCaptureDeviceDeckLinkMac::SendLogString().
@@ -150,21 +151,27 @@ void DeckLinkCaptureDelegate::AllocateAndStart(
     }
   }
   if (!decklink_local.get()) {
-    SendErrorString(FROM_HERE, "Device id not found in the system");
+    SendErrorString(
+        media::VideoCaptureError::kMacDeckLinkDeviceIdNotFoundInTheSystem,
+        FROM_HERE, "Device id not found in the system");
     return;
   }
 
   ScopedDeckLinkPtr<IDeckLinkInput> decklink_input_local;
   if (decklink_local->QueryInterface(
           IID_IDeckLinkInput, decklink_input_local.ReceiveVoid()) != S_OK) {
-    SendErrorString(FROM_HERE, "Error querying input interface.");
+    SendErrorString(
+        media::VideoCaptureError::kMacDeckLinkErrorQueryingInputInterface,
+        FROM_HERE, "Error querying input interface.");
     return;
   }
 
   ScopedDeckLinkPtr<IDeckLinkDisplayModeIterator> display_mode_iter;
   if (decklink_input_local->GetDisplayModeIterator(
           display_mode_iter.Receive()) != S_OK) {
-    SendErrorString(FROM_HERE, "Error creating Display Mode Iterator");
+    SendErrorString(
+        media::VideoCaptureError::kMacDeckLinkErrorCreatingDisplayModeIterator,
+        FROM_HERE, "Error creating Display Mode Iterator");
     return;
   }
 
@@ -185,7 +192,9 @@ void DeckLinkCaptureDelegate::AllocateAndStart(
     display_mode.Release();
   }
   if (!chosen_display_mode.get()) {
-    SendErrorString(FROM_HERE, "Could not find a display mode");
+    SendErrorString(
+        media::VideoCaptureError::kMacDeckLinkCouldNotFindADisplayMode,
+        FROM_HERE, "Could not find a display mode");
     return;
   }
 #if !defined(NDEBUG)
@@ -201,13 +210,17 @@ void DeckLinkCaptureDelegate::AllocateAndStart(
   if (decklink_input_local->EnableVideoInput(
           chosen_display_mode->GetDisplayMode(), bmdFormat8BitYUV,
           bmdVideoInputFlagDefault) != S_OK) {
-    SendErrorString(FROM_HERE, "Could not select the video format we like.");
+    SendErrorString(media::VideoCaptureError::
+                        kMacDeckLinkCouldNotSelectTheVideoFormatWeLike,
+                    FROM_HERE, "Could not select the video format we like.");
     return;
   }
 
   decklink_input_local->SetCallback(this);
   if (decklink_input_local->StartStreams() != S_OK)
-    SendErrorString(FROM_HERE, "Could not start capturing");
+    SendErrorString(
+        media::VideoCaptureError::kMacDeckLinkCouldNotStartCapturing, FROM_HERE,
+        "Could not start capturing");
 
   if (frame_receiver_)
     frame_receiver_->ReportStarted();
@@ -254,7 +267,9 @@ HRESULT DeckLinkCaptureDelegate::VideoInputFrameArrived(
       pixel_format = media::PIXEL_FORMAT_ARGB;
       break;
     default:
-      SendErrorString(FROM_HERE, "Unsupported pixel format");
+      SendErrorString(
+          media::VideoCaptureError::kMacDeckLinkUnsupportedPixelFormat,
+          FROM_HERE, "Unsupported pixel format");
       break;
   }
 
@@ -311,11 +326,12 @@ ULONG DeckLinkCaptureDelegate::Release() {
   return ret_value;
 }
 
-void DeckLinkCaptureDelegate::SendErrorString(const base::Location& from_here,
+void DeckLinkCaptureDelegate::SendErrorString(media::VideoCaptureError error,
+                                              const base::Location& from_here,
                                               const std::string& reason) {
   base::AutoLock lock(lock_);
   if (frame_receiver_)
-    frame_receiver_->SendErrorString(from_here, reason);
+    frame_receiver_->SendErrorString(error, from_here, reason);
 }
 
 void DeckLinkCaptureDelegate::SendLogString(const std::string& message) {
@@ -481,12 +497,13 @@ void VideoCaptureDeviceDeckLinkMac::OnIncomingCapturedData(
 }
 
 void VideoCaptureDeviceDeckLinkMac::SendErrorString(
+    VideoCaptureError error,
     const base::Location& from_here,
     const std::string& reason) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock lock(lock_);
   if (client_)
-    client_->OnError(from_here, reason);
+    client_->OnError(error, from_here, reason);
 }
 
 void VideoCaptureDeviceDeckLinkMac::SendLogString(const std::string& message) {

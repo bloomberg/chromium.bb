@@ -142,7 +142,9 @@ public class VideoCaptureCamera
     private class CrErrorCallback implements android.hardware.Camera.ErrorCallback {
         @Override
         public void onError(int error, android.hardware.Camera camera) {
-            nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error id: " + error);
+            nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                    AndroidVideoCaptureError.ANDROID_API_1_CAMERA_ERROR_CALLBACK_RECEIVED,
+                    "Error id: " + error);
 
             synchronized (mPhotoTakenCallbackLock) {
                 if (mPhotoTakenCallbackId == 0) return;

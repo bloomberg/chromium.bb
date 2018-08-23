@@ -152,7 +152,9 @@ class MockMediaStreamProviderListener : public MediaStreamProviderListener {
 // Needed as an input argument to ConnectClient().
 class MockFrameObserver : public VideoCaptureControllerEventHandler {
  public:
-  MOCK_METHOD1(OnError, void(VideoCaptureControllerID id));
+  MOCK_METHOD2(OnError,
+               void(VideoCaptureControllerID id,
+                    media::VideoCaptureError error));
   MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID id));
   MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID id));
 
@@ -258,7 +260,8 @@ class VideoCaptureManagerTest : public testing::Test {
   void StopClient(VideoCaptureControllerID client_id) {
     ASSERT_TRUE(1 == controllers_.count(client_id));
     vcm_->DisconnectClient(controllers_[client_id], client_id,
-                           frame_observer_.get(), false);
+                           frame_observer_.get(),
+                           media::VideoCaptureError::kNone);
     controllers_.erase(client_id);
   }
 
@@ -355,8 +358,9 @@ TEST_F(VideoCaptureManagerTest, CreateAndAbort) {
   // Wait for device opened.
   base::RunLoop().RunUntilIdle();
 
-  vcm_->DisconnectClient(controllers_[client_id], client_id,
-                         frame_observer_.get(), true);
+  vcm_->DisconnectClient(
+      controllers_[client_id], client_id, frame_observer_.get(),
+      media::VideoCaptureError::kIntentionalErrorRaisedByUnitTest);
 
   // Wait to check callbacks before removing the listener.
   base::RunLoop().RunUntilIdle();
@@ -666,7 +670,7 @@ TEST_F(VideoCaptureManagerTest, OpenTwo) {
 // Try open a non-existing device.
 TEST_F(VideoCaptureManagerTest, OpenNotExisting) {
   InSequence s;
-  EXPECT_CALL(*frame_observer_, OnError(_));
+  EXPECT_CALL(*frame_observer_, OnError(_, _));
   EXPECT_CALL(*listener_, Opened(MEDIA_DEVICE_VIDEO_CAPTURE, _));
   EXPECT_CALL(*listener_, Closed(MEDIA_DEVICE_VIDEO_CAPTURE, _));
 

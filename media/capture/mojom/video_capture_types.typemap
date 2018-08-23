@@ -34,6 +34,7 @@ type_mappings = [
   "media.mojom.PowerLineFrequency=media::PowerLineFrequency",
   "media.mojom.VideoCapturePixelFormat=media::VideoPixelFormat",
   "media.mojom.VideoCaptureBufferType=media::VideoCaptureBufferType",
+  "media.mojom.VideoCaptureError=media::VideoCaptureError",
   "media.mojom.VideoCaptureFormat=media::VideoCaptureFormat",
   "media.mojom.VideoCaptureParams=media::VideoCaptureParams",
   "media.mojom.VideoCaptureDeviceDescriptorCameraCalibration=media::VideoCaptureDeviceDescriptor::CameraCalibration",

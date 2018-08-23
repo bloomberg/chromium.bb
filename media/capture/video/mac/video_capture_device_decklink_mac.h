@@ -62,7 +62,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceDeckLinkMac : public VideoCaptureDevice {
                               base::TimeDelta timestamp);
 
   // Forwarder to VideoCaptureDevice::Client::OnError().
-  void SendErrorString(const base::Location& from_here,
+  void SendErrorString(VideoCaptureError error,
+                       const base::Location& from_here,
                        const std::string& reason);
 
   // Forwarder to VideoCaptureDevice::Client::OnLog().

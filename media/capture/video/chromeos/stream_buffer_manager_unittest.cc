@@ -382,7 +382,7 @@ TEST_F(StreamBufferManagerTest, DeviceErrorTest) {
         test->QuitCaptureLoop();
       },
       base::Unretained(this)));
-  EXPECT_CALL(*GetMockVideoCaptureClient(), OnError(_, _))
+  EXPECT_CALL(*GetMockVideoCaptureClient(), OnError(_, _, _))
       .Times(1)
       .WillOnce(
           InvokeWithoutArgs(this, &StreamBufferManagerTest::QuitCaptureLoop));

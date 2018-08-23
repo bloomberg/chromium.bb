@@ -30,12 +30,13 @@ CameraDeviceContext::State CameraDeviceContext::GetState() {
   return state_;
 }
 
-void CameraDeviceContext::SetErrorState(const base::Location& from_here,
+void CameraDeviceContext::SetErrorState(media::VideoCaptureError error,
+                                        const base::Location& from_here,
                                         const std::string& reason) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = State::kError;
   LOG(ERROR) << reason;
-  client_->OnError(from_here, reason);
+  client_->OnError(error, from_here, reason);
 }
 
 void CameraDeviceContext::LogToClient(std::string message) {

@@ -78,14 +78,14 @@ class SingleClientVideoCaptureHost final
           buffer_read_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
-  void OnError() override;
+  void OnError(media::VideoCaptureError error) override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
 
   void OnDeviceLaunched(
       std::unique_ptr<content::LaunchedVideoCaptureDevice> device);
-  void OnDeviceLaunchFailed();
+  void OnDeviceLaunchFailed(media::VideoCaptureError error);
   void OnDeviceLaunchAborted();
 
  private:

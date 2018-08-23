@@ -62,11 +62,15 @@ class MockVideoCaptureControllerEventHandler
                void(VideoCaptureControllerID, int buffer_id));
   MOCK_METHOD2(DoBufferReady, void(VideoCaptureControllerID, const gfx::Size&));
   MOCK_METHOD1(DoEnded, void(VideoCaptureControllerID));
-  MOCK_METHOD1(DoError, void(VideoCaptureControllerID));
+  MOCK_METHOD2(DoError,
+               void(VideoCaptureControllerID, media::VideoCaptureError));
   MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID));
   MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID));
 
-  void OnError(VideoCaptureControllerID id) override { DoError(id); }
+  void OnError(VideoCaptureControllerID id,
+               media::VideoCaptureError error) override {
+    DoError(id, error);
+  }
   void OnNewBuffer(VideoCaptureControllerID id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
                    int length,
@@ -513,14 +517,24 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
 
   // Start with one client.
   controller_->AddClient(route_id, client_a_.get(), 100, session_100);
-  device_client_->OnError(FROM_HERE, "Test Error");
-  EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);
+  device_client_->OnError(
+      media::VideoCaptureError::kIntentionalErrorRaisedByUnitTest, FROM_HERE,
+      "Test Error");
+  EXPECT_CALL(
+      *client_a_,
+      DoError(route_id,
+              media::VideoCaptureError::kIntentionalErrorRaisedByUnitTest))
+      .Times(1);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
   // Second client connects after the error state. It also should get told of
   // the error.
-  EXPECT_CALL(*client_b_, DoError(route_id)).Times(1);
+  EXPECT_CALL(
+      *client_b_,
+      DoError(route_id, media::VideoCaptureError::
+                            kVideoCaptureControllerIsAlreadyInErrorState))
+      .Times(1);
   controller_->AddClient(route_id, client_b_.get(), 200, session_200);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_b_.get());
@@ -568,18 +582,28 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
                                           arbitrary_frame_feedback_id);
   ASSERT_TRUE(buffer.is_valid());
 
-  device_client_->OnError(FROM_HERE, "Test Error");
+  device_client_->OnError(
+      media::VideoCaptureError::kIntentionalErrorRaisedByUnitTest, FROM_HERE,
+      "Test Error");
   device_client_->OnIncomingCapturedBuffer(std::move(buffer), device_format,
                                            arbitrary_reference_time_,
                                            arbitrary_timestamp_);
 
-  EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);
+  EXPECT_CALL(
+      *client_a_,
+      DoError(route_id,
+              media::VideoCaptureError::kIntentionalErrorRaisedByUnitTest))
+      .Times(1);
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_a_.get());
 
   // Second client connects after the error state. It also should get told of
   // the error.
-  EXPECT_CALL(*client_b_, DoError(route_id)).Times(1);
+  EXPECT_CALL(
+      *client_b_,
+      DoError(route_id, media::VideoCaptureError::
+                            kVideoCaptureControllerIsAlreadyInErrorState))
+      .Times(1);
   controller_->AddClient(route_id, client_b_.get(), 200, session_200);
   Mock::VerifyAndClearExpectations(client_b_.get());
 }

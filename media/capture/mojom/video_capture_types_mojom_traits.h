@@ -52,6 +52,15 @@ struct EnumTraits<media::mojom::VideoCaptureBufferType,
 };
 
 template <>
+struct EnumTraits<media::mojom::VideoCaptureError, media::VideoCaptureError> {
+  static media::mojom::VideoCaptureError ToMojom(
+      media::VideoCaptureError buffer_type);
+
+  static bool FromMojom(media::mojom::VideoCaptureError input,
+                        media::VideoCaptureError* out);
+};
+
+template <>
 struct EnumTraits<media::mojom::VideoFacingMode, media::VideoFacingMode> {
   static media::mojom::VideoFacingMode ToMojom(media::VideoFacingMode input);
   static bool FromMojom(media::mojom::VideoFacingMode input,

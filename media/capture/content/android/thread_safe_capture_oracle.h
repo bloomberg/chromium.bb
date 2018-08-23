@@ -71,7 +71,9 @@ class CAPTURE_EXPORT ThreadSafeCaptureOracle
   void Stop();
 
   // Signal an error to the client.
-  void ReportError(const base::Location& from_here, const std::string& reason);
+  void ReportError(media::VideoCaptureError error,
+                   const base::Location& from_here,
+                   const std::string& reason);
 
   // Signal device started to the client.
   void ReportStarted();

@@ -15,7 +15,7 @@ interface Receiver {
                        ScopedAccessPermission access_permission,
                        media.mojom.VideoFrameInfo frame_info);
   OnBufferRetired(int32 buffer_id);
-  OnError();
+  OnError(media.mojom.VideoCaptureError error);
   OnLog(string message);
   OnStarted();
   OnStartedUsingGpuDecode();

@@ -144,7 +144,7 @@ class FakeVideoCaptureDeviceTestBase : public ::testing::Test {
         image_capture_client_(new ImageCaptureClient()),
         video_capture_device_factory_(new FakeVideoCaptureDeviceFactory()) {}
 
-  void SetUp() override { EXPECT_CALL(*client_, OnError(_, _)).Times(0); }
+  void SetUp() override { EXPECT_CALL(*client_, OnError(_, _, _)).Times(0); }
 
   std::unique_ptr<MockVideoCaptureDeviceClient> CreateClient() {
     auto result = std::make_unique<MockVideoCaptureDeviceClient>();
@@ -243,7 +243,7 @@ TEST_P(FakeVideoCaptureDeviceTest, CaptureUsing) {
 
   for (const auto& resolution : resolutions_to_test) {
     std::unique_ptr<MockVideoCaptureDeviceClient> client = CreateClient();
-    EXPECT_CALL(*client, OnError(_, _)).Times(0);
+    EXPECT_CALL(*client, OnError(_, _, _)).Times(0);
     EXPECT_CALL(*client, OnStarted());
 
     VideoCaptureParams capture_params;
@@ -328,7 +328,7 @@ TEST_F(FakeVideoCaptureDeviceTest, GetCameraCalibration) {
 TEST_F(FakeVideoCaptureDeviceTest, ErrorDeviceReportsError) {
   auto device = FakeVideoCaptureDeviceFactory::CreateErrorDevice();
   ASSERT_TRUE(device);
-  EXPECT_CALL(*client_, OnError(_, _));
+  EXPECT_CALL(*client_, OnError(_, _, _));
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(640, 480);
   capture_params.requested_format.frame_rate = 30.0;
@@ -499,7 +499,7 @@ TEST_F(FakeVideoCaptureDeviceFactoryTest, DeviceWithNoSupportedFormats) {
   EXPECT_TRUE(device.get());
 
   auto client = CreateClient();
-  EXPECT_CALL(*client, OnError(_, _));
+  EXPECT_CALL(*client, OnError(_, _, _));
   VideoCaptureParams capture_params;
   capture_params.requested_format.frame_size.SetSize(1280, 720);
   device->AllocateAndStart(capture_params, std::move(client));

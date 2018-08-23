@@ -16,6 +16,7 @@
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "media/base/timestamp_constants.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
 #include "media/capture/video_capture_types.h"
@@ -170,7 +171,7 @@ void ExtractBaseAddressAndLength(char** base_address,
   NSArray* devices = [AVCaptureDevice devices];
   AVCaptureDevice* device = nil;
   for (device in devices) {
-    if ([[device uniqueID] UTF8String] == descriptor.device_id)
+    if (base::SysNSStringToUTF8([device uniqueID]) == descriptor.device_id)
       break;
   }
   if (device == nil)
@@ -498,10 +499,13 @@ void ExtractBaseAddressAndLength(char** base_address,
 }
 
 - (void)sendErrorString:(NSString*)error {
-  DLOG(ERROR) << [error UTF8String];
+  DLOG(ERROR) << base::SysNSStringToUTF8(error);
   base::AutoLock lock(lock_);
   if (frameReceiver_)
-    frameReceiver_->ReceiveError(FROM_HERE, [error UTF8String]);
+    frameReceiver_->ReceiveError(
+        media::VideoCaptureError::
+            kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification,
+        FROM_HERE, base::SysNSStringToUTF8(error));
 }
 
 @end

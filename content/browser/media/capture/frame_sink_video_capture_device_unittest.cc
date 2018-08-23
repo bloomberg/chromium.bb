@@ -184,7 +184,7 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
                     Buffer::ScopedAccessPermission* buffer_read_permission,
                     const media::mojom::VideoFrameInfo* frame_info));
   MOCK_METHOD1(OnBufferRetired, void(int buffer_id));
-  MOCK_METHOD0(OnError, void());
+  MOCK_METHOD1(OnError, void(media::VideoCaptureError error));
   MOCK_METHOD1(OnLog, void(const std::string& message));
   MOCK_METHOD0(OnStarted, void());
   void OnStartedUsingGpuDecode() final { NOTREACHED(); }
@@ -416,7 +416,7 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, CapturesAndDeliversFrames) {
   auto receiver_ptr = std::make_unique<MockVideoFrameReceiver>();
   auto* const receiver = receiver_ptr.get();
   EXPECT_CALL(*receiver, OnStarted());
-  EXPECT_CALL(*receiver, OnError()).Times(0);
+  EXPECT_CALL(*receiver, OnError(_)).Times(0);
 
   AllocateAndStartSynchronouslyWithExpectations(std::move(receiver_ptr));
   // From this point, there is no reason the capturer should be re-started.
@@ -555,7 +555,7 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, ShutsDownOnFatalError) {
   Sequence sequence;
   EXPECT_CALL(*receiver, OnStarted()).InSequence(sequence);
   EXPECT_CALL(*receiver, OnLog(StrNe(""))).InSequence(sequence);
-  EXPECT_CALL(*receiver, OnError()).InSequence(sequence);
+  EXPECT_CALL(*receiver, OnError(_)).InSequence(sequence);
 
   AllocateAndStartSynchronouslyWithExpectations(std::move(receiver_ptr));
 
@@ -581,7 +581,7 @@ TEST_F(FrameSinkVideoCaptureDeviceTest, ShutsDownOnFatalError) {
   {
     EXPECT_CALL(*receiver, OnStarted()).Times(0);
     EXPECT_CALL(*receiver, OnLog(StrNe("")));
-    EXPECT_CALL(*receiver, OnError());
+    EXPECT_CALL(*receiver, OnError(_));
     EXPECT_CALL(capturer_, MockStart(_)).Times(0);
 
     POST_DEVICE_METHOD_CALL(AllocateAndStartWithReceiver, GetCaptureParams(),

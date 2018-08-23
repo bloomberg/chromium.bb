@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_MEDIA_VIDEO_CAPTURE_DEVICE_LAUNCH_OBSERVER_H_
 
 #include "content/common/content_export.h"
+#include "media/capture/video_capture_types.h"
 
 namespace content {
 
@@ -15,7 +16,8 @@ class CONTENT_EXPORT VideoCaptureDeviceLaunchObserver {
  public:
   virtual ~VideoCaptureDeviceLaunchObserver() {}
   virtual void OnDeviceLaunched(VideoCaptureController* controller) = 0;
-  virtual void OnDeviceLaunchFailed(VideoCaptureController* controller) = 0;
+  virtual void OnDeviceLaunchFailed(VideoCaptureController* controller,
+                                    media::VideoCaptureError error) = 0;
   virtual void OnDeviceLaunchAborted() = 0;
   virtual void OnDeviceConnectionLost(VideoCaptureController* controller) = 0;
 };
