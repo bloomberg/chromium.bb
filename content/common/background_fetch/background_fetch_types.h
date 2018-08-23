@@ -14,6 +14,12 @@
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom.h"
 
+namespace blink {
+namespace mojom {
+enum class BackgroundFetchState;
+}  // namespace mojom
+}  // namespace blink
+
 namespace content {
 
 // Represents the optional options a developer can provide when starting a new
@@ -34,6 +40,13 @@ struct CONTENT_EXPORT BackgroundFetchOptions {
 // https://wicg.github.io/background-fetch/#background-fetch-registration
 struct CONTENT_EXPORT BackgroundFetchRegistration {
   BackgroundFetchRegistration();
+  BackgroundFetchRegistration(const std::string& developer_id,
+                              const std::string& unique_id,
+                              uint64_t upload_total,
+                              uint64_t uploaded,
+                              uint64_t download_total,
+                              uint64_t downloaded,
+                              blink::mojom::BackgroundFetchState state);
   BackgroundFetchRegistration(const BackgroundFetchRegistration& other);
   ~BackgroundFetchRegistration();
 
@@ -49,7 +62,7 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   uint64_t uploaded = 0;
   uint64_t download_total = 0;
   uint64_t downloaded = 0;
-  // TODO(crbug.com/699957): Support the `activeFetches` member.
+  blink::mojom::BackgroundFetchState state;
 };
 
 // Represents a request/response pair for a settled Background Fetch fetch.

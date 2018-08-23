@@ -112,6 +112,7 @@ void BackgroundFetchBridge::DidGetRegistration(
 
   if (registration) {
     DCHECK_EQ(error, mojom::blink::BackgroundFetchError::NONE);
+    DCHECK_EQ(registration->state(), "pending");
     registration->Initialize(GetSupplementable());
   }
 

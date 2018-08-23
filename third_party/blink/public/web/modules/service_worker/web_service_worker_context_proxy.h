@@ -34,6 +34,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/common/message_port/transferable_message.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-shared.h"
+#include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_registration.h"
 #include "third_party/blink/public/platform/web_canonical_cookie.h"
@@ -70,25 +71,17 @@ class WebServiceWorkerContextProxy {
 
   virtual void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state) = 0;
+      const WebBackgroundFetchRegistration& registration) = 0;
   virtual void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state) = 0;
+      const WebBackgroundFetchRegistration& registration) = 0;
   virtual void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const WebBackgroundFetchRegistration& registration,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
   virtual void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const WebBackgroundFetchRegistration& registration,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
   virtual void DispatchCookieChangeEvent(
       int event_id,

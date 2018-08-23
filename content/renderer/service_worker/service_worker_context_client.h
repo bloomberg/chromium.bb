@@ -284,25 +284,17 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       DispatchBackgroundFetchAbortEventCallback callback) override;
   void DispatchBackgroundFetchClickEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       DispatchBackgroundFetchClickEventCallback callback) override;
   void DispatchBackgroundFetchFailEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchFailEventCallback callback) override;
   void DispatchBackgroundFetchSuccessEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchSuccessEventCallback callback) override;
   void DispatchExtendableMessageEvent(

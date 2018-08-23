@@ -56,6 +56,12 @@ class BackgroundFetchTestBase : public ::testing::Test {
       const GURL& url,
       std::unique_ptr<TestResponse> response);
 
+  // Creates a BackgroundFetchRegistration object.
+  static std::unique_ptr<BackgroundFetchRegistration>
+  CreateBackgroundFetchRegistration(const std::string& developer_id,
+                                    const std::string& unique_id,
+                                    blink::mojom::BackgroundFetchState state);
+
   // Returns the embedded worker test helper instance, which can be used to
   // influence the behavior of the Service Worker events.
   BackgroundFetchEmbeddedWorkerTestHelper* embedded_worker_test_helper() {

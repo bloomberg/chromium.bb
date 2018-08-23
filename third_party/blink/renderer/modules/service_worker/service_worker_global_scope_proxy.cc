@@ -117,9 +117,7 @@ void ServiceWorkerGlobalScopeProxy::SetRegistration(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
     int event_id,
-    const WebString& developer_id,
-    const WebString& unique_id,
-    blink::mojom::BackgroundFetchState state) {
+    const WebBackgroundFetchRegistration& registration) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchAbort, event_id);
@@ -131,13 +129,10 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
   // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  // TODO(crbug.com/869918): Update to take a BackgroundFetchRegistration
-  // object, or all information required to build one.
-  BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
-      developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
-  init.setRegistration(registration);
+  init.setRegistration(new BackgroundFetchRegistration(
+      WorkerGlobalScope()->registration() /* service_worker_registration */,
+      registration));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
       EventTypeNames::backgroundfetchabort, init, observer);
@@ -147,20 +142,15 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
     int event_id,
-    const WebString& developer_id,
-    const WebString& unique_id,
-    blink::mojom::BackgroundFetchState state) {
+    const WebBackgroundFetchRegistration& registration) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchClick, event_id);
 
-  // TODO(crbug.com/869918): Update to take a BackgroundFetchRegistration
-  // object, or all information required to build one.
-  BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
-      developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
-  init.setRegistration(registration);
+  init.setRegistration(new BackgroundFetchRegistration(
+      WorkerGlobalScope()->registration() /* service_worker_registration */,
+      registration));
 
   BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
       EventTypeNames::backgroundfetchclick, init, observer);
@@ -170,9 +160,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
     int event_id,
-    const WebString& developer_id,
-    const WebString& unique_id,
-    blink::mojom::BackgroundFetchState state,
+    const WebBackgroundFetchRegistration& registration,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
@@ -185,13 +173,10 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  // TODO(crbug.com/869918): Update to take a BackgroundFetchRegistration
-  // object, or all information required to build one.
-  BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
-      developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
-  init.setRegistration(registration);
+  init.setRegistration(new BackgroundFetchRegistration(
+      WorkerGlobalScope()->registration() /* service_worker_registration */,
+      registration));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
       EventTypeNames::backgroundfetchfail, init, observer,
@@ -204,9 +189,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
     int event_id,
-    const WebString& developer_id,
-    const WebString& unique_id,
-    blink::mojom::BackgroundFetchState state,
+    const WebBackgroundFetchRegistration& registration,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
@@ -220,13 +203,10 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
   // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
-  // TODO(crbug.com/869918): Update to take a BackgroundFetchRegistration
-  // object, or all information required to build one.
-  BackgroundFetchRegistration* registration = new BackgroundFetchRegistration(
-      developer_id, unique_id, 0 /* upload_total */, 0 /* uploaded */,
-      0 /* download_total */, 0 /* downloaded */, state);
   BackgroundFetchEventInit init;
-  init.setRegistration(registration);
+  init.setRegistration(new BackgroundFetchRegistration(
+      WorkerGlobalScope()->registration() /* service_worker_registration */,
+      registration));
 
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
       EventTypeNames::backgroundfetchsuccess, init, observer,

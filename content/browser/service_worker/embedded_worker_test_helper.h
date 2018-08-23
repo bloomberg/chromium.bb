@@ -35,6 +35,7 @@ class GURL;
 
 namespace content {
 
+struct BackgroundFetchRegistration;
 struct BackgroundFetchSettledFetch;
 class EmbeddedWorkerRegistry;
 class EmbeddedWorkerTestHelper;
@@ -167,25 +168,17 @@ class EmbeddedWorkerTestHelper {
   virtual void OnActivateEvent(
       mojom::ServiceWorker::DispatchActivateEventCallback callback);
   virtual void OnBackgroundFetchAbortEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
   virtual void OnBackgroundFetchClickEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   virtual void OnBackgroundFetchFailEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
   virtual void OnBackgroundFetchSuccessEvent(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);
@@ -271,25 +264,17 @@ class EmbeddedWorkerTestHelper {
   void OnActivateEventStub(
       mojom::ServiceWorker::DispatchActivateEventCallback callback);
   void OnBackgroundFetchAbortEventStub(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback);
   void OnBackgroundFetchClickEventStub(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback);
   void OnBackgroundFetchFailEventStub(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback);
   void OnBackgroundFetchSuccessEventStub(
-      const std::string& developer_id,
-      const std::string& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const BackgroundFetchRegistration& registration,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
           callback);

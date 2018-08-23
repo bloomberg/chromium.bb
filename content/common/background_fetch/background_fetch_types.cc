@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/common/background_fetch/background_fetch_types.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace {
 
@@ -27,7 +28,24 @@ BackgroundFetchOptions::BackgroundFetchOptions(
 
 BackgroundFetchOptions::~BackgroundFetchOptions() = default;
 
-BackgroundFetchRegistration::BackgroundFetchRegistration() = default;
+BackgroundFetchRegistration::BackgroundFetchRegistration()
+    : state(blink::mojom::BackgroundFetchState::PENDING) {}
+
+BackgroundFetchRegistration::BackgroundFetchRegistration(
+    const std::string& developer_id,
+    const std::string& unique_id,
+    uint64_t upload_total,
+    uint64_t uploaded,
+    uint64_t download_total,
+    uint64_t downloaded,
+    blink::mojom::BackgroundFetchState state)
+    : developer_id(developer_id),
+      unique_id(unique_id),
+      upload_total(upload_total),
+      uploaded(uploaded),
+      download_total(download_total),
+      downloaded(downloaded),
+      state(state) {}
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     const BackgroundFetchRegistration& other) = default;
