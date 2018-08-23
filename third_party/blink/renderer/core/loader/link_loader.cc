@@ -574,9 +574,13 @@ static Resource* PrefetchIfNeeded(const LinkLoadParameters& params,
 
     ResourceRequest resource_request(params.href);
     resource_request.SetReferrerPolicy(params.referrer_policy);
-
     resource_request.SetFetchImportanceMode(
         GetFetchImportanceAttributeValue(params.importance));
+    if (RuntimeEnabledFeatures::SignedHTTPExchangeEnabled()) {
+      DEFINE_STATIC_LOCAL(const AtomicString, accept_prefetch,
+                          ("application/signed-exchange;v=b1;q=0.9,*/*;q=0.8"));
+      resource_request.SetHTTPAccept(accept_prefetch);
+    }
 
     ResourceLoaderOptions options;
     options.initiator_info.name = FetchInitiatorTypeNames::link;

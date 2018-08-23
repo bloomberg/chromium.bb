@@ -444,9 +444,11 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableIsolatedCodeCache(
       base::FeatureList::IsEnabled(features::kIsolatedCodeCache));
 
-  // Make srcset on link rel=preload work with SignedHTTPExchange flag too.
-  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
+    WebRuntimeFeatures::EnableSignedHTTPExchange(true);
+    // Make srcset on link rel=preload work with SignedHTTPExchange flag too.
     WebRuntimeFeatures::EnablePreloadImageSrcSetEnabled(true);
+  }
 
   WebRuntimeFeatures::EnableNestedWorkers(
       base::FeatureList::IsEnabled(blink::features::kNestedWorkers));

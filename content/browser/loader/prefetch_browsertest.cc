@@ -110,12 +110,16 @@ class PrefetchBrowserTest
     return nullptr;
   }
 
-  void WatchURLAndRunClosure(const std::string& relative_url,
-                             int* visit_count,
-                             base::OnceClosure closure,
-                             const net::test_server::HttpRequest& request) {
+  void WatchURLAndRunClosure(
+      const std::string& relative_url,
+      int* visit_count,
+      net::test_server::HttpRequest::HeaderMap* out_headers,
+      base::OnceClosure closure,
+      const net::test_server::HttpRequest& request) {
     if (request.relative_url == relative_url) {
       (*visit_count)++;
+      if (out_headers)
+        *out_headers = request.headers;
       if (closure)
         std::move(closure).Run();
     }
@@ -153,7 +157,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, Simple) {
   base::RunLoop prefetch_waiter;
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      target_url, &target_fetch_count, prefetch_waiter.QuitClosure()));
+      target_url, &target_fetch_count, nullptr, prefetch_waiter.QuitClosure()));
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -191,7 +195,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, DoublePrefetch) {
   base::RunLoop prefetch_waiter;
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      target_url, &target_fetch_count, prefetch_waiter.QuitClosure()));
+      target_url, &target_fetch_count, nullptr, prefetch_waiter.QuitClosure()));
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -238,10 +242,12 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, NoCacheAndNoStore) {
   base::RunLoop nostore_waiter;
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      nocache_url, &nocache_fetch_count, nocache_waiter.QuitClosure()));
+      nocache_url, &nocache_fetch_count, nullptr,
+      nocache_waiter.QuitClosure()));
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      nostore_url, &nostore_fetch_count, nostore_waiter.QuitClosure()));
+      nostore_url, &nostore_fetch_count, nullptr,
+      nostore_waiter.QuitClosure()));
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -298,10 +304,11 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WithPreload) {
   base::RunLoop preload_waiter;
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      target_url, &target_fetch_count, base::RepeatingClosure()));
+      target_url, &target_fetch_count, nullptr, base::RepeatingClosure()));
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      preload_url, &preload_fetch_count, preload_waiter.QuitClosure()));
+      preload_url, &preload_fetch_count, nullptr,
+      preload_waiter.QuitClosure()));
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -344,20 +351,23 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   RegisterResponse(
       target_sxg,
       // We mock the SignedExchangeHandler, so just return a HTML content
-      // as "application/signed-exchange;v=b0".
+      // as "application/signed-exchange;v=b1".
       ResponseEntry("<head><title>Prefetch Target (SXG)</title></head>",
-                    "application/signed-exchange;v=b0"));
+                    "application/signed-exchange;v=b1"));
   RegisterResponse(preload_url_in_sxg,
                    ResponseEntry("function foo() {}", "text/javascript"));
 
   base::RunLoop preload_waiter;
   base::RunLoop prefetch_waiter;
+  net::test_server::HttpRequest::HeaderMap prefetch_headers;
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      target_sxg, &target_fetch_count, prefetch_waiter.QuitClosure()));
+      target_sxg, &target_fetch_count, &prefetch_headers,
+      prefetch_waiter.QuitClosure()));
   embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
       &PrefetchBrowserTest::WatchURLAndRunClosure, base::Unretained(this),
-      preload_url_in_sxg, &preload_fetch_count, preload_waiter.QuitClosure()));
+      preload_url_in_sxg, &preload_fetch_count, nullptr,
+      preload_waiter.QuitClosure()));
   embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
       &PrefetchBrowserTest::ServeResponses, base::Unretained(this)));
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -376,6 +386,11 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   prefetch_waiter.Run();
   EXPECT_EQ(1, target_fetch_count);
   EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(1));
+  if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
+    EXPECT_EQ(prefetch_headers["Accept"],
+              "application/signed-exchange;v=b1;q=0.9,*/*;q=0.8");
+  else
+    EXPECT_EQ(prefetch_headers["Accept"], "*/*");
 
   // Test after this point requires SignedHTTPExchange support, which is now
   // disabled when Network Service is enabled.
