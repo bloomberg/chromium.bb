@@ -91,6 +91,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebURL&,
       base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>)
       override;
+  void ClearCodeCacheEntry(const GURL&) override;
   void CacheMetadataInCacheStorage(
       const blink::WebURL&,
       base::Time,

@@ -106,6 +106,7 @@ class CONTENT_EXPORT RenderMessageFilter
                                     base::Time expected_response_time,
                                     const std::vector<uint8_t>& data) override;
   void FetchCachedCode(const GURL& url, FetchCachedCodeCallback) override;
+  void ClearCodeCacheEntry(const GURL& url) override;
   void DidGenerateCacheableMetadataInCacheStorage(
       const GURL& url,
       base::Time expected_response_time,

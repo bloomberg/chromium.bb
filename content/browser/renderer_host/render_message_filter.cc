@@ -92,6 +92,26 @@ const uint32_t kRenderFilteredMessageClasses[] = {ViewMsgStart};
 void NoOpCacheStorageErrorCallback(CacheStorageCacheHandle cache_handle,
                                    CacheStorageError error) {}
 
+base::Optional<url::Origin> GetRendererOrigin(const GURL& url,
+                                              int render_process_id) {
+  GURL requesting_url =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+          render_process_id);
+
+  if (!requesting_url.is_valid() || !url.is_valid())
+    return base::nullopt;
+
+  url::Origin origin = url::Origin::Create(requesting_url);
+
+  // Don't cache the code corresponding to unique origins. The same-origin
+  // checks should always fail for unique origins but the serialized value of
+  // unique origins does not ensure this.
+  if (origin.unique())
+    return base::nullopt;
+
+  return origin;
+}
+
 }  // namespace
 
 RenderMessageFilter::RenderMessageFilter(
@@ -237,45 +257,35 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
     cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
                          data.size());
   } else {
-    GURL requesting_url =
-        ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
-            render_process_id_);
-    // If the origin_url isn't valid then render process might not be locked to
-    // an origin yet so we don't allow any writes to the disk.
-    if (!requesting_url.is_valid() || !url.is_valid())
+    if (!generated_code_cache_context_->generated_code_cache())
       return;
-    url::Origin requesting_origin = url::Origin::Create(requesting_url);
 
-    // Don't cache the code corresponding to unique origins. The same-origin
-    // checks should always fail for unique origins but the serialized value of
-    // unique origins does not ensure this.
-    if (requesting_origin.unique())
+    base::Optional<url::Origin> requesting_origin =
+        GetRendererOrigin(url, render_process_id_);
+    if (!requesting_origin)
       return;
 
     generated_code_cache_context_->generated_code_cache()->WriteData(
-        url, requesting_origin, expected_response_time, data);
+        url, *requesting_origin, expected_response_time, data);
   }
 }
 
 void RenderMessageFilter::FetchCachedCode(const GURL& url,
                                           FetchCachedCodeCallback callback) {
-  GURL requesting_url =
-      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
-          render_process_id_);
-  // If the url isn't valid then render process may not be locked to an origin
-  // yet so we don't allow fetches from code cache.
-  if (!requesting_url.is_valid() || !url.is_valid()) {
-    std::move(callback).Run(base::Time(), std::vector<uint8_t>());
+  if (!generated_code_cache_context_->generated_code_cache())
     return;
-  }
 
-  url::Origin requesting_origin = url::Origin::Create(requesting_url);
+  base::Optional<url::Origin> requesting_origin =
+      GetRendererOrigin(url, render_process_id_);
+  if (!requesting_origin)
+    return;
+
   base::RepeatingCallback<void(const base::Time&, const std::vector<uint8_t>&)>
       read_callback = base::BindRepeating(
           &RenderMessageFilter::OnReceiveCachedCode,
           weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback));
   generated_code_cache_context_->generated_code_cache()->FetchEntry(
-      url, requesting_origin, read_callback);
+      url, *requesting_origin, read_callback);
 }
 
 void RenderMessageFilter::OnReceiveCachedCode(
@@ -285,6 +295,19 @@ void RenderMessageFilter::OnReceiveCachedCode(
   // TODO(crbug.com/867848): Pass the data as a mojo data pipe instead
   // of vector<uint8>
   std::move(callback).Run(response_time, data);
+}
+
+void RenderMessageFilter::ClearCodeCacheEntry(const GURL& url) {
+  if (!generated_code_cache_context_->generated_code_cache())
+    return;
+
+  base::Optional<url::Origin> requesting_origin =
+      GetRendererOrigin(url, render_process_id_);
+  if (!requesting_origin)
+    return;
+
+  generated_code_cache_context_->generated_code_cache()->DeleteEntry(
+      url, *requesting_origin);
 }
 
 void RenderMessageFilter::DidGenerateCacheableMetadataInCacheStorage(

@@ -368,6 +368,7 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual void FetchCachedCode(
       const WebURL&,
       base::OnceCallback<void(base::Time, const std::vector<uint8_t>&)>) {}
+  virtual void ClearCodeCacheEntry(const GURL&) {}
 
   // A suggestion to cache this metadata in association with this URL which
   // resource is in CacheStorage.
