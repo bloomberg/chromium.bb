@@ -60,7 +60,10 @@ class MockClient : public VideoCaptureDevice::Client {
   MOCK_METHOD3(ResurrectLastOutputBuffer,
                Buffer(const gfx::Size&, VideoPixelFormat, int));
 
-  MOCK_METHOD2(OnError, void(const base::Location&, const std::string&));
+  MOCK_METHOD3(OnError,
+               void(VideoCaptureError,
+                    const base::Location&,
+                    const std::string&));
 
   double GetBufferPoolUtilization() const override { return 0.0; }
 
@@ -1069,7 +1072,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, CallClientOnErrorMediaEvent) {
 
   EXPECT_CALL(*(engine_.Get()), OnStartPreview());
   EXPECT_CALL(*client_, OnStarted());
-  EXPECT_CALL(*client_, OnError(_, _));
+  EXPECT_CALL(*client_, OnError(_, _, _));
   scoped_refptr<MockMFMediaEvent> media_event_error = new MockMFMediaEvent();
   EXPECT_CALL(*media_event_error, DoGetStatus()).WillRepeatedly(Return(E_FAIL));
 
@@ -1138,7 +1141,7 @@ TEST_F(VideoCaptureDeviceMFWinTest, AllocateAndStartWithFailingInvalidRequest) {
   EXPECT_CALL(*capture_source_, DoGetDeviceStreamCount(_))
       .WillRepeatedly(Return(MF_E_INVALIDREQUEST));
 
-  EXPECT_CALL(*client_, OnError(_, _));
+  EXPECT_CALL(*client_, OnError(_, _, _));
   device_->AllocateAndStart(VideoCaptureParams(), std::move(client_));
 }
 

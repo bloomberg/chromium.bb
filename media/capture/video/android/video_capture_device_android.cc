@@ -136,7 +136,8 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
       params.requested_format.frame_size.height(),
       params.requested_format.frame_rate);
   if (!ret) {
-    SetErrorState(FROM_HERE, "failed to allocate");
+    SetErrorState(media::VideoCaptureError::kAndroidFailedToAllocate, FROM_HERE,
+                  "failed to allocate");
     return;
   }
 
@@ -163,7 +164,8 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
 
   ret = Java_VideoCapture_startCapture(env, j_capture_);
   if (!ret) {
-    SetErrorState(FROM_HERE, "failed to start capture");
+    SetErrorState(media::VideoCaptureError::kAndroidFailedToStartCapture,
+                  FROM_HERE, "failed to start capture");
     return;
   }
 
@@ -185,7 +187,8 @@ void VideoCaptureDeviceAndroid::StopAndDeAllocate() {
 
   const jboolean ret = Java_VideoCapture_stopCapture(env, j_capture_);
   if (!ret) {
-    SetErrorState(FROM_HERE, "failed to stop capture");
+    SetErrorState(media::VideoCaptureError::kAndroidFailedToStopCapture,
+                  FROM_HERE, "failed to stop capture");
     return;
   }
 
@@ -339,9 +342,11 @@ void VideoCaptureDeviceAndroid::OnI420FrameAvailable(JNIEnv* env,
 
 void VideoCaptureDeviceAndroid::OnError(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
+                                        int android_video_capture_error,
                                         const JavaParamRef<jstring>& message) {
-  SetErrorState(FROM_HERE,
-                base::android::ConvertJavaStringToUTF8(env, message));
+  SetErrorState(
+      static_cast<media::VideoCaptureError>(android_video_capture_error),
+      FROM_HERE, base::android::ConvertJavaStringToUTF8(env, message));
 }
 
 void VideoCaptureDeviceAndroid::OnPhotoTaken(
@@ -440,14 +445,15 @@ VideoPixelFormat VideoCaptureDeviceAndroid::GetColorspace() {
   }
 }
 
-void VideoCaptureDeviceAndroid::SetErrorState(const base::Location& from_here,
+void VideoCaptureDeviceAndroid::SetErrorState(media::VideoCaptureError error,
+                                              const base::Location& from_here,
                                               const std::string& reason) {
   {
     base::AutoLock lock(lock_);
     state_ = kError;
     if (!client_)
       return;
-    client_->OnError(from_here, reason);
+    client_->OnError(error, from_here, reason);
   }
 }
 

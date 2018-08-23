@@ -59,7 +59,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
             if (createPreviewObjectsAndStartPreview()) return;
 
             changeCameraStateAndNotify(CameraState.STOPPED);
-            nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error configuring camera");
+            nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                    AndroidVideoCaptureError.ANDROID_API_2_ERROR_CONFIGURING_CAMERA,
+                    "Error configuring camera");
         }
 
         @Override
@@ -77,6 +79,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
             mCameraDevice = null;
             changeCameraStateAndNotify(CameraState.STOPPED);
             nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                    AndroidVideoCaptureError.ANDROID_API_2_CAMERA_DEVICE_ERROR_RECEIVED,
                     "Camera device error " + Integer.toString(error));
         }
     };
@@ -126,7 +129,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
             // TODO(mcasas): When signalling error, C++ will tear us down. Is there need for
             // cleanup?
             changeCameraStateAndNotify(CameraState.STOPPED);
-            nativeOnError(mNativeVideoCaptureDeviceAndroid, "Camera session configuration error");
+            nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                    AndroidVideoCaptureError.ANDROID_API_2_CAPTURE_SESSION_CONFIGURE_FAILED,
+                    "Camera session configuration error");
         }
     };
 
@@ -139,17 +144,22 @@ public class VideoCaptureCamera2 extends VideoCapture {
                 if (image == null) return;
 
                 if (image.getFormat() != ImageFormat.YUV_420_888 || image.getPlanes().length != 3) {
-                    nativeOnError(mNativeVideoCaptureDeviceAndroid, "Unexpected image format: "
-                            + image.getFormat() + " or #planes: " + image.getPlanes().length);
+                    nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                            AndroidVideoCaptureError
+                                    .ANDROID_API_2_IMAGE_READER_UNEXPECTED_IMAGE_FORMAT,
+                            "Unexpected image format: " + image.getFormat()
+                                    + " or #planes: " + image.getPlanes().length);
                     throw new IllegalStateException();
                 }
 
                 if (reader.getWidth() != image.getWidth()
                         || reader.getHeight() != image.getHeight()) {
-                    nativeOnError(mNativeVideoCaptureDeviceAndroid, "ImageReader size ("
-                            + reader.getWidth() + "x" + reader.getHeight()
-                            + ") did not match Image size (" + image.getWidth() + "x"
-                            + image.getHeight() + ")");
+                    nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                            AndroidVideoCaptureError
+                                    .ANDROID_API_2_IMAGE_READER_SIZE_DID_NOT_MATCH_IMAGE_SIZE,
+                            "ImageReader size (" + reader.getWidth() + "x" + reader.getHeight()
+                                    + ") did not match Image size (" + image.getWidth() + "x"
+                                    + image.getHeight() + ")");
                     throw new IllegalStateException();
                 }
 
@@ -254,7 +264,9 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
             if (createPreviewObjectsAndStartPreview()) return;
 
-            nativeOnError(mNativeVideoCaptureDeviceAndroid, "Error restarting preview");
+            nativeOnError(mNativeVideoCaptureDeviceAndroid,
+                    AndroidVideoCaptureError.ANDROID_API_2_ERROR_RESTARTING_PREVIEW,
+                    "Error restarting preview");
         }
     };
 

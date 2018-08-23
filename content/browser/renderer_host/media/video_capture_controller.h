@@ -109,7 +109,7 @@ class CONTENT_EXPORT VideoCaptureController
           buffer_read_permission,
       media::mojom::VideoFrameInfoPtr frame_info) override;
   void OnBufferRetired(int buffer_id) override;
-  void OnError() override;
+  void OnError(media::VideoCaptureError error) override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
   void OnStartedUsingGpuDecode() override;
@@ -117,7 +117,7 @@ class CONTENT_EXPORT VideoCaptureController
   // Implementation of VideoCaptureDeviceLauncher::Callbacks interface:
   void OnDeviceLaunched(
       std::unique_ptr<LaunchedVideoCaptureDevice> device) override;
-  void OnDeviceLaunchFailed() override;
+  void OnDeviceLaunchFailed(media::VideoCaptureError error) override;
   void OnDeviceLaunchAborted() override;
 
   void OnDeviceConnectionLost();
@@ -219,8 +219,8 @@ class CONTENT_EXPORT VideoCaptureController
       const std::vector<BufferContext>::iterator& buffer_state_iter);
 
   using EventHandlerAction =
-      base::Callback<void(VideoCaptureControllerEventHandler* client,
-                          VideoCaptureControllerID id)>;
+      base::RepeatingCallback<void(VideoCaptureControllerEventHandler* client,
+                                   VideoCaptureControllerID id)>;
   void PerformForClientsWithOpenSession(EventHandlerAction action);
 
   void EmitLogMessage(const std::string& message, int verbose_log_level);

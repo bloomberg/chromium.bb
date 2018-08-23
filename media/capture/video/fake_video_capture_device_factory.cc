@@ -72,7 +72,9 @@ class ErrorFakeDevice : public media::VideoCaptureDevice {
   // VideoCaptureDevice implementation.
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override {
-    client->OnError(FROM_HERE, "Device has no supported formats.");
+    client->OnError(media::VideoCaptureError::
+                        kErrorFakeDeviceIntentionallyEmittingErrorEvent,
+                    FROM_HERE, "Device has no supported formats.");
   }
 
   void StopAndDeAllocate() override {}

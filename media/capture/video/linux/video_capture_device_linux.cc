@@ -64,7 +64,9 @@ void VideoCaptureDeviceLinux::AllocateAndStart(
       v4l2_.get(), device_descriptor_, v4l2_thread_.task_runner(),
       line_frequency);
   if (!capture_impl_) {
-    client->OnError(FROM_HERE, "Failed to create VideoCaptureDelegate");
+    client->OnError(VideoCaptureError::
+                        kDeviceCaptureLinuxFailedToCreateVideoCaptureDelegate,
+                    FROM_HERE, "Failed to create VideoCaptureDelegate");
     return;
   }
   v4l2_thread_.task_runner()->PostTask(

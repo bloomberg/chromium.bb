@@ -272,7 +272,9 @@ void CameraDeviceDelegate::OnMojoConnectionError() {
       stream_buffer_manager_->StopPreview();
     }
     device_context_->SetState(CameraDeviceContext::State::kStopped);
-    device_context_->SetErrorState(FROM_HERE, "Mojo connection error");
+    device_context_->SetErrorState(
+        media::VideoCaptureError::kCrosHalV3DeviceDelegateMojoConnectionError,
+        FROM_HERE, "Mojo connection error");
     ResetMojoInterface();
     // We cannnot reset |device_context_| here because
     // |device_context_->SetErrorState| above will call StopAndDeAllocate later
@@ -315,7 +317,9 @@ void CameraDeviceDelegate::OnGotCameraInfo(
   }
 
   if (result) {
-    device_context_->SetErrorState(FROM_HERE, "Failed to get camera info");
+    device_context_->SetErrorState(
+        media::VideoCaptureError::kCrosHalV3DeviceDelegateFailedToGetCameraInfo,
+        FROM_HERE, "Failed to get camera info");
     return;
   }
   SortCameraMetadata(&camera_info->static_camera_characteristics);
@@ -330,6 +334,8 @@ void CameraDeviceDelegate::OnGotCameraInfo(
         *reinterpret_cast<int32_t*>((*sensor_orientation)->data.data()));
   } else {
     device_context_->SetErrorState(
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateMissingSensorOrientationInfo,
         FROM_HERE, "Camera is missing required sensor orientation info");
     return;
   }
@@ -361,7 +367,10 @@ void CameraDeviceDelegate::OnOpenedDevice(int32_t result) {
   }
 
   if (result) {
-    device_context_->SetErrorState(FROM_HERE, "Failed to open camera device");
+    device_context_->SetErrorState(
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateFailedToOpenCameraDevice,
+        FROM_HERE, "Failed to open camera device");
     return;
   }
   Initialize();
@@ -396,8 +405,11 @@ void CameraDeviceDelegate::OnInitialized(int32_t result) {
   }
   if (result) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Failed to initialize camera device: ") +
-                       base::safe_strerror(-result));
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateFailedToInitializeCameraDevice,
+        FROM_HERE,
+        std::string("Failed to initialize camera device: ") +
+            base::safe_strerror(-result));
     return;
   }
   device_context_->SetState(CameraDeviceContext::State::kInitialized);
@@ -469,15 +481,21 @@ void CameraDeviceDelegate::OnConfiguredStreams(
   }
   if (result) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Failed to configure streams: ") +
-                       base::safe_strerror(-result));
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateFailedToConfigureStreams,
+        FROM_HERE,
+        std::string("Failed to configure streams: ") +
+            base::safe_strerror(-result));
     return;
   }
   if (!updated_config ||
       updated_config->streams.size() != kMaxConfiguredStreams) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Wrong number of streams configured: ") +
-                       std::to_string(updated_config->streams.size()));
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateWrongNumberOfStreamsConfigured,
+        FROM_HERE,
+        std::string("Wrong number of streams configured: ") +
+            std::to_string(updated_config->streams.size()));
     return;
   }
 
@@ -523,8 +541,10 @@ void CameraDeviceDelegate::OnConstructedDefaultPreviewRequestSettings(
     return;
   }
   if (!settings) {
-    device_context_->SetErrorState(FROM_HERE,
-                                   "Failed to get default request settings");
+    device_context_->SetErrorState(
+        media::VideoCaptureError::
+            kCrosHalV3DeviceDelegateFailedToGetDefaultRequestSettings,
+        FROM_HERE, "Failed to get default request settings");
     return;
   }
   device_context_->SetState(CameraDeviceContext::State::kCapturing);

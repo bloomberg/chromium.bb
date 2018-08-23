@@ -49109,6 +49109,142 @@ Full version information for the fingerprint enum values:
   <int value="1" label="Failure"/>
 </enum>
 
+<enum name="VideoCaptureError">
+  <int value="0" label="kNone"/>
+  <int value="1"
+      label="kVideoCaptureControllerInvalidOrUnsupportedVideoCaptureParametersRequested"/>
+  <int value="2" label="kVideoCaptureControllerIsAlreadyInErrorState"/>
+  <int value="3" label="kVideoCaptureManagerDeviceConnectionLost"/>
+  <int value="4" label="kFrameSinkVideoCaptureDeviceAleradyEndedOnFatalError"/>
+  <int value="5" label="kFrameSinkVideoCaptureDeviceEncounteredFatalError"/>
+  <int value="6" label="kV4L2FailedToOpenV4L2DeviceDriverFile"/>
+  <int value="7" label="kV4L2ThisIsNotAV4L2VideoCaptureDevice"/>
+  <int value="8" label="kV4L2FailedToFindASupportedCameraFormat"/>
+  <int value="9" label="kV4L2FailedToSetVideoCaptureFormat"/>
+  <int value="10" label="kV4L2UnsupportedPixelFormat"/>
+  <int value="11" label="kV4L2FailedToSetCameraFramerate"/>
+  <int value="12" label="kV4L2ErrorRequestingMmapBuffers"/>
+  <int value="13" label="kV4L2AllocateBufferFailed"/>
+  <int value="14" label="kV4L2VidiocStreamonFailed"/>
+  <int value="15" label="kV4L2VidiocStreamoffFailed"/>
+  <int value="16" label="kV4L2FailedToVidiocReqbufsWithCount0"/>
+  <int value="17" label="kV4L2PollFailed"/>
+  <int value="18" label="kV4L2MultipleContinuousTimeoutsWhileReadPolling"/>
+  <int value="19" label="kV4L2FailedToDequeueCaptureBuffer"/>
+  <int value="20" label="kV4L2FailedToEnqueueCaptureBuffer"/>
+  <int value="21" label="kSingleClientVideoCaptureHostLostConnectionToDevice"/>
+  <int value="22" label="kSingleClientVideoCaptureDeviceLaunchAborted"/>
+  <int value="23" label="kDesktopCaptureDeivceWebrtcDesktopCapturerHasFailed"/>
+  <int value="24" label="kFileVideoCaptureDeviceCouldNotOpenVideoFile"/>
+  <int value="25"
+      label="kDeviceCaptureLinuxFailedToCreateVideoCaptureDelegate"/>
+  <int value="26" label="kErrorFakeDeviceIntentionallyEmittingErrorEvent"/>
+  <int value="27" label="kDeviceClientTooManyFramesDropped"/>
+  <int value="28" label="kDeviceClientTooManyFramesDroppedY16"/>
+  <int value="29"
+      label="kDeviceMediaToMojoAdapterEncounteredUnsupportedBufferType"/>
+  <int value="30"
+      label="kVideoCaptureManagerProcessDeviceStartQueueDeviceInfoNotFound"/>
+  <int value="31" label="kInProcessDeviceLauncherFailedToCreateDeviceInstance"/>
+  <int value="32"
+      label="kServiceDeviceLauncherLostConnectionToDeviceFactoryDuringDeviceStart"/>
+  <int value="33"
+      label="kServiceDeviceLauncherServiceRespondedWithDeviceNotFound"/>
+  <int value="34"
+      label="kServiceDeviceLauncherConnectionLostWhileWaitingForCallback"/>
+  <int value="35" label="kIntentionalErrorRaisedByUnitTest"/>
+  <int value="36" label="kCrosHalV3FailedToStartDeviceThread"/>
+  <int value="37" label="kCrosHalV3DeviceDelegateMojoConnectionError"/>
+  <int value="38" label="kCrosHalV3DeviceDelegateFailedToGetCameraInfo"/>
+  <int value="39" label="kCrosHalV3DeviceDelegateMissingSensorOrientationInfo"/>
+  <int value="40" label="kCrosHalV3DeviceDelegateFailedToOpenCameraDevice"/>
+  <int value="41"
+      label="kCrosHalV3DeviceDelegateFailedToInitializeCameraDevice"/>
+  <int value="42" label="kCrosHalV3DeviceDelegateFailedToConfigureStreams"/>
+  <int value="43"
+      label="kCrosHalV3DeviceDelegateWrongNumberOfStreamsConfigured"/>
+  <int value="44"
+      label="kCrosHalV3DeviceDelegateFailedToGetDefaultRequestSettings"/>
+  <int value="45" label="kCrosHalV3BufferManagerHalRequestedTooManyBuffers"/>
+  <int value="46" label="kCrosHalV3BufferManagerFailedToCreateGpuMemoryBuffer"/>
+  <int value="47" label="kCrosHalV3BufferManagerFailedToMapGpuMemoryBuffer"/>
+  <int value="48" label="kCrosHalV3BufferManagerUnsupportedVideoPixelFormat"/>
+  <int value="49" label="kCrosHalV3BufferManagerFailedToDupFd"/>
+  <int value="50" label="kCrosHalV3BufferManagerFailedToWrapGpuMemoryHandle"/>
+  <int value="51" label="kCrosHalV3BufferManagerFailedToRegisterBuffer"/>
+  <int value="52" label="kCrosHalV3BufferManagerProcessCaptureRequestFailed"/>
+  <int value="53" label="kCrosHalV3BufferManagerInvalidPendingResultId"/>
+  <int value="54"
+      label="kCrosHalV3BufferManagerReceivedDuplicatedPartialMetadata"/>
+  <int value="55"
+      label="kCrosHalV3BufferManagerIncorrectNumberOfOutputBuffersReceived"/>
+  <int value="56"
+      label="kCrosHalV3BufferManagerInvalidTypeOfOutputBuffersReceived"/>
+  <int value="57"
+      label="kCrosHalV3BufferManagerReceivedMultipleResultBuffersForFrame"/>
+  <int value="58"
+      label="kCrosHalV3BufferManagerUnknownStreamInCamera3NotifyMsg"/>
+  <int value="59" label="kCrosHalV3BufferManagerReceivedInvalidShutterTime"/>
+  <int value="60" label="kCrosHalV3BufferManagerFatalDeviceError"/>
+  <int value="61" label="kCrosHalV3BufferManagerReceivedFrameIsOutOfOrder"/>
+  <int value="62" label="kCrosHalV3BufferManagerFailedToUnwrapReleaseFenceFd"/>
+  <int value="63"
+      label="kCrosHalV3BufferManagerSyncWaitOnReleaseFenceTimedOut"/>
+  <int value="64" label="kCrosHalV3BufferManagerInvalidJpegBlob"/>
+  <int value="65" label="kAndroidFailedToAllocate"/>
+  <int value="66" label="kAndroidFailedToStartCapture"/>
+  <int value="67" label="kAndroidFailedToStopCapture"/>
+  <int value="68" label="kAndroidApi1CameraErrorCallbackReceived"/>
+  <int value="69" label="kAndroidApi2CameraDeviceErrorReceived"/>
+  <int value="70" label="kAndroidApi2CaptureSessionConfigureFailed"/>
+  <int value="71" label="kAndroidApi2ImageReaderUnexpectedImageFormat"/>
+  <int value="72" label="kAndroidApi2ImageReaderSizeDidNotMatchImageSize"/>
+  <int value="73" label="kAndroidApi2ErrorRestartingPreview"/>
+  <int value="74" label="kAndroidScreenCaptureUnsupportedFormat"/>
+  <int value="75" label="kAndroidScreenCaptureFailedToStartCaptureMachine"/>
+  <int value="76" label="kAndroidScreenCaptureTheUserDeniedScreenCapture"/>
+  <int value="77" label="kAndroidScreenCaptureFailedToStartScreenCapture"/>
+  <int value="78" label="kWinDirectShowCantGetCaptureFormatSettings"/>
+  <int value="79" label="kWinDirectShowFailedToGetNumberOfCapabilities"/>
+  <int value="80" label="kWinDirectShowFailedToGetCaptureDeviceCapabilities"/>
+  <int value="81" label="kWinDirectShowFailedToSetCaptureDeviceOutputFormat"/>
+  <int value="82" label="kWinDirectShowFailedToConnectTheCaptureGraph"/>
+  <int value="83" label="kWinDirectShowFailedToPauseTheCaptureDevice"/>
+  <int value="84" label="kWinDirectShowFailedToStartTheCaptureDevice"/>
+  <int value="85" label="kWinDirectShowFailedToStopTheCaptureGraph"/>
+  <int value="86" label="kWinMediaFoundationEngineIsNull"/>
+  <int value="87" label="kWinMediaFoundationEngineGetSourceFailed"/>
+  <int value="88" label="kWinMediaFoundationFillPhotoCapabilitiesFailed"/>
+  <int value="89" label="kWinMediaFoundationFillVideoCapabilitiesFailed"/>
+  <int value="90" label="kWinMediaFoundationNoVideoCapabilityFound"/>
+  <int value="91" label="kWinMediaFoundationGetAvailableDeviceMediaTypeFailed"/>
+  <int value="92" label="kWinMediaFoundationSetCurrentDeviceMediaTypeFailed"/>
+  <int value="93" label="kWinMediaFoundationEngineGetSinkFailed"/>
+  <int value="94"
+      label="kWinMediaFoundationSinkQueryCapturePreviewInterfaceFailed"/>
+  <int value="95" label="kWinMediaFoundationSinkRemoveAllStreamsFailed"/>
+  <int value="96" label="kWinMediaFoundationCreateSinkVideoMediaTypeFailed"/>
+  <int value="97" label="kWinMediaFoundationConvertToVideoSinkMediaTypeFailed"/>
+  <int value="98" label="kWinMediaFoundationSinkAddStreamFailed"/>
+  <int value="99" label="kWinMediaFoundationSinkSetSampleCallbackFailed"/>
+  <int value="100" label="kWinMediaFoundationEngineStartPreviewFailed"/>
+  <int value="101" label="kWinMediaFoundationGetMediaEventStatusFailed"/>
+  <int value="102" label="kMacSetCaptureDeviceFailed"/>
+  <int value="103" label="kMacCouldNotStartCaptureDevice"/>
+  <int value="104" label="kMacReceivedFrameWithUnexpectedResolution"/>
+  <int value="105" label="kMacUpdateCaptureResolutionFailed"/>
+  <int value="106" label="kMacDeckLinkDeviceIdNotFoundInTheSystem"/>
+  <int value="107" label="kMacDeckLinkErrorQueryingInputInterface"/>
+  <int value="108" label="kMacDeckLinkErrorCreatingDisplayModeIterator"/>
+  <int value="109" label="kMacDeckLinkCouldNotFindADisplayMode"/>
+  <int value="110" label="kMacDeckLinkCouldNotSelectTheVideoFormatWeLike"/>
+  <int value="111" label="kMacDeckLinkCouldNotStartCapturing"/>
+  <int value="112" label="kMacDeckLinkUnsupportedPixelFormat"/>
+  <int value="113"
+      label="kMacAvFoundationReceivedAVCaptureSessionRuntimeErrorNotification"/>
+  <int value="114" label="kAndroidApi2ErrorConfiguringCamera"/>
+</enum>
+
 <enum name="VideoCaptureEvent">
   <int value="0" label="Starting video capture"/>
   <int value="1" label="Stopping video capture normally"/>

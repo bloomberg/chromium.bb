@@ -626,20 +626,23 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   DCHECK_EQ(false, is_started_);
 
   if (!engine_) {
-    OnError(FROM_HERE, E_FAIL);
+    OnError(VideoCaptureError::kWinMediaFoundationEngineIsNull, FROM_HERE,
+            E_FAIL);
     return;
   }
 
   ComPtr<IMFCaptureSource> source;
   HRESULT hr = engine_->GetSource(source.GetAddressOf());
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationEngineGetSourceFailed,
+            FROM_HERE, hr);
     return;
   }
 
   hr = FillCapabilities(source.Get(), true, &photo_capabilities_);
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationFillPhotoCapabilitiesFailed,
+            FROM_HERE, hr);
     return;
   }
 
@@ -651,12 +654,14 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   CapabilityList video_capabilities;
   hr = FillCapabilities(source.Get(), false, &video_capabilities);
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationFillVideoCapabilitiesFailed,
+            FROM_HERE, hr);
     return;
   }
 
   if (video_capabilities.empty()) {
-    OnError(FROM_HERE, "No video capability found");
+    OnError(VideoCaptureError::kWinMediaFoundationNoVideoCapabilityFound,
+            FROM_HERE, "No video capability found");
     return;
   }
 
@@ -668,14 +673,18 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
                                    best_match_video_capability.media_type_index,
                                    source_video_media_type.GetAddressOf());
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(
+        VideoCaptureError::kWinMediaFoundationGetAvailableDeviceMediaTypeFailed,
+        FROM_HERE, hr);
     return;
   }
 
   hr = source->SetCurrentDeviceMediaType(
       best_match_video_capability.stream_index, source_video_media_type.Get());
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(
+        VideoCaptureError::kWinMediaFoundationSetCurrentDeviceMediaTypeFailed,
+        FROM_HERE, hr);
     return;
   }
 
@@ -683,34 +692,42 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
   hr = engine_->GetSink(MF_CAPTURE_ENGINE_SINK_TYPE_PREVIEW,
                         sink.GetAddressOf());
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationEngineGetSinkFailed,
+            FROM_HERE, hr);
     return;
   }
 
   ComPtr<IMFCapturePreviewSink> preview_sink;
   hr = sink->QueryInterface(IID_PPV_ARGS(preview_sink.GetAddressOf()));
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::
+                kWinMediaFoundationSinkQueryCapturePreviewInterfaceFailed,
+            FROM_HERE, hr);
     return;
   }
 
   hr = preview_sink->RemoveAllStreams();
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationSinkRemoveAllStreamsFailed,
+            FROM_HERE, hr);
     return;
   }
 
   ComPtr<IMFMediaType> sink_video_media_type;
   hr = MFCreateMediaType(sink_video_media_type.GetAddressOf());
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(
+        VideoCaptureError::kWinMediaFoundationCreateSinkVideoMediaTypeFailed,
+        FROM_HERE, hr);
     return;
   }
 
   hr = ConvertToVideoSinkMediaType(source_video_media_type.Get(),
                                    sink_video_media_type.Get());
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(
+        VideoCaptureError::kWinMediaFoundationConvertToVideoSinkMediaTypeFailed,
+        FROM_HERE, hr);
     return;
   }
 
@@ -719,20 +736,23 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
                                sink_video_media_type.Get(), NULL,
                                &dw_sink_stream_index);
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationSinkAddStreamFailed,
+            FROM_HERE, hr);
     return;
   }
 
   hr = preview_sink->SetSampleCallback(dw_sink_stream_index,
                                        video_callback_.get());
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationSinkSetSampleCallbackFailed,
+            FROM_HERE, hr);
     return;
   }
 
   hr = engine_->StartPreview();
   if (FAILED(hr)) {
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationEngineStartPreviewFailed,
+            FROM_HERE, hr);
     return;
   }
 
@@ -992,19 +1012,23 @@ void VideoCaptureDeviceMFWin::OnEvent(IMFMediaEvent* media_event) {
   media_event->GetStatus(&hr);
 
   if (FAILED(hr))
-    OnError(FROM_HERE, hr);
+    OnError(VideoCaptureError::kWinMediaFoundationGetMediaEventStatusFailed,
+            FROM_HERE, hr);
 }
 
-void VideoCaptureDeviceMFWin::OnError(const Location& from_here, HRESULT hr) {
-  OnError(from_here, logging::SystemErrorCodeToString(hr).c_str());
+void VideoCaptureDeviceMFWin::OnError(VideoCaptureError error,
+                                      const Location& from_here,
+                                      HRESULT hr) {
+  OnError(error, from_here, logging::SystemErrorCodeToString(hr).c_str());
 }
 
-void VideoCaptureDeviceMFWin::OnError(const Location& from_here,
+void VideoCaptureDeviceMFWin::OnError(VideoCaptureError error,
+                                      const Location& from_here,
                                       const char* message) {
   if (!client_.get())
     return;
 
-  client_->OnError(from_here,
+  client_->OnError(error, from_here,
                    base::StringPrintf("VideoCaptureDeviceMFWin: %s", message));
 }
 

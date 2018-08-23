@@ -53,7 +53,8 @@ class CONTENT_EXPORT VideoCaptureHost
   FRIEND_TEST_ALL_PREFIXES(VideoCaptureTest, IncrementMatchesDecrementCalls);
 
   // VideoCaptureControllerEventHandler implementation.
-  void OnError(VideoCaptureControllerID id) override;
+  void OnError(VideoCaptureControllerID id,
+               media::VideoCaptureError error) override;
   void OnNewBuffer(VideoCaptureControllerID id,
                    media::mojom::VideoBufferHandlePtr buffer_handle,
                    int length,
@@ -90,7 +91,7 @@ class CONTENT_EXPORT VideoCaptureHost
                              int32_t session_id,
                              GetDeviceFormatsInUseCallback callback) override;
 
-  void DoError(VideoCaptureControllerID id);
+  void DoError(VideoCaptureControllerID id, media::VideoCaptureError error);
   void DoEnded(VideoCaptureControllerID id);
 
   // Bound as callback for VideoCaptureManager::StartCaptureForClient().
@@ -102,7 +103,7 @@ class CONTENT_EXPORT VideoCaptureHost
   // to StopCaptureForClient(). |on_error| is true if this is triggered by
   // VideoCaptureControllerEventHandler::OnError.
   void DeleteVideoCaptureController(VideoCaptureControllerID controller_id,
-                                    bool on_error);
+                                    media::VideoCaptureError error);
 
   void NotifyStreamAdded();
   void NotifyStreamRemoved();

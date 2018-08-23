@@ -65,7 +65,9 @@ void VideoCaptureDeviceChromeOSHalv3::AllocateAndStart(
   if (!camera_device_ipc_thread_.Start()) {
     std::string error_msg = "Failed to start device thread";
     LOG(ERROR) << error_msg;
-    client->OnError(FROM_HERE, error_msg);
+    client->OnError(
+        media::VideoCaptureError::kCrosHalV3FailedToStartDeviceThread,
+        FROM_HERE, error_msg);
     return;
   }
   capture_params_ = params;

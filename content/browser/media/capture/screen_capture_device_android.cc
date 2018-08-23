@@ -25,8 +25,10 @@ void ScreenCaptureDeviceAndroid::AllocateAndStart(
 
   if (params.requested_format.pixel_format != media::PIXEL_FORMAT_I420) {
     client->OnError(
-        FROM_HERE, "unsupported format: " + media::VideoCaptureFormat::ToString(
-                                                params.requested_format));
+        media::VideoCaptureError::kAndroidScreenCaptureUnsupportedFormat,
+        FROM_HERE,
+        "unsupported format: " +
+            media::VideoCaptureFormat::ToString(params.requested_format));
     return;
   }
 
@@ -34,7 +36,10 @@ void ScreenCaptureDeviceAndroid::AllocateAndStart(
   oracle_proxy_ = new media::ThreadSafeCaptureOracle(std::move(client), params);
 
   if (!capture_machine_.Start(oracle_proxy_, params)) {
-    oracle_proxy_->ReportError(FROM_HERE, "Failed to start capture machine.");
+    oracle_proxy_->ReportError(
+        media::VideoCaptureError::
+            kAndroidScreenCaptureFailedToStartCaptureMachine,
+        FROM_HERE, "Failed to start capture machine.");
     StopAndDeAllocate();
   } else {
     // The |capture_machine_| will later report to the |oracle_proxy_| whether

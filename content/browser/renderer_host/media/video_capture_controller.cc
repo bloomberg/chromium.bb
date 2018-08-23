@@ -47,9 +47,10 @@ static const int kInfiniteRatio = 99999;
   base::UmaHistogramSparse(                             \
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
-void CallOnError(VideoCaptureControllerEventHandler* client,
+void CallOnError(media::VideoCaptureError error,
+                 VideoCaptureControllerEventHandler* client,
                  VideoCaptureControllerID id) {
-  client->OnError(id);
+  client->OnError(id, error);
 }
 
 void CallOnStarted(VideoCaptureControllerEventHandler* client,
@@ -233,7 +234,10 @@ void VideoCaptureController::AddClient(
     // invalid or unsupported parameters.
     LOG(DFATAL) << "Invalid or unsupported video capture parameters requested: "
                 << media::VideoCaptureFormat::ToString(params.requested_format);
-    event_handler->OnError(id);
+    event_handler->OnError(
+        id,
+        media::VideoCaptureError::
+            kVideoCaptureControllerInvalidOrUnsupportedVideoCaptureParametersRequested);
     return;
   }
 
@@ -243,7 +247,9 @@ void VideoCaptureController::AddClient(
 
   // Signal error in case device is already in error state.
   if (state_ == VIDEO_CAPTURE_STATE_ERROR) {
-    event_handler->OnError(id);
+    event_handler->OnError(
+        id,
+        media::VideoCaptureError::kVideoCaptureControllerIsAlreadyInErrorState);
     return;
   }
 
@@ -498,10 +504,10 @@ void VideoCaptureController::OnBufferRetired(int buffer_id) {
     buffer_context_iter->set_is_retired();
 }
 
-void VideoCaptureController::OnError() {
+void VideoCaptureController::OnError(media::VideoCaptureError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_ERROR;
-  PerformForClientsWithOpenSession(base::Bind(&CallOnError));
+  PerformForClientsWithOpenSession(base::BindRepeating(&CallOnError, error));
 }
 
 void VideoCaptureController::OnLog(const std::string& message) {
@@ -512,13 +518,14 @@ void VideoCaptureController::OnLog(const std::string& message) {
 void VideoCaptureController::OnStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_STARTED;
-  PerformForClientsWithOpenSession(base::Bind(&CallOnStarted));
+  PerformForClientsWithOpenSession(base::BindRepeating(&CallOnStarted));
 }
 
 void VideoCaptureController::OnStartedUsingGpuDecode() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   OnLog("StartedUsingGpuDecode");
-  PerformForClientsWithOpenSession(base::Bind(&CallOnStartedUsingGpuDecode));
+  PerformForClientsWithOpenSession(
+      base::BindRepeating(&CallOnStartedUsingGpuDecode));
 }
 
 void VideoCaptureController::OnDeviceLaunched(
@@ -532,10 +539,11 @@ void VideoCaptureController::OnDeviceLaunched(
   }
 }
 
-void VideoCaptureController::OnDeviceLaunchFailed() {
+void VideoCaptureController::OnDeviceLaunchFailed(
+    media::VideoCaptureError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (device_launch_observer_) {
-    device_launch_observer_->OnDeviceLaunchFailed(this);
+    device_launch_observer_->OnDeviceLaunchFailed(this, error);
     device_launch_observer_ = nullptr;
   }
 }

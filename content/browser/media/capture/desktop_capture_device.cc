@@ -313,7 +313,9 @@ void DesktopCaptureDevice::Core::OnCaptureResult(
           IncrementDesktopCaptureCounter(WINDOW_CAPTURER_PERMANENT_ERROR);
         }
       }
-      client_->OnError(FROM_HERE, "The desktop capturer has failed.");
+      client_->OnError(media::VideoCaptureError::
+                           kDesktopCaptureDeviceWebrtcDesktopCapturerHasFailed,
+                       FROM_HERE, "The desktop capturer has failed.");
     }
     return;
   }

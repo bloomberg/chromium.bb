@@ -84,7 +84,8 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
 
   void DoCapture();
 
-  void SetErrorState(const base::Location& from_here,
+  void SetErrorState(VideoCaptureError error,
+                     const base::Location& from_here,
                      const std::string& reason);
 
   V4L2CaptureDevice* const v4l2_;

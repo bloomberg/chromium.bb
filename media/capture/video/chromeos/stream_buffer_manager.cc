@@ -99,6 +99,8 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
     const size_t kMaximumAllowedBuffers = 15;
     if (stream->max_buffers > kMaximumAllowedBuffers) {
       device_context_->SetErrorState(
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerHalRequestedTooManyBuffers,
           FROM_HERE,
           std::string("Camera HAL requested ") +
               std::to_string(stream->max_buffers) +
@@ -146,14 +148,18 @@ void StreamBufferManager::SetUpStreamsAndBuffers(
       auto buffer = camera_buffer_factory_->CreateGpuMemoryBuffer(
           gfx::Size(buffer_width, buffer_height), stream_format.gfx_format);
       if (!buffer) {
-        device_context_->SetErrorState(FROM_HERE,
-                                       "Failed to create GpuMemoryBuffer");
+        device_context_->SetErrorState(
+            media::VideoCaptureError::
+                kCrosHalV3BufferManagerFailedToCreateGpuMemoryBuffer,
+            FROM_HERE, "Failed to create GpuMemoryBuffer");
         return;
       }
       bool ret = buffer->Map();
       if (!ret) {
-        device_context_->SetErrorState(FROM_HERE,
-                                       "Failed to map GpuMemoryBuffer");
+        device_context_->SetErrorState(
+            media::VideoCaptureError::
+                kCrosHalV3BufferManagerFailedToMapGpuMemoryBuffer,
+            FROM_HERE, "Failed to map GpuMemoryBuffer");
         return;
       }
       stream_context_[stream_type]->buffers[j] = std::move(buffer);
@@ -307,8 +313,11 @@ void StreamBufferManager::RegisterBuffer(StreamType stream_type) {
   uint32_t drm_format = PixFormatVideoToDrm(buffer_format);
   if (!drm_format) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Unsupported video pixel format") +
-                       VideoPixelFormatToString(buffer_format));
+        media::VideoCaptureError::
+            kCrosHalV3BufferManagerUnsupportedVideoPixelFormat,
+        FROM_HERE,
+        std::string("Unsupported video pixel format") +
+            VideoPixelFormatToString(buffer_format));
     return;
   }
   cros::mojom::HalPixelFormat hal_pixel_format =
@@ -328,14 +337,18 @@ void StreamBufferManager::RegisterBuffer(StreamType stream_type) {
   for (size_t i = 0; i < num_planes; ++i) {
     int dup_fd = dup(fd.get());
     if (dup_fd == -1) {
-      device_context_->SetErrorState(FROM_HERE, "Failed to dup fd");
+      device_context_->SetErrorState(
+          media::VideoCaptureError::kCrosHalV3BufferManagerFailedToDupFd,
+          FROM_HERE, "Failed to dup fd");
       return;
     }
     planes[i].fd =
         mojo::WrapPlatformHandle(mojo::PlatformHandle(base::ScopedFD(dup_fd)));
     if (!planes[i].fd.is_valid()) {
-      device_context_->SetErrorState(FROM_HERE,
-                                     "Failed to wrap gpu memory handle");
+      device_context_->SetErrorState(
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerFailedToWrapGpuMemoryHandle,
+          FROM_HERE, "Failed to wrap gpu memory handle");
       return;
     }
     planes[i].stride = buffer_handle.planes[i].stride;
@@ -367,9 +380,11 @@ void StreamBufferManager::OnRegisteredBuffer(StreamType stream_type,
     return;
   }
   if (result) {
-    device_context_->SetErrorState(FROM_HERE,
-                                   std::string("Failed to register buffer: ") +
-                                       base::safe_strerror(-result));
+    device_context_->SetErrorState(
+        media::VideoCaptureError::kCrosHalV3BufferManagerFailedToRegisterBuffer,
+        FROM_HERE,
+        std::string("Failed to register buffer: ") +
+            base::safe_strerror(-result));
     return;
   }
   stream_context_[stream_type]->registered_buffers.push(buffer_id);
@@ -441,8 +456,11 @@ void StreamBufferManager::OnProcessedCaptureRequest(int32_t result) {
   }
   if (result) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Process capture request failed: ") +
-                       base::safe_strerror(-result));
+        media::VideoCaptureError::
+            kCrosHalV3BufferManagerProcessCaptureRequestFailed,
+        FROM_HERE,
+        std::string("Process capture request failed: ") +
+            base::safe_strerror(-result));
     return;
   }
   // Keeps the preview stream going.
@@ -467,14 +485,20 @@ void StreamBufferManager::ProcessCaptureResult(
     uint32_t result_id = result->partial_result;
     if (result_id > partial_result_count_) {
       device_context_->SetErrorState(
-          FROM_HERE, std::string("Invalid pending_result id: ") +
-                         std::to_string(result_id));
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerInvalidPendingResultId,
+          FROM_HERE,
+          std::string("Invalid pending_result id: ") +
+              std::to_string(result_id));
       return;
     }
     if (pending_result.partial_metadata_received.count(result_id)) {
       device_context_->SetErrorState(
-          FROM_HERE, std::string("Received duplicated partial metadata: ") +
-                         std::to_string(result_id));
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerReceivedDuplicatedPartialMetadata,
+          FROM_HERE,
+          std::string("Received duplicated partial metadata: ") +
+              std::to_string(result_id));
       return;
     }
     DVLOG(2) << "Received partial result " << result_id << " for frame "
@@ -486,6 +510,8 @@ void StreamBufferManager::ProcessCaptureResult(
   if (result->output_buffers) {
     if (result->output_buffers->size() > kMaxConfiguredStreams) {
       device_context_->SetErrorState(
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerIncorrectNumberOfOutputBuffersReceived,
           FROM_HERE,
           std::string("Incorrect number of output buffers received: ") +
               std::to_string(result->output_buffers->size()));
@@ -497,6 +523,8 @@ void StreamBufferManager::ProcessCaptureResult(
       StreamType stream_type = StreamIdToStreamType(stream_buffer->stream_id);
       if (stream_type == StreamType::kUnknown) {
         device_context_->SetErrorState(
+            media::VideoCaptureError::
+                kCrosHalV3BufferManagerInvalidTypeOfOutputBuffersReceived,
             FROM_HERE,
             std::string("Invalid type of output buffers received: ") +
                 std::to_string(stream_buffer->stream_id));
@@ -508,6 +536,8 @@ void StreamBufferManager::ProcessCaptureResult(
       if (stream_context_[stream_type]->capture_results_with_buffer.count(
               frame_number)) {
         device_context_->SetErrorState(
+            media::VideoCaptureError::
+                kCrosHalV3BufferManagerReceivedMultipleResultBuffersForFrame,
             FROM_HERE,
             std::string("Received multiple result buffers for frame ") +
                 std::to_string(frame_number) + std::string(" for stream ") +
@@ -545,8 +575,11 @@ void StreamBufferManager::Notify(cros::mojom::Camera3NotifyMsgPtr message) {
     StreamType stream_type = StreamIdToStreamType(error_stream_id);
     if (stream_type == StreamType::kUnknown) {
       device_context_->SetErrorState(
-          FROM_HERE, std::string("Unknown stream in Camera3NotifyMsg: ") +
-                         std::to_string(error_stream_id));
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerUnknownStreamInCamera3NotifyMsg,
+          FROM_HERE,
+          std::string("Unknown stream in Camera3NotifyMsg: ") +
+              std::to_string(error_stream_id));
       return;
     }
     cros::mojom::Camera3ErrorMsgCode error_code =
@@ -558,8 +591,11 @@ void StreamBufferManager::Notify(cros::mojom::Camera3NotifyMsgPtr message) {
     DVLOG(2) << "Received shutter time for frame " << frame_number;
     if (!shutter_time) {
       device_context_->SetErrorState(
-          FROM_HERE, std::string("Received invalid shutter time: ") +
-                         std::to_string(shutter_time));
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerReceivedInvalidShutterTime,
+          FROM_HERE,
+          std::string("Received invalid shutter time: ") +
+              std::to_string(shutter_time));
       return;
     }
     CaptureResult& pending_result = pending_results_[frame_number];
@@ -590,7 +626,9 @@ void StreamBufferManager::HandleNotifyError(
   switch (error_code) {
     case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_DEVICE:
       // Fatal error and no more frames will be produced by the device.
-      device_context_->SetErrorState(FROM_HERE, "Fatal device error");
+      device_context_->SetErrorState(
+          media::VideoCaptureError::kCrosHalV3BufferManagerFatalDeviceError,
+          FROM_HERE, "Fatal device error");
       return;
 
     case cros::mojom::Camera3ErrorMsgCode::CAMERA3_MSG_ERROR_REQUEST:
@@ -684,9 +722,12 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number,
           ->capture_results_with_buffer.begin()
           ->first != frame_number) {
     device_context_->SetErrorState(
-        FROM_HERE, std::string("Received frame is out-of-order; expect ") +
-                       std::to_string(pending_results_.begin()->first) +
-                       std::string(" but got ") + std::to_string(frame_number));
+        media::VideoCaptureError::
+            kCrosHalV3BufferManagerReceivedFrameIsOutOfOrder,
+        FROM_HERE,
+        std::string("Received frame is out-of-order; expect ") +
+            std::to_string(pending_results_.begin()->first) +
+            std::string(" but got ") + std::to_string(frame_number));
     return;
   }
 
@@ -707,13 +748,17 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number,
     mojo::PlatformHandle fence =
         mojo::UnwrapPlatformHandle(std::move(stream_buffer->release_fence));
     if (!fence.is_valid()) {
-      device_context_->SetErrorState(FROM_HERE,
-                                     "Failed to unwrap release fence fd");
+      device_context_->SetErrorState(
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerFailedToUnwrapReleaseFenceFd,
+          FROM_HERE, "Failed to unwrap release fence fd");
       return;
     }
     if (!sync_wait(fence.GetFD().get(), kSyncWaitTimeoutMs)) {
-      device_context_->SetErrorState(FROM_HERE,
-                                     "Sync wait on release fence timed out");
+      device_context_->SetErrorState(
+          media::VideoCaptureError::
+              kCrosHalV3BufferManagerSyncWaitOnReleaseFenceTimedOut,
+          FROM_HERE, "Sync wait on release fence timed out");
       return;
     }
   }
@@ -738,7 +783,9 @@ void StreamBufferManager::SubmitCaptureResult(uint32_t frame_number,
           reinterpret_cast<uintptr_t>(buffer->memory(0)) +
           buffer->GetSize().width() - sizeof(Camera3JpegBlob));
       if (header->jpeg_blob_id != kCamera3JpegBlobId) {
-        device_context_->SetErrorState(FROM_HERE, "Invalid JPEG blob");
+        device_context_->SetErrorState(
+            media::VideoCaptureError::kCrosHalV3BufferManagerInvalidJpegBlob,
+            FROM_HERE, "Invalid JPEG blob");
         return;
       }
       mojom::BlobPtr blob = blobify_callback_.Run(

@@ -257,7 +257,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
   device_fd_.reset(
       HANDLE_EINTR(v4l2_->open(device_descriptor_.device_id.c_str(), O_RDWR)));
   if (!device_fd_.is_valid()) {
-    SetErrorState(FROM_HERE, "Failed to open V4L2 device driver file.");
+    SetErrorState(VideoCaptureError::kV4L2FailedToOpenV4L2DeviceDriverFile,
+                  FROM_HERE, "Failed to open V4L2 device driver file.");
     return;
   }
 
@@ -269,7 +270,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
         ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
          !(cap.capabilities & V4L2_CAP_VIDEO_OUTPUT)))) {
     device_fd_.reset();
-    SetErrorState(FROM_HERE, "This is not a V4L2 video capture device");
+    SetErrorState(VideoCaptureError::kV4L2ThisIsNotAV4L2VideoCaptureDevice,
+                  FROM_HERE, "This is not a V4L2 video capture device");
     return;
   }
 
@@ -287,7 +289,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
     best = std::find(desired_v4l2_formats.begin(), best, fmtdesc.pixelformat);
   }
   if (best == desired_v4l2_formats.end()) {
-    SetErrorState(FROM_HERE, "Failed to find a supported camera format.");
+    SetErrorState(VideoCaptureError::kV4L2FailedToFindASupportedCameraFormat,
+                  FROM_HERE, "Failed to find a supported camera format.");
     return;
   }
 
@@ -296,13 +299,15 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_S_FMT, &video_fmt_)) <
       0) {
-    SetErrorState(FROM_HERE, "Failed to set video capture format");
+    SetErrorState(VideoCaptureError::kV4L2FailedToSetVideoCaptureFormat,
+                  FROM_HERE, "Failed to set video capture format");
     return;
   }
   const VideoPixelFormat pixel_format =
       V4l2FourCcToChromiumPixelFormat(video_fmt_.fmt.pix.pixelformat);
   if (pixel_format == PIXEL_FORMAT_UNKNOWN) {
-    SetErrorState(FROM_HERE, "Unsupported pixel format");
+    SetErrorState(VideoCaptureError::kV4L2UnsupportedPixelFormat, FROM_HERE,
+                  "Unsupported pixel format");
     return;
   }
 
@@ -322,7 +327,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
 
       if (HANDLE_EINTR(
               v4l2_->ioctl(device_fd_.get(), VIDIOC_S_PARM, &streamparm)) < 0) {
-        SetErrorState(FROM_HERE, "Failed to set camera framerate");
+        SetErrorState(VideoCaptureError::kV4L2FailedToSetCameraFramerate,
+                      FROM_HERE, "Failed to set camera framerate");
         return;
       }
       DVLOG(2) << "Actual camera driverframerate: "
@@ -356,12 +362,14 @@ void V4L2CaptureDelegate::AllocateAndStart(
   FillV4L2RequestBuffer(&r_buffer, kNumVideoBuffers);
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) <
       0) {
-    SetErrorState(FROM_HERE, "Error requesting MMAP buffers from V4L2");
+    SetErrorState(VideoCaptureError::kV4L2ErrorRequestingMmapBuffers, FROM_HERE,
+                  "Error requesting MMAP buffers from V4L2");
     return;
   }
   for (unsigned int i = 0; i < r_buffer.count; ++i) {
     if (!MapAndQueueBuffer(i)) {
-      SetErrorState(FROM_HERE, "Allocate buffer failed");
+      SetErrorState(VideoCaptureError::kV4L2AllocateBufferFailed, FROM_HERE,
+                    "Allocate buffer failed");
       return;
     }
   }
@@ -369,7 +377,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (HANDLE_EINTR(
           v4l2_->ioctl(device_fd_.get(), VIDIOC_STREAMON, &capture_type)) < 0) {
-    SetErrorState(FROM_HERE, "VIDIOC_STREAMON failed");
+    SetErrorState(VideoCaptureError::kV4L2VidiocStreamonFailed, FROM_HERE,
+                  "VIDIOC_STREAMON failed");
     return;
   }
 
@@ -388,7 +397,8 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
   v4l2_buf_type capture_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_STREAMOFF,
                                 &capture_type)) < 0) {
-    SetErrorState(FROM_HERE, "VIDIOC_STREAMOFF failed");
+    SetErrorState(VideoCaptureError::kV4L2VidiocStreamoffFailed, FROM_HERE,
+                  "VIDIOC_STREAMOFF failed");
     return;
   }
 
@@ -398,7 +408,8 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
   FillV4L2RequestBuffer(&r_buffer, 0);
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) <
       0)
-    SetErrorState(FROM_HERE, "Failed to VIDIOC_REQBUFS with count = 0");
+    SetErrorState(VideoCaptureError::kV4L2FailedToVidiocReqbufsWithCount0,
+                  FROM_HERE, "Failed to VIDIOC_REQBUFS with count = 0");
 
   // At this point we can close the device.
   // This is also needed for correctly changing settings later via VIDIOC_S_FMT.
@@ -815,7 +826,7 @@ void V4L2CaptureDelegate::DoCapture() {
   const int result =
       HANDLE_EINTR(v4l2_->poll(&device_pfd, 1, kCaptureTimeoutMs));
   if (result < 0) {
-    SetErrorState(FROM_HERE, "Poll failed");
+    SetErrorState(VideoCaptureError::kV4L2PollFailed, FROM_HERE, "Poll failed");
     return;
   }
 
@@ -824,8 +835,9 @@ void V4L2CaptureDelegate::DoCapture() {
   if (result == 0) {
     timeout_count_++;
     if (timeout_count_ >= kContinuousTimeoutLimit) {
-      SetErrorState(FROM_HERE,
-                    "Multiple continuous timeouts while read-polling.");
+      SetErrorState(
+          VideoCaptureError::kV4L2MultipleContinuousTimeoutsWhileReadPolling,
+          FROM_HERE, "Multiple continuous timeouts while read-polling.");
       timeout_count_ = 0;
       return;
     }
@@ -840,7 +852,8 @@ void V4L2CaptureDelegate::DoCapture() {
 
     if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_DQBUF, &buffer)) <
         0) {
-      SetErrorState(FROM_HERE, "Failed to dequeue capture buffer");
+      SetErrorState(VideoCaptureError::kV4L2FailedToDequeueCaptureBuffer,
+                    FROM_HERE, "Failed to dequeue capture buffer");
       return;
     }
 
@@ -887,7 +900,8 @@ void V4L2CaptureDelegate::DoCapture() {
 
     if (HANDLE_EINTR(v4l2_->ioctl(device_fd_.get(), VIDIOC_QBUF, &buffer)) <
         0) {
-      SetErrorState(FROM_HERE, "Failed to enqueue capture buffer");
+      SetErrorState(VideoCaptureError::kV4L2FailedToEnqueueCaptureBuffer,
+                    FROM_HERE, "Failed to enqueue capture buffer");
       return;
     }
   }
@@ -896,11 +910,12 @@ void V4L2CaptureDelegate::DoCapture() {
       FROM_HERE, base::Bind(&V4L2CaptureDelegate::DoCapture, GetWeakPtr()));
 }
 
-void V4L2CaptureDelegate::SetErrorState(const base::Location& from_here,
+void V4L2CaptureDelegate::SetErrorState(VideoCaptureError error,
+                                        const base::Location& from_here,
                                         const std::string& reason) {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   is_capturing_ = false;
-  client_->OnError(from_here, reason);
+  client_->OnError(error, from_here, reason);
 }
 
 V4L2CaptureDelegate::BufferTracker::BufferTracker(V4L2CaptureDevice* v4l2)

@@ -74,7 +74,8 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
   // If the device has already ended on a fatal error, abort immediately.
   if (fatal_error_message_) {
     receiver->OnLog(*fatal_error_message_);
-    receiver->OnError();
+    receiver->OnError(media::VideoCaptureError::
+                          kFrameSinkVideoCaptureDeviceAleradyEndedOnFatalError);
     return;
   }
 
@@ -332,7 +333,8 @@ void FrameSinkVideoCaptureDevice::OnFatalError(std::string message) {
   fatal_error_message_ = std::move(message);
   if (receiver_) {
     receiver_->OnLog(*fatal_error_message_);
-    receiver_->OnError();
+    receiver_->OnError(media::VideoCaptureError::
+                           kFrameSinkVideoCaptureDeviceEncounteredFatalError);
   }
 
   StopAndDeAllocate();
