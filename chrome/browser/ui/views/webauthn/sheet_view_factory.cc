@@ -57,6 +57,15 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorNoAvailableTransportsErrorModel>(
               dialog_model));
       break;
+    case Step::kErrorKeyNotRegistered:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorNotRegisteredErrorModel>(dialog_model));
+      break;
+    case Step::kErrorKeyAlreadyRegistered:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorAlreadyRegisteredErrorModel>(
+              dialog_model));
+      break;
     case Step::kBlePowerOnManual:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           std::make_unique<AuthenticatorBlePowerOnManualSheetModel>(

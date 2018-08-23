@@ -36,6 +36,8 @@ class AuthenticatorRequestDialogModel {
     kTransportSelection,
     kErrorTimedOut,
     kErrorNoAvailableTransports,
+    kErrorKeyNotRegistered,
+    kErrorKeyAlreadyRegistered,
     kCompleted,
 
     // Universal Serial Bus (USB).
