@@ -24,13 +24,41 @@
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/window_open_disposition.h"
 
+namespace {
+
+enum class FeatureTestState { kDisabled, kEnabledWithoutUI, kEnabledWithUI };
+
+struct SiteEngagementTestCase {
+  const char* const navigated;
+  const char* const suggested;
+} kSiteEngagementTestCases[] = {
+    {"sité1.test", "site1.test"},
+    {"mail.www.sité1.test", "site1.test"},
+
+    // These should match since the comparison uses eTLD+1s.
+    {"sité2.test", "www.site2.test"},
+    {"mail.sité2.test", "www.site2.test"},
+
+    {"síté3.test", "sité3.test"},
+    {"mail.síté3.test", "sité3.test"},
+
+    {"síté4.test", "www.sité4.test"},
+    {"mail.síté4.test", "www.sité4.test"},
+};
+
+}  // namespace
+
 class IdnNavigationObserverBrowserTest
     : public InProcessBrowserTest,
-      public testing::WithParamInterface<bool> {
+      public testing::WithParamInterface<FeatureTestState> {
  protected:
   void SetUp() override {
-    if (IsFeatureEnabled())
+    if (GetParam() == FeatureTestState::kEnabledWithoutUI) {
+      feature_list_.InitAndEnableFeatureWithParameters(
+          features::kIdnNavigationSuggestions, {{"metrics_only", "true"}});
+    } else if (GetParam() == FeatureTestState::kEnabledWithUI) {
       feature_list_.InitAndEnableFeature(features::kIdnNavigationSuggestions);
+    }
     InProcessBrowserTest::SetUp();
   }
 
@@ -100,15 +128,15 @@ class IdnNavigationObserverBrowserTest
     EXPECT_FALSE(base::ContainsValue(enumerator.urls(), navigated_url));
   }
 
-  bool IsFeatureEnabled() const { return GetParam(); }
-
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_CASE_P(,
                         IdnNavigationObserverBrowserTest,
-                        ::testing::Values(false, true));
+                        ::testing::Values(FeatureTestState::kDisabled,
+                                          FeatureTestState::kEnabledWithoutUI,
+                                          FeatureTestState::kEnabledWithUI));
 
 // Navigating to a non-IDN shouldn't show an infobar.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest, NonIdn_NoInfobar) {
@@ -125,9 +153,9 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
 }
 
 // Navigating to a domain whose visual representation looks like a top domain
-// should show a "Did you mean to go to ..." infobar.
+// should show a "Did you mean to go to ..." infobar and record metrics.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest, TopDomainIdn_Infobar) {
-  if (!IsFeatureEnabled())
+  if (GetParam() != FeatureTestState::kEnabledWithUI)
     return;
 
   base::HistogramTester histograms;
@@ -149,13 +177,28 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest, TopDomainIdn_Infobar) {
       IdnNavigationObserver::NavigationSuggestionEvent::kMatchTopSite, 1);
 }
 
+// Same as TopDomainIdn_Infobar but the UI is disabled, so only checks for
+// metrics.
+IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
+                       TopDomainIdn_Metrics_NoInfobar) {
+  if (GetParam() != FeatureTestState::kEnabledWithoutUI)
+    return;
+
+  base::HistogramTester histograms;
+
+  TestInfobarNotShown(
+      embedded_test_server()->GetURL("googlé.com", "/title1.html"));
+
+  histograms.ExpectTotalCount(IdnNavigationObserver::kHistogramName, 1);
+  histograms.ExpectBucketCount(
+      IdnNavigationObserver::kHistogramName,
+      IdnNavigationObserver::NavigationSuggestionEvent::kMatchTopSite, 1);
+}
+
 // Same as TopDomainIdn_Infobar but the user has engaged with the domain before.
 // Shouldn't show an infobar.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
                        TopDomainIdn_EngagedSite_NoInfobar) {
-  if (!IsFeatureEnabled())
-    return;
-
   // If the user already engaged with the site, the infobar shouldn't be shown.
   const GURL url = embedded_test_server()->GetURL("googlé.com", "/title1.html");
   SetSiteEngagementScore(url, 20);
@@ -167,7 +210,7 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
 // to go to ..." infobar.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
                        SiteEngagement_Infobar) {
-  if (!IsFeatureEnabled())
+  if (GetParam() != FeatureTestState::kEnabledWithUI)
     return;
 
   SetSiteEngagementScore(GURL("http://site1.test"), 20);
@@ -175,25 +218,7 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
   SetSiteEngagementScore(GURL("http://sité3.test"), 20);
   SetSiteEngagementScore(GURL("http://www.sité4.test"), 20);
 
-  struct TestCase {
-    const char* const navigated;
-    const char* const suggested;
-  } kTestCases[] = {
-      {"sité1.test", "site1.test"},
-      {"mail.www.sité1.test", "site1.test"},
-
-      // These should match since the comparison uses eTLD+1s.
-      {"sité2.test", "www.site2.test"},
-      {"mail.sité2.test", "www.site2.test"},
-
-      {"síté3.test", "sité3.test"},
-      {"mail.síté3.test", "sité3.test"},
-
-      {"síté4.test", "www.sité4.test"},
-      {"mail.síté4.test", "www.sité4.test"},
-  };
-
-  for (const auto& test_case : kTestCases) {
+  for (const auto& test_case : kSiteEngagementTestCases) {
     base::HistogramTester histograms;
     TestInfobarShown(
         embedded_test_server()->GetURL(test_case.navigated, "/title1.html"),
@@ -212,10 +237,34 @@ IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
   }
 }
 
+// Same as SiteEngagement_Infobar but the UI is disabled, so only checks for
+// metrics.
+IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
+                       SiteEngagement_Metrics_NoInfobar) {
+  if (GetParam() != FeatureTestState::kEnabledWithoutUI)
+    return;
+
+  SetSiteEngagementScore(GURL("http://site1.test"), 20);
+  SetSiteEngagementScore(GURL("http://www.site2.test"), 20);
+  SetSiteEngagementScore(GURL("http://sité3.test"), 20);
+  SetSiteEngagementScore(GURL("http://www.sité4.test"), 20);
+
+  for (const auto& test_case : kSiteEngagementTestCases) {
+    base::HistogramTester histograms;
+    TestInfobarNotShown(
+        embedded_test_server()->GetURL(test_case.navigated, "/title1.html"));
+    histograms.ExpectTotalCount(IdnNavigationObserver::kHistogramName, 1);
+    histograms.ExpectBucketCount(
+        IdnNavigationObserver::kHistogramName,
+        IdnNavigationObserver::NavigationSuggestionEvent::kMatchSiteEngagement,
+        1);
+  }
+}
+
 // The infobar shouldn't be shown when the feature is disabled.
 IN_PROC_BROWSER_TEST_P(IdnNavigationObserverBrowserTest,
                        TopDomainIdn_FeatureDisabled) {
-  if (IsFeatureEnabled())
+  if (GetParam() != FeatureTestState::kDisabled)
     return;
 
   TestInfobarNotShown(

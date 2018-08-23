@@ -485,6 +485,14 @@ const FeatureEntry::Choice kMemoryPressureThresholdChoices[] = {
 };
 #endif  // OS_CHROMEOS
 
+const FeatureEntry::FeatureParam kIdnNavigationSuggestionsMetricsOnly[] = {
+    {"metrics_only", "true"},
+};
+
+const FeatureEntry::FeatureVariation kIdnNavigationSuggestionVariants[] = {
+    {"With Metrics Only", kIdnNavigationSuggestionsMetricsOnly,
+     base::size(kIdnNavigationSuggestionsMetricsOnly)}};
+
 const FeatureEntry::Choice kExtensionContentVerificationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flag_descriptions::kExtensionContentVerificationBootstrap,
@@ -4288,7 +4296,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-idn-navigation-suggestions",
      flag_descriptions::kIdnNavigationSuggestionsName,
      flag_descriptions::kIdnNavigationSuggestionsDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kIdnNavigationSuggestions)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kIdnNavigationSuggestions,
+                                    kIdnNavigationSuggestionVariants,
+                                    "IdnNavigationSuggestions")},
 
 #if defined(OS_ANDROID)
     {"long-press-back-for-history",
