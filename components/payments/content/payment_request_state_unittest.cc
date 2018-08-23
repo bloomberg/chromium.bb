@@ -402,4 +402,71 @@ TEST_F(PaymentRequestStateTest, JaLatnShippingAddress) {
   EXPECT_EQ("+81363849000", selected_shipping_address()->phone);
 }
 
+TEST_F(PaymentRequestStateTest, UpdateShippingAddressErrors) {
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_shipping = true;
+  RecreateStateWithOptions(std::move(options));
+
+  // Because there are shipping options, no address is selected by default.
+  // Therefore we are not ready to pay.
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  state()->SetSelectedShippingProfile(test_address());
+  EXPECT_EQ(0, num_on_selected_information_changed_called());
+
+  // Simulate that the merchant has validated the shipping address change.
+  spec()->UpdateWith(CreateDefaultDetails());
+  EXPECT_EQ(1, num_on_selected_information_changed_called());
+
+  // Not ready to pay since there's no selected shipping option.
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  // Simulate that the website validates the shipping option.
+  state()->SetSelectedShippingOption("option:1");
+  auto details = CreateDefaultDetails();
+  details->shipping_options[0]->selected = true;
+  spec()->UpdateWith(std::move(details));
+  EXPECT_EQ(2, num_on_selected_information_changed_called());
+  EXPECT_TRUE(state()->is_ready_to_pay());
+
+  EXPECT_TRUE(state()->selected_shipping_profile());
+  EXPECT_FALSE(state()->invalid_shipping_profile());
+
+  mojom::AddressErrorsPtr shipping_address_errors = mojom::AddressErrors::New();
+  shipping_address_errors->address_line = "Invalid address line";
+  shipping_address_errors->city = "Invalid city";
+  spec()->UpdateShippingAddressErrors(std::move(shipping_address_errors));
+  EXPECT_EQ(3, num_on_selected_information_changed_called());
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  EXPECT_FALSE(state()->selected_shipping_profile());
+  EXPECT_TRUE(state()->invalid_shipping_profile());
+}
+
+TEST_F(PaymentRequestStateTest, UpdatePayerErrors) {
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_payer_name = true;
+  options->request_payer_phone = true;
+  options->request_payer_email = true;
+  RecreateStateWithOptions(std::move(options));
+
+  state()->SetSelectedContactProfile(test_address());
+  EXPECT_EQ(1, num_on_selected_information_changed_called());
+  EXPECT_TRUE(state()->is_ready_to_pay());
+
+  EXPECT_TRUE(state()->selected_contact_profile());
+  EXPECT_FALSE(state()->invalid_contact_profile());
+
+  mojom::PayerErrorFieldsPtr payer_errors = mojom::PayerErrorFields::New();
+  payer_errors->email = "Invalid email";
+  payer_errors->name = "Invalid name";
+  payer_errors->phone = "Invalid phone";
+  spec()->UpdatePayerErrors(std::move(payer_errors));
+  EXPECT_EQ(2, num_on_selected_information_changed_called());
+  EXPECT_FALSE(state()->is_ready_to_pay());
+
+  EXPECT_FALSE(state()->selected_contact_profile());
+  EXPECT_TRUE(state()->invalid_contact_profile());
+}
+
 }  // namespace payments

@@ -29,6 +29,11 @@ void PaymentRequestDisplayManager::DisplayHandle::Show(
   delegate_->ShowDialog(request);
 }
 
+void PaymentRequestDisplayManager::DisplayHandle::Retry() {
+  DCHECK(delegate_);
+  delegate_->RetryDialog();
+}
+
 void PaymentRequestDisplayManager::DisplayHandle::DisplayPaymentHandlerWindow(
     const GURL& url,
     PaymentHandlerOpenWindowCallback callback) {

@@ -79,6 +79,7 @@ base::string16 ContactInfoEditorViewController::GetInitialValueForType(
     autofill::ServerFieldType type) {
   if (!profile_to_edit_)
     return base::string16();
+  return GetValueForType(*profile_to_edit_, type);
 
   if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
     return autofill::i18n::GetFormattedPhoneNumberForDisplay(
@@ -150,10 +151,21 @@ bool ContactInfoEditorViewController::GetSheetId(DialogViewID* sheet_id) {
   return true;
 }
 
+base::string16 ContactInfoEditorViewController::GetValueForType(
+    const autofill::AutofillProfile& profile,
+    autofill::ServerFieldType type) {
+  if (type == autofill::PHONE_HOME_WHOLE_NUMBER) {
+    return autofill::i18n::GetFormattedPhoneNumberForDisplay(
+        profile, state()->GetApplicationLocale());
+  }
+
+  return profile.GetInfo(type, state()->GetApplicationLocale());
+}
+
 ContactInfoEditorViewController::ContactInfoValidationDelegate::
     ContactInfoValidationDelegate(const EditorField& field,
                                   const std::string& locale,
-                                  EditorViewController* controller)
+                                  ContactInfoEditorViewController* controller)
     : field_(field), controller_(controller), locale_(locale) {}
 
 ContactInfoEditorViewController::ContactInfoValidationDelegate::
@@ -193,6 +205,17 @@ bool ContactInfoEditorViewController::ContactInfoValidationDelegate::
     ValidateTextfield(views::Textfield* textfield,
                       base::string16* error_message) {
   bool is_valid = true;
+
+  // Show errors from merchant's retry() call.
+  autofill::AutofillProfile* invalid_contact_profile =
+      controller_->state()->invalid_contact_profile();
+  if (invalid_contact_profile && error_message &&
+      textfield->text() ==
+          controller_->GetValueForType(*invalid_contact_profile, field_.type)) {
+    *error_message = controller_->spec()->GetPayerError(field_.type);
+    if (!error_message->empty())
+      return false;
+  }
 
   if (textfield->text().empty()) {
     is_valid = false;

@@ -101,9 +101,105 @@ void PaymentRequestSpec::UpdateWith(mojom::PaymentDetailsPtr details) {
   RecomputeSpecForDetails();
 }
 
+void PaymentRequestSpec::UpdateShippingAddressErrors(
+    mojom::AddressErrorsPtr errors) {
+  shipping_address_errors_ = std::move(errors);
+  current_update_reason_ = UpdateReason::RETRY;
+  NotifyOnSpecUpdated();
+  current_update_reason_ = UpdateReason::NONE;
+}
+
+void PaymentRequestSpec::UpdatePayerErrors(mojom::PayerErrorFieldsPtr errors) {
+  payer_errors_ = std::move(errors);
+  current_update_reason_ = UpdateReason::RETRY;
+  NotifyOnSpecUpdated();
+  current_update_reason_ = UpdateReason::NONE;
+}
+
+base::string16 PaymentRequestSpec::GetShippingAddressError(
+    autofill::ServerFieldType type) {
+  if (!shipping_address_errors_)
+    return base::string16();
+
+  if (type == autofill::ADDRESS_HOME_STREET_ADDRESS)
+    return base::UTF8ToUTF16(shipping_address_errors_->address_line);
+
+  if (type == autofill::ADDRESS_HOME_CITY)
+    return base::UTF8ToUTF16(shipping_address_errors_->city);
+
+  if (type == autofill::ADDRESS_HOME_COUNTRY)
+    return base::UTF8ToUTF16(shipping_address_errors_->country);
+
+  if (type == autofill::ADDRESS_HOME_DEPENDENT_LOCALITY)
+    return base::UTF8ToUTF16(shipping_address_errors_->dependent_locality);
+
+  if (type == autofill::COMPANY_NAME)
+    return base::UTF8ToUTF16(shipping_address_errors_->organization);
+
+  if (type == autofill::PHONE_HOME_WHOLE_NUMBER)
+    return base::UTF8ToUTF16(shipping_address_errors_->phone);
+
+  if (type == autofill::ADDRESS_HOME_ZIP)
+    return base::UTF8ToUTF16(shipping_address_errors_->postal_code);
+
+  if (type == autofill::NAME_FULL)
+    return base::UTF8ToUTF16(shipping_address_errors_->recipient);
+
+  if (type == autofill::ADDRESS_HOME_STATE)
+    return base::UTF8ToUTF16(shipping_address_errors_->region);
+
+  if (type == autofill::ADDRESS_HOME_SORTING_CODE)
+    return base::UTF8ToUTF16(shipping_address_errors_->sorting_code);
+
+  return base::string16();
+}
+
+base::string16 PaymentRequestSpec::GetPayerError(
+    autofill::ServerFieldType type) {
+  if (!payer_errors_)
+    return base::string16();
+
+  if (type == autofill::EMAIL_ADDRESS)
+    return base::UTF8ToUTF16(payer_errors_->email);
+
+  if (type == autofill::NAME_FULL)
+    return base::UTF8ToUTF16(payer_errors_->name);
+
+  if (type == autofill::PHONE_HOME_WHOLE_NUMBER)
+    return base::UTF8ToUTF16(payer_errors_->phone);
+
+  return base::string16();
+}
+
+bool PaymentRequestSpec::has_shipping_address_error() const {
+  return shipping_address_errors_ &&
+         !(shipping_address_errors_->address_line.empty() &&
+           shipping_address_errors_->city.empty() &&
+           shipping_address_errors_->country.empty() &&
+           shipping_address_errors_->dependent_locality.empty() &&
+           shipping_address_errors_->organization.empty() &&
+           shipping_address_errors_->phone.empty() &&
+           shipping_address_errors_->postal_code.empty() &&
+           shipping_address_errors_->recipient.empty() &&
+           shipping_address_errors_->region.empty() &&
+           shipping_address_errors_->region_code.empty() &&
+           shipping_address_errors_->sorting_code.empty());
+}
+
+bool PaymentRequestSpec::has_payer_error() const {
+  return payer_errors_ &&
+         !(payer_errors_->email.empty() && payer_errors_->name.empty() &&
+           payer_errors_->phone.empty());
+}
+
 void PaymentRequestSpec::RecomputeSpecForDetails() {
   // Reparse the |details_| and update the observers.
   UpdateSelectedShippingOption(/*after_update=*/true);
+
+  // Clear the shipping address errors when the merchant updates the price based
+  // on the shipping address that the user has newly fixed or selected.
+  shipping_address_errors_.reset();
+
   NotifyOnSpecUpdated();
   current_update_reason_ = UpdateReason::NONE;
 }

@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/views/payments/payment_request_browsertest_base.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view_ids.h"
+#include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
 namespace payments {
@@ -320,6 +321,78 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
   EXPECT_EQ(base::ASCIIToUTF16(kEmailAddress),
             profile->GetInfo(autofill::AutofillType(autofill::EMAIL_ADDRESS),
                              GetLocale()));
+}
+
+IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+                       RetryWithPayerErrors) {
+  NavigateTo("/payment_request_retry_with_payer_errors.html");
+
+  autofill::AutofillProfile contact = autofill::test::GetFullProfile();
+  AddAutofillProfile(contact);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(contact.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+
+  ResetEventWaiter(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
+  RetryPaymentRequest(
+      "{"
+      "  payer: {"
+      "    email: 'EMAIL ERROR',"
+      "    name: 'NAME ERROR',"
+      "    phone: 'PHONE ERROR'"
+      "  }"
+      "}");
+  WaitForObservedEvent();
+
+  EXPECT_EQ(base::ASCIIToUTF16("EMAIL ERROR"),
+            GetErrorLabelForType(autofill::EMAIL_ADDRESS));
+  EXPECT_EQ(base::ASCIIToUTF16("NAME ERROR"),
+            GetErrorLabelForType(autofill::NAME_FULL));
+  EXPECT_EQ(base::ASCIIToUTF16("PHONE ERROR"),
+            GetErrorLabelForType(autofill::PHONE_HOME_WHOLE_NUMBER));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    PaymentRequestContactInfoEditorTest,
+    RetryWithPayerErrors_HasSameValueButDifferentErrorsShown) {
+  NavigateTo("/payment_request_retry_with_payer_errors.html");
+
+  autofill::AutofillProfile contact = autofill::test::GetFullProfile();
+  // Set the same value in both of email and name field.
+  contact.SetRawInfo(autofill::EMAIL_ADDRESS,
+                     base::ASCIIToUTF16("johndoe@hades.com"));
+  contact.SetRawInfo(autofill::NAME_FULL,
+                     base::ASCIIToUTF16("johndoe@hades.com"));
+  AddAutofillProfile(contact);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(contact.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+
+  ResetEventWaiter(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
+  RetryPaymentRequest(
+      "{"
+      "  payer: {"
+      "    email: 'EMAIL ERROR',"
+      "    name: 'NAME ERROR',"
+      "    phone: 'PHONE ERROR'"
+      "  }"
+      "}");
+  WaitForObservedEvent();
+
+  EXPECT_EQ(base::ASCIIToUTF16("EMAIL ERROR"),
+            GetErrorLabelForType(autofill::EMAIL_ADDRESS));
+  EXPECT_EQ(base::ASCIIToUTF16("NAME ERROR"),
+            GetErrorLabelForType(autofill::NAME_FULL));
+  EXPECT_EQ(base::ASCIIToUTF16("PHONE ERROR"),
+            GetErrorLabelForType(autofill::PHONE_HOME_WHOLE_NUMBER));
 }
 
 }  // namespace payments

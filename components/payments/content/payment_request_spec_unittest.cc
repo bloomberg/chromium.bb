@@ -452,4 +452,46 @@ TEST_F(PaymentRequestSpecTest, MultipleCurrenciesWithTwoDisplayItem) {
   EXPECT_TRUE(spec()->IsMixedCurrency());
 }
 
+TEST_F(PaymentRequestSpecTest, ShippingAddressErrors) {
+  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                    mojom::PaymentDetails::New());
+
+  EXPECT_FALSE(spec()->has_shipping_address_error());
+
+  mojom::AddressErrorsPtr shipping_address_errors = mojom::AddressErrors::New();
+  shipping_address_errors->address_line = "Invalid address line";
+  shipping_address_errors->city = "Invalid city";
+  spec()->UpdateShippingAddressErrors(std::move(shipping_address_errors));
+
+  EXPECT_EQ(base::UTF8ToUTF16("Invalid city"),
+            spec()->GetShippingAddressError(autofill::ADDRESS_HOME_CITY));
+  EXPECT_EQ(
+      base::UTF8ToUTF16("Invalid address line"),
+      spec()->GetShippingAddressError(autofill::ADDRESS_HOME_STREET_ADDRESS));
+
+  EXPECT_TRUE(spec()->has_shipping_address_error());
+}
+
+TEST_F(PaymentRequestSpecTest, PayerErrors) {
+  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+                                    mojom::PaymentDetails::New());
+
+  EXPECT_FALSE(spec()->has_payer_error());
+
+  mojom::PayerErrorFieldsPtr payer_errors = mojom::PayerErrorFields::New();
+  payer_errors->email = "Invalid email";
+  payer_errors->name = "Invalid name";
+  payer_errors->phone = "Invalid phone";
+  spec()->UpdatePayerErrors(std::move(payer_errors));
+
+  EXPECT_EQ(base::UTF8ToUTF16("Invalid email"),
+            spec()->GetPayerError(autofill::EMAIL_ADDRESS));
+  EXPECT_EQ(base::UTF8ToUTF16("Invalid name"),
+            spec()->GetPayerError(autofill::NAME_FULL));
+  EXPECT_EQ(base::UTF8ToUTF16("Invalid phone"),
+            spec()->GetPayerError(autofill::PHONE_HOME_WHOLE_NUMBER));
+
+  EXPECT_TRUE(spec()->has_payer_error());
+}
+
 }  // namespace payments

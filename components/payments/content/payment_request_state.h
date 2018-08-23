@@ -130,6 +130,12 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   autofill::AutofillProfile* selected_contact_profile() const {
     return selected_contact_profile_;
   }
+  autofill::AutofillProfile* invalid_shipping_profile() const {
+    return invalid_shipping_profile_;
+  }
+  autofill::AutofillProfile* invalid_contact_profile() const {
+    return invalid_contact_profile_;
+  }
   // Returns the currently selected instrument for this PaymentRequest flow.
   // It's not guaranteed to be complete. Returns nullptr if there is no selected
   // instrument.
@@ -282,6 +288,8 @@ class PaymentRequestState : public PaymentResponseHelper::Delegate,
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_shipping_option_error_profile_;
   autofill::AutofillProfile* selected_contact_profile_;
+  autofill::AutofillProfile* invalid_shipping_profile_;
+  autofill::AutofillProfile* invalid_contact_profile_;
   PaymentInstrument* selected_instrument_;
 
   // Number of pending service worker payment instruments waiting for

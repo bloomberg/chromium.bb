@@ -28,6 +28,10 @@ void TestContentPaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
   core_delegate_.ShowDialog(request);
 }
 
+void TestContentPaymentRequestDelegate::RetryDialog() {
+  core_delegate_.RetryDialog();
+}
+
 void TestContentPaymentRequestDelegate::CloseDialog() {
   core_delegate_.CloseDialog();
 }

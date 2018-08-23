@@ -186,6 +186,18 @@ void PaymentRequest::Show(bool is_user_gesture) {
 }
 
 void PaymentRequest::Retry(mojom::PaymentValidationErrorsPtr errors) {
+  if (!client_.is_bound() || !binding_.is_bound()) {
+    DLOG(ERROR) << "Attempted Retry(), but binding(s) missing.";
+    OnConnectionTerminated();
+    return;
+  }
+
+  if (!display_handle_) {
+    DLOG(ERROR) << "Attempted Retry(), but display_handle_ is nullptr.";
+    OnConnectionTerminated();
+    return;
+  }
+
   std::string error;
   if (!PaymentsValidators::IsValidPaymentValidationErrorsFormat(errors,
                                                                 &error)) {
@@ -195,9 +207,9 @@ void PaymentRequest::Retry(mojom::PaymentValidationErrorsPtr errors) {
     return;
   }
 
-  // TODO(zino): Should implement this method (including updating UI part).
-  // Please see https://crbug.com/861704
-  NOTIMPLEMENTED();
+  spec()->UpdateShippingAddressErrors(std::move(errors->shipping_address));
+  spec()->UpdatePayerErrors(std::move(errors->payer));
+  display_handle_->Retry();
 }
 
 void PaymentRequest::AreRequestedMethodsSupportedCallback(

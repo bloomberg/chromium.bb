@@ -88,6 +88,7 @@ void PaymentRequestBrowserTestBase::SetUpCommandLine(
   // HTTPS server only serves a valid cert for localhost, so this is needed to
   // load pages from "a.com" without an interstitial.
   command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+  command_line->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
 }
 
 void PaymentRequestBrowserTestBase::SetUpOnMainThread() {
@@ -625,6 +626,28 @@ void PaymentRequestBrowserTestBase::PayWithCreditCardAndWait(
       {DialogEvent::PROCESSING_SPINNER_SHOWN, DialogEvent::DIALOG_CLOSED});
   ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON,
                            dialog_view);
+}
+
+void PaymentRequestBrowserTestBase::PayWithCreditCard(
+    const base::string16& cvc) {
+  OpenCVCPromptWithCVC(cvc, delegate_->dialog_view());
+
+  ResetEventWaiter(DialogEvent::PROCESSING_SPINNER_SHOWN);
+  ClickOnDialogViewAndWait(DialogViewID::CVC_PROMPT_CONFIRM_BUTTON,
+                           delegate_->dialog_view());
+}
+
+void PaymentRequestBrowserTestBase::RetryPaymentRequest(
+    const std::string& validation_errors) {
+  ResetEventWaiterForSequence(
+      {DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
+       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
+       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::DIALOG_OPENED});
+
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
+                                     "retry(" + validation_errors + ");"));
+
+  WaitForObservedEvent();
 }
 
 base::string16 PaymentRequestBrowserTestBase::GetEditorTextfieldValue(

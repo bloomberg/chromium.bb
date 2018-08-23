@@ -96,6 +96,9 @@ class ShippingAddressEditorViewController : public EditorViewController {
     DISALLOW_COPY_AND_ASSIGN(ShippingAddressValidationDelegate);
   };
 
+  base::string16 GetValueForType(const autofill::AutofillProfile& profile,
+                                 autofill::ServerFieldType type);
+
   bool GetSheetId(DialogViewID* sheet_id) override;
 
   // Updates |countries_| with the content of |model| if it's not null,

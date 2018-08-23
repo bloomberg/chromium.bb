@@ -18,6 +18,8 @@ class PaymentRequestDelegate : public PaymentRequestBaseDelegate {
   // Shows the Payment Request dialog for the given |request|.
   virtual void ShowDialog(PaymentRequest* request) = 0;
 
+  virtual void RetryDialog() = 0;
+
   // Closes the same dialog that was opened by this delegate. Must be safe to
   // call when the dialog is not showing.
   virtual void CloseDialog() = 0;
