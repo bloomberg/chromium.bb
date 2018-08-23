@@ -49,7 +49,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DedicatedWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
+  DedicatedWorkerGlobalScope(const String& name,
+                             std::unique_ptr<GlobalScopeCreationParams>,
                              DedicatedWorkerThread*,
                              base::TimeTicks time_origin);
   ~DedicatedWorkerGlobalScope() override;
@@ -64,6 +65,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& module_url_record,
       FetchClientSettingsObjectSnapshot* outside_settings_object,
       network::mojom::FetchCredentialsMode) override;
+
+  const String name() const;
 
   void postMessage(ScriptState*,
                    const ScriptValue& message,
@@ -80,6 +83,9 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   void Trace(blink::Visitor*) override;
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
+
+ private:
+  const String name_;
 };
 
 DEFINE_TYPE_CASTS(DedicatedWorkerGlobalScope,

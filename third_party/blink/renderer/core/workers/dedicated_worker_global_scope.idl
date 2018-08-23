@@ -34,6 +34,8 @@
     Global=(Worker,DedicatedWorker),
     Exposed=DedicatedWorker
 ] interface DedicatedWorkerGlobalScope : WorkerGlobalScope {
+    [Replaceable] readonly attribute DOMString name;
+
     [CallWith=ScriptState, RaisesException] void postMessage(any message, optional sequence<object> transfer = []);
     [RuntimeEnabled=PostMessageOptions, CallWith=ScriptState, RaisesException] void postMessage(any message, PostMessageOptions options);
 

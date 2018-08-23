@@ -74,14 +74,6 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  if (options.name() != "") {
-    // TODO(asamidoi): Implement 'name' option (https://crbug.com/721219)
-    context->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kInfoMessageLevel,
-        "'name' param in WorkerOptions is not implemented yet. See "
-        "https://crbug.com/721219 for details."));
-  }
-
   // TODO(nhiroki): Remove this flag check once module loading for
   // DedicatedWorker is enabled by default (https://crbug.com/680046).
   if (options.type() == "module" &&
@@ -254,6 +246,10 @@ bool DedicatedWorker::HasPendingActivity() const {
   // The worker context does not exist while loading, so we must ensure that the
   // worker object is not collected, nor are its event listeners.
   return context_proxy_->HasPendingActivity() || classic_script_loader_;
+}
+
+const String DedicatedWorker::Name() const {
+  return options_.name();
 }
 
 WorkerClients* DedicatedWorker::CreateWorkerClients() {

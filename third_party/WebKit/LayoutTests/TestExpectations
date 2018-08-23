@@ -3579,7 +3579,6 @@ crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/size_50.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/too_many_cues.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/too_many_cues_wrapped.html [ Failure ]
-crbug.com/815116 external/wpt/workers/name-property.html [ Timeout Failure Pass ]
 crbug.com/626703 external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/xhr/event-readystatechange-loaded.htm [ Failure Timeout ]

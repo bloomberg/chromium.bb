@@ -193,8 +193,8 @@ DedicatedWorkerMessagingProxy::CreateBackingThreadStartupData(
 
 std::unique_ptr<WorkerThread>
 DedicatedWorkerMessagingProxy::CreateWorkerThread() {
-  return DedicatedWorkerThread::Create(GetExecutionContext(),
-                                       WorkerObjectProxy());
+  return DedicatedWorkerThread::Create(
+      worker_object_->Name(), GetExecutionContext(), WorkerObjectProxy());
 }
 
 }  // namespace blink

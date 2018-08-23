@@ -1,5 +1,9 @@
 This is a testharness.js-based test.
-FAIL name property value for DedicatedWorkerGlobalScope assert_true: property exists on the global expected true got false
+PASS name property value for DedicatedWorkerGlobalScope
+PASS name property is replaceable for DedicatedWorkerGlobalScope
+PASS Declaring name as an accidental global must not cause a harness error for DedicatedWorkerGlobalScope
 FAIL name property value for SharedWorkerGlobalScope assert_equals: expected "my name" but got "[object Object]"
+FAIL name property is replaceable for SharedWorkerGlobalScope Cannot assign to read only property 'name' of object '#<SharedWorkerGlobalScope>'
+FAIL name-as-accidental-global Uncaught TypeError: Cannot assign to read only property 'name' of object '#<SharedWorkerGlobalScope>'
 Harness: the test ran to completion.
 

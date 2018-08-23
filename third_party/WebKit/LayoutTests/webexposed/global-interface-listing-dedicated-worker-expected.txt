@@ -3552,6 +3552,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] [GLOBAL OBJECT]
 [Worker]     attribute console
 [Worker]     attribute internals
+[Worker]     getter name
 [Worker]     getter onmessage
 [Worker]     getter onmessageerror
 [Worker]     method close
@@ -3561,6 +3562,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method webkitRequestFileSystemSync
 [Worker]     method webkitResolveLocalFileSystemSyncURL
 [Worker]     method webkitResolveLocalFileSystemURL
+[Worker]     setter name
 [Worker]     setter onmessage
 [Worker]     setter onmessageerror
 PASS successfullyParsed is true
