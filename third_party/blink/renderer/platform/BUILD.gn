@@ -1829,7 +1829,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "web_vector_test.cc",
     "weborigin/known_ports_test.cc",
     "weborigin/kurl_test.cc",
-    "weborigin/origin_access_entry_test.cc",
     "weborigin/scheme_registry_test.cc",
     "weborigin/security_origin_test.cc",
     "weborigin/security_policy_test.cc",
