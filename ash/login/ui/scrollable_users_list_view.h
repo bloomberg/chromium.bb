@@ -23,7 +23,6 @@ class BoxLayout;
 
 namespace ash {
 
-class HoverNotifier;
 class WallpaperController;
 
 // Scrollable list of the users. Stores the list of login user views. Can be
@@ -75,8 +74,6 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
   void OnWallpaperBlurChanged() override;
 
  private:
-  class ScrollBar;
-
   struct GradientParams {
     static GradientParams BuildForStyle(LoginDisplayStyle style);
 
@@ -88,9 +85,6 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
     SkScalar height = 0;
   };
 
-  // Updates visibility of scroll bar thumb. Called when hover state changes.
-  void OnHover(bool has_hover);
-
   // Display style to determine layout and sizing of users list.
   const LoginDisplayStyle display_style_;
 
@@ -100,12 +94,7 @@ class ASH_EXPORT ScrollableUsersListView : public views::ScrollView,
   // Layout for |user_view_host_|.
   views::BoxLayout* user_view_host_layout_ = nullptr;
 
-  // Owned by ScrollView.
-  ScrollBar* vertical_scroll_bar_ = nullptr;
-
   std::vector<LoginUserView*> user_views_;
-
-  std::unique_ptr<HoverNotifier> hover_notifier_;
 
   GradientParams gradient_params_;
 
