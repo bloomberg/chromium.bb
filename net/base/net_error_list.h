@@ -424,8 +424,7 @@ NET_ERROR(EARLY_DATA_REJECTED, -178)
 // received before any data is returned from the socket. The request should be
 // retried with early data disabled.
 //
-// See https://tools.ietf.org/html/draft-ietf-tls-tls13-28#appendix-D.3 for
-// details.
+// See https://tools.ietf.org/html/rfc8446#appendix-D.3 for details.
 NET_ERROR(WRONG_VERSION_ON_EARLY_DATA, -179)
 
 // Certificate error codes
