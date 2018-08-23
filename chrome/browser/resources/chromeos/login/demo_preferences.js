@@ -8,25 +8,12 @@ Polymer({
   behaviors: [I18nBehavior, OobeDialogHostBehavior],
 
   properties: {
-    /** Currently selected system language (display name). */
-    currentLanguage: {
-      type: String,
-      value: '',
-    },
-
-    /** Currently selected input method (display name). */
-    currentKeyboard: {
-      type: String,
-      value: '',
-    },
-
     /**
      * List of languages for language selector dropdown.
      * @type {!Array<!OobeTypes.LanguageDsc>}
      */
     languages: {
       type: Array,
-      observer: 'onLanguagesChanged_',
     },
 
     /**
@@ -35,25 +22,40 @@ Polymer({
      */
     keyboards: {
       type: Array,
-      observer: 'onKeyboardsChanged_',
     },
   },
 
-  /** @override */
-  ready: function() {
-    this.i18nUpdateLocale();
-
+  /** Called after resources are updated. */
+  updateLocalizedContent: function() {
     assert(loadTimeData);
     var languageList = loadTimeData.getValue('languageList');
     this.setLanguageList_(languageList);
 
     var inputMethodsList = loadTimeData.getValue('inputMethodsList');
     this.setInputMethods_(inputMethodsList);
+
+    this.i18nUpdateLocale();
   },
 
-  /** Called after resources are updated. */
-  updateLocalizedContent: function() {
-    this.i18nUpdateLocale();
+  /**
+   * Sets selected keyboard.
+   * @param {string} keyboardId
+   */
+  setSelectedKeyboard: function(keyboardId) {
+    var found = false;
+    for (var keyboard of this.keyboards) {
+      if (keyboard.value != keyboardId) {
+        keyboard.selected = false;
+        continue;
+      }
+      keyboard.selected = true;
+      found = true;
+    }
+    if (!found)
+      return;
+
+    // Force i18n-dropdown to refresh.
+    this.keyboards = this.keyboards.slice();
   },
 
   /**
@@ -75,29 +77,6 @@ Polymer({
   },
 
   /**
-   * Sets selected keyboard.
-   * @param {string} keyboardId
-   * @private
-   */
-  setSelectedKeyboard_: function(keyboardId) {
-    var found = false;
-    for (var keyboard of this.keyboards) {
-      if (keyboard.value != keyboardId) {
-        keyboard.selected = false;
-        continue;
-      }
-      keyboard.selected = true;
-      found = true;
-    }
-    if (!found)
-      return;
-
-    // Force i18n-dropdown to refresh.
-    this.keyboards = this.keyboards.slice();
-    this.onKeyboardsChanged_();
-  },
-
-  /**
    * Handle language selection.
    * @param {!{detail: {!OobeTypes.LanguageDsc}}} event
    * @private
@@ -105,7 +84,6 @@ Polymer({
   onLanguageSelected_: function(event) {
     var item = event.detail;
     var languageId = item.value;
-    this.currentLanguage = item.title;
     this.screen.onLanguageSelected_(languageId);
   },
 
@@ -117,24 +95,7 @@ Polymer({
   onKeyboardSelected_: function(event) {
     var item = event.detail;
     var inputMethodId = item.value;
-    this.currentKeyboard = item.title;
     this.screen.onKeyboardSelected_(inputMethodId);
-  },
-
-  /**
-   * Language changes handler.
-   * @private
-   */
-  onLanguagesChanged_: function() {
-    this.currentLanguage = getSelectedTitle(this.languages);
-  },
-
-  /**
-   * Keyboard changes handler.
-   * @private
-   */
-  onKeyboardsChanged_: function() {
-    this.currentKeyboard = getSelectedTitle(this.keyboards);
   },
 
   /**

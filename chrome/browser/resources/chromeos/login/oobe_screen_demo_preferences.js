@@ -10,26 +10,30 @@ login.createScreen('DemoPreferencesScreen', 'demo-preferences', function() {
   var CONTEXT_KEY_LOCALE = 'locale';
   var CONTEXT_KEY_INPUT_METHOD = 'input-method';
 
+  var demoPreferencesModule = null;
+
   return {
+
     /** @override */
     decorate: function() {
-      var demoPreferences = $('demo-preferences-content');
-      demoPreferences.screen = this;
+      demoPreferencesModule = $('demo-preferences-content');
+      demoPreferencesModule.screen = this;
 
       this.context.addObserver(
           CONTEXT_KEY_INPUT_METHOD, function(inputMethodId) {
             $('demo-preferences-content').setSelectedKeyboard(inputMethodId);
           });
+      this.updateLocalizedContent();
     },
 
     /** Returns a control which should receive an initial focus. */
     get defaultControl() {
-      return $('demo-preferences-content');
+      return demoPreferencesModule;
     },
 
     /** Called after resources are updated. */
     updateLocalizedContent: function() {
-      $('demo-preferences-content').updateLocalizedContent();
+      demoPreferencesModule.updateLocalizedContent();
     },
 
     /**
