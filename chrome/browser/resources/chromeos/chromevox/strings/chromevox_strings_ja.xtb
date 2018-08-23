@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">無効な入力値</translation>
 <translation id="1080471004309605942">斜体の末尾</translation>
 <translation id="1082209053475788238">前のレベル 6 見出しはありません。</translation>
+<translation id="1087788677726983142">イベント ストリーム フィルタを非表示にする</translation>
 <translation id="1088219014394087294">見出しがありません。</translation>
 <translation id="1106741348836243114">音声フィードバック（イアコン）をオンまたはオフにします。</translation>
 <translation id="1108651818222110612">副題</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">現在位置の詳細な説明を読み上げます</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{大なり}other{# 個の大なり記号}}</translation>
 <translation id="1653266918374749391">前のレベル 3 見出し</translation>
+<translation id="1657616855184033958">イベント ストリーム フィルタを表示する</translation>
 <translation id="1659072772017912254">オフ</translation>
 <translation id="1669290819662866522">週間</translation>
 <translation id="1674262202423278359">ChromeVox ナビゲーション</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">以下のオプションを使用して ChromeVox をカスタマイズします。変更は直ちに有効になります。</translation>
 <translation id="4271220233568730077">次の数式</translation>
 <translation id="4271521365602459209">他に検索結果はありません。</translation>
+<translation id="4275397969489577657">イベント ストリームのログを有効にする</translation>
 <translation id="4287520460805643128">次の記事はありません。</translation>
 <translation id="4289540628985791613">概要</translation>
 <translation id="4300318234632215983">リンクの URL を読み上げる</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{セミコロン}other{# 個のセミコロン}}</translation>
 <translation id="5411891038905756502">前のジャンプ ポイントはありません。</translation>
 <translation id="5417034931411865818">ルーティング キー $1 の下のアイテムをクリックします</translation>
+<translation id="5435274640623994081">イアコンのログを有効にする</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{小なり}other{# 個の小なり記号}}</translation>
 <translation id="5444587279251314700">（有効）</translation>
 <translation id="5446809554778706307">対象がありません。Ctrl+T キーで新しいタブを開きます。</translation>
@@ -899,6 +903,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8650576015643545550">前のリストはありません。</translation>
 <translation id="8651481478098336970">音量をミュート</translation>
 <translation id="8653646212587894517">リンク リストを表示</translation>
+<translation id="8656888282555543604">点字のログを有効にする</translation>
 <translation id="8664519043722036194">秒</translation>
 <translation id="867187640362843212">見出し 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{パイプ}other{# 個のパイプ}}</translation>

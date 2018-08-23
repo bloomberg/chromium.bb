@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> eklendi</translation>
 <translation id="1056775291175587022">Hücresel ağ yok</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Canım sıkıldı</translation>
 <translation id="1104084341931202936">Erişilebilirlik ayarlarını göster</translation>
 <translation id="1104621072296271835">Cihazlarınız birlikte daha da iyi çalışır</translation>
 <translation id="112308213915226829">Rafı otomatik gizle</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Tümünü temizle</translation>
 <translation id="1247372569136754018">Mikrofon (dahili)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> güç kaynağından şarj ediliyor</translation>
+<translation id="1255033239764210633">Hava nasıl?</translation>
 <translation id="1267032506238418139">Kısayol değişikliği</translation>
 <translation id="1270290102613614947">Dokunmatik klavye devre dışı</translation>
 <translation id="1272079795634619415">Durdur</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Çoklu oturum açmada en fazla <ph name="MULTI_PROFILE_USER_LIMIT" /> hesabınız olabilir.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Bir cihaza bağlı}other{# cihaza bağlı}}</translation>
 <translation id="3236488194889173876">Kullanılabilir mobil ağ yok</translation>
+<translation id="3255483164551725916">Neler yapabilirsin?</translation>
 <translation id="3294437725009624529">Misafir</translation>
 <translation id="332587331255250389">Lütfen pili değiştirin</translation>
 <translation id="3351879221545518001">Şu anda ekranı yayınlıyorsunuz.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Lazer işaretçi</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Bir uygulama için kapalı}other{# uygulama için kapalı}}</translation>
 <translation id="4072264167173457037">Orta düzeyde sinyal</translation>
+<translation id="4146833061457621061">Müzik çal</translation>
 <translation id="4200057768455216496">Yerleştirilmiş büyüteç kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="4217571870635786043">Dikte</translation>
 <translation id="4261870227682513959">Bildirim ayarlarını göster. Bildirimler kapalı</translation>
@@ -344,6 +348,7 @@
 <translation id="7037152028959403492">Yüksek kontrast kısayoluna bastınız. Bu özelliği açmak istiyor musunuz?</translation>
 <translation id="7066646422045619941">Bu ağ, yöneticiniz tarafından devre dışı bırakıldı.</translation>
 <translation id="7067196344162293536">Otomatik döndür</translation>
+<translation id="7068360136237591149">Dosya aç</translation>
 <translation id="7076293881109082629">Oturum açılıyor</translation>
 <translation id="7092922358121866860">Gece Işığı ayarlarını göster</translation>
 <translation id="7098389117866926363">USB-C cihaz (arkadaki sol bağlantı noktası)</translation>
@@ -387,6 +392,7 @@
 <translation id="7842569679327885685">Uyarı: Deneysel özellik</translation>
 <translation id="7846634333498149051">Klavye</translation>
 <translation id="7886277072580235377">Oturumu kapattığınızda internet oturumunuz temizlenecektir. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">E-posta gönder</translation>
 <translation id="790040513076446191">Gizlilikle ilgili ayarları değiştirme</translation>
 <translation id="7904094684485781019">Bu hesabın yöneticisi, çoklu oturum açmayı engelledi.</translation>
 <translation id="7933084174919150729">Google Asistan yalnızca birincil profilde kullanılabilir.</translation>
@@ -449,6 +455,7 @@
 <translation id="8850991929411075241">Ara+Esc</translation>
 <translation id="8870509716567206129">Uygulama bölünmüş ekranı desteklemiyor.</translation>
 <translation id="8874184842967597500">Bağlı değil</translation>
+<translation id="8877788021141246043">Hatırlatıcı oluştur</translation>
 <translation id="8878886163241303700">Genişletilmiş ekran</translation>
 <translation id="8921624153894383499">Google Asistan bu dili konuşmuyor.</translation>
 <translation id="8938800817013097409">USB-C cihaz (arkadaki sağ bağlantı noktası)</translation>
@@ -472,6 +479,7 @@
 <translation id="9210037371811586452">Birleşik masaüstü modundan çıkılıyor</translation>
 <translation id="9215934040295798075">Duvar kağıdını ayarla</translation>
 <translation id="923686485342484400">Oturumu kapatmak için Control ÜstKrktr Q tuşlarına iki defa basın.</translation>
+<translation id="938963181863597773">Takvimimde ne var?</translation>
 <translation id="945522503751344254">Geri bildirim gönder</translation>
 <translation id="98515147261107953">Yatay</translation>
 <translation id="995927048686010764">Otomatik tıkla</translation>

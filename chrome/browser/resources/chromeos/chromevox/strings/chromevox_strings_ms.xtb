@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Input tidak sah</translation>
 <translation id="1080471004309605942">Huruf condong tamat</translation>
 <translation id="1082209053475788238">Tiada tajuk tahap 6 terdahulu.</translation>
+<translation id="1087788677726983142">Sembunyikan penapis strim acara</translation>
 <translation id="1088219014394087294">Tiada tajuk.</translation>
 <translation id="1106741348836243114">Hidupkan atau matikan maklum balas bunyi (earcon).</translation>
 <translation id="1108651818222110612">sari kata</translation>
@@ -78,6 +79,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="1618597272655350600">Mengumumkan huraian lengkap tentang kedudukan semasa</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{lebih besar daripada}other{# tanda lebih besar daripada}}</translation>
 <translation id="1653266918374749391">Tajuk tahap 3 sebelumnya</translation>
+<translation id="1657616855184033958">Tunjukkan penapis strim acara</translation>
 <translation id="1659072772017912254">Tidak ditandai</translation>
 <translation id="1669290819662866522">minggu</translation>
 <translation id="1674262202423278359">Navigasi ChromeVox</translation>
@@ -412,6 +414,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="4255943572433203166">Gunakan pilihan di bawah untuk menyesuaikan ChromeVox. Perubahan berkuat kuasa serta-merta.</translation>
 <translation id="4271220233568730077">Matematik seterusnya</translation>
 <translation id="4271521365602459209">Tiada lagi hasil carian.</translation>
+<translation id="4275397969489577657">Dayakan pengelogan strim acara</translation>
 <translation id="4287520460805643128">Tiada artikel seterusnya.</translation>
 <translation id="4289540628985791613">Gambaran keseluruhan</translation>
 <translation id="4300318234632215983">Umumkan URL di sebalik pautan</translation>
@@ -550,6 +553,7 @@ Jika anda ingin keluar daripada tutorial, gunakan ChromeVox untuk menavigasi ke 
 <translation id="5407530583102765689">{COUNT,plural, =1{koma bertitik}other{# koma bertitik}}</translation>
 <translation id="5411891038905756502">Tiada titik langkau terdahulu.</translation>
 <translation id="5417034931411865818">Klik item di bawah kekunci penghalaan $1</translation>
+<translation id="5435274640623994081">Dayakan pengelogan ikon audio</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kurang daripada}other{# tanda kurang daripada}}</translation>
 <translation id="5444587279251314700">(aktif)</translation>
 <translation id="5446809554778706307">Tiada fokus. Tekan Ctrl+T untuk membuka tab baharu.</translation>
@@ -899,6 +903,7 @@ Untuk membuka menu penyemak imbas Chrome, tekan Alt+F.</translation>
 <translation id="8650576015643545550">Tiada senarai terdahulu.</translation>
 <translation id="8651481478098336970">redam kelantangan</translation>
 <translation id="8653646212587894517">Paparkan senarai pautan</translation>
+<translation id="8656888282555543604">Dayakan pengelogan braille</translation>
 <translation id="8664519043722036194">saat</translation>
 <translation id="867187640362843212">Tajuk 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{paip}other{# paip menegak}}</translation>

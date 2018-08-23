@@ -357,11 +357,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
           Hvis denne regelen ikke angis, brukes alle de fire skjemaene.</translation>
 <translation id="2067011586099792101">Blokkér tilgang til nettsteder som ikke inngår i innholdspakker</translation>
-<translation id="2070270043919235595">Varsle brukere om at <ph name="PRODUCT_NAME" /> må startes på nytt på grunn av en oppdatering som ikke er installert ennå.
-
-      Denne regelen aktiverer varsler for å informere brukeren om at nettleseren må eller bør startes på nytt. Hvis regelen ikke er angitt, varsler <ph name="PRODUCT_NAME" /> brukeren om at det er nødvendig med en omstart ved hjelp av diskrete endringer i menyen. Hvis regelen er angitt som «Recommended» (anbefalt), ser brukeren en gjentakende advarsel om at en omstart er anbefalt. Brukeren kan avvise advarselen for å utsette omstarten. Hvis regelen er angitt som «Required» (obligatorisk), ser brukeren en gjentakende advarsel om at en tvungen omstart utføres når varselperioden er utløpt. Denne perioden er som standard 7 dager og kan konfigureres via regelen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Brukerens økt gjenopprettes etter omstarten.</translation>
 <translation id="2073552873076775140">Tillat pålogging i <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2077273864382355561">Forsinkelse for avslått skjerm når enheten kjører på batteristrøm</translation>
@@ -905,7 +900,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
           Denne innstillingen er valgfri. Hvis den ikke angis, leveres ingen nye fane-side.
 
           Denne innstillingen etterfølges bare dersom «DefaultSearchProviderEnabled» er aktivert.</translation>
-<translation id="3465852069254497664">Varsle en bruker om at nettleseren bør eller må startes på nytt</translation>
 <translation id="346731943813722404">Angi hvorvidt tidtaking av strømstyringsforsinkelser og grense for øktens varighet bare skal begynne å løpe etter brukerens første aktivitet i en økt.
 
           Hvis innstillingen er satt til True, begynner ikke tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe før etter at brukerens første aktivitet i en økt er registrert.
@@ -2152,17 +2146,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Like før skjermen nedtones, evaluerer den smarte modellen for nedtoning om nedtoning av skjermen bør utsettes. Hvis den smarte modellen for nedtoning utsetter nedtoning av skjermen, forlenges tiden det tar før skjermen nedtones. I dette tilfellet blir utsettelsen av avslått skjerm, låseskjerm og inaktivitet justert til å samsvare med tidsrommet fra nedtoningsutsettelsen slik det ble konfigurert opprinnelig.
       Hvis denne regelen er angitt som «True» (sann), eller hvis den ikke er angitt, slås den smarte modellen for nedtoning på, og den kan forlenge tiden det tar før skjermen nedtones. Hvis denne regelen er angitt som «False» (usann), påvirkes ikke nedtoning av skjermen av den smarte modellen for nedtoning.</translation>
-<translation id="6982028490425791294">
-      Hvis regelen er satt til sann (true), tillater <ph name="PRODUCT_NAME" /> innhenting av WebRTC-aktivitetslogger fra Google-tjenester (f.eks. Google Meet) og opplasting av disse loggene til Google.
-
-      Hvis denne regelen er satt til usann eller ikke er angitt, kan ikke <ph name="PRODUCT_NAME" /> innhente eller laste opp slike logger.
-
-      Disse loggene inneholder blant annet tidspunkt for og størrelse på sendte og mottatte RTP-pakker, tilbakemelding om overbelastning av nettverket samt metadata om tid og kvalitet for lydrammer og videobilder. Denne informasjonen er nyttig ved feilsøking av problemer med lyd- og videosamtaler i Chrome, for eksempel problemer med estimering av båndbredde. Loggene inneholder ikke lyd- eller videoinnhold fra samtaler.
-
-      Disse datainnsamlingene kan kun bli utløst av Googles nettjenester, slik som Google Hangouts eller Google Meet.
-
-      Disse loggene kan knyttes sammen, via en økt-ID, med andre logger som er samlet inn av Google-tjenesten, for å gjøre feilsøking enklere.
-      </translation>
 <translation id="6994082778848658360">Spesifiserer hvordan det integrerte sikre maskinvareelementet kan brukes til å tilby tofaktor-autentisering hvis det er kompatibelt med denne funksjonen. Av/på-knappen på maskinen brukes til å finne ut om brukeren er fysisk til stede.
 
       Hvis «Disabled» (deaktivert) er valgt, tilbys ingen tofaktor-autentisering.
@@ -2979,11 +2962,6 @@ For mer informasjon om sikkert innhold, se https://www.w3.org/TR/secure-contexts
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
-<translation id="9085839450090699752">Lar deg angi en tidsperiode i millisekunder når brukere blir varslet om at <ph name="PRODUCT_NAME" /> må startes på nytt, eller at en <ph name="PRODUCT_OS_NAME" />-enhet må startes på nytt på grunn av en oppdatering som ikke er installert ennå.
-
-      I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. På <ph name="PRODUCT_OS_NAME" />-enheter vises varselet om omstart i systemfeltet når en oppgradering oppdages. Dette varselet skifter farge når halvparten av varselperioden har passert og igjen når hele varselperioden har passert. I <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å vise at en omstart er påkrevd når en tredjedel av varselperioden har passert. Dette varselet skifter farge når to tredjedeler av varselperioden har passert og igjen når hele varselperioden har passert. Ekstra varsler aktivert av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen for nettlesere følger den samme tidsplanen.
-
-      Hvis regelen ikke er angitt, brukes standardperioden på 345600000 millisekunder (fire dager) på <ph name="PRODUCT_OS_NAME" />-enheter og 604800000 millisekunder (én uke) i nettlesere.</translation>
 <translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk påvisning av tidssoner</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>

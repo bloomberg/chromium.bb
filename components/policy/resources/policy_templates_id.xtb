@@ -177,6 +177,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Aktifkan pemblokiran injeksi software pihak ketiga</translation>
 <translation id="1504431521196476721">Pengesahan Jarak Jauh</translation>
+<translation id="1507957856411744193">Jika kebijakan ini disetel ke true, <ph name="PRODUCT_NAME" /> akan terhubung ke perangkat Transmisi di semua alamat IP, bukan hanya alamat pribadi RFC1918/RFC4913.
+
+          Jika kebijakan ini disetel ke false, <ph name="PRODUCT_NAME" /> hanya akan terhubung ke perangkat Transmisi di alamat pribadi RFC1918/RFC4913.
+
+          Jika kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> hanya akan terhubung ke perangkat Transmisi di alamat pribadi RFC1918/RFC4913, kecuali fitur CastAllowAllIPs diaktifkan.
+
+          Jika kebijakan "EnableMediaRouter" disetel ke false, nilai kebijakan ini tidak akan berpengaruh.</translation>
 <translation id="1509692106376861764">Kebijakan ini tidak lagi digunakan mulai <ph name="PRODUCT_NAME" /> versi 29.</translation>
 <translation id="1514888685242892912">Aktifkan <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Izinkan situs melacak lokasi fisik pengguna</translation>
@@ -350,11 +357,6 @@
 
           Jika kebijakan ini dibiarkan tidak disetel, keempat skema akan digunakan seluruhnya.</translation>
 <translation id="2067011586099792101">Memblokir akses ke situs di luar paket konten</translation>
-<translation id="2070270043919235595">Beri tahu pengguna bahwa <ph name="PRODUCT_NAME" /> harus diluncurkan ulang untuk menerapkan update yang tertunda.
-
-      Setelan kebijakan ini mengaktifkan notifikasi untuk memberi tahu pengguna bahwa peluncuran ulang browser direkomendasikan atau diperlukan. Jika tidak disetel, <ph name="PRODUCT_NAME" /> memberi tahu pengguna bahwa peluncuran ulang diperlukan melalui sedikit perubahan pada menunya. Jika disetel ke 'Recommended', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang direkomendasikan. Pengguna dapat menutup peringatan ini untuk menunda peluncuran ulang. Jika disetel ke 'Required', akan muncul peringatan berulang yang menunjukkan bahwa peluncuran ulang browser akan dilakukan secara paksa setelah periode notifikasi terlampaui. Periode ini akan disetel secara default menjadi 7 hari, dan dapat dikonfigurasi melalui setelan kebijakan <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Sesi pengguna akan dilanjutkan kembali setelah peluncuran ulang.</translation>
 <translation id="2073552873076775140">Izinkan login ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Gunakan akselerasi hardware jika tersedia</translation>
 <translation id="2077273864382355561">Penundaan mematikan layar saat menggunakan daya baterai</translation>
@@ -886,7 +888,6 @@ Jika kebijakan ini tidak disetel, tidak ada aplikasi atau ekstensi yang otomatis
           Kebijakan ini bersifat opsional. Jika tidak disetel, halaman tab baru tidak akan diberikan.
 
           Kebijakan ini dipatuhi hanya jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
-<translation id="3465852069254497664">Beri tahu pengguna bahwa peluncuran ulang browser direkomendasikan atau diperlukan</translation>
 <translation id="346731943813722404">Menentukan apakah penundaan pengelolaan daya dan batas lama sesi hanya mulai berjalan setelah aktivitas pengguna pertama teramati dalam sebuah sesi.
 
           Jika kebijakan disetel ke True, penundaan pengelolaan daya dan batas lama sesi tidak mulai berjalan sampai aktivitas pengguna pertama teramati dalam sebuah sesi.
@@ -1939,6 +1940,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Kebijakan <ph name="SYNC_DISABLED_POLICY_NAME" /> menonaktifkan semua sinkronisasi data, menggantikan RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filter konten khusus dewasa dari situs level teratas (namun bukan iframe yang tersemat)</translation>
+<translation id="6734521799274931721">Mengontrol fitur Berbagi File Jaringan untuk ketersediaan ChromeOS</translation>
 <translation id="6735701345096330595">Mengaktifkan paksa pemeriksaan ejaan bahasa</translation>
 <translation id="673699536430961464">Setelan ini memungkinkan pengguna beralih ke akun Google lain di dalam area konten jendela browser setelah mereka login ke perangkat <ph name="PRODUCT_OS_NAME" />.
 
@@ -2088,17 +2090,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 
       Saat layar akan diredupkan, model redup smart akan mengevaluasi apakah peredupan layar sebaiknya ditunda. Jika model redup smart menunda peredupan layar, maka hal itu secara efektif akan memperpanjang waktu hingga layar diredupkan. Dalam hal ini, penundaan layar nonaktif, layar terkunci, dan layar menganggur disesuaikan untuk mempertahankan agar interval penundaan peredupan layar tetap sama dengan yang semula dikonfigurasi.
       Jika kebijakan ini ditetapkan ke True atau tidak ditetapkan, model redup smart akan diaktifkan dan diizinkan untuk memperpanjang waktu hingga layar diredupkan. Jika kebijakan ini ditetapkan ke False, model redup smart tidak akan memengaruhi peredupan layar.</translation>
-<translation id="6982028490425791294">
-      Jika kebijakan disetel ke true, <ph name="PRODUCT_NAME" /> diizinkan untuk mengumpulkan log aktivitas WebRTC dari layanan Google (mis., Google Meet), dan mengupload log tersebut ke Google.
-
-      Jika kebijakan disetel ke false, atau tidak disetel, <ph name="PRODUCT_NAME" /> mungkin tidak mengumpulkan atau mengupload log tersebut.
-
-      Log ini berisi informasi seperti waktu dan ukuran paket RTP yang dikirim dan diterima, masukan tentang kemacetan di jaringan, dan metadata tentang waktu dan kualitas frame audio dan video. Informasi ini bermanfaat saat melakukan debug masalah pada panggilan audio atau video di Chrome, misalnya masalah perkiraan bandwidth, dan lainnya. Log tidak berisi konten audio atau video dari panggilan telepon.
-
-      Pengumpulan data ini hanya dapat dipicu oleh layanan web Google, seperti Google Hangouts atau Google Meet.
-
-      Log ini dapat dikaitkan, melalui ID sesi, dengan log lain yang dikumpulkan oleh layanan Google itu sendiri. Ini dimaksudkan agar debug lebih mudah.
-      </translation>
 <translation id="6994082778848658360">Menentukan bagaimana hardware elemen pengaman on-board digunakan untuk memberikan autentikasi faktor kedua jika kompatibel dengan fitur ini. Tombol power mesin digunakan untuk mendeteksi keberadaan pengguna.
 
       Jika 'Dinonaktifkan' dipilih, tidak ada faktor kedua yang diberikan.
@@ -2883,11 +2874,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="9035964157729712237">ID Ekstensi yang dikeluarkan dari daftar hitam</translation>
 <translation id="9042911395677044526">Memungkinkan konfigurasi jaringan dorongan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang diuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>
-<translation id="9085839450090699752">Memungkinkan Anda menetapkan periode waktu, dalam milidetik, yang selama periode tersebut pengguna akan menerima notifikasi bahwa <ph name="PRODUCT_NAME" /> harus dijalankan ulang atau perangkat <ph name="PRODUCT_OS_NAME" /> harus dimulai ulang untuk menerapkan update yang tertunda.
-
-      Selama periode waktu ini, pengguna akan terus-menerus diberi tahu tentang perlunya melakukan update. Untuk perangkat <ph name="PRODUCT_OS_NAME" />, notifikasi untuk memulai ulang perangkat akan ditampilkan di baki sistem ketika ada upgrade yang terdeteksi. Warna notifikasi akan berubah setelah separuh periode notifikasi berlalu, dan berubah lagi setelah seluruh periode notifikasi berlalu. Untuk browser <ph name="PRODUCT_NAME" />, warna menu aplikasi akan berubah setelah 1/3 periode notifikasi berlalu untuk menunjukkan bahwa browser perlu dijalankan ulang. Warna notifikasi akan berubah lagi setelah 2/3 periode notifikasi berlalu, dan berubah sekali lagi setelah seluruh periode notifikasi berlalu. Notifikasi tambahan yang diaktifkan oleh kebijakan <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> untuk browser mengikuti jadwal yang sama seperti ini.
-
-      Jika tidak ditetapkan, periode default 345.600.000 milidetik (4 hari) akan digunakan untuk perangkat <ph name="PRODUCT_OS_NAME" /> dan 604.800.000 milidetik (1 minggu) untuk browser.</translation>
 <translation id="9088433379343318874">Izinkan penyedia konten pengguna yang dilindungi</translation>
 <translation id="9088444059179765143">Mengonfigurasi metode deteksi zona waktu otomatis</translation>
 <translation id="9096086085182305205">Daftar putih server autentikasi</translation>

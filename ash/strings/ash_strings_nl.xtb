@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> toegevoegd</translation>
 <translation id="1056775291175587022">Geen netwerken</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Ik verveel me</translation>
 <translation id="1104084341931202936">Toegankelijkheidsinstellingen weergeven</translation>
 <translation id="1104621072296271835">Je apparaten werken samen nog beter</translation>
 <translation id="112308213915226829">Plank automatisch verbergen</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Alles wissen</translation>
 <translation id="1247372569136754018">Microfoon (intern)</translation>
 <translation id="1252999807265626933">Opladen via <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Wat voor weer is het?</translation>
 <translation id="1267032506238418139">Sneltoets gewijzigd</translation>
 <translation id="1270290102613614947">Schermtoetsenbord uitgeschakeld</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Je kunt maximaal <ph name="MULTI_PROFILE_USER_LIMIT" /> accounts hebben in Toegang tot meerdere accounts.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Verbonden met een apparaat}other{Verbonden met # apparaten}}</translation>
 <translation id="3236488194889173876">Geen mobiel netwerk beschikbaar</translation>
+<translation id="3255483164551725916">Wat kun je doen?</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="332587331255250389">Vervang de batterij</translation>
 <translation id="3351879221545518001">Je cast momenteel een scherm.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Laserpen</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Uitgeschakeld voor een app}other{Uitgeschakeld voor # apps}}</translation>
 <translation id="4072264167173457037">Normaal signaal</translation>
+<translation id="4146833061457621061">Speel muziek</translation>
 <translation id="4200057768455216496">Je hebt op de sneltoets voor het gedockte vergrootglas gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="4217571870635786043">Dicteren</translation>
 <translation id="4261870227682513959">Instellingen voor meldingen weergeven. Meldingen zijn uitgeschakeld</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Je hebt op de sneltoets voor hoog contrast gedrukt. Wil je deze functie inschakelen?</translation>
 <translation id="7066646422045619941">Dit netwerk is uitgeschakeld door je beheerder.</translation>
 <translation id="7067196344162293536">Automatisch draaien</translation>
+<translation id="7068360136237591149">Open bestanden</translation>
 <translation id="7076293881109082629">Inloggen</translation>
 <translation id="7092922358121866860">Instellingen voor Nachtverlichting weergeven</translation>
 <translation id="7098389117866926363">USB-C-apparaat (poort links aan de achterkant)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Waarschuwing: Experimentele functie</translation>
 <translation id="7846634333498149051">Toetsenbord</translation>
 <translation id="7886277072580235377">Je internetsessie wordt gewist wanneer je uitlogt. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Stuur een e-mail</translation>
 <translation id="790040513076446191">Privacygerelateerde instellingen manipuleren</translation>
 <translation id="7904094684485781019">De beheerder van dit account heeft toegang tot meerdere accounts niet toegestaan.</translation>
 <translation id="7933084174919150729">De Google Assistent is alleen beschikbaar voor het primaire profiel.</translation>
@@ -448,6 +454,7 @@
 <translation id="8850991929411075241">Zoeken+Esc</translation>
 <translation id="8870509716567206129">App biedt geen ondersteuning voor gesplitst scherm.</translation>
 <translation id="8874184842967597500">Niet verbonden</translation>
+<translation id="8877788021141246043">Stel een herinnering in</translation>
 <translation id="8878886163241303700">Uitgebreid scherm</translation>
 <translation id="8921624153894383499">De Google Assistent spreekt deze taal niet.</translation>
 <translation id="8938800817013097409">USB-C-apparaat (poort rechts aan de achterkant)</translation>
@@ -471,6 +478,7 @@
 <translation id="9210037371811586452">Samengestelde desktopmodus wordt gesloten</translation>
 <translation id="9215934040295798075">Achtergrond instellen</translation>
 <translation id="923686485342484400">Druk twee keer op Control+Shift+Q om uit te loggen.</translation>
+<translation id="938963181863597773">Wat staat er in mijn agenda?</translation>
 <translation id="945522503751344254">Feedback verzenden</translation>
 <translation id="98515147261107953">Liggend</translation>
 <translation id="995927048686010764">Automatisch klikken</translation>

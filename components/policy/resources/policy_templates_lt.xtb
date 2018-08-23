@@ -370,11 +370,6 @@
 
           Nenustačius šios politikos, bus naudojamos visos keturios schemos.</translation>
 <translation id="2067011586099792101">Blokuoti prieigą prie svetainių, nesančių turinio paketuose</translation>
-<translation id="2070270043919235595">Pranešama naudotojams, kad būtina iš naujo paleisti „<ph name="PRODUCT_NAME" />“, norint pritaikyti laukiantį naujinį.
-
-      Taikant šį politikos nustatymą įgalinami pranešimai, kuriais naudotojas informuojamas, kad rekomenduojama arba būtina iš naujo paleisti naršyklę. Nenustačius, „<ph name="PRODUCT_NAME" />“ subtiliais meniu pakeitimais nurodo naudotojui, kad reikia paleisti iš naujo. Nustačius kaip „Rekomenduojama“, naudotojui rodomas pasikartojantis įspėjimas, kad rekomenduojama paleisti iš naujo. Naudotojas gali atsisakyti šio pranešimo, kad atidėtų paleidimą iš naujo. Nustačius kaip „Būtina“, naudotojui rodomas pasikartojantis įspėjimas, nurodantis, kad naršyklė bus priverstinai paleista iš naujo pasibaigus pranešimo laikotarpiui. Pagal numatytuosius nustatymus šis laikotarpis yra septynios dienos. Jį galima konfigūruoti politikos „<ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />“ nustatymuose.
-
-      Paleidus iš naujo, naudotojo sesija atkuriama.</translation>
 <translation id="2073552873076775140">Leisti prisijungti prie „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
 <translation id="2077273864382355561">Ekrano išjungimo delsa, kai naudojama akumuliatoriaus energija</translation>
@@ -932,7 +927,6 @@
           Ši politika pasirenkama. Jei ji nenustatyta, nebus pateikiamas jos naujo skirtuko puslapis.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „DefaultSearchProviderEnabled“.</translation>
-<translation id="3465852069254497664">Pranešimas naudotojui apie rekomenduojamą ar būtiną naršyklės paleidimą iš naujo</translation>
 <translation id="346731943813722404">Nurodo, ar energijos valdymo delsa ir seanso ilgio apribojimas turėtų būti suaktyvinti tik naudotojui pradėjus seanso veiklą.
 
           Jei ši politika nustatyta į „True“, energijos valdymo delsa ir seanso ilgio apribojimas nesuaktyvinami, kol naudotojas nepradeda seanso veiklos.
@@ -2187,17 +2181,6 @@
 
       Kai ekranas turėtų būti pritemdomas, išmanusis pritemdymo modelis įvertina, ar ekrano pritemdymo nereikia atidėti. Jei išmanusis pritemdymo modelis atideda ekrano pritemdymą, jis veiksmingai pratęsia laiką iki ekrano pritemdymo. Tokiu atveju ekrano išjungimo, ekrano užrakto ir neveikos būsenos delsos koreguojamos siekiant išlaikyti vienodą laiką nuo pirminės sukonfigūruotos pritemdymo delsos.
       Jei ši politika nustatyta kaip „True“ arba paliekama nenustatyta, išmanusis pritemdymo modelis bus įgalintas ir jam bus leista pratęsti laiką iki ekrano pritemdymo. Jei ši politika nustatyta kaip „False“, išmanusis pritemdymo modelis neturės įtakos ekrano pritemdymui.</translation>
-<translation id="6982028490425791294">
-      Jei ši politika nustatyta kaip „True“, „<ph name="PRODUCT_NAME" />“ leidžiama rinkti „WebRTC“ įvykių žurnalus iš „Google“ paslaugų (pvz., „Google Meet“) ir įkelti šiuos žurnalus į „Google“.
-
-      Jei ši politika nustatyta kaip „False“ arba nenustatyta, „<ph name="PRODUCT_NAME" />“ nerinks ir neįkels tokių žurnalų.
-
-      Šiuose žurnaluose yra tokios informacijos kaip išsiųstų ir gautų RTP paketų laikas ir dydis, atsiliepimai apie tinklo perpildymą ir metaduomenys apie garso ir vaizdo įrašų kadrų laiką ir kokybę. Ši informacija naudinga derinant problemas dėl garso ir vaizdo skambučių „Chrome“, pavyzdžiui, siuntimo spartos vertinimo problemas ir kt. Žurnaluose nėra skambučių garso ir vaizdo turinio.
-
-      Šį duomenų rinkimą gali suaktyvinti tik „Google“ žiniatinklio paslaugos, pvz., „Google Hangouts“ ar „Google Meet“.
-
-      Šie žurnalai naudojantis seanso ID gali būti susieti su kitais žurnalais, kuriuos surinko pačios „Google“ paslaugos; tai skirta lengvesniam derinimui.
-      </translation>
 <translation id="6994082778848658360">Nurodoma, kaip vidinė saugi elemento aparatinė įranga gali būti naudojama teikiant tapatybės nustatymą dviem veiksniais, jei ji suderinama su šia funkcija. Įrenginio maitinimo mygtukas naudojamas naudotojo buvimo vietai aptikti.
 
       Jei pasirinkta „Išjungta“, neteikiamas joks antras veiksnys.
@@ -3037,11 +3020,6 @@ Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačia
 <translation id="9035964157729712237">Į juodąjį sąrašą neįtrauktinų plėtinių ID</translation>
 <translation id="9042911395677044526">Leidžiama pateikti tinklo konfigūraciją, kad būtų taikoma „<ph name="PRODUCT_OS_NAME" />“ įrenginiui pagal naudotoją. Tinklo konfigūracija yra JSON formatuota eilutė, apibrėžta pagal „Atvirosios tinklo konfigūracijos“ formatą, nurodytą šiuo adresu: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Nurodykite, ar vaizdo įrašo veikla paveikia energijos valdymą</translation>
-<translation id="9085839450090699752">Leidžiama nustatyti laikotarpį (milisekundėmis), per kurį naudotojams pranešama, kad „<ph name="PRODUCT_NAME" />“ arba „<ph name="PRODUCT_OS_NAME" />“ įrenginį reikia paleisti iš naujo, norint pritaikyti laukiantį naujinį.
-
-      Per šį laikotarpį naudotojui bus pakartotinai pranešama apie reikalingą atnaujinimą. „<ph name="PRODUCT_OS_NAME" />“ įrenginiuose paleidimo iš naujo pranešimas rodomas sistemos juostelėje, kai aptinkamas naujovinimas. Praėjus pusei pranešimo laikotarpio ir dar kartą praėjus visam pranešimo laikotarpiui pakeičiama pranešimo spalva. Praėjus trečdaliui pranešimo laikotarpio „<ph name="PRODUCT_NAME" />“ naršyklėse pakeičiamas programų meniu nurodant, kad reikia paleisti iš naujo. Šio pranešimo spalva pakeičiama praėjus dviem trečdaliams pranešimo laikotarpiui ir dar kartą praėjus visam pranešimo laikotarpiui. Tas pats tvarkaraštis taikomas papildomiems pranešimams naršyklėse, įgalintiems taikant „<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />“ politiką.
-
-      Jei nenustatyta, „<ph name="PRODUCT_OS_NAME" />“ įrenginiams naudojamas numatytasis 345 600 000 milisekundžių (keturių dienų) laikotarpis, o naršyklėms – 604 800 000 milisekundžių (vienos savaitės) laikotarpis.</translation>
 <translation id="9088433379343318874">Įgalinti prižiūrimo naudotojo turinio teikėją</translation>
 <translation id="9088444059179765143">Automatinio laiko juostos aptikimo metodo konfigūravimas</translation>
 <translation id="9096086085182305205">Tapatumo nustatymo serverio baltasis sąrašas</translation>

@@ -761,7 +761,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7016516562562142042">Es permet al motor de cerca actual</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> s'ha baixat</translation>
 <translation id="7022756207310403729">Obre al navegador</translation>
-<translation id="702463548815491781">Es recomana quan els serveis TalkBack o l'accés amb interruptors estan activats</translation>
+<translation id="702463548815491781">Es recomana quan TalkBack o l'accés amb interruptors estan activats</translation>
 <translation id="7029809446516969842">Contrasenyes</translation>
 <translation id="7031882061095297553">Sincronitza amb</translation>
 <translation id="7032663816368481562">En tocar Més contingut com aquest <ph name="ICON" /> a la barra d'adreces, es mostren enllaços ràpids a pàgines relacionades. Els URL de les pàgines que visites s'envien a Google.</translation>
@@ -875,6 +875,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7981313251711023384">Carrega les pàgines prèviament per poder-hi navegar i fer cerques més de pressa</translation>
 <translation id="79859296434321399">Per veure contingut en realitat augmentada, instal·la ARCore</translation>
 <translation id="7987073022710626672">Condicions del servei de Chrome</translation>
+<translation id="7987764905897278458">Gaudeix de més eines intel·ligents de Google</translation>
 <translation id="7998918019931843664">Torna a obrir la pestanya tancada</translation>
 <translation id="7999064672810608036">Confirmes que vols esborrar d'aquest lloc web totes les dades locals, incloses les galetes, i restablir-ne tots els permisos?</translation>
 <translation id="8004582292198964060">Navegador</translation>

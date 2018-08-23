@@ -187,7 +187,6 @@
 <translation id="126768002343224824">১৬x</translation>
 <translation id="127138278192656016">সিঙ্ক এবং সমস্ত পরিষেবা ব্যবহার করুন</translation>
 <translation id="1272079795634619415">বন্ধ</translation>
-<translation id="1272242203003205253">আপনাকে সাহায্য করতে Google পার্টনাররা অ্যাসিস্ট্যান্টের সাথে কাজ করে</translation>
 <translation id="1272978324304772054">এই ডিভাইসটি যে ডোমেনের অন্তর্গত সেটার সাথে এই ব্যবহারকারীর অ্যাকাউন্টটি নথিভুক্ত করা হয় নি। যদি আপনি কোনো অন্য ডোমেনের সাথে জুড়তে চান তাহলে সবার প্রথমে ডিভাইস পুনরুদ্ধার করা প্রয়োজন।</translation>
 <translation id="1274977772557788323">Adobe Flash Player সঞ্চয়স্থান সেটিংস...</translation>
 <translation id="1274997165432133392">কুকিজ এবং অন্য সাইট ডেটা</translation>
@@ -415,7 +414,6 @@
 <translation id="161460670679785907">আপনার ফোনটি শনাক্ত করা যায়নি</translation>
 <translation id="1616206807336925449">এই এক্সটেনশনটির কোনো বিশেষ অনুমতির প্রয়োজন নেই।</translation>
 <translation id="1616298854599875024">এটি একটি শেয়ার করা মডিউল না হওয়ার কারণে <ph name="IMPORT_NAME" /> এক্সটেনশন ইমপোর্ট করা যাচ্ছে না</translation>
-<translation id="161707228174452095">আঙ্গুলের ছাপ যোগ করা হয়েছে!</translation>
 <translation id="1618268899808219593">সহায়তা কেন্দ্র</translation>
 <translation id="162035744160882748">সিঙ্ক, ব্যক্তিগতকরণ এবং অন্যান্য Google পরিষেবাগুলি চালু করুন</translation>
 <translation id="1620510694547887537">ক্যামেরা</translation>
@@ -692,7 +690,6 @@
 <translation id="2028997212275086731">RAR আর্কাইভ</translation>
 <translation id="2034346955588403444">অন্য ওয়াই ফাই নেটওয়ার্ক যোগ করুন</translation>
 <translation id="203574396658008164">লক স্ক্রিন থেকেই নোট নেওয়া সক্ষম করুন</translation>
-<translation id="2039623879703305659">আঙ্গুল অতি দ্রুত সরানো হয়েছে</translation>
 <translation id="2040460856718599782">ওহো! আপনাকে প্রমাণীকরণ করতে চেষ্টা করার সময় কিছু ত্রুটি হয়েছিল৷  দয়া করে আপনার লগ-ইন শংসাপত্রাদি আবার পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
 <translation id="2043818754674261542">এই <ph name="DEVICE_TYPE" /> আনলক করার জন্য দূরত্ব প্রয়োজন</translation>
 <translation id="204497730941176055">Microsoft শংসাপত্র টেম্পলেট নাম</translation>
@@ -736,7 +733,6 @@
 <translation id="2099686503067610784">সার্ভার শংসাপত্র "<ph name="CERTIFICATE_NAME" />" মুছবেন?</translation>
 <translation id="2100273922101894616">স্বতঃ সাইন-ইন</translation>
 <translation id="2101225219012730419">সংস্করণ:</translation>
-<translation id="2107494551712864447">একটি আঙ্গুলের ছাপ যোগ করুন</translation>
 <translation id="2112877397266219826">আমাকে সেট করতে আপনার স্পর্শ নিয়ন্ত্রক চালু করুন</translation>
 <translation id="21133533946938348">ট্যাব পিন করুন</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
@@ -1012,7 +1008,6 @@
 <translation id="2526590354069164005">ডেস্কটপ</translation>
 <translation id="2526619973349913024">আপডেট চেক করুন</translation>
 <translation id="2527167509808613699">যেকোনও প্রকারের কানেকশন</translation>
-<translation id="2532026602297547439">সেন্সর অপরিষ্কার</translation>
 <translation id="2532589005999780174">উচ্চ কনট্রাস্ট মোড</translation>
 <translation id="253434972992662860">&amp;বিরাম</translation>
 <translation id="2534460670861217804">সুরক্ষিত HTTP প্রক্সী</translation>
@@ -1372,7 +1367,6 @@
 <translation id="3057861065630527966">আপনার ফটো ও ভিডিওগুলির ব্যাকআপ নিন</translation>
 <translation id="3060379269883947824">'বাছুন ও শুনুন' চালু করুন</translation>
 <translation id="3061707000357573562">প্যাচ পরিষেবা</translation>
-<translation id="3064410671692449875">অপর্যাপ্ত ডেটা</translation>
 <translation id="3065041951436100775">ট্যাব নষ্ট হওয়ার প্রতিক্রিয়া।</translation>
 <translation id="3067198179881736288">অ্যাপ ইনস্টল করবেন?</translation>
 <translation id="3067198360141518313">এই প্লাগ ইনটি চালনা করুন</translation>
@@ -2308,7 +2302,6 @@
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" এ সংযুক্ত করার সময় প্রমাণীকরণ বাতিল করা হয়েছে৷</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ফাইল</translation>
 <translation id="457386861538956877">আরও...</translation>
-<translation id="4576537685267142337">আঙ্গুল তুলুন, তারপরে আবার সেন্সরে স্পর্শ করুন</translation>
 <translation id="4576541033847873020">ব্লুটুথ ডিভাইস যুক্ত করুন</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> কাস্ট করতে ব্যর্থ হয়েছে।</translation>
 <translation id="4580526846085481512">আপনি কি "$1" আইটেম মুছতে চান?</translation>
@@ -2551,7 +2544,6 @@
 <translation id="4941627891654116707">হরফের মাপ</translation>
 <translation id="494286511941020793">প্রক্সি কনফিগারেশন সহায়তা</translation>
 <translation id="4945444280533270988">Smart Lock চালু রয়েছে</translation>
-<translation id="494660967831069720">আংশিক ডেটা</translation>
 <translation id="4953689047182316270">অ্যাক্সেসযোগ্যতা সংক্রান্ত ইভেন্টে প্রতিক্রিয়া দিতে চায়</translation>
 <translation id="4953808748584563296">ডিফল্ট কমলা রঙের অবতার</translation>
 <translation id="4955814292505481804">বার্ষিক</translation>
@@ -3506,7 +3498,6 @@
 <translation id="6384275966486438344">আপনার সার্চের সেটিংস এ পরিবর্তন করুন: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">সাইটগুলি কুকি ডেটা সংরক্ষণ করতে ও পড়তে পারে</translation>
 <translation id="6388429472088318283">ভাষাগুলি সার্চ করুন</translation>
-<translation id="6388771388956873507">আপনার ডিভাইসে আঙ্গুলের ছাপ নেওয়ার সেন্সরটি খুঁজে নিয়ে সেটিকে আপনার আঙুল দিয়ে স্পর্শ করুন</translation>
 <translation id="6390799748543157332">এই উইন্ডোতে আপনি যে পৃষ্ঠাগুলি দেখেন তা ব্রাউজারের ইতিহাসে উপস্থিত হবে না, এবং আপনি সমস্ত খোলা অতিথি উইন্ডো বন্ধ করার পরে এগুলি কম্পিউটারটিতে কুকিজের মতো অন্যান্য ট্রেসগুলিও রেখে যাবে না৷ যদিও আপনার ডাউনলোড করা যেকোনো ফাইল সংরক্ষিত করা হবে৷</translation>
 <translation id="6390994422085833176">সেট-আপ হওয়ার পর সিঙ্ক এবং আপনার জন্য তৈরি বৈশিষ্ট্যগুলি পর্যালোচনা করুন</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />সিস্টেমের তথ্য<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />মেট্রিক্স<ph name="END_LINK2" /> পাঠান</translation>
@@ -4104,7 +4095,6 @@
 <translation id="7309257895202129721">&amp;নিয়ন্ত্রণগুলি দেখান</translation>
 <translation id="7310598146671372464">লগ-ইন করা সম্ভব হয়নি। সার্ভারটি নির্দিষ্ট Kerberos এনক্রিপশনের ধরনগুলি সমর্থন করে না। আপনার অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="7311079019872751559">আনসান্ডবক্সড প্ল্যাগ ইন অ্যাক্সেস</translation>
-<translation id="7311891583377621132">আঙ্গুলের ছাপের বিভিন্ন অংশ ক্যাপচার করতে সেটি এদিক ওদিক সরান</translation>
 <translation id="7317680720589234980">স্ক্রিন লক এবং সাইন-ইনের বিকল্প</translation>
 <translation id="7321545336522791733">সার্ভারে সংযোগ করা যাচ্ছে না</translation>
 <translation id="7324297612904500502">বিটা ফোরাম</translation>
@@ -4942,7 +4932,6 @@
 <translation id="8639047128869322042">ক্ষতিকর সফ্টওয়্যার খোঁজা হচ্ছে...</translation>
 <translation id="8639963783467694461">স্বতঃপূর্ণ সেটিংস</translation>
 <translation id="8642171459927087831">অ্যাক্সেস টোকেন</translation>
-<translation id="8642267168767642381">আঙ্গুল খুব ধীরে সরানো হয়েছে</translation>
 <translation id="8642947597466641025">পাঠ্যকে আরও বড় করুন</translation>
 <translation id="8643418457919840804">চালিয়ে যেতে, একটি বিকল্প বেছে নিন:</translation>
 <translation id="8645354835496065562">সেন্সর অ্যাক্সেস করার অনুমতি চালু রাখুন</translation>
@@ -5302,7 +5291,6 @@
 <translation id="916607977885256133">ছবির-মধ্যে-ছবি</translation>
 <translation id="9169496697824289689">কীবোর্ড শর্টকাটগুলি দেখুন</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> অ্যাপটি হোম স্ক্রিনে যোগ করুন</translation>
-<translation id="9170397650136757332">এবার আপনার আঙ্গুলের ছাপের সমস্ত অংশ ক্যাপচার করতে আপনার আঙ্গুল সামান্য সরান</translation>
 <translation id="9170848237812810038">&amp;পূর্বাবস্থায় ফিরুন</translation>
 <translation id="9170884462774788842">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি থিম জুড়েছে যা Chrome এর কাজ করার পদ্ধতিকে পাল্টে দিতে পারে৷</translation>
 <translation id="9173995187295789444">ব্লুটুথ ডিভাইসগুলির জন্য স্ক্যান করা হচ্ছে...</translation>

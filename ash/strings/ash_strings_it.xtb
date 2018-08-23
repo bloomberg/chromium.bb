@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> aggiunto</translation>
 <translation id="1056775291175587022">Nessuna rete</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Mi annoio</translation>
 <translation id="1104084341931202936">Mostra impostazioni di accessibilità</translation>
 <translation id="1104621072296271835">I tuoi dispositivi funzionano ancora meglio insieme</translation>
 <translation id="112308213915226829">Nascondi automaticamente shelf</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Cancella tutto</translation>
 <translation id="1247372569136754018">Microfono (interno)</translation>
 <translation id="1252999807265626933">In carica da: <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Che tempo fa?</translation>
 <translation id="1267032506238418139">Modifica alla scorciatoia</translation>
 <translation id="1270290102613614947">Tastiera sullo schermo disattivata</translation>
 <translation id="1272079795634619415">Interrompi</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Puoi avere massimo <ph name="MULTI_PROFILE_USER_LIMIT" /> account per l'accesso simultaneo.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connesso a un dispositivo}other{Connesso a # dispositivi}}</translation>
 <translation id="3236488194889173876">Nessuna rete mobile disponibile</translation>
+<translation id="3255483164551725916">Cosa sai fare?</translation>
 <translation id="3294437725009624529">Ospite</translation>
 <translation id="332587331255250389">Sostituisci la batteria</translation>
 <translation id="3351879221545518001">Al momento stai trasmettendo lo schermo.</translation>
@@ -185,6 +188,7 @@
 <translation id="4017989525502048489">Puntatore laser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Disattivata per un'app}other{Disattivate per # app}}</translation>
 <translation id="4072264167173457037">Segnale medio</translation>
+<translation id="4146833061457621061">Fammi ascoltare musica</translation>
 <translation id="4200057768455216496">Hai premuto la scorciatoia per la lente d'ingrandimento ancorata. Vuoi attivarla?</translation>
 <translation id="4217571870635786043">Dettatura</translation>
 <translation id="4261870227682513959">Mostra impostazioni di notifica. Le notifiche sono disattivate</translation>
@@ -344,6 +348,7 @@
 <translation id="7037152028959403492">Hai premuto la scorciatoia per l'alto contrasto. Vuoi attivarlo?</translation>
 <translation id="7066646422045619941">Questa rete è stata disattivata dall'amministratore.</translation>
 <translation id="7067196344162293536">Ruota in modo automatico</translation>
+<translation id="7068360136237591149">Apri file</translation>
 <translation id="7076293881109082629">Accesso</translation>
 <translation id="7092922358121866860">Mostra le impostazioni Luminosità notturna</translation>
 <translation id="7098389117866926363">Dispositivo USB-C (porta posteriore sinistra)</translation>
@@ -387,6 +392,7 @@
 <translation id="7842569679327885685">Avviso: funzione sperimentale</translation>
 <translation id="7846634333498149051">Tastiera</translation>
 <translation id="7886277072580235377">La sessione verrà cancellata al momento dell'uscita dall'account. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Invia un'email</translation>
 <translation id="790040513076446191">Modifica delle impostazioni relative alla privacy</translation>
 <translation id="7904094684485781019">L'amministratore di questo account ha bloccato l'accesso simultaneo.</translation>
 <translation id="7933084174919150729">L'Assistente Google è disponibile solo per il profilo principale.</translation>
@@ -449,6 +455,7 @@
 <translation id="8850991929411075241">Tasto di ricerca+ESC</translation>
 <translation id="8870509716567206129">L'app non supporta la modalità Schermo diviso.</translation>
 <translation id="8874184842967597500">Non connessa</translation>
+<translation id="8877788021141246043">Imposta un promemoria</translation>
 <translation id="8878886163241303700">Estensione schermo</translation>
 <translation id="8921624153894383499">L'Assistente Google non parla questa lingua.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta posteriore destra)</translation>
@@ -472,6 +479,7 @@
 <translation id="9210037371811586452">Uscita dalla modalità Desktop unificato</translation>
 <translation id="9215934040295798075">Imposta sfondo</translation>
 <translation id="923686485342484400">Premi due volte Control Maiusc Q per uscire.</translation>
+<translation id="938963181863597773">Cosa è segnato sul mio calendario?</translation>
 <translation id="945522503751344254">Invia feedback</translation>
 <translation id="98515147261107953">Orizzontale</translation>
 <translation id="995927048686010764">Clic automatico</translation>

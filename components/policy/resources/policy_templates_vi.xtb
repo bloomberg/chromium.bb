@@ -191,6 +191,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Cho phép chặn phần mềm bên thứ ba thêm mã thực thi</translation>
 <translation id="1504431521196476721">Chứng thực từ xa</translation>
+<translation id="1507957856411744193">Nếu bạn đặt chính sách này thành true, thì <ph name="PRODUCT_NAME" /> sẽ kết nối với Thiết bị truyền trên tất cả các địa chỉ IP, chứ không chỉ các địa chỉ riêng RFC1918/RFC4913.
+
+          Nếu bạn đặt chính sách này thành false, thì <ph name="PRODUCT_NAME" /> sẽ chỉ kết nối với Thiết bị truyền trên các địa chỉ riêng RFC1918/RFC4913.
+
+          Nếu bạn chưa đặt chính sách này, thì <ph name="PRODUCT_NAME" /> sẽ chỉ kết nối với Thiết bị truyền trên các địa chỉ riêng RFC1918/RFC4913, trừ khi bạn bật tính năng CastAllowAllIPs.
+
+          Nếu bạn đặt chính sách "EnableMediaRouter" thành false, thì khi đó giá trị của chính sách này sẽ không có hiệu lực.</translation>
 <translation id="1509692106376861764">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_NAME" /> 29.</translation>
 <translation id="1514888685242892912">Bật <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Cho phép các trang web theo dõi vị trí thực của người dùng</translation>
@@ -364,11 +371,6 @@
 
           Nếu không thiết lập chính sách này, tất cả bốn cơ chế sẽ được sử dụng.</translation>
 <translation id="2067011586099792101">Chặn truy cập vào các trang web nằm ngoài gói nội dung</translation>
-<translation id="2070270043919235595">Thông báo cho người dùng biết rằng phải chạy lại <ph name="PRODUCT_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
-
-      Cài đặt chính sách này bật thông báo để báo cho người dùng rằng họ cần hoặc bắt buộc phải chạy lại trình duyệt. Nếu người dùng không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cho người dùng biết rằng họ cần chạy lại qua các thay đổi nhỏ đối với menu của sản phẩm. Nếu người dùng đặt chính sách thành 'Đề xuất', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng họ cần chạy lại. Người dùng có thể bỏ qua cảnh báo này để hoãn việc chạy lại. Nếu người dùng đặt chính sách thành 'Bắt buộc', một cảnh báo lặp lại sẽ hiển thị cho người dùng biết rằng bắt buộc phải chạy lại trình duyệt sau khi khoảng thời gian thông báo đã hết. Khoảng thời gian này là 7 ngày theo mặc định và có thể định cấu hình qua cài đặt chính sách <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Phiên của người dùng được lưu trữ sau lần chạy lại đó.</translation>
 <translation id="2073552873076775140">Cho phép đăng nhập vào <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
 <translation id="2077273864382355561">Độ trễ tắt màn hình khi chạy trên nguồn pin</translation>
@@ -932,7 +934,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Chính sách này là tùy chọn. Nếu không được đặt, sẽ không có trang tab mới nào được cung cấp.
 
           Chính sách này chỉ được tuân thủ nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
-<translation id="3465852069254497664">Thông báo cho người dùng biết rằng cần hoặc bắt buộc chạy lại trình duyệt</translation>
 <translation id="346731943813722404">Chỉ định liệu độ trễ quản lý nguồn và giới hạn thời lượng phiên có chỉ bắt đầu chạy sau khi hoạt động đầu tiên của người dùng được quan sát thấy trong phiên hay không.
 
           Nếu chính sách này được đặt thành Đúng, độ trễ quản lý nguồn và giới hạn thời lượng phiên sẽ không bắt đầu chạy cho đến sau khi hoạt động đầu tiên của người dùng được quan sát thấy trong phiên.
@@ -2030,6 +2031,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Chính sách <ph name="SYNC_DISABLED_POLICY_NAME" /> sẽ tắt tất cả đồng bộ hóa dữ liệu, ghi đè RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Lọc các trang web cấp cao nhất (không phải iframe được nhúng) có nội dung người lớn</translation>
+<translation id="6734521799274931721">Kiểm soát tính sẵn có của ứng dụng Chia sẻ tệp trong mạng cho Chrome OS</translation>
 <translation id="6735701345096330595">Buộc bật tính năng kiểm tra chính tả ngôn ngữ</translation>
 <translation id="673699536430961464">Cài đặt này cho phép người dùng chuyển đổi giữa các tài khoản Google trong vùng nội dung của cửa sổ trình duyệt sau khi họ đăng nhập vào thiết bị <ph name="PRODUCT_OS_NAME" /> của mình.
 
@@ -2181,17 +2183,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Khi màn hình sắp mờ đi, mô hình làm mờ thông minh sẽ đánh giá xem có nên làm chậm quá trình làm mờ màn hình hay không. Nếu mô hình làm mờ thông minh làm chậm quá trình mờ màn hình, thì có nghĩa mô hình này đã kéo dài được thời gian cho đến khi màn hình mờ đi. Trong trường hợp này, độ trễ tắt màn hình, độ trễ khóa màn hình và độ trễ khi không hoạt động sẽ được điều chỉnh để duy trì cùng khoảng cách với độ trễ mờ màn hình như được định cấu hình ban đầu.
       Nếu bạn đặt chính sách này là True hoặc không đặt, thì mô hình làm mờ thông minh sẽ bật và được phép kéo dài thời gian cho đến khi màn hình mờ đi. Nếu bạn đặt chính sách này là False, thì mô hình làm mờ thông minh sẽ không ảnh hưởng tới quá trình làm mờ màn hình.</translation>
-<translation id="6982028490425791294">
-      Nếu bạn đặt chính sách này là true, thì <ph name="PRODUCT_NAME" /> được phép thu thập nhật ký sự kiện WebRTC từ các dịch vụ của Google (ví dụ: Google Meet), và tải các nhật ký đó lên Google.
-
-      Nếu bạn đặt chính sách này thành false hoặc không đặt, thì <ph name="PRODUCT_NAME" /> không được phép thu thập hay tải các nhật ký đó lên.
-
-      Những nhật ký này chứa các loại thông tin, chẳng hạn như thời gian và kích thước các gói RTP gửi đi và nhận được, phản hồi về tình trạng nghẽn mạng, cũng như siêu dữ liệu về thời gian và chất lượng của âm thanh cũng như khung video. Thông tin này hữu ích khi gỡ lỗi các vấn đề về cuộc gọi thoại hoặc cuộc gọi video trong Chrome, chẳng hạn như vấn đề về ước tính băng thông, v.v. Các nhật ký này không chứa nội dung video hoặc nội dung thoại của các cuộc gọi.
-
-      Chỉ các dịch vụ web của Google, chẳng hạn như Google Hangouts hoặc Google Meet, mới có thể kích hoạt việc thu thập dữ liệu này.
-
-      Thông qua ID phiên, những nhật ký này có thể liên kết với các nhật ký khác do dịch vụ của Google tự thu thập. Điều này nhằm giúp quá trình gỡ lỗi dễ dàng hơn.
-      </translation>
 <translation id="6994082778848658360">Chỉ định cách bạn có thể sử dụng phần cứng tích hợp phần tử bảo mật để cung cấp xác thực hai yếu tố nếu tương thích với tính năng này. Nút nguồn của máy dùng để phát hiện sự hiện diện của người dùng.
 
       Nếu bạn chọn 'Đã tắt' thì sẽ không nhận được hai yếu tố.
@@ -3021,11 +3012,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
-<translation id="9085839450090699752">Cho phép bạn đặt khoảng thời gian, tính bằng mili giây mà qua đó người dùng được thông báo rằng phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại thiết bị chạy <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
-
-      Quá khoảng thời gian này, người dùng sẽ được nhắc lại nhiều lần về việc cần phải cập nhật. Đối với các thiết bị chạy <ph name="PRODUCT_OS_NAME" />, thông báo khởi động lại sẽ xuất hiện trong khay hệ thống khi phát hiện có bản nâng cấp. Thông báo này sẽ đổi màu khi hết một nửa thời gian thông báo và đổi màu một lần nữa khi hết toàn bộ thời gian thông báo. Đối với các trình duyệt <ph name="PRODUCT_NAME" />, menu ứng dụng sẽ thay đổi để cho thấy cần chạy lại sau khi đã qua một phần ba thời gian thông báo. Thông báo này sẽ đổi màu sau khi đã qua hai phần ba thời gian thông báo và đổi màu một lần nữa khi hết toàn bộ thời gian thông báo. Những thông báo bổ sung được chính sách <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> bật cho các trình duyệt sẽ tuân theo lịch biểu tương tự này.
-
-      Nếu không được đặt, chúng tôi sẽ sử dụng khoảng thời gian mặc định là 345.600.000 mili giây (bốn ngày) cho các thiết bị chạy <ph name="PRODUCT_OS_NAME" /> và 604.800.000 mili giây (một tuần) cho các trình duyệt.</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>
 <translation id="9088444059179765143">Định cấu hình phương thức phát hiện múi giờ tự động</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>

@@ -69,7 +69,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="1445680696957526815">Os componentes do Chrome são incompatíveis entre si. O Chrome pode estar fazendo um upgrade. Tente novamente em alguns minutos. Se o problema persistir, tente desinstalar e reinstalar o Chrome.</translation>
 <translation id="1446450296470737166">Permitir controle total de dispositivos MIDI</translation>
 <translation id="145097072038377568">Desativada nas configurações do Android</translation>
-<translation id="1455941322673536744">Preenchimento autom. e pagamentos</translation>
+<translation id="1455941322673536744">Autopreenchimento e pagamentos</translation>
 <translation id="1477626028522505441">Falha no download do arquivo <ph name="FILE_NAME" /> devido a problemas de servidor.</translation>
 <translation id="1506061864768559482">Mecanismo de pesquisa</translation>
 <translation id="1513352483775369820">Favoritos e histórico da Web</translation>
@@ -875,6 +875,7 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7981313251711023384">Pré-carregar páginas para possibilitar navegação e pesquisa mais rápidas</translation>
 <translation id="79859296434321399">Para ver conteúdo de realidade aumentada, instale o ARCore</translation>
 <translation id="7987073022710626672">Termos de Serviço do Chrome</translation>
+<translation id="7987764905897278458">Aproveite mais a tecnologia do Google</translation>
 <translation id="7998918019931843664">Reabrir guia fechada</translation>
 <translation id="7999064672810608036">Tem certeza que quer apagar todos os dados locais, inclusive os cookies, e redefinir todas as permissões para este website?</translation>
 <translation id="8004582292198964060">Navegador</translation>
@@ -961,6 +962,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8664979001105139458">O nome do arquivo já existe</translation>
 <translation id="8676374126336081632">Limpar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nível de intensidade do sinal: de # barra}one{Nível de intensidade do sinal: de # barra}other{Nível de intensidade do sinal: de # barras}}</translation>
+<translation id="868929229000858085">Pesquisar seus contatos</translation>
 <translation id="869891660844655955">Validade</translation>
 <translation id="8719023831149562936">Não é possível enviar a guia atual</translation>
 <translation id="8725066075913043281">Tentar novamente</translation>
@@ -995,6 +997,7 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="8986494364107987395">Envia estatísticas de uso e relatórios de erros ao Google automaticamente</translation>
 <translation id="8993760627012879038">Abrir uma nova guia no modo de navegação anônima</translation>
 <translation id="8998729206196772491">Você está fazendo login com uma conta gerenciada por <ph name="MANAGED_DOMAIN" /> e dando ao administrador dela o controle sobre seus dados do Chrome, os quais ficarão permanentemente vinculados a essa conta. Se você sair do Chrome, seus dados serão excluídos desse dispositivo, mas permanecerão armazenados na sua Conta do Google.</translation>
+<translation id="9018881455348618200">Botão "Pesquisar"</translation>
 <translation id="9019902583201351841">Gerenciado pelos seus pais</translation>
 <translation id="9040142327097499898">As notificações são permitidas. A localização está desativada neste dispositivo.</translation>
 <translation id="9050666287014529139">Senha</translation>

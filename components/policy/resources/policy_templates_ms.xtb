@@ -193,6 +193,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Dayakan penyekatan suntikan perisian pihak ketiga</translation>
 <translation id="1504431521196476721">Pembuktian Jauh</translation>
+<translation id="1507957856411744193">Jika dasar ini ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada semua alamat IP, bukan alamat peribadi RFC1918/RFC4193 semata-mata.
+
+          Jika dasar ini ditetapkan kepada palsu, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada alamat peribadi RFC1918/RFC4193 sahaja.
+
+          Jika dasar ini tidak ditetapkan, <ph name="PRODUCT_NAME" /> akan menyambung ke peranti Cast pada alamat peribadi RFC1918/RFC4193 sahaja, melainkan ciri CastAllowAllIPs didayakan.
+
+          Jika dasar "EnableMediaRouter" ditetapkan kepada palsu, maka nilai dasar ini tidak memberikan sebarang kesan.</translation>
 <translation id="1509692106376861764">Dasar ini telah dihentikan pada <ph name="PRODUCT_NAME" /> versi 29.</translation>
 <translation id="1514888685242892912">Dayakan <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Membenarkan tapak untuk mengesan lokasi fizikal pengguna</translation>
@@ -372,11 +379,6 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, kesemua empat skim akan digunakan.</translation>
 <translation id="2067011586099792101">Sekat akses ke tapak web di luar pek kandungan</translation>
-<translation id="2070270043919235595">Maklumi pengguna bahawa <ph name="PRODUCT_NAME" /> mesti dilancarkan semula untuk menggunakan kemas kini yang belum selesai.
-
-      Tetapan dasar ini mendayakan pemberitahuan untuk memaklumi pengguna bahawa pelancaran semula penyemak imbas adalah disyorkan atau diperlukan. Jika tidak ditetapkan, <ph name="PRODUCT_NAME" /> menunjukkan kepada pengguna bahawa pelancaran semula diperlukan melalui sedikit perubahan kepada menunya. Jika ditetapkan kepada 'Disyorkan', amaran berulang akan ditunjukkan kepada pengguna bahawa pelancaran semula disyorkan. Pengguna boleh menolak amaran ini untuk menunda pelancaran semula. Jika ditetapkan kepada 'Diperlukan', amaran berulang akan ditunjukkan kepada pengguna yang menunjukkan bahawa pelancaran semula penyemak imbas akan dipaksa selepas tempoh pemberitahuan tamat. Tempoh ini ialah 7 hari secara lalai dan boleh dikonfigurasikan melalui tetapan dasar <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Sesi pengguna dipulihkan selepas pelancaran semula.</translation>
 <translation id="2073552873076775140">Benarkan log masuk ke <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Gunakan pecutan perkakasan apabila tersedia</translation>
 <translation id="2077273864382355561">Kelewatan pemadaman skrin apabila dijalankan dengan kuasa bateri</translation>
@@ -934,7 +936,6 @@
           Dasar ini merupakan pilihan. Jika tidak ditetapkan, tiada halaman tab baharu akan disediakan.
 
           Dasar ini hanya dikuatkuasakan jika dasar 'DefaultSearchProviderEnabled' didayakan.</translation>
-<translation id="3465852069254497664">Maklumi pengguna bahawa pelancaran semula penyemak imbas disyorkan atau diperlukan</translation>
 <translation id="346731943813722404">Menentukan sama ada lengah pengurusan kuasa dan had tempoh sesi hanya harus mula dijalankan selepas aktiviti pengguna awal dalam sesi.
 
           Jika dasar ini ditetapkan kepada Benar, lengah pengurusan kuasa dan had tempoh sesi tidak mula dijalankan sehingga selepas aktiviti pengguna pertama telah diperhatikan dalam sesi.
@@ -2035,6 +2036,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Dasar <ph name="SYNC_DISABLED_POLICY_NAME" /> melumpuhkan semua penyegerakan data, mengatasi RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Tapis tapak peringkat atas (tetapi bukan iframe yang dibenamkan) untuk kandungan dewasa</translation>
+<translation id="6734521799274931721">Mengawal Perkongsian Fail Rangkaian untuk ketersediaan OS Chrome</translation>
 <translation id="6735701345096330595">Paksa dayakan semakan ejaan bahasa</translation>
 <translation id="673699536430961464">Tetapan ini membenarkan pengguna beralih antara akaun Google dalam kawasan kandungan tetingkap penyemak imbas selepas mereka mengelog masuk ke peranti <ph name="PRODUCT_OS_NAME" /> mereka.
 
@@ -2185,17 +2187,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
       Apabila skrin hendak dimalapkan, model pemalapan pintar akan menilai sama ada pemalapan skrin harus ditunda. Jika model pemalapan pintar menunda pemalapan skrin, model itu melanjutkan masa sehingga skrin dimalapkan. Dalam kes ini, skrin dimatikan, kunci skrin dan kelengahan melahu dilaraskan untuk mengekalkan jarak yang sama dari kelengahan pemalapan skrin seperti yang dikonfigurasi pada asalnya.
       Jika dasar ini ditetapkan kepada Benar atau dibiarkan tidak ditetapkan, model pemalapan pintar akan didayakan dan dibenarkan melanjutkan masa sehingga skrin dimalapkan. Jika dasar ini ditetapkan kepada Palsu, model pemalapan pintar tidak akan mempengaruhi pemalapan skrin.</translation>
-<translation id="6982028490425791294">
-      Jika dasar ditetapkan kepada benar, <ph name="PRODUCT_NAME" /> dibenarkan mengumpulkan log peristiwa WebRTC daripada perkhidmatan Google (mis. Google Meet) dan memuat naik log tersebut ke Google.
-
-      Jika dasar ini ditetapkan kepada palsu atau tidak ditetapkan, <ph name="PRODUCT_NAME" /> tidak boleh mengumpul mahupun memuat naik log tersebut.
-
-      Log ini mengandungi maklumat seperti masa dan saiz paket RTP yang dihantar dan diterima, maklum balas tentang kesesakan pada rangkaian serta metadata tentang masa dan kualiti bingkai audio dan video. Maklumat ini berguna apabila menyahpepijat isu berkaitan panggilan audio atau video dalam Chrome, seperti isu anggaran lebar jalur, dll. Log tidak mengandungi kandungan audio atau video daripada panggilan.
-
-      Pengumpulan data ini hanya boleh dicetuskan oleh perkhidmatan web Google, seperti Google Hangouts atau Google Meet.
-
-      Log ini mungkin dikaitkan, melalui ID sesi, dengan log lain yang dikumpulkan oleh perkhidmatan Google itu sendiri; ini bertujuan untuk memudahkan penyahpepijatan.
-      </translation>
 <translation id="6994082778848658360">Menyatakan cara perkakasan unsur selamat atas papan boleh digunakan untuk menyediakan pengesahan faktor kedua jika serasi dengan ciri ini. Butang kuasa mesin digunakan untuk mengesan kehadiran fizikal pengguna.
 
       Jika 'Dilumpuhkan' dipilih, faktor kedua tidak disediakan.
@@ -3041,11 +3032,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Menyatakan sama ada aktiviti video menjejaskan pengurusan kuasa</translation>
-<translation id="9085839450090699752">Membenarkan anda menetapkan tempoh waktu dalam milisaat berkenaan pengguna yang akan dimaklumkan tentang <ph name="PRODUCT_NAME" /> yang mesti dilancarkan semula atau tentang peranti <ph name="PRODUCT_OS_NAME" /> yang mesti dimulakan semula untuk menggunakan kemas kini yang belum selesai.
-
-      Sepanjang tempoh waktu ini, pengguna akan dimaklumkan berulang kali tentang perlunya kemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem apabila naik taraf dikesan. Pemberitahuan ini akan berubah warna apabila separuh daripada tempoh pemberitahuan telah berlalu dan berubah warna sekali lagi apabila keseluruhan tempoh pemberitahuan telah berlalu. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga tempoh pemberitahuan telah berlalu dan berubah warna sekali lagi apabila keseluruhan tempoh pemberitahuan telah berlalu. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> untuk penyemak imbas akan mengikut jadual yang sama ini.
-
-      Jika tidak ditetapkan, tempoh lalai 345600000 milisaat (empat hari) akan digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604800000 milisaat (satu minggu) untuk penyemak imbas.</translation>
 <translation id="9088433379343318874">Dayakan penyedia kandungan pengguna di bawah seliaan</translation>
 <translation id="9088444059179765143">Konfigurasi kaedah pengesanan zon waktu automatik</translation>
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>

@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">સિંક અને બધી સેવાઓનો ઉપયોગ કરો</translation>
 <translation id="1272079795634619415">રોકો</translation>
-<translation id="1272242203003205253">તમને સહાય કરવા માટે, Google પાર્ટનર તમારા આસિસ્ટંટ સાથે કાર્ય કરે છે</translation>
 <translation id="1272978324304772054">આ વપરાશકર્તા એકાઉન્ટ ઉપકરણની નોંધણી થયેલા ડોમેનમાંનું નથી. જો તમે કોઈ અલગ ડોમેન પર નોંધણી કરવા માગતા હો તો તમારે પ્રથમ ઉપકરણ પુનઃપ્રાપ્તિથી જવાની જરૂર પડશે.</translation>
 <translation id="1274977772557788323">Adobe Flash Player સ્ટોરેજ સેટિંગ્સ</translation>
 <translation id="1274997165432133392">કુકીઝ અને અન્ય સાઇટ ડેટા</translation>
@@ -411,7 +410,6 @@
 <translation id="161460670679785907">તમારો ફોન શોધવામાં અસમર્થ</translation>
 <translation id="1616206807336925449">આ એક્સટેન્શનને કોઈ વિશિષ્ટ પરવાનગીઓની જરૂર નથી.</translation>
 <translation id="1616298854599875024">એક્સટેંશન "<ph name="IMPORT_NAME" />" આયાત કરવામાં અસમર્થ કારણ કે તે કોઈ શેર કરેલ મૉડ્યૂલ નથી</translation>
-<translation id="161707228174452095">ફિંગરપ્રિન્ટ ઉમેરી!</translation>
 <translation id="1618268899808219593">સ&amp;હાય કેન્દ્ર</translation>
 <translation id="162035744160882748">સિંક, વૈયક્તિકરણ અને અન્ય Google સેવાઓ ચાલુ કરો</translation>
 <translation id="1620510694547887537">કૅમેરો</translation>
@@ -689,7 +687,6 @@
 <translation id="2028997212275086731">RAR આર્કાઇવ</translation>
 <translation id="2034346955588403444">અન્ય WiFi નેટવર્ક ઉમેરો</translation>
 <translation id="203574396658008164">લૉક સ્ક્રીનમાંથી નોંધ લેવાનું સક્ષમ કરો</translation>
-<translation id="2039623879703305659">ફિંગરપ્રિન્ટ બહુ જ ઝડપથી ખસેડી</translation>
 <translation id="2040460856718599782">અરેરે! તમને પ્રમાણિત કરવાનો પ્રયાસ કરતી વખતે કંઈક ખોટું થયું. કૃપા કરીને તમારા સાઇન-ઇન ઓળખપત્રોને બીજીવાર તપાસો અને ફરી પ્રયાસ કરો.</translation>
 <translation id="2043818754674261542">આ <ph name="DEVICE_TYPE" />ને અનલૉક કરવા માટે ફોન માટેનું જરૂરી અંતર</translation>
 <translation id="204497730941176055">Microsoft પ્રમાણપત્ર નમૂના નામ</translation>
@@ -733,7 +730,6 @@
 <translation id="2099686503067610784">સર્વર પ્રમાણપત્ર "<ph name="CERTIFICATE_NAME" />" ને કાઢી નાખીએ?</translation>
 <translation id="2100273922101894616">સ્વતઃ સાઇન-ઇન</translation>
 <translation id="2101225219012730419">સંસ્કરણ:</translation>
-<translation id="2107494551712864447">કોઈ ફિંગરપ્રિન્ટ ઉમેરો</translation>
 <translation id="2112877397266219826">મને સેટ કરવા માટે તમારા ટચ નિયંત્રકોને ચાલુ કરો</translation>
 <translation id="21133533946938348">ટૅબ પિન કરો</translation>
 <translation id="2113479184312716848">Open &amp;File...</translation>
@@ -1009,7 +1005,6 @@
 <translation id="2526590354069164005">ડેસ્કટૉપ</translation>
 <translation id="2526619973349913024">અપડેટ માટે તપાસો</translation>
 <translation id="2527167509808613699">કોઈપણ પ્રકારનું કનેક્શન</translation>
-<translation id="2532026602297547439">સેન્સર ગંદું છે</translation>
 <translation id="2532589005999780174">ઉચ્ચ કોન્ટ્રાસ્ટ મોડ</translation>
 <translation id="253434972992662860">&amp;થોભો</translation>
 <translation id="2534460670861217804">સુરક્ષિત HTTP પ્રોક્સી</translation>
@@ -1367,7 +1362,6 @@
 <translation id="3057861065630527966">તમારા ફોટો અને વિડિઓઝનો બેકઅપ લો</translation>
 <translation id="3060379269883947824">સાંભળવા માટે પસંદ કરોને ચાલુ કરો</translation>
 <translation id="3061707000357573562">પૅચ સેવા</translation>
-<translation id="3064410671692449875">અપૂરતો ડેટા</translation>
 <translation id="3065041951436100775">ટેબ ફરજિયાત બંધ કરવાનો પ્રતિસાદ.</translation>
 <translation id="3067198179881736288">ઍપ ઇન્સ્ટૉલ કરીએ?</translation>
 <translation id="3067198360141518313">આ પ્લગિન ચલાવો</translation>
@@ -2307,7 +2301,6 @@
 <translation id="4572659312570518089">"<ph name="DEVICE_NAME" />" થી કનેક્ટ કરતી વખતે પ્રમાણીકરણ રદ કરવામાં આવ્યું.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> ફાઇલ</translation>
 <translation id="457386861538956877">વધુ...</translation>
-<translation id="4576537685267142337">આંગળીને ઉંચકો, પછી ફરીથી સેન્સરને ટચ કરો</translation>
 <translation id="4576541033847873020">Bluetooth ઉપકરણની જોડી કરો</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> કાસ્ટ કરવામાં અસમર્થ.</translation>
 <translation id="4580526846085481512">શું તમે ખરેખર $1 આઇટમ્સને કાઢવા માંગો છો?</translation>
@@ -2550,7 +2543,6 @@
 <translation id="4941627891654116707">ફૉન્ટનું કદ</translation>
 <translation id="494286511941020793">Proxy ગોઠવણી સહાય</translation>
 <translation id="4945444280533270988">Smart Lock સુવિધા ચાલુ છે</translation>
-<translation id="494660967831069720">આંશિક ડેટા</translation>
 <translation id="4953689047182316270">ઍક્સેસિબિલિટી ઇવેન્ટનો જવાબ આપો</translation>
 <translation id="4953808748584563296">ડિફોલ્ટ નારંગી અવતાર</translation>
 <translation id="4955814292505481804">વાર્ષિક</translation>
@@ -3507,7 +3499,6 @@
 <translation id="6384275966486438344">આ પર તમારી શોધ સેટિંગ્સ બદલો: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">સાઇટ્સ કુકી ડેટા સાચવી અને વાંચી શકે છે</translation>
 <translation id="6388429472088318283">ભાષાઓ શોધો</translation>
-<translation id="6388771388956873507">તમારા ઉપકરણ પર ફિંગરપ્રિન્ટ સેન્સર શોધો અને તેને તમારી આંગળી વડે ટચ કરો</translation>
 <translation id="6390799748543157332">આ વિંડોમાં તમે જે પૃષ્ઠો જોઈ રહ્યાં છો તે બ્રાઉઝર ઇતિહાસમાં દેખાશે નહીં અને તે તમે બધી ખુલેલી અતિથિ વિંડોઝ બંધ કરી દો તે પછી તમારા કમ્પ્યુટર પર કૂકીઝ જેવા કોઈ અન્ય નિશાન છોડશે નહીં. જો કે, તમે ડાઉનલોડ કરેલી કોઈપણ ફાઇલો જાળવવામાં આવશે.</translation>
 <translation id="6390994422085833176">સેટઅપ પછી સિંક અને વૈયક્તિકરણ સુવિધાઓનું રિવ્યૂ કરો</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />સિસ્ટમ માહિતી<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />મેટ્રિક્સ<ph name="END_LINK2" /> મોકલો</translation>
@@ -4106,7 +4097,6 @@
 <translation id="7309257895202129721">&amp;નિયંત્રણો બતાવો</translation>
 <translation id="7310598146671372464">લૉગ ઇન કરવામાં નિષ્ફળ થયા. સર્વર આપેલ Kerberos ઍન્ક્રિપ્શન પ્રકારોનું સમર્થન કરતું નથી. કૃપા કરીને તમારા વ્યવસ્થાપકનો સપર્ક કરો.</translation>
 <translation id="7311079019872751559">અનસેન્ડબૉક્સ કરેલ પ્લગિનની ઍક્સેસ</translation>
-<translation id="7311891583377621132">ફિંગરપ્રિન્ટનો ભિન્ન ભાગ કૅપ્ચર કરવા માટે સહેજ ખસેડો</translation>
 <translation id="7317680720589234980">સ્ક્રીન લૉક અને સાઇન ઇન વિકલ્પો</translation>
 <translation id="7321545336522791733">સર્વર પહોંચની બહાર છે</translation>
 <translation id="7324297612904500502">બીટા ચર્ચા મંચ</translation>
@@ -4938,7 +4928,6 @@
 <translation id="8639047128869322042">નુકસાનકારક સૉફ્ટવેરની તપાસ કરી રહ્યાં છીએ…</translation>
 <translation id="8639963783467694461">સ્વતઃભરો સેટિંગ્સ</translation>
 <translation id="8642171459927087831">ઍક્સેસ ટોકન</translation>
-<translation id="8642267168767642381">આંગળી બહુ જ ધીમેથી ખસેડી</translation>
 <translation id="8642947597466641025">ટેક્સ્ટ મોટો કરો</translation>
 <translation id="8643418457919840804">આગળ વધવા માટે, એક વિકલ્પ પસંદ કરો:</translation>
 <translation id="8645354835496065562">સેન્સરના ઍક્સેસની મંજૂરી ચાલુ રાખો</translation>
@@ -5298,7 +5287,6 @@
 <translation id="916607977885256133">ચિત્ર-માં-ચિત્ર</translation>
 <translation id="9169496697824289689">કીબોર્ડ શૉર્ટકટ્સ જુઓ</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" />ને હોમ સ્ક્રીનમાં ઉમેરો</translation>
-<translation id="9170397650136757332">હવે તમારી ફિંગરપ્રિન્ટના નામ ભિન્ન ભાગોને કૅપ્ચર કરવા માટે તમારી આંગળીને સહેજ ખસેડો</translation>
 <translation id="9170848237812810038">&amp;પૂર્વવત્ કરો</translation>
 <translation id="9170884462774788842">તમારા કમ્પ્યુટર પરના બીજા પ્રોગ્રામે એક થીમ ઉમેરી જે Chrome કાર્ય કરે છે તે રીતને બદલી શકે છે.</translation>
 <translation id="9173995187295789444">બ્લૂટૂથ ઉપકરણો માટે સ્કૅન કરી રહ્યાં છીએ...</translation>

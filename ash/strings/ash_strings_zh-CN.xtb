@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">输入法是由您的管理员配置的。</translation>
 <translation id="1747827819627189109">屏幕键盘已启用</translation>
 <translation id="1761222317188459878">切换网络连接设置。<ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">我的屏幕上有什么内容？</translation>
 <translation id="1823873187264960516">以太网：<ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">智能助理（正在加载中…）</translation>
 <translation id="1841545962859478868">此设备的管理员可能会监控以下各项：</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">添加连接</translation>
 <translation id="2961963223658824723">出了点问题。请过几秒钟后重试。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">显示所有通知内容</translation>
 <translation id="2995447421581609334">显示投射设备。</translation>
 <translation id="2996462380875591307">已启用停靠的放大镜。再按一次 Ctrl+搜索键+D 组合键即可将其停用。</translation>
 <translation id="2999742336789313416">“<ph name="DISPLAY_NAME" />”是由 <ph name="DOMAIN" /> 管理的公用自助终端</translation>
@@ -211,12 +213,14 @@
 <translation id="4628757576491864469">设备</translation>
 <translation id="4659419629803378708">已启用 ChromeVox</translation>
 <translation id="4734965478015604180">横向</translation>
+<translation id="476166673298332917">此设备的管理员有权访问所有活动数据，包括密码和通信内容。</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> 的密码</translation>
 <translation id="479989351350248267">搜索</translation>
 <translation id="4804818685124855865">断开连接</translation>
 <translation id="4849058404725798627">突出显示键盘焦点所在对象</translation>
 <translation id="4872237917498892622">Alt + 搜索键或 Shift</translation>
 <translation id="4890187583552566966">Google 智能助理已被您的管理员停用。</translation>
+<translation id="4893522937062257019">在锁定屏幕上</translation>
 <translation id="4895488851634969361">电池电量已满。</translation>
 <translation id="490375751687810070">纵向</translation>
 <translation id="4905614135390995787">用于切换高反差模式的快捷键已更改。请使用 <ph name="NEW_SHORTCUT" />，而不是 <ph name="OLD_SHORTCUT" />。</translation>
@@ -232,6 +236,7 @@
 <translation id="523505283826916779">无障碍设置</translation>
 <translation id="5313326810920013265">蓝牙设置</translation>
 <translation id="5331975486040154427">USB-C 设备（左侧后端端口）</translation>
+<translation id="5379115545237091094">尝试次数过多</translation>
 <translation id="5397578532367286026">管理员 (<ph name="MANAGER_EMAIL" />) 可在 chrome.com 上查看该用户的使用情况和历史记录。</translation>
 <translation id="5430931332414098647">即时网络共享</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -263,6 +268,7 @@
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">快捷键查看器</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="592343074608792716">此 Chromebook 将会自动连接到您的手机</translation>
 <translation id="5947494881799873997">还原</translation>
@@ -332,6 +338,7 @@
 <translation id="6972754398087986839">开始使用</translation>
 <translation id="6981982820502123353">无障碍</translation>
 <translation id="698231206551913481">移除该用户后，与其关联的所有文件和本地数据都会被永久删除。</translation>
+<translation id="7007100238996585961">正在通过另一设备答复</translation>
 <translation id="7015766095477679451">您需要等到<ph name="COME_BACK_TIME" /> 才能再次使用此设备。</translation>
 <translation id="7029814467594812963">退出会话</translation>
 <translation id="7037152028959403492">您按下了高对比度的快捷键。要开启这项功能吗？</translation>
@@ -353,6 +360,7 @@
 <translation id="7398254312354928459">已切换网络连接</translation>
 <translation id="742594950370306541">摄像头处于使用状态。</translation>
 <translation id="743058460480092004">摄像头和麦克风处于使用状态。</translation>
+<translation id="7497767806359279797">选择语言和键盘布局</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">网络可能受到了监控</translation>
 <translation id="7536035074519304529">IP 地址：<ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@
 <translation id="7569509451529460200">已启用盲文和 ChromeVox</translation>
 <translation id="7593891976182323525">搜索键或 Shift</translation>
 <translation id="7604942372593434070">访问您的浏览活动</translation>
+<translation id="7642778300616172920">隐藏敏感内容</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" />（所有者）</translation>
 <translation id="7647488630410863958">解锁设备即可查看您的通知</translation>
 <translation id="7649070708921625228">帮助</translation>
@@ -377,6 +386,7 @@
 <translation id="7842211907556571265">正在连接到<ph name="NETWORK_NAME" /></translation>
 <translation id="7842569679327885685">警告：实验性功能</translation>
 <translation id="7846634333498149051">键盘</translation>
+<translation id="7886277072580235377">当您退出时，系统即会清除您的网络会话。<ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">管理隐私相关设置</translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
 <translation id="7933084174919150729">Google 智能助理仅适用于主要个人资料。</translation>
@@ -417,6 +427,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />：正在重新连接…</translation>
 <translation id="8513108775083588393">自动旋转屏幕</translation>
 <translation id="8517041960877371778">您的 <ph name="DEVICE_TYPE" /> 在开启时可能无法充电。</translation>
+<translation id="8592141010104017453">完全不显示通知</translation>
 <translation id="8627191004499078455">已连接到<ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">剩余电量：<ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">随选朗读</translation>

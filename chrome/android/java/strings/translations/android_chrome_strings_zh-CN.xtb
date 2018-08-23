@@ -120,6 +120,7 @@
 <translation id="1891331835972267886"><ph name="APP_NAME" />将在 Chrome 中打开。继续操作即表示您同意 Chrome 的<ph name="BEGIN_LINK1" />服务条款<ph name="END_LINK1" />和<ph name="BEGIN_LINK2" />隐私权声明<ph name="END_LINK2" />。</translation>
 <translation id="189172778771606813">关闭抽屉式导航栏</translation>
 <translation id="1919345977826869612">广告</translation>
+<translation id="1919950603503897840">选择联系人</translation>
 <translation id="1923695749281512248">已下载 <ph name="BYTES_DOWNLOADED_WITH_UNITS" />，共 <ph name="FILE_SIZE_WITH_UNITS" /></translation>
 <translation id="1933845786846280168">所选的标签页</translation>
 <translation id="1938981467853765413">提供反馈</translation>
@@ -156,7 +157,7 @@
 <translation id="2122601567107267586">无法打开此应用</translation>
 <translation id="2126426811489709554">由 Chrome 提供支持</translation>
 <translation id="2131665479022868825">节省了 <ph name="DATA" /></translation>
-<translation id="213279576345780926">已关闭<ph name="TAB_TITLE" /></translation>
+<translation id="213279576345780926">已关闭“<ph name="TAB_TITLE" />”</translation>
 <translation id="2139186145475833000">添加到主屏幕</translation>
 <translation id="2146738493024040262">打开免安装应用</translation>
 <translation id="2148716181193084225">今天</translation>
@@ -291,6 +292,7 @@
 <translation id="3282568296779691940">登录 Chrome</translation>
 <translation id="32895400574683172">允许显示通知</translation>
 <translation id="3295602654194328831">隐藏信息</translation>
+<translation id="3298243779924642547">精简版</translation>
 <translation id="3303414029551471755">要开始下载该内容吗？</translation>
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3341058695485821946">查看您已节省多少数据流量</translation>
@@ -855,6 +857,7 @@
 <translation id="7791543448312431591">添加</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7810647596859435254">打开方式…</translation>
+<translation id="7821588508402923572">您的数据流量节省情况将显示在这里</translation>
 <translation id="7832327313660264358">您同步到 Google 的数据和您使用的功能不会改变</translation>
 <translation id="7837721118676387834">允许特定网站自动播放静音的视频。</translation>
 <translation id="7846076177841592234">取消选择</translation>
@@ -872,6 +875,7 @@
 <translation id="7981313251711023384">预加载网页，以便实现更快速的浏览和搜索</translation>
 <translation id="79859296434321399">要查看增强现实内容，请安装 ARCore</translation>
 <translation id="7987073022710626672">Chrome 服务条款</translation>
+<translation id="7987764905897278458">畅享 Google 的更多智能技术</translation>
 <translation id="7998918019931843664">重新打开关闭的标签页</translation>
 <translation id="7999064672810608036">确定要清除该网站的所有本地数据（包括 Cookie）并重置该网站的所有权限吗？</translation>
 <translation id="8004582292198964060">浏览器</translation>

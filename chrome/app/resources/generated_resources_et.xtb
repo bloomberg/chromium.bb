@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16-kordne</translation>
 <translation id="127138278192656016">Sünkroonimise ja kõigi teenuste kasutamine</translation>
 <translation id="1272079795634619415">Peata</translation>
-<translation id="1272242203003205253">Google'i partnerid teevad teie abistamiseks teie assistendiga koostööd</translation>
 <translation id="1272978324304772054">See kasutajakonto ei kuulu domeeni, kus seade on registreeritud. Kui soovite registreeruda mõnel teisel domeenil, peate esmalt tegema seadmetaaste.</translation>
 <translation id="1274977772557788323">Adobe Flash Playeri salvestusruumi seaded</translation>
 <translation id="1274997165432133392">Küpsised ja muud saidi andmed</translation>
@@ -417,7 +416,6 @@
 <translation id="161460670679785907">Teie telefoni ei saa tuvastada</translation>
 <translation id="1616206807336925449">Selle laienduse jaoks pole erilube vaja.</translation>
 <translation id="1616298854599875024">Laiendust „<ph name="IMPORT_NAME" />” ei saa importida, kuna see pole jagatud moodul</translation>
-<translation id="161707228174452095">Sõrmejälg lisati.</translation>
 <translation id="1618268899808219593">A&amp;bikeskus</translation>
 <translation id="162035744160882748">Sünkroonimise, isikupärastamise ja muude Google'i teenuste sisselülitamine</translation>
 <translation id="1620510694547887537">Kaamera</translation>
@@ -695,7 +693,6 @@
 <translation id="2028997212275086731">RAR-arhiiv</translation>
 <translation id="2034346955588403444">Muu WiFi-võrgu lisamine</translation>
 <translation id="203574396658008164">Luba lukustuskuval märkmete tegemine</translation>
-<translation id="2039623879703305659">Sõrm liikus liiga kiiresti</translation>
 <translation id="2040460856718599782">Vabandust! Teie autentimisel läks midagi valesti. Kontrollige veel kord sisselogimise mandaate ja proovige uuesti.</translation>
 <translation id="2043818754674261542">Seadme <ph name="DEVICE_TYPE" /> telefoniga avamiseks vajalik vahemaa</translation>
 <translation id="204497730941176055">Microsofti sertifikaadi malli nimi</translation>
@@ -739,7 +736,6 @@
 <translation id="2099686503067610784">Kustutada serveri sertifikaat „<ph name="CERTIFICATE_NAME" />”</translation>
 <translation id="2100273922101894616">Automaatne sisselogimine</translation>
 <translation id="2101225219012730419">Versioon:</translation>
-<translation id="2107494551712864447">Sõrmejälje lisamine</translation>
 <translation id="2112877397266219826">Lülitage oma puutetundlik pult seadistamiseks sisse</translation>
 <translation id="21133533946938348">Kinnita vaheleht</translation>
 <translation id="2113479184312716848">Ava &amp;fail ...</translation>
@@ -1018,7 +1014,6 @@
 <translation id="2526590354069164005">Töölaud</translation>
 <translation id="2526619973349913024">Otsi värskendusi</translation>
 <translation id="2527167509808613699">Igat laadi ühendus</translation>
-<translation id="2532026602297547439">Andur on must</translation>
 <translation id="2532589005999780174">Suure kontrastsusega režiim</translation>
 <translation id="253434972992662860">&amp;Peata</translation>
 <translation id="2534460670861217804">Turvaline HTTP-puhverserver</translation>
@@ -1377,7 +1372,6 @@
 <translation id="3057861065630527966">Fotode ja videote varundamine</translation>
 <translation id="3060379269883947824">Luba funktsioon Vali ja kuula</translation>
 <translation id="3061707000357573562">Teenuse paikamine</translation>
-<translation id="3064410671692449875">Andmeid pole piisavalt</translation>
 <translation id="3065041951436100775">Tagasiside vahelehe sulgumise kohta.</translation>
 <translation id="3067198179881736288">Kas soovite rakenduse installida?</translation>
 <translation id="3067198360141518313">Käita pistikprogramm</translation>
@@ -2265,7 +2259,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4480590691557335796">Chrome võib teie arvutist otsida kahjulikku tarkvara ja selle eemaldada</translation>
 <translation id="4481530544597605423">Sidumata seadmed</translation>
 <translation id="4482194545587547824">Google võib kasutada teie sirvimisajalugu otsingu ja teiste Google'i teenuste isikupärastamiseks</translation>
-<translation id="4493287891836751813">Tutvustame teie Google'i assistenti</translation>
 <translation id="4495419450179050807">Ära sellel lehel kuva</translation>
 <translation id="4499718683476608392">Saate lubada krediitkaardiandmete automaattäite, et täita vormid ühe klikiga</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> jooksis kokku</translation>
@@ -2320,7 +2313,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4572659312570518089">Autentimine tühistati seadmega „<ph name="DEVICE_NAME" />” ühenduse loomisel.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-file</translation>
 <translation id="457386861538956877">Rohkem ...</translation>
-<translation id="4576537685267142337">Tõstke sõrm üles, seejärel puudutage andurit uuesti</translation>
 <translation id="4576541033847873020">Bluetoothi seadme sidumine</translation>
 <translation id="4579581181964204535">Hosti <ph name="HOST_NAME" /> ei saa üle kanda.</translation>
 <translation id="4580526846085481512">Kas soovite kindlasti $1 üksust kustutada?</translation>
@@ -2565,7 +2557,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4941627891654116707">Fondi suurus</translation>
 <translation id="494286511941020793">Puhverserveri konfigureerimise abi</translation>
 <translation id="4945444280533270988">Smart Lock on sisse lülitatud</translation>
-<translation id="494660967831069720">Osalised andmed</translation>
 <translation id="4953689047182316270">Juurdepääsetavuse sündmustele vastamine</translation>
 <translation id="4953808748584563296">Oranž vaikeavatar</translation>
 <translation id="4955814292505481804">Aastane</translation>
@@ -3522,7 +3513,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="6384275966486438344">Muutke oma otsinguseadeid: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Saidid saavad salvestada ja lugeda küpsisefaili andmeid</translation>
 <translation id="6388429472088318283">Otsige keeli</translation>
-<translation id="6388771388956873507">Leidke seadmel olev sõrmejäljeandur ja puudutage seda sõrmega</translation>
 <translation id="6390799748543157332">Lehti, mida vaatate selles aknas, ei lisata teie brauseri ajalukku ja pärast kõikide avatud külalise režiimi akende sulgemist ei jää neist arvutisse ka muid jälgi (nt küpsiseid). Kõik allalaaditud failid siiski säilitatakse.</translation>
 <translation id="6390994422085833176">Pärast seadistamist vaadake üle sünkroonimise ja isikupärastamise funktsioonid</translation>
 <translation id="6395423953133416962">Saada <ph name="BEGIN_LINK1" />süsteemiteave<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />mõõdikud<ph name="END_LINK2" /></translation>
@@ -4125,7 +4115,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7309257895202129721">Kuva &amp;juhtelemendid</translation>
 <translation id="7310598146671372464">Sisselogimine ebaõnnestus. Server ei toeta määratud Kerberose krüpteerimistüüpe. Võtke ühendust administraatoriga.</translation>
 <translation id="7311079019872751559">Liivakastist eemaldatud pistikprogrammi juurdepääs</translation>
-<translation id="7311891583377621132">Liigutage veidi, et sõrmejälje teine osa jäädvustada</translation>
 <translation id="7317680720589234980">Ekraaniluku ja sisselogimise valikud</translation>
 <translation id="7321545336522791733">Serveriga ei saa ühendust</translation>
 <translation id="7324297612904500502">Beeta foorum</translation>
@@ -4966,7 +4955,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8639047128869322042">Ohtliku tarkvara otsimine …</translation>
 <translation id="8639963783467694461">Automaatse täitmise seaded</translation>
 <translation id="8642171459927087831">Juurdepääsuluba</translation>
-<translation id="8642267168767642381">Sõrm liikus liiga aeglaselt</translation>
 <translation id="8642947597466641025">Saate teksti suurendada</translation>
 <translation id="8643418457919840804">Jätkamiseks tehke valik:</translation>
 <translation id="8645354835496065562">Luba ka edaspidi juurdepääs anduritele</translation>
@@ -5327,7 +5315,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="916607977885256133">Pilt pildis</translation>
 <translation id="9169496697824289689">Kuva klaviatuuri otseteed</translation>
 <translation id="9169931577761441333">Lisa <ph name="APP_NAME" /> avaekraanile</translation>
-<translation id="9170397650136757332">Nüüd liigutage veidi oma sõrme, et jäädvustada oma sõrmejälje kõik eri osad</translation>
 <translation id="9170848237812810038">&amp;Võta tagasi</translation>
 <translation id="9170884462774788842">Teine programm teie arvutis lisas teema, mis võib muuta Chrome'i toimimist.</translation>
 <translation id="9173995187295789444">Bluetoothi seadmete otsimine …</translation>

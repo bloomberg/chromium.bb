@@ -176,6 +176,13 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">啟用禁止第三方軟體置入可執行程式碼的政策</translation>
 <translation id="1504431521196476721">遠端證明</translation>
+<translation id="1507957856411744193">如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 會連線至所有 IP 位址上的 Cast 裝置，而不是只有 RFC1918/RFC4193 私人位址上的 Cast 裝置。
+
+          如果將這項政策設為 False，<ph name="PRODUCT_NAME" /> 將只會連線至 RFC1918/RFC4193 私人位址上的 Cast 裝置。
+
+          如果未設定這項政策，除非啟用 CastAllowAllIPs 功能，否則<ph name="PRODUCT_NAME" /> 只會連線至 RFC1918/RFC4193 私人位址上的 Cast 裝置。
+
+          如果將「EnableMediaRouter」政策設為 False，則這項政策的值不會有任何效果。</translation>
 <translation id="1509692106376861764">我們已於 <ph name="PRODUCT_NAME" /> 版本 29 中移除這項政策。</translation>
 <translation id="1514888685242892912">啟用 <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">允許網站追蹤使用者的實際位置</translation>
@@ -349,11 +356,6 @@
 
           如果未設定這項政策，系統將全部採用以上 4 種機制。</translation>
 <translation id="2067011586099792101">禁止存取內容套件以外的網站</translation>
-<translation id="2070270043919235595">通知使用者 <ph name="PRODUCT_NAME" /> 必須重新啟動才能套用待安裝的更新。
-
-      這項政策設定可啟用通知，藉此建議或要求使用者重新啟動瀏覽器。如果不予設定，<ph name="PRODUCT_NAME" /> 會以細微的選單變更讓使用者知道瀏覽器需要重新啟動。如果設為「Recommended」(建議)，瀏覽器會定期顯示警告，建議使用者重新啟動。如果不想立即重新啟動，使用者可以關閉這項警告。如果設為「Required」(必要)，瀏覽器會定期顯示警告，告知使用者瀏覽器將於通知期過後強制重新啟動。通知期預設為七天，可透過 <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> 政策設定加以設定。
-
-      使用者的工作階段會在瀏覽器重新啟動後恢復。</translation>
 <translation id="2073552873076775140">允許登入 <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">在可用時使用硬體加速</translation>
 <translation id="2077273864382355561">在電池供電環境下執行時的螢幕關閉延遲時間</translation>
@@ -891,7 +893,6 @@
           這項政策是選擇性的，如果未設定，系統將不會提供新分頁。
 
           只有在啟用「DefaultSearchProviderEnabled」時，系統才會遵循這項政策。</translation>
-<translation id="3465852069254497664">透過通知建議或要求使用者重新啟動瀏覽器</translation>
 <translation id="346731943813722404">指定是否延遲管理電源，以及是否在發現工作階段中產生第一個使用者活動後，才開始執行工作階段長度限制。
 
           如果這項政策設為 True，系統會延遲管理電源，並且在發現工作階段中產生第一個使用者活動後，才會開始執行工作階段長度限制。
@@ -1941,6 +1942,7 @@
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策會停用所有資料同步處理功能，並覆寫 RoamingProfileSupportEnabled。</translation>
 <translation id="6731757988219967594">針對成人內容篩選頂層網站 (但不篩選嵌入的 iframe)</translation>
+<translation id="6734521799274931721">控管是否允許在 Chrome 作業系統使用網路檔案共用功能</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
 <translation id="673699536430961464">如果啟用這項設定，使用者在登入 <ph name="PRODUCT_OS_NAME" />裝置後，將可在瀏覽器視窗的內容區域中切換 Google 帳戶。
 
@@ -2089,17 +2091,6 @@
 在螢幕即將變暗時，智慧型調光模式會評估是否要延遲螢幕變暗的時間。如果智慧型調光模式決定延遲螢幕變暗的時間，使用時間就會確實延長至螢幕變暗為止。在這種情況下，關閉螢幕、鎖定螢幕和閒置狀態的延遲時間也會隨之調整，以維持原本所設定的相同時間比例。
 
 如果你將這項政策設為 True 或不予設定，系統會啟用智慧型調光模式並允許延長使用時間，直到螢幕變暗為止。如果將這項政策設為 False，智慧型調光模式便無法管理螢幕的調光設定。</translation>
-<translation id="6982028490425791294">
-      如果將這項政策設為 True，<ph name="PRODUCT_NAME" /> 就能從 Google 服務 (例如 Google Meet) 收集 WebRTC 事件記錄，並將這些記錄上傳至 Google。
-
-      如果將這項政策設為 False 或未設定，<ph name="PRODUCT_NAME" /> 就可能不會收集或上傳這類記錄。
-
-      這些記錄包含下列資訊：收發 RTP 封包的時間和大小、網路壅塞情形回報、關於語音及視訊畫格的時間和品質等中繼資料。這項資訊有助於偵錯 Chrome 中的語音或視訊通話問題，例如頻寬預估的問題等。這些記錄不包含通話的語音和視訊內容。
-
-      此資料收集只能由 Google 的網路服務觸發，例如 Google Hangouts 或 Google Meet。
-
-      系統可能會依照工作階段 ID 將這些記錄和 Google 服務本身收集的其他記錄建立關聯，目的是簡化偵錯作業。
-      </translation>
 <translation id="6994082778848658360">如果你安裝的安全元素硬體和雙重驗證功能相容，就可以使用這項政策來指定如何使用該硬體提供雙重驗證功能。裝置的電源鍵會用來偵測使用者是否真實存在。
 
       如果選取 [已停用]，系統就不會提供雙重驗證功能。
@@ -2882,11 +2873,6 @@
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
-<translation id="9085839450090699752">讓你設定時間範圍 (毫秒)，系統會在這段時間內通知使用者，<ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置必須重新啟動，才能套用未安裝的更新。
-
-      在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，當系統偵測到升級時，會在系統匣中顯示重新啟動通知。這項通知會在時間過了一半後變更顏色，並於時間過完後再次變色。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間過完後再次變色。<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策所啟用的其他瀏覽器通知也會按照同樣的時間安排發生變更。
-
-      如果不設定，<ph name="PRODUCT_OS_NAME" />裝置的預設通知時間為 345600000 毫秒 (四天)，瀏覽器的預設通知時間則為 604800000 毫秒 (一週)。</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>
 <translation id="9088444059179765143">設定自動偵測時區方式</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>

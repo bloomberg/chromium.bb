@@ -191,6 +191,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">I-enable ang pag-block sa pagpasok ng third party software</translation>
 <translation id="1504431521196476721">Malayuang Pagpapatunay</translation>
+<translation id="1507957856411744193">Kung nakatakda ang patakarang ito sa true, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa lahat ng IP address, hindi lang sa mga pribadong address ng RFC1918/RFC4193.
+
+          Kung nakatakda ang patakarang ito sa false, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa mga pribadong address ng RFC1918/RFC4193 lang.
+
+          Kung hindi nakatakda ang patakarang ito, kokonekta ang <ph name="PRODUCT_NAME" /> sa mga Cast device sa mga pribadong address ng RFC1918/RFC4193 lang, maliban kung naka-enable ang feature na CastAllowAllIPs.
+
+          Kung nakatakda ang patakarang "EnableMediaRouter" sa false, hindi magkakaroon ng bisa ang value ng patakarang ito.</translation>
 <translation id="1509692106376861764">Hindi na ginagamit ang patakarang ito simula sa <ph name="PRODUCT_NAME" /> bersyon 29.</translation>
 <translation id="1514888685242892912">I-enable ang <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Payagan ang mga site na subaybayan ang aktwal na lokasyon ng mga user</translation>
@@ -368,11 +375,6 @@
 
           Kung hindi itatakda ang patakarang ito, gagamitin ang lahat ng apat na scheme.</translation>
 <translation id="2067011586099792101">I-block ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
-<translation id="2070270043919235595">Nag-aabiso sa mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> upang malapat ang nakabinbing pag-update.
-
-      Ine-enable ng setting ng patakarang ito ang mga notification upang ipaalam sa user na inirerekomenda o kinakailangan ang muling paglulunsad ng browser. Kung hindi nakatakda, ipapaalam ng <ph name="PRODUCT_NAME" /> sa user na kinakailangan ang muling paglulunsad sa pamamagitan ng maliliit na pagbabago sa menu nito. Kung nakatakda sa 'Inirerekomenda,' magpapakita ng umuulit na babala sa user na inirerekomenda ang muling paglulunsad. Maaaring i-dismiss ng user ang babalang ito upang ipagpaliban ang muling paglulunsad. Kung nakatakda sa 'Kinakailangan,' magpapakita ng umuulit na babala sa user na nagsasaad na sapilitang magsasagawa ng muling paglulunsad ng browser kapag lumampas na sa panahon ng notification. Bilang default, may pitong araw ang panahong ito at maaari itong i-configure sa pamamagitan ng setting ng patakarang <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Ire-restore ang session ng user pagkatapos ng muling paglulunsad.</translation>
 <translation id="2073552873076775140">Payagan ang pag-sign in sa <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Gamitin ang pagpapabilis ng hardware kapag available</translation>
 <translation id="2077273864382355561">Delay ng pag-off ng screen kapag tumatakbo gamit ang power ng baterya</translation>
@@ -929,7 +931,6 @@
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang ibibigay na pahina ng bagong tab.
 
           Gagamitin lang ang patakarang ito kung naka-enable ang patakarang 'DefaultSearchProviderEnabled.'</translation>
-<translation id="3465852069254497664">Abisuhan ang user na inirerekomenda o kinakailangang muling ilunsad ang browser</translation>
 <translation id="346731943813722404">Tinutukoy kung dapat lang magsimulang tumakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session pagkatapos makita ang unang aktibidad ng user sa isang session.
 
           Kung nakatakda ang patakarang ito sa True, hindi magsisimulang tumakbo ang mga pagkaantala sa pamamahala sa power management at ang limitasyon sa haba ng session hanggang makita ang unang aktibidad ng user sa isang session.
@@ -2026,6 +2027,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Dini-disable ng patakarang <ph name="SYNC_DISABLED_POLICY_NAME" /> ang lahat ng pag-synchronize ng data, na nag-o-override sa RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Mag-filter ng mga nangungunang site (ngunit hindi mga naka-embed na iframe) para sa pang-adult na content</translation>
+<translation id="6734521799274931721">Kumokontrol sa Mga File Share sa Network para sa availability ng ChromeOS</translation>
 <translation id="6735701345096330595">Puwersahang ine-enable ang mga wika ng spellcheck</translation>
 <translation id="673699536430961464">Nagbibigay-daan ang setting na ito sa mga user na lumipat ng Google account sa lugar ng content ng window ng kanilang browser pagkatapos nilang mag-sign in sa kanilang <ph name="PRODUCT_OS_NAME" /> device.
 
@@ -2177,17 +2179,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kapag malapit nang ma-dim ang screen, sinusuri ng smart dim model kung dapat bang ipagpaliban ang pag-dim ng screen. Kung ipapagpaliban ng smart dim model ang pag-dim ng screen, papatagalin din nito ang oras bago ma-dim ang screen. Sa ganitong sitwasyon, maisasaayos ang pag-off ng screen, lock ng screen, at ang mga pagkaantala ng idle para mapanatili ang parehong mga pagitan mula sa pagkaantala ng pag-dim ng screen gaya ng orihinal na na-configure.
       Kung itatakda ang patakarang ito sa True o hahayaang hindi nakatakda, mae-enable ang smart dim model at papayagang patagalin ang oras bago ma-dim ang screen. Kung itatakda ang patakarang ito sa False, hindi maaapektuhan ng smart dim model ang pag-dim ng screen.</translation>
-<translation id="6982028490425791294">
-      Kung nakatakda ang patakaran sa true, pinapayagan ang <ph name="PRODUCT_NAME" /> na kolektahin ang mga log ng event sa WebRTC mula sa mga serbisyo ng Google (hal. Google Meet), at i-upload ang mga log na iyon sa Google.
-
-      Kung nakatakda ang patakaran sa false, o hindi ito nakatakda, hindi maaaring kolektahin o i-upload ng <ph name="PRODUCT_NAME" /> ang mga nasabing log.
-
-      Makikita sa mga log na ito ang impormasyon gaya ng oras at laki ng mga naipadala at natanggap na RTP packet, feedback tungkol sa pagdami ng gumagamit sa network, at metadata tungkol sa oras at kalidad ng mga audio at video frame. Makakatulong ang impormasyong ito kapag nagde-debug ng mga isyu sa mga audio o video call sa Chrome, gaya ng mga isyu sa pagtantya ng bandwidth, atbp. Ang mga log ay hindi naglalaman ng audio o video content mula sa tawag.
-
-      Mati-trigger lang ang ganitong pagkolekta ng data sa pamamagitan ng mga serbisyo sa web ng Google, gaya ng Google Hangouts o Google Meet.
-
-      Maiuugnay ang mga log na ito, sa pamamagitan ng session ID, sa iba pang log na nakolekta mismo ng serbisyo ng Google; layunin nitong mas padaliin ang pag-debug.
-      </translation>
 <translation id="6994082778848658360">Tinutukoy kung paano magagamit ang kasamang hardware ng secure na elemento upang magbigay ng pangalawang factor ng pag-authenticate kung tugma ito sa feature na ito. Ginagamit ang power button ng machine upang tukuyin ang aktwal na presensya ng user.
 
       Kung pinili ang 'Naka-disable,' walang pangalawang factor na ibibigay.
@@ -3027,11 +3018,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
 <translation id="9035964157729712237">Ang mga ID ng Extension upang maibukod mula sa blacklist</translation>
 <translation id="9042911395677044526">Nagbibigay-daan na malapat sa bawat user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME" /> na device. Ang configuration ng network ay isang naka-format sa JSON  na string tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Tukuyin kung nakakaapekto ang aktibidad ng video sa pamamahala ng power</translation>
-<translation id="9085839450090699752">Binibigyang-daan kang itakda ang yugto ng panahon, sa millisecond, kung kailan aabisuhan ang mga user na dapat muling ilunsad ang <ph name="PRODUCT_NAME" /> o na dapat i-restart ang isang <ph name="PRODUCT_OS_NAME" /> device para malapat ang isang nakabinbing update.
-
-      Sa yugto ng panahong ito, paulit-ulit na ipapaalam sa user ang pangangailangang mag-update. Para sa mga <ph name="PRODUCT_OS_NAME" /> device, lalabas sa system tray ang isang notification sa pag-restart kapag may na-detect na pag-upgrade. Magbabago ng kulay ang notification na ito kapag lumipas ang kalahati ng yugto ng panahon ng notification, at muli kapag lumipas ang buong yugto ng panahon ng notification. Para sa mga <ph name="PRODUCT_NAME" /> browser, magbabago ang menu ng app para isaad na kinakailangan ng muling paglulunsad kapag lumipas ang one third ng yugto ng panahon ng notification. Magbabago ng kulay ang notification na ito kapag lumipas ang two thirds ng yugto ng panahon ng notification, at muli kapag lumipas ang buong yugto ng panahon ng notification. Ang mga karagdagang notification na na-enable ng patakarang <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> para sa mga browser ay sumusunod sa iskedyul na ito mismo.
-
-      Kung hindi itatakda, ang default na yugto ng panahong 345600000 millisecond (apat na araw) ang gagamitin para sa mga <ph name="PRODUCT_OS_NAME" /> device at 604800000 millisecond (isang linggo) ang gagamitin para sa mga browser.</translation>
 <translation id="9088433379343318874">I-enable ang content provider ng pinangangasiwaang user</translation>
 <translation id="9088444059179765143">I-configure ang awtomatikong paraan ng pag-detect ng timezone</translation>
 <translation id="9096086085182305205">Whitelist ng server sa pagpapatotoo</translation>

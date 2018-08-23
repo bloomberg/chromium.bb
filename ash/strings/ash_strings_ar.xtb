@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">تمت إضافة جهاز <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">لم يتم العثور على أي شبكات.</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">أشعر بالملل</translation>
 <translation id="1104084341931202936">عرض إعدادات إمكانية الوصول</translation>
 <translation id="1104621072296271835">تعمل أجهزتك بشكل أفضل وهي مرتبطة معًا</translation>
 <translation id="112308213915226829">الإخفاء التلقائي للرف</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">محو جميع التنزيلات</translation>
 <translation id="1247372569136754018">ميكروفون (داخلي)</translation>
 <translation id="1252999807265626933">جارٍ الشحن من <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">ما حالة الطقس؟</translation>
 <translation id="1267032506238418139">تغيير الاختصار</translation>
 <translation id="1270290102613614947">تم إيقاف لوحة المفاتيح على الشاشة</translation>
 <translation id="1272079795634619415">إيقاف</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">يمكنك الحصول فقط على ما يصل إلى <ph name="MULTI_PROFILE_USER_LIMIT" /> حساب في الدخول المتعدد.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{تم الاتصال بجهاز واحد}zero{تم الاتصال بـ # جهاز}two{تم الاتصال بجهازين (#)}few{تم الاتصال بـ # أجهزة}many{تم الاتصال بـ # جهازًا}other{تم الاتصال بـ # جهاز}}</translation>
 <translation id="3236488194889173876">ليست هناك شبكة جوّال متاحة</translation>
+<translation id="3255483164551725916">ما الإجراء المطلوب؟</translation>
 <translation id="3294437725009624529">ضيف</translation>
 <translation id="332587331255250389">يُرجى استبدال البطارية</translation>
 <translation id="3351879221545518001">أنت حاليًا تبث محتوى الشاشة.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">مؤشر الليزر</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
+<translation id="4146833061457621061">تشغيل موسيقى</translation>
 <translation id="4200057768455216496">لقد ضغطت على اختصار المُكبِّر الذي تم إرساؤه. هل ترغب في تفعيله؟</translation>
 <translation id="4217571870635786043">إملاء</translation>
 <translation id="4261870227682513959">عرض إعدادات الإشعارات. تم إيقاف الإشعارات</translation>
@@ -344,6 +348,7 @@
 <translation id="7037152028959403492">لقد ضغطت على اختصار التباين العالي. هل ترغب في تفعيله؟</translation>
 <translation id="7066646422045619941">تم إيقاف هذه الشبكة من قِبل مشرفك.</translation>
 <translation id="7067196344162293536">تدوير تلقائي</translation>
+<translation id="7068360136237591149">فتح الملفات</translation>
 <translation id="7076293881109082629">تسجيل الدخول</translation>
 <translation id="7092922358121866860">عرض إعدادات "الإضاءة الليلية"</translation>
 <translation id="7098389117866926363">‏جهاز USB-C (المنفذ الأيسر في الخلف)</translation>
@@ -387,6 +392,7 @@
 <translation id="7842569679327885685">تحذير: ميزة تجريبية</translation>
 <translation id="7846634333498149051">لوحة المفاتيح</translation>
 <translation id="7886277072580235377">سيتم محو جلسة الإنترنت عند تسجيل الخروج. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">إرسال رسالة إلكترونية</translation>
 <translation id="790040513076446191">معالجة الإعدادات المتعلقة بالخصوصية</translation>
 <translation id="7904094684485781019">لقد حظر مشرف هذا الحساب إمكانية الدخول المتعدد.</translation>
 <translation id="7933084174919150729">‏لا يتوفر مساعد Google إلا للملف الشخصي الأساسي.</translation>
@@ -449,6 +455,7 @@
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">التطبيق لا يتيح تقسيم الشاشة.</translation>
 <translation id="8874184842967597500">غير متصل</translation>
+<translation id="8877788021141246043">ضبط تذكير</translation>
 <translation id="8878886163241303700">توسيع الشاشة</translation>
 <translation id="8921624153894383499">‏لا يتحدث مساعد Google هذه اللغة.</translation>
 <translation id="8938800817013097409">‏جهاز USB-C (المنفذ الأيمن في الخلف)</translation>
@@ -472,6 +479,7 @@
 <translation id="9210037371811586452">جارٍ الخروج من وضع سطح المكتب الموحد</translation>
 <translation id="9215934040295798075">تعيين خلفية</translation>
 <translation id="923686485342484400">‏للخروج اضغط على Ctrl Shift Q مرتين.</translation>
+<translation id="938963181863597773">ماذا يتضمّن تقويمي؟</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="98515147261107953">أفقي</translation>
 <translation id="995927048686010764">النقر التلقائي</translation>

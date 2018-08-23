@@ -345,11 +345,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak toto pravidlo ponecháte nenastavené, použijú sa všetky štyri schémy.</translation>
 <translation id="2067011586099792101">Blokovať prístup ku stránkam mimo balíkov obsahu</translation>
-<translation id="2070270043919235595">Umožňuje používateľov upozorniť, že <ph name="PRODUCT_NAME" /> musia znova spustiť, aby sa použila čakajúca aktualizácia.
-
-      Toto nastavenie pravidla aktivuje upozornenia, ktoré informujú používateľa o tom, že sa odporúča alebo vyžaduje opätovné spustenie prehliadača. Ak nie je nastavené, <ph name="PRODUCT_NAME" /> upozorní používateľa prostredníctvom nenápadných zmien v ponuke, že sa vyžaduje opätovné spustenie. Ak je nastavené na možnosť Recommended (Odporúčané), používateľovi sa bude zobrazovať opakované upozornenie na to, že sa odporúča opätovné spustenie. Používateľ môže toto upozornenie zrušiť a opätovné spustenie tak odmietnuť. Ak je nastavené na možnosť Required (Vyžadované), používateľovi sa zobrazí opakované upozornenie, že po vypršaní obdobia upozornenia sa vynúti opätovné spustenie prehliadača. Toto obdobie je predvolene nastavené na sedem dní a dá sa nakonfigurovať prostredníctvom nastavenia pravidla <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Relácia používateľa sa po opätovnom spustení obnoví.</translation>
 <translation id="2073552873076775140">Povoliť prihlásenie do prehliadača <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Používať hardvérovú akceleráciu (keď je dostupná)</translation>
 <translation id="2077273864382355561">Oneskorenie vypnutia obrazovky pri napájaní z batérie</translation>
@@ -901,7 +896,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Toto pravidlo je nepovinné. Ak sa nenastaví, neotvorí sa na novej karta žiadna stránka.
 
           Toto pravidlo sa rešpektuje iba v prípade, ak je zapnuté pravidlo DefaultSearchProviderEnabled.</translation>
-<translation id="3465852069254497664">Upozorňovať používateľa, že sa odporúča alebo vyžaduje opätovné spustenie prehliadača</translation>
 <translation id="346731943813722404">Toto pravidlo určuje, či oneskorenia správy napájania a limit dĺžky relácie sa majú spustiť iba po zaznamenaní prvej aktivity používateľa v relácii.
 
           Ak je toto pravidlo nastavené na hodnotu True, oneskorenia správy napájania a limit dĺžky relácie sa nespustia po zaznamenaní prvej aktivity používateľa v relácii.
@@ -2150,17 +2144,6 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Tesne predtým, ako sa obrazovka stlmí, inteligentný model stlmenia zhodnotí, či by malo byť stlmenie obrazovky odložené. Ak ho odloží, účinne predĺži čas do stlmenia obrazovky. V tomto prípade sa oneskorenie vypnutia obrazovky, aktivácie zámky obrazovky a nečinnosti upraví tak, aby sa zachovali rovnaké odstupy od oneskorenia stlmenia obrazovky, ktoré boli pôvodne nakonfigurované.
       Ak toto pravidlo nastavíte na hodnotu true alebo ho nenastavíte, inteligentný model stlmenia bude aktívny a bude môcť predĺžiť čas do stlmenia obrazovky. Ak toto pravidlo nastavíte na hodnotu false, tento model nebude mať vplyv na stlmenie obrazovky.</translation>
-<translation id="6982028490425791294">
-      Ak toto pravidlo nastavíte na hodnotu true, prehliadaču <ph name="PRODUCT_NAME" /> povolíte zhromažďovať denníky udalostí WebRTC zo služieb Googlu (napr. Google Meet) a nahrávať ich do Googlu.
-
-      Ak ho nastavíte na hodnotu false alebo ho ponecháte nenastavené, <ph name="PRODUCT_NAME" /> nebude môcť tieto denníky zhromažďovať ani nahrávať.
-
-      Tieto denníky obsahujú informácie, ako napríklad čas a veľkosť odoslaných a prijatých balíkov RTP, spätnú väzbu týkajúcu sa preťaženia siete a metadáta o čase a kvalite zvuku a snímok videa. Tieto informácie sú užitočné pri ladení problémov so zvukovými alebo videohovormi v Chrome, ako napríklad problémoch s odhadom rýchlosti pripojenia atď. Do denníkov sa neukladá zvukový ani videoobsah hovoru.
-
-      Zhromažďovanie týchto dát sa dá spustiť iba pomocou webových služieb Googlu, ako je napríklad Google Hangouts alebo Google Meet.
-
-      Tieto denníky môžu byť prostredníctvom identifikátora relácie priradené k iným denníkom zhromaždeným príslušnou službou Google. Ide o zamýšľané správanie, ktoré má uľahčiť ladenie.
-      </translation>
 <translation id="6994082778848658360">Umožňuje určiť, ako môže byť hardvér zabezpečeného prvku na základnej doske počítača použitý na poskytovanie druhého faktora overenia totožnosti, ak je kompatibilný s touto funkciou. Vypínač zariadenia sa používa na rozpoznanie fyzickej prítomnosti používateľa.
 
       Ak vyberiete možnosť Zakázané, druhý faktor nebude poskytovaný.
@@ -2984,11 +2967,6 @@ Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto n
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
 <translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Určuje, či prehrávanie videa ovplyvňuje správu napájania</translation>
-<translation id="9085839450090699752">Umožňuje nastaviť časové obdobie v milisekundách, po uplynutí ktorého budú používatelia upozornení, že <ph name="PRODUCT_NAME" /> sa musí znova spustiť alebo že zariadenie <ph name="PRODUCT_OS_NAME" /> musí byť reštartované, aby sa použila čakajúca aktualizácia.
-
-      V priebehu tohto časového obdobia bude používateľ opakovane informovaný o potrebe aktualizácie. V zariadeniach <ph name="PRODUCT_OS_NAME" /> sa po zistení inovácie objaví na paneli úloh systému upozornenie na reštartovanie. Farba tohto upozornenia sa zmení po uplynutí polovice obdobia a opäť po uplynutí celého obdobia. V prípade prehliadačov <ph name="PRODUCT_NAME" /> sa po uplynutí jednej tretiny časového obdobia upozornenia zmení ponuka aplikácie, ktorá označuje potrebu opätovného spustenia. Farba upozornenia sa zmení po uplynutí dvoch tretín obdobia a znova po uplynutí celého obdobia. Ďalšie upozornenia povolené pravidlom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pre prehliadače dodržiavajú rovnaký harmonogram.
-
-      Ak pravidlo nenastavíte, použije sa predvolené obdobie 345 600 000 milisekúnd (štyri dni) pre zariadenia <ph name="PRODUCT_OS_NAME" /> a 604 800 000 milisekúnd (jeden týždeň) pre prehliadače.</translation>
 <translation id="9088433379343318874">Povoliť poskytovateľa obsahu pre kontrolovaného používateľa</translation>
 <translation id="9088444059179765143">Konfigurovať spôsob automatického zisťovania časového pásma</translation>
 <translation id="9096086085182305205">Zoznam povolených overovacích serverov</translation>

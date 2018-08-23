@@ -345,11 +345,6 @@ Sera hii ikiondolewa, chaguomsingi zitatumika kwa mipangilio yote.</translation>
 
           Ikiwa sera hii itaachwa bila kuwekwa, mipango yote minne itatumika.</translation>
 <translation id="2067011586099792101">Zuia ufikiaji wa tovuti zilizo nje ya vifurushi vya maudhui</translation>
-<translation id="2070270043919235595">Arifu watumiaji kwamba ni lazima <ph name="PRODUCT_NAME" /> ifunguliwe upya ndipo sasisho linalosubiri liwekwe.
-
-      Mipangilio hii ya sera huwasha arifa ili kumwarifu mtumiaji kwamba anatakiwa afungue kivinjari upya au tunapendekeza afanye hivyo. Kama haijawekwa, <ph name="PRODUCT_NAME" /> humwonyesha mtumiaji kwamba anatakiwa aifungue upya kwa kufanya mabadiliko madogo kwenye menyu yake. Kama sera imewekwa kuwa 'Inapendekezwa', mtumiaji ataonyeshwa onyo linalojirudiarudia litakaloashiria kwamba anatakiwa afungue kivinjari upya. Mtumiaji anaweza kuondoa onyo hili ili afungue kivinjari upya baadaye. Kama sera imewekwa kuwa 'Inahitajika', mtumiaji ataonyeshwa onyo linalojirudiarudia litakaloashiria kwamba kivinjari kitafunguliwa upya kwa lazima pindi kipindi cha arifa kitakapokamiika. Kulingana na mipangilio chaguomsingi, kipindi hiki huwa siku saba na huenda mipangilio yake ikawekwa kupitia sera ya <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Kurasa alizokuwa amefungua mtumiaji hurejeshwa baada ya kuvinjari kufunguliwa upya.</translation>
 <translation id="2073552873076775140">Ruhusu kuingia katika akaunti ya <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Tumia uongezaji kasi wa maunzi wakati unapatikana</translation>
 <translation id="2077273864382355561">Kuzimika kwa skrini kunachelewa wakati wa kuendesha kwa nishati ya betri</translation>
@@ -900,7 +895,6 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
 Sera hii ni ya hiari. Kama haitawekwa, hakuna ukurasa mpya wa kichupo utatolewa.
 
 Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</translation>
-<translation id="3465852069254497664">Mwarifu mtumiaji kwamba inapendekezwa au inatakiwa afungue kivinjari upya</translation>
 <translation id="346731943813722404">Hubainisha iwapo ucheleweshaji wa usimamizi wa nishati na kikomo cha urefu wa kipindi lazima tu uanze kutekeleza baada ya kuonekana kwa shughuli ya kwanza ya mtumiaji katika kipindi.
      
         Iwapo sera hii imewekwa kuwa Ndivyo, ucheleweshaji wa usimamizi wa nishati na kikomo cha urefu wa kipindi havianzi kutekeleza mpaka shughuli ya kwanza ya mtumiaji ionekane katika kipindi.
@@ -2146,17 +2140,6 @@ Sera hii haipatikani kwenye Windows ambazo hazijaunganishwa kwenye kikoa cha <ph
       Wakati mwangaza wa skrini uko karibu kuwa hafifu, muundo mahiri wa kufifiliza hutathmini ikiwa inafaa kuongeza muda wa kufifiliza mwangaza wa skrini. Ikiwa kipengele mahiri cha kufifiliza mwangaza kinaacha kufifiliza mwangaza wa skrini, kitaongeza muda hadi wakati skrini itafifilizwa. Katika hali hii, kipengele cha kuzima skrini, cha kufunga skrini na cha kuchelewesha kuweka skrini tuli, kitarekebishwa ili kudumisha kipindi sawa kuanzia ucheleweshaji wa kufifilizwa kwa mwangaza wa skrini jinsi ilivyopangwa hapo awali.
 
       Ikiwa sera hii imewekwa kuwa Ndivyo au haijawekwa, kipengele cha muundo mahiri wa kufifiliza mwangaza kitawashwa na kuruhusiwa kupitisha muda hadi wakati mwangaza wa skrini itafifilizwa. Ikiwa sera hii inawekwa kuwa Sivyo, kipengele cha muundo mahiri wa kufifiliza skrini hakitaathiri ufifilizaji wa skrini.</translation>
-<translation id="6982028490425791294">
-      Ukiweka sera hii kuwa 'ndivyo', <ph name="PRODUCT_NAME" /> itaruhusiwa kukusanya kumbukumbu za matukio ya WebRTC kutoka huduma za Google (k.m., Google Meet) na kupakia kumbukumbu hizo kwenye Google.
-
-      Ukiweka sera hii kuwa 'sivyo', au usipoiweka, huenda <ph name="PRODUCT_NAME" /> isikusanye wala kupakia kumbukumbu kama hizo.
-
-      Kumbukumbu hizi zinajumuisha maelezo kama vile wakati na ukubwa wa vifurushi vya RTP vilivyotumwa na kupokelewa, maoni kuhusu msongamano kwenye mtandao na metadata kuhusu wakati na ubora wa fremu za sauti na video. Maelezo haya husaidia wakati wa kutatua matatizo ya simu za sauti na za video katika Chrome, kama vile matatizo ya kukadiria kipimo data n.k. Kumbukumbu hizi hazijumuishi maudhui ya simu ya sauti wala ya video.
-
-      Ukusanyaji wa data hii unaweza kuanzishwa tu na huduma za wavuti za Google, kama vile Google Hangouts au Google Meet.
-
-      Kumbukumbu hizi zinaweza kuhusishwa na kumbukumbu zingine ambazo hukusanywa na huduma ya Google yenyewe kupitia Kitambulisho cha kipindi; hali hii inanuia kurahisisha hatua ya utatuzi.
-      </translation>
 <translation id="6994082778848658360">Hubainisha jinsi maunzi salama unayotumia yanaweza kutoa uthibitishaji wa hatua mbili ikiwa yanaweza kukitumia kipengele hiki. Kitufe cha kuwasha/kuzima mashine kinatumika kutambua kuwepo kwa mtumiaji mwenyewe.
 
       Ukichagua 'Imezimwa', hamna uthibitishaji wa hatua mbili utakaotolewa.
@@ -2964,11 +2947,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
 <translation id="9035964157729712237">Vitambulisho vya viendelezi vya kuondolewa kenye orodha isiyokubalika</translation>
 <translation id="9042911395677044526">Inaruhusu kusukuma kwa usanidi wa mtandao kutekelezwa kwa kila mtumiaji katika kifaa cha <ph name="PRODUCT_OS_NAME" />. Usanidi wa mtandao ni mtungo ulioumbizwa wa JSON kama ilivyofasiliwa kwa umbizo la Fungua Usanidi wa Mtandao ilivyofafanuliwa katika <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Bainisha iwapo shughuli za video zinaathiri udhibiti wa nishati</translation>
-<translation id="9085839450090699752">Hukuruhusu kuweka kipindi cha muda, katika milisekunde, ambacho watumiaji wanaarifiwa kwamba <ph name="PRODUCT_NAME" /> lazima ifunguliwe upya au kwamba kifaa cha <ph name="PRODUCT_OS_NAME" /> lazima kizimwe kisha kiwashwe ili kutumia sasisho linalosubiri.
-
-     Katika kipindi hiki cha muda, mtumiaji ataarifiwa mara kwa mara kuhusu haja ya kusasisha. Kwa vifaa vya <ph name="PRODUCT_OS_NAME" />, arifa ya kuzima kisha kuwasha inaonekana katika trei ya mfumo wakati sasisho linatambuliwa. Arifa hii hubadilisha rangi baada ya nusu ya kipindi cha arifa kuisha na mara nyingine tena kipindi kamili cha arifa kinapoisha. Kwa vivinjari vya <ph name="PRODUCT_NAME" />, menyu ya programu hubadilika na kuonyesha kwamba inahitaji kufunguliwa tena baada ya thuluthi moja ya kipindi cha arifa kupita. Arifa hii hubadilisha rangi baada ya thuluthi mbili za muda wa arifa kuisha na hubadilisha tena baada ya kipindi kamili cha arifa kuisha. Arifa za ziada zinazowashwa na sera ya <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> kwa vivinjari hufuata ratiba sawa.
-
-      Ikiwa haijawekwa, kipindi chaguomsingi cha milisekunde 345600000 (siku nne) kinatumiwa kwa vifaa vya <ph name="PRODUCT_OS_NAME" /> na milisekunde 604800000 (wiki moia) kwa vivinjari.</translation>
 <translation id="9088433379343318874">Washa mtoa huduma za maudhui ya mtumiaji anayesimamiwa</translation>
 <translation id="9088444059179765143">Weka mbinu ya ugunduzi wa saa za eneo kiotomatiki</translation>
 <translation id="9096086085182305205">Orodha ya kuidhinisha ya seva ya uthibitishaji</translation>

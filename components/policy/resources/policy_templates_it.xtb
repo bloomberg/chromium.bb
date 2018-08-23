@@ -174,6 +174,13 @@ Se la norma non viene impostata, la modalità ad alto contrasto viene disattivat
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Attiva blocco inserimento da software di terze parti</translation>
 <translation id="1504431521196476721">Attestazione da remoto</translation>
+<translation id="1507957856411744193">Se questa norma è impostata su True, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi di trasmissione su tutti gli indirizzi IP, non soltanto su indirizzi privati RFC1918/RFC4913.
+
+          Se questa norma è impostata su False, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi di trasmissione soltanto su indirizzi privati RFC1918/RFC4913.
+
+          Se questa norma non è impostata, <ph name="PRODUCT_NAME" /> si connetterà ai dispositivi di trasmissione soltanto su indirizzi privati RFC1918/RFC4913, a meno che non sia attiva la funzione CastAllowAllIPs.
+
+          Se la norma "EnableMediaRouter" è impostata su False, allora il valore di questa norma non produrrà alcun effetto.</translation>
 <translation id="1509692106376861764">Questa norma non è più supportata a partire dalla versione 29 di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Attiva <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Consenti ai siti di monitorare la posizione fisica degli utenti</translation>
@@ -339,11 +346,6 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Se questa norma non viene impostata, vengono utilizzati tutti e quattro gli schemi.</translation>
 <translation id="2067011586099792101">Blocca l'accesso ai siti non presenti nei pacchetti di contenuti</translation>
-<translation id="2070270043919235595">Notifica agli utenti che <ph name="PRODUCT_NAME" /> deve essere riavviato per applicare l'aggiornamento in attesa.
-
-      Questa impostazione della norma consente di informare l'utente tramite notifiche che è obbligatorio o consigliato eseguire un riavvio del browser. Se non è impostata, <ph name="PRODUCT_NAME" /> indica all'utente che è necessario un riavvio tramite piccole modifiche al menu. Se impostata su "Recommended", all'utente verrà mostrato un avviso ricorrente con un riavvio consigliato. L'utente può ignorare questo avviso e rimandare il riavvio. Se impostata su "Required", verrà visualizzato un avviso ricorrente all'utente che indica che il riavvio del browser sarà forzato una volta trascorso il periodo di notifica. Per impostazione predefinita, il periodo di notifica è di sette giorni e può essere configurato tramite l'impostazione della norma <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      La sessione dell'utente viene ripristinata dopo il riavvio.</translation>
 <translation id="2073552873076775140">Consenti di eseguire l'accesso a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Usa accelerazione hardware quando disponibile</translation>
 <translation id="2077273864382355561">Ritardo disattivazione schermo in caso di utilizzo della batteria</translation>
@@ -870,7 +872,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 Questa norma è facoltativa. Se non viene impostata non verrà fornita una pagina Nuova scheda.
 
 Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearchProviderEnabled".</translation>
-<translation id="3465852069254497664">Notifica a un utente che è consigliato o necessario eseguire un riavvio del browser</translation>
 <translation id="346731943813722404">Consente di specificare se i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni devono iniziare soltanto dopo il rilevamento dell'attività del primo utente in una sessione.
 
 Se questa norma viene impostata su True, i ritardi di gestione dell'alimentazione e il limite di durata delle sessioni non iniziano fino al termine del rilevamento dell'attività del primo utente in una sessione.
@@ -1905,6 +1906,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 
       La norma <ph name="SYNC_DISABLED_POLICY_NAME" /> consente di disattivare la sincronizzazione di tutti i dati e sostituisce la norma RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtra i siti di contenuti per adulti di primo livello (ma non gli iframe incorporati)</translation>
+<translation id="6734521799274931721">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
 <translation id="673699536430961464">Questa impostazione consente agli utenti di passare da un account Google a un altro all'interno dell'area dei contenuti della finestra del browser dopo avere eseguito l'accesso al dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -2047,17 +2049,6 @@ Se la norma non viene configurata, la lettura vocale viene inizialmente disattiv
 
 Quando lo schermo sta per essere oscurato, il modello di oscuramento smart valuta se posticipare l'azione. In tal caso, il tempo prima che lo schermo venga oscurato viene effettivamente prolungato e il ritardo di inattività, la disattivazione dello schermo e il blocco dello schermo vengono regolati in modo da rispettare gli intervalli di tempo rispetto al ritardo oscuramento schermo configurati in precedenza.
 Se questa norma è impostata su vero o non è impostata, il modello di oscuramento smart verrà attivato e la quantità di tempo prima che lo schermo venga oscurato verrà estesa. Se questa norma è impostata su falso, il modello di oscuramento smart non inciderà sull'oscuramento dello schermo.</translation>
-<translation id="6982028490425791294">
-      Se questa norma viene impostata su true, <ph name="PRODUCT_NAME" /> è autorizzato a raccogliere log eventi WebRTC dai servizi Google (ad esempio Google Meet) e a caricarli su Google.
-
-      Se la norma viene impostata su false o non viene impostata, <ph name="PRODUCT_NAME" /> non può raccogliere e caricare tali log.
-
-      Questi log contengono informazioni quali data/ora e dimensioni dei pacchetti RTP inviati e ricevuti, feedback sulla congestione della rete, nonché metadati su tempo e qualità dei frame audio e video. Queste informazioni sono utili per il debug di problemi con le chiamate audio o le videochiamate in Chrome, ad esempio i problemi relativi alla stima della larghezza di banda. I log non contengono l'audio o i video delle chiamate.
-
-      La raccolta dei dati può essere attivata soltanto dai servizi web di Google, ad esempio Google Hangouts o Google Meet.
-
-      I log potrebbero essere associati tramite un ID sessione ad altri log raccolti dal servizio Google stesso al fine di facilitare il debug.
-      </translation>
 <translation id="6994082778848658360">Consente di specificare in che modo è possibile usare l'hardware degli elementi di sicurezza su scheda per fornire l'autenticazione a due fattori, se compatibile con questa funzione. Il tasto di accensione del computer viene usato per rilevare la presenza fisica dell'utente.
 
        Se selezioni l'opzione "Disabilitata", non viene fornita l'autenticazione a due fattori.
@@ -2833,11 +2824,6 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>
-<translation id="9085839450090699752">Consente di stabilire per quanto tempo, in millisecondi, gli utenti riceveranno notifiche relative alla necessità di riavviare <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> per applicare un aggiornamento in sospeso.
-
-      Durante questo periodo di tempo l'utente verrà informato più volte della necessità di un aggiornamento. Per quanto riguarda i dispositivi <ph name="PRODUCT_OS_NAME" />, nella barra delle applicazioni viene mostrata una notifica relativa al riavvio quando viene rilevato un upgrade. Questa notifica cambia colore una volta trascorso metà del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Per quanto riguarda i browser <ph name="PRODUCT_NAME" />, il menu delle app cambia per indicare che è necessario il riavvio una volta trascorso un terzo del periodo di notifica. Questa notifica cambia colore una volta trascorsi due terzi del periodo di notifica e lo cambia di nuovo al termine dell'intero periodo di notifica. Le notifiche aggiuntive attivate in base alla norma <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> relativa ai browser seguono questa stessa pianificazione.
-
-      Se la norma non viene impostata, viene usato il periodo predefinito di 345600000 millisecondi (quattro giorni) per i dispositivi <ph name="PRODUCT_OS_NAME" /> e di 604800000 millisecondi (una settimana) per i browser.</translation>
 <translation id="9088433379343318874">Abilita il provider di contenuti dell'utente supervisionato</translation>
 <translation id="9088444059179765143">Configura il metodo di rilevamento automatico del fuso orario</translation>
 <translation id="9096086085182305205">Whitelist server di autenticazione</translation>

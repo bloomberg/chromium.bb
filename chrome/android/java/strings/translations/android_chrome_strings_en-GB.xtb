@@ -875,6 +875,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
 <translation id="79859296434321399">To view augmented reality content, install ARCore</translation>
 <translation id="7987073022710626672">Chrome Terms of Service</translation>
+<translation id="7987764905897278458">Get more Google smarts</translation>
 <translation id="7998918019931843664">Re-open closed tab</translation>
 <translation id="7999064672810608036">Are you sure that you want to clear all local data, including cookies, and reset all permissions for this website?</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -960,6 +961,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8664979001105139458">File name already exists</translation>
 <translation id="8676374126336081632">Clear input</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal Strength Level: # bar}other{Signal Strength Level: # bars}}</translation>
+<translation id="868929229000858085">Search your contacts</translation>
 <translation id="869891660844655955">Expiry date</translation>
 <translation id="8719023831149562936">Can’t beam current tab</translation>
 <translation id="8725066075913043281">Try again</translation>
@@ -994,6 +996,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8993760627012879038">Open a new tab in Incognito mode</translation>
 <translation id="8998729206196772491">You are signing in with an account managed by <ph name="MANAGED_DOMAIN" /> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google account.</translation>
+<translation id="9018881455348618200">Search button</translation>
 <translation id="9019902583201351841">Managed by your parents</translation>
 <translation id="9040142327097499898">Notifications are allowed. Location is off for this device.</translation>
 <translation id="9050666287014529139">Passphrase</translation>

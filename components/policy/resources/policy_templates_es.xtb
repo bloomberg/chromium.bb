@@ -39,10 +39,8 @@
       seguridad de orígenes inseguros.
 
       La intención es permitir que las organizaciones definan orígenes
-
       incluidos en listas blancas para aplicaciones antiguas que no pueden
       implementar TLS, o bien configuren un servidor provisional para desarrollar
-
       web internas y conseguir que los desarrolladores puedan probar las
       funciones que necesiten en contextos seguros sin tener que implementar
       TLS en el servidor provisional. Esta política también evita que el origen
@@ -190,6 +188,13 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Habilitar el bloqueo de inserción de software de terceros</translation>
 <translation id="1504431521196476721">Confirmación remota</translation>
+<translation id="1507957856411744193">Si se le asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> se conectará a dispositivos de transmisión de todas las direcciones IP, no solo a los de las direcciones privadas de RFC1918 y RFC4193.
+
+          Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> solo se conectará a los dispositivos de transmisión de las direcciones privadas de RFC1918 y RFC4193.
+
+          Si no se le asigna ningún valor, <ph name="PRODUCT_NAME" /> solo se conectará a los dispositivos de transmisión de las direcciones privadas de RFC1918 y RFC4913, a menos que la función CastAllowAllIPs esté habilitada.
+
+          Si se le asigna el valor "False" a la política "EnableMediaRouter", el valor de esta política no tendrá ningún efecto.</translation>
 <translation id="1509692106376861764">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Habilitar <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Permitir que los sitios puedan hacer un seguimiento de la ubicación física de los usuarios</translation>
@@ -368,11 +373,6 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
 
           Si no se establece esta política, se utilizarán los cuatro esquemas.</translation>
 <translation id="2067011586099792101">Bloquear acceso a sitios no incluidos en paquetes de contenido</translation>
-<translation id="2070270043919235595">Notifica a los usuarios que <ph name="PRODUCT_NAME" /> debe reiniciarse para aplicar una actualización pendiente.
-
-      Este ajuste de la política habilita las notificaciones para informar al usuario de que es necesario o recomendable reiniciar el navegador. Si no se configura, <ph name="PRODUCT_NAME" /> indica al usuario que es necesario reiniciarlo mediante pequeños cambios en el menú. Si se le asigna el valor "Recomendada", se muestra una advertencia al usuario de forma periódica indicando que se recomienda reiniciar el navegador. El usuario puede ignorar esta advertencia y aplazar esta acción. Si se le asigna el valor "Obligatoria", se muestra una advertencia al usuario de forma periódica indicando que se reiniciará el navegador cuando haya transcurrido el periodo de notificación. De forma predeterminada, este periodo dura siete días, pero se puede configurar en los ajustes de la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      La sesión del usuario se restaurará cuando el navegador se reinicie.</translation>
 <translation id="2073552873076775140">Permitir inicio de sesión en <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Utilizar aceleración por hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Retraso de desconexión de pantalla cuando el dispositivo funciona con la batería</translation>
@@ -934,7 +934,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
           Esta política es opcional. Si no se establece, no se mostrará una página Nueva pestaña.
 
           Esta política solo se respeta si está habilita la política DefaultSearchProviderEnabled.</translation>
-<translation id="3465852069254497664">Informar al usuario de que es necesario o recomendable reiniciar el navegador</translation>
 <translation id="346731943813722404">Especifica si los retrasos de administración de energía y el límite de duración de sesión se deben ejecutar después de que se haya detectado actividad por parte del usuario en una sesión.
 
           Si esta política se establece en true, los retrasos de administración de energía y el límite de duración de sesión no se ejecutarán hasta que se haya detectado actividad por parte del usuario en una sesión.
@@ -2043,6 +2042,7 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 
       La política <ph name="SYNC_DISABLED_POLICY_NAME" /> inhabilita todas las sincronizaciones de datos y anula RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrar contenido para adultos de sitios web de nivel superior (y no de los iframes insertados)</translation>
+<translation id="6734521799274931721">Controlar si el uso compartido de archivos del sistema estará disponible en Chrome OS</translation>
 <translation id="6735701345096330595">Forzar que se habilite el corrector ortográfico de idiomas</translation>
 <translation id="673699536430961464">Esta opción permite que los usuarios cambien de una cuenta de Google a otra en el área de contenido de la ventana de su navegador después de haber iniciado sesión en su dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -2193,17 +2193,6 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 
       Cuando la pantalla esté a punto de atenuarse, el modelo de atenuación inteligente evaluará si esta acción debe aplazarse. Si esto ocurre, este modelo alargará el tiempo que debe pasar hasta que la pantalla se atenúe. En este caso, los retrasos por inactividad, para apagar la pantalla o para bloquearla se ajustan para que mantengan las mismas distancias con la atenuación de pantalla que se configuraron al principio.
       Si a esta política se le asigna el valor "True" o no se le asigna ningún valor, el modelo de atenuación inteligente se habilitará y podrá alargar el tiempo que debe pasar hasta que la pantalla se atenúe. Si se le asigna el valor "False", este modelo no afectará a la atenuación de la pantalla.</translation>
-<translation id="6982028490425791294">
-      Si se le asigna el valor "True" a esta política", <ph name="PRODUCT_NAME" /> puede recopilar registros de eventos WebRTC de los servicios de Google (p. ej., Google Meet) y subirlos a Google.
-
-      Si se le asigna el valor "False" a esta política o no se le asigna ningún valor, <ph name="PRODUCT_NAME" /> no podrá recopilar ni subir estos registros.
-
-      Estos registros contienen información como la hora y el tamaño de los paquetes RTP recibidos, comentarios sobre la congestión de la red y metadatos sobre la hora y la calidad de los marcos de vídeo y audio. Esta información resulta útil para depurar problemas de las llamadas de audio o videollamadas de Chrome, como problemas de estimación del ancho de banda. Los registros no incluyen contenido de audio ni vídeo de las llamadas.
-
-      Esta recogida de datos solo la pueden activar los servicios web de Google, como Hangouts o Google Meet.
-
-      Estos registros se pueden asociar, mediante un ID de sesión, a otros registros recopilados por el servicio de Google para facilitar la depuración.
-      </translation>
 <translation id="6994082778848658360">Especifica cómo se puede utilizar el hardware del elemento seguro integrado para proporcionar una autenticación de dos factores si es compatible con esta función. El botón de encendido del ordenador se utiliza para detectar la presencia física del usuario.
 
       Si se inhabilita esta opción, no se proporciona ninguna autenticación de dos factores.
@@ -3047,11 +3036,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar si la actividad de vídeo afecta a la administración de energía</translation>
-<translation id="9085839450090699752">Permite establecer el periodo de tiempo (en milisegundos) durante el que los usuarios recibirán una notificación informándoles de que deben reiniciar <ph name="PRODUCT_NAME" /> o un dispositivo <ph name="PRODUCT_OS_NAME" /> para que se aplique una actualización pendiente.
-
-      Durante este periodo de tiempo, se informará repetidamente al usuario de la necesidad de aplicar una actualización. En el caso de dispositivos <ph name="PRODUCT_OS_NAME" />, se mostrará una notificación de reinicio en la bandeja del sistema cuando se detecte una actualización. Esta notificación cambiará de color cuando haya transcurrido la mitad del periodo de notificación y, de nuevo, cuando este haya finalizado. En el caso de los navegadores <ph name="PRODUCT_NAME" />, el menú de aplicaciones cambiará para indicar que es necesario reiniciar cuando haya transcurrido un tercio del periodo de notificación. Esta notificación cambiará de color cuando hayan transcurrido dos tercios del periodo de notificación y, de nuevo, cuando este haya finalizado. Las notificaciones adicionales habilitadas por la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> en navegadores siguen esta misma programación.
-
-      Si no se asigna ningún valor, se usará el periodo predeterminado de 345.600.000 milisegundos (cuatro días) para los dispositivos <ph name="PRODUCT_OS_NAME" /> y de 604.800.000 milisegundos (una semana) para los navegadores.</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de usuarios supervisados</translation>
 <translation id="9088444059179765143">Configura el método de detección automática de la zona horaria</translation>
 <translation id="9096086085182305205">Lista de admisión de servidores de autenticación</translation>

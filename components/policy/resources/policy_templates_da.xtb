@@ -177,6 +177,13 @@ Hvis denne politik ikke er angivet, benyttes standardreglen, hvor ingen HTTP/2-f
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Bloker for tilføjelse af software fra tredjeparter</translation>
 <translation id="1504431521196476721">Fjernattestering</translation>
+<translation id="1507957856411744193">Hvis politikken er angivet som Sand, opretter <ph name="PRODUCT_NAME" /> forbindelse til Cast-enheder på alle IP-adresser og ikke kun på private adresser af typen RFC1918/RFC4193.
+
+          Hvis politikken er angivet som Falsk, opretter <ph name="PRODUCT_NAME" /> kun forbindelse til Cast-enheder på private adresser af typen RFC1918/RFC4193.
+
+          Hvis politikken ikke er konfigureret, opretter <ph name="PRODUCT_NAME" /> kun forbindelse til Cast-enheder på private adresser af typen RFC1918/RFC4193, medmindre funktionen CastAllowAllIPs er aktiveret.
+
+          Hvis politikken "EnableMediaRouter" er angivet som Falsk, har værdien for denne politik ingen virkning.</translation>
 <translation id="1509692106376861764">Denne politik er trukket tilbage fra og med <ph name="PRODUCT_NAME" /> version 29.</translation>
 <translation id="1514888685242892912">Aktivér <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Tillad, at websites registrerer brugernes fysiske placering</translation>
@@ -350,11 +357,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Hvis denne politik ikke er angivet, anvendes alle fire skemaer.</translation>
 <translation id="2067011586099792101">Bloker adgangen til websites uden for indholdspakker</translation>
-<translation id="2070270043919235595">Underretter brugeren om, at <ph name="PRODUCT_NAME" /> skal genstartes for at anvende en afventende opdatering.
-
-      Denne politikindstilling aktiverer underretninger, som anbefaler eller kræver, at brugeren genstarter browseren. Hvis politikken ikke angives, indikerer <ph name="PRODUCT_NAME" /> over for brugeren via diskrete ændringer af menuen, at en genstart er nødvendig. Hvis politikken indstilles til "Anbefalet", får brugeren vist en fast advarsel med en anbefaling om, at browseren genstartes. Brugeren kan afvise advarslen for at udskyde genstarten. Hvis politikken er indstillet til "Påkrævet", får brugeren vist en fast advarsel, som indikerer, at der gennemtvinges en genstart af browseren, når underretningsperioden er udløbet. Denne periode er som standard syv dage, og den kan konfigureres via politikindstillingen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Brugerens session genoprettes efter genstarten.</translation>
 <translation id="2073552873076775140">Tillad login på <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
 <translation id="2077273864382355561">Skærmslukforsinkelse, når batteriet bruges</translation>
@@ -892,7 +894,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
           Denne politik er valgfri. Hvis den ikke er angivet, leveres siden Ny fane ikke.
 
           Denne politik respekteres kun, hvis politikken 'DefaultSearchProviderEnabled' er aktiveret.</translation>
-<translation id="3465852069254497664">Underret en bruger om, at genstart af browseren anbefales eller påkræves</translation>
 <translation id="346731943813722404">Angiver, om strømstyringsforsinkelser og begrænsning af sessionslængden kun skal begynde at køre, efter den første brugeraktivitet er blevet registreret i en session.
 
           Hvis denne politik er indstillet til Sand, begynder strømstyringsforsinkelser og begrænsing af sessionslængden først at køre, efter den første brugeraktivitet er blevet registreret i en session.
@@ -1949,6 +1950,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
       Politikken <ph name="SYNC_DISABLED_POLICY_NAME" /> deaktiverer al datasynkronisering og tilsidesætter RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrér voksenindhold fra på websites på øverste niveau (men ikke integrerede iframes)</translation>
+<translation id="6734521799274931721">Styrer tilgængelighed af fildeling via netværk for Chrome OS</translation>
 <translation id="6735701345096330595">Gennemtving aktivering af stavekontrol af sprog</translation>
 <translation id="673699536430961464">Med denne indstilling har brugerne tilladelse til at skifte mellem Google-konti i browservinduets indholdsområde, når de er logget ind på deres <ph name="PRODUCT_OS_NAME" />-enhed.
 
@@ -2091,17 +2093,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 
 Når skærmen er ved at blive nedtonet, vurderer den smarte nedtoningsmodel, om nedtoningen af skærmen skal udskydes. Hvis den smarte nedtoningsmodel udskyder nedtoningen af skærmen, forlænges den tid, der går, inden skærmen nedtones. I dette tilfælde justeres skærmlåsen og inaktivitetsforsinkelsen, så de bevarer den samme afstand til skærmnedtoningsforsinkelsen som oprindeligt konfigureret.
 Hvis denne politik er angivet som sand eller ikke angives, aktiveres den smarte nedtoningsmodel, som får tilladelse til at forlænge den tid, der går, inden skærmen nedtones. Hvis denne politik er angivet som falsk, har den smarte nedtoningsmodel ikke indflydelse på skærmnedtoning.</translation>
-<translation id="6982028490425791294">
-      Hvis politikken er angivet som sand, har <ph name="PRODUCT_NAME" /> tilladelse til at indsamle WebRTC-hændelseslogfiler fra Google-tjenester (f.eks. Google Meet) og uploade de pågældende logfiler til Google.
-
-      Hvis politikken er angivet som falsk eller ikke er angivet, må <ph name="PRODUCT_NAME" /> ikke indsamle eller uploade sådanne logfiler.
-
-      Disse logfiler indeholder visse oplysninger, bl.a. tidspunkt for og størrelsen på sendte og modtagne RTP-pakker, feedback om belastning af netværket samt metadata om varigheden og kvaliteten af lyd- og videorammer. Disse oplysninger er nyttige i forbindelse med fejretning af problemer med lyd- og videoopkald i Chrome, f.eks. problemer med vurdering af båndbredde. Logfilerne omfatter ikke lyd- eller videoindhold fra opkald.
-
-      Denne dataindsamling kan kun aktiveres af Google-webtjenester såsom Google Hangouts eller Google Meet.
-
-      Disse logfiler kan ved hjælp af et sessions-id knyttes til andre logfiler, der er indsamlet af selve Google-tjenesten. Dette kan gøre fejlretningen nemmere.
-      </translation>
 <translation id="6994082778848658360">Angiver, hvordan det sikre element, der er indbygget i hardwaren, kan bruges til at levere godkendelse med sekundær faktor, hvis det er kompatibelt med denne funktion. Maskinens afbryderknap bruges til at fastslå brugerens fysiske tilstedeværelse.
 
       Hvis "Deaktiveret" er valgt, leveres der ingen sekundær faktor.
@@ -2887,11 +2878,6 @@ Du kan få flere oplysninger om sikre kontekster på https://www.w3.org/TR/secur
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>
-<translation id="9085839450090699752">Giver dig mulighed for at angive et tidsrum i millisekunder, hvor brugerne underrettes om, at <ph name="PRODUCT_NAME" /> skal startes igen, eller at en <ph name="PRODUCT_OS_NAME" />-enhed skal genstartes for at anvende en afventende opdatering.
-
-      I dette tidsrum informeres brugeren gentagne gange om nødvendigheden af en opdatering. Når der registreres en opgradering til <ph name="PRODUCT_OS_NAME" />-enheder, vises en underretning om genstart i systembakken. Underretningen skifter farve, når halvdelen af underretningsperioden er gået, og igen når underretningsperioden er udløbet. For <ph name="PRODUCT_NAME" />-browsere ændres appmenuen for at vise, at genstart er nødvendig, når en tredjedel af underretningsperioden er gået. Underretningen skifter farve, når to tredjedele af underretningsperioden er gået, og igen når hele underretningsperioden er udløbet. De yderligere underretninger, der aktiveres af politikken <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> for browsere, følger samme tidsplan.
-
-      Hvis den ikke er angivet, anvendes standardtidsrummet på 345600000 millisekunder (fire dage) for <ph name="PRODUCT_OS_NAME" />-enheder og 604800000 millisekunder (en uge) for browsere.</translation>
 <translation id="9088433379343318874">Aktivér indholdsudbyderen for den administrerede bruger</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk registrering af tidszone.</translation>
 <translation id="9096086085182305205">Hvidliste til godkendelse af server</translation>

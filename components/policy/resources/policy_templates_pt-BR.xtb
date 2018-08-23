@@ -185,6 +185,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Ativar bloqueio de injeção de software de terceiros</translation>
 <translation id="1504431521196476721">Declaração remota</translation>
+<translation id="1507957856411744193">Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão em todos os endereços IP, não apenas nos endereços privados RFC1918/RFC4193.
+
+          Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão somente em endereços privados RFC1918/RFC4193.
+
+          Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> fará a conexão com os dispositivos de transmissão somente em endereços privados RFC1918/RFC4193, a menos que o recurso CastAllowAllIPs esteja ativado.
+
+          Se a política EnableMediaRouter estiver definida como falsa, o valor desta política não terá nenhum efeito.</translation>
 <translation id="1509692106376861764">Esta política teve o uso suspenso a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Ativar <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Permitir que os sites rastreiem a localização física dos usuários</translation>
@@ -358,11 +365,6 @@
 
           Se esta política não for definida, os quatro esquemas serão utilizados.</translation>
 <translation id="2067011586099792101">Bloquear acesso a sites fora de pacotes de conteúdo</translation>
-<translation id="2070270043919235595">Informe aos usuários que o <ph name="PRODUCT_NAME" /> precisa ser reiniciado para aplicar uma atualização pendente.
-
-      A definição desta política ativa notificações para informar ao usuário que a reinicialização do navegador é recomendada ou necessária. Se a política não for definida, o <ph name="PRODUCT_NAME" /> indicará ao usuário que a reinicialização precisa ser feita por meio de alterações sutis no menu. Se definida como "Recomendado", um aviso recorrente será exibido ao usuário indicando que a reinicialização é recomendada. O usuário pode dispensar esse aviso para adiar a reinicialização. Se definida como "Obrigatório", um aviso recorrente será exibido ao usuário indicando que a reinicialização do navegador será forçada assim que o período de notificação passar. Esse período tem, por padrão, sete dias e pode ser definido na configuração da política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      A sessão do usuário é restaurada após a reinicialização.</translation>
 <translation id="2073552873076775140">Permitir login no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="2077273864382355561">Intervalo de desligamento da tela no funcionamento com energia da bateria</translation>
@@ -896,7 +898,6 @@
           Esta política é opcional. Se não for definida, nenhuma página "Nova guia" será exibida.
 
           Esta política somente é respeitada se a política "DefaultSearchProviderEnabled" estiver ativada.</translation>
-<translation id="3465852069254497664">Informar ao usuário que a reinicialização do navegador é recomendada ou necessária</translation>
 <translation id="346731943813722404">Especifica se os intervalos de gerenciamento de energia e o limite de duração da sessão só devem começar a ser contados após a atividade do usuário ser detectada em uma sessão.
 
           Se esta política for definida como verdadeira, os intervalos de gerenciamento de energia e o limite de duração da sessão só começarão a ser contados depois que a primeira atividade do usuário for detectada em uma sessão.
@@ -1943,6 +1944,7 @@
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados por meio da modificação de RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrar sites de nível superior (exceto iframes incorporados) com conteúdo adulto</translation>
+<translation id="6734521799274931721">Controla o Compartilhamento de arquivos de rede para disponibilidade do ChromeOS</translation>
 <translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>
 <translation id="673699536430961464">Essa definição permite que os usuários alternem entre Contas do Google na área de conteúdo da janela do navegador depois de fazer login no dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -2091,17 +2093,6 @@
 
       Quando a tela está prestes a escurecer, o modelo de escurecimento inteligente avalia se o escurecimento deve ser adiado. Se o modelo de escurecimento inteligente adiar o escurecimento da tela, ela permanecerá ativa por mais tempo. Neste caso, os intervalos de desativação de tela, bloqueio de tela e modo ocioso são ajustados para manter as mesmas distâncias do intervalo de escurecimento de tela originalmente configuradas.
       Se esta política for definida como Verdadeira ou não for definida, o modelo de escurecimento inteligente será ativado e permitirá o aumento do tempo que a tela fica ativa. Se esta política for definida como Falsa, o modelo de escurecimento inteligente não influenciará o escurecimento da tela.</translation>
-<translation id="6982028490425791294">
-      Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> poderá coletar logs de eventos WebRTC dos serviços do Google (por exemplo, do Google Meet) e enviá-los para o Google.
-
-      Se a política for definida como falsa ou não for definida, o <ph name="PRODUCT_NAME" /> não poderá coletar nem enviar esses logs.
-
-      Esses logs contêm informações como tempo e tamanho dos pacotes RTP enviados e recebidos, feedback sobre congestionamento na rede e metadados sobre o tempo e a qualidade de frames de vídeo e áudio. Essas informações são úteis na depuração de problemas com chamadas de áudio ou videochamadas no Chrome, como problemas de estimativa de largura de banda etc. Os logs não apresentam conteúdo de áudio ou vídeo da chamada.
-
-      Essa coleta de dados só pode ser acionada pelos serviços da Web do Google, como o Google Hangouts ou o Google Meet.
-
-      Esses logs podem ser associados, por meio de um código de sessão, a outros logs coletados pelo próprio serviço do Google para facilitar a depuração.
-      </translation>
 <translation id="6994082778848658360">Especifica como o hardware de elemento seguro integrado pode ser usado para fornecer uma autenticação de segundo fator, se ele for compatível com esse recurso. O botão liga/desliga da máquina é usado para detectar a presença física do usuário.
 
       Se a opção Desativado for selecionada, nenhum segundo fator será fornecido.
@@ -2903,11 +2894,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="9035964157729712237">IDs de extensão que serão isentos da lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar a configuração de rede por usuário de dispositivo <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma string formatada em JSON, conforme definido pelo formato Open Network Configuration descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especifica se a atividade de vídeo afeta o gerenciamento de energia</translation>
-<translation id="9085839450090699752">Permite definir, em milissegundos, o período que transcorrerá até que os usuários sejam notificados de que o <ph name="PRODUCT_NAME" /> precisa ser reinicializado ou que um dispositivo <ph name="PRODUCT_OS_NAME" /> precisa ser reinicializado para que uma atualização pendente seja aplicada.
-
-      Após esse período, o usuário será sempre informado sobre a necessidade de uma atualização. Para dispositivos <ph name="PRODUCT_OS_NAME" />, uma notificação de reinicialização aparecerá na bandeja do sistema quando um upgrade for detectado. A cor da notificação muda quando metade do período de notificação passar e, depois, mais uma vez, quando o período total da notificação tiver transcorrido. Para navegadores <ph name="PRODUCT_NAME" />, o menu do app muda para indicar que é necessária mais uma reinicialização quando um terço do período de notificação tiver transcorrido e, depois, mais uma vez, quando o período total da notificação tiver transcorrido. As notificações adicionais ativadas pela política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> para navegadores seguem essa mesma programação.
-
-      Se esta política não for definida, será usado o período padrão de 345.600.000 milissegundos (quatro dias) para dispositivos <ph name="PRODUCT_OS_NAME" /> e 604.800.000 milissegundos (uma semana) para navegadores.</translation>
 <translation id="9088433379343318874">Ativar o provedor de conteúdo de usuário supervisionado</translation>
 <translation id="9088444059179765143">Configurar o método de detecção automática de fuso horário</translation>
 <translation id="9096086085182305205">Lista branca do servidor de autenticação</translation>

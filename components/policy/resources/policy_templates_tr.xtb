@@ -175,6 +175,13 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Üçüncü taraf yazılımı yerleştirme engellemesini etkinleştirin</translation>
 <translation id="1504431521196476721">Uzaktan Doğrulama</translation>
+<translation id="1507957856411744193">Bu politika doğru değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> sadece RFC1918/RFC4913 özel adreslerine sahip olanlara değil, tüm IP adreslerindeki Yayın cihazlarına bağlanır.
+
+          Bu politika yanlış (false) değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> yalnızca RFC1918/RFC4913 özel adreslerindeki Yayın cihazlarına bağlanır.
+
+          Bu politika ayarlanmazsa, <ph name="PRODUCT_NAME" /> CastAllowAllIPs özelliği etkinleştirilmediği sürece yalnızca RFC1918/RFC4913 özel adreslerindeki Yayın cihazlarına bağlanır.
+
+          "EnableMediaRouter" politikası yanlış (false) değerine ayarlanırsa bu politikanın değerinin herhangi bir etkisi olmaz.</translation>
 <translation id="1509692106376861764">Bu politika, <ph name="PRODUCT_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır.</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" /> ürününü etkinleştirin</translation>
 <translation id="1522425503138261032">Sitelerin, kullanıcıların fiziksel konumlarını izlemesine izin ver</translation>
@@ -355,11 +362,6 @@
 
           Bu politika ayarlanmadan bırakılırsa dört şema da kullanılır.</translation>
 <translation id="2067011586099792101">İçerik paketlerinin dışındaki sitelere erişimi engelle</translation>
-<translation id="2070270043919235595">Kullanıcılara, bekleyen bir güncellemeyi uygulamak için <ph name="PRODUCT_NAME" /> uygulamasının yeniden başlatılması gerektiğini bildirin.
-
-      Bu politika ayarı, kullanıcıya tarayıcının yeniden başlatılmasının önerildiği veya gerektiği bilgisini verecek bildirimleri etkinleştirir. Bir değer ayarlanmazsa <ph name="PRODUCT_NAME" />, menüsündeki küçük değişiklikler aracılığıyla kullanıcıya uygulamanın yeniden başlatılması gerektiğini belirtir. "Önerilen" seçeneği ayarlanırsa, kullanıcıya uygulamayı yeniden başlatmasının önerildiği yinelenen bir uyarı ile bildirilir. Kullanıcı, yeniden başlatmayı ertelemek için bu uyarıyı kapatabilir. "Zorunlu" değeri ayarlanırsa kullanıcıya, bildirim dönemi geçtikten sonra tarayıcının yeniden başlatılmasının zorlanacağını belirten yinelenen bir uyarı gösterilir. Bu dönem varsayılan olarak yedi gündür ve <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> politika ayarı aracılığıyla yapılandırılabilir.
-
-      Yeniden başlatmanın ardından kullanıcı oturumu yeniden açılır.</translation>
 <translation id="2073552873076775140"><ph name="PRODUCT_NAME" /> oturumunun açılmasına izin ver</translation>
 <translation id="2077129598763517140">Kullanılabilir olduğunda donanım hızlandırmayı kullan</translation>
 <translation id="2077273864382355561">Pil gücüyle çalışırken ekran kapatma gecikmesi</translation>
@@ -912,7 +914,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
           Bu politika isteğe bağlıdır. Ayarlanmazsa hiçbir yeni sekme sayfası sağlanmaz.
 
           Bu politika sadece "DefaultSearchProviderEnabled" politikası etkinleştirilmişse geçerli olur.</translation>
-<translation id="3465852069254497664">Kullanıcıya tarayıcının yeniden başlatılmasının önerildiğini veya gerektiğini bildirme</translation>
 <translation id="346731943813722404">Bir oturumda güç yönetimi gecikmelerinin ve oturum süresi sınırının sadece kullanıcı ilk etkinliğinin gözlenmesinden sonra çalışmaya başlayıp başlamayacağını belirler.
 
           Bu politika Doğru seçeneğine ayarlanırsa bir oturumda güç yönetimi gecikmeleri ve oturum süresi sınırı kullanıcının ilk etkinliğinin gözlenmesine kadar çalışmaya başlamaz.
@@ -2005,6 +2006,7 @@ politikayı geçersiz kılamaz.
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> politikası, RoamingProfileSupportEnabled'ı geçersiz kılarak tüm veri senkronizasyonunu devre dışı bırakır.</translation>
 <translation id="6731757988219967594">Üst düzey siteleri (ancak yerleştirilmiş iframe'leri değil) yetişkinlere yönelik içerik için filtrele</translation>
+<translation id="6734521799274931721">ChromeOS için Ağ Üzerinde Dosya Paylaşımı'nın kullanılabilirliğini kontrol eder</translation>
 <translation id="6735701345096330595">Yazım denetimi dillerini etkinleştirmeye zorla</translation>
 <translation id="673699536430961464">Bu ayar, kullanıcıların <ph name="PRODUCT_OS_NAME" /> cihazlarında oturum açtıktan sonra tarayıcı pencerelerinin içerik alanındaki Google Hesapları arasında geçiş yapmalarına olanak tanır.
 
@@ -2157,17 +2159,6 @@ politikayı geçersiz kılamaz.
 
       Ekran karartılmak üzereyken akıllı karartma modeli, ekranı karartmanın geciktirilmesinin gerekip gerekmediğini değerlendirir. Akıllı karartma modeli ekranın karartılmasını geciktirirse, ekranın karartılması için gereken süre etkili şekilde uzar. Bu durumda, ekran kapatma, ekran kilidi ve işlem yapılmadan geçen süre gecikmeleri, ekran karartma gecikmesinin başlangıçta yapılandırıldığı değerle aynı süreyi koruyacak şekilde ayarlanır. 
       Bu politika True (Doğru) değerine ayarlanır veya ayarlanmadan bırakılırsa akıllı karartma modeli etkinleşir ve ekranı karartma süresini uzatmasına izin verilir. Bu politika False (Yanlış) değerine ayarlanırsa akıllı karartma modeli, ekran karartmayı etkilemez.</translation>
-<translation id="6982028490425791294">
-      Bu politika doğru (true) değerine ayarlanırsa, <ph name="PRODUCT_NAME" /> ürünün Google hizmetlerinden (ör. Google Meet) WebRTC etkinlik günlüklerini toplamasına ve bu günlükleri Google'a yüklemesine izin verilir.
-
-      Bu politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa, <ph name="PRODUCT_NAME" /> ürünü bu tür günlükleri toplayamaz veya yükleyemez.
-
-      Bu günlükler gönderilen ve alınan RTP paketlerinin boyutu ve işlem zamanı, ağdaki tıkanıklıkla ilgili geri bildirim, ses ve video karelerinin süresi ve kalitesi gibi bilgileri içerir. Bu bilgiler, Chrome'da sesli ve görüntülü aramalarla ilgili sorunlar (ör. bant genişliği tahminiyle ilgili sorunlar vb) için hata ayıklaması yaparken kullanışlıdır. Günlükler aramadaki ses ve video içeriklerini barındırmaz.
-
-      Bu veri toplama işlemi yalnızca Google Hangouts veya Google Meet gibi Google'ın web hizmetleri tarafından tetiklenebilir.
-
-      Bu günlükler bir oturum kimliği kullanılarak, Google hizmetinin kendisi tarafından toplanan diğer günlüklerle ilişkilendirilebilir. Bu, hata ayıklamayı kolaylaştırmak amacıyla kasıtlı olarak yapılır.
-      </translation>
 <translation id="6994082778848658360">Yerleşik güvenli öğe donanımının bu özellikle uyumlu olması halinde iki etmenli kimlik doğrulama sunmak için nasıl kullanılabileceğini belirtir. Kullanıcının fiziksel varlığını algılamak için makinenin güç düğmesi kullanılır.
 
       "Devre dışı" seçilirse ikinci etmen sunulmaz.
@@ -2991,11 +2982,6 @@ olan sanal makineleri kapatmaz.
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
-<translation id="9085839450090699752">Beklemedeki bir güncellemenin uygulanması için <ph name="PRODUCT_NAME" /> ürününün veya bir <ph name="PRODUCT_OS_NAME" /> cihazının yeniden başlatılması gerektiği konusunda kullanıcıların bilgilendirileceği dönemi milisaniye cinsinden ayarlamanıza olanak tanır.
-
-      Bu dönem boyunca, kullanıcı güncelleme gereksinimi konusunda tekrarlanan bir şekilde bilgilendirilir. <ph name="PRODUCT_OS_NAME" /> cihazlarda, yeni sürüme geçme olanağı tespit edildiğinde sistem tepsisinde bir yeniden başlatma bildirimi görüntülenir. Bu bildirimin rengi, bildirim döneminin yarısı geçtikten ve tam bildirim dönemi sona erdikten sonra değişir. <ph name="PRODUCT_NAME" /> tarayıcılarda, yeniden başlatmanın gerektiğini belirtmek için bildirim döneminin üçte biri geçtikten sonra uygulama menüsü değişir. Bu bildirimin rengi, bildirim döneminin üçte ikisi ve tam bildirim dönemi geçtikten sonra tekrar değişir. Tarayıcılar için <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> politikasıyla etkinleştirilen ek bildirimler bu programa uyar.
-
-      Bu değer ayarlanmazsa, <ph name="PRODUCT_OS_NAME" /> cihazlarda varsayılan dönem için 345600000 milisaniye (dört gün) ve tarayıcılar için 604800000 milisaniye (bir hafta) değerleri kullanılır.</translation>
 <translation id="9088433379343318874">Denetlenen kullanıcı içerik sağlayıcısını etkinleştirme</translation>
 <translation id="9088444059179765143">Otomatik saat dilimi algılama yöntemini yapılandır</translation>
 <translation id="9096086085182305205">Kimlik doğrulama sunucusu beyaz listesi</translation>

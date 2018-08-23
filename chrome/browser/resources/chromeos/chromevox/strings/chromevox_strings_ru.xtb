@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Неправильный ввод</translation>
 <translation id="1080471004309605942">Конец курсива</translation>
 <translation id="1082209053475788238">Предыдущего заголовка шестого уровня нет.</translation>
+<translation id="1087788677726983142">Скрыть фильтры потока событий</translation>
 <translation id="1088219014394087294">Заголовков нет.</translation>
 <translation id="1106741348836243114">Включить или отключить озвучивание (звуковые сигналы)</translation>
 <translation id="1108651818222110612">подзаголовок</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">Озвучить полное описание текущего элемента</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак "больше"}one{# знак "больше"}few{# знака "больше"}many{# знаков "больше"}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Перейти к предыдущему заголовку третьего уровня</translation>
+<translation id="1657616855184033958">Показать фильтры потока событий</translation>
 <translation id="1659072772017912254">Не проверено</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">Навигация ChromeVox</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">Эти параметры позволяют настроить ChromeVox. Изменения вступят в силу немедленно.</translation>
 <translation id="4271220233568730077">Перейти к следующему математическому выражению</translation>
 <translation id="4271521365602459209">Больше ничего не найдено.</translation>
+<translation id="4275397969489577657">Включить ведение журнала для потока событий</translation>
 <translation id="4287520460805643128">Следующей статьи нет.</translation>
 <translation id="4289540628985791613">Обзор</translation>
 <translation id="4300318234632215983">Произносить URL после названия ссылки</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{точка с запятой}one{# точка с запятой}few{# точки с запятой}many{# точек с запятой}other{# semicolons}}</translation>
 <translation id="5411891038905756502">Предыдущей точки перехода нет.</translation>
 <translation id="5417034931411865818">Нажать на элемент под ключом маршрутизации $1</translation>
+<translation id="5435274640623994081">Включить ведение журнала для звуковых сигналов</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак "меньше"}one{# знак "меньше"}few{# знака "меньше"}many{# знаков "меньше"}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(активна)</translation>
 <translation id="5446809554778706307">Нет аудиофокуса. Нажмите Ctrl + T, чтобы открыть новую вкладку.</translation>
@@ -899,6 +903,7 @@
 <translation id="8650576015643545550">Предыдущего списка нет.</translation>
 <translation id="8651481478098336970">отключить звук</translation>
 <translation id="8653646212587894517">Показать список ссылок</translation>
+<translation id="8656888282555543604">Включить ведение журнала для шрифта Брайля</translation>
 <translation id="8664519043722036194">сек.</translation>
 <translation id="867187640362843212">Заголовок пятого уровня.</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{вертикальная черта}one{# вертикальная черта}few{# вертикальные черты}many{# вертикальных черт}other{# vertical pipes}}</translation>

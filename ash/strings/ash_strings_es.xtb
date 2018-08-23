@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Se ha añadido <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">No hay redes</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Me aburro</translation>
 <translation id="1104084341931202936">Mostrar configuración de accesibilidad</translation>
 <translation id="1104621072296271835">Tus dispositivos funcionan aún mejor juntos</translation>
 <translation id="112308213915226829">Ocultar estantería automáticamente</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Eliminar todo</translation>
 <translation id="1247372569136754018">Micrófono (interno)</translation>
 <translation id="1252999807265626933">Cargando a través de <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">¿Qué tiempo hace?</translation>
 <translation id="1267032506238418139">Cambio de la combinación de teclas</translation>
 <translation id="1270290102613614947">Teclado en pantalla inhabilitado</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Solo puedes tener un máximo de <ph name="MULTI_PROFILE_USER_LIMIT" /> cuentas en el inicio de sesión múltiple.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectado a 1 dispositivo}other{Conectado a # dispositivos}}</translation>
 <translation id="3236488194889173876">No hay ninguna red móvil disponible</translation>
+<translation id="3255483164551725916">¿Qué puedes hacer?</translation>
 <translation id="3294437725009624529">Invitado</translation>
 <translation id="332587331255250389">Cambia la batería</translation>
 <translation id="3351879221545518001">Estás enviando la pantalla.</translation>
@@ -185,6 +188,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una aplicación}other{Desactivadas para # aplicaciones}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
+<translation id="4146833061457621061">Pon música</translation>
 <translation id="4200057768455216496">Has pulsado la combinación de teclas de la lupa fijada. ¿Quieres activarla?</translation>
 <translation id="4217571870635786043">Dictado</translation>
 <translation id="4261870227682513959">Muestra la configuración de notificaciones. Las notificaciones están desactivadas.</translation>
@@ -344,6 +348,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7037152028959403492">Has pulsado la combinación de teclas de contraste alto. ¿Quieres activarlo?</translation>
 <translation id="7066646422045619941">El administrador ha inhabilitado esta red.</translation>
 <translation id="7067196344162293536">Rotación automática</translation>
+<translation id="7068360136237591149">Abre archivos</translation>
 <translation id="7076293881109082629">Iniciando sesión</translation>
 <translation id="7092922358121866860">Mostrar la configuración de luz nocturna</translation>
 <translation id="7098389117866926363">Dispositivo USB tipo C (puerto izquierdo situado en la parte trasera)</translation>
@@ -387,6 +392,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7842569679327885685">Advertencia: Función experimental</translation>
 <translation id="7846634333498149051">Teclado</translation>
 <translation id="7886277072580235377">Tu sesión de Internet se borrará cuando la cierres. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Envía un correo electrónico</translation>
 <translation id="790040513076446191">Modificar la configuración relacionada con la privacidad</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
 <translation id="7933084174919150729">El Asistente de Google solo está disponible en el perfil principal.</translation>
@@ -449,6 +455,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8850991929411075241">Buscar+Esc</translation>
 <translation id="8870509716567206129">La aplicación no admite la pantalla dividida.</translation>
 <translation id="8874184842967597500">No conectado</translation>
+<translation id="8877788021141246043">Añade un recordatorio</translation>
 <translation id="8878886163241303700">Ampliando pantalla</translation>
 <translation id="8921624153894383499">El Asistente de Google no habla este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB tipo C (puerto derecho situado en la parte trasera)</translation>
@@ -472,6 +479,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="9210037371811586452">Saliendo del modo de escritorio unificado</translation>
 <translation id="9215934040295798075">Establecer fondo de pantalla</translation>
 <translation id="923686485342484400">Pulsa Control Mayús Q dos veces para cerrar sesión.</translation>
+<translation id="938963181863597773">¿Qué tengo en el calendario?</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="98515147261107953">Horizontal</translation>
 <translation id="995927048686010764">Clic automático</translation>

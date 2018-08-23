@@ -118,6 +118,7 @@
 <translation id="5358375970380395591">您目前登录的帐号是一个托管帐号，该帐号的管理员将能够控制您的 Chromium 个人资料。您的 Chromium 数据（例如您的应用、书签、历史记录、密码和其他设置）将永远与 <ph name="USER_NAME" /> 相关联。您可以通过 Google 帐号信息中心删除这些数据，但无法将这些数据与其他帐号相关联。<ph name="LEARN_MORE" /></translation>
 <translation id="5386450000063123300">正在更新 Chromium (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="5398878173008909840">Chromium 现已推出新版本。</translation>
+<translation id="5416696090975899932">在缺少内置 PDF 查看器的情况下，Chromium 无法显示打印预览。</translation>
 <translation id="5427571867875391349">将Chromium设为默认浏览器</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 测试版</translation>
 <translation id="5466153949126434691">Chromium会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chromium会重新启动，然后您就可以开始使用了。</translation>

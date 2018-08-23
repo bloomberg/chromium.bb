@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Bruk synkronisering og alle tjenester</translation>
 <translation id="1272079795634619415">Stopp</translation>
-<translation id="1272242203003205253">Google-samarbeidspartnere jobber med assistenten din for å hjelpe deg</translation>
 <translation id="1272978324304772054">Denne brukerkontoen tilhører ikke domenet som enheten er registrert for. Hvis du vil registrere deg for et annet domene, må du først gå gjennom enhetsgjenoppretting.</translation>
 <translation id="1274977772557788323">Lagringsinnstillinger for Adobe Flash Player</translation>
 <translation id="1274997165432133392">Informasjonskapsler og andre nettstedsdata</translation>
@@ -414,7 +413,6 @@
 <translation id="161460670679785907">Finner ikke telefonen din</translation>
 <translation id="1616206807336925449">Denne utvidelsen krever ingen spesielle tillatelser.</translation>
 <translation id="1616298854599875024">Kan ikke importere utvidelsen «<ph name="IMPORT_NAME" />», fordi den ikke er en delt modul</translation>
-<translation id="161707228174452095">Fingeravtrykket er lagt til.</translation>
 <translation id="1618268899808219593">&amp;Brukerstøtte</translation>
 <translation id="162035744160882748">Slå på synkronisering, personlig tilpasning og andre Google-tjenester</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -692,7 +690,6 @@
 <translation id="2028997212275086731">RAR-arkiv</translation>
 <translation id="2034346955588403444">Legg til et annet Wi-Fi-nettverk</translation>
 <translation id="203574396658008164">Slå på notatskriving på låseskjermen</translation>
-<translation id="2039623879703305659">Du flyttet fingeren for raskt</translation>
 <translation id="2040460856718599782">Beklager!  Det oppsto en feil da vi forsøkte å autentisere deg. Kontrollér påloggingslegitimasjonen, og prøv på nytt.</translation>
 <translation id="2043818754674261542">Avstanden som kreves for at telefonen skal kunne låse opp denne <ph name="DEVICE_TYPE" />-enheten</translation>
 <translation id="204497730941176055">Navn på Microsoft sertifikatmal</translation>
@@ -736,7 +733,6 @@
 <translation id="2099686503067610784">Slette tjenersertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="2100273922101894616">Automatisk pålogging</translation>
 <translation id="2101225219012730419">Versjon:</translation>
-<translation id="2107494551712864447">Legg til et fingeravtrykk</translation>
 <translation id="2112877397266219826">Slå på berøringskontrolleren din for å konfigurere meg</translation>
 <translation id="21133533946938348">Fest fanen</translation>
 <translation id="2113479184312716848">Åpne &amp;fil ...</translation>
@@ -1015,7 +1011,6 @@
 <translation id="2526590354069164005">Skrivebordet</translation>
 <translation id="2526619973349913024">Se etter oppdateringer</translation>
 <translation id="2527167509808613699">Alle typer tilkobling</translation>
-<translation id="2532026602297547439">Sensoren er skitten</translation>
 <translation id="2532589005999780174">Høykontrastmodus</translation>
 <translation id="253434972992662860">&amp;Stans midlertidig</translation>
 <translation id="2534460670861217804">Sikker HTTP-proxy-tjener</translation>
@@ -1373,7 +1368,6 @@
 <translation id="3057861065630527966">Sikkerhetskopiér bildene og videoene dine</translation>
 <translation id="3060379269883947824">Slå på Tekstopplesing</translation>
 <translation id="3061707000357573562">Feilrettingstjeneste</translation>
-<translation id="3064410671692449875">Ikke nok data</translation>
 <translation id="3065041951436100775">Tilbakemelding for lukket fane.</translation>
 <translation id="3067198179881736288">Vil du installere appen?</translation>
 <translation id="3067198360141518313">Kjør dette programtillegget</translation>
@@ -2258,7 +2252,6 @@
 <translation id="4480590691557335796">Chrome kan finne skadelig programvare på datamaskinen din og fjerne den</translation>
 <translation id="4481530544597605423">Frakoblede enheter</translation>
 <translation id="4482194545587547824">Google kan bruke nettlesingsloggen din for å gi Søk og andre Google-tjenester et personlig preg</translation>
-<translation id="4493287891836751813">Her er Google-assistenten din</translation>
 <translation id="4495419450179050807">Ikke vis på denne siden</translation>
 <translation id="4499718683476608392">Slå på autofyll for kredittkort for å fylle ut skjemaer med ett klikk</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> har kræsjet</translation>
@@ -2313,7 +2306,6 @@
 <translation id="4572659312570518089">Autentiseringen ble avbrutt under tilkobling til <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-fil</translation>
 <translation id="457386861538956877">Mer</translation>
-<translation id="4576537685267142337">Løft fingeren, og trykk på sensoren på nytt</translation>
 <translation id="4576541033847873020">Koble til Bluetooth-enhet</translation>
 <translation id="4579581181964204535">Kunne ikke caste <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Er du sikker på at du vil slette $1 elementer?</translation>
@@ -2558,7 +2550,6 @@
 <translation id="4941627891654116707">Skriftstørrelse</translation>
 <translation id="494286511941020793">Hjelp for konfigurering av mellomtjenere</translation>
 <translation id="4945444280533270988">Smart Lock er på</translation>
-<translation id="494660967831069720">Delvise data</translation>
 <translation id="4953689047182316270">Svar på tilgjengelighetshendelser</translation>
 <translation id="4953808748584563296">Oransje standardbrukerbilde</translation>
 <translation id="4955814292505481804">Årlig</translation>
@@ -3514,7 +3505,6 @@
 <translation id="6384275966486438344">endre søkeinnstillingene dine til: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Nettsteder kan lagre og lese data fra informasjonskapsler</translation>
 <translation id="6388429472088318283">Søk etter språk</translation>
-<translation id="6388771388956873507">Finn frem til fingeravtrykkssensoren på enheten din, og legg en finger på den</translation>
 <translation id="6390799748543157332">Sider du åpner i dette vinduet, vises ikke i nettloggen og de etterlater ingen andre spor (f.eks. informasjonskapsler) på datamaskinen etter at du har lukket alle åpne gjestevinduer. Filer du laster ned, blir imidlertid lagret.</translation>
 <translation id="6390994422085833176">Gjennomgå funksjonene for synkronisering og personlig tilpasning etter konfigureringen</translation>
 <translation id="6395423953133416962">Send <ph name="BEGIN_LINK1" />systeminformasjon<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />-målinger<ph name="END_LINK2" /></translation>
@@ -4116,7 +4106,6 @@
 <translation id="7309257895202129721">Vis &amp;kontroller</translation>
 <translation id="7310598146671372464">Kan ikke logge på. Tjeneren støtter ikke de angitte Kerberos-krypteringstypene. Ta kontakt med administratoren din.</translation>
 <translation id="7311079019872751559">Tilgang for programtillegg uten prosessisolering</translation>
-<translation id="7311891583377621132">Flytt litt på fingeren for å registrere en annen del av fingeravtrykket</translation>
 <translation id="7317680720589234980">Alternativer for skjermlås og pålogging</translation>
 <translation id="7321545336522791733">Tjeneren er ikke tilgjengelig</translation>
 <translation id="7324297612904500502">Forumet for betaversjoner</translation>
@@ -4954,7 +4943,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8639047128869322042">Ser etter skadelig programvare …</translation>
 <translation id="8639963783467694461">Innstillinger for autofyll</translation>
 <translation id="8642171459927087831">Tilgangstoken</translation>
-<translation id="8642267168767642381">Du flyttet fingeren for sakte</translation>
 <translation id="8642947597466641025">Forstørr teksten</translation>
 <translation id="8643418457919840804">Velg et alternativ for å fortsette:</translation>
 <translation id="8645354835496065562">Fortsett å tillate sensortilgang</translation>
@@ -5315,7 +5303,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="916607977885256133">Bilde i bilde</translation>
 <translation id="9169496697824289689">Se tastaturets hurtigtaster</translation>
 <translation id="9169931577761441333">Legg til <ph name="APP_NAME" /> på startskjermen</translation>
-<translation id="9170397650136757332">Flytt litt på fingeren for å registrere alle deler av fingeravtrykket</translation>
 <translation id="9170848237812810038">&amp;Angre</translation>
 <translation id="9170884462774788842">Et annet program på datamaskinen la til et tema som kan endre måten Chrome fungerer på.</translation>
 <translation id="9173995187295789444">Skanner etter Bluetooth-enheter …</translation>

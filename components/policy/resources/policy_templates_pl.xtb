@@ -361,11 +361,6 @@ Format jest taki sam jak w słowniku NativePrinters. Dodatkowo w przypadku każd
 
           Jeśli ta zasada nie zostanie skonfigurowana, będą używane wszystkie cztery schematy.</translation>
 <translation id="2067011586099792101">Blokuj dostęp do witryn spoza pakietów treści</translation>
-<translation id="2070270043919235595">Powiadamiaj użytkowników o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> w celu zastosowania oczekującej aktualizacji.
-
-      Ta zasada włącza powiadomienia informujące użytkownika o tym, że zalecane lub wymagane jest ponowne uruchomienie przeglądarki. Jeśli nie jest włączona, <ph name="PRODUCT_NAME" /> informuje użytkownika o potrzebie ponownego uruchomienia za pomocą subtelnych zmian w menu. Wybranie opcji „Zalecane” powoduje cykliczne wyświetlanie ostrzeżenia o tym, że ponowne uruchomienie jest zalecane. Użytkownik może zamknąć to ostrzeżenie, by odłożyć ponowne uruchomienie na później. Wybranie opcji „Wymagane” powoduje wyświetlanie ostrzeżenia, że ponowne uruchomienie przeglądarki zostanie wymuszone po upływie czasu powiadamiania. Domyślnie ten czas to siedem dni, a można go ustawić za pomocą zasady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Sesja użytkownika zostanie przywrócona po ponownym uruchomieniu.</translation>
 <translation id="2073552873076775140">Zezwalaj na logowanie się w: <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
 <translation id="2077273864382355561">Opóźnienie wyłączenia ekranu przy zasilaniu z baterii</translation>
@@ -899,7 +894,6 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
           Ta zasada jest opcjonalna. Jeśli jej nie skonfigurujesz, na stronie nowej karty nie będzie otwierana żadna strona.
 
           Ta zasada jest stosowana tylko wtedy, gdy jest włączona zasada „DefaultSearchProviderEnabled”.</translation>
-<translation id="3465852069254497664">Powiadamiaj użytkownika o tym, że zalecane lub wymagane jest ponowne uruchomienie</translation>
 <translation id="346731943813722404">Określa, czy odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji powinno być rozpoczynane dopiero po zarejestrowaniu pierwszej aktywności użytkownika w sesji.
 
           W przypadku włączenia tej zasady odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji nie będzie rozpoczynane do momentu zarejestrowania pierwszej aktywności użytkownika w sesji.
@@ -2084,17 +2078,6 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       W momencie, gdy ekran powinien zostać przyciemniony, model inteligentnego przyciemniania ocenia, czy należy opóźnić to działanie. Jeśli model inteligentnego przyciemniania opóźni przyciemnienie, to wydłuży czas, po którym ono nastąpi, a także skoryguje czas wyłączenia ekranu, zablokowania ekranu i bezczynności, by te działania nastąpiły w takim samym odstępie czasu od przyciemnienia, jak w oryginalnej konfiguracji.
       Jeśli ta zasada ma wartość Prawda lub jest nieskonfigurowana, model inteligentnego przyciemniania będzie włączony i będzie mógł opóźniać przyciemnienie ekranu. Jeśli zasada ma wartość Fałsz, model inteligentnego przyciemniania nie będzie zmieniać czasu przyciemnienia.</translation>
-<translation id="6982028490425791294">
-      Jeśli ta zasada ma wartość Fałsz, <ph name="PRODUCT_NAME" /> może zbierać dzienniki zdarzeń WebRTC z naszych usług (np. Google Meet) i przesyłać te dane do Google.
-
-      Jeśli ta zasada ma wartość Fałsz lub nie jest ustawiona, <ph name="PRODUCT_NAME" /> nie może zbierać ani przesyłać takich dzienników.
-
-      Dzienniki zawierają takie informacje jak daty i godziny wysłania i odebrania pakietów RTP, dane dotyczące obciążenia sieci oraz metadane związane z jakością ramek audio i wideo. Te informacje są przydatne podczas debugowania problemów z połączeniami audio lub wideo w Chrome, takich jak kłopoty z szacowaniem przepustowości. Dzienniki nie zawierają treści połączeń audio ani wideo.
-
-      Zbieranie danych mogą inicjować tylko usługi internetowe Google, takie jak Google Hangouts czy Google Meet.
-
-      Aby ułatwić debugowanie, możemy za pomocą identyfikatora sesji łączyć te dzienniki z innymi dziennikami zbieranymi przez usługi Google.
-      </translation>
 <translation id="6994082778848658360">Określa, jak można użyć zainstalowanego sprzętowego elementu zabezpieczeń w celu stosowania uwierzytelniania dwuskładnikowego, jeśli jest on zgodny z tą funkcją. Przycisk zasilania komputera wykrywa fizyczną obecność użytkownika.
 
       Jeśli wybierzesz „Wyłączone”, uwierzytelnianie dwuskładnikowe nie będzie dostępne.
@@ -2909,11 +2892,6 @@ Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>
-<translation id="9085839450090699752">Umożliwia ustawienie czasu (w milisekundach), przez który użytkownicy będą powiadamiani o konieczności ponownego uruchomienia <ph name="PRODUCT_NAME" /> lub urządzenia z systemem <ph name="PRODUCT_OS_NAME" /> w celu zainstalowania oczekującej aktualizacji.
-
-      Przez ten czas użytkownik będzie cyklicznie informowany o konieczności aktualizacji. Na urządzeniach z systemem <ph name="PRODUCT_OS_NAME" /> powiadomienie o konieczności ponownego uruchomienia będzie wyświetlane w obszarze powiadomień. Powiadomienie zmieni kolor pierwszy raz po upływie połowy okresu powiadamiania i drugi raz po jego zakończeniu. W przeglądarkach <ph name="PRODUCT_NAME" /> po upływie jednej trzeciej okresu powiadamiania zmienia się menu aplikacji, sygnalizując konieczność ponownego uruchomienia. Powiadomienie zmienia kolor po upływie dwóch trzecich okresu powiadamiania i ponownie po jego zakończeniu. Dodatkowe powiadomienia, które w przeglądarkach włącza zasada <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />, są wyświetlane według tego samego harmonogramu.
-
-      Jeśli zasada jest nieskonfigurowana, na urządzeniach z systemem <ph name="PRODUCT_OS_NAME" /> stosowany jest okres domyślny 345600000 milisekund (cztery dni), a w przeglądarkach – 604800000 milisekund (tydzień).</translation>
 <translation id="9088433379343318874">Włącz dostawcę treści dla nadzorowanego użytkownika</translation>
 <translation id="9088444059179765143">Konfigurowanie metody automatycznego wykrywania strefy czasowej</translation>
 <translation id="9096086085182305205">Biała lista serwera uwierzytelniania</translation>

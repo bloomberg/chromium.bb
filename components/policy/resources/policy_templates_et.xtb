@@ -372,11 +372,6 @@
 
           Kui jätate selle reegli määramata, siis kasutatakse kõiki nelja skeemi.</translation>
 <translation id="2067011586099792101">Sisupakettidest väljaspool olevatele saitidele juurdepääsu blokeerimine</translation>
-<translation id="2070270043919235595">Teavitage kasutajaid sellest, et <ph name="PRODUCT_NAME" /> tuleb ooteloleva värskenduse rakendamiseks uuesti käivitada.
-
-      See reegli seade lubab märguanded, mis teavitavad kasutajat sellest, brauseri taaskäivitamine on soovitatav või nõutav. Kui reegel on määramata, <ph name="PRODUCT_NAME" /> näidatakse taaskäivitamise vajadust menüü väikeste muudatuste abil. Kui reegel on seatud väärtusele „Soovitatav”, kuvatakse kasutajale korduv hoiatus, mis annab teada, et taaskäivitamine on soovitatav. Kasutaja saab hoiatusest loobuda, et taaskäivitamine edasi lükata. Kui valitud on väärtus „Nõutav”, kuvatakse kasutajale korduv hoiatus, mis annab teada, et brauser taaskäivitatakse sunniviisiliselt pärast märguandeperioodi möödumist. Perioodi vaikekestus on seitse päeva ja seda saab reegli <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> seadetes konfigureerida.
-
-      Kasutaja seanss taastatakse pärast taaskäivitamist.</translation>
 <translation id="2073552873076775140">Teenusesse <ph name="PRODUCT_NAME" /> sisselogimise lubamine</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="2077273864382355561">Ekraani väljalülitamise viiteaeg akutoite kasutamisel</translation>
@@ -930,7 +925,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
           See reegel on valikuline. Kui seda pole määratud, siis ei looda ühtegi uut vahelehte.
 
           Reeglit arvestatakse ainult juhul, kui on lubatud reegel „DefaultSearchProviderEnabled”.</translation>
-<translation id="3465852069254497664">Kasutaja teavitamine sellest, et brauseri taaskäivitamine on soovitatav või nõutav</translation>
 <translation id="346731943813722404">Määrab, kas toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine peaks toimuma pärast seda, kui seansi ajal on toimunud esmane kasutajatoiming.
 
           Kui reegel on määratud olekule Tõene, siis ei toimu toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine enne, kui seansi ajal on toimunud esimene kasutajatoiming.
@@ -2180,17 +2174,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Kui ekraani hämardamine algab, uurib nutikas hämardamismudel, kas ekraani hämardamine tuleks edasi lükata. Kui nutikas hämardamismudel lükkab ekraani hämardamise edasi, pikendatakse sisuliselt aega, mille möödudes ekraan hämardatakse. Sel juhul reguleeritakse ka ekraani väljalülitamise, lukustamise ja tegevusetuse viiteaegu, et järgida algselt seadistatud hämardamisviivitust.
       Kui reegel on määramata või seatud väärtusele Tõene, lubatakse nutikas hämardamismudel ja ekraani hämardamiseni kuluva aja pikendamine. Kui reegel on seatud väärtusele Väär, ei mõjuta nutikas hämardamismudel ekraani hämardamist.</translation>
-<translation id="6982028490425791294">
-      Kui reegli väärtuseks määratakse Tõene, võib <ph name="PRODUCT_NAME" /> koguda Google'i teenustest (nt Google Meet) WebRTC sündmuselogisid ja need Google'i serveritesse üles laadida.
-
-      Kui reegli väärtuseks määratakse Väär või jäetakse see määramata, ei tohi <ph name="PRODUCT_NAME" /> logisid koguda ega üles laadida.
-
-      Need logid sisaldavad näiteks saadetud ja vastuvõetud RTP-pakettide kellaaja ja suuruse teavet, tagasisidet võrgu ummistuste kohta ja metaandmeid heli- ja videokaadrite aja ja kvaliteedi kohta. See teave on kasulik Chrome'i hääl- või videokõnedega seotud probleemide, nt ribalaiuse prognoosimise probleemide jms silumisel. Logid ei sisalda kõne hääl- ega videosisu.
-
-      Andmete kogumise saavad käivitada ainult Google'i veebiteenused, nt Google Hangouts või Google Meet.
-
-      Logid võidakse seansi ID alusel seostada muude logidega, mida Google'i teenus kogub. Selle eesmärk on hõlbustada silumist.
-      </translation>
 <translation id="6994082778848658360">Määrab, kuidas kasutada sisseehitatud turvalist elementi kahe teguriga autentimise funktsiooni pakkumiseks, kui element ühildub selle funktsiooniga. Kasutaja füüsilise kohaloleku tuvastamiseks kasutatakse seadme toitenuppu.
 
       Kui valite väärtuse „Keelatud”, ei pakuta kahe teguriga autentimist.
@@ -3033,11 +3016,6 @@ Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi reegl
 <translation id="9035964157729712237">Mustast nimekirjast välistatud laienduste ID-d</translation>
 <translation id="9042911395677044526">Võimaldab võrguseadistuse kasutajapõhiselt teenuse <ph name="PRODUCT_OS_NAME" /> seadmes jõustada. Võrguseadistus on JSON-i vormingus string, mille määratleb Open Network Configuration vorming, mida kirjeldatakse aadressil <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Määrake, kas videotoimingud mõjutavad toitehaldust</translation>
-<translation id="9085839450090699752">Võimaldab määrata ajavahemiku millisekundites, mille jooksul kasutajaid teavitatakse sellest, et <ph name="PRODUCT_NAME" /> või <ph name="PRODUCT_OS_NAME" />-seade tuleb ootel oleva värskenduse rakendamiseks taaskäivitada.
-
-      Selle vahemiku jooksul teavitatakse kasutajat värskendusest korduvalt. <ph name="PRODUCT_OS_NAME" />-i seadmete puhul kuvatakse värskenduse tuvastamisel taaskäivituse märguanne süsteemisalves. Märguanne muudab üks kord värvi siis, kui pool ajavahemikust on möödunud, ja teist korda ajavahemiku lõpus. <ph name="PRODUCT_NAME" />'i brauseri puhul rakenduse menüü muutub, kui kolmandik ajavahemikust on möödunud, ja näitab, et rakendus on vaja taaskäivitada. Märguanne muudab esimest korda värvi siis, kui möödunud on kaks kolmandikku ajavahemikust, ja teist korda ajavahemiku lõpus. Brauserites reegliga <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> lubatud lisamärguanded järgivad sama ajakava.
-
-      Kui reegel on määramata, kasutatakse <ph name="PRODUCT_OS_NAME" />-i seadmete puhul vaikeperioodi 345 600 000 millisekundit (neli päeva) ja brauserite puhul 604 800 000 (üks nädal).</translation>
 <translation id="9088433379343318874">Jälgitava kasutaja sisupakkuja lubamine</translation>
 <translation id="9088444059179765143">Ajavööndi automaatse tuvastamise viisi seadistamine</translation>
 <translation id="9096086085182305205">Autentimisserveri lubatud nimekiri</translation>

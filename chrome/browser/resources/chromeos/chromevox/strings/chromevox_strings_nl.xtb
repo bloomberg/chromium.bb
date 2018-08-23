@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Ongeldige invoer.</translation>
 <translation id="1080471004309605942">Einde van cursieve tekst</translation>
 <translation id="1082209053475788238">Geen vorige kop voor niveau 6.</translation>
+<translation id="1087788677726983142">Filters voor gebeurtenisstream verbergen</translation>
 <translation id="1088219014394087294">Geen koppen.</translation>
 <translation id="1106741348836243114">Geluidsfeedback (earcons) in- of uitschakelen.</translation>
 <translation id="1108651818222110612">ondertitel</translation>
@@ -78,6 +79,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1618597272655350600">Geeft een volledige beschrijving van de huidige positie</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{groter-dan-teken}other{# groter-dan-tekens}}</translation>
 <translation id="1653266918374749391">Vorige kop voor niveau 3</translation>
+<translation id="1657616855184033958">Filters voor gebeurtenisstream weergeven</translation>
 <translation id="1659072772017912254">Niet aangevinkt</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">ChromeVox-navigatie</translation>
@@ -411,6 +413,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4255943572433203166">Gebruik de opties hieronder om ChromeVox aan te passen. Wijzigingen worden onmiddellijk van kracht.</translation>
 <translation id="4271220233568730077">Volgende wiskundige uitdrukking</translation>
 <translation id="4271521365602459209">Geen andere resultaten.</translation>
+<translation id="4275397969489577657">Filters voor gebeurtenisstream inschakelen</translation>
 <translation id="4287520460805643128">Geen volgend artikel.</translation>
 <translation id="4289540628985791613">Overzicht</translation>
 <translation id="4300318234632215983">De URL achter een link melden</translation>
@@ -549,6 +552,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5407530583102765689">{COUNT,plural, =1{puntkomma}other{# puntkomma's}}</translation>
 <translation id="5411891038905756502">Geen vorig punt om naar te springen.</translation>
 <translation id="5417034931411865818">Klik op het item onder de routeringstoets $1</translation>
+<translation id="5435274640623994081">Earconregistratie inschakelen</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kleiner-dan-teken}other{# kleiner-dan-tekens}}</translation>
 <translation id="5444587279251314700">(actief)</translation>
 <translation id="5446809554778706307">Geen focus. Druk op Ctrl+T om een nieuw tabblad te openen.</translation>
@@ -897,6 +901,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8650576015643545550">Geen vorige lijst.</translation>
 <translation id="8651481478098336970">volume dempen</translation>
 <translation id="8653646212587894517">Lijst met links weergeven</translation>
+<translation id="8656888282555543604">Brailleregistratie inschakelen</translation>
 <translation id="8664519043722036194">seconden</translation>
 <translation id="867187640362843212">Kop 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pijpteken}other{# verticale pijptekens}}</translation>
