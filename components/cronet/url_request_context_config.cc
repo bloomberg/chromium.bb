@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/json/json_reader.h"
+#include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -124,6 +125,15 @@ const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
 const char kNetworkErrorLoggingFieldTrialName[] = "NetworkErrorLogging";
 // Name of boolean to enable Reporting API.
 const char kNetworkErrorLoggingEnable[] = "enable";
+// Name of list of preloaded "Report-To" headers.
+const char kNetworkErrorLoggingPreloadedReportToHeaders[] =
+    "preloaded_report_to_headers";
+// Name of list of preloaded "NEL" headers.
+const char kNetworkErrorLoggingPreloadedNELHeaders[] = "preloaded_nel_headers";
+// Name of key (for above two lists) for header origin.
+const char kNetworkErrorLoggingOrigin[] = "origin";
+// Name of key (for above two lists) for header value.
+const char kNetworkErrorLoggingValue[] = "value";
 
 // Disable IPv6 when on WiFi. This is a workaround for a known issue on certain
 // Android phones, and should not be necessary when not on one of those devices.
@@ -139,6 +149,49 @@ const bool kDefaultQuicGoAwaySessionsOnIpChange = true;
 #else
 const bool kDefaultQuicGoAwaySessionsOnIpChange = false;
 #endif
+
+// Serializes a base::Value into a string that can be used as the value of
+// JFV-encoded HTTP header [1].  If |value| is a list, we remove the outermost
+// [] delimiters from the result.
+//
+// [1] https://tools.ietf.org/html/draft-reschke-http-jfv
+std::string SerializeJFVHeader(const base::Value& value) {
+  std::string result;
+  if (!base::JSONWriter::Write(value, &result))
+    return std::string();
+  if (value.is_list()) {
+    DCHECK(result.size() >= 2);
+    return result.substr(1, result.size() - 2);
+  }
+  return result;
+}
+
+std::vector<URLRequestContextConfig::PreloadedNelAndReportingHeader>
+ParseNetworkErrorLoggingHeaders(
+    const base::Value::ListStorage& preloaded_headers_config) {
+  std::vector<URLRequestContextConfig::PreloadedNelAndReportingHeader> result;
+  for (const auto& preloaded_header_config : preloaded_headers_config) {
+    if (!preloaded_header_config.is_dict())
+      continue;
+
+    auto* origin_config = preloaded_header_config.FindKeyOfType(
+        kNetworkErrorLoggingOrigin, base::Value::Type::STRING);
+    if (!origin_config)
+      continue;
+    GURL origin_url(origin_config->GetString());
+    if (!origin_url.is_valid())
+      continue;
+    auto origin = url::Origin::Create(origin_url);
+
+    auto* value = preloaded_header_config.FindKey(kNetworkErrorLoggingValue);
+    if (!value)
+      continue;
+
+    result.push_back(URLRequestContextConfig::PreloadedNelAndReportingHeader(
+        origin, SerializeJFVHeader(*value)));
+  }
+  return result;
+}
 
 }  // namespace
 
@@ -157,6 +210,13 @@ URLRequestContextConfig::Pkp::Pkp(const std::string& host,
       expiration_date(expiration_date) {}
 
 URLRequestContextConfig::Pkp::~Pkp() {}
+
+URLRequestContextConfig::PreloadedNelAndReportingHeader::
+    PreloadedNelAndReportingHeader(const url::Origin& origin, std::string value)
+    : origin(origin), value(std::move(value)) {}
+
+URLRequestContextConfig::PreloadedNelAndReportingHeader::
+    ~PreloadedNelAndReportingHeader() = default;
 
 URLRequestContextConfig::URLRequestContextConfig(
     bool enable_quic,
@@ -464,6 +524,21 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
         continue;
       }
       nel_args->GetBoolean(kNetworkErrorLoggingEnable, &nel_enable);
+
+      const auto* preloaded_report_to_headers_config =
+          nel_args->FindKeyOfType(kNetworkErrorLoggingPreloadedReportToHeaders,
+                                  base::Value::Type::LIST);
+      if (preloaded_report_to_headers_config) {
+        preloaded_report_to_headers = ParseNetworkErrorLoggingHeaders(
+            preloaded_report_to_headers_config->GetList());
+      }
+
+      const auto* preloaded_nel_headers_config = nel_args->FindKeyOfType(
+          kNetworkErrorLoggingPreloadedNELHeaders, base::Value::Type::LIST);
+      if (preloaded_nel_headers_config) {
+        preloaded_nel_headers = ParseNetworkErrorLoggingHeaders(
+            preloaded_nel_headers_config->GetList());
+      }
     } else if (it.key() == kDisableIPv6OnWifi) {
       if (!it.value().GetAsBoolean(&disable_ipv6_on_wifi)) {
         LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()

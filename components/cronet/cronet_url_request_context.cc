@@ -36,6 +36,7 @@
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/cronet/url_request_context_config.h"
+#include "net/base/ip_address.h"
 #include "net/base/load_flags.h"
 #include "net/base/logging_network_change_observer.h"
 #include "net/base/net_errors.h"
@@ -47,6 +48,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
+#include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/channel_id_service.h"
@@ -55,6 +57,11 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_interceptor.h"
+
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_service.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 namespace {
 
@@ -413,6 +420,22 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
             &CronetURLRequestContext::NetworkTasks::InitializeNQEPrefs,
             base::Unretained(this)));
   }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+  if (context_->reporting_service()) {
+    for (const auto& preloaded_header : config->preloaded_report_to_headers) {
+      context_->reporting_service()->ProcessHeader(
+          preloaded_header.origin.GetURL(), preloaded_header.value);
+    }
+  }
+
+  if (context_->network_error_logging_service()) {
+    for (const auto& preloaded_header : config->preloaded_nel_headers) {
+      context_->network_error_logging_service()->OnHeader(
+          preloaded_header.origin, net::IPAddress(), preloaded_header.value);
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
   while (!tasks_waiting_for_context_.empty()) {
     std::move(tasks_waiting_for_context_.front()).Run();
