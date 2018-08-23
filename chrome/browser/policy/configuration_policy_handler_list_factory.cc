@@ -662,6 +662,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPowerSmartDimEnabled,
     ash::prefs::kPowerSmartDimEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kNetBiosShareDiscoveryEnabled,
+    prefs::kNetBiosShareDiscoveryEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

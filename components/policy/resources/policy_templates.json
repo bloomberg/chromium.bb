@@ -669,6 +669,7 @@
       'desc': '''Configure Network File Share related policies.''',
       'policies': [
         'NetworkFileSharesAllowed',
+        'NetBiosShareDiscoveryEnabled',
       ],
     },
     {
@@ -12799,6 +12800,25 @@
 
       If this policy is left unset, then the default behavior of not allowing any HTTP/2 connection coalescing on connections using client certificates will be used.''',
     },
+    {
+      'id': 467,
+      'name': 'NetBiosShareDiscoveryEnabled',
+      'type': 'main',
+      'schema': {'type': 'boolean', },
+      'tags': [],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome_os:70-'],
+      'caption': '''Controls Network File Share discovery via <ph name="NETBIOS_NAME">NetBIOS</ph>''',
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'desc': '''This policy controls whether the Network File Shares feature for <ph name="PRODUCT_NAME">$2<ex>Google Chrome OS</ex></ph> should use the <ph name="NETBIOS_PROTOCOL">NetBIOS Name Query Request protocol</ph> to discover shares on the network.
+      When this policy is set to True, share discovery will use the <ph name="NETBIOS_PROTOCOL">NetBIOS Name Query Request protocol</ph> protocol to discover shares on the network.
+      When this policy is set to False, share discovery will not use the <ph name="NETBIOS_PROTOCOL">NetBIOS Name Query Request protocol</ph> protocol to discover shares.
+      If the policy is left not set, the default is disabled for enterprise-managed users and enabled for non-managed users.''',
+    },
   ],
 
   'messages': {
@@ -12940,5 +12960,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 466
+  'highest_id_currently_used': 467
 }

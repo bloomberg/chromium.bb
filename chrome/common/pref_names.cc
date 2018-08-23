@@ -880,6 +880,12 @@ const char kManagedSessionEnabled[] = "managed_session.enabled";
 extern const char kTPMFirmwareUpdateCleanupDismissed[] =
     "tpm_firmware_update.cleanup_dismissed";
 
+// Boolean pref indicating whether the NetBios Name Query Request Protocol is
+// used for discovering shares on the user's network by the Network File
+// Shares for Chrome OS feature.
+const char kNetBiosShareDiscoveryEnabled[] =
+    "network_file_shares.netbios_discovery.enabled";
+
 #endif  // defined(OS_CHROMEOS)
 
 // A boolean pref set to true if a Home button to open the Home pages should be
