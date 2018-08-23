@@ -242,6 +242,7 @@ class FlexLayoutAlgorithm {
                       Vector<FlexItem>& all_items);
 
   const ComputedStyle* Style() const { return style_; }
+  const ComputedStyle& StyleRef() const { return *style_; }
 
   Vector<FlexLine>& FlexLines() { return flex_lines_; }
 

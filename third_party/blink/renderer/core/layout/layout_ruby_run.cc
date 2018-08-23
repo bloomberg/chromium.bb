@@ -237,8 +237,8 @@ void LayoutRubyRun::UpdateLayout() {
     last_line_ruby_text_bottom = root_box->LogicalBottomLayoutOverflow();
   }
 
-  if (Style()->IsFlippedLinesWritingMode() ==
-      (Style()->GetRubyPosition() == RubyPosition::kAfter)) {
+  if (StyleRef().IsFlippedLinesWritingMode() ==
+      (StyleRef().GetRubyPosition() == RubyPosition::kAfter)) {
     LayoutUnit first_line_top;
     if (LayoutRubyBase* rb = RubyBase()) {
       RootInlineBox* root_box = rb->FirstRootBox();
@@ -295,10 +295,10 @@ void LayoutRubyRun::GetOverhang(bool first_line,
         (logical_width - root_inline_box->LogicalRight()).ToInt());
   }
 
-  start_overhang = Style()->IsLeftToRightDirection() ? logical_left_overhang
-                                                     : logical_right_overhang;
-  end_overhang = Style()->IsLeftToRightDirection() ? logical_right_overhang
-                                                   : logical_left_overhang;
+  start_overhang = StyleRef().IsLeftToRightDirection() ? logical_left_overhang
+                                                       : logical_right_overhang;
+  end_overhang = StyleRef().IsLeftToRightDirection() ? logical_right_overhang
+                                                     : logical_left_overhang;
 
   if (!start_layout_object || !start_layout_object->IsText() ||
       start_layout_object->Style(first_line)->FontSize() >

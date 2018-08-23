@@ -203,11 +203,11 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
            .StyleRef()
            .SubtreeWillChangeContents() &&
        squashing_layer.GetLayoutObject()
-           .Style()
-           ->IsRunningAnimationOnCompositor()) ||
+           .StyleRef()
+           .IsRunningAnimationOnCompositor()) ||
       squashing_layer.GetLayoutObject()
-          .Style()
-          ->ShouldCompositeForCurrentAnimations())
+          .StyleRef()
+          .ShouldCompositeForCurrentAnimations())
     return SquashingDisallowedReason::kSquashingLayerIsAnimating;
 
   if (layer->EnclosingPaginationLayer())
@@ -314,8 +314,8 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
       if (ScrollingCoordinator* scrolling_coordinator =
               layer->GetScrollingCoordinator()) {
         if (layer->GetLayoutObject()
-                .Style()
-                ->HasViewportConstrainedPosition()) {
+                .StyleRef()
+                .HasViewportConstrainedPosition()) {
           scrolling_coordinator->FrameViewFixedObjectsDidChange(
               layer->GetLayoutObject().View()->GetFrameView());
         }

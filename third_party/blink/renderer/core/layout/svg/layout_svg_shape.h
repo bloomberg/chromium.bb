@@ -86,7 +86,7 @@ class LayoutSVGShape : public LayoutSVGModelObject {
   }
 
   bool HasNonScalingStroke() const {
-    return Style()->SvgStyle().VectorEffect() == VE_NON_SCALING_STROKE;
+    return StyleRef().SvgStyle().VectorEffect() == VE_NON_SCALING_STROKE;
   }
   const Path& NonScalingStrokePath() const {
     DCHECK(HasNonScalingStroke());

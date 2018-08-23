@@ -88,7 +88,7 @@ void LayoutFileUploadControl::ComputeIntrinsicLogicalWidths(
   // characters (using "0" as the nominal character).
   const UChar kCharacter = '0';
   const String character_as_string = String(&kCharacter, 1);
-  const Font& font = Style()->GetFont();
+  const Font& font = StyleRef().GetFont();
   float min_default_label_width =
       kDefaultWidthNumChars *
       font.Width(ConstructTextRun(font, character_as_string, StyleRef(),
@@ -106,7 +106,7 @@ void LayoutFileUploadControl::ComputeIntrinsicLogicalWidths(
   max_logical_width =
       LayoutUnit(ceilf(std::max(min_default_label_width, default_label_width)));
 
-  if (!Style()->Width().IsPercentOrCalc())
+  if (!StyleRef().Width().IsPercentOrCalc())
     min_logical_width = max_logical_width;
 }
 
@@ -178,7 +178,7 @@ String LayoutFileUploadControl::FileTextValue() const {
   HTMLInputElement* input = ToHTMLInputElement(GetNode());
   DCHECK(input->files());
   return LayoutTheme::GetTheme().FileListNameForWidth(
-      input->GetLocale(), input->files(), Style()->GetFont(),
+      input->GetLocale(), input->files(), StyleRef().GetFont(),
       MaxFilenameWidth());
 }
 

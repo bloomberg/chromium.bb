@@ -129,7 +129,7 @@ void LayoutImage::StyleDidChange(StyleDifference diff,
   bool old_orientation =
       old_style ? old_style->RespectImageOrientation()
                 : ComputedStyleInitialValues::InitialRespectImageOrientation();
-  if (Style() && Style()->RespectImageOrientation() != old_orientation)
+  if (Style() && StyleRef().RespectImageOrientation() != old_orientation)
     IntrinsicSizeChanged();
 }
 
@@ -202,7 +202,7 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
     CanDeferInvalidation defer) {
   LayoutSize old_intrinsic_size = IntrinsicSize();
   LayoutSize new_intrinsic_size =
-      RoundedLayoutSize(image_resource_->ImageSize(Style()->EffectiveZoom()));
+      RoundedLayoutSize(image_resource_->ImageSize(StyleRef().EffectiveZoom()));
   UpdateIntrinsicSizeIfNeeded(new_intrinsic_size);
 
   // In the case of generated image content using :before/:after/content, we
@@ -218,17 +218,17 @@ void LayoutImage::InvalidatePaintAndMarkForLayoutIfNeeded(
 
   // If the actual area occupied by the image has changed and it is not
   // constrained by style then a layout is required.
-  bool image_size_is_constrained = Style()->LogicalWidth().IsSpecified() &&
-                                   Style()->LogicalHeight().IsSpecified();
+  bool image_size_is_constrained = StyleRef().LogicalWidth().IsSpecified() &&
+                                   StyleRef().LogicalHeight().IsSpecified();
 
   // FIXME: We only need to recompute the containing block's preferred size if
   // the containing block's size depends on the image's size (i.e., the
   // container uses shrink-to-fit sizing). There's no easy way to detect that
   // shrink-to-fit is needed, always force a layout.
   bool containing_block_needs_to_recompute_preferred_size =
-      Style()->LogicalWidth().IsPercentOrCalc() ||
-      Style()->LogicalMaxWidth().IsPercentOrCalc() ||
-      Style()->LogicalMinWidth().IsPercentOrCalc();
+      StyleRef().LogicalWidth().IsPercentOrCalc() ||
+      StyleRef().LogicalMaxWidth().IsPercentOrCalc() ||
+      StyleRef().LogicalMinWidth().IsPercentOrCalc();
 
   if (image_source_has_changed_size &&
       (!image_size_is_constrained ||
@@ -307,23 +307,23 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
     return false;
   if (!ContentBoxRect().Contains(local_rect))
     return false;
-  EFillBox background_clip = Style()->BackgroundClip();
+  EFillBox background_clip = StyleRef().BackgroundClip();
   // Background paints under borders.
-  if (background_clip == EFillBox::kBorder && Style()->HasBorder() &&
-      !Style()->BorderObscuresBackground())
+  if (background_clip == EFillBox::kBorder && StyleRef().HasBorder() &&
+      !StyleRef().BorderObscuresBackground())
     return false;
   // Background shows in padding area.
   if ((background_clip == EFillBox::kBorder ||
        background_clip == EFillBox::kPadding) &&
-      Style()->HasPadding())
+      StyleRef().HasPadding())
     return false;
   // Object-position may leave parts of the content box empty, regardless of the
   // value of object-fit.
-  if (Style()->ObjectPosition() !=
+  if (StyleRef().ObjectPosition() !=
       ComputedStyleInitialValues::InitialObjectPosition())
     return false;
   // Object-fit may leave parts of the content box empty.
-  EObjectFit object_fit = Style()->GetObjectFit();
+  EObjectFit object_fit = StyleRef().GetObjectFit();
   if (object_fit != EObjectFit::kFill && object_fit != EObjectFit::kCover)
     return false;
   // Check for image with alpha.
@@ -375,8 +375,8 @@ void LayoutImage::ComputeIntrinsicSizingInfo(
 
     // Handle zoom & vertical writing modes here, as the embedded SVG document
     // doesn't know about them.
-    intrinsic_sizing_info.size.Scale(Style()->EffectiveZoom());
-    if (Style()->GetObjectFit() != EObjectFit::kScaleDown)
+    intrinsic_sizing_info.size.Scale(StyleRef().EffectiveZoom());
+    if (StyleRef().GetObjectFit() != EObjectFit::kScaleDown)
       intrinsic_sizing_info.size.Scale(ImageDevicePixelRatio());
 
     if (!IsHorizontalWritingMode())

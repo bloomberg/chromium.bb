@@ -170,9 +170,9 @@ void TableLayoutAlgorithmAuto::FullRecalc() {
   for (LayoutTableCol* column = table_->FirstColumn(); column;
        column = column->NextColumn()) {
     if (column->IsTableColumnGroupWithColumnChildren()) {
-      group_logical_width = column->Style()->LogicalWidth();
+      group_logical_width = column->StyleRef().LogicalWidth();
     } else {
-      Length col_logical_width = column->Style()->LogicalWidth();
+      Length col_logical_width = column->StyleRef().LogicalWidth();
       // FIXME: calc() on tables should be handled consistently with other
       // lengths. See bug: https://crbug.com/382725
       if (col_logical_width.IsCalculated() || col_logical_width.IsAuto())
@@ -242,19 +242,19 @@ static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
   // A special case.  If this table is not fixed width and contained inside
   // a cell, then don't bloat the maxwidth by examining percentage growth.
   while (true) {
-    Length tw = table->Style()->Width();
+    Length tw = table->StyleRef().Width();
     if ((!tw.IsAuto() && !tw.IsPercentOrCalc()) ||
         table->IsOutOfFlowPositioned())
       return true;
     LayoutBlock* cb = table->ContainingBlock();
 
     while (!cb->IsLayoutView() && !cb->IsTableCell() &&
-           cb->Style()->Width().IsAuto() && !cb->IsOutOfFlowPositioned())
+           cb->StyleRef().Width().IsAuto() && !cb->IsOutOfFlowPositioned())
       cb = cb->ContainingBlock();
 
     // TODO(dgrogan): Should the second clause check for isFixed() instead?
-    if (!cb->IsTableCell() || (!cb->Style()->Width().IsAuto() &&
-                               !cb->Style()->Width().IsPercentOrCalc()))
+    if (!cb->IsTableCell() || (!cb->StyleRef().Width().IsAuto() &&
+                               !cb->StyleRef().Width().IsPercentOrCalc()))
       return true;
 
     LayoutTableCell* cell = ToLayoutTableCell(cb);
@@ -328,7 +328,7 @@ void TableLayoutAlgorithmAuto::ComputeIntrinsicLogicalWidths(
 void TableLayoutAlgorithmAuto::ApplyPreferredLogicalWidthQuirks(
     LayoutUnit& min_width,
     LayoutUnit& max_width) const {
-  Length table_logical_width = table_->Style()->LogicalWidth();
+  Length table_logical_width = table_->StyleRef().LogicalWidth();
   if (table_logical_width.IsFixed() && table_logical_width.IsPositive()) {
     // |minWidth| is the result of measuring the intrinsic content's size. Keep
     // it to make sure we are *never* smaller than the actual content.
@@ -339,7 +339,8 @@ void TableLayoutAlgorithmAuto::ApplyPreferredLogicalWidthQuirks(
     min_width = max_width = LayoutUnit(
         std::max<int>(min_width.Floor(), table_logical_width.Value()));
 
-    const Length& style_max_logical_width = table_->Style()->LogicalMaxWidth();
+    const Length& style_max_logical_width =
+        table_->StyleRef().LogicalMaxWidth();
     if (style_max_logical_width.IsFixed() &&
         !style_max_logical_width.IsNegative()) {
       min_width = LayoutUnit(

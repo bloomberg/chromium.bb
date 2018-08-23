@@ -243,7 +243,7 @@ LayoutPoint MultiColumnFragmentainerGroup::VisualPointToFlowThreadPoint(
   local_point.MoveBy(-column_rect.Location());
   if (!column_set_.IsHorizontalWritingMode()) {
     if (snap == kSnapToColumn) {
-      LayoutUnit column_start = column_set_.Style()->IsLeftToRightDirection()
+      LayoutUnit column_start = column_set_.StyleRef().IsLeftToRightDirection()
                                     ? LayoutUnit()
                                     : column_rect.Height();
       if (local_point.X() < 0)
@@ -255,7 +255,7 @@ LayoutPoint MultiColumnFragmentainerGroup::VisualPointToFlowThreadPoint(
                        local_point.Y());
   }
   if (snap == kSnapToColumn) {
-    LayoutUnit column_start = column_set_.Style()->IsLeftToRightDirection()
+    LayoutUnit column_start = column_set_.StyleRef().IsLeftToRightDirection()
                                   ? LayoutUnit()
                                   : column_rect.Width();
     if (local_point.Y() < 0)
@@ -425,7 +425,7 @@ LayoutRect MultiColumnFragmentainerGroup::ColumnRectAt(
   LayoutUnit column_gap = column_set_.ColumnGap();
 
   if (column_set_.MultiColumnFlowThread()->ProgressionIsInline()) {
-    if (column_set_.Style()->IsLeftToRightDirection())
+    if (column_set_.StyleRef().IsLeftToRightDirection())
       column_logical_left += column_index * (column_logical_width + column_gap);
     else
       column_logical_left += column_set_.ContentLogicalWidth() -
@@ -476,7 +476,7 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
   // contents from a previous column in the overflow area of a following column.
   bool is_first_column_in_row = !column_index;
   bool is_last_column_in_row = column_index == ActualColumnCount() - 1;
-  bool is_ltr = column_set_.Style()->IsLeftToRightDirection();
+  bool is_ltr = column_set_.StyleRef().IsLeftToRightDirection();
   bool is_leftmost_column =
       is_ltr ? is_first_column_in_row : is_last_column_in_row;
   bool is_rightmost_column =
@@ -572,7 +572,7 @@ unsigned MultiColumnFragmentainerGroup::ColumnIndexAtVisualPoint(
       is_horizontal_writing_mode == is_column_progression_inline
           ? visual_point.X()
           : visual_point.Y();
-  if (!column_set_.Style()->IsLeftToRightDirection() &&
+  if (!column_set_.StyleRef().IsLeftToRightDirection() &&
       is_column_progression_inline)
     offset_in_column_progression_direction =
         column_set_.LogicalWidth() - offset_in_column_progression_direction;
@@ -618,7 +618,7 @@ void MultiColumnFragmentainerGroup::ColumnIntervalForVisualRect(
   bool is_column_progression_inline =
       column_set_.MultiColumnFlowThread()->ProgressionIsInline();
   bool is_flipped_column_progression =
-      !column_set_.Style()->IsLeftToRightDirection() &&
+      !column_set_.StyleRef().IsLeftToRightDirection() &&
       is_column_progression_inline;
   if (column_set_.IsHorizontalWritingMode() == is_column_progression_inline) {
     if (is_flipped_column_progression) {

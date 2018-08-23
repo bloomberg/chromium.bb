@@ -173,7 +173,7 @@ Node* SmartClip::FindBestOverlappingNode(Node* root_node,
     if (layout_object && !node_rect.IsEmpty()) {
       if (layout_object->IsText() || layout_object->IsLayoutImage() ||
           node->IsFrameOwnerElement() ||
-          (layout_object->Style()->HasBackgroundImage() &&
+          (layout_object->StyleRef().HasBackgroundImage() &&
            !ShouldSkipBackgroundImage(node))) {
         if (resized_crop_rect.Intersects(node_rect)) {
           min_node = MinNodeContainsNodes(min_node, node);
@@ -203,8 +203,8 @@ bool SmartClip::ShouldSkipBackgroundImage(Node* node) {
   // or a width. On the other hand, if we've got a legit background image,
   // it's very likely the height or the width will be set to auto.
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (layout_object && (layout_object->Style()->LogicalHeight().IsAuto() ||
-                        layout_object->Style()->LogicalWidth().IsAuto()))
+  if (layout_object && (layout_object->StyleRef().LogicalHeight().IsAuto() ||
+                        layout_object->StyleRef().LogicalWidth().IsAuto()))
     return true;
 
   return false;

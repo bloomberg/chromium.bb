@@ -346,7 +346,7 @@ bool LayoutMultiColumnSet::HeightIsAuto() const {
     // 'balance' - in accordance with the spec).
     // Pretending that column-fill is auto also matches the old multicol
     // implementation, which has no support for this property.
-    if (MultiColumnBlockFlow()->Style()->GetColumnFill() ==
+    if (MultiColumnBlockFlow()->StyleRef().GetColumnFill() ==
         EColumnFill::kBalance)
       return true;
     if (LayoutBox* next = NextSiblingBox()) {
@@ -492,12 +492,12 @@ PositionWithAffinity LayoutMultiColumnSet::PositionForPoint(
 LayoutUnit LayoutMultiColumnSet::ColumnGap() const {
   LayoutBlockFlow* parent_block = MultiColumnBlockFlow();
 
-  if (parent_block->Style()->ColumnGap().IsNormal()) {
+  if (parent_block->StyleRef().ColumnGap().IsNormal()) {
     // "1em" is recommended as the normal gap setting. Matches <p> margins.
     return LayoutUnit(
-        parent_block->Style()->GetFontDescription().ComputedPixelSize());
+        parent_block->StyleRef().GetFontDescription().ComputedPixelSize());
   }
-  return ValueForLength(parent_block->Style()->ColumnGap().GetLength(),
+  return ValueForLength(parent_block->StyleRef().ColumnGap().GetLength(),
                         AvailableLogicalWidth());
 }
 
@@ -591,7 +591,7 @@ bool LayoutMultiColumnSet::ComputeColumnRuleBounds(
   if (col_count <= 1)
     return false;
 
-  bool left_to_right = Style()->IsLeftToRightDirection();
+  bool left_to_right = StyleRef().IsLeftToRightDirection();
   LayoutUnit curr_logical_left_offset =
       left_to_right ? LayoutUnit() : ContentLogicalWidth();
   LayoutUnit rule_add = BorderAndPaddingLogicalLeft();

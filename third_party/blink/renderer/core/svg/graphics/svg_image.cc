@@ -187,7 +187,7 @@ IntSize SVGImage::ContainerSize() const {
     return container_size;
 
   // Assure that a container size is always given for a non-identity zoom level.
-  DCHECK_EQ(layout_object->Style()->EffectiveZoom(), 1);
+  DCHECK_EQ(layout_object->StyleRef().EffectiveZoom(), 1);
 
   // No set container size; use concrete object size.
   return intrinsic_size_;

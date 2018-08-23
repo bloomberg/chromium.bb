@@ -145,7 +145,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
   int VBorderSpacing() const { return v_spacing_; }
 
   bool ShouldCollapseBorders() const {
-    return Style()->BorderCollapse() == EBorderCollapse::kCollapse;
+    return StyleRef().BorderCollapse() == EBorderCollapse::kCollapse;
   }
 
   LayoutUnit BorderLeft() const override;

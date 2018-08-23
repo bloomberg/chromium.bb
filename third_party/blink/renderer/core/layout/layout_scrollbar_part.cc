@@ -165,18 +165,18 @@ void LayoutScrollbarPart::UpdateScrollbarWidth() {
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visible_size = box->Size().Width() - box->Style()->BorderLeftWidth() -
-                     box->Style()->BorderRightWidth();
+  int visible_size = box->Size().Width() - box->StyleRef().BorderLeftWidth() -
+                     box->StyleRef().BorderRightWidth();
   SetWidth(LayoutUnit(ComputeScrollbarWidth(visible_size, Style())));
 
   // Buttons and track pieces can all have margins along the axis of the
   // scrollbar. Values are rounded because scrollbar parts need to be rendered
   // at device pixel boundaries.
   SetMarginLeft(LayoutUnit(
-      MinimumValueForLength(Style()->MarginLeft(), LayoutUnit(visible_size))
+      MinimumValueForLength(StyleRef().MarginLeft(), LayoutUnit(visible_size))
           .Round()));
   SetMarginRight(LayoutUnit(
-      MinimumValueForLength(Style()->MarginRight(), LayoutUnit(visible_size))
+      MinimumValueForLength(StyleRef().MarginRight(), LayoutUnit(visible_size))
           .Round()));
 }
 
@@ -188,18 +188,18 @@ void LayoutScrollbarPart::UpdateScrollbarHeight() {
   // up to date, especially since we are called at style change.
   // FIXME: Querying the style's border information doesn't work on table cells
   // with collapsing borders.
-  int visible_size = box->Size().Height() - box->Style()->BorderTopWidth() -
-                     box->Style()->BorderBottomWidth();
+  int visible_size = box->Size().Height() - box->StyleRef().BorderTopWidth() -
+                     box->StyleRef().BorderBottomWidth();
   SetHeight(LayoutUnit(ComputeScrollbarHeight(visible_size, Style())));
 
   // Buttons and track pieces can all have margins along the axis of the
   // scrollbar. Values are rounded because scrollbar parts need to be rendered
   // at device pixel boundaries.
   SetMarginTop(LayoutUnit(
-      MinimumValueForLength(Style()->MarginTop(), LayoutUnit(visible_size))
+      MinimumValueForLength(StyleRef().MarginTop(), LayoutUnit(visible_size))
           .Round()));
   SetMarginBottom(LayoutUnit(
-      MinimumValueForLength(Style()->MarginBottom(), LayoutUnit(visible_size))
+      MinimumValueForLength(StyleRef().MarginBottom(), LayoutUnit(visible_size))
           .Round()));
 }
 

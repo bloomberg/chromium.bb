@@ -904,7 +904,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
 
   // CSS clip only applies when position is absolute or fixed. Prefer this check
-  // over !Style()->HasAutoClip().
+  // over !StyleRef().HasAutoClip().
   bool HasClip() const {
     return IsOutOfFlowPositioned() && !StyleRef().HasAutoClip();
   }

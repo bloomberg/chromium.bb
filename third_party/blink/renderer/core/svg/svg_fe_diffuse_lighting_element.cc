@@ -67,7 +67,7 @@ bool SVGFEDiffuseLightingElement::SetFilterEffectAttribute(
     DCHECK(layout_object);
     DCHECK(layout_object->Style());
     return diffuse_lighting->SetLightingColor(
-        layout_object->Style()->SvgStyle().LightingColor());
+        layout_object->StyleRef().SvgStyle().LightingColor());
   }
   if (attr_name == SVGNames::surfaceScaleAttr)
     return diffuse_lighting->SetSurfaceScale(
@@ -151,7 +151,7 @@ FilterEffect* SVGFEDiffuseLightingElement::Build(
     return nullptr;
 
   DCHECK(layout_object->Style());
-  Color color = layout_object->Style()->SvgStyle().LightingColor();
+  Color color = layout_object->StyleRef().SvgStyle().LightingColor();
 
   const SVGFELightElement* light_node =
       SVGFELightElement::FindLightElement(*this);

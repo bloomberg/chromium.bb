@@ -53,7 +53,7 @@ void LayoutTableRow::WillBeRemovedFromTree() {
 
 void LayoutTableRow::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
-  DCHECK_EQ(Style()->Display(), EDisplay::kTableRow);
+  DCHECK_EQ(StyleRef().Display(), EDisplay::kTableRow);
 
   LayoutTableBoxComponent::StyleDidChange(diff, old_style);
   PropagateStyleToAnonymousChildren();
@@ -61,7 +61,7 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
   if (!old_style)
     return;
 
-  if (Section() && Style()->LogicalHeight() != old_style->LogicalHeight())
+  if (Section() && StyleRef().LogicalHeight() != old_style->LogicalHeight())
     Section()->RowLogicalHeightChanged(this);
 
   if (!Parent())
@@ -100,7 +100,7 @@ void LayoutTableRow::StyleDidChange(StyleDifference diff,
   // When a row gets collapsed or uncollapsed, it's necessary to check all the
   // rows to find any cell that may span the current row.
   if ((old_style->Visibility() == EVisibility::kCollapse) !=
-      (Style()->Visibility() == EVisibility::kCollapse)) {
+      (StyleRef().Visibility() == EVisibility::kCollapse)) {
     for (LayoutTableRow* row = Section()->FirstRow(); row;
          row = row->NextRow()) {
       for (LayoutTableCell* cell = row->FirstCell(); cell;

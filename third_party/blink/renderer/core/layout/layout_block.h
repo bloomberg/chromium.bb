@@ -290,12 +290,12 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     return LogicalLeftOffsetForContent() + AvailableLogicalWidth();
   }
   LayoutUnit StartOffsetForContent() const {
-    return Style()->IsLeftToRightDirection()
+    return StyleRef().IsLeftToRightDirection()
                ? LogicalLeftOffsetForContent()
                : LogicalWidth() - LogicalRightOffsetForContent();
   }
   LayoutUnit EndOffsetForContent() const {
-    return !Style()->IsLeftToRightDirection()
+    return !StyleRef().IsLeftToRightDirection()
                ? LogicalLeftOffsetForContent()
                : LogicalWidth() - LogicalRightOffsetForContent();
   }

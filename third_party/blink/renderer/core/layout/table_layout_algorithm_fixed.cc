@@ -98,7 +98,7 @@ int TableLayoutAlgorithmFixed::CalcWidthArray() {
     if (col->IsTableColumnGroupWithColumnChildren())
       continue;
 
-    Length col_style_logical_width = col->Style()->LogicalWidth();
+    Length col_style_logical_width = col->StyleRef().LogicalWidth();
     int effective_col_width = 0;
     if (col_style_logical_width.IsFixed() &&
         col_style_logical_width.Value() > 0)
@@ -196,7 +196,7 @@ void TableLayoutAlgorithmFixed::ComputeIntrinsicLogicalWidths(
 void TableLayoutAlgorithmFixed::ApplyPreferredLogicalWidthQuirks(
     LayoutUnit& min_width,
     LayoutUnit& max_width) const {
-  Length table_logical_width = table_->Style()->LogicalWidth();
+  Length table_logical_width = table_->StyleRef().LogicalWidth();
   if (table_logical_width.IsFixed() && table_logical_width.IsPositive()) {
     min_width = max_width = LayoutUnit(
         max(min_width,
@@ -218,7 +218,7 @@ void TableLayoutAlgorithmFixed::ApplyPreferredLogicalWidthQuirks(
   // In this example, the two inner tables should be as large as the outer
   // table. We can achieve this effect by making the maxwidth of fixed tables
   // with percentage widths be infinite.
-  if (table_->Style()->LogicalWidth().IsPercentOrCalc() &&
+  if (table_->StyleRef().LogicalWidth().IsPercentOrCalc() &&
       max_width < kTableMaxWidth)
     max_width = LayoutUnit(kTableMaxWidth);
 }

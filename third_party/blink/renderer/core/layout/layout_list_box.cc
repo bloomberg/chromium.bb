@@ -70,7 +70,7 @@ unsigned LayoutListBox::size() const {
 }
 
 LayoutUnit LayoutListBox::DefaultItemHeight() const {
-  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
+  const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
   if (!font_data)
     return LayoutUnit();
   return LayoutUnit(font_data->GetFontMetrics().Height() +
@@ -127,7 +127,7 @@ void LayoutListBox::ComputeIntrinsicLogicalWidths(
     LayoutUnit& max_logical_width) const {
   LayoutBlockFlow::ComputeIntrinsicLogicalWidths(min_logical_width,
                                                  max_logical_width);
-  if (Style()->Width().IsPercentOrCalc())
+  if (StyleRef().Width().IsPercentOrCalc())
     min_logical_width = LayoutUnit();
 }
 

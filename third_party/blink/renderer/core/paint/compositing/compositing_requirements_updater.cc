@@ -192,7 +192,7 @@ static CompositingReasons SubtreeReasonsForCompositing(
   //
   // TODO(smcgruer): Only composite fixed if needed (http://crbug.com/742213)
   const bool ignore_lcd_text = true;
-  if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed ||
+  if (layer->GetLayoutObject().StyleRef().GetPosition() == EPosition::kFixed ||
       compositing_reason_finder.RequiresCompositingForScrollDependentPosition(
           layer, ignore_lcd_text)) {
     subtree_reasons |=

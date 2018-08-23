@@ -38,7 +38,7 @@ void LineBreaker::SkipLeadingWhitespace(InlineBidiResolver& resolver,
     if (line_layout_item.IsOutOfFlowPositioned()) {
       SetStaticPositions(block_, LineLayoutBox(line_layout_item),
                          width.IndentText());
-      if (line_layout_item.Style()->IsOriginalDisplayInlineType()) {
+      if (line_layout_item.StyleRef().IsOriginalDisplayInlineType()) {
         resolver.Runs().AddRun(
             CreateRun(0, 1, LineLayoutItem(line_layout_item), resolver));
         line_info.IncrementRunsFromLeadingWhitespace();

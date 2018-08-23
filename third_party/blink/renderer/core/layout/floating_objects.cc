@@ -59,7 +59,7 @@ FloatingObject::FloatingObject(LayoutBox* layout_object)
       is_in_placed_tree_(false)
 #endif
 {
-  EFloat type = layout_object->Style()->Floating();
+  EFloat type = layout_object->StyleRef().Floating();
   DCHECK_NE(type, EFloat::kNone);
   if (type == EFloat::kLeft)
     type_ = kFloatLeft;

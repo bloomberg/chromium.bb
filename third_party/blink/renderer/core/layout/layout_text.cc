@@ -436,7 +436,7 @@ void LayoutText::AccumlateQuads(Vector<FloatQuad>& quads,
                                 const LayoutRect& passed_boundaries) const {
   FloatRect boundaries(passed_boundaries);
   if (!ellipsis_rect.IsEmpty()) {
-    if (Style()->IsHorizontalWritingMode())
+    if (StyleRef().IsHorizontalWritingMode())
       boundaries.SetWidth(ellipsis_rect.MaxX() - boundaries.X());
     else
       boundaries.SetHeight(ellipsis_rect.MaxY() - boundaries.Y());
@@ -739,7 +739,7 @@ PositionWithAffinity LayoutText::PositionForPoint(
       FirstTextBox()->IsHorizontal() ? point.X() : point.Y();
   LayoutUnit point_block_direction =
       FirstTextBox()->IsHorizontal() ? point.Y() : point.X();
-  bool blocks_are_flipped = Style()->IsFlippedBlocksWritingMode();
+  bool blocks_are_flipped = StyleRef().IsFlippedBlocksWritingMode();
 
   InlineTextBox* last_box = nullptr;
   for (InlineTextBox* box : TextBoxes()) {
@@ -869,7 +869,7 @@ LayoutRect LayoutText::LocalCaretRect(
 
   // for unicode-bidi: plaintext, use inlineBoxBidiLevel() to test the correct
   // direction for the cursor.
-  if (right_aligned && Style()->GetUnicodeBidi() == UnicodeBidi::kPlaintext) {
+  if (right_aligned && StyleRef().GetUnicodeBidi() == UnicodeBidi::kPlaintext) {
     if (inline_box->BidiLevel() % 2 != 1)
       right_aligned = false;
   }
@@ -883,7 +883,7 @@ LayoutRect LayoutText::LocalCaretRect(
   }
 
   return LayoutRect(
-      Style()->IsHorizontalWritingMode()
+      StyleRef().IsHorizontalWritingMode()
           ? IntRect(left.ToInt(), top, caret_width.ToInt(), height)
           : IntRect(top, left.ToInt(), height, caret_width.ToInt()));
 }
@@ -898,7 +898,7 @@ ALWAYS_INLINE float LayoutText::WidthFromFont(
     HashSet<const SimpleFontData*>* fallback_fonts,
     FloatRect* glyph_bounds_accumulation,
     float expansion) const {
-  if (Style()->HasTextCombine() && IsCombineText()) {
+  if (StyleRef().HasTextCombine() && IsCombineText()) {
     const LayoutTextCombine* combine_text = ToLayoutTextCombine(this);
     if (combine_text->IsCombined())
       return combine_text->CombinedTextWidth(f);
@@ -908,7 +908,7 @@ ALWAYS_INLINE float LayoutText::WidthFromFont(
       ConstructTextRun(f, this, start, len, StyleRef(), text_direction);
   run.SetCharactersLength(TextLength() - start);
   DCHECK_GE(run.CharactersLength(), run.length());
-  run.SetTabSize(!Style()->CollapseWhiteSpace(), Style()->GetTabSize());
+  run.SetTabSize(!StyleRef().CollapseWhiteSpace(), StyleRef().GetTabSize());
   run.SetXPos(lead_width + text_width_so_far);
   run.SetExpansion(expansion);
 
@@ -942,7 +942,7 @@ void LayoutText::TrimmedPrefWidths(LayoutUnit lead_width_layout_unit,
   // below.
   float lead_width = lead_width_layout_unit.ToFloat();
 
-  bool collapse_white_space = Style()->CollapseWhiteSpace();
+  bool collapse_white_space = StyleRef().CollapseWhiteSpace();
   if (!collapse_white_space)
     strip_front_spaces = false;
 
@@ -978,9 +978,9 @@ void LayoutText::TrimmedPrefWidths(LayoutUnit lead_width_layout_unit,
   DCHECK(text_);
   StringImpl& text = *text_.Impl();
   if (text[0] == kSpaceCharacter ||
-      (text[0] == kNewlineCharacter && !Style()->PreserveNewline()) ||
+      (text[0] == kNewlineCharacter && !StyleRef().PreserveNewline()) ||
       text[0] == kTabulationCharacter) {
-    const Font& font = Style()->GetFont();  // FIXME: This ignores first-line.
+    const Font& font = StyleRef().GetFont();  // FIXME: This ignores first-line.
     if (strip_front_spaces) {
       const UChar kSpaceChar = kSpaceCharacter;
       TextRun run =
@@ -994,12 +994,12 @@ void LayoutText::TrimmedPrefWidths(LayoutUnit lead_width_layout_unit,
 
   strip_front_spaces = collapse_white_space && has_end_white_space_;
 
-  if (!Style()->AutoWrap() || float_min_width > float_max_width)
+  if (!StyleRef().AutoWrap() || float_min_width > float_max_width)
     float_min_width = float_max_width;
 
   // Compute our max widths by scanning the string for newlines.
   if (has_break) {
-    const Font& f = Style()->GetFont();  // FIXME: This ignores first-line.
+    const Font& f = StyleRef().GetFont();  // FIXME: This ignores first-line.
     bool first_line = true;
     first_line_max_width = LayoutUnit(float_max_width);
     last_line_max_width = LayoutUnit(float_max_width);
@@ -1424,7 +1424,7 @@ void LayoutText::ComputePreferredLogicalWidths(
     } else {
       // Nowrap can never be broken, so don't bother setting the breakable
       // character boolean. Pre can only be broken if we encounter a newline.
-      if (Style()->AutoWrap() || is_newline)
+      if (StyleRef().AutoWrap() || is_newline)
         has_breakable_char_ = true;
 
       if (curr_min_width > min_width_)
@@ -1448,7 +1448,8 @@ void LayoutText::ComputePreferredLogicalWidths(
             ConstructTextRun(f, this, i, 1, style_to_use, text_direction);
         run.SetCharactersLength(len - i);
         DCHECK_GE(run.CharactersLength(), run.length());
-        run.SetTabSize(!Style()->CollapseWhiteSpace(), Style()->GetTabSize());
+        run.SetTabSize(!StyleRef().CollapseWhiteSpace(),
+                       StyleRef().GetTabSize());
         run.SetXPos(lead_width + curr_max_width);
 
         curr_max_width += f.Width(run);
@@ -1492,13 +1493,13 @@ bool LayoutText::IsAllCollapsibleWhitespace() const {
   unsigned length = TextLength();
   if (Is8Bit()) {
     for (unsigned i = 0; i < length; ++i) {
-      if (!Style()->IsCollapsibleWhiteSpace(Characters8()[i]))
+      if (!StyleRef().IsCollapsibleWhiteSpace(Characters8()[i]))
         return false;
     }
     return true;
   }
   for (unsigned i = 0; i < length; ++i) {
-    if (!Style()->IsCollapsibleWhiteSpace(Characters16()[i]))
+    if (!StyleRef().IsCollapsibleWhiteSpace(Characters16()[i]))
       return false;
   }
   return true;
@@ -1886,8 +1887,8 @@ float LayoutText::Width(unsigned from,
     return 0;
 
   float w;
-  if (&f == &Style()->GetFont()) {
-    if (!Style()->PreserveNewline() && !from && len == TextLength()) {
+  if (&f == &StyleRef().GetFont()) {
+    if (!StyleRef().PreserveNewline() && !from && len == TextLength()) {
       if (fallback_fonts) {
         DCHECK(glyph_bounds);
         if (PreferredLogicalWidthsDirty() ||
@@ -1913,7 +1914,7 @@ float LayoutText::Width(unsigned from,
     run.SetCharactersLength(TextLength() - from);
     DCHECK_GE(run.CharactersLength(), run.length());
 
-    run.SetTabSize(!Style()->CollapseWhiteSpace(), Style()->GetTabSize());
+    run.SetTabSize(!StyleRef().CollapseWhiteSpace(), StyleRef().GetTabSize());
     run.SetXPos(x_pos.ToFloat());
     w = f.Width(run, fallback_fonts, glyph_bounds);
   }
@@ -1947,7 +1948,7 @@ LayoutRect LayoutText::LinesBoundingBox() const {
         logical_right_side = curr->LogicalRight().ToFloat();
     }
 
-    bool is_horizontal = Style()->IsHorizontalWritingMode();
+    bool is_horizontal = StyleRef().IsHorizontalWritingMode();
 
     float x = is_horizontal ? logical_left_side : FirstTextBox()->X().ToFloat();
     float y = is_horizontal ? FirstTextBox()->Y().ToFloat() : logical_left_side;
@@ -2001,7 +2002,7 @@ LayoutRect LayoutText::VisualOverflowRect() const {
 
   LayoutRect rect(logical_left_side, logical_top, logical_width,
                   logical_height);
-  if (!Style()->IsHorizontalWritingMode())
+  if (!StyleRef().IsHorizontalWritingMode())
     rect = rect.TransposedRect();
   return rect;
 }

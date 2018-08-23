@@ -290,8 +290,8 @@ void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
       (parent_layout_inline && parent_layout_inline->AlwaysCreateLineBoxes()) ||
       (parent_layout_inline &&
        parent_style.VerticalAlign() != EVerticalAlign::kBaseline) ||
-      Style()->VerticalAlign() != EVerticalAlign::kBaseline ||
-      Style()->GetTextEmphasisMark() != TextEmphasisMark::kNone ||
+      StyleRef().VerticalAlign() != EVerticalAlign::kBaseline ||
+      StyleRef().GetTextEmphasisMark() != TextEmphasisMark::kNone ||
       (check_fonts &&
        (!StyleRef().HasIdenticalAscentDescentAndLineGap(parent_style) ||
         parent_style.LineHeight() != StyleRef().LineHeight()));
@@ -421,7 +421,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
     // collect the x/y offsets from inline parents later.
     if (LayoutObject* positioned_ancestor =
             InFlowPositionedInlineAncestor(this))
-      new_style->SetPosition(positioned_ancestor->Style()->GetPosition());
+      new_style->SetPosition(positioned_ancestor->StyleRef().GetPosition());
 
     LayoutBlockFlow* new_box =
         LayoutBlockFlow::CreateAnonymous(&GetDocument(), std::move(new_style));
@@ -710,7 +710,7 @@ void LayoutInline::GenerateCulledLineBoxRects(
   if (!CulledInlineFirstLineBox())
     return;
 
-  bool is_horizontal = Style()->IsHorizontalWritingMode();
+  bool is_horizontal = StyleRef().IsHorizontalWritingMode();
 
   LayoutUnit logical_top, logical_height;
   for (LayoutObject* curr = FirstChild(); curr; curr = curr->NextSibling()) {
@@ -890,19 +890,19 @@ static LayoutUnit ComputeMargin(const LayoutInline* layout_object,
 }
 
 LayoutUnit LayoutInline::MarginLeft() const {
-  return ComputeMargin(this, Style()->MarginLeft());
+  return ComputeMargin(this, StyleRef().MarginLeft());
 }
 
 LayoutUnit LayoutInline::MarginRight() const {
-  return ComputeMargin(this, Style()->MarginRight());
+  return ComputeMargin(this, StyleRef().MarginRight());
 }
 
 LayoutUnit LayoutInline::MarginTop() const {
-  return ComputeMargin(this, Style()->MarginTop());
+  return ComputeMargin(this, StyleRef().MarginTop());
 }
 
 LayoutUnit LayoutInline::MarginBottom() const {
-  return ComputeMargin(this, Style()->MarginBottom());
+  return ComputeMargin(this, StyleRef().MarginBottom());
 }
 
 bool LayoutInline::NodeAtPoint(HitTestResult& result,
@@ -1092,7 +1092,7 @@ LayoutRect LayoutInline::LinesBoundingBox() const {
         logical_right_side = curr->LogicalRight();
     }
 
-    bool is_horizontal = Style()->IsHorizontalWritingMode();
+    bool is_horizontal = StyleRef().IsHorizontalWritingMode();
 
     LayoutUnit x = is_horizontal ? logical_left_side : FirstLineBox()->X();
     LayoutUnit y = is_horizontal ? FirstLineBox()->Y() : logical_left_side;
@@ -1159,7 +1159,7 @@ LayoutRect LayoutInline::CulledInlineVisualOverflowBoundingBox() const {
   LinesBoundingBoxGeneratorContext context(float_result);
   GenerateCulledLineBoxRects(context, this);
   LayoutRect result(EnclosingLayoutRect(float_result));
-  bool is_horizontal = Style()->IsHorizontalWritingMode();
+  bool is_horizontal = StyleRef().IsHorizontalWritingMode();
   for (LayoutObject* curr = FirstChild(); curr; curr = curr->NextSibling()) {
     if (curr->IsFloatingOrOutOfFlowPositioned())
       continue;
@@ -1239,7 +1239,7 @@ LayoutRect LayoutInline::LinesVisualOverflowBoundingBox() const {
 
   LayoutRect rect(logical_left_side, logical_top, logical_width,
                   logical_height);
-  if (!Style()->IsHorizontalWritingMode())
+  if (!StyleRef().IsHorizontalWritingMode())
     rect = rect.TransposedRect();
   return rect;
 }
@@ -1298,7 +1298,7 @@ LayoutRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
 
 LayoutRect LayoutInline::VisualOverflowRect() const {
   LayoutRect overflow_rect = LinesVisualOverflowBoundingBox();
-  LayoutUnit outline_outset(Style()->OutlineOutsetExtent());
+  LayoutUnit outline_outset(StyleRef().OutlineOutsetExtent());
   if (outline_outset) {
     Vector<LayoutRect> rects;
     if (GetDocument().InNoQuirksMode()) {
@@ -1336,13 +1336,13 @@ bool LayoutInline::MapToVisualRectInAncestorSpaceInternal(
   if (!container)
     return true;
 
-  bool preserve3d = container->Style()->Preserves3D();
+  bool preserve3d = container->StyleRef().Preserves3D();
 
   TransformState::TransformAccumulation accumulation =
       preserve3d ? TransformState::kAccumulateTransform
                  : TransformState::kFlattenTransform;
 
-  if (Style()->HasInFlowPosition() && Layer()) {
+  if (StyleRef().HasInFlowPosition() && Layer()) {
     // Apply the in-flow position offset when invalidating a rectangle. The
     // layer is translated, but the layout box isn't, so we need to do this to
     // get the right dirty rect. Since this is called from LayoutObject::
@@ -1386,7 +1386,7 @@ LayoutSize LayoutInline::OffsetFromContainerInternal(
 
 PaintLayerType LayoutInline::LayerTypeRequired() const {
   return IsInFlowPositioned() || CreatesGroup() ||
-                 Style()->ShouldCompositeForCurrentAnimations() ||
+                 StyleRef().ShouldCompositeForCurrentAnimations() ||
                  ShouldApplyPaintContainment()
              ? kNormalPaintLayer
              : kNoPaintLayer;
@@ -1492,7 +1492,7 @@ LayoutUnit LayoutInline::LineHeight(
       return LayoutUnit(s->ComputedLineHeight());
   }
 
-  return LayoutUnit(Style()->ComputedLineHeight());
+  return LayoutUnit(StyleRef().ComputedLineHeight());
 }
 
 LayoutUnit LayoutInline::BaselinePosition(
@@ -1542,19 +1542,19 @@ LayoutSize LayoutInline::OffsetForInFlowPositionedInline(
   // relative-positioned inline has a negative offset we need to compensate for
   // it so that we align the positioned object with the edge of its containing
   // block.
-  if (child.Style()->HasStaticInlinePosition(
-          Style()->IsHorizontalWritingMode()))
+  if (child.StyleRef().HasStaticInlinePosition(
+          StyleRef().IsHorizontalWritingMode()))
     logical_offset.SetWidth(
         std::max(LayoutUnit(), -OffsetForInFlowPosition().Width()));
   else
     logical_offset.SetWidth(inline_position);
 
-  if (!child.Style()->HasStaticBlockPosition(
-          Style()->IsHorizontalWritingMode()))
+  if (!child.StyleRef().HasStaticBlockPosition(
+          StyleRef().IsHorizontalWritingMode()))
     logical_offset.SetHeight(block_position);
 
-  return Style()->IsHorizontalWritingMode() ? logical_offset
-                                            : logical_offset.TransposedSize();
+  return StyleRef().IsHorizontalWritingMode() ? logical_offset
+                                              : logical_offset.TransposedSize();
 }
 
 void LayoutInline::ImageChanged(WrappedImagePtr,
@@ -1650,15 +1650,15 @@ void LayoutInline::ComputeSelfHitTestRects(
 
 void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   // Convert the style regions to absolute coordinates.
-  if (Style()->Visibility() != EVisibility::kVisible)
+  if (StyleRef().Visibility() != EVisibility::kVisible)
     return;
 
-  if (Style()->DraggableRegionMode() == EDraggableRegionMode::kNone)
+  if (StyleRef().DraggableRegionMode() == EDraggableRegionMode::kNone)
     return;
 
   AnnotatedRegionValue region;
   region.draggable =
-      Style()->DraggableRegionMode() == EDraggableRegionMode::kDrag;
+      StyleRef().DraggableRegionMode() == EDraggableRegionMode::kDrag;
   region.bounds = LayoutRect(LinesBoundingBox());
 
   LayoutObject* container = ContainingBlock();

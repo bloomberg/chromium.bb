@@ -262,22 +262,22 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   LayoutUnit LogicalLeft() const {
-    return Style()->IsHorizontalWritingMode() ? frame_rect_.X()
-                                              : frame_rect_.Y();
+    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.X()
+                                                : frame_rect_.Y();
   }
   LayoutUnit LogicalRight() const { return LogicalLeft() + LogicalWidth(); }
   LayoutUnit LogicalTop() const {
-    return Style()->IsHorizontalWritingMode() ? frame_rect_.Y()
-                                              : frame_rect_.X();
+    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.Y()
+                                                : frame_rect_.X();
   }
   LayoutUnit LogicalBottom() const { return LogicalTop() + LogicalHeight(); }
   LayoutUnit LogicalWidth() const {
-    return Style()->IsHorizontalWritingMode() ? frame_rect_.Width()
-                                              : frame_rect_.Height();
+    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.Width()
+                                                : frame_rect_.Height();
   }
   LayoutUnit LogicalHeight() const {
-    return Style()->IsHorizontalWritingMode() ? frame_rect_.Height()
-                                              : frame_rect_.Width();
+    return StyleRef().IsHorizontalWritingMode() ? frame_rect_.Height()
+                                                : frame_rect_.Width();
   }
 
   // Logical height of the object, including content overflowing the
@@ -295,12 +295,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LayoutUnit intrinsic_content_height) const;
 
   int PixelSnappedLogicalHeight() const {
-    return Style()->IsHorizontalWritingMode() ? PixelSnappedHeight()
-                                              : PixelSnappedWidth();
+    return StyleRef().IsHorizontalWritingMode() ? PixelSnappedHeight()
+                                                : PixelSnappedWidth();
   }
   int PixelSnappedLogicalWidth() const {
-    return Style()->IsHorizontalWritingMode() ? PixelSnappedWidth()
-                                              : PixelSnappedHeight();
+    return StyleRef().IsHorizontalWritingMode() ? PixelSnappedWidth()
+                                                : PixelSnappedHeight();
   }
 
   LayoutUnit MinimumLogicalHeightForEmptyLine() const {
@@ -312,31 +312,31 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   void SetLogicalLeft(LayoutUnit left) {
-    if (Style()->IsHorizontalWritingMode())
+    if (StyleRef().IsHorizontalWritingMode())
       SetX(left);
     else
       SetY(left);
   }
   void SetLogicalTop(LayoutUnit top) {
-    if (Style()->IsHorizontalWritingMode())
+    if (StyleRef().IsHorizontalWritingMode())
       SetY(top);
     else
       SetX(top);
   }
   void SetLogicalLocation(const LayoutPoint& location) {
-    if (Style()->IsHorizontalWritingMode())
+    if (StyleRef().IsHorizontalWritingMode())
       SetLocation(location);
     else
       SetLocation(location.TransposedPoint());
   }
   void SetLogicalWidth(LayoutUnit size) {
-    if (Style()->IsHorizontalWritingMode())
+    if (StyleRef().IsHorizontalWritingMode())
       SetWidth(size);
     else
       SetHeight(size);
   }
   void SetLogicalHeight(LayoutUnit size) {
-    if (Style()->IsHorizontalWritingMode())
+    if (StyleRef().IsHorizontalWritingMode())
       SetHeight(size);
     else
       SetWidth(size);
@@ -479,12 +479,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return LayoutSize(LayoutOverflowRect().MaxX(), LayoutOverflowRect().MaxY());
   }
   LayoutUnit LogicalLeftLayoutOverflow() const {
-    return Style()->IsHorizontalWritingMode() ? LayoutOverflowRect().X()
-                                              : LayoutOverflowRect().Y();
+    return StyleRef().IsHorizontalWritingMode() ? LayoutOverflowRect().X()
+                                                : LayoutOverflowRect().Y();
   }
   LayoutUnit LogicalRightLayoutOverflow() const {
-    return Style()->IsHorizontalWritingMode() ? LayoutOverflowRect().MaxX()
-                                              : LayoutOverflowRect().MaxY();
+    return StyleRef().IsHorizontalWritingMode() ? LayoutOverflowRect().MaxX()
+                                                : LayoutOverflowRect().MaxY();
   }
 
   LayoutRect VisualOverflowRect() const override;
@@ -494,12 +494,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return overflow_rect;
   }
   LayoutUnit LogicalLeftVisualOverflow() const {
-    return Style()->IsHorizontalWritingMode() ? VisualOverflowRect().X()
-                                              : VisualOverflowRect().Y();
+    return StyleRef().IsHorizontalWritingMode() ? VisualOverflowRect().X()
+                                                : VisualOverflowRect().Y();
   }
   LayoutUnit LogicalRightVisualOverflow() const {
-    return Style()->IsHorizontalWritingMode() ? VisualOverflowRect().MaxX()
-                                              : VisualOverflowRect().MaxY();
+    return StyleRef().IsHorizontalWritingMode() ? VisualOverflowRect().MaxX()
+                                                : VisualOverflowRect().MaxY();
   }
 
   LayoutRect SelfVisualOverflowRect() const {
@@ -556,12 +556,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     return LayoutSize(ContentWidth(), ContentHeight());
   }
   LayoutUnit ContentLogicalWidth() const {
-    return Style()->IsHorizontalWritingMode() ? ContentWidth()
-                                              : ContentHeight();
+    return StyleRef().IsHorizontalWritingMode() ? ContentWidth()
+                                                : ContentHeight();
   }
   LayoutUnit ContentLogicalHeight() const {
-    return Style()->IsHorizontalWritingMode() ? ContentHeight()
-                                              : ContentWidth();
+    return StyleRef().IsHorizontalWritingMode() ? ContentHeight()
+                                                : ContentWidth();
   }
 
   // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
@@ -586,10 +586,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutUnit ClientWidth() const;
   LayoutUnit ClientHeight() const;
   DISABLE_CFI_PERF LayoutUnit ClientLogicalWidth() const {
-    return Style()->IsHorizontalWritingMode() ? ClientWidth() : ClientHeight();
+    return StyleRef().IsHorizontalWritingMode() ? ClientWidth()
+                                                : ClientHeight();
   }
   DISABLE_CFI_PERF LayoutUnit ClientLogicalHeight() const {
-    return Style()->IsHorizontalWritingMode() ? ClientHeight() : ClientWidth();
+    return StyleRef().IsHorizontalWritingMode() ? ClientHeight()
+                                                : ClientWidth();
   }
   DISABLE_CFI_PERF LayoutUnit ClientLogicalBottom() const {
     return BorderBefore() + ClientLogicalHeight();
@@ -914,12 +916,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual LayoutSize IntrinsicSize() const { return LayoutSize(); }
   LayoutUnit IntrinsicLogicalWidth() const {
-    return Style()->IsHorizontalWritingMode() ? IntrinsicSize().Width()
-                                              : IntrinsicSize().Height();
+    return StyleRef().IsHorizontalWritingMode() ? IntrinsicSize().Width()
+                                                : IntrinsicSize().Height();
   }
   LayoutUnit IntrinsicLogicalHeight() const {
-    return Style()->IsHorizontalWritingMode() ? IntrinsicSize().Height()
-                                              : IntrinsicSize().Width();
+    return StyleRef().IsHorizontalWritingMode() ? IntrinsicSize().Height()
+                                                : IntrinsicSize().Width();
   }
   virtual LayoutUnit IntrinsicContentLogicalHeight() const {
     return intrinsic_content_logical_height_;
@@ -980,12 +982,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // physical width and available physical height. Relative positioning is one
   // of those cases, since left/top offsets are physical.
   LayoutUnit AvailableWidth() const {
-    return Style()->IsHorizontalWritingMode()
+    return StyleRef().IsHorizontalWritingMode()
                ? AvailableLogicalWidth()
                : AvailableLogicalHeight(kIncludeMarginBorderPadding);
   }
   LayoutUnit AvailableHeight() const {
-    return Style()->IsHorizontalWritingMode()
+    return StyleRef().IsHorizontalWritingMode()
                ? AvailableLogicalHeight(kIncludeMarginBorderPadding)
                : AvailableLogicalWidth();
   }
@@ -993,12 +995,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   int VerticalScrollbarWidth() const;
   int HorizontalScrollbarHeight() const;
   int ScrollbarLogicalWidth() const {
-    return Style()->IsHorizontalWritingMode() ? VerticalScrollbarWidth()
-                                              : HorizontalScrollbarHeight();
+    return StyleRef().IsHorizontalWritingMode() ? VerticalScrollbarWidth()
+                                                : HorizontalScrollbarHeight();
   }
   int ScrollbarLogicalHeight() const {
-    return Style()->IsHorizontalWritingMode() ? HorizontalScrollbarHeight()
-                                              : VerticalScrollbarWidth();
+    return StyleRef().IsHorizontalWritingMode() ? HorizontalScrollbarHeight()
+                                                : VerticalScrollbarWidth();
   }
 
   // Return the width of the vertical scrollbar, unless it's larger than the
@@ -1019,16 +1021,16 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual void DispatchFakeMouseMoveEventSoon(EventHandler&);
 
   DISABLE_CFI_PERF bool HasAutoVerticalScrollbar() const {
-    return HasOverflowClip() && Style()->HasAutoVerticalScroll();
+    return HasOverflowClip() && StyleRef().HasAutoVerticalScroll();
   }
   DISABLE_CFI_PERF bool HasAutoHorizontalScrollbar() const {
-    return HasOverflowClip() && Style()->HasAutoHorizontalScroll();
+    return HasOverflowClip() && StyleRef().HasAutoHorizontalScroll();
   }
   DISABLE_CFI_PERF bool ScrollsOverflow() const {
-    return HasOverflowClip() && Style()->ScrollsOverflow();
+    return HasOverflowClip() && StyleRef().ScrollsOverflow();
   }
   virtual bool ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
-    return Style()->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft();
+    return StyleRef().ShouldPlaceBlockDirectionScrollbarOnLogicalLeft();
   }
 
   bool HasScrollableOverflowX() const {
@@ -1040,10 +1042,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
            PixelSnappedScrollHeight() != PixelSnappedClientHeight();
   }
   virtual bool ScrollsOverflowX() const {
-    return HasOverflowClip() && Style()->ScrollsOverflowX();
+    return HasOverflowClip() && StyleRef().ScrollsOverflowX();
   }
   virtual bool ScrollsOverflowY() const {
-    return HasOverflowClip() && Style()->ScrollsOverflowY();
+    return HasOverflowClip() && StyleRef().ScrollsOverflowY();
   }
 
   // Elements such as the <input> field override this to specify that they are
@@ -1116,7 +1118,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool IsWritingModeRoot() const {
     return !Parent() ||
-           Parent()->Style()->GetWritingMode() != Style()->GetWritingMode();
+           Parent()->StyleRef().GetWritingMode() != StyleRef().GetWritingMode();
   }
   bool IsOrthogonalWritingModeRoot() const {
     return Parent() &&
@@ -1315,7 +1317,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   bool HasSameDirectionAs(const LayoutBox* object) const {
-    return Style()->Direction() == object->Style()->Direction();
+    return StyleRef().Direction() == object->StyleRef().Direction();
   }
 
   ShapeOutsideInfo* GetShapeOutsideInfo() const;

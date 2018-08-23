@@ -378,7 +378,7 @@ FloatRect LayoutSVGText::ObjectBoundingBox() const {
 
 FloatRect LayoutSVGText::StrokeBoundingBox() const {
   FloatRect stroke_boundaries = ObjectBoundingBox();
-  const SVGComputedStyle& svg_style = Style()->SvgStyle();
+  const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
   if (!svg_style.HasStroke())
     return stroke_boundaries;
 
@@ -393,7 +393,7 @@ FloatRect LayoutSVGText::VisualRectInLocalSVGCoordinates() const {
   FloatRect visual_rect = StrokeBoundingBox();
   SVGLayoutSupport::AdjustVisualRectWithResources(*this, visual_rect);
 
-  if (const ShadowList* text_shadow = Style()->TextShadow())
+  if (const ShadowList* text_shadow = StyleRef().TextShadow())
     text_shadow->AdjustRectForShadow(visual_rect);
 
   return visual_rect;

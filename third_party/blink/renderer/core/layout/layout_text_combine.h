@@ -39,7 +39,7 @@ class LayoutTextCombine final : public LayoutText {
   float CombinedTextWidth(const Font& font) const {
     return font.GetFontDescription().ComputedSize();
   }
-  const Font& OriginalFont() const { return Parent()->Style()->GetFont(); }
+  const Font& OriginalFont() const { return Parent()->StyleRef().GetFont(); }
   void TransformToInlineCoordinates(GraphicsContext&,
                                     const LayoutRect& box_rect,
                                     bool clip = false) const;

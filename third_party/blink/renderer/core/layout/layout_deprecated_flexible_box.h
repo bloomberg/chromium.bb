@@ -56,10 +56,10 @@ class LayoutDeprecatedFlexibleBox final : public LayoutBlock {
   LayoutUnit AllowedChildFlex(LayoutBox* child, bool expanding);
 
   bool IsVertical() const {
-    return Style()->BoxOrient() == EBoxOrient::kVertical;
+    return StyleRef().BoxOrient() == EBoxOrient::kVertical;
   }
   bool IsHorizontal() const {
-    return Style()->BoxOrient() == EBoxOrient::kHorizontal;
+    return StyleRef().BoxOrient() == EBoxOrient::kHorizontal;
   }
 
   void ApplyLineClamp(FlexBoxIterator&, bool relayout_children);

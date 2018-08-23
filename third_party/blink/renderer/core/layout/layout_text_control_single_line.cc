@@ -223,7 +223,7 @@ LayoutUnit LayoutTextControlSingleLine::PreferredContentLogicalWidth(
   LayoutUnit result = LayoutUnit::FromFloatCeil(char_width * factor);
 
   float max_char_width = 0.f;
-  const Font& font = Style()->GetFont();
+  const Font& font = StyleRef().GetFont();
   AtomicString family = font.GetFontDescription().Family().Family();
   // Match the default system font to the width of MS Shell Dlg, the default
   // font for textareas in Firefox, Safari Win and IE for some encodings (in

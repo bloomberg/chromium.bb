@@ -115,9 +115,9 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
   // since position:static elements that are not flex-items get their z-index
   // coerced to auto.
   if (IsPositioned() || CreatesGroup() || HasTransformRelatedProperty() ||
-      HasHiddenBackface() || HasReflection() || Style()->SpecifiesColumns() ||
-      Style()->IsStackingContext() ||
-      Style()->ShouldCompositeForCurrentAnimations() ||
+      HasHiddenBackface() || HasReflection() || StyleRef().SpecifiesColumns() ||
+      StyleRef().IsStackingContext() ||
+      StyleRef().ShouldCompositeForCurrentAnimations() ||
       IsEffectiveRootScroller())
     return kNormalPaintLayer;
 
@@ -428,17 +428,17 @@ void LayoutBox::UpdateGridPositionAfterStyleChange(
   if (!old_style || !Parent() || !Parent()->IsLayoutGrid())
     return;
 
-  if (old_style->GridColumnStart() == Style()->GridColumnStart() &&
-      old_style->GridColumnEnd() == Style()->GridColumnEnd() &&
-      old_style->GridRowStart() == Style()->GridRowStart() &&
-      old_style->GridRowEnd() == Style()->GridRowEnd() &&
-      old_style->Order() == Style()->Order() &&
-      old_style->HasOutOfFlowPosition() == Style()->HasOutOfFlowPosition())
+  if (old_style->GridColumnStart() == StyleRef().GridColumnStart() &&
+      old_style->GridColumnEnd() == StyleRef().GridColumnEnd() &&
+      old_style->GridRowStart() == StyleRef().GridRowStart() &&
+      old_style->GridRowEnd() == StyleRef().GridRowEnd() &&
+      old_style->Order() == StyleRef().Order() &&
+      old_style->HasOutOfFlowPosition() == StyleRef().HasOutOfFlowPosition())
     return;
 
   // Positioned items don't participate on the layout of the grid,
   // so we don't need to mark the grid as dirty if they change positions.
-  if (old_style->HasOutOfFlowPosition() && Style()->HasOutOfFlowPosition())
+  if (old_style->HasOutOfFlowPosition() && StyleRef().HasOutOfFlowPosition())
     return;
 
   // It should be possible to not dirty the grid in some cases (like moving an
@@ -559,7 +559,7 @@ LayoutUnit LayoutBox::ScrollWidth() const {
     return GetScrollableArea()->ScrollWidth();
   // For objects with visible overflow, this matches IE.
   // FIXME: Need to work right with writing modes.
-  if (Style()->IsLeftToRightDirection())
+  if (StyleRef().IsLeftToRightDirection())
     return std::max(ClientWidth(), LayoutOverflowRect().MaxX() - BorderLeft());
   return ClientWidth() -
          std::min(LayoutUnit(), LayoutOverflowRect().X() - BorderLeft());
@@ -704,7 +704,7 @@ LayoutRect LayoutBox::ScrollRectToVisibleRecursive(
 
   // If we are fixed-position and stick to the viewport, it is useless to
   // scroll the parent.
-  if (Style()->GetPosition() == EPosition::kFixed && Container() == View())
+  if (StyleRef().GetPosition() == EPosition::kFixed && Container() == View())
     return absolute_rect_for_parent;
 
   if (parent_box) {
@@ -764,7 +764,7 @@ LayoutUnit LayoutBox::LogicalHeightWithVisibleOverflow() const {
   if (!overflow_ || HasOverflowClip())
     return LogicalHeight();
   LayoutRect overflow = LayoutOverflowRect();
-  if (Style()->IsHorizontalWritingMode())
+  if (StyleRef().IsHorizontalWritingMode())
     return overflow.MaxY();
   return overflow.MaxX();
 }
@@ -878,7 +878,7 @@ FloatQuad LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
 LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
   EFillBox background_box = EFillBox::kText;
   // Find the largest background rect of the given opaqueness.
-  if (const FillLayer* current = &(Style()->BackgroundLayers())) {
+  if (const FillLayer* current = &(StyleRef().BackgroundLayers())) {
     do {
       const FillLayer* cur = current;
       current = current->Next();
@@ -955,7 +955,7 @@ bool LayoutBox::CanResize() const {
   // hasOverflowClip(). However, they do "implicitly" clip their contents, so
   // we want to allow resizing them also.
   return (HasOverflowClip() || IsLayoutIFrame()) &&
-         Style()->Resize() != EResize::kNone;
+         StyleRef().Resize() != EResize::kNone;
 }
 
 void LayoutBox::AddLayerHitTestRects(
@@ -978,14 +978,14 @@ void LayoutBox::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
 }
 
 int LayoutBox::VerticalScrollbarWidth() const {
-  if (!HasOverflowClip() || Style()->OverflowY() == EOverflow::kOverlay)
+  if (!HasOverflowClip() || StyleRef().OverflowY() == EOverflow::kOverlay)
     return 0;
 
   return GetScrollableArea()->VerticalScrollbarWidth();
 }
 
 int LayoutBox::HorizontalScrollbarHeight() const {
-  if (!HasOverflowClip() || Style()->OverflowX() == EOverflow::kOverlay)
+  if (!HasOverflowClip() || StyleRef().OverflowX() == EOverflow::kOverlay)
     return 0;
 
   return GetScrollableArea()->HorizontalScrollbarHeight();
@@ -1144,8 +1144,8 @@ void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
 }
 
 bool LayoutBox::NeedsPreferredWidthsRecalculation() const {
-  return Style()->PaddingStart().IsPercentOrCalc() ||
-         Style()->PaddingEnd().IsPercentOrCalc();
+  return StyleRef().PaddingStart().IsPercentOrCalc() ||
+         StyleRef().PaddingEnd().IsPercentOrCalc();
 }
 
 IntSize LayoutBox::OriginAdjustmentForScrollbars() const {
@@ -1188,7 +1188,7 @@ bool LayoutBox::MapVisualRectToContainer(
     const LayoutObject* ancestor,
     VisualRectFlags visual_rect_flags,
     TransformState& transform_state) const {
-  bool container_preserve_3d = container_object->Style()->Preserves3D();
+  bool container_preserve_3d = container_object->StyleRef().Preserves3D();
 
   TransformState::TransformAccumulation accumulation =
       container_preserve_3d ? TransformState::kAccumulateTransform
@@ -1247,7 +1247,7 @@ bool LayoutBox::MapVisualRectToContainer(
 
   // d) Perspective applied by container.
   if (container_object && container_object->HasLayer() &&
-      container_object->Style()->HasPerspective()) {
+      container_object->StyleRef().HasPerspective()) {
     // Perspective on the container affects us, so we have to factor it in here.
     DCHECK(container_object->HasLayer());
     FloatPoint perspective_origin =
@@ -1255,7 +1255,7 @@ bool LayoutBox::MapVisualRectToContainer(
 
     TransformationMatrix perspective_matrix;
     perspective_matrix.ApplyPerspective(
-        container_object->Style()->Perspective());
+        container_object->StyleRef().Perspective());
     perspective_matrix.ApplyTransformOrigin(perspective_origin.X(),
                                             perspective_origin.Y(), 0);
 
@@ -1477,7 +1477,7 @@ LayoutUnit LayoutBox::AdjustBorderBoxLogicalWidthForBoxSizing(
     float width) const {
   LayoutUnit borders_plus_padding = CollapsedBorderAndCSSPaddingLogicalWidth();
   LayoutUnit result(width);
-  if (Style()->BoxSizing() == EBoxSizing::kContentBox)
+  if (StyleRef().BoxSizing() == EBoxSizing::kContentBox)
     return result + borders_plus_padding;
   return std::max(result, borders_plus_padding);
 }
@@ -1486,7 +1486,7 @@ LayoutUnit LayoutBox::AdjustBorderBoxLogicalHeightForBoxSizing(
     float height) const {
   LayoutUnit borders_plus_padding = CollapsedBorderAndCSSPaddingLogicalHeight();
   LayoutUnit result(height);
-  if (Style()->BoxSizing() == EBoxSizing::kContentBox)
+  if (StyleRef().BoxSizing() == EBoxSizing::kContentBox)
     return result + borders_plus_padding;
   return std::max(result, borders_plus_padding);
 }
@@ -1494,7 +1494,7 @@ LayoutUnit LayoutBox::AdjustBorderBoxLogicalHeightForBoxSizing(
 LayoutUnit LayoutBox::AdjustContentBoxLogicalWidthForBoxSizing(
     float width) const {
   LayoutUnit result(width);
-  if (Style()->BoxSizing() == EBoxSizing::kBorderBox)
+  if (StyleRef().BoxSizing() == EBoxSizing::kBorderBox)
     result -= CollapsedBorderAndCSSPaddingLogicalWidth();
   return std::max(LayoutUnit(), result);
 }
@@ -1502,7 +1502,7 @@ LayoutUnit LayoutBox::AdjustContentBoxLogicalWidthForBoxSizing(
 LayoutUnit LayoutBox::AdjustContentBoxLogicalHeightForBoxSizing(
     float height) const {
   LayoutUnit result(height);
-  if (Style()->BoxSizing() == EBoxSizing::kBorderBox)
+  if (StyleRef().BoxSizing() == EBoxSizing::kBorderBox)
     result -= CollapsedBorderAndCSSPaddingLogicalHeight();
   return std::max(LayoutUnit(), result);
 }
@@ -1552,10 +1552,10 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
             adjusted_location, kExcludeOverlayScrollbarSizeForHitTesting))) {
       skip_children = true;
     }
-    if (!skip_children && Style()->HasBorderRadius()) {
+    if (!skip_children && StyleRef().HasBorderRadius()) {
       LayoutRect bounds_rect(adjusted_location, Size());
       skip_children = !location_in_container.Intersects(
-          Style()->GetRoundedInnerBorderFor(bounds_rect));
+          StyleRef().GetRoundedInnerBorderFor(bounds_rect));
     }
   }
 
@@ -1564,7 +1564,7 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
     return true;
   }
 
-  if (Style()->HasBorderRadius() &&
+  if (StyleRef().HasBorderRadius() &&
       HitTestClippedOutByBorder(location_in_container, adjusted_location))
     return false;
 
@@ -1608,7 +1608,7 @@ bool LayoutBox::HitTestClippedOutByBorder(
   LayoutRect border_rect = BorderBoxRect();
   border_rect.MoveBy(border_box_location);
   return !location_in_container.Intersects(
-      Style()->GetRoundedBorderFor(border_rect));
+      StyleRef().GetRoundedBorderFor(border_rect));
 }
 
 void LayoutBox::Paint(const PaintInfo& paint_info) const {
@@ -1636,8 +1636,8 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
     return true;
   }
 
-  if (!Style()->BackgroundLayers().GetImage() ||
-      Style()->BackgroundLayers().Next()) {
+  if (!StyleRef().BackgroundLayers().GetImage() ||
+      StyleRef().BackgroundLayers().Next()) {
     painted_extent = background_rect;
     return true;
   }
@@ -1647,7 +1647,7 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
   // and outside of the paint phase. Potentially returning different results at
   // different phases. crbug.com/732934
   geometry.Calculate(nullptr, PaintPhase::kBlockBackground,
-                     kGlobalPaintNormalPhase, Style()->BackgroundLayers(),
+                     kGlobalPaintNormalPhase, StyleRef().BackgroundLayers(),
                      background_rect);
   if (geometry.HasNonLocalGeometry())
     return false;
@@ -1664,16 +1664,16 @@ bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
   // We cannot be sure if theme paints the background opaque.
   // In this case it is safe to not assume opaqueness.
   // FIXME: May be ask theme if it paints opaque.
-  if (Style()->HasAppearance())
+  if (StyleRef().HasAppearance())
     return false;
   // FIXME: Check the opaqueness of background images.
 
   // FIXME: Use rounded rect if border radius is present.
-  if (Style()->HasBorderRadius())
+  if (StyleRef().HasBorderRadius())
     return false;
   if (HasClipPath())
     return false;
-  if (Style()->HasBlendMode())
+  if (StyleRef().HasBlendMode())
     return false;
   return BackgroundRect(kBackgroundKnownOpaqueRect).Contains(local_rect);
 }
@@ -1755,7 +1755,7 @@ bool LayoutBox::ComputeBackgroundIsKnownToBeObscured() const {
   if (IsLayoutView())
     return false;
   // FIXME: box-shadow is painted while background painting.
-  if (Style()->BoxShadow())
+  if (StyleRef().BoxShadow())
     return false;
   LayoutRect background_rect;
   if (!GetBackgroundPaintedExtent(background_rect))
@@ -1822,7 +1822,7 @@ void LayoutBox::ImageChanged(WrappedImagePtr image,
     }
   }
 
-  ShapeValue* shape_outside_value = Style()->ShapeOutside();
+  ShapeValue* shape_outside_value = StyleRef().ShapeOutside();
   if (!GetFrameView()->IsInPerformLayout() && IsFloating() &&
       shape_outside_value && shape_outside_value->GetImage() &&
       shape_outside_value->GetImage()->Data() == image) {
@@ -1966,26 +1966,28 @@ LayoutRect LayoutBox::ClipRect(const LayoutPoint& location) const {
   LayoutRect clip_rect =
       LayoutRect(border_box_rect.Location() + location, border_box_rect.Size());
 
-  if (!Style()->ClipLeft().IsAuto()) {
-    LayoutUnit c = ValueForLength(Style()->ClipLeft(), border_box_rect.Width());
+  if (!StyleRef().ClipLeft().IsAuto()) {
+    LayoutUnit c =
+        ValueForLength(StyleRef().ClipLeft(), border_box_rect.Width());
     clip_rect.Move(c, LayoutUnit());
     clip_rect.Contract(c, LayoutUnit());
   }
 
-  if (!Style()->ClipRight().IsAuto())
+  if (!StyleRef().ClipRight().IsAuto())
     clip_rect.Contract(
-        Size().Width() - ValueForLength(Style()->ClipRight(), Size().Width()),
+        Size().Width() - ValueForLength(StyleRef().ClipRight(), Size().Width()),
         LayoutUnit());
 
-  if (!Style()->ClipTop().IsAuto()) {
-    LayoutUnit c = ValueForLength(Style()->ClipTop(), border_box_rect.Height());
+  if (!StyleRef().ClipTop().IsAuto()) {
+    LayoutUnit c =
+        ValueForLength(StyleRef().ClipTop(), border_box_rect.Height());
     clip_rect.Move(LayoutUnit(), c);
     clip_rect.Contract(LayoutUnit(), c);
   }
 
-  if (!Style()->ClipBottom().IsAuto()) {
+  if (!StyleRef().ClipBottom().IsAuto()) {
     clip_rect.Contract(LayoutUnit(),
-                       Size().Height() - ValueForLength(Style()->ClipBottom(),
+                       Size().Height() - ValueForLength(StyleRef().ClipBottom(),
                                                         Size().Height()));
   }
 
@@ -2123,7 +2125,7 @@ LayoutUnit LayoutBox::PerpendicularContainingBlockLogicalHeight() const {
 void LayoutBox::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                    TransformState& transform_state,
                                    MapCoordinatesFlags mode) const {
-  bool is_fixed_pos = Style()->GetPosition() == EPosition::kFixed;
+  bool is_fixed_pos = StyleRef().GetPosition() == EPosition::kFixed;
 
   // If this box has a transform or contains paint, it acts as a fixed position
   // container for fixed descendants, and may itself also be fixed position. So
@@ -2142,7 +2144,7 @@ void LayoutBox::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   if (this == ancestor)
     return;
 
-  bool is_fixed_pos = Style()->GetPosition() == EPosition::kFixed;
+  bool is_fixed_pos = StyleRef().GetPosition() == EPosition::kFixed;
 
   // If this box has a transform or contains paint, it acts as a fixed position
   // container for fixed descendants, and may itself also be fixed position. So
@@ -2170,7 +2172,7 @@ LayoutSize LayoutBox::OffsetFromContainerInternal(
     offset += OffsetFromScrollableContainer(o, ignore_scroll_offset);
 
   if (IsOutOfFlowPositioned() && o->IsLayoutInline() &&
-      o->CanContainOutOfFlowPositionedElement(Style()->GetPosition())) {
+      o->CanContainOutOfFlowPositionedElement(StyleRef().GetPosition())) {
     offset += ToLayoutInline(o)->OffsetForInFlowPositionedInline(*this);
   }
 
@@ -2210,7 +2212,7 @@ void LayoutBox::InLayoutNGInlineFormattingContextWillChange(bool new_value) {
 void LayoutBox::PositionLineBox(InlineBox* box) {
   if (IsOutOfFlowPositioned()) {
     // Cache the x position only if we were an INLINE type originally.
-    bool originally_inline = Style()->IsOriginalDisplayInlineType();
+    bool originally_inline = StyleRef().IsOriginalDisplayInlineType();
     if (originally_inline) {
       // The value is cached in the xPos of the box.  We only need this value if
       // our object was inline originally, since otherwise it would have ended
@@ -2242,7 +2244,7 @@ void LayoutBox::MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
   DCHECK(IsOutOfFlowPositioned());
   DCHECK(Container()->IsLayoutInline());
   DCHECK(Container()->CanContainOutOfFlowPositionedElement(
-      Style()->GetPosition()));
+      StyleRef().GetPosition()));
   // If this object is inside a relative positioned inline and its inline
   // position is an explicit offset from the edge of its container then it will
   // need to move if its inline container has changed width. We do not track if
@@ -2250,7 +2252,7 @@ void LayoutBox::MoveWithEdgeOfInlineContainerIfNecessary(bool is_horizontal) {
   // inside it, so it probably has - mark our object for layout so that it can
   // move to the new offset created by the new width.
   if (!NormalChildNeedsLayout() &&
-      !Style()->HasStaticInlinePosition(is_horizontal))
+      !StyleRef().HasStaticInlinePosition(is_horizontal))
     SetChildNeedsLayout(kMarkOnlyThis);
 }
 
@@ -2354,7 +2356,7 @@ bool LayoutBox::IsBreakInsideControllable(EBreakInside break_value) const {
 }
 
 EBreakBetween LayoutBox::BreakAfter() const {
-  EBreakBetween break_value = Style()->BreakAfter();
+  EBreakBetween break_value = StyleRef().BreakAfter();
   if (break_value == EBreakBetween::kAuto ||
       IsBreakBetweenControllable(break_value))
     return break_value;
@@ -2362,7 +2364,7 @@ EBreakBetween LayoutBox::BreakAfter() const {
 }
 
 EBreakBetween LayoutBox::BreakBefore() const {
-  EBreakBetween break_value = Style()->BreakBefore();
+  EBreakBetween break_value = StyleRef().BreakBefore();
   if (break_value == EBreakBetween::kAuto ||
       IsBreakBetweenControllable(break_value))
     return break_value;
@@ -2370,7 +2372,7 @@ EBreakBetween LayoutBox::BreakBefore() const {
 }
 
 EBreakInside LayoutBox::BreakInside() const {
-  EBreakInside break_value = Style()->BreakInside();
+  EBreakInside break_value = StyleRef().BreakInside();
   if (break_value == EBreakInside::kAuto ||
       IsBreakInsideControllable(break_value))
     return break_value;
@@ -2522,7 +2524,7 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
     return false;
 
   if (skip_info.AncestorSkipped()) {
-    bool preserve3D = container->Style()->Preserves3D();
+    bool preserve3D = container->StyleRef().Preserves3D();
     TransformState::TransformAccumulation accumulation =
         preserve3D ? TransformState::kAccumulateTransform
                    : TransformState::kFlattenTransform;
@@ -2615,7 +2617,7 @@ static float GetMaxWidthListMarker(const LayoutBox* layout_object) {
   Node* parent_node = layout_object->GeneratingNode();
   DCHECK(parent_node);
   DCHECK(IsHTMLOListElement(parent_node) || IsHTMLUListElement(parent_node));
-  DCHECK_NE(layout_object->Style()->TextAutosizingMultiplier(), 1);
+  DCHECK_NE(layout_object->StyleRef().TextAutosizingMultiplier(), 1);
 #endif
   float max_width = 0;
   for (LayoutObject* child = layout_object->SlowFirstChild(); child;
@@ -2666,8 +2668,9 @@ void LayoutBox::ComputeLogicalWidth(
   // https://bugs.webkit.org/show_bug.cgi?id=46418
   bool in_vertical_box =
       Parent()->IsDeprecatedFlexibleBox() &&
-      (Parent()->Style()->BoxOrient() == EBoxOrient::kVertical);
-  bool stretching = (Parent()->Style()->BoxAlign() == EBoxAlignment::kStretch);
+      (Parent()->StyleRef().BoxOrient() == EBoxOrient::kVertical);
+  bool stretching =
+      (Parent()->StyleRef().BoxAlign() == EBoxAlignment::kStretch);
   // TODO (lajava): Stretching is the only reason why we don't want the box to
   // be treated as a replaced element, so we could perhaps refactor all this
   // logic, not only for flex and grid since alignment is intended to be applied
@@ -2725,7 +2728,7 @@ void LayoutBox::ComputeLogicalWidth(
   ComputeMarginsForDirection(
       kInlineDirection, cb, container_logical_width, computed_values.extent_,
       computed_values.margins_.start_, computed_values.margins_.end_,
-      Style()->MarginStart(), Style()->MarginEnd());
+      StyleRef().MarginStart(), StyleRef().MarginEnd());
 
   if (!has_perpendicular_containing_block && container_logical_width &&
       container_logical_width !=
@@ -2735,8 +2738,8 @@ void LayoutBox::ComputeLogicalWidth(
       !cb->IsLayoutGrid()) {
     LayoutUnit new_margin_total =
         container_logical_width - computed_values.extent_;
-    bool has_inverted_direction = cb->Style()->IsLeftToRightDirection() !=
-                                  Style()->IsLeftToRightDirection();
+    bool has_inverted_direction = cb->StyleRef().IsLeftToRightDirection() !=
+                                  StyleRef().IsLeftToRightDirection();
     if (has_inverted_direction) {
       computed_values.margins_.start_ =
           new_margin_total - computed_values.margins_.end_;
@@ -2756,8 +2759,8 @@ void LayoutBox::ComputeLogicalWidth(
       const float adjusted_margin =
           (1 - 1.0 / style_to_use.TextAutosizingMultiplier()) *
           GetMaxWidthListMarker(this);
-      bool has_inverted_direction = cb->Style()->IsLeftToRightDirection() !=
-                                    Style()->IsLeftToRightDirection();
+      bool has_inverted_direction = cb->StyleRef().IsLeftToRightDirection() !=
+                                    StyleRef().IsLeftToRightDirection();
       if (has_inverted_direction)
         computed_values.margins_.end_ += adjusted_margin;
       else
@@ -2784,9 +2787,9 @@ LayoutUnit LayoutBox::FillAvailableMeasure(LayoutUnit available_logical_width,
   LayoutUnit available_size_for_resolving_margin =
       isOrthogonalElement ? ContainingBlockLogicalWidthForContent()
                           : available_logical_width;
-  margin_start = MinimumValueForLength(Style()->MarginStart(),
+  margin_start = MinimumValueForLength(StyleRef().MarginStart(),
                                        available_size_for_resolving_margin);
-  margin_end = MinimumValueForLength(Style()->MarginEnd(),
+  margin_end = MinimumValueForLength(StyleRef().MarginEnd(),
                                      available_size_for_resolving_margin);
   LayoutUnit available = available_logical_width - margin_start - margin_end;
   available = std::max(available, LayoutUnit());
@@ -2892,15 +2895,15 @@ bool LayoutBox::ColumnFlexItemHasStretchAlignment() const {
 bool LayoutBox::IsStretchingColumnFlexItem() const {
   LayoutObject* parent = Parent();
   if (parent->IsDeprecatedFlexibleBox() &&
-      parent->Style()->BoxOrient() == EBoxOrient::kVertical &&
-      parent->Style()->BoxAlign() == EBoxAlignment::kStretch)
+      parent->StyleRef().BoxOrient() == EBoxOrient::kVertical &&
+      parent->StyleRef().BoxAlign() == EBoxAlignment::kStretch)
     return true;
 
   // We don't stretch multiline flexboxes because they need to apply line
   // spacing (align-content) first.
   if (parent->IsFlexibleBox() &&
-      parent->Style()->FlexWrap() == EFlexWrap::kNowrap &&
-      parent->Style()->IsColumnFlexDirection() &&
+      parent->StyleRef().FlexWrap() == EFlexWrap::kNowrap &&
+      parent->StyleRef().IsColumnFlexDirection() &&
       ColumnFlexItemHasStretchAlignment())
     return true;
   return false;
@@ -2948,8 +2951,8 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
   if (Parent()->IsFlexibleBox()) {
     // For multiline columns, we need to apply align-content first, so we can't
     // stretch now.
-    if (!Parent()->Style()->IsColumnFlexDirection() ||
-        Parent()->Style()->FlexWrap() != EFlexWrap::kNowrap)
+    if (!Parent()->StyleRef().IsColumnFlexDirection() ||
+        Parent()->StyleRef().FlexWrap() != EFlexWrap::kNowrap)
       return true;
     if (!ColumnFlexItemHasStretchAlignment())
       return true;
@@ -2961,8 +2964,8 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
   // FIXME: Think about writing-mode here.
   // https://bugs.webkit.org/show_bug.cgi?id=46473
   if (Parent()->IsDeprecatedFlexibleBox() &&
-      (Parent()->Style()->BoxOrient() == EBoxOrient::kHorizontal ||
-       Parent()->Style()->BoxAlign() != EBoxAlignment::kStretch))
+      (Parent()->StyleRef().BoxOrient() == EBoxOrient::kHorizontal ||
+       Parent()->StyleRef().BoxAlign() != EBoxAlignment::kStretch))
     return true;
 
   // Button, input, select, textarea, and legend treat width value of 'auto' as
@@ -3043,7 +3046,7 @@ void LayoutBox::ComputeMarginsForDirection(MarginDirection flow_direction,
   // width of the containing block, then any 'auto' values for 'margin-left' or
   // 'margin-right' are, for the following rules, treated as zero.
   LayoutUnit margin_box_width =
-      child_width + (!Style()->Width().IsAuto()
+      child_width + (!StyleRef().Width().IsAuto()
                          ? margin_start_width + margin_end_width
                          : LayoutUnit());
 
@@ -3119,8 +3122,8 @@ void LayoutBox::UpdateLogicalHeight() {
 static inline Length HeightForDocumentElement(const Document& document) {
   return document.documentElement()
       ->GetLayoutObject()
-      ->Style()
-      ->LogicalHeight();
+      ->StyleRef()
+      .LogicalHeight();
 }
 
 void LayoutBox::ComputeLogicalHeight(
@@ -3169,8 +3172,8 @@ void LayoutBox::ComputeLogicalHeight(
       ComputeMarginsForDirection(
           flow_direction, cb, ContainingBlockLogicalWidthForContent(),
           computed_values.extent_, computed_values.margins_.before_,
-          computed_values.margins_.after_, Style()->MarginBefore(),
-          Style()->MarginAfter());
+          computed_values.margins_.after_, StyleRef().MarginBefore(),
+          StyleRef().MarginAfter());
       return;
     }
 
@@ -3178,8 +3181,9 @@ void LayoutBox::ComputeLogicalHeight(
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     bool in_horizontal_box =
         Parent()->IsDeprecatedFlexibleBox() &&
-        Parent()->Style()->BoxOrient() == EBoxOrient::kHorizontal;
-    bool stretching = Parent()->Style()->BoxAlign() == EBoxAlignment::kStretch;
+        Parent()->StyleRef().BoxOrient() == EBoxOrient::kHorizontal;
+    bool stretching =
+        Parent()->StyleRef().BoxAlign() == EBoxAlignment::kStretch;
     bool treat_as_replaced =
         ShouldComputeSizeAsReplaced() && (!in_horizontal_box || !stretching);
     bool check_min_max_height = false;
@@ -3193,7 +3197,7 @@ void LayoutBox::ComputeLogicalHeight(
           ComputeReplacedLogicalHeight() + BorderAndPaddingLogicalHeight(),
           kFixed);
     } else {
-      h = Style()->LogicalHeight();
+      h = StyleRef().LogicalHeight();
       check_min_max_height = true;
     }
 
@@ -3211,7 +3215,7 @@ void LayoutBox::ComputeLogicalHeight(
     LayoutUnit height_result;
     if (check_min_max_height) {
       height_result = ComputeLogicalHeightUsing(
-          kMainOrPreferredSize, Style()->LogicalHeight(),
+          kMainOrPreferredSize, StyleRef().LogicalHeight(),
           computed_values.extent_ - BorderAndPaddingLogicalHeight());
       if (height_result == -1)
         height_result = computed_values.extent_;
@@ -3227,8 +3231,8 @@ void LayoutBox::ComputeLogicalHeight(
     ComputeMarginsForDirection(
         flow_direction, cb, ContainingBlockLogicalWidthForContent(),
         computed_values.extent_, computed_values.margins_.before_,
-        computed_values.margins_.after_, Style()->MarginBefore(),
-        Style()->MarginAfter());
+        computed_values.margins_.after_, StyleRef().MarginBefore(),
+        StyleRef().MarginAfter());
   }
 
   // WinIE quirk: The <html> block always fills the entire canvas in quirks
@@ -3357,7 +3361,7 @@ LayoutUnit LayoutBox::ComputeContentAndScrollbarLogicalHeightUsing(
 bool LayoutBox::StretchesToViewportInQuirksMode() const {
   if (!IsDocumentElement() && !IsBody())
     return false;
-  return Style()->LogicalHeight().IsAuto() &&
+  return StyleRef().LogicalHeight().IsAuto() &&
          !IsFloatingOrOutOfFlowPositioned() && !IsInline() &&
          !FlowThreadContainingBlock();
 }
@@ -3387,7 +3391,7 @@ bool LayoutBox::SkipContainingBlockForPercentHeightCalculation(
   return GetDocument().InQuirksMode() && !containing_block->IsTableCell() &&
          !containing_block->IsOutOfFlowPositioned() &&
          !containing_block->IsLayoutGrid() &&
-         containing_block->Style()->LogicalHeight().IsAuto();
+         containing_block->StyleRef().LogicalHeight().IsAuto();
 }
 
 LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
@@ -3429,11 +3433,11 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
         // height if they have overflow set to visible or hidden or if
         // they are replaced elements, and a 0px height if they have not.
         LayoutTableCell* cell = ToLayoutTableCell(cb);
-        if (Style()->OverflowY() != EOverflow::kVisible &&
-            Style()->OverflowY() != EOverflow::kHidden &&
+        if (StyleRef().OverflowY() != EOverflow::kVisible &&
+            StyleRef().OverflowY() != EOverflow::kHidden &&
             !ShouldBeConsideredAsReplaced() &&
-            (!cell->Style()->LogicalHeight().IsAuto() ||
-             !cell->Table()->Style()->LogicalHeight().IsAuto()))
+            (!cell->StyleRef().LogicalHeight().IsAuto() ||
+             !cell->Table()->StyleRef().LogicalHeight().IsAuto()))
           return LayoutUnit();
         return LayoutUnit(-1);
       }
@@ -3464,7 +3468,7 @@ LayoutUnit LayoutBox::ComputePercentageLogicalHeight(
       IsTable() ||
       (cb->IsTableCell() && !skipped_auto_height_containing_block &&
        cb->HasOverrideLogicalHeight() &&
-       Style()->BoxSizing() == EBoxSizing::kContentBox);
+       StyleRef().BoxSizing() == EBoxSizing::kContentBox);
   if (subtract_border_and_padding) {
     result -= BorderAndPaddingLogicalHeight();
     return std::max(LayoutUnit(), result);
@@ -3476,7 +3480,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidth(
     ShouldComputePreferred should_compute_preferred) const {
   return ComputeReplacedLogicalWidthRespectingMinMaxWidth(
       ComputeReplacedLogicalWidthUsing(kMainOrPreferredSize,
-                                       Style()->LogicalWidth()),
+                                       StyleRef().LogicalWidth()),
       should_compute_preferred);
 }
 
@@ -3485,17 +3489,17 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthRespectingMinMaxWidth(
     ShouldComputePreferred should_compute_preferred) const {
   LayoutUnit min_logical_width =
       (should_compute_preferred == kComputePreferred &&
-       Style()->LogicalMinWidth().IsPercentOrCalc())
+       StyleRef().LogicalMinWidth().IsPercentOrCalc())
           ? logical_width
           : ComputeReplacedLogicalWidthUsing(kMinSize,
-                                             Style()->LogicalMinWidth());
+                                             StyleRef().LogicalMinWidth());
   LayoutUnit max_logical_width =
       (should_compute_preferred == kComputePreferred &&
-       Style()->LogicalMaxWidth().IsPercentOrCalc()) ||
-              Style()->LogicalMaxWidth().IsMaxSizeNone()
+       StyleRef().LogicalMaxWidth().IsPercentOrCalc()) ||
+              StyleRef().LogicalMaxWidth().IsMaxSizeNone()
           ? logical_width
           : ComputeReplacedLogicalWidthUsing(kMaxSize,
-                                             Style()->LogicalMaxWidth());
+                                             StyleRef().LogicalMaxWidth());
   return std::max(min_logical_width,
                   std::min(logical_width, max_logical_width));
 }
@@ -3535,7 +3539,7 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
                  : PerpendicularContainingBlockLogicalHeight();
       }
       Length container_logical_width =
-          ContainingBlock()->Style()->LogicalWidth();
+          ContainingBlock()->StyleRef().LogicalWidth();
       // FIXME: Handle cases when containing block width is calculated or
       // viewport percent. https://bugs.webkit.org/show_bug.cgi?id=91071
       if (logical_width.IsIntrinsic())
@@ -3564,13 +3568,13 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalWidthUsing(
 LayoutUnit LayoutBox::ComputeReplacedLogicalHeight(LayoutUnit) const {
   return ComputeReplacedLogicalHeightRespectingMinMaxHeight(
       ComputeReplacedLogicalHeightUsing(kMainOrPreferredSize,
-                                        Style()->LogicalHeight()));
+                                        StyleRef().LogicalHeight()));
 }
 
 bool LayoutBox::LogicalHeightComputesAsNone(SizeType size_type) const {
   DCHECK(size_type == kMinSize || size_type == kMaxSize);
-  Length logical_height = size_type == kMinSize ? Style()->LogicalMinHeight()
-                                                : Style()->LogicalMaxHeight();
+  Length logical_height = size_type == kMinSize ? StyleRef().LogicalMinHeight()
+                                                : StyleRef().LogicalMaxHeight();
   Length initial_logical_height =
       size_type == kMinSize ? ComputedStyleInitialValues::InitialMinHeight()
                             : ComputedStyleInitialValues::InitialMaxHeight();
@@ -3590,13 +3594,15 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightRespectingMinMaxHeight(
   // the percentage value is treated as '0' (for 'min-height') or 'none' (for
   // 'max-height').
   LayoutUnit min_logical_height;
-  if (!LogicalHeightComputesAsNone(kMinSize))
+  if (!LogicalHeightComputesAsNone(kMinSize)) {
     min_logical_height = ComputeReplacedLogicalHeightUsing(
-        kMinSize, Style()->LogicalMinHeight());
+        kMinSize, StyleRef().LogicalMinHeight());
+  }
   LayoutUnit max_logical_height = logical_height;
-  if (!LogicalHeightComputesAsNone(kMaxSize))
+  if (!LogicalHeightComputesAsNone(kMaxSize)) {
     max_logical_height = ComputeReplacedLogicalHeightUsing(
-        kMaxSize, Style()->LogicalMaxHeight());
+        kMaxSize, StyleRef().LogicalMaxHeight());
+  }
   return std::max(min_logical_height,
                   std::min(logical_height, max_logical_height));
 }
@@ -3639,8 +3645,9 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
         }
       }
 
-      if (cb->IsOutOfFlowPositioned() && cb->Style()->Height().IsAuto() &&
-          !(cb->Style()->Top().IsAuto() || cb->Style()->Bottom().IsAuto())) {
+      if (cb->IsOutOfFlowPositioned() && cb->StyleRef().Height().IsAuto() &&
+          !(cb->StyleRef().Top().IsAuto() ||
+            cb->StyleRef().Bottom().IsAuto())) {
         SECURITY_DCHECK(cb->IsLayoutBlock());
         LayoutBlock* block = ToLayoutBlock(cb);
         LogicalExtentComputedValues computed_values;
@@ -3671,8 +3678,8 @@ LayoutUnit LayoutBox::ComputeReplacedLogicalHeightUsing(
         // image are perpendicular writing-modes, this isn't right.
         // https://bugs.webkit.org/show_bug.cgi?id=46997
         while (cb && !cb->IsLayoutView() &&
-               (cb->Style()->LogicalHeight().IsAuto() ||
-                cb->Style()->LogicalHeight().IsPercentOrCalc())) {
+               (cb->StyleRef().LogicalHeight().IsAuto() ||
+                cb->StyleRef().LogicalHeight().IsPercentOrCalc())) {
           if (cb->IsTableCell()) {
             // Don't let table cells squeeze percent-height replaced elements
             // <http://bugs.webkit.org/show_bug.cgi?id=15359>
@@ -3713,7 +3720,7 @@ LayoutUnit LayoutBox::AvailableLogicalHeight(
     // This code gets executed 740 times in the test case.
     // https://chromium-review.googlesource.com/c/chromium/src/+/1103289
     LayoutUnit height =
-        AvailableLogicalHeightUsing(Style()->LogicalHeight(), height_type);
+        AvailableLogicalHeightUsing(StyleRef().LogicalHeight(), height_type);
     if (UNLIKELY(height == -1))
       return height;
     return ConstrainContentBoxLogicalHeightByMinMax(height, LayoutUnit(-1));
@@ -3722,7 +3729,7 @@ LayoutUnit LayoutBox::AvailableLogicalHeight(
   // in the content height.
   // FIXME: Should we pass intrinsicContentLogicalHeight() instead of -1 here?
   return ConstrainContentBoxLogicalHeightByMinMax(
-      AvailableLogicalHeightUsing(Style()->LogicalHeight(), height_type),
+      AvailableLogicalHeightUsing(StyleRef().LogicalHeight(), height_type),
       LayoutUnit(-1));
 }
 
@@ -3776,8 +3783,8 @@ LayoutUnit LayoutBox::AvailableLogicalHeightUsing(
   // writing-mode.
   // https://bugs.webkit.org/show_bug.cgi?id=46500
   if (IsLayoutBlock() && IsOutOfFlowPositioned() &&
-      Style()->Height().IsAuto() &&
-      !(Style()->Top().IsAuto() || Style()->Bottom().IsAuto())) {
+      StyleRef().Height().IsAuto() &&
+      !(StyleRef().Top().IsAuto() || StyleRef().Bottom().IsAuto())) {
     LayoutBlock* block = const_cast<LayoutBlock*>(ToLayoutBlock(this));
     LogicalExtentComputedValues computed_values;
     block->ComputeLogicalHeight(block->LogicalHeight(), LayoutUnit(),
@@ -3826,7 +3833,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
     return ContainingBlockLogicalHeightForPositioned(containing_block, false);
 
   // Use viewport as container for top-level fixed-position elements.
-  if (Style()->GetPosition() == EPosition::kFixed &&
+  if (StyleRef().GetPosition() == EPosition::kFixed &&
       containing_block->IsLayoutView() && !GetDocument().Printing()) {
     const LayoutView* view = ToLayoutView(containing_block);
     if (LocalFrameView* frame_view = view->GetFrameView()) {
@@ -3856,7 +3863,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
 
   DCHECK(containing_block->IsLayoutInline());
   DCHECK(containing_block->CanContainOutOfFlowPositionedElement(
-      Style()->GetPosition()));
+      StyleRef().GetPosition()));
 
   const LayoutInline* flow = ToLayoutInline(containing_block);
   InlineFlowBox* first = flow->FirstLineBox();
@@ -3868,7 +3875,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalWidthForPositioned(
 
   LayoutUnit from_left;
   LayoutUnit from_right;
-  if (containing_block->Style()->IsLeftToRightDirection()) {
+  if (containing_block->StyleRef().IsLeftToRightDirection()) {
     from_left = first->LogicalLeft() + first->BorderLogicalLeft();
     from_right =
         last->LogicalLeft() + last->LogicalWidth() - last->BorderLogicalRight();
@@ -3889,7 +3896,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
     return ContainingBlockLogicalWidthForPositioned(containing_block, false);
 
   // Use viewport as container for top-level fixed-position elements.
-  if (Style()->GetPosition() == EPosition::kFixed &&
+  if (StyleRef().GetPosition() == EPosition::kFixed &&
       containing_block->IsLayoutView() && !GetDocument().Printing()) {
     const LayoutView* view = ToLayoutView(containing_block);
     if (LocalFrameView* frame_view = view->GetFrameView()) {
@@ -3911,7 +3918,7 @@ LayoutUnit LayoutBox::ContainingBlockLogicalHeightForPositioned(
 
   DCHECK(containing_block->IsLayoutInline());
   DCHECK(containing_block->CanContainOutOfFlowPositionedElement(
-      Style()->GetPosition()));
+      StyleRef().GetPosition()));
 
   const LayoutInline* flow = ToLayoutInline(containing_block);
   InlineFlowBox* first = flow->FirstLineBox();
@@ -3960,7 +3967,7 @@ void LayoutBox::ComputeInlineStaticDistance(
     return;
 
   LayoutObject* parent = child->Parent();
-  TextDirection parent_direction = parent->Style()->Direction();
+  TextDirection parent_direction = parent->StyleRef().Direction();
 
   // This method is using EnclosingBox() which is wrong for absolutely
   // positioned grid items, as they rely on the grid area. So for grid items if
@@ -3995,13 +4002,13 @@ void LayoutBox::ComputeInlineStaticDistance(
               *ToLayoutBox(curr), static_position, static_block_position);
       } else if (curr->IsInline()) {
         if (curr->IsInFlowPositioned()) {
-          if (!curr->Style()->LogicalLeft().IsAuto())
+          if (!curr->StyleRef().LogicalLeft().IsAuto())
             static_position +=
-                ValueForLength(curr->Style()->LogicalLeft(),
+                ValueForLength(curr->StyleRef().LogicalLeft(),
                                curr->ContainingBlock()->AvailableWidth());
           else
             static_position -=
-                ValueForLength(curr->Style()->LogicalRight(),
+                ValueForLength(curr->StyleRef().LogicalRight(),
                                curr->ContainingBlock()->AvailableWidth());
         }
       }
@@ -4033,13 +4040,13 @@ void LayoutBox::ComputeInlineStaticDistance(
         }
       } else if (curr->IsInline()) {
         if (curr->IsInFlowPositioned()) {
-          if (!curr->Style()->LogicalLeft().IsAuto())
+          if (!curr->StyleRef().LogicalLeft().IsAuto())
             static_position -=
-                ValueForLength(curr->Style()->LogicalLeft(),
+                ValueForLength(curr->StyleRef().LogicalLeft(),
                                curr->ContainingBlock()->AvailableWidth());
           else
             static_position +=
-                ValueForLength(curr->Style()->LogicalRight(),
+                ValueForLength(curr->StyleRef().LogicalRight(),
                                curr->ContainingBlock()->AvailableWidth());
         }
       }
@@ -4079,17 +4086,17 @@ void LayoutBox::ComputePositionedLogicalWidth(
   // Use the container block's direction except when calculating the static
   // distance. This conforms with the reference results for
   // abspos-replaced-width-margin-000.htm of the CSS 2.1 test suite.
-  TextDirection container_direction = container_block->Style()->Direction();
+  TextDirection container_direction = container_block->StyleRef().Direction();
 
   bool is_horizontal = IsHorizontalWritingMode();
   const LayoutUnit borders_plus_padding = BorderAndPaddingLogicalWidth();
   const Length margin_logical_left =
-      is_horizontal ? Style()->MarginLeft() : Style()->MarginTop();
+      is_horizontal ? StyleRef().MarginLeft() : StyleRef().MarginTop();
   const Length margin_logical_right =
-      is_horizontal ? Style()->MarginRight() : Style()->MarginBottom();
+      is_horizontal ? StyleRef().MarginRight() : StyleRef().MarginBottom();
 
-  Length logical_left_length = Style()->LogicalLeft();
-  Length logical_right_length = Style()->LogicalRight();
+  Length logical_left_length = StyleRef().LogicalLeft();
+  Length logical_right_length = StyleRef().LogicalRight();
   // ---------------------------------------------------------------------------
   //  For the purposes of this section and the next, the term "static position"
   //  (of an element) refers, roughly, to the position an element would have had
@@ -4120,17 +4127,17 @@ void LayoutBox::ComputePositionedLogicalWidth(
 
   // Calculate constraint equation values for 'width' case.
   ComputePositionedLogicalWidthUsing(
-      kMainOrPreferredSize, Style()->LogicalWidth(), container_block,
+      kMainOrPreferredSize, StyleRef().LogicalWidth(), container_block,
       container_direction, container_logical_width, borders_plus_padding,
       logical_left_length, logical_right_length, margin_logical_left,
       margin_logical_right, computed_values);
 
   // Calculate constraint equation values for 'max-width' case.
-  if (!Style()->LogicalMaxWidth().IsMaxSizeNone()) {
+  if (!StyleRef().LogicalMaxWidth().IsMaxSizeNone()) {
     LogicalExtentComputedValues max_values;
 
     ComputePositionedLogicalWidthUsing(
-        kMaxSize, Style()->LogicalMaxWidth(), container_block,
+        kMaxSize, StyleRef().LogicalMaxWidth(), container_block,
         container_direction, container_logical_width, borders_plus_padding,
         logical_left_length, logical_right_length, margin_logical_left,
         margin_logical_right, max_values);
@@ -4144,12 +4151,12 @@ void LayoutBox::ComputePositionedLogicalWidth(
   }
 
   // Calculate constraint equation values for 'min-width' case.
-  if (!Style()->LogicalMinWidth().IsZero() ||
-      Style()->LogicalMinWidth().IsIntrinsic()) {
+  if (!StyleRef().LogicalMinWidth().IsZero() ||
+      StyleRef().LogicalMinWidth().IsIntrinsic()) {
     LogicalExtentComputedValues min_values;
 
     ComputePositionedLogicalWidthUsing(
-        kMinSize, Style()->LogicalMinWidth(), container_block,
+        kMinSize, StyleRef().LogicalMinWidth(), container_block,
         container_direction, container_logical_width, borders_plus_padding,
         logical_left_length, logical_right_length, margin_logical_left,
         margin_logical_right, min_values);
@@ -4177,7 +4184,7 @@ void LayoutBox::ComputeLogicalLeftPositionedOffset(
   // if the containing block is both a flipped mode and perpendicular to us.
   if (container_block->IsHorizontalWritingMode() !=
           child->IsHorizontalWritingMode() &&
-      container_block->Style()->IsFlippedBlocksWritingMode()) {
+      container_block->StyleRef().IsFlippedBlocksWritingMode()) {
     logical_left_pos =
         container_logical_width - logical_width_value - logical_left_pos;
     logical_left_pos +=
@@ -4246,12 +4253,12 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
   bool logical_width_is_auto = logical_width.IsAuto();
   bool logical_left_is_auto = logical_left.IsAuto();
   bool logical_right_is_auto = logical_right.IsAuto();
-  LayoutUnit& margin_logical_left_value = Style()->IsLeftToRightDirection()
+  LayoutUnit& margin_logical_left_value = StyleRef().IsLeftToRightDirection()
                                               ? computed_values.margins_.start_
                                               : computed_values.margins_.end_;
   LayoutUnit& margin_logical_right_value =
-      Style()->IsLeftToRightDirection() ? computed_values.margins_.end_
-                                        : computed_values.margins_.start_;
+      StyleRef().IsLeftToRightDirection() ? computed_values.margins_.end_
+                                          : computed_values.margins_.start_;
   if (!logical_left_is_auto && !logical_width_is_auto &&
       !logical_right_is_auto) {
     // -------------------------------------------------------------------------
@@ -4412,7 +4419,7 @@ void LayoutBox::ComputePositionedLogicalWidthUsing(
   // logical left position of the first line box when really it should use the
   // last line box. When this is fixed elsewhere, this block should be removed.
   if (container_block->IsLayoutInline() &&
-      !container_block->Style()->IsLeftToRightDirection()) {
+      !container_block->StyleRef().IsLeftToRightDirection()) {
     const LayoutInline* flow = ToLayoutInline(container_block);
     InlineFlowBox* first_line = flow->FirstLineBox();
     InlineFlowBox* last_line = flow->LastLineBox();
@@ -4582,11 +4589,11 @@ void LayoutBox::ComputeLogicalTopPositionedOffset(
   // containing block's coordinate space. If the containing block is flipped
   // along this axis, then we need to flip the coordinate.  This can only happen
   // if the containing block is both a flipped mode and perpendicular to us.
-  if ((child->Style()->IsFlippedBlocksWritingMode() &&
+  if ((child->StyleRef().IsFlippedBlocksWritingMode() &&
        child->IsHorizontalWritingMode() !=
            container_block->IsHorizontalWritingMode()) ||
-      (child->Style()->IsFlippedBlocksWritingMode() !=
-           container_block->Style()->IsFlippedBlocksWritingMode() &&
+      (child->StyleRef().IsFlippedBlocksWritingMode() !=
+           container_block->StyleRef().IsFlippedBlocksWritingMode() &&
        child->IsHorizontalWritingMode() ==
            container_block->IsHorizontalWritingMode()))
     logical_top_pos =
@@ -4594,7 +4601,7 @@ void LayoutBox::ComputeLogicalTopPositionedOffset(
 
   // Our offset is from the logical bottom edge in a flipped environment, e.g.,
   // right for vertical-rl.
-  if (container_block->Style()->IsFlippedBlocksWritingMode() &&
+  if (container_block->StyleRef().IsFlippedBlocksWritingMode() &&
       child->IsHorizontalWritingMode() ==
           container_block->IsHorizontalWritingMode()) {
     if (child->IsHorizontalWritingMode())
@@ -4813,7 +4820,7 @@ LayoutRect LayoutBox::LocalCaretRect(
   LayoutUnit caret_width = GetFrameView()->CaretWidth();
   LayoutRect rect(Location(), LayoutSize(caret_width, Size().Height()));
   bool ltr =
-      box ? box->IsLeftToRightDirection() : Style()->IsLeftToRightDirection();
+      box ? box->IsLeftToRightDirection() : StyleRef().IsLeftToRightDirection();
 
   if ((!caret_offset) ^ ltr)
     rect.Move(LayoutSize(Size().Width() - caret_width, LayoutUnit()));
@@ -4834,7 +4841,7 @@ LayoutRect LayoutBox::LocalCaretRect(
   // giant tall-as-window insertion point
   //
   // FIXME: ignoring :first-line, missing good reason to take care of
-  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
+  const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
   LayoutUnit font_height =
       LayoutUnit(font_data ? font_data->GetFontMetrics().Height() : 0);
   if (font_height > rect.Height() || (!IsAtomicInlineLevel() && !IsTable()))
@@ -4896,7 +4903,7 @@ PositionWithAffinity LayoutBox::PositionForPoint(
        layout_object = layout_object->NextSibling()) {
     if ((!layout_object->SlowFirstChild() && !layout_object->IsInline() &&
          !layout_object->IsLayoutBlockFlow()) ||
-        layout_object->Style()->Visibility() != EVisibility::kVisible)
+        layout_object->StyleRef().Visibility() != EVisibility::kVisible)
       continue;
 
     if (!layout_object->IsBox())
@@ -4971,7 +4978,7 @@ bool LayoutBox::ShrinkToAvoidFloats() const {
     return false;
 
   // Only auto width objects can possibly shrink to avoid floats.
-  if (!Style()->Width().IsAuto())
+  if (!StyleRef().Width().IsAuto())
     return false;
 
   // If the containing block is LayoutNG, we will not let legacy layout deal
@@ -5113,7 +5120,7 @@ bool LayoutBox::IsRenderedLegend() const {
 }
 
 void LayoutBox::AddVisualEffectOverflow() {
-  if (!Style()->HasVisualOverflowingEffect())
+  if (!StyleRef().HasVisualOverflowingEffect())
     return;
 
   // Add in the final overflow with shadows, outsets and outline combined.
@@ -5188,11 +5195,11 @@ void LayoutBox::AddOverflowFromChild(const LayoutBox& child,
 }
 
 bool LayoutBox::HasTopOverflow() const {
-  return !Style()->IsLeftToRightDirection() && !IsHorizontalWritingMode();
+  return !StyleRef().IsLeftToRightDirection() && !IsHorizontalWritingMode();
 }
 
 bool LayoutBox::HasLeftOverflow() const {
-  return !Style()->IsLeftToRightDirection() && IsHorizontalWritingMode();
+  return !StyleRef().IsLeftToRightDirection() && IsHorizontalWritingMode();
 }
 
 DISABLE_CFI_PERF
@@ -5313,14 +5320,14 @@ bool LayoutBox::HasUnsplittableScrollingOverflow() const {
   // under these conditions, but it should work out to be good enough for common
   // cases. Paginating overflow with scrollbars present is not the end of the
   // world and is what we used to do in the old model anyway.
-  return !Style()->LogicalHeight().IsIntrinsicOrAuto() ||
-         (!Style()->LogicalMaxHeight().IsIntrinsicOrAuto() &&
-          !Style()->LogicalMaxHeight().IsMaxSizeNone() &&
-          (!Style()->LogicalMaxHeight().IsPercentOrCalc() ||
+  return !StyleRef().LogicalHeight().IsIntrinsicOrAuto() ||
+         (!StyleRef().LogicalMaxHeight().IsIntrinsicOrAuto() &&
+          !StyleRef().LogicalMaxHeight().IsMaxSizeNone() &&
+          (!StyleRef().LogicalMaxHeight().IsPercentOrCalc() ||
            PercentageLogicalHeightIsResolvable())) ||
-         (!Style()->LogicalMinHeight().IsIntrinsicOrAuto() &&
-          Style()->LogicalMinHeight().IsPositive() &&
-          (!Style()->LogicalMinHeight().IsPercentOrCalc() ||
+         (!StyleRef().LogicalMinHeight().IsIntrinsicOrAuto() &&
+          StyleRef().LogicalMinHeight().IsPositive() &&
+          (!StyleRef().LogicalMinHeight().IsPercentOrCalc() ||
            PercentageLogicalHeightIsResolvable()));
 }
 
@@ -5329,7 +5336,8 @@ LayoutBox::PaginationBreakability LayoutBox::GetPaginationBreakability() const {
   // actually look for replaced elements.
   if (IsAtomicInlineLevel() || HasUnsplittableScrollingOverflow() ||
       (Parent() && IsWritingModeRoot()) ||
-      (IsOutOfFlowPositioned() && Style()->GetPosition() == EPosition::kFixed))
+      (IsOutOfFlowPositioned() &&
+       StyleRef().GetPosition() == EPosition::kFixed))
     return kForbidBreaks;
 
   EBreakInside break_value = BreakInside();
@@ -5521,7 +5529,7 @@ LayoutUnit LayoutBox::OffsetTop(const Element* parent) const {
 LayoutPoint LayoutBox::FlipForWritingModeForChild(
     const LayoutBox* child,
     const LayoutPoint& point) const {
-  if (!Style()->IsFlippedBlocksWritingMode())
+  if (!StyleRef().IsFlippedBlocksWritingMode())
     return point;
 
   // The child is going to add in its x(), so we have to make sure it ends up in
@@ -5559,15 +5567,15 @@ LayoutPoint LayoutBox::PhysicalLocation(
 }
 
 bool LayoutBox::HasRelativeLogicalWidth() const {
-  return Style()->LogicalWidth().IsPercentOrCalc() ||
-         Style()->LogicalMinWidth().IsPercentOrCalc() ||
-         Style()->LogicalMaxWidth().IsPercentOrCalc();
+  return StyleRef().LogicalWidth().IsPercentOrCalc() ||
+         StyleRef().LogicalMinWidth().IsPercentOrCalc() ||
+         StyleRef().LogicalMaxWidth().IsPercentOrCalc();
 }
 
 bool LayoutBox::HasRelativeLogicalHeight() const {
-  return Style()->LogicalHeight().IsPercentOrCalc() ||
-         Style()->LogicalMinHeight().IsPercentOrCalc() ||
-         Style()->LogicalMaxHeight().IsPercentOrCalc();
+  return StyleRef().LogicalHeight().IsPercentOrCalc() ||
+         StyleRef().LogicalMinHeight().IsPercentOrCalc() ||
+         StyleRef().LogicalMaxHeight().IsPercentOrCalc();
 }
 
 static void MarkBoxForRelayoutAfterSplit(LayoutBox* box) {
@@ -5787,18 +5795,18 @@ bool LayoutBox::MustInvalidateFillLayersPaintOnWidthChange(
 
 bool LayoutBox::MustInvalidateBackgroundOrBorderPaintOnWidthChange() const {
   if (HasMask() &&
-      MustInvalidateFillLayersPaintOnWidthChange(Style()->MaskLayers()))
+      MustInvalidateFillLayersPaintOnWidthChange(StyleRef().MaskLayers()))
     return true;
 
   // If we don't have a background/border/mask, then nothing to do.
   if (!HasBoxDecorationBackground())
     return false;
 
-  if (MustInvalidateFillLayersPaintOnWidthChange(Style()->BackgroundLayers()))
+  if (MustInvalidateFillLayersPaintOnWidthChange(StyleRef().BackgroundLayers()))
     return true;
 
   // Our fill layers are ok. Let's check border.
-  if (Style()->CanRenderBorderImage())
+  if (StyleRef().CanRenderBorderImage())
     return true;
 
   return false;
@@ -5806,18 +5814,19 @@ bool LayoutBox::MustInvalidateBackgroundOrBorderPaintOnWidthChange() const {
 
 bool LayoutBox::MustInvalidateBackgroundOrBorderPaintOnHeightChange() const {
   if (HasMask() &&
-      MustInvalidateFillLayersPaintOnHeightChange(Style()->MaskLayers()))
+      MustInvalidateFillLayersPaintOnHeightChange(StyleRef().MaskLayers()))
     return true;
 
   // If we don't have a background/border/mask, then nothing to do.
   if (!HasBoxDecorationBackground())
     return false;
 
-  if (MustInvalidateFillLayersPaintOnHeightChange(Style()->BackgroundLayers()))
+  if (MustInvalidateFillLayersPaintOnHeightChange(
+          StyleRef().BackgroundLayers()))
     return true;
 
   // Our fill layers are ok.  Let's check border.
-  if (Style()->CanRenderBorderImage())
+  if (StyleRef().CanRenderBorderImage())
     return true;
 
   return false;
@@ -6094,7 +6103,7 @@ TextDirection LayoutBox::ResolvedDirection() const {
     if (InlineBoxWrapper())
       return InlineBoxWrapper()->Direction();
   }
-  return Style()->Direction();
+  return StyleRef().Direction();
 }
 
 }  // namespace blink

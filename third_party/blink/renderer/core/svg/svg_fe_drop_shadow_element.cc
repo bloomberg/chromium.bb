@@ -103,7 +103,7 @@ FilterEffect* SVGFEDropShadowElement::Build(SVGFilterBuilder* filter_builder,
     return nullptr;
 
   DCHECK(layout_object->Style());
-  const SVGComputedStyle& svg_style = layout_object->Style()->SvgStyle();
+  const SVGComputedStyle& svg_style = layout_object->StyleRef().SvgStyle();
 
   Color color = svg_style.FloodColor();
   float opacity = svg_style.FloodOpacity();

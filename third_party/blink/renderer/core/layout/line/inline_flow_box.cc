@@ -355,14 +355,14 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
 
   // The root inline box never has borders/margins/padding.
   if (Parent()) {
-    bool ltr = GetLineLayoutItem().Style()->IsLeftToRightDirection();
+    bool ltr = GetLineLayoutItem().StyleRef().IsLeftToRightDirection();
 
     // Check to see if all initial lines are unconstructed.  If so, then
     // we know the inline began on this line (unless we are a continuation).
     LineBoxList* line_box_list = LineBoxes();
     if (!line_box_list->First()->IsConstructed() &&
         !GetLineLayoutItem().IsInlineElementContinuation()) {
-      if (GetLineLayoutItem().Style()->BoxDecorationBreak() ==
+      if (GetLineLayoutItem().StyleRef().BoxDecorationBreak() ==
           EBoxDecorationBreak::kClone)
         include_left_edge = include_right_edge = true;
       else if (ltr && line_box_list->First() == this)
@@ -391,7 +391,7 @@ void InlineFlowBox::DetermineSpacingForFlowBoxes(
       //     next line.
       // (4) The decoration break is set to clone therefore there will be
       //     borders on every sides.
-      if (GetLineLayoutItem().Style()->BoxDecorationBreak() ==
+      if (GetLineLayoutItem().StyleRef().BoxDecorationBreak() ==
           EBoxDecorationBreak::kClone) {
         include_left_edge = include_right_edge = true;
       } else if (ltr) {
@@ -485,8 +485,8 @@ void InlineFlowBox::PlaceBoxRangeInInlineDirection(
       if (curr->GetLineLayoutItem().IsOutOfFlowPositioned()) {
         if (curr->GetLineLayoutItem()
                 .Parent()
-                .Style()
-                ->IsLeftToRightDirection()) {
+                .StyleRef()
+                .IsLeftToRightDirection()) {
           curr->SetLogicalLeft(logical_left);
         } else {
           // Our offset that we cache needs to be from the edge of the right
@@ -825,8 +825,8 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
         // being part of the overall lineTop/lineBottom.
         // Really this is a workaround hack for the fact that ruby should have
         // been done as line layout and not done using inline-block.
-        if (GetLineLayoutItem().Style()->IsFlippedLinesWritingMode() ==
-            (curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
+        if (GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode() ==
+            (curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
              RubyPosition::kAfter))
           has_annotations_before = true;
         else
@@ -845,7 +845,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
               (ruby_base.FirstRootBox() ? ruby_base.FirstRootBox()->LineTop()
                                         : LayoutUnit());
           new_logical_top +=
-              !GetLineLayoutItem().Style()->IsFlippedLinesWritingMode()
+              !GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode()
                   ? top_ruby_base_leading
                   : bottom_ruby_base_leading;
           box_height -= (top_ruby_base_leading + bottom_ruby_base_leading);
@@ -912,7 +912,7 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
           std::max(line_bottom, line_bottom_including_margins);
     }
 
-    if (GetLineLayoutItem().Style()->IsFlippedLinesWritingMode())
+    if (GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode())
       FlipLinesInBlockDirection(line_top_including_margins,
                                 line_bottom_including_margins);
   }
@@ -1138,7 +1138,7 @@ static void ComputeGlyphOverflow(
   float measured_width = layout_text.Width(
       text->Start(), text->Len(), LayoutUnit(), text->Direction(), false,
       &fallback_fonts, &glyph_bounds);
-  const Font& font = layout_text.Style()->GetFont();
+  const Font& font = layout_text.StyleRef().GetFont();
   glyph_overflow.SetFromBounds(glyph_bounds, font, measured_width);
   if (!fallback_fonts.IsEmpty()) {
     GlyphOverflowAndFallbackFontsMap::ValueType* it =
@@ -1353,11 +1353,12 @@ bool InlineFlowBox::NodeAtPoint(HitTestResult& result,
                                       overflow_rect.Location()))
     return false;
 
-  if (GetLineLayoutItem().Style()->HasBorderRadius()) {
+  if (GetLineLayoutItem().StyleRef().HasBorderRadius()) {
     LayoutRect border_rect = LogicalFrameRect();
     border_rect.MoveBy(accumulated_offset);
-    FloatRoundedRect border = GetLineLayoutItem().Style()->GetRoundedBorderFor(
-        border_rect, IncludeLogicalLeftEdge(), IncludeLogicalRightEdge());
+    FloatRoundedRect border =
+        GetLineLayoutItem().StyleRef().GetRoundedBorderFor(
+            border_rect, IncludeLogicalLeftEdge(), IncludeLogicalRightEdge());
     if (!location_in_container.Intersects(border))
       return false;
   }
@@ -1402,7 +1403,8 @@ bool InlineFlowBox::BoxShadowCanBeAppliedToBackground(
   // would be clipped out, so it has to be drawn separately).
   StyleImage* image = last_background_layer.GetImage();
   bool has_fill_image = image && image->CanRender();
-  return (!has_fill_image && !GetLineLayoutItem().Style()->HasBorderRadius()) ||
+  return (!has_fill_image &&
+          !GetLineLayoutItem().StyleRef().HasBorderRadius()) ||
          (!PrevForSameLayoutObject() && !NextForSameLayoutObject()) ||
          !Parent();
 }
@@ -1503,14 +1505,14 @@ LayoutUnit InlineFlowBox::ComputeOverAnnotationAdjustment(
 
     if (curr->GetLineLayoutItem().IsAtomicInlineLevel() &&
         curr->GetLineLayoutItem().IsRubyRun() &&
-        curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
+        curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
             RubyPosition::kBefore) {
       LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
       LineLayoutRubyText ruby_text = ruby_run.RubyText();
       if (!ruby_text)
         continue;
 
-      if (!ruby_run.Style()->IsFlippedLinesWritingMode()) {
+      if (!ruby_run.StyleRef().IsFlippedLinesWritingMode()) {
         LayoutUnit top_of_first_ruby_text_line =
             ruby_text.LogicalTop() + (ruby_text.FirstRootBox()
                                           ? ruby_text.FirstRootBox()->LineTop()
@@ -1574,14 +1576,14 @@ LayoutUnit InlineFlowBox::ComputeUnderAnnotationAdjustment(
 
     if (curr->GetLineLayoutItem().IsAtomicInlineLevel() &&
         curr->GetLineLayoutItem().IsRubyRun() &&
-        curr->GetLineLayoutItem().Style()->GetRubyPosition() ==
+        curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
             RubyPosition::kAfter) {
       LineLayoutRubyRun ruby_run = LineLayoutRubyRun(curr->GetLineLayoutItem());
       LineLayoutRubyText ruby_text = ruby_run.RubyText();
       if (!ruby_text)
         continue;
 
-      if (ruby_run.Style()->IsFlippedLinesWritingMode()) {
+      if (ruby_run.StyleRef().IsFlippedLinesWritingMode()) {
         LayoutUnit top_of_first_ruby_text_line =
             ruby_text.LogicalTop() + (ruby_text.FirstRootBox()
                                           ? ruby_text.FirstRootBox()->LineTop()
@@ -1645,7 +1647,7 @@ void InlineFlowBox::CollectLeafBoxesInLogicalOrder(
     leaf_boxes_in_logical_order.push_back(leaf);
   }
 
-  if (GetLineLayoutItem().Style()->RtlOrdering() == EOrder::kVisual)
+  if (GetLineLayoutItem().StyleRef().RtlOrdering() == EOrder::kVisual)
     return;
 
   // Reverse of reordering of the line (L2 according to Bidi spec):

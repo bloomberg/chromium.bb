@@ -149,7 +149,7 @@ void LayoutTextCombine::TransformToInlineCoordinates(GraphicsContext& context,
 
 void LayoutTextCombine::UpdateIsCombined() {
   // CSS3 spec says text-combine works only in vertical writing mode.
-  is_combined_ = !Style()->IsHorizontalWritingMode()
+  is_combined_ = !StyleRef().IsHorizontalWritingMode()
                  // Nothing to combine.
                  && !HasEmptyText();
 }

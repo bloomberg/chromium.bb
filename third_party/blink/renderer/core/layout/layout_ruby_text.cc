@@ -44,7 +44,7 @@ bool LayoutRubyText::IsChildAllowed(LayoutObject* child,
 
 ETextAlign LayoutRubyText::TextAlignmentForLine(
     bool ends_with_soft_break) const {
-  ETextAlign text_align = Style()->GetTextAlign();
+  ETextAlign text_align = StyleRef().GetTextAlign();
   // FIXME: This check is bogus since user can set the initial value.
   if (text_align != ComputedStyleInitialValues::InitialTextAlign())
     return LayoutBlockFlow::TextAlignmentForLine(ends_with_soft_break);
@@ -58,7 +58,7 @@ void LayoutRubyText::AdjustInlineDirectionLineBounds(
     unsigned expansion_opportunity_count,
     LayoutUnit& logical_left,
     LayoutUnit& logical_width) const {
-  ETextAlign text_align = Style()->GetTextAlign();
+  ETextAlign text_align = StyleRef().GetTextAlign();
   // FIXME: This check is bogus since user can set the initial value.
   if (text_align != ComputedStyleInitialValues::InitialTextAlign())
     return LayoutBlockFlow::AdjustInlineDirectionLineBounds(
@@ -73,7 +73,7 @@ void LayoutRubyText::AdjustInlineDirectionLineBounds(
   LayoutUnit inset = (logical_width - max_preferred_logical_width) /
                      (expansion_opportunity_count + 1);
   if (expansion_opportunity_count)
-    inset = std::min(LayoutUnit(2 * Style()->FontSize()), inset);
+    inset = std::min(LayoutUnit(2 * StyleRef().FontSize()), inset);
 
   logical_left += inset / 2;
   logical_width -= inset;

@@ -39,8 +39,8 @@ void LayoutFieldset::ComputePreferredLogicalWidths() {
   if (LayoutBox* legend = FindInFlowLegend()) {
     int legend_min_width = legend->MinPreferredLogicalWidth().ToInt();
 
-    Length legend_margin_left = legend->Style()->MarginLeft();
-    Length legend_margin_right = legend->Style()->MarginRight();
+    Length legend_margin_left = legend->StyleRef().MarginLeft();
+    Length legend_margin_right = legend->StyleRef().MarginRight();
 
     if (legend_margin_left.IsFixed())
       legend_min_width += legend_margin_left.Value();
@@ -66,8 +66,8 @@ LayoutObject* LayoutFieldset::LayoutSpecialExcludedChild(bool relayout_children,
     legend->LayoutIfNeeded();
 
     LayoutUnit logical_left;
-    if (Style()->IsLeftToRightDirection()) {
-      switch (legend->Style()->GetTextAlign()) {
+    if (StyleRef().IsLeftToRightDirection()) {
+      switch (legend->StyleRef().GetTextAlign()) {
         case ETextAlign::kCenter:
           logical_left = (LogicalWidth() - LogicalWidthForChild(*legend)) / 2;
           break;
@@ -81,7 +81,7 @@ LayoutObject* LayoutFieldset::LayoutSpecialExcludedChild(bool relayout_children,
           break;
       }
     } else {
-      switch (legend->Style()->GetTextAlign()) {
+      switch (legend->StyleRef().GetTextAlign()) {
         case ETextAlign::kLeft:
           logical_left = BorderStart() + PaddingStart();
           break;

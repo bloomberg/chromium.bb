@@ -125,7 +125,7 @@ void LayoutMenuList::AdjustInnerStyle(ComputedStyle& inner_style) const {
   // when the content overflows, treat it the same as align-items: flex-start.
   // But we only do that for the cases where html.css would otherwise use
   // center.
-  if (Style()->AlignItemsPosition() == ItemPosition::kCenter) {
+  if (StyleRef().AlignItemsPosition() == ItemPosition::kCenter) {
     inner_style.SetMarginTop(Length());
     inner_style.SetMarginBottom(Length());
     inner_style.SetAlignSelfPosition(ItemPosition::kFlexStart);
@@ -199,7 +199,7 @@ void LayoutMenuList::StyleDidChange(StyleDifference diff,
 }
 
 void LayoutMenuList::UpdateInnerBlockHeight() {
-  const SimpleFontData* font_data = Style()->GetFont().PrimaryFont();
+  const SimpleFontData* font_data = StyleRef().GetFont().PrimaryFont();
   DCHECK(font_data);
   inner_block_height_ = (font_data ? font_data->GetFontMetrics().Height() : 0) +
                         inner_block_->BorderAndPaddingHeight();
@@ -215,9 +215,9 @@ void LayoutMenuList::UpdateOptionsWidth() const {
     item_style->ApplyTextTransform(&text);
     // We apply SELECT's style, not OPTION's style because m_optionsWidth is
     // used to determine intrinsic width of the menulist box.
-    TextRun text_run = ConstructTextRun(Style()->GetFont(), text, *Style());
+    TextRun text_run = ConstructTextRun(StyleRef().GetFont(), text, *Style());
     max_option_width =
-        std::max(max_option_width, Style()->GetFont().Width(text_run));
+        std::max(max_option_width, StyleRef().GetFont().Width(text_run));
   }
   options_width_ = static_cast<int>(ceilf(max_option_width));
 }
@@ -316,7 +316,7 @@ void LayoutMenuList::ComputeIntrinsicLogicalWidths(
       std::max(options_width_,
                LayoutTheme::GetTheme().MinimumMenuListSize(StyleRef())) +
       inner_block_->PaddingLeft() + inner_block_->PaddingRight();
-  if (!Style()->Width().IsPercentOrCalc())
+  if (!StyleRef().Width().IsPercentOrCalc())
     min_logical_width = max_logical_width;
   else
     min_logical_width = LayoutUnit();
@@ -326,7 +326,7 @@ void LayoutMenuList::ComputeLogicalHeight(
     LayoutUnit logical_height,
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
-  if (Style()->HasAppearance())
+  if (StyleRef().HasAppearance())
     logical_height = inner_block_height_ + BorderAndPaddingHeight();
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }

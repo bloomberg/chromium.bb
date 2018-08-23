@@ -297,9 +297,9 @@ LayoutRect RootFrameViewport::ScrollIntoView(
     if (params.is_for_scroll_sequence) {
       DCHECK(params.GetScrollType() == kProgrammaticScroll ||
              params.GetScrollType() == kUserScroll);
-      ScrollBehavior behavior =
-          DetermineScrollBehavior(params.GetScrollBehavior(),
-                                  GetLayoutBox()->Style()->GetScrollBehavior());
+      ScrollBehavior behavior = DetermineScrollBehavior(
+          params.GetScrollBehavior(),
+          GetLayoutBox()->StyleRef().GetScrollBehavior());
       GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
                                                  behavior);
     } else {

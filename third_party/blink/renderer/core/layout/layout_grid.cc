@@ -960,7 +960,7 @@ void LayoutGrid::PlaceSpecifiedMajorAxisItemsOnGrid(
     Grid& grid,
     const Vector<LayoutBox*>& auto_grid_items) const {
   bool is_for_columns = AutoPlacementMajorAxisDirection() == kForColumns;
-  bool is_grid_auto_flow_dense = Style()->IsGridAutoFlowAlgorithmDense();
+  bool is_grid_auto_flow_dense = StyleRef().IsGridAutoFlowAlgorithmDense();
 
   // Mapping between the major axis tracks (rows or columns) and the last
   // auto-placed item's position inserted on that track. This is needed to
@@ -1009,7 +1009,7 @@ void LayoutGrid::PlaceAutoMajorAxisItemsOnGrid(
     Grid& grid,
     const Vector<LayoutBox*>& auto_grid_items) const {
   std::pair<size_t, size_t> auto_placement_cursor = std::make_pair(0, 0);
-  bool is_grid_auto_flow_dense = Style()->IsGridAutoFlowAlgorithmDense();
+  bool is_grid_auto_flow_dense = StyleRef().IsGridAutoFlowAlgorithmDense();
 
   for (auto* const auto_grid_item : auto_grid_items) {
     PlaceAutoMajorAxisItemOnGrid(grid, *auto_grid_item, auto_placement_cursor);
@@ -1115,11 +1115,11 @@ void LayoutGrid::PlaceAutoMajorAxisItemOnGrid(
 }
 
 GridTrackSizingDirection LayoutGrid::AutoPlacementMajorAxisDirection() const {
-  return Style()->IsGridAutoFlowDirectionColumn() ? kForColumns : kForRows;
+  return StyleRef().IsGridAutoFlowDirectionColumn() ? kForColumns : kForRows;
 }
 
 GridTrackSizingDirection LayoutGrid::AutoPlacementMinorAxisDirection() const {
-  return Style()->IsGridAutoFlowDirectionColumn() ? kForRows : kForColumns;
+  return StyleRef().IsGridAutoFlowDirectionColumn() ? kForRows : kForColumns;
 }
 
 void LayoutGrid::DirtyGrid() {
@@ -1975,11 +1975,11 @@ LayoutUnit LayoutGrid::GridAreaBreadthForOutOfFlowChild(
   int end_line = span.UntranslatedEndLine() + smallest_start;
   int last_line = NumTracks(direction, *grid_);
   GridPosition start_position = direction == kForColumns
-                                    ? child.Style()->GridColumnStart()
-                                    : child.Style()->GridRowStart();
+                                    ? child.StyleRef().GridColumnStart()
+                                    : child.StyleRef().GridRowStart();
   GridPosition end_position = direction == kForColumns
-                                  ? child.Style()->GridColumnEnd()
-                                  : child.Style()->GridRowEnd();
+                                  ? child.StyleRef().GridColumnEnd()
+                                  : child.StyleRef().GridRowEnd();
 
   bool start_is_auto =
       GridPositionIsAutoForOutOfFlow(start_position, direction) ||
@@ -2040,7 +2040,7 @@ LayoutUnit LayoutGrid::LogicalOffsetForChild(const LayoutBox& child,
   LayoutUnit child_margin =
       is_flowaware_row_axis ? child.MarginLineLeft() : child.MarginBefore();
   LayoutUnit offset = child_position - grid_border - child_margin;
-  if (!is_row_axis || Style()->IsLeftToRightDirection())
+  if (!is_row_axis || StyleRef().IsLeftToRightDirection())
     return offset;
 
   LayoutUnit child_breadth =
@@ -2297,7 +2297,7 @@ LayoutPoint LayoutGrid::FindChildLogicalPosition(const LayoutBox& child) const {
   // We stored column_position_'s data ignoring the direction, hence we might
   // need now to translate positions from RTL to LTR, as it's more convenient
   // for painting.
-  if (!Style()->IsLeftToRightDirection()) {
+  if (!StyleRef().IsLeftToRightDirection()) {
     row_axis_offset =
         (child.IsOutOfFlowPositioned()
              ? TranslateOutOfFlowRTLCoordinate(child, row_axis_offset)
@@ -2321,7 +2321,7 @@ LayoutPoint LayoutGrid::GridAreaLogicalPosition(const GridArea& area) const {
 
   // See comment in findChildLogicalPosition() about why we need sometimes to
   // translate from RTL to LTR the rowAxisOffset coordinate.
-  return LayoutPoint(Style()->IsLeftToRightDirection()
+  return LayoutPoint(StyleRef().IsLeftToRightDirection()
                          ? row_axis_offset
                          : TranslateRTLCoordinate(row_axis_offset),
                      column_axis_offset);

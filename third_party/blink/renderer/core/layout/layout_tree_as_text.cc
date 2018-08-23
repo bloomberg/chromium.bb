@@ -156,8 +156,8 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
   if (behavior & kLayoutAsTextShowAddresses)
     ts << " " << static_cast<const void*>(&o);
 
-  if (o.Style() && o.Style()->ZIndex())
-    ts << " zI: " << o.Style()->ZIndex();
+  if (o.Style() && o.StyleRef().ZIndex())
+    ts << " zI: " << o.StyleRef().ZIndex();
 
   if (o.GetNode()) {
     String tag_name = GetTagName(o.GetNode());
@@ -201,10 +201,10 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
           text_stroke_color != color && text_stroke_color.Rgb())
         ts << " [textStrokeColor=" << text_stroke_color << "]";
 
-      if (o.Parent()->Style()->TextStrokeWidth() !=
-              o.Style()->TextStrokeWidth() &&
-          o.Style()->TextStrokeWidth() > 0)
-        ts << " [textStrokeWidth=" << o.Style()->TextStrokeWidth() << "]";
+      if (o.Parent()->StyleRef().TextStrokeWidth() !=
+              o.StyleRef().TextStrokeWidth() &&
+          o.StyleRef().TextStrokeWidth() > 0)
+        ts << " [textStrokeWidth=" << o.StyleRef().TextStrokeWidth() << "]";
     }
 
     if (!o.IsBoxModelObject())
@@ -215,44 +215,44 @@ void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
         box.BorderLeft()) {
       ts << " [border:";
 
-      BorderValue prev_border = o.Style()->BorderTop();
+      BorderValue prev_border = o.StyleRef().BorderTop();
       if (!box.BorderTop()) {
         ts << " none";
       } else {
         ts << " (" << box.BorderTop() << "px ";
-        PrintBorderStyle(ts, o.Style()->BorderTopStyle());
+        PrintBorderStyle(ts, o.StyleRef().BorderTopStyle());
         ts << o.ResolveColor(GetCSSPropertyBorderTopColor()) << ")";
       }
 
-      if (!o.Style()->BorderRightEquals(prev_border)) {
-        prev_border = o.Style()->BorderRight();
+      if (!o.StyleRef().BorderRightEquals(prev_border)) {
+        prev_border = o.StyleRef().BorderRight();
         if (!box.BorderRight()) {
           ts << " none";
         } else {
           ts << " (" << box.BorderRight() << "px ";
-          PrintBorderStyle(ts, o.Style()->BorderRightStyle());
+          PrintBorderStyle(ts, o.StyleRef().BorderRightStyle());
           ts << o.ResolveColor(GetCSSPropertyBorderRightColor()) << ")";
         }
       }
 
-      if (!o.Style()->BorderBottomEquals(prev_border)) {
-        prev_border = box.Style()->BorderBottom();
+      if (!o.StyleRef().BorderBottomEquals(prev_border)) {
+        prev_border = box.StyleRef().BorderBottom();
         if (!box.BorderBottom()) {
           ts << " none";
         } else {
           ts << " (" << box.BorderBottom() << "px ";
-          PrintBorderStyle(ts, o.Style()->BorderBottomStyle());
+          PrintBorderStyle(ts, o.StyleRef().BorderBottomStyle());
           ts << o.ResolveColor(GetCSSPropertyBorderBottomColor()) << ")";
         }
       }
 
-      if (!o.Style()->BorderLeftEquals(prev_border)) {
-        prev_border = o.Style()->BorderLeft();
+      if (!o.StyleRef().BorderLeftEquals(prev_border)) {
+        prev_border = o.StyleRef().BorderLeft();
         if (!box.BorderLeft()) {
           ts << " none";
         } else {
           ts << " (" << box.BorderLeft() << "px ";
-          PrintBorderStyle(ts, o.Style()->BorderLeftStyle());
+          PrintBorderStyle(ts, o.StyleRef().BorderLeftStyle());
           ts << o.ResolveColor(GetCSSPropertyBorderLeftColor()) << ")";
         }
       }
@@ -443,9 +443,10 @@ static void WriteTextRun(WTF::TextStream& ts,
   ts << ": "
      << QuoteAndEscapeNonPrintables(
             String(o.GetText()).Substring(run.Start(), run.Len()));
-  if (run.HasHyphen())
+  if (run.HasHyphen()) {
     ts << " + hyphen string "
-       << QuoteAndEscapeNonPrintables(o.Style()->HyphenString());
+       << QuoteAndEscapeNonPrintables(o.StyleRef().HyphenString());
+  }
   ts << "\n";
 }
 
@@ -609,7 +610,7 @@ static void Write(WTF::TextStream& ts,
 
   WriteIndent(ts, indent);
 
-  if (layer.GetLayoutObject().Style()->Visibility() == EVisibility::kHidden)
+  if (layer.GetLayoutObject().StyleRef().Visibility() == EVisibility::kHidden)
     ts << "hidden ";
 
   ts << "layer ";
@@ -653,11 +654,11 @@ static void Write(WTF::TextStream& ts,
   else if (paint_phase == kLayerPaintPhaseForeground)
     ts << " layerType: foreground only";
 
-  if (layer.GetLayoutObject().Style()->HasBlendMode()) {
+  if (layer.GetLayoutObject().StyleRef().HasBlendMode()) {
     ts << " blendMode: "
        << CompositeOperatorName(
               kCompositeSourceOver,
-              layer.GetLayoutObject().Style()->GetBlendMode());
+              layer.GetLayoutObject().StyleRef().GetBlendMode());
   }
 
   if (behavior & kLayoutAsTextShowCompositedLayers) {

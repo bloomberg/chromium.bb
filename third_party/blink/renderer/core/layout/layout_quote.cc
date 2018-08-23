@@ -302,10 +302,10 @@ String LayoutQuote::ComputeText() const {
 }
 
 const QuotesData* LayoutQuote::GetQuotesData() const {
-  if (const QuotesData* custom_quotes = Style()->Quotes())
+  if (const QuotesData* custom_quotes = StyleRef().Quotes())
     return custom_quotes;
 
-  if (const QuotesData* quotes = QuotesDataForLanguage(Style()->Locale()))
+  if (const QuotesData* quotes = QuotesDataForLanguage(StyleRef().Locale()))
     return quotes;
 
   return BasicQuotesData();

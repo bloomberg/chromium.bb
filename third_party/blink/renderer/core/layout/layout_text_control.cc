@@ -108,9 +108,9 @@ void LayoutTextControl::ComputeLogicalHeight(
 
     // We are able to have a horizontal scrollbar if the overflow style is
     // scroll, or if its auto and there's no word wrap.
-    if (Style()->OverflowInlineDirection() == EOverflow::kScroll ||
-        (Style()->OverflowInlineDirection() == EOverflow::kAuto &&
-         inner_editor->GetLayoutObject()->Style()->OverflowWrap() ==
+    if (StyleRef().OverflowInlineDirection() == EOverflow::kScroll ||
+        (StyleRef().OverflowInlineDirection() == EOverflow::kAuto &&
+         inner_editor->GetLayoutObject()->StyleRef().OverflowWrap() ==
              EOverflowWrap::kNormal))
       logical_height += ScrollbarThickness();
 
@@ -214,7 +214,7 @@ bool LayoutTextControl::HasValidAvgCharWidth(const SimpleFontData* font_data,
 }
 
 float LayoutTextControl::GetAvgCharWidth(const AtomicString& family) const {
-  const Font& font = Style()->GetFont();
+  const Font& font = StyleRef().GetFont();
 
   const SimpleFontData* primary_font = font.PrimaryFont();
   if (primary_font && HasValidAvgCharWidth(primary_font, family))
@@ -231,7 +231,7 @@ float LayoutTextControl::ScaleEmToUnits(int x) const {
   // This matches the unitsPerEm value for MS Shell Dlg and Courier New from the
   // "head" font table.
   float units_per_em = 2048.0f;
-  return roundf(Style()->GetFont().GetFontDescription().ComputedSize() * x /
+  return roundf(StyleRef().GetFont().GetFontDescription().ComputedSize() * x /
                 units_per_em);
 }
 
@@ -240,7 +240,7 @@ void LayoutTextControl::ComputeIntrinsicLogicalWidths(
     LayoutUnit& max_logical_width) const {
   // Use average character width. Matches IE.
   AtomicString family =
-      Style()->GetFont().GetFontDescription().Family().Family();
+      StyleRef().GetFont().GetFontDescription().Family().Family();
   max_logical_width = PreferredContentLogicalWidth(
       const_cast<LayoutTextControl*>(this)->GetAvgCharWidth(family));
   if (InnerEditorElement()) {
@@ -249,7 +249,7 @@ void LayoutTextControl::ComputeIntrinsicLogicalWidths(
       max_logical_width += inner_editor_layout_box->PaddingStart() +
                            inner_editor_layout_box->PaddingEnd();
   }
-  if (!Style()->LogicalWidth().IsPercentOrCalc())
+  if (!StyleRef().LogicalWidth().IsPercentOrCalc())
     min_logical_width = max_logical_width;
 }
 

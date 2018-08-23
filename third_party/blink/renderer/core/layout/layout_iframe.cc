@@ -41,7 +41,7 @@ bool LayoutIFrame::IsInlineBlockOrInlineTable() const {
 }
 
 PaintLayerType LayoutIFrame::LayerTypeRequired() const {
-  if (Style()->Resize() != EResize::kNone)
+  if (StyleRef().Resize() != EResize::kNone)
     return kNormalPaintLayer;
   return LayoutEmbeddedContent::LayerTypeRequired();
 }

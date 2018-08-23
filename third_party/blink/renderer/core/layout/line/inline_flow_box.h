@@ -73,7 +73,7 @@ class InlineFlowBox : public InlineBox {
     // bullet list items.  Even when the list bullet is an image, the line is
     // still considered to be immune from the quirk.
     has_text_children_ =
-        line_layout_item.Style()->Display() == EDisplay::kListItem;
+        line_layout_item.StyleRef().Display() == EDisplay::kListItem;
     has_text_descendants_ = has_text_children_;
   }
 

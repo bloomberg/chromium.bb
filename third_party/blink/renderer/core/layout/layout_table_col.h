@@ -68,10 +68,10 @@ class LayoutTableCol final : public LayoutTableBoxComponent {
 
   bool IsTableColumnGroupWithColumnChildren() { return FirstChild(); }
   bool IsTableColumn() const {
-    return Style()->Display() == EDisplay::kTableColumn;
+    return StyleRef().Display() == EDisplay::kTableColumn;
   }
   bool IsTableColumnGroup() const {
-    return Style()->Display() == EDisplay::kTableColumnGroup;
+    return StyleRef().Display() == EDisplay::kTableColumnGroup;
   }
 
   LayoutTableCol* EnclosingColumnGroup() const;

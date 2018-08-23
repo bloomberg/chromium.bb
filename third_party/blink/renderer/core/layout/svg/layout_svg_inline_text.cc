@@ -69,7 +69,7 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
   UpdateScaledFont();
 
   bool new_preserves =
-      Style() ? Style()->WhiteSpace() == EWhiteSpace::kPre : false;
+      Style() ? StyleRef().WhiteSpace() == EWhiteSpace::kPre : false;
   bool old_preserves =
       old_style ? old_style->WhiteSpace() == EWhiteSpace::kPre : false;
   if (old_preserves != new_preserves) {
