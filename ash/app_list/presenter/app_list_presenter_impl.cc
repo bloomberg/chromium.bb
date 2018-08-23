@@ -213,11 +213,12 @@ void AppListPresenterImpl::ProcessMouseWheelOffset(int y_scroll_offset) {
     view_->HandleScroll(y_scroll_offset, ui::ET_MOUSEWHEEL);
 }
 
-void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start) {
+void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start,
+                                                         bool animate) {
   if (ui::ScopedAnimationDurationScaleMode::duration_scale_mode() ==
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION) {
     // Start animation immediately in test.
-    StartOverviewModeAnimation(start);
+    StartOverviewModeAnimation(start, false);
     return;
   }
 
@@ -225,16 +226,19 @@ void AppListPresenterImpl::ScheduleOverviewModeAnimation(bool start) {
   start_animation_timer_.Start(
       FROM_HERE, start ? base::TimeDelta() : kOverViewEndAnimationDelay,
       base::BindOnce(&AppListPresenterImpl::StartOverviewModeAnimation,
-                     base::Unretained(this), start));
+                     base::Unretained(this), start, animate));
 }
 
-void AppListPresenterImpl::StartOverviewModeAnimation(bool start) {
+void AppListPresenterImpl::StartOverviewModeAnimation(bool start,
+                                                      bool animate) {
   if (!GetTargetVisibility())
     return;
 
   // Calculate the source and target parameters used in the animation.
   gfx::Transform transform;
   transform.Translate(0, kOverViewAnimationYOffset);
+  const base::TimeDelta duration =
+      animate ? kOverViewAnimationDuration : base::TimeDelta();
   const gfx::Transform source_transform = start ? gfx::Transform() : transform;
   const gfx::Transform target_transform = start ? transform : gfx::Transform();
   const float source_opacity = start ? 1.0f : 0.0f;
@@ -250,7 +254,7 @@ void AppListPresenterImpl::StartOverviewModeAnimation(bool start) {
 
   {
     ui::ScopedLayerAnimationSettings animation(layer->GetAnimator());
-    animation.SetTransitionDuration(kOverViewAnimationDuration);
+    animation.SetTransitionDuration(duration);
     animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation.SetAnimationMetricsReporter(
         state_animation_metrics_reporter_.get());
@@ -267,7 +271,7 @@ void AppListPresenterImpl::StartOverviewModeAnimation(bool start) {
 
   {
     ui::ScopedLayerAnimationSettings animation(search_box_layer->GetAnimator());
-    animation.SetTransitionDuration(kOverViewAnimationDuration);
+    animation.SetTransitionDuration(duration);
     animation.SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     animation.SetAnimationMetricsReporter(
         state_animation_metrics_reporter_.get());

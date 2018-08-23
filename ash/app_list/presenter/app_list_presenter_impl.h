@@ -85,11 +85,13 @@ class APP_LIST_PRESENTER_EXPORT AppListPresenterImpl
   // Passes a MouseWheelEvent from the shelf to the AppListView.
   void ProcessMouseWheelOffset(int y_scroll_offset);
 
-  // Schedules animation for app list when overview mode starts or ends.
-  void ScheduleOverviewModeAnimation(bool start);
+  // Schedules animation for app list when overview mode starts or ends. The
+  // animation duration will be set to 0 if |animate| is false.
+  void ScheduleOverviewModeAnimation(bool start, bool animate);
 
   // Immediately start animation for app list when overview mode starts or ends.
-  void StartOverviewModeAnimation(bool start);
+  // The animation duration will be set to 0 if |animate| is false.
+  void StartOverviewModeAnimation(bool start, bool animate);
 
  private:
   // Sets the app list view and attempts to show it.

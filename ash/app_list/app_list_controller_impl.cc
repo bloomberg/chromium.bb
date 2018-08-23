@@ -24,6 +24,7 @@
 #include "ash/shell.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
+#include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -498,14 +499,27 @@ void AppListControllerImpl::OnOverviewModeStarting() {
     DismissAppList();
     return;
   }
-  presenter_.ScheduleOverviewModeAnimation(true /* start */);
+
+  // Only animate the app list when overview mode is using slide animation.
+  presenter_.ScheduleOverviewModeAnimation(
+      true /* start */, Shell::Get()
+                            ->window_selector_controller()
+                            ->window_selector()
+                            ->use_slide_animation() /* animate */);
 }
 
 void AppListControllerImpl::OnOverviewModeEnding() {
   in_overview_mode_ = false;
 
-  if (IsHomeLauncherEnabledInTabletMode())
-    presenter_.ScheduleOverviewModeAnimation(false /* start */);
+  if (!IsHomeLauncherEnabledInTabletMode())
+    return;
+
+  // Only animate the app list when overview mode is using slide animation.
+  presenter_.ScheduleOverviewModeAnimation(
+      false /* start */, Shell::Get()
+                             ->window_selector_controller()
+                             ->window_selector()
+                             ->use_slide_animation() /* animate */);
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
