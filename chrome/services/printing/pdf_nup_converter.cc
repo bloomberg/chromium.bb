@@ -9,6 +9,7 @@
 
 #include "base/containers/span.h"
 #include "base/logging.h"
+#include "base/memory/free_deleter.h"
 #include "components/crash/core/common/crash_key.h"
 #include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "pdf/pdf.h"
@@ -36,6 +37,25 @@ std::vector<base::span<const uint8_t>> CreatePdfPagesVector(
   return pdf_page_span;
 }
 
+using ScopedMallocMemory = std::unique_ptr<void, base::FreeDeleter>;
+
+template <class Callback>
+void RunCallbackWithConversionResult(Callback callback,
+                                     ScopedMallocMemory buffer,
+                                     size_t size) {
+  base::MappedReadOnlyRegion region_mapping =
+      mojo::CreateReadOnlySharedMemoryRegion(size);
+  if (!region_mapping.IsValid()) {
+    std::move(callback).Run(mojom::PdfNupConverter::Status::HANDLE_MAP_ERROR,
+                            std::move(region_mapping.region));
+    return;
+  }
+
+  memcpy(region_mapping.mapping.memory(), buffer.get(), size);
+  std::move(callback).Run(mojom::PdfNupConverter::Status::SUCCESS,
+                          std::move(region_mapping.region));
+}
+
 }  // namespace
 
 PdfNupConverter::PdfNupConverter(
@@ -55,22 +75,17 @@ void PdfNupConverter::NupPageConvert(
 
   void* output_pdf_buffer = nullptr;
   size_t output_pdf_buffer_size = 0;
-  base::MappedReadOnlyRegion region_mapping;
   if (!chrome_pdf::ConvertPdfPagesToNupPdf(
           std::move(input_pdf_buffers), pages_per_sheet, page_size.width(),
           page_size.height(), &output_pdf_buffer, &output_pdf_buffer_size)) {
     std::move(callback).Run(mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
-                            std::move(region_mapping.region));
+                            base::ReadOnlySharedMemoryRegion());
     return;
   }
 
-  region_mapping =
-      mojo::CreateReadOnlySharedMemoryRegion(output_pdf_buffer_size);
-  memcpy(region_mapping.mapping.memory(), output_pdf_buffer,
-         output_pdf_buffer_size);
-  free(output_pdf_buffer);
-  std::move(callback).Run(mojom::PdfNupConverter::Status::SUCCESS,
-                          std::move(region_mapping.region));
+  RunCallbackWithConversionResult(std::move(callback),
+                                  ScopedMallocMemory(output_pdf_buffer),
+                                  output_pdf_buffer_size);
 }
 
 void PdfNupConverter::NupDocumentConvert(
@@ -84,22 +99,17 @@ void PdfNupConverter::NupDocumentConvert(
       pdf_document_mapping.size());
   void* output_pdf_buffer = nullptr;
   size_t output_pdf_buffer_size = 0;
-  base::MappedReadOnlyRegion region_mapping;
   if (!chrome_pdf::ConvertPdfDocumentToNupPdf(
           input_pdf_buffer, pages_per_sheet, page_size.width(),
           page_size.height(), &output_pdf_buffer, &output_pdf_buffer_size)) {
     std::move(callback).Run(mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
-                            std::move(region_mapping.region));
+                            base::ReadOnlySharedMemoryRegion());
     return;
   }
 
-  region_mapping =
-      mojo::CreateReadOnlySharedMemoryRegion(output_pdf_buffer_size);
-  memcpy(region_mapping.mapping.memory(), output_pdf_buffer,
-         output_pdf_buffer_size);
-  free(output_pdf_buffer);
-  std::move(callback).Run(mojom::PdfNupConverter::Status::SUCCESS,
-                          std::move(region_mapping.region));
+  RunCallbackWithConversionResult(std::move(callback),
+                                  ScopedMallocMemory(output_pdf_buffer),
+                                  output_pdf_buffer_size);
 }
 
 void PdfNupConverter::SetWebContentsURL(const GURL& url) {

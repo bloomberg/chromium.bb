@@ -26,6 +26,7 @@ interface PdfNupConverter {
   enum Status {
     SUCCESS = 0,
     CONVERSION_FAILURE = 1,
+    HANDLE_MAP_ERROR = 2,
   };
 
   // Convert a list of PDF pages to a N-up PDF.
