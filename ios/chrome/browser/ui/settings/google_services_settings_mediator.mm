@@ -6,6 +6,7 @@
 
 #include "base/auto_reset.h"
 #include "base/mac/foundation_util.h"
+#include "components/autofill/core/common/autofill_prefs.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics/metrics_pref_names.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
@@ -66,6 +67,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   SyncAutofillItemType,
   SyncSettingsItemType,
   SyncReadingListItemType,
+  AutocompleteWalletItemType,
   SyncActivityAndInteractionsItemType,
   SyncGoogleActivityControlsItemType,
   EncryptionItemType,
@@ -99,6 +101,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @property(nonatomic, assign, readonly) BOOL isConsentGiven;
 // Sync setup service.
 @property(nonatomic, assign, readonly) SyncSetupService* syncSetupService;
+// Preference value for the autocomplete wallet feature.
+@property(nonatomic, strong, readonly)
+    PrefBackedBoolean* autocompleteWalletPreference;
 // Preference value for the "Autocomplete searches and URLs" feature.
 @property(nonatomic, strong, readonly)
     PrefBackedBoolean* autocompleteSearchPreference;
@@ -135,6 +140,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     SettingsCollapsibleItem* syncPersonalizationItem;
 // All the items for the personalized section.
 @property(nonatomic, strong, readonly) ItemArray personalizedItems;
+// Item for the autocomplete wallet feature.
+@property(nonatomic, strong, readonly) SyncSwitchItem* autocompleteWalletItem;
 // Collapsible item for the non-personalized section.
 @property(nonatomic, strong, readonly)
     SettingsCollapsibleItem* nonPersonalizedServicesItem;
@@ -149,6 +156,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize consumer = _consumer;
 @synthesize authService = _authService;
 @synthesize syncSetupService = _syncSetupService;
+@synthesize autocompleteWalletPreference = _autocompleteWalletPreference;
 @synthesize autocompleteSearchPreference = _autocompleteSearchPreference;
 @synthesize preloadPagesPreference = _preloadPagesPreference;
 @synthesize preloadPagesWifiOnlyPreference = _preloadPagesWifiOnlyPreference;
@@ -163,6 +171,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @synthesize syncEverythingItem = _syncEverythingItem;
 @synthesize syncPersonalizationItem = _syncPersonalizationItem;
 @synthesize personalizedItems = _personalizedItems;
+@synthesize autocompleteWalletItem = _autocompleteWalletItem;
 @synthesize nonPersonalizedServicesItem = _nonPersonalizedServicesItem;
 @synthesize nonPersonalizedItems = _nonPersonalizedItems;
 
@@ -189,21 +198,25 @@ initWithUserPrefService:(PrefService*)userPrefService
     prefChangeRegistrar_.Init(userPrefService);
     prefObserverBridge_->ObserveChangesForPreference(kUnifiedConsentGiven,
                                                      &prefChangeRegistrar_);
+    _autocompleteWalletPreference = [[PrefBackedBoolean alloc]
+        initWithPrefService:userPrefService
+                   prefName:autofill::prefs::kAutofillWalletImportEnabled];
+    _autocompleteWalletPreference.observer = self;
     _autocompleteSearchPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:prefs::kSearchSuggestEnabled];
-    [_autocompleteSearchPreference setObserver:self];
+    _autocompleteSearchPreference.observer = self;
     _preloadPagesPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:prefs::kNetworkPredictionEnabled];
-    [_preloadPagesPreference setObserver:self];
+    _preloadPagesPreference.observer = self;
     _preloadPagesWifiOnlyPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:userPrefService
                    prefName:prefs::kNetworkPredictionWifiOnly];
     _sendDataUsagePreference = [[PrefBackedBoolean alloc]
         initWithPrefService:localPrefService
                    prefName:metrics::prefs::kMetricsReportingEnabled];
-    [_sendDataUsagePreference setObserver:self];
+    _sendDataUsagePreference.observer = self;
     _sendDataUsageWifiOnlyPreference = [[PrefBackedBoolean alloc]
         initWithPrefService:localPrefService
                    prefName:prefs::kMetricsReportingWifiOnly];
@@ -211,7 +224,7 @@ initWithUserPrefService:(PrefService*)userPrefService
         initWithPrefService:userPrefService
                    prefName:unified_consent::prefs::
                                 kUrlKeyedAnonymizedDataCollectionEnabled];
-    [_anonymizedDataCollectionPreference setObserver:self];
+    _anonymizedDataCollectionPreference.observer = self;
   }
   return self;
 }
@@ -379,11 +392,25 @@ initWithUserPrefService:(PrefService*)userPrefService
     _personalizedItems = @[
       syncBookmarksItem, syncHistoryItem, syncPasswordsItem, syncOpenTabsItem,
       syncAutofillItem, syncSettingsItem, syncReadingListItem,
-      syncActivityAndInteractionsItem, syncGoogleActivityControlsItem,
-      encryptionItem, manageSyncedDataItem
+      self.autocompleteWalletItem, syncActivityAndInteractionsItem,
+      syncGoogleActivityControlsItem, encryptionItem, manageSyncedDataItem
     ];
   }
   return _personalizedItems;
+}
+
+- (SyncSwitchItem*)autocompleteWalletItem {
+  if (!_autocompleteWalletItem) {
+    _autocompleteWalletItem = [self
+        switchItemWithItemType:AutocompleteWalletItemType
+                  textStringID:
+                      IDS_IOS_GOOGLE_SERVICES_SETTINGS_AUTOCOMPLETE_WALLET
+                detailStringID:0
+                     commandID:
+                         GoogleServicesSettingsCommandIDAutocompleteWalletService
+                      dataType:0];
+  }
+  return _autocompleteWalletItem;
 }
 
 - (SettingsCollapsibleItem*)nonPersonalizedServicesItem {
@@ -497,6 +524,14 @@ textItemWithItemType:(NSInteger)itemType
   [self updateSectionWithCollapsibleItem:self.syncPersonalizationItem
                                    items:self.personalizedItems
                                  enabled:enabled];
+  syncer::ModelType autofillModelType =
+      _syncSetupService->GetModelType(SyncSetupService::kSyncAutofill);
+  BOOL isAutofillOn = _syncSetupService->IsDataTypePreferred(autofillModelType);
+  self.autocompleteWalletItem.enabled = enabled && isAutofillOn;
+  if (!isAutofillOn) {
+    // Autocomplete wallet item should be disabled when autofill is off.
+    self.autocompleteWalletItem.on = false;
+  }
 }
 
 // Updates the non-personalized section according to the user consent.
@@ -528,6 +563,9 @@ textItemWithItemType:(NSInteger)itemType
           switchItem.on = self.syncSetupService->IsDataTypePreferred(modelType);
           break;
         }
+        case GoogleServicesSettingsCommandIDAutocompleteWalletService:
+          switchItem.on = self.autocompleteWalletPreference.value;
+          break;
         case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
           switchItem.on = self.autocompleteSearchPreference.value;
           break;
@@ -586,6 +624,10 @@ textItemWithItemType:(NSInteger)itemType
       static_cast<SyncSetupService::SyncableDatatype>(dataTypeInt);
   syncer::ModelType modelType = self.syncSetupService->GetModelType(dataType);
   self.syncSetupService->SetDataTypeEnabled(modelType, value);
+}
+
+- (void)toggleAutocompleteWalletServiceWithValue:(BOOL)value {
+  self.autocompleteWalletPreference.value = value;
 }
 
 - (void)toggleAutocompleteSearchesServiceWithValue:(BOOL)value {
@@ -653,10 +695,15 @@ textItemWithItemType:(NSInteger)itemType
 - (void)onSyncStateChanged {
   [self updatePersonalizedSection];
   if (!self.personalizedSectionBeingAnimated) {
+    CollectionViewModel* model = self.consumer.collectionViewModel;
     NSMutableIndexSet* sectionIndexToReload = [NSMutableIndexSet indexSet];
-    [sectionIndexToReload
-        addIndex:PersonalizedSectionIdentifier - kSectionIdentifierEnumZero];
+    [sectionIndexToReload addIndex:[model sectionForSectionIdentifier:
+                                              PersonalizedSectionIdentifier]];
     [self.consumer reloadSections:sectionIndexToReload];
+  } else {
+    // Needs to reload only the autocomplete wallet item (which is part of the
+    // personalized section), if the autofill feature changed state.
+    [self.consumer reloadItem:self.autocompleteWalletItem];
   }
 }
 

@@ -110,6 +110,9 @@ constexpr NSInteger kSectionOffset = 1000;
       [self.serviceDelegate toggleSyncDataSync:syncSwitchItem.dataType
                                      withValue:isOn];
       break;
+    case GoogleServicesSettingsCommandIDAutocompleteWalletService:
+      [self.serviceDelegate toggleAutocompleteWalletServiceWithValue:isOn];
+      break;
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
       [self.serviceDelegate toggleAutocompleteSearchesServiceWithValue:isOn];
       break;
@@ -150,6 +153,11 @@ constexpr NSInteger kSectionOffset = 1000;
 
 - (void)reloadSections:(NSIndexSet*)sections {
   [self.collectionView reloadSections:sections];
+}
+
+- (void)reloadItem:(CollectionViewItem*)item {
+  NSIndexPath* indexPath = [self.collectionViewModel indexPathForItem:item];
+  [self.collectionView reloadItemsAtIndexPaths:@[ indexPath ]];
 }
 
 #pragma mark - CollectionViewController
@@ -235,6 +243,7 @@ constexpr NSInteger kSectionOffset = 1000;
     case GoogleServicesSettingsCommandIDNoOp:
     case GoogleServicesSettingsCommandIDToggleSyncEverything:
     case GoogleServicesSettingsCommandIDToggleDataTypeSync:
+    case GoogleServicesSettingsCommandIDAutocompleteWalletService:
     case GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService:
     case GoogleServicesSettingsCommandIDTogglePreloadPagesService:
     case GoogleServicesSettingsCommandIDToggleImproveChromeService:
