@@ -30,22 +30,13 @@
 
 namespace content {
 
-namespace {
+AppCacheInfoCollection::AppCacheInfoCollection() = default;
 
-void DeferredCallback(OnceCompletionCallback callback, int rv) {
-  std::move(callback).Run(rv);
-}
-
-}  // namespace
-
-AppCacheInfoCollection::AppCacheInfoCollection() {}
-
-AppCacheInfoCollection::~AppCacheInfoCollection() {}
+AppCacheInfoCollection::~AppCacheInfoCollection() = default;
 
 // AsyncHelper -------
 
-class AppCacheServiceImpl::AsyncHelper
-    : public AppCacheStorage::Delegate {
+class AppCacheServiceImpl::AsyncHelper : public AppCacheStorage::Delegate {
  public:
   AsyncHelper(AppCacheServiceImpl* service, OnceCompletionCallback callback)
       : service_(service), callback_(std::move(callback)) {
@@ -64,13 +55,12 @@ class AppCacheServiceImpl::AsyncHelper
 
  protected:
   void CallCallback(int rv) {
-    if (!callback_.is_null()) {
+    if (callback_) {
       // Defer to guarantee async completion.
       base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&DeferredCallback, std::move(callback_), rv));
+          FROM_HERE, base::BindOnce(std::move(callback_), rv));
     }
-    callback_.Reset();
+    DCHECK(!callback_);
   }
 
   AppCacheServiceImpl* service_;
@@ -442,9 +432,9 @@ void AppCacheServiceImpl::ScheduleReinitialize() {
   // leave the appcache disabled for an indefinite period of time. Some
   // users never shutdown the browser.
 
-  const base::TimeDelta kZeroDelta;
-  const base::TimeDelta kOneHour(base::TimeDelta::FromHours(1));
-  const base::TimeDelta k30Seconds(base::TimeDelta::FromSeconds(30));
+  constexpr base::TimeDelta kZeroDelta;
+  constexpr base::TimeDelta kOneHour = base::TimeDelta::FromHours(1);
+  constexpr base::TimeDelta kThirtySeconds = base::TimeDelta::FromSeconds(30);
 
   // If the system managed to stay up for long enough, reset the
   // delay so a new failure won't incur a long wait to get going again.
@@ -456,7 +446,7 @@ void AppCacheServiceImpl::ScheduleReinitialize() {
                       this, &AppCacheServiceImpl::Reinitialize);
 
   // Adjust the delay for next time.
-  base::TimeDelta increment = std::max(k30Seconds, next_reinit_delay_);
+  base::TimeDelta increment = std::max(kThirtySeconds, next_reinit_delay_);
   next_reinit_delay_ = std::min(next_reinit_delay_ + increment,  kOneHour);
 }
 
@@ -514,8 +504,7 @@ void AppCacheServiceImpl::set_special_storage_policy(
 void AppCacheServiceImpl::RegisterBackend(
     AppCacheBackendImpl* backend_impl) {
   DCHECK(backends_.find(backend_impl->process_id()) == backends_.end());
-  backends_.insert(
-      BackendMap::value_type(backend_impl->process_id(), backend_impl));
+  backends_.insert({backend_impl->process_id(), backend_impl});
 }
 
 void AppCacheServiceImpl::UnregisterBackend(

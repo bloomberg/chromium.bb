@@ -65,8 +65,7 @@ class CONTENT_EXPORT AppCacheStorageReference
 // Class that manages the application cache service. Sends notifications
 // to many frontends.  One instance per user-profile. Each instance has
 // exclusive access to its cache_directory on disk.
-class CONTENT_EXPORT AppCacheServiceImpl
-    : public AppCacheService {
+class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
  public:
 
   class CONTENT_EXPORT Observer {
@@ -154,8 +153,8 @@ class CONTENT_EXPORT AppCacheServiceImpl
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
   virtual void UnregisterBackend(AppCacheBackendImpl* backend_impl);
   AppCacheBackendImpl* GetBackend(int id) const {
-    BackendMap::const_iterator it = backends_.find(id);
-    return (it != backends_.end()) ? it->second : NULL;
+    auto it = backends_.find(id);
+    return (it != backends_.end()) ? it->second : nullptr;
   }
 
   AppCacheStorage* storage() const { return storage_.get(); }
@@ -192,10 +191,6 @@ class CONTENT_EXPORT AppCacheServiceImpl
   class GetInfoHelper;
   class CheckResponseHelper;
 
-  using PendingAsyncHelpers =
-      std::map<AsyncHelper*, std::unique_ptr<AsyncHelper>>;
-  using BackendMap = std::map<int, AppCacheBackendImpl*>;
-
   void Reinitialize();
 
   base::FilePath cache_directory_;
@@ -205,8 +200,9 @@ class CONTENT_EXPORT AppCacheServiceImpl
   std::unique_ptr<AppCacheStorage> storage_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
-  PendingAsyncHelpers pending_helpers_;
-  BackendMap backends_;  // One 'backend' per child process.
+  std::map<AsyncHelper*, std::unique_ptr<AsyncHelper>> pending_helpers_;
+  // One 'backend' per child process.
+  std::map<int, AppCacheBackendImpl*> backends_;
   // Context for use during cache updates.
   net::URLRequestContext* request_context_;
   // If true, nothing (not even session-only data) should be deleted on exit.
