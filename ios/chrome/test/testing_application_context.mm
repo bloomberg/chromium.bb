@@ -179,9 +179,3 @@ TestingApplicationContext::GetComponentUpdateService() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return nullptr;
 }
-
-network::NetworkConnectionTracker*
-TestingApplicationContext::GetNetworkConnectionTracker() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  return nullptr;
-}

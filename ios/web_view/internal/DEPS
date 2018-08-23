@@ -34,7 +34,6 @@ include_rules = [
   "+ios/web_view",
   "+net",
   "+services/identity/public/cpp",
-  "+services/network/network_change_manager.h",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+third_party/ocmock",
