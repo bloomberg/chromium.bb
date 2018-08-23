@@ -150,7 +150,7 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
                    const ResourceLoaderOptions& options) const override {
     return new ImageResource(request, options,
                              ImageResourceContent::CreateNotStarted(),
-                             fetch_params_->GetPlaceholderImageRequestType() ==
+                             fetch_params_->GetImageRequestOptimization() ==
                                  FetchParameters::kAllowPlaceholder);
   }
 
@@ -181,7 +181,7 @@ bool ImageResource::CanReuse(
     scoped_refptr<const SecurityOrigin> new_source_origin) const {
   // If the image is a placeholder, but this fetch doesn't allow a
   // placeholder, then do not reuse this resource.
-  if (params.GetPlaceholderImageRequestType() !=
+  if (params.GetImageRequestOptimization() !=
           FetchParameters::kAllowPlaceholder &&
       placeholder_option_ != PlaceholderOption::kDoNotReloadPlaceholder)
     return false;

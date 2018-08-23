@@ -47,7 +47,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesSpecifiedRequestValue) {
       new TestLocalFrameClient(WebURLRequest::kPreviewsOff));
   MaybeAllowImagePlaceholder(page_holder.get(), params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params1.GetPlaceholderImageRequestType());
+            params1.GetImageRequestOptimization());
 
   ResourceRequest request2;
   request2.SetURL(KURL("https://secure.com"));
@@ -57,8 +57,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesSpecifiedRequestValue) {
       IntSize(800, 600), nullptr,
       new TestLocalFrameClient(WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder2.get(), params2);
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            params2.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone, params2.GetImageRequestOptimization());
 }
 
 TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
@@ -71,7 +70,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
       new TestLocalFrameClient(WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder.get(), params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params1.GetPlaceholderImageRequestType());
+            params1.GetImageRequestOptimization());
   EXPECT_TRUE(page_holder->GetFrame().IsUsingDataSavingPreview());
 
   ResourceRequest request2;
@@ -82,8 +81,7 @@ TEST(LocalFrameTest, MaybeAllowPlaceholderImageUsesFramePreviewsState) {
       IntSize(800, 600), nullptr,
       new TestLocalFrameClient(WebURLRequest::kServerLitePageOn));
   MaybeAllowImagePlaceholder(page_holder2.get(), params2);
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            params2.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone, params2.GetImageRequestOptimization());
   EXPECT_FALSE(page_holder2->GetFrame().IsUsingDataSavingPreview());
 }
 
@@ -99,7 +97,7 @@ TEST(LocalFrameTest,
                                WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder.get(), params1);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params1.GetPlaceholderImageRequestType());
+            params1.GetImageRequestOptimization());
 
   ResourceRequest request2;
   request2.SetURL(KURL("http://insecure.com"));
@@ -110,8 +108,7 @@ TEST(LocalFrameTest,
       new TestLocalFrameClient(WebURLRequest::kServerLoFiOn |
                                WebURLRequest::kClientLoFiOn));
   MaybeAllowImagePlaceholder(page_holder2.get(), params2);
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            params2.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone, params2.GetImageRequestOptimization());
 }
 
 TEST(LocalFrameTest, IsUsingDataSavingPreview) {

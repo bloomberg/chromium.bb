@@ -50,7 +50,7 @@ class CSSImageSetValue : public CSSValueList {
   StyleImage* CacheImage(
       const Document&,
       float device_scale_factor,
-      FetchParameters::PlaceholderImageRequestType,
+      FetchParameters::ImageRequestOptimization,
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
   String CustomCSSText() const;
