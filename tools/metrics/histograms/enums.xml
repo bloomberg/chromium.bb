@@ -35496,34 +35496,44 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="OfflinePagesOfflineUsage">
-  <int value="0" label="Not used">Not used at all during whole day.</int>
-  <int value="1" label="Started, but no pages loaded successfully">
-    Started, but failed to successfully navigate.
+  <int value="0" label="Not used">
+    There was no attempt to perform a navigation in a day.
+  </int>
+  <int value="1" label="Navigation started, but no pages loaded successfully">
+    At least one navigation was started but none committed successfully in a
+    day.
   </int>
   <int value="2" label="Offline pages loaded only">
-    Only navigated to offline pages locally saved on the device.
+    Chrome navigations committed exclusively to locally saved offline pages in a
+    day.
   </int>
-  <int value="3" label="Online pages loaded only">Only navigated online.</int>
-  <int value="4" label="Both offlilne and online pages loaded">
-    Navigated to both online and offline pages.
+  <int value="3" label="Online pages loaded only">
+    Chrome navigations committed exclusively to online pages in a day.
+  </int>
+  <int value="4" label="Both offline and online pages loaded">
+    Chrome navigations committed to both online pages and locally saved offline
+    pages in a day.
   </int>
 </enum>
 
 <enum name="OfflinePagesPrefetchUsage">
-  <int value="0" label="Deprecated: Has prefetched pages">
+  <int value="0" label="Deprecated: Has prefetched offline pages">
     <obsolete>
-      Not useful enough to justify its reporting complexities.
+      This state was never reported.
     </obsolete>
-    Deprecated: Reported when Offline Model DB is loaded.
+    Deprecated: No prefetched offline pages were downloaded nor opened by the
+    user in a day but there are some available locally.
   </int>
-  <int value="1" label="Only fetched new pages">
-    Reported when at least one page was prefetched in a day, but none opened.
+  <int value="1" label="Only prefetched new offline pages">
+    Prefetched offline pages were downloaded in a day but none were opened by
+    the user.
   </int>
-  <int value="2" label="Only opened prefetched page">
-    User opened at least one prefetched page, but no new pages were prefetched.
+  <int value="2" label="Only opened prefetched offline pages">
+    The user opened prefetched offline pages in a day but no new ones were
+    downloaded.
   </int>
-  <int value="3" label="Both fetched and opened prefetched pages">
-    The pages were both prefetched and opened during the day.
+  <int value="3" label="Both prefetched and opened offline pages">
+    Prefetched offline pages were both downloaded a opened by the user in a day.
   </int>
 </enum>
 
