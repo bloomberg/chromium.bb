@@ -135,6 +135,15 @@ base::TimeDelta LitePagePreviewsSingleBypassDuration() {
       60 * 5));
 }
 
+std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes() {
+  const std::string csv = base::GetFieldTrialParamValueByFeature(
+      features::kLitePageServerPreviews, "blacklisted_path_suffixes");
+  if (csv == "")
+    return {};
+  return base::SplitString(csv, ",", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY);
+}
+
 int PreviewServerLoadshedMaxSeconds() {
   return base::GetFieldTrialParamByFeatureAsInt(
       features::kLitePageServerPreviews, "loadshed_max_seconds",
