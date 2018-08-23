@@ -77,6 +77,8 @@ class MockRenderMessageFilterImpl : public mojom::RenderMessageFilter {
     NOTREACHED();
   }
 
+  void ClearCodeCacheEntry(const GURL& url) override { NOTREACHED(); }
+
   void DidGenerateCacheableMetadataInCacheStorage(
       const GURL& url,
       base::Time expected_response_time,

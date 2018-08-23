@@ -467,6 +467,11 @@ void RendererBlinkPlatformImpl::FetchCachedCode(
       url, std::move(callback));
 }
 
+void RendererBlinkPlatformImpl::ClearCodeCacheEntry(const GURL& url) {
+  RenderThreadImpl::current()->render_message_filter()->ClearCodeCacheEntry(
+      url);
+}
+
 void RendererBlinkPlatformImpl::CacheMetadataInCacheStorage(
     const blink::WebURL& url,
     base::Time response_time,

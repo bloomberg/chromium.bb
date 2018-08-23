@@ -37,6 +37,8 @@ interface RenderMessageFilter {
   FetchCachedCode(url.mojom.Url url) => (mojo_base.mojom.Time response_time,
                                          array<uint8> data);
 
+  ClearCodeCacheEntry(url.mojom.Url url);
+
   // Requests that the browser cache |data| for the specified CacheStorage entry.
   DidGenerateCacheableMetadataInCacheStorage(
       url.mojom.Url url, mojo_base.mojom.Time expected_response_time,
