@@ -715,6 +715,7 @@ def _git_checkout(sln, sln_dir, revisions, refs, git_cache_dir, cleanup_dir):
         _git_disable_gc(sln_dir)
         git('remote', 'set-url', 'origin', mirror_dir, cwd=sln_dir)
         git('fetch', 'origin', cwd=sln_dir)
+      git('remote', 'set-url', '--push', 'origin', url, cwd=sln_dir)
       for ref in refs:
         refspec = '%s:%s' % (ref, ref.lstrip('+'))
         git('fetch', 'origin', refspec, cwd=sln_dir)
