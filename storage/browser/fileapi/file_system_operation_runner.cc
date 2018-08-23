@@ -689,6 +689,11 @@ FileSystemOperationRunner::BeginOperation(
     base::WeakPtr<BeginOperationScoper> scope) {
   OperationHandle handle;
   handle.id = next_operation_id_++;
+
+  // TODO(https://crbug.com/864351): Diagnostic to determine whether OperationID
+  // wrap-around is occurring in the wild.
+  DCHECK(operations_.find(handle.id) == operations_.end());
+
   operations_.emplace(handle.id, std::move(operation));
   handle.scope = scope;
   return handle;
