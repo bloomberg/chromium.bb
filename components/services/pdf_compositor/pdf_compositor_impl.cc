@@ -14,6 +14,7 @@
 #include "components/crash/core/common/crash_key.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_types.h"
 #include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "printing/common/metafile_utils.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -226,7 +227,7 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
   doc->close();
 
   base::MappedReadOnlyRegion region_mapping =
-      CreateReadOnlySharedMemoryRegion(wstream.bytesWritten());
+      mojo::CreateReadOnlySharedMemoryRegion(wstream.bytesWritten());
   if (!region_mapping.IsValid()) {
     DLOG(ERROR) << "CompositeToPdf: Cannot create new shared memory region.";
     return mojom::PdfCompositor::Status::HANDLE_MAP_ERROR;

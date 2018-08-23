@@ -10,7 +10,7 @@
 #include "base/containers/span.h"
 #include "base/logging.h"
 #include "components/crash/core/common/crash_key.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "pdf/pdf.h"
 
 namespace printing {
@@ -64,7 +64,8 @@ void PdfNupConverter::NupPageConvert(
     return;
   }
 
-  region_mapping = CreateReadOnlySharedMemoryRegion(output_pdf_buffer_size);
+  region_mapping =
+      mojo::CreateReadOnlySharedMemoryRegion(output_pdf_buffer_size);
   memcpy(region_mapping.mapping.memory(), output_pdf_buffer,
          output_pdf_buffer_size);
   free(output_pdf_buffer);
@@ -92,7 +93,8 @@ void PdfNupConverter::NupDocumentConvert(
     return;
   }
 
-  region_mapping = CreateReadOnlySharedMemoryRegion(output_pdf_buffer_size);
+  region_mapping =
+      mojo::CreateReadOnlySharedMemoryRegion(output_pdf_buffer_size);
   memcpy(region_mapping.mapping.memory(), output_pdf_buffer,
          output_pdf_buffer_size);
   free(output_pdf_buffer);

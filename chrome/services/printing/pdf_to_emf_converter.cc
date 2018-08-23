@@ -11,7 +11,7 @@
 #include "base/containers/span.h"
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "pdf/pdf.h"
 #include "printing/emf_win.h"
 #include "ui/gfx/gdi_util.h"
@@ -170,7 +170,7 @@ base::ReadOnlySharedMemoryRegion PdfToEmfConverter::RenderPdfPageToMetafile(
 
   const uint32_t size = metafile.GetDataSize();
   base::MappedReadOnlyRegion region_mapping =
-      CreateReadOnlySharedMemoryRegion(size);
+      mojo::CreateReadOnlySharedMemoryRegion(size);
   if (!region_mapping.IsValid())
     return invalid_emf_region;
 
