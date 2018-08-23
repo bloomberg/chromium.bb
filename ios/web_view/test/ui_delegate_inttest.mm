@@ -25,16 +25,20 @@ namespace ios_web_view {
 // Tests CWVUIDelegate.
 class UIDelegateTest : public ios_web_view::WebViewInttestBase {
  public:
-  void SetUp() override {
-    mock_delegate_ = OCMProtocolMock(@protocol(CWVUIDelegate));
+  UIDelegateTest() : mock_delegate_(OCMProtocolMock(@protocol(CWVUIDelegate))) {
     web_view_.UIDelegate = mock_delegate_;
+  }
 
+  void SetUp() override {
+    ios_web_view::WebViewInttestBase::SetUp();
     ASSERT_TRUE(test_server_->Start());
-    url_ = net::NSURLWithGURL(GetUrlForPageWithTitleAndBody("Title", "Body"));
+  }
+
+  NSURL* GetEchoURL() {
+    return net::NSURLWithGURL(test_server_->GetURL("/echo"));
   }
 
   id<CWVUIDelegate> mock_delegate_;
-  NSURL* url_;
 };
 
 // Tests -webView:createWebViewWithConfiguration:forNavigationAction:
@@ -48,7 +52,7 @@ TEST_F(UIDelegateTest, CreateWebView) {
       createWebViewWithConfiguration:web_view_.configuration
                  forNavigationAction:expected_navigation_action]);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetEchoURL()));
   NSError* error = nil;
   EXPECT_NE(nil, test::EvaluateJavaScript(
                      web_view_, @"open('http://example.com/')", &error));
@@ -67,10 +71,10 @@ TEST_F(UIDelegateTest, RunJavaScriptAlertPanel) {
 
   OCMExpect([mock_delegate_ webView:web_view_
       runJavaScriptAlertPanelWithMessage:@"message"
-                                 pageURL:url_
+                                 pageURL:GetEchoURL()
                        completionHandler:mock_completion_handler]);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetEchoURL()));
   NSError* error = nil;
   test::EvaluateJavaScript(web_view_, @"alert('message')", &error);
   EXPECT_EQ(nil, error);
@@ -89,10 +93,10 @@ TEST_F(UIDelegateTest, RunJavaScriptConfirmPanel) {
 
   OCMExpect([mock_delegate_ webView:web_view_
       runJavaScriptConfirmPanelWithMessage:@"message"
-                                   pageURL:url_
+                                   pageURL:GetEchoURL()
                          completionHandler:mock_completion_handler]);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetEchoURL()));
   NSError* error = nil;
   EXPECT_NSEQ(@(YES), test::EvaluateJavaScript(web_view_, @"confirm('message')",
                                                &error));
@@ -113,10 +117,10 @@ TEST_F(UIDelegateTest, RunJavaScriptTextInputPanel) {
   OCMExpect([mock_delegate_ webView:web_view_
       runJavaScriptTextInputPanelWithPrompt:@"prompt"
                                 defaultText:@"default"
-                                    pageURL:url_
+                                    pageURL:GetEchoURL()
                           completionHandler:mock_completion_handler]);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetEchoURL()));
   NSError* error = nil;
   EXPECT_NSEQ(@"input", test::EvaluateJavaScript(
                             web_view_, @"prompt('prompt', 'default')", &error));

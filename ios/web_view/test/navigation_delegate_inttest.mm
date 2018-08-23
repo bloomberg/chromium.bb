@@ -22,15 +22,24 @@ namespace ios_web_view {
 // Tests CWVNavigationDelegate.
 class NavigationDelegateTest : public ios_web_view::WebViewInttestBase {
  public:
-  void SetUp() override {
-    ASSERT_TRUE(test_server_->Start());
-    url_with_content_ =
-        net::NSURLWithGURL(GetUrlForPageWithTitleAndBody("Title", "Body"));
-    url_with_error_ = net::NSURLWithGURL(test_server_->GetURL("/close-socket"));
-
-    mock_delegate_ = OCMStrictProtocolMock(@protocol(CWVNavigationDelegate));
+  NavigationDelegateTest()
+      : mock_delegate_(
+            OCMStrictProtocolMock(@protocol(CWVNavigationDelegate))) {
     [(id)mock_delegate_ setExpectationOrderMatters:YES];
     web_view_.navigationDelegate = mock_delegate_;
+  }
+
+  void SetUp() override {
+    ios_web_view::WebViewInttestBase::SetUp();
+    ASSERT_TRUE(test_server_->Start());
+  }
+
+  NSURL* GetEchoURL() {
+    return net::NSURLWithGURL(test_server_->GetURL("/echo"));
+  }
+
+  NSURL* GetCloseSocketURL() {
+    return net::NSURLWithGURL(test_server_->GetURL("/close-socket"));
   }
 
   id ArgWithURL(NSURL* url) {
@@ -39,8 +48,6 @@ class NavigationDelegateTest : public ios_web_view::WebViewInttestBase {
     }];
   }
 
-  NSURL* url_with_content_;
-  NSURL* url_with_error_;
   id<CWVNavigationDelegate> mock_delegate_;
 };
 
@@ -48,25 +55,25 @@ class NavigationDelegateTest : public ios_web_view::WebViewInttestBase {
 TEST_F(NavigationDelegateTest, RequestSucceeds) {
   // A request made with -loadRequest: has type CWVNavigationTypeClientRedirect.
   OCMExpect([mock_delegate_ webView:web_view_
-                shouldStartLoadWithRequest:ArgWithURL(url_with_content_)
+                shouldStartLoadWithRequest:ArgWithURL(GetEchoURL())
                             navigationType:CWVNavigationTypeClientRedirect])
       .andReturn(YES);
   OCMExpect([mock_delegate_ webViewDidStartProvisionalNavigation:web_view_]);
   OCMExpect([mock_delegate_ webView:web_view_
-                shouldContinueLoadWithResponse:ArgWithURL(url_with_content_)
+                shouldContinueLoadWithResponse:ArgWithURL(GetEchoURL())
                                   forMainFrame:YES])
       .andReturn(YES);
   OCMExpect([mock_delegate_ webViewDidCommitNavigation:web_view_]);
   OCMExpect([mock_delegate_ webViewDidFinishNavigation:web_view_]);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_with_content_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetEchoURL()));
   [(id)mock_delegate_ verify];
 }
 
 // Tests that expected delegate methods are called for a failed request.
 TEST_F(NavigationDelegateTest, RequestFails) {
   OCMExpect([mock_delegate_ webView:web_view_
-                shouldStartLoadWithRequest:ArgWithURL(url_with_error_)
+                shouldStartLoadWithRequest:ArgWithURL(GetCloseSocketURL())
                             navigationType:CWVNavigationTypeClientRedirect])
       .andReturn(YES);
   OCMExpect([mock_delegate_ webViewDidStartProvisionalNavigation:web_view_]);
@@ -76,7 +83,7 @@ TEST_F(NavigationDelegateTest, RequestFails) {
   // -webViewDidCommitNavigation: is called one more time for failures.
   OCMExpect([mock_delegate_ webViewDidCommitNavigation:web_view_]);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_with_error_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetCloseSocketURL()));
   [(id)mock_delegate_ verify];
 }
 
@@ -84,11 +91,11 @@ TEST_F(NavigationDelegateTest, RequestFails) {
 // when -shouldStartLoadWithRequest:navigationType: returns NO.
 TEST_F(NavigationDelegateTest, CancelRequest) {
   OCMExpect([mock_delegate_ webView:web_view_
-                shouldStartLoadWithRequest:ArgWithURL(url_with_content_)
+                shouldStartLoadWithRequest:ArgWithURL(GetEchoURL())
                             navigationType:CWVNavigationTypeClientRedirect])
       .andReturn(NO);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_with_content_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetEchoURL()));
   [(id)mock_delegate_ verify];
 }
 
@@ -96,16 +103,16 @@ TEST_F(NavigationDelegateTest, CancelRequest) {
 // when -shouldContinueLoadWithResponse:forMainFrame: returns NO.
 TEST_F(NavigationDelegateTest, CancelResponse) {
   OCMExpect([mock_delegate_ webView:web_view_
-                shouldStartLoadWithRequest:ArgWithURL(url_with_content_)
+                shouldStartLoadWithRequest:ArgWithURL(GetEchoURL())
                             navigationType:CWVNavigationTypeClientRedirect])
       .andReturn(YES);
   OCMExpect([mock_delegate_ webViewDidStartProvisionalNavigation:web_view_]);
   OCMExpect([mock_delegate_ webView:web_view_
-                shouldContinueLoadWithResponse:ArgWithURL(url_with_content_)
+                shouldContinueLoadWithResponse:ArgWithURL(GetEchoURL())
                                   forMainFrame:YES])
       .andReturn(NO);
 
-  ASSERT_TRUE(test::LoadUrl(web_view_, url_with_content_));
+  ASSERT_TRUE(test::LoadUrl(web_view_, GetEchoURL()));
   [(id)mock_delegate_ verify];
 }
 
