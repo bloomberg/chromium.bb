@@ -723,7 +723,7 @@ public class WebappActivity extends SingleTabActivity {
 
                     updateToolbarCloseButtonVisibility();
 
-                    if (!scopePolicy().isUrlInScope(mWebappInfo, url)) {
+                    if (!WebappScopePolicy.isUrlInScope(scopePolicy(), mWebappInfo, url)) {
                         // Briefly show the toolbar for off-scope navigations.
                         getFullscreenManager()
                                 .getBrowserVisibilityDelegate()
@@ -785,8 +785,8 @@ public class WebappActivity extends SingleTabActivity {
         };
     }
 
-    public WebappScopePolicy scopePolicy() {
-        return isVerified() ? WebappScopePolicy.STRICT : WebappScopePolicy.LEGACY;
+    public @WebappScopePolicy.Type int scopePolicy() {
+        return isVerified() ? WebappScopePolicy.Type.STRICT : WebappScopePolicy.Type.LEGACY;
     }
 
     /**
@@ -850,8 +850,8 @@ public class WebappActivity extends SingleTabActivity {
         final int lastIndex = nc.getLastCommittedEntryIndex();
         int index = lastIndex;
         while (index > 0
-                && !scopePolicy().isUrlInScope(
-                           getWebappInfo(), nc.getEntryAtIndex(index).getUrl())) {
+                && !WebappScopePolicy.isUrlInScope(
+                           scopePolicy(), getWebappInfo(), nc.getEntryAtIndex(index).getUrl())) {
             index--;
         }
 
