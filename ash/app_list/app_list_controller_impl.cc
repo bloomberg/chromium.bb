@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/app_list/app_list_presenter_delegate_impl.h"
+#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/app_list_main_view.h"
@@ -70,6 +71,11 @@ AppListControllerImpl::AppListControllerImpl(
   Shell::Get()->wallpaper_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
   keyboard::KeyboardController::Get()->AddObserver(this);
+
+  if (IsHomeLauncherEnabledInTabletMode()) {
+    home_launcher_gesture_handler_ =
+        std::make_unique<HomeLauncherGestureHandler>();
+  }
 
   mojom::VoiceInteractionObserverPtr ptr;
   voice_interaction_binding_.Bind(mojo::MakeRequest(&ptr));
@@ -503,6 +509,13 @@ void AppListControllerImpl::OnOverviewModeEnding() {
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
+  // TODO(sammiequon): Find a better way to handle events that are not in tablet
+  // mode than controlling the lifetime fo this object.
+  if (is_home_launcher_enabled_) {
+    home_launcher_gesture_handler_ =
+        std::make_unique<HomeLauncherGestureHandler>();
+  }
+
   if (presenter_.GetTargetVisibility()) {
     DCHECK(IsVisible());
     presenter_.GetView()->OnTabletModeChanged(true);
@@ -523,6 +536,8 @@ void AppListControllerImpl::OnTabletModeStarted() {
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
+  home_launcher_gesture_handler_.reset();
+
   if (IsVisible())
     presenter_.GetView()->OnTabletModeChanged(false);
 
