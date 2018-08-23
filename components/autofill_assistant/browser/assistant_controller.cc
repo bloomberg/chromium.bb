@@ -33,7 +33,8 @@ AssistantController::AssistantController(
     std::unique_ptr<AssistantUiController> ui_controller)
     : content::WebContentsObserver(web_contents),
       assistant_ui_controller_(std::move(ui_controller)),
-      assistant_web_controller_(std::make_unique<AssistantWebController>()),
+      assistant_web_controller_(
+          AssistantWebController::CreateForWebContents(web_contents)),
       assistant_service_(std::make_unique<AssistantService>(
           web_contents->GetBrowserContext())) {
   assistant_ui_controller_->SetUiDelegate(this);

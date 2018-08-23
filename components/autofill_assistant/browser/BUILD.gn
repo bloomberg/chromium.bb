@@ -48,6 +48,7 @@ jumbo_static_library("browser") {
   deps = [
     ":proto",
     "//base",
+    "//components/autofill_assistant/browser/devtools",
     "//components/version_info",
     "//content/public/browser",
     "//google_apis",

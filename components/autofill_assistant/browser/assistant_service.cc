@@ -114,20 +114,20 @@ void AssistantService::GetNextAssistantActions(
 AssistantService::AssistantLoader::AssistantLoader() {}
 AssistantService::AssistantLoader::~AssistantLoader() {}
 
-std::unique_ptr<network::SimpleURLLoader>
+std::unique_ptr<::network::SimpleURLLoader>
 AssistantService::CreateAndStartLoader(const GURL& server_url,
                                        const std::string& request,
                                        AssistantLoader* loader) {
-  auto resource_request = std::make_unique<network::ResourceRequest>();
+  auto resource_request = std::make_unique<::network::ResourceRequest>();
   resource_request->url = server_url;
   resource_request->method = "POST";
   resource_request->fetch_redirect_mode =
-      network::mojom::FetchRedirectMode::kError;
+      ::network::mojom::FetchRedirectMode::kError;
   resource_request->load_flags =
       net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  std::unique_ptr<network::SimpleURLLoader> simple_loader =
-      network::SimpleURLLoader::Create(std::move(resource_request),
-                                       traffic_annotation);
+  std::unique_ptr<::network::SimpleURLLoader> simple_loader =
+      ::network::SimpleURLLoader::Create(std::move(resource_request),
+                                         traffic_annotation);
   simple_loader->AttachStringForUpload(request, "application/x-protobuffer");
   simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
       content::BrowserContext::GetDefaultStoragePartition(context_)
