@@ -190,6 +190,13 @@ class CONTENT_EXPORT CompositorImpl
   // returns an empty surface.
   viz::LocalSurfaceId GenerateLocalSurfaceId() const;
 
+  // Tears down the display for both Viz and non-Viz, unregistering the root
+  // frame sink ID in the process.
+  void TearDownDisplayAndUnregisterRootFrameSink();
+
+  // Registers the root frame sink ID.
+  void RegisterRootFrameSink();
+
   // Viz specific functions:
   void InitializeVizLayerTreeFrameSink(
       scoped_refptr<ui::ContextProviderCommandBuffer> context_provider);
