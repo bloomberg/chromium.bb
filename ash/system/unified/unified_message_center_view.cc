@@ -13,9 +13,11 @@
 #include "ui/gfx/canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/message_center/views/message_view_factory.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -33,7 +35,10 @@ const int kMaxVisibleNotifications = 100;
 
 }  // namespace
 
-StackingNotificationCounterView::StackingNotificationCounterView() = default;
+StackingNotificationCounterView::StackingNotificationCounterView() {
+  SetBorder(views::CreateSolidSidedBorder(
+      0, 0, 1, 0, kStackingNotificationCounterBorderColor));
+}
 
 StackingNotificationCounterView::~StackingNotificationCounterView() = default;
 
@@ -48,15 +53,25 @@ void StackingNotificationCounterView::OnPaint(gfx::Canvas* canvas) {
   const int y = kStackingNotificationCounterHeight / 2;
 
   cc::PaintFlags flags;
-  flags.setColor(kStackingNotificationCounterColor);
+  flags.setColor(message_center::kNotificationBackgroundColor);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setAntiAlias(true);
 
+  SkPath background_path;
+  SkScalar top_radius = SkIntToScalar(kUnifiedTrayCornerRadius);
+  SkScalar radii[8] = {top_radius, top_radius, top_radius, top_radius,
+                       0,          0,          0,          0};
+  background_path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), radii);
+  canvas->DrawPath(background_path, flags);
+
+  flags.setColor(kStackingNotificationCounterColor);
   for (int i = 0; i < stacking_count_; ++i) {
     canvas->DrawCircle(gfx::Point(x, y), kStackingNotificationCounterRadius,
                        flags);
     x += kStackingNotificationCounterDistanceX;
   }
+
+  views::View::OnPaint(canvas);
 }
 
 // UnifiedMessageCenterView
