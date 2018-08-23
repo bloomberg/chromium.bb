@@ -2530,15 +2530,13 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_COLLECT_RD_STATS
 
 static void model_rd_with_dnn(const AV1_COMP *const cpi, MACROBLOCK *const x,
-                              BLOCK_SIZE plane_bsize, int plane, int64_t *rsse,
+                              BLOCK_SIZE plane_bsize, int plane, int64_t sse,
                               int *rate, int64_t *dist) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int log_numpels = num_pels_log2_lookup[plane_bsize];
 
-  const struct macroblock_plane *const p = &x->plane[plane];
   int bw, bh;
-  const int diff_stride = block_size_wide[plane_bsize];
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
                      &bh);
   const int num_samples = bw * bh;
@@ -2546,15 +2544,15 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi, MACROBLOCK *const x,
       (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
   const int q_step = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
 
+  const struct macroblock_plane *const p = &x->plane[plane];
   const int src_stride = p->src.stride;
   const uint8_t *const src = p->src.buf;
   const int dst_stride = pd->dst.stride;
   const uint8_t *const dst = pd->dst.buf;
   const int16_t *const src_diff = p->src_diff;
+  const int diff_stride = block_size_wide[plane_bsize];
   const int shift = (xd->bd - 8);
-  int64_t sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
-  sse = ROUND_POWER_OF_TWO(sse, shift * 2);
-  if (rsse) *rsse = sse;
+
   const double sse_norm = (double)sse / num_samples;
 
   if (sse == 0) {
@@ -2644,13 +2642,21 @@ static void model_rd_for_sb_with_dnn(
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
-    int64_t sse;
+    int64_t dist, sse;
     int rate;
-    int64_t dist;
 
     if (x->skip_chroma_rd && plane) continue;
 
-    model_rd_with_dnn(cpi, x, plane_bsize, plane, &sse, &rate, &dist);
+    int bw, bh;
+    const struct macroblock_plane *const p = &x->plane[plane];
+    const int diff_stride = block_size_wide[plane_bsize];
+    const int shift = (xd->bd - 8);
+    get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
+                       &bw, &bh);
+    sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
+    sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+
+    model_rd_with_dnn(cpi, x, plane_bsize, plane, sse, &rate, &dist);
 
     if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
@@ -2674,24 +2680,18 @@ static void model_rd_for_sb_with_dnn(
 // log2(sse_norm + 1) and log2(sse_norm/qstep^2)
 static void model_rd_with_surffit(const AV1_COMP *const cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
-                                  int plane, int64_t *rsse, int *rate,
+                                  int plane, int64_t sse, int *rate,
                                   int64_t *dist) {
   (void)cpi;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const struct macroblock_plane *const p = &x->plane[plane];
   const int dequant_shift =
       (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
   const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
-  const int diff_stride = block_size_wide[plane_bsize];
   int bw, bh;
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
                      &bh);
   const int num_samples = bw * bh;
-  const int shift = (xd->bd - 8);
-  int64_t sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
-  sse = ROUND_POWER_OF_TWO(sse, shift * 2);
-  if (rsse) *rsse = sse;
   if (sse == 0) {
     if (rate) *rate = 0;
     if (dist) *dist = 0;
@@ -2743,13 +2743,21 @@ static void model_rd_for_sb_with_surffit(
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
-    int64_t sse;
+    int64_t dist, sse;
     int rate;
-    int64_t dist;
 
     if (x->skip_chroma_rd && plane) continue;
 
-    model_rd_with_surffit(cpi, x, plane_bsize, plane, &sse, &rate, &dist);
+    int bw, bh;
+    const struct macroblock_plane *const p = &x->plane[plane];
+    const int diff_stride = block_size_wide[plane_bsize];
+    const int shift = (xd->bd - 8);
+    get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
+                       &bw, &bh);
+    sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
+    sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+
+    model_rd_with_surffit(cpi, x, plane_bsize, plane, sse, &rate, &dist);
 
     if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
@@ -2773,26 +2781,19 @@ static void model_rd_for_sb_with_surffit(
 // log2(sse_norm/qstep^2)
 static void model_rd_with_curvfit(const AV1_COMP *const cpi,
                                   MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
-                                  int plane, int64_t *rsse, int *rate,
+                                  int plane, int64_t sse, int *rate,
                                   int64_t *dist) {
   (void)cpi;
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const struct macroblock_plane *const p = &x->plane[plane];
   const int dequant_shift =
       (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd - 5 : 3;
   const int qstep = AOMMAX(pd->dequant_Q3[1] >> dequant_shift, 1);
-  const int diff_stride = block_size_wide[plane_bsize];
   int bw, bh;
   get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL, &bw,
                      &bh);
-  bw = block_size_wide[plane_bsize];
-  bh = block_size_high[plane_bsize];
   const int num_samples = bw * bh;
-  const int shift = (xd->bd - 8);
-  int64_t sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
-  sse = ROUND_POWER_OF_TWO(sse, shift * 2);
-  if (rsse) *rsse = sse;
+
   if (sse == 0) {
     if (rate) *rate = 0;
     if (dist) *dist = 0;
@@ -2843,13 +2844,20 @@ static void model_rd_for_sb_with_curvfit(
     struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
-    int64_t sse;
+    int64_t dist, sse;
     int rate;
-    int64_t dist;
 
     if (x->skip_chroma_rd && plane) continue;
 
-    model_rd_with_curvfit(cpi, x, plane_bsize, plane, &sse, &rate, &dist);
+    int bw, bh;
+    const struct macroblock_plane *const p = &x->plane[plane];
+    const int diff_stride = block_size_wide[plane_bsize];
+    const int shift = (xd->bd - 8);
+    get_txb_dimensions(xd, plane, plane_bsize, 0, 0, plane_bsize, NULL, NULL,
+                       &bw, &bh);
+    sse = aom_sum_squares_2d_i16(p->src_diff, diff_stride, bw, bh);
+    sse = ROUND_POWER_OF_TWO(sse, shift * 2);
+    model_rd_with_curvfit(cpi, x, plane_bsize, plane, sse, &rate, &dist);
 
     if (plane == 0) x->pred_sse[ref] = (unsigned int)AOMMIN(sse, UINT_MAX);
 
