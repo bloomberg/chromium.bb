@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/test/fullscreen_model_test_util.h"
+#import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_mediator.h"
 #include "testing/platform_test.h"
@@ -17,13 +18,14 @@
 // Test fixture for FullscreenMediator.
 class FullscreenMediatorTest : public PlatformTest {
  public:
-  FullscreenMediatorTest() : PlatformTest(), mediator_(controller(), &model_) {
+  FullscreenMediatorTest()
+      : PlatformTest(), controller_(&model_), mediator_(&controller_, &model_) {
     SetUpFullscreenModelForTesting(&model_, 100);
     mediator_.AddObserver(&observer_);
   }
   ~FullscreenMediatorTest() override {
-    mediator_.RemoveObserver(&observer_);
     mediator_.Disconnect();
+    EXPECT_TRUE(observer_.is_shut_down());
   }
 
   FullscreenController* controller() {
@@ -37,6 +39,7 @@ class FullscreenMediatorTest : public PlatformTest {
 
  private:
   FullscreenModel model_;
+  TestFullscreenController controller_;
   TestFullscreenMediator mediator_;
   TestFullscreenControllerObserver observer_;
 };

@@ -52,6 +52,10 @@ class FullscreenControllerObserver {
   virtual void FullscreenModelWasReset(FullscreenController* controller,
                                        FullscreenAnimator* animator) {}
 
+  // Invoked before the FullscreenController service is shut down.
+  virtual void FullscreenControllerWillShutDown(
+      FullscreenController* controller) {}
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FullscreenControllerObserver);
 };

@@ -77,6 +77,9 @@ void FullscreenMediator::AnimateModelReset() {
 }
 
 void FullscreenMediator::Disconnect() {
+  for (auto& observer : observers_) {
+    observer.FullscreenControllerWillShutDown(controller_);
+  }
   [animator_ stopAnimation:YES];
   animator_ = nil;
   model_->RemoveObserver(this);

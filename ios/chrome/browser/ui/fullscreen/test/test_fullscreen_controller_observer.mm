@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/fullscreen/test/test_fullscreen_controller_observer.h"
 
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
+#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -38,4 +39,10 @@ void TestFullscreenControllerObserver::FullscreenModelWasReset(
     FullscreenController* controller,
     FullscreenAnimator* animator) {
   animator_ = animator;
+}
+
+void TestFullscreenControllerObserver::FullscreenControllerWillShutDown(
+    FullscreenController* controller) {
+  is_shut_down_ = true;
+  controller->RemoveObserver(this);
 }

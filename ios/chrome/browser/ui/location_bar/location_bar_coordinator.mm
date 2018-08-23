@@ -63,6 +63,8 @@ const int kLocationAuthorizationStatusCount = 4;
   // Observer that updates |viewController| for fullscreen events.
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
+// Whether the coordinator is started.
+@property(nonatomic, assign, getter=isStarted) BOOL started;
 // Coordinator for the omnibox popup.
 @property(nonatomic, strong) OmniboxPopupCoordinator* omniboxPopupCoordinator;
 // Coordinator for the omnibox.
@@ -75,6 +77,7 @@ const int kLocationAuthorizationStatusCount = 4;
 @implementation LocationBarCoordinator
 @synthesize commandDispatcher = _commandDispatcher;
 @synthesize viewController = _viewController;
+@synthesize started = _started;
 @synthesize mediator = _mediator;
 @synthesize browserState = _browserState;
 @synthesize dispatcher = _dispatcher;
@@ -93,6 +96,9 @@ const int kLocationAuthorizationStatusCount = 4;
 
 - (void)start {
   DCHECK(self.commandDispatcher);
+
+  if (self.started)
+    return;
 
   [self.commandDispatcher startDispatchingToTarget:self
                                        forProtocol:@protocol(OmniboxFocuser)];
@@ -146,9 +152,13 @@ const int kLocationAuthorizationStatusCount = 4;
   FullscreenControllerFactory::GetInstance()
       ->GetForBrowserState(self.browserState)
       ->AddObserver(_fullscreenObserver.get());
+
+  self.started = YES;
 }
 
 - (void)stop {
+  if (!self.started)
+    return;
   [self.commandDispatcher stopDispatchingToTarget:self];
   // The popup has to be destroyed before the location bar.
   [self.omniboxPopupCoordinator stop];
@@ -158,6 +168,11 @@ const int kLocationAuthorizationStatusCount = 4;
   self.viewController = nil;
   [self.mediator disconnect];
   self.mediator = nil;
+
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->RemoveObserver(_fullscreenObserver.get());
+  self.started = NO;
 }
 
 - (BOOL)omniboxPopupHasAutocompleteResults {
