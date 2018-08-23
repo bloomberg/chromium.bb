@@ -428,21 +428,27 @@ class NavigationOrSwapObserver : public WebContentsObserver,
   }
 
   // TabStripModelObserver implementation:
-  void TabReplacedAt(TabStripModel* tab_strip_model,
-                     WebContents* old_contents,
-                     WebContents* new_contents,
-                     int index) override {
-    if (old_contents != web_contents())
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (change.type() != TabStripModelChange::kReplaced)
       return;
-    // Switch to observing the new WebContents.
-    Observe(new_contents);
-    if (new_contents->IsLoading()) {
-      // If the new WebContents is still loading, wait for it to complete. Only
-      // one load post-swap is supported.
-      did_start_loading_ = true;
-      number_of_loads_ = 1;
-    } else {
-      loop_.Quit();
+
+    for (const auto& delta : change.deltas()) {
+      if (delta.replace.old_contents != web_contents())
+        continue;
+
+      // Switch to observing the new WebContents.
+      Observe(delta.replace.new_contents);
+      if (delta.replace.new_contents->IsLoading()) {
+        // If the new WebContents is still loading, wait for it to complete.
+        // Only one load post-swap is supported.
+        did_start_loading_ = true;
+        number_of_loads_ = 1;
+      } else {
+        loop_.Quit();
+      }
     }
   }
 
