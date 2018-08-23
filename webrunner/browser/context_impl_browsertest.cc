@@ -148,7 +148,8 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, NavigateFrame) {
   frame.Unbind();
 }
 
-IN_PROC_BROWSER_TEST_F(ContextImplTest, FrameDeletedBeforeContext) {
+// TODO(crbug.com/876894): Disabled due to flakiness under QEMU.
+IN_PROC_BROWSER_TEST_F(ContextImplTest, DISABLED_FrameDeletedBeforeContext) {
   chromium::web::FramePtr frame = CreateFrame();
 
   // Process the frame creation message.
