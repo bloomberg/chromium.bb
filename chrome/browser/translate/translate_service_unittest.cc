@@ -10,7 +10,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -50,9 +49,7 @@ TEST(TranslateServiceTest, CheckTranslatableURL) {
 
 // Tests that download and history URLs are not translatable.
 TEST(TranslateServiceTest, DownloadsAndHistoryNotTranslated) {
-  content::TestBrowserThreadBundle thread_bundle;
-  TranslateService::InitializeForTesting(
-      network::mojom::ConnectionType::CONNECTION_WIFI);
+  TranslateService::InitializeForTesting();
   EXPECT_FALSE(
       TranslateService::IsTranslatableURL(GURL(chrome::kChromeUIDownloadsURL)));
   EXPECT_FALSE(

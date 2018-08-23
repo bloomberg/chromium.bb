@@ -210,7 +210,6 @@ source_set("browser_impl") {
     "//ios/web/public/app",
     "//net",
     "//rlz/buildflags",
-    "//services/network:network_service",
     "//ui/base",
   ]
 

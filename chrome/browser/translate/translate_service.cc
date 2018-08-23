@@ -19,7 +19,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
-#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/url_constants.h"
 #include "url/gurl.h"
 
@@ -30,15 +29,14 @@
 
 namespace {
 // The singleton instance of TranslateService.
-TranslateService* g_translate_service = nullptr;
+TranslateService* g_translate_service = NULL;
 }
 
 TranslateService::TranslateService()
     : resource_request_allowed_notifier_(
           g_browser_process->local_state(),
-          switches::kDisableBackgroundNetworking,
-          base::BindOnce(&content::GetNetworkConnectionTracker)) {
-  resource_request_allowed_notifier_.Init(this, true /* leaky */);
+          switches::kDisableBackgroundNetworking) {
+  resource_request_allowed_notifier_.Init(this);
 }
 
 TranslateService::~TranslateService() {}
@@ -77,18 +75,14 @@ void TranslateService::Shutdown(bool cleanup_pending_fetcher) {
 }
 
 // static
-void TranslateService::InitializeForTesting(
-    network::mojom::ConnectionType type) {
+void TranslateService::InitializeForTesting() {
   if (!g_translate_service) {
     TranslateService::Initialize();
     translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
   } else {
     translate::TranslateDownloadManager::GetInstance()->ResetForTesting();
+    g_translate_service->OnResourceRequestsAllowed();
   }
-
-  g_translate_service->resource_request_allowed_notifier_
-      .SetConnectionTypeForTesting(type);
-  g_translate_service->OnResourceRequestsAllowed();
 }
 
 // static

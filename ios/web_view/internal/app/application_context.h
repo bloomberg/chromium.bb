@@ -23,8 +23,6 @@ class URLRequestContextGetter;
 }
 
 namespace network {
-class NetworkChangeManager;
-class NetworkConnectionTracker;
 class SharedURLLoaderFactory;
 class WeakWrapperSharedURLLoaderFactory;
 namespace mojom {
@@ -55,9 +53,6 @@ class ApplicationContext {
 
   scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
   network::mojom::NetworkContext* GetSystemNetworkContext();
-
-  // Returns the NetworkConnectionTracker instance for this ApplicationContext.
-  network::NetworkConnectionTracker* GetNetworkConnectionTracker();
 
   // Gets the locale used by the application.
   const std::string& GetApplicationLocale();
@@ -102,10 +97,6 @@ class ApplicationContext {
 
   // Created on the UI thread, destroyed on the IO thread.
   std::unique_ptr<web::NetworkContextOwner> network_context_owner_;
-
-  std::unique_ptr<network::NetworkChangeManager> network_change_manager_;
-  std::unique_ptr<network::NetworkConnectionTracker>
-      network_connection_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationContext);
 };
