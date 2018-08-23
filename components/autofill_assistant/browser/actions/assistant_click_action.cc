@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
+
 #include <utility>
 
+#include "base/callback.h"
 #include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
-#include "components/autofill_assistant/browser/actions/assistant_click_action.h"
 
 namespace autofill_assistant {
 

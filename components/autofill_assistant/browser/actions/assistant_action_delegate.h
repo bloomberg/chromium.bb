@@ -27,6 +27,30 @@ class AssistantActionDelegate {
   virtual void ElementExists(const std::vector<std::string>& selectors,
                              base::OnceCallback<void(bool)> callback) = 0;
 
+  // Ask user to choose an address in personal data manager. GUID of the chosen
+  // address will be returned through callback if succeed, otherwise empty
+  // string is returned.
+  virtual void ChooseAddress(
+      base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Fill the address form given by |selectors| with the given address |guid| in
+  // personal data manager.
+  virtual void FillAddressForm(const std::string& guid,
+                               const std::vector<std::string>& selectors,
+                               base::OnceCallback<void(bool)> callback) = 0;
+
+  // Ask user to choose a card in personal data manager. GUID of the chosen card
+  // will be returned through callback if succeed, otherwise empty string is
+  // returned.
+  virtual void ChooseCard(
+      base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Fill the card form given by |selectors| with the given card |guid| in
+  // personal data manager.
+  virtual void FillCardForm(const std::string& guid,
+                            const std::vector<std::string>& selectors,
+                            base::OnceCallback<void(bool)> callback) = 0;
+
  protected:
   AssistantActionDelegate() = default;
 };

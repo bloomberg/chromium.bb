@@ -5,11 +5,10 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_TELL_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_TELL_ACTION_H_
 
-#include "components/autofill_assistant/browser/actions/assistant_action.h"
-
 #include <string>
 
 #include "base/macros.h"
+#include "components/autofill_assistant/browser/actions/assistant_action.h"
 
 namespace autofill_assistant {
 // An action to display a message.

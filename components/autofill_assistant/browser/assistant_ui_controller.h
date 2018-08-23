@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
+
 namespace autofill_assistant {
 // Controller to control autofill assistant UI.
 class AssistantUiController {
@@ -26,6 +28,18 @@ class AssistantUiController {
 
   // Hide the overlay.
   virtual void HideOverlay() = 0;
+
+  // Show UI to ask user to choose an address in personal data manager. GUID of
+  // the chosen address will be returned through callback if succeed, otherwise
+  // empty string is returned.
+  virtual void ChooseAddress(
+      base::OnceCallback<void(const std::string&)> callback) = 0;
+
+  // Show UI to ask user to choose a card in personal data manager. GUID of the
+  // chosen card will be returned through callback if succeed, otherwise empty
+  // string is returned.
+  virtual void ChooseCard(
+      base::OnceCallback<void(const std::string&)> callback) = 0;
 
  protected:
   AssistantUiController() = default;

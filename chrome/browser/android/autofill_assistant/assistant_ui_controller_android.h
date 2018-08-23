@@ -27,6 +27,10 @@ class AssistantUiControllerAndroid : public AssistantUiController {
   void ShowStatusMessage(const std::string& message) override;
   void ShowOverlay() override;
   void HideOverlay() override;
+  void ChooseAddress(
+      base::OnceCallback<void(const std::string&)> callback) override;
+  void ChooseCard(
+      base::OnceCallback<void(const std::string&)> callback) override;
 
   // Called by Java.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);

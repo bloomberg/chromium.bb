@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/actions/assistant_tell_action.h"
-#include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
 
 #include <utility>
+
+#include "base/callback.h"
+#include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
 
 namespace autofill_assistant {
 

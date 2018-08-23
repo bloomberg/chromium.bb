@@ -26,4 +26,20 @@ void AssistantWebController::ElementExists(
   std::move(callback).Run(true);
 }
 
+void AssistantWebController::FillAddressForm(
+    const std::string& guid,
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(crbug.com/806868): Implement fill address form operation.
+  std::move(callback).Run(true);
+}
+
+void AssistantWebController::FillCardForm(
+    const std::string& guid,
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  // TODO(crbug.com/806868): Implement fill card form operation.
+  std::move(callback).Run(true);
+}
+
 }  // namespace autofill_assistant.

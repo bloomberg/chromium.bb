@@ -29,6 +29,18 @@ class AssistantWebController {
   virtual void ElementExists(const std::vector<std::string>& selectors,
                              base::OnceCallback<void(bool)> callback);
 
+  // Fill the address form given by |selectors| with the given address |guid| in
+  // personal data manager.
+  virtual void FillAddressForm(const std::string& guid,
+                               const std::vector<std::string>& selectors,
+                               base::OnceCallback<void(bool)> callback);
+
+  // Fill the card form given by |selectors| with the given card |guid| in
+  // personal data manager.
+  virtual void FillCardForm(const std::string& guid,
+                            const std::vector<std::string>& selectors,
+                            base::OnceCallback<void(bool)> callback);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(AssistantWebController);
 };

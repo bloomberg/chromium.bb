@@ -37,6 +37,16 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
                     base::OnceCallback<void(bool)> callback) override;
   void ElementExists(const std::vector<std::string>& selectors,
                      base::OnceCallback<void(bool)> callback) override;
+  void ChooseAddress(
+      base::OnceCallback<void(const std::string&)> callback) override;
+  void FillAddressForm(const std::string& guid,
+                       const std::vector<std::string>& selectors,
+                       base::OnceCallback<void(bool)> callback) override;
+  void ChooseCard(
+      base::OnceCallback<void(const std::string&)> callback) override;
+  void FillCardForm(const std::string& guid,
+                    const std::vector<std::string>& selectors,
+                    base::OnceCallback<void(bool)> callback) override;
 
  private:
   void OnGetAssistantActions(bool result, const std::string& response);
