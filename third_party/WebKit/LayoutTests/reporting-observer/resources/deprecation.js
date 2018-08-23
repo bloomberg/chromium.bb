@@ -1,7 +1,12 @@
 async_test(function(test) {
+  // UseCounter feature IDs, from web_feature.mojom.
+  var kReportingObserver = 2529;
+  var kDeprecationReport = 2530;
+
   var observer = new ReportingObserver(function(reports, observer) {
     test.step(function() {
       assert_equals(reports.length, 2);
+      assert_true(internals.isUseCounted(document, kDeprecationReport));
 
       // Ensure that the contents of the reports are valid.
       for(let report of reports) {
@@ -21,7 +26,11 @@ async_test(function(test) {
 
     test.done();
   });
+  assert_false(internals.isUseCounted(document, kReportingObserver));
   observer.observe();
+  assert_true(internals.isUseCounted(document, kReportingObserver));
+
+  assert_false(internals.isUseCounted(document, kDeprecationReport));
 
   // This ensures that ReportingObserver is traced properly. This will cause the
   // test to fail otherwise.

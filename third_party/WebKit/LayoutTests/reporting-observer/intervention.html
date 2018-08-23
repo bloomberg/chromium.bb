@@ -9,9 +9,12 @@
 
 <script>
 async_test(function(test) {
+  var kInterventionReport = 2531; // From web_feature.mojom.
+
   var observer = new ReportingObserver(function(reports, observer) {
     test.step(function() {
       assert_equals(reports.length, 1);
+      assert_true(internals.isUseCounted(document, kInterventionReport));
 
       // Ensure that the contents of the report are valid.
       assert_equals(reports[0].type, "intervention");
@@ -29,6 +32,7 @@ async_test(function(test) {
   });
   observer.observe();
 
+  assert_false(internals.isUseCounted(document, kInterventionReport));
   causeIntervention();
 }, "Intervention report");
 </script>

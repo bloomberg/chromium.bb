@@ -1982,6 +1982,9 @@ enum WebFeature {
   kV8MediaStreamTrack_ContentHint_AttributeSetter = 2526,
   kV8IDBFactory_Open_Method = 2527,
   kEvaluateScriptMovedBetweenDocuments = 2528,
+  kReportingObserver = 2529,
+  kDeprecationReport = 2530,
+  kInterventionReport = 2531,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

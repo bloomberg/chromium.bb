@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_observer.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
@@ -31,10 +32,11 @@ ReportingContext* ReportingContext::From(ExecutionContext* context) {
 }
 
 void ReportingContext::QueueReport(Report* report) {
+  CountReport(report);
   report_buffer_.insert(report);
 
   // Only the most recent 100 reports will remain buffered.
-  // https://wicg.github.io/reporting/#notify-observers
+  // https://w3c.github.io/reporting/#notify-observers
   if (report_buffer_.size() > 100)
     report_buffer_.RemoveFirst();
 
@@ -42,7 +44,25 @@ void ReportingContext::QueueReport(Report* report) {
     observer->QueueReport(report);
 }
 
+void ReportingContext::CountReport(Report* report) {
+  const String& type = report->type();
+  WebFeature feature;
+
+  if (type == "deprecation") {
+    feature = WebFeature::kDeprecationReport;
+  } else if (type == "intervention") {
+    feature = WebFeature::kInterventionReport;
+  } else {
+    NOTREACHED();
+    return;
+  }
+
+  UseCounter::Count(execution_context_, feature);
+}
+
 void ReportingContext::RegisterObserver(ReportingObserver* observer) {
+  UseCounter::Count(execution_context_, WebFeature::kReportingObserver);
+
   observers_.insert(observer);
   if (!observer->Buffered())
     return;
