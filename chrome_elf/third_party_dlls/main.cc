@@ -4,6 +4,8 @@
 
 #include "chrome_elf/third_party_dlls/main.h"
 
+#include <limits>
+
 #include <windows.h>
 
 #include <versionhelpers.h>
@@ -73,8 +75,10 @@ void AddStatusCode(ThirdPartyStatus code) {
 
   AddStatusCodeToBuffer(code, &value_bytes);
 
+  assert(value_bytes.size() < std::numeric_limits<DWORD>::max());
   nt::SetRegKeyValue(key_handle, kStatusCodesRegValue, REG_BINARY,
-                     value_bytes.data(), value_bytes.size());
+                     value_bytes.data(),
+                     static_cast<DWORD>(value_bytes.size()));
   nt::CloseRegKey(key_handle);
 
   return;
