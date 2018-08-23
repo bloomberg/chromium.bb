@@ -12,7 +12,9 @@
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "components/viz/common/gpu/context_lost_reason.h"
 #include "components/viz/common/resources/platform_color.h"
@@ -58,6 +60,25 @@ gpu::ContextCreationAttribs CreateAttributes(bool requires_alpha_channel) {
   attributes.bind_generates_resource = false;
   attributes.fail_if_major_perf_caveat = false;
   attributes.lose_context_when_out_of_memory = true;
+
+#if defined(OS_ANDROID)
+  // TODO(cblume): We should add wide gamut code here, setting
+  // attributes.color_space.
+
+  if (requires_alpha_channel) {
+    attributes.alpha_size = 8;
+  } else if (base::SysInfo::AmountOfPhysicalMemoryMB() <= 512) {
+    // See compositor_impl_android.cc for more information about this.
+    // It is inside GetCompositorContextAttributes().
+    attributes.alpha_size = 0;
+    attributes.red_size = 5;
+    attributes.green_size = 6;
+    attributes.blue_size = 5;
+  }
+
+  attributes.enable_swap_timestamps_if_supported = true;
+#endif  // defined(OS_ANDROID)
+
   return attributes;
 }
 
