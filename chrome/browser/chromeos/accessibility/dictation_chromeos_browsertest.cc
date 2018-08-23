@@ -122,4 +122,27 @@ IN_PROC_BROWSER_TEST_F(DictationTest, UserEndsDictationWhenChromeVoxEnabled) {
   EXPECT_EQ(kFinalSpeechResult, input_context_handler_->last_commit_text());
 }
 
+IN_PROC_BROWSER_TEST_F(DictationTest, SwitchInputContext) {
+  // Turn on dictation and say something.
+  AccessibilityManager::Get()->ToggleDictation();
+  SendSpeechResult(kFirstSpeechResult, true /* is_final */);
+
+  // Speech goes to the default IMEInputContextHandler.
+  EXPECT_EQ(kFirstSpeechResult, input_context_handler_->last_commit_text());
+
+  // Simulate a remote app instantiating a new IMEInputContextHandler, like the
+  // keyboard shortcut viewer app creating a second InputMethodChromeOS.
+  ui::MockIMEInputContextHandler input_context_handler2;
+  ui::IMEBridge::Get()->SetInputContextHandler(&input_context_handler2);
+
+  // Turn on dictation and say something else.
+  AccessibilityManager::Get()->ToggleDictation();
+  SendSpeechResult(kSecondSpeechResult, true /* is_final */);
+
+  // Speech goes to the new IMEInputContextHandler.
+  EXPECT_EQ(kSecondSpeechResult, input_context_handler2.last_commit_text());
+
+  ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+}
+
 }  // namespace chromeos
