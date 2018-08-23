@@ -42,6 +42,7 @@ source_set("platform_apps") {
     "//chrome/app:command_ids",
     "//chrome/browser/extensions",
     "//chrome/browser/media/router/discovery",
+    "//chrome/browser/web_applications/extensions",
     "//chrome/common",
     "//components/crx_file",
     "//components/keyed_service/content",

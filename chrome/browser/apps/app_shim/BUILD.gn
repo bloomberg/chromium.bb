@@ -21,7 +21,18 @@ source_set("app_shim") {
   ]
 
   deps = [
+    "//apps",
+    "//chrome/browser/apps/platform_apps",
+    "//chrome/browser/extensions",
+    "//chrome/browser/web_applications/components",
+    "//chrome/browser/web_applications/extensions",
+    "//chrome/common",
+    "//chrome/common:app_mode_app_support",
+    "//chrome/common:constants",
     "//chrome/common:mojo_bindings",
+    "//chrome/common:non_code_constants",
+    "//components/crx_file",
+    "//components/version_info",
     "//content/public/browser",
     "//content/public/common",
     "//extensions/browser",

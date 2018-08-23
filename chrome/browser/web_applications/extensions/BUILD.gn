@@ -32,6 +32,7 @@ source_set("extensions") {
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//content/public/browser",
+    "//extensions/browser",
     "//skia",
   ]
 }
@@ -48,10 +49,40 @@ source_set("unit_tests") {
 
   deps = [
     ":extensions",
+    "//chrome/browser",
     "//chrome/browser/web_applications:web_app_group",
     "//chrome/browser/web_applications/components",
+    "//chrome/common",
+    "//chrome/test:test_support",
     "//content/public/browser",
+    "//content/test:test_support",
+    "//extensions/browser/install",
+    "//extensions/common",
     "//skia",
     "//testing/gtest",
+  ]
+}
+
+source_set("browser_tests") {
+  testonly = true
+
+  sources = [
+    "pending_bookmark_app_manager_browsertest.cc",
+  ]
+
+  defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+
+  deps = [
+    ":extensions",
+    "//base/test:test_support",
+    "//chrome/browser",
+    "//chrome/browser/ui",
+    "//chrome/browser/web_applications",
+    "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications/components",
+    "//chrome/test:test_support_ui",
+    "//extensions/browser",
+    "//extensions/common",
+    "//net:test_support",
   ]
 }
