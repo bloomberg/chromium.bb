@@ -65,6 +65,7 @@
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
+#include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/push_messaging/push_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
@@ -838,6 +839,38 @@ bool RendererBlinkPlatformImpl::SetSandboxEnabledForTesting(bool enable) {
   bool was_enabled = g_sandbox_enabled;
   g_sandbox_enabled = enable;
   return was_enabled;
+}
+
+//------------------------------------------------------------------------------
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  PeerConnectionDependencyFactory* rtc_dependency_factory =
+      render_thread->GetPeerConnectionDependencyFactory();
+  rtc_dependency_factory->EnsureInitialized();
+  return rtc_dependency_factory->GetWebRtcWorkerThread();
+}
+
+rtc::Thread* RendererBlinkPlatformImpl::GetWebRtcWorkerThreadRtcThread() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  PeerConnectionDependencyFactory* rtc_dependency_factory =
+      render_thread->GetPeerConnectionDependencyFactory();
+  rtc_dependency_factory->EnsureInitialized();
+  return rtc_dependency_factory->GetWebRtcWorkerThreadRtcThread();
+}
+
+std::unique_ptr<cricket::PortAllocator>
+RendererBlinkPlatformImpl::CreateWebRtcPortAllocator(
+    blink::WebLocalFrame* frame) {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  PeerConnectionDependencyFactory* rtc_dependency_factory =
+      render_thread->GetPeerConnectionDependencyFactory();
+  rtc_dependency_factory->EnsureInitialized();
+  return rtc_dependency_factory->CreatePortAllocator(frame);
 }
 
 //------------------------------------------------------------------------------

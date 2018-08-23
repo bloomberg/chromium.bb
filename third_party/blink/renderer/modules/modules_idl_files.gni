@@ -592,6 +592,7 @@ modules_dictionary_idl_files =
           "peerconnection/rtc_data_channel_init.idl",
           "peerconnection/rtc_ice_candidate_init.idl",
           "peerconnection/rtc_ice_candidate_pair.idl",
+          "peerconnection/rtc_ice_gather_options.idl",
           "peerconnection/rtc_ice_parameters.idl",
           "peerconnection/rtc_ice_server.idl",
           "peerconnection/rtc_offer_answer_options.idl",

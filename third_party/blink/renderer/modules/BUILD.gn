@@ -162,6 +162,8 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/webusb",
     "//third_party/blink/renderer/modules/xr",
     "//third_party/icu",
+    "//third_party/webrtc/pc:libjingle_peerconnection",
+    "//third_party/webrtc_overrides:init_webrtc",
     "//third_party/zlib",
   ]
 

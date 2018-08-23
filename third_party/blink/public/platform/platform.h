@@ -62,6 +62,7 @@
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "third_party/webrtc/p2p/base/portallocator.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -69,6 +70,10 @@ class SingleThreadTaskRunner;
 
 namespace gpu {
 class GpuMemoryBufferManager;
+}
+
+namespace rtc {
+class Thread;
 }
 
 namespace service_manager {
@@ -99,6 +104,7 @@ class WebDatabaseObserver;
 class WebFileSystem;
 class WebGraphicsContext3DProvider;
 class WebImageCaptureFrameGrabber;
+class WebLocalFrame;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaCapabilitiesClient;
@@ -599,6 +605,24 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if WebRTC functionality is not available or out of
   // resources.
   virtual std::unique_ptr<WebMediaStreamCenter> CreateMediaStreamCenter();
+
+  // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
+  // An rtc::Thread will have already been created.
+  // May return null if WebRTC functionality is not implemented.
+  virtual scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() {
+    return nullptr;
+  }
+
+  // Returns the rtc::Thread instance associated with the WebRTC worker thread.
+  // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
+  // May return null if WebRTC functionality is not implemented.
+  virtual rtc::Thread* GetWebRtcWorkerThreadRtcThread() { return nullptr; }
+
+  // May return null if WebRTC functionality is not implemented.
+  virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
+      WebLocalFrame* frame) {
+    return nullptr;
+  }
 
   // Creates a WebCanvasCaptureHandler to capture Canvas output.
   virtual std::unique_ptr<WebCanvasCaptureHandler>

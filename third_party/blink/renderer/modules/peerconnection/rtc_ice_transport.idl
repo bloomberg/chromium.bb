@@ -28,11 +28,13 @@ enum RTCIceGatheringState {
 
 // https://w3c.github.io/webrtc-pc/#rtcicetransport
 [
+   ActiveScriptWrappable,
    // Constructor from https://w3c.github.io/webrtc-ice/#rtcicetransport*
    Constructor(),
+   ConstructorCallWith=ExecutionContext,
    Exposed=Window,
    RuntimeEnabled=RTCIceTransportExtension
-] interface RTCIceTransport {
+] interface RTCIceTransport : EventTarget {
     // TODO(github.com/w3c/webrtc-ice/issues/4): role is non-null in the
     // WebRTC-PC specification.
     readonly attribute RTCIceRole? role;
@@ -43,6 +45,13 @@ enum RTCIceGatheringState {
     RTCIceCandidatePair? getSelectedCandidatePair();
     RTCIceParameters? getLocalParameters();
     RTCIceParameters? getRemoteParameters();
+    attribute EventHandler ongatheringstatechange;
 
-    // TODO(crbug.com/864871): Add events and extension methods.
+    // The following is defined in the WebRTC-ICE extension specification.
+    // https://w3c.github.io/webrtc-ice/#rtcicetransport*
+    [RaisesException] void gather(RTCIceGatherOptions options);
+    void stop();
+    attribute EventHandler onicecandidate;
+
+    // TODO(crbug.com/864871): Implement remaining events and extension methods.
 };
