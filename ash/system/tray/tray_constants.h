@@ -140,7 +140,7 @@ constexpr SkColor kUnifiedMenuBackgroundColorWithBlur =
     SkColorSetA(kUnifiedMenuBackgroundColor, 0x99);
 constexpr float kUnifiedMenuBackgroundBlur = 30.f;
 constexpr SkColor kUnifiedMenuTextColor = SkColorSetRGB(0xf1, 0xf3, 0xf4);
-constexpr SkColor kUnifiedMenuIconColor = SkColorSetRGB(0xf1, 0xf3, 0xf4);
+constexpr SkColor kUnifiedMenuIconColor = SkColorSetRGB(0xe8, 0xea, 0xed);
 constexpr SkColor kUnifiedMenuSecondaryTextColor =
     SkColorSetA(kUnifiedMenuIconColor, 0xa3);
 constexpr SkColor kUnifiedMenuIconColorDisabled =
