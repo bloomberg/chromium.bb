@@ -41,6 +41,29 @@ class BackgroundFetchDelegateProxy::Core
     return weak_ptr_factory_.GetWeakPtr();
   }
 
+  void ForwardGetPermissionForOriginCallbackToIO(
+      BackgroundFetchDelegate::GetPermissionForOriginCallback callback,
+      bool has_permission) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(std::move(callback), has_permission));
+  }
+
+  void GetPermissionForOrigin(
+      const url::Origin& origin,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      BackgroundFetchDelegate::GetPermissionForOriginCallback callback) {
+    if (delegate_) {
+      delegate_->GetPermissionForOrigin(
+          origin, wc_getter,
+          base::BindOnce(&Core::ForwardGetPermissionForOriginCallbackToIO,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    } else {
+      std::move(callback).Run(false /* has_permission */);
+    }
+  }
+
   void ForwardGetIconDisplaySizeCallbackToIO(
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback,
       const gfx::Size& display_size) {
@@ -287,6 +310,17 @@ void BackgroundFetchDelegateProxy::GetIconDisplaySize(
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(&Core::GetIconDisplaySize,
                                          ui_core_ptr_, std::move(callback)));
+}
+
+void BackgroundFetchDelegateProxy::GetPermissionForOrigin(
+    const url::Origin& origin,
+    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    BackgroundFetchDelegate::GetPermissionForOriginCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&Core::GetPermissionForOrigin, ui_core_ptr_, origin,
+                     wc_getter, std::move(callback)));
 }
 
 void BackgroundFetchDelegateProxy::CreateDownloadJob(

@@ -239,6 +239,7 @@ class DownloadRequestLimiter
   FRIEND_TEST_ALL_PREFIXES(ContentSettingImageModelBrowserTest,
                            CreateBubbleModel);
   friend class base::RefCountedThreadSafe<DownloadRequestLimiter>;
+  friend class BackgroundFetchBrowserTest;
   friend class ContentSettingBubbleDialogTest;
   friend class DownloadRequestLimiterTest;
   friend class TabDownloadState;

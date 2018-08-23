@@ -16,7 +16,6 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -91,7 +90,8 @@ BackgroundFetchServiceImpl::BackgroundFetchServiceImpl(
     url::Origin origin,
     RenderFrameHost* render_frame_host)
     : background_fetch_context_(std::move(background_fetch_context)),
-      origin_(std::move(origin)) {
+      origin_(std::move(origin)),
+      render_frame_host_(render_frame_host) {
   DCHECK(background_fetch_context_);
 }
 
@@ -123,7 +123,8 @@ void BackgroundFetchServiceImpl::Fetch(
                                                 base::GenerateGUID());
 
   background_fetch_context_->StartFetch(registration_id, requests, options,
-                                        icon, std::move(callback));
+                                        icon, render_frame_host_,
+                                        std::move(callback));
 }
 
 void BackgroundFetchServiceImpl::GetIconDisplaySize(

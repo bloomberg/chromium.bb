@@ -17,6 +17,8 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -131,6 +133,7 @@ void BackgroundFetchContext::StartFetch(
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     const SkBitmap& icon,
+    RenderFrameHost* render_frame_host,
     blink::mojom::BackgroundFetchService::FetchCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -141,10 +144,55 @@ void BackgroundFetchContext::StartFetch(
   DCHECK_EQ(0u, fetch_callbacks_.count(registration_id));
   fetch_callbacks_[registration_id] = std::move(callback);
 
-  data_manager_->CreateRegistration(
-      registration_id, requests, options, icon,
+  // |data_manager| is guaranteed to outlive |this|. |create_registration| is
+  // passed to `DidGetPermission`, which is tied to |weak_factory_|. That means
+  // that if |create_registration| runs, |this| is still alive, as is
+  // |data_manager| (a pointer owned by |this|).
+  auto create_registration = base::BindOnce(
+      &BackgroundFetchDataManager::CreateRegistration,
+      base::Unretained(data_manager_.get()), registration_id, requests, options,
+      icon,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration,
                      weak_factory_.GetWeakPtr(), registration_id));
+
+  GetPermissionForOrigin(
+      registration_id.origin(), render_frame_host,
+      base::BindOnce(&BackgroundFetchContext::DidGetPermission,
+                     weak_factory_.GetWeakPtr(), std::move(create_registration),
+                     registration_id));
+}
+
+void BackgroundFetchContext::GetPermissionForOrigin(
+    const url::Origin& origin,
+    RenderFrameHost* render_frame_host,
+    GetPermissionCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  ResourceRequestInfo::WebContentsGetter wc_getter =
+      render_frame_host
+          ? base::BindRepeating(&WebContents::FromFrameTreeNodeId,
+                                render_frame_host->GetFrameTreeNodeId())
+          : base::NullCallback();
+
+  delegate_proxy_.GetPermissionForOrigin(origin, std::move(wc_getter),
+                                         std::move(callback));
+}
+
+void BackgroundFetchContext::DidGetPermission(
+    base::OnceClosure permission_closure,
+    const BackgroundFetchRegistrationId& registration_id,
+    bool has_permission) {
+  if (has_permission) {
+    std::move(permission_closure).Run();
+    return;
+  }
+
+  // No permission, the fetch should be rejected.
+  background_fetch::RecordRegistrationCreatedError(
+      blink::mojom::BackgroundFetchError::PERMISSION_DENIED);
+  std::move(fetch_callbacks_[registration_id])
+      .Run(blink::mojom::BackgroundFetchError::PERMISSION_DENIED,
+           base::nullopt);
 }
 
 void BackgroundFetchContext::GetIconDisplaySize(

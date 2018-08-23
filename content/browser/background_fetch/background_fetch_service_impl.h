@@ -100,6 +100,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
 
   const url::Origin origin_;
 
+  RenderFrameHost* render_frame_host_;
+
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchServiceImpl);
 };
 

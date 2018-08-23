@@ -66,6 +66,12 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   void GetIconDisplaySize(
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback);
 
+  // Checks if the provided origin has permission to start a Background Fetch.
+  void GetPermissionForOrigin(
+      const url::Origin& origin,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      BackgroundFetchDelegate::GetPermissionForOriginCallback callback);
+
   // Creates a new download grouping described by |fetch_description|. Further
   // downloads started by StartRequest will also use
   // |fetch_description.job_unique_id| so that a notification can be updated

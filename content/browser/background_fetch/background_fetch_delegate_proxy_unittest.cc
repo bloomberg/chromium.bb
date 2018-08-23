@@ -33,6 +33,12 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
       BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) override {
     std::move(callback).Run(gfx::Size(kIconDisplaySize, kIconDisplaySize));
   }
+  void GetPermissionForOrigin(
+      const url::Origin& origin,
+      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      GetPermissionForOriginCallback callback) override {
+    std::move(callback).Run(true /* has_permission */);
+  }
   void CreateDownloadJob(
       std::unique_ptr<BackgroundFetchDescription> fetch_description) override {}
   void DownloadUrl(const std::string& job_unique_id,

@@ -12,6 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +27,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "url/origin.h"
 
 BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
     Profile* profile,
@@ -146,6 +149,28 @@ void BackgroundFetchDelegateImpl::GetIconDisplaySize(
   display_size = gfx::Size(192, 192);
 #endif
   std::move(callback).Run(display_size);
+}
+
+void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
+    const url::Origin& origin,
+    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    GetPermissionForOriginCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!wc_getter) {
+    // TODO(crbug.com/692647): Check permission for non-framed contexts as well.
+    std::move(callback).Run(true /* has_permission */);
+    return;
+  }
+
+  DownloadRequestLimiter* limiter =
+      g_browser_process->download_request_limiter();
+  DCHECK(limiter);
+
+  // The fetch should be thought of as one download. So the origin will be
+  // used as the URL, and the |request_method| is set to GET.
+  limiter->CanDownload(wc_getter, origin.GetURL(), "GET",
+                       base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 void BackgroundFetchDelegateImpl::CreateDownloadJob(

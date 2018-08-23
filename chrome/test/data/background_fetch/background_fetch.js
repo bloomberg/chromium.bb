@@ -116,3 +116,15 @@ function RunFetchTillCompletionWithMissingResource() {
         kBackgroundFetchId, resources);
   }).catch(sendErrorToTest);
 }
+
+// Starts a Background Fetch that should fail due to a missing resource.
+function RunFetchAnExpectAnException() {
+  const resources = [
+    '/background_fetch/types_of_cheese.txt',
+    '/background_fetch/missing_cat.txt',
+  ];
+  navigator.serviceWorker.ready.then(swRegistration => {
+    return swRegistration.backgroundFetch.fetch(kBackgroundFetchId, resources);
+  }).then(sendErrorToTest)
+    .catch(e => sendResultToTest(e.message));
+}

@@ -40,6 +40,7 @@ class BackgroundFetchRequestInfo;
 class BackgroundFetchScheduler;
 class BrowserContext;
 class CacheStorageContextImpl;
+class RenderFrameHost;
 class ServiceWorkerContextWrapper;
 struct ServiceWorkerFetchRequest;
 
@@ -90,6 +91,7 @@ class CONTENT_EXPORT BackgroundFetchContext
                   const std::vector<ServiceWorkerFetchRequest>& requests,
                   const BackgroundFetchOptions& options,
                   const SkBitmap& icon,
+                  RenderFrameHost* render_frame_host,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
   // Gets display size for the icon for Background Fetch UI.
@@ -148,6 +150,8 @@ class CONTENT_EXPORT BackgroundFetchContext
   void OnStorageWiped() override;
 
  private:
+  using GetPermissionCallback = base::OnceCallback<void(bool)>;
+
   FRIEND_TEST_ALL_PREFIXES(BackgroundFetchServiceTest,
                            JobsInitializedOnBrowserRestart);
   friend class BackgroundFetchServiceTest;
@@ -258,6 +262,17 @@ class CONTENT_EXPORT BackgroundFetchContext
   // Abandons all of them if |service_worker_registration_id| is set to
   // blink::mojom::kInvalidServiceWorkerRegistrationId.
   void AbandonFetches(int64_t service_worker_registration_id);
+
+  // Check if |origin| has permission to start a fetch.
+  // virtual for testing.
+  void GetPermissionForOrigin(const url::Origin& origin,
+                              RenderFrameHost* render_frame_host,
+                              GetPermissionCallback callback);
+
+  // Callback for GetPermissionForOrigin.
+  void DidGetPermission(base::OnceClosure permission_closure,
+                        const BackgroundFetchRegistrationId& registration_id,
+                        bool has_permission);
 
   // |this| is owned, indirectly, by the BrowserContext.
   BrowserContext* browser_context_;
