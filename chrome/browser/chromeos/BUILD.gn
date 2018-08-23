@@ -597,8 +597,6 @@ source_set("chromeos") {
     "dbus/chrome_features_service_provider.h",
     "dbus/chrome_proxy_resolution_service_provider_delegate.cc",
     "dbus/chrome_proxy_resolution_service_provider_delegate.h",
-    "dbus/chrome_virtual_file_request_service_provider_delegate.cc",
-    "dbus/chrome_virtual_file_request_service_provider_delegate.h",
     "dbus/component_updater_service_provider.cc",
     "dbus/component_updater_service_provider.h",
     "dbus/drive_file_stream_service_provider.cc",

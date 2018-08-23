@@ -5,13 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DBUS_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
 #define CHROME_BROWSER_CHROMEOS_DBUS_VIRTUAL_FILE_REQUEST_SERVICE_PROVIDER_H_
 
-#include <stdint.h>
-
-#include <memory>
-#include <string>
-
-#include "base/compiler_specific.h"
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -29,23 +22,7 @@ namespace chromeos {
 class VirtualFileRequestServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  // TODO(derat): Move the delegate into this class.
-  class Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Writes the requested data to the given pipe write end.
-    virtual bool HandleReadRequest(const std::string& id,
-                                   int64_t offset,
-                                   int64_t size,
-                                   base::ScopedFD pipe_write_end) = 0;
-
-    // Releases resources associated with the ID.
-    virtual bool HandleIdReleased(const std::string& id) = 0;
-  };
-
-  explicit VirtualFileRequestServiceProvider(
-      std::unique_ptr<Delegate> delegate);
+  VirtualFileRequestServiceProvider();
   ~VirtualFileRequestServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -57,8 +34,6 @@ class VirtualFileRequestServiceProvider
                          dbus::ExportedObject::ResponseSender response_sender);
   void HandleIdReleased(dbus::MethodCall* method_call,
                         dbus::ExportedObject::ResponseSender response_sender);
-
-  std::unique_ptr<Delegate> delegate_;
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
