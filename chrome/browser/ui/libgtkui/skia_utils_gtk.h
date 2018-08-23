@@ -5,15 +5,19 @@
 #ifndef CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK_H_
 #define CHROME_BROWSER_UI_LIBGTKUI_SKIA_UTILS_GTK_H_
 
+#include <gtk/gtk.h>
 #include <stdint.h>
 
 #include "third_party/skia/include/core/SkColor.h"
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
 typedef struct _GdkColor GdkColor;
+#endif
 typedef struct _GdkPixbuf GdkPixbuf;
 
 class SkBitmap;
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
 // Define a macro for creating GdkColors from RGB values.  This is a macro to
 // allow static construction of literals, etc.  Use this like:
 //   GdkColor white = GDK_COLOR_RGB(0xff, 0xff, 0xff);
@@ -24,9 +28,11 @@ class SkBitmap;
     g * ::libgtkui::kSkiaToGDKMultiplier,    \
     b * ::libgtkui::kSkiaToGDKMultiplier,    \
   }
+#endif
 
 namespace libgtkui {
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
 // Multiply uint8_t color components by this.
 const int kSkiaToGDKMultiplier = 257;
 
@@ -35,6 +41,7 @@ SkColor GdkColorToSkColor(GdkColor color);
 
 // Converts ARGB to GdkColor.
 GdkColor SkColorToGdkColor(SkColor color);
+#endif
 
 const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf);
 

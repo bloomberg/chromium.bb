@@ -1713,7 +1713,11 @@ int HostProcessMain() {
     // Required for any calls into GTK functions, such as the Disconnect and
     // Continue windows, though these should not be used for the Me2Me case
     // (crbug.com/104377).
+#if GTK_CHECK_VERSION(3, 90, 0)
+    gtk_init();
+#else
     gtk_init(nullptr, nullptr);
+#endif
   }
 
   // Need to prime the host OS version value for linux to prevent IO on the

@@ -123,12 +123,21 @@ void It2MeConfirmationDialogLinux::CreateWindow(
           remote_user_email);
   GtkWidget* text_label = gtk_label_new(base::UTF16ToUTF8(dialog_text).c_str());
   gtk_label_set_line_wrap(GTK_LABEL(text_label), true);
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_widget_set_margin_start(GTK_WIDGET(text_label), 12);
+  gtk_widget_set_margin_end(GTK_WIDGET(text_label), 12);
+  gtk_widget_set_margin_top(GTK_WIDGET(text_label), 12);
+  gtk_widget_set_margin_bottom(GTK_WIDGET(text_label), 12);
+#else
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
   gtk_misc_set_padding(GTK_MISC(text_label), 12, 12);
   G_GNUC_END_IGNORE_DEPRECATIONS;
+#endif
 
   gtk_container_add(GTK_CONTAINER(content_area), text_label);
+#if !GTK_CHECK_VERSION(3, 90, 0)
   gtk_widget_show_all(content_area);
+#endif
 
   gtk_window_set_urgency_hint(GTK_WINDOW(confirmation_window_), true);
   gtk_window_present(GTK_WINDOW(confirmation_window_));

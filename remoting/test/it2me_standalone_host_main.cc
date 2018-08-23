@@ -28,7 +28,11 @@ int main(int argc, const char** argv) {
   // Required for any calls into GTK functions, such as the Disconnect and
   // Continue windows. Calling with nullptr arguments because we don't have
   // any command line arguments for gtk to consume.
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_init();
+#else
   gtk_init(nullptr, nullptr);
+#endif
 
   // Need to prime the host OS version value for linux to prevent IO on the
   // network thread. base::GetLinuxDistro() caches the result.

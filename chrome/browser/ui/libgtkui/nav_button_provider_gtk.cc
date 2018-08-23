@@ -79,21 +79,33 @@ gfx::Insets InsetsFromGtkBorder(const GtkBorder& border) {
 gfx::Insets PaddingFromStyleContext(GtkStyleContext* context,
                                     GtkStateFlags state) {
   GtkBorder padding;
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get_padding(context, &padding);
+#else
   gtk_style_context_get_padding(context, state, &padding);
+#endif
   return InsetsFromGtkBorder(padding);
 }
 
 gfx::Insets BorderFromStyleContext(GtkStyleContext* context,
                                    GtkStateFlags state) {
   GtkBorder border;
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get_border(context, &border);
+#else
   gtk_style_context_get_border(context, state, &border);
+#endif
   return InsetsFromGtkBorder(border);
 }
 
 gfx::Insets MarginFromStyleContext(GtkStyleContext* context,
                                    GtkStateFlags state) {
   GtkBorder margin;
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get_margin(context, &margin);
+#else
   gtk_style_context_get_margin(context, state, &margin);
+#endif
   return InsetsFromGtkBorder(margin);
 }
 
@@ -299,8 +311,12 @@ void NavButtonProviderGtk::RedrawImages(int top_area_height,
   auto header_context = CreateHeaderContext(maximized);
 
   GtkBorder header_padding;
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get_padding(header_context, &header_padding);
+#else
   gtk_style_context_get_padding(header_context, GTK_STATE_FLAG_NORMAL,
                                 &header_padding);
+#endif
 
   double scale = 1.0f;
   std::map<chrome::FrameButtonDisplayType, gfx::Size> button_sizes;

@@ -33,8 +33,10 @@ namespace {
 
 const char kAuraTransientParent[] = "aura-transient-parent";
 
-void CommonInitFromCommandLine(const base::CommandLine& command_line,
-                               void (*init_func)(gint*, gchar***)) {
+void CommonInitFromCommandLine(const base::CommandLine& command_line) {
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_init();
+#else
   const std::vector<std::string>& args = command_line.argv();
   int argc = args.size();
   std::unique_ptr<char* []> argv(new char*[argc + 1]);
@@ -49,11 +51,12 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line,
   {
     // http://crbug.com/423873
     ANNOTATE_SCOPED_MEMORY_LEAK;
-    init_func(&argc, &argv_pointer);
+    gtk_init(&argc, &argv_pointer);
   }
   for (size_t i = 0; i < args.size(); ++i) {
     free(argv[i]);
   }
+#endif
 }
 
 }  // namespace
@@ -115,7 +118,7 @@ SkColor SelectedURLColor(SkColor foreground, SkColor background) {
 }
 
 void GtkInitFromCommandLine(const base::CommandLine& command_line) {
-  CommonInitFromCommandLine(command_line, gtk_init);
+  CommonInitFromCommandLine(command_line);
 }
 
 // TODO(erg): This method was copied out of shell_integration_linux.cc. Because
@@ -494,8 +497,12 @@ SkColor GdkRgbaToSkColor(const GdkRGBA& color) {
 
 SkColor GetFgColorFromStyleContext(GtkStyleContext* context) {
   GdkRGBA color;
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get_color(context, &color);
+#else
   gtk_style_context_get_color(context, gtk_style_context_get_state(context),
                               &color);
+#endif
   return GdkRgbaToSkColor(color);
 }
 
@@ -524,9 +531,13 @@ SkColor GetFgColor(const std::string& css_selector) {
 
 ScopedCssProvider GetCssProvider(const std::string& css) {
   GtkCssProvider* provider = gtk_css_provider_new();
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_css_provider_load_from_data(provider, css.c_str(), -1);
+#else
   GError* error = nullptr;
   gtk_css_provider_load_from_data(provider, css.c_str(), -1, &error);
   DCHECK(!error);
+#endif
   return ScopedCssProvider(provider);
 }
 
@@ -574,8 +585,12 @@ SkColor GetSelectionBgColor(const std::string& css_selector) {
   // This is verbatim how Gtk gets the selection color on versions before 3.20.
   GdkRGBA selection_color;
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get_background_color(context, &selection_color);
+#else
   gtk_style_context_get_background_color(
       context, gtk_style_context_get_state(context), &selection_color);
+#endif
   G_GNUC_END_IGNORE_DEPRECATIONS;
   return GdkRgbaToSkColor(selection_color);
 }
@@ -595,9 +610,14 @@ SkColor GetSeparatorColor(const std::string& css_selector) {
   gtk_style_context_get(context, gtk_style_context_get_state(context),
                         "min-width", &w, "min-height", &h, nullptr);
   GtkBorder border, padding;
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_style_context_get_border(context, &border);
+  gtk_style_context_get_padding(context, &padding);
+#else
   GtkStateFlags state = gtk_style_context_get_state(context);
   gtk_style_context_get_border(context, state, &border);
   gtk_style_context_get_padding(context, state, &padding);
+#endif
   w += border.left + padding.left + padding.right + border.right;
   h += border.top + padding.top + padding.bottom + border.bottom;
 

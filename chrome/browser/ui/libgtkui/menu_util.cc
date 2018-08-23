@@ -12,14 +12,19 @@
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/models/menu_model.h"
 
-G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-
 namespace libgtkui {
 
 GtkWidget* BuildMenuItemWithImage(const std::string& label, GtkWidget* image) {
+// GTK4 removed support for image menu items.
+#if GTK_CHECK_VERSION(3, 90, 0)
+  return gtk_menu_item_new_with_mnemonic(label.c_str());
+#else
+  G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
   GtkWidget* menu_item = gtk_image_menu_item_new_with_mnemonic(label.c_str());
   gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item), image);
+  G_GNUC_END_IGNORE_DEPRECATIONS;
   return menu_item;
+#endif
 }
 
 GtkWidget* BuildMenuItemWithImage(const std::string& label,
@@ -140,10 +145,14 @@ void BuildSubmenuFromModel(ui::MenuModel* model,
           menu_item = BuildMenuItemWithImage(label, icon);
         else
           menu_item = BuildMenuItemWithLabel(label);
+#if !GTK_CHECK_VERSION(3, 90, 0)
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
         if (GTK_IS_IMAGE_MENU_ITEM(menu_item)) {
           gtk_image_menu_item_set_always_show_image(
               GTK_IMAGE_MENU_ITEM(menu_item), TRUE);
         }
+        G_GNUC_END_IGNORE_DEPRECATIONS;
+#endif
         break;
       }
 
@@ -233,17 +242,21 @@ void SetMenuItemInfo(GtkWidget* widget, void* block_activation_ptr) {
             base::UTF16ToUTF8(model->GetLabelAt(id)));
 
         gtk_menu_item_set_label(GTK_MENU_ITEM(widget), label.c_str());
+#if !GTK_CHECK_VERSION(3, 90, 0)
+        G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
         if (GTK_IS_IMAGE_MENU_ITEM(widget)) {
           gfx::Image icon;
           if (model->GetIconAt(id, &icon)) {
             GdkPixbuf* pixbuf = GdkPixbufFromSkBitmap(*icon.ToSkBitmap());
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget),
-                gtk_image_new_from_pixbuf(pixbuf));
+                                          gtk_image_new_from_pixbuf(pixbuf));
             g_object_unref(pixbuf);
           } else {
             gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(widget), nullptr);
           }
         }
+        G_GNUC_END_IGNORE_DEPRECATIONS;
+#endif
       }
 
       gtk_widget_show(widget);

@@ -30,7 +30,6 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon.h"
-#include "chrome/browser/ui/libgtkui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
@@ -149,6 +148,7 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
     if (focus_) {
       gfx::Rect focus_rect(width, height);
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
       if (!GtkVersionCheck(3, 14)) {
         gint focus_pad;
         gtk_style_context_get_style(context, "focus-padding", &focus_pad,
@@ -166,10 +166,15 @@ class GtkButtonImageSource : public gfx::ImageSkiaSource {
             focus_rect.Offset(child_displacement_x, child_displacement_y);
         }
       }
+#endif
 
       if (!GtkVersionCheck(3, 20)) {
         GtkBorder border;
+#if GTK_CHECK_VERSION(3, 90, 0)
+        gtk_style_context_get_border(context, &border);
+#else
         gtk_style_context_get_border(context, state_flags, &border);
+#endif
         focus_rect.Inset(border.left, border.top, border.right, border.bottom);
       }
 
@@ -216,17 +221,23 @@ struct GObjectDeleter {
 };
 struct GtkIconInfoDeleter {
   void operator()(GtkIconInfo* ptr) {
+#if GTK_CHECK_VERSION(3, 90, 0)
+    g_object_unref(ptr);
+#else
     G_GNUC_BEGIN_IGNORE_DEPRECATIONS
     gtk_icon_info_free(ptr);
     G_GNUC_END_IGNORE_DEPRECATIONS
+#endif
   }
 };
 typedef std::unique_ptr<GIcon, GObjectDeleter> ScopedGIcon;
 typedef std::unique_ptr<GtkIconInfo, GtkIconInfoDeleter> ScopedGtkIconInfo;
 typedef std::unique_ptr<GdkPixbuf, GObjectDeleter> ScopedGdkPixbuf;
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
 // Prefix for app indicator ids
 const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
+#endif
 
 // Number of app indicators used (used as part of app-indicator id).
 int indicators_count;
@@ -574,12 +585,26 @@ void GtkUi::SetProgressFraction(float percentage) const {
 }
 
 bool GtkUi::IsStatusIconSupported() const {
+#if GTK_CHECK_VERSION(3, 90, 0)
+  // TODO(thomasanderson): Provide some sort of status icon for GTK4.  The GTK3
+  // config has two options.  The first is to use GTK status icons, but these
+  // were removed in GTK4.  The second is to use libappindicator.  However, that
+  // library has a dependency on GTK3, and loading multiple versions of GTK into
+  // the same process is explicitly unsupported.
+  NOTIMPLEMENTED();
+  return false;
+#else
   return true;
+#endif
 }
 
 std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) const {
+#if GTK_CHECK_VERSION(3, 90, 0)
+  NOTIMPLEMENTED();
+  return nullptr;
+#else
   if (AppIndicatorIcon::CouldOpen()) {
     ++indicators_count;
     return std::unique_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
@@ -589,6 +614,7 @@ std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
     return std::unique_ptr<views::StatusIconLinux>(
         new GtkStatusIcon(image, tool_tip));
   }
+#endif
 }
 
 gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
