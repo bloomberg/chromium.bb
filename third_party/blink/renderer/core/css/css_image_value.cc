@@ -54,7 +54,7 @@ CSSImageValue::~CSSImageValue() = default;
 
 StyleImage* CSSImageValue::CacheImage(
     const Document& document,
-    FetchParameters::PlaceholderImageRequestType placeholder_image_request_type,
+    FetchParameters::ImageRequestOptimization image_request_optimization,
     CrossOriginAttributeValue cross_origin) {
   if (!cached_image_) {
     if (absolute_url_.IsEmpty())
@@ -74,7 +74,7 @@ StyleImage* CSSImageValue::CacheImage(
     }
 
     if (document.GetFrame() &&
-        placeholder_image_request_type == FetchParameters::kAllowPlaceholder &&
+        image_request_optimization == FetchParameters::kAllowPlaceholder &&
         document.GetFrame()->IsClientLoFiAllowed(params.GetResourceRequest())) {
       params.SetClientLoFiPlaceholder();
     }

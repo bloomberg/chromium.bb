@@ -78,7 +78,7 @@ class ElementStyleResources {
   StyleImage* LoadPendingImage(
       ComputedStyle*,
       StylePendingImage*,
-      FetchParameters::PlaceholderImageRequestType,
+      FetchParameters::ImageRequestOptimization,
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
   Member<Document> document_;

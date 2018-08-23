@@ -897,7 +897,7 @@ TEST_P(ImageResourceReloadTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, fetcher);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+            params.GetImageRequestOptimization());
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -922,14 +922,14 @@ TEST_P(ImageResourceReloadTest, ReloadLoFiImagesWithDuplicateURLs) {
   ImageResource* placeholder_resource =
       ImageResource::Fetch(placeholder_params, fetcher);
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            placeholder_params.GetPlaceholderImageRequestType());
+            placeholder_params.GetImageRequestOptimization());
   EXPECT_TRUE(placeholder_resource->ShouldShowPlaceholder());
 
   FetchParameters full_image_params{ResourceRequest(test_url)};
   ImageResource* full_image_resource =
       ImageResource::Fetch(full_image_params, fetcher);
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            full_image_params.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone,
+            full_image_params.GetImageRequestOptimization());
   EXPECT_FALSE(full_image_resource->ShouldShowPlaceholder());
 
   // The |placeholder_resource| should not be reused for the
@@ -1349,8 +1349,7 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
 
   FetchParameters params{ResourceRequest(test_url)};
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone, params.GetImageRequestOptimization());
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -1365,8 +1364,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderDataURL) {
   FetchParameters params{ResourceRequest(test_url)};
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone, params.GetImageRequestOptimization());
   EXPECT_EQ(g_null_atom,
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_FALSE(image_resource->ShouldShowPlaceholder());
@@ -1380,8 +1378,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPostRequest) {
   FetchParameters params(resource_request);
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone, params.GetImageRequestOptimization());
   EXPECT_EQ(g_null_atom,
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_FALSE(image_resource->ShouldShowPlaceholder());
@@ -1397,8 +1394,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderExistingRangeHeader) {
   FetchParameters params(resource_request);
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
-  EXPECT_EQ(FetchParameters::kDisallowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+  EXPECT_EQ(FetchParameters::kNone, params.GetImageRequestOptimization());
   EXPECT_EQ("bytes=128-255",
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_FALSE(image_resource->ShouldShowPlaceholder());
@@ -1414,7 +1410,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderSuccessful) {
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+            params.GetImageRequestOptimization());
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -1430,7 +1426,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+            params.GetImageRequestOptimization());
   EXPECT_EQ("bytes=0-2047",
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
@@ -1472,7 +1468,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
   params.SetAllowImagePlaceholder();
   ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
   EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params.GetPlaceholderImageRequestType());
+            params.GetImageRequestOptimization());
   EXPECT_EQ("bytes=0-2047",
             image_resource->GetResourceRequest().HttpHeaderField("range"));
   EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
@@ -1533,7 +1529,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
     ImageResource* image_resource =
         ImageResource::Fetch(params, CreateFetcher());
     EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-              params.GetPlaceholderImageRequestType());
+              params.GetImageRequestOptimization());
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
@@ -1683,7 +1679,7 @@ TEST(ImageResourceTest, FetchAllowPlaceholderFullResponseDecodeSuccess) {
     ImageResource* image_resource =
         ImageResource::Fetch(params, CreateFetcher());
     EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-              params.GetPlaceholderImageRequestType());
+              params.GetImageRequestOptimization());
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
@@ -1742,7 +1738,7 @@ TEST(ImageResourceTest,
     ImageResource* image_resource =
         ImageResource::Fetch(params, CreateFetcher());
     EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-              params.GetPlaceholderImageRequestType());
+              params.GetImageRequestOptimization());
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
@@ -1774,7 +1770,7 @@ TEST(ImageResourceTest,
     ImageResource* image_resource =
         ImageResource::Fetch(params, CreateFetcher());
     EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-              params.GetPlaceholderImageRequestType());
+              params.GetImageRequestOptimization());
     EXPECT_EQ("bytes=0-2047",
               image_resource->GetResourceRequest().HttpHeaderField("range"));
     EXPECT_TRUE(image_resource->ShouldShowPlaceholder());

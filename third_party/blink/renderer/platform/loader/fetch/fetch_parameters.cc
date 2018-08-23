@@ -38,7 +38,7 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request)
       decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      placeholder_image_request_type_(kDisallowPlaceholder) {}
+      image_request_optimization_(kNone) {}
 
 FetchParameters::FetchParameters(const ResourceRequest& resource_request,
                                  const ResourceLoaderOptions& options)
@@ -47,7 +47,7 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
       options_(options),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
       defer_(kNoDefer),
-      placeholder_image_request_type_(kDisallowPlaceholder) {}
+      image_request_optimization_(kNone) {}
 
 FetchParameters::~FetchParameters() = default;
 
@@ -118,7 +118,7 @@ void FetchParameters::SetClientLoFiPlaceholder() {
 }
 
 void FetchParameters::SetAllowImagePlaceholder() {
-  DCHECK_EQ(kDisallowPlaceholder, placeholder_image_request_type_);
+  DCHECK_EQ(kNone, image_request_optimization_);
   if (!resource_request_.Url().ProtocolIsInHTTPFamily() ||
       resource_request_.HttpMethod() != "GET" ||
       !resource_request_.HttpHeaderField("range").IsNull()) {
@@ -129,7 +129,7 @@ void FetchParameters::SetAllowImagePlaceholder() {
     return;
   }
 
-  placeholder_image_request_type_ = kAllowPlaceholder;
+  image_request_optimization_ = kAllowPlaceholder;
 
   // Fetch the first few bytes of the image. This number is tuned to both (a)
   // likely capture the entire image for small images and (b) likely contain

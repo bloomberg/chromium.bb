@@ -142,10 +142,10 @@ static bool BackgroundLayerMayBeSprite(const FillLayer& background_layer) {
 StyleImage* ElementStyleResources::LoadPendingImage(
     ComputedStyle* style,
     StylePendingImage* pending_image,
-    FetchParameters::PlaceholderImageRequestType placeholder_image_request_type,
+    FetchParameters::ImageRequestOptimization image_request_optimization,
     CrossOriginAttributeValue cross_origin) {
   if (CSSImageValue* image_value = pending_image->CssImageValue()) {
-    return image_value->CacheImage(*document_, placeholder_image_request_type,
+    return image_value->CacheImage(*document_, image_request_optimization,
                                    cross_origin);
   }
 
@@ -163,7 +163,7 @@ StyleImage* ElementStyleResources::LoadPendingImage(
 
   if (CSSImageSetValue* image_set_value = pending_image->CssImageSetValue()) {
     return image_set_value->CacheImage(*document_, device_scale_factor_,
-                                       placeholder_image_request_type,
+                                       image_request_optimization,
                                        cross_origin);
   }
 
@@ -200,7 +200,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             background_layer->SetImage(LoadPendingImage(
                 style, ToStylePendingImage(background_layer->GetImage()),
                 BackgroundLayerMayBeSprite(*background_layer)
-                    ? FetchParameters::kDisallowPlaceholder
+                    ? FetchParameters::kNone
                     : FetchParameters::kAllowPlaceholder));
           }
         }
@@ -229,9 +229,8 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
             if (StyleImage* image = current_cursor.GetImage()) {
               if (image->IsPendingImage()) {
                 // cursor images shouldn't be replaced with placeholders
-                current_cursor.SetImage(
-                    LoadPendingImage(style, ToStylePendingImage(image),
-                                     FetchParameters::kDisallowPlaceholder));
+                current_cursor.SetImage(LoadPendingImage(
+                    style, ToStylePendingImage(image), FetchParameters::kNone));
               }
             }
           }
@@ -244,7 +243,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
           // List style images shouldn't be replaced with placeholders
           style->SetListStyleImage(LoadPendingImage(
               style, ToStylePendingImage(style->ListStyleImage()),
-              FetchParameters::kDisallowPlaceholder));
+              FetchParameters::kNone));
         }
         break;
       }
@@ -254,7 +253,7 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
           // Border images shouldn't be replaced with placeholders
           style->SetBorderImageSource(LoadPendingImage(
               style, ToStylePendingImage(style->BorderImageSource()),
-              FetchParameters::kDisallowPlaceholder));
+              FetchParameters::kNone));
         }
         break;
       }

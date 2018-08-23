@@ -57,9 +57,9 @@ class PLATFORM_EXPORT FetchParameters {
     kInDocument,  // The request was discovered in the main document
     kInserted     // The request was discovered in a document.write()
   };
-  enum PlaceholderImageRequestType {
-    kDisallowPlaceholder = 0,  // The requested image must not be a placeholder.
-    kAllowPlaceholder,         // The image is allowed to be a placeholder.
+  enum ImageRequestOptimization {
+    kNone = 0,          // No optimization.
+    kAllowPlaceholder,  // The image is allowed to be a placeholder.
   };
   struct ResourceWidth {
     DISALLOW_NEW();
@@ -171,8 +171,8 @@ class PLATFORM_EXPORT FetchParameters {
 
   void MakeSynchronous();
 
-  PlaceholderImageRequestType GetPlaceholderImageRequestType() const {
-    return placeholder_image_request_type_;
+  ImageRequestOptimization GetImageRequestOptimization() const {
+    return image_request_optimization_;
   }
 
   // Configures the request to load an image placeholder if the request is
@@ -196,7 +196,7 @@ class PLATFORM_EXPORT FetchParameters {
   DeferOption defer_;
   ResourceWidth resource_width_;
   ClientHintsPreferences client_hint_preferences_;
-  PlaceholderImageRequestType placeholder_image_request_type_;
+  ImageRequestOptimization image_request_optimization_;
   bool is_stale_revalidation_ = false;
 };
 
