@@ -21,9 +21,9 @@
             android:layout_height="@dimen/toolbar_height_no_shadow" />
         <ImageView
             android:id="@+id/toolbar_shadow"
-            android:src="@drawable/toolbar_shadow"
+            android:src="@drawable/modern_toolbar_shadow"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/toolbar_shadow_height"
             android:layout_marginTop="@dimen/tab_strip_and_toolbar_height"
             android:scaleType="fitXY"
             tools:ignore="ContentDescription" />

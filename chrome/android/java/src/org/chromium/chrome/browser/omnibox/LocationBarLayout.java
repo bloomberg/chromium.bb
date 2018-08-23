@@ -2037,9 +2037,7 @@ public class LocationBarLayout extends FrameLayout
 
         if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
             mScrimParams.backgroundColor =
-                    useModernDesign() && !mIsTablet && !mToolbarDataProvider.isIncognito()
-                    ? mLightScrimColor
-                    : null;
+                    !mIsTablet && !mToolbarDataProvider.isIncognito() ? mLightScrimColor : null;
 
             // If the location bar is shown in the NTP, the toolbar will eventually trigger a
             // fade in.

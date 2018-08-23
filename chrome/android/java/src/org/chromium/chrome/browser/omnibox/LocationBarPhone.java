@@ -8,9 +8,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.support.annotation.Nullable;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
@@ -42,10 +40,8 @@ public class LocationBarPhone extends LocationBarLayout {
             new FastOutLinearInInterpolator();
 
     private View mFirstVisibleFocusedView;
-    private @Nullable View mIncognitoBadge;
     private View mGoogleGContainer;
     private View mGoogleG;
-    private int mIncognitoBadgePadding;
     private int mGoogleGWidth;
     private int mGoogleGMargin;
 
@@ -64,9 +60,6 @@ public class LocationBarPhone extends LocationBarLayout {
         super.onFinishInflate();
 
         mFirstVisibleFocusedView = findViewById(R.id.url_bar);
-        mIncognitoBadge = findViewById(R.id.incognito_badge);
-        mIncognitoBadgePadding =
-                getResources().getDimensionPixelSize(R.dimen.location_bar_incognito_badge_padding);
 
         mGoogleGContainer = findViewById(R.id.google_g_container);
         mGoogleG = findViewById(R.id.google_g);
@@ -242,51 +235,8 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     @Override
-    protected void updateLocationBarIconContainerVisibility() {
-        super.updateLocationBarIconContainerVisibility();
-        updateIncognitoBadgePadding();
-    }
-
-    private void updateIncognitoBadgePadding() {
-        // This can be triggered in the super.onFinishInflate, so we need to null check in this
-        // place only.
-        if (mIncognitoBadge == null) return;
-
-        if (findViewById(R.id.location_bar_icon).getVisibility() == GONE) {
-            ViewCompat.setPaddingRelative(mIncognitoBadge, 0, 0, mIncognitoBadgePadding, 0);
-        } else {
-            ViewCompat.setPaddingRelative(mIncognitoBadge, 0, 0, 0, 0);
-        }
-    }
-
-    @Override
-    public void updateVisualsForState() {
-        super.updateVisualsForState();
-
-        if (mIncognitoBadge == null) return;
-
-        boolean showIncognitoBadge =
-                getToolbarDataProvider() != null && getToolbarDataProvider().isIncognito();
-        mIncognitoBadge.setVisibility(showIncognitoBadge ? VISIBLE : GONE);
-        updateIncognitoBadgePadding();
-    }
-
-    @Override
     protected boolean shouldAnimateIconChanges() {
         return super.shouldAnimateIconChanges() || isUrlFocusChangeInProgress();
-    }
-
-    @Override
-    public void setLayoutDirection(int layoutDirection) {
-        super.setLayoutDirection(layoutDirection);
-        updateIncognitoBadgePadding();
-    }
-
-    /**
-     * @return Whether the incognito badge is currently visible.
-     */
-    public boolean isIncognitoBadgeVisible() {
-        return mIncognitoBadge != null && mIncognitoBadge.getVisibility() == View.VISIBLE;
     }
 
     /**
@@ -348,24 +298,7 @@ public class LocationBarPhone extends LocationBarLayout {
             }
         });
 
-        // Chrome Home does not use the incognito badge. Remove the View to save memory.
-        removeView(mIncognitoBadge);
-        mIncognitoBadge = null;
-
         // TODO(twellington): remove and null out mGoogleG and mGoogleGContainer if we remove
         //                    support for the Google 'G' to save memory.
-    }
-
-    @Override
-    public void onNativeLibraryReady() {
-        super.onNativeLibraryReady();
-
-        // TODO(twellington): Move this to constructor when isModernUiEnabled() is available before
-        // native is loaded.
-        if (useModernDesign()) {
-            // Modern does not use the incognito badge. Remove the View to save memory.
-            removeView(mIncognitoBadge);
-            mIncognitoBadge = null;
-        }
     }
 }

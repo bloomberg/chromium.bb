@@ -827,7 +827,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
 
     @Override
     public boolean useModernDesign() {
-        return false;
+        return true;
     }
 
     @Override
