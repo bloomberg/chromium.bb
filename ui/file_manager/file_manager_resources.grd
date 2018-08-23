@@ -70,12 +70,10 @@
 
       <!-- Images referenced from the manifest or the code -->
       <include name="IDR_FILE_MANAGER_ICON_16" file="file_manager/common/images/icon16.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_ICON_32" file="file_manager/common/images/icon32.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ICON_48" file="file_manager/common/images/icon48.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_ICON_64" file="file_manager/common/images/icon64.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ICON_96" file="file_manager/common/images/icon96.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_ICON_128" file="file_manager/common/images/icon128.png" type="BINDATA" />
-      <include name="IDR_FILE_MANAGER_ICON_256" file="file_manager/common/images/icon256.png" type="BINDATA" />
+      <include name="IDR_FILE_MANAGER_ICON_192" file="file_manager/common/images/icon192.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_GALLERY_ICON_16" file="gallery/images/icon16.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_GALLERY_ICON_32" file="gallery/images/icon32.png" type="BINDATA" />
       <include name="IDR_FILE_MANAGER_GALLERY_ICON_48" file="gallery/images/icon48.png" type="BINDATA" />
