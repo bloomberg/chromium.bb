@@ -58,6 +58,10 @@ class LevelDB {
   virtual bool Load(std::vector<std::string>* entries);
   virtual bool LoadWithFilter(const KeyFilter& filter,
                               std::vector<std::string>* entries);
+  virtual bool LoadWithFilter(const KeyFilter& filter,
+                              std::vector<std::string>* entries,
+                              const leveldb::ReadOptions& options,
+                              const std::string& target_prefix);
   virtual bool LoadKeys(std::vector<std::string>* keys);
   virtual bool Get(const std::string& key, bool* found, std::string* entry);
   // Close (if currently open) and then destroy (i.e. delete) the database

@@ -57,7 +57,12 @@ class ProtoDatabaseImpl : public ProtoDatabase<T> {
       typename ProtoDatabase<T>::UpdateCallback callback) override;
   void LoadEntries(typename ProtoDatabase<T>::LoadCallback callback) override;
   void LoadEntriesWithFilter(
-      const LevelDB::KeyFilter& key_filter,
+      const LevelDB::KeyFilter& filter,
+      typename ProtoDatabase<T>::LoadCallback callback) override;
+  void LoadEntriesWithFilter(
+      const LevelDB::KeyFilter& filter,
+      const leveldb::ReadOptions& options,
+      const std::string& target_prefix,
       typename ProtoDatabase<T>::LoadCallback callback) override;
   void LoadKeys(typename ProtoDatabase<T>::LoadKeysCallback callback) override;
   void GetEntry(const std::string& key,
@@ -181,6 +186,8 @@ void UpdateEntriesWithRemoveFilterFromTaskRunner(
 template <typename T>
 void LoadEntriesFromTaskRunner(LevelDB* database,
                                const LevelDB::KeyFilter& filter,
+                               const leveldb::ReadOptions& options,
+                               const std::string& target_prefix,
                                std::vector<T>* entries,
                                bool* success) {
   DCHECK(success);
@@ -189,7 +196,8 @@ void LoadEntriesFromTaskRunner(LevelDB* database,
   entries->clear();
 
   std::vector<std::string> loaded_entries;
-  *success = database->LoadWithFilter(filter, &loaded_entries);
+  *success =
+      database->LoadWithFilter(filter, &loaded_entries, options, target_prefix);
 
   for (const auto& serialized_entry : loaded_entries) {
     T entry;
@@ -339,6 +347,16 @@ template <typename T>
 void ProtoDatabaseImpl<T>::LoadEntriesWithFilter(
     const LevelDB::KeyFilter& key_filter,
     typename ProtoDatabase<T>::LoadCallback callback) {
+  LoadEntriesWithFilter(key_filter, leveldb::ReadOptions(), std::string(),
+                        std::move(callback));
+}
+
+template <typename T>
+void ProtoDatabaseImpl<T>::LoadEntriesWithFilter(
+    const LevelDB::KeyFilter& key_filter,
+    const leveldb::ReadOptions& options,
+    const std::string& target_prefix,
+    typename ProtoDatabase<T>::LoadCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool* success = new bool(false);
 
@@ -349,7 +367,7 @@ void ProtoDatabaseImpl<T>::LoadEntriesWithFilter(
   task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(LoadEntriesFromTaskRunner<T>, base::Unretained(db_.get()),
-                     key_filter, entries_ptr, success),
+                     key_filter, options, target_prefix, entries_ptr, success),
       base::BindOnce(RunLoadCallback<T>, std::move(callback),
                      base::Owned(success), std::move(entries)));
 }

@@ -74,6 +74,10 @@ class ProtoDatabase {
   // ProtoDatabase's taskrunner.
   virtual void LoadEntriesWithFilter(const LevelDB::KeyFilter& filter,
                                      LoadCallback callback) = 0;
+  virtual void LoadEntriesWithFilter(const LevelDB::KeyFilter& filter,
+                                     const leveldb::ReadOptions& options,
+                                     const std::string& target_prefix,
+                                     LoadCallback callback) = 0;
 
   // Asynchronously loads all keys from the database and invokes |callback| with
   // those keys when complete.
