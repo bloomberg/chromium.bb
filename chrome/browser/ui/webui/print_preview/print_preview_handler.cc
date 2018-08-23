@@ -129,7 +129,7 @@ enum PrintSettingsBuckets {
   HEADERS_AND_FOOTERS,
   CSS_BACKGROUND,
   SELECTION_ONLY,
-  EXTERNAL_PDF_PREVIEW,
+  EXTERNAL_PDF_PREVIEW_UNUSED,
   PAGE_RANGE,
   DEFAULT_MEDIA,
   NON_DEFAULT_MEDIA,
@@ -294,18 +294,30 @@ std::unique_ptr<base::DictionaryValue> GetSettingsDictionary(
 }
 
 // Track the popularity of print settings and report the stats.
-void ReportPrintSettingsStats(const base::DictionaryValue& settings,
+void ReportPrintSettingsStats(const base::DictionaryValue& print_settings,
+                              const base::DictionaryValue& preview_settings,
                               bool is_pdf) {
   ReportPrintSettingHistogram(TOTAL);
 
+  // Print settings can be categorized into 2 groups: settings that are applied
+  // via preview generation (page range, selection, headers/footers, background
+  // graphics, scaling, layout, page size, pages per sheet, fit to page,
+  // margins, rasterize), and settings that are applied at the printer (color,
+  // duplex, copies, collate, dpi). The former should be captured from the most
+  // recent preview request, as some of them are set to dummy values in the
+  // print ticket. Similarly, settings applied at the printer should be pulled
+  // from the print ticket, as they may have dummy values in the preview
+  // request.
   const base::ListValue* page_range_array = NULL;
-  if (settings.GetList(printing::kSettingPageRange, &page_range_array) &&
+  if (preview_settings.GetList(printing::kSettingPageRange,
+                               &page_range_array) &&
       !page_range_array->empty()) {
     ReportPrintSettingHistogram(PAGE_RANGE);
   }
 
   const base::DictionaryValue* media_size_value = NULL;
-  if (settings.GetDictionary(printing::kSettingMediaSize, &media_size_value) &&
+  if (preview_settings.GetDictionary(printing::kSettingMediaSize,
+                                     &media_size_value) &&
       !media_size_value->empty()) {
     bool is_default = false;
     if (media_size_value->GetBoolean(printing::kSettingMediaSizeIsDefault,
@@ -318,89 +330,92 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings,
   }
 
   bool landscape = false;
-  if (settings.GetBoolean(printing::kSettingLandscape, &landscape))
+  if (preview_settings.GetBoolean(printing::kSettingLandscape, &landscape))
     ReportPrintSettingHistogram(landscape ? LANDSCAPE : PORTRAIT);
 
   int copies = 1;
-  if (settings.GetInteger(printing::kSettingCopies, &copies) && copies > 1)
+  if (print_settings.GetInteger(printing::kSettingCopies, &copies) &&
+      copies > 1) {
     ReportPrintSettingHistogram(COPIES);
+  }
 
   int scaling = 100;
-  if (settings.GetInteger(printing::kSettingScaleFactor, &scaling) &&
+  if (preview_settings.GetInteger(printing::kSettingScaleFactor, &scaling) &&
       scaling != 100) {
     ReportPrintSettingHistogram(SCALING);
   }
 
   int pages_per_sheet = 1;
-  if (settings.GetInteger(printing::kSettingPagesPerSheet, &pages_per_sheet) &&
+  if (preview_settings.GetInteger(printing::kSettingPagesPerSheet,
+                                  &pages_per_sheet) &&
       pages_per_sheet != 1) {
     ReportPrintSettingHistogram(PAGES_PER_SHEET);
   }
 
   bool collate = false;
-  if (settings.GetBoolean(printing::kSettingCollate, &collate) && collate)
+  if (print_settings.GetBoolean(printing::kSettingCollate, &collate) && collate)
     ReportPrintSettingHistogram(COLLATE);
 
   int duplex_mode = 0;
-  if (settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode))
+  if (print_settings.GetInteger(printing::kSettingDuplexMode, &duplex_mode))
     ReportPrintSettingHistogram(duplex_mode ? DUPLEX : SIMPLEX);
 
   int color_mode = 0;
-  if (settings.GetInteger(printing::kSettingColor, &color_mode)) {
+  if (print_settings.GetInteger(printing::kSettingColor, &color_mode)) {
     ReportPrintSettingHistogram(
         printing::IsColorModelSelected(color_mode) ? COLOR : BLACK_AND_WHITE);
   }
 
   int margins_type = 0;
-  if (settings.GetInteger(printing::kSettingMarginsType, &margins_type) &&
+  if (preview_settings.GetInteger(printing::kSettingMarginsType,
+                                  &margins_type) &&
       margins_type != 0) {
     ReportPrintSettingHistogram(NON_DEFAULT_MARGINS);
   }
 
   bool headers = false;
-  if (settings.GetBoolean(printing::kSettingHeaderFooterEnabled, &headers) &&
+  if (preview_settings.GetBoolean(printing::kSettingHeaderFooterEnabled,
+                                  &headers) &&
       headers) {
     ReportPrintSettingHistogram(HEADERS_AND_FOOTERS);
   }
 
   bool css_background = false;
-  if (settings.GetBoolean(printing::kSettingShouldPrintBackgrounds,
-                          &css_background) && css_background) {
+  if (preview_settings.GetBoolean(printing::kSettingShouldPrintBackgrounds,
+                                  &css_background) &&
+      css_background) {
     ReportPrintSettingHistogram(CSS_BACKGROUND);
   }
 
   bool selection_only = false;
-  if (settings.GetBoolean(printing::kSettingShouldPrintSelectionOnly,
-                          &selection_only) && selection_only) {
+  if (preview_settings.GetBoolean(printing::kSettingShouldPrintSelectionOnly,
+                                  &selection_only) &&
+      selection_only) {
     ReportPrintSettingHistogram(SELECTION_ONLY);
   }
 
-  bool external_preview = false;
-  if (settings.GetBoolean(printing::kSettingOpenPDFInPreview,
-                          &external_preview) && external_preview) {
-    ReportPrintSettingHistogram(EXTERNAL_PDF_PREVIEW);
-  }
-
   bool rasterize = false;
-  if (settings.GetBoolean(printing::kSettingRasterizePdf,
-                          &rasterize) && rasterize) {
+  if (preview_settings.GetBoolean(printing::kSettingRasterizePdf, &rasterize) &&
+      rasterize) {
     ReportPrintSettingHistogram(PRINT_AS_IMAGE);
   }
 
   bool fit_to_page = false;
   if (is_pdf &&
-      settings.GetBoolean(printing::kSettingFitToPageEnabled, &fit_to_page) &&
+      preview_settings.GetBoolean(printing::kSettingFitToPageEnabled,
+                                  &fit_to_page) &&
       fit_to_page) {
     ReportPrintSettingHistogram(FIT_TO_PAGE);
   }
 
   int dpi_horizontal = 0;
   int dpi_vertical = 0;
-  if (settings.GetInteger(printing::kSettingDpiHorizontal, &dpi_horizontal) &&
-      settings.GetInteger(printing::kSettingDpiVertical, &dpi_vertical) &&
+  if (print_settings.GetInteger(printing::kSettingDpiHorizontal,
+                                &dpi_horizontal) &&
+      print_settings.GetInteger(printing::kSettingDpiVertical, &dpi_vertical) &&
       dpi_horizontal > 0 && dpi_vertical > 0) {
     bool is_default = false;
-    if (settings.GetBoolean(printing::kSettingDpiDefault, &is_default))
+    if (print_settings.GetBoolean(printing::kSettingDpiDefault, &is_default))
       ReportPrintSettingHistogram(is_default ? DEFAULT_DPI : NON_DEFAULT_DPI);
   }
 }
@@ -801,6 +816,7 @@ void PrintPreviewHandler::HandleGetPreview(const base::ListValue* args) {
   VLOG(1) << "Print preview request start";
 
   rfh->Send(new PrintMsg_PrintPreview(rfh->GetRoutingID(), *settings));
+  last_preview_settings_ = std::move(settings);
 }
 
 void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
@@ -864,7 +880,8 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
 
   // After validating |settings|, record metrics.
   bool is_pdf = !print_preview_ui()->source_is_modifiable();
-  ReportPrintSettingsStats(*settings, is_pdf);
+  if (last_preview_settings_)
+    ReportPrintSettingsStats(*settings, *last_preview_settings_, is_pdf);
   {
     PrintDocumentTypeBuckets doc_type = is_pdf ? PDF_DOCUMENT : HTML_DOCUMENT;
     size_t average_page_size_in_kb = data->size() / page_count;
