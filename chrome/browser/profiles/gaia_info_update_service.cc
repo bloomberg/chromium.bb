@@ -86,9 +86,8 @@ Profile* GAIAInfoUpdateService::GetBrowserProfile() {
   return profile_;
 }
 
-GURL GAIAInfoUpdateService::GetCachedPictureURL() const {
-  return GURL(
-      profile_->GetPrefs()->GetString(prefs::kProfileGAIAInfoPictureURL));
+std::string GAIAInfoUpdateService::GetCachedPictureURL() const {
+  return profile_->GetPrefs()->GetString(prefs::kProfileGAIAInfoPictureURL);
 }
 
 bool GAIAInfoUpdateService::IsPreSignin() const {
@@ -112,8 +111,7 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
   SkBitmap bitmap = downloader->GetProfilePicture();
   ProfileDownloader::PictureStatus picture_status =
       downloader->GetProfilePictureStatus();
-  GURL picture_url = downloader->GetProfilePictureURL();
-  DCHECK(picture_url.is_valid());
+  std::string picture_url = downloader->GetProfilePictureURL();
 
   ProfileAttributesEntry* entry;
   if (!g_browser_process->profile_manager()->GetProfileAttributesStorage().
@@ -126,7 +124,7 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
 
   if (picture_status == ProfileDownloader::PICTURE_SUCCESS) {
     profile_->GetPrefs()->SetString(prefs::kProfileGAIAInfoPictureURL,
-                                    picture_url.spec());
+                                    picture_url);
     gfx::Image gfx_image = gfx::Image::CreateFrom1xBitmap(bitmap);
     entry->SetGAIAPicture(&gfx_image);
   } else if (picture_status == ProfileDownloader::PICTURE_DEFAULT) {
