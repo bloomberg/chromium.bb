@@ -120,13 +120,15 @@ function DialogActionController(
   fileSelectionHandler.addEventListener(
       FileSelectionHandler.EventType.CHANGE_THROTTLED,
       this.onFileSelectionChanged_.bind(this));
+  volumeManager.addEventListener(
+      'drive-connection-changed', this.updateOkButton_.bind(this));
 
   dialogFooter.initFileTypeFilter(
       this.fileTypes_, launchParam.includeAllFiles);
   this.onFileTypeFilterChanged_();
 
   this.newFolderCommand_ =
-      /** @type {cr.ui.Command} */ (document.getElementById('new-folder'));
+      /** @type {cr.ui.Command} */ ($('new-folder'));
   this.newFolderCommand_.addEventListener(
       'disabledChange', this.updateNewFolderButton_.bind(this));
 }
