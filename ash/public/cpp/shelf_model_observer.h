@@ -36,6 +36,11 @@ class ASH_PUBLIC_EXPORT ShelfModelObserver {
                                         ShelfItemDelegate* old_delegate,
                                         ShelfItemDelegate* delegate) {}
 
+  // Invoked when the status of the item corresponding to |id| changes. Only
+  // observers within ash (typically the shelf views) need to respond to this
+  // event.
+  virtual void ShelfItemStatusChanged(const ShelfID& id) {}
+
  protected:
   virtual ~ShelfModelObserver() {}
 };

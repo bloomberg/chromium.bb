@@ -253,6 +253,9 @@ void ShelfWindowWatcher::OnWindowActivated(ActivationReason reason,
     OnUserWindowPropertyChanged(gained_active);
   if (lost_active && user_windows_with_items_.count(lost_active) > 0)
     OnUserWindowPropertyChanged(lost_active);
+
+  model_->SetActiveShelfID(gained_active ? GetShelfID(gained_active)
+                                         : ShelfID());
 }
 
 void ShelfWindowWatcher::OnRootWindowAdded(aura::Window* root_window) {
