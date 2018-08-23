@@ -787,6 +787,7 @@ source_set("common") {
     "//ui/gl",
     "//ui/gl/init",
     "//ui/shell_dialogs",
+    "//url",
     "//v8",
   ]
 

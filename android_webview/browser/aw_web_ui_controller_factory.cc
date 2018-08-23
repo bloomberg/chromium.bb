@@ -8,6 +8,7 @@
 #include "components/safe_browsing/web_ui/constants.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/web_ui.h"
+#include "url/gurl.h"
 
 using content::WebUI;
 using content::WebUIController;
