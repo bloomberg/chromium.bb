@@ -146,19 +146,6 @@ void PaymentRequestDialogView::ShowDialog() {
   constrained_window::ShowWebModalDialogViews(this, request_->web_contents());
 }
 
-void PaymentRequestDialogView::ShowDialogAtPaymentHandlerSheet(
-    const GURL& url,
-    PaymentHandlerOpenWindowCallback callback) {
-  view_stack_->Push(CreateViewAndInstallController(
-                        std::make_unique<PaymentHandlerWebFlowViewController>(
-                            request_->spec(), request_->state(), this,
-                            GetProfile(), url, std::move(callback)),
-                        &controller_map_),
-                    /* animate = */ false);
-  HideProcessingSpinner();
-  ShowDialog();
-}
-
 void PaymentRequestDialogView::CloseDialog() {
   // This calls PaymentRequestDialogView::Cancel() before closing.
   // ViewHierarchyChanged() also gets called after Cancel().
@@ -235,6 +222,14 @@ void PaymentRequestDialogView::Pay() {
 }
 
 void PaymentRequestDialogView::GoBack() {
+  // If payment request UI is skipped when calling PaymentRequest.show, then
+  // abort payment request when back button is clicked. This only happens for
+  // service worker based payment handler under circumstance.
+  if (request_->skipped_payment_request_ui()) {
+    CloseDialog();
+    return;
+  }
+
   view_stack_->Pop();
 
   if (observer_for_testing_)
