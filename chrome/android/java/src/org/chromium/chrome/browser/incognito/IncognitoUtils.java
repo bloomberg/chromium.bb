@@ -10,13 +10,17 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.util.Pair;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
@@ -103,5 +107,25 @@ public class IncognitoUtils {
         for (IncognitoTabHost host : IncognitoTabHostRegistry.getInstance().getHosts()) {
             host.closeAllIncognitoTabs();
         }
+    }
+
+    /**
+     * Deletes files with saved state of incognito tabs.
+     * @return whether successful.
+     */
+    public static boolean deleteIncognitoStateFiles() {
+        File directory = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
+        File[] tabStateFiles = directory.listFiles();
+        if (tabStateFiles == null) return true;
+
+        boolean deletionSuccessful = true;
+        for (File file : tabStateFiles) {
+            Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(file.getName());
+            boolean isIncognito = tabInfo != null && tabInfo.second;
+            if (isIncognito) {
+                deletionSuccessful &= file.delete();
+            }
+        }
+        return deletionSuccessful;
     }
 }

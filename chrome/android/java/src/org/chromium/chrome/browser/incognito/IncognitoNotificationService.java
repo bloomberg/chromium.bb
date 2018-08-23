@@ -16,7 +16,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
-import android.util.Pair;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -25,14 +24,11 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.content_public.browser.BrowserStartupController;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.List;
@@ -64,8 +60,7 @@ public class IncognitoNotificationService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         ThreadUtils.runOnUiThreadBlocking(IncognitoUtils::closeAllIncognitoTabs);
 
-        boolean clearedIncognito = deleteIncognitoStateFilesInDirectory(
-                TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory());
+        boolean clearedIncognito = IncognitoUtils.deleteIncognitoStateFiles();
 
         // If we failed clearing all of the incognito tabs, then do not dismiss the notification.
         if (!clearedIncognito) return;
@@ -164,22 +159,4 @@ public class IncognitoNotificationService extends IntentService {
         }
         return visibleTaskIds;
     }
-
-    /**
-     * @return Whether deleting all the incognito files was successful.
-     */
-    private boolean deleteIncognitoStateFilesInDirectory(File directory) {
-        File[] allTabStates = directory.listFiles();
-        if (allTabStates == null) return true;
-
-        boolean deletionSuccessful = true;
-        for (int i = 0; i < allTabStates.length; i++) {
-            String fileName = allTabStates[i].getName();
-            Pair<Integer, Boolean> tabInfo = TabState.parseInfoFromFilename(fileName);
-            if (tabInfo == null || !tabInfo.second) continue;
-            deletionSuccessful &= allTabStates[i].delete();
-        }
-        return deletionSuccessful;
-    }
-
 }

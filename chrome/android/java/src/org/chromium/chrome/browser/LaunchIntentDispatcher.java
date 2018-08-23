@@ -29,11 +29,13 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.SeparateTaskCustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
+import org.chromium.chrome.browser.incognito.IncognitoDisclosureActivity;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.metrics.MediaNotificationUma;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.NotificationPlatformBridge;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.searchwidget.SearchActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
@@ -344,6 +346,16 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Create and fire a launch intent.
         Intent launchIntent = createCustomTabActivityIntent(mActivity, mIntent);
+
+        boolean shouldShowIncognitoDisclosure =
+                CustomTabIntentDataProvider.isValidExternalIncognitoIntent(launchIntent)
+                && Profile.getLastUsedProfile().hasOffTheRecordProfile();
+
+        if (shouldShowIncognitoDisclosure) {
+            IncognitoDisclosureActivity.launch(mActivity, launchIntent);
+            return;
+        }
+
         // Allow disk writes during startActivity() to avoid strict mode violations on some
         // Samsung devices, see https://crbug.com/796548.
         try (StrictModeContext smc = StrictModeContext.allowDiskWrites()) {
