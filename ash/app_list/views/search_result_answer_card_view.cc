@@ -31,19 +31,31 @@ namespace app_list {
 
 namespace {
 
-// Helper to get/create answer card view by token.
-views::View* GetViewByToken(
+// Holds answer card data. |view| is the view to be added to app list view
+// hierarchy. |native_view| is the root of the card contents view. For classic
+// ash, it is the NativeView of the answer card WebContents. For mash, it is
+// the embedding root for answer card contents.
+struct CardData {
+  views::View* view = nullptr;
+  gfx::NativeView native_view = nullptr;
+};
+
+// Get answer card data by token.
+CardData GetCardDataByToken(
     ui::ws2::WindowService* window_service,
     const base::Optional<base::UnguessableToken>& token) {
   // Bail for invalid token.
   if (!token.has_value() || token->is_empty())
-    return nullptr;
+    return {};
 
   // Use AnswerCardContentsRegistry for an in-process token-to-view map. See
   // answer_card_contents_registry.h. Null check because it could be missing in
   // Mash and for tests.
-  if (AnswerCardContentsRegistry::Get())
-    return AnswerCardContentsRegistry::Get()->GetView(token.value());
+  auto* card_registry = AnswerCardContentsRegistry::Get();
+  if (card_registry) {
+    return {card_registry->GetView(token.value()),
+            card_registry->GetNativeView(token.value())};
+  }
 
   // Use ServerRemoteViewHost to embed the answer card contents provided in the
   // browser process in Mash.
@@ -51,25 +63,16 @@ views::View* GetViewByToken(
     ui::ws2::ServerRemoteViewHost* view =
         new ui::ws2::ServerRemoteViewHost(window_service);
     view->EmbedUsingToken(token.value(),
-                          ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
-                              ui::mojom::kEmbedFlagEmbedderControlsVisibility,
+                          ui::mojom::kEmbedFlagEmbedderControlsVisibility,
                           base::DoNothing());
-    return view;
+    return {view, view->embedding_root()};
   }
 
-  return nullptr;
+  return {};
 }
 
-// If there is a card native view identified by |token| in
-// AnswerCardContentsRegistry, exclude it from event handling.
-void ExcludeFromEventHandlingByToken(
-    const base::Optional<base::UnguessableToken>& token) {
-  if (!AnswerCardContentsRegistry::Get())
-    return;
-
-  DCHECK(token.has_value() && !token->is_empty());
-  gfx::NativeView card_native_view =
-      AnswerCardContentsRegistry::Get()->GetNativeView(token.value());
+// Exclude the card native view from event handling.
+void ExcludeCardFromEventHandling(gfx::NativeView card_native_view) {
   // |card_native_view| could be null in tests.
   if (!card_native_view)
     return;
@@ -124,11 +127,13 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     if (old_token != new_token) {
       RemoveAllChildViews(true /* delete_children */);
 
-      result_view =
-          GetViewByToken(view_delegate_->GetWindowService(), new_token);
+      const CardData card_data =
+          GetCardDataByToken(view_delegate_->GetWindowService(), new_token);
+
+      result_view = card_data.view;
       if (result_view) {
         AddChildView(result_view);
-        ExcludeFromEventHandlingByToken(new_token);
+        ExcludeCardFromEventHandling(card_data.native_view);
       }
     }
 

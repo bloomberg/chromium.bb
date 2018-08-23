@@ -50,6 +50,8 @@ class ServerRemoteViewHost : public views::NativeViewHost {
                        int embed_flags,
                        EmbedCallback callback);
 
+  aura::Window* embedding_root() { return embedding_root_.get(); }
+
  private:
   void EmbedImpl();
 
