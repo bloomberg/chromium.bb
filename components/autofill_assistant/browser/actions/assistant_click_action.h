@@ -16,7 +16,7 @@ namespace autofill_assistant {
 // An action to perform a mouse left button click on a given element on Web.
 class AssistantClickAction : public AssistantAction {
  public:
-  explicit AssistantClickAction(const AssistantActionProto& proto);
+  explicit AssistantClickAction(const ActionProto& proto);
   ~AssistantClickAction() override;
 
   // Overrides AssistantAction:

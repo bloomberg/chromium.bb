@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "components/autofill_assistant/browser/assistant.pb.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
@@ -41,7 +41,7 @@ class AssistantService {
   // previous reponse.
   virtual void GetNextAssistantActions(
       const std::string& previous_server_payload,
-      const std::vector<ProcessedAssistantActionProto>& processed_actions,
+      const std::vector<ProcessedActionProto>& processed_actions,
       ResponseCallback callback);
 
  private:

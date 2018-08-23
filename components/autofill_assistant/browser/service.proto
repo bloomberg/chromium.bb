@@ -8,8 +8,7 @@ option optimize_for = LITE_RUNTIME;
 
 package autofill_assistant;
 
-// Context contains client environment details. It's used to filter the
-// scripts that can be surfaced to the user.
+// Context contains client environment details.
 message ClientContextProto {
   required string chrome_version = 1;
 }
@@ -31,12 +30,11 @@ message SupportedScriptProto {
   required string path = 1;
 
   message PresentationProto {
-    // Name to use when suggesting this script to users.
+    // Script name.
     optional string name = 1;
 
     // Precondition contains a set of conditions that must hold for a script to
-    // be executed. No precondition means that a script can run in any
-    // case.
+    // be executed. No precondition means that a script can run in any case.
     optional ScriptPreconditionProto precondition = 2;
   }
   optional PresentationProto presentation = 2;
@@ -78,10 +76,10 @@ message InitialScriptActionsRequestProto {
 
 // Next request to get a script's actions.
 message NextScriptActionsRequestProto {
-  // The result of processing each AssistantActionProto from the previous
-  // response. This field must be in the same order as the actions in the
-  // original response. It may have less actions in case of failure.
-  repeated ProcessedAssistantActionProto processed_actions = 1;
+  // The result of processing each ActionProto from the previous response. This
+  // field must be in the same order as the actions in the original response.
+  // It may have less actions in case of failure.
+  repeated ProcessedActionProto processed_actions = 1;
 }
 
 // Response of a script's actions.
@@ -92,11 +90,11 @@ message ActionsResponseProto {
 
   // Actions to be performed in order.
   // Should stop processing as soon as an action fails.
-  repeated AssistantActionProto actions = 2;
+  repeated ActionProto actions = 2;
 }
 
-// An assistant action could be performed.
-message AssistantActionProto {
+// An action could be performed.
+message ActionProto {
   // Opaque data that should not be interpreted by the client. The client must
   // pass this back unchanged in the next request
   optional bytes server_payload = 4;
@@ -110,14 +108,14 @@ message AssistantActionProto {
   }
 }
 
-message ProcessedAssistantActionProto {
+message ProcessedActionProto {
   // The action that was processed.
-  optional AssistantActionProto action = 1;
+  optional ActionProto action = 1;
 
-  optional ProcessedAssistantActionStatus status = 2;
+  optional ProcessedActionStatus status = 2;
 }
 
-enum ProcessedAssistantActionStatus {
+enum ProcessedActionStatus {
   UNKNOWN_ACTION_STATUS = 0;
   ELEMENT_RESOLUTION_FAILED = 1;
   ACTION_APPLIED = 2;
@@ -139,14 +137,12 @@ message ClickProto {
   required ElementReferenceProto element_to_click = 1;
 }
 
-// Contain a localized text message from the server to show to the user.
+// Contain a localized text message from the server.
 message TellProto {
   required string message = 1;
 }
 
-// TODO(crbug.com/806868): Handle it better when there is no local address.
-// Ask user to fill a form with a local address if there is, otherwise fail this
-// action.
+// Fill a form with an address if there is, otherwise fail this action.
 message UseAddressProto {
   // Optional message to show usage of the address, like billing or shipping
   // address.
@@ -156,9 +152,7 @@ message UseAddressProto {
   required ElementReferenceProto form_field_element = 2;
 }
 
-// TODO(crbug.com/806868): Handle it better when there is no local credit card.
-// Ask user to fill a form with a local credit card if there is, otherwise fail
-// this action.
+// Fill a form with a credit card if there is, otherwise fail this action.
 message UseCreditCardProto {
   // A reference to the card number field in the form that should be filled.
   required ElementReferenceProto form_field_element = 1;

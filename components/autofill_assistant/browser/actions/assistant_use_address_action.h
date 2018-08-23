@@ -15,7 +15,7 @@ namespace autofill_assistant {
 // An action to ask user to choose a local address to fill the form.
 class AssistantUseAddressAction : public AssistantAction {
  public:
-  explicit AssistantUseAddressAction(const AssistantActionProto& proto);
+  explicit AssistantUseAddressAction(const ActionProto& proto);
 
   ~AssistantUseAddressAction() override;
 

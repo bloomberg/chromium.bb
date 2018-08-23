@@ -16,7 +16,7 @@ namespace autofill_assistant {
 // An action to ask user to choose a local card to fill the form.
 class AssistantUseCardAction : public AssistantAction {
  public:
-  explicit AssistantUseCardAction(const AssistantActionProto& proto);
+  explicit AssistantUseCardAction(const ActionProto& proto);
   ~AssistantUseCardAction() override;
 
   // Overrides AssistantAction:

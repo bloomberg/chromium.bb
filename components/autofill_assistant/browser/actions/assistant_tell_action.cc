@@ -11,7 +11,7 @@
 
 namespace autofill_assistant {
 
-AssistantTellAction::AssistantTellAction(const AssistantActionProto& proto)
+AssistantTellAction::AssistantTellAction(const ActionProto& proto)
     : AssistantAction(proto) {
   DCHECK(proto_.has_tell());
 }

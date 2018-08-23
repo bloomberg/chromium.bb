@@ -12,8 +12,7 @@
 
 namespace autofill_assistant {
 
-AssistantUseAddressAction::AssistantUseAddressAction(
-    const AssistantActionProto& proto)
+AssistantUseAddressAction::AssistantUseAddressAction(const ActionProto& proto)
     : AssistantAction(proto), weak_ptr_factory_(this) {}
 
 AssistantUseAddressAction::~AssistantUseAddressAction() {}

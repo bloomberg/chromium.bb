@@ -21,8 +21,7 @@ int kDefaultCheckRounds = 150;
 
 namespace autofill_assistant {
 
-AssistantWaitForDomAction::AssistantWaitForDomAction(
-    const AssistantActionProto& proto)
+AssistantWaitForDomAction::AssistantWaitForDomAction(const ActionProto& proto)
     : AssistantAction(proto), weak_ptr_factory_(this) {}
 
 AssistantWaitForDomAction::~AssistantWaitForDomAction() {}

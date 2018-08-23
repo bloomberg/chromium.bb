@@ -11,13 +11,13 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/assistant_action.h"
-#include "components/autofill_assistant/browser/assistant.pb.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 // An action to ask Chrome to wait for a DOM element to process next action.
 class AssistantWaitForDomAction : public AssistantAction {
  public:
-  explicit AssistantWaitForDomAction(const AssistantActionProto& proto);
+  explicit AssistantWaitForDomAction(const ActionProto& proto);
   ~AssistantWaitForDomAction() override;
 
   // Overrides AssistantAction:

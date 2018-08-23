@@ -86,7 +86,7 @@ TEST_F(AssistantScriptExecutorTest, RunOneActionReportFailureAndStop) {
   EXPECT_CALL(mock_assistant_service_, OnGetAssistantActions(_, _))
       .WillOnce(RunOnceCallback<1>(true, Serialize(actions_response)));
 
-  std::vector<ProcessedAssistantActionProto> processed_actions_capture;
+  std::vector<ProcessedActionProto> processed_actions_capture;
   EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
       .WillOnce(DoAll(SaveArg<1>(&processed_actions_capture),
                       RunOnceCallback<2>(true, "")));
@@ -109,8 +109,8 @@ TEST_F(AssistantScriptExecutorTest, RunMultipleActions) {
   ActionsResponseProto next_actions_response;
   next_actions_response.set_server_payload("payload2");
   next_actions_response.add_actions()->mutable_tell()->set_message("3");
-  std::vector<ProcessedAssistantActionProto> processed_actions1_capture;
-  std::vector<ProcessedAssistantActionProto> processed_actions2_capture;
+  std::vector<ProcessedActionProto> processed_actions1_capture;
+  std::vector<ProcessedActionProto> processed_actions2_capture;
   EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
       .WillOnce(
           DoAll(SaveArg<1>(&processed_actions1_capture),
@@ -143,8 +143,8 @@ TEST_F(AssistantScriptExecutorTest, InterruptActionListOnError) {
   next_actions_response.set_server_payload("payload2");
   next_actions_response.add_actions()->mutable_tell()->set_message(
       "will run after error");
-  std::vector<ProcessedAssistantActionProto> processed_actions1_capture;
-  std::vector<ProcessedAssistantActionProto> processed_actions2_capture;
+  std::vector<ProcessedActionProto> processed_actions1_capture;
+  std::vector<ProcessedActionProto> processed_actions2_capture;
   EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
       .WillOnce(
           DoAll(SaveArg<1>(&processed_actions1_capture),

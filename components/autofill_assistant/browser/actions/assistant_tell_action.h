@@ -14,7 +14,7 @@ namespace autofill_assistant {
 // An action to display a message.
 class AssistantTellAction : public AssistantAction {
  public:
-  explicit AssistantTellAction(const AssistantActionProto& proto);
+  explicit AssistantTellAction(const ActionProto& proto);
   ~AssistantTellAction() override;
 
   // Overrides AssistantAction:

@@ -6,7 +6,6 @@
 
 namespace autofill_assistant {
 
-AssistantAction::AssistantAction(const AssistantActionProto& proto)
-    : proto_(proto) {}
+AssistantAction::AssistantAction(const ActionProto& proto) : proto_(proto) {}
 
 }  // namespace autofill_assistant.
