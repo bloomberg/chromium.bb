@@ -22,6 +22,7 @@
 #include "net/base/backoff_entry.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 
+class SigninClient;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

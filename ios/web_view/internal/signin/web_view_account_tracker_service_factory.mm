@@ -9,8 +9,6 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
-#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
-#include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +21,6 @@ WebViewAccountTrackerServiceFactory::WebViewAccountTrackerServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "AccountTrackerService",
           BrowserStateDependencyManager::GetInstance()) {
-  DependsOn(WebViewSigninClientFactory::GetInstance());
 }
 
 // static
@@ -51,8 +48,7 @@ WebViewAccountTrackerServiceFactory::BuildServiceInstanceFor(
       WebViewBrowserState::FromBrowserState(context);
   std::unique_ptr<AccountTrackerService> service =
       std::make_unique<AccountTrackerService>();
-  service->Initialize(
-      WebViewSigninClientFactory::GetForBrowserState(browser_state));
+  service->Initialize(browser_state->GetPrefs(), base::FilePath());
   return service;
 }
 

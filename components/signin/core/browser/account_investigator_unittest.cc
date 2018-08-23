@@ -49,7 +49,7 @@ class AccountInvestigatorTest : public testing::Test {
     AccountTrackerService::RegisterPrefs(prefs_.registry());
     AccountInvestigator::RegisterPrefs(prefs_.registry());
     SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
-    account_tracker_service_.Initialize(&signin_client_);
+    account_tracker_service_.Initialize(&prefs_, base::FilePath());
   }
 
   ~AccountInvestigatorTest() override { investigator_.Shutdown(); }

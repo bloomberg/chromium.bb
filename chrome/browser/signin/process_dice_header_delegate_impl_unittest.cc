@@ -48,7 +48,7 @@ class ProcessDiceHeaderDelegateImplTest
         auth_error_(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
     AccountTrackerService::RegisterPrefs(pref_service_.registry());
     SigninManager::RegisterProfilePrefs(pref_service_.registry());
-    account_tracker_service_.Initialize(&signin_client_);
+    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
   }
 
   ~ProcessDiceHeaderDelegateImplTest() override {

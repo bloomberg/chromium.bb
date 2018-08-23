@@ -28,7 +28,7 @@ SyncUsernameTestBase::SyncUsernameTestBase()
       signin_manager_(&signin_client_, &account_tracker_) {
   SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
   AccountTrackerService::RegisterPrefs(prefs_.registry());
-  account_tracker_.Initialize(&signin_client_);
+  account_tracker_.Initialize(&prefs_, base::FilePath());
 }
 
 SyncUsernameTestBase::~SyncUsernameTestBase() {}

@@ -105,7 +105,7 @@ class CrOSOAuthDelegateTest : public testing::Test {
         AccountTrackerService::MIGRATION_NOT_STARTED);
     client_ = std::make_unique<TestSigninClient>(&pref_service_);
 
-    account_tracker_service_.Initialize(client_.get());
+    account_tracker_service_.Initialize(&pref_service_, base::FilePath());
 
     account_info_ = CreateAccountInfoTestFixture("111" /* gaia_id */,
                                                  "user@gmail.com" /* email */);
