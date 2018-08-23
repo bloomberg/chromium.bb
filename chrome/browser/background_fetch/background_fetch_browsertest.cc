@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
@@ -21,6 +22,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/download/public/background_service/logger.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -307,6 +310,19 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
         DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED);
   }
 
+  void SetPermission(ContentSettingsType content_type, ContentSetting setting) {
+    auto* settings_map =
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+    DCHECK(settings_map);
+
+    ContentSettingsPattern host_pattern =
+        ContentSettingsPattern::FromURL(https_server_->base_url());
+
+    settings_map->SetContentSettingCustomScope(
+        host_pattern, host_pattern, content_type,
+        std::string() /* resource_identifier */, setting);
+  }
+
  protected:
   download::DownloadService* download_service_{nullptr};
 
@@ -531,4 +547,36 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
   ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
       "RunFetchAnExpectAnException()",
       "This origin does not have permission to start a fetch."));
+}
+
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, FetchFromServiceWorker) {
+  auto* settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  DCHECK(settings_map);
+
+  // Give the needed permissions.
+  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+                CONTENT_SETTING_ALLOW);
+  SetPermission(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, CONTENT_SETTING_ALLOW);
+
+  // The fetch should succeed.
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "StartFetchFromServiceWorker()", "backgroundfetchsuccess"));
+
+  // Revoke Automatic Downloads permission.
+  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+                CONTENT_SETTING_BLOCK);
+
+  // This should fail without the Automatic Downloads permission.
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "StartFetchFromServiceWorker()", "permissionerror"));
+
+  // Reset Automatic Downloads permission and remove Background Sync permission
+  SetPermission(CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+                CONTENT_SETTING_ALLOW);
+  SetPermission(CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC, CONTENT_SETTING_BLOCK);
+
+  // This should also fail now.
+  ASSERT_NO_FATAL_FAILURE(RunScriptAndCheckResultingMessage(
+      "StartFetchFromServiceWorker()", "permissionerror"));
 }

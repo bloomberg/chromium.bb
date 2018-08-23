@@ -13,6 +13,14 @@ function postToWindowClients(msg) {
   });
 }
 
+self.addEventListener('message', e => {
+  if (e.data !== 'fetch') throw "unexpected message";
+
+  self.registration.backgroundFetch.fetch(
+      'sw-fetch', '/background_fetch/types_of_cheese.txt')
+    .catch(e => postToWindowClients('permissionerror'));
+});
+
 // Background Fetch event listeners.
 self.addEventListener('backgroundfetchsuccess', e => {
   e.waitUntil(e.updateUI({title: 'New Fetched Title!'}).then(

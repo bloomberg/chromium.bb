@@ -86,8 +86,13 @@ function StartSingleFileDownloadWithCorrectDownloadTotal() {
 }
 
 // Listens for a postMessage from sw.js and sends the result to the test.
-navigator.serviceWorker.addEventListener('message', (event) => {
-  if (['backgroundfetchsuccess', 'backgroundfetchfail'].includes(event.data))
+navigator.serviceWorker.addEventListener('message', event => {
+  const expectedResponses = [
+    'backgroundfetchsuccess',
+    'backgroundfetchfail',
+    'permissionerror',
+  ];
+  if (expectedResponses.includes(event.data))
     sendResultToTest(event.data);
   else
     sendErrorToTest(Error('Unexpected message received: ' + event.data));
@@ -127,4 +132,10 @@ function RunFetchAnExpectAnException() {
     return swRegistration.backgroundFetch.fetch(kBackgroundFetchId, resources);
   }).then(sendErrorToTest)
     .catch(e => sendResultToTest(e.message));
+}
+
+function StartFetchFromServiceWorker() {
+  navigator.serviceWorker.ready.then(() => {
+    navigator.serviceWorker.controller.postMessage('fetch');
+  });
 }
