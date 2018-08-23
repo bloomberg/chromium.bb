@@ -4,6 +4,7 @@
 
 #include "services/ui/ws2/window_delegate_impl.h"
 
+#include "services/ui/ws2/embedding.h"
 #include "services/ui/ws2/server_window.h"
 #include "services/ui/ws2/window_properties.h"
 #include "ui/aura/window.h"
@@ -43,8 +44,12 @@ gfx::NativeCursor WindowDelegateImpl::GetCursor(const gfx::Point& point) {
       return server_window->window()->delegate()->GetCursor(toplevel_point);
     }
 
-    if (server_window->HasEmbedding())
+    // Assume that if the embedder is intercepting events, it's also responsible
+    // for the cursor (which is the case with content embeddings).
+    if (server_window->HasEmbedding() &&
+        !server_window->embedding()->embedding_tree_intercepts_events()) {
       return server_window->cursor();
+    }
   }
 
   // TODO(sky): there should be a NOTREACHED() here, but we're hitting this on
