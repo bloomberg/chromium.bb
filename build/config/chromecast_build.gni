@@ -10,6 +10,10 @@ declare_args() {
   # Linux and Android.
   is_chromecast = false
 
+  # chromecast_branding is used to include or exclude Google-branded components.
+  # Set it to "public" for a Chromium build.
+  chromecast_branding = "public"
+
   # Set this true for an audio-only Chromecast build.
   is_cast_audio_only = false
 }
