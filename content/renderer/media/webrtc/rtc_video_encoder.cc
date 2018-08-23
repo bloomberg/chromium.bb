@@ -63,7 +63,7 @@ webrtc::VideoCodecType ProfileToWebRtcVideoCodecType(
     return webrtc::kVideoCodecH264;
   }
   NOTREACHED() << "Invalid profile " << GetProfileName(profile);
-  return webrtc::kVideoCodecUnknown;
+  return webrtc::kVideoCodecGeneric;
 }
 
 // Populates struct webrtc::RTPFragmentationHeader for H264 codec.
