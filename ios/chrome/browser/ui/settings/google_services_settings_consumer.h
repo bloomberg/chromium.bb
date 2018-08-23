@@ -19,6 +19,9 @@
 // Reloads |sections|.
 - (void)reloadSections:(NSIndexSet*)sections;
 
+// Reloads only a specific |item|.
+- (void)reloadItem:(CollectionViewItem*)item;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_SETTINGS_GOOGLE_SERVICES_SETTINGS_CONSUMER_H_

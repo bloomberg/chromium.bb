@@ -15,6 +15,8 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
   // Personalized section.
   // Enable/disabble bookmark sync.
   GoogleServicesSettingsCommandIDToggleDataTypeSync,
+  // Enable/disable autocomplete wallet for Google Pay.
+  GoogleServicesSettingsCommandIDAutocompleteWalletService,
   // Opens the Google activity controls dialog.
   GoogleServicesSettingsCommandIDOpenGoogleActivityControlsDialog,
   // Opens the encryption dialog.
@@ -42,6 +44,9 @@ typedef NS_ENUM(NSInteger, GoogleServicesSettingsCommandID) {
 // Personalized section.
 // Called when GoogleServicesSettingsCommandIDToggleDataTypeSync is triggered.
 - (void)toggleSyncDataSync:(NSInteger)dataType withValue:(BOOL)value;
+// Called when GoogleServicesSettingsCommandIDAutocompleteWalletService is
+// triggered.
+- (void)toggleAutocompleteWalletServiceWithValue:(BOOL)value;
 
 // Non-personalized section.
 // Called when GoogleServicesSettingsCommandIDToggleAutocompleteSearchesService
