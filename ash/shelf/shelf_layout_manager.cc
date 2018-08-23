@@ -10,7 +10,6 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/app_list/home_launcher_gesture_handler.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
@@ -94,14 +93,6 @@ bool IsTabletModeEnabled() {
   return Shell::Get()
       ->tablet_mode_controller()
       ->IsTabletModeWindowManagerEnabled();
-}
-
-// TODO(sammiequon): This should be the same as IsTabletModeEnabled once home
-// launcher flag is removed.
-bool IsHomeLauncherEnabled() {
-  return Shell::Get()
-      ->app_list_controller()
-      ->IsHomeLauncherEnabledInTabletMode();
 }
 
 }  // namespace
@@ -539,8 +530,11 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
 
   // If the app list is active and the home launcher is not shown, hide the
   // shelf background to prevent overlap.
-  if (is_app_list_visible_ && !IsHomeLauncherEnabled())
+  if (is_app_list_visible_ && !Shell::Get()
+                                   ->app_list_controller()
+                                   ->IsHomeLauncherEnabledInTabletMode()) {
     return SHELF_BACKGROUND_APP_LIST;
+  }
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {
@@ -986,8 +980,12 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (visibility_state != SHELF_AUTO_HIDE)
     return SHELF_AUTO_HIDE_HIDDEN;
 
-  if (shelf_widget_->IsShowingAppList() && !IsHomeLauncherEnabled())
+  if (shelf_widget_->IsShowingAppList() &&
+      !Shell::Get()
+           ->app_list_controller()
+           ->IsHomeLauncherEnabledInTabletMode()) {
     return SHELF_AUTO_HIDE_SHOWN;
+  }
 
   if (shelf_widget_->status_area_widget() &&
       shelf_widget_->status_area_widget()->ShouldShowShelf())
@@ -1174,16 +1172,6 @@ void ShelfLayoutManager::StartGestureDrag(
     launcher_above_shelf_bottom_amount_ =
         shelf_bounds.bottom() - gesture_in_screen.location().y();
   } else {
-    HomeLauncherGestureHandler* home_launcher_handler =
-        Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-    if (home_launcher_handler) {
-      home_launcher_handler->OnPressEvent();
-      if (home_launcher_handler->window()) {
-        gesture_drag_status_ = GESTURE_DRAG_APPLIST_IN_PROGRESS;
-        return;
-      }
-    }
-
     // Disable the shelf dragging if the fullscreen app list is opened.
     if (is_app_list_visible_) {
       return;
@@ -1199,17 +1187,6 @@ void ShelfLayoutManager::StartGestureDrag(
 
 void ShelfLayoutManager::UpdateGestureDrag(
     const ui::GestureEvent& gesture_in_screen) {
-  HomeLauncherGestureHandler* home_launcher_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_handler) {
-    if (home_launcher_handler->window()) {
-      home_launcher_handler->OnScrollEvent(gesture_in_screen.location());
-    } else {
-      gesture_drag_status_ = GESTURE_DRAG_NONE;
-    }
-    return;
-  }
-
   if (gesture_drag_status_ == GESTURE_DRAG_APPLIST_IN_PROGRESS) {
     // Dismiss the app list if the shelf changed to vertical alignment during
     // dragging.
@@ -1293,16 +1270,6 @@ void ShelfLayoutManager::CompleteAppListDrag(
   if (gesture_drag_status_ == GESTURE_DRAG_NONE)
     return;
 
-  HomeLauncherGestureHandler* home_launcher_handler =
-      Shell::Get()->app_list_controller()->home_launcher_gesture_handler();
-  if (home_launcher_handler) {
-    if (home_launcher_handler->window()) {
-      home_launcher_handler->OnReleaseEvent(gesture_in_screen.location());
-    }
-    gesture_drag_status_ = GESTURE_DRAG_NONE;
-    return;
-  }
-
   using app_list::AppListViewState;
   AppListViewState app_list_state = AppListViewState::PEEKING;
   if (gesture_in_screen.type() == ui::ET_SCROLL_FLING_START &&
@@ -1371,8 +1338,11 @@ bool ShelfLayoutManager::CanStartFullscreenAppListDrag(
   // In overview mode, app list for tablet mode is hidden temporarily and will
   // be shown automatically after overview mode ends. So prevent opening it
   // here.
-  if (IsHomeLauncherEnabled())
+  if (Shell::Get()
+          ->app_list_controller()
+          ->IsHomeLauncherEnabledInTabletMode()) {
     return false;
+  }
 
   return true;
 }
