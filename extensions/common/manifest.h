@@ -193,9 +193,8 @@ class Manifest {
   bool GetList(const std::string& path,
                const base::ListValue** out_value) const;
 
-  // Returns a new Manifest equal to this one, passing ownership to
-  // the caller.
-  Manifest* DeepCopy() const;
+  // Returns a new Manifest equal to this one.
+  std::unique_ptr<Manifest> CreateDeepCopy() const;
 
   // Returns true if this equals the |other| manifest.
   bool Equals(const Manifest* other) const;

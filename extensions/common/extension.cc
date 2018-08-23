@@ -157,8 +157,8 @@ scoped_refptr<Extension> Extension::Create(const base::FilePath& path,
   base::ElapsedTimer timer;
   DCHECK(utf8_error);
   base::string16 error;
-  std::unique_ptr<extensions::Manifest> manifest(new extensions::Manifest(
-      location, std::unique_ptr<base::DictionaryValue>(value.DeepCopy())));
+  std::unique_ptr<extensions::Manifest> manifest(
+      new extensions::Manifest(location, value.CreateDeepCopy()));
 
   if (!InitExtensionID(manifest.get(), path, explicit_id, flags, &error)) {
     *utf8_error = base::UTF16ToUTF8(error);
@@ -786,7 +786,7 @@ ExtensionInfo::ExtensionInfo(const base::DictionaryValue* manifest,
       extension_path(path),
       extension_location(location) {
   if (manifest)
-    extension_manifest.reset(manifest->DeepCopy());
+    extension_manifest = manifest->CreateDeepCopy();
 }
 
 ExtensionInfo::~ExtensionInfo() {}

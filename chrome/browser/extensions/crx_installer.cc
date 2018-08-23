@@ -143,8 +143,9 @@ CrxInstaller::CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
     approved_ = true;
     expected_manifest_check_level_ = approval->manifest_check_level;
     if (expected_manifest_check_level_ !=
-        WebstoreInstaller::MANIFEST_CHECK_LEVEL_NONE)
-      expected_manifest_.reset(approval->manifest->DeepCopy());
+        WebstoreInstaller::MANIFEST_CHECK_LEVEL_NONE) {
+      expected_manifest_ = approval->manifest->CreateDeepCopy();
+    }
     expected_id_ = approval->extension_id;
   }
   if (approval->minimum_version.get())

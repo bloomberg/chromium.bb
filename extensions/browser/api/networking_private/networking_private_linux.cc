@@ -79,7 +79,8 @@ bool GuidToSsid(const std::string& guid, std::string* ssid) {
 // list then returns the list.
 std::unique_ptr<base::ListValue> CopyNetworkMapToList(
     const NetworkingPrivateLinux::NetworkMap& network_map) {
-  std::unique_ptr<base::ListValue> network_list(new base::ListValue);
+  auto network_list = std::make_unique<base::ListValue>();
+  network_list->GetList().reserve(network_map.size());
 
   for (const auto& network : network_map) {
     network_list->Append(network.second->CreateDeepCopy());

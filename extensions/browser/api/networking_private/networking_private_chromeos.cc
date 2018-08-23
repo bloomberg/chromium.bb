@@ -851,7 +851,8 @@ void NetworkingPrivateChromeOS::GetPropertiesCallback(
     const DictionaryCallback& callback,
     const std::string& service_path,
     const base::DictionaryValue& dictionary) {
-  std::unique_ptr<base::DictionaryValue> dictionary_copy(dictionary.DeepCopy());
+  std::unique_ptr<base::DictionaryValue> dictionary_copy =
+      dictionary.CreateDeepCopy();
   AppendThirdPartyProviderName(dictionary_copy.get());
   if (managed)
     SetManagedActiveProxyValues(guid, dictionary_copy.get());

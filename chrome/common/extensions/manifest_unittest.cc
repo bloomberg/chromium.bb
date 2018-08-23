@@ -89,8 +89,8 @@ TEST_F(ManifestUnitTest, Extension) {
   EXPECT_TRUE(manifest->GetString("unknown_key", &value));
   EXPECT_EQ("foo", value);
 
-  // Test DeepCopy and Equals.
-  std::unique_ptr<Manifest> manifest2(manifest->DeepCopy());
+  // Test CreateDeepCopy and Equals.
+  std::unique_ptr<Manifest> manifest2 = manifest->CreateDeepCopy();
   EXPECT_TRUE(manifest->Equals(manifest2.get()));
   EXPECT_TRUE(manifest2->Equals(manifest.get()));
   MutateManifest(&manifest, "foo", std::make_unique<base::Value>("blah"));
