@@ -159,6 +159,14 @@ TEST_P(MerkleIntegritySourceStreamTest, EmptyStream) {
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
+  EXPECT_EQ(net::OK, result);
+}
+
+TEST_P(MerkleIntegritySourceStreamTest, EmptyStreamWrongHash) {
+  Init(kMISingleRecord);
+  source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
+  std::string actual_output;
+  int result = ReadStream(&actual_output);
   EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
 }
 
@@ -210,7 +218,7 @@ TEST_P(MerkleIntegritySourceStreamTest, RecordSizeOnly) {
   source()->AddReadResult(nullptr, 0, net::OK, GetParam().mode);
   std::string actual_output;
   int result = ReadStream(&actual_output);
-  EXPECT_EQ(net::OK, result);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, result);
 }
 
 TEST_P(MerkleIntegritySourceStreamTest, TruncatedRecordSize) {
@@ -462,12 +470,7 @@ TEST_P(MerkleIntegritySourceStreamTest, Truncated) {
   EXPECT_EQ(kMessage, actual_output);
 }
 
-// Test that the final record is allowed to be empty.
-//
-// TODO(davidben): This does not match the specification and means some inputs
-// have two valid encodings. However, the specification's version cannot
-// represent the empty string. Update the code and possibly this test depending
-// on how https://github.com/martinthomson/http-mice/issues/3 is resolved.
+// Test that the final record is not allowed to be empty.
 TEST_P(MerkleIntegritySourceStreamTest, EmptyFinalRecord) {
   Init("mi-sha256-03=JJnIuaOEc2247K9V88VQAQy1GJuQ6ylaVM7mG69QkE4=");
   const uint8_t kRecordSize[] = {0, 0, 0, 0, 0, 0, 0, 16};
@@ -492,7 +495,7 @@ TEST_P(MerkleIntegritySourceStreamTest, EmptyFinalRecord) {
 
   std::string actual_output;
   int rv = ReadStream(&actual_output);
-  EXPECT_EQ(static_cast<int>(kMessage.size()), rv);
+  EXPECT_EQ(net::ERR_CONTENT_DECODING_FAILED, rv);
   EXPECT_EQ(kMessage, actual_output);
 }
 

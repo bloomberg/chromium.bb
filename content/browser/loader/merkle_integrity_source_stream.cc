@@ -89,7 +89,17 @@ bool MerkleIntegritySourceStream::FilterDataImpl(base::span<char>* output,
   if (record_size_ == 0) {
     base::span<const char> bytes;
     if (!ConsumeBytes(input, 8, &bytes, &storage)) {
-      return !upstream_eof_reached;
+      if (!upstream_eof_reached) {
+        return true;  // Wait for more data later.
+      }
+      if (partial_input_.empty()) {
+        // As a special case, the encoding of an empty payload is itself an
+        // empty message (i.e. it omits the initial record size), and its
+        // integrity proof is SHA-256("\0").
+        final_record_done_ = true;
+        return ProcessRecord({}, final_record_done_, output);
+      }
+      return false;
     }
     uint64_t record_size;
     base::ReadBigEndian(bytes.data(), &record_size);
@@ -122,14 +132,8 @@ bool MerkleIntegritySourceStream::FilterDataImpl(base::span<char>* output,
       }
 
       // The final record is shorter and does not contain a hash. Process all
-      // remaining input the final record.
-      //
-      // TODO(davidben): This matches the previous implementation in that it
-      // allows empty final records, but this does not match the specification
-      // and means some inputs have two valid encodings. However, the
-      // specification's version cannot represent the empty string. Update this
-      // when https://github.com/martinthomson/http-mice/issues/3 is resolved.
-      if (partial_input_.size() > record_size_) {
+      // remaining input as the final record.
+      if (partial_input_.empty() || partial_input_.size() > record_size_) {
         return false;
       }
       record = partial_input_;
