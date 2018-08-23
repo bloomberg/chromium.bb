@@ -71,8 +71,8 @@ copy("cpplib_unstripped") {
 action("cpplib_stripped") {
   _strip_bin = "${android_tool_prefix}strip"
   _soname = "libc++_shared.so"
-  _input_so = "${root_shlib_dir}/lib.unstripped/${_soname}"
-  _output_so = "${root_shlib_dir}/${_soname}"
+  _input_so = "${root_out_dir}/lib.unstripped/${_soname}"
+  _output_so = "${root_out_dir}/${_soname}"
 
   deps = [
     ":cpplib_unstripped",
