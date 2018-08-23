@@ -839,7 +839,7 @@ customBackgrounds.init = function() {
     if (event.target == editDialog)
       editDialogInteraction();
   };
-  editDialog.onkeyup = function(event) {
+  editDialog.onkeydown = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ESC) {
       editDialogInteraction();
     }
@@ -853,12 +853,15 @@ customBackgrounds.init = function() {
       editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
     }
     // If keyboard navigation is attempted, remove mouse-only mode.
-    else if (
-        event.keyCode === customBackgrounds.KEYCODES.TAB ||
+    else if (event.keyCode === customBackgrounds.KEYCODES.TAB) {
+      editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
+    }
+    else if(
         event.keyCode === customBackgrounds.KEYCODES.LEFT ||
         event.keyCode === customBackgrounds.KEYCODES.UP ||
         event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
         event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      event.preventDefault();
       editDialog.classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
     }
   };
@@ -889,18 +892,20 @@ customBackgrounds.initCustomLinksItems = function() {
   };
   $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).onclick =
       customLinksRestoreDefaultInteraction;
-  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).onkeyup = function(
+  $(customBackgrounds.IDS.CUSTOM_LINKS_RESTORE_DEFAULT).onkeydown = function(
       event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       customLinksRestoreDefaultInteraction(event);
     }
     // Handle arrow key navigation.
     else if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(
               customBackgrounds.MENU_ENTRIES.CUSTOM_LINKS_RESTORE_DEFAULT, -1)
           .focus();
     } else if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(
               customBackgrounds.MENU_ENTRIES.CUSTOM_LINKS_RESTORE_DEFAULT, 1)
@@ -957,18 +962,20 @@ customBackgrounds.initCustomBackgrounds = function() {
   };
 
   $(customBackgrounds.IDS.UPLOAD_IMAGE).onclick = uploadImageInteraction;
-  $(customBackgrounds.IDS.UPLOAD_IMAGE).onkeyup = function(event) {
+  $(customBackgrounds.IDS.UPLOAD_IMAGE).onkeydown = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       uploadImageInteraction(event);
     }
 
     // Handle arrow key navigation.
     if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.UPLOAD_IMAGE, -1)
           .focus();
     }
     if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.UPLOAD_IMAGE, 1)
           .focus();
@@ -984,18 +991,20 @@ customBackgrounds.initCustomBackgrounds = function() {
                               .NTP_CUSTOMIZE_RESTORE_BACKGROUND_CLICKED);
   };
   $(customBackgrounds.IDS.RESTORE_DEFAULT).onclick = restoreDefaultInteraction;
-  $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeyup = function(event) {
+  $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeydown = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       restoreDefaultInteraction(event);
     }
 
     // Handle arrow key navigation.
     if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT, -1)
           .focus();
     }
     if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.RESTORE_DEFAULT, 1)
           .focus();
@@ -1022,7 +1031,7 @@ customBackgrounds.initCustomBackgrounds = function() {
         .classList.add(customBackgrounds.CLASSES.MOUSE_NAV);
     defaultWallpapersInteraction(event);
   };
-  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onkeyup = function(event) {
+  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onkeydown = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       $(customBackgrounds.IDS.MENU)
           .classList.remove(customBackgrounds.CLASSES.MOUSE_NAV);
@@ -1031,11 +1040,13 @@ customBackgrounds.initCustomBackgrounds = function() {
 
     // Handle arrow key navigation.
     if (event.keyCode === customBackgrounds.KEYCODES.UP) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.CHROME_BACKGROUNDS, -1)
           .focus();
     }
     if (event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      event.preventDefault();
       customBackgrounds
           .getNextOption(customBackgrounds.MENU_ENTRIES.CHROME_BACKGROUNDS, 1)
           .focus();
