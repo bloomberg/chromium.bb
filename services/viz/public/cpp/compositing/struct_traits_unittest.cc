@@ -614,10 +614,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const gfx::Vector2dF root_scroll_offset(1234.5f, 6789.1f);
   const float page_scale_factor = 1337.5f;
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
-  const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
-  const float min_page_scale_factor = 3.5f;
-  const float max_page_scale_factor = 4.6f;
-  const bool root_overflow_y_hidden = true;
   const bool may_contain_video = true;
   const bool is_resourceless_software_draw_with_scroll_or_animation = true;
   const float top_bar_height(1234.5f);
@@ -641,7 +637,12 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   uint32_t frame_token = 0xdeadbeef;
   uint64_t begin_frame_ack_sequence_number = 0xdeadbeef;
   FrameDeadline frame_deadline(base::TimeTicks(), 4u, base::TimeDelta(), true);
+  const float min_page_scale_factor = 3.5f;
+
 #if defined(OS_ANDROID)
+  const float max_page_scale_factor = 4.6f;
+  const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
+  const bool root_overflow_y_hidden = true;
   Selection<gfx::SelectionBound> selection;
   selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
                           gfx::PointF(5432.1f, 1987.6f));
@@ -658,10 +659,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.root_scroll_offset = root_scroll_offset;
   input.page_scale_factor = page_scale_factor;
   input.scrollable_viewport_size = scrollable_viewport_size;
-  input.root_layer_size = root_layer_size;
-  input.min_page_scale_factor = min_page_scale_factor;
-  input.max_page_scale_factor = max_page_scale_factor;
-  input.root_overflow_y_hidden = root_overflow_y_hidden;
   input.may_contain_video = may_contain_video;
   input.is_resourceless_software_draw_with_scroll_or_animation =
       is_resourceless_software_draw_with_scroll_or_animation;
@@ -676,7 +673,12 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.deadline = frame_deadline;
   input.frame_token = frame_token;
   input.begin_frame_ack.sequence_number = begin_frame_ack_sequence_number;
+  input.min_page_scale_factor = min_page_scale_factor;
+
 #if defined(OS_ANDROID)
+  input.max_page_scale_factor = max_page_scale_factor;
+  input.root_layer_size = root_layer_size;
+  input.root_overflow_y_hidden = root_overflow_y_hidden;
   input.selection = selection;
 #endif  // defined(OS_ANDROID)
 
@@ -686,10 +688,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(root_scroll_offset, output.root_scroll_offset);
   EXPECT_EQ(page_scale_factor, output.page_scale_factor);
   EXPECT_EQ(scrollable_viewport_size, output.scrollable_viewport_size);
-  EXPECT_EQ(root_layer_size, output.root_layer_size);
-  EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
-  EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
-  EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
   EXPECT_EQ(may_contain_video, output.may_contain_video);
   EXPECT_EQ(is_resourceless_software_draw_with_scroll_or_animation,
             output.is_resourceless_software_draw_with_scroll_or_animation);
@@ -712,7 +710,12 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(frame_token, output.frame_token);
   EXPECT_EQ(begin_frame_ack_sequence_number,
             output.begin_frame_ack.sequence_number);
+  EXPECT_EQ(min_page_scale_factor, output.min_page_scale_factor);
+
 #if defined(OS_ANDROID)
+  EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
+  EXPECT_EQ(root_layer_size, output.root_layer_size);
+  EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
   EXPECT_EQ(selection, output.selection);
 #endif  // defined(OS_ANDROID)
 }

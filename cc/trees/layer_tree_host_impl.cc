@@ -1898,9 +1898,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
   metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
-  metadata.root_layer_size = active_tree_->ScrollableSize();
-  metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
-  metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
   metadata.top_controls_height =
       browser_controls_offset_manager_->TopControlsHeight();
   metadata.top_controls_shown_ratio =
@@ -1926,11 +1923,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
     DCHECK_LE(frame_token_infos_.size(), 25u);
   }
 
-  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
-    metadata.root_overflow_y_hidden =
-        !outer_viewport_scroll_node->user_scrollable_vertical;
-  }
-
   if (GetDrawMode() == DRAW_MODE_RESOURCELESS_SOFTWARE) {
     metadata.is_resourceless_software_draw_with_scroll_or_animation =
         IsActivelyScrolling() || mutator_host_->NeedsTickAnimations();
@@ -1944,7 +1936,17 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   if (last_draw_referenced_surfaces_ != referenced_surfaces)
     last_draw_referenced_surfaces_ = referenced_surfaces;
 
+  metadata.min_page_scale_factor = active_tree_->min_page_scale_factor();
+
 #if defined(OS_ANDROID)
+  metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
+  metadata.root_layer_size = active_tree_->ScrollableSize();
+
+  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
+    metadata.root_overflow_y_hidden =
+        !outer_viewport_scroll_node->user_scrollable_vertical;
+  }
+
   active_tree_->GetViewportSelection(&metadata.selection);
 #endif
 
@@ -1952,8 +1954,10 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
   if (!inner_viewport_scroll_node)
     return metadata;
 
+#if defined(OS_ANDROID)
   metadata.root_overflow_y_hidden |=
       !inner_viewport_scroll_node->user_scrollable_vertical;
+#endif
 
   // TODO(miletus) : Change the metadata to hold ScrollOffset.
   metadata.root_scroll_offset =
