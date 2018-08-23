@@ -26,12 +26,12 @@ class VRDeviceBase;
 // TODO(http://crbug.com/842025): Rename this.
 class DEVICE_VR_EXPORT VRDisplayImpl
     : public mojom::XRFrameDataProvider,
-      public mojom::XREnviromentIntegrationProvider,
+      public mojom::XREnvironmentIntegrationProvider,
       public mojom::XRSessionController {
  public:
   VRDisplayImpl(VRDeviceBase* device,
                 mojom::XRFrameDataProviderRequest,
-                mojom::XREnviromentIntegrationProviderRequest,
+                mojom::XREnvironmentIntegrationProviderRequest,
                 mojom::XRSessionControllerRequest);
   ~VRDisplayImpl() override;
 
@@ -55,7 +55,7 @@ class DEVICE_VR_EXPORT VRDisplayImpl
   void OnMojoConnectionError();
 
   mojo::Binding<mojom::XRFrameDataProvider> magic_window_binding_;
-  mojo::Binding<mojom::XREnviromentIntegrationProvider> enviroment_binding_;
+  mojo::Binding<mojom::XREnvironmentIntegrationProvider> environment_binding_;
   mojo::Binding<mojom::XRSessionController> session_controller_binding_;
   device::VRDeviceBase* device_;
   bool restrict_frame_data_ = true;

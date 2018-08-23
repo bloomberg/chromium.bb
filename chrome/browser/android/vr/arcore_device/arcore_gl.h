@@ -59,7 +59,7 @@ class ARCoreGl {
 
   void RequestHitTest(
       mojom::XRRayPtr,
-      mojom::XREnviromentIntegrationProvider::RequestHitTestCallback);
+      mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback);
 
   base::WeakPtr<ARCoreGl> GetWeakPtr();
 

@@ -55,7 +55,7 @@ class ARCoreDevice : public VRDeviceBase {
       mojom::XRFrameDataProvider::GetFrameDataCallback callback) override;
   void RequestHitTest(
       mojom::XRRayPtr ray,
-      mojom::XREnviromentIntegrationProvider::RequestHitTestCallback callback)
+      mojom::XREnvironmentIntegrationProvider::RequestHitTestCallback callback)
       override;
 
   void OnMailboxBridgeReady();

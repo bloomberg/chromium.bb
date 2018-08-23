@@ -202,7 +202,7 @@ void XRDevice::OnRequestSessionReturned(
     frameProvider()->BeginImmersiveSession(session, std::move(session_ptr));
   } else {
     magic_window_provider_.Bind(std::move(session_ptr->data_provider));
-    enviroment_provider_.Bind(std::move(session_ptr->enviroment_provider));
+    environment_provider_.Bind(std::move(session_ptr->environment_provider));
   }
 
   resolver->Resolve(session);
