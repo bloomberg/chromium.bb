@@ -12,7 +12,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import android.app.Activity;
-import android.os.Bundle;
 import android.support.test.filters.SmallTest;
 
 import com.google.android.libraries.feed.api.stream.Stream;
@@ -51,7 +50,7 @@ public class StreamLifecycleManagerTest {
         MockitoAnnotations.initMocks(this);
         ApplicationStatus.onStateChangeForTesting(mActivity, ActivityState.CREATED);
         mStreamLifecycleManager = new StreamLifecycleManager(mStream, mActivity, mTab);
-        verify(mStream, times(1)).onCreate(or(any(Bundle.class), isNull()));
+        verify(mStream, times(1)).onCreate(or(any(String.class), isNull()));
     }
 
     @Test

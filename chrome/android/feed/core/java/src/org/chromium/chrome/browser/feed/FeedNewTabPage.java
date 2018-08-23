@@ -273,8 +273,8 @@ public class FeedNewTabPage extends NewTabPage {
     }
 
     @Override
-    protected void restoreLastScrollPosition() {
-        // This behavior is handled by the Feed library.
+    protected void saveLastScrollPosition() {
+        // This behavior is handled by the StreamLifecycleManager and the Feed library.
     }
 
     @Override
