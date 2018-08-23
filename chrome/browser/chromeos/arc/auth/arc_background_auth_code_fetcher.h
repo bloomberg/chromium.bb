@@ -38,9 +38,11 @@ extern const char kAuthTokenExchangeEndPoint[];
 class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
                                      public OAuth2TokenService::Consumer {
  public:
+  // |account_id| is the id used by the OAuth Token Service chain.
   ArcBackgroundAuthCodeFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
+      const std::string& account_id,
       bool initial_signin);
   ~ArcBackgroundAuthCodeFetcher() override;
 

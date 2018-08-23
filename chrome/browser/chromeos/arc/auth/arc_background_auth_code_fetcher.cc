@@ -51,11 +51,12 @@ const char kAuthTokenExchangeEndPoint[] =
 ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
+    const std::string& account_id,
     bool initial_signin)
     : OAuth2TokenService::Consumer(kConsumerName),
       url_loader_factory_(std::move(url_loader_factory)),
       profile_(profile),
-      context_(profile_),
+      context_(profile_, account_id),
       initial_signin_(initial_signin),
       weak_ptr_factory_(this) {}
 
@@ -77,12 +78,12 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(
 
   // Get token service and account ID to fetch auth tokens.
   ProfileOAuth2TokenService* const token_service = context_.token_service();
-  const std::string& account_id = context_.account_id();
-  DCHECK(token_service->RefreshTokenIsAvailable(account_id));
+  DCHECK(token_service->RefreshTokenIsAvailable(context_.account_id()));
 
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  login_token_request_ = token_service->StartRequest(account_id, scopes, this);
+  login_token_request_ =
+      token_service->StartRequest(context_.account_id(), scopes, this);
 }
 
 void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
