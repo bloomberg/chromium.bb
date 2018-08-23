@@ -7,11 +7,14 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/account_mapper_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
+#include "chromeos/account_manager/account_manager.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -34,7 +37,8 @@ class ArcBridgeService;
 // Implementation of ARC authorization.
 class ArcAuthService : public KeyedService,
                        public mojom::AuthHost,
-                       public ConnectionObserver<mojom::AuthInstance> {
+                       public ConnectionObserver<mojom::AuthInstance>,
+                       public chromeos::AccountManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -48,6 +52,7 @@ class ArcAuthService : public KeyedService,
   static const char kArcServiceName[];
 
   // ConnectionObserver<mojom::AuthInstance>:
+  void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
   // mojom::AuthHost:
@@ -64,6 +69,12 @@ class ArcAuthService : public KeyedService,
   void SetURLLoaderFactoryForTesting(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
+  // chromeos::AccountManager::Observer:
+  void OnTokenUpserted(
+      const chromeos::AccountManager::AccountKey& account_key) override;
+  void OnAccountRemoved(
+      const chromeos::AccountManager::AccountKey& account_key) override;
+
  private:
   // Callbacks when auth info is fetched.
   void OnEnrollmentTokenFetched(
@@ -79,7 +90,19 @@ class ArcAuthService : public KeyedService,
   // Callback for data removal confirmation.
   void OnDataRemovalAccepted(bool accepted);
 
+  // |AccountManager::GetAccounts| callback.
+  void GetAccountsCallback(
+      std::vector<chromeos::AccountManager::AccountKey> accounts);
+
+  // Checks whether |account_key| points to the Device Account.
+  bool IsDeviceAccount(
+      const chromeos::AccountManager::AccountKey& account_key) const;
+
+  // Non-owning pointers.
   Profile* const profile_;
+  chromeos::AccountManager* account_manager_ = nullptr;
+
+  chromeos::AccountMapperUtil account_mapper_util_;
   ArcBridgeService* const arc_bridge_service_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 

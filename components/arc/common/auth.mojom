@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 15
+// Next MinVersion: 16
 
 module arc.mojom;
 
@@ -225,7 +225,7 @@ interface AuthHost {
       SupervisionChangeStatus status);
 };
 
-// Next Method ID: 3
+// Next Method ID: 5
 interface AuthInstance {
   // DEPRECATED: Please use Init@2 instead.
   InitDeprecated@0(AuthHost host_ptr);
@@ -243,4 +243,13 @@ interface AuthInstance {
   [MinVersion=5] OnAccountInfoReady@1(
       AccountInfo? account_info, [MinVersion=10] ArcSignInStatus status);
 
+  // A notification that a Secondary Account has been updated or inserted in
+  // Chrome OS Account Manager. This API is guaranteed to be idempotent.
+  // Note: This notification is guaranteed to be called at least once for every
+  // Secondary Account in Chrome OS Account Manager at startup.
+  [MinVersion=15] OnSecondaryAccountUpserted@3(string account_name);
+
+  // A notification that a Secondary Account has been removed from Chrome OS
+  // Account Manager. This API is guaranteed to be idempotent.
+  [MinVersion=15] OnSecondaryAccountRemoved@4(string account_name);
 };
