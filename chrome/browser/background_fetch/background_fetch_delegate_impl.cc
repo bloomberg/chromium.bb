@@ -36,11 +36,13 @@ BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(
     Profile* profile,
     const std::string& provider_namespace)
     : profile_(profile),
+      provider_namespace_(provider_namespace),
       offline_content_aggregator_(
           OfflineContentAggregatorFactory::GetForBrowserContext(profile)),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
-  offline_content_aggregator_->RegisterProvider(provider_namespace, this);
+  DCHECK(!provider_namespace_.empty());
+  offline_content_aggregator_->RegisterProvider(provider_namespace_, this);
 }
 
 BackgroundFetchDelegateImpl::~BackgroundFetchDelegateImpl() = default;
@@ -65,10 +67,11 @@ void BackgroundFetchDelegateImpl::Shutdown() {
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(JobDetails&&) = default;
 
 BackgroundFetchDelegateImpl::JobDetails::JobDetails(
-    std::unique_ptr<content::BackgroundFetchDescription> fetch_description)
+    std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
+    const std::string& provider_namespace)
     : cancelled(false),
       offline_item(offline_items_collection::ContentId(
-          "background_fetch",
+          provider_namespace,
           fetch_description->job_unique_id)),
       fetch_description(std::move(fetch_description)) {
   UpdateOfflineItem();
@@ -207,7 +210,8 @@ void BackgroundFetchDelegateImpl::CreateDownloadJob(
   std::string job_unique_id = fetch_description->job_unique_id;
   DCHECK(!job_details_map_.count(job_unique_id));
   auto emplace_result = job_details_map_.emplace(
-      job_unique_id, JobDetails(std::move(fetch_description)));
+      job_unique_id,
+      JobDetails(std::move(fetch_description), provider_namespace_));
 
   const JobDetails& details = emplace_result.first->second;
   for (const auto& download_guid : details.fetch_description->current_guids) {
