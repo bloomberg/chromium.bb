@@ -20,6 +20,7 @@ issues]].
   table is for Chinese double spelling Braille, commonly known as the
   new Braille where Chinese character is composed of two Braille
   Symbols, consonants and vowels and the tones are included in vowels.
+- Major update to the Urdu tables thanks to Jake Kyle.
 
 ** Other changes
 - Test suite improvements: In addition to checking the translation the
