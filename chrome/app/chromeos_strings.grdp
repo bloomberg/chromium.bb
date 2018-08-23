@@ -1772,6 +1772,15 @@
   <message name="IDS_SPOKEN_FEEDBACK_OPTION_ON" desc="A value for Spoken Feedback accessibility option when it is on.">
     On
   </message>
+  <message name="IDS_OOBE_SELECT_TO_SPEAK_OPTION" desc="Select to Speak option shown on OOBE screens accessibility menu.">
+    Select to speak
+  </message>
+  <message name="IDS_SELECT_TO_SPEAK_OPTION_OFF" desc="A value for Select to Speak accessibility option when it is off.">
+    Off
+  </message>
+  <message name="IDS_SELECT_TO_SPEAK_OPTION_ON" desc="A value for Select to Speak accessibility option when it is on.">
+    On
+  </message>
   <message name="IDS_OOBE_LARGE_CURSOR_OPTION" desc="Large mouse cursor option shown on OOBE screens accessibility menu.">
     Large mouse cursor
   </message>

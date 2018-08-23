@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/event_rewriter_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -38,6 +39,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/chromeos_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/login/base_screen_handler_utils.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
@@ -125,6 +127,7 @@ void CoreOobeHandler::DeclareLocalizedValues(
   // OOBE accessibility options menu strings shown on each screen.
   builder->Add("accessibilityLink", IDS_OOBE_ACCESSIBILITY_LINK);
   builder->Add("spokenFeedbackOption", IDS_OOBE_SPOKEN_FEEDBACK_OPTION);
+  builder->Add("selectToSpeakOption", IDS_OOBE_SELECT_TO_SPEAK_OPTION);
   builder->Add("largeCursorOption", IDS_OOBE_LARGE_CURSOR_OPTION);
   builder->Add("highContrastOption", IDS_OOBE_HIGH_CONTRAST_MODE_OPTION);
   builder->Add("screenMagnifierOption", IDS_OOBE_SCREEN_MAGNIFIER_OPTION);
@@ -197,6 +200,8 @@ void CoreOobeHandler::RegisterMessages() {
               &CoreOobeHandler::HandleEnableScreenMagnifier);
   AddCallback("enableSpokenFeedback",
               &CoreOobeHandler::HandleEnableSpokenFeedback);
+  AddCallback("enableSelectToSpeak",
+              &CoreOobeHandler::HandleEnableSelectToSpeak);
   AddCallback("setDeviceRequisition",
               &CoreOobeHandler::HandleSetDeviceRequisition);
   AddCallback("screenAssetsLoaded", &CoreOobeHandler::HandleScreenAssetsLoaded);
@@ -354,8 +359,15 @@ void CoreOobeHandler::HandleEnableScreenMagnifier(bool enabled) {
 void CoreOobeHandler::HandleEnableSpokenFeedback(bool /* enabled */) {
   // Checkbox is initialized on page init and updates when spoken feedback
   // setting is changed so just toggle spoken feedback here.
-  AccessibilityManager* manager = AccessibilityManager::Get();
-  manager->EnableSpokenFeedback(!manager->IsSpokenFeedbackEnabled());
+  AccessibilityManager::Get()->EnableSpokenFeedback(
+      !AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+}
+
+void CoreOobeHandler::HandleEnableSelectToSpeak(bool /* enabled */) {
+  // Checkbox is initialized on page init and updates when Select to Speak
+  // setting is changed so just toggle Select to Speak here.
+  AccessibilityManager::Get()->SetSelectToSpeakEnabled(
+      !AccessibilityManager::Get()->IsSelectToSpeakEnabled());
 }
 
 void CoreOobeHandler::HandleSetDeviceRequisition(
@@ -479,6 +491,12 @@ void CoreOobeHandler::UpdateA11yState() {
                        AccessibilityManager::Get()->IsLargeCursorEnabled());
   a11y_info.SetBoolean("spokenFeedbackEnabled",
                        AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
+  a11y_info.SetBoolean("selectToSpeakEnabled",
+                       AccessibilityManager::Get()->IsSelectToSpeakEnabled());
+  a11y_info.SetBoolean(
+      "enableExperimentalA11yFeatures",
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kEnableExperimentalAccessibilityFeatures));
   if (!features::IsMultiProcessMash()) {
     DCHECK(MagnificationManager::Get());
     a11y_info.SetBoolean("screenMagnifierEnabled",

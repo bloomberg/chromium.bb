@@ -155,6 +155,8 @@ void WelcomeScreenHandler::DeclareLocalizedValues(
   builder->Add("screenMagnifierOptionOn", IDS_SCREEN_MAGNIFIER_OPTION_ON);
   builder->Add("spokenFeedbackOptionOff", IDS_SPOKEN_FEEDBACK_OPTION_OFF);
   builder->Add("spokenFeedbackOptionOn", IDS_SPOKEN_FEEDBACK_OPTION_ON);
+  builder->Add("selectToSpeakOptionOff", IDS_SELECT_TO_SPEAK_OPTION_OFF);
+  builder->Add("selectToSpeakOptionOn", IDS_SELECT_TO_SPEAK_OPTION_ON);
   builder->Add("virtualKeyboardOptionOff", IDS_VIRTUAL_KEYBOARD_OPTION_OFF);
   builder->Add("virtualKeyboardOptionOn", IDS_VIRTUAL_KEYBOARD_OPTION_ON);
 

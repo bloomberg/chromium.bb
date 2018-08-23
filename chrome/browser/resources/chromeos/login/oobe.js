@@ -97,6 +97,8 @@ cr.define('cr.ui.Oobe', function() {
       $('large-cursor').addEventListener('click', Oobe.handleLargeCursorClick);
       $('spoken-feedback')
           .addEventListener('click', Oobe.handleSpokenFeedbackClick);
+      $('select-to-speak')
+          .addEventListener('click', Oobe.handleSelectToSpeakClick);
       $('screen-magnifier')
           .addEventListener('click', Oobe.handleScreenMagnifierClick);
       $('virtual-keyboard')
@@ -105,6 +107,8 @@ cr.define('cr.ui.Oobe', function() {
       $('high-contrast').addEventListener('keypress', Oobe.handleA11yKeyPress);
       $('large-cursor').addEventListener('keypress', Oobe.handleA11yKeyPress);
       $('spoken-feedback')
+          .addEventListener('keypress', Oobe.handleA11yKeyPress);
+      $('select-to-speak')
           .addEventListener('keypress', Oobe.handleA11yKeyPress);
       $('screen-magnifier')
           .addEventListener('keypress', Oobe.handleA11yKeyPress);
@@ -178,6 +182,14 @@ cr.define('cr.ui.Oobe', function() {
     },
 
     /**
+     * Select to speak checkbox handler.
+     */
+    handleSelectToSpeakClick: function(e) {
+      chrome.send('enableSelectToSpeak', [$('select-to-speak').checked]);
+      e.stopPropagation();
+    },
+
+    /**
      * Large cursor checkbox handler.
      */
     handleLargeCursorClick: function(e) {
@@ -232,9 +244,14 @@ cr.define('cr.ui.Oobe', function() {
     refreshA11yInfo: function(data) {
       $('high-contrast').checked = data.highContrastEnabled;
       $('spoken-feedback').checked = data.spokenFeedbackEnabled;
+      $('select-to-speak').checked = data.selectToSpeakEnabled;
       $('screen-magnifier').checked = data.screenMagnifierEnabled;
       $('large-cursor').checked = data.largeCursorEnabled;
       $('virtual-keyboard').checked = data.virtualKeyboardEnabled;
+
+      // TODO(katie): Remove this when launching STS in OOBE screen.
+      if (!data.enableExperimentalA11yFeatures)
+        $('select-to-speak-row').setAttribute('hidden', true);
 
       $('oobe-welcome-md').a11yStatus = data;
     },
