@@ -22,10 +22,12 @@ WebAppProvider* WebAppProvider::Get(Profile* profile) {
 
 WebAppProvider::WebAppProvider(Profile* profile)
     : pending_app_manager_(
-          std::make_unique<extensions::PendingBookmarkAppManager>(profile)),
-      web_app_policy_manager_(
-          std::make_unique<WebAppPolicyManager>(profile->GetPrefs(),
-                                                pending_app_manager_.get())) {
+          std::make_unique<extensions::PendingBookmarkAppManager>(profile)) {
+  if (WebAppPolicyManager::ShouldEnableForProfile(profile)) {
+    web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(
+        profile->GetPrefs(), pending_app_manager_.get());
+  }
+
   web_app::ScanForExternalWebApps(
       profile, base::BindOnce(&WebAppProvider::OnScanForExternalWebApps,
                               weak_ptr_factory_.GetWeakPtr()));

@@ -114,6 +114,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
+#include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -6282,6 +6283,54 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, WebUsbDefault) {
             std::make_unique<base::Value>(3));
   UpdateProviderPolicy(policies);
   EXPECT_TRUE(context->CanRequestObjectPermission(kTestUrl, kTestUrl));
+}
+
+// Similar to PolicyTest but sets the WebAppInstallForceList policy before the
+// browser is started.
+class WebAppInstallForceListPolicyTest : public PolicyTest {
+ public:
+  WebAppInstallForceListPolicyTest() {}
+  ~WebAppInstallForceListPolicyTest() override {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    policy_app_url_ =
+        embedded_test_server()->GetURL("/banners/manifest_test_page.html");
+    base::Value url(policy_app_url_.spec());
+    base::Value launch_container("window");
+
+    base::Value item(base::Value::Type::DICTIONARY);
+    item.SetKey("url", std::move(url));
+    item.SetKey("launch_container", std::move(launch_container));
+
+    base::Value list(base::Value::Type::LIST);
+    list.GetList().push_back(std::move(item));
+
+    PolicyMap policies;
+    SetPolicy(&policies, key::kWebAppInstallForceList,
+              base::Value::ToUniquePtrValue(std::move(list)));
+    provider_.UpdateChromePolicy(policies);
+  }
+
+ protected:
+  GURL policy_app_url_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebAppInstallForceListPolicyTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
+  extensions::TestExtensionRegistryObserver observer(
+      extensions::ExtensionRegistry::Get(browser()->profile()));
+  const extensions::Extension* installed_extension =
+      observer.WaitForExtensionWillBeInstalled();
+
+  ASSERT_TRUE(installed_extension);
+  const GURL installed_app_url =
+      extensions::AppLaunchInfo::GetFullLaunchURL(installed_extension);
+  EXPECT_EQ(policy_app_url_, installed_app_url);
 }
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)

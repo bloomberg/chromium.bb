@@ -8,12 +8,18 @@
 
 #include "base/bind.h"
 #include "base/values.h"
+#include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/bookmark_apps/policy/web_app_policy_constants.h"
 #include "chrome/browser/web_applications/extensions/pending_bookmark_app_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#endif  // OS_CHROMEOS
 
 namespace web_app {
 
@@ -36,6 +42,22 @@ void WebAppPolicyManager::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kWebAppInstallForceList);
 }
 
+// static
+bool WebAppPolicyManager::ShouldEnableForProfile(Profile* profile) {
+// PolicyBrowserTests applies test policies to all profiles, including the
+// sign-in profile. This causes tests to become flaky since the tests could
+// finish before, during, or after the policy apps fail to install in the
+// sign-in profile. So we temporarily add a guard to ignore the policy for the
+// sign-in profile.
+// TODO(crbug.com/876705): Remove once the policy no longer applies to the
+// sign-in profile during tests.
+#if defined(OS_CHROMEOS)
+  return !chromeos::ProfileHelper::IsSigninProfile(profile);
+#else  // !OS_CHROMEOS
+  return true;
+#endif
+}
+
 void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   const base::Value* web_apps =
       pref_service_->GetList(prefs::kWebAppInstallForceList);
@@ -43,16 +65,24 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
   std::vector<PendingAppManager::AppInfo> apps_to_install;
   for (const base::Value& info : web_apps->GetList()) {
     const base::Value& url = *info.FindKey(kUrlKey);
-    const base::Value& launch_container = *info.FindKey(kLaunchContainerKey);
+    const base::Value* launch_container = info.FindKey(kLaunchContainerKey);
 
-    DCHECK(launch_container.GetString() == kLaunchContainerWindowValue ||
-           launch_container.GetString() == kLaunchContainerTabValue);
+    DCHECK(!launch_container ||
+           launch_container->GetString() == kLaunchContainerWindowValue ||
+           launch_container->GetString() == kLaunchContainerTabValue);
 
-    apps_to_install.emplace_back(
-        GURL(url.GetString()),
-        launch_container.GetString() == kLaunchContainerWindowValue
-            ? PendingAppManager::LaunchContainer::kWindow
-            : PendingAppManager::LaunchContainer::kTab);
+    PendingAppManager::LaunchContainer container;
+
+    // TODO(crbug.com/864904): Remove this default once PendingAppManager
+    // supports not setting the launch container.
+    if (!launch_container)
+      container = PendingAppManager::LaunchContainer::kTab;
+    else if (launch_container->GetString() == kLaunchContainerWindowValue)
+      container = PendingAppManager::LaunchContainer::kWindow;
+    else
+      container = PendingAppManager::LaunchContainer::kTab;
+
+    apps_to_install.emplace_back(GURL(url.GetString()), container);
   }
   pending_app_manager_->InstallApps(std::move(apps_to_install),
                                     base::DoNothing());
