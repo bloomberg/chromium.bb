@@ -11,7 +11,7 @@
 #include "base/containers/span.h"
 #include "components/pwg_encoder/bitmap_image.h"
 #include "components/pwg_encoder/pwg_encoder.h"
-#include "components/services/pdf_compositor/public/cpp/pdf_service_mojo_utils.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "pdf/pdf.h"
 #include "printing/pdf_render_settings.h"
@@ -101,7 +101,7 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
   }
 
   base::MappedReadOnlyRegion region_mapping =
-      CreateReadOnlySharedMemoryRegion(pwg_data.size());
+      mojo::CreateReadOnlySharedMemoryRegion(pwg_data.size());
   if (!region_mapping.IsValid())
     return invalid_pwg_region;
 
