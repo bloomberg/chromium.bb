@@ -332,6 +332,10 @@ class StaticSocketDataProvider : public SocketDataProvider {
                            base::span<const MockWrite> writes);
   ~StaticSocketDataProvider() override;
 
+  // Pause/resume reads from this provider.
+  void Pause();
+  void Resume();
+
   // From SocketDataProvider:
   MockRead OnRead() override;
   MockWriteResult OnWrite(const std::string& data) override;
@@ -348,6 +352,7 @@ class StaticSocketDataProvider : public SocketDataProvider {
   void Reset() override;
 
   StaticSocketDataHelper helper_;
+  bool paused_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(StaticSocketDataProvider);
 };

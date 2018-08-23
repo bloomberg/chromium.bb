@@ -4,7 +4,9 @@ include_rules = [
   "+content/public/browser",
   "+content/public/test",
   "+crypto",
+  "+mojo/public/cpp",
   "+net",
+  "+services/network",
 ]
 
 specific_include_rules = {

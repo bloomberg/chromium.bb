@@ -24,6 +24,7 @@ interface TCPConnectedSocket {
   // On success, |net_error| is net::OK. Caller is to use |send_stream| to send
   // data and |receive_stream| to receive data over the connection. On failure,
   // |result| is a network error code.
+  // |ssl_info| is only returned if |options::skip_cert_verification| is true.
   UpgradeToTLS(HostPortPair host_port_pair,
                TLSClientSocketOptions? options,
                MutableNetworkTrafficAnnotationTag traffic_annotation,
@@ -31,7 +32,8 @@ interface TCPConnectedSocket {
                SocketObserver? observer)
       => (int32 net_error,
           handle<data_pipe_consumer>? receive_stream,
-          handle<data_pipe_producer>? send_stream);
+          handle<data_pipe_producer>? send_stream,
+          SSLInfo? ssl_info);
 
   // Socket options:
   // Note that an implementation can apply default socket options suitable for

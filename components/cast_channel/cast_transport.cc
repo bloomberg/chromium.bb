@@ -22,19 +22,18 @@
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/net_errors.h"
-#include "net/socket/socket.h"
 
 #define VLOG_WITH_CONNECTION(level) \
   VLOG(level) << "[" << ip_endpoint_.ToString() << ", auth=SSL_VERIFIED] "
 
 namespace cast_channel {
 
-CastTransportImpl::CastTransportImpl(net::Socket* socket,
+CastTransportImpl::CastTransportImpl(Channel* channel,
                                      int channel_id,
                                      const net::IPEndPoint& ip_endpoint,
                                      scoped_refptr<Logger> logger)
     : started_(false),
-      socket_(socket),
+      channel_(channel),
       write_state_(WriteState::IDLE),
       read_state_(ReadState::READ),
       error_state_(ChannelError::NONE),
@@ -83,10 +82,8 @@ void CastTransportImpl::FlushWriteQueue() {
   }
 }
 
-void CastTransportImpl::SendMessage(
-    const CastMessage& message,
-    const net::CompletionCallback& callback,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
+void CastTransportImpl::SendMessage(const CastMessage& message,
+                                    const net::CompletionCallback& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsCastMessageValid(message));
   std::string serialized_message;
@@ -95,8 +92,8 @@ void CastTransportImpl::SendMessage(
         FROM_HERE, base::BindOnce(callback, net::ERR_FAILED));
     return;
   }
-  WriteRequest write_request(message.namespace_(), serialized_message, callback,
-                             traffic_annotation);
+  WriteRequest write_request(message.namespace_(), serialized_message,
+                             callback);
 
   write_queue_.push(write_request);
   if (write_state_ == WriteState::IDLE) {
@@ -108,11 +105,8 @@ void CastTransportImpl::SendMessage(
 CastTransportImpl::WriteRequest::WriteRequest(
     const std::string& namespace_,
     const std::string& payload,
-    const net::CompletionCallback& callback,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : message_namespace(namespace_),
-      callback(callback),
-      traffic_annotation_(traffic_annotation) {
+    const net::CompletionCallback& callback)
+    : message_namespace(namespace_), callback(callback) {
   VLOG(2) << "WriteRequest size: " << payload.size();
   io_buffer = new net::DrainableIOBuffer(new net::StringIOBuffer(payload),
                                          payload.size());
@@ -202,11 +196,10 @@ int CastTransportImpl::DoWrite() {
 
   SetWriteState(WriteState::WRITE_COMPLETE);
 
-  int rv = socket_->Write(
-      request.io_buffer.get(), request.io_buffer->BytesRemaining(),
-      base::BindOnce(&CastTransportImpl::OnWriteResult, base::Unretained(this)),
-      request.traffic_annotation_);
-  return rv;
+  channel_->Write(request.io_buffer.get(), request.io_buffer->BytesRemaining(),
+                  base::BindOnce(&CastTransportImpl::OnWriteResult,
+                                 base::Unretained(this)));
+  return net::ERR_IO_PENDING;
 }
 
 int CastTransportImpl::DoWriteComplete(int result) {
@@ -325,9 +318,10 @@ int CastTransportImpl::DoRead() {
   DCHECK_GT(num_bytes_to_read, 0u);
 
   // Read up to num_bytes_to_read into |current_read_buffer_|.
-  return socket_->Read(
+  channel_->Read(
       read_buffer_.get(), base::checked_cast<uint32_t>(num_bytes_to_read),
       base::BindOnce(&CastTransportImpl::OnReadResult, base::Unretained(this)));
+  return net::ERR_IO_PENDING;
 }
 
 int CastTransportImpl::DoReadComplete(int result) {

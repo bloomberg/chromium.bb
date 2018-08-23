@@ -476,7 +476,8 @@ void TCPSocket::OnUpgradeToTLSComplete(
     const net::IPEndPoint& peer_addr,
     int result,
     mojo::ScopedDataPipeConsumerHandle receive_stream,
-    mojo::ScopedDataPipeProducerHandle send_stream) {
+    mojo::ScopedDataPipeProducerHandle send_stream,
+    const base::Optional<net::SSLInfo>& ssl_info) {
   std::move(callback).Run(result, std::move(tls_socket), local_addr, peer_addr,
                           std::move(receive_stream), std::move(send_stream));
 }

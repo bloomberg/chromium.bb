@@ -33,6 +33,7 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/updater/chrome_update_client_config.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -47,6 +48,7 @@
 #include "components/net_log/chrome_net_log.h"
 #include "components/update_client/update_client.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
@@ -526,6 +528,12 @@ bool ChromeExtensionsBrowserClient::IsWebUIAllowedToMakeNetworkRequests(
     const url::Origin& origin) {
   return ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
       origin);
+}
+
+network::mojom::NetworkContext*
+ChromeExtensionsBrowserClient::GetSystemNetworkContext() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return g_browser_process->system_network_context_manager()->GetContext();
 }
 
 // static

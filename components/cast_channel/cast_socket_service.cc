@@ -81,7 +81,8 @@ CastSocket* CastSocketService::GetSocket(
   return it == sockets_.end() ? nullptr : it->second.get();
 }
 
-void CastSocketService::OpenSocket(const CastSocketOpenParams& open_params,
+void CastSocketService::OpenSocket(NetworkContextGetter network_context_getter,
+                                   const CastSocketOpenParams& open_params,
                                    CastSocket::OnOpenCallback open_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -92,7 +93,7 @@ void CastSocketService::OpenSocket(const CastSocketOpenParams& open_params,
     if (socket_for_test_) {
       socket = AddSocket(std::move(socket_for_test_));
     } else {
-      socket = new CastSocketImpl(open_params, logger_);
+      socket = new CastSocketImpl(network_context_getter, open_params, logger_);
       AddSocket(base::WrapUnique(socket));
     }
   }

@@ -97,9 +97,9 @@ void TCPConnectedSocket::UpgradeToTLS(
     return;
   }
   if (!socket_ || !socket_->IsConnected()) {
-    std::move(callback).Run(net::ERR_SOCKET_NOT_CONNECTED,
-                            mojo::ScopedDataPipeConsumerHandle(),
-                            mojo::ScopedDataPipeProducerHandle());
+    std::move(callback).Run(
+        net::ERR_SOCKET_NOT_CONNECTED, mojo::ScopedDataPipeConsumerHandle(),
+        mojo::ScopedDataPipeProducerHandle(), base::nullopt);
     return;
   }
   auto socket_handle = std::make_unique<net::ClientSocketHandle>();

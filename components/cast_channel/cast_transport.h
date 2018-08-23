@@ -15,13 +15,14 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/logger.h"
 #include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/ip_endpoint.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 class DrainableIOBuffer;
 class DrainableIOBuffer;
 class GrowableIOBuffer;
+class IOBuffer;
 class Socket;
 }  // namespace net
 
@@ -54,10 +55,8 @@ class CastTransport {
   // |message|: The message to send.
   // |callback|: Callback to be invoked when the write operation has finished.
   // Virtual for testing.
-  virtual void SendMessage(
-      const CastMessage& message,
-      const net::CompletionCallback& callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+  virtual void SendMessage(const CastMessage& message,
+                           const net::CompletionCallback& callback) = 0;
 
   // Initializes the reading state machine and starts reading from the
   // underlying socket.
@@ -76,13 +75,25 @@ class CastTransportImpl : public CastTransport {
  public:
   using ChannelError = ::cast_channel::ChannelError;
 
+  // Interface to read/write data from a socket to ease unit-testing.
+  class Channel {
+   public:
+    virtual ~Channel() {}
+    virtual void Read(net::IOBuffer* buffer,
+                      int bytes,
+                      net::CompletionOnceCallback callback) = 0;
+    virtual void Write(net::IOBuffer* buffer,
+                       int bytes,
+                       net::CompletionOnceCallback callback) = 0;
+  };
+
   // Adds a CastMessage read/write layer to a socket.
   // Message read events are propagated to the owner via |read_delegate|.
   // |vlog_prefix| sets the prefix used for all VLOGged output.
-  // |socket| and |logger| must all out-live the
+  // |channel| and |logger| must all out-live the
   // CastTransportImpl instance.
   // |read_delegate| is owned by this CastTransportImpl object.
-  CastTransportImpl(net::Socket* socket,
+  CastTransportImpl(Channel* channel,
                     int channel_id,
                     const net::IPEndPoint& ip_endpoint_,
                     scoped_refptr<Logger> logger);
@@ -90,10 +101,8 @@ class CastTransportImpl : public CastTransport {
   ~CastTransportImpl() override;
 
   // CastTransport interface.
-  void SendMessage(
-      const CastMessage& message,
-      const net::CompletionCallback& callback,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
+  void SendMessage(const CastMessage& message,
+                   const net::CompletionCallback& callback) override;
   void Start() override;
   void SetReadDelegate(std::unique_ptr<Delegate> delegate) override;
 
@@ -101,11 +110,9 @@ class CastTransportImpl : public CastTransport {
   // Holds a message to be written to the socket. |callback| is invoked when the
   // message is fully written or an error occurrs.
   struct WriteRequest {
-    explicit WriteRequest(
-        const std::string& namespace_,
-        const std::string& payload,
-        const net::CompletionCallback& callback,
-        const net::NetworkTrafficAnnotationTag& traffic_annotation);
+    explicit WriteRequest(const std::string& namespace_,
+                          const std::string& payload,
+                          const net::CompletionCallback& callback);
     WriteRequest(const WriteRequest& other);
     ~WriteRequest();
 
@@ -116,8 +123,6 @@ class CastTransportImpl : public CastTransport {
     net::CompletionCallback callback;
     // Buffer with outgoing data.
     scoped_refptr<net::DrainableIOBuffer> io_buffer;
-    // Traffic Annotation.
-    net::NetworkTrafficAnnotationTag traffic_annotation_;
   };
 
   static bool IsTerminalReadState(ReadState read_state);
@@ -169,8 +174,8 @@ class CastTransportImpl : public CastTransport {
   // Last message received on the socket.
   std::unique_ptr<CastMessage> current_message_;
 
-  // Socket used for I/O operations.
-  net::Socket* const socket_;
+  // Channel used for I/O operations.
+  Channel* const channel_;
 
   // Methods for communicating message receipt and error status to client code.
   std::unique_ptr<Delegate> delegate_;
