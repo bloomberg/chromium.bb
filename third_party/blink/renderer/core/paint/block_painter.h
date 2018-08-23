@@ -47,6 +47,7 @@ class BlockPainter {
   // called in the background paint phase even if there is no other painted
   // content.
   void RecordHitTestData(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintBlockFlowContents(const PaintInfo&, const LayoutPoint&);
   void PaintCarets(const PaintInfo&, const LayoutPoint& paint_offset);
 
   const LayoutBlock& layout_block_;

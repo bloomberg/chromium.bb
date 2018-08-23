@@ -113,7 +113,7 @@ void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
 }
 
 void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info) {
-  // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that
+  // Pass kSelection and kTextClip to the descendants so that
   // they will paint for selection and text clip respectively. We don't need
   // complete painting for these phases.
   if (paint_info.phase == PaintPhase::kSelection ||

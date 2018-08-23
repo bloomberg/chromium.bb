@@ -13,8 +13,6 @@ blink_core_sources("paint") {
     "background_image_geometry.h",
     "block_flow_paint_invalidator.cc",
     "block_flow_paint_invalidator.h",
-    "block_flow_painter.cc",
-    "block_flow_painter.h",
     "block_paint_invalidator.cc",
     "block_paint_invalidator.h",
     "block_painter.cc",

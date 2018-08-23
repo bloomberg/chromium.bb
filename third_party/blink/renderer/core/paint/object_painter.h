@@ -39,9 +39,8 @@ class ObjectPainter : public ObjectPainterBase {
   //
   // It is expected that the caller will call this function independent of the
   // value of paintInfo.phase, and this function will do atomic paint (for
-  // PaintPhaseForeground), normal paint (for PaintPhaseSelection and
-  // PaintPhaseTextClip) or nothing (other paint phases) according to
-  // paintInfo.phase.
+  // kForeground), normal paint (for kSelection and kTextClip) or nothing (other
+  // paint phases) according to paintInfo.phase.
   void PaintAllPhasesAtomically(const PaintInfo&);
 
   const LayoutObject& layout_object_;
