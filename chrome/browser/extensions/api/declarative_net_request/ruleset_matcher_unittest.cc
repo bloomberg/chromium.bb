@@ -146,7 +146,7 @@ TEST_P(RulesetMatcherTest, FailedVerification) {
   data = GetVersionHeaderForTesting() + "invalid data";
   ASSERT_EQ(static_cast<int>(data.size()),
             base::WriteFile(indexed_ruleset_path, data.c_str(), data.size()));
-  EXPECT_EQ(RulesetMatcher::kLoadErrorRulesetVerification,
+  EXPECT_EQ(RulesetMatcher::kLoadErrorChecksumMismatch,
             RulesetMatcher::CreateVerifiedMatcher(indexed_ruleset_path,
                                                   expected_checksum, &matcher));
 }

@@ -49,8 +49,7 @@ class RulesetMatcher {
     kLoadErrorFileRead = 2,
 
     // Ruleset loading failed due to a checksum mismatch.
-    // TODO(karandeepb): Rename this to kLoadErrorChecksumMismatch.
-    kLoadErrorRulesetVerification = 3,
+    kLoadErrorChecksumMismatch = 3,
 
     // Ruleset loading failed due to version header mismatch.
     kLoadErrorVersionMismatch = 4,
