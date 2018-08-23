@@ -128,12 +128,13 @@ void ArrayBufferContents::FreeMemory(void* data) {
 ArrayBufferContents::DataHandle ArrayBufferContents::CreateDataHandle(
     size_t size,
     InitializationPolicy policy) {
-  return DataHandle(ArrayBufferContents::AllocateMemoryOrNull(size, policy),
-                    size, FreeMemory);
+  return DataHandle(
+      ArrayBufferContents::AllocateMemoryOrNull(size, policy), size,
+      [](void* buffer, size_t, void*) { FreeMemory(buffer); }, nullptr);
 }
 
 ArrayBufferContents::DataHolder::DataHolder()
-    : data_(nullptr, 0, FreeMemory),
+    : data_(nullptr, 0, [](void*, size_t, void*) {}, nullptr),
       is_shared_(kNotShared),
       has_registered_external_allocation_(false) {}
 

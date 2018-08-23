@@ -50,7 +50,7 @@ class WTF_EXPORT ArrayBufferContents {
   // ArrayBufferContents::FreeMemory as the DataDeleter. Most clients would want
   // to use ArrayBufferContents::CreateDataHandle, which allocates memory and
   // specifies the correct deleter.
-  using DataDeleter = void (*)(void* data);
+  using DataDeleter = void (*)(void* data, size_t length, void* info);
 
   enum class AllocationKind { kNormal, kReservation };
 
@@ -58,25 +58,31 @@ class WTF_EXPORT ArrayBufferContents {
     DISALLOW_COPY_AND_ASSIGN(DataHandle);
 
    public:
-    DataHandle(void* data, size_t length, DataDeleter deleter)
+    DataHandle(void* data,
+               size_t length,
+               DataDeleter deleter,
+               void* deleter_info)
         : allocation_base_(data),
           allocation_length_(length),
           data_(data),
           data_length_(length),
           kind_(AllocationKind::kNormal),
-          deleter_(deleter) {}
+          deleter_(deleter),
+          deleter_info_(deleter_info) {}
     DataHandle(void* allocation_base,
                size_t allocation_length,
                void* data,
                size_t data_length,
                AllocationKind kind,
-               DataDeleter deleter)
+               DataDeleter deleter,
+               void* deleter_info)
         : allocation_base_(allocation_base),
           allocation_length_(allocation_length),
           data_(data),
           data_length_(data_length),
           kind_(kind),
-          deleter_(deleter) {
+          deleter_(deleter),
+          deleter_info_(deleter_info) {
       DCHECK(reinterpret_cast<uintptr_t>(allocation_base_) <=
              reinterpret_cast<uintptr_t>(data_));
       DCHECK(reinterpret_cast<uintptr_t>(data_) + data_length_ <=
@@ -96,7 +102,7 @@ class WTF_EXPORT ArrayBufferContents {
       switch (kind_) {
         case AllocationKind::kNormal:
           DCHECK(deleter_);
-          deleter_(data_);
+          deleter_(data_, data_length_, deleter_info_);
           return;
         case AllocationKind::kReservation:
           base::FreePages(allocation_base_, allocation_length_);
@@ -112,6 +118,7 @@ class WTF_EXPORT ArrayBufferContents {
       data_length_ = other.data_length_;
       kind_ = other.kind_;
       deleter_ = other.deleter_;
+      deleter_info_ = other.deleter_info_;
       other.allocation_base_ = nullptr;
       return *this;
     }
@@ -137,6 +144,7 @@ class WTF_EXPORT ArrayBufferContents {
 
     ArrayBufferContents::AllocationKind kind_;
     DataDeleter deleter_;
+    void* deleter_info_;
   };
 
   enum InitializationPolicy { kZeroInitialize, kDontInitialize };
