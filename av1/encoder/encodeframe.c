@@ -3792,6 +3792,7 @@ BEGIN_PARTITION_SEARCH:
   }
 
   if (pb_source_variance == UINT_MAX) {
+    av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       pb_source_variance = av1_high_get_sby_perpixel_variance(
           cpi, &x->plane[0].src, bsize, xd->bd);
