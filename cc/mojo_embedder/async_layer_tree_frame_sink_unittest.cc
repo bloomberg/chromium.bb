@@ -73,8 +73,8 @@ TEST(AsyncLayerTreeFrameSinkTest,
   init_params.local_surface_id_provider =
       std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   init_params.enable_surface_synchronization = true;
-  AsyncLayerTreeFrameSink layer_tree_frame_sink(std::move(provider), nullptr,
-                                                &init_params);
+  auto layer_tree_frame_sink = std::make_unique<AsyncLayerTreeFrameSink>(
+      std::move(provider), nullptr, &init_params);
 
   base::PlatformThreadId called_thread_id = base::kInvalidThreadId;
   base::RunLoop close_run_loop;
@@ -88,7 +88,7 @@ TEST(AsyncLayerTreeFrameSinkTest,
       };
   bg_thread.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(bind_in_background,
-                                base::Unretained(&layer_tree_frame_sink),
+                                base::Unretained(layer_tree_frame_sink.get()),
                                 base::Unretained(&frame_sink_client)));
   // Closes the pipe, which should trigger calling DidLoseLayerTreeFrameSink()
   // (and quitting the RunLoop). There is no need to wait for BindToClient()
@@ -101,15 +101,16 @@ TEST(AsyncLayerTreeFrameSinkTest,
 
   // DetachFromClient() has to be called on the background thread.
   base::RunLoop detach_run_loop;
-  auto detach_in_background = [](AsyncLayerTreeFrameSink* layer_tree_frame_sink,
-                                 base::RunLoop* detach_run_loop) {
-    layer_tree_frame_sink->DetachFromClient();
-    detach_run_loop->Quit();
-  };
+  auto detach_in_background =
+      [](std::unique_ptr<AsyncLayerTreeFrameSink> layer_tree_frame_sink,
+         base::RunLoop* detach_run_loop) {
+        layer_tree_frame_sink->DetachFromClient();
+        detach_run_loop->Quit();
+      };
   bg_thread.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(detach_in_background,
-                                base::Unretained(&layer_tree_frame_sink),
-                                base::Unretained(&detach_run_loop)));
+      FROM_HERE,
+      base::BindOnce(detach_in_background, std::move(layer_tree_frame_sink),
+                     base::Unretained(&detach_run_loop)));
   detach_run_loop.Run();
 }
 
