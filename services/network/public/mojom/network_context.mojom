@@ -573,6 +573,13 @@ interface NetworkContext {
   // be a restricted resolver with some functionality disabled (eg maybe MDNS).
   CreateHostResolver(HostResolver& host_resolver);
 
+  // Caches |data| associated with |url| and |expected_response_time| in the
+  // HttpCache related to this NetworkContext.
+  WriteCacheMetadata(url.mojom.Url url,
+                     RequestPriority priority,
+                     mojo_base.mojom.Time expected_response_time,
+                     array<uint8> data);
+
   [Sync]
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header.

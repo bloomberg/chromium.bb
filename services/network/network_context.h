@@ -211,6 +211,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                    mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override;
   void CreateHostResolver(mojom::HostResolverRequest request) override;
+  void WriteCacheMetadata(const GURL& url,
+                          net::RequestPriority priority,
+                          base::Time expected_response_time,
+                          const std::vector<uint8_t>& data) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
