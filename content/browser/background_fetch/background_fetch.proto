@@ -11,8 +11,13 @@ package content.proto;
 // Stores per-registration (as opposed to per-request) data.
 // https://wicg.github.io/background-fetch/#background-fetch-registration
 //
-// Next Tag: 7
+// Next Tag: 8
 message BackgroundFetchRegistration {
+  enum BackgroundFetchState {
+    PENDING = 0;  // Default value.
+    FAILURE = 1;
+    SUCCESS = 2;
+  }
   // See definition of |unique_id| in BackgroundFetchRegistrationId.
   optional string unique_id = 1;
 
@@ -23,6 +28,7 @@ message BackgroundFetchRegistration {
   optional uint64 uploaded = 4;
   optional uint64 download_total = 5;
   optional uint64 downloaded = 6;
+  optional BackgroundFetchState state = 7;
 }
 
 // Developer provided options.

@@ -83,32 +83,24 @@ class MockWebServiceWorkerContextProxy
   void DispatchActivateEvent(int event_id) override { NOTREACHED(); }
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const blink::WebString& developer_id,
-      const blink::WebString& unique_id,
-      blink::mojom::BackgroundFetchState state) override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const blink::WebString& developer_id,
-      const blink::WebString& unique_id,
-      blink::mojom::BackgroundFetchState state) override {
+      const blink::WebBackgroundFetchRegistration& registration) override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const blink::WebString& developer_id,
-      const blink::WebString& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const blink::WebBackgroundFetchRegistration& registration,
       const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
       override {
     NOTREACHED();
   }
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const blink::WebString& developer_id,
-      const blink::WebString& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const blink::WebBackgroundFetchRegistration& registration,
       const blink::WebVector<blink::WebBackgroundFetchSettledFetch>& fetches)
       override {
     NOTREACHED();

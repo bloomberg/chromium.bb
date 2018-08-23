@@ -83,25 +83,17 @@ class ServiceWorkerGlobalScopeProxy final
   void DispatchActivateEvent(int) override;
   void DispatchBackgroundFetchAbortEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchBackgroundFetchClickEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state) override;
+      const WebBackgroundFetchRegistration& registration) override;
   void DispatchBackgroundFetchFailEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const WebBackgroundFetchRegistration& registration,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
   void DispatchBackgroundFetchSuccessEvent(
       int event_id,
-      const WebString& developer_id,
-      const WebString& unique_id,
-      blink::mojom::BackgroundFetchState state,
+      const WebBackgroundFetchRegistration& registration,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
   void DispatchCookieChangeEvent(
       int event_id,

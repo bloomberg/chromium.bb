@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
 
 #include "base/optional.h"
+#include "third_party/blink/public/platform/modules/background_fetch/web_background_fetch_registration.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -38,6 +39,21 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       downloaded_(downloaded),
       state_(state),
       observer_binding_(this) {}
+
+BackgroundFetchRegistration::BackgroundFetchRegistration(
+    ServiceWorkerRegistration* registration,
+    const WebBackgroundFetchRegistration& web_registration)
+    : developer_id_(web_registration.developer_id),
+      unique_id_(web_registration.unique_id),
+      upload_total_(web_registration.upload_total),
+      uploaded_(web_registration.uploaded),
+      download_total_(web_registration.download_total),
+      downloaded_(web_registration.downloaded),
+      state_(web_registration.state),
+      observer_binding_(this) {
+  DCHECK(registration);
+  Initialize(registration);
+}
 
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 

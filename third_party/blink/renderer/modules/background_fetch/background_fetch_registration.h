@@ -21,6 +21,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
 class RequestOrUSVString;
+struct WebBackgroundFetchRegistration;
 
 // Represents an individual Background Fetch registration. Gives developers
 // access to its properties, options, and enables them to abort the fetch.
@@ -38,6 +39,11 @@ class BackgroundFetchRegistration final
                               unsigned long long download_total,
                               unsigned long long downloaded,
                               mojom::BackgroundFetchState state);
+
+  BackgroundFetchRegistration(
+      ServiceWorkerRegistration* registration,
+      const WebBackgroundFetchRegistration& web_registration);
+
   ~BackgroundFetchRegistration() override;
 
   // Initializes the BackgroundFetchRegistration to be associated with the given
@@ -69,6 +75,9 @@ class BackgroundFetchRegistration final
   unsigned long long uploaded() const;
   unsigned long long downloadTotal() const;
   unsigned long long downloaded() const;
+  const String state() const;
+
+  const String& unique_id() const { return unique_id_; }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(progress);
 
@@ -77,9 +86,6 @@ class BackgroundFetchRegistration final
   // EventTargetWithInlineData implementation.
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
-
-  const String& unique_id() const { return unique_id_; }
-  const String state() const;
 
   void Dispose();
 

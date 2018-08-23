@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
+#include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
 
@@ -99,7 +100,19 @@ BackgroundFetchRegistration ToBackgroundFetchRegistration(
   registration.uploaded = registration_proto.uploaded();
   registration.download_total = registration_proto.download_total();
   registration.downloaded = registration_proto.downloaded();
-
+  switch (registration_proto.state()) {
+    case proto::BackgroundFetchRegistration_BackgroundFetchState_PENDING:
+      registration.state = blink::mojom::BackgroundFetchState::PENDING;
+      break;
+    case proto::BackgroundFetchRegistration_BackgroundFetchState_FAILURE:
+      registration.state = blink::mojom::BackgroundFetchState::FAILURE;
+      break;
+    case proto::BackgroundFetchRegistration_BackgroundFetchState_SUCCESS:
+      registration.state = blink::mojom::BackgroundFetchState::SUCCESS;
+      break;
+    default:
+      NOTREACHED();
+  }
   return registration;
 }
 

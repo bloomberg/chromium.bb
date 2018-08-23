@@ -60,6 +60,7 @@ struct BackgroundFetchRegistration {
   uint64 uploaded;
   uint64 download_total;
   uint64 downloaded;
+  BackgroundFetchState state;
 };
 
 interface BackgroundFetchRegistrationObserver {

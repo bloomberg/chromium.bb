@@ -126,6 +126,7 @@ source_set("blink_headers") {
     "platform/linux/web_sandbox_support.h",
     "platform/mac/web_sandbox_support.h",
     "platform/mac/web_scrollbar_theme.h",
+    "platform/modules/background_fetch/web_background_fetch_registration.h",
     "platform/modules/background_fetch/web_background_fetch_settled_fetch.h",
     "platform/modules/indexeddb/web_idb_callbacks.h",
     "platform/modules/indexeddb/web_idb_cursor.h",

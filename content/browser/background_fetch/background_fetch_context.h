@@ -208,6 +208,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   // retrieved from storage, and the Service Worker event can be invoked.
   void DidGetSettledFetches(
       const BackgroundFetchRegistrationId& registration_id,
+      std::unique_ptr<BackgroundFetchRegistration> registration,
       blink::mojom::BackgroundFetchError error,
       bool background_fetch_succeeded,
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
@@ -290,13 +291,13 @@ class CONTENT_EXPORT BackgroundFetchContext
   std::map<std::string, std::unique_ptr<BackgroundFetchJobController>>
       job_controllers_;
 
-  // Map from |unique_id|s to {|registration_id|s, BackgroundFetchState}.
+  // Map from |unique_id|s to {|registration_id|, |registration|}.
   // An entry in here means the fetch has completed. This information is needed
   // after the fetch has completed to dispatch the backgroundfetchclick event.
   // TODO(crbug.com/857122): Clean this up when the UI is no longer showing.
   std::map<std::string,
            std::pair<BackgroundFetchRegistrationId,
-                     blink::mojom::BackgroundFetchState>>
+                     std::unique_ptr<BackgroundFetchRegistration>>>
       completed_fetches_;
   // Map from BackgroundFetchRegistrationIds to FetchCallbacks for active
   // fetches. Must be destroyed before |data_manager_| and

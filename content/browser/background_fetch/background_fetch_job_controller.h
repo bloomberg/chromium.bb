@@ -76,8 +76,19 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   void UpdateUI(const base::Optional<std::string>& title,
                 const base::Optional<SkBitmap>& icon);
 
+  // Returns a unique_ptr to a BackgroundFetchRegistration object
+  // created with member fields.
+  std::unique_ptr<BackgroundFetchRegistration> NewRegistration(
+      blink::mojom::BackgroundFetchState state) const;
+
   // Returns the options with which this job is fetching data.
   const BackgroundFetchOptions& options() const { return options_; }
+
+  // Returns total downloaded bytes.
+  int downloaded() const { return complete_requests_downloaded_bytes_cache_; }
+
+  // Returns total size of downloads, as indicated by the developer.
+  int download_total() const { return total_downloads_size_; }
 
   base::WeakPtr<BackgroundFetchJobController> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -115,6 +126,9 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   // Cache of downloaded byte count stored by the DataManager, to enable
   // delivering progress events without having to read from the database.
   uint64_t complete_requests_downloaded_bytes_cache_;
+
+  // Total downloads size, as indicated by the developer.
+  int total_downloads_size_ = 0;
 
   // Proxy for interacting with the BackgroundFetchDelegate across thread
   // boundaries. It is owned by the BackgroundFetchContext.

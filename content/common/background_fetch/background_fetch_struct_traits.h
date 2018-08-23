@@ -64,6 +64,10 @@ struct CONTENT_EXPORT
       const content::BackgroundFetchRegistration& registration) {
     return registration.downloaded;
   }
+  static blink::mojom::BackgroundFetchState state(
+      const content::BackgroundFetchRegistration& registration) {
+    return registration.state;
+  }
 
   static bool Read(blink::mojom::BackgroundFetchRegistrationDataView data,
                    content::BackgroundFetchRegistration* registration);
