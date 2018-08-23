@@ -2,30 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This module implements the public-facing API functions for the <webview> tag.
+// This module contains the public-facing API functions for the <webview> tag.
 
-var WebViewInternal = getInternalApi ?
-    getInternalApi('webViewInternal') :
-    require('webViewInternal').WebViewInternal;
-var WebViewImpl = require('webView').WebViewImpl;
-
-// An array of <webview>'s public-facing API methods. Methods without custom
-// implementations will be given default implementations that call into the
-// internal API method with the same name in |WebViewInternal|. For example, a
-// method called 'someApiMethod' would be given the following default
-// implementation:
-//
-// WebViewImpl.prototype.someApiMethod = function(var_args) {
-//   if (!this.guest.getId()) {
-//     return false;
-//   }
-//   var args = $Array.concat([this.guest.getId()], $Array.slice(arguments));
-//   $Function.apply(WebViewInternal.someApiMethod, null, args);
-//   return true;
-// };
-//
-// These default implementations come from createDefaultApiMethod() in
-// web_view.js.
 var WEB_VIEW_API_METHODS = [
   // Add content scripts for the guest page.
   'addContentScripts',
@@ -120,99 +98,5 @@ var WEB_VIEW_API_METHODS = [
   'terminate'
 ];
 
-// -----------------------------------------------------------------------------
-// Custom API method implementations.
-
-WebViewImpl.prototype.addContentScripts = function(rules) {
-  return WebViewInternal.addContentScripts(this.viewInstanceId, rules);
-};
-
-WebViewImpl.prototype.back = function(callback) {
-  return this.go(-1, callback);
-};
-
-WebViewImpl.prototype.canGoBack = function() {
-  return this.entryCount > 1 && this.currentEntryIndex > 0;
-};
-
-WebViewImpl.prototype.canGoForward = function() {
-  return this.currentEntryIndex >= 0 &&
-      this.currentEntryIndex < (this.entryCount - 1);
-};
-
-WebViewImpl.prototype.executeScript = function(var_args) {
-  return this.executeCode(WebViewInternal.executeScript,
-                          $Array.slice(arguments));
-};
-
-WebViewImpl.prototype.forward = function(callback) {
-  return this.go(1, callback);
-};
-
-WebViewImpl.prototype.getProcessId = function() {
-  return this.processId;
-};
-
-WebViewImpl.prototype.getUserAgent = function() {
-  return this.userAgentOverride || navigator.userAgent;
-};
-
-WebViewImpl.prototype.insertCSS = function(var_args) {
-  return this.executeCode(WebViewInternal.insertCSS, $Array.slice(arguments));
-};
-
-WebViewImpl.prototype.isUserAgentOverridden = function() {
-  return !!this.userAgentOverride &&
-      this.userAgentOverride != navigator.userAgent;
-};
-
-WebViewImpl.prototype.loadDataWithBaseUrl = function(
-    dataUrl, baseUrl, virtualUrl) {
-  if (!this.guest.getId()) {
-    return;
-  }
-  WebViewInternal.loadDataWithBaseUrl(
-      this.guest.getId(), dataUrl, baseUrl, virtualUrl, function() {
-        // Report any errors.
-        if (chrome.runtime.lastError != undefined) {
-          window.console.error(
-              'Error while running webview.loadDataWithBaseUrl: ' +
-                  chrome.runtime.lastError.message);
-        }
-      });
-};
-
-WebViewImpl.prototype.print = function() {
-  return this.executeScript({code: 'window.print();'});
-};
-
-WebViewImpl.prototype.removeContentScripts = function(names) {
-  return WebViewInternal.removeContentScripts(this.viewInstanceId, names);
-};
-
-WebViewImpl.prototype.setUserAgentOverride = function(userAgentOverride) {
-  this.userAgentOverride = userAgentOverride;
-  if (!this.guest.getId()) {
-    // If we are not attached yet, then we will pick up the user agent on
-    // attachment.
-    return false;
-  }
-  WebViewInternal.overrideUserAgent(this.guest.getId(), userAgentOverride);
-  return true;
-};
-
-WebViewImpl.prototype.setZoom = function(zoomFactor, callback) {
-  if (!this.guest.getId()) {
-    this.cachedZoomFactor = zoomFactor;
-    return false;
-  }
-  this.cachedZoomFactor = 1;
-  WebViewInternal.setZoom(this.guest.getId(), zoomFactor, callback);
-  return true;
-};
-
-// -----------------------------------------------------------------------------
-
-WebViewImpl.getApiMethods = function() {
-  return WEB_VIEW_API_METHODS;
-};
+// Exports.
+exports.$set('WEB_VIEW_API_METHODS', WEB_VIEW_API_METHODS);
