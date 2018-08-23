@@ -18,10 +18,6 @@ struct CompositorFrameMetadata {
   gfx.mojom.Vector2dF root_scroll_offset;
   float page_scale_factor;
   gfx.mojom.SizeF scrollable_viewport_size;
-  gfx.mojom.SizeF root_layer_size;
-  float min_page_scale_factor;
-  float max_page_scale_factor;
-  bool root_overflow_y_hidden;
   bool may_contain_video;
   bool is_resourceless_software_draw_with_scroll_or_animation;
   float top_controls_height;
@@ -38,6 +34,17 @@ struct CompositorFrameMetadata {
   uint32 frame_token;
   bool send_frame_token_to_embedder;
   bool request_presentation_feedback;
+
+  float min_page_scale_factor;
+
+  [EnableIf=is_android]
+  float max_page_scale_factor;
+
+  [EnableIf=is_android]
+  gfx.mojom.SizeF root_layer_size;
+
+  [EnableIf=is_android]
+  bool root_overflow_y_hidden;
 
   [EnableIf=is_android]
   Selection selection;

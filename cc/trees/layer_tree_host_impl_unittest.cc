@@ -908,9 +908,11 @@ TEST_F(LayerTreeHostImplTest, ResourcelessDrawWithEmptyViewport) {
   const bool resourceless_software_draw = true;
   host_impl_->OnDraw(identity, viewport, resourceless_software_draw, false);
   ASSERT_EQ(fake_layer_tree_frame_sink->num_sent_frames(), 1u);
+#if defined(OS_ANDROID)
   EXPECT_EQ(
       gfx::SizeF(100.f, 100.f),
       fake_layer_tree_frame_sink->last_sent_frame()->metadata.root_layer_size);
+#endif
 }
 
 TEST_F(LayerTreeHostImplTest, ScrollDeltaNoLayers) {
@@ -4521,10 +4523,13 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(gfx::Vector2dF(), metadata.root_scroll_offset);
     EXPECT_EQ(1.f, metadata.page_scale_factor);
     EXPECT_EQ(gfx::SizeF(50.f, 50.f), metadata.scrollable_viewport_size);
-    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+
+#if defined(OS_ANDROID)
     EXPECT_EQ(4.f, metadata.max_page_scale_factor);
+    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
+#endif
   }
 
   // Scrolling should update metadata immediately.
@@ -4556,7 +4561,9 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
+#if defined(OS_ANDROID)
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
+#endif
 
     host_impl_->active_tree()
         ->OuterViewportScrollLayer()
@@ -4564,7 +4571,9 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         ->user_scrollable_vertical = false;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     metadata = host_impl_->MakeCompositorFrameMetadata();
+#if defined(OS_ANDROID)
     EXPECT_TRUE(metadata.root_overflow_y_hidden);
+#endif
   }
 
   // Re-enable scrollability and verify that overflows are no longer hidden.
@@ -4580,7 +4589,9 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
+#if defined(OS_ANDROID)
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
+#endif
   }
 
   // Root "overflow: hidden" properties should also be reflected on the
@@ -4593,7 +4604,9 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     viz::CompositorFrameMetadata metadata =
         host_impl_->MakeCompositorFrameMetadata();
+#if defined(OS_ANDROID)
     EXPECT_FALSE(metadata.root_overflow_y_hidden);
+#endif
 
     host_impl_->active_tree()
         ->InnerViewportScrollLayer()
@@ -4601,7 +4614,9 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
         ->user_scrollable_vertical = false;
     host_impl_->active_tree()->BuildPropertyTreesForTesting();
     metadata = host_impl_->MakeCompositorFrameMetadata();
+#if defined(OS_ANDROID)
     EXPECT_TRUE(metadata.root_overflow_y_hidden);
+#endif
   }
 
   // Page scale should update metadata correctly (shrinking only the viewport).
@@ -4617,9 +4632,12 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
     EXPECT_EQ(2.f, metadata.page_scale_factor);
     EXPECT_EQ(gfx::SizeF(25.f, 25.f), metadata.scrollable_viewport_size);
-    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+
+#if defined(OS_ANDROID)
     EXPECT_EQ(4.f, metadata.max_page_scale_factor);
+    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
+#endif
   }
 
   // Likewise if set from the main thread.
@@ -4632,9 +4650,12 @@ TEST_F(LayerTreeHostImplTest, CompositorFrameMetadata) {
     EXPECT_EQ(gfx::Vector2dF(0.f, 10.f), metadata.root_scroll_offset);
     EXPECT_EQ(4.f, metadata.page_scale_factor);
     EXPECT_EQ(gfx::SizeF(12.5f, 12.5f), metadata.scrollable_viewport_size);
-    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
     EXPECT_EQ(0.5f, metadata.min_page_scale_factor);
+
+#if defined(OS_ANDROID)
     EXPECT_EQ(4.f, metadata.max_page_scale_factor);
+    EXPECT_EQ(gfx::SizeF(100.f, 100.f), metadata.root_layer_size);
+#endif
   }
 }
 

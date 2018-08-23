@@ -54,13 +54,8 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   gfx::Vector2dF root_scroll_offset;
   float page_scale_factor = 0.f;
 
-  // These limits can be used together with the scroll/scale fields above to
-  // determine if scrolling/scaling in a particular direction is possible.
   gfx::SizeF scrollable_viewport_size;
-  gfx::SizeF root_layer_size;
-  float min_page_scale_factor = 0.f;
-  float max_page_scale_factor = 0.f;
-  bool root_overflow_y_hidden = false;
+
   bool may_contain_video = false;
 
   // WebView makes quality decisions for rastering resourceless software frames
@@ -143,7 +138,15 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // will be provided to CompositorFrameSinkClient.
   bool request_presentation_feedback = false;
 
+  // These limits can be used together with the scroll/scale fields above to
+  // determine if scrolling/scaling in a particular direction is possible.
+  float min_page_scale_factor = 0.f;
+
 #if defined(OS_ANDROID)
+  float max_page_scale_factor = 0.f;
+  gfx::SizeF root_layer_size;
+  bool root_overflow_y_hidden = false;
+
   // Provides selection region updates relative to the current viewport. If the
   // selection is empty or otherwise unused, the bound types will indicate such.
   Selection<gfx::SelectionBound> selection;

@@ -38,26 +38,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.scrollable_viewport_size;
   }
 
-  static gfx::SizeF root_layer_size(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.root_layer_size;
-  }
-
-  static float min_page_scale_factor(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.min_page_scale_factor;
-  }
-
-  static float max_page_scale_factor(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.max_page_scale_factor;
-  }
-
-  static bool root_overflow_y_hidden(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.root_overflow_y_hidden;
-  }
-
   static bool may_contain_video(const viz::CompositorFrameMetadata& metadata) {
     return metadata.may_contain_video;
   }
@@ -136,7 +116,27 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.request_presentation_feedback;
   }
 
+  static float min_page_scale_factor(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.min_page_scale_factor;
+  }
+
 #if defined(OS_ANDROID)
+  static float max_page_scale_factor(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.max_page_scale_factor;
+  }
+
+  static const gfx::SizeF& root_layer_size(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.root_layer_size;
+  }
+
+  static bool root_overflow_y_hidden(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.root_overflow_y_hidden;
+  }
+
   static const viz::Selection<gfx::SelectionBound>& selection(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.selection;
