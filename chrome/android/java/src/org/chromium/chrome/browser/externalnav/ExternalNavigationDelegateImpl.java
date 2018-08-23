@@ -260,8 +260,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         Context context = getAvailableContext();
         if (context instanceof WebappActivity) {
             WebappActivity webappActivity = (WebappActivity) context;
-            return webappActivity.scopePolicy().applyPolicyForNavigationToUrl(
-                    webappActivity.getWebappInfo(), url);
+            return WebappScopePolicy.applyPolicyForNavigationToUrl(
+                    webappActivity.scopePolicy(), webappActivity.getWebappInfo(), url);
         }
         return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
     }

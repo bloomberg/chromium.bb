@@ -13,23 +13,19 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Defines which URLs are inside a web app scope as well as what to do when user navigates to them.
  */
-public enum WebappScopePolicy {
-    LEGACY {
-        @Override
-        public boolean isUrlInScope(WebappInfo info, String url) {
-            return UrlUtilities.sameDomainOrHost(info.uri().toString(), url, true);
-        }
-    },
-    STRICT {
-        @Override
-        public boolean isUrlInScope(WebappInfo info, String url) {
-            return UrlUtilities.isUrlWithinScope(url, info.scopeUri().toString());
-        }
-    };
-
+public class WebappScopePolicy {
+    @IntDef({Type.LEGACY, Type.STRICT})
     @Retention(RetentionPolicy.SOURCE)
+    public @interface Type {
+        // Values should be numerated from 0 and can't have gaps.
+        int LEGACY = 0;
+        int STRICT = 1;
+        int NUM_ENTRIES = 2;
+    }
+
     @IntDef({NavigationDirective.NORMAL_BEHAVIOR,
             NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS})
+    @Retention(RetentionPolicy.SOURCE)
     public @interface NavigationDirective {
         // No special handling.
         int NORMAL_BEHAVIOR = 0;
@@ -41,11 +37,22 @@ public enum WebappScopePolicy {
      * @return {@code true} if given {@code url} is in scope of a web app as defined by its
      *         {@code WebappInfo}, {@code false} otherwise.
      */
-    abstract boolean isUrlInScope(WebappInfo info, String url);
+    public static boolean isUrlInScope(@Type int type, WebappInfo info, String url) {
+        switch (type) {
+            case Type.LEGACY:
+                return UrlUtilities.sameDomainOrHost(info.uri().toString(), url, true);
+            case Type.STRICT:
+                return UrlUtilities.isUrlWithinScope(url, info.scopeUri().toString());
+            default:
+                assert false;
+                return false;
+        }
+    }
 
     /** Applies the scope policy for navigation to {@link url}. */
-    public @NavigationDirective int applyPolicyForNavigationToUrl(WebappInfo info, String url) {
-        if (isUrlInScope(info, url)) return NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS;
-        return NavigationDirective.NORMAL_BEHAVIOR;
+    public static @NavigationDirective int applyPolicyForNavigationToUrl(
+            @Type int type, WebappInfo info, String url) {
+        return isUrlInScope(type, info, url) ? NavigationDirective.IGNORE_EXTERNAL_INTENT_REQUESTS
+                                             : NavigationDirective.NORMAL_BEHAVIOR;
     }
 }

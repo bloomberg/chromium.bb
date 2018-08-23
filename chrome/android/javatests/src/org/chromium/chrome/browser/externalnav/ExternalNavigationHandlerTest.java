@@ -1285,7 +1285,7 @@ public class ExternalNavigationHandlerTest {
         final String twaScope = "https://my_twa.org";
         final String twaPackageName = "org.my_twa";
         mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.STRICT));
+                              .withWebappScopePolicy(WebappScopePolicy.Type.STRICT));
         mDelegate.setReferrerWebappPackageName(twaPackageName);
 
         checkUrl(twaScope + "/new.html").expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
@@ -1301,7 +1301,7 @@ public class ExternalNavigationHandlerTest {
         final String twaScope = "https://my_twa.org";
         final String twaPackageName = "org.my_twa";
         mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.STRICT));
+                              .withWebappScopePolicy(WebappScopePolicy.Type.STRICT));
         mDelegate.setReferrerWebappPackageName(twaPackageName);
 
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -1319,7 +1319,7 @@ public class ExternalNavigationHandlerTest {
         final String twaScope = "https://my_twa.org";
         final String twaPackageName = "org.my_twa";
         mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.STRICT));
+                              .withWebappScopePolicy(WebappScopePolicy.Type.STRICT));
         mDelegate.setReferrerWebappPackageName(twaPackageName);
 
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -1337,7 +1337,7 @@ public class ExternalNavigationHandlerTest {
         final String twaScope = "https://my_twa.org";
         final String twaPackageName = "org.my_twa";
         mDelegate.add(new IntentActivity(twaScope, twaPackageName)
-                              .withWebappScopePolicy(WebappScopePolicy.LEGACY));
+                              .withWebappScopePolicy(WebappScopePolicy.Type.LEGACY));
         mDelegate.setReferrerWebappPackageName(twaPackageName);
 
         checkUrl(SEARCH_RESULT_URL_FOR_TOM_HANKS)
@@ -1468,21 +1468,21 @@ public class ExternalNavigationHandlerTest {
         private String mUrlPrefix;
         private String mPackageName;
         private boolean mIsWebApk;
-        private WebappScopePolicy mWebappScopePolicy;
+        private @WebappScopePolicy.Type int mWebappScopePolicy;
 
         public IntentActivity(String urlPrefix, String packageName) {
             mUrlPrefix = urlPrefix;
             mPackageName = packageName;
-            mWebappScopePolicy = WebappScopePolicy.LEGACY;
+            mWebappScopePolicy = WebappScopePolicy.Type.LEGACY;
         }
 
         public IntentActivity withIsWebApk(boolean isWebApk) {
             mIsWebApk = isWebApk;
-            mWebappScopePolicy = WebappScopePolicy.STRICT;
+            mWebappScopePolicy = WebappScopePolicy.Type.STRICT;
             return this;
         }
 
-        public IntentActivity withWebappScopePolicy(WebappScopePolicy policy) {
+        public IntentActivity withWebappScopePolicy(@WebappScopePolicy.Type int policy) {
             mWebappScopePolicy = policy;
             return this;
         }
@@ -1499,7 +1499,7 @@ public class ExternalNavigationHandlerTest {
             return mIsWebApk;
         }
 
-        public WebappScopePolicy webappScopePolicy() {
+        public @WebappScopePolicy.Type int webappScopePolicy() {
             return mWebappScopePolicy;
         }
 
@@ -1556,8 +1556,8 @@ public class ExternalNavigationHandlerTest {
             for (IntentActivity intentActivity : mIntentActivities) {
                 if (intentActivity.packageName().equals(mReferrerWebappPackageName)) {
                     WebappInfo info = newWebappInfoFromScope(intentActivity.urlPrefix());
-                    return intentActivity.webappScopePolicy().applyPolicyForNavigationToUrl(
-                            info, url);
+                    return WebappScopePolicy.applyPolicyForNavigationToUrl(
+                            intentActivity.webappScopePolicy(), info, url);
                 }
             }
             return WebappScopePolicy.NavigationDirective.NORMAL_BEHAVIOR;
