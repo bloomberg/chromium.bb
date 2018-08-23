@@ -8,6 +8,10 @@ component("ios") {
   deps = [
     "//base",
     "//components/autofill/core/common",
+    "//components/autofill/ios/browser",
+    "//components/autofill/ios/form_util",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser/form_parsing",
     "//ios/web/public",
     "//url",
   ]
@@ -17,6 +21,8 @@ component("ios") {
     "account_select_fill_data.h",
     "js_password_manager.h",
     "js_password_manager.mm",
+    "password_controller_helper.h",
+    "password_controller_helper.mm",
   ]
 }
 
@@ -39,6 +45,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "account_select_fill_data_unittest.cc",
+    "password_controller_helper_unittest.mm",
   ]
   deps = [
     ":ios",
