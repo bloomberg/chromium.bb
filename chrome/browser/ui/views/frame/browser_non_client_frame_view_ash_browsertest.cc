@@ -699,8 +699,7 @@ class HostedAppNonClientFrameViewAshTest
     : public TopChromeMdParamTest<BrowserActionsBarBrowserTest> {
  public:
   HostedAppNonClientFrameViewAshTest()
-      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        cert_verifier_(&mock_cert_verifier_) {}
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   ~HostedAppNonClientFrameViewAshTest() override = default;
 
@@ -717,10 +716,22 @@ class HostedAppNonClientFrameViewAshTest
   BrowserActionsContainer* browser_actions_container_ = nullptr;
   views::MenuButton* app_menu_button_ = nullptr;
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpCommandLine(
+        command_line);
+    cert_verifier_.SetUpCommandLine(command_line);
+  }
+
   void SetUpInProcessBrowserTestFixture() override {
     TopChromeMdParamTest<
         BrowserActionsBarBrowserTest>::SetUpInProcessBrowserTestFixture();
-    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+    cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    cert_verifier_.TearDownInProcessBrowserTestFixture();
+    TopChromeMdParamTest<
+        BrowserActionsBarBrowserTest>::TearDownInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
@@ -731,7 +742,7 @@ class HostedAppNonClientFrameViewAshTest
 
     // Start secure local server.
     host_resolver()->AddRule("*", "127.0.0.1");
-    cert_verifier_.set_default_result(net::OK);
+    cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
     ASSERT_TRUE(https_server_.Start());
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -816,8 +827,7 @@ class HostedAppNonClientFrameViewAshTest
 
   // For mocking a secure site.
   net::EmbeddedTestServer https_server_;
-  net::MockCertVerifier mock_cert_verifier_;
-  CertVerifierBrowserTest::CertVerifier cert_verifier_;
+  ChromeMockCertVerifier cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppNonClientFrameViewAshTest);
 };

@@ -5,15 +5,21 @@
 #ifndef CHROME_BROWSER_SSL_CERT_VERIFIER_BROWSER_TEST_H_
 #define CHROME_BROWSER_SSL_CERT_VERIFIER_BROWSER_TEST_H_
 
-#include <memory>
-
 #include "chrome/test/base/in_process_browser_test.h"
-#include "net/cert/mock_cert_verifier.h"
-#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "content/public/test/content_mock_cert_verifier.h"
 
-namespace net {
-class MockCertVerifier;
-}  // namespace net
+// Helper class for use by tests that already derive from
+// InProcessBrowserTest so can't use CertVerifierBrowserTest.
+class ChromeMockCertVerifier : public content::ContentMockCertVerifier {
+ public:
+  ChromeMockCertVerifier();
+  ~ChromeMockCertVerifier() override;
+  void SetUpInProcessBrowserTestFixture() override;
+  void TearDownInProcessBrowserTestFixture() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ChromeMockCertVerifier);
+};
 
 // CertVerifierBrowserTest allows tests to force certificate
 // verification results for requests made with any profile's main
@@ -30,40 +36,14 @@ class CertVerifierBrowserTest : public InProcessBrowserTest {
   void SetUpInProcessBrowserTestFixture() override;
   void TearDownInProcessBrowserTestFixture() override;
 
-  // Has the same methods as net::MockCertVerifier and updates the network
-  // service as well if it's in use. See the documentation of the net class
-  // for documentation on the methods.
-  // Once all requests use the NetworkContext even when network service is not
-  // enabled, we can stop also updating net::MockCertVerifier here and always
-  // go through the NetworkServiceTest mojo interface.
-  class CertVerifier {
-   public:
-    explicit CertVerifier(net::MockCertVerifier* verifier);
-    ~CertVerifier();
-    void set_default_result(int default_result);
-    void AddResultForCert(scoped_refptr<net::X509Certificate> cert,
-                          const net::CertVerifyResult& verify_result,
-                          int rv);
-    void AddResultForCertAndHost(scoped_refptr<net::X509Certificate> cert,
-                                 const std::string& host_pattern,
-                                 const net::CertVerifyResult& verify_result,
-                                 int rv);
-
-   private:
-    void EnsureNetworkServiceTestInitialized();
-
-    net::MockCertVerifier* verifier_;
-    network::mojom::NetworkServiceTestPtr network_service_test_;
-  };
-
-  // Returns a pointer to the MockCertVerifier used by all profiles in
-  // this test.
-  CertVerifier* mock_cert_verifier();
+  content::ContentMockCertVerifier::CertVerifier* mock_cert_verifier() {
+    return mock_cert_verifier_.mock_cert_verifier();
+  }
 
  private:
-  std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
+  ChromeMockCertVerifier mock_cert_verifier_;
 
-  CertVerifier cert_verifier_;
+  DISALLOW_COPY_AND_ASSIGN(CertVerifierBrowserTest);
 };
 
 #endif  // CHROME_BROWSER_SSL_CERT_VERIFIER_BROWSER_TEST_H_

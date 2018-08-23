@@ -233,7 +233,6 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
  protected:
   explicit AutofillInteractiveTestBase(bool popup_views_enabled)
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
-        cert_verifier_(&mock_cert_verifier_),
         popup_views_enabled_(popup_views_enabled) {
     scoped_feature_list_.InitWithFeatureState(kAutofillExpandedPopupViews,
                                               popup_views_enabled_);
@@ -266,21 +265,21 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
 
     // By default, all SSL cert checks are valid. Can be overriden in tests if
     // needed.
-    cert_verifier_.set_default_result(net::OK);
+    cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     AutofillUiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+    cert_verifier_.SetUpCommandLine(command_line);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
     AutofillUiTest::SetUpInProcessBrowserTestFixture();
-    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+    cert_verifier_.SetUpInProcessBrowserTestFixture();
   }
 
   void TearDownInProcessBrowserTestFixture() override {
-    ProfileIOData::SetCertVerifierForTesting(nullptr);
+    cert_verifier_.TearDownInProcessBrowserTestFixture();
     AutofillUiTest::TearDownInProcessBrowserTestFixture();
   }
 
@@ -610,12 +609,10 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
  private:
   net::EmbeddedTestServer https_server_;
 
-  net::MockCertVerifier mock_cert_verifier_;
-
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService. This is needed for when tests run with
   // the NetworkService enabled.
-  CertVerifierBrowserTest::CertVerifier cert_verifier_;
+  ChromeMockCertVerifier cert_verifier_;
 
   net::TestURLFetcherFactory url_fetcher_factory_;
 

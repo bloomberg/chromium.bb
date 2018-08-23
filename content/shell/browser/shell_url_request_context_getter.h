@@ -50,6 +50,9 @@ class ShellURLRequestContextGetter : public net::URLRequestContextGetter {
 
   static std::string GetAcceptLanguages();
 
+  // Sets a global CertVerifier to use when initializing all BrowserContexts.
+  static void SetCertVerifierForTesting(net::CertVerifier* cert_verifier);
+
  protected:
   ~ShellURLRequestContextGetter() override;
 
