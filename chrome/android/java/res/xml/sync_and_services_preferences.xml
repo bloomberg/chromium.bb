@@ -32,11 +32,11 @@
             android:title="@string/sync_bookmarks"/>
         <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
-            android:key="payments_integration"
-            android:title="@string/payments_integration"/>
+            android:key="sync_payments_integration"
+            android:title="@string/sync_payments_integration"/>
         <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
-            android:key="sync_omnibox"
+            android:key="sync_history"
             android:title="@string/sync_history"/>
         <org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference
             android:persistent="false"
