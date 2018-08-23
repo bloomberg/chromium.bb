@@ -22,6 +22,7 @@ feed_lib_proto_sources = [
   "src/src/main/proto/search/now/ui/piet/shadows.proto",
   "src/src/main/proto/search/now/ui/piet/styles.proto",
   "src/src/main/proto/search/now/ui/piet/text.proto",
+  "src/src/main/proto/search/now/ui/stream/stream_offline_extension.proto",
   "src/src/main/proto/search/now/ui/stream/stream_structure.proto",
   "src/src/main/proto/search/now/ui/stream/stream_swipe_extension.proto",
   "src/src/main/proto/search/now/wire/feed/action_type.proto",
