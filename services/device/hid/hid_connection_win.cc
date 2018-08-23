@@ -44,6 +44,7 @@ class PendingHidTransfer : public base::win::ObjectWatcher::Delegate {
   // Implements base::win::ObjectWatcher::Delegate.
   void OnObjectSignaled(HANDLE object) override;
 
+ private:
   // The buffer isn't used by this object but it's important that a reference
   // to it is held until the transfer completes.
   scoped_refptr<base::RefCountedBytes> buffer_;
@@ -52,7 +53,6 @@ class PendingHidTransfer : public base::win::ObjectWatcher::Delegate {
   base::win::ScopedHandle event_;
   base::win::ObjectWatcher watcher_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(PendingHidTransfer);
 };
 
@@ -241,7 +241,6 @@ void HidConnectionWin::OnWriteComplete(WriteCallback callback,
   DWORD bytes_transferred;
   if (signaled && GetOverlappedResult(file_.Get(), transfer->GetOverlapped(),
                                       &bytes_transferred, FALSE)) {
-    DCHECK_LE(bytes_transferred, transfer->buffer_->size());
     std::move(callback).Run(true);
   } else {
     HID_PLOG(EVENT) << "HID write failed";
