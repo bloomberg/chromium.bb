@@ -1430,8 +1430,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNaClPluginDisabled) {
 // http://crbug.com/100514
 #define MAYBE_PrerenderIframeDelayLoadPlugin \
         DISABLED_PrerenderIframeDelayLoadPlugin
-#elif defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-// TODO(jschuh): Failing plugin tests. crbug.com/244653
+#elif defined(OS_WIN)
+// TODO(jschuh): Failing plugin tests. https://crbug.com/244653,
+// https://crbug.com/876872
 #define MAYBE_PrerenderIframeDelayLoadPlugin \
         DISABLED_PrerenderIframeDelayLoadPlugin
 #else
