@@ -18,6 +18,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
+#include "chrome/browser/chromeos/policy/policy_certificate_provider.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -74,11 +75,11 @@ constexpr char kDeviceLocalAccountId[] = "dla1@example.com";
 // Allows waiting until the list of policy-pushed web-trusted certificates
 // changes.
 class WebTrustedCertsChangedObserver
-    : public UserNetworkConfigurationUpdater::PolicyProvidedCertsObserver {
+    : public PolicyCertificateProvider::Observer {
  public:
   WebTrustedCertsChangedObserver() {}
 
-  // UserNetworkConfigurationUpdater:PolicyProvidedCertsObserver
+  // PolicyCertificateProvider::Observer
   void OnPolicyProvidedCertsChanged(
       const net::CertificateList& all_server_and_authority_certs,
       const net::CertificateList& trust_anchors) override {
@@ -255,7 +256,7 @@ class PolicyProvidedTrustAnchorsTestBase : public DevicePolicyCrosBrowserTest {
   // |profile|'s UserNetworkConfigurationUpdater.
   void SetRootCertONCPolicy(Profile* profile) {
     UserNetworkConfigurationUpdater* user_network_configuration_updater =
-        UserNetworkConfigurationUpdaterFactory::GetForProfile(profile);
+        UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(profile);
     WebTrustedCertsChangedObserver trust_roots_changed_observer;
     user_network_configuration_updater->AddPolicyProvidedCertsObserver(
         &trust_roots_changed_observer);

@@ -21,9 +21,10 @@ namespace policy {
 
 // static
 UserNetworkConfigurationUpdater*
-UserNetworkConfigurationUpdaterFactory::GetForProfile(Profile* profile) {
+UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
   return static_cast<UserNetworkConfigurationUpdater*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true));
+      GetInstance()->GetServiceForBrowserContext(browser_context, true));
 }
 
 // static

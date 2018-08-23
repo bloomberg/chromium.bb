@@ -13,6 +13,7 @@
  *   id: string,
  *   name: string,
  *   policy: boolean,
+ *   webTrustAnchor: boolean,
  *   readonly: boolean,
  *   untrusted: boolean,
  * }}

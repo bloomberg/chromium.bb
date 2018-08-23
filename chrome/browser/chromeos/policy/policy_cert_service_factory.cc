@@ -99,7 +99,7 @@ KeyedService* PolicyCertServiceFactory::BuildServiceInstanceFor(
     return NULL;
 
   UserNetworkConfigurationUpdater* net_conf_updater =
-      UserNetworkConfigurationUpdaterFactory::GetForProfile(profile);
+      UserNetworkConfigurationUpdaterFactory::GetForBrowserContext(profile);
   if (!net_conf_updater)
     return NULL;
 

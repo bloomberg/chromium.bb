@@ -15,6 +15,7 @@
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/policy_certificate_provider.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
@@ -81,7 +82,7 @@ class FakeUser : public user_manager::User {
 };
 
 class FakePolicyProvidedCertsObserver
-    : public UserNetworkConfigurationUpdater::PolicyProvidedCertsObserver {
+    : public PolicyCertificateProvider::Observer {
  public:
   FakePolicyProvidedCertsObserver() {}
 
@@ -517,7 +518,8 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
 TEST_F(NetworkConfigurationUpdaterTest,
        DoNotAllowTrustedCertificatesFromPolicy) {
   EXPECT_CALL(network_config_handler_,
-              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _, _));
+              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _, _))
+      .Times(AnyNumber());
 
   UserNetworkConfigurationUpdater* updater =
       CreateNetworkConfigurationUpdaterForUserPolicy(
@@ -529,10 +531,17 @@ TEST_F(NetworkConfigurationUpdaterTest,
   FakePolicyProvidedCertsObserver observer;
   updater->AddPolicyProvidedCertsObserver(&observer);
 
+  PolicyMap policy;
+  policy.Set(key::kOpenNetworkConfiguration, POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+             std::make_unique<base::Value>(kFakeONC), nullptr);
+  UpdateProviderPolicy(policy);
   MarkPolicyProviderInitialized();
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(updater->GetWebTrustedCertificates().empty());
+  EXPECT_EQ(2u, updater->GetCertificatesWithoutWebTrust().size());
+  EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
 
   EXPECT_TRUE(observer.trust_anchors_.empty());
   updater->RemovePolicyProvidedCertsObserver(&observer);
@@ -564,6 +573,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
 
   // Certificates with the "Web" trust flag set will be returned.
   EXPECT_EQ(1u, updater->GetWebTrustedCertificates().size());
+  EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust().size());
+  EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
 
   EXPECT_EQ(1u, observer.trust_anchors_.size());
   updater->RemovePolicyProvidedCertsObserver(&observer);
@@ -589,6 +600,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
   // Verify that the returned certificate list is empty.
   EXPECT_TRUE(updater->GetWebTrustedCertificates().empty());
   EXPECT_TRUE(observer.trust_anchors_.empty());
+  EXPECT_TRUE(updater->GetCertificatesWithoutWebTrust().empty());
+  EXPECT_TRUE(updater->GetAllServerAndAuthorityCertificates().empty());
 
   // Change to ONC policy with web trust certs.
   PolicyMap policy;
@@ -602,6 +615,8 @@ TEST_F(NetworkConfigurationUpdaterTest,
   // to observers.
   EXPECT_EQ(1u, updater->GetWebTrustedCertificates().size());
   EXPECT_EQ(1u, observer.trust_anchors_.size());
+  EXPECT_EQ(1u, updater->GetCertificatesWithoutWebTrust().size());
+  EXPECT_EQ(2u, updater->GetAllServerAndAuthorityCertificates().size());
 
   updater->RemovePolicyProvidedCertsObserver(&observer);
 }

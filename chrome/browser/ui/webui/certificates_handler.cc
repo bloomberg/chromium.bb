@@ -42,11 +42,6 @@
 #include "net/der/parser.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
-#endif
-
 using base::UTF8ToUTF16;
 
 namespace {
@@ -57,7 +52,8 @@ static const char kCertificatesHandlerExtractableField[] = "extractable";
 static const char kCertificatesHandlerKeyField[] = "id";
 static const char kCertificatesHandlerNameField[] = "name";
 static const char kCertificatesHandlerObjSignField[] = "objSign";
-static const char kCertificatesHandlerPolicyField[] = "policy";
+static const char kCertificatesHandlerPolicyInstalledField[] = "policy";
+static const char kCertificatesHandlerWebTrustAnchorField[] = "webTrustAnchor";
 static const char kCertificatesHandlerReadonlyField[] = "readonly";
 static const char kCertificatesHandlerSslField[] = "ssl";
 static const char kCertificatesHandlerSubnodesField[] = "subnodes";
@@ -70,7 +66,7 @@ static const char kCertificatesHandlerErrorField[] = "error";
 static const char kCertificatesHandlerErrorTitle[] = "title";
 
 // Enumeration of different callers of SelectFile.  (Start counting at 1 so
-// if SelectFile is accidentally called with params=NULL it won't match any.)
+// if SelectFile is accidentally called with params=nullptr it won't match any.)
 enum {
   EXPORT_PERSONAL_FILE_SELECTED = 1,
   IMPORT_PERSONAL_FILE_SELECTED,
@@ -99,7 +95,7 @@ struct DictionaryIdComparator {
     base::string16 b_str;
     a_dict->GetString(kCertificatesHandlerNameField, &a_str);
     b_dict->GetString(kCertificatesHandlerNameField, &b_str);
-    if (collator_ == NULL)
+    if (collator_ == nullptr)
       return a_str < b_str;
     return base::i18n::CompareString16WithCollator(*collator_, a_str, b_str) ==
            UCOL_LESS;
@@ -131,13 +127,6 @@ struct CertEquals {
   }
   CERTCertificate* cert_;
 };
-
-// Determine whether a certificate was stored with web trust by a policy.
-bool IsPolicyInstalledWithWebTrust(const net::CertificateList& web_trust_certs,
-                                   CERTCertificate* cert) {
-  return std::find_if(web_trust_certs.begin(), web_trust_certs.end(),
-                      CertEquals(cert)) != web_trust_certs.end();
-}
 
 // Determine if |data| could be a PFX Protocol Data Unit.
 // This only does the minimum parsing necessary to distinguish a PFX file from a
@@ -226,12 +215,12 @@ CERTCertificate* CertIdMap::IdToCert(const std::string& id) {
 CERTCertificate* CertIdMap::CallbackArgsToCert(const base::ListValue* args) {
   std::string node_id;
   if (!args->GetString(0, &node_id))
-    return NULL;
+    return nullptr;
 
   CERTCertificate* cert = IdToCert(node_id);
   if (!cert) {
     NOTREACHED();
-    return NULL;
+    return nullptr;
   }
 
   return cert;
@@ -414,18 +403,10 @@ void CertificatesHandler::RegisterMessages() {
 }
 
 void CertificatesHandler::CertificatesRefreshed() {
-  net::CertificateList web_trusted_certs;
-#if defined(OS_CHROMEOS)
-  policy::UserNetworkConfigurationUpdater* service =
-      policy::UserNetworkConfigurationUpdaterFactory::GetForProfile(
-          Profile::FromWebUI(web_ui()));
-  if (service)
-    web_trusted_certs = service->GetWebTrustedCertificates();
-#endif
-  PopulateTree("personalCerts", net::USER_CERT, web_trusted_certs);
-  PopulateTree("serverCerts", net::SERVER_CERT, web_trusted_certs);
-  PopulateTree("caCerts", net::CA_CERT, web_trusted_certs);
-  PopulateTree("otherCerts", net::OTHER_CERT, web_trusted_certs);
+  PopulateTree("personalCerts", net::USER_CERT);
+  PopulateTree("serverCerts", net::SERVER_CERT);
+  PopulateTree("caCerts", net::CA_CERT);
+  PopulateTree("otherCerts", net::OTHER_CERT);
 }
 
 void CertificatesHandler::FileSelected(const base::FilePath& path,
@@ -785,7 +766,7 @@ void CertificatesHandler::ImportExportCleanup() {
   // away so they don't try and call back to us.
   if (select_file_dialog_.get())
     select_file_dialog_->ListenerDestroyed();
-  select_file_dialog_ = NULL;
+  select_file_dialog_ = nullptr;
 }
 
 void CertificatesHandler::HandleImportServer(const base::ListValue* args) {
@@ -1023,74 +1004,65 @@ void CertificatesHandler::HandleRefreshCertificates(
   // to do anything.
 }
 
-void CertificatesHandler::PopulateTree(
-    const std::string& tab_name,
-    net::CertType type,
-    const net::CertificateList& web_trust_certs) {
+void CertificatesHandler::PopulateTree(const std::string& tab_name,
+                                       net::CertType type) {
   std::unique_ptr<icu::Collator> collator;
   UErrorCode error = U_ZERO_ERROR;
   collator.reset(icu::Collator::createInstance(
       icu::Locale(g_browser_process->GetApplicationLocale().c_str()), error));
   if (U_FAILURE(error))
-    collator.reset(NULL);
+    collator.reset();
   DictionaryIdComparator comparator(collator.get());
-  CertificateManagerModel::OrgGroupingMap map;
+  CertificateManagerModel::OrgGroupingMap org_grouping_map;
 
-  certificate_manager_model_->FilterAndBuildOrgGroupingMap(type, &map);
+  certificate_manager_model_->FilterAndBuildOrgGroupingMap(type,
+                                                           &org_grouping_map);
 
-  {
-    std::unique_ptr<base::ListValue> nodes =
-        std::make_unique<base::ListValue>();
-    for (CertificateManagerModel::OrgGroupingMap::iterator i = map.begin();
-         i != map.end(); ++i) {
-      // Populate first level (org name).
-      std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-      dict->SetString(kCertificatesHandlerKeyField, OrgNameToId(i->first));
-      dict->SetString(kCertificatesHandlerNameField, i->first);
+  base::ListValue nodes;
+  for (const auto& org_grouping_map_entry : org_grouping_map) {
+    // Populate first level (org name).
+    base::DictionaryValue org_dict;
+    org_dict.SetKey(kCertificatesHandlerKeyField,
+                    base::Value(OrgNameToId(org_grouping_map_entry.first)));
+    org_dict.SetKey(kCertificatesHandlerNameField,
+                    base::Value(org_grouping_map_entry.first));
 
-      // Populate second level (certs).
-      auto subnodes = std::make_unique<base::ListValue>();
-      for (net::ScopedCERTCertificateList::const_iterator org_cert_it =
-               i->second.begin();
-           org_cert_it != i->second.end(); ++org_cert_it) {
-        std::unique_ptr<base::DictionaryValue> cert_dict(
-            new base::DictionaryValue);
-        CERTCertificate* cert = org_cert_it->get();
-        cert_dict->SetString(kCertificatesHandlerKeyField,
-                             cert_id_map_->CertToId(cert));
-        cert_dict->SetString(
-            kCertificatesHandlerNameField,
-            certificate_manager_model_->GetColumnText(
-                cert, CertificateManagerModel::COL_SUBJECT_NAME));
-        cert_dict->SetBoolean(
-            kCertificatesHandlerReadonlyField,
-            certificate_manager_model_->cert_db()->IsReadOnly(cert));
-        // Policy-installed certificates with web trust are trusted.
-        bool policy_trusted =
-            IsPolicyInstalledWithWebTrust(web_trust_certs, cert);
-        cert_dict->SetBoolean(
-            kCertificatesHandlerUntrustedField,
-            !policy_trusted &&
-                certificate_manager_model_->cert_db()->IsUntrusted(cert));
-        cert_dict->SetBoolean(kCertificatesHandlerPolicyField, policy_trusted);
-        // TODO(hshi): This should be determined by testing for PKCS #11
-        // CKA_EXTRACTABLE attribute. We may need to use the NSS function
-        // PK11_ReadRawAttribute to do that.
-        cert_dict->SetBoolean(
-            kCertificatesHandlerExtractableField,
-            !certificate_manager_model_->IsHardwareBacked(cert));
-        // TODO(mattm): Other columns.
-        subnodes->Append(std::move(cert_dict));
-      }
-      std::sort(subnodes->begin(), subnodes->end(), comparator);
-
-      dict->Set(kCertificatesHandlerSubnodesField, std::move(subnodes));
-      nodes->Append(std::move(dict));
+    // Populate second level (certs).
+    base::ListValue subnodes;
+    for (const auto& org_cert : org_grouping_map_entry.second) {
+      base::DictionaryValue cert_dict;
+      CERTCertificate* cert = org_cert->cert();
+      cert_dict.SetKey(kCertificatesHandlerKeyField,
+                       base::Value(cert_id_map_->CertToId(cert)));
+      cert_dict.SetKey(kCertificatesHandlerNameField,
+                       base::Value(org_cert->name()));
+      cert_dict.SetKey(kCertificatesHandlerReadonlyField,
+                       base::Value(org_cert->read_only()));
+      cert_dict.SetKey(kCertificatesHandlerUntrustedField,
+                       base::Value(org_cert->untrusted()));
+      cert_dict.SetKey(
+          kCertificatesHandlerPolicyInstalledField,
+          base::Value(org_cert->source() ==
+                      CertificateManagerModel::CertInfo::Source::kPolicy));
+      cert_dict.SetKey(kCertificatesHandlerWebTrustAnchorField,
+                       base::Value(org_cert->web_trust_anchor()));
+      // TODO(hshi): This should be determined by testing for PKCS #11
+      // CKA_EXTRACTABLE attribute. We may need to use the NSS function
+      // PK11_ReadRawAttribute to do that.
+      cert_dict.SetKey(kCertificatesHandlerExtractableField,
+                       base::Value(!org_cert->hardware_backed()));
+      // TODO(mattm): Other columns.
+      subnodes.GetList().push_back(std::move(cert_dict));
     }
-    std::sort(nodes->begin(), nodes->end(), comparator);
+    std::sort(subnodes.GetList().begin(), subnodes.GetList().end(), comparator);
 
-    FireWebUIListener("certificates-changed", base::Value(tab_name), *nodes);
+    org_dict.SetKey(kCertificatesHandlerSubnodesField, std::move(subnodes));
+    nodes.GetList().push_back(std::move(org_dict));
   }
+  std::sort(nodes.GetList().begin(), nodes.GetList().end(), comparator);
+
+  FireWebUIListener("certificates-changed", base::Value(tab_name),
+                    std::move(nodes));
 }
 
 void CertificatesHandler::ResolveCallback(const base::Value& response) {

@@ -347,6 +347,26 @@ bool NSSCertDatabase::IsUntrusted(const CERTCertificate* cert) const {
   return false;
 }
 
+bool NSSCertDatabase::IsWebTrustAnchor(const CERTCertificate* cert) const {
+  CERTCertTrust nsstrust;
+  SECStatus rv = CERT_GetCertTrust(cert, &nsstrust);
+  if (rv != SECSuccess) {
+    LOG(ERROR) << "CERT_GetCertTrust failed with error " << PORT_GetError();
+    return false;
+  }
+
+  // Note: This should return true iff a net::TrustStoreNSS instantiated with
+  // SECTrustType trustSSL would classify |cert| as a trust anchor.
+  const unsigned int ssl_trust_flags = nsstrust.sslFlags;
+
+  // Determine if the certificate is a trust anchor.
+  if ((ssl_trust_flags & CERTDB_TRUSTED_CA) == CERTDB_TRUSTED_CA) {
+    return true;
+  }
+
+  return false;
+}
+
 bool NSSCertDatabase::SetCertTrust(CERTCertificate* cert,
                                    CertType type,
                                    TrustBits trust_bits) {
