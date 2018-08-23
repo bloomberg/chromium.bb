@@ -138,6 +138,9 @@ class SmbService : public KeyedService,
   // Whether Network File Shares are allowed to be used. Controlled via policy.
   bool IsAllowedByPolicy() const;
 
+  // Whether NetBios discovery should be used. Controlled via policy.
+  bool IsNetBiosDiscoveryEnabled() const;
+
   // Records metrics on the number of SMB mounts a user has.
   void RecordMountCount() const;
 
