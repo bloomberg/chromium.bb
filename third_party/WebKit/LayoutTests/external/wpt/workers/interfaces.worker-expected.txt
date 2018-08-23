@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 161 tests; 149 PASS, 12 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 161 tests; 151 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS EventTarget interface: existence and properties of interface object
 PASS EventTarget interface object length
 PASS EventTarget interface object name
@@ -47,7 +47,7 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of interface prototype object - setting to its original value via Reflect.setPrototypeOf should return true
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface prototype object's "constructor" property
 PASS DedicatedWorkerGlobalScope interface: existence and properties of interface prototype object's @@unscopables property
-FAIL DedicatedWorkerGlobalScope interface: attribute name assert_own_property: The global object must have a property "name" expected property "name" missing
+PASS DedicatedWorkerGlobalScope interface: attribute name
 PASS DedicatedWorkerGlobalScope interface: operation postMessage(any, [object Object])
 PASS DedicatedWorkerGlobalScope interface: operation close()
 PASS DedicatedWorkerGlobalScope interface: attribute onmessage
@@ -60,7 +60,7 @@ PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of
 PASS DedicatedWorkerGlobalScope interface: internal [[SetPrototypeOf]] method of global platform object - setting to its original value via Reflect.setPrototypeOf should return true
 PASS DedicatedWorkerGlobalScope must be primary interface of self
 PASS Stringification of self
-FAIL DedicatedWorkerGlobalScope interface: self must inherit property "name" with the proper type assert_own_property: expected property "name" missing
+PASS DedicatedWorkerGlobalScope interface: self must inherit property "name" with the proper type
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "postMessage(any, [object Object])" with the proper type
 PASS DedicatedWorkerGlobalScope interface: calling postMessage(any, [object Object]) on self with too few arguments must throw TypeError
 PASS DedicatedWorkerGlobalScope interface: self must inherit property "close()" with the proper type

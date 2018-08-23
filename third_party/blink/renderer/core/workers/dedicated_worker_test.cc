@@ -30,7 +30,8 @@ namespace blink {
 class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
  public:
   DedicatedWorkerThreadForTest(DedicatedWorkerObjectProxy& worker_object_proxy)
-      : DedicatedWorkerThread(nullptr /* parent_execution_context*/,
+      : DedicatedWorkerThread("fake worker name",
+                              nullptr /* parent_execution_context*/,
                               worker_object_proxy) {
     worker_backing_thread_ = WorkerBackingThread::Create(
         WebThreadCreationParams(WebThreadType::kTestThread));
@@ -39,7 +40,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) override {
     auto* global_scope = new DedicatedWorkerGlobalScope(
-        std::move(creation_params), this, time_origin_);
+        "fake worker name", std::move(creation_params), this, time_origin_);
     // Initializing a global scope with a dummy creation params may emit warning
     // messages (e.g., invalid CSP directives). Clear them here for tests that
     // check console messages (i.e., UseCounter tests).

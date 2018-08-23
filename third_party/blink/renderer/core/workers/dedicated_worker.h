@@ -73,6 +73,9 @@ class CORE_EXPORT DedicatedWorker final
   // (via AbstractWorker -> EventTargetWithInlineData -> EventTarget).
   bool HasPendingActivity() const final;
 
+  // Returns the name specified by WorkerOptions.
+  const String Name() const;
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
   void Trace(blink::Visitor*) override;
