@@ -3,11 +3,7 @@
 # we don't want them.
 set noparent
 
-bauerb@chromium.org
-dtrainor@chromium.org
-tedchoc@chromium.org
-twellington@chromium.org
-yusufo@chromium.org
+file://ui/android/java/res/OWNERS
 
 # COMPONENT: Content>Core
 # OS: Android
