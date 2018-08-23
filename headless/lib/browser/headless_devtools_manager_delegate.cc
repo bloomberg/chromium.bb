@@ -81,6 +81,10 @@ HeadlessDevToolsManagerDelegate::GetBrowserContexts() {
   }
   return contexts;
 }
+content::BrowserContext*
+HeadlessDevToolsManagerDelegate::GetDefaultBrowserContext() {
+  return HeadlessBrowserContextImpl::From(browser_->GetDefaultBrowserContext());
+}
 
 content::BrowserContext*
 HeadlessDevToolsManagerDelegate::CreateBrowserContext() {

@@ -6,139 +6,57 @@
   TestRunner.addResult(`Tests that geolocation emulation with latitude and longitude works as expected.\n`);
 
   await TestRunner.loadModule('console_test_runner');
-  await TestRunner.addScriptTag('../resources/permissions-helper.js');
+  await TestRunner.navigatePromise('https://devtools.test:8443/devtools/network/resources/empty.html');
+  await TestRunner.BrowserAgent.invoke_grantPermissions({
+    origin: 'https://devtools.test:8443',
+    permissions: ['geolocation']
+  });
   await TestRunner.evaluateInPagePromise(`
-      function grantGeolocationPermission() {
-        PermissionsHelper.setPermission('geolocation', 'granted').then(function(p) {
-          console.log("Permission granted.");
-        });
+    async function getPositionPromise() {
+      try {
+        const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject));
+        if ((new Date(position.timestamp)).toDateString() != (new Date()).toDateString())
+            return 'Unexpected error occured: timestamps mismatch.';
+        if (position && position.coords)
+            return 'Latitude: ' + position.coords.latitude + ' Longitude: ' + position.coords.longitude;
+        return 'Unexpected error occured. Test failed.';
+      } catch (error) {
+        const suffix = error.message ? ' (' + error.message + ')' : '';
+        if (error.code === error.PERMISSION_DENIED)
+          return 'Permission denied' + suffix;
+        if (error.code === error.POSITION_UNAVAILABLE)
+          return 'Position unavailable' + suffix;
+        if (error.code === error.TIMEOUT)
+          return 'Request timed out' + suffix;
+        return 'Unknown error' + suffix;
       }
-
-      function serializeGeolocationError(error) {
-          var result = "Unknown error"
-          switch (error.code)
-          {
-              case error.PERMISSION_DENIED:
-                  result = "Permission denied";
-                  break;
-              case error.POSITION_UNAVAILABLE:
-                  result = "Position unavailable";
-                  break;
-              case error.TIMEOUT:
-                  result = "Request timed out";
-                  break;
-          }
-          if (error.message)
-              result += " (" + error.message + ")";
-          return result;
-      }
-
-      function overrideGeolocation()
-      {
-          function testSuccess(position)
-          {
-              if (position && position.coords)
-                  console.log("Latitude: " + position.coords.latitude + " Longitude: " + position.coords.longitude);
-              else
-                  console.log("Unexpected error occured. Test failed.");
-          }
-
-          function testFailed(error)
-          {
-              console.log(serializeGeolocationError(error));
-          }
-
-          navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
-      }
-
-      function getPositionPromise()
-      {
-          return new Promise((resolve, reject) => {
-              function testSuccess(position)
-              {
-                  if (position && position.coords)
-                      resolve("Latitude: " + position.coords.latitude + " Longitude: " + position.coords.longitude);
-                  else
-                      resolve("Unexpected error occured. Test failed.");
-              }
-
-              function testFailed(error)
-              {
-                  resolve(serializeGeolocationError(error));
-              }
-
-              navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
-          });
-      }
-
-      function overridenTimestampGeolocation()
-      {
-          function testSuccess(position)
-          {
-              if ((new Date(position.timestamp)).toDateString() == (new Date()).toDateString())
-                  console.log("PASSED");
-              else
-                  console.log("Unexpected error occured. Test failed.");
-          }
-
-          function testFailed(error)
-          {
-              console.log(serializeGeolocationError(error));
-          }
-
-          navigator.geolocation.getCurrentPosition(testSuccess, testFailed);
-      }
+    }
   `);
 
-  function consoleSniffAndDump(next) {
-    ConsoleTestRunner.addConsoleSniffer(() => {
-        ConsoleTestRunner.dumpConsoleMessages();
-        Console.ConsoleView.clearConsole();
-        next();
-    });
-  }
-
-  var positionBeforeOverride;
+  const positionBeforeOverride = await TestRunner.evaluateInPageAsync('getPositionPromise()');
 
   TestRunner.runTestSuite([
-    function testPermissionGranted(next) {
-      consoleSniffAndDump(savePositionBeforeOverride);
-      TestRunner.evaluateInPage('grantGeolocationPermission()');
-
-      async function savePositionBeforeOverride() {
-        positionBeforeOverride = await TestRunner.evaluateInPageAsync('getPositionPromise()');
-        Console.ConsoleView.clearConsole();
-        next();
-      }
-    },
-
-    function testGeolocationUnavailable(next) {
+    async function testGeolocationUnavailable(next) {
       TestRunner.EmulationAgent.setGeolocationOverride();
-      consoleSniffAndDump(next);
-      TestRunner.evaluateInPage('overrideGeolocation()');
+      TestRunner.addResult(await TestRunner.evaluateInPageAsync('getPositionPromise()'));
+      next();
     },
 
-    function testOverridenGeolocation(next) {
+    async function testOverridenGeolocation(next) {
       TestRunner.EmulationAgent.setGeolocationOverride(50, 100, 95);
-      consoleSniffAndDump(next);
-      TestRunner.evaluateInPage('overrideGeolocation()');
+      TestRunner.addResult(await TestRunner.evaluateInPageAsync('getPositionPromise()'));
+      next();
     },
 
-    function testInvalidParam(next) {
+    async function testInvalidParam(next) {
       TestRunner.EmulationAgent.setGeolocationOverride(true, 100, 95);
       next();
     },
 
-    function testInvalidGeolocation(next) {
+    async function testInvalidGeolocation(next) {
       TestRunner.EmulationAgent.setGeolocationOverride(200, 300, 95);
-      consoleSniffAndDump(next);
-      TestRunner.evaluateInPage('overrideGeolocation()');
-    },
-
-    function testTimestampOfOverridenPosition(next) {
-      TestRunner.EmulationAgent.setGeolocationOverride(50, 100, 95);
-      consoleSniffAndDump(next);
-      TestRunner.evaluateInPage('overridenTimestampGeolocation()');
+      TestRunner.addResult(await TestRunner.evaluateInPageAsync('getPositionPromise()'));
+      next();
     },
 
     async function testNoOverride(next) {
@@ -148,7 +66,11 @@
         TestRunner.addResult('Override was cleared correctly.');
       else
         TestRunner.addResult('Position differs from value before override.');
+
+      // Reset browser context permissions after running this test.
+      await TestRunner.BrowserAgent.invoke_resetPermissions();
       next();
     }
   ]);
 })();
+

@@ -36,12 +36,15 @@ scoped_refptr<DevToolsAgentHost> DevToolsManagerDelegate::CreateNewTarget(
   return nullptr;
 }
 
-std::vector<content::BrowserContext*>
-DevToolsManagerDelegate::GetBrowserContexts() {
-  return std::vector<content::BrowserContext*>();
+std::vector<BrowserContext*> DevToolsManagerDelegate::GetBrowserContexts() {
+  return std::vector<BrowserContext*>();
 }
 
-content::BrowserContext* DevToolsManagerDelegate::CreateBrowserContext() {
+BrowserContext* DevToolsManagerDelegate::GetDefaultBrowserContext() {
+  return nullptr;
+}
+
+BrowserContext* DevToolsManagerDelegate::CreateBrowserContext() {
   return nullptr;
 }
 

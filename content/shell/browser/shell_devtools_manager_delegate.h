@@ -23,6 +23,7 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
   ~ShellDevToolsManagerDelegate() override;
 
   // DevToolsManagerDelegate implementation.
+  BrowserContext* GetDefaultBrowserContext() override;
   scoped_refptr<DevToolsAgentHost> CreateNewTarget(const GURL& url) override;
   std::string GetDiscoveryPageHTML() override;
   bool HasBundledFrontendResources() override;

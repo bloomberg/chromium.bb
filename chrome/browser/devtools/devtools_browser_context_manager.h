@@ -16,6 +16,7 @@ class DevToolsBrowserContextManager : public BrowserListObserver {
 
   Profile* GetProfileById(const std::string& browser_context_id);
   std::vector<content::BrowserContext*> GetBrowserContexts();
+  content::BrowserContext* GetDefaultBrowserContext();
   content::BrowserContext* CreateBrowserContext();
   void DisposeBrowserContext(
       content::BrowserContext* context,

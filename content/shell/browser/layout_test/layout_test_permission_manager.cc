@@ -199,15 +199,17 @@ void LayoutTestPermissionManager::SetPermission(
   PermissionDescription description(permission, url.GetOrigin(),
                                     embedding_url.GetOrigin());
 
-  base::AutoLock lock(permissions_lock_);
+  {
+    base::AutoLock lock(permissions_lock_);
 
-  auto it = permissions_.find(description);
-  if (it == permissions_.end()) {
-    permissions_.insert(
-        std::pair<PermissionDescription, blink::mojom::PermissionStatus>(
-            description, status));
-  } else {
-    it->second = status;
+    auto it = permissions_.find(description);
+    if (it == permissions_.end()) {
+      permissions_.insert(
+          std::pair<PermissionDescription, blink::mojom::PermissionStatus>(
+              description, status));
+    } else {
+      it->second = status;
+    }
   }
 
   OnPermissionChanged(description, status);

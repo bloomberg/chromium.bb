@@ -49,8 +49,12 @@ class CONTENT_EXPORT DevToolsManagerDelegate {
   // Get all live browser contexts created by CreateBrowserContext() method.
   virtual std::vector<BrowserContext*> GetBrowserContexts();
 
-  // May return null if not supported or not possible. Delegate must take
-  // ownership of the created browser context, and may destroy it at will.
+  // Get default browser context. May return null if not supported.
+  virtual BrowserContext* GetDefaultBrowserContext();
+
+  // Create new browser context. May return null if not supported or not
+  // possible. Delegate must take ownership of the created browser context, and
+  // may destroy it at will.
   virtual BrowserContext* CreateBrowserContext();
 
   // Dispose browser context that was created with |CreateBrowserContext|
