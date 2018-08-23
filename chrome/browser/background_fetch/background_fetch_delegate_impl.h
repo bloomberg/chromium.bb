@@ -114,8 +114,9 @@ class BackgroundFetchDelegateImpl
  private:
   struct JobDetails {
     JobDetails(JobDetails&&);
-    explicit JobDetails(
-        std::unique_ptr<content::BackgroundFetchDescription> fetch_description);
+    JobDetails(
+        std::unique_ptr<content::BackgroundFetchDescription> fetch_description,
+        const std::string& provider_namespace);
     ~JobDetails();
 
     void UpdateOfflineItem();
@@ -149,6 +150,10 @@ class BackgroundFetchDelegateImpl
 
   // The profile this service is being created for.
   Profile* profile_;
+
+  // The namespace provided to the |offline_content_aggregator_| and used when
+  // creating Content IDs.
+  std::string provider_namespace_;
 
   // The BackgroundFetchDelegateImplFactory depends on the
   // DownloadServiceFactory, so |download_service_| should outlive |this|.
