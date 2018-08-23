@@ -52,6 +52,7 @@
     self.trackLayer.lineWidth = self.lineWidth;
 
     [self.trackLayer addSublayer:self.progressLayer];
+    [self updateProgressLayer];
   }
 }
 
@@ -60,12 +61,23 @@
 - (void)setProgress:(float)progress {
   if (_progress != progress) {
     _progress = progress;
-    self.progressLayer.path =
-        [self progressPathWithEndAngle:M_PI * 2 * progress - M_PI_2].CGPath;
+    [self updateProgressLayer];
   }
 }
 
 #pragma mark - Private
+
+// Creates progressLayer if necessary and updates its path.
+- (void)updateProgressLayer {
+  if (!self.superview) {
+    // view is not ready yet. -updateProgressLayer will be called again from
+    // -willMoveToSuperview:.
+    return;
+  }
+
+  self.progressLayer.path =
+      [self progressPathWithEndAngle:M_PI * 2 * self.progress - M_PI_2].CGPath;
+}
 
 // Returns Bezier path for drawing radial progress or track. Start angle is
 // always 12 o'clock.
