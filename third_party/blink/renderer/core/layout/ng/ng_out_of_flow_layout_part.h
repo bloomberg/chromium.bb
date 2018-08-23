@@ -31,10 +31,16 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   STACK_ALLOCATED();
 
  public:
+  // The container_builder, borders_and_scrollers, container_space and
+  // container_style parameters are all with respect to the containing block of
+  // the relevant out-of-flow positioned descendants. If the CSS "containing
+  // block" of such an out-of-flow positioned descendant isn't a true block (but
+  // e.g. a relatively positioned inline instead), the containing block here is
+  // the containing block of said non-block.
   NGOutOfFlowLayoutPart(NGFragmentBuilder* container_builder,
                         bool contains_absolute,
                         bool contains_fixed,
-                        const NGBoxStrut& scrollbar_sizes,
+                        const NGBoxStrut& borders_and_scrollers,
                         const NGConstraintSpace& container_space,
                         const ComputedStyle& container_style);
 
