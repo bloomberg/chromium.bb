@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -489,6 +490,19 @@ class BodyReader {
       mojo::ScopedDataPipeConsumerHandle body_data_pipe =
           std::move(body_data_pipe_);
 
+      // TODO(mmenke): Remove this once https://crbug.com/875253 is understood
+      // and fixed.
+      int total_bytes_read = total_bytes_read_;
+      int max_body_size = max_body_size_;
+      base::debug::Alias(&body_data);
+      base::debug::Alias(&max_body_size);
+      base::debug::Alias(&total_bytes_read);
+      base::debug::Alias(&read_size);
+      base::debug::Alias(&copy_size);
+      // This is just to make sure the first byte of body_data is accessible.
+      char first_read_byte = static_cast<const char*>(body_data)[0];
+      base::debug::Alias(&first_read_byte);
+
       // This call may delete the BodyReader.
       net::Error error =
           delegate_->OnDataRead(copy_size, static_cast<const char*>(body_data));
@@ -632,6 +646,11 @@ class SaveToStringBodyHandler : public BodyHandler,
   // BodyReader::Delegate implementation.
 
   net::Error OnDataRead(uint32_t length, const char* data) override {
+    // TODO(mmenke): Remove this once https://crbug.com/875253 is understood and
+    // fixed.
+    std::string* body = body_.get();
+    base::debug::Alias(&body);
+
     body_->append(data, length);
     ReportProgress(body_reader_->total_bytes_read());
     return net::OK;
