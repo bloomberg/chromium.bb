@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
+from telemetry.util import wpr_modes
 
 from page_sets.login_helpers import google_login
 from page_sets.login_helpers import linkedin_login
@@ -210,7 +211,8 @@ class Linkedin2018Page(TopRealWorldDesktopPage):
         extra_browser_args=extra_browser_args)
 
   def RunNavigateSteps(self, action_runner):
-    linkedin_login.LoginDesktopAccount(action_runner, 'linkedin')
+    if self.wpr_mode != wpr_modes.WPR_REPLAY:
+      linkedin_login.LoginDesktopAccount(action_runner, 'linkedin')
     super(Linkedin2018Page, self).RunNavigateSteps(action_runner)
 
 
@@ -324,7 +326,8 @@ class Gmail2018SmoothPage(TopRealWorldDesktopPage):
   URL = 'https://mail.google.com/mail/'
 
   def RunNavigateSteps(self, action_runner):
-    google_login.NewLoginGoogleAccount(action_runner, 'googletest')
+    if self.wpr_mode != wpr_modes.WPR_REPLAY:
+      google_login.NewLoginGoogleAccount(action_runner, 'googletest')
     super(Gmail2018SmoothPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForJavaScriptCondition(
         'window.gmonkey !== undefined &&'
@@ -349,7 +352,8 @@ class GoogleCalendar2018SmoothPage(TopRealWorldDesktopPage):
   URL='https://www.google.com/calendar/'
 
   def RunNavigateSteps(self, action_runner):
-    google_login.NewLoginGoogleAccount(action_runner, 'googletest')
+    if self.wpr_mode != wpr_modes.WPR_REPLAY:
+      google_login.NewLoginGoogleAccount(action_runner, 'googletest')
     super(GoogleCalendar2018SmoothPage, self).RunNavigateSteps(action_runner)
     action_runner.WaitForElement('span[class~="sm8sCf"]')
     action_runner.ExecuteJavaScript("""
