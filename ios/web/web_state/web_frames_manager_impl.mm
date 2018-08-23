@@ -54,39 +54,35 @@ void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
   if (frame->IsMainFrame()) {
     main_web_frame_ = frame.get();
   }
-  web_frame_ptrs_.push_back(frame.get());
-  web_frames_.push_back(std::move(frame));
+  DCHECK(web_frames_.count(frame->GetFrameId()) == 0);
+  web_frames_[frame->GetFrameId()] = std::move(frame);
 }
 
 void WebFramesManagerImpl::RemoveFrameWithId(const std::string& frame_id) {
   if (main_web_frame_ && main_web_frame_->GetFrameId() == frame_id) {
     main_web_frame_ = nullptr;
   }
-
-  auto web_frame_ptrs_it = std::find_if(
-      web_frame_ptrs_.begin(), web_frame_ptrs_.end(), FrameIdMatcher(frame_id));
-  if (web_frame_ptrs_it != web_frame_ptrs_.end()) {
-    web_frame_ptrs_.erase(web_frame_ptrs_it);
-    web_frames_.erase(web_frames_.begin() +
-                      (web_frame_ptrs_it - web_frame_ptrs_.begin()));
-  }
+  web_frames_.erase(frame_id);
 }
 
 void WebFramesManagerImpl::RemoveAllWebFrames() {
   main_web_frame_ = nullptr;
   web_frames_.clear();
-  web_frame_ptrs_.clear();
 }
 
 WebFrame* WebFramesManagerImpl::GetFrameWithId(const std::string& frame_id) {
-  auto web_frame_ptrs_it = std::find_if(
-      web_frame_ptrs_.begin(), web_frame_ptrs_.end(), FrameIdMatcher(frame_id));
-  return web_frame_ptrs_it == web_frame_ptrs_.end() ? nullptr
-                                                    : *web_frame_ptrs_it;
+  DCHECK(!frame_id.empty());
+  auto web_frames_it = web_frames_.find(frame_id);
+  return web_frames_it == web_frames_.end() ? nullptr
+                                            : web_frames_it->second.get();
 }
 
-const std::vector<WebFrame*>& WebFramesManagerImpl::GetAllWebFrames() {
-  return web_frame_ptrs_;
+std::set<WebFrame*> WebFramesManagerImpl::GetAllWebFrames() {
+  std::set<WebFrame*> frames;
+  for (const auto& it : web_frames_) {
+    frames.insert(it.second.get());
+  }
+  return frames;
 }
 
 WebFrame* WebFramesManagerImpl::GetMainWebFrame() {

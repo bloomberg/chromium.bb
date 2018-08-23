@@ -5,8 +5,8 @@
 #ifndef IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAMES_MANAGER_H_
 #define IOS_WEB_PUBLIC_WEB_STATE_WEB_FRAMES_MANAGER_H_
 
+#include <set>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
@@ -25,7 +25,7 @@ class WebFramesManager : public web::WebStateUserData<WebFramesManager> {
   // Returns a list of all the web frames associated with WebState.
   // NOTE: Due to the asynchronous nature of renderer, this list may be
   // outdated.
-  virtual const std::vector<WebFrame*>& GetAllWebFrames() = 0;
+  virtual std::set<WebFrame*> GetAllWebFrames() = 0;
   // Returns the web frame for the main frame associated with WebState or null
   // if unknown.
   // NOTE: Due to the asynchronous nature of JavaScript to native messsaging,

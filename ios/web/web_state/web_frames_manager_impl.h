@@ -31,17 +31,15 @@ class WebFramesManagerImpl : public WebFramesManager {
   void RegisterExistingFrames();
 
   // WebFramesManager overrides
-  const std::vector<WebFrame*>& GetAllWebFrames() override;
+  std::set<WebFrame*> GetAllWebFrames() override;
   WebFrame* GetMainWebFrame() override;
   WebFrame* GetFrameWithId(const std::string& frame_id) override;
 
  private:
   friend class web::WebStateUserData<WebFramesManagerImpl>;
 
-  // List of all web frames associated with WebState.
-  std::vector<std::unique_ptr<WebFrame>> web_frames_;
   // List of pointers to all web frames associated with WebState.
-  std::vector<WebFrame*> web_frame_ptrs_;
+  std::map<std::string, std::unique_ptr<WebFrame>> web_frames_;
 
   // Reference to the current main web frame.
   WebFrame* main_web_frame_ = nullptr;
