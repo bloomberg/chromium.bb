@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.feed;
 
 import android.app.Activity;
-import android.os.Bundle;
 import android.support.annotation.IntDef;
 
 import com.google.android.libraries.feed.api.stream.Stream;
@@ -13,9 +12,12 @@ import com.google.android.libraries.feed.api.stream.Stream;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -28,6 +30,9 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
     @IntDef({NOT_SPECIFIED, CREATED, SHOWN, ACTIVE, INACTIVE, HIDDEN, DESTROYED})
     @Retention(RetentionPolicy.SOURCE)
     private @interface StreamState {}
+
+    /** Key for the Stream instance state that may be stored in a navigation entry. */
+    private static final String STREAM_SAVED_INSTANCE_STATE_KEY = "StreamSavedInstanceState";
 
     private static final int NOT_SPECIFIED = -1;
     private static final int CREATED = 0;
@@ -86,11 +91,15 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
             public void onHidden(Tab tab) {
                 hide();
             }
+
+            @Override
+            public void onPageLoadStarted(Tab tab, String url) {
+                saveInstanceState();
+            }
         };
 
         mStreamState = CREATED;
-        // TODO(huayinz): Handle saved instance state.
-        mStream.onCreate((Bundle) null);
+        mStream.onCreate(restoreInstanceState());
         show();
         activate();
 
@@ -166,6 +175,9 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
 
         deactivate();
         mStreamState = HIDDEN;
+        // Save instance state as the Stream begins to hide. This matches the activity lifecycle
+        // that instance state is saved as the activity begins to stop.
+        saveInstanceState();
         mStream.onHide();
     }
 
@@ -181,6 +193,37 @@ class StreamLifecycleManager implements ApplicationStatus.ActivityStateListener 
         mTab.removeObserver(mTabObserver);
         ApplicationStatus.unregisterActivityStateListener(this);
         mStream.onDestroy();
+    }
+
+    /** Save the Stream instance state to the navigation entry if necessary. */
+    private void saveInstanceState() {
+        if (mTab.getWebContents() == null) return;
+
+        NavigationController controller = mTab.getWebContents().getNavigationController();
+        int index = controller.getLastCommittedEntryIndex();
+        NavigationEntry entry = controller.getEntryAtIndex(index);
+        if (entry == null) return;
+
+        // At least under test conditions this method may be called initially for the load of the
+        // NTP itself, at which point the last committed entry is not for the NTP yet. This method
+        // will then be called a second time when the user navigates away, at which point the last
+        // committed entry is for the NTP. The extra data must only be set in the latter case.
+        if (!NewTabPage.isNTPUrl(entry.getUrl())) return;
+
+        controller.setEntryExtraData(
+                index, STREAM_SAVED_INSTANCE_STATE_KEY, mStream.getSavedInstanceStateString());
+    }
+
+    /**
+     * @return The Stream instance state saved in navigation entry, or null if it is not previously
+     *         saved.
+     */
+    private String restoreInstanceState() {
+        if (mTab.getWebContents() == null) return null;
+
+        NavigationController controller = mTab.getWebContents().getNavigationController();
+        int index = controller.getLastCommittedEntryIndex();
+        return controller.getEntryExtraData(index, STREAM_SAVED_INSTANCE_STATE_KEY);
     }
 
     @VisibleForTesting

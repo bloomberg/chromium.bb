@@ -171,7 +171,7 @@ class FeedNewTabPageMediator
         if (!isScrollViewInitialized()) return 0;
 
         int firstChildTop = mCoordinator.getStream().getChildTopAt(0);
-        return firstChildTop != Stream.POSITION_NOT_KNOWN ? -firstChildTop : 0;
+        return firstChildTop != Stream.POSITION_NOT_KNOWN ? -firstChildTop : Integer.MIN_VALUE;
     }
 
     @Override

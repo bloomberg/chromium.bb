@@ -314,7 +314,7 @@ public class NewTabPage
 
             @Override
             public void onPageLoadStarted(Tab tab, String url) {
-                restoreLastScrollPosition();
+                saveLastScrollPosition();
             }
         };
         mTab.addObserver(mTabObserver);
@@ -349,9 +349,9 @@ public class NewTabPage
     }
 
     /**
-     * Restore the last scroll position stored in the navigation entry (if set).
+     * Save the last scroll position stored in the navigation entry if necessary.
      */
-    protected void restoreLastScrollPosition() {
+    protected void saveLastScrollPosition() {
         int scrollPosition = mNewTabPageView.getScrollPosition();
         if (scrollPosition == RecyclerView.NO_POSITION) return;
 
