@@ -69,7 +69,6 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 - (void)setupSubviews {
   self.showsVerticalScrollIndicator = NO;
   self.showsHorizontalScrollIndicator = NO;
-  self.bounces = NO;
   self.canCancelContentTouches = YES;
 
   UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
