@@ -531,7 +531,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   //      + overflow_controls_ancestor_clipping_layer_ [OPTIONAL]
   //      | + overflow_controls_host_layer_ [OPTIONAL]
   //      |   + layer_for_vertical_scrollbar_ [OPTIONAL]
-  //      |   + layer_for_vertical_scrollbar_ [OPTIONAL]
+  //      |   + layer_for_horizontal_scrollbar_ [OPTIONAL]
   //      |   + layer_for_scroll_corner_ [OPTIONAL]
   //      + decoration_outline_layer_ [OPTIONAL]
   // The overflow controls may need to be repositioned in the graphics layer

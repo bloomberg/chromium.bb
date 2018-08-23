@@ -49,7 +49,7 @@ enum class PaintPhase {
   kBlockBackground = 0,
   //
   // The following two values are added besides the normal
-  // PaintPhaseBlockBackground to distinguish backgrounds for the object itself
+  // kBlockBackground to distinguish backgrounds for the object itself
   // and for descendants, because the two backgrounds are often painted with
   // different scroll offsets and clips.
   //
@@ -57,8 +57,8 @@ enum class PaintPhase {
   kSelfBlockBackgroundOnly = 1,
   // Paint backgrounds of non-self-painting descendants only. The painter should
   // call each non-self-painting child's paint method by passing
-  // paintInfo.forDescendants() which converts
-  // PaintPhaseDescendantsBlockBackgroundsOnly to PaintPhaseBlockBackground.
+  // paintInfo.forDescendants() which converts kDescendantBlockBackgroundsOnly
+  // to kBlockBackground.
   kDescendantBlockBackgroundsOnly = 2,
 
   // Float phase
@@ -79,8 +79,8 @@ enum class PaintPhase {
   kSelfOutlineOnly = 6,
   // Paint outlines of non-self-painting descendants only. The painter should
   // call each non-self-painting child's paint method by passing
-  // paintInfo.forDescendants() which
-  // converts PaintPhaseDescendantsOutlinesOnly to PaintPhaseBlockOutline.
+  // paintInfo.forDescendants() which converts kDescendantOutlinesOnly to
+  // kOutline.
   kDescendantOutlinesOnly = 7,
 
   // The below are auxiliary phases which are used to paint special effects.
