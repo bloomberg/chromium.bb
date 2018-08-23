@@ -243,7 +243,7 @@ class TopIconAnimation : public AppListFolderView::Animation,
                                   : folder_view_->folder_item_icon_bounds();
 
       TopIconAnimationView* icon_view = new TopIconAnimationView(
-          top_item->icon(), base::ASCIIToUTF16(top_item->GetDisplayName()),
+          top_item->icon(), base::UTF8ToUTF16(top_item->GetDisplayName()),
           scaled_rect, show_, item_in_folder_icon);
 
       icon_view->AddObserver(this);
