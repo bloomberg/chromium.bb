@@ -51,12 +51,11 @@ const char kAuthTokenExchangeEndPoint[] =
 ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     Profile* profile,
-    ArcAuthContext* context,
     bool initial_signin)
     : OAuth2TokenService::Consumer(kConsumerName),
       url_loader_factory_(std::move(url_loader_factory)),
       profile_(profile),
-      context_(context),
+      context_(profile_),
       initial_signin_(initial_signin),
       weak_ptr_factory_(this) {}
 
@@ -65,8 +64,8 @@ ArcBackgroundAuthCodeFetcher::~ArcBackgroundAuthCodeFetcher() = default;
 void ArcBackgroundAuthCodeFetcher::Fetch(const FetchCallback& callback) {
   DCHECK(callback_.is_null());
   callback_ = callback;
-  context_->Prepare(base::Bind(&ArcBackgroundAuthCodeFetcher::OnPrepared,
-                               weak_ptr_factory_.GetWeakPtr()));
+  context_.Prepare(base::Bind(&ArcBackgroundAuthCodeFetcher::OnPrepared,
+                              weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcBackgroundAuthCodeFetcher::OnPrepared(
@@ -77,8 +76,8 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(
   }
 
   // Get token service and account ID to fetch auth tokens.
-  ProfileOAuth2TokenService* const token_service = context_->token_service();
-  const std::string& account_id = context_->account_id();
+  ProfileOAuth2TokenService* const token_service = context_.token_service();
+  const std::string& account_id = context_.account_id();
   DCHECK(token_service->RefreshTokenIsAvailable(account_id));
 
   OAuth2TokenService::ScopeSet scopes;
@@ -235,6 +234,10 @@ void ArcBackgroundAuthCodeFetcher::ReportResult(
   else
     UpdateReauthorizationSilentAuthCodeUMA(uma_status);
   std::move(callback_).Run(!auth_code.empty(), auth_code);
+}
+
+void ArcBackgroundAuthCodeFetcher::SkipMergeSessionForTesting() {
+  context_.SkipMergeSessionForTesting();
 }
 
 }  // namespace arc

@@ -15,9 +15,12 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
@@ -33,24 +36,30 @@ policy::DeviceManagementService* GetDeviceManagementService() {
   return connector->device_management_service();
 }
 
+// Returns the Device Account Id. Assumes that |profile| is the only Profile
+// on Chrome OS.
+std::string GetDeviceAccountId(Profile* profile) {
+  const SigninManagerBase* const signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+
+  return signin_manager->GetAuthenticatedAccountId();
+}
+
 }  // namespace
 
-ArcAndroidManagementChecker::ArcAndroidManagementChecker(
-    Profile* profile,
-    ProfileOAuth2TokenService* token_service,
-    const std::string& account_id,
-    bool retry_on_error)
+ArcAndroidManagementChecker::ArcAndroidManagementChecker(Profile* profile,
+                                                         bool retry_on_error)
     : profile_(profile),
-      token_service_(token_service),
-      account_id_(account_id),
+      token_service_(ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)),
+      device_account_id_(GetDeviceAccountId(profile_)),
       retry_on_error_(retry_on_error),
       retry_delay_(kRetryDelayMin),
       android_management_client_(
           GetDeviceManagementService(),
           g_browser_process->system_network_context_manager()
               ->GetSharedURLLoaderFactory(),
-          account_id,
-          token_service),
+          device_account_id_,
+          token_service_),
       weak_ptr_factory_(this) {}
 
 ArcAndroidManagementChecker::~ArcAndroidManagementChecker() {
@@ -79,7 +88,7 @@ void ArcAndroidManagementChecker::StartCheck(const CheckCallback& callback) {
 }
 
 void ArcAndroidManagementChecker::EnsureRefreshTokenLoaded() {
-  if (token_service_->RefreshTokenIsAvailable(account_id_)) {
+  if (token_service_->RefreshTokenIsAvailable(device_account_id_)) {
     // If the refresh token is already available, just start the management
     // check immediately.
     StartCheckInternal();
@@ -93,7 +102,7 @@ void ArcAndroidManagementChecker::EnsureRefreshTokenLoaded() {
 
 void ArcAndroidManagementChecker::OnRefreshTokenAvailable(
     const std::string& account_id) {
-  if (account_id != account_id_)
+  if (account_id != device_account_id_)
     return;
   OnRefreshTokensLoaded();
 }
@@ -106,7 +115,7 @@ void ArcAndroidManagementChecker::OnRefreshTokensLoaded() {
 void ArcAndroidManagementChecker::StartCheckInternal() {
   DCHECK(!callback_.is_null());
 
-  if (!token_service_->RefreshTokenIsAvailable(account_id_)) {
+  if (!token_service_->RefreshTokenIsAvailable(device_account_id_)) {
     VLOG(2) << "No refresh token is available for android management check.";
     std::move(callback_).Run(policy::AndroidManagementClient::Result::ERROR);
     return;

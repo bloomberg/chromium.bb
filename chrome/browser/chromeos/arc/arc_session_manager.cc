@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
-#include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
@@ -456,8 +456,6 @@ void ArcSessionManager::Initialize() {
       cryptohome::Identification(
           multi_user_util::GetAccountIdFromProfile(profile_)));
 
-  context_ = std::make_unique<ArcAuthContext>(profile_);
-
   if (g_enable_check_android_management_in_tests.value_or(g_ui_enabled))
     ArcAndroidManagementChecker::StartClient();
 
@@ -488,7 +486,6 @@ void ArcSessionManager::Shutdown() {
     support_host_->Close();
     support_host_.reset();
   }
-  context_.reset();
   pai_starter_.reset();
   fast_app_reinstall_starter_.reset();
   profile_ = nullptr;
@@ -876,8 +873,7 @@ void ArcSessionManager::StartAndroidManagementCheck() {
     return;
 
   android_management_checker_ = std::make_unique<ArcAndroidManagementChecker>(
-      profile_, context_->token_service(), context_->account_id(),
-      false /* retry_on_error */);
+      profile_, false /* retry_on_error */);
   android_management_checker_->StartCheck(
       base::Bind(&ArcSessionManager::OnAndroidManagementChecked,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -931,8 +927,7 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
   }
 
   android_management_checker_ = std::make_unique<ArcAndroidManagementChecker>(
-      profile_, context_->token_service(), context_->account_id(),
-      true /* retry_on_error */);
+      profile_, true /* retry_on_error */);
   android_management_checker_->StartCheck(
       base::Bind(&ArcSessionManager::OnBackgroundAndroidManagementChecked,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -975,8 +970,8 @@ void ArcSessionManager::StartArc() {
   provisioning_reported_ = false;
 
   std::string locale;
-  std::string preferred_lanaguages;
-  GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_lanaguages);
+  std::string preferred_languages;
+  GetLocaleAndPreferredLanguages(profile_, &locale, &preferred_languages);
 
   ArcSession::UpgradeParams params;
 
@@ -991,9 +986,9 @@ void ArcSessionManager::StartArc() {
   params.is_child = profile_->IsChild();
   params.supervision_transition = GetSupervisionTransition(profile_);
   params.locale = locale;
-  // Empty |preferred_lanaguages| is converted to empty array.
+  // Empty |preferred_languages| is converted to empty array.
   params.preferred_languages = base::SplitString(
-      preferred_lanaguages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      preferred_languages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   arc_session_runner_->RequestUpgrade(std::move(params));
 }
@@ -1056,7 +1051,7 @@ void ArcSessionManager::MaybeReenableArc() {
   DCHECK_EQ(state_, State::STOPPED);
 
   if (!reenable_arc_) {
-    // Reenabling is not triggered. Do nothing.
+    // Re-enabling is not triggered. Do nothing.
     return;
   }
   DCHECK(enable_requested_);

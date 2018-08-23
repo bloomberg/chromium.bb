@@ -21,10 +21,7 @@ namespace arc {
 
 class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
  public:
-  ArcAndroidManagementChecker(Profile* profile,
-                              ProfileOAuth2TokenService* token_service,
-                              const std::string& account_id,
-                              bool retry_on_error);
+  ArcAndroidManagementChecker(Profile* profile, bool retry_on_error);
   ~ArcAndroidManagementChecker() override;
 
   static void StartClient();
@@ -54,7 +51,7 @@ class ArcAndroidManagementChecker : public OAuth2TokenService::Observer {
   Profile* profile_;
   ProfileOAuth2TokenService* const token_service_;
 
-  const std::string account_id_;
+  const std::string device_account_id_;
 
   // If true, on error, instead of reporting the error to the caller, schedule
   // the retry with delay.

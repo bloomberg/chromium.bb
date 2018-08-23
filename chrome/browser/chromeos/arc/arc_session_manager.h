@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <ostream>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -25,7 +24,6 @@ class Profile;
 namespace arc {
 
 class ArcAndroidManagementChecker;
-class ArcAuthContext;
 class ArcDataRemover;
 class ArcFastAppReinstallStarter;
 class ArcPaiStarter;
@@ -219,10 +217,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   ArcSupportHost* support_host() { return support_host_.get(); }
 
-  // TODO(hidehiko): Get rid of the getter by migration between ArcAuthContext
-  // and ArcAuthCodeFetcher.
-  ArcAuthContext* auth_context() { return context_.get(); }
-
   // On provisioning completion (regardless of whether successfully done or
   // not), this is called with its status. On success, called with
   // ProvisioningResult::SUCCESS, otherwise |result| is the error reason.
@@ -386,7 +380,6 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
 
   std::unique_ptr<ArcTermsOfServiceNegotiator> terms_of_service_negotiator_;
 
-  std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;
 
   std::unique_ptr<ScopedOptInFlowTracker> scoped_opt_in_tracker_;

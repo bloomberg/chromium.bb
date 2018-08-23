@@ -41,12 +41,13 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
   ArcBackgroundAuthCodeFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Profile* profile,
-      ArcAuthContext* context,
       bool initial_signin);
   ~ArcBackgroundAuthCodeFetcher() override;
 
   // ArcAuthCodeFetcher:
   void Fetch(const FetchCallback& callback) override;
+
+  void SkipMergeSessionForTesting();
 
  private:
   void ResetFetchers();
@@ -65,9 +66,9 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
                     OptInSilentAuthCode uma_status);
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  // Unowned pointers.
+  // Unowned pointer.
   Profile* const profile_;
-  ArcAuthContext* const context_;
+  ArcAuthContext context_;
   FetchCallback callback_;
 
   std::unique_ptr<OAuth2TokenService::Request> login_token_request_;

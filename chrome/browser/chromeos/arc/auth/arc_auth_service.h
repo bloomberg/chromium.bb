@@ -75,6 +75,8 @@ class ArcAuthService : public KeyedService,
   void OnAccountRemoved(
       const chromeos::AccountManager::AccountKey& account_key) override;
 
+  void SkipMergeSessionForTesting();
+
  private:
   // Callbacks when auth info is fetched.
   void OnEnrollmentTokenFetched(
@@ -107,6 +109,8 @@ class ArcAuthService : public KeyedService,
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<ArcFetcherBase> fetcher_;
+
+  bool skip_merge_session_for_testing_ = false;
 
   base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
 

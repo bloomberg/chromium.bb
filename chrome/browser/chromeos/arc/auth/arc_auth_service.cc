@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
@@ -22,6 +23,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
 #include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
@@ -340,9 +343,13 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
     auth_code_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
   } else {
     // Optionally retrieve auth code in silent mode.
-    auth_code_fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
-        url_loader_factory_, profile_, ArcSessionManager::Get()->auth_context(),
-        initial_signin);
+    auto background_auth_code_fetcher =
+        std::make_unique<ArcBackgroundAuthCodeFetcher>(
+            url_loader_factory_, profile_, initial_signin);
+    if (skip_merge_session_for_testing_)
+      background_auth_code_fetcher->SkipMergeSessionForTesting();
+
+    auth_code_fetcher = std::move(background_auth_code_fetcher);
   }
   auth_code_fetcher->Fetch(base::Bind(&ArcAuthService::OnAuthCodeFetched,
                                       weak_ptr_factory_.GetWeakPtr()));
@@ -433,11 +440,14 @@ void ArcAuthService::OnAuthCodeFetched(bool success,
   fetcher_.reset();
 
   if (success) {
+    const SigninManagerBase* const signin_manager =
+        SigninManagerFactory::GetForProfile(profile_);
+    const std::string& full_account_id = base::UTF16ToUTF8(
+        signin_ui_util::GetAuthenticatedUsername(signin_manager));
     OnAccountInfoReady(
-        CreateAccountInfo(
-            !IsArcOptInVerificationDisabled(), auth_code,
-            ArcSessionManager::Get()->auth_context()->full_account_id(),
-            GetAccountType(profile_), policy_util::IsAccountManaged(profile_)),
+        CreateAccountInfo(!IsArcOptInVerificationDisabled(), auth_code,
+                          full_account_id, GetAccountType(profile_),
+                          policy_util::IsAccountManaged(profile_)),
         mojom::ArcSignInStatus::SUCCESS);
   } else if (chromeos::DemoSession::Get() &&
              chromeos::DemoSession::Get()->started()) {
@@ -486,6 +496,10 @@ bool ArcAuthService::IsDeviceAccount(
                                            ->GetAccountId();
 
   return account_mapper_util_.IsEqual(account_key, device_account_id);
+}
+
+void ArcAuthService::SkipMergeSessionForTesting() {
+  skip_merge_session_for_testing_ = true;
 }
 
 }  // namespace arc
