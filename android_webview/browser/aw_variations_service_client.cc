@@ -48,7 +48,10 @@ AwVariationsServiceClient::GetNetworkTimeTracker() {
 }
 
 Channel AwVariationsServiceClient::GetChannel() {
-  return android_webview::GetChannel();
+  // Pretend stand-alone WebView is always "stable" for the purpose of
+  // variations. This simplifies experiment design, since stand-alone WebView
+  // need not be considered separately when choosing channels.
+  return android_webview::GetChannelOrStable();
 }
 
 bool AwVariationsServiceClient::GetSupportsPermanentConsistency() {
