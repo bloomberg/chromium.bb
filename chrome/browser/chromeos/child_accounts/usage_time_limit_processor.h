@@ -170,6 +170,11 @@ base::Time GetExpectedResetTime(
     base::Time current_time,
     const icu::TimeZone* const time_zone);
 
+// Returns time of the day when TimeUsageLimit policy is reset, represented by
+// the distance from midnight.
+base::TimeDelta GetTimeUsageLimitResetTime(
+    const std::unique_ptr<base::DictionaryValue>& time_limit);
+
 }  // namespace usage_time_limit
 }  // namespace chromeos
 

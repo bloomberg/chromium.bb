@@ -767,5 +767,33 @@ TEST_F(UsageTimeLimitProcessorTest, GetExpectedResetTimeWithCustomPolicy) {
   ASSERT_EQ(reset_time_two, TimeFromString("Wed, 3 Jan 2018 8:00 EST"));
 }
 
+TEST_F(UsageTimeLimitProcessorTest, GetTimeUsageLimitResetTime) {
+  // If there is no valid time usage limit in the policy, default value
+  // (midnight) should be returned.
+  auto empty_time_limit =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  auto empty_time_limit_dictionary =
+      base::DictionaryValue::From(std::move(empty_time_limit));
+
+  EXPECT_EQ(base::TimeDelta::FromHours(0),
+            GetTimeUsageLimitResetTime(empty_time_limit_dictionary));
+
+  // If reset time is specified in the time usage limit policy, its value should
+  // be returned.
+  const int kHour = 8;
+  const int kMinutes = 30;
+  auto time_usage_limit = base::Value(base::Value::Type::DICTIONARY);
+  time_usage_limit.SetKey("reset_at", CreateTime(kHour, kMinutes));
+  auto time_limit =
+      std::make_unique<base::Value>(base::Value::Type::DICTIONARY);
+  time_limit->SetKey("time_usage_limit", std::move(time_usage_limit));
+  auto time_limit_dictionary =
+      base::DictionaryValue::From(std::move(time_limit));
+
+  EXPECT_EQ(base::TimeDelta::FromHours(kHour) +
+                base::TimeDelta::FromMinutes(kMinutes),
+            GetTimeUsageLimitResetTime(time_limit_dictionary));
+}
+
 }  // namespace usage_time_limit
 }  // namespace chromeos

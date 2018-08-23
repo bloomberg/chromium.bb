@@ -447,8 +447,12 @@ class DeviceStatusCollector::ActivityStorage {
   };
 
   // Creates activity storage. Activity data will be stored in the given
-  // |pref_service| under |pref_name| preference.
-  ActivityStorage(PrefService* pref_service, const std::string& pref_name);
+  // |pref_service| under |pref_name| preference. Activity data are aggregated
+  // by day. The start of the new day is counted from |activity_day_start| that
+  // represents the distance from midnight.
+  ActivityStorage(PrefService* pref_service,
+                  const std::string& pref_name,
+                  TimeDelta activity_day_start);
   ~ActivityStorage();
 
   // Adds an activity period. Accepts empty |active_user_email| if it should not
@@ -482,9 +486,6 @@ class DeviceStatusCollector::ActivityStorage {
   std::vector<ActivityPeriod> GetFilteredActivityPeriods(bool omit_emails);
 
  private:
-  // Determine the day key (milliseconds since epoch for corresponding day
-  // in UTC) for a given |timestamp|.
-  static int64_t TimestampToDayKey(Time timestamp);
   static std::string MakeActivityPeriodPrefKey(int64_t start,
                                                const std::string& user_email);
   static bool ParseActivityPeriodPrefKey(const std::string& key,
@@ -494,16 +495,27 @@ class DeviceStatusCollector::ActivityStorage {
                               const std::vector<std::string>& reporting_users,
                               base::DictionaryValue* const filtered_times);
 
+  // Determine the day key (milliseconds since epoch for corresponding
+  // |day_start_| in UTC) for a given |timestamp|.
+  int64_t TimestampToDayKey(Time timestamp);
+
   PrefService* const pref_service_ = nullptr;
   const std::string pref_name_;
+
+  // New day start time used for aggregating data represented by the distance
+  // from midnight.
+  const TimeDelta day_start_;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityStorage);
 };
 
 DeviceStatusCollector::ActivityStorage::ActivityStorage(
     PrefService* pref_service,
-    const std::string& pref_name)
-    : pref_service_(pref_service), pref_name_(pref_name) {
+    const std::string& pref_name,
+    TimeDelta activity_day_start)
+    : pref_service_(pref_service),
+      pref_name_(pref_name),
+      day_start_(activity_day_start) {
   DCHECK(pref_service_);
   const PrefService::PrefInitializationStatus pref_service_status =
       pref_service_->GetInitializationStatus();
@@ -524,16 +536,18 @@ void DeviceStatusCollector::ActivityStorage::AddActivityPeriod(
   base::DictionaryValue* activity_times = update.Get();
 
   // Assign the period to day buckets in local time.
-  Time midnight = start.LocalMidnight();
-  while (midnight < end) {
-    midnight += TimeDelta::FromDays(1);
-    int64_t activity = (std::min(end, midnight) - start).InMilliseconds();
+  Time day_start = start.LocalMidnight() + day_start_;
+  if (start < day_start)
+    day_start -= TimeDelta::FromDays(1);
+  while (day_start < end) {
+    day_start += TimeDelta::FromDays(1);
+    int64_t activity = (std::min(end, day_start) - start).InMilliseconds();
     const std::string key =
         MakeActivityPeriodPrefKey(TimestampToDayKey(start), active_user_email);
     int previous_activity = 0;
     activity_times->GetInteger(key, &previous_activity);
     activity_times->SetInteger(key, previous_activity + activity);
-    start = midnight;
+    start = day_start;
   }
 }
 
@@ -617,17 +631,6 @@ DeviceStatusCollector::ActivityStorage::GetFilteredActivityPeriods(
 }
 
 // static
-int64_t DeviceStatusCollector::ActivityStorage::TimestampToDayKey(
-    Time timestamp) {
-  Time::Exploded exploded;
-  timestamp.LocalMidnight().LocalExplode(&exploded);
-  Time out_time;
-  bool conversion_success = Time::FromUTCExploded(exploded, &out_time);
-  DCHECK(conversion_success);
-  return out_time.ToJavaTime();
-}
-
-// static
 std::string DeviceStatusCollector::ActivityStorage::MakeActivityPeriodPrefKey(
     int64_t start,
     const std::string& user_email) {
@@ -682,6 +685,19 @@ void DeviceStatusCollector::ActivityStorage::ProcessActivityPeriods(
   }
 }
 
+int64_t DeviceStatusCollector::ActivityStorage::TimestampToDayKey(
+    Time timestamp) {
+  Time::Exploded exploded;
+  Time day_start = timestamp.LocalMidnight() + day_start_;
+  if (timestamp < day_start)
+    day_start -= TimeDelta::FromDays(1);
+  day_start.LocalExplode(&exploded);
+  Time out_time;
+  bool conversion_success = Time::FromUTCExploded(exploded, &out_time);
+  DCHECK(conversion_success);
+  return out_time.ToJavaTime();
+}
+
 DeviceStatusCollector::DeviceStatusCollector(
     PrefService* pref_service,
     chromeos::system::StatisticsProvider* provider,
@@ -689,6 +705,7 @@ DeviceStatusCollector::DeviceStatusCollector(
     const CPUStatisticsFetcher& cpu_statistics_fetcher,
     const CPUTempFetcher& cpu_temp_fetcher,
     const AndroidStatusFetcher& android_status_fetcher,
+    TimeDelta activity_day_start,
     bool is_enterprise_reporting)
     : max_stored_past_activity_interval_(kMaxStoredPastActivityInterval),
       max_stored_future_activity_interval_(kMaxStoredFutureActivityInterval),
@@ -783,8 +800,10 @@ DeviceStatusCollector::DeviceStatusCollector(
   DCHECK(pref_service_->GetInitializationStatus() !=
          PrefService::INITIALIZATION_STATUS_WAITING);
   activity_storage_ = std::make_unique<ActivityStorage>(
-      pref_service_, (is_enterprise_reporting_ ? prefs::kDeviceActivityTimes
-                                               : prefs::kUserActivityTimes));
+      pref_service_,
+      (is_enterprise_reporting_ ? prefs::kDeviceActivityTimes
+                                : prefs::kUserActivityTimes),
+      activity_day_start);
 }
 
 DeviceStatusCollector::~DeviceStatusCollector() {}

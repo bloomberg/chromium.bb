@@ -8,14 +8,19 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+class PrefChangeRegistrar;
 
 namespace content {
 class BrowserContext;
 }
 
 namespace policy {
+class CloudPolicyClient;
 class StatusUploader;
+class UserCloudPolicyManagerChromeOS;
 }
 
 namespace chromeos {
@@ -31,9 +36,26 @@ class ConsumerStatusReportingService : public KeyedService {
   ~ConsumerStatusReportingService() override;
 
  private:
+  // Creates new status uploader if parameters changed.
+  void CreateStatusUploaderIfNeeded(policy::CloudPolicyClient* client);
+
+  // Called when the UsageTimeLimits policy changes.
+  void OnTimeLimitsPolicyChanged();
+
   // Helper object that controls device status collection/storage and uploads
   // gathered reports to the server.
   std::unique_ptr<policy::StatusUploader> status_uploader_;
+
+  // Preference changes observer.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
+
+  // Day start/reset time used for aggregating activity data for consumer status
+  // reporting.
+  base::TimeDelta day_reset_time_;
+
+  content::BrowserContext* const context_;
+
+  policy::UserCloudPolicyManagerChromeOS* user_cloud_policy_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsumerStatusReportingService);
 };
