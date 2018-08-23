@@ -39,8 +39,8 @@ class MODULES_EXPORT NavigatorVR final
   ~NavigatorVR() override;
 
   // XR API
-  // TODO(offenwanger) Should eventually move this out into it's own separate
-  // Navigator supplement.
+  // TODO(http://crbug.com/842025) Should eventually move this out into it's own
+  // separate Navigator supplement.
   static XR* xr(Navigator&);
   XR* xr();
 

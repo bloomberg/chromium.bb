@@ -140,7 +140,8 @@ VRDisplay::VRDisplay(NavigatorVR* navigator_vr,
   options->immersive = false;
   // Set in_on_display_activate to true, this will prevent the request present
   // from being logged.
-  // TODO(offenwanger): clean up the logging when refactors are complete.
+  // TODO(http://crbug.com/842025): clean up the logging when refactors are
+  // complete.
   device_ptr_->RequestSession(
       std::move(options), true,
       WTF::Bind(&VRDisplay::OnNonImmersiveSessionRequestReturned,

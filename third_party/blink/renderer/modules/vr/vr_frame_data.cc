@@ -187,8 +187,6 @@ bool VRFrameData::Update(const device::mojom::blink::VRPosePtr& pose,
     fov_right = right_eye->FieldOfView();
   } else {
     DCHECK(!left_eye && !right_eye);
-    // TODO(offenwanger): Look into making the projection matrixes null instead
-    // of hard coding values. May break some apps.
     fov_left = fov_right = new VRFieldOfView(45, 45, 45, 45);
   }
 

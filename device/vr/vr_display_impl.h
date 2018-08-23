@@ -23,7 +23,7 @@ class VRDeviceBase;
 // VR device process implementation of a XRFrameDataProvider within a WebVR
 // or WebXR site session.
 // VRDisplayImpl objects are owned by their respective XRRuntime instances.
-// TODO(offenwanger): Rename this.
+// TODO(http://crbug.com/842025): Rename this.
 class DEVICE_VR_EXPORT VRDisplayImpl
     : public mojom::XRFrameDataProvider,
       public mojom::XREnviromentIntegrationProvider,
