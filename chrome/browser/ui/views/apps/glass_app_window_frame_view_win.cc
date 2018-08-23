@@ -9,6 +9,7 @@
 #include "base/win/windows_version.h"
 #include "extensions/browser/app_window/native_app_window.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/win/hwnd_metrics.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -56,11 +57,8 @@ gfx::Insets GlassAppWindowFrameViewWin::GetClientAreaInsets(
     int border_thickness = 1;
     insets.Set(0, 0, border_thickness, border_thickness);
   } else {
-    // On Windows 10 we use a 1 pixel non client border which is too thin as a
-    // resize target. This inset extends the resize region.
-    int resize_border = display::win::ScreenWin::GetSystemMetricsForMonitor(
-        monitor, SM_CXSIZEFRAME);
-    insets.Set(0, resize_border, resize_border, resize_border);
+    const int frame_thickness = ui::GetFrameThickness(monitor);
+    insets.Set(0, frame_thickness, frame_thickness, frame_thickness);
   }
   return insets;
 }

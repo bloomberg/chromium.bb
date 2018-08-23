@@ -22,6 +22,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/win/hwnd_metrics.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/controls/menu/native_menu_win.h"
@@ -100,9 +101,7 @@ bool BrowserDesktopWindowTreeHostWin::GetClientAreaInsets(
     // In fullscreen mode there is no frame.
     *insets = gfx::Insets();
   } else {
-    const int frame_thickness =
-        display::win::ScreenWin::GetSystemMetricsForMonitor(monitor,
-                                                            SM_CXSIZEFRAME);
+    const int frame_thickness = ui::GetFrameThickness(monitor);
     // Reduce the Windows non-client border size because we extend the border
     // into our client area in UpdateDWMFrame(). The top inset must be 0 or
     // else Windows will draw a full native titlebar outside the client area.
