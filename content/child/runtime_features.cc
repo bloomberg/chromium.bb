@@ -24,6 +24,10 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/native_theme/native_theme_features.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 using blink::WebRuntimeFeatures;
 
 namespace content {
@@ -68,10 +72,14 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   WebRuntimeFeatures::EnableNetInfoDownlinkMax(false);
 #endif
 
-// Web Bluetooth is shipped on Android, ChromeOS & MacOS, experimental
-// otherwise.
+// Web Bluetooth is shipped on Android, ChromeOS, MacOS and Windows 10,
+// experimental otherwise.
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID) || defined(OS_MACOSX)
   WebRuntimeFeatures::EnableWebBluetooth(true);
+#endif
+#if defined(OS_WIN)
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10)
+    WebRuntimeFeatures::EnableWebBluetooth(true);
 #endif
 
 #if defined(OS_CHROMEOS)
