@@ -217,11 +217,11 @@ cr.define('discards', function() {
    */
   function visibilityToString(visibility) {
     switch (visibility) {
-      case 0:
+      case mojom.LifecycleUnitVisibility.HIDDEN:
         return 'hidden';
-      case 1:
+      case mojom.LifecycleUnitVisibility.OCCLUDED:
         return 'occluded';
-      case 2:
+      case mojom.LifecycleUnitVisibility.VISIBLE:
         return 'visible';
     }
     assertNotReached('Unknown visibility: ' + visibility);
@@ -235,11 +235,11 @@ cr.define('discards', function() {
    */
   function loadingStateToString(loadingState) {
     switch (loadingState) {
-      case 0:
+      case mojom.LifecycleUnitLoadingState.UNLOADED:
         return 'unloaded';
-      case 1:
+      case mojom.LifecycleUnitLoadingState.LOADING:
         return 'loading';
-      case 2:
+      case mojom.LifecycleUnitLoadingState.LOADED:
         return 'loaded';
     }
     assertNotReached('Unknown loadingState: ' + loadingState);
@@ -248,7 +248,7 @@ cr.define('discards', function() {
   /**
    * Returns a string representation of a discard reason.
    * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason.
-   * @param {string} A string representation of the discarding reason.
+   * @return {string} A string representation of the discarding reason.
    */
   function discardReasonToString(reason) {
     switch (reason) {
@@ -267,25 +267,40 @@ cr.define('discards', function() {
    * @param {mojom.LifecycleUnitState} state The lifecycle state.
    * @param {mojom.LifecycleUnitDiscardReason} reason The discard reason. This
    *     is only used if the state is discard related.
-   * @param {string} A string representation of the lifecycle state, augmented
+   * @param {int} visibility A value in LifecycleUnitVisibility.
+   * @param {boolean} hasFocus Whether or not the tab has input focus.
+   * @return {string} A string representation of the lifecycle state, augmented
    *     with the discard reason if appropriate.
    */
-  function lifecycleStateToString(state, reason) {
+  function lifecycleStateToString(state, reason, visibility, hasFocus) {
+    let pageLifecycleStateFromVisibilityAndFocus = function() {
+      switch (visibility) {
+        case mojom.LifecycleUnitVisibility.HIDDEN:
+        case mojom.LifecycleUnitVisibility.OCCLUDED:
+          // An occluded page is also considered hidden.
+          return 'hidden';
+        case mojom.LifecycleUnitVisibility.VISIBLE:
+          return hasFocus ? 'active' : 'passive';
+      }
+      assertNotReached('Unknown visibility: ' + visibility);
+    };
+
     switch (state) {
       case mojom.LifecycleUnitState.ACTIVE:
-        return 'active';
+        return pageLifecycleStateFromVisibilityAndFocus();
       case mojom.LifecycleUnitState.THROTTLED:
-        return 'throttled';
+        return pageLifecycleStateFromVisibilityAndFocus() + ' (throttled)';
       case mojom.LifecycleUnitState.PENDING_FREEZE:
-        return 'pending frozen';
+        return pageLifecycleStateFromVisibilityAndFocus() + ' (pending frozen)';
       case mojom.LifecycleUnitState.FROZEN:
         return 'frozen';
       case mojom.LifecycleUnitState.PENDING_DISCARD:
-        return 'pending discard (' + discardReasonToString(reason) + ')';
+        return pageLifecycleStateFromVisibilityAndFocus() +
+            ' (pending discard (' + discardReasonToString(reason) + '))';
       case mojom.LifecycleUnitState.DISCARDED:
         return 'discarded (' + discardReasonToString(reason) + ')';
       case mojom.LifecycleUnitState.PENDING_UNFREEZE:
-        return 'pending unfreeze';
+        return 'frozen (pending unfreeze)';
     }
     assertNotReached('Unknown lifecycle state: ' + state);
   }
@@ -401,7 +416,8 @@ cr.define('discards', function() {
     row.querySelector('.state-cell').textContent =
         (info.loadingState != mojom.LifecycleUnitLoadingState.UNLOADED ||
          info.discardCount > 0) ?
-        lifecycleStateToString(info.state, info.discardReason) :
+        lifecycleStateToString(
+            info.state, info.discardReason, info.visibility, info.hasFocus) :
         '';
     row.querySelector('.discard-count-cell').textContent =
         info.discardCount.toString();
@@ -437,7 +453,9 @@ cr.define('discards', function() {
     let discardUrgentEnabled = false;
     if (info.loadingState == mojom.LifecycleUnitLoadingState.UNLOADED) {
       loadEnabled = true;
-    } else if (info.visibility == 0) {
+    } else if (
+        info.visibility == mojom.LifecycleUnitVisibility.HIDDEN ||
+        info.visibility == mojom.LifecycleUnitVisibility.OCCLUDED) {
       // Only tabs that aren't visible can be frozen or discarded for now.
       freezeEnabled = true;
       discardEnabled = true;

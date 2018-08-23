@@ -150,6 +150,11 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       if (info->has_reactivation_score)
         info->reactivation_score = reactivation_score.value();
       info->site_engagement_score = GetSiteEngagementScore(contents);
+      // TODO(crbug.com/876340): The focus is used to compute the page lifecycle
+      // state. This should be replaced with the actual page lifecycle state
+      // information from Blink, but this depends on implementing the passive
+      // state and plumbing it to the browser.
+      info->has_focus = lifecycle_unit->GetLastFocusedTime().is_max();
 
       infos.push_back(std::move(info));
     }

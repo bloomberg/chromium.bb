@@ -58,6 +58,8 @@ struct TabDiscardsInfo {
   double reactivation_score;
   // Site engagement score.
   double site_engagement_score;
+  // Whether or not the tab has input focus.
+  bool has_focus;
 };
 
 // Interface for providing information about discards. Lives in the browser
