@@ -221,10 +221,12 @@ void MojoHandle::mapBuffer(unsigned offset,
   result_dict.setResult(result);
   if (result == MOJO_RESULT_OK) {
     WTF::ArrayBufferContents::DataHandle data_handle(
-        data, num_bytes, [](void* buffer) {
+        data, num_bytes,
+        [](void* buffer, size_t length, void* alloc_data) {
           MojoResult result = MojoUnmapBuffer(buffer);
           DCHECK_EQ(result, MOJO_RESULT_OK);
-        });
+        },
+        nullptr);
     WTF::ArrayBufferContents contents(std::move(data_handle),
                                       WTF::ArrayBufferContents::kNotShared);
     result_dict.setBuffer(DOMArrayBuffer::Create(contents));

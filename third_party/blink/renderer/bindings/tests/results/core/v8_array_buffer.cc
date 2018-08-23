@@ -87,12 +87,16 @@ TestArrayBuffer* V8ArrayBuffer::ToImpl(v8::Local<v8::Object> object) {
     default:
       NOTREACHED();
   };
+  // TODO(v8:8073): Use specific deallocator per mode once v8 provides information.
   WTF::ArrayBufferContents::DataHandle data(v8Contents.AllocationBase(),
                                             v8Contents.AllocationLength(),
                                             v8Contents.Data(),
                                             v8Contents.ByteLength(),
                                             kind,
-                                            WTF::ArrayBufferContents::FreeMemory);
+                                            [](void* buffer, size_t length, void* alloc_data) {
+                                              WTF::ArrayBufferContents::FreeMemory(buffer);
+                                            },
+                                            nullptr);
   WTF::ArrayBufferContents contents(std::move(data), WTF::ArrayBufferContents::kNotShared);
   TestArrayBuffer* buffer = TestArrayBuffer::Create(contents);
   v8::Local<v8::Object> associatedWrapper = buffer->AssociateWithWrapper(v8::Isolate::GetCurrent(), buffer->GetWrapperTypeInfo(), object);
