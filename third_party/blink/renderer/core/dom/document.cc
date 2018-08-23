@@ -1496,6 +1496,15 @@ void Document::setXMLStandalone(bool standalone,
 }
 
 void Document::SetContent(const String& content) {
+  // Only set the content of the document if it is ready to be set. This method
+  // could be called at any time.
+  if (ScriptableDocumentParser* parser = GetScriptableDocumentParser()) {
+    if (parser->IsParsing() && parser->IsExecutingScript())
+      return;
+  }
+  if (ignore_opens_during_unload_count_)
+    return;
+
   open();
   parser_->Append(content);
   close();
@@ -3003,6 +3012,7 @@ void Document::SetPrinting(PrintingState state) {
   }
 }
 
+// https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#document-open-steps
 void Document::open(Document* entered_document,
                     ExceptionState& exception_state) {
   if (ImportLoader()) {
@@ -3012,12 +3022,16 @@ void Document::open(Document* entered_document,
     return;
   }
 
+  // If |document| is an XML document, then throw an "InvalidStateError"
+  // DOMException exception.
   if (!IsHTMLDocument()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support open().");
     return;
   }
 
+  // If |document|'s throw-on-dynamic-markup-insertion counter is greater than
+  // 0, then throw an "InvalidStateError" DOMException.
   if (throw_on_dynamic_markup_insertion_count_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -3028,25 +3042,40 @@ void Document::open(Document* entered_document,
   if (!AllowedToUseDynamicMarkUpInsertion("open", exception_state))
     return;
 
-  if (entered_document) {
-    if (!GetSecurityOrigin()->IsSameSchemeHostPort(
-            entered_document->GetSecurityOrigin())) {
-      exception_state.ThrowSecurityError(
-          "Can only call open() on same-origin documents.");
+  // If |document|'s origin is not same origin to the origin of the responsible
+  // document specified by the entry settings object, then throw a
+  // "SecurityError" DOMException.
+  if (entered_document && !GetSecurityOrigin()->IsSameSchemeHostPort(
+                              entered_document->GetSecurityOrigin())) {
+    exception_state.ThrowSecurityError(
+        "Can only call open() on same-origin documents.");
+    return;
+  }
+
+  // If |document| has an active parser whose script nesting level is greater
+  // than 0, then return |document|.
+  if (ScriptableDocumentParser* parser = GetScriptableDocumentParser()) {
+    if (parser->IsParsing() && parser->IsExecutingScript())
       return;
-    }
+  }
+
+  // Similarly, if |document|'s ignore-opens-during-unload counter is greater
+  // than 0, then return |document|.
+  if (ignore_opens_during_unload_count_)
+    return;
+
+  // Change |document|'s URL to the URL of the responsible document specified
+  // by the entry settings object.
+  if (entered_document && this != entered_document) {
+    // Clear the hash fragment from the inherited URL to prevent a
+    // scroll-into-view for any document.open()'d frame.
+    KURL new_url = entered_document->Url();
+    new_url.SetFragmentIdentifier(String());
+    SetURL(new_url);
+
     SetSecurityOrigin(entered_document->GetMutableSecurityOrigin());
-
-    if (this != entered_document) {
-      // Clear the hash fragment from the inherited URL to prevent a
-      // scroll-into-view for any document.open()'d frame.
-      KURL new_url = entered_document->Url();
-      new_url.SetFragmentIdentifier(String());
-      SetURL(new_url);
-      SetReferrerPolicy(entered_document->GetReferrerPolicy());
-    }
-
-    cookie_url_ = entered_document->CookieURL();
+    SetReferrerPolicy(entered_document->GetReferrerPolicy());
+    SetCookieURL(entered_document->CookieURL());
   }
 
   open();
@@ -3055,33 +3084,41 @@ void Document::open(Document* entered_document,
 // https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#document-open-steps
 void Document::open() {
   DCHECK(!ImportLoader());
+  DCHECK(!ignore_opens_during_unload_count_);
+  if (ScriptableDocumentParser* parser = GetScriptableDocumentParser())
+    DCHECK(!parser->IsParsing() || !parser->IsExecutingScript());
 
-  if (frame_) {
-    // If |document| has an active parser whose script nesting level is greater
-    // than 0, then return |document|.
-    if (ScriptableDocumentParser* parser = GetScriptableDocumentParser()) {
-      if (parser->IsParsing() && parser->IsExecutingScript())
-        return;
-    }
-
-    // Similarly, if |document|'s ignore-opens-during-unload counter is greater
-    // than 0, then return |document|.
-    if (ignore_opens_during_unload_count_)
-      return;
-
-    if (frame_->Loader().HasProvisionalNavigation()) {
-      frame_->Loader().StopAllLoaders();
-      // Navigations handled by the client should also be cancelled.
-      if (frame_->Client())
-        frame_->Client()->AbortClientNavigation();
-    }
+  // Abort |document|.
+  //
+  // TODO(timothygu): We are only aborting the document if there is a
+  // provisional navigation, unlike the spec.
+  if (frame_ && frame_->Loader().HasProvisionalNavigation()) {
+    frame_->Loader().StopAllLoaders();
+    // Navigations handled by the client should also be cancelled.
+    if (frame_->Client())
+      frame_->Client()->AbortClientNavigation();
   }
 
+  // For each shadow-including inclusive descendant |node| of |document|, erase
+  // all event listeners and handlers given |node|.
+  //
+  // Erase all event listeners and handlers given |window|.
+  //
+  // NB: Document::RemoveAllEventListeners() (called by
+  // RemoveAllEventListenersRecursively()) erases event listeners from the
+  // Window object as well.
   RemoveAllEventListenersRecursively();
+
   ResetTreeScope();
   if (frame_)
     frame_->Selection().Clear();
+
+  // Create a new HTML parser and associate it with |document|.
+  //
+  // Set the current document readiness of |document| to "loading".
   ImplicitOpen(kForceSynchronousParsing);
+
+  // This is a script-created parser.
   if (ScriptableDocumentParser* parser = GetScriptableDocumentParser())
     parser->SetWasCreatedByScript(true);
 
@@ -3277,10 +3314,8 @@ DOMWindow* Document::open(LocalDOMWindow* current_window,
                            entered_window, exception_state);
 }
 
+// https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#dom-document-close
 void Document::close(ExceptionState& exception_state) {
-  // FIXME: We should follow the specification more closely:
-  //        http://www.whatwg.org/specs/web-apps/current-work/#dom-document-close
-
   if (ImportLoader()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -3288,12 +3323,16 @@ void Document::close(ExceptionState& exception_state) {
     return;
   }
 
+  // If the Document object is an XML document, then throw an
+  // "InvalidStateError" DOMException.
   if (!IsHTMLDocument()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       "Only HTML documents support close().");
     return;
   }
 
+  // If the Document object's throw-on-dynamic-markup-insertion counter is
+  // greater than zero, then throw an "InvalidStateError" DOMException.
   if (throw_on_dynamic_markup_insertion_count_) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
@@ -3307,13 +3346,20 @@ void Document::close(ExceptionState& exception_state) {
   close();
 }
 
+// https://html.spec.whatwg.org/C/dynamic-markup-insertion.html#dom-document-close
 void Document::close() {
+  // If there is no script-created parser associated with the document, then
+  // return.
   if (!GetScriptableDocumentParser() ||
       !GetScriptableDocumentParser()->WasCreatedByScript() ||
       !GetScriptableDocumentParser()->IsParsing())
     return;
 
+  // Insert an explicit "EOF" character at the end of the parser's input
+  // stream.
   parser_->Finish();
+
+  // TODO(timothygu): We should follow the specification more closely.
   if (!parser_ || !parser_->IsParsing())
     SetReadyState(kComplete);
   CheckCompleted();
