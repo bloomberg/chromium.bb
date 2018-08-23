@@ -122,7 +122,7 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
                              const QuicString& unique_remote_server_id,
                              Perspective perspective,
                              QuicConnectionHelperInterface* helper,
-                             QuicClock* clock,
+                             const QuicClock* clock,
                              std::unique_ptr<QuartcPacketWriter> packet_writer)
     : QuicSession(connection.get(), nullptr /*visitor*/, config),
       unique_remote_server_id_(unique_remote_server_id),
