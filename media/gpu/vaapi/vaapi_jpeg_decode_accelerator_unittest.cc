@@ -21,7 +21,7 @@
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame.h"
 #include "media/filters/jpeg_parser.h"
-#include "media/gpu/vaapi/vaapi_jpeg_decoder.h"
+#include "media/gpu/vaapi/vaapi_jpeg_decode_accelerator.h"
 #include "mojo/core/embedder/embedder.h"
 
 namespace media {
@@ -34,9 +34,9 @@ void LogOnError() {
   LOG(FATAL) << "Oh noes! Decoder failed";
 }
 
-class VaapiJpegDecoderTest : public ::testing::Test {
+class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
  protected:
-  VaapiJpegDecoderTest() {}
+  VaapiJpegDecodeAcceleratorTest() {}
 
   void SetUp() override {
     base::Closure report_error_cb = base::Bind(&LogOnError);
@@ -60,8 +60,9 @@ class VaapiJpegDecoderTest : public ::testing::Test {
   std::string jpeg_data_;
 };
 
-bool VaapiJpegDecoderTest::VerifyDecode(const JpegParseResult& parse_result,
-                                        const std::string& expected_md5sum) {
+bool VaapiJpegDecodeAcceleratorTest::VerifyDecode(
+    const JpegParseResult& parse_result,
+    const std::string& expected_md5sum) {
   gfx::Size size(parse_result.frame_header.coded_width,
                  parse_result.frame_header.coded_height);
 
@@ -69,7 +70,8 @@ bool VaapiJpegDecoderTest::VerifyDecode(const JpegParseResult& parse_result,
   if (!wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, size, 1, &va_surfaces))
     return false;
 
-  if (!VaapiJpegDecoder::Decode(wrapper_.get(), parse_result, va_surfaces[0])) {
+  if (!VaapiJpegDecodeAccelerator::DoDecode(wrapper_.get(), parse_result,
+                                            va_surfaces[0])) {
     LOG(ERROR) << "Decode failed";
     return false;
   }
@@ -99,7 +101,7 @@ bool VaapiJpegDecoderTest::VerifyDecode(const JpegParseResult& parse_result,
   return true;
 }
 
-TEST_F(VaapiJpegDecoderTest, DecodeSuccess) {
+TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeSuccess) {
   JpegParseResult parse_result;
   ASSERT_TRUE(
       ParseJpegPicture(reinterpret_cast<const uint8_t*>(jpeg_data_.data()),
@@ -108,7 +110,7 @@ TEST_F(VaapiJpegDecoderTest, DecodeSuccess) {
   EXPECT_TRUE(VerifyDecode(parse_result, kExpectedMd5Sum));
 }
 
-TEST_F(VaapiJpegDecoderTest, DecodeFail) {
+TEST_F(VaapiJpegDecodeAcceleratorTest, DecodeFail) {
   JpegParseResult parse_result;
   ASSERT_TRUE(
       ParseJpegPicture(reinterpret_cast<const uint8_t*>(jpeg_data_.data()),
@@ -125,8 +127,8 @@ TEST_F(VaapiJpegDecoderTest, DecodeFail) {
   ASSERT_TRUE(
       wrapper_->CreateSurfaces(VA_RT_FORMAT_YUV420, size, 1, &va_surfaces));
 
-  EXPECT_FALSE(
-      VaapiJpegDecoder::Decode(wrapper_.get(), parse_result, va_surfaces[0]));
+  EXPECT_FALSE(VaapiJpegDecodeAccelerator::DoDecode(
+      wrapper_.get(), parse_result, va_surfaces[0]));
 }
 
 }  // namespace

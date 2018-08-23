@@ -534,7 +534,8 @@ bool JpegDecodeAcceleratorTestEnvironment::CreateTestJpegImage(
 void JpegDecodeAcceleratorTestEnvironment::ReadTestJpegImage(
     base::FilePath& input_file,
     TestImageFile* image_data) {
-  ASSERT_TRUE(base::ReadFileToString(input_file, &image_data->data_str));
+  ASSERT_TRUE(base::ReadFileToString(input_file, &image_data->data_str))
+      << input_file;
 
   ASSERT_TRUE(ParseJpegPicture(
       reinterpret_cast<const uint8_t*>(image_data->data_str.data()),
