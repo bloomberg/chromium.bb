@@ -1676,8 +1676,8 @@ TEST_F(FFmpegDemuxerTest, StreamStatusNotifications) {
   // there is no buffers ready to be returned by the Read right away, thus
   // ensuring that status changes occur while an async read is pending.
 
-  audio_stream->FlushBuffers();
-  video_stream->FlushBuffers();
+  audio_stream->FlushBuffers(true);
+  video_stream->FlushBuffers(true);
   audio_stream->Read(base::Bind(&OnReadDoneExpectEos));
   video_stream->Read(base::Bind(&OnReadDoneExpectEos));
 

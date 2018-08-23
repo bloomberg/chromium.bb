@@ -304,7 +304,9 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       aborted_(false),
       fixup_negative_timestamps_(false),
       fixup_chained_ogg_(false),
-      num_discarded_packet_warnings_(0) {
+      num_discarded_packet_warnings_(0),
+      last_packet_pos_(AV_NOPTS_VALUE),
+      last_packet_dts_(AV_NOPTS_VALUE) {
   DCHECK(demuxer_);
 
   bool is_encrypted = false;
@@ -363,10 +365,40 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   DCHECK(packet->size);
   DCHECK(packet->data);
 
+  const bool is_audio = type() == AUDIO;
+
+  // dts == pts when dts is not present.
+  int64_t packet_dts =
+      packet->dts == AV_NOPTS_VALUE ? packet->pts : packet->dts;
+
+  // Chained ogg files have non-monotonically increasing position and time stamp
+  // values, which prevents us from using them to determine if a packet should
+  // be dropped. Since chained ogg is only allowed on single track audio only
+  // opus/vorbis media, and dropping packets is only necessary for multi-track
+  // video-and-audio streams, we can just disable dropping when we detect
+  // chained ogg.
+  // For similar reasons, we only want to allow packet drops for audio streams;
+  // video frame dropping is handled by the renderer when correcting for a/v
+  // sync.
+  if (is_audio && !fixup_chained_ogg_ && last_packet_pos_ != AV_NOPTS_VALUE) {
+    if (packet->pos < last_packet_pos_) {
+      DVLOG(3) << "Dropped packet with out of order position";
+      return;
+    }
+    if (packet->pos == last_packet_pos_ && packet_dts <= last_packet_dts_) {
+      DCHECK_NE(last_packet_dts_, AV_NOPTS_VALUE);
+      DVLOG(3) << "Dropped packet with out of order display timestamp";
+      return;
+    }
+  }
+
   if (!demuxer_ || end_of_stream_) {
     NOTREACHED() << "Attempted to enqueue packet on a stopped stream";
     return;
   }
+
+  last_packet_pos_ = packet->pos;
+  last_packet_dts_ = packet_dts;
 
   if (waiting_for_keyframe_) {
     if (packet->flags & AV_PKT_FLAG_KEY)
@@ -387,7 +419,6 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
   scoped_refptr<DecoderBuffer> buffer;
 
-  const bool is_audio = type() == AUDIO;
   if (type() == DemuxerStream::TEXT) {
     int id_size = 0;
     uint8_t* id_data = av_packet_get_side_data(
@@ -638,7 +669,7 @@ void FFmpegDemuxerStream::SetEndOfStream() {
   SatisfyPendingRead();
 }
 
-void FFmpegDemuxerStream::FlushBuffers() {
+void FFmpegDemuxerStream::FlushBuffers(bool preserve_packet_position) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(read_cb_.is_null()) << "There should be no pending read";
 
@@ -646,6 +677,11 @@ void FFmpegDemuxerStream::FlushBuffers() {
   // Reset bitstream for converter to do so.
   // This is related to chromium issue 140371 (http://crbug.com/140371).
   ResetBitstreamConverter();
+
+  if (!preserve_packet_position) {
+    last_packet_pos_ = AV_NOPTS_VALUE;
+    last_packet_dts_ = AV_NOPTS_VALUE;
+  }
 
   buffer_queue_.Clear();
   end_of_stream_ = false;
@@ -1011,6 +1047,15 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK(pending_seek_cb_.is_null());
 
+  pending_seek_cb_ = cb;
+  SeekInternal(time, base::BindOnce(&FFmpegDemuxer::OnSeekFrameSuccess,
+                                    weak_factory_.GetWeakPtr()));
+}
+
+void FFmpegDemuxer::SeekInternal(base::TimeDelta time,
+                                 base::OnceClosure seek_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
   // FFmpeg requires seeks to be adjusted according to the lowest starting time.
   // Since EnqueuePacket() rebased negative timestamps by the start time, we
   // must correct the shift here.
@@ -1033,8 +1078,8 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
       seek_time = std::max(start_time_, seek_time - config.seek_preroll());
   }
 
-  // Choose the seeking stream based on whether it contains the seek time, if no
-  // match can be found prefer the preferred stream.
+  // Choose the seeking stream based on whether it contains the seek time, if
+  // no match can be found prefer the preferred stream.
   //
   // TODO(dalecurtis): Currently FFmpeg does not ensure that all streams in a
   // given container will demux all packets after the seek point.  Instead it
@@ -1047,14 +1092,14 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
   const AVStream* seeking_stream = demux_stream->av_stream();
   DCHECK(seeking_stream);
 
-  pending_seek_cb_ = cb;
-  base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&av_seek_frame, glue_->format_context(), seeking_stream->index,
-                 ConvertToTimeBase(seeking_stream->time_base, seek_time),
-                 // Always seek to a timestamp <= to the desired timestamp.
-                 AVSEEK_FLAG_BACKWARD),
-      base::Bind(&FFmpegDemuxer::OnSeekFrameDone, weak_factory_.GetWeakPtr()));
+  blocking_task_runner_->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(base::IgnoreResult(&av_seek_frame),
+                     glue_->format_context(), seeking_stream->index,
+                     ConvertToTimeBase(seeking_stream->time_base, seek_time),
+                     // Always seek to a timestamp <= to the desired timestamp.
+                     AVSEEK_FLAG_BACKWARD),
+      std::move(seek_cb));
 }
 
 base::Time FFmpegDemuxer::GetTimelineOffset() const {
@@ -1616,7 +1661,7 @@ FFmpegDemuxerStream* FFmpegDemuxer::FindPreferredStreamForSeeking(
   return nullptr;
 }
 
-void FFmpegDemuxer::OnSeekFrameDone(int result) {
+void FFmpegDemuxer::OnSeekFrameSuccess() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   CHECK(!pending_seek_cb_.is_null());
 
@@ -1626,17 +1671,10 @@ void FFmpegDemuxer::OnSeekFrameDone(int result) {
     return;
   }
 
-  if (result < 0) {
-    // Use VLOG(1) instead of NOTIMPLEMENTED() to prevent the message being
-    // captured from stdout and contaminates testing.
-    // TODO(scherkus): Implement this properly and signal error (BUG=23447).
-    VLOG(1) << "Not implemented";
-  }
-
   // Tell streams to flush buffers due to seeking.
   for (const auto& stream : streams_) {
     if (stream)
-      stream->FlushBuffers();
+      stream->FlushBuffers(false);
   }
 
   // Resume reading until capacity.
@@ -1694,12 +1732,38 @@ void FFmpegDemuxer::OnEnabledAudioTracksChanged(
                             std::move(change_completed_cb));
 }
 
+void FFmpegDemuxer::OnVideoSeekedForTrackChange(
+    DemuxerStream* video_stream,
+    base::OnceClosure seek_completed_cb) {
+  static_cast<FFmpegDemuxerStream*>(video_stream)->FlushBuffers(true);
+  std::move(seek_completed_cb).Run();
+}
+
+void FFmpegDemuxer::SeekOnVideoTrackChange(
+    base::TimeDelta seek_to_time,
+    TrackChangeCB seek_completed_cb,
+    DemuxerStream::Type stream_type,
+    const std::vector<DemuxerStream*>& streams) {
+  DCHECK_EQ(streams.size(), 1u);
+  DCHECK_EQ(stream_type, DemuxerStream::VIDEO);
+  SeekInternal(seek_to_time,
+               base::BindOnce(&FFmpegDemuxer::OnVideoSeekedForTrackChange,
+                              weak_factory_.GetWeakPtr(), streams[0],
+                              base::BindOnce(std::move(seek_completed_cb),
+                                             DemuxerStream::VIDEO, streams)));
+}
+
 void FFmpegDemuxer::OnSelectedVideoTrackChanged(
     const std::vector<MediaTrack::Id>& track_ids,
     base::TimeDelta curr_time,
     TrackChangeCB change_completed_cb) {
-  FindAndEnableProperTracks(track_ids, curr_time, DemuxerStream::VIDEO,
-                            std::move(change_completed_cb));
+  // Find tracks -> Seek track -> run callback.
+  FindAndEnableProperTracks(
+      track_ids, curr_time, DemuxerStream::VIDEO,
+      track_ids.empty() ? std::move(change_completed_cb)
+                        : base::BindOnce(&FFmpegDemuxer::SeekOnVideoTrackChange,
+                                         weak_factory_.GetWeakPtr(), curr_time,
+                                         std::move(change_completed_cb)));
 }
 
 void FFmpegDemuxer::ReadFrameIfNeeded() {
