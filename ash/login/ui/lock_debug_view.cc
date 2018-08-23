@@ -39,6 +39,7 @@ namespace {
 namespace ButtonId {
 enum {
   kGlobalAddUser = 1,
+  kGlobalAddTenUsers,
   kGlobalRemoveUser,
   kGlobalToggleBlur,
   kGlobalToggleNoteAction,
@@ -667,6 +668,8 @@ LockDebugView::LockDebugView(mojom::TrayActionState initial_note_action_state,
 
   auto* change_users_container = add_horizontal_container();
   AddButton("Add user", ButtonId::kGlobalAddUser, change_users_container);
+  AddButton("Add 10 users", ButtonId::kGlobalAddTenUsers,
+            change_users_container);
   AddButton("Remove user", ButtonId::kGlobalRemoveUser, change_users_container);
 
   auto* toggle_container = add_horizontal_container();
@@ -773,11 +776,14 @@ void LockDebugView::ButtonPressed(views::Button* sender,
                                   const ui::Event& event) {
   // Add or remove a user.
   bool is_add_user = sender->id() == ButtonId::kGlobalAddUser;
+  bool is_add_many_users = sender->id() == ButtonId::kGlobalAddTenUsers;
   bool is_remove_user = sender->id() == ButtonId::kGlobalRemoveUser;
-  if (is_add_user || is_remove_user) {
+  if (is_add_user || is_add_many_users || is_remove_user) {
     int num_users = debug_data_dispatcher_->GetUserCount();
     if (is_add_user)
       ++num_users;
+    else if (is_add_many_users)
+      num_users += 10;
     else if (is_remove_user)
       --num_users;
     if (num_users < 0)
