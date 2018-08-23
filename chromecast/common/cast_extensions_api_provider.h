@@ -25,6 +25,7 @@ class CastExtensionsAPIProvider : public ExtensionsAPIProvider {
   bool IsAPISchemaGenerated(const std::string& name) override;
   base::StringPiece GetAPISchema(const std::string& name) override;
   void AddPermissionsProviders(PermissionsInfo* permissions_info) override;
+  void RegisterManifestHandlers() override;
 
  private:
   const CastAPIPermissions api_permissions_;

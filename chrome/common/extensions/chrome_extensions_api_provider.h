@@ -25,6 +25,7 @@ class ChromeExtensionsAPIProvider : public ExtensionsAPIProvider {
   bool IsAPISchemaGenerated(const std::string& name) override;
   base::StringPiece GetAPISchema(const std::string& name) override;
   void AddPermissionsProviders(PermissionsInfo* permissions_info) override;
+  void RegisterManifestHandlers() override;
 
  private:
   const ChromeAPIPermissions api_permissions_;

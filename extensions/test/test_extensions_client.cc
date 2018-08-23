@@ -11,10 +11,8 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/stl_util.h"
-#include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/core_extensions_api_provider.h"
 #include "extensions/common/extension_urls.h"
-#include "extensions/common/manifest_handler.h"
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/grit/extensions_resources.h"
 #include "extensions/test/test_permission_message_provider.h"
@@ -41,12 +39,6 @@ void TestExtensionsClient::RemoveBrowserImagePathsFilter(
 }
 
 void TestExtensionsClient::Initialize() {
-  // Registration could already be finalized in unit tests, where the utility
-  // thread runs in-process.
-  if (!ManifestHandler::IsRegistrationFinalized()) {
-    RegisterCommonManifestHandlers();
-    ManifestHandler::FinalizeRegistration();
-  }
 }
 
 void TestExtensionsClient::InitializeWebStoreUrls(

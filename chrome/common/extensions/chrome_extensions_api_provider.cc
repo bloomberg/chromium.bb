@@ -9,6 +9,7 @@
 #include "chrome/common/extensions/api/manifest_features.h"
 #include "chrome/common/extensions/api/permission_features.h"
 #include "chrome/common/extensions/chrome_aliases.h"
+#include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/grit/common_resources.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -55,6 +56,10 @@ base::StringPiece ChromeExtensionsAPIProvider::GetAPISchema(
 void ChromeExtensionsAPIProvider::AddPermissionsProviders(
     PermissionsInfo* permissions_info) {
   permissions_info->AddProvider(api_permissions_, GetChromePermissionAliases());
+}
+
+void ChromeExtensionsAPIProvider::RegisterManifestHandlers() {
+  RegisterChromeManifestHandlers();
 }
 
 }  // namespace extensions

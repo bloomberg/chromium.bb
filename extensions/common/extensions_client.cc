@@ -9,6 +9,7 @@
 #include "extensions/common/extensions_api_provider.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/permissions_info.h"
 
@@ -109,9 +110,13 @@ std::string ExtensionsClient::GetUserAgent() const {
 void ExtensionsClient::DoInitialize() {
   initialize_called_ = true;
 
+  DCHECK(!ManifestHandler::IsRegistrationFinalized());
   PermissionsInfo* permissions_info = PermissionsInfo::GetInstance();
-  for (const auto& provider : api_providers_)
+  for (const auto& provider : api_providers_) {
+    provider->RegisterManifestHandlers();
     provider->AddPermissionsProviders(permissions_info);
+  }
+  ManifestHandler::FinalizeRegistration();
 
   Initialize();
 }
