@@ -459,8 +459,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
        !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
     [self.dispatcher onFakeboxBlur];
   }
-  self.fakeOmnibox.hidden = NO;
-
   [self.collectionSynchronizer shiftTilesDown];
 
   [self.commandHandler dismissModals];
@@ -476,7 +474,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
          !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
       [self.dispatcher onFakeboxAnimationComplete];
       [self.headerView fadeOutShadow];
-      [self.fakeOmnibox setHidden:YES];
     }
   };
   [self.collectionSynchronizer shiftTilesUpWithCompletionBlock:completionBlock];
