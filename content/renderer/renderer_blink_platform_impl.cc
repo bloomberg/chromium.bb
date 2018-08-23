@@ -582,7 +582,7 @@ RendererBlinkPlatformImpl::CreateIdbFactory() {
 //------------------------------------------------------------------------------
 
 WebFileSystem* RendererBlinkPlatformImpl::FileSystem() {
-  return WebFileSystemImpl::ThreadSpecificInstance(default_task_runner_);
+  return WebFileSystemImpl::ThreadSpecificInstance(default_task_runner_.get());
 }
 
 WebString RendererBlinkPlatformImpl::FileSystemCreateOriginIdentifier(

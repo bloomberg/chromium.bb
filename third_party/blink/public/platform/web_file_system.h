@@ -187,13 +187,6 @@ class WebFileSystem {
   virtual void CreateSnapshotFileAndReadMetadata(const WebURL& path,
                                                  WebFileSystemCallbacks) = 0;
 
-  // Waits for additional results returned for the method call and returns true
-  // if possible.
-  // Returns false if there is no running method call corresponding for the
-  // given ID.
-  // |callbacks_id| must be the value returned by the original method call.
-  virtual bool WaitForAdditionalResult(int callbacks_id) = 0;
-
  protected:
   virtual ~WebFileSystem() = default;
 };

@@ -16,6 +16,7 @@
 #include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
+#include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -56,7 +57,9 @@ class PepperFileSystemHost
 
  private:
   // Callback for OpenFileSystem.
-  void DidOpenFileSystem(const std::string& name_unused, const GURL& root);
+  void DidOpenFileSystem(const std::string& name_unused,
+                         const GURL& root,
+                         base::File::Error error);
   void DidFailOpenFileSystem(base::File::Error error);
 
   int32_t OnHostMsgOpen(ppapi::host::HostMessageContext* context,
@@ -66,6 +69,8 @@ class PepperFileSystemHost
       const std::string& fsid,
       PP_IsolatedFileSystemType_Private type);
 
+  blink::mojom::FileSystemManager& GetFileSystemManager();
+
   RendererPpapiHost* renderer_ppapi_host_;
   ppapi::host::ReplyMessageContext reply_context_;
 
@@ -73,6 +78,7 @@ class PepperFileSystemHost
   bool opened_;  // whether open is successful.
   GURL root_url_;
   bool called_open_;  // whether open has been called.
+  blink::mojom::FileSystemManagerPtr file_system_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperFileSystemHost);
 };

@@ -155,7 +155,6 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
                     EntriesCallbacks::OnDidGetEntriesCallback*,
                     ErrorCallbackBase*,
                     SynchronousType = kAsynchronous);
-  bool WaitForAdditionalResult(int callbacks_id);
 
   void Trace(blink::Visitor*) override;
 

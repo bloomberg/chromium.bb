@@ -39,88 +39,31 @@ using blink::WebVector;
 
 namespace content {
 
-class WebFileSystemImpl::WaitableCallbackResults
-    : public base::RefCountedThreadSafe<WaitableCallbackResults> {
- public:
-  WaitableCallbackResults()
-      : results_available_event_(
-            base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED) {}
-
-  void AddResultsAndSignal(const base::Closure& results_closure) {
-    base::AutoLock lock(lock_);
-    results_closures_.push_back(results_closure);
-    results_available_event_.Signal();
-  }
-
-  void WaitAndRun() {
-    results_available_event_.Wait();
-    Run();
-  }
-
-  void Run() {
-    std::vector<base::Closure> closures;
-    {
-      base::AutoLock lock(lock_);
-      results_closures_.swap(closures);
-      results_available_event_.Reset();
-    }
-    for (size_t i = 0; i < closures.size(); ++i)
-      closures[i].Run();
-  }
-
- private:
-  friend class base::RefCountedThreadSafe<WaitableCallbackResults>;
-
-  ~WaitableCallbackResults() {}
-
-  base::Lock lock_;
-  base::WaitableEvent results_available_event_;
-  std::vector<base::Closure> results_closures_;
-  DISALLOW_COPY_AND_ASSIGN(WaitableCallbackResults);
-};
-
 namespace {
-
-typedef WebFileSystemImpl::WaitableCallbackResults WaitableCallbackResults;
 
 base::LazyInstance<base::ThreadLocalPointer<WebFileSystemImpl>>::Leaky
     g_webfilesystem_tls = LAZY_INSTANCE_INITIALIZER;
-
-template <typename Method, typename Params>
-void CallDispatcherOnMainThread(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
-    Method method, const Params& params,
-    WaitableCallbackResults* waitable_results) {
-  if (!main_thread_task_runner->BelongsToCurrentThread()) {
-    main_thread_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(&CallDispatcherOnMainThread<Method, Params>,
-                       main_thread_task_runner, method, params, nullptr));
-    if (!waitable_results)
-      return;
-    waitable_results->WaitAndRun();
-  }
-  if (!RenderThreadImpl::current() ||
-      !RenderThreadImpl::current()->file_system_dispatcher())
-    return;
-
-  DCHECK(!waitable_results);
-  DispatchToMethod(RenderThreadImpl::current()->file_system_dispatcher(),
-                   method, params);
-}
 
 enum CallbacksUnregisterMode {
   UNREGISTER_CALLBACKS,
   DO_NOT_UNREGISTER_CALLBACKS,
 };
 
+template <typename Method, typename Params>
+void CallDispatcher(const WebFileSystemCallbacks& callbacks,
+                    Method async_method,
+                    Method sync_method,
+                    FileSystemDispatcher* dispatcher,
+                    Params&& params) {
+  if (callbacks.ShouldBlockUntilCompletion())
+    DispatchToMethod(dispatcher, sync_method, params);
+  else
+    DispatchToMethod(dispatcher, async_method, params);
+}
+
 // Bridging functions that convert the arguments into Blink objects
 // (e.g. WebFileInfo, WebString, WebVector<WebFileSystemEntry>)
 // and call WebFileSystemCallbacks's methods.
-// These are called by RunCallbacks after crossing threads to ensure
-// thread safety, because the Blink objects cannot be passed across
-// threads by base::Bind().
 void DidSucceed(WebFileSystemCallbacks* callbacks) {
   callbacks->DidSucceed();
 }
@@ -167,11 +110,9 @@ void DidFail(base::File::Error error, WebFileSystemCallbacks* callbacks) {
   callbacks->DidFail(storage::FileErrorToWebFileError(error));
 }
 
-// Run WebFileSystemCallbacks's |method| with |params|.
-void RunCallbacks(
-    int callbacks_id,
-    const base::Callback<void(WebFileSystemCallbacks*)>& callback,
-    CallbacksUnregisterMode callbacks_unregister_mode) {
+void RunCallbacks(int callbacks_id,
+                  base::OnceCallback<void(WebFileSystemCallbacks*)> callback,
+                  CallbacksUnregisterMode callbacks_unregister_mode) {
   WebFileSystemImpl* filesystem =
       WebFileSystemImpl::ThreadSpecificInstance(nullptr);
   if (!filesystem)
@@ -179,117 +120,61 @@ void RunCallbacks(
   WebFileSystemCallbacks callbacks = filesystem->GetCallbacks(callbacks_id);
   if (callbacks_unregister_mode == UNREGISTER_CALLBACKS)
     filesystem->UnregisterCallbacks(callbacks_id);
-  callback.Run(&callbacks);
-}
-
-void DispatchResultsClosure(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const base::Closure& results_closure) {
-  if (task_runner->BelongsToCurrentThread()) {
-    results_closure.Run();
-    return;
-  }
-
-  if (waitable_results) {
-    // If someone is waiting, this should result in running the closure.
-    waitable_results->AddResultsAndSignal(results_closure);
-    // In case no one is waiting, post a task to run the closure.
-    task_runner->PostTask(
-        FROM_HERE, base::BindOnce(&WaitableCallbackResults::Run,
-                                  base::WrapRefCounted(waitable_results)));
-    return;
-  }
-  task_runner->PostTask(FROM_HERE, results_closure);
-}
-
-void CallbackFileSystemCallbacks(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const base::Callback<void(WebFileSystemCallbacks*)>& callback,
-    CallbacksUnregisterMode callbacksunregister_mode) {
-  DispatchResultsClosure(task_runner, callbacks_id, waitable_results,
-                         base::Bind(&RunCallbacks, callbacks_id, callback,
-                                    callbacksunregister_mode));
+  std::move(callback).Run(&callbacks);
 }
 
 //-----------------------------------------------------------------------------
-// Callback adapters. Callbacks must be called on the original calling thread,
-// so these callback adapters relay back the results to the calling thread
-// if necessary.
+// Callback adapters.
 
-void OpenFileSystemCallbackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const std::string& name,
-    const GURL& root) {
-  CallbackFileSystemCallbacks(task_runner, callbacks_id, waitable_results,
-                              base::Bind(&DidOpenFileSystem, name, root),
-                              UNREGISTER_CALLBACKS);
+void OpenFileSystemCallbackAdapter(int callbacks_id,
+                                   const std::string& name,
+                                   const GURL& root) {
+  RunCallbacks(callbacks_id, base::BindOnce(&DidOpenFileSystem, name, root),
+               UNREGISTER_CALLBACKS);
 }
 
-void ResolveURLCallbackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const storage::FileSystemInfo& info,
-    const base::FilePath& file_path,
-    bool is_directory) {
+void ResolveURLCallbackAdapter(int callbacks_id,
+                               const storage::FileSystemInfo& info,
+                               const base::FilePath& file_path,
+                               bool is_directory) {
   base::FilePath normalized_path(
       storage::VirtualPath::GetNormalizedFilePath(file_path));
-  CallbackFileSystemCallbacks(
-      task_runner, callbacks_id, waitable_results,
-      base::Bind(&DidResolveURL, info.name, info.root_url, info.mount_type,
-                 normalized_path, is_directory),
-      UNREGISTER_CALLBACKS);
+  RunCallbacks(callbacks_id,
+               base::BindOnce(&DidResolveURL, info.name, info.root_url,
+                              info.mount_type, normalized_path, is_directory),
+               UNREGISTER_CALLBACKS);
 }
 
-void StatusCallbackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    base::File::Error error) {
+void StatusCallbackAdapter(int callbacks_id, base::File::Error error) {
   if (error == base::File::FILE_OK) {
-    CallbackFileSystemCallbacks(task_runner, callbacks_id, waitable_results,
-                                base::Bind(&DidSucceed), UNREGISTER_CALLBACKS);
+    RunCallbacks(callbacks_id, base::BindOnce(&DidSucceed),
+                 UNREGISTER_CALLBACKS);
   } else {
-    CallbackFileSystemCallbacks(task_runner, callbacks_id, waitable_results,
-                                base::Bind(&DidFail, error),
-                                UNREGISTER_CALLBACKS);
+    RunCallbacks(callbacks_id, base::BindOnce(&DidFail, error),
+                 UNREGISTER_CALLBACKS);
   }
 }
 
-void ReadMetadataCallbackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const base::File::Info& file_info) {
-  CallbackFileSystemCallbacks(task_runner, callbacks_id, waitable_results,
-                              base::Bind(&DidReadMetadata, file_info),
-                              UNREGISTER_CALLBACKS);
+void ReadMetadataCallbackAdapter(int callbacks_id,
+                                 const base::File::Info& file_info) {
+  RunCallbacks(callbacks_id, base::BindOnce(&DidReadMetadata, file_info),
+               UNREGISTER_CALLBACKS);
 }
 
 void ReadDirectoryCallbackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     int callbacks_id,
-    WaitableCallbackResults* waitable_results,
     const std::vector<filesystem::mojom::DirectoryEntry>& entries,
     bool has_more) {
-  CallbackFileSystemCallbacks(
-      task_runner, callbacks_id, waitable_results,
-      base::Bind(&DidReadDirectory, entries, has_more),
-      has_more ? DO_NOT_UNREGISTER_CALLBACKS : UNREGISTER_CALLBACKS);
+  RunCallbacks(callbacks_id,
+               base::BindOnce(&DidReadDirectory, entries, has_more),
+               has_more ? DO_NOT_UNREGISTER_CALLBACKS : UNREGISTER_CALLBACKS);
 }
 
-void DidCreateFileWriter(
-    int callbacks_id,
-    const GURL& path,
-    blink::WebFileWriterClient* client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
-    const base::File::Info& file_info) {
+void DidCreateFileWriter(int callbacks_id,
+                         const GURL& path,
+                         blink::WebFileWriterClient* client,
+                         base::SingleThreadTaskRunner* main_thread_task_runner,
+                         const base::File::Info& file_info) {
   WebFileSystemImpl* filesystem =
       WebFileSystemImpl::ThreadSpecificInstance(nullptr);
   if (!filesystem)
@@ -311,22 +196,17 @@ void DidCreateFileWriter(
 }
 
 void CreateFileWriterCallbackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     const GURL& path,
     blink::WebFileWriterClient* client,
     const base::File::Info& file_info) {
-  DispatchResultsClosure(
-      task_runner, callbacks_id, waitable_results,
-      base::Bind(&DidCreateFileWriter, callbacks_id, path, client,
-                 main_thread_task_runner, file_info));
+  DidCreateFileWriter(callbacks_id, path, client, main_thread_task_runner.get(),
+                      file_info);
 }
 
 void DidCreateSnapshotFile(
     int callbacks_id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
     base::Optional<blink::mojom::ReceivedSnapshotListenerPtr> opt_listener,
@@ -347,29 +227,18 @@ void DidCreateSnapshotFile(
   // TODO(michaeln,kinuko): Use ThreadSafeSender when Blob becomes
   // non-bridge model.
   if (opt_listener) {
-    main_thread_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(
-                       [](blink::mojom::ReceivedSnapshotListenerPtr listener) {
-                         listener->DidReceiveSnapshotFile();
-                       },
-                       std::move(opt_listener.value())));
+    opt_listener.value()->DidReceiveSnapshotFile();
   }
 }
 
 void CreateSnapshotFileCallbackAdapter(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     int callbacks_id,
-    WaitableCallbackResults* waitable_results,
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const base::File::Info& file_info,
     const base::FilePath& platform_path,
     base::Optional<blink::mojom::ReceivedSnapshotListenerPtr> opt_listener,
     int request_id) {
-  DispatchResultsClosure(
-      task_runner, callbacks_id, waitable_results,
-      base::Bind(&DidCreateSnapshotFile, callbacks_id, main_thread_task_runner,
-                 file_info, platform_path, base::Passed(&opt_listener),
-                 request_id));
+  DidCreateSnapshotFile(callbacks_id, file_info, platform_path,
+                        std::move(opt_listener), request_id);
 }
 
 }  // namespace
@@ -378,12 +247,11 @@ void CreateSnapshotFileCallbackAdapter(
 // WebFileSystemImpl
 
 WebFileSystemImpl* WebFileSystemImpl::ThreadSpecificInstance(
-    const scoped_refptr<base::SingleThreadTaskRunner>&
-        main_thread_task_runner) {
-  if (g_webfilesystem_tls.Pointer()->Get() || !main_thread_task_runner.get())
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner) {
+  if (g_webfilesystem_tls.Pointer()->Get() || !main_thread_task_runner)
     return g_webfilesystem_tls.Pointer()->Get();
   WebFileSystemImpl* filesystem =
-      new WebFileSystemImpl(main_thread_task_runner);
+      new WebFileSystemImpl(std::move(main_thread_task_runner));
   if (WorkerThread::GetCurrentId())
     WorkerThread::AddObserver(filesystem);
   return filesystem;
@@ -396,9 +264,10 @@ void WebFileSystemImpl::DeleteThreadSpecificInstance() {
 }
 
 WebFileSystemImpl::WebFileSystemImpl(
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner)
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : main_thread_task_runner_(main_thread_task_runner),
-      next_callbacks_id_(1) {
+      next_callbacks_id_(1),
+      file_system_dispatcher_(std::move(main_thread_task_runner)) {
   g_webfilesystem_tls.Pointer()->Set(this);
 }
 
@@ -415,197 +284,135 @@ void WebFileSystemImpl::OpenFileSystem(const blink::WebURL& storage_partition,
                                        blink::WebFileSystemType type,
                                        WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::OpenFileSystem,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::OpenFileSystem,
+      &FileSystemDispatcher::OpenFileSystemSync, &file_system_dispatcher_,
       std::make_tuple(
           GURL(storage_partition), static_cast<storage::FileSystemType>(type),
-          base::Bind(&OpenFileSystemCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results)),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+          base::BindRepeating(&OpenFileSystemCallbackAdapter, callbacks_id),
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
 void WebFileSystemImpl::ResolveURL(const blink::WebURL& filesystem_url,
                                    WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::ResolveURL,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::ResolveURL,
+      &FileSystemDispatcher::ResolveURLSync, &file_system_dispatcher_,
       std::make_tuple(
           GURL(filesystem_url),
-          base::Bind(&ResolveURLCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results)),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+          base::BindRepeating(&ResolveURLCallbackAdapter, callbacks_id),
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
 void WebFileSystemImpl::Move(const blink::WebURL& src_path,
                              const blink::WebURL& dest_path,
                              WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::Move,
-      std::make_tuple(
-          GURL(src_path), GURL(dest_path),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+  CallDispatcher(callbacks, &FileSystemDispatcher::Move,
+                 &FileSystemDispatcher::MoveSync, &file_system_dispatcher_,
+                 std::make_tuple(GURL(src_path), GURL(dest_path),
+                                 base::BindRepeating(&StatusCallbackAdapter,
+                                                     callbacks_id)));
 }
 
 void WebFileSystemImpl::Copy(const blink::WebURL& src_path,
                              const blink::WebURL& dest_path,
                              WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::Copy,
-      std::make_tuple(
-          GURL(src_path), GURL(dest_path),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+  CallDispatcher(callbacks, &FileSystemDispatcher::Copy,
+                 &FileSystemDispatcher::CopySync, &file_system_dispatcher_,
+                 std::make_tuple(GURL(src_path), GURL(dest_path),
+                                 base::BindRepeating(&StatusCallbackAdapter,
+                                                     callbacks_id)));
 }
 
 void WebFileSystemImpl::Remove(const blink::WebURL& path,
                                WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::Remove,
-      std::make_tuple(
-          GURL(path), false /* recursive */,
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+  CallDispatcher(callbacks, &FileSystemDispatcher::Remove,
+                 &FileSystemDispatcher::RemoveSync, &file_system_dispatcher_,
+                 std::make_tuple(GURL(path), /*recursive=*/false,
+                                 base::BindRepeating(&StatusCallbackAdapter,
+                                                     callbacks_id)));
 }
 
 void WebFileSystemImpl::RemoveRecursively(const blink::WebURL& path,
                                           WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::Remove,
-      std::make_tuple(
-          GURL(path), true /* recursive */,
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+  CallDispatcher(callbacks, &FileSystemDispatcher::Remove,
+                 &FileSystemDispatcher::RemoveSync, &file_system_dispatcher_,
+                 std::make_tuple(GURL(path), /*recursive=*/true,
+                                 base::BindRepeating(&StatusCallbackAdapter,
+                                                     callbacks_id)));
 }
 
 void WebFileSystemImpl::ReadMetadata(const blink::WebURL& path,
                                      WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::ReadMetadata,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::ReadMetadata,
+      &FileSystemDispatcher::ReadMetadataSync, &file_system_dispatcher_,
       std::make_tuple(
           GURL(path),
-          base::Bind(&ReadMetadataCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results)),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+          base::BindRepeating(&ReadMetadataCallbackAdapter, callbacks_id),
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
 void WebFileSystemImpl::CreateFile(const blink::WebURL& path,
                                    bool exclusive,
                                    WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::CreateFile,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::CreateFile,
+      &FileSystemDispatcher::CreateFileSync, &file_system_dispatcher_,
       std::make_tuple(
           GURL(path), exclusive,
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
 void WebFileSystemImpl::CreateDirectory(const blink::WebURL& path,
                                         bool exclusive,
                                         WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::CreateDirectory,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::CreateDirectory,
+      &FileSystemDispatcher::CreateDirectorySync, &file_system_dispatcher_,
       std::make_tuple(
-          GURL(path), exclusive, false /* recursive */,
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+          GURL(path), exclusive, /*recursive=*/false,
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
 void WebFileSystemImpl::FileExists(const blink::WebURL& path,
                                    WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::Exists,
-      std::make_tuple(
-          GURL(path), false /* directory */,
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+  CallDispatcher(callbacks, &FileSystemDispatcher::Exists,
+                 &FileSystemDispatcher::ExistsSync, &file_system_dispatcher_,
+                 std::make_tuple(GURL(path), /*directory=*/false,
+                                 base::BindRepeating(&StatusCallbackAdapter,
+                                                     callbacks_id)));
 }
 
 void WebFileSystemImpl::DirectoryExists(const blink::WebURL& path,
                                         WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::Exists,
-      std::make_tuple(
-          GURL(path), true /* directory */,
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+  CallDispatcher(callbacks, &FileSystemDispatcher::Exists,
+                 &FileSystemDispatcher::ExistsSync, &file_system_dispatcher_,
+                 std::make_tuple(GURL(path), /*directory=*/true,
+                                 base::BindRepeating(&StatusCallbackAdapter,
+                                                     callbacks_id)));
 }
 
 int WebFileSystemImpl::ReadDirectory(const blink::WebURL& path,
                                      WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::ReadDirectory,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::ReadDirectory,
+      &FileSystemDispatcher::ReadDirectorySync, &file_system_dispatcher_,
       std::make_tuple(
           GURL(path),
-          base::Bind(&ReadDirectoryCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results)),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+          base::BindRepeating(&ReadDirectoryCallbackAdapter, callbacks_id),
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
   return callbacks_id;
 }
 
@@ -613,50 +420,27 @@ void WebFileSystemImpl::CreateFileWriter(const WebURL& path,
                                          blink::WebFileWriterClient* client,
                                          WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::ReadMetadata,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::ReadMetadata,
+      &FileSystemDispatcher::ReadMetadataSync, &file_system_dispatcher_,
       std::make_tuple(
           GURL(path),
-          base::Bind(&CreateFileWriterCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results),
-                     main_thread_task_runner_, GURL(path), client),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
+          base::BindRepeating(&CreateFileWriterCallbackAdapter, callbacks_id,
+                              main_thread_task_runner_, GURL(path), client),
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
 void WebFileSystemImpl::CreateSnapshotFileAndReadMetadata(
     const blink::WebURL& path,
     WebFileSystemCallbacks callbacks) {
   int callbacks_id = RegisterCallbacks(callbacks);
-  scoped_refptr<WaitableCallbackResults> waitable_results =
-      MaybeCreateWaitableResults(callbacks, callbacks_id);
-  CallDispatcherOnMainThread(
-      main_thread_task_runner_, &FileSystemDispatcher::CreateSnapshotFile,
+  CallDispatcher(
+      callbacks, &FileSystemDispatcher::CreateSnapshotFile,
+      &FileSystemDispatcher::CreateSnapshotFileSync, &file_system_dispatcher_,
       std::make_tuple(
           GURL(path),
-          base::Bind(&CreateSnapshotFileCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results),
-                     main_thread_task_runner_),
-          base::Bind(&StatusCallbackAdapter,
-                     base::ThreadTaskRunnerHandle::Get(), callbacks_id,
-                     base::RetainedRef(waitable_results))),
-      waitable_results.get());
-}
-
-bool WebFileSystemImpl::WaitForAdditionalResult(int callbacksId) {
-  WaitableCallbackResultsMap::iterator found =
-      waitable_results_.find(callbacksId);
-  if (found == waitable_results_.end())
-    return false;
-
-  found->second->WaitAndRun();
-  return true;
+          base::BindRepeating(&CreateSnapshotFileCallbackAdapter, callbacks_id),
+          base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
 int WebFileSystemImpl::RegisterCallbacks(
@@ -679,17 +463,6 @@ void WebFileSystemImpl::UnregisterCallbacks(int callbacks_id) {
   CallbacksMap::iterator found = callbacks_.find(callbacks_id);
   DCHECK(found != callbacks_.end());
   callbacks_.erase(found);
-
-  waitable_results_.erase(callbacks_id);
-}
-
-WaitableCallbackResults* WebFileSystemImpl::MaybeCreateWaitableResults(
-    const WebFileSystemCallbacks& callbacks, int callbacks_id) {
-  if (!callbacks.ShouldBlockUntilCompletion())
-    return nullptr;
-  WaitableCallbackResults* results = new WaitableCallbackResults();
-  waitable_results_[callbacks_id] = results;
-  return results;
 }
 
 }  // namespace content

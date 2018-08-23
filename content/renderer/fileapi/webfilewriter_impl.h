@@ -10,8 +10,6 @@
 #include <string>
 
 #include "base/callback_forward.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "content/renderer/fileapi/webfilewriter_base.h"
 
 namespace base {
@@ -20,20 +18,21 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
+class FileSystemDispatcher;
+
 // An implementation of WebFileWriter for use in chrome renderers and workers.
-class WebFileWriterImpl : public WebFileWriterBase,
-                          public base::SupportsWeakPtr<WebFileWriterImpl> {
+class WebFileWriterImpl : public WebFileWriterBase {
  public:
   enum Type {
     TYPE_SYNC,
     TYPE_ASYNC,
   };
 
-  WebFileWriterImpl(const GURL& path,
-                    blink::WebFileWriterClient* client,
-                    Type type,
-                    const scoped_refptr<base::SingleThreadTaskRunner>&
-                        main_thread_task_runner);
+  WebFileWriterImpl(
+      const GURL& path,
+      blink::WebFileWriterClient* client,
+      Type type,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~WebFileWriterImpl() override;
 
  protected:
@@ -45,12 +44,9 @@ class WebFileWriterImpl : public WebFileWriterBase,
   void DoCancel() override;
 
  private:
-  class WriterBridge;
-
-  void RunOnMainThread(const base::Closure& closure);
-
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<WriterBridge> bridge_;
+  int request_id_;
+  Type type_;
+  std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
 };
 
 }  // namespace content

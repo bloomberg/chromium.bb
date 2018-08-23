@@ -94,15 +94,24 @@ class CONTENT_EXPORT FileSystemManagerImpl
   void ReadDirectory(
       const GURL& path,
       blink::mojom::FileSystemOperationListenerPtr listener) override;
+  void ReadDirectorySync(const GURL& path,
+                         ReadDirectorySyncCallback callback) override;
   void Write(const GURL& file_path,
              const std::string& blob_uuid,
              int64_t position,
              blink::mojom::FileSystemCancellableOperationRequest op_request,
              blink::mojom::FileSystemOperationListenerPtr listener) override;
+  void WriteSync(const GURL& file_path,
+                 const std::string& blob_uuid,
+                 int64_t position,
+                 WriteSyncCallback callback) override;
   void Truncate(const GURL& file_path,
                 int64_t length,
                 blink::mojom::FileSystemCancellableOperationRequest op_request,
                 TruncateCallback callback) override;
+  void TruncateSync(const GURL& file_path,
+                    int64_t length,
+                    TruncateSyncCallback callback) override;
   void TouchFile(const GURL& path,
                  base::Time last_access_time,
                  base::Time last_modified_time,
@@ -117,6 +126,8 @@ class CONTENT_EXPORT FileSystemManagerImpl
   class ReceivedSnapshotListenerImpl;
   using OperationID = storage::FileSystemOperationRunner::OperationID;
   using OperationListenerID = int;
+  struct WriteSyncCallbackEntry;
+  struct ReadDirectorySyncCallbackEntry;
 
   void Cancel(
       OperationID op_id,
@@ -137,10 +148,19 @@ class CONTENT_EXPORT FileSystemManagerImpl
                         base::File::Error result,
                         std::vector<filesystem::mojom::DirectoryEntry> entries,
                         bool has_more);
+  void DidReadDirectorySync(
+      ReadDirectorySyncCallbackEntry* callback_entry,
+      base::File::Error result,
+      std::vector<filesystem::mojom::DirectoryEntry> entries,
+      bool has_more);
   void DidWrite(OperationListenerID listener_id,
                 base::File::Error result,
                 int64_t bytes,
                 bool complete);
+  void DidWriteSync(WriteSyncCallbackEntry* entry,
+                    base::File::Error result,
+                    int64_t bytes,
+                    bool complete);
   void DidOpenFileSystem(OpenCallback callback,
                          const GURL& root,
                          const std::string& filesystem_name,
@@ -196,7 +216,7 @@ class CONTENT_EXPORT FileSystemManagerImpl
   std::unordered_map<OperationListenerID,
                      blink::mojom::FileSystemOperationListenerPtr>
       op_listeners_;
-  OperationListenerID next_operation_listener_id_ = 0;
+  OperationListenerID next_operation_listener_id_ = 1;
 
   // Used to keep snapshot files alive while a DidCreateSnapshot
   // is being sent to the renderer.

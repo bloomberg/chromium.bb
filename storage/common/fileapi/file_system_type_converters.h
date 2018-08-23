@@ -5,6 +5,7 @@
 #ifndef STORAGE_COMMON_FILEAPI_FILE_SYSTEM_TYPE_CONVERTERS_H_
 #define STORAGE_COMMON_FILEAPI_FILE_SYSTEM_TYPE_CONVERTERS_H_
 
+#include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom.h"
 

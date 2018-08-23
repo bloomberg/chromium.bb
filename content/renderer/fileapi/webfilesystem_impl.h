@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
 #include "content/public/renderer/worker_thread.h"
+#include "content/renderer/fileapi/file_system_dispatcher.h"
 #include "third_party/blink/public/platform/web_file_system.h"
 
 namespace base {
@@ -28,14 +29,11 @@ namespace content {
 class WebFileSystemImpl : public blink::WebFileSystem,
                           public WorkerThread::Observer {
  public:
-  class WaitableCallbackResults;
-
   // Returns thread-specific instance.  If non-null |main_thread_loop|
   // is given and no thread-specific instance has been created it may
   // create a new instance.
   static WebFileSystemImpl* ThreadSpecificInstance(
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          main_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
 
   // Deletes thread-specific instance (if exists). For workers it deletes
   // itself in WillStopCurrentWorkerThread(), but for an instance created on the
@@ -43,8 +41,7 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   static void DeleteThreadSpecificInstance();
 
   explicit WebFileSystemImpl(
-      const scoped_refptr<base::SingleThreadTaskRunner>&
-          main_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~WebFileSystemImpl() override;
 
   // WorkerThread::Observer implementation.
@@ -86,7 +83,6 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   void CreateSnapshotFileAndReadMetadata(
       const blink::WebURL& path,
       blink::WebFileSystemCallbacks) override;
-  bool WaitForAdditionalResult(int callbacksId) override;
 
   int RegisterCallbacks(const blink::WebFileSystemCallbacks& callbacks);
   blink::WebFileSystemCallbacks GetCallbacks(int callbacks_id);
@@ -94,17 +90,12 @@ class WebFileSystemImpl : public blink::WebFileSystem,
 
  private:
   typedef std::map<int, blink::WebFileSystemCallbacks> CallbacksMap;
-  typedef std::map<int, scoped_refptr<WaitableCallbackResults> >
-      WaitableCallbackResultsMap;
-
-  WaitableCallbackResults* MaybeCreateWaitableResults(
-      const blink::WebFileSystemCallbacks& callbacks, int callbacks_id);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   CallbacksMap callbacks_;
   int next_callbacks_id_;
-  WaitableCallbackResultsMap waitable_results_;
+  FileSystemDispatcher file_system_dispatcher_;
 
   // Thread-affine per use of TLS in impl.
   THREAD_CHECKER(thread_checker_);

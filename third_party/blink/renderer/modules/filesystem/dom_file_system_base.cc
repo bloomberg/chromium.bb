@@ -474,12 +474,6 @@ int DOMFileSystemBase::ReadDirectory(
                                      std::move(callbacks));
 }
 
-bool DOMFileSystemBase::WaitForAdditionalResult(int callbacks_id) {
-  if (!FileSystem())
-    return false;
-  return FileSystem()->WaitForAdditionalResult(callbacks_id);
-}
-
 STATIC_ASSERT_ENUM(WebFileSystem::kTypeTemporary,
                    mojom::blink::FileSystemType::kTemporary);
 STATIC_ASSERT_ENUM(WebFileSystem::kTypePersistent,
