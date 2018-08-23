@@ -887,7 +887,7 @@ back_updatePositions(const widechar *outChars, int inLength, int outLength,
 }
 
 static int
-undefinedDots(widechar dots, int mode, OutString *output) {
+undefinedDots(widechar dots, int mode, OutString *output, int pos, int *posMapping) {
 	if (mode & noUndefinedDots) return 1;
 	/* Print out dot numbers */
 	widechar buffer[20];
@@ -911,6 +911,7 @@ undefinedDots(widechar dots, int mode, OutString *output) {
 	buffer[k++] = '/';
 	if ((output->length + k) > output->maxlength) return 0;
 	memcpy(&output->chars[output->length], buffer, k * CHARSIZE);
+	posMapping[pos] = output->length;
 	output->length += k;
 	return 1;
 }
@@ -933,7 +934,7 @@ putCharacter(widechar dots, const TranslationTableHeader *table, int pos, int mo
 		return back_updatePositions(&c, 1, 1, table, pos, input, output, posMapping,
 				cursorPosition, cursorStatus, nextUpper, allUpper, allUpperPhrase);
 	}
-	return undefinedDots(dots, mode, output);
+	return undefinedDots(dots, mode, output, pos, posMapping);
 }
 
 static int
@@ -1186,8 +1187,9 @@ backTranslateString(const TranslationTableHeader *table, int mode, int currentPa
 				goto failure;
 			break;
 		case CTO_None:
-			if (!undefinedDots(input->chars[pos], mode, output)) goto failure;
-			posMapping[pos++] = output->length;
+			if (!undefinedDots(input->chars[pos], mode, output, pos, posMapping))
+				goto failure;
+			pos++;
 			break;
 		case CTO_BegNum:
 			itsANumber = 1;
