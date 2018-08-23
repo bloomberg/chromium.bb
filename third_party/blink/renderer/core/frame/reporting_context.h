@@ -33,6 +33,9 @@ class CORE_EXPORT ReportingContext final
   // Queues a report in all registered observers.
   void QueueReport(Report*);
 
+  // Counts the use of a report type via UseCounter.
+  void CountReport(Report*);
+
   void RegisterObserver(ReportingObserver*);
   void UnregisterObserver(ReportingObserver*);
 

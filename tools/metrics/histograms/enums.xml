@@ -19825,6 +19825,9 @@ Called by update_net_error_codes.py.-->
   <int value="2526" label="V8MediaStreamTrack_ContentHint_AttributeSetter"/>
   <int value="2527" label="V8IDBFactory_Open_Method"/>
   <int value="2528" label="EvaluateScriptMovedBetweenDocuments"/>
+  <int value="2529" label="ReportingObserver"/>
+  <int value="2530" label="DeprecationReport"/>
+  <int value="2531" label="InterventionReport"/>
 </enum>
 
 <enum name="FeedbackSource">
