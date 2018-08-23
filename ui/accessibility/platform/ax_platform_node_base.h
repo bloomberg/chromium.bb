@@ -176,7 +176,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   bool HasFocus();
 
-  virtual base::string16 GetText();
+  virtual std::string GetText();
 
   virtual base::string16 GetValue();
 
@@ -212,7 +212,7 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
 
   // |GetInnerText| recursively includes all the text from descendants such as
   // text found in any embedded object.
-  base::string16 GetInnerText();
+  std::string GetInnerText();
 
   // Cast a gfx::NativeViewAccessible to an AXPlatformNodeBase if it is one,
   // or return NULL if it's not an instance of this class.
