@@ -12,12 +12,14 @@ option go_package = "seneschal_proto";
 
 // Defines a path to be shared with a 9p server.
 message SharedPath {
-  // Path to be shared.  The basename of this path is appended to the root of
-  // the server to get the destination path.  For example,
-  // "/home/chronos/user/Downloads/project" will be visible to the server as
-  // "/project".  Note that this means that it is not possible to share 2
-  // different paths with the same name with the same server as they would
-  // both have the same destination path inside the server's root directory.
+  // Path to be shared.  Must be relative, must not have any ".." elements, and
+  // must not end with ".".  The destination path is constructed by appending
+  // the name of the storage location and this path to the root of the server.
+  // So if |path| is "foo/bar" and the |storage_location| field of the
+  // SharePathRequest is "DOWNLOADS", then the destination path will be
+  // "/Downloads/foo/bar".  Any ancestor directories will be automatically
+  // created but will not be writable unless they have been shared via a
+  // SharePathRequest.
   string path = 1;
 
   // Whether the path should be writable by the server.  Due to limitations in
