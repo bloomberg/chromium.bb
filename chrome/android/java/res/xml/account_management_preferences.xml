@@ -38,8 +38,7 @@
                 <TextView android:id="@android:id/summary"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?android:attr/textColorSecondary"/>
+                    android:textAppearance="@style/BlackBody"/>
 
                 <LinearLayout android:id="@android:id/widget_frame"
                     android:layout_width="wrap_content"
@@ -62,6 +61,7 @@
         android:title="@string/sign_in_sync"/>
 
     <Preference
+        android:key="sync_settings_divider"
         android:layout="@layout/divider_preference"/>
 
     <Preference
@@ -71,6 +71,7 @@
         android:summary="@string/sign_in_google_activity_controls_message"/>
 
     <Preference
+        android:key="google_activity_controls_divider"
         android:layout="@layout/divider_preference"/>
 
     <Preference
