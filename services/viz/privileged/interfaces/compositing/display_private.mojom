@@ -44,6 +44,14 @@ interface DisplayPrivate {
     mojo_base.mojom.TimeTicks timebase,
     mojo_base.mojom.TimeDelta interval);
 
+  // Attempts to immediately draw and swap a frame if possible. Note that this
+  // is not a sync IPC, as all current uses are during tear down of the root
+  // compositor frame sink and are immediately followed by a call to
+  // FrameSinkManager::DestroyCompositorFrameSink which is an associated sync
+  // IPC. If this function is needed in cases where ordering isn't guaranteed
+  // by other means, it should be made sync.
+  ForceImmediateDrawAndSwapIfPossible();
+
   // Notifies the display to pause VSync signals. Used for VR.
   [EnableIf=is_android]
   SetVSyncPaused(bool paused);

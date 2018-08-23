@@ -140,6 +140,10 @@ void RootCompositorFrameSinkImpl::SetDisplayVSyncParameters(
     synthetic_begin_frame_source_->OnUpdateVSyncParameters(timebase, interval);
 }
 
+void RootCompositorFrameSinkImpl::ForceImmediateDrawAndSwapIfPossible() {
+  display_->ForceImmediateDrawAndSwapIfPossible();
+}
+
 #if defined(OS_ANDROID)
 void RootCompositorFrameSinkImpl::SetVSyncPaused(bool paused) {
   if (external_begin_frame_source_)

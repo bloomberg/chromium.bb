@@ -702,9 +702,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       enable_viz_(
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       weak_factory_(this) {
-  GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
-  GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
-                                                    "CompositorImpl");
   DCHECK(client);
 
   SetRootWindow(root_window);
@@ -719,7 +716,6 @@ CompositorImpl::~CompositorImpl() {
   DetachRootWindow();
   // Clean-up any surface references.
   SetSurface(NULL);
-  GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
 
 void CompositorImpl::DetachRootWindow() {
@@ -857,28 +853,24 @@ void CompositorImpl::CreateLayerTreeHost() {
 
 void CompositorImpl::SetVisible(bool visible) {
   TRACE_EVENT1("cc", "CompositorImpl::SetVisible", "visible", visible);
+
   if (!visible) {
     DCHECK(host_->IsVisible());
-
-    // Make a best effort to try to complete pending readbacks.
-    // TODO(crbug.com/637035): Consider doing this in a better way,
-    // ideally with the guarantee of readbacks completing.
-    if (display_.get() && HavePendingReadbacks())
-      display_->ForceImmediateDrawAndSwapIfPossible();
-
+    // Tear down the display first, synchronously completing any pending
+    // draws/readbacks if poosible.
+    TearDownDisplayAndUnregisterRootFrameSink();
+    // Hide the LayerTreeHost and release its frame sink.
     host_->SetVisible(false);
     host_->ReleaseLayerTreeFrameSink();
     has_layer_tree_frame_sink_ = false;
     pending_frames_ = 0;
-    if (display_) {
-      GetFrameSinkManager()->UnregisterBeginFrameSource(
-          root_window_->GetBeginFrameSource());
-    }
-    display_.reset();
+    // Handle GPU visibility signals.
     GpuDataManagerImpl::GetInstance()->SetApplicationVisible(false);
     SendOnBackgroundedToGpuService();
     EnqueueLowEndBackgroundCleanup();
   } else {
+    DCHECK(!host_->IsVisible());
+    RegisterRootFrameSink();
     host_->SetVisible(true);
     has_submitted_frame_since_became_visible_ = false;
     if (layer_tree_frame_sink_request_pending_)
@@ -887,8 +879,46 @@ void CompositorImpl::SetVisible(bool visible) {
     SendOnForegroundedToGpuService();
     low_end_background_cleanup_task_.Cancel();
   }
-  if (display_private_)
-    display_private_->SetDisplayVisible(visible);
+}
+
+void CompositorImpl::TearDownDisplayAndUnregisterRootFrameSink() {
+  if (enable_viz_) {
+    // Make a best effort to try to complete pending readbacks.
+    // TODO(crbug.com/637035): Consider doing this in a better way,
+    // ideally with the guarantee of readbacks completing.
+    if (display_private_ && HavePendingReadbacks()) {
+      // Note that while this is not a Sync IPC, the call to
+      // InvalidateFrameSinkId below will end up triggering a sync call to
+      // FrameSinkManager::DestroyCompositorFrameSink, as this is the root
+      // frame sink. Because |display_private_| is an associated interface to
+      // FrameSinkManager, this subsequent sync call will ensure ordered
+      // execution of this call.
+      display_private_->ForceImmediateDrawAndSwapIfPossible();
+    }
+
+    GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
+    display_private_.reset();
+  } else {
+    // Make a best effort to try to complete pending readbacks.
+    // TODO(crbug.com/637035): Consider doing this in a better way,
+    // ideally with the guarantee of readbacks completing.
+    if (display_ && HavePendingReadbacks())
+      display_->ForceImmediateDrawAndSwapIfPossible();
+
+    if (display_) {
+      GetFrameSinkManager()->UnregisterBeginFrameSource(
+          root_window_->GetBeginFrameSource());
+    }
+
+    GetHostFrameSinkManager()->InvalidateFrameSinkId(frame_sink_id_);
+    display_.reset();
+  }
+}
+
+void CompositorImpl::RegisterRootFrameSink() {
+  GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
+  GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
+                                                    "CompositorImpl");
 }
 
 void CompositorImpl::SetWindowBounds(const gfx::Size& size) {
