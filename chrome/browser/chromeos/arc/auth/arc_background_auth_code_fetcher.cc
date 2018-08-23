@@ -230,10 +230,12 @@ void ArcBackgroundAuthCodeFetcher::ResetFetchers() {
 void ArcBackgroundAuthCodeFetcher::ReportResult(
     const std::string& auth_code,
     OptInSilentAuthCode uma_status) {
-  if (initial_signin_)
+  if (initial_signin_) {
     UpdateSilentAuthCodeUMA(uma_status);
-  else
+  } else {
+    // TODO(sinhak): Check if we need to migrate this / create a new metric.
     UpdateReauthorizationSilentAuthCodeUMA(uma_status);
+  }
   std::move(callback_).Run(!auth_code.empty(), auth_code);
 }
 

@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
@@ -96,9 +97,15 @@ class FakeAuthInstance : public mojom::AuthInstance {
     std::move(done_closure_).Run();
   }
 
-  void RequestAccountInfo(base::Closure done_closure) {
-    done_closure_ = done_closure;
-    host_->RequestAccountInfo(true);
+  void RequestAccountInfo(base::OnceClosure done_closure) {
+    done_closure_ = std::move(done_closure);
+    host_->RequestAccountInfo(true /* initial_signin */, base::nullopt);
+  }
+
+  void RequestSecondaryAccountInfo(base::OnceClosure done_closure,
+                                   const std::string& account_name) {
+    done_closure_ = std::move(done_closure);
+    host_->RequestAccountInfo(false /* initial_signin */, account_name);
   }
 
   void OnSecondaryAccountUpserted(const std::string& account_name) override {
@@ -121,7 +128,7 @@ class FakeAuthInstance : public mojom::AuthInstance {
  private:
   mojom::AuthHostPtr host_;
   mojom::AccountInfoPtr account_info_;
-  base::Closure done_closure_;
+  base::OnceClosure done_closure_;
 };
 
 class ArcAuthServiceTest : public InProcessBrowserTest {
@@ -276,6 +283,11 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
     ASSERT_TRUE(account_info.IsValid());
     account_tracker_service->SeedAccountInfo(account_info);
+
+    FakeProfileOAuth2TokenService* token_service =
+        static_cast<FakeProfileOAuth2TokenService*>(
+            ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
+    token_service->UpdateCredentials(account_info.account_id, kRefreshToken);
   }
 
   Profile* profile() { return profile_.get(); }
@@ -310,7 +322,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
   SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
   test_url_loader_factory().AddResponse(
       arc::kAuthTokenExchangeEndPoint,
-      "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }");
+      R"({ "token" : ")" + std::string(kFakeAuthCode) + R"(" })");
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfo(run_loop.QuitClosure());
@@ -324,6 +336,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
             auth_instance().account_info()->account_type);
   EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
+  EXPECT_FALSE(auth_instance().account_info()->is_secondary_account);
 }
 
 IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
@@ -376,6 +389,30 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, FetchSecondaryAccountInfoSucceeds) {
+  const std::string gaia_id = "123999";
+  const std::string email = "email.111@gmail.com";
+
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(gaia_id, email);
+  test_url_loader_factory().AddResponse(
+      arc::kAuthTokenExchangeEndPoint,
+      R"({ "token" : ")" + std::string(kFakeAuthCode) + R"(" })");
+
+  base::RunLoop run_loop;
+  auth_instance().RequestSecondaryAccountInfo(run_loop.QuitClosure(), email);
+  run_loop.Run();
+
+  ASSERT_TRUE(auth_instance().account_info());
+  EXPECT_EQ(email, auth_instance().account_info()->account_name.value());
+  EXPECT_EQ(kFakeAuthCode, auth_instance().account_info()->auth_code.value());
+  EXPECT_EQ(mojom::ChromeAccountType::USER_ACCOUNT,
+            auth_instance().account_info()->account_type);
+  EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
+  EXPECT_FALSE(auth_instance().account_info()->is_managed);
+  EXPECT_TRUE(auth_instance().account_info()->is_secondary_account);
 }
 
 class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
@@ -541,7 +578,7 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceChildAccountTest, ChildAccountFetch) {
   EXPECT_TRUE(profile()->IsChild());
   test_url_loader_factory().AddResponse(
       arc::kAuthTokenExchangeEndPoint,
-      "{ \"token\" : \"" + std::string(kFakeAuthCode) + "\" }");
+      R"({ "token" : ")" + std::string(kFakeAuthCode) + R"(" })");
 
   base::RunLoop run_loop;
   auth_instance().RequestAccountInfo(run_loop.QuitClosure());
