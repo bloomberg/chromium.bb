@@ -5,8 +5,10 @@
 #ifndef CONTENT_BROWSER_PERMISSIONS_PERMISSION_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_PERMISSIONS_PERMISSION_CONTROLLER_IMPL_H_
 
+#include "base/containers/id_map.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/permission_controller.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -22,6 +24,13 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
 
   static PermissionControllerImpl* FromBrowserContext(
       BrowserContext* browser_context);
+
+  using PermissionOverrides = std::set<PermissionType>;
+  // For the given |origin|, grant permissions that belong to |overrides|
+  // and reject all others.
+  void SetPermissionOverridesForDevTools(const GURL& origin,
+                                         const PermissionOverrides& overrides);
+  void ResetPermissionOverridesForDevTools();
 
   // PermissionController implementation.
   blink::mojom::PermissionStatus GetPermissionStatus(
@@ -62,6 +71,16 @@ class CONTENT_EXPORT PermissionControllerImpl : public PermissionController {
   void UnsubscribePermissionStatusChange(int subscription_id);
 
  private:
+  struct Subscription;
+  using SubscriptionsMap = base::IDMap<std::unique_ptr<Subscription>>;
+
+  blink::mojom::PermissionStatus GetSubscriptionCurrentValue(
+      const Subscription& subscription);
+  void OnDelegatePermissionStatusChange(Subscription* subscription,
+                                        blink::mojom::PermissionStatus status);
+
+  std::map<GURL, PermissionOverrides> devtools_permission_overrides_;
+  SubscriptionsMap subscriptions_;
   BrowserContext* browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionControllerImpl);

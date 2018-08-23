@@ -180,6 +180,10 @@ ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(
 ShellDevToolsManagerDelegate::~ShellDevToolsManagerDelegate() {
 }
 
+BrowserContext* ShellDevToolsManagerDelegate::GetDefaultBrowserContext() {
+  return browser_context_;
+}
+
 scoped_refptr<DevToolsAgentHost>
 ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
   Shell* shell = Shell::CreateNewWindow(browser_context_,

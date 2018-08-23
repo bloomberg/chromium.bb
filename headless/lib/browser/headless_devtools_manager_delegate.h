@@ -44,6 +44,7 @@ class HeadlessDevToolsManagerDelegate
                       content::DevToolsAgentHostClient* client) override;
 
   std::vector<content::BrowserContext*> GetBrowserContexts() override;
+  content::BrowserContext* GetDefaultBrowserContext() override;
   content::BrowserContext* CreateBrowserContext() override;
   void DisposeBrowserContext(content::BrowserContext* context,
                              DisposeCallback callback) override;

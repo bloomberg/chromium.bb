@@ -51,6 +51,11 @@ DevToolsBrowserContextManager::GetBrowserContexts() {
   return result;
 }
 
+content::BrowserContext*
+DevToolsBrowserContextManager::GetDefaultBrowserContext() {
+  return ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
+}
+
 void DevToolsBrowserContextManager::DisposeBrowserContext(
     content::BrowserContext* context,
     content::DevToolsManagerDelegate::DisposeCallback callback) {

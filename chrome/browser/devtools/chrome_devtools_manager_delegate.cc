@@ -227,6 +227,12 @@ ChromeDevToolsManagerDelegate::GetBrowserContexts() {
   return DevToolsBrowserContextManager::GetInstance().GetBrowserContexts();
 }
 
+content::BrowserContext*
+ChromeDevToolsManagerDelegate::GetDefaultBrowserContext() {
+  return DevToolsBrowserContextManager::GetInstance()
+      .GetDefaultBrowserContext();
+}
+
 content::BrowserContext* ChromeDevToolsManagerDelegate::CreateBrowserContext() {
   return DevToolsBrowserContextManager::GetInstance().CreateBrowserContext();
 }
