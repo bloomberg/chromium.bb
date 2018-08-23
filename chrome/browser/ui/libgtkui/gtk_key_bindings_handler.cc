@@ -28,10 +28,22 @@ using ui::TextEditCommand;
 // linking requirements regarding GTK+ as we don't have a libgtkui_unittests
 // yet. http://crbug.com/358297.
 
+namespace {
+
+GtkWidget* CreateInvisibleWindow() {
+#if GTK_CHECK_VERSION(3, 90, 0)
+  return gtk_invisible_new();
+#else
+  return gtk_offscreen_window_new();
+#endif
+}
+
+}  // namespace
+
 namespace libgtkui {
 
 GtkKeyBindingsHandler::GtkKeyBindingsHandler()
-    : fake_window_(gtk_offscreen_window_new()),
+    : fake_window_(CreateInvisibleWindow()),
       handler_(CreateNewHandler()),
       has_xkb_(false) {
   gtk_container_add(GTK_CONTAINER(fake_window_), handler_);
@@ -65,11 +77,7 @@ bool GtkKeyBindingsHandler::MatchEvent(
   // will be emitted.
 
   gtk_bindings_activate_event(
-#if GDK_MAJOR_VERSION >= 3
       G_OBJECT(handler_),
-#else
-      GTK_OBJECT(handler_),
-#endif
       &gdk_event);
 
   bool matched = !edit_commands_.empty();
@@ -90,7 +98,9 @@ GtkWidget* GtkKeyBindingsHandler::CreateNewHandler() {
 
   // Prevents it from handling any events by itself.
   gtk_widget_set_sensitive(GTK_WIDGET(handler), FALSE);
+#if !GTK_CHECK_VERSION(3, 90, 0)
   gtk_widget_set_events(GTK_WIDGET(handler), 0);
+#endif
   gtk_widget_set_can_focus(GTK_WIDGET(handler), TRUE);
 
   return GTK_WIDGET(handler);
@@ -145,7 +155,6 @@ void GtkKeyBindingsHandler::HandlerInit(Handler* self) {
 
 void GtkKeyBindingsHandler::HandlerClassInit(HandlerClass* klass) {
   GtkTextViewClass* text_view_class = GTK_TEXT_VIEW_CLASS(klass);
-  GtkWidgetClass* widget_class = GTK_WIDGET_CLASS(klass);
 
   // Overrides all virtual methods related to editor key bindings.
   text_view_class->backspace = BackSpace;
@@ -157,7 +166,10 @@ void GtkKeyBindingsHandler::HandlerClassInit(HandlerClass* klass) {
   text_view_class->paste_clipboard = PasteClipboard;
   text_view_class->set_anchor = SetAnchor;
   text_view_class->toggle_overwrite = ToggleOverwrite;
+#if !GTK_CHECK_VERSION(3, 90, 0)
+  GtkWidgetClass* widget_class = GTK_WIDGET_CLASS(klass);
   widget_class->show_help = ShowHelp;
+#endif
 
   // "move-focus", "move-viewport", "select-all" and "toggle-cursor-visible"
   // have no corresponding virtual methods. Since glib 2.18 (gtk 2.14),
@@ -418,11 +430,13 @@ void GtkKeyBindingsHandler::ToggleOverwrite(GtkTextView* text_view) {
   // Not supported by webkit.
 }
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
 gboolean GtkKeyBindingsHandler::ShowHelp(GtkWidget* widget,
                                          GtkWidgetHelpType arg1) {
   // Just for disabling the default handler.
   return FALSE;
 }
+#endif
 
 void GtkKeyBindingsHandler::MoveFocus(GtkWidget* widget,
                                       GtkDirectionType arg1) {

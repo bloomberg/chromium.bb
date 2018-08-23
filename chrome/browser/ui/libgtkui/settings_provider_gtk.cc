@@ -26,6 +26,10 @@ std::string GetGtkSettingsStringProperty(GtkSettings* settings,
 }
 
 std::string GetDecorationLayoutFromGtkWindow() {
+#if GTK_CHECK_VERSION(3, 90, 0)
+  NOTREACHED();
+  return kDefaultGtkLayout;
+#else
   static ScopedStyleContext context;
   if (!context) {
     context = GetStyleContextFromCss("");
@@ -39,6 +43,7 @@ std::string GetDecorationLayoutFromGtkWindow() {
   std::string layout(layout_c);
   g_free(layout_c);
   return layout;
+#endif
 }
 
 void ParseActionString(const std::string& value,

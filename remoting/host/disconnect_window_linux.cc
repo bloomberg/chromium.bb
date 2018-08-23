@@ -186,7 +186,9 @@ void DisconnectWindowGtk::Start(
   gtk_window_set_deletable(window, FALSE);
 
   // Allow custom rendering of the background pixmap.
+#if !GTK_CHECK_VERSION(3, 90, 0)
   gtk_widget_set_app_paintable(disconnect_window_, TRUE);
+#endif
   g_signal_connect(disconnect_window_, "draw", G_CALLBACK(OnDrawThunk), this);
 
   // Handle window resizing, to regenerate the background pixmap and window
@@ -199,7 +201,9 @@ void DisconnectWindowGtk::Start(
                    G_CALLBACK(OnConfigureThunk), this);
 
   // Handle mouse events to allow the user to drag the window around.
+#if !GTK_CHECK_VERSION(3, 90, 0)
   gtk_widget_set_events(disconnect_window_, GDK_BUTTON_PRESS_MASK);
+#endif
   g_signal_connect(disconnect_window_, "button-press-event",
                    G_CALLBACK(OnButtonPressThunk), this);
 
@@ -207,24 +211,40 @@ void DisconnectWindowGtk::Start(
   // The alignment sets narrow margins at the top and bottom, compared with
   // left and right.  The left margin is made larger to accommodate the
   // window movement gripper.
+  GtkWidget* button_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
+  gtk_box_set_homogeneous(GTK_BOX(button_row), FALSE);
+
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_widget_set_margin_start(GTK_WIDGET(button_row), 24);
+  gtk_widget_set_margin_end(GTK_WIDGET(button_row), 12);
+  gtk_widget_set_margin_top(GTK_WIDGET(button_row), 8);
+  gtk_widget_set_margin_bottom(GTK_WIDGET(button_row), 8);
+  gtk_container_add(GTK_CONTAINER(window), button_row);
+#else
   G_GNUC_BEGIN_IGNORE_DEPRECATIONS;
   GtkWidget* align = gtk_alignment_new(0, 0, 1, 1);
   gtk_alignment_set_padding(GTK_ALIGNMENT(align), 8, 8, 24, 12);
   G_GNUC_END_IGNORE_DEPRECATIONS;
   gtk_container_add(GTK_CONTAINER(window), align);
-
-  GtkWidget* button_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 12);
-  gtk_box_set_homogeneous(GTK_BOX(button_row), FALSE);
   gtk_container_add(GTK_CONTAINER(align), button_row);
+#endif
 
   button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_STOP_SHARING_BUTTON).c_str());
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_box_pack_end(GTK_BOX(button_row), button_);
+#else
   gtk_box_pack_end(GTK_BOX(button_row), button_, FALSE, FALSE, 0);
+#endif
 
   g_signal_connect(button_, "clicked", G_CALLBACK(OnClickedThunk), this);
 
   message_ = gtk_label_new(nullptr);
+#if GTK_CHECK_VERSION(3, 90, 0)
+  gtk_box_pack_end(GTK_BOX(button_row), message_);
+#else
   gtk_box_pack_end(GTK_BOX(button_row), message_, FALSE, FALSE, 0);
+#endif
 
   // Override any theme setting for the text color, so that the text is
   // readable against the window's background pixmap.
@@ -234,13 +254,16 @@ void DisconnectWindowGtk::Start(
   gtk_label_set_attributes(GTK_LABEL(message_), attributes);
   pango_attr_list_unref(attributes);
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
+  // GTK4 always uses an RGBA visual for windows.
   GdkScreen* screen = gtk_widget_get_screen(disconnect_window_);
   GdkVisual* visual = gdk_screen_get_rgba_visual(screen);
-
   if (visual)
     gtk_widget_set_visual(disconnect_window_, visual);
 
+  // GTK4 shows windows by default.
   gtk_widget_show_all(disconnect_window_);
+#endif
 
   // Extract the user name from the JID.
   std::string client_jid = client_session_control_->client_jid();

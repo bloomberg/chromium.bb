@@ -5,6 +5,7 @@
 assert(is_linux, "This file should only be referenced on Linux")
 
 import("//build/config/features.gni")
+import("//build/config/linux/gtk/gtk.gni")
 import("//printing/buildflags/buildflags.gni")
 
 component("libgtkui") {
@@ -13,8 +14,6 @@ component("libgtkui") {
     "app_indicator_icon.h",
     "app_indicator_icon_menu.cc",
     "app_indicator_icon_menu.h",
-    "chrome_gtk_frame.cc",
-    "chrome_gtk_frame.h",
     "chrome_gtk_menu_subclasses.cc",
     "chrome_gtk_menu_subclasses.h",
     "gtk_background_painter.cc",
@@ -24,8 +23,6 @@ component("libgtkui") {
     "gtk_key_bindings_handler.cc",
     "gtk_key_bindings_handler.h",
     "gtk_signal.h",
-    "gtk_status_icon.cc",
-    "gtk_status_icon.h",
     "gtk_ui.cc",
     "gtk_ui.h",
     "gtk_util.cc",
@@ -56,6 +53,13 @@ component("libgtkui") {
     "x11_input_method_context_impl_gtk.cc",
     "x11_input_method_context_impl_gtk.h",
   ]
+
+  if (gtk_version <= 3) {
+    sources += [
+      "gtk_status_icon.cc",
+      "gtk_status_icon.h",
+    ]
+  }
 
   configs += [
     "//build/config/linux/pangocairo",

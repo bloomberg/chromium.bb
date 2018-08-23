@@ -6,7 +6,6 @@
 
 #include <gtk/gtk.h>
 
-#include "chrome/browser/ui/libgtkui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtkui/chrome_gtk_menu_subclasses.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
@@ -159,9 +158,9 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
         return GetFgColor("GtkLabel.link:link:hover:active");
       FALLTHROUGH;
     case ui::NativeTheme::kColorId_LinkEnabled: {
-      if (GtkVersionCheck(3, 12)) {
+      if (GtkVersionCheck(3, 12))
         return GetFgColor("GtkLabel.link:link");
-      }
+#if !GTK_CHECK_VERSION(3, 90, 0)
       auto link_context = GetStyleContextFromCss("GtkLabel.view");
       GdkColor* color;
       gtk_style_context_get_style(link_context, "link-color", &color, nullptr);
@@ -175,6 +174,7 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
         G_GNUC_END_IGNORE_DEPRECATIONS;
         return ret_color;
       }
+#endif
 
       // Default color comes from gtklinkbutton.c.
       return SkColorSetRGB(0x00, 0x00, 0xEE);
@@ -607,9 +607,15 @@ void NativeThemeGtk::PaintMenuSeparator(
         "GtkMenu#menu GtkSeparator#separator.horizontal");
     GtkBorder margin, border, padding;
     GtkStateFlags state = gtk_style_context_get_state(context);
+#if GTK_CHECK_VERSION(3, 90, 0)
+    gtk_style_context_get_margin(context, &margin);
+    gtk_style_context_get_border(context, &border);
+    gtk_style_context_get_padding(context, &padding);
+#else
     gtk_style_context_get_margin(context, state, &margin);
     gtk_style_context_get_border(context, state, &border);
     gtk_style_context_get_padding(context, state, &padding);
+#endif
     int min_height = 1;
     gtk_style_context_get(context, state, "min-height", &min_height, nullptr);
     int w = rect.width() - margin.left - margin.right;
@@ -620,6 +626,7 @@ void NativeThemeGtk::PaintMenuSeparator(
     int y = separator_offset(h);
     PaintWidget(canvas, gfx::Rect(x, y, w, h), context, BG_RENDER_NORMAL, true);
   } else {
+#if !GTK_CHECK_VERSION(3, 90, 0)
     auto context = GetStyleContextFromCss(
         "GtkMenu#menu GtkMenuItem#menuitem.separator.horizontal");
     gboolean wide_separators = false;
@@ -644,6 +651,7 @@ void NativeThemeGtk::PaintMenuSeparator(
       flags.setStrokeWidth(1);
       canvas->drawLine(x + 0.5f, y + 0.5f, x + w + 0.5f, y + 0.5f, flags);
     }
+#endif
   }
 }
 

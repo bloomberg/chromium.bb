@@ -17,6 +17,7 @@ namespace libgtkui {
 // To get back, we can just right shift by eight
 // (or, formulated differently, i == (i*257)/256 for all i < 256).
 
+#if !GTK_CHECK_VERSION(3, 90, 0)
 SkColor GdkColorToSkColor(GdkColor color) {
   return SkColorSetRGB(color.red >> 8, color.green >> 8, color.blue >> 8);
 }
@@ -28,6 +29,7 @@ GdkColor SkColorToGdkColor(SkColor color) {
       static_cast<guint16>(SkColorGetB(color) * kSkiaToGDKMultiplier)};
   return gdk_color;
 }
+#endif
 
 const SkBitmap GdkPixbufToImageSkia(GdkPixbuf* pixbuf) {
   // TODO(erg): What do we do in the case where the pixbuf fails these dchecks?
