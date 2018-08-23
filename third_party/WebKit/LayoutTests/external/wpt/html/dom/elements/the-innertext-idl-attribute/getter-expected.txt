@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 214 tests; 136 PASS, 78 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 214 tests; 140 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -47,7 +47,7 @@ PASS No whitespace compression in display:none container ("<div style='display:n
 PASS No removal of leading/trailing whitespace in display:none container ("<div style='display:none'> abc def ")
 PASS display:none child not rendered ("<div>123<span style='display:none'>abc")
 PASS display:none container with non-display-none target child ("<div style='display:none'><span id='target'>abc")
-FAIL non-display-none child of svg ("<div id='target'>abc") assert_equals: expected "" but got "abc"
+PASS non-display-none child of svg ("<div id='target'>abc")
 PASS display:none child of svg ("<div style='display:none' id='target'>abc")
 PASS child of display:none child of svg ("<div style='display:none'><div id='target'>abc")
 PASS display:contents container ("<div style='display:contents'>abc")
@@ -80,13 +80,13 @@ PASS <iframe> contents ignored ("<iframe>abc")
 PASS <iframe> contents ignored ("<iframe><div id='target'>abc")
 PASS <iframe> subdocument ignored ("<iframe src='data:text/html,abc'>")
 FAIL <audio> contents ignored ("<audio style='display:block'>abc") assert_equals: expected "" but got "abc"
-FAIL <audio> contents ignored ("<audio style='display:block'><source id='target' class='poke' style='display:block'>") assert_equals: expected "" but got "abc"
-PASS <audio> contents ok if display:none ("<audio style='display:block'><source id='target' class='poke' style='display:none'>")
+PASS <audio> contents ok for element not being rendered ("<audio style='display:block'><source id='target' class='poke' style='display:block'>")
+PASS <audio> contents ok for element not being rendered ("<audio style='display:block'><source id='target' class='poke' style='display:none'>")
 PASS <video> contents ignored ("<video>abc")
-FAIL <video> contents ignored ("<video style='display:block'><source id='target' class='poke' style='display:block'>") assert_equals: expected "" but got "abc"
-PASS <video> contents ok if display:none ("<video style='display:block'><source id='target' class='poke' style='display:none'>")
+PASS <video> contents ok for element not being rendered ("<video style='display:block'><source id='target' class='poke' style='display:block'>")
+PASS <video> contents ok for element not being rendered ("<video style='display:block'><source id='target' class='poke' style='display:none'>")
 PASS <canvas> contents ignored ("<canvas>abc")
-FAIL <canvas><div id='target'> contents ignored ("<canvas><div id='target'>abc") assert_equals: expected "" but got "abc"
+PASS <canvas><div id='target'> contents ok for element not being rendered ("<canvas><div id='target'>abc")
 PASS <img> alt text ignored ("<img alt='abc'>")
 PASS <img> contents ignored ("<img src='about:blank' class='poke'>")
 FAIL <select size='1'> contents of options preserved ("<select size='1'><option>abc</option><option>def") assert_equals: expected "abc\ndef" but got ""
