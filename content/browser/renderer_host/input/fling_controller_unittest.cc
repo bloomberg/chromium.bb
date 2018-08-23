@@ -282,8 +282,7 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
 }
 
-// TDOO(http://crbug.com/875777): We should do use better comparison method for
-// floating point numbers.
+// TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
 TEST_F(FlingControllerTest,
        DISABLED_EarlyTouchpadFlingCancelationOnInertialGSUAckNotConsumed) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
@@ -319,8 +318,9 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(0.f, last_sent_wheel_.delta_y);
 }
 
+// TODO(https://crbug.com/836996): Timing-dependent flakes on some platforms.
 TEST_F(FlingControllerTest,
-       EarlyTouchscreenFlingCancelationOnInertialGSUAckNotConsumed) {
+       DISABLED_EarlyTouchscreenFlingCancelationOnInertialGSUAckNotConsumed) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
