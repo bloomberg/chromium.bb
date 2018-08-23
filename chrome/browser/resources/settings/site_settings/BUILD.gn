@@ -224,6 +224,7 @@ js_library("site_list_entry") {
     ":site_settings_behavior",
     "..:focus_row_behavior",
     "..:route",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_pref_indicator",
     "//ui/webui/resources/js:cr",
   ]
 }
