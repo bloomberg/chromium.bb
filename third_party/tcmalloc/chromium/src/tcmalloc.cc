@@ -135,6 +135,9 @@
 
 #include "maybe_emergency_malloc.h"
 
+// Remove to enable huge allocations (> 2GB), the default for gperftools.
+#define TCMALLOC_DISABLE_HUGE_ALLOCATIONS
+
 #if (defined(_WIN32) && !defined(__CYGWIN__) && !defined(__CYGWIN32__)) && !defined(WIN32_OVERRIDE_ALLOCATORS)
 # define WIN32_DO_PATCHING 1
 #endif
@@ -343,6 +346,18 @@ size_t InvalidGetAllocatedSize(const void* ptr) {
       "Attempt to get the size of an invalid pointer", ptr);
   return 0;
 }
+
+#if defined(TCMALLOC_DISABLE_HUGE_ALLOCATIONS)
+// For security reasons, we want to limit the size of allocations.
+// See crbug.com/169327.
+inline bool IsAllocSizePermitted(size_t alloc_size) {
+  // Never allow an allocation larger than what can be indexed via an int.
+  // Remove kPageSize to account for various rounding, padding and to have a
+  // small margin.
+  return alloc_size <= ((std::numeric_limits<int>::max)() - kPageSize);
+}
+#endif
+
 }  // unnamed namespace
 
 // Extract interesting stats
@@ -1347,6 +1362,13 @@ static void *nop_oom_handler(size_t size) {
 }
 
 ATTRIBUTE_ALWAYS_INLINE inline void* do_malloc(size_t size) {
+#if defined(TCMALLOC_DISABLE_HUGE_ALLOCATIONS)
+  if (!IsAllocSizePermitted(size)) {
+    errno = ENOMEM;
+    return NULL;
+  }
+#endif
+
   if (PREDICT_FALSE(ThreadCache::IsUseEmergencyMalloc())) {
     return tcmalloc::EmergencyMalloc(size);
   }
