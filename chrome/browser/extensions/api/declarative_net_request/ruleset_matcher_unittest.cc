@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
+#include "extensions/browser/api/declarative_net_request/utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
@@ -123,7 +124,8 @@ TEST_P(RulesetMatcherTest, FailedVerification) {
   base::FilePath indexed_ruleset_path =
       file_util::GetIndexedRulesetPath(extension()->path());
 
-  // Persist invalid data to the ruleset file.
+  // Persist invalid data to the ruleset file and ensure that a version mismatch
+  // occurs.
   std::string data = "invalid data";
   ASSERT_EQ(static_cast<int>(data.size()),
             base::WriteFile(indexed_ruleset_path, data.c_str(), data.size()));
@@ -134,6 +136,16 @@ TEST_P(RulesetMatcherTest, FailedVerification) {
           ->GetDNRRulesetChecksum(extension()->id(), &expected_checksum));
 
   std::unique_ptr<RulesetMatcher> matcher;
+  EXPECT_EQ(RulesetMatcher::kLoadErrorVersionMismatch,
+            RulesetMatcher::CreateVerifiedMatcher(indexed_ruleset_path,
+                                                  expected_checksum, &matcher));
+
+  // Now, persist invalid data to the ruleset file, while maintaining the
+  // correct version header. Ensure that it fails verification due to checksum
+  // mismatch.
+  data = GetVersionHeaderForTesting() + "invalid data";
+  ASSERT_EQ(static_cast<int>(data.size()),
+            base::WriteFile(indexed_ruleset_path, data.c_str(), data.size()));
   EXPECT_EQ(RulesetMatcher::kLoadErrorRulesetVerification,
             RulesetMatcher::CreateVerifiedMatcher(indexed_ruleset_path,
                                                   expected_checksum, &matcher));

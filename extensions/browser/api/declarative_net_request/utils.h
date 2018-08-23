@@ -81,6 +81,17 @@ void IndexAndPersistRules(service_manager::Connector* connector,
 // ruleset data with |expected_checksum|.
 bool IsValidRulesetData(base::span<const uint8_t> data, int expected_checksum);
 
+// Returns the version header used for indexed ruleset files. Only exposed for
+// testing.
+std::string GetVersionHeaderForTesting();
+
+// Override the ruleset format version for testing.
+void SetIndexedRulesetFormatVersionForTesting(int version);
+
+// Strips the version header from |ruleset_data|. Returns false on version
+// mismatch.
+bool StripVersionHeaderAndParseVersion(std::string* ruleset_data);
+
 }  // namespace declarative_net_request
 }  // namespace extensions
 

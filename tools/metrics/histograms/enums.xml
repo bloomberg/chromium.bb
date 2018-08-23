@@ -27706,6 +27706,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Load failed - Invalid path"/>
   <int value="2" label="Load failed - File read error"/>
   <int value="3" label="Load failed - Ruleset verification error"/>
+  <int value="4" label="Load failed - Version mismatch"/>
 </enum>
 
 <enum name="LoadType">
