@@ -2414,6 +2414,14 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       project = project[:-len('.git')]
     return project
 
+  def _GerritChangeIdentifier(self):
+    """Handy method for gerrit_util.ChangeIdentifier for a given CL.
+
+    Not to be confused by value of "Change-Id:" footer.
+    """
+    return gerrit_util.ChangeIdentifier(
+        self._GetGerritProject(), self.GetIssue())
+
   @classmethod
   def IssueConfigKey(cls):
     return 'gerritissue'
@@ -3135,8 +3143,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       # TODO(agable): non-squash uploads in git cl should be removed.
       gerrit_util.AddReviewers(
           self._GetGerritHost(),
-          gerrit_util.ChangeIdentifier(
-              self._GetGerritProject(), self.GetIssue()),
+          self._GerritChangeIdentifier(),
           reviewers, cc,
           notify=bool(options.send_mail))
 
@@ -3148,8 +3155,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       print('Adding self-LGTM (Code-Review +%d) because of TBRs.' % score)
       gerrit_util.SetReview(
           self._GetGerritHost(),
-          gerrit_util.ChangeIdentifier(
-              self._GetGerritProject(), self.GetIssue()),
+          self._GerritChangeIdentifier(),
           msg='Self-approving for TBR',
           labels={'Code-Review': score})
 
@@ -3241,8 +3247,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       labels['Commit-Queue'] = 1
       notify = False
     if labels:
-      gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
-                            labels=labels, notify=notify)
+      gerrit_util.SetReview(
+          self._GetGerritHost(),
+          self._GerritChangeIdentifier(),
+          labels=labels, notify=notify)
 
   def SetCQState(self, new_state):
     """Sets the Commit-Queue label assuming canonical CQ config for Gerrit."""
