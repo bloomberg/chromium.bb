@@ -53,4 +53,6 @@ const char kWebglMSAASampleCount[] = "webgl-msaa-sample-count";
 const char kDisableGpuProcessForDX12VulkanInfoCollection[] =
     "disable-gpu-process-for-dx12-vulkan-info-collection";
 
+const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
+
 }  // namespace switches

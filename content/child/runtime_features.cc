@@ -15,6 +15,7 @@
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/base/media_switches.h"
 #include "services/device/public/cpp/device_features.h"
 #include "services/network/public/cpp/features.h"

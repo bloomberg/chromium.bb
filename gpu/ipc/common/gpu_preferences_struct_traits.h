@@ -122,6 +122,7 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_vulkan = prefs.enable_vulkan();
     out->enable_gpu_benchmarking_extension =
         prefs.enable_gpu_benchmarking_extension();
+    out->enable_webgpu = prefs.enable_webgpu();
     return true;
   }
 
@@ -264,6 +265,9 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enable_gpu_benchmarking_extension(
       const gpu::GpuPreferences& prefs) {
     return prefs.enable_gpu_benchmarking_extension;
+  }
+  static bool enable_webgpu(const gpu::GpuPreferences& prefs) {
+    return prefs.enable_webgpu;
   }
 };
 

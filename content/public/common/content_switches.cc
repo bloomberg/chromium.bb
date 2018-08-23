@@ -429,9 +429,6 @@ const char kEnableTracing[]                 = "enable-tracing";
 // The filename to write the output of the test tracing to.
 const char kEnableTracingOutput[]           = "enable-tracing-output";
 
-// Enables unsafe WebGPU support.
-const char kEnableUnsafeWebGPU[] = "enable-unsafe-webgpu";
-
 // Enable screen capturing support for MediaStream API.
 const char kEnableUserMediaScreenCapturing[] =
     "enable-usermedia-screen-capturing";
