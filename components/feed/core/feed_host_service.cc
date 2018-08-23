@@ -12,13 +12,11 @@ FeedHostService::FeedHostService(
     std::unique_ptr<FeedImageManager> image_manager,
     std::unique_ptr<FeedNetworkingHost> networking_host,
     std::unique_ptr<FeedSchedulerHost> scheduler_host,
-    std::unique_ptr<FeedStorageDatabase> storage_database,
     std::unique_ptr<FeedContentDatabase> content_database,
     std::unique_ptr<FeedJournalDatabase> journal_database)
     : image_manager_(std::move(image_manager)),
       networking_host_(std::move(networking_host)),
       scheduler_host_(std::move(scheduler_host)),
-      storage_database_(std::move(storage_database)),
       content_database_(std::move(content_database)),
       journal_database_(std::move(journal_database)) {}
 
@@ -34,10 +32,6 @@ FeedNetworkingHost* FeedHostService::GetNetworkingHost() {
 
 FeedSchedulerHost* FeedHostService::GetSchedulerHost() {
   return scheduler_host_.get();
-}
-
-FeedStorageDatabase* FeedHostService::GetStorageDatabase() {
-  return storage_database_.get();
 }
 
 FeedContentDatabase* FeedHostService::GetContentDatabase() {
