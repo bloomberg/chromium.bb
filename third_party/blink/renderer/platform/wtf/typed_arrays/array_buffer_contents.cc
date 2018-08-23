@@ -157,7 +157,7 @@ void ArrayBufferContents::DataHolder::AllocateNew(size_t length,
 
   is_shared_ = is_shared;
 
-  AdjustAmountOfExternalAllocatedMemory(length);
+  RegisterExternalAllocationWithCurrentContext();
 }
 
 void ArrayBufferContents::DataHolder::Adopt(DataHandle data,
@@ -168,7 +168,7 @@ void ArrayBufferContents::DataHolder::Adopt(DataHandle data,
   data_ = std::move(data);
   is_shared_ = is_shared;
 
-  AdjustAmountOfExternalAllocatedMemory(data.DataLength());
+  RegisterExternalAllocationWithCurrentContext();
 }
 
 void ArrayBufferContents::DataHolder::CopyMemoryFrom(const DataHolder& source) {
@@ -181,12 +181,17 @@ void ArrayBufferContents::DataHolder::CopyMemoryFrom(const DataHolder& source) {
 
   memcpy(data_.Data(), source.Data(), source.DataLength());
 
-  AdjustAmountOfExternalAllocatedMemory(source.DataLength());
+  RegisterExternalAllocationWithCurrentContext();
 }
 
 void ArrayBufferContents::DataHolder::
     RegisterExternalAllocationWithCurrentContext() {
   DCHECK(!has_registered_external_allocation_);
+  // Currently, we can only track an allocation if we have a single owner. For
+  // shared data this is not true, hence do not attempt to track at all.
+  // TODO(crbug.com/877055) Implement tracking of shared external allocations.
+  if (IsShared())
+    return;
   AdjustAmountOfExternalAllocatedMemory(static_cast<int64_t>(DataLength()));
 }
 
@@ -194,6 +199,7 @@ void ArrayBufferContents::DataHolder::
     UnregisterExternalAllocationWithCurrentContext() {
   if (!has_registered_external_allocation_)
     return;
+  DCHECK(!IsShared());
   AdjustAmountOfExternalAllocatedMemory(-static_cast<int64_t>(DataLength()));
 }
 
