@@ -43,6 +43,8 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
                                   const AtomicString& new_value);
 
   bool FindHostChildBySlotName(const AtomicString& slot_name) const;
+  void CallSlotChangeIfNeeded(HTMLSlotElement& slot);
+  HTMLSlotElement* FindSlotChange(HTMLSlotElement& slot, Node& child);
 
   void Trace(blink::Visitor*);
 
@@ -71,6 +73,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
       const AtomicString& slot_name);
 
   void DidAddSlotInternal(HTMLSlotElement&);
+  void DidAddSlotInternalInManualMode(HTMLSlotElement&);
   void DidRemoveSlotInternal(HTMLSlotElement&,
                              const AtomicString& slot_name,
                              SlotMutationType);
