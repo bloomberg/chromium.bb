@@ -6,7 +6,9 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 
 namespace {
 
@@ -120,6 +122,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
       SetCurrentStep(Step::kTransportSelection);
       break;
     case AuthenticatorTransport::kInternal:
+      SetCurrentStep(Step::kTouchId);
       TryTouchId();
       break;
     case AuthenticatorTransport::kBluetoothLowEnergy:
@@ -160,7 +163,6 @@ void AuthenticatorRequestDialogModel::TryUsbDevice() {
 }
 
 void AuthenticatorRequestDialogModel::TryTouchId() {
-  SetCurrentStep(Step::kTouchId);
   if (!request_callback_)
     return;
 
@@ -174,7 +176,14 @@ void AuthenticatorRequestDialogModel::TryTouchId() {
   if (touch_id_authenticator == saved_authenticators_.end())
     return;
 
-  request_callback_.Run(touch_id_authenticator->authenticator_id);
+  static base::TimeDelta kTouchIdDispatchDelay =
+      base::TimeDelta::FromMilliseconds(1000);
+
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(request_callback_,
+                     touch_id_authenticator->authenticator_id),
+      kTouchIdDispatchDelay);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {
