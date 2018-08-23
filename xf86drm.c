@@ -3014,6 +3014,12 @@ get_real_pci_path(int maj, int min, char *real_path)
     return real_path;
 }
 
+static void
+get_normal_pci_path(int maj, int min, char *normal_path)
+{
+    snprintf(normal_path, PATH_MAX, "/sys/dev/char/%d:%d/device", maj, min);
+}
+
 static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
 {
 #ifdef __linux__
@@ -3022,7 +3028,7 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
     int num;
 
     if (get_real_pci_path(maj, min, real_path) == NULL)
-        return -ENOENT;
+        get_normal_pci_path(maj, min, real_path);
 
     value = sysfs_uevent_get(real_path, "PCI_SLOT_NAME");
     if (!value)
@@ -3143,7 +3149,7 @@ static int parse_separate_sysfs_files(int maj, int min,
     int ret;
 
     if (get_real_pci_path(maj, min, real_path) == NULL)
-        return -ENOENT;
+        get_normal_pci_path(maj, min, real_path);
 
     for (unsigned i = ignore_revision ? 1 : 0; i < ARRAY_SIZE(attrs); i++) {
         snprintf(path, PATH_MAX, "%s/%s", real_path, attrs[i]);
@@ -3175,7 +3181,7 @@ static int parse_config_sysfs_file(int maj, int min,
     int fd, ret;
 
     if (get_real_pci_path(maj, min, real_path) == NULL)
-        return -ENOENT;
+        get_normal_pci_path(maj, min, real_path);
 
     snprintf(path, PATH_MAX, "%s/config", real_path);
     fd = open(path, O_RDONLY);
