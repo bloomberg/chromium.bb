@@ -11,10 +11,6 @@ import("//media/media_options.gni")
 # directory. Arguments which are used in other Chrome components should
 # be instead declared in //build/config/chromecast_build.gni.
 declare_args() {
-  # chromecast_branding is used to include or exclude Google-branded components.
-  # Set it to "public" for a Chromium build.
-  chromecast_branding = "public"
-
   # The incremental build number. The Cast automated builders will set this
   # value to indicate the buildset. Note: The default value should be greater
   # than any value the builder may assign to prevent attempted automatic updates

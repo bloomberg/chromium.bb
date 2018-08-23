@@ -8,6 +8,7 @@
 # toolchain, this GNI file may be read and processed from within Chrome OS
 # toolchains. Checking |is_android| here would therefore be too restrictive.
 if (is_android || is_chromeos) {
+  import("//build/config/chromecast_build.gni")
   import("//build_overrides/build.gni")
   import("abi.gni")
 
@@ -116,7 +117,11 @@ if (is_android || is_chromeos) {
   # google_play_services_package contains the path where individual client
   # targets (e.g. google_play_services_base_java) are located.
   if (!defined(google_play_services_package)) {
-    google_play_services_package = "//third_party/android_tools"
+    if (is_chromecast && chromecast_branding != "public") {
+      google_play_services_package = "//chromecast/internal/android/prebuilt/google-play-services-first-party"
+    } else {
+      google_play_services_package = "//third_party/android_tools"
+    }
   }
 
   if (!defined(system_webview_apk_target)) {
