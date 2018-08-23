@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Usar la sincronización y todos los servicios</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
-<translation id="1272242203003205253">Los socios de Google trabajan con el Asistente para brindarte ayuda</translation>
 <translation id="1272978324304772054">Esta cuenta de usuario no pertenece al dominio en el que se inscribió el dispositivo. Si deseas inscribirte en un dominio diferente, primero tendrás que realizar el proceso de recuperación del dispositivo.</translation>
 <translation id="1274977772557788323">Configuración de almacenamiento de Adobe Flash Player</translation>
 <translation id="1274997165432133392">Cookies y otros datos de sitios</translation>
@@ -414,7 +413,6 @@
 <translation id="161460670679785907">No se puede detectar tu teléfono</translation>
 <translation id="1616206807336925449">Esta extensión no requiere permisos especiales.</translation>
 <translation id="1616298854599875024">No se puede importar la extensión "<ph name="IMPORT_NAME" />" porque no es un módulo compartido</translation>
-<translation id="161707228174452095">Se agregó una huella digital.</translation>
 <translation id="1618268899808219593">C&amp;entro de ayuda</translation>
 <translation id="162035744160882748">Activar la sincronización, la personalización y otros servicios de Google</translation>
 <translation id="1620510694547887537">Cámara</translation>
@@ -692,7 +690,6 @@
 <translation id="2028997212275086731">Archivo RAR</translation>
 <translation id="2034346955588403444">Agregar otra red Wi-Fi</translation>
 <translation id="203574396658008164">Habilitar la toma de notas de la pantalla bloqueada</translation>
-<translation id="2039623879703305659">Moviste el dedo demasiado rápido</translation>
 <translation id="2040460856718599782">Se produjo un error cuando intentábamos autenticarte. Verifica tus credenciales de acceso y vuelve a intentarlo.</translation>
 <translation id="2043818754674261542">Distancia a la que debe estar el teléfono para desbloquear esta <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Nombre de la plantilla de certificado de Microsoft</translation>
@@ -736,7 +733,6 @@
 <translation id="2099686503067610784">¿Eliminar certificado "<ph name="CERTIFICATE_NAME" />" del servidor?</translation>
 <translation id="2100273922101894616">Acceso automático</translation>
 <translation id="2101225219012730419">Versión:</translation>
-<translation id="2107494551712864447">Agregar una huella digital</translation>
 <translation id="2112877397266219826">Activa el controlador táctil para realizar la configuración.</translation>
 <translation id="21133533946938348">Fijar pestaña</translation>
 <translation id="2113479184312716848">Abrir &amp;archivo...</translation>
@@ -1015,7 +1011,6 @@
 <translation id="2526590354069164005">Escritorio</translation>
 <translation id="2526619973349913024">Verificar actualización</translation>
 <translation id="2527167509808613699">Cualquier tipo de conexión</translation>
-<translation id="2532026602297547439">El sensor está sucio</translation>
 <translation id="2532589005999780174">Modo de contraste alto</translation>
 <translation id="253434972992662860">Pausa</translation>
 <translation id="2534460670861217804">Proxy HTTP seguro</translation>
@@ -1374,7 +1369,6 @@
 <translation id="3057861065630527966">Crea una copia de seguridad de tus fotos y videos.</translation>
 <translation id="3060379269883947824">Habilitar Seleccionar para pronunciar</translation>
 <translation id="3061707000357573562">Aplicar parche al servicio</translation>
-<translation id="3064410671692449875">Datos insuficientes</translation>
 <translation id="3065041951436100775">La pestaña terminó los comentarios.</translation>
 <translation id="3067198179881736288">¿Deseas instalar la app?</translation>
 <translation id="3067198360141518313">Ejecutar este complemento</translation>
@@ -2262,7 +2256,6 @@
 <translation id="4480590691557335796">Chrome puede buscar software dañino en tu computadora y quitarlo</translation>
 <translation id="4481530544597605423">Dispositivos no sincronizados</translation>
 <translation id="4482194545587547824">Es posible que Google use tu historial de navegación para personalizar Búsqueda y otros servicios de Google</translation>
-<translation id="4493287891836751813">Conoce a tu Asistente de Google</translation>
 <translation id="4495419450179050807">No mostrar en esta página</translation>
 <translation id="4499718683476608392">Habilita Autocompletar datos de tarjetas de crédito para llenar formularios con un solo clic</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> se bloqueó</translation>
@@ -2317,7 +2310,6 @@
 <translation id="4572659312570518089">La autenticación se canceló mientras se establecía la conexión a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Archivo <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Más ...</translation>
-<translation id="4576537685267142337">Levanta el dedo y vuelve a tocar el sensor</translation>
 <translation id="4576541033847873020">Sincronizar dispositivo Bluetooth</translation>
 <translation id="4579581181964204535">No se puede transmitir <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">¿Estás seguro de que deseas eliminar los elementos $1?</translation>
@@ -2562,7 +2554,6 @@
 <translation id="4941627891654116707">Tamaño de fuente</translation>
 <translation id="494286511941020793">Ayuda para la configuración de proxy</translation>
 <translation id="4945444280533270988">Se activó "Smart Lock"</translation>
-<translation id="494660967831069720">Datos parciales</translation>
 <translation id="4953689047182316270">Responder a los eventos de accesibilidad</translation>
 <translation id="4953808748584563296">Avatar naranja predeterminado</translation>
 <translation id="4955814292505481804">Anual</translation>
@@ -3519,7 +3510,6 @@
 <translation id="6384275966486438344">Cambiar la configuración de búsqueda por <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Los sitios pueden guardar y leer los datos de las cookies</translation>
 <translation id="6388429472088318283">Buscar idiomas</translation>
-<translation id="6388771388956873507">Busca el sensor de huellas digitales en tu dispositivo y tócalo con el dedo</translation>
 <translation id="6390799748543157332">Las páginas a las que accedas desde esta ventana no aparecerán en el historial del navegador ni dejarán rastros (por ejemplo, cookies) en la computadora después de cerrar todas las ventanas abiertas de la sesión de invitado. Los archivos descargados permanecerán intactos.</translation>
 <translation id="6390994422085833176">Después de establecer la configuración, revisa las funciones de sincronización y personalización</translation>
 <translation id="6395423953133416962">Enviar <ph name="BEGIN_LINK1" />información del sistema<ph name="END_LINK1" /> y <ph name="BEGIN_LINK2" />métricas<ph name="END_LINK2" /></translation>
@@ -4122,7 +4112,6 @@
 <translation id="7309257895202129721">Mostrar &amp;controles</translation>
 <translation id="7310598146671372464">No pudiste acceder porque el servidor no es compatible con los tipos de encriptación de Kerberos especificados. Comunícate con el administrador.</translation>
 <translation id="7311079019872751559">Acceso a complementos no incluidos en la zona de pruebas</translation>
-<translation id="7311891583377621132">Mueve el dedo ligeramente para capturar otra parte de la huella digital</translation>
 <translation id="7317680720589234980">Opciones del bloqueo de pantalla y el acceso</translation>
 <translation id="7321545336522791733">No se puede acceder al servidor</translation>
 <translation id="7324297612904500502">Foro de la versión Beta</translation>
@@ -4963,7 +4952,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8639047128869322042">Buscando software dañino…</translation>
 <translation id="8639963783467694461">Configuración de Autocompletar</translation>
 <translation id="8642171459927087831">Token de acceso</translation>
-<translation id="8642267168767642381">Moviste el dedo muy lento</translation>
 <translation id="8642947597466641025">Aumentar el tamaño del texto</translation>
 <translation id="8643418457919840804">Para continuar, elige una opción:</translation>
 <translation id="8645354835496065562">Seguir permitiendo el acceso a los sensores</translation>
@@ -5324,7 +5312,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="9169496697824289689">Ver combinación de teclas para acceso directo</translation>
 <translation id="9169931577761441333">Agrega <ph name="APP_NAME" /> a la pantalla principal</translation>
-<translation id="9170397650136757332">Mueve el dedo ligeramente para capturar todas las partes de tu huella digital</translation>
 <translation id="9170848237812810038">&amp;Deshacer</translation>
 <translation id="9170884462774788842">Otro programa en tu computadora agregó un tema que puede cambiar el funcionamiento de Chrome.</translation>
 <translation id="9173995187295789444">Buscando dispositivos Bluetooth…</translation>

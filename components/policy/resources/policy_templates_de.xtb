@@ -181,6 +181,13 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1484146587843605071"><ph name="PRODUCT_NAME" /> umgeht für die Liste der hier angegebenen Hosts alle Proxys. Diese Richtlinie tritt nur dann in Kraft, wenn Sie bei "Auswählen, wie Proxyserver-Einstellungen angegeben werden" manuelle Proxy-Einstellungen angegeben haben. Sie sollten diese Richtlinie nicht konfigurieren, wenn Sie sich für eine andere Methode zur Festlegung der Proxy-Richtlinien entschieden haben. Ausführliche Beispiele erhalten Sie unter <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Blockieren von Codeeinschleusungen durch Drittanbieter-Software aktivieren</translation>
 <translation id="1504431521196476721">Remote-Bestätigung</translation>
+<translation id="1507957856411744193">Wenn diese Richtlinie auf "true" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> eine Verbindung zu Übertragungsgeräten unter allen IP-Adressen her, nicht nur zu jenen unter privaten RFC1918- oder RFC4193-Adressen.
+
+Wenn diese Richtlinie auf "false" gesetzt ist, stellt <ph name="PRODUCT_NAME" /> nur eine Verbindung zu Übertragungsgeräten unter privaten RFC1918- und RFC4193-Adressen her.
+
+Wenn diese Richtlinie nicht festgelegt und die Funktion "CastAllowAllIPs" deaktiviert ist, stellt <ph name="PRODUCT_NAME" /> nur eine Verbindung zu Übertragungsgeräten unter privaten RFC1918- und RFC4193-Adressen her.
+
+Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert dieser Richtlinie keine Wirkung.</translation>
 <translation id="1509692106376861764">Diese Richtlinie wird ab <ph name="PRODUCT_NAME" />-Version 29 nicht mehr verwendet.</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" /> aktivieren</translation>
 <translation id="1522425503138261032">Ermittlung des physischen Standorts des Nutzers durch Websites zulassen</translation>
@@ -355,11 +362,6 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
           Wenn diese Richtlinie nicht konfiguriert ist, kommen alle vier Schemas zum Einsatz.</translation>
 <translation id="2067011586099792101">Zugriff auf Websites außerhalb von Inhaltspaketen blockieren</translation>
-<translation id="2070270043919235595">Nutzer benachrichtigen, dass <ph name="PRODUCT_NAME" /> neu gestartet werden muss, um ein ausstehendes Update durchzuführen.
-
-      Mit dieser Richtlinieneinstellung kann der Nutzer durch Benachrichtigungen informiert werden, dass ein Neustart des Browsers empfohlen wird oder erforderlich ist. Wenn die Richtlinie nicht festgelegt ist, wird dem Nutzer in <ph name="PRODUCT_NAME" /> durch kleinere Menüänderungen angezeigt, dass ein Neustart erforderlich ist. Wenn die Richtlinie auf "Recommended" (Empfohlen) festgelegt ist, wird dem Nutzer eine wiederkehrende Warnung angezeigt, dass ein Neustart empfohlen wird. Der Nutzer kann diese Warnung schließen, um den Neustart zu verschieben. Wenn die Richtlinie auf "Required" (Erforderlich) festgelegt ist, wird dem Nutzer eine wiederkehrende Warnung angezeigt, dass nach Ablauf des Benachrichtigungszeitraums ein Neustart des Browsers erzwungen wird. Dieser Zeitraum beträgt standardmäßig sieben Tage und kann über die <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-Richtlinieneinstellung konfiguriert werden.
-
-      Nach dem Neustart wird die Sitzung des Nutzers wiederhergestellt.</translation>
 <translation id="2073552873076775140">Anmeldung in <ph name="PRODUCT_NAME" /> erlauben</translation>
 <translation id="2077129598763517140">Hardwarebeschleunigung verwenden, falls verfügbar</translation>
 <translation id="2077273864382355561">Verzögerung für die Bildschirmabschaltung im Akkubetrieb</translation>
@@ -894,7 +896,6 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Diese Richtlinie ist optional. Ist sie nicht festgelegt, wird keine "Neuer Tab"-Seite bereitgestellt.
 
           Die Richtlinie wird nur berücksichtigt, wenn die Richtlinie "DefaultSearchProviderEnabled" aktiviert ist.</translation>
-<translation id="3465852069254497664">Nutzer benachrichtigen, dass ein Neustart des Browsers empfohlen wird oder erforderlich ist</translation>
 <translation id="346731943813722404">Damit legen Sie fest, ob die erste Aktivität des Nutzers in einer Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet werden soll.
           Wenn diese Richtlinie auf "true" gesetzt ist, wie die erste Aktivität des Nutzers in einer Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet.
 
@@ -1947,6 +1948,7 @@ Ein Teil der Proxyeinstellungen ist für Android-Apps verfügbar und kann auf fr
 
       Durch die Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> wird die gesamte Datensynchronisierung deaktiviert und somit RoamingProfileSupportEnabled überschrieben.</translation>
 <translation id="6731757988219967594">Websites auf oberster Ebene (aber nicht eingebettete iFrames) mit Inhalten nur für Erwachsene filtern</translation>
+<translation id="6734521799274931721">Steuert die Verfügbarkeit von Netzwerkfreigaben unter Chrome OS</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
 <translation id="673699536430961464">Mit dieser Einstellung können Nutzer nach der Anmeldung auf ihrem <ph name="PRODUCT_OS_NAME" />-Gerät im Inhaltsbereich des Browserfensters zwischen Google-Konten wechseln.
 
@@ -2097,17 +2099,6 @@ Speicherinformationen werden unabhängig von der gewählten Option an die Seite 
 
       Kurz vor dem Dimmen des Bildschirms prüft das intelligente Dimmmodell, ob der Vorgang verzögert werden sollte. Wenn das Dimmen des Bildschirms durch das Modell verzögert wird, wird damit der Zeitraum verlängert. In diesem Fall werden die Verzögerungen für das Ausschalten des Bildschirms, die Bildschirmsperre und die Inaktivität entsprechend angepasst, um die ursprünglich konfigurierten Abstände beizubehalten.
       Ist die Richtlinie auf "true" festgelegt oder nicht konfiguriert, wird das intelligente Dimmmodell aktiviert und der Zeitraum bis zum Dimmen des Bildschirms kann durch das Modell verlängert werden. Wenn die Richtlinie auf "false" festgelegt ist, wird das Dimmen des Bildschirms durch das intelligente Dimmmodell nicht beeinflusst.</translation>
-<translation id="6982028490425791294">
-      Wenn diese Richtlinie auf "true" gesetzt ist, darf <ph name="PRODUCT_NAME" /> WebRTC-Ereignisprotokolle aus Google-Diensten (z. B. Google Meet) speichern und die Protokolle bei Google hochladen.
-
-      Ist die Richtlinie auf "false" gesetzt oder nicht festgelegt, darf <ph name="PRODUCT_NAME" /> solche Protokolle nicht speichern oder hochladen.
-
-      Diese Protokolle enthalten z. B. Informationen dazu, wann RTP-Pakete gesendet und empfangen wurden und welche Größe sie haben, außerdem Feedback zur Auslastung des Netzwerks und Metadaten zur Länge und Qualität von Audio- und Videoframes. Diese Informationen können helfen, Probleme bei Audio- und Videoanrufen in Chrome zu lösen – etwa wenn die Bandbreite nicht geschätzt werden kann. Die Protokolle enthalten keine Audio- oder Videoinhalte aus dem Anruf.
-
-      Das Erfassen dieser Daten kann nur von den Google-Webdiensten ausgelöst werden, etwa von Google Hangouts oder Google Meet.
-
-      Diese Protokolle können anhand einer Sitzungs-ID mit anderen Protokollen verknüpft sein, die vom Google-Dienst selbst erstellt wurden. Dies dient dazu, Fehler leichter zu beheben.
-      </translation>
 <translation id="6994082778848658360">Hiermit wird angegeben, wie die integrierte Secure Element-Hardware zur Zwei-Faktor-Authentifizierung verwendet werden kann, wenn sie mit dieser Funktion kompatibel ist. Mithilfe der Ein-/Aus-Taste des Geräts wird die Anwesenheit des Nutzers ermittelt.
 
       Wenn "Deaktiviert" ausgewählt ist, steht kein zweiter Authentifizierungsfaktor zur Verfügung.
@@ -2903,11 +2894,6 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="9035964157729712237">Aus der schwarzen Liste auszuschließende Erweiterungs-IDs</translation>
 <translation id="9042911395677044526">Ermöglicht das Übernehmen einer per Push übertragenen Netzwerkkonfiguration pro Nutzer für ein <ph name="PRODUCT_OS_NAME" />-Gerät. Die Netzwerkkonfiguration ist ein JSON-formatierter String, der den Open Network Configuration-Vorgaben unter <ph name="ONC_SPEC_URL" /> entspricht.</translation>
 <translation id="9084985621503260744">Angaben zum Einfluss von Videoaktivitäten auf den Energiesparmodus</translation>
-<translation id="9085839450090699752">Mit dieser Richtlinie können Sie den Zeitraum in Millisekunden festlegen, in dem Nutzer darüber benachrichtigt werden, dass <ph name="PRODUCT_NAME" /> oder ein <ph name="PRODUCT_OS_NAME" />-Gerät zum Durchführen eines ausstehenden Updates neu gestartet werden muss.
-
-      In diesem Zeitraum wird der Nutzer wiederholt darüber informiert, dass ein Update erforderlich ist. Auf <ph name="PRODUCT_OS_NAME" />-Geräten erscheint in der Taskleiste eine Neustartbenachrichtigung, wenn ein Upgrade gefunden wird. Die Farbe dieser Benachrichtigung ändert sich, sobald die Hälfte des Benachrichtigungszeitraums vorüber ist. Sie ändert sich noch einmal, wenn der gesamte Benachrichtigungszeitraum verstrichen ist. In <ph name="PRODUCT_NAME" />-Browsern ändert sich das App-Menü, sobald ein Drittel des Benachrichtigungszeitraums vorüber ist, um anzuzeigen, dass ein Neustart nötig ist. Die Farbe dieser Benachrichtigung ändert sich, sobald zwei Drittel des Benachrichtigungszeitraums vergangen sind. Sie ändert sich noch einmal, wenn der gesamte Benachrichtigungszeitraum verstrichen ist. Für die zusätzlichen Benachrichtigungen, die über die Richtlinie "<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />" für Browser aktiviert werden, gilt derselbe Zeitplan.
-
-      Wenn nichts festgelegt ist, wird für <ph name="PRODUCT_OS_NAME" />-Geräte der Standardzeitraum von 345.600.000 Millisekunden (vier Tagen) und für Browser ein Zeitraum von 604.800.000 Millisekunden (einer Woche) verwendet.</translation>
 <translation id="9088433379343318874">Contentanbieter für betreute Nutzer aktivieren</translation>
 <translation id="9088444059179765143">Methode für die automatische Erkennung der Zeitzone konfigurieren</translation>
 <translation id="9096086085182305205">Weiße Liste für Authentifizierungsserver</translation>

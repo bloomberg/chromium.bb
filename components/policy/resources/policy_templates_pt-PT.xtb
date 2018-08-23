@@ -194,6 +194,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Ativar o bloqueio de injeção de software de terceiros</translation>
 <translation id="1504431521196476721">Comprovação Remota</translation>
+<translation id="1507957856411744193">Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_NAME" /> irá ligar-se a dispositivos de transmissão em todos os endereços IP e não apenas nos endereços privados RFC1918/RFC4193.
+
+          Se esta política estiver definida como falsa, o <ph name="PRODUCT_NAME" /> irá ligar-se a dispositivos de transmissão apenas nos endereços privados RFC1918/RFC4193.
+
+          Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> irá ligar-se a dispositivos de transmissão apenas nos endereços privados RFC1918/RFC4193, a menos que a funcionalidade CastAllowAllIPs esteja ativada.
+
+          Se a política "EnableMediaRouter" estiver definida como falsa, o valor desta política não tem efeito.</translation>
 <translation id="1509692106376861764">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Ativar o <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Permitir que os sites registem a localização física dos utilizadores</translation>
@@ -367,11 +374,6 @@
 
           Se deixar esta política por definir, são utilizados os quatro esquemas.</translation>
 <translation id="2067011586099792101">Bloquear o acesso a sites fora de pacotes de conteúdo</translation>
-<translation id="2070270043919235595">Notifica os utilizadores acerca da necessidade de reiniciar o <ph name="PRODUCT_NAME" /> para aplicar uma atualização pendente.
-
-      Esta definição de política ativa as notificações para informar o utilizador de que é recomendado ou necessário reiniciar o navegador. Se não estiver definida, o <ph name="PRODUCT_NAME" /> indica ao utilizador que é necessário reiniciá-lo através de alterações subtis ao respetivo menu. Se estiver definida como "Recomendado", é apresentado um aviso recorrente ao utilizador a recomendar o reinício. O utilizador pode ignorar este aviso para adiar o reinício. Se estiver definida como "Obrigatório", é apresentado um aviso recorrente ao utilizador a indicar que o reinício do navegador será forçado assim que o período da notificação passar. Por predefinição, este período é de sete dias e pode ser configurado através da definição da política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      A sessão do utilizador é restaurada após o reinício.</translation>
 <translation id="2073552873076775140">Permitir iniciar sessão no <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Utilizar aceleração de hardware sempre que estiver disponível</translation>
 <translation id="2077273864382355561">Atraso para desligar o ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
@@ -915,7 +917,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Esta política é opcional. Se não for definida, não será fornecida nenhuma página novo separador.
 
           Esta política é respeitada apenas se for ativada a política "DefaultSearchProviderEnabled".</translation>
-<translation id="3465852069254497664">Notificar um utilizador de que é recomendado ou necessário reiniciar o navegador</translation>
 <translation id="346731943813722404">Especifica se os atrasos de gestão de energia e o limite de duração da sessão devem apenas começar após ter sido observada a primeira atividade do utilizador numa sessão.
 
           Se esta política estiver definida como Verdadeira, os atrasos de gestão de energia e o limite de duração da sessão só começarão após ter sido observada a primeira atividade do utilizador numa sessão.
@@ -1967,6 +1968,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados e substitui a política RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrar sites de nível superior (mas não iFrames incorporados) com conteúdo para adultos</translation>
+<translation id="6734521799274931721">Controla a disponibilidade das Partilhas de ficheiros na rede para o Chrome OS</translation>
 <translation id="6735701345096330595">Forçar a ativação de idiomas com verificação ortográfica</translation>
 <translation id="673699536430961464">Esta definição permite que os utilizadores alternem entre Contas Google na área de conteúdo da respetiva janela do navegador após iniciarem sessão no dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -2116,17 +2118,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Quando o ecrã está prestes a ser escurecido, o modelo de escurecimento inteligente determina se essa ação deve ser adiada. Se o modelo de escurecimento inteligente adiar o escurecimento do ecrã, prolonga efetivamente o tempo até essa ação. Neste caso, os atrasos de desativação, de bloqueio do ecrã e de inatividade são ajustados para manter as mesmas distâncias relativamente ao atraso de escurecimento do ecrã, conforme configurado originalmente.
       Se esta política não for definida ou estiver definida como verdadeira, o modelo de escurecimento inteligente será ativado para poder prolongar o tempo até ao escurecimento do ecrã. Se estiver definida como falsa, o modelo de escurecimento inteligente não irá influenciar o escurecimento do ecrã.</translation>
-<translation id="6982028490425791294">
-      Se definir esta política como verdadeira, o <ph name="PRODUCT_NAME" /> obtém permissão para recolher registos de eventos WebRTC dos serviços Google (por exemplo, o Google Meet) e carregar os mesmos para a Google.
-
-       Se definir esta política como falsa, ou não a definir, o <ph name="PRODUCT_NAME" /> não pode recolher nem carregar os referidos registos.
-
-      Estes registos contêm informações, como o tempo e o tamanho dos pacotes RTP enviados e recebidos, comentários acerca do congestionamento na rede e metadados acerca do tempo e da qualidade dos frames de áudio e vídeo. Estas informações são úteis durante a depuração de problemas com chamadas de áudio ou de vídeo no Chrome, como problemas de estimativa da largura de banda, etc. Os registos não possuem quaisquer conteúdos de áudio ou de vídeo resultantes da chamada.
-
-      Esta recolha de dados só pode ser acionada pelos serviços Web da Google, como o Google Hangouts ou o Google Meet.
-
-      Estes registos podem ser associados, através de um ID de sessão, a outros registos recolhidos pelo próprio serviço Google. Este processo pretende tornar a depuração mais fácil.
-      </translation>
 <translation id="6994082778848658360">Especifica de que forma o hardware de elemento seguro integrado pode ser utilizado para fornecer uma autenticação de fator duplo, se for compatível com esta funcionalidade. O botão ligar/desligar do computador é utilizado para detetar a presença física do utilizador.
 
       Se estiver selecionado "Desativado", o fator duplo não é fornecido.
@@ -2938,11 +2929,6 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
-<translation id="9085839450090699752">Permite-lhe definir o período de tempo, em milissegundos, durante o qual os utilizadores são notificados de que é necessário reiniciar o <ph name="PRODUCT_NAME" /> ou de que é necessário reiniciar um dispositivo do <ph name="PRODUCT_OS_NAME" /> para aplicar uma atualização pendente.
-
-      Durante este período de tempo, o utilizador é repetidamente informado da necessidade de aplicar uma atualização. Para os dispositivos do <ph name="PRODUCT_OS_NAME" />, é apresentada uma notificação de reinício no tabuleiro do sistema quando é detetada uma atualização. Esta notificação muda de cor assim que for atingida metade do período de notificação e, novamente, assim que for concluído todo o período de notificação. Para os navegadores do <ph name="PRODUCT_NAME" />, o menu de aplicações muda para indicar que é necessário um reinício assim que for atingido um terço do período de notificação. Esta notificação muda de cor novamente assim que forem atingidos dois terços do período de notificação e, por fim, após a conclusão de todo o período de notificação. As notificações adicionais ativadas pela política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> para navegadores seguem o mesmo esquema.
-
-      Se não for definido, é utilizado o período predefinido de 345 600 000 milissegundos (quatro dias) para os dispositivos do <ph name="PRODUCT_OS_NAME" /> e de 604 800 000 milissegundos (uma semana) para navegadores.</translation>
 <translation id="9088433379343318874">Ativar o fornecedor de conteúdos do utilizador supervisionado</translation>
 <translation id="9088444059179765143">Configurar o método de deteção automática do fuso horário</translation>
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>

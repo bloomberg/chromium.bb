@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Geçersiz giriş</translation>
 <translation id="1080471004309605942">İtalik metin sonu</translation>
 <translation id="1082209053475788238">Önceki 6. düzey başlık yok.</translation>
+<translation id="1087788677726983142">Etkinlik akış filtrelerini gizle</translation>
 <translation id="1088219014394087294">Başlık yok.</translation>
 <translation id="1106741348836243114">Sesli geri bildirimi (ses sinyalleri) aç veya kapat.</translation>
 <translation id="1108651818222110612">alt başlık</translation>
@@ -78,6 +79,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1618597272655350600">Mevcut konumun tam açıklamasını söyler</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{büyüktür işareti}other{# büyüktür işareti}}</translation>
 <translation id="1653266918374749391">Önceki 3. düzey başlık</translation>
+<translation id="1657616855184033958">Etkinlik akış filtrelerini göster</translation>
 <translation id="1659072772017912254">İşaretli değil</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">ChromeVox Gezinme</translation>
@@ -411,6 +413,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="4255943572433203166">ChromeVox'u özelleştirmek için aşağıdaki seçenekleri kullanın. Değişiklikler anında geçerli olur.</translation>
 <translation id="4271220233568730077">Sonraki matematik tuşu</translation>
 <translation id="4271521365602459209">Başka sonuç yok.</translation>
+<translation id="4275397969489577657">Etkinlik akış günlük kaydını etkinleştir</translation>
 <translation id="4287520460805643128">Sonraki makale yok.</translation>
 <translation id="4289540628985791613">Genel bakış</translation>
 <translation id="4300318234632215983">Bir bağlantının arkasındaki URL'yi söyle</translation>
@@ -549,6 +552,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5407530583102765689">{COUNT,plural, =1{noktalı virgül}other{# noktalı virgül}}</translation>
 <translation id="5411891038905756502">Önceki atlama noktası yok.</translation>
 <translation id="5417034931411865818">$1 yönlendirme tuşunun altındaki öğeyi tıklayın</translation>
+<translation id="5435274640623994081">Ses sinyali günlük kaydını etkinleştir</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{küçüktür işareti}other{# küçüktür işareti}}</translation>
 <translation id="5444587279251314700">(etkin)</translation>
 <translation id="5446809554778706307">Odak yok. Yeni bir sekme açmak için Ctrl+T tuşlarına basın.</translation>
@@ -898,6 +902,7 @@ Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translatio
 <translation id="8650576015643545550">Önceki liste yok.</translation>
 <translation id="8651481478098336970">sesi kapat</translation>
 <translation id="8653646212587894517">Bağlantı listesini göster</translation>
+<translation id="8656888282555543604">Braille günlük kaydını etkinleştir</translation>
 <translation id="8664519043722036194">saniye</translation>
 <translation id="867187640362843212">Başlık 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{dikey çizgi işareti}other{# dikey çizgi işareti}}</translation>

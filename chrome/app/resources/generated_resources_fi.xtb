@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Käytä synkronointia ja kaikkia palveluja</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
-<translation id="1272242203003205253">Google Partners ja Assistant auttavat sinua yhdessä</translation>
 <translation id="1272978324304772054">Tämä käyttäjätili ei kuulu verkkotunnukselle, jossa laite on otettu käyttöön. Jos haluat ottaa laitteen käyttöön eri verkkotunnuksessa, sinun tulee ensin suorittaa laitteen palauttaminen.</translation>
 <translation id="1274977772557788323">Adobe Flash Playerin tallennusasetukset</translation>
 <translation id="1274997165432133392">Evästeet ja muut sivuston tiedot</translation>
@@ -417,7 +416,6 @@
 <translation id="161460670679785907">Puhelinta ei havaittu</translation>
 <translation id="1616206807336925449">Tämä laajennus ei vaadi erityisiä käyttöoikeuksia.</translation>
 <translation id="1616298854599875024">Laajennusta <ph name="IMPORT_NAME" /> ei voi tuoda, koska se ei ole jaettu moduuli.</translation>
-<translation id="161707228174452095">Sormenjälki lisättiin!</translation>
 <translation id="1618268899808219593">Ohj&amp;ekeskus</translation>
 <translation id="162035744160882748">Ota synkronointi, personointi ja muut Google-palvelut käyttöön</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -695,7 +693,6 @@
 <translation id="2028997212275086731">RAR-arkisto</translation>
 <translation id="2034346955588403444">Lisää muu Wi-Fi-verkko</translation>
 <translation id="203574396658008164">Salli muistiinpanojen tekeminen lukitusnäytöllä</translation>
-<translation id="2039623879703305659">Liikutit sormea liian nopeasti</translation>
 <translation id="2040460856718599782">Hups! Jotain meni vikaan todennuksen aikana. Tarkista kirjautumistietosi ja yritä uudelleen.</translation>
 <translation id="2043818754674261542">Puhelimen etäisyys, joka tarvitaan tämän laitteen (<ph name="DEVICE_TYPE" />) lukituksen avaamiseen</translation>
 <translation id="204497730941176055">Microsoftin varmenteen mallin nimi</translation>
@@ -739,7 +736,6 @@
 <translation id="2099686503067610784">Poistetaanko palvelimen varmenne <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Automaattinen kirjautuminen</translation>
 <translation id="2101225219012730419">Versio:</translation>
-<translation id="2107494551712864447">Lisää sormenjälki</translation>
 <translation id="2112877397266219826">Ota kosketussäädin käyttöön, jotta voit määrittää minut</translation>
 <translation id="21133533946938348">Kiinnitä välilehti</translation>
 <translation id="2113479184312716848">Avaa &amp;tiedosto...</translation>
@@ -1018,7 +1014,6 @@
 <translation id="2526590354069164005">Työpöytä</translation>
 <translation id="2526619973349913024">Tarkista päivitykset</translation>
 <translation id="2527167509808613699">Mikä tahansa yhteys</translation>
-<translation id="2532026602297547439">Anturi likainen</translation>
 <translation id="2532589005999780174">Suuri kontrasti -tila</translation>
 <translation id="253434972992662860">&amp;Tauko</translation>
 <translation id="2534460670861217804">Suojattu HTTP-välityspalvelin</translation>
@@ -1378,7 +1373,6 @@
 <translation id="3057861065630527966">Varmuuskopioi valokuvasi ja videosi.</translation>
 <translation id="3060379269883947824">Ota käyttöön Teksti puhuttuna</translation>
 <translation id="3061707000357573562">Virheenkorjauspalvelu</translation>
-<translation id="3064410671692449875">Riittämättömät tiedot</translation>
 <translation id="3065041951436100775">Välilehti sulki palautesivun.</translation>
 <translation id="3067198179881736288">Asennetaanko sovellus?</translation>
 <translation id="3067198360141518313">Suorita laajennus</translation>
@@ -2263,7 +2257,6 @@
 <translation id="4480590691557335796">Chrome etsii haitallisia ohjelmia tietokoneestasi ja voi poistaa ne</translation>
 <translation id="4481530544597605423">Laitteet ilman paria</translation>
 <translation id="4482194545587547824">Google voi muokata hakua ja muita Googlen palveluita selaushistoriasi perusteella.</translation>
-<translation id="4493287891836751813">Tutustu Google Assistantiin</translation>
 <translation id="4495419450179050807">Älä näytä tällä sivulla</translation>
 <translation id="4499718683476608392">Ota luottokorttien automaattinen täyttö käyttöön, niin voit täyttää lomakkeita yhdellä klikkauksella</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> on kaatunut.</translation>
@@ -2318,7 +2311,6 @@
 <translation id="4572659312570518089">Todennus peruutettiin yhdistettäessä laitteeseen <ph name="DEVICE_NAME" />.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-tiedosto</translation>
 <translation id="457386861538956877">Lisää...</translation>
-<translation id="4576537685267142337">Nosta sormesi ja kosketa tunnistinta uudelleen.</translation>
 <translation id="4576541033847873020">Parin muodostus Bluetooth-laitteen kanssa</translation>
 <translation id="4579581181964204535">Osoitteen <ph name="HOST_NAME" /> suoratoisto ei onnistu.</translation>
 <translation id="4580526846085481512">Haluatko varmasti poistaa $1 kohdetta?</translation>
@@ -2563,7 +2555,6 @@
 <translation id="4941627891654116707">Kirjasinkoko</translation>
 <translation id="494286511941020793">Välityspalvelinmäärityksen ohje</translation>
 <translation id="4945444280533270988">Smart Lock on käytössä</translation>
-<translation id="494660967831069720">Osittaiset tiedot</translation>
 <translation id="4953689047182316270">Vastata esteettömyystapahtumiin</translation>
 <translation id="4953808748584563296">Oranssi oletusavatar</translation>
 <translation id="4955814292505481804">Vuosittainen</translation>
@@ -3522,7 +3513,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6384275966486438344">Ota käyttöön seuraava hakukone: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Sivustot voivat lukea ja tallentaa evästetietoja.</translation>
 <translation id="6388429472088318283">Hae kieliä</translation>
-<translation id="6388771388956873507">Etsi laitteen sormenjälkitunnistin ja kosketa sitä sormellasi.</translation>
 <translation id="6390799748543157332">Tässä ikkunassa katselemasi sivut eivät näy selaushistoriassa, eikä niistä jää tietokoneelle muita jälkiä, kuten evästeitä, suljettuasi kaikki vierailijaikkunat. Kaikki lataamasi tiedostot kuitenkin säilytetään.</translation>
 <translation id="6390994422085833176">Tarkasta synkronointi- ja räätälöintiominaisuudet määrityksen jälkeen</translation>
 <translation id="6395423953133416962">Lähetä <ph name="BEGIN_LINK1" />järjestelmän tiedot<ph name="END_LINK1" /> ja <ph name="BEGIN_LINK2" />tilastot<ph name="END_LINK2" /></translation>
@@ -4125,7 +4115,6 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7309257895202129721">Näytä &amp;painikkeet</translation>
 <translation id="7310598146671372464">Kirjautuminen epäonnistui. Palvelin ei tue määritettyjä Kerberos-salaustyyppejä. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="7311079019872751559">Ei hiekkalaatikossa toimivan laajennuksen käyttö</translation>
-<translation id="7311891583377621132">Liikuta sormeasi hieman, niin sormenjäljen toinen osa tallennetaan.</translation>
 <translation id="7317680720589234980">Näytön lukituksen ja sisäänkirjautumisen asetukset</translation>
 <translation id="7321545336522791733">Palvelimeen ei saada yhteyttä.</translation>
 <translation id="7324297612904500502">Beta-keskusteluryhmä</translation>
@@ -4964,7 +4953,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8639047128869322042">Etsitään haittaohjelmia…</translation>
 <translation id="8639963783467694461">Automaattisen täytön asetukset</translation>
 <translation id="8642171459927087831">Käyttötunnus</translation>
-<translation id="8642267168767642381">Liikutit sormea liian hitaasti</translation>
 <translation id="8642947597466641025">Suurenna tekstiä</translation>
 <translation id="8643418457919840804">Jatka valitsemalla vaihtoehto:</translation>
 <translation id="8645354835496065562">Salli edelleen tunnistimien käyttö</translation>
@@ -5325,7 +5313,6 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="916607977885256133">Kuva kuvassa</translation>
 <translation id="9169496697824289689">Näytä pikanäppäimet</translation>
 <translation id="9169931577761441333">Lisää <ph name="APP_NAME" /> aloitusnäytölle</translation>
-<translation id="9170397650136757332">Tallenna sormenjälkesi kokonaisuudessaan liikuttamalla sormeasi varovasti.</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="9170884462774788842">Toinen tietokoneellasi oleva ohjelma lisäsi teeman, joka voi muuttaa Chromen toimintaa.</translation>
 <translation id="9173995187295789444">Haetaan Bluetooth-laitteita…</translation>

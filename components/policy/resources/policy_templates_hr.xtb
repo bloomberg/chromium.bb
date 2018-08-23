@@ -179,6 +179,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Omogući blokiranje umetanja softvera treće strane</translation>
 <translation id="1504431521196476721">Daljinsko atestiranje</translation>
+<translation id="1507957856411744193">Ako se to pravilo postavi na True, usluga <ph name="PRODUCT_NAME" /> povezat će se s uređajima za emitiranje na svim IP adresama, a ne samo privatnim adresama RFC1918/RFC4193.
+
+          Ako se to pravilo postavi na False, usluga <ph name="PRODUCT_NAME" /> povezat će se s uređajima za emitiranje samo na privatnim adresama RFC1918/RFC4193.
+
+          Ako se to pravilo ne postavi, usluga <ph name="PRODUCT_NAME" /> povezat će se s uređajima za emitiranje samo na privatnim adresama RFC1918/RFC4193, osim ako se omogući značajka CastAllowAllIPs.
+
+          Ako se pravilo "EnableMediaRouter" postavi na False, vrijednost ovog pravila nema utjecaja.</translation>
 <translation id="1509692106376861764">To se pravilo ne upotrebljava od verzije 29 sustava <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">Omogući uslugu <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Dopusti web-lokacijama praćenje fizičke lokacije korisnika</translation>
@@ -352,11 +359,6 @@
 
           Ako se to pravilo ne postavi, upotrebljavat će se sve četiri sheme.</translation>
 <translation id="2067011586099792101">Blokiraj pristup web-lokacijama izvan paketa sadržaja</translation>
-<translation id="2070270043919235595">Obavještava korisnike da se <ph name="PRODUCT_NAME" /> mora ponovo pokrenuti radi primjene ažuriranja na čekanju.
-
-      Ova postavka pravila omogućuje obavijesti koje informiraju korisnika o preporučenom ili obaveznom ponovnom pokretanju preglednika. Ako nije postavljeno, <ph name="PRODUCT_NAME" /> korisniku naznačuje potrebu za ponovnim pokretanjem putem sitnih promjena na izborniku. Ako se postavi na "Preporučeno", korisniku će se prikazivati ponavljajuće upozorenje da je preporučeno ponovno pokretanje. Korisnik može odbaciti upozorenje i tako odgoditi ponovno pokretanje. Ako se postavi na "Obavezno", korisniku će se prikazati ponavljajuće upozorenje da će se preglednik prisilno ponovo pokrenuti nakon isteka naznačenog vremena u obavijesti. To razdoblje prema zadanim postavkama iznosi sedam dana, a može se konfigurirati putem postavke pravila <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Korisnička će se sesija vratiti nakon ponovnog pokretanja.</translation>
 <translation id="2073552873076775140">Dopusti prijavu u preglednik <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
 <translation id="2077273864382355561">Odgoda isključivanja zaslona za vrijeme baterijskog napajanja</translation>
@@ -891,7 +893,6 @@
           To pravilo nije obavezno. Ako nije postavljeno, neće se pružati web-stranica nove kartice.
 
           To se pravilo poštuje samo ako je omogućeno pravilo "DefaultSearchProviderEnabled".</translation>
-<translation id="3465852069254497664">Obavijesti korisnika o obaveznom ili preporučenom ponovnom pokretanju preglednika</translation>
 <translation id="346731943813722404">Pravilo određuje trebaju li odgode upravljanja potrošnjom energije i ograničenje duljine sesije početi teći tek nakon što se uoči prva aktivnost korisnika u sesiji.
 
           Ako se to pravilo postavi na istinito, odgode upravljanja potrošnjom energije i ograničenje duljine sesije neće početi teći dok se ne uoči prva aktivnost korisnika u sesiji.
@@ -1949,6 +1950,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 
       Pravilo <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogućuje svu sinkronizaciju podataka nadjačavajući RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtriraj vršne web-lokacije (ali ne ugrađene iframeove) na temelju sadržaja za odrasle</translation>
+<translation id="6734521799274931721">Određuje dostupnost mrežnog dijeljenja datoteka za OS Chrome</translation>
 <translation id="6735701345096330595">Nametni omogućivanje provjere pravopisa za jezike</translation>
 <translation id="673699536430961464">Ova postavka korisnicima omogućuje promjenu Google računa unutar područja sadržaja u prozoru preglednika nakon što se prijave na svojem <ph name="PRODUCT_OS_NAME" /> uređaju.
 
@@ -2090,17 +2092,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 
       Prije nego što se zaslon zatamni, model pametnog zatamnjenja procjenjuje treba li odgoditi zatamnjenje zaslona. Ako model pametnog zatamnjenja odgodi zatamnjenje zaslona, on učinkovito produljuje vrijeme dok zaslon ne bude zatamnjen. U tom se slučaju isključivanje zaslona, zaključavanje zaslona i odgode  mirovanja prilagođavaju kako bi zadržale jednaku udaljenost od odgode zatamnjenja zaslona kako je izvorno konfigurirano.
       Ako je ovo pravilo postavljeno na True ili nije postavljeno, bit će omogućen model pametnog zatamnjenja te će biti dopušteno produljiti vrijeme dok zaslon ne bude zatamnjen. Ako je ovo pravilo postavljeno na False, model pametnog zatamnjenja neće utjecati na zatamnjenje zaslona.</translation>
-<translation id="6982028490425791294">
-      Ako se pravilo postavi na True, <ph name="PRODUCT_NAME" /> ima dopuštenje prikupljati zapisnike događaja WebRTC s Googleovih usluga (npr. Google Meet) i prenijeti te zapisnike na Google.
-
-      Ako se pravilo postavi na False ili se ne postavi, <ph name="PRODUCT_NAME" /> ne smije prikupljati niti prenositi takve zapisnike.
-
-      Ti zapisnici sadrže podatke kao što su vrijeme i veličina poslanih i primljenih RTP paketa, povratne informacije o zagušenju na mreži i medapodatke o vremenu i kvaliteti zvučnih i videozapisa. Ti podaci pomažu pri otklanjanju pogrešaka kod audio i videopoziva na Chromeu, kao što su poteškoće s procjenom propusnosti itd. Zapisnici ne sadrže audio ili videosadržaje poziva.
-
-      Ta kolekcija podataka može se pokrenuti samo pomoću Googleovih web-usluga, kao što su Hangouts ili Google Meet.
-
-      Ti zapisnici mogu se putem ID-ja sesija povezati s drugim zapisnicima koje je prikupila sama Googleova usluga; to je namijenjeno lakšem otklanjanju pogrešaka.
-      </translation>
 <translation id="6994082778848658360">Određuje način na koji se hardver s ugrađenim sigurnosnim elementom može upotrebljavati za pružanje dvostruke autentifikacije ako je kompatibilan s ovom značajkom. Tipka za uključivanje/isključivanje uređaja upotrebljava se za otkrivanje korisnikove fizičke prisutnosti.
 
       Ako se odabere "Onemogućeno", dvostruka se autentifikacija ne upotrebljava.
@@ -2895,11 +2886,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Odredi utječe li aktivnost videozapisa na upravljanje napajanjem</translation>
-<translation id="9085839450090699752">Omogućuje vam da postavite razdoblje, u milisekundama, tijekom kojeg korisnici primaju obavijesti da se <ph name="PRODUCT_NAME" /> mora ponovo pokrenuti ili da se <ph name="PRODUCT_OS_NAME" /> uređaj mora ponovo pokrenuti da bi se primijenilo ažuriranje na čekanju.
-
-      U tom će razdoblju korisnik primiti više obavijesti da je potrebno ažuriranje. Za <ph name="PRODUCT_OS_NAME" /> uređaje obavijest o ponovnom pokretanju prikazuje se na traci sustava kada se otkrije nadogradnja. Boja te obavijesti mijenja se kada istekne polovica razdoblja obavijesti i još jednom kada istekne cijelo razdoblje. Za preglednike <ph name="PRODUCT_NAME" /> izbornik aplikacije mijenja se kada istekne trećina razdoblja obavijesti kako bi se naznačilo da je potrebno ponovno pokretanje. Boja te obavijesti mijenja se kada isteknu dvije trećine razdoblja i još jednom kada istekne cijelo razdoblje. Dodatne obavijesti omogućene pravilom <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> za preglednike imaju isti raspored.
-
-      Ako se ne postavi, za <ph name="PRODUCT_OS_NAME" /> uređaje upotrebljava se zadano razdoblje od 345.600.000 milisekundi (četiri dana), a za preglednike zadano razdoblje od 604.800.000 milisekundi (jedan tjedan).</translation>
 <translation id="9088433379343318874">Omogući davatelja sadržaja nadziranog korisnika</translation>
 <translation id="9088444059179765143">Konfiguriraj način automatskog otkrivanja vremenske zone</translation>
 <translation id="9096086085182305205">Bijela lista poslužitelja za autentifikaciju</translation>

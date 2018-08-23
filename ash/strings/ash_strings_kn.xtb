@@ -46,6 +46,7 @@
 <translation id="1746730358044914197">ನಿಮ್ಮ ಇನ್‌ಪುಟ್‌ ವಿಧಾನಗಳನ್ನು ನಿರ್ವಾಹಕರ ಸಹಾಯದಿಂದ ಕಾನ್ಫಿಗರ್‌ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1747827819627189109">ಆನ್ ಸ್ಕ್ರೀನ್ ಕೀಬೋರ್ಡ್ ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="1761222317188459878">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕವನ್ನು ಟಾಗಲ್ ಮಾಡಿ. <ph name="STATE_TEXT" /></translation>
+<translation id="1812997170047690955">ನನ್ನ ಪರದೆಯಲ್ಲಿ ಏನಿದೆ?</translation>
 <translation id="1823873187264960516">ಇಥರ್ನೆಟ್: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">ಸಹಾಯಕ (ಲೋಡ್ ಆಗುತ್ತಿದೆ...)</translation>
 <translation id="1841545962859478868">ಸಾಧನದ ನಿರ್ವಾಹಕರು ಕೆಳಗಿನದನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದು:</translation>
@@ -122,6 +123,7 @@
 <translation id="2946119680249604491">ಸಂಪರ್ಕ ಸೇರಿಸಿ</translation>
 <translation id="2961963223658824723">ಏನೋ ಸಮಸ್ಯೆಯಾಗಿದೆ. ಕೆಲವು ನಿಮಿಷಗಳಲ್ಲಿ ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2992931425024192067">ಎಲ್ಲಾ ಅಧಿಸೂಚನೆ ವಿಷಯಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="2995447421581609334">ಬಿತ್ತರಿಸುವ ಸಾಧನಗಳನ್ನು ತೋರಿಸಿ.</translation>
 <translation id="2996462380875591307">ಡಾಕ್‌‌ ಮಾಡಿರುವ ವರ್ಧಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ. ಅದನ್ನು ಟಾಗಲ್‌ ಆಫ್‌ ಮಾಡಲು ಪುನಃ Ctrl+Search+D ಅನ್ನು ಒತ್ತಿರಿ.</translation>
 <translation id="2999742336789313416"><ph name="DOMAIN" /> ಮೂಲಕ ನಿರ್ವಹಿಸಲಾದ ಸಾರ್ವಜನಿಕ ಸೆಶನ್ <ph name="DISPLAY_NAME" /> ಆಗಿದೆ</translation>
@@ -210,12 +212,14 @@
 <translation id="4628757576491864469">ಸಾಧನಗಳು</translation>
 <translation id="4659419629803378708">ChromeVox ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="4734965478015604180">ಅಡ್ಡ</translation>
+<translation id="476166673298332917">ಪಾಸ್‌ವರ್ಡ್‌ಗಳು ಹಾಗೂ ಸಂವಹನಗಳು ಸೇರಿದಂತೆ ಎಲ್ಲಾ ಚಟುವಟಿಕೆಗೆ, ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರು ಪ್ರವೇಶ ಹೊಂದಿರುತ್ತಾರೆ.</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> ಗಾಗಿ ಪಾಸ್‌ವರ್ಡ್</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">ಡಿಸ್‌ಕನೆಕ್ಟ್</translation>
 <translation id="4849058404725798627">ಕೀಬೋರ್ಡ್‌ ಫೋಕಸ್‌ ಮೂಲಕ ವಿಷಯವನ್ನು ಎದ್ದುಗಾಣಿಸಿ</translation>
 <translation id="4872237917498892622">Alt+ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="4890187583552566966">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು Google ಸಹಾಯಕವನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
+<translation id="4893522937062257019">ಲಾಕ್ ಪರದೆಯಲ್ಲಿ</translation>
 <translation id="4895488851634969361">ಬ್ಯಾಟರಿ ತುಂಬಿದೆ.</translation>
 <translation id="490375751687810070">ಲಂಬ</translation>
 <translation id="4905614135390995787">ಹೆಚ್ಚು ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಟಾಗಲ್‌ ಮಾಡಲು ಶಾರ್ಟ್‌ಕಟ್ ಬದಲಾಗಿದೆ. <ph name="OLD_SHORTCUT" /> ಬದಲಿಗೆ <ph name="NEW_SHORTCUT" /> ಅನ್ನು ಬಳಸಿ.</translation>
@@ -231,6 +235,7 @@
 <translation id="523505283826916779">ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5313326810920013265">ಬ್ಲೂಟೂತ್‌‌ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="5331975486040154427">USB-C ಸಾಧನ (ಎಡ ಭಾಗದ ಹಿಂದಿನ ಪೋರ್ಟ್‌)</translation>
+<translation id="5379115545237091094">ಹಲವು ಬಾರಿ ಪ್ರಯತ್ನಿಸಿದ್ದೀರಿ</translation>
 <translation id="5397578532367286026">ಈ ಬಳಕೆದಾರರ ಬಳಕೆ ಮತ್ತು ಇತಿಹಾಸವನ್ನು chrome.com ನಲ್ಲಿ ನಿರ್ವಾಹಕರು (<ph name="MANAGER_EMAIL" />) ಪರಿಶೀಲಿಸಬಹುದು.</translation>
 <translation id="5430931332414098647">ತತ್‌ಕ್ಷಣದ ಟೆಥರಿಂಗ್‌</translation>
 <translation id="5431825016875453137">VPN / L2TP ತೆರೆಯಿರಿ</translation>
@@ -262,6 +267,7 @@
 <translation id="5895138241574237353">ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">ಶಾರ್ಟ್‌ಕಟ್ ವೀಕ್ಷಕ</translation>
+<translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">ಆನ್‌</translation>
 <translation id="592343074608792716">ಈ Chromebook ಮತ್ತು ನಿಮ್ಮ ಫೋನ್ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸಂಪರ್ಕಗೊಳ್ಳುತ್ತವೆ</translation>
 <translation id="5947494881799873997">ಹಿಂತಿರುಗಿಸು</translation>
@@ -332,6 +338,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="6972754398087986839">ಪ್ರಾರಂಭಗೊಂಡಿದೆ</translation>
 <translation id="6981982820502123353">ಪ್ರವೇಶ</translation>
 <translation id="698231206551913481">ಒಮ್ಮೆ ಈ ಬಳಕೆದಾರರನ್ನು ತೆಗೆದುಹಾಕಿದಾಗ ಈ ಬಳಕೆದಾರರೊಂದಿಗೆ ಸಂಯೋಜಿತವಾಗಿರುವ ಎಲ್ಲಾ ಫೈಲ್‌ಗಳು ಮತ್ತು ಸ್ಥಳೀಯ ಡೇಟಾವನ್ನು ಶಾಶ್ವತವಾಗಿ ಅಳಿಸಲಾಗುತ್ತದೆ.</translation>
+<translation id="7007100238996585961">ಮತ್ತೊಂದು ಸಾಧನದಲ್ಲಿ ಉತ್ತರಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7015766095477679451"><ph name="COME_BACK_TIME" /> ಸಮಯಕ್ಕೆ ಹಿಂತಿರುಗಿ</translation>
 <translation id="7029814467594812963">ಸೆಶನ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="7037152028959403492">ನೀವು ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್‌ನ ಶಾರ್ಟ್‌ಕಟ್ ಅನ್ನು ಒತ್ತಿದ್ದೀರಿ. ಅದನ್ನು ಆನ್ ಮಾಡಲು ಬಯಸುವಿರಾ?</translation>
@@ -353,6 +360,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7398254312354928459">ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕವನ್ನು ಬದಲಿಸಲಾಗಿದೆ</translation>
 <translation id="742594950370306541">ಕ್ಯಾಮರಾ ಬಳಕೆಯಲ್ಲಿದೆ.</translation>
 <translation id="743058460480092004">ಕ್ಯಾಮರಾ ಮತ್ತು ಮೈಕ್ರೋಫೋನ್ ಬಳಕೆಯಲ್ಲಿವೆ.</translation>
+<translation id="7497767806359279797">ಭಾಷೆ ಮತ್ತು ಕೀಬೋರ್ಡ್ ಆರಿಸಿ</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7526573455193969409">ನೆಟ್‌ವರ್ಕ್‌ನ ಮೇಲ್ವಿಚಾರಣೆ ಮಾಡಬಹುದಾಗಿದೆ</translation>
 <translation id="7536035074519304529">ಐಪಿ ವಿಳಾಸ: <ph name="ADDRESS" /></translation>
@@ -362,6 +370,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7569509451529460200">ಬ್ರೈಲ್ ಹಾಗೂ ChromeVox ಸಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ</translation>
 <translation id="7593891976182323525">ಹುಡುಕಾಟ ಅಥವಾ Shift</translation>
 <translation id="7604942372593434070">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಚಟುವಟಿಕೆಯನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
+<translation id="7642778300616172920">ಸೂಕ್ಷ್ಮ ವಿಷಯವನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ಮಾಲೀಕರು)</translation>
 <translation id="7647488630410863958">ನಿಮ್ಮ ಅಧಿಸೂಚನೆಗಳನ್ನು ವೀಕ್ಷಿಸಲು ಸಾಧನವನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಿ</translation>
 <translation id="7649070708921625228">ಸಹಾಯ</translation>
@@ -377,6 +386,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="7842211907556571265"><ph name="NETWORK_NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ</translation>
 <translation id="7842569679327885685">ಎಚ್ಚರಿಕೆ: ಪ್ರಾಯೋಗಿಕ ವೈಶಿಷ್ಟ್ಯ</translation>
 <translation id="7846634333498149051">ಕೀಬೋರ್ಡ್</translation>
+<translation id="7886277072580235377">ನೀವು ಸೈನ್ ಔಟ್ ಮಾಡುವಾಗ ನಿಮ್ಮ ಇಂಟರ್ನೆಟ್ ಸೆಶನ್ ಅನ್ನು ತೆರವುಗೊಳಿಸಲಾಗುತ್ತದೆ. <ph name="LEARN_MORE" /></translation>
 <translation id="790040513076446191">ಗೌಪ್ಯತೆಗೆ- ಸಂಬಂಧಿಸಿದ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಸ್ವಾಧೀನಪಡಿಸಿಕೊಳ್ಳಿ</translation>
 <translation id="7904094684485781019">ಈ ಖಾತೆಗಾಗಿ ನಿರ್ವಾಹಕರು ಬಹುವಿಧದ ಸೈನ್ ಇನ್ ಅನುಮತಿಸಿಲ್ಲ.</translation>
 <translation id="7933084174919150729">ಪ್ರಾಥಮಿಕ ಪ್ರೊಫೈಲ್‌ಗೆ ಮಾತ್ರ Google ಸಹಾಯಕ ಲಭ್ಯವಿದೆ.</translation>
@@ -417,6 +427,7 @@ Ctrl+ಹುಡುಕಾಟ+H ಅನ್ನು ಒತ್ತಿರಿ.</translation
 <translation id="8484916590211895857"><ph name="NAME" />: ಮರುಸಂಪರ್ಕಿಸಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="8513108775083588393">ಸ್ವಯಂ-ತಿರುಗುವಿಕೆ</translation>
 <translation id="8517041960877371778">ನಿಮ್ಮ <ph name="DEVICE_TYPE" /> ಅನ್ನು ಆನ್ ಮಾಡಿರುವಾಗ ಅದನ್ನು ಚಾರ್ಜ್ ಮಾಡಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="8592141010104017453">ಅಧಿಸೂಚನೆಗಳನ್ನು ತೋರಿಸಲೇಬೇಡಿ</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> ಗೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ಉಳಿದಿದೆ</translation>
 <translation id="8649101189709089199">ಧ್ವನಿ ಆಯ್ಕೆ ಮಾಡಿ</translation>

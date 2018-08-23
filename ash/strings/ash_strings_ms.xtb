@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ditambahkan</translation>
 <translation id="1056775291175587022">Tiada rangkaian</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Saya bosan</translation>
 <translation id="1104084341931202936">Tunjukkan tetapan kebolehaksesan</translation>
 <translation id="1104621072296271835">Peranti anda akan berfungsi lebih baik bersama-sama</translation>
 <translation id="112308213915226829">Autosembunyi rak</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Kosongkan semua</translation>
 <translation id="1247372569136754018">Mikrofon (dalaman)</translation>
 <translation id="1252999807265626933">Mengecas daripada <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Apakah keadaan cuaca?</translation>
 <translation id="1267032506238418139">Perubahan pintasan</translation>
 <translation id="1270290102613614947">Papan kekunci pada skrin dilumpuhkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Anda hanya boleh memiliki sehingga <ph name="MULTI_PROFILE_USER_LIMIT" /> akaun dalam log masuk berbilang.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Disambungkan ke peranti}other{Disambungkan ke # peranti}}</translation>
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
+<translation id="3255483164551725916">Apakah yang anda boleh lakukan?</translation>
 <translation id="3294437725009624529">Tetamu</translation>
 <translation id="332587331255250389">Sila gantikan bateri</translation>
 <translation id="3351879221545518001">Anda sedang menghantar skrin.</translation>
@@ -185,6 +188,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4017989525502048489">Penuding laser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Matikan untuk satu apl}other{Matikan untuk # apl}}</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
+<translation id="4146833061457621061">Mainkan muzik</translation>
 <translation id="4200057768455216496">Anda menekan pintasan untuk penggadang yang didok. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
 <translation id="4261870227682513959">Tunjukkan tetapan pemberitahuan. Pemberitahuan dimatikan</translation>
@@ -344,6 +348,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7037152028959403492">Anda menekan pintasan untuk kontras tinggi. Adakah anda ingin menghidupkannya?</translation>
 <translation id="7066646422045619941">Rangkaian ini dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="7067196344162293536">Auto putar</translation>
+<translation id="7068360136237591149">Buka fail</translation>
 <translation id="7076293881109082629">Melog masuk</translation>
 <translation id="7092922358121866860">Tunjukkan tetapan Cahaya Malam</translation>
 <translation id="7098389117866926363">Peranti USB-C (port kiri di belakang)</translation>
@@ -387,6 +392,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7842569679327885685">Amaran: Ciri percubaan</translation>
 <translation id="7846634333498149051">Papan kekunci</translation>
 <translation id="7886277072580235377">Sesi Internet anda akan dipadam bersih apabila anda log keluar. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Hantar e-mel</translation>
 <translation id="790040513076446191">Manipulasi tetapan yang berkaitan privasi</translation>
 <translation id="7904094684485781019">Pentadbir akaun ini tidak membenarkan berbilang log masuk.</translation>
 <translation id="7933084174919150729">Google Assistant hanya tersedia untuk profil utama.</translation>
@@ -449,6 +455,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8850991929411075241">Carian+Esc</translation>
 <translation id="8870509716567206129">Apl tidak menyokong skrin pisah.</translation>
 <translation id="8874184842967597500">Tidak bersambung</translation>
+<translation id="8877788021141246043">Tetapkan peringatan</translation>
 <translation id="8878886163241303700">Meluaskan skrin</translation>
 <translation id="8921624153894383499">Google Assistant tidak bertutur dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Peranti USB-C (port kanan di belakang)</translation>
@@ -472,6 +479,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="9210037371811586452">Keluar daripada mod desktop bersatu</translation>
 <translation id="9215934040295798075">Tetapkan kertas dinding</translation>
 <translation id="923686485342484400">Tekan Tekan Shift Q dua kali untuk keluar.</translation>
+<translation id="938963181863597773">Apakah acara dalam kalendar saya?</translation>
 <translation id="945522503751344254">Hantar maklum balas</translation>
 <translation id="98515147261107953">Lanskap</translation>
 <translation id="995927048686010764">Autoklik</translation>

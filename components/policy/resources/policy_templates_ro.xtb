@@ -351,11 +351,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
           Dacă politica nu este configurată, vor fi utilizate toate cele patru scheme.</translation>
 <translation id="2067011586099792101">Se blochează accesul la site-urile din afara pachetelor de conținut</translation>
-<translation id="2070270043919235595">Notifică utilizatorul că <ph name="PRODUCT_NAME" /> trebuie relansat pentru aplicarea unei actualizări în așteptare.
-
-      Setarea acestei politici activează notificările care informează utilizatorul că este recomandată sau necesară relansarea browserului. Dacă politica nu este setată, <ph name="PRODUCT_NAME" /> îi arată utilizatorului că este necesară o relansare prin schimbări subtile aduse meniului. Dacă politica este setată la „Recomandat”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea este recomandată. Utilizatorul poate să respingă avertizarea pentru a amâna relansarea. Dacă politica este setată la „Obligatoriu”, utilizatorului i se va afișa o avertizare recurentă prin care se indică faptul că relansarea browserului va fi obligatorie după încheierea perioadei de notificare. În mod prestabilit, această perioadă este de șapte zile și poate fi configurată prin setarea politicii <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Sesiunea utilizatorului este restabilită după relansare.</translation>
 <translation id="2073552873076775140">Permite conectarea la <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
 <translation id="2077273864382355561">Interval până la oprirea ecranului la funcționarea pe baterie</translation>
@@ -895,7 +890,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           Politica este opțională. Dacă nu este configurată, nu va fi furnizată o pagină Filă nouă.
 
           Politica este urmată numai dacă este activată politica „DefaultSearchProviderEnabled”.</translation>
-<translation id="3465852069254497664">Notifică utilizatorul că relansarea browserului este recomandată sau necesară</translation>
 <translation id="346731943813722404">Indică dacă întârzierile din managementul alimentării cu energie și limita de durată a sesiunii trebuie să înceapă să ruleze numai după ce a fost detectată prima activitate a utilizatorului într-o sesiune.
 
           Dacă politica este activată, întârzierile din managementul alimentării cu energie și limita de durată a sesiunii nu încep să ruleze decât după ce a fost detectată prima activitate a utilizatorului într-o sesiune.
@@ -2105,17 +2099,6 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
 Atunci când ecranul este pe cale să se întunece, modelul inteligent de reducere a luminozității evaluează dacă reducerea luminozității trebuie amânată. Dacă modelul inteligent de reducere a luminozității amână acest eveniment, el extinde practic timpul până când ecranul se întunecă. În acest caz, duratele până la închiderea ecranului, blocarea acestuia și dezactivare se ajustează pentru a păstra același distanțe față de configurația inițială de întunecare a ecranului.
 Dacă politica este setată la True sau nu este setată, modelul inteligent de reducere a luminozității va fi activat și va putea extinde timpul până la întunecarea ecranului. Dacă politica este setată la False, modelul inteligent de reducere a luminozității nu va influența întunecarea ecranului.</translation>
-<translation id="6982028490425791294">
-      Dacă politica este activată, <ph name="PRODUCT_NAME" /> poate să colecteze jurnale de evenimente WebRTC din serviciile Google (de exemplu, Google Meet) și să le încarce pe Google.
-
-      Dacă politica este dezactivată sau nu este configurată, <ph name="PRODUCT_NAME" /> nu poate colecta sau încărca astfel de jurnale.
-
-      Jurnalele conțin informații precum ora și dimensiunea pachetelor RTP trimise și primite, feedback privind congestionarea rețelei și metadate despre ora și calitatea cadrelor audio și video. Aceste informații sunt utile pentru remedierea problemelor privind apelurile audio sau video în Chrome, cum ar fi problemele de estimare a lățimii de bandă etc. Jurnalele nu conțin înregistrări audio sau video din apel.
-
-      Această colectare a datelor poate fi declanșată numai de serviciile web Google, precum Google Hangouts sau Google Meet.
-
-      Jurnalele pot fi asociate, prin intermediul unui ID de sesiune, cu alte jurnale colectate chiar de serviciile Google. Astfel, se poate simplifica remedierea erorilor.
-      </translation>
 <translation id="6994082778848658360">Specifică modul în care poate fi folosit hardware-ul elementului de securitate încorporat pentru a oferi o autentificare cu doi factori, dacă se acceptă de această funcție. Butonul de pornire al dispozitivului este folosit ca să detecteze prezența fizică a utilizatorului.
 
       Dacă selectezi „Dezactivat”, al doilea factor nu mai este oferit.
@@ -2905,11 +2888,6 @@ Pentru mai multe informații despre contextele sigure, accesează https://www.w3
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
-<translation id="9085839450090699752">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
-
-      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem atunci când se detectează un upgrade. Această notificare își schimbă culoarea după expirarea primei jumătăți a perioadei de notificare și încă o dată, după încheierea întregii perioade de notificare. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pentru browsere urmează aceeași regulă.
-
-      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (4 zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și o perioadă prestabilită de 604.800.000 de milisecunde (o săptămână) pentru browsere.</translation>
 <translation id="9088433379343318874">Activează furnizorul de conținut pentru utilizatori monitorizați</translation>
 <translation id="9088444059179765143">Configurează metoda de detectare automată a fusului orar</translation>
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>

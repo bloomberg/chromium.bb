@@ -875,6 +875,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7981313251711023384">I-preload ang mga page para sa mas mabilis na pag-browse at paghahanap</translation>
 <translation id="79859296434321399">Para matingnan ang augmented reality na content, i-install ang ARCore</translation>
 <translation id="7987073022710626672">Mga Tuntunin ng Serbisyo ng Chrome</translation>
+<translation id="7987764905897278458">Magkaroon ng higit pang smart na feature ng Google</translation>
 <translation id="7998918019931843664">Muling buksan ang isinarang tab</translation>
 <translation id="7999064672810608036">Sigurado ka bang gusto mong i-clear ang lahat ng lokal na data, kasama ang cookies, at i-reset ang lahat ng pahintulot para sa website na ito?</translation>
 <translation id="8004582292198964060">Browser</translation>
@@ -962,6 +963,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8664979001105139458">May ganito nang pangalan ng file</translation>
 <translation id="8676374126336081632">I-clear ang input</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Antas ng Lakas ng Signal: # bar}one{Antas ng Lakas ng Signal: # bar}other{Antas ng Lakas ng Signal: # na bar}}</translation>
+<translation id="868929229000858085">Maghanap sa iyong mga contact</translation>
 <translation id="869891660844655955">Expiration date</translation>
 <translation id="8719023831149562936">Hindi ma-beam ang kasalukuyang tab</translation>
 <translation id="8725066075913043281">Muling subukan</translation>
@@ -996,6 +998,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8986494364107987395">Awtomatikong ipadala ang mga istatistika ng paggamit at mga ulat ng pag-crash sa Google</translation>
 <translation id="8993760627012879038">Magbukas ng bagong tab sa Incognito mode</translation>
 <translation id="8998729206196772491">Nagsa-sign in ka gamit ang isang account na pinamamahalaan ng <ph name="MANAGED_DOMAIN" /> at binibigyan mo ang administrator nito ng kontrol sa iyong data sa Chrome. Permanenteng mauugnay ang iyong data sa account na ito. Made-delete ang data mo sa device na ito kapag nag-sign out ka sa Chrome, ngunit mananatili itong nakaimbak sa iyong Google Account.</translation>
+<translation id="9018881455348618200">Button ng paghahanap</translation>
 <translation id="9019902583201351841">Pinamamahalaan ng iyong mga magulang</translation>
 <translation id="9040142327097499898">Pinapayagan ang mga notification. Naka-off ang lokasyon para sa device na ito.</translation>
 <translation id="9050666287014529139">Passphrase</translation>

@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> додано</translation>
 <translation id="1056775291175587022">Немає мереж</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Мені нудно</translation>
 <translation id="1104084341931202936">Показати налаштування спеціальних можливостей</translation>
 <translation id="1104621072296271835">Ваші пристрої працюватимуть разом ще краще</translation>
 <translation id="112308213915226829">Автоматично ховати полицю</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Очистити все</translation>
 <translation id="1247372569136754018">Мікрофон (внутрішній)</translation>
 <translation id="1252999807265626933">Джерело заряджання: <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Який прогноз погоди?</translation>
 <translation id="1267032506238418139">Зміна комбінацій клавіш</translation>
 <translation id="1270290102613614947">Екранну клавіатуру вимкнено</translation>
 <translation id="1272079795634619415">Зупинити</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Максимальна кількість паралельних входів в обліковий запис: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Під’єднано до пристрою}one{Під’єднано до # пристрою}few{Під’єднано до # пристроїв}many{Під’єднано до # пристроїв}other{Під’єднано до # пристрою}}</translation>
 <translation id="3236488194889173876">Немає мобільних мереж</translation>
+<translation id="3255483164551725916">Що ти можеш?</translation>
 <translation id="3294437725009624529">Гість</translation>
 <translation id="332587331255250389">Замініть акумулятор</translation>
 <translation id="3351879221545518001">Зараз ви транслюєте екран.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Лазерний вказівник</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Вимкнено для додатка}one{Вимкнено для # додатка}few{Вимкнено для # додатків}many{Вимкнено для # додатків}other{Вимкнено для # додатка}}</translation>
 <translation id="4072264167173457037">середній сигнал</translation>
+<translation id="4146833061457621061">Увімкни музику</translation>
 <translation id="4200057768455216496">Ви натиснули комбінацію клавіш для закріпленої лупи. Увімкнути?</translation>
 <translation id="4217571870635786043">Диктування</translation>
 <translation id="4261870227682513959">Показати налаштування сповіщень. Сповіщення вимкнено</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Ви натиснули комбінацію клавіш для високого контрасту. Увімкнути?</translation>
 <translation id="7066646422045619941">Ваш адміністратор вимкнув цю мережу.</translation>
 <translation id="7067196344162293536">Автоматичне обертання</translation>
+<translation id="7068360136237591149">Відкрий файли</translation>
 <translation id="7076293881109082629">Вхід</translation>
 <translation id="7092922358121866860">Показати налаштування нічного режиму</translation>
 <translation id="7098389117866926363">Пристрій, під’єднаний до порту USB-C (ліворуч на задній панелі)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Попередження. Експериментальна функція</translation>
 <translation id="7846634333498149051">Клавіатура</translation>
 <translation id="7886277072580235377">Коли ви вийдете з облікового запису, дані інтернет-сеансу буде стерто. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Надішли електронний лист</translation>
 <translation id="790040513076446191">Керувати налаштуваннями, пов’язаними з конфіденційністю</translation>
 <translation id="7904094684485781019">Адміністратор цього облікового запису заборонив паралельний вхід.</translation>
 <translation id="7933084174919150729">Google Асистент доступний лише в основному профілі.</translation>
@@ -448,6 +454,7 @@
 <translation id="8850991929411075241">Search (Пошук)+Esc</translation>
 <translation id="8870509716567206129">Додаток не підтримує розділення екрана.</translation>
 <translation id="8874184842967597500">Не під’єднано</translation>
+<translation id="8877788021141246043">Налаштуй нагадування</translation>
 <translation id="8878886163241303700">Розширення екрана</translation>
 <translation id="8921624153894383499">Google Асистент не підтримує цю мову.</translation>
 <translation id="8938800817013097409">Пристрій, під’єднаний до порту USB-C (праворуч на задній панелі)</translation>
@@ -471,6 +478,7 @@
 <translation id="9210037371811586452">Вихід з уніфікованого режиму робочого стола</translation>
 <translation id="9215934040295798075">Вибрати фоновий малюнок</translation>
 <translation id="923686485342484400">Щоб вийти, двічі натисніть Control Shift Q.</translation>
+<translation id="938963181863597773">Які події заплановано?</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>
 <translation id="98515147261107953">Альбомна</translation>
 <translation id="995927048686010764">Автоклік</translation>

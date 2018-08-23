@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Đã thêm <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Không có mạng</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Tôi chán quá</translation>
 <translation id="1104084341931202936">Hiển thị các tùy chọn cài đặt hỗ trợ tiếp cận</translation>
 <translation id="1104621072296271835">Các thiết bị của bạn hoạt động hiệu quả hơn khi kết nối với nhau</translation>
 <translation id="112308213915226829">Tự động ẩn giá</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Xóa tất cả</translation>
 <translation id="1247372569136754018">Micrô (bên trong)</translation>
 <translation id="1252999807265626933">Đang sạc từ <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Tình hình thời tiết thế nào?</translation>
 <translation id="1267032506238418139">Thay đổi phím tắt</translation>
 <translation id="1270290102613614947">Đã tắt bàn phím ảo</translation>
 <translation id="1272079795634619415">Dừng</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Bạn chỉ có thể có tối đa <ph name="MULTI_PROFILE_USER_LIMIT" /> tài khoản khi sử dụng tính năng đăng nhập nhiều tài khoản.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Đã kết nối với một thiết bị}other{Đã kết nối với # thiết bị}}</translation>
 <translation id="3236488194889173876">Không có mạng di động nào</translation>
+<translation id="3255483164551725916">Bạn có thể làm gì?</translation>
 <translation id="3294437725009624529">Khách</translation>
 <translation id="332587331255250389">Vui lòng thay pin</translation>
 <translation id="3351879221545518001">Bạn hiện đang truyền màn hình.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Con trỏ laser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Tắt thông báo của một ứng dụng}other{Tắt thông báo của # ứng dụng}}</translation>
 <translation id="4072264167173457037">Tín hiệu trung bình</translation>
+<translation id="4146833061457621061">Phát nhạc</translation>
 <translation id="4200057768455216496">Bạn đã nhấn phím tắt của tính năng phóng to ở vị trí cố định. Bạn có muốn bật tính năng này không?</translation>
 <translation id="4217571870635786043">Nhập bằng giọng nói</translation>
 <translation id="4261870227682513959">Hiển thị các tùy chọn cài đặt thông báo. Thông báo hiện đang tắt</translation>
@@ -344,6 +348,7 @@
 <translation id="7037152028959403492">Bạn đã nhấn phím tắt để có độ tương phản cao. Bạn có muốn bật chế độ này không?</translation>
 <translation id="7066646422045619941">Mạng này bị quản trị viên của bạn tắt.</translation>
 <translation id="7067196344162293536">Tự động xoay</translation>
+<translation id="7068360136237591149">Mở tệp</translation>
 <translation id="7076293881109082629">Đăng nhập</translation>
 <translation id="7092922358121866860">Hiển thị các tùy chọn cài đặt Chế độ ánh sáng ban đêm</translation>
 <translation id="7098389117866926363">Thiết bị USB-C (cổng bên trái ở phía sau)</translation>
@@ -387,6 +392,7 @@
 <translation id="7842569679327885685">Cảnh báo: Tính năng thử nghiệm</translation>
 <translation id="7846634333498149051">Bàn phím</translation>
 <translation id="7886277072580235377">Phiên hoạt động trên Internet của bạn sẽ bị xóa khi bạn đăng xuất. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Gửi email</translation>
 <translation id="790040513076446191">Thực hiện cài đặt liên quan đến bảo mật</translation>
 <translation id="7904094684485781019">Quản trị viên của tài khoản này đã không cho phép đăng nhập nhiều tài khoản.</translation>
 <translation id="7933084174919150729">Bạn chỉ có thể sử dụng Trợ lý Google cho hồ sơ chính.</translation>
@@ -449,6 +455,7 @@
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Ứng dụng không hỗ trợ chế độ chia đôi màn hình.</translation>
 <translation id="8874184842967597500">Chưa kết nối</translation>
+<translation id="8877788021141246043">Đặt lời nhắc</translation>
 <translation id="8878886163241303700">Mở rộng màn hình</translation>
 <translation id="8921624153894383499">Trợ lý Google không hỗ trợ ngôn ngữ này.</translation>
 <translation id="8938800817013097409">Thiết bị USB-C (cổng bên phải ở phía sau)</translation>
@@ -472,6 +479,7 @@
 <translation id="9210037371811586452">Đang thoát chế độ màn hình hợp nhất</translation>
 <translation id="9215934040295798075">Đặt hình nền</translation>
 <translation id="923686485342484400">Nhấn Control Shift Q hai lần để đăng xuất.</translation>
+<translation id="938963181863597773">Trên lịch của tôi có sự kiện gì?</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
 <translation id="98515147261107953">Khổ ngang</translation>
 <translation id="995927048686010764">Tự động nhấp</translation>

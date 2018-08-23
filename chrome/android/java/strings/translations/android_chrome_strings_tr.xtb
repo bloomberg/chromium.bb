@@ -875,6 +875,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7981313251711023384">Daha hızlı göz atmak ve arama yapmak için sayfaları önceden yükle</translation>
 <translation id="79859296434321399">Artırılmış gerçeklik içeriğini görüntülemek için ARCore'u yükleyin</translation>
 <translation id="7987073022710626672">Chrome Hizmet Şartları</translation>
+<translation id="7987764905897278458">Google zekasından daha fazla yararlanın</translation>
 <translation id="7998918019931843664">Kapatılan sekmeyi yeniden aç</translation>
 <translation id="7999064672810608036">Bu web sitesine ilişkin çerezler dahil tüm yerel verileri temizlemek ve bu sitenin tüm izinlerini sıfırlamak istediğinizden emin misiniz?</translation>
 <translation id="8004582292198964060">Tarayıcı</translation>
@@ -962,6 +963,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8664979001105139458">Dosya adı zaten mevcut</translation>
 <translation id="8676374126336081632">Girişi temizle</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Sinyal Gücü Düzeyi: # çubuk}other{Sinyal Gücü Düzeyi: # çubuk}}</translation>
+<translation id="868929229000858085">Kişilerinizde arama yapın</translation>
 <translation id="869891660844655955">Son kullanma tarihi</translation>
 <translation id="8719023831149562936">Geçerli sekme ışınlanamıyor</translation>
 <translation id="8725066075913043281">Yeniden dene</translation>
@@ -996,6 +998,7 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="8986494364107987395">Kullanım istatistiklerini ve çökme raporlarını otomatik olarak Google'a gönder</translation>
 <translation id="8993760627012879038">Gizli modda yeni bir sekme açar</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> tarafından yönetilen bir hesapla oturum açıyorsunuz ve yöneticiye tüm Chrome verileriniz üzerinde denetim olanağı veriyorsunuz. Verileriniz kalıcı olarak bu hesaba bağlanacaktır. Chrome'da oturumu kapattığınızda verileriniz bu cihazdan silinir, ancak Google Hesabınızda kalmaya devam eder.</translation>
+<translation id="9018881455348618200">Ara düğmesi</translation>
 <translation id="9019902583201351841">Ebeveynleriniz tarafından yönetiliyor</translation>
 <translation id="9040142327097499898">Bildirimlere izin veriliyor. Konum özelliği bu cihazda kapalı.</translation>
 <translation id="9050666287014529139">Parola</translation>

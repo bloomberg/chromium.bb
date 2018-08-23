@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Добавлено устройство <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Нет сетей</translation>
 <translation id="1059194134494239015">Разрешение экрана <ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Мне скучно</translation>
 <translation id="1104084341931202936">Показать настройки специальных возможностей</translation>
 <translation id="1104621072296271835">Вместе ваши устройства будут работать ещё лучше</translation>
 <translation id="112308213915226829">Автоматически скрывать панель запуска</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Удалить все</translation>
 <translation id="1247372569136754018">Микрофон (встроенный)</translation>
 <translation id="1252999807265626933">Подключен источник питания: <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Какая сейчас погода?</translation>
 <translation id="1267032506238418139">Изменение сочетания клавиш</translation>
 <translation id="1270290102613614947">Экранная клавиатура отключена</translation>
 <translation id="1272079795634619415">Остановить</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Для множественного входа можно использовать не более <ph name="MULTI_PROFILE_USER_LIMIT" /> аккаунтов.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Подключено одно устройство}one{Подключено # устройство}few{Подключено # устройства}many{Подключено # устройств}other{Подключено # устройства}}</translation>
 <translation id="3236488194889173876">Нет доступных мобильных сетей</translation>
+<translation id="3255483164551725916">Что ты умеешь?</translation>
 <translation id="3294437725009624529">Гость</translation>
 <translation id="332587331255250389">Замените батарею в стилусе.</translation>
 <translation id="3351879221545518001">Вы транслируете изображение своего экрана.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Лазерная указка</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Отключить уведомления для 1 приложения}one{Отключить уведомления для # приложения}few{Отключить уведомления для # приложений}many{Отключить уведомления для # приложений}other{Отключить уведомления для # приложения}}</translation>
 <translation id="4072264167173457037">сигнал средней мощности</translation>
+<translation id="4146833061457621061">Включить музыку</translation>
 <translation id="4200057768455216496">Вы нажали сочетание клавиш для закрепленной лупы. Включить ее?</translation>
 <translation id="4217571870635786043">Голосовой ввод</translation>
 <translation id="4261870227682513959">Показать настройки уведомлений. Уведомления отключены.</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Вы нажали сочетание клавиш для высокой контрастности. Включить ее?</translation>
 <translation id="7066646422045619941">Эта сеть отключена администратором.</translation>
 <translation id="7067196344162293536">Автоповорот</translation>
+<translation id="7068360136237591149">Открыть файлы</translation>
 <translation id="7076293881109082629">Вход</translation>
 <translation id="7092922358121866860">Показать настройки ночного режима</translation>
 <translation id="7098389117866926363">Устройство USB-C (порт слева на задней панели)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Внимание! Экспериментальная функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7886277072580235377">После выхода из аккаунта данные о ваших действиях в Интернете будут удалены. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Отправить письмо</translation>
 <translation id="790040513076446191">Управление настройками конфиденциальности</translation>
 <translation id="7904094684485781019">Администратор этого аккаунта запретил множественный вход</translation>
 <translation id="7933084174919150729">Google Ассистент доступен только в основном профиле</translation>
@@ -448,6 +454,7 @@
 <translation id="8850991929411075241">Клавиша поиска + Esc</translation>
 <translation id="8870509716567206129">Приложение не поддерживает разделение экрана.j</translation>
 <translation id="8874184842967597500">Не подключено</translation>
+<translation id="8877788021141246043">Создать напоминание</translation>
 <translation id="8878886163241303700">Раскрытый экран</translation>
 <translation id="8921624153894383499">Google Ассистент не говорит на этом языке</translation>
 <translation id="8938800817013097409">Устройство USB-C (порт справа на задней панели)</translation>
@@ -471,6 +478,7 @@
 <translation id="9210037371811586452">Выход из режима единого рабочего стола…</translation>
 <translation id="9215934040295798075">Выбрать обои</translation>
 <translation id="923686485342484400">Чтобы выйти, дважды нажмите Control+Shift+Q.</translation>
+<translation id="938963181863597773">Что у меня запланировано?</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="98515147261107953">Альбомная</translation>
 <translation id="995927048686010764">Автоклик</translation>

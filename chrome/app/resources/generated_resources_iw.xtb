@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">שימוש בסינכרון ובכל השירותים</translation>
 <translation id="1272079795634619415">הפסק</translation>
-<translation id="1272242203003205253">‏שותפים של Google עובדים עם ה-Assistant כדי לעזור לך</translation>
 <translation id="1272978324304772054">חשבון משתמש זה אינו שייך לדומיין שאליו רשום המכשיר. אם ברצונך להירשם לדומיין אחר, ראשית עליך לבצע שחזור מכשיר.</translation>
 <translation id="1274977772557788323">‏הגדרות אחסון של Adobe Flash Player</translation>
 <translation id="1274997165432133392">‏קובצי Cookie ונתוני אתר נוספים</translation>
@@ -414,7 +413,6 @@
 <translation id="161460670679785907">לא ניתן לזהות את הטלפון שלך</translation>
 <translation id="1616206807336925449">אין צורך בהרשאות מיוחדות כדי להשתמש בתוסף זה.</translation>
 <translation id="1616298854599875024">לא ניתן לייבא את התוסף "<ph name="IMPORT_NAME" />" כי הוא לא מודול משותף</translation>
-<translation id="161707228174452095">טביעת האצבע נוספה.</translation>
 <translation id="1618268899808219593">מרכז עזרה</translation>
 <translation id="162035744160882748">‏הפעלת סינכרון, התאמה אישית ושירותים אחרים של Google</translation>
 <translation id="1620510694547887537">מצלמה</translation>
@@ -692,7 +690,6 @@
 <translation id="2028997212275086731">‏ארכיון RAR</translation>
 <translation id="2034346955588403444">‏הוסף עוד רשת Wi-Fi</translation>
 <translation id="203574396658008164">הפעל רישום הערות ממסך הנעילה</translation>
-<translation id="2039623879703305659">הזזת את האצבע מהר מדי</translation>
 <translation id="2040460856718599782">אופס! משהו השתבש במהלך ניסיון האימות שלך. בדוק שוב את פרטי הכניסה שלך ונסה שוב.</translation>
 <translation id="2043818754674261542">המרחק הדרוש לביטול הנעילה של <ph name="DEVICE_TYPE" /> באמצעות הטלפון</translation>
 <translation id="204497730941176055">‏שם תבנית אישור של Microsoft</translation>
@@ -736,7 +733,6 @@
 <translation id="2099686503067610784">למחוק את אישור השרת "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2101225219012730419">גרסה:</translation>
-<translation id="2107494551712864447">הוספה של טביעת אצבע</translation>
 <translation id="2112877397266219826">הפעל את בקר המגע שלך כדי להגדיר אותי</translation>
 <translation id="21133533946938348">הצמד כרטיסייה</translation>
 <translation id="2113479184312716848">פתח &amp;קובץ...</translation>
@@ -1015,7 +1011,6 @@
 <translation id="2526590354069164005">שולחן עבודה</translation>
 <translation id="2526619973349913024">בדוק אם קיים עדכון</translation>
 <translation id="2527167509808613699">חיבור מכל סוג שהוא</translation>
-<translation id="2532026602297547439">החיישן מלוכלך</translation>
 <translation id="2532589005999780174">מצב ניגודיות גבוהה</translation>
 <translation id="253434972992662860">&amp;השהה</translation>
 <translation id="2534460670861217804">‏שרת proxy של Secure HTTP</translation>
@@ -1374,7 +1369,6 @@
 <translation id="3057861065630527966">גבה את התמונות והסרטונים</translation>
 <translation id="3060379269883947824">הפעלת הקראה</translation>
 <translation id="3061707000357573562">שירות תיקון</translation>
-<translation id="3064410671692449875">אין מספיק נתונים</translation>
 <translation id="3065041951436100775">משוב על כרטיסייה שנסגרה.</translation>
 <translation id="3067198179881736288">להתקין את האפליקציה?</translation>
 <translation id="3067198360141518313">הרץ פלאגין זה</translation>
@@ -2262,7 +2256,6 @@
 <translation id="4480590691557335796">‏Chrome יכול לאתר תוכנות מזיקות במחשב ולהסיר אותן</translation>
 <translation id="4481530544597605423">מכשירים לא מותאמים</translation>
 <translation id="4482194545587547824">‏Google עשויה להשתמש בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google</translation>
-<translation id="4493287891836751813">‏היכרות עם Google Assistant</translation>
 <translation id="4495419450179050807">אל תציג בדף זה</translation>
 <translation id="4499718683476608392">התכונה 'מילוי אוטומטי' של כרטיסי אשראי יכולה למלא טפסים בקליק אחד</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> קרס</translation>
@@ -2317,7 +2310,6 @@
 <translation id="4572659312570518089">האימות בוטל בעת ההתחברות ל-"<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">קובץ <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">עוד...</translation>
-<translation id="4576537685267142337">הרם את האצבע ואז גע שוב בחיישן</translation>
 <translation id="4576541033847873020">‏התאמת מכשיר Bluetooth</translation>
 <translation id="4579581181964204535">לא ניתן להעביר את <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">האם אתה בטוח שברצונך למחוק את פריטי $1 אלה?</translation>
@@ -2562,7 +2554,6 @@
 <translation id="4941627891654116707">גודל גופן</translation>
 <translation id="494286511941020793">‏עזרה של תצורת שרת Proxy</translation>
 <translation id="4945444280533270988">נעילה חכמה מופעלת</translation>
-<translation id="494660967831069720">נתונים חלקיים</translation>
 <translation id="4953689047182316270">להגיב לאירועי נגישות</translation>
 <translation id="4953808748584563296">דמות ברירת מחדל כתומה</translation>
 <translation id="4955814292505481804">שנתי</translation>
@@ -3520,7 +3511,6 @@
 <translation id="6384275966486438344">שנה את הגדרות החיפוש שלך ל: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">‏אתרים יכולים לשמור ולקרוא נתונים של קובצי cookie</translation>
 <translation id="6388429472088318283">חיפוש שפות</translation>
-<translation id="6388771388956873507">מצא את חיישן טביעות האצבע במכשיר וגע בו עם האצבע</translation>
 <translation id="6390799748543157332">‏הדפים שאתה מציג בחלון זה לא יופיעו בהיסטוריית הדפדפן, ולאחר שתסגור את כל חלונות האורח הפתוחים, לא יותירו במחשב עקבות, כמו קובצי Cookie. עם זאת, כל הקבצים שאתה מוריד יישמרו.</translation>
 <translation id="6390994422085833176">בדיקת תכונות ההתאמה האישית והסינכרון אחרי ההגדרה</translation>
 <translation id="6395423953133416962">שלח <ph name="BEGIN_LINK1" />פרטי מערכת<ph name="END_LINK1" /> ו<ph name="BEGIN_LINK2" />ערכים<ph name="END_LINK2" /></translation>
@@ -4123,7 +4113,6 @@
 <translation id="7309257895202129721">הצג &amp;פקדים</translation>
 <translation id="7310598146671372464">‏ההתחברות נכשלה. השרת לא תומך בסוגי הצפנת Kerberos שצוינו. צריך לפנות אל מנהל המערכת.</translation>
 <translation id="7311079019872751559">גישה לפלאגין ללא ארגז חול</translation>
-<translation id="7311891583377621132">הזז קצת את האצבע כדי לסרוק חלק אחר של טביעת האצבע</translation>
 <translation id="7317680720589234980">אפשרויות לנעילת מסך וכניסה</translation>
 <translation id="7321545336522791733">השרת אינו נגיש</translation>
 <translation id="7324297612904500502">פורום ביטא</translation>
@@ -4960,7 +4949,6 @@
 <translation id="8639047128869322042">מחפש תוכנות מזיקות...</translation>
 <translation id="8639963783467694461">הגדרות מילוי אוטומטי</translation>
 <translation id="8642171459927087831">אסימון גישה</translation>
-<translation id="8642267168767642381">הזזת את האצבע לאט מדי</translation>
 <translation id="8642947597466641025">הגדל טקסט</translation>
 <translation id="8643418457919840804">כדי להמשיך יש לבחור אפשרות:</translation>
 <translation id="8645354835496065562">המשך התרת הגישה לחיישנים</translation>
@@ -5321,7 +5309,6 @@
 <translation id="916607977885256133">תמונה בתוך תמונה</translation>
 <translation id="9169496697824289689">הצג מקשי קיצור</translation>
 <translation id="9169931577761441333">הוספה של <ph name="APP_NAME" /> למסך דף הבית</translation>
-<translation id="9170397650136757332">עכשיו הזז מעט את האצבע כדי שהחיישן יזהה את כל חלקי טביעת האצבע</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="9170884462774788842">‏תכנית אחרת במחשב שלך הוסיפה עיצוב שעשוי לשנות את אופן הפעולה של Chrome.</translation>
 <translation id="9173995187295789444">‏מחפש מכשירי Bluetooth...</translation>

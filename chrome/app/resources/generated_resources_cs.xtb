@@ -187,7 +187,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="126768002343224824">16×</translation>
 <translation id="127138278192656016">Používat synchronizaci a všechny služby</translation>
 <translation id="1272079795634619415">Zastavit</translation>
-<translation id="1272242203003205253">Asistent vám pomáhá ve spolupráci s partnery Googlu</translation>
 <translation id="1272978324304772054">Tento uživatelský účet nepatří do domény, do které je zaregistrováno toto zařízení. Chcete-li se zaregistrovat do jiné domény, je nutné nejdříve provést obnovení zařízení.</translation>
 <translation id="1274977772557788323">Nastavení úložiště přehrávače Adobe Flash Player</translation>
 <translation id="1274997165432133392">Soubory cookie a jiná data webů</translation>
@@ -417,7 +416,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="161460670679785907">Telefon se nepodařilo najít</translation>
 <translation id="1616206807336925449">Toto rozšíření vyžaduje speciální oprávnění.</translation>
 <translation id="1616298854599875024">Rozšíření <ph name="IMPORT_NAME" /> nelze importovat, protože se nejedná o sdílený modul</translation>
-<translation id="161707228174452095">Otisk byl přidán!</translation>
 <translation id="1618268899808219593">C&amp;entrum nápovědy</translation>
 <translation id="162035744160882748">Zapnout synchronizaci, personalizaci a další služby Google</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -695,7 +693,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2028997212275086731">Archiv ve formátu RAR</translation>
 <translation id="2034346955588403444">Přidat jinou síť Wi-Fi</translation>
 <translation id="203574396658008164">Povolit psaní poznámek na obrazovce uzamčení</translation>
-<translation id="2039623879703305659">Pohyb prstem byl příliš rychlý</translation>
 <translation id="2040460856718599782">Jejda! Při ověřování vaší totožnosti došlo k chybě. Zkontrolujte prosím identifikační údaje a zkuste to znovu.</translation>
 <translation id="2043818754674261542">Maximální vzdálenost od telefonu k odemknutí tohoto zařízení <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Název šablony certifikátu Microsoft</translation>
@@ -739,7 +736,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2099686503067610784">Smazat certifikát serveru <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="2100273922101894616">Přihlásit se automaticky</translation>
 <translation id="2101225219012730419">Verze:</translation>
-<translation id="2107494551712864447">Přidejte otisk prstu</translation>
 <translation id="2112877397266219826">Chcete-li tuto službu nastavit, zapněte dotykové ovládání.</translation>
 <translation id="21133533946938348">Připnout kartu</translation>
 <translation id="2113479184312716848">&amp;Otevřít soubor...</translation>
@@ -1018,7 +1014,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2526590354069164005">Plocha</translation>
 <translation id="2526619973349913024">Zkontrolovat aktualizace</translation>
 <translation id="2527167509808613699">Jakýkoli typ spojení</translation>
-<translation id="2532026602297547439">Senzor je znečištěný</translation>
 <translation id="2532589005999780174">Režim vysokého kontrastu</translation>
 <translation id="253434972992662860">&amp;Pozastavit</translation>
 <translation id="2534460670861217804">Proxy server protokolu HTTPS</translation>
@@ -1377,7 +1372,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3057861065630527966">Zálohovat fotky a videa</translation>
 <translation id="3060379269883947824">Zapnout poslech vybraného textu</translation>
 <translation id="3061707000357573562">Služba oprav</translation>
-<translation id="3064410671692449875">Nedostatek dat</translation>
 <translation id="3065041951436100775">Zpětná vazba k ukončení procesu karty</translation>
 <translation id="3067198179881736288">Nainstalovat aplikaci?</translation>
 <translation id="3067198360141518313">Spustit plugin</translation>
@@ -1500,7 +1494,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3271648667212143903">Web <ph name="ORIGIN" /> žádá o připojení</translation>
 <translation id="3274763671541996799">Přepnuli jste do režimu celé obrazovky.</translation>
 <translation id="3275778913554317645">Otevřít jako okno</translation>
-<translation id="3278877214895457897">Po nastavení Chromebooku získáte pomoc od Asistenta kdykoliv tak, že stisknete tlačítko Asistent nebo řeknete „OK Google“.</translation>
+<translation id="3278877214895457897">Po nastavení Chromebooku získáte pomoc od Asistenta kdykoliv tak, že stisknete tlačítko Asistent nebo řeknete „Ok Google“.</translation>
 <translation id="3279230909244266691">Tento proces může trvat několik minut. Probíhá spouštění virtuálního počítače.</translation>
 <translation id="3279741024917655738">Videa na celou stránku zobrazovat na</translation>
 <translation id="3280237271814976245">Uložit &amp;jako...</translation>
@@ -2262,7 +2256,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4480590691557335796">Chrome na vašem počítači může vyhledat škodlivý software a odstranit jej</translation>
 <translation id="4481530544597605423">Nespárovaná zařízení</translation>
 <translation id="4482194545587547824">Google vaši historii procházení může používat k přizpůsobení Vyhledávání a dalších služeb Google.</translation>
-<translation id="4493287891836751813">Seznamte se se svým Asistentem Google</translation>
 <translation id="4495419450179050807">Nezobrazovat na této stránce</translation>
 <translation id="4499718683476608392">Zapněte automatické vyplňování platebních karet a vyplňujte webové formuláře jedním kliknutím</translation>
 <translation id="4500114933761911433">Plugin <ph name="PLUGIN_NAME" /> selhal</translation>
@@ -2317,7 +2310,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4572659312570518089">Během připojování k zařízení <ph name="DEVICE_NAME" /> bylo zrušeno ověření.</translation>
 <translation id="4572815280350369984">Soubor <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Další...</translation>
-<translation id="4576537685267142337">Zvedněte prst a poté na senzor klepněte znovu.</translation>
 <translation id="4576541033847873020">Párování zařízení Bluetooth</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" /> nelze odeslat.</translation>
 <translation id="4580526846085481512">Opravdu chcete tyto položky ($1) smazat?</translation>
@@ -2562,7 +2554,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4941627891654116707">Velikost písma</translation>
 <translation id="494286511941020793">Nápověda ke konfiguraci proxy serveru</translation>
 <translation id="4945444280533270988">Funkce Smart Lock je zapnutá</translation>
-<translation id="494660967831069720">Částečná data</translation>
 <translation id="4953689047182316270">Reagovat na události přístupnosti</translation>
 <translation id="4953808748584563296">Výchozí oranžový avatar</translation>
 <translation id="4955814292505481804">Roční</translation>
@@ -3518,7 +3509,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6384275966486438344">Změňte nastavení vyhledávání na: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Weby mohou ukládat a číst data souborů cookie</translation>
 <translation id="6388429472088318283">Vyhledat jazyky</translation>
-<translation id="6388771388956873507">Vyhledejte senzor otisků prstů na zařízení a dotkněte se ho prstem</translation>
 <translation id="6390799748543157332">Stránky, které otevřete v tomto okně, nebudou uvedeny v historii prohlížeče a nezanechají v počítači po zavření všech oken hosta žádné stopy, např. soubory cookie. Všechny stažené soubory však budou zachovány.</translation>
 <translation id="6390994422085833176">Po nastavení zkontrolovat funkce synchronizace a personalizace</translation>
 <translation id="6395423953133416962">Odesílat <ph name="BEGIN_LINK1" />informace o systému<ph name="END_LINK1" /> a <ph name="BEGIN_LINK2" />metriky<ph name="END_LINK2" /></translation>
@@ -4121,7 +4111,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="7309257895202129721">Zobrazit &amp;ovládací prvky</translation>
 <translation id="7310598146671372464">Přihlášení se nezdařilo. Server nepodporuje zadané typy šifrování Kerberos. Obraťte se na svého administrátora.</translation>
 <translation id="7311079019872751559">Přístup pluginu mimo izolovaný prostor</translation>
-<translation id="7311891583377621132">Lehce prst natočte, aby se zaznamenala jiná část otisku</translation>
 <translation id="7317680720589234980">Možnosti zámku obrazovky a přihlášení</translation>
 <translation id="7321545336522791733">Server je nedostupný</translation>
 <translation id="7324297612904500502">Fórum beta</translation>
@@ -4959,7 +4948,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8639047128869322042">Vyhledávání škodlivého softwaru...</translation>
 <translation id="8639963783467694461">Nastavení automatického vyplňování</translation>
 <translation id="8642171459927087831">Přístupový token</translation>
-<translation id="8642267168767642381">Pohyb prstem byl příliš pomalý</translation>
 <translation id="8642947597466641025">Zvětšit text</translation>
 <translation id="8643418457919840804">Chcete-li pokračovat, vyberte jednu možnost:</translation>
 <translation id="8645354835496065562">I nadále povolovat přístup k senzorům</translation>
@@ -5320,7 +5308,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="916607977885256133">Obraz v obraze</translation>
 <translation id="9169496697824289689">Zobrazit klávesové zkratky</translation>
 <translation id="9169931577761441333">Přidat aplikaci <ph name="APP_NAME" /> na plochu</translation>
-<translation id="9170397650136757332">Nyní prst lehce natočte, aby se zaznamenaly všechny části otisku</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="9170884462774788842">Jiný program ve vašem počítači nainstaloval motiv, který může měnit funkce Chromu.</translation>
 <translation id="9173995187295789444">Vyhledávání zařízení Bluetooth...</translation>

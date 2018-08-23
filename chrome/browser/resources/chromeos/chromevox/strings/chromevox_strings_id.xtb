@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Input tidak valid</translation>
 <translation id="1080471004309605942">Akhir teks berformat miring</translation>
 <translation id="1082209053475788238">Tidak ada judul tingkat 6 sebelumnya.</translation>
+<translation id="1087788677726983142">Sembunyikan filter streaming acara</translation>
 <translation id="1088219014394087294">Tanpa judul.</translation>
 <translation id="1106741348836243114">Mengaktifkan atau menonaktifkan masukan suara (earcons).</translation>
 <translation id="1108651818222110612">subti</translation>
@@ -78,6 +79,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="1618597272655350600">Mengumumkan deskripsi lengkap dari posisi saat ini</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{lebih dari}other{# tanda lebih dari}}</translation>
 <translation id="1653266918374749391">Judul tingkat 3 sebelumnya</translation>
+<translation id="1657616855184033958">Tampilkan filter streaming acara</translation>
 <translation id="1659072772017912254">Tidak dicentang</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">Navigasi ChromeVox</translation>
@@ -412,6 +414,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="4255943572433203166">Gunakan opsi di bawah untuk menyesuaikan ChromeVox. Perubahan segera diterapkan.</translation>
 <translation id="4271220233568730077">Matematika berikutnya</translation>
 <translation id="4271521365602459209">Tidak ada hasil lainnya.</translation>
+<translation id="4275397969489577657">Aktifkan pencatatan streaming acara</translation>
 <translation id="4287520460805643128">Tidak ada artikel berikutnya.</translation>
 <translation id="4289540628985791613">Ikhtisar</translation>
 <translation id="4300318234632215983">Mengumumkan URL di belakang link</translation>
@@ -550,6 +553,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="5407530583102765689">{COUNT,plural, =1{titik koma}other{# titik koma}}</translation>
 <translation id="5411891038905756502">Tidak ada titik lompatan sebelumnya.</translation>
 <translation id="5417034931411865818">Klik item di bawah tombol perutean $1</translation>
+<translation id="5435274640623994081">Aktifkan pencatatan earcon</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kurang dari}other{# tanda kurang dari}}</translation>
 <translation id="5444587279251314700">(aktif)</translation>
 <translation id="5446809554778706307">Tidak ada fokus. Tekan Ctrl+T untuk membuka tab baru.</translation>
@@ -899,6 +903,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8650576015643545550">Tidak ada daftar sebelumnya.</translation>
 <translation id="8651481478098336970">membisukan volume</translation>
 <translation id="8653646212587894517">Menampilkan daftar link</translation>
+<translation id="8656888282555543604">Aktifkan pencatatan braille</translation>
 <translation id="8664519043722036194">detik</translation>
 <translation id="867187640362843212">Judul 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pipa}other{# pipa vertikal}}</translation>

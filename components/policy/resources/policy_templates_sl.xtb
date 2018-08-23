@@ -370,11 +370,6 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 
           Če ta pravilnik ni nastavljen, bodo uporabljeni vsi štirje načini.</translation>
 <translation id="2067011586099792101">Blokira dostop do spletnih mest zunaj paketov vsebine</translation>
-<translation id="2070270043919235595">Obvesti uporabnike, da je treba zaradi uveljavitve posodobitve na čakanju zagnati brskalnik <ph name="PRODUCT_NAME" />.
-
-      Ta nastavitev pravilnika omogoči obvestila, ki uporabnika obvestijo, da je priporočen ali obvezen vnovičen zagon brskalnika. Če pravilnik ni nastavljen, brskalnik <ph name="PRODUCT_NAME" /> uporabnika glede potrebnega vnovičnega zagona obvesti prek manjših sprememb menija. Če je pravilnik nastavljen na »Recommended«, je uporabniku prikazano ponavljajoče se opozorilo, da je priporočen vnovičen zagon. Uporabnik lahko opozorilo opusti in tako odloži vnovičen zagon. Če je pravilnik nastavljen na »Required«, je uporabniku prikazano ponavljajoče se opozorilo, da bo po izteku obdobja za obveščanje vsiljen vnovičen zagon brskalnika. To obdobje privzeto traja sedem dni in ga je mogoče konfigurirati v nastavitvi pravilnika <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Uporabniška seja je po vnovičnem zagonu obnovljena.</translation>
 <translation id="2073552873076775140">Dovoli prijavo v izdelek <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
 <translation id="2077273864382355561">Časovni zamik izklopa zaslona ob napajanju iz akumulatorja</translation>
@@ -934,7 +929,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Ta pravilnik je izbiren. Če ni nastavljen, ne bo novega zavihka s povezavami.
 
           Ta pravilnik se upošteva samo, če je omogočen pravilnik »DefaultSearchProviderEnabled«.</translation>
-<translation id="3465852069254497664">Obveščanje uporabnika, da je priporočen ali obvezen vnovičen zagon brskalnika</translation>
 <translation id="346731943813722404">Določa, ali naj se zakasnitve upravljanja porabe in omejitev dolžine seje začnejo izvajati šele po prvi zaznani dejavnosti uporabnika v seji.
 
           Če je pravilnik nastavljen na »True«, se zakasnitve upravljanja porabe in omejitev dolžine seje ne začnejo izvajati, dokler v seji ni zaznana prva dejavnost uporabnika.
@@ -2194,17 +2188,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Preden se zaslon zatemni, pametni model zatemnitve oceni, ali je treba zatemnitev zaslona odložiti. Če pametni model zatemnitve odloži zatemnitev zaslona, dejansko podaljša čas do zatemnitve zaslona. V tem primeru se časovna zamika izklopa zaslona in zaklepanja zaslona ter časovni zamik ob nedejavnosti prilagodijo, da ohranijo enako časovno razdaljo od prvotno konfigurirane zakasnitve zatemnitve zaslona.
       Če je pravilnik omogočen ali ni nastavljen, je pametni model zatemnitve omogočen in sme podaljšati čas do zatemnitve zaslona. Če je pravilnik onemogočen, pametni model zatemnitve na zatemnitev zaslona ne vpliva.</translation>
-<translation id="6982028490425791294">
-      Če je pravilnik omogočen, <ph name="PRODUCT_NAME" /> sme zbirati dnevnike dogodkov tehnologije WebRTC iz Googlovih storitev (npr. iz Googla Meet) in te dnevnike nalagati v Google.
-
-      Če je pravilnik onemogočen ali ni nastavljen, <ph name="PRODUCT_NAME" /> tovrstnih dnevnikov ne sme ne zbirati ne nalagati.
-
-      Ti dnevniki vsebujejo podatke, kot so čas in velikost poslanih ter prejetih paketov RTP, povratne informacije o preobremenjenosti omrežja ter metapodatki o času in kakovosti zvočnih ter slikovnih okvirov. Ti podatki so v pomoč pri odpravljanju napak z zvočnimi klici ali videoklici v Chromu, na primer pri težavah z ocenjevanjem pasovne širine ipd. Dnevniki ne vsebujejo zvočne in slikovne vsebine klica.
-
-      To zbiranje podatkov lahko sprožijo samo Googlove spletne storitve, na primer Google Hangouts ali Google Meet.
-
-      Ti dnevniki so lahko prek ID-ja seje povezani z drugimi dnevniki, ki jih zbira sama Googlova storitev, in sicer zaradi lažjega odpravljanja napak.
-      </translation>
 <translation id="6994082778848658360">Določa, kako lahko vgrajena strojna oprema za varnostni element zagotovi dvojno preverjanje pristnosti, če je združljiva s to funkcijo. Gumb za vklop na računalniku zazna fizično prisotnost uporabnika.
 
       Če je izbrana možnost »Onemogočeno«, dvojno preverjanje ni zagotovljeno.
@@ -3045,11 +3028,6 @@ Storitev za zaščito gesla po prikazu opozorila v brskalniku pošlje uporabnike
 <translation id="9035964157729712237">ID-ji razširitev, ki naj bodo izvzete s seznama prepovedanih</translation>
 <translation id="9042911395677044526">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja glede na uporabnika, v napravo s sistemom <ph name="PRODUCT_OS_NAME" />. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisane na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Navedite, ali videodejavnost vpliva na upravljanje napajanja</translation>
-<translation id="9085839450090699752">Omogoči nastavitev časovnega obdobja v milisekundah, v katerem so uporabniki obveščeni, da mora biti <ph name="PRODUCT_NAME" /> znova zagnan ali da mora biti naprava <ph name="PRODUCT_OS_NAME" /> znova zagnana za uveljavitev čakajoče posodobitve.
-
-      V tem časovnem obdobju je uporabnik večkrat obveščen glede potrebe po posodobitvi. Ko je zaznana nadgradnja, se za naprave <ph name="PRODUCT_OS_NAME" /> v sistemski vrstici pojavi obvestilo o vnovičnem zagonu. Barva obvestila se spremeni, ko mine polovica obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za brskalnike <ph name="PRODUCT_NAME" /> se meni aplikacije spremeni, da ponazori, da je potreben vnovični zagon, ko mine ena tretjina obdobja za obveščanje. Barva tega obvestila se spremeni, ko mineta dve tretjini obdobja za obveščanje, in znova, ko mine celotno obdobje za obveščanje. Za dodatna obvestila, ki jih je omogočil pravilnik <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> za brskalnike, prav tako velja ta razpored.
-
-      Če pravilnik ni nastavljen, se za naprave <ph name="PRODUCT_OS_NAME" /> kot privzeto časovno obdobje uporabi 345.600.000 millisekund (štirje dnevi), za brskalnike pa 604.800.000 milisekund (en teden).</translation>
 <translation id="9088433379343318874">Omogočanje ponudnika vsebine za zaščitene uporabnike</translation>
 <translation id="9088444059179765143">Konfiguriranje načina samodejnega zaznavanja časovnega pasu</translation>
 <translation id="9096086085182305205">Seznam dovoljenih strežnikov za preverjanje pristnosti</translation>

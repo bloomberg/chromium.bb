@@ -163,6 +163,7 @@
 <translation id="1225211345201532184">Plankartikel 5</translation>
 <translation id="1227507814927581609">Verificatie mislukt tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
 <translation id="1230807973377071856">systeemmenu</translation>
+<translation id="123186018454553812">Een andere sleutel proberen</translation>
 <translation id="1232569758102978740">Naamloos</translation>
 <translation id="1233721473400465416">Landinstelling</translation>
 <translation id="1234808891666923653">Service Workers</translation>
@@ -187,7 +188,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Synchronisatie en alle services gebruiken</translation>
 <translation id="1272079795634619415">Stop</translation>
-<translation id="1272242203003205253">Google-partners werken samen met je Assistent om je te helpen</translation>
 <translation id="1272978324304772054">Dit gebruikersaccount hoort niet bij het domein waarbij het apparaat is geregistreerd. Als je het apparaat wilt registreren bij een ander domein, moet je eerst apparaatherstel uitvoeren.</translation>
 <translation id="1274977772557788323">Opslaginstellingen voor Adobe Flash Player</translation>
 <translation id="1274997165432133392">Cookies en andere sitegegevens</translation>
@@ -332,6 +332,7 @@
 <translation id="1485141095922496924">Versie <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
 <translation id="1486096554574027028">Wachtwoorden zoeken</translation>
 <translation id="1487335504823219454">Aan - aangepaste instellingen</translation>
+<translation id="1489664337021920575">Een andere optie kiezen</translation>
 <translation id="1493892686965953381">Wachten op <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> andere beschikbare apparaten.</translation>
 <translation id="1497522201463361063">Kan de naam van '<ph name="FILE_NAME" />' niet wijzigen. <ph name="ERROR_MESSAGE" /></translation>
@@ -367,6 +368,7 @@
 <translation id="1531004739673299060">App-venster</translation>
 <translation id="15373452373711364">Grote muisaanwijzer</translation>
 <translation id="1538729222189715449">Linux-bestanden openen…</translation>
+<translation id="153933193410874873">We kunnen je identiteit niet verifiëren op dit apparaat</translation>
 <translation id="1540605929960647700">Demomodus inschakelen</translation>
 <translation id="1543284117603151572">Geïmporteerd uit Edge</translation>
 <translation id="1545177026077493356">Automatische kioskmodus</translation>
@@ -383,6 +385,7 @@
 <translation id="1564414980088536597">Deze afbeelding kan niet worden gebruikt. Kies een andere afbeelding.</translation>
 <translation id="1566049601598938765">Website</translation>
 <translation id="1567387640189251553">Er is een ander toetsenbord aangesloten sinds de laatste keer dat je je wachtwoord hebt ingevoerd. Mogelijk wordt geprobeerd om je toetsaanslagen te stelen.</translation>
+<translation id="1567750922576943685">Wanneer je je identiteit verifieert, blijven je persoonlijke gegevens beter beschermd</translation>
 <translation id="1567993339577891801">JavaScript-console</translation>
 <translation id="1568067597247500137">Geluid van site dempen</translation>
 <translation id="1568323446248056064">Weergave-instellingen van apparaat openen</translation>
@@ -417,7 +420,6 @@
 <translation id="161460670679785907">Je telefoon kan niet worden gedetecteerd</translation>
 <translation id="1616206807336925449">De extensie vereist geen speciale rechten.</translation>
 <translation id="1616298854599875024">Kan '<ph name="IMPORT_NAME" />' niet importeren, omdat dit geen gedeelde module is</translation>
-<translation id="161707228174452095">Vingerafdruk is toegevoegd.</translation>
 <translation id="1618268899808219593">H&amp;elpcentrum</translation>
 <translation id="162035744160882748">Synchronisatie, personalisatie en andere Google-services inschakelen</translation>
 <translation id="1620510694547887537">Camera</translation>
@@ -695,7 +697,6 @@
 <translation id="2028997212275086731">RAR-archief</translation>
 <translation id="2034346955588403444">Ander wifi-netwerk toevoegen</translation>
 <translation id="203574396658008164">Notities maken vanaf inlogscherm inschakelen</translation>
-<translation id="2039623879703305659">Vinger te snel bewogen</translation>
 <translation id="2040460856718599782">Er is iets verkeerd gegaan tijdens de verificatie. Controleer je inloggegevens en probeer het opnieuw.</translation>
 <translation id="2043818754674261542">Afstand die nodig is om deze <ph name="DEVICE_TYPE" /> te ontgrendelen met de telefoon</translation>
 <translation id="204497730941176055">Sjabloonnaam van Microsoft-certificaat</translation>
@@ -739,7 +740,6 @@
 <translation id="2099686503067610784">Servercertificaat '<ph name="CERTIFICATE_NAME" />' verwijderen?</translation>
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="2101225219012730419">Versie:</translation>
-<translation id="2107494551712864447">Een vingerafdruk toevoegen</translation>
 <translation id="2112877397266219826">Schakel je touch-controller in om mij in te stellen</translation>
 <translation id="21133533946938348">Tabblad vastzetten</translation>
 <translation id="2113479184312716848">Bestand &amp;openen...</translation>
@@ -1018,7 +1018,6 @@
 <translation id="2526590354069164005">Bureaublad</translation>
 <translation id="2526619973349913024">Controleren op updates</translation>
 <translation id="2527167509808613699">Elk soort verbinding</translation>
-<translation id="2532026602297547439">Vuil op sensor</translation>
 <translation id="2532589005999780174">Modus voor hoog contrast</translation>
 <translation id="253434972992662860">&amp;Onderbreken</translation>
 <translation id="2534460670861217804">Beveiligde HTTP-proxy</translation>
@@ -1197,6 +1196,7 @@
 <translation id="2783298271312924866">Gedownload</translation>
 <translation id="2783321960289401138">Snelle link maken…</translation>
 <translation id="2783829359200813069">Versleutelingstypen selecteren</translation>
+<translation id="2783952358106015700">Je beveiligingssleutel gebruiken met <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Je mobiele netwerk activeren</translation>
 <translation id="2785873697295365461">Bestandsdescriptors</translation>
 <translation id="2787047795752739979">Oorspronkelijk bestand overschrijven</translation>
@@ -1377,7 +1377,6 @@
 <translation id="3057861065630527966">Een back-up van je foto's en video's maken</translation>
 <translation id="3060379269883947824">'Selecteer om uitgesproken te worden' inschakelen</translation>
 <translation id="3061707000357573562">Patchservice</translation>
-<translation id="3064410671692449875">Onvoldoende gegevens</translation>
 <translation id="3065041951436100775">Feedback over gesloten tabblad.</translation>
 <translation id="3067198179881736288">App installeren?</translation>
 <translation id="3067198360141518313">Deze plugin uitvoeren</translation>
@@ -1510,6 +1509,7 @@
 <translation id="3285322247471302225">Nieuw &amp;tabblad</translation>
 <translation id="3288047731229977326">Extensies die in de ontwikkelaarmodus worden uitgevoerd, kunnen je computer beschadigen. Als je geen ontwikkelaar bent, moet je deze extensies uitschakelen, die in de ontwikkelaarsmodus worden uitgevoerd, om beveiligd te blijven.</translation>
 <translation id="3289856944988573801">Gebruik Ethernet of wifi om op updates te controleren.</translation>
+<translation id="3292421191230118801">Doorgaan met sites bekijken via mobiel op je Chromebook</translation>
 <translation id="32939749466444286">De Linux-container is niet gestart. Probeer het opnieuw.</translation>
 <translation id="3294437725009624529">Gast</translation>
 <translation id="329838636886466101">Repareren</translation>
@@ -1552,6 +1552,7 @@
 <translation id="3348038390189153836">Verwisselbaar apparaat gedetecteerd</translation>
 <translation id="3348459612390503954">Gefeliciteerd</translation>
 <translation id="3349933790966648062">Geheugenvoetafdruk</translation>
+<translation id="3350117557200012647">De koppelingsmodus activeren</translation>
 <translation id="3353984535370177728">Een map voor uploaden selecteren</translation>
 <translation id="3355936511340229503">Verbindingsfout</translation>
 <translation id="3356797067524893661">Je bent gereed om door te gaan met Hangouts Meet</translation>
@@ -1691,6 +1692,7 @@
 <translation id="3556000484321257665">Je zoekmachine is gewijzigd in <ph name="URL" />.</translation>
 <translation id="3563432852173030730">Kiosk-app kan niet worden gedownload.</translation>
 <translation id="3564334271939054422">Het is mogelijk dat je de inlogpagina moet bezoeken van het wifi-netwerk dat je gebruikt (<ph name="NETWORK_ID" />).</translation>
+<translation id="3564848315152754834">USB-beveiligingssleutel</translation>
 <translation id="3566721612727112615">Geen sites toegevoegd</translation>
 <translation id="3569382839528428029">Wil je je scherm delen met <ph name="APP_NAME" />?</translation>
 <translation id="3570985609317741174">Webinhoud</translation>
@@ -1741,6 +1743,7 @@
 <translation id="3627588569887975815">Link openen in inco&amp;gnitovenster</translation>
 <translation id="3627671146180677314">Vernieuwingsmoment voor Netscape-certificaat</translation>
 <translation id="3627879631695760395"><ph name="APP" /> installeren...</translation>
+<translation id="3630132874740063857">Je telefoon</translation>
 <translation id="3630995161997703415">Voeg deze site aan je plank toe om hem altijd te kunnen gebruiken</translation>
 <translation id="3635030235490426869">Tabblad 1</translation>
 <translation id="3636096452488277381">Hallo, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -1762,6 +1765,7 @@
 <translation id="3664511988987167893">Extensiepictogram</translation>
 <translation id="3665589677786828986">Chrome heeft gedetecteerd dat sommige van je instellingen zijn beschadigd door een ander programma en heeft de instellingen teruggezet naar de oorspronkelijke standaardwaarden.</translation>
 <translation id="3668570675727296296">Taalinstellingen</translation>
+<translation id="3668801437375206837">Googlers kunnen aanvullende Bluetooth-logboeken toevoegen aan hun feedbackrapporten om Bluetooth-problemen beter te analyseren. Als deze optie is aangevinkt, bevat je rapport btsnoop- en HCI-logboeken van je huidige sessie die zijn opgeschoond om zo veel mogelijk PII te verwijderen. Toegang tot deze logboeken is beperkt tot beheerders van de productgroep Chrome OS in Listnr. Logboeken worden na negentig dagen verwijderd.</translation>
 <translation id="3668823961463113931">Handlers</translation>
 <translation id="3670229581627177274">Bluetooth inschakelen</translation>
 <translation id="3672681487849735243">Er is een fabrieksfout gedetecteerd</translation>
@@ -1780,6 +1784,7 @@
 <translation id="3691267899302886494"><ph name="HOST" /> wil je scherm delen</translation>
 <translation id="3693415264595406141">Wachtwoord:</translation>
 <translation id="3694027410380121301">Selecteer vorig tabblad</translation>
+<translation id="369489984217678710">Wachtwoorden en andere inloggegevens</translation>
 <translation id="3699624789011381381">E-mailadres</translation>
 <translation id="3699920817649120894">Synchronisatie en personalisatie uitschakelen?</translation>
 <translation id="3700888195348409686">Gepresenteerd (<ph name="PAGE_ORIGIN" />)</translation>
@@ -1803,6 +1808,7 @@
 <translation id="3727148787322499904">Het wijzigen van deze instelling is van invloed op alle gedeelde netwerken</translation>
 <translation id="3727187387656390258">Pop-up controleren</translation>
 <translation id="3729506734996624908">Toegestane sites</translation>
+<translation id="3731997362820527097">Je beveiligingssleutel selecteren</translation>
 <translation id="3732078975418297900">Fout op regel <ph name="ERROR_LINE" /></translation>
 <translation id="3733127536501031542">SSL-server met step-up</translation>
 <translation id="3735740477244556633">Sorteren op</translation>
@@ -1903,6 +1909,7 @@
 <translation id="3860381078714302691">Welkom bij Hangouts Meet</translation>
 <translation id="3861241522664181545">Pagina is onderbroken.</translation>
 <translation id="3862134173397075045">Welkom bij de Cast-functie in Chrome!</translation>
+<translation id="3862693525629180217">Verifiëren via ingebouwde sensor</translation>
 <translation id="3862788408946266506">Een app met het manifestkenmerk 'kiosk_only' moet worden geïnstalleerd in de Chrome OS-kioskmodus</translation>
 <translation id="3865414814144988605">Resolutie</translation>
 <translation id="386548886866354912">Inpakken met <ph name="EXTENSION_NAME" /></translation>
@@ -2028,6 +2035,7 @@
 <translation id="4055023634561256217">Opnieuw starten is vereist voordat je apparaat opnieuw kan worden ingesteld met Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> - <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Bekijken in de Web Store</translation>
+<translation id="4058647953897694817">Verifiëren via Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Controleer document nu</translation>
 <translation id="406070391919917862">Achtergrondapplicaties</translation>
@@ -2041,6 +2049,7 @@
 <translation id="407520071244661467">Schaal</translation>
 <translation id="4075639477629295004">Kan <ph name="FILE_NAME" /> niet casten.</translation>
 <translation id="4077917118009885966">Advertenties geblokkeerd op deze site</translation>
+<translation id="4079799245038595838">Er is een melding verstuurd naar je telefoon. Volg de aanwijzingen om te bevestigen dat jij het bent.</translation>
 <translation id="4081242589061676262">Kan bestand niet casten.</translation>
 <translation id="4084682180776658562">Bladwijzer maken</translation>
 <translation id="4084835346725913160"><ph name="TAB_NAME" /> sluiten</translation>
@@ -2140,6 +2149,7 @@
 <translation id="4250229828105606438">Screenshot</translation>
 <translation id="4250680216510889253">Nee</translation>
 <translation id="4252852543720145436">ID's voor beveiligde content</translation>
+<translation id="4252899949534773101">Bluetooth is uitgeschakeld</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" />: content van tabblad gedeeld</translation>
 <translation id="4254813446494774748">Doeltaal:</translation>
 <translation id="425573743389990240">Batterij-ontlading in Watt (een negatieve waarde betekent dat de batterij wordt opgeladen)</translation>
@@ -2265,8 +2275,8 @@
 <translation id="4480590691557335796">Chrome kan schadelijke software op je computer vinden en verwijderen</translation>
 <translation id="4481530544597605423">Ontkoppelde apparaten</translation>
 <translation id="4482194545587547824">Google kan je browsegeschiedenis gebruiken om Google Zoeken en andere Google-services te personaliseren</translation>
-<translation id="4493287891836751813">Ontdek de Google Assistent</translation>
 <translation id="4495419450179050807">Niet op deze pagina weergeven</translation>
+<translation id="449938344715680828">Druk op |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| gevolgd door |<ph name="ACCELERATOR3" />| om af te sluiten</translation>
 <translation id="4499718683476608392">Automatisch aanvullen van creditcardgegevens inschakelen om formulieren met één klik in te vullen</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> is gecrasht</translation>
 <translation id="450099669180426158">Uitroeptekenpictogram</translation>
@@ -2320,7 +2330,6 @@
 <translation id="4572659312570518089">Verificatie geannuleerd tijdens verbinden met '<ph name="DEVICE_NAME" />'.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" />-bestand</translation>
 <translation id="457386861538956877">Meer...</translation>
-<translation id="4576537685267142337">Til je vinger op en raak de sensor opnieuw aan</translation>
 <translation id="4576541033847873020">Bluetooth-apparaat koppelen</translation>
 <translation id="4579581181964204535">Kan <ph name="HOST_NAME" /> niet casten.</translation>
 <translation id="4580526846085481512">Weet je zeker dat je $1 items wilt verwijderen?</translation>
@@ -2343,6 +2352,7 @@
 <translation id="4611114513649582138">Gegevensverbinding beschikbaar</translation>
 <translation id="4613271546271159013">Een extensie heeft de pagina gewijzigd die wordt weergegeven wanneer je een nieuw tabblad opent.</translation>
 <translation id="4615586811063744755">geen cookie geselecteerd</translation>
+<translation id="4615618657481886098">Je hebt deze sleutel al eerder geregistreerd. Je hoeft deze niet opnieuw te registreren.</translation>
 <translation id="4617270414136722281">Opties voor extensies</translation>
 <translation id="4619615317237390068">Tabbladen van andere apparaten</translation>
 <translation id="4620809267248568679">Deze instelling wordt door een extensie afgedwongen.</translation>
@@ -2452,6 +2462,7 @@
 <translation id="4790972063719531840">Automatisch diagnostische en gebruiksgegevens verzenden naar Google</translation>
 <translation id="4792711294155034829">&amp;Een probleem melden...</translation>
 <translation id="479536056609751218">Webpagina, alleen HTML</translation>
+<translation id="4798236378408895261"><ph name="BEGIN_LINK" />Bluetooth-logboeken<ph name="END_LINK" /> toevoegen (voor intern Google-gebruik)</translation>
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4801448226354548035">Accounts verbergen</translation>
 <translation id="4801512016965057443">Mobiele dataroaming toestaan</translation>
@@ -2518,6 +2529,7 @@
 <translation id="4882473678324857464">Focus op bladwijzers</translation>
 <translation id="4882831918239250449">Beheren hoe je browsegeschiedenis wordt gebruikt om Google Zoeken, advertenties en meer te personaliseren</translation>
 <translation id="4883178195103750615">Bladwijzers exporteren naar HTML-bestand...</translation>
+<translation id="4883274597792587930">Zoek de naam op de achterkant van je sleutel</translation>
 <translation id="4883436287898674711">Alle sites op <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">&amp;Taakbeheer</translation>
 <translation id="4883898390143004266">Apps je locatie laten vaststellen. Zorg dat apps gemakkelijker je locatie kunnen vinden met de locatieservice van Google. Google kan periodiek locatiegegevens verzamelen en deze op een anonieme manier gebruiken om de locatienauwkeurigheid en locatiegebaseerde services te verbeteren. <ph name="BEGIN_LINK1" />Meer informatie<ph name="END_LINK1" /></translation>
@@ -2565,7 +2577,6 @@
 <translation id="4941627891654116707">Lettergrootte</translation>
 <translation id="494286511941020793">Ondersteuning voor proxyconfiguratie</translation>
 <translation id="4945444280533270988">Smart Lock is ingeschakeld</translation>
-<translation id="494660967831069720">Gedeeltelijke gegevens</translation>
 <translation id="4953689047182316270">Reageren op toegankelijkheidsgebeurtenissen</translation>
 <translation id="4953808748584563296">Standaard oranje avatar</translation>
 <translation id="4955814292505481804">Jaarlijks</translation>
@@ -2992,6 +3003,7 @@
 <translation id="55601339223879446">De grenzen van je bureaublad aanpassen binnen de weergave</translation>
 <translation id="5562781907504170924">Dit tabblad is gekoppeld aan een Bluetooth-apparaat.</translation>
 <translation id="5563234215388768762">Zoek op Google of typ een URL</translation>
+<translation id="5567950944308676169">Sluit je beveiligingssleutel aan en activeer deze</translation>
 <translation id="5567989639534621706">Applicatiecaches</translation>
 <translation id="5568069709869097550">Kan niet aanmelden</translation>
 <translation id="5568144734023334204">Android-opslag</translation>
@@ -3238,6 +3250,7 @@
 <translation id="5931146425219109062">Al je gegevens lezen en wijzigen op de websites die je bezoekt</translation>
 <translation id="5932881020239635062">Serienummer</translation>
 <translation id="5933376509899483611">Tijdzone</translation>
+<translation id="5938002010494270685">Beveiligingsupgrade beschikbaar</translation>
 <translation id="5939518447894949180">Resetten</translation>
 <translation id="5939847200023027600">PDF-samenstellerservice</translation>
 <translation id="5941153596444580863">Persoon toevoegen...</translation>
@@ -3274,6 +3287,7 @@
 <translation id="6006484371116297560">Klassiek</translation>
 <translation id="6007237601604674381">Verplaatsen mislukt. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6007240208646052708">Gesproken zoekopdracht is niet beschikbaar in jouw taal.</translation>
+<translation id="6009781704028455063">Ingebouwde sensor</translation>
 <translation id="6010869025736512584">Video-invoer openen</translation>
 <translation id="6011193465932186973">Vingerafdruk</translation>
 <translation id="6011449291337289699">Sitegegevens wissen</translation>
@@ -3284,6 +3298,7 @@
 <translation id="6020431688553761150">De server heeft je niet geautoriseerd voor toegang tot deze resource.</translation>
 <translation id="602251597322198729">Deze site probeert meerdere bestanden te downloaden. Wil je dit toestaan?</translation>
 <translation id="6022526133015258832">Openen in volledig scherm</translation>
+<translation id="6022705094403139349">Klaar om je beveiligingssleutel te koppelen?</translation>
 <translation id="6023643151125006053">Dit apparaat (serienummer: <ph name="SERIAL_NUMBER" />) is vergrendeld door de beheerder van <ph name="SAML_DOMAIN" />.</translation>
 <translation id="6025215716629925253">Stack-tracering</translation>
 <translation id="6026047032548434446">App installeren?</translation>
@@ -3347,6 +3362,7 @@
 <translation id="6105877918873366097">Laatst geopend</translation>
 <translation id="6107012941649240045">Verleend aan</translation>
 <translation id="6112294629795967147">Tikken om het formaat aan te passen</translation>
+<translation id="6112931163620622315">Controleer je telefoon</translation>
 <translation id="6112952769866305444">Persoon bewerken: <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6116338172782435947">Tekst en afbeeldingen bekijken die naar het klembord zijn gekopieerd</translation>
 <translation id="6116921718742659598">Taal- en invoerinstellingen wijzigen</translation>
@@ -3392,6 +3408,7 @@
 <translation id="6169666352732958425">Kan desktop niet casten.</translation>
 <translation id="6171948306033499786">Afdrukken onderbreken</translation>
 <translation id="6175314957787328458">Microsoft-domein-GUID</translation>
+<translation id="6176043333338857209">Bluetooth wordt tijdelijk ingeschakeld om te communiceren met je beveiligingssleutel</translation>
 <translation id="6178664161104547336">Een certificaat selecteren</translation>
 <translation id="6181431612547969857">Download geblokkeerd</translation>
 <translation id="6185132558746749656">Apparaatlocatie</translation>
@@ -3479,6 +3496,7 @@
 <translation id="6311220991371174222">Kan Chrome niet starten omdat er een fout is opgetreden bij het openen van je profiel. Probeer Chrome opnieuw te starten.</translation>
 <translation id="6312400084708441752">Hieronder valt informatie over schadelijke software, systeeminstellingen en processen op je computer</translation>
 <translation id="6312403991423642364">Onbekende netwerkfout</translation>
+<translation id="6313320178014547270">Je gebruikt een sleutel die niet is geregistreerd voor deze website</translation>
 <translation id="6313641880021325787">VR AFSLUITEN</translation>
 <translation id="6314819609899340042">Je hebt foutopsporingsfuncties ingeschakeld voor dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat.</translation>
 <translation id="6315493146179903667">Alles op voorgrond</translation>
@@ -3523,7 +3541,6 @@
 <translation id="6384275966486438344">Je zoekinstellingen wijzigen in: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Sites kunnen cookiegegevens opslaan en lezen</translation>
 <translation id="6388429472088318283">Talen zoeken</translation>
-<translation id="6388771388956873507">Zoek de vingerafdruksensor op je apparaat en raak deze aan met je vinger</translation>
 <translation id="6390799748543157332">De pagina's die je in dit venster bekijkt, worden niet in de browsergeschiedenis weergegeven en laten geen sporen op de computer achter (zoals cookies) nadat je alle geopende gastvensters hebt gesloten. Bestanden die je downloadt, blijven echter wel behouden.</translation>
 <translation id="6390994422085833176">De synchronisatie- en personalisatiefuncties controleren na de installatie</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />Systeeminformatie<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />statistische gegevens<ph name="END_LINK2" /> verzenden</translation>
@@ -3535,6 +3552,7 @@
 <translation id="6399774419735315745">Spionne</translation>
 <translation id="6401445054534215853">Plankartikel 1</translation>
 <translation id="6404511346730675251">Bladwijzer bewerken</translation>
+<translation id="6405510437656969977">Ga door wanneer je klaar bent om de pincode op te geven</translation>
 <translation id="6406303162637086258">Opnieuw starten van browser simuleren</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
 <translation id="6408118934673775994">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en <ph name="WEBSITE_3" /></translation>
@@ -3653,6 +3671,7 @@
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" />: content van bureaublad gedeeld</translation>
 <translation id="6580151766480067746">ARC-versie</translation>
 <translation id="6581162200855843583">Google Drive-link</translation>
+<translation id="6582080224869403177">Reset je <ph name="DEVICE_TYPE" /> om je beveiliging te upgraden.</translation>
 <translation id="6582421931165117398">Wijzig je wachtwoord nu om je persoonlijke gegevens te beschermen. Voordat je je wachtwoord kunt wijzigen, wordt je gevraagd in te loggen.</translation>
 <translation id="6583851739559471707">Geblokkeerd op sites die opdringerige advertenties weergeven (aanbevolen)</translation>
 <translation id="6584878029876017575">Microsoft-ondertekening van levensduur</translation>
@@ -3702,6 +3721,7 @@
 <translation id="6644846457769259194">Je apparaat updaten (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">URL voor intrekken van certificeringsinstantie voor Netscape-certificaat</translation>
 <translation id="6647838571840953560">Momenteel op <ph name="CHANNEL_NAME" /></translation>
+<translation id="6648051959475508072">Beveiligingssleutel geactiveerd…</translation>
 <translation id="6648911618876616409">Er is een nieuwe essentiële update beschikbaar. Log in om aan de slag te gaan.</translation>
 <translation id="6649018507441623493">Een ogenblik…</translation>
 <translation id="6649563841575838401">De archiefindeling wordt niet ondersteund of het bestand is beschadigd.</translation>
@@ -3777,6 +3797,7 @@
 <translation id="6759193508432371551">Terugzetten op fabrieksinstellingen</translation>
 <translation id="6767639283522617719">Kan het domein niet koppelen. Zorg ervoor dat je de juiste instellingen gebruikt voor de organisatie-eenheid.</translation>
 <translation id="6769712124046837540">Printer toevoegen…</translation>
+<translation id="6770664076092644100">Verifiëren via NFC</translation>
 <translation id="6771503742377376720">Is een certificeringsinstantie</translation>
 <translation id="6777817260680419853">Omleiding geblokkeerd</translation>
 <translation id="6778959797435875428">Geluid van sites dempen opheffen</translation>
@@ -3812,6 +3833,7 @@
 <translation id="6823506025919456619">Je moet inloggen bij Chrome om je apparaten te bekijken</translation>
 <translation id="6824564591481349393">&amp;E-mailadres kopiëren</translation>
 <translation id="6825184156888454064">Sorteren op naam</translation>
+<translation id="6826872289184051766">Verifiëren via USB</translation>
 <translation id="6827236167376090743">Deze video wordt eindeloos afgespeeld.</translation>
 <translation id="6828153365543658583">Inloggen beperken tot de volgende gebruikers:</translation>
 <translation id="6828860976882136098">Kan automatische updates niet instellen voor alle gebruikers (uitvoeringsfout bij pre-flight-procedure: <ph name="ERROR_NUMBER" />)</translation>
@@ -3845,6 +3867,7 @@
 <translation id="6880587130513028875">Er zijn afbeeldingen op deze pagina geblokkeerd.</translation>
 <translation id="6883319974225028188">Het systeem kan de apparaatconfiguratie niet opslaan.</translation>
 <translation id="6885771755599377173">Voorbeeld van systeeminformatie</translation>
+<translation id="6886476658664859389">NFC-beveiligingssleutel</translation>
 <translation id="6886871292305414135">Link openen in nieuw &amp;tabblad</translation>
 <translation id="6892812721183419409">Link openen als <ph name="USER" /></translation>
 <translation id="6896758677409633944">Kopieer</translation>
@@ -4010,6 +4033,7 @@
 <translation id="713122686776214250">Pa&amp;gina toevoegen...</translation>
 <translation id="7133578150266914903">Je beheerder zet dit apparaat terug naar een oudere versie (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">De tekst kleiner maken</translation>
+<translation id="7135729336746831607">Bluetooth inschakelen?</translation>
 <translation id="7136694880210472378">Instellen als standaard</translation>
 <translation id="7136984461011502314">Welkom bij <ph name="PRODUCT_NAME" /></translation>
 <translation id="7136993520339022828">Er is een fout opgetreden. Probeer het later opnieuw door andere afbeeldingen te kiezen.</translation>
@@ -4055,6 +4079,7 @@
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' verwijderd</translation>
 <translation id="7206693748120342859"><ph name="PLUGIN_NAME" /> downloaden...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Pagina afsluiten}other{Pagina's afsluiten}}</translation>
+<translation id="721467499098558573">Druk de knop op je beveiligingssleutel ten minste vijf seconden in</translation>
 <translation id="7216409898977639127">Mobiele provider</translation>
 <translation id="7216595297012131718">Talen rangschikken op basis van je voorkeur</translation>
 <translation id="7220019174139618249">Kan geen wachtwoorden exporteren naar '<ph name="FOLDER" />'</translation>
@@ -4090,6 +4115,7 @@
 <translation id="7256710573727326513">Openen in een tabblad</translation>
 <translation id="725758059478686223">Afdrukservice</translation>
 <translation id="7257666756905341374">Gegevens lezen die je kopieert en plakt</translation>
+<translation id="7260764918845374269">Je beveiligingssleutel moet in de koppelingsmodus staan om te worden weergegeven. Druk de knop op je beveiligingssleutel ten minste vijf seconden in.</translation>
 <translation id="7262004276116528033">Deze inlogservice wordt gehost door <ph name="SAML_DOMAIN" />.</translation>
 <translation id="7268365133021434339">Tabbladen sluiten</translation>
 <translation id="7268659760406822741">Beschikbare services</translation>
@@ -4126,7 +4152,6 @@
 <translation id="7309257895202129721">Besturingselementen &amp;weergeven</translation>
 <translation id="7310598146671372464">Kan niet inloggen. De server ondersteunt de opgegeven Kerberos-versleutelingstypen niet. Neem contact op met je beheerder.</translation>
 <translation id="7311079019872751559">Plug-intoegang zonder sandbox</translation>
-<translation id="7311891583377621132">Beweeg je vinger enigszins om een ander deel van de vingerafdruk vast te leggen</translation>
 <translation id="7317680720589234980">Schermvergrendeling en inlogopties</translation>
 <translation id="7321545336522791733">Server niet bereikbaar</translation>
 <translation id="7324297612904500502">Bètaforum</translation>
@@ -4208,6 +4233,7 @@
 <translation id="7464490149090366184">Inpakken mislukt, item bestaat al: '$1'</translation>
 <translation id="7465778193084373987">URL voor intrekken van Netscape-certificaat</translation>
 <translation id="7469406957790636836">Als je dit wilt inschakelen, moet je eerst de spellingcontrole inschakelen bij <ph name="BEGIN_LINK" />Talen en invoer<ph name="END_LINK" /></translation>
+<translation id="7469518857922439236">Je meldingen sturen en deze computer standaard onthouden voor Berichten</translation>
 <translation id="7469894403370665791">Automatisch verbinding maken met dit netwerk</translation>
 <translation id="747114903913869239">Fout: kan extensie niet decoderen</translation>
 <translation id="7473753388963818366">Laten we je <ph name="DEVICE_TYPE" /> klaarmaken voor gebruik</translation>
@@ -4257,6 +4283,7 @@
 <translation id="7531779363494549572">Ga naar Instellingen &gt; Apps en meldingen &gt; Meldingen.</translation>
 <translation id="7536709149194614609">Start het apparaat opnieuw op en probeer het later opnieuw.</translation>
 <translation id="7537601449003285327">Vastzetten op taakbalk</translation>
+<translation id="7539856059004947393">Bluetooth-beveiligingssleutel</translation>
 <translation id="7540972813190816353">Er is een fout opgetreden bij het ​​controleren op updates: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Foutopsporingsfuncties inschakelen voor dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat</translation>
 <translation id="7544853251252956727">Shuffle</translation>
@@ -4359,6 +4386,7 @@
 <translation id="7709152031285164251">Mislukt - <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Casten...</translation>
 <translation id="7711920809702896782">Afbeeldingsgegevens</translation>
+<translation id="7712740978240882272">Je Chromebook ontgrendelen met je telefoon. <ph name="LINK_BEGIN" />Meer informatie.<ph name="LINK_END" /></translation>
 <translation id="7712836429117959503">Onbekende extensie met ID <ph name="EXTENSION_ID" /></translation>
 <translation id="7714307061282548371">Cookies van <ph name="DOMAIN" /> toegestaan</translation>
 <translation id="7714464543167945231">Certificaat</translation>
@@ -4573,6 +4601,7 @@
 <translation id="7984068253310542383"><ph name="DISPLAY_NAME" /> mirroren</translation>
 <translation id="7986295104073916105">Instellingen voor opgeslagen wachtwoorden lezen en wijzigen</translation>
 <translation id="7987764905897278458">Gebruik meer slimme Google-functies</translation>
+<translation id="798835209536175951">Sms'jes verzenden en ontvangen op je Chromebook. <ph name="LINK_BEGIN" />Meer informatie<ph name="LINK_END" /></translation>
 <translation id="7988355189918024273">Functies voor toegankelijkheid inschakelen</translation>
 <translation id="7994702968232966508">EAP-methode</translation>
 <translation id="799547531016638432">Snelle link verwijderen</translation>
@@ -4705,6 +4734,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8185331656081929126">Meldingen weergeven wanneer er nieuwe printers in het netwerk worden gedetecteerd</translation>
 <translation id="8186609076106987817">De server kan het bestand niet vinden.</translation>
 <translation id="8188120771410500975">&amp;Controleer de spelling van tekstvelden</translation>
+<translation id="8188389033983459049">Controleer de instellingen van je apparaat en schakel het in om door te gaan</translation>
 <translation id="8190193592390505034">Verbinding maken met <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Je apps, extensies en thema's beheren</translation>
 <translation id="8191453843330043793">V8 Proxy Resolver</translation>
@@ -4799,6 +4829,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8353683614194668312">De app/extensie kan het volgende doen:</translation>
 <translation id="8356197132883132838"><ph name="TITLE" /> - <ph name="COUNT" /></translation>
 <translation id="8358685469073206162">Pagina's herstellen?</translation>
+<translation id="8362993567435070757">Zoek de pincode van zes cijfers op de achterkant van je sleutel</translation>
 <translation id="8363095875018065315">stabiel</translation>
 <translation id="8363142353806532503">Microfoon geblokkeerd</translation>
 <translation id="8366396658833131068">Je netwerkverbinding is hersteld. Selecteer een ander netwerk of druk hieronder op de knop 'Doorgaan' om je kiosk-app te starten.</translation>
@@ -4807,6 +4838,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8371695176452482769">Begin nu te spreken</translation>
 <translation id="8372369524088641025">Slechte WEP-sleutel</translation>
 <translation id="8373553483208508744">Tabbladen dempen</translation>
+<translation id="8379878387931047019">Dit apparaat biedt geen ondersteuning voor het type beveiligingssleutel dat is vereist voor deze website</translation>
 <translation id="8382913212082956454">&amp;E-mailadres kopiëren</translation>
 <translation id="8386903983509584791">Scan voltooid</translation>
 <translation id="8389492867173948260">Hiermee kan deze extensie al je gegevens lezen en wijzigen op de websites die je bezoekt:</translation>
@@ -4925,6 +4957,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8557930019681227453">Manifest</translation>
 <translation id="8559694214572302298">Image Decoder</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
+<translation id="8562084399541316921">Verder lezen</translation>
 <translation id="8565650234829130278">Je probeert een oudere versie van de app te installeren.</translation>
 <translation id="8569002732135253578"><ph name="DOCUMENT_NAME" /> wordt nu afgedrukt</translation>
 <translation id="8569682776816196752">Geen bestemmingen gevonden</translation>
@@ -4965,7 +4998,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8639047128869322042">Controleren op schadelijke software...</translation>
 <translation id="8639963783467694461">Instellingen voor Automatisch aanvullen</translation>
 <translation id="8642171459927087831">Toegangstoken</translation>
-<translation id="8642267168767642381">Vinger te langzaam bewogen</translation>
 <translation id="8642947597466641025">De tekst groter maken</translation>
 <translation id="8643418457919840804">Kies een optie om door te gaan:</translation>
 <translation id="8645354835496065562">Toegang tot sensoren blijven toestaan</translation>
@@ -4980,6 +5012,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8655295600908251630">Kanaal</translation>
 <translation id="8655319619291175901">Er is een fout opgetreden.</translation>
 <translation id="8655972064210167941">Het inloggen is mislukt omdat je wachtwoord niet kan worden geverifieerd. Neem contact op met je beheerder of probeer het opnieuw.</translation>
+<translation id="8656619792520327915">Nog een Bluetooth-beveiligingssleutel toevoegen</translation>
 <translation id="8656768832129462377">Niet controleren</translation>
 <translation id="8658595122208653918">Printeropties wijzigen...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> deelt je scherm en audio met <ph name="TAB_NAME" />.</translation>
@@ -5103,6 +5136,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8814687660896548945">Het archief wordt gescand. Een ogenblik geduld…</translation>
 <translation id="881799181680267069">Verberg andere</translation>
 <translation id="8818152010000655963">Achtergrond</translation>
+<translation id="8818958672113348984">Verifiëren via je telefoon</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
 <translation id="8821045908425223359">IP-adres automatisch configureren</translation>
 <translation id="882204272221080310">Firmware updaten voor extra beveiliging</translation>
@@ -5133,11 +5167,13 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8872155268274985541">Ongeldig manifestbestand voor de externe update van Kiosk gevonden. Het updaten van de Kiosk-app is mislukt. Verwijder de USB-stick.</translation>
 <translation id="8874184842967597500">Niet verbonden</translation>
 <translation id="8876215549894133151">Indeling:</translation>
+<translation id="8876307312329369159">Deze instelling kan niet worden gewijzigd tijdens een demosessie.</translation>
 <translation id="8876309039915144086">Wachtwoord genereren...</translation>
 <translation id="8877448029301136595">[hoofddirectory]</translation>
 <translation id="8879284080359814990">Weergeven al&amp;s tabblad</translation>
 <translation id="8883847527783433352">Synchroniseren met een ander account</translation>
 <translation id="8885197664446363138">Smart Lock is niet beschikbaar</translation>
+<translation id="88870264962436283">Touch ID gebruiken voor <ph name="APP_NAME" /></translation>
 <translation id="8888432776533519951">Kleur:</translation>
 <translation id="8890516388109605451">Bronnen</translation>
 <translation id="8892168913673237979">Helemaal klaar!</translation>
@@ -5158,6 +5194,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8915370057835397490">Suggestie wordt geladen</translation>
 <translation id="8916476537757519021">Incognito-subframe: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919275547519617350">Log in en schakel synchronisatie in om al je wachtwoorden op al je apparaten beschikbaar te maken.</translation>
+<translation id="8921366488406707015">Je beveiligingssleutel verifiëren…</translation>
 <translation id="8922013791253848639">Altijd advertenties op deze site toestaan</translation>
 <translation id="8925458182817574960">&amp;Instellingen</translation>
 <translation id="8926389886865778422">Niet meer vragen</translation>
@@ -5266,6 +5303,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9066782832737749352">Tekst-naar-spraak</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> logt je automatisch in bij geschikte sites en apps met wachtwoorden die je hebt opgeslagen.</translation>
 <translation id="9073281213608662541">PAP</translation>
+<translation id="90737709606140813">Koppel je sleutel met dit apparaat zodat je de sleutel kunt gebruiken om in te loggen op je account</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">USB-muis aangesloten</translation>
 <translation id="9076523132036239772">Je e-mailadres of wachtwoord kan niet worden geverifieerd. Probeer eerst verbinding met een netwerk te maken.</translation>
@@ -5327,7 +5365,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="916607977885256133">Scherm-in-scherm</translation>
 <translation id="9169496697824289689">Sneltoetsen bekijken</translation>
 <translation id="9169931577761441333"><ph name="APP_NAME" /> toevoegen aan startscherm</translation>
-<translation id="9170397650136757332">Beweeg je vinger nu een beetje zodat alle delen van je vingerafdruk kunnen worden vastgelegd</translation>
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>
 <translation id="9170884462774788842">Een ander programma op je computer heeft een thema toegevoegd dat de manier waarop Chrome werkt kan wijzigen.</translation>
 <translation id="9173995187295789444">Scannen naar Bluetooth-apparaten...</translation>
@@ -5391,6 +5428,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="971774202801778802">Bladwijzer-URL</translation>
 <translation id="973473557718930265">Sluiten</translation>
 <translation id="974555521953189084">Voer je wachtwoordzin in om de synchronisatie te starten</translation>
+<translation id="977640333593638907">De meeste beveiligingssleutels hebben een knop waarop je kunt drukken om ze te gebruiken</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Deze functie wordt niet ondersteund in VR</translation>
 <translation id="984275831282074731">Betaalmethoden</translation>

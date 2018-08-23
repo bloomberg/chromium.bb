@@ -188,6 +188,13 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Blokkering van injectie van software van derden inschakelen</translation>
 <translation id="1504431521196476721">Externe bevestiging</translation>
+<translation id="1507957856411744193">Als dit beleid is ingesteld op true (waar), maakt <ph name="PRODUCT_NAME" /> verbinding met Cast-apparaten op alle IP-adressen en niet alleen op RFC1918/RFC4193-privéadressen.
+
+          Als dit beleid is ingesteld op false (onwaar), maakt <ph name="PRODUCT_NAME" /> alleen verbinding met Cast-apparaten op RFC1918/RFC4193-privéadressen.
+
+          Als dit beleid niet is ingesteld, maakt <ph name="PRODUCT_NAME" /> alleen verbinding met Cast-apparaten op RFC1918/RFC4193-privéadressen, tenzij de functie CastAllowAllIPs is ingeschakeld.
+
+          Als het beleid EnableMediaRouter is ingesteld op false (onwaar), heeft de waarde van dit beleid geen effect.</translation>
 <translation id="1509692106376861764">Dit beleid wordt niet meer gebruikt sinds <ph name="PRODUCT_NAME" /> versie 29.</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" /> inschakelen</translation>
 <translation id="1522425503138261032">Sites toestaan de fysieke locatie van gebruikers bij te houden</translation>
@@ -364,11 +371,6 @@
 
           Als dit beleid niet is ingesteld, worden alle vier de schema's gebruikt.</translation>
 <translation id="2067011586099792101">Toegang blokkeren naar sites die zich niet in inhoudspakketten bevinden</translation>
-<translation id="2070270043919235595">Laat gebruikers weten dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart om een update toe te passen.
-
-      Met deze beleidsinstelling worden meldingen ingeschakeld waarmee de gebruiker wordt gevraagd of aangeraden om de browser opnieuw op te starten. Als dit niet is ingesteld, ziet de gebruiker een melding in <ph name="PRODUCT_NAME" /> dat de browser opnieuw moet worden opgestart via kleine wijzigingen in het menu. Als dit is ingesteld op 'Recommended', wordt er een herhaalde waarschuwing weergeven om de gebruiker te laten weten dat het raadzaam is de browser opnieuw op te starten. De gebruiker kan deze waarschuwing negeren om de actie uit te stellen. Als dit is ingesteld op 'Required', wordt er een herhaalde waarschuwing weergegeven om de gebruiker te laten weten dat de browser automatisch opnieuw wordt opgestart zodra de meldingsperiode is verstreken. Deze periode is standaard zeven dagen en kan worden ingesteld via de beleidsinstelling voor <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      De sessie van de gebruiker wordt hersteld zodra de browser opnieuw is opgestart.</translation>
 <translation id="2073552873076775140">Inloggen bij <ph name="PRODUCT_NAME" /> toestaan</translation>
 <translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="2077273864382355561">Vertraging van scherm uitschakelen wanneer op de batterij wordt gewerkt</translation>
@@ -921,7 +923,6 @@
           Dit beleid is optioneel. Als het niet wordt ingesteld, wordt er geen nieuwe tabbladpagina weergegeven.
 
           Dit beleid wordt alleen gerespecteerd als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
-<translation id="3465852069254497664">Laat een gebruiker weten dat het aanbevolen of vereist is om de browser opnieuw op te starten</translation>
 <translation id="346731943813722404">Hiermee wordt aangegeven of vertragingen in energiebeheer en de limiet voor sessielengte pas moeten worden gestart nadat de eerste gebruikersactiviteit in een sessie is gedetecteerd.
 
           Als dit beleid is ingesteld op 'True', worden vertragingen in energiebeheer en de limiet voor sessielengte pas gestart nadat de eerste gebruikersactiviteit in een sessie is gedetecteerd.
@@ -2022,6 +2023,7 @@
 
       Met het beleid <ph name="SYNC_DISABLED_POLICY_NAME" /> wordt alle gegevenssynchronisatie uitgeschakeld (RoamingProfileSupportEnabled wordt overschreven).</translation>
 <translation id="6731757988219967594">Sites op hoofdniveau (maar geen ingesloten iframes) filteren op content voor volwassenen</translation>
+<translation id="6734521799274931721">Beheert Network File Shares voor Chrome OS-beschikbaarheid</translation>
 <translation id="6735701345096330595">Inschakelen van spellingcontrole voor talen afdwingen</translation>
 <translation id="673699536430961464">Deze instelling biedt gebruikers de mogelijkheid om in het contentgedeelte van hun browservenster tussen Google-accounts te schakelen nadat ze zijn ingelogd op hun <ph name="PRODUCT_OS_NAME" />-apparaat.
 
@@ -2163,17 +2165,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Wanneer het scherm bijna wordt gedimd, evalueert het slimme dimmodel of het dimmen moet worden uitgesteld, waardoor het langer duurt tot het scherm wordt gedimd. In dit geval worden de vertragingen aangepast voordat het scherm wordt uitgeschakeld, wordt vergrendeld of inactief wordt, zodat de tijden vanaf het moment dat het scherm wordt gedimd, zo blijven zoals oorspronkelijk is ingesteld.
       Als dit beleid wordt ingesteld op 'waar' of niet wordt ingesteld, wordt het slimme dimmodel ingeschakeld, zodat het langer duurt voordat het scherm wordt gedimd. Als dit beleid wordt ingesteld op 'onwaar', heeft het slimme dimmodel geen invloed op het dimmen van het scherm.</translation>
-<translation id="6982028490425791294">
-      Als het beleid is ingesteld op 'true' (waar), mag <ph name="PRODUCT_NAME" /> WebRTC-gebeurtenislogboeken van Google-services (zoals Google Meet) verzamelen en die logboeken uploaden naar Google.
-
-      Als het beleid is ingesteld op 'false' (onwaar) of niet is ingesteld, mag <ph name="PRODUCT_NAME" /> dergelijke logboeken niet verzamelen of uploaden.
-
-      Deze logboeken bevatten informatie zoals de tijd en grootte van verzonden en ontvangen RTP-pakketten, feedback over overbelasting van het netwerk en metadata met betrekking tot de tijd en kwaliteit van audio- en videoframes. Deze informatie is nuttig voor het opsporen van fouten met audio- of videogesprekken in Chrome, zoals problemen met bandbreedteschattingen, enzovoort. De logboeken bevatten geen audio- of videocontent uit het gesprek.
-
-      Deze gegevensverzameling kan alleen worden geactiveerd door webservices van Google, zoals Google Hangouts of Google Meet.
-
-      Deze logboeken kunnen door middel van een sessie-ID worden gekoppeld aan andere logboeken die worden verzameld door de Google-service zelf. Dit wordt gedaan om fouten gemakkelijker te kunnen opsporen.
-      </translation>
 <translation id="6994082778848658360">Geeft aan hoe de ingebouwde Secure Element-hardware kan worden gebruikt voor authenticatie met meerdere factoren, indien de hardware geschikt is voor deze functie. De aan/uit-knop van de machine wordt gebruikt om de fysieke aanwezigheid van de gebruiker te detecteren.
 
       Als Uitgeschakeld is geselecteerd, wordt er geen tweede factor verstrekt.
@@ -3009,11 +3000,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="9035964157729712237">Extensie-ID's die zijn vrijgesteld van de zwarte lijst</translation>
 <translation id="9042911395677044526">Hiermee kun je een gebruikerspecifieke netwerkconfiguratie toepassen op een <ph name="PRODUCT_OS_NAME" />-apparaat. De netwerkconfiguratie is een tekenreeks met JSON-indeling, zoals gedefinieerd door de indeling voor open netwerkconfiguratie, beschreven op <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specificeer of videoactiviteit invloed heeft op stroombeheer</translation>
-<translation id="9085839450090699752">Hiermee kun je een periode in milliseconden instellen waarin gebruikers een melding krijgen dat <ph name="PRODUCT_NAME" /> opnieuw moet worden gestart of dat een <ph name="PRODUCT_OS_NAME" />-apparaat opnieuw moet worden opgestart om een beschikbare update toe te passen.
-
-      Gedurende deze periode wordt de gebruiker herhaaldelijk geïnformeerd over het belang van de update. Op <ph name="PRODUCT_OS_NAME" />-apparaten wordt een melding dat opnieuw moet worden opgestart, weergegeven in het systeemvak zodra er een upgrade wordt gedetecteerd. Deze melding verandert van kleur wanneer de helft van de meldingsperiode is verstreken en nogmaals wanneer de volledige meldingsperiode is verstreken. In <ph name="PRODUCT_NAME" />-browsers wordt nadat een derde van de meldingstijd is verstreken, in het app-menu aangegeven dat opnieuw moet worden opgestart. Deze melding verandert van kleur wanneer twee derde van de meldingsperiode is verstreken en nogmaals wanneer de volledige meldingsperiode is verstreken. De extra meldingen die worden geactiveerd door het beleid <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> voor browsers, volgen dezelfde planning.
-
-      Als deze waarde niet is ingesteld, wordt een standaardperiode van 345.600.000 milliseconden (vier dagen) gebruikt voor <ph name="PRODUCT_OS_NAME" />-apparaten en 604.800.000 milliseconden (één week) voor browsers.</translation>
 <translation id="9088433379343318874">Contentprovider voor de gebruiker met beperkte rechten inschakelen</translation>
 <translation id="9088444059179765143">De methode voor automatische tijdzonedetectie configureren</translation>
 <translation id="9096086085182305205">Witte lijst voor verificatieserver</translation>

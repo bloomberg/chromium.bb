@@ -191,6 +191,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Enable third-party software injection blocking</translation>
 <translation id="1504431521196476721">Remote Attestation</translation>
+<translation id="1507957856411744193">If this policy is set to true, <ph name="PRODUCT_NAME" /> will connect to Cast devices on all IP addresses, not just RFC1918/RFC4193 private addresses.
+
+          If this policy is set to false, <ph name="PRODUCT_NAME" /> will connect to Cast devices on RFC1918/RFC4193 private addresses only.
+
+          If this policy is not set, <ph name="PRODUCT_NAME" /> will connect to Cast devices on RFC1918/RFC4193 private addresses only, unless the CastAllowAllIPs feature is enabled.
+
+          If the policy 'EnableMediaRouter' is set to false, then this policy's value would have no effect.</translation>
 <translation id="1509692106376861764">This policy has been retired as of <ph name="PRODUCT_NAME" /> version 29.</translation>
 <translation id="1514888685242892912">Enable <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Allow sites to track the users' physical location</translation>
@@ -370,11 +377,6 @@
 
           If this policy is left unset, all four schemes will be used.</translation>
 <translation id="2067011586099792101">Block access to sites outside of content packs</translation>
-<translation id="2070270043919235595">Notify users that <ph name="PRODUCT_NAME" /> must be relaunched to apply a pending update.
-
-      This policy setting enables notifications to inform the user that a browser relaunch is recommended or required. If not set, <ph name="PRODUCT_NAME" /> indicates to the user that a relaunch is needed via subtle changes to its menu. If set to 'Recommended', a recurring warning will be shown to the user that a relaunch is recommended. The user can dismiss this warning to defer the relaunch. If set to 'Required', a recurring warning will be shown to the user indicating that a browser relaunch will be forced once the notification period passes. This period is seven days by default, and may be configured via the <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> policy setting.
-
-      The user's session is restored following the relaunch.</translation>
 <translation id="2073552873076775140">Allow sign-in to <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Use hardware acceleration when available</translation>
 <translation id="2077273864382355561">Screen off delay when running on battery power</translation>
@@ -934,7 +936,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
           This policy is optional. If not set, no new tab page will be provided.
 
           This policy is only respected if the 'DefaultSearchProviderEnabled' policy is enabled.</translation>
-<translation id="3465852069254497664">Notify a user that a browser relaunch is recommended or required</translation>
 <translation id="346731943813722404">Specifies whether power management delays and the session length limit should only start running after the first user activity has been observed in a session.
 
           If this policy is set to True, power management delays and the session length limit do not start running until after the first user activity has been observed in a session.
@@ -2037,6 +2038,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       The <ph name="SYNC_DISABLED_POLICY_NAME" /> policy disables all data synchronisation, overriding RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filter top-level sites (but not embedded iframes) for adult content</translation>
+<translation id="6734521799274931721">Controls Network File Shares for ChromeOS availability</translation>
 <translation id="6735701345096330595">Force enable spellcheck languages</translation>
 <translation id="673699536430961464">This setting allows users to switch between Google Accounts within the content area of their browser window after they sign in to their <ph name="PRODUCT_OS_NAME" /> device.
 
@@ -2188,17 +2190,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       When the screen is about to be dimmed, the smart dim model evaluates if dimming the screen should be deferred. If the smart dim model defers dimming the screen, it effectively extends the time until the screen is dimmed. In this case, the screen off, screen lock and idle delays get adjusted to maintain the same distances from the screen dim delay as originally configured.
       If this policy is set to True or left not set, the smart dim model will be enabled and allowed to extend the time until the screen is dimmed. If this policy is set to False, the smart dim model will not influence screen dimming.</translation>
-<translation id="6982028490425791294">
-      If the policy is set to true, <ph name="PRODUCT_NAME" /> is allowed to collect WebRTC event logs from Google services (e.g. Google Meet), and upload those logs to Google.
-
-      If the policy is set to false, or is unset, <ph name="PRODUCT_NAME" /> may not collect nor upload such logs.
-
-      These logs contain information, such as the time and size of sent and received RTP packets, feedback about congestion on the network and metadata about time and quality of audio and video frames. This information is helpful when debugging issues with audio or video calls in Chrome, such as bandwidth estimation issues, etc. The logs do not contain audio or video contents from the call.
-
-      This data collection can only be triggered by Google's web services, such as Google Hangouts or Google Meet.
-
-      These logs may be associated, by means of a session ID, with other logs collected by the Google service itself; this is intended to make debugging easier.
-      </translation>
 <translation id="6994082778848658360">Specifies how the on-board secure element hardware can be used to provide a second-factor authentication if it is compatible with this feature. The machine power button is used to detect the user physical presence.
 
       If 'Disabled' is selected, no second factor is provided.
@@ -3039,11 +3030,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
-<translation id="9085839450090699752">Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME" /> must be relaunched or that a <ph name="PRODUCT_OS_NAME" /> device must be restarted to apply a pending update.
-
-      Over this time period, the user will be informed repeatedly of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray when an upgrade is detected. This notification changes colour once half of the notification period passes, and again once the full notification period has passed. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy for browsers follow this same schedule.
-
-      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for browsers.</translation>
 <translation id="9088433379343318874">Enable the supervised user content provider</translation>
 <translation id="9088444059179765143">Configure the automatic timezone detection method</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>

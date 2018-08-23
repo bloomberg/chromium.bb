@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Ugyldigt input</translation>
 <translation id="1080471004309605942">Slut kursiv</translation>
 <translation id="1082209053475788238">Ingen tidligere niveau 6-overskrifter.</translation>
+<translation id="1087788677726983142">Skjul filtre for begivenhedsstreaming</translation>
 <translation id="1088219014394087294">Ingen overskrifter.</translation>
 <translation id="1106741348836243114">Slå lydfeedback (earcons) til eller fra.</translation>
 <translation id="1108651818222110612">undertitel</translation>
@@ -78,6 +79,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1618597272655350600">Angiver en komplet beskrivelse af den aktuelle position</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{større end}one{# større end-tegn}other{# større end-tegn}}</translation>
 <translation id="1653266918374749391">Forrige niveau 3-overskrift</translation>
+<translation id="1657616855184033958">Vis filtre for begivenhedsstreaming</translation>
 <translation id="1659072772017912254">Ikke kontrolleret</translation>
 <translation id="1669290819662866522">uge</translation>
 <translation id="1674262202423278359">Navigation i ChromeVox</translation>
@@ -412,6 +414,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="4255943572433203166">Brug indstillingerne nedenfor til at tilpasse ChromeVox. Ændringer træder i kraft med det samme.</translation>
 <translation id="4271220233568730077">Næste matematiske udtryk</translation>
 <translation id="4271521365602459209">Ikke flere resultater.</translation>
+<translation id="4275397969489577657">Aktivér logning af begivenhedsstreaming</translation>
 <translation id="4287520460805643128">Ikke flere artikler.</translation>
 <translation id="4289540628985791613">Oversigt</translation>
 <translation id="4300318234632215983">Offentliggør webadressen bag et link</translation>
@@ -550,6 +553,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}one{# semikoloner}other{# semikoloner}}</translation>
 <translation id="5411891038905756502">Ingen tidligere hoppunkter.</translation>
 <translation id="5417034931411865818">Klik på elementet under routingtasten $1</translation>
+<translation id="5435274640623994081">Aktivér logning af lydikoner</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre end}one{# mindre end-tegn}other{# mindre end-tegn}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
 <translation id="5446809554778706307">Der er intet fokus. Tryk på Ctrl+T for at åbne en ny fane.</translation>
@@ -899,6 +903,7 @@ Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="8650576015643545550">Ingen tidligere lister.</translation>
 <translation id="8651481478098336970">slå lyden fra</translation>
 <translation id="8653646212587894517">Vis liste over links</translation>
+<translation id="8656888282555543604">Aktivér logning af braille</translation>
 <translation id="8664519043722036194">sekunder</translation>
 <translation id="867187640362843212">Overskrift 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{streg}one{# lodrette streger}other{# lodrette streger}}</translation>

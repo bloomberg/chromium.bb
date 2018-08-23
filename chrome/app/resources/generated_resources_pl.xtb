@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Używaj synchronizacji i wszystkich usług</translation>
 <translation id="1272079795634619415">Zatrzymaj</translation>
-<translation id="1272242203003205253">Aby Ci pomagać, Asystent współpracuje z partnerami Google</translation>
 <translation id="1272978324304772054">To konto użytkownika nie należy do domeny, w której urządzenie jest zarejestrowane. Jeśli chcesz się zarejestrować w innej domenie, musisz najpierw przeprowadzić odzyskiwanie urządzenia.</translation>
 <translation id="1274977772557788323">Ustawienia pamięci Adobe Flash Playera</translation>
 <translation id="1274997165432133392">Pliki cookie i inne dane witryn</translation>
@@ -417,7 +416,6 @@
 <translation id="161460670679785907">Nie można wykryć telefonu</translation>
 <translation id="1616206807336925449">To rozszerzenie nie wymaga specjalnych uprawnień.</translation>
 <translation id="1616298854599875024">Nie można zaimportować rozszerzenia „<ph name="IMPORT_NAME" />”, ponieważ nie jest to moduł udostępniany</translation>
-<translation id="161707228174452095">Odcisk palca dodany</translation>
 <translation id="1618268899808219593">C&amp;entrum pomocy</translation>
 <translation id="162035744160882748">Włącz synchronizację, personalizację i inne usługi Google</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -695,7 +693,6 @@
 <translation id="2028997212275086731">Archiwum RAR</translation>
 <translation id="2034346955588403444">Dodaj inną sieć Wi-Fi</translation>
 <translation id="203574396658008164">Włącz robienie notatek na ekranie blokady</translation>
-<translation id="2039623879703305659">Palec został przesunięty zbyt szybko</translation>
 <translation id="2040460856718599782">Ups, wystąpił błąd podczas próby uwierzytelnienia. Sprawdź poprawność danych logowania i spróbuj ponownie.</translation>
 <translation id="2043818754674261542">Wymagana odległość do odblokowania urządzenia <ph name="DEVICE_TYPE" /> przy użyciu telefonu</translation>
 <translation id="204497730941176055">Nazwa szablonu certyfikatu firmy Microsoft</translation>
@@ -739,7 +736,6 @@
 <translation id="2099686503067610784">Czy usunąć certyfikat serwera „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="2100273922101894616">Autologowanie</translation>
 <translation id="2101225219012730419">Wersja:</translation>
-<translation id="2107494551712864447">Dodaj odcisk palca</translation>
 <translation id="2112877397266219826">Włącz kontroler dotykowy, by skonfigurować urządzenie</translation>
 <translation id="21133533946938348">Przypnij kartę</translation>
 <translation id="2113479184312716848">&amp;Otwórz plik</translation>
@@ -857,7 +853,7 @@
 <translation id="2271088077909873520">Zarządzaj zsynchronizowanymi danymi w <ph name="BEGIN_LINK" />Panelu Google<ph name="END_LINK" />.</translation>
 <translation id="2272570998639520080">Kieliszek do martini</translation>
 <translation id="2276503375879033601">Dodaj więcej aplikacji</translation>
-<translation id="2277255602909579701">Wszystkie pliki cookie i dane stron</translation>
+<translation id="2277255602909579701">Wszystkie pliki cookie i dane witryn</translation>
 <translation id="2277769717710009150">{COUNT,plural, =1{Skopiowano 1 element}few{Skopiowano # elementy}many{Skopiowano # elementów}other{Skopiowano # elementu}}</translation>
 <translation id="2278562042389100163">Otwórz okno przeglądarki</translation>
 <translation id="2279874276457403668">Można utworzyć tylko jedną sesję na raz.</translation>
@@ -1018,7 +1014,6 @@
 <translation id="2526590354069164005">Pulpit</translation>
 <translation id="2526619973349913024">Sprawdź dostępność aktualizacji</translation>
 <translation id="2527167509808613699">Dowolny rodzaj połączenia</translation>
-<translation id="2532026602297547439">Zabrudzony czytnik</translation>
 <translation id="2532589005999780174">Tryb wysokiego kontrastu</translation>
 <translation id="253434972992662860">&amp;Wstrzymaj</translation>
 <translation id="2534460670861217804">Serwer proxy HTTPS</translation>
@@ -1377,7 +1372,6 @@
 <translation id="3057861065630527966">Utwórz kopię zapasową zdjęć i filmów</translation>
 <translation id="3060379269883947824">Włącz funkcję Przeczytaj na głos</translation>
 <translation id="3061707000357573562">Zastosowanie poprawki do usługi</translation>
-<translation id="3064410671692449875">Niewystarczające dane</translation>
 <translation id="3065041951436100775">Informacje o zakończeniu działania karty.</translation>
 <translation id="3067198179881736288">Zainstalować aplikację?</translation>
 <translation id="3067198360141518313">Uruchom wtyczkę</translation>
@@ -1496,7 +1490,7 @@
 <translation id="3269093882174072735">Wczytaj obraz</translation>
 <translation id="326999365752735949">Pobieram zmiany</translation>
 <translation id="3270965368676314374">Odczyt, zmiana i usuwanie zdjęć, muzyki oraz innych multimediów na komputerze</translation>
-<translation id="327147043223061465">Wyświetl wszystkie pliki cookie i dane stron</translation>
+<translation id="327147043223061465">Wyświetl wszystkie pliki cookie i dane witryn</translation>
 <translation id="3271648667212143903"><ph name="ORIGIN" /> chce się połączyć</translation>
 <translation id="3274763671541996799">Pracujesz w trybie pełnoekranowym.</translation>
 <translation id="3275778913554317645">Otwórz jako okno</translation>
@@ -2265,7 +2259,6 @@
 <translation id="4480590691557335796">Chrome może znaleźć i usunąć szkodliwe oprogramowanie na Twoim komputerze</translation>
 <translation id="4481530544597605423">Niesparowane urządzenia</translation>
 <translation id="4482194545587547824">Google może korzystać z Twojej historii przeglądania, by dostosowywać wyniki wyszukiwania i działanie innych usług</translation>
-<translation id="4493287891836751813">Poznaj swojego Asystenta Google</translation>
 <translation id="4495419450179050807">Nie pokazuj na tej stronie</translation>
 <translation id="4499718683476608392">Włącz autouzupełnianie danych karty kredytowej, by wypełniać formularze jednym kliknięciem</translation>
 <translation id="4500114933761911433">We wtyczce <ph name="PLUGIN_NAME" /> wystąpił poważny błąd</translation>
@@ -2320,7 +2313,6 @@
 <translation id="4572659312570518089">Podczas łączenia się z urządzeniem „<ph name="DEVICE_NAME" />” zostało anulowane uwierzytelnianie.</translation>
 <translation id="4572815280350369984">Plik <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Więcej</translation>
-<translation id="4576537685267142337">Podnieś palec, a potem przyłóż go do czytnika jeszcze raz</translation>
 <translation id="4576541033847873020">Sparuj urządzenie Bluetooth</translation>
 <translation id="4579581181964204535">Nie udało się przesłać <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Czy na pewno chcesz usunąć następującą liczbę elementów: $1?</translation>
@@ -2565,7 +2557,6 @@
 <translation id="4941627891654116707">Rozmiar czcionki</translation>
 <translation id="494286511941020793">Konfiguracja serwera proxy – pomoc</translation>
 <translation id="4945444280533270988">Funkcja Smart Lock jest włączona</translation>
-<translation id="494660967831069720">Częściowe dane</translation>
 <translation id="4953689047182316270">Odpowiadanie na zdarzenia dotyczące ułatwień dostępu</translation>
 <translation id="4953808748584563296">Domyślny pomarańczowy awatar</translation>
 <translation id="4955814292505481804">Roczna</translation>
@@ -3522,7 +3513,6 @@
 <translation id="6384275966486438344">Zmiana ustawień wyszukiwania na: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Strony mogą zapisywać dane w plikach cookie i je odczytywać</translation>
 <translation id="6388429472088318283">Wyszukaj języki</translation>
-<translation id="6388771388956873507">Znajdź na urządzeniu czytnik linii papilarnych i dotknij go palcem</translation>
 <translation id="6390799748543157332">Strony wyświetlane w tym oknie nie pojawią się w historii przeglądarki. Po zamknięciu wszystkich okien otwartych w trybie gościa nie zostanie po nich na komputerze żaden ślad (np. w postaci plików cookie). Pobrane pliki zostaną jednak zachowane.</translation>
 <translation id="6390994422085833176">Przejrzyj ustawienia funkcji synchronizacji i personalizacji po ich skonfigurowaniu</translation>
 <translation id="6395423953133416962">Przesyłaj <ph name="BEGIN_LINK1" />informacje o systemie<ph name="END_LINK1" /> i <ph name="BEGIN_LINK2" />dane<ph name="END_LINK2" /></translation>
@@ -4125,7 +4115,6 @@
 <translation id="7309257895202129721">Pokaż elementy sterują&amp;ce</translation>
 <translation id="7310598146671372464">Logowanie nie udało się. Serwer nie obsługuje wybranych typów szyfrowania Kerberos. Skontaktuj się z administratorem.</translation>
 <translation id="7311079019872751559">Dostęp przez wtyczkę spoza piaskownicy</translation>
-<translation id="7311891583377621132">Przesuń odrobinę, by zeskanować inną część odcisku palca</translation>
 <translation id="7317680720589234980">Opcje blokady ekranu i logowania</translation>
 <translation id="7321545336522791733">Serwer niedostępny</translation>
 <translation id="7324297612904500502">Forum użytkowników wersji beta</translation>
@@ -4966,7 +4955,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8639047128869322042">Szukam szkodliwego oprogramowania…</translation>
 <translation id="8639963783467694461">Ustawienia autouzupełniania</translation>
 <translation id="8642171459927087831">Token dostępu</translation>
-<translation id="8642267168767642381">Palec został przesunięty zbyt wolno</translation>
 <translation id="8642947597466641025">Powiększ tekst</translation>
 <translation id="8643418457919840804">Aby kontynuować, wybierz opcję:</translation>
 <translation id="8645354835496065562">Nadal zezwalaj na dostęp do czujników</translation>
@@ -5327,7 +5315,6 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="916607977885256133">Obraz w obrazie</translation>
 <translation id="9169496697824289689">Pokaż skróty klawiszowe</translation>
 <translation id="9169931577761441333">Dodaj aplikację <ph name="APP_NAME" /> do ekranu głównego</translation>
-<translation id="9170397650136757332">Teraz powoli przesuń palec, by dokładnie zeskanować linie papilarne</translation>
 <translation id="9170848237812810038">&amp;Cofnij</translation>
 <translation id="9170884462774788842">Inny program na Twoim komputerze dodał motyw, który może zmienić działanie Chrome.</translation>
 <translation id="9173995187295789444">Skanuję w poszukiwaniu urządzeń Bluetooth…</translation>

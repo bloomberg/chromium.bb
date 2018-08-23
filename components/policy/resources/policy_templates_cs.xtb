@@ -340,11 +340,6 @@ Hodnota je analyzována jako slovník JSON s mapováním názvu zásady na hodno
 
           Pokud tuto zásadu nenastavíte, budou se používat všechna čtyři schémata.</translation>
 <translation id="2067011586099792101">Blokování přístupu k webům mimo obsahové balíčky</translation>
-<translation id="2070270043919235595">Oznamovat uživatelům, že je nutné prohlížeč <ph name="PRODUCT_NAME" /> restartovat, aby bylo možné použít aktualizaci čekající na vyřízení.
-
-      Tato zásada povoluje oznámení o tom, že je vyžadován nebo doporučen restart prohlížeče. Pokud není nastavena, <ph name="PRODUCT_NAME" /> uživatele o potřebě restartu informuje prostřednictvím drobných změn v nabídce. Pokud je nastavena na hodnotu Doporučeno, bude se uživateli opakovaně zobrazovat upozornění, že je doporučen restart. Uživatel upozornění může odmítnout a tím restart odložit. Pokud je nastavena na hodnotu Povinné, bude se uživateli opakovaně zobrazovat upozornění, že po uplynutí lhůty pro oznámení bude vynucen restart prohlížeče. Lhůta je ve výchozím nastavení sedm dní a lze ji nakonfigurovat pomocí zásady <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Relace uživatele se po restartu obnoví.</translation>
 <translation id="2073552873076775140">Povolit přihlášení do prohlížeče <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
 <translation id="2077273864382355561">Prodleva vypnutí obrazovky při napájení z baterie</translation>
@@ -884,7 +879,6 @@ Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky glob�
           Tato zásada je nepovinná. Pokud ji nenastavíte, žádná stránka nové karty se nezobrazí.
 
           Tato zásada je respektována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
-<translation id="3465852069254497664">Oznamovat uživateli, že je doporučen nebo vyžadován restart prohlížeče</translation>
 <translation id="346731943813722404">Určuje, zda mají prodlevy systému správy napájení a limit délky relací začít běžet až poté, co je v relaci zaznamenána první aktivita uživatele.
 
           Pokud je tato zásada nastavena na hodnotu True, prodlevy systému správy napájení a limit délky relace začnou běžet až poté, co je v relaci zaznamenána první aktivita uživatele.
@@ -2119,17 +2113,6 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
 
       Když se má obrazovka ztmavit, chytrý model ztmavování posoudí, zda by se ztmavení obrazovky nemělo odložit. Pokud chytrý model ztmavování ztmavení obrazovky odloží, prodlouží se tím doba do ztmavení obrazovky. Prodlevy vypnutí obrazovky, uzamčení obrazovky a nečinnosti se v tomto případě upraví tak, aby mezi nimi a prodlevou ztmavení zůstala původně nakonfigurovaná doba.
       Pokud je tato zásada nastavená na hodnotu True nebo není nastavená, bude chytrý model ztmavování zapnut a bude mít povoleno prodloužit dobu do ztmavení obrazovky. Pokud je tato zásada nastavená na hodnotu False, chytrý model ztmavování na ztmavení obrazovky nebude mít vliv.</translation>
-<translation id="6982028490425791294">
-      Je-li tato zásada nastavena na hodnotu true, má <ph name="PRODUCT_NAME" /> povoleno shromažďovat protokoly událostí WebRTC ze služeb Google (např. Google Meet) a nahrávat je do Googlu.
-
-      Pokud je tato zásada nastavená na hodnotu false nebo je ponechána nenastavená, prohlížeč <ph name="PRODUCT_NAME" /> takové protokoly shromažďovat ani nahrávat nesmí.
-
-      Tyto protokoly obsahují informace, jako je čas, velikost odeslaných a přijatých paketů RTP, zpětná vazba ohledně zahlcení sítě a metadata ohledně času a kvality snímků zvuku a videa. Tyto informace jsou užitečné k ladění problémů se zvukovými hovory a videohovory v Chromu, jako jsou problémy s odhadem rychlosti připojení apod. Protokoly neobsahují zvukový ani obrazový obsah z hovoru.
-
-      Toto shromažďování dat mohou spustit pouze webové služby Googlu, například Google Hangouts nebo Google Meet.
-
-      Kvůli snazšímu ladění tyto protokoly mohou být prostřednictvím ID relace přidruženy k jiným protokolům shromažďovaným samotnou službou Google.
-      </translation>
 <translation id="6994082778848658360">Udává, jak lze integrovaný bezpečnostní hardwarový prvek používat k dvoufaktorovému ověření, pokud je s touto funkcí kompatibilní. Ke zjištění fyzické přítomnosti uživatele se používá vypínač počítače.
 
       Pokud je vybrána možnost Deaktivováno, druhý faktor není k dispozici.
@@ -2935,11 +2918,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Určuje, zda aktivita videa ovlivňuje správu napájení</translation>
-<translation id="9085839450090699752">Umožňuje nastavit dobu v milisekundách, po kterou se uživatelům bude zobrazovat oznámení, že je třeba prohlížeč <ph name="PRODUCT_NAME" /> nebo systém <ph name="PRODUCT_OS_NAME" /> restartovat, aby bylo možné nainstalovat nevyřízenou aktualizaci.
-
-      Během této doby bude uživatel opakovaně informován, že je potřeba nainstalovat aktualizaci. Na zařízeních se systémem <ph name="PRODUCT_OS_NAME" /> se oznámení o restartu zobrazuje na hlavním panelu systému, když je zjištěn upgrade. Barva oznámení se změní po uplynutí poloviny lhůty pro oznámení a poté znovu po uplynutí celé lhůty pro oznámení. V prohlížečích <ph name="PRODUCT_NAME" /> se po uplynutí jedné třetiny lhůty pro oznámení změní nabídka aplikace na znamení, že je prohlížeč potřeba aktualizovat. Barva tohoto oznámení se změní po uplynutí dvou třetin lhůty a poté znovu po uplynutí celé lhůty. Další oznámení aktivovaná pomocí zásady <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pro prohlížeče se řídí stejným časovým plánem.
-
-      Pokud tuto zásadu nenastavíte, použije se pro systém <ph name="PRODUCT_OS_NAME" /> výchozí doba 345 600 000 milisekund (čtyři dny) a pro prohlížeče 604 800 000 milisekund (jeden týden).</translation>
 <translation id="9088433379343318874">Povolit poskytovatele obsahu pro dozorovaného uživatele</translation>
 <translation id="9088444059179765143">Konfigurace metody automatického zjišťování časového pásma</translation>
 <translation id="9096086085182305205">Seznam povolených serverů pro ověřování</translation>

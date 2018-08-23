@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Entrada inválida</translation>
 <translation id="1080471004309605942">Fin de la cursiva</translation>
 <translation id="1082209053475788238">No hay ningún título de nivel 6 anterior.</translation>
+<translation id="1087788677726983142">Ocultar filtros de emisión de eventos</translation>
 <translation id="1088219014394087294">No hay títulos.</translation>
 <translation id="1106741348836243114">Activa o desactiva el sonido.</translation>
 <translation id="1108651818222110612">subtítulo</translation>
@@ -78,6 +79,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1618597272655350600">Muestra una descripción completa de la posición actual.</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{mayor que}other{# signos mayor que}}</translation>
 <translation id="1653266918374749391">Encabezado anterior de nivel 3</translation>
+<translation id="1657616855184033958">Mostrar filtros de emisión de eventos</translation>
 <translation id="1659072772017912254">Sin marcar</translation>
 <translation id="1669290819662866522">semana</translation>
 <translation id="1674262202423278359">Navegación de ChromeVox</translation>
@@ -412,6 +414,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4255943572433203166">Puedes personalizar ChromeVox con las opciones que aparecen a continuación. Los cambios se aplican inmediatamente.</translation>
 <translation id="4271220233568730077">Siguiente expresión matemática</translation>
 <translation id="4271521365602459209">No hay más resultados.</translation>
+<translation id="4275397969489577657">Habilitar registro de emisión de eventos</translation>
 <translation id="4287520460805643128">No hay más artículos.</translation>
 <translation id="4289540628985791613">Descripción general</translation>
 <translation id="4300318234632215983">Indica la URL de un enlace</translation>
@@ -550,6 +553,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5407530583102765689">{COUNT,plural, =1{punto y coma}other{# puntos y comas}}</translation>
 <translation id="5411891038905756502">No hay ningún punto de salto anterior.</translation>
 <translation id="5417034931411865818">Haz clic en el elemento que aparece debajo de la tecla de enrutamiento $1</translation>
+<translation id="5435274640623994081">Habilitar registro de audiconos</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# signos menor que}}</translation>
 <translation id="5444587279251314700">(activa)</translation>
 <translation id="5446809554778706307">Ningún elemento seleccionado. Pulsa Ctrl + T para abrir una pestaña nueva.</translation>
@@ -899,6 +903,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="8650576015643545550">No hay ninguna lista anterior.</translation>
 <translation id="8651481478098336970">silenciar volumen</translation>
 <translation id="8653646212587894517">Muestra la lista de enlaces</translation>
+<translation id="8656888282555543604">Habilitar registro de braille</translation>
 <translation id="8664519043722036194">segundos</translation>
 <translation id="867187640362843212">Título 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra vertical}other{# barras verticales}}</translation>

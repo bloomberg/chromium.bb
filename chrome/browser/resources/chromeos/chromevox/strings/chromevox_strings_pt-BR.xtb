@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Entrada inválida</translation>
 <translation id="1080471004309605942">Fim do itálico</translation>
 <translation id="1082209053475788238">Nenhum cabeçalho anterior de nível 6.</translation>
+<translation id="1087788677726983142">Ocultar filtros de stream de eventos</translation>
 <translation id="1088219014394087294">Nenhum cabeçalho.</translation>
 <translation id="1106741348836243114">Ativa ou desativa o feedback sonoro (earcons).</translation>
 <translation id="1108651818222110612">subtítulo</translation>
@@ -78,6 +79,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="1618597272655350600">Anuncia uma descrição completa da posição atual</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{sinal maior que}one{# sinais de maior que}other{# sinais de maior que}}</translation>
 <translation id="1653266918374749391">Cabeçalho de nível 3 anterior</translation>
+<translation id="1657616855184033958">Mostrar filtros de stream de eventos</translation>
 <translation id="1659072772017912254">Não marcado</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">Navegação no ChromeVox</translation>
@@ -412,6 +414,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="4255943572433203166">Use as opções abaixo para personalizar o ChromeVox. As alterações têm efeito imediato.</translation>
 <translation id="4271220233568730077">Próxima expressão matemática</translation>
 <translation id="4271521365602459209">Não há mais resultados.</translation>
+<translation id="4275397969489577657">Ativar registro de stream de eventos</translation>
 <translation id="4287520460805643128">Não há artigos a seguir.</translation>
 <translation id="4289540628985791613">Visão geral</translation>
 <translation id="4300318234632215983">Anunciar o URL associado a um link</translation>
@@ -550,6 +553,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5407530583102765689">{COUNT,plural, =1{sinal de ponto-e-vírgula}one{# sinais de ponto-e-vírgula}other{# sinais de ponto-e-vírgula}}</translation>
 <translation id="5411891038905756502">No previous jump point.</translation>
 <translation id="5417034931411865818">Clique no item abaixo da chave de roteamento $1</translation>
+<translation id="5435274640623994081">Ativar registro de ícone auditivo</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{sinal de menor que}one{# sinais de menor que}other{# sinais de menor que}}</translation>
 <translation id="5444587279251314700">(ativo)</translation>
 <translation id="5446809554778706307">Nenhum foco. Pressione Ctrl+T para abrir uma nova guia.</translation>
@@ -899,6 +903,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="8650576015643545550">Nenhuma lista anterior.</translation>
 <translation id="8651481478098336970">desativar o som</translation>
 <translation id="8653646212587894517">Mostrar lista de links</translation>
+<translation id="8656888282555543604">Ativar registro de braille</translation>
 <translation id="8664519043722036194">segundos</translation>
 <translation id="867187640362843212">Cabeçalho 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra vertical}one{# barras verticais}other{# barras verticais}}</translation>

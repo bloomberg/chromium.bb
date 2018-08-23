@@ -361,11 +361,6 @@
           Mahdollisia arvoja ovat basic, digest, ntlm ja negotiate. Erota arvot toisistaan pilkuilla.
           Jos tätä käytäntöä ei ole määritetty, kaikkia neljää todennustapaa tuetaan.</translation>
 <translation id="2067011586099792101">Estä pääsy sisältöpakkauksiin kuulumattomiin sivustoihin</translation>
-<translation id="2070270043919235595">Ilmoita käyttäjille, että <ph name="PRODUCT_NAME" /> on käynnistettävä uudelleen odottavan päivityksen käyttöönottamiseksi.
-
-      Tämän käytäntöasetuksen avulla voit ilmoittaa käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan. Jos asetusta ei ole määritetty, <ph name="PRODUCT_NAME" /> kertoo käyttäjälle uudelleenkäynnistyksen tarpeesta hienovaraisilla valikon muutoksilla. Jos tilana on Suositeltu, käyttäjä saa toistuvan varoituksen suositellusta uudelleenkäynnistyksestä. Käyttäjä voi hylätä varoituksen ja lykätä uudelleenkäynnistystä. Jos tilana on Vaadittu, käyttäjä saa toistuvan varoituksen ilmoitusaikaa seuraavasta selaimen pakotetusta uudelleenkäynnistyksestä. Tämä aika on oletuksena seitsemän päivää, ja sitä voi muuttaa <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />-käytäntoasetuksista.
-
-      Käyttäjän käyttökerta palautetaan uudelleenkäynnistyksen jälkeen.</translation>
 <translation id="2073552873076775140">Salli kirjautuminen tuotteeseen <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Käytä laitteistokiihdytystä, jos mahdollista</translation>
 <translation id="2077273864382355561">Ruudun sammutuksen viive käytettäessä laitetta akkuvirralla</translation>
@@ -903,7 +898,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Tämä käytäntö on valinnainen. Jos sitä ei ole asetettu, uutta välilehteä ei tarjota.
 
           Tämä käytäntö toteutetaan, jos käytäntö DefaultSearchProviderEnabled on käytössä.</translation>
-<translation id="3465852069254497664">Ilmoita käyttäjälle, että selaimen uudelleenkäynnistystä suositellaan tai vaaditaan</translation>
 <translation id="346731943813722404">Määritä, alkavatko virranhallinnan viiveet ja istuntojen pituusrajoitukset vasta käyttäjän ensimmäisen toiminnon jälkeen.
 
           Jos tämän käytännön arvoksi on määritetty tosi, virranhallinnan viiveet ja istuntojen pituusrajoitukset eivät ala ennen kuin käyttäjän ensimmäinen istunnon aikainen toiminto on havaittu.
@@ -2101,17 +2095,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 
       Kun näyttöä ollaan himmentämässä, älykäs himmennysmalli arvioi, pitäisikö näytön himmennystä viivästyttää. Jos älykäs himmennysmalli viivästyttää näytön himmennystä, se pidentää sen myötä näytön himmennysaikaa. Tässä tapauksessa näytön sammuttamisen, näytön lukituksen ja käyttämättömyysajan viivästykset säädetään niin, että niissä pysyy samat etäisyydet näytön himmennysviiveeseen kuin alkuperäisissä asetuksissa.
       Jos käytännön arvoksi on merkitty tosi tai sitä ei ole määritetty, älykäs himmennysmalli otetaan käyttöö ja sen annetaan pidentää näytön himmennysaikaa. Jos käytännön arvoksi on merkitty epätosi, älykäs himmennysmalli ei vaikuta näytön himmennykseen.</translation>
-<translation id="6982028490425791294">
-      Jos tämän käytännön arvo on tosi, <ph name="PRODUCT_NAME" /> saa kerätä WebRTC-tapahtumalokeja Googlen palveluista (esim. Google Meet) ja lähettää niitä Googlelle.
-
-      Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, <ph name="PRODUCT_NAME" /> ei saa kerätä tai lähettää kyseisiä lokeja.
-
-      Lokit sisältävät tietoa esimerkiksi lähetettyjen ja vastaanotettujen RTP-pakettien koko- ja ajankohtatietoja, palautetta verkon ruuhkautumisesta ja ääni- ja videokehysten käyttöaikaan ja laatuun liittyviä sisällönkuvaustietoja. Nämä tiedot auttavat korjaamaan Chromen ääni- ja videopuheluihin liittyviä ongelmia, kuten kaistanleveyden arviointivirheitä. Lokeihin ei tallenneta puhelujen ääni- tai videosisältöä.
-
-      Tämän datan keräyksen voi käynnistää vain Googlen verkkopalvelu, kuten Google Hangouts tai Google Meet.
-
-      Nämä lokit voidaan yhdistää käyttökertatunnuksen avulla muihin lokeihin, jotka kyseessä oleva Googlen palvelu on kerännyt. Tämän tarkoituksena on helpottaa virheenkorjausta.
-      </translation>
 <translation id="6994082778848658360">Määrittää laitteen Secure Element ‑komponentin tarjoaman monitasoisen todennuksen käytön, jos se on yhteensopiva tämän ominaisuuden kanssa. Käyttäjän läsnäolo havaitaan laitteen virtapainikkeen avulla.
 
       Jos valittuna on Ei käytössä, toista todennustasoa ei käytetä.
@@ -2916,11 +2899,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
 <translation id="9042911395677044526">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset käyttäjäkohtaisesti. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Määritä, vaikuttaako videotoiminta virranhallintaan</translation>
-<translation id="9085839450090699752">Voit määrittää ajanjakson (millisekunteina), jonka aikana käyttäjälle ilmoitetaan, että <ph name="PRODUCT_NAME" /> tai <ph name="PRODUCT_OS_NAME" /> ‑laite on käynnistettävä uudelleen päivityksen vuoksi.
-
-      Tänä aikana käyttäjä saa toistuvia muistutuksia päivityksen tarpeellisuudesta. <ph name="PRODUCT_OS_NAME" /> ‑laitteilla uudelleenkäynnistysilmoitus näkyy ilmaisinalueella, kun päivitys havaitaan. Ilmoituksen väri muuttuu, kun puolet ilmoitusajasta on kulunut, ja uudelleen, kun koko ilmoitusaika on kulunut. Selaimen (<ph name="PRODUCT_NAME" />) sovellusvalikon muutos kertoo uudelleenkäynnistyksen tarpeesta, kun kolmannes ilmoitusajasta on kulunut. Ilmoituksen väri muuttuu, kun ilmoitusajasta on kulunut kaksi kolmannesta, ja uudelleen, kun koko ilmoitusaika on kulunut. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-selainkäytännön sallimat lisäilmoitukset noudattavat samaa aikataulua.
-
-      Jos käytäntöä ei ole määritetty, <ph name="PRODUCT_OS_NAME" /> ‑laitteiden oletusajanjakso on 345 600 000 millisekuntia (neljä päivää) ja selainten 604 800 000 millisekuntia (yksi viikko).</translation>
 <translation id="9088433379343318874">Ota käyttöön valvotun käyttäjän sisällön tarjoaja</translation>
 <translation id="9088444059179765143">Määritä aikavyöhykkeen automaattinen tunnistamistapa.</translation>
 <translation id="9096086085182305205">Sallittujen todennuspalvelimien luettelo</translation>

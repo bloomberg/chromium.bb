@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Invalid input</translation>
 <translation id="1080471004309605942">Italic end</translation>
 <translation id="1082209053475788238">No previous level 6 heading.</translation>
+<translation id="1087788677726983142">Hide event stream filters</translation>
 <translation id="1088219014394087294">No headings.</translation>
 <translation id="1106741348836243114">Turn sound feedback (earcons) on or off.</translation>
 <translation id="1108651818222110612">subti</translation>
@@ -78,6 +79,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1618597272655350600">Announces a complete description of the current position</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{greater than}other{# greater than signs}}</translation>
 <translation id="1653266918374749391">Previous level 3 heading</translation>
+<translation id="1657616855184033958">Show event stream filters</translation>
 <translation id="1659072772017912254">Not ticked</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">ChromeVox Navigation</translation>
@@ -412,6 +414,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4255943572433203166">Use the options below to customise ChromeVox. Changes take effect immediately.</translation>
 <translation id="4271220233568730077">Next math</translation>
 <translation id="4271521365602459209">No more results.</translation>
+<translation id="4275397969489577657">Enable event stream logging</translation>
 <translation id="4287520460805643128">No next article.</translation>
 <translation id="4289540628985791613">Overview</translation>
 <translation id="4300318234632215983">Announce the URL behind a link</translation>
@@ -550,6 +553,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5407530583102765689">{COUNT,plural, =1{semicolon}other{# semicolons}}</translation>
 <translation id="5411891038905756502">No previous jump point.</translation>
 <translation id="5417034931411865818">Click the item under routing key $1</translation>
+<translation id="5435274640623994081">Enable earcon logging</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{less than}other{# less than signs}}</translation>
 <translation id="5444587279251314700">(active)</translation>
 <translation id="5446809554778706307">No focus. Press Ctrl+T to open a new tab.</translation>
@@ -899,6 +903,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8650576015643545550">No previous list.</translation>
 <translation id="8651481478098336970">volume mute</translation>
 <translation id="8653646212587894517">Show links list</translation>
+<translation id="8656888282555543604">Enable braille logging</translation>
 <translation id="8664519043722036194">seconds</translation>
 <translation id="867187640362843212">Heading 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pipe}other{# vertical pipes}}</translation>

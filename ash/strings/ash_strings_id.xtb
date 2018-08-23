@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ditambahkan</translation>
 <translation id="1056775291175587022">Tidak ada jaringan</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Saya bosan</translation>
 <translation id="1104084341931202936">Tampilkan setelan aksesibilitas</translation>
 <translation id="1104621072296271835">Perangkat berfungsi lebih baik jika digunakan bersama</translation>
 <translation id="112308213915226829">Sembunyikan otomatis rak</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Hapus semua</translation>
 <translation id="1247372569136754018">Mikrofon (internal)</translation>
 <translation id="1252999807265626933">Mengisi daya dari <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Laporan cuaca?</translation>
 <translation id="1267032506238418139">Perubahan pintasan</translation>
 <translation id="1270290102613614947">Keyboard di layar dinonaktifkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Anda hanya dapat memiliki maksimum <ph name="MULTI_PROFILE_USER_LIMIT" /> akun dalam fitur login multipel.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Tersambung ke satu perangkat}other{Tersambung ke # perangkat}}</translation>
 <translation id="3236488194889173876">Jaringan seluler tidak tersedia</translation>
+<translation id="3255483164551725916">Apa yang dapat Anda lakukan?</translation>
 <translation id="3294437725009624529">Tamu</translation>
 <translation id="332587331255250389">Harap ganti baterai</translation>
 <translation id="3351879221545518001">Anda sedang mentransmisi layar.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Penunjuk laser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk 1 aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
 <translation id="4072264167173457037">Sinyal sedang</translation>
+<translation id="4146833061457621061">Putar musik</translation>
 <translation id="4200057768455216496">Anda menekan pintasan untuk kaca pembesar yang terpasang di dok. Ingin mengaktifkannya?</translation>
 <translation id="4217571870635786043">Dikte</translation>
 <translation id="4261870227682513959">Tampilkan setelan notifikasi. Notifikasi nonaktif.</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Anda menekan pintasan untuk kontras tinggi. Ingin mengaktifkannya?</translation>
 <translation id="7066646422045619941">Jaringan ini dinonaktifkan oleh administrator Anda.</translation>
 <translation id="7067196344162293536">Putar otomatis</translation>
+<translation id="7068360136237591149">Buka file</translation>
 <translation id="7076293881109082629">Sedang masuk</translation>
 <translation id="7092922358121866860">Tampilkan setelan Cahaya Malam</translation>
 <translation id="7098389117866926363">Perangkat USB-C (port belakang sebelah kiri)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Peringatan: Fitur eksperimental</translation>
 <translation id="7846634333498149051">Keyboard</translation>
 <translation id="7886277072580235377">Sesi internet Anda akan dihapus saat Anda logout. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Kirim email</translation>
 <translation id="790040513076446191">Memanipulasi setelan yang terkait privasi</translation>
 <translation id="7904094684485781019">Administrator untuk akun ini menonaktifkan fitur masuk banyak akun.</translation>
 <translation id="7933084174919150729">Asisten Google hanya tersedia untuk profil utama.</translation>
@@ -448,6 +454,7 @@
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Aplikasi tidak mendukung layar terpisah.</translation>
 <translation id="8874184842967597500">Tidak tersambung</translation>
+<translation id="8877788021141246043">Setel pengingat</translation>
 <translation id="8878886163241303700">Memperluas layar</translation>
 <translation id="8921624153894383499">Asisten Google tidak berbicara dalam bahasa ini.</translation>
 <translation id="8938800817013097409">Perangkat USB-C (port belakang sebelah kanan)</translation>
@@ -471,6 +478,7 @@
 <translation id="9210037371811586452">Keluar dari mode desktop terpadu</translation>
 <translation id="9215934040295798075">Setel wallpaper</translation>
 <translation id="923686485342484400">Tekan Control Shift Q dua kali untuk keluar.</translation>
+<translation id="938963181863597773">Apa saja daftar acara di kalender saya?</translation>
 <translation id="945522503751344254">Kirim masukan</translation>
 <translation id="98515147261107953">Lanskap</translation>
 <translation id="995927048686010764">Autoclick</translation>

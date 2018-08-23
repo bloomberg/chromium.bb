@@ -875,6 +875,7 @@
 <translation id="7981313251711023384">ページをプリロードして閲覧と検索をすばやく行えるようにする</translation>
 <translation id="79859296434321399">拡張現実（AR）コンテンツを表示するには ARCore をインストールしてください</translation>
 <translation id="7987073022710626672">Chrome 利用規約</translation>
+<translation id="7987764905897278458">Google の最先端技術をさらに活用</translation>
 <translation id="7998918019931843664">閉じたタブを開く</translation>
 <translation id="7999064672810608036">すべてのローカルデータ（Cookie を含む）を消去して、このウェブサイトに指定したすべての許可をリセットしてもよろしいですか？</translation>
 <translation id="8004582292198964060">ブラウザ</translation>
@@ -962,6 +963,7 @@
 <translation id="8664979001105139458">同じ名前のファイルが存在します</translation>
 <translation id="8676374126336081632">入力内容を消去</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{電波強度: レベル #}other{電波強度: レベル #}}</translation>
+<translation id="868929229000858085">連絡先を検索</translation>
 <translation id="869891660844655955">有効期限</translation>
 <translation id="8719023831149562936">現在のタブはビームできません</translation>
 <translation id="8725066075913043281">やり直し</translation>
@@ -996,6 +998,7 @@
 <translation id="8986494364107987395">使用統計データと障害レポートを Google に自動送信します</translation>
 <translation id="8993760627012879038">新しいタブをシークレット モードで開く</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" /> で管理されているアカウントでログインして、Chrome データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chrome からログアウトすると、データはこの端末から削除されますが、Google アカウントには残ります。</translation>
+<translation id="9018881455348618200">検索ボタン</translation>
 <translation id="9019902583201351841">保護者により管理されています</translation>
 <translation id="9040142327097499898">通知が許可されていますが、位置情報が端末でオフになっています。</translation>
 <translation id="9050666287014529139">パスフレーズ</translation>

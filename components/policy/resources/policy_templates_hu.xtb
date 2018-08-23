@@ -362,11 +362,6 @@
 
           Ha a házirend konfigurálatlanul marad, a böngésző mind a négy sémát használhatja.</translation>
 <translation id="2067011586099792101">A tartalomcsomagokon kívüli webhelyekhez való hozzáférés letiltása</translation>
-<translation id="2070270043919235595">Értesíti a felhasználót arról, hogy újra kell indítani a <ph name="PRODUCT_NAME" /> böngészőt a függőben lévő frissítés élesítéséhez.
-
-      Ezen házirend-beállítás használatával a felhasználó értesítéseken keresztül tudomást szerezhet arról, hogy ajánlott, illetve szükséges a böngésző újraindítása. Ha nincs beállítva, a <ph name="PRODUCT_NAME" /> a menüben található apró módosításokkal jelzi a felhasználónak, hogy szükség van az újraindításra. Ha a házirend beállítása „Ajánlott”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára az ajánlott újraindítással kapcsolatban. A felhasználónak lehetősége van a figyelmeztetés elvetésére és az újraindítás elhalasztására. Ha a házirend beállítása „Szükséges”, ismétlődő figyelmeztetés jelenik meg a felhasználó számára, amely szerint a rendszer kényszeríti a böngésző újraindítását az értesítési időszak lejárta után. Ez az időszak alapértelmezés szerint hét nap, és a <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" /> házirend-beállításnál módosítható.
-
-      Az újraindítás után a rendszer visszaállítja a felhasználói munkamenetet.</translation>
 <translation id="2073552873076775140">Bejelentkezés engedélyezése a <ph name="PRODUCT_NAME" /> böngészőbe</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
 <translation id="2077273864382355561">Képernyő kikapcsolásának késleltetése akkumulátorról való működés során</translation>
@@ -902,7 +897,6 @@
           Ezt a szabályt nem kötelező beállítani. Ha nincs megadva, nem lesz új lap oldal megjelenítve.
 
           A rendszer csak akkor veszi figyelembe ezt a szabályt, ha a „DefaultSearchProviderEnabled” szabály engedélyezve van.</translation>
-<translation id="3465852069254497664">A felhasználó értesítése arról, hogy ajánlott, illetve szükséges a böngésző újraindítása</translation>
 <translation id="346731943813722404">Meghatározza, hogy az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja egy munkamenet során csak az első felhasználói tevékenység észlelése után kezdődjön-e.
 
           Ha az irányelv beállítása Igaz, akkor az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja nem indul el egy munkamenet során az első felhasználói tevékenység észleléséig.
@@ -2101,17 +2095,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Amikor a képernyő elsötétítésére kerül sor, az intelligens elsötétítési modell megállapítja, hogy el kell-e halasztani az elsötétítést. Ha a halasztás mellett dönt, meghosszabbítja az elsötétítésig hátralévő időt. Ebben az esetben a képernyő kikapcsolását és lezárását, illetve az üresjárati késleltetést úgy korrigálja, hogy megtartsa a képernyő elsötétítésénél eredetileg beállított időtávolságot.
       Ha a házirend értéke Igaz, vagy ha nincs beállítva, akkor az intelligens elsötétítési modell aktiválódik, és lehetővé teszi a képernyő elsötétítéséig hátralévő idő növelését. Ha a házirend értéke Hamis, akkor az intelligens elsötétítési modell nem befolyásolja a képernyő elsötétítését.</translation>
-<translation id="6982028490425791294">
-      Ha a házirend értéke igaz, a(z) <ph name="PRODUCT_NAME" /> engedélyt kap a WebRTC-eseménynaplók begyűjtésére a Google-szolgáltatásokból (pl. a Google Meet felületéről), valamint azok feltöltésére a Google rendszerébe.
-
-      Ha a házirend értéke hamis vagy nincs beállítva, a(z) <ph name="PRODUCT_NAME" /> nem gyűjtheti vagy töltheti fel a naplókat.
-
-      A naplókban olyan különböző információk kerülnek rögzítésre, mint a küldött és fogadott RTP-csomagok ideje vagy mérete, a hálózat túlterheltségéről szóló visszajelzés vagy az audió- és videókeretek idejéről és minőségéről szóló metaadatok. Az említett információk rendkívül hasznosak a Chrome-ban folytatott audió-vagy videóhívásokkal kapcsolatos hibakeresés során, például sávszélesség-becslési problémák stb. esetén.
-
-      Az adatgyűjtést csak a Google internetes szolgáltatásai kezdeményezhetik, mind például a Google Hangouts vagy a Google Meet.
-
-      A naplókat a Google összekapcsolhatja a munkamenet azonosítója alapján a saját maga által gyűjtött naplókkal, ezáltal egyszerűsítve hibakeresés folyamatát.
-      </translation>
 <translation id="6994082778848658360">Meghatározza, hogyan használható az integrált biztonságos hardverelem a kétlépcsős azonosítás biztosítására, amennyiben kompatibilis ezzel a funkcióval. A készülék bekapcsológombja használható a felhasználó fizikai jelenlétének észlelésére.
 
       A „Letiltva” érték kiválasztása esetén nincs használatban kétlépcsős azonosítás.
@@ -2917,11 +2900,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Megadja, hogy a videotevékenység hatással van-e az energiagazdálkodásra</translation>
-<translation id="9085839450090699752">Lehetővé teszi azon időtartam megadását (ezredmásodpercben), amelynek során a felhasználó látja az értesítést, hogy a <ph name="PRODUCT_NAME" /> böngészőt vagy a <ph name="PRODUCT_OS_NAME" />-eszközt újra kell indítani egy függőben lévő frissítés alkalmazásához.
-
-      Ezen időtartam során a felhasználó ismétlődő értesítést kap a frissítés szükségességéről. <ph name="PRODUCT_OS_NAME" />-eszközök esetében az újraindítási értesítés a tálcán jelenik meg, amikor a rendszer frissítést talál. Az értesítés színe megváltozik az értesítési időtartam felének eltelte után, majd újra megváltozik a teljes értesítési időtartam letelte után. A <ph name="PRODUCT_NAME" /> böngésző esetében az értesítési időtartam harmadának letelte után megváltozik az alkalmazásmenü, jelezve, hogy újraindításra van szükség. Az értesítés színe megváltozik az értesítési időtartam kétharmadának eltelte után, majd újra megváltozik a teljes értesítési időtartam letelte után. Az <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> házirend által engedélyezett további értesítések ugyanezt a módszert követik a böngésző esetében.
-
-      Ha a házirend nincs beállítva, akkor a <ph name="PRODUCT_OS_NAME" />-eszközök esetében az alapértelmezett érték 345 600 000 ezredmásodperc (négy nap), a böngésző esetében pedig 604 800 000 ezredmásodperc (egy hét).</translation>
 <translation id="9088433379343318874">Felügyelt felhasználó tartalomszolgáltatójának engedélyezése</translation>
 <translation id="9088444059179765143">Az automatikus időzóna-érzékelés módszerének konfigurálása</translation>
 <translation id="9096086085182305205">Azonosítási szerverek engedélyezési listája</translation>

@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Fes servir la sincronització i tots els serveis</translation>
 <translation id="1272079795634619415">Atura</translation>
-<translation id="1272242203003205253">Els col·laboradors de Google treballen amb l'Assistent per ajudar-te</translation>
 <translation id="1272978324304772054">Aquest compte d'usuari no pertany al domini on s'ha registrat el dispositiu. Si el voleu registrar en un domini diferent, primer cal que apliqueu el procés de recuperació del dispositiu.</translation>
 <translation id="1274977772557788323">Configuració d'emmagatzematge d'Adobe Flash Player</translation>
 <translation id="1274997165432133392">Galetes i altres dades dels llocs web</translation>
@@ -417,7 +416,6 @@
 <translation id="161460670679785907">No es pot detectar el telèfon</translation>
 <translation id="1616206807336925449">Aquesta extensió no requereix cap permís especial.</translation>
 <translation id="1616298854599875024">L'extensió <ph name="IMPORT_NAME" /> no es pot importar perquè no és un mòdul compartit</translation>
-<translation id="161707228174452095">L'empremta digital s'ha afegit.</translation>
 <translation id="1618268899808219593">Centre d'ajuda</translation>
 <translation id="162035744160882748">Activa la sincronització, la personalització i altres serveis de Google</translation>
 <translation id="1620510694547887537">Càmera</translation>
@@ -695,7 +693,6 @@
 <translation id="2028997212275086731">Arxiu RAR</translation>
 <translation id="2034346955588403444">Afegeix una altra xarxa Wi-Fi</translation>
 <translation id="203574396658008164">Activa la presa de notes des de la pantalla de bloqueig</translation>
-<translation id="2039623879703305659">El dit s'ha mogut massa ràpid</translation>
 <translation id="2040460856718599782">S'ha produït un error quan provàvem d'autenticar-vos. Comproveu les vostres credencials d'inici de sessió i torneu-ho a provar.</translation>
 <translation id="2043818754674261542">Distància necessària perquè el telèfon desbloquegi aquest <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Nom de plantilla de certificat de Microsoft</translation>
@@ -739,7 +736,6 @@
 <translation id="2099686503067610784">Voleu suprimir el certificat de servidor "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Inici de sessió automàtic</translation>
 <translation id="2101225219012730419">Versió:</translation>
-<translation id="2107494551712864447">Afegeix una empremta digital</translation>
 <translation id="2112877397266219826">Activeu el comandament tàctil per configurar-me</translation>
 <translation id="21133533946938348">Fixa la pestanya</translation>
 <translation id="2113479184312716848">Obre un &amp;fitxer...</translation>
@@ -1018,7 +1014,6 @@
 <translation id="2526590354069164005">Escriptori</translation>
 <translation id="2526619973349913024">Cerca actualitzacions</translation>
 <translation id="2527167509808613699">Qualsevol tipus de connexió</translation>
-<translation id="2532026602297547439">El sensor està brut</translation>
 <translation id="2532589005999780174">Mode d'alt contrast</translation>
 <translation id="253434972992662860">P&amp;ausa</translation>
 <translation id="2534460670861217804">Servidor intermediari HTTP segur</translation>
@@ -1376,7 +1371,6 @@
 <translation id="3057861065630527966">Crea una còpia de seguretat de les fotos i dels vídeos</translation>
 <translation id="3060379269883947824">Activa Escolta la selecció</translation>
 <translation id="3061707000357573562">Servei de pedaç</translation>
-<translation id="3064410671692449875">Dades insuficients</translation>
 <translation id="3065041951436100775">Suggeriments sobre el tancament sobtat de la pestanya</translation>
 <translation id="3067198179881736288">Vols instal·lar l'aplicació?</translation>
 <translation id="3067198360141518313">Executa aquest connector</translation>
@@ -2262,7 +2256,6 @@
 <translation id="4480590691557335796">Chrome pot cercar programari perjudicial a l'ordinador i suprimir-lo</translation>
 <translation id="4481530544597605423">Dispositius desvinculats</translation>
 <translation id="4482194545587547824">És possible que Google utilitzi el vostre historial de navegació per personalitzar la Cerca i altres serveis de Google</translation>
-<translation id="4493287891836751813">Et presentem el teu Assistent de Google</translation>
 <translation id="4495419450179050807">No la mostris en aquesta pàgina</translation>
 <translation id="4499718683476608392">Permet que la funció Emplenament automàtic de targetes de crèdit empleni els formularis amb un sol clic</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> ha fallat</translation>
@@ -2317,7 +2310,6 @@
 <translation id="4572659312570518089">S'ha cancel·lat l'autenticació mentre es connectava a "<ph name="DEVICE_NAME" />".</translation>
 <translation id="4572815280350369984">Fitxer <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Més...</translation>
-<translation id="4576537685267142337">Aixeca el dit i, a continuació, torna a tocar el sensor</translation>
 <translation id="4576541033847873020">Vincula un dispositiu Bluetooth</translation>
 <translation id="4579581181964204535">No es pot emetre <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Confirmes que vols suprimir  $1 elements?</translation>
@@ -2563,7 +2555,6 @@
 <translation id="4941627891654116707">Mida de la lletra</translation>
 <translation id="494286511941020793">Ajuda per configurar servidors intermediaris</translation>
 <translation id="4945444280533270988">Smart Lock està activat</translation>
-<translation id="494660967831069720">Dades parcials</translation>
 <translation id="4953689047182316270">Respondre als esdeveniments d'accessibilitat</translation>
 <translation id="4953808748584563296">Avatar taronja predeterminat</translation>
 <translation id="4955814292505481804">Anual</translation>
@@ -3522,7 +3513,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="6384275966486438344">Canvia la configuració de la cerca a: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Els llocs poden desar i llegir dades de galetes</translation>
 <translation id="6388429472088318283">Cerca idiomes</translation>
-<translation id="6388771388956873507">Localitza el sensor d'empremtes digitals al dispositiu i toca'l amb el dit</translation>
 <translation id="6390799748543157332">Les pàgines que visualitzeu en aquesta finestra no es mostraran a l'historial del navegador i no deixaran cap altre rastre a l'ordinador, com ara galetes, després de tancar totes les finestres obertes de la sessió de convidat. No obstant això, es conservaran tots els fitxers que baixeu.</translation>
 <translation id="6390994422085833176">Vull revisar les funcions de sincronització i personalització després de la configuració</translation>
 <translation id="6395423953133416962">Envia les <ph name="BEGIN_LINK2" />mètriques<ph name="END_LINK2" /> i la <ph name="BEGIN_LINK1" />informació del sistema<ph name="END_LINK1" /></translation>
@@ -4124,7 +4114,6 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7309257895202129721">Mostra els &amp;controls</translation>
 <translation id="7310598146671372464">No s'ha pogut iniciar la sessió. El servidor no admet els tipus d'encriptació de Kerberos especificats. Contacta amb l'administrador.</translation>
 <translation id="7311079019872751559">Accés del connector de fora de la zona de proves</translation>
-<translation id="7311891583377621132">Mou el dit lleugerament perquè es pugui captar una altra part de l’empremta digital</translation>
 <translation id="7317680720589234980">Opcions de bloqueig de pantalla i d'inici de sessió</translation>
 <translation id="7321545336522791733">No s'ha pogut accedir al servidor</translation>
 <translation id="7324297612904500502">Fòrum per a la versió beta</translation>
@@ -4962,7 +4951,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8639047128869322042">S'està cercant programari maliciós...</translation>
 <translation id="8639963783467694461">Configuració d'Emplenament automàtic</translation>
 <translation id="8642171459927087831">Testimoni d'accés</translation>
-<translation id="8642267168767642381">El dit s'ha mogut massa lentament</translation>
 <translation id="8642947597466641025">Fa el text més gran</translation>
 <translation id="8643418457919840804">Per continuar, tria una opció:</translation>
 <translation id="8645354835496065562">Continua permetent l'accés als sensors</translation>
@@ -5323,7 +5311,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="916607977885256133">Pantalla en pantalla</translation>
 <translation id="9169496697824289689">Mostra les tecles de drecera</translation>
 <translation id="9169931577761441333">Afegeix <ph name="APP_NAME" /> a la pantalla d'inici</translation>
-<translation id="9170397650136757332">Ara mou el dit lleugerament perquè es pugui captar l’empremta digital sencera</translation>
 <translation id="9170848237812810038">&amp;Desfés</translation>
 <translation id="9170884462774788842">Un altre programa de l'ordinador ha afegit un tema que pot canviar el funcionament de Chrome.</translation>
 <translation id="9173995187295789444">S'estan cercant dispositius Bluetooth...</translation>

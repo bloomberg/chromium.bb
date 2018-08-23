@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Hindi wastong input</translation>
 <translation id="1080471004309605942">Dulo ng italic</translation>
 <translation id="1082209053475788238">Walang nakaraang heading sa antas 6.</translation>
+<translation id="1087788677726983142">Itago ang mga filter ng stream ng event</translation>
 <translation id="1088219014394087294">Walang mga heading.</translation>
 <translation id="1106741348836243114">I-on o i-off ang feedback ng tunog (mga earcon).</translation>
 <translation id="1108651818222110612">subti</translation>
@@ -78,6 +79,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1618597272655350600">Nagpapahayag ng kumpletong paglalarawan sa kasalukuyang posisyon</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{greater than}one{# greater than sign}other{# na greater than sign}}</translation>
 <translation id="1653266918374749391">Nakaraang heading sa antas 3</translation>
+<translation id="1657616855184033958">Ipakita ang mga filter ng stream ng event</translation>
 <translation id="1659072772017912254">Hindi nilagyan ng check</translation>
 <translation id="1669290819662866522">linggo</translation>
 <translation id="1674262202423278359">Nabigasyon sa ChromeVox</translation>
@@ -412,6 +414,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="4255943572433203166">Gamitin ang mga opsyon sa ibaba upang i-customize ang ChromeVox. Agad na magkakabisa ang mga pagbabago.</translation>
 <translation id="4271220233568730077">Susunod na math</translation>
 <translation id="4271521365602459209">Wala nang mga resulta.</translation>
+<translation id="4275397969489577657">I-enable ang pag-log ng stream ng event</translation>
 <translation id="4287520460805643128">Walang susunod na artikulo.</translation>
 <translation id="4289540628985791613">Pangkalahatang-ideya</translation>
 <translation id="4300318234632215983">Ianunsyo ang URL sa likod ng isang link</translation>
@@ -550,6 +553,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="5407530583102765689">{COUNT,plural, =1{semicolon}one{# semicolon}other{# na semicolon}}</translation>
 <translation id="5411891038905756502">Walang nakaraang jump point.</translation>
 <translation id="5417034931411865818">I-click ang item sa ilalim ng routing key $1</translation>
+<translation id="5435274640623994081">I-enable ang pag-log ng earcon</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{less than}one{# less than sign}other{# na less than sign}}</translation>
 <translation id="5444587279251314700">(aktibo)</translation>
 <translation id="5446809554778706307">Walang focus. Pindutin ang Ctrl+T upang magbukas ng bagong tab.</translation>
@@ -899,6 +903,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8650576015643545550">Walang nakaraang listahan.</translation>
 <translation id="8651481478098336970">i-mute ang volume</translation>
 <translation id="8653646212587894517">Ipakita ang listahan ng mga link</translation>
+<translation id="8656888282555543604">I-enable ang pag-log ng braille</translation>
 <translation id="8664519043722036194">mga segundo</translation>
 <translation id="867187640362843212">Heading 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pipe}one{# vertical pipe}other{# na vertical pipe}}</translation>

@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16 x</translation>
 <translation id="127138278192656016">Uporaba sinhronizacije in vseh storitev</translation>
 <translation id="1272079795634619415">Ustavi</translation>
-<translation id="1272242203003205253">Googlovi partnerji sodelujejo s Pomočnikom, da vam lahko skupaj pomagajo</translation>
 <translation id="1272978324304772054">Uporabniški račun ne sodi v domeno, v katero je včlanjena naprava. Če se želite včlaniti v drugo domeno, morate najprej obnoviti napravo.</translation>
 <translation id="1274977772557788323">Nastavitve shranjevanja za Adobe Flash Player</translation>
 <translation id="1274997165432133392">Piškotki in drugi podatki spletnega mesta</translation>
@@ -417,7 +416,6 @@
 <translation id="161460670679785907">Ni mogoče zaznati vašega telefona</translation>
 <translation id="1616206807336925449">Za to razširitev so potrebna posebna dovoljenja.</translation>
 <translation id="1616298854599875024">Razširitve »<ph name="IMPORT_NAME" />« ni mogoče uvoziti, ker ni modul v skupni rabi.</translation>
-<translation id="161707228174452095">Prstni odtis dodan.</translation>
 <translation id="1618268899808219593">Center za pomoč</translation>
 <translation id="162035744160882748">Vklop sinhronizacije, prilagajanja in drugih Googlovih storitev</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -695,7 +693,6 @@
 <translation id="2028997212275086731">Arhiv RAR</translation>
 <translation id="2034346955588403444">Dodaj drugo omrežje Wi-Fi</translation>
 <translation id="203574396658008164">Omogoči ustvarjanje zapiskov na zaklenjenem zaslonu</translation>
-<translation id="2039623879703305659">Prehiter premik prsta</translation>
 <translation id="2040460856718599782">Pri preverjanju pristnosti je prišlo do težav. Še enkrat preverite poverilnice za prijavo in poskusite znova.</translation>
 <translation id="2043818754674261542">Razdalja, ki je potrebna, da telefon odklene to napravo <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Microsoftovo ime predloge potrdila</translation>
@@ -739,7 +736,6 @@
 <translation id="2099686503067610784">Ali želite izbrisati strežniško potrdilo »<ph name="CERTIFICATE_NAME" />«?</translation>
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2101225219012730419">Različica:</translation>
-<translation id="2107494551712864447">Dodajanje prstnega odtisa</translation>
 <translation id="2112877397266219826">Vklopite krmilnik na dotik, da me nastavite</translation>
 <translation id="21133533946938348">Pripni zavihek</translation>
 <translation id="2113479184312716848">Odpri &amp;datoteko ...</translation>
@@ -1018,7 +1014,6 @@
 <translation id="2526590354069164005">Namizje</translation>
 <translation id="2526619973349913024">Poišči posodobitev</translation>
 <translation id="2527167509808613699">Kakršna koli povezava</translation>
-<translation id="2532026602297547439">Tipalo je umazano</translation>
 <translation id="2532589005999780174">Visokokontrastni način</translation>
 <translation id="253434972992662860">&amp;Premor</translation>
 <translation id="2534460670861217804">Varni proxy HTTP</translation>
@@ -1377,7 +1372,6 @@
 <translation id="3057861065630527966">Varnostno kopiranje fotografij videoposnetkov</translation>
 <translation id="3060379269883947824">Omogoči storitev Izberite in poslušajte</translation>
 <translation id="3061707000357573562">Storitev za popravke</translation>
-<translation id="3064410671692449875">Nezadostni podatki</translation>
 <translation id="3065041951436100775">Povratne informacije o zaustavitvi zavihka.</translation>
 <translation id="3067198179881736288">Želite namestiti aplikacijo?</translation>
 <translation id="3067198360141518313">Zaženi vtičnik</translation>
@@ -2265,7 +2259,6 @@
 <translation id="4480590691557335796">Chrome lahko poišče škodljivo programsko opremo v računalniku in jo odstrani</translation>
 <translation id="4481530544597605423">Naprave, za katere je bila preklicana seznanitev</translation>
 <translation id="4482194545587547824">Google lahko vašo zgodovino brskanja uporabi za prilagajanje Iskanja Google in drugih Googlovih storitev</translation>
-<translation id="4493287891836751813">Spoznajte Pomočnika Google</translation>
 <translation id="4495419450179050807">Ne pokaži na tej strani</translation>
 <translation id="4499718683476608392">Omogoči samodejno izpolnjevanje za kreditne kartice za izpolnjevanje obrazcev z enim klikom</translation>
 <translation id="4500114933761911433">Vtičnik <ph name="PLUGIN_NAME" /> se je zrušil</translation>
@@ -2320,7 +2313,6 @@
 <translation id="4572659312570518089">Med povezovanjem z napravo »<ph name="DEVICE_NAME" />« je bilo preklicano preverjanje pristnosti.</translation>
 <translation id="4572815280350369984">Datoteka <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Več ...</translation>
-<translation id="4576537685267142337">Dvignite prst in se znova dotaknite tipala</translation>
 <translation id="4576541033847873020">Seznanitev naprave Bluetooth</translation>
 <translation id="4579581181964204535">Ni mogoče predvajati <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Ali ste prepričani, da želite izbrisati $1 elementov?</translation>
@@ -2565,7 +2557,6 @@
 <translation id="4941627891654116707">Velikost pisave</translation>
 <translation id="494286511941020793">Pomoč pri nastavitvi strežnika proxy</translation>
 <translation id="4945444280533270988">Funkcija Smart Lock je vklopljena</translation>
-<translation id="494660967831069720">Delni podatki</translation>
 <translation id="4953689047182316270">Odzivanje na dogodke funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="4953808748584563296">Privzeti oranžni avatar</translation>
 <translation id="4955814292505481804">Letna</translation>
@@ -3523,7 +3514,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6384275966486438344">Sprememba nastavitev iskanja na: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Spletna mesta lahko shranjujejo in berejo podatke piškotkov</translation>
 <translation id="6388429472088318283">Iskanje jezikov</translation>
-<translation id="6388771388956873507">Poiščite tipalo prstnih odtisov na napravi in se ga dotaknite s prstom</translation>
 <translation id="6390799748543157332">Strani, ki si jih ogledujete v tem oknu, ne bodo prikazane v zgodovini brskalnika in v računalniku ne bodo pustile drugih sledi, na primer piškotkov, ko boste zaprli vsa odprta okna gostujočih sej. Datoteke, ki jih prenesete, se bodo ohranile.</translation>
 <translation id="6390994422085833176">Po nastavitvi preglejte funkcije sinhronizacije in prilagajanja</translation>
 <translation id="6395423953133416962">Pošlji <ph name="BEGIN_LINK1" />podatke o sistemu<ph name="END_LINK1" /> in <ph name="BEGIN_LINK2" />meritve<ph name="END_LINK2" /></translation>
@@ -4125,7 +4115,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7309257895202129721">Pokaži &amp;kontrolnike</translation>
 <translation id="7310598146671372464">Prijava ni uspela. Strežnik ne podpira navedenih vrst šifriranja Kerberos. Obrnite se na skrbnika.</translation>
 <translation id="7311079019872751559">Dostop do vtičnika, ki ni v peskovniku</translation>
-<translation id="7311891583377621132">Rahlo premaknite prst, da bo zajet drug del prstnega odtisa</translation>
 <translation id="7317680720589234980">Možnosti zaklepanja zaslona in prijave</translation>
 <translation id="7321545336522791733">Strežnik ni dosegljiv</translation>
 <translation id="7324297612904500502">Forum za beto</translation>
@@ -4965,7 +4954,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="8639047128869322042">Iskanje škodljive programske opreme ...</translation>
 <translation id="8639963783467694461">Nastavitve samodejnega izpolnjevanja</translation>
 <translation id="8642171459927087831">Žeton za dostop</translation>
-<translation id="8642267168767642381">Prepočasen premik prsta</translation>
 <translation id="8642947597466641025">Povečaj besedilo</translation>
 <translation id="8643418457919840804">Če želite nadaljevati, izberite možnost:</translation>
 <translation id="8645354835496065562">Še naprej dovoli dostop do tipal</translation>
@@ -5326,7 +5314,6 @@ Datoteko s ključem shranite na varnem. Potrebovali jo boste za izdelavo novih r
 <translation id="916607977885256133">Slika v sliki</translation>
 <translation id="9169496697824289689">Ogled bližnjičnih tipk</translation>
 <translation id="9169931577761441333">Dodajanje aplikacije <ph name="APP_NAME" /> na začetni zaslon</translation>
-<translation id="9170397650136757332">Rahlo premaknite prst, da bodo zajeti vsi različni deli prstnega odtisa</translation>
 <translation id="9170848237812810038">&amp;Razveljavi</translation>
 <translation id="9170884462774788842">Drug program v računalniku je dodal temo, ki lahko spremeni način delovanja Chroma.</translation>
 <translation id="9173995187295789444">Iskanje naprav Bluetooth ...</translation>

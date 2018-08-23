@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16배</translation>
 <translation id="127138278192656016">동기화 및 모든 서비스 사용</translation>
 <translation id="1272079795634619415">중지</translation>
-<translation id="1272242203003205253">Google 파트너사는 어시스턴트와 함께 사용자를 돕습니다</translation>
 <translation id="1272978324304772054">이 사용자 계정은 기기가 등록된 도메인에 속해 있지 않습니다. 다른 도메인에 등록하려면 먼저 기기 복구 절차를 거쳐야 합니다.</translation>
 <translation id="1274977772557788323">Adobe Flash Player 저장용량 설정</translation>
 <translation id="1274997165432133392">쿠키 및 기타 사이트 데이터</translation>
@@ -417,7 +416,6 @@
 <translation id="161460670679785907">휴대전화를 인식할 수 없습니다</translation>
 <translation id="1616206807336925449">이 확장 프로그램은 특별한 권한이 필요하지 않습니다.</translation>
 <translation id="1616298854599875024">확장 프로그램 '<ph name="IMPORT_NAME" />'은(는) 공유 모듈이 아니므로 가져올 수 없습니다</translation>
-<translation id="161707228174452095">지문이 추가되었습니다.</translation>
 <translation id="1618268899808219593">고객센터(H)</translation>
 <translation id="162035744160882748">동기화, 맞춤설정 및 기타 Google 서비스 사용 설정</translation>
 <translation id="1620510694547887537">카메라</translation>
@@ -695,7 +693,6 @@
 <translation id="2028997212275086731">RAR 압축 파일</translation>
 <translation id="2034346955588403444">다른 Wi-Fi 네트워크 추가</translation>
 <translation id="203574396658008164">잠금 화면에서 메모 작성 사용</translation>
-<translation id="2039623879703305659">손가락을 너무 빨리 움직였습니다.</translation>
 <translation id="2040460856718599782">인증을 시도하는 중에 문제가 발생했습니다. 로그인 사용자 인증 정보를 확인하고 다시 시도해 주세요.</translation>
 <translation id="2043818754674261542">휴대전화로 이 <ph name="DEVICE_TYPE" />을(를) 잠금 해제하는 데 필요한 거리</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
@@ -739,7 +736,6 @@
 <translation id="2099686503067610784">서버 인증서 '<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="2100273922101894616">자동 로그인</translation>
 <translation id="2101225219012730419">버전:</translation>
-<translation id="2107494551712864447">지문 추가</translation>
 <translation id="2112877397266219826">설정이 필요하면 터치 컨트롤러를 사용하도록 설정하세요.</translation>
 <translation id="21133533946938348">탭 고정</translation>
 <translation id="2113479184312716848">파일 열기(&amp;F)...</translation>
@@ -792,7 +788,7 @@
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" />의 <ph name="PEPPER_PLUGIN_NAME" />에서 내 컴퓨터에 액세스하려고 합니다</translation>
 <translation id="2178614541317717477">CA 손상</translation>
 <translation id="218070003709087997">숫자로 인쇄 부수를 표시하세요(1부터 999까지).</translation>
-<translation id="2184515124301515068">소리를 재생할 수 있는 사이트를 Chrome이 결정(권장)</translation>
+<translation id="2184515124301515068">사이트의 소리 재생 여부를 Chrome이 결정(권장)</translation>
 <translation id="2187895286714876935">서버 인증서 가져오기 오류</translation>
 <translation id="2187906491731510095">확장 프로그램 업데이트됨</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> 열기</translation>
@@ -1018,7 +1014,6 @@
 <translation id="2526590354069164005">데스크톱</translation>
 <translation id="2526619973349913024">업데이트 상태 확인</translation>
 <translation id="2527167509808613699">모든 종류의 연결</translation>
-<translation id="2532026602297547439">센서가 오염되었습니다.</translation>
 <translation id="2532589005999780174">고대비 모드</translation>
 <translation id="253434972992662860">일시중지(&amp;P)</translation>
 <translation id="2534460670861217804">보안 HTTP 프록시</translation>
@@ -1377,7 +1372,6 @@
 <translation id="3057861065630527966">사진 및 동영상을 백업합니다.</translation>
 <translation id="3060379269883947824">텍스트 읽어주기 사용</translation>
 <translation id="3061707000357573562">서비스 패치</translation>
-<translation id="3064410671692449875">데이터 부족</translation>
 <translation id="3065041951436100775">탭 사용 중지 관련 피드백</translation>
 <translation id="3067198179881736288">앱을 설치하시겠습니까?</translation>
 <translation id="3067198360141518313">이 플러그인 실행</translation>
@@ -2263,7 +2257,6 @@
 <translation id="4480590691557335796">Chrome이 컴퓨터에서 유해한 소프트웨어를 찾아 삭제할 수 있습니다.</translation>
 <translation id="4481530544597605423">페어링 해제된 기기</translation>
 <translation id="4482194545587547824">검색 및 다른 Google 서비스를 맞춤설정하기 위하여 Google에서 인터넷 사용 기록을 사용할 수 있습니다.</translation>
-<translation id="4493287891836751813">나만의 Google 어시스턴트를 만나보세요</translation>
 <translation id="4495419450179050807">이 페이지에 표시하지 않음</translation>
 <translation id="4499718683476608392">신용카드 자동 완성을 사용하여 클릭 한 번으로 양식을 작성합니다.</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" />이(가) 다운되었습니다</translation>
@@ -2318,7 +2311,6 @@
 <translation id="4572659312570518089">'<ph name="DEVICE_NAME" />'에 연결하는 동안 인증이 취소되었습니다.</translation>
 <translation id="4572815280350369984"><ph name="FILE_TYPE" /> 파일</translation>
 <translation id="457386861538956877">더보기...</translation>
-<translation id="4576537685267142337">손가락을 들어 올린 후 센서를 다시 터치하세요.</translation>
 <translation id="4576541033847873020">블루투스 기기 페어링</translation>
 <translation id="4579581181964204535"><ph name="HOST_NAME" />을(를) 전송할 수 없습니다.</translation>
 <translation id="4580526846085481512">선택한 $1개의 항목을 삭제하시겠습니까?</translation>
@@ -2563,7 +2555,6 @@
 <translation id="4941627891654116707">글꼴 크기</translation>
 <translation id="494286511941020793">프록시 설정 도움말</translation>
 <translation id="4945444280533270988">Smart Lock 사용</translation>
-<translation id="494660967831069720">일부 데이터</translation>
 <translation id="4953689047182316270">접근성 이벤트에 응답</translation>
 <translation id="4953808748584563296">기본 주황색 아바타</translation>
 <translation id="4955814292505481804">연간</translation>
@@ -3520,7 +3511,6 @@
 <translation id="6384275966486438344">다음으로 검색 설정 변경: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">사이트에서 쿠키 데이터를 저장하고 읽을 수 있음</translation>
 <translation id="6388429472088318283">언어 검색</translation>
-<translation id="6388771388956873507">기기에서 지문 센서를 찾아 손가락으로 터치합니다.</translation>
 <translation id="6390799748543157332">이 창에서 보는 페이지는 브라우저 기록에 나타나지 않으며 열려 있는 모든 손님 창을 닫은 후에도 컴퓨터에 쿠키와 같은 다른 흔적을 남기지 않습니다. 하지만 다운로드한 파일은 모두 저장됩니다.</translation>
 <translation id="6390994422085833176">설정 후 동기화 및 맞춤설정 기능 검토</translation>
 <translation id="6395423953133416962"><ph name="BEGIN_LINK1" />시스템 정보<ph name="END_LINK1" /> 및 <ph name="BEGIN_LINK2" />통계<ph name="END_LINK2" /> 전송</translation>
@@ -4123,7 +4113,6 @@
 <translation id="7309257895202129721">컨트롤 표시(&amp;C)</translation>
 <translation id="7310598146671372464">로그인하지 못했습니다. 서버가 지정된 Kerberos 암호화 유형을 지원하지 않습니다. 관리자에게 문의하세요.</translation>
 <translation id="7311079019872751559">샌드박스 처리되지 않은 플러그인 액세스</translation>
-<translation id="7311891583377621132">지문의 다른 부분이 인식되도록 손가락을 살짝 움직이세요.</translation>
 <translation id="7317680720589234980">화면 잠금 및 로그인 옵션</translation>
 <translation id="7321545336522791733">서버에 연결할 수 없음</translation>
 <translation id="7324297612904500502">베타 포럼</translation>
@@ -4963,7 +4952,6 @@
 <translation id="8639047128869322042">유해한 소프트웨어 확인 중...</translation>
 <translation id="8639963783467694461">자동 완성 설정</translation>
 <translation id="8642171459927087831">액세스 토큰</translation>
-<translation id="8642267168767642381">손가락을 너무 느리게 움직였습니다.</translation>
 <translation id="8642947597466641025">텍스트 확대</translation>
 <translation id="8643418457919840804">계속하려면 옵션을 선택하세요.</translation>
 <translation id="8645354835496065562">계속해서 센서 액세스 허용</translation>
@@ -5324,7 +5312,6 @@
 <translation id="916607977885256133">PIP 모드</translation>
 <translation id="9169496697824289689">단축키 보기</translation>
 <translation id="9169931577761441333">홈 화면에 <ph name="APP_NAME" /> 추가</translation>
-<translation id="9170397650136757332">이제 지문의 다른 부분도 모두 인식되도록 손가락을 살짝 움직이세요.</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="9170884462774788842">컴퓨터의 다른 프로그램에서 Chrome 작동에 영향을 줄 수 있는 테마를 추가했습니다.</translation>
 <translation id="9173995187295789444">블루투스 기기 검색 중...</translation>

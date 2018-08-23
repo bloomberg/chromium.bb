@@ -361,11 +361,6 @@
 
           Si esta política no se configura, se usarán los cuatro esquemas.</translation>
 <translation id="2067011586099792101">Bloquea el acceso a sitios fuera de los paquetes de contenido.</translation>
-<translation id="2070270043919235595">Notifica a los usuarios que deben reiniciar <ph name="PRODUCT_NAME" /> para aplicar una actualización pendiente.
-
-      Esta configuración de la política habilita notificaciones para informarle al usuario que se recomienda o es obligatorio realizar un reinicio. Si no se establece, <ph name="PRODUCT_NAME" /> implementará cambios sutiles en el menú para indicarle al usuario que se necesita llevar a cabo el reinicio. Si se establece como "Recomendado", el usuario verá una advertencia recurrente con una recomendación para hacerlo. El usuario puede omitir esta advertencia para posponer el reinicio. Si se establece como "Obligatorio", se le mostrará una advertencia recurrente al usuario para indicarle que el navegador se reiniciará de manera forzada una vez que finalice un período específico. De forma predeterminada, este período es de siete días y se puede configurar a través de la configuración de política de <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Después del reinicio, se restablecerá la sesión del usuario.</translation>
 <translation id="2073552873076775140">Permitir el acceso a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Usar aceleración de hardware cuando esté disponible</translation>
 <translation id="2077273864382355561">Demora de pantalla apagada con batería</translation>
@@ -895,7 +890,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Esta política es opcional. Si no se establece, no se mostrará una página Nueva pestaña.
 
           Esta política solo se respeta si está habilita la política "DefaultSearchProviderEnabled".</translation>
-<translation id="3465852069254497664">Notificar a un usuario que se recomienda o es obligatorio reiniciar el navegador</translation>
 <translation id="346731943813722404">Especifica si las demoras por administración de energía y el límite de duración de la sesión deben ejecutarse solo después de que se observe actividad inicial en la sesión de un usuario.
 
           Si esta política se establece en "True", las demoras por administración de energía y el límite de duración de la sesión no se ejecutan hasta que se observe actividad inicial en la sesión de un usuario.
@@ -1572,7 +1566,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="551639594034811656">Esta política define una lista de porcentajes que determinará la fracción de dispositivos <ph name="PRODUCT_OS_NAME" /> en la UO que se actualizará por día a partir del momento en que se descubre la actualización (posterior a la publicación, conforme a lo que tarde el dispositivo en buscar actualizaciones).
       Cada par (día, porcentaje) contiene el porcentaje de la flota que se debe actualizar en una cantidad dada de días a partir del descubrimiento de la actualización. Por ejemplo, si tenemos los pares [(4, 40), (10, 70), (15, 100)], el 40% de la flota debe haberse actualizado 4 días después de descubrir la actualización. El 70% debe actualizarse después de 10 días, y así sucesivamente.
 
-      Si se define valor para esta política, las actualizaciones ignorarán la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> y, en su lugar, seguirán esta.
+      Si se define un valor para esta política, las actualizaciones ignorarán la política <ph name="DEVICE_UPDATE_SCATTER_FACTOR_POLICY_NAME" /> y, en su lugar, seguirán esta.
 
       Si esta lista está vacía, no se definirán etapas y se aplicarán las actualizaciones conforme a otras políticas de dispositivo.
 
@@ -2095,17 +2089,6 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Cuando la pantalla está a punto de atenuarse, el modelo evalúa si debe posponerse la atenuación de la pantalla. Si es así, se el tiempo de atenuación. En este caso, se ajustan el apagado y el bloqueo de la pantalla, y el tiempo de inactividad para mantener las mismas distancias con respecto al tiempo de atenuación de la configuración original.
       Si se establece esta política como verdadera o no se establece, se habilitará el modelo de atenuación inteligente y se permitirá que extienda el tiempo de atenuación. Si se establece como falsa, el modelo no modificará la atenuación.</translation>
-<translation id="6982028490425791294">
-      Si la política se establece como verdadera, <ph name="PRODUCT_NAME" /> puede recopilar registros de acontecimientos de WebRTC provenientes de los servicios de Google (p. ej., Google Meet) y cargarlos a Google.
-
-      Si se establece como falsa, o no se establece, <ph name="PRODUCT_NAME" /> no puede recopilar estos registros ni cargarlos.
-
-      Estos registros contienen información, como el momento en que se enviaron o recibieron paquetes RTP, el tamaño de estos paquetes, comentarios sobre la congestión de la red y metadatos sobre el tiempo y la calidad de los cuadros de video y audio. Esta información es útil para depurar problemas con llamadas de audio o videollamadas en Chrome, como los problemas relacionados con la estimación del ancho de banda, etc. Los registros no incluyen contenido de audio o video de la llamada.
-
-      Esta recopilación de datos solo se puede activar mediante servicios web de Google, como Google Hangouts o Google Meet.
-
-      Es posible que estos registros se asocien (mediante un ID de sesión) con otros registros que recopila el mismo servicio de Google a fin de facilitar la depuración.
-      </translation>
 <translation id="6994082778848658360">Especifica la forma en que los elementos de hardware de seguridad integrados se usan para la autenticación de dos factores, si son compatibles con esta función. El botón de encendido de la máquina se usa para detectar la presencia física del usuario.
 
 Si se selecciona "Inhabilitada", no se proporciona un segundo factor.
@@ -2923,11 +2906,6 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="9035964157729712237">Identificaciones de extensión para excluir de la lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> por usuario. La configuración de red es una cadena escrita en formato JSON, como la define el formato Open Network Configuration que se describe en <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Especificar si la actividad de video afecta a la administración de energía</translation>
-<translation id="9085839450090699752">Te permite establecer el período, en milisegundos, durante el cual se notifica a los usuarios que <ph name="PRODUCT_NAME" /> se debe volver a iniciar o que un dispositivo con <ph name="PRODUCT_OS_NAME" /> se debe reiniciar para que se aplique una actualización pendiente.
-
-      Durante este período, se informará reiteradamente al usuario sobre la necesidad de una actualización. Para los dispositivos con <ph name="PRODUCT_OS_NAME" />, aparece una notificación de reinicio en la bandeja del sistema cuando se detecta una actualización. Esta notificación cambia de color una vez que transcurre la mitad del período y vuelve a cambiar cuando se completa el período. Para <ph name="PRODUCT_NAME" />, el menú de apps cambia y comienza a indicar que se necesita un reinicio una vez que transcurre un tercio del período. Esta notificación cambia de color cuando pasan dos tercios del período y vuelve a cambiar cuando se completa el período. Las notificaciones adicionales que habilita la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> para los navegadores siguen este mismo esquema.
-
-      Si no se establece, se usan los períodos predeterminados de 345,600,000 milisegundos (4 días) para los dispositivos con <ph name="PRODUCT_OS_NAME" /> y 604,800,000 milisegundos (1 semana) para los navegadores.</translation>
 <translation id="9088433379343318874">Habilitar el proveedor de contenido de un usuario supervisado</translation>
 <translation id="9088444059179765143">Configurar el método de detección automática de la zona horaria</translation>
 <translation id="9096086085182305205">Lista blanca del servidor de autenticación</translation>

@@ -187,7 +187,6 @@
 <translation id="126768002343224824">16x</translation>
 <translation id="127138278192656016">Користите синхронизацију и све услуге</translation>
 <translation id="1272079795634619415">Заустави</translation>
-<translation id="1272242203003205253">Google партнери сарађују са Помоћником да би вам помогли</translation>
 <translation id="1272978324304772054">Овај кориснички налог не припада домену на ком је уређај регистрован. Ако желите да се региструјете на другом домену, прво морате да обавите опоравак уређаја.</translation>
 <translation id="1274977772557788323">Подешавања Adobe Flash Player меморијског простора</translation>
 <translation id="1274997165432133392">Колачићи и други подаци о сајтовима</translation>
@@ -414,7 +413,6 @@
 <translation id="161460670679785907">Нисмо успели да откријемо телефон</translation>
 <translation id="1616206807336925449">Овај додатак не захтева никакве специјалне дозволе.</translation>
 <translation id="1616298854599875024">Увоз додатка „<ph name="IMPORT_NAME" />“ није успео зато што није дељени модул</translation>
-<translation id="161707228174452095">Додали сте отисак прста!</translation>
 <translation id="1618268899808219593">Ц&amp;ентар за помоћ</translation>
 <translation id="162035744160882748">Укључите синхронизацију, персонализацију и друге Google услуге</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -692,7 +690,6 @@
 <translation id="2028997212275086731">RAR архива</translation>
 <translation id="2034346955588403444">Додај другу Wi-Fi мрежу</translation>
 <translation id="203574396658008164">Омогући прављење белешки са закључаног екрана</translation>
-<translation id="2039623879703305659">Превише брзо сте померили прст</translation>
 <translation id="2040460856718599782">Упс! Нешто је пошло наопако док смо покушавали да потврдимо вашу аутентичност. Проверите поново акредитиве за пријављивање и покушајте поново.</translation>
 <translation id="2043818754674261542">Раздаљина потребна да би телефон откључао овај <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Назив шаблона Microsoft сертификата</translation>
@@ -736,7 +733,6 @@
 <translation id="2099686503067610784">Желите да избришете серверски сертификат „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="2100273922101894616">Аутоматско пријављивање</translation>
 <translation id="2101225219012730419">Верзија:</translation>
-<translation id="2107494551712864447">Додајте отисак прста</translation>
 <translation id="2112877397266219826">Укључите додирни контролер да бисте ме подесили</translation>
 <translation id="21133533946938348">Закачи картицу</translation>
 <translation id="2113479184312716848">Open &amp;File... (Отвори датотеку)</translation>
@@ -1015,7 +1011,6 @@
 <translation id="2526590354069164005">Радна површина</translation>
 <translation id="2526619973349913024">Провери да ли постоји ажурирање</translation>
 <translation id="2527167509808613699">Било која врста везе</translation>
-<translation id="2532026602297547439">Сензор је прљав</translation>
 <translation id="2532589005999780174">Режим високог контраста</translation>
 <translation id="253434972992662860">&amp;Паузирај</translation>
 <translation id="2534460670861217804">Безбедан HTTP прокси</translation>
@@ -1373,7 +1368,6 @@
 <translation id="3057861065630527966">Направите резервне копије слика и видео снимака</translation>
 <translation id="3060379269883947824">Омогући услугу Изаберите за говор</translation>
 <translation id="3061707000357573562">Услуга крпљења</translation>
-<translation id="3064410671692449875">Недовољно података</translation>
 <translation id="3065041951436100775">Повратне информације о затварању картице.</translation>
 <translation id="3067198179881736288">Желите ли да инсталирате апликацију?</translation>
 <translation id="3067198360141518313">Покрени овај додатак</translation>
@@ -2261,7 +2255,6 @@
 <translation id="4480590691557335796">Chrome може да пронађе штетан софтвер на рачунару и да га уклони</translation>
 <translation id="4481530544597605423">Уређаји чије је упаривање опозвано</translation>
 <translation id="4482194545587547824">Google може да користи историју прегледања за персонализацију Претраге и других Google услуга</translation>
-<translation id="4493287891836751813">Упознајте Google помоћник</translation>
 <translation id="4495419450179050807">Не приказуј на овој страници</translation>
 <translation id="4499718683476608392">Омогућава аутоматско попуњавање образаца подацима о кредитним картицама једним кликом</translation>
 <translation id="4500114933761911433">Додатна компонента <ph name="PLUGIN_NAME" /> је отказала</translation>
@@ -2316,7 +2309,6 @@
 <translation id="4572659312570518089">Потврда аутентичности је отказана током повезивања са „<ph name="DEVICE_NAME" />“.</translation>
 <translation id="4572815280350369984">Датотека <ph name="FILE_TYPE" /></translation>
 <translation id="457386861538956877">Још...</translation>
-<translation id="4576537685267142337">Подигните прст, па поново додирните сензор</translation>
 <translation id="4576541033847873020">Упарите Bluetooth уређај</translation>
 <translation id="4579581181964204535">Није успело пребацивање за <ph name="HOST_NAME" />.</translation>
 <translation id="4580526846085481512">Да ли стварно желите да избришете $1 ставке(и)?</translation>
@@ -2561,7 +2553,6 @@
 <translation id="4941627891654116707">Величина фонта</translation>
 <translation id="494286511941020793">Помоћ за конфигурацију проксија</translation>
 <translation id="4945444280533270988">Smart Lock је укључен</translation>
-<translation id="494660967831069720">Делимични подаци</translation>
 <translation id="4953689047182316270">одговара на догађаје приступачности</translation>
 <translation id="4953808748584563296">Подразумевани наранџасти аватар</translation>
 <translation id="4955814292505481804">Годишња</translation>
@@ -3520,7 +3511,6 @@
 <translation id="6384275966486438344">Промените подешавања претраге на: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Сајтови могу да чувају и читају податке колачића</translation>
 <translation id="6388429472088318283">Претражите језике</translation>
-<translation id="6388771388956873507">Пронађите сензор за отисак прста на уређају и додирните га прстом</translation>
 <translation id="6390799748543157332">Странице које видите у овом прозору се неће појављивати у историји прегледача и неће остављати друге трагове, попут колачића, на рачунару када затворите све отворене прозоре режима госта. Међутим, све датотеке које преузмете ће бити сачуване.</translation>
 <translation id="6390994422085833176">Прегледајте функције синхронизације и персонализације после подешавања</translation>
 <translation id="6395423953133416962">Шаљи <ph name="BEGIN_LINK1" />информације<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />показатеље<ph name="END_LINK2" /> о систему</translation>
@@ -4122,7 +4112,6 @@
 <translation id="7309257895202129721">Прикажи &amp;контроле</translation>
 <translation id="7310598146671372464">Пријављивање није успело. Сервер не подржава наведене Kerberos типове шифровања. Контактирајте администратора.</translation>
 <translation id="7311079019872751559">Приступ помоћу додатне компоненте ван заштићеног окружења</translation>
-<translation id="7311891583377621132">Мало померите да бисте снимили други део отиска прста</translation>
 <translation id="7317680720589234980">Опције закључавања екрана и пријављивања</translation>
 <translation id="7321545336522791733">Сервер није доступан</translation>
 <translation id="7324297612904500502">Форум за бета верзију</translation>
@@ -4962,7 +4951,6 @@
 <translation id="8639047128869322042">Тражи се штетни софтвер…</translation>
 <translation id="8639963783467694461">Подешавања Аутоматског попуњавања</translation>
 <translation id="8642171459927087831">Ознака приступа</translation>
-<translation id="8642267168767642381">Превише споро сте померили прст</translation>
 <translation id="8642947597466641025">Увећај текст</translation>
 <translation id="8643418457919840804">Да бисте наставили, изаберите неку опцију:</translation>
 <translation id="8645354835496065562">Настави да дозвољаваш приступ сензорима</translation>
@@ -5323,7 +5311,6 @@
 <translation id="916607977885256133">Слика у слици</translation>
 <translation id="9169496697824289689">Приказ тастерских пречица</translation>
 <translation id="9169931577761441333">Додајте <ph name="APP_NAME" /> на почетни екран</translation>
-<translation id="9170397650136757332">Сада мало померите прст да бисте снимили све различите делове отиска прста</translation>
 <translation id="9170848237812810038">&amp;Опозови</translation>
 <translation id="9170884462774788842">Други програм на рачунару је додао тему која може да промени начин на који Chrome функционише.</translation>
 <translation id="9173995187295789444">Траже се Bluetooth уређаји...</translation>

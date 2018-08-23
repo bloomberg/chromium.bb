@@ -157,7 +157,7 @@
 <translation id="2122601567107267586">無法開啟應用程式</translation>
 <translation id="2126426811489709554">技術提供：Chrome</translation>
 <translation id="2131665479022868825">已節省 <ph name="DATA" /></translation>
-<translation id="213279576345780926">已關閉的「<ph name="TAB_TITLE" />」</translation>
+<translation id="213279576345780926">已關閉「<ph name="TAB_TITLE" />」</translation>
 <translation id="2139186145475833000">加到主畫面</translation>
 <translation id="2146738493024040262">開啟免安裝應用程式</translation>
 <translation id="2148716181193084225">今天</translation>
@@ -875,6 +875,7 @@
 <translation id="7981313251711023384">預先載入網頁，以加快瀏覽及搜尋速度</translation>
 <translation id="79859296434321399">如要查看擴增實境內容，請安裝 ARCore</translation>
 <translation id="7987073022710626672">Chrome 服務條款</translation>
+<translation id="7987764905897278458">體驗更多 Google 強大的智慧功能</translation>
 <translation id="7998918019931843664">重新開啟先前關閉的分頁</translation>
 <translation id="7999064672810608036">您確定要刪除這個網站儲存的所有本機資料 (包括 Cookie 在內)，並重設這個網站的所有權限嗎？</translation>
 <translation id="8004582292198964060">瀏覽器</translation>
@@ -962,6 +963,7 @@
 <translation id="8664979001105139458">檔案名稱已存在</translation>
 <translation id="8676374126336081632">清除輸入</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{訊號強度等級：# 格}other{訊號強度等級：# 格}}</translation>
+<translation id="868929229000858085">搜尋聯絡人</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8719023831149562936">無法傳輸目前的分頁</translation>
 <translation id="8725066075913043281">再試一次</translation>
@@ -996,6 +998,7 @@
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>
 <translation id="8993760627012879038">在無痕模式下開啟新分頁</translation>
 <translation id="8998729206196772491">您即將使用由 <ph name="MANAGED_DOMAIN" /> 所管理的帳戶登入，並授權該網域的管理員控管您的 Chrome 資料。您的資料會與這個帳戶建立永久連結。登出 Chrome 後，系統會將您的資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
+<translation id="9018881455348618200">搜尋按鈕</translation>
 <translation id="9019902583201351841">你的家長已停用這項功能</translation>
 <translation id="9040142327097499898">允許顯示通知。這部裝置的定位功能已關閉。</translation>
 <translation id="9050666287014529139">通關密語</translation>

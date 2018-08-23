@@ -191,6 +191,13 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Aktivera blockering av kodinjektion från tredjepartsprogram</translation>
 <translation id="1504431521196476721">Fjärrattestering</translation>
+<translation id="1507957856411744193">Om den här principen är inställd på sant ansluter <ph name="PRODUCT_NAME" /> till Cast-enheter på alla IP-adresser, inte bara privata RFC1918/RFC4193-adresser.
+
+          Om den här principen är inställd på falskt ansluter <ph name="PRODUCT_NAME" /> bara till Cast-enheter på privata RFC1918/RFC4193-adresser.
+
+          Om den här principen inte är inställd ansluter <ph name="PRODUCT_NAME" /> bara till Cast-enheter på privata RFC1918/RFC4193-adresser, om inte funktionen CastAllowAllIPs är aktiverad.
+
+          Om principen EnableMediaRouter är inställd på falskt har den här principens värde ingen effekt.</translation>
 <translation id="1509692106376861764">Den här principen gäller inte från version 29 av <ph name="PRODUCT_NAME" /> och senare.</translation>
 <translation id="1514888685242892912">Aktivera <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Tillåt alla webbplatser att spåra användarnas fysiska plats</translation>
@@ -370,11 +377,6 @@
 
           Om principen inte anges används alla fyra.</translation>
 <translation id="2067011586099792101">Blockera åtkomst till webbplatser utanför innehållspaket</translation>
-<translation id="2070270043919235595">Meddela användarna att <ph name="PRODUCT_NAME" /> måste startas om eftersom en uppdatering väntar.
-
-      Med den här principen kan användaren få en avisering om att webbläsaren bör eller måste startas om. Om principen lämnas utan inställning framgår det av en diskret ändring i menyn i <ph name="PRODUCT_NAME" /> att omstart krävs. Med inställningen Rekommenderas visas ett återkommande meddelande för användaren att en omstart rekommenderas. Användaren kan ignorera meddelandet och skjuta upp omstarten. Med inställningen Krävs visas ett återkommande meddelande om att webbläsaren kommer att startas om efter en viss tid. Tidsperioden är sju dagar som standard och kan konfigureras via principen <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      Användarens session återställs efter omstarten.</translation>
 <translation id="2073552873076775140">Tillåt inloggning i <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="2077273864382355561">Skärmavstängningstid när enheten drivs av batteriet</translation>
@@ -933,7 +935,6 @@
           Policyn är valfri. Om den inte anges tillhandahålls ingen ny fliksida.
 
           Policyn följs endast om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
-<translation id="3465852069254497664">Meddela användaren att webbläsaren bör eller måste startas om</translation>
 <translation id="346731943813722404">Anger om fördröjningar i energisparfunktionen och begränsningar i sessionslängden endast ska användas efter att den första användaraktiviteten har observerats i en session.
 
           Om Sant har angetts för den här policyn börjar inte fördröjningar i energisparfunktionen och begränsningar i sessionslängden förrän den första användaraktiviteten har observerats i sessionen.
@@ -2040,6 +2041,7 @@
 
       Principen <ph name="SYNC_DISABLED_POLICY_NAME" /> inaktiverar all synkronisering av data och åsidosätter RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrera bort webbplatser på toppnivå (men inte inbäddade iframe) med barnförbjudet innehåll</translation>
+<translation id="6734521799274931721">Styr om Network File Share är tillgängligt i Chrome OS</translation>
 <translation id="6735701345096330595">Aktivera alltid språk för stavningskontroll</translation>
 <translation id="673699536430961464">Den här inställningen gör så att användarna kan byta Google-konto i webbläsarens innehållsområde när de har loggat in på <ph name="PRODUCT_OS_NAME" />-enheten.
 
@@ -2191,17 +2193,6 @@
 
       När skärmen ska tonas ned utvärderar den smarta modellen för nedtoning om skärmens nedtoning ska skjutas upp. Om den smarta modellen för nedtoning skjuter upp nedtoningen, utökas tiden tills skärmen tonas ned. Då justeras även fördröjningarna för skärmavstängning, skärmlåsning och viloläge så att tiden från skärmens nedtoning blir samma som ursprungligen ställdes in.
       Om den här principen är inställd på Sant eller inte ställs in aktiveras den smarta modellen för nedtoning och kan utöka tiden tills skärmen tonas ned. Om principen ställs in på Falskt påverkar inte den smarta modellen för nedtoning skärmens ljusstyrka.</translation>
-<translation id="6982028490425791294">
-      Om principen är inställd på sant får <ph name="PRODUCT_NAME" /> samla in WebRTC-händelseloggar från Googles tjänster (t.ex. Google Meet) och ladda upp dem till Google.
-
-      Om principen är inställd på falskt eller lämnas utan inställning får <ph name="PRODUCT_NAME" /> inte samla in eller ladda upp sådana loggar.
-
-      Loggarna innehåller information som när RTP-paket skickades och togs emot och hur stora de var, feedback om överbelastning i nätverket och metadata om ljud och bildramars längd och kvalitet. Informationen är praktisk vid felsökning av problem med ljud- eller videosamtal i Chrome, t.ex. vid uppskattning av bandbredd med mera. Loggarna innehåller inte ljud eller video från själva samtalet.
-
-      Datainsamlingen kan bara aktiveras av Googles webbtjänster som Google Hangouts eller Google Meet.
-
-      Loggarna kan gå att koppla via ett sessions-id till andra loggar som samlats in av Google-tjänsten. Detta är avsiktligt för att underlätta felsökningen.
-      </translation>
 <translation id="6994082778848658360">Anger hur den integrerade maskinvaran för säkra element kan användas för tvåfaktorsautentisering om den är kompatibel med den här funktionen. Strömbrytaren på datorn används för att identifiera användarens fysiska närvaro.
 
       Om Inaktiverad har valts tillhandahålls ingen tvåfaktorsautentisering.
@@ -3039,11 +3030,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
-<translation id="9085839450090699752">Gör det möjlighet att ange en tidsperiod i millisekunder under vilken användare meddelas att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" />-enheten måste startas om för att en vilande uppdatering ska börja gälla.
-
-      Under den tiden visas upprepade uppmaningar om uppdatering. På <ph name="PRODUCT_OS_NAME" />-enheter visas en avisering om omstart i systemfältet när en uppgradering upptäcks. Aviseringen ändrar färg när halva aviseringsperioden har passerat och sedan en gång till när hela aviseringsperioden har passerat. I webbläsaren <ph name="PRODUCT_NAME" /> ändras appmenyn för att markera att en omstart behövs när en tredjedel av aviseringsperioden har passerat. Denna avisering ändrar färg när två tredjedelar av aviseringsperioden har passerat och sedan igen när hela aviseringsperioden har passerat. De ytterligare aviseringar som aktiveras via principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> för webbläsare följer samma schema.
-
-      Om inget värde anges används standardperioden 345600000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604800000 millisekunder (en vecka) för webbläsare.</translation>
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>

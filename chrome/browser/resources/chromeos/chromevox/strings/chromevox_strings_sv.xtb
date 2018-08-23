@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Ogiltiga indata</translation>
 <translation id="1080471004309605942">Kursiv slutar</translation>
 <translation id="1082209053475788238">Det finns ingen föregående rubrik på nivå 6.</translation>
+<translation id="1087788677726983142">Göm filter för händelseflöden</translation>
 <translation id="1088219014394087294">Det finns inga rubriker.</translation>
 <translation id="1106741348836243114">Aktivera eller inaktivera ljudsignaler (ljudikoner).</translation>
 <translation id="1108651818222110612">underrubrik</translation>
@@ -78,6 +79,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1618597272655350600">Ger en komplett beskrivning av den aktuella positionen</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{större än-tecken}other{# större än-tecken}}</translation>
 <translation id="1653266918374749391">Föregående rubrik på nivå 3</translation>
+<translation id="1657616855184033958">Visa filter för händelseflöden</translation>
 <translation id="1659072772017912254">Inte markerat</translation>
 <translation id="1669290819662866522">vecka</translation>
 <translation id="1674262202423278359">Navigering med ChromeVox</translation>
@@ -412,6 +414,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="4255943572433203166">Anpassa ChromeVox med alternativen nedan. Ändringarna börjar gälla direkt.</translation>
 <translation id="4271220233568730077">Nästa matematiska uttryck</translation>
 <translation id="4271521365602459209">Inga fler resultat.</translation>
+<translation id="4275397969489577657">Aktivera loggning av händelseflöden</translation>
 <translation id="4287520460805643128">Det finns inga fler artiklar.</translation>
 <translation id="4289540628985791613">Översikt</translation>
 <translation id="4300318234632215983">Läs upp webbadressen bakom en länk</translation>
@@ -550,6 +553,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}other{# semikolon}}</translation>
 <translation id="5411891038905756502">Det finns inga tidigare punkter att hoppa till.</translation>
 <translation id="5417034931411865818">Klicka på objektet under markörhämtaren $1</translation>
+<translation id="5435274640623994081">Aktivera loggning av ljudikoner</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre än-tecken}other{# mindre än-tecken}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
 <translation id="5446809554778706307">Inget objekt är i fokus. Öppna en ny flik med Ctrl+T.</translation>
@@ -899,6 +903,7 @@ Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten.
 <translation id="8650576015643545550">Det finns ingen föregående lista.</translation>
 <translation id="8651481478098336970">ljud av</translation>
 <translation id="8653646212587894517">Visa länklistan</translation>
+<translation id="8656888282555543604">Aktivera loggning av punktskrift</translation>
 <translation id="8664519043722036194">sekunder</translation>
 <translation id="867187640362843212">Rubrik 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{lodstreck}other{# lodstreck}}</translation>

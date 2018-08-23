@@ -311,7 +311,7 @@
 
       Si s'activa aquesta opció de configuració o no s'hi estableix cap valor, l'usuari podrà controlar el funcionament d'Emplenament automàtic per a les adreces a la IU.</translation>
 <translation id="1960840544413786116">Si es permeten certificats emesos per ancoratges de confiança locals que no tinguin l'extensió subjectAlternativeName</translation>
-<translation id="1962273523772270623">Permet la col·lecció de registres d'esdeveniments WebRTC dels serveis de Google</translation>
+<translation id="1962273523772270623">Permet que es recopilin registres d'esdeveniments WebRTC dels serveis de Google</translation>
 <translation id="1964634611280150550">Mode d'incògnit desactivat</translation>
 <translation id="1964802606569741174">Aquesta política no té cap efecte a l'aplicació YouTube per a Android. Per forçar l'ús del mode de seguretat de YouTube, s'ha de denegar la instal·lació d'aquesta aplicació.</translation>
 <translation id="1969212217917526199">Substitueix les polítiques de compilacions de depuració de l'amfitrió d'accés remot.
@@ -342,11 +342,6 @@
 
           Si no s'estableix aquesta política, s'utilitzaran els quatre esquemes.</translation>
 <translation id="2067011586099792101">Bloqueja l'accés a llocs situats fora de paquets de contingut.</translation>
-<translation id="2070270043919235595">Notifica als usuaris que cal reiniciar <ph name="PRODUCT_NAME" /> per aplicar una actualització pendent.
-
-      Aquesta política activa les notificacions per avisar l'usuari que es recomana o es requereix reiniciar el navegador. Si no s'estableix, <ph name="PRODUCT_NAME" /> fa canvis subtils al seu menú per indicar a l'usuari que cal reiniciar el navegador. Si s'estableix en "Recommended", s'avisa periòdicament l'usuari que es recomana reiniciar el navegador. L'usuari pot ignorar aquest advertiment per posposar el reinici. Si s'estableix en "Required", s'avisa periòdicament l'usuari que el navegador es reiniciarà a la força en finalitzar el període de notificació. La durada predeterminada d'aquest període és de 7 dies i es pot configurar amb la política <ph name="RELAUNCH_NOTIFICATION_PERIOD_POLICY_NAME" />.
-
-      La sessió de l'usuari es restaura en reiniciar el navegador.</translation>
 <translation id="2073552873076775140">Permet iniciar la sessió a <ph name="PRODUCT_NAME" /></translation>
 <translation id="2077129598763517140">Utilitza l'acceleració per maquinari quan estigui disponible</translation>
 <translation id="2077273864382355561">Retard de la desactivació de pantalla quan s'utilitza bateria</translation>
@@ -882,7 +877,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Aquesta política és opcional. Si no es configura, no es proporcionarà cap pestanya nova.
 
           La política només s'aplica si la política "DefaultSearchProviderEnabled" està activada.</translation>
-<translation id="3465852069254497664">Notifica a un usuari que es recomana o que cal reiniciar el navegador</translation>
 <translation id="346731943813722404">Permet especificar si els retards de la gestió de l'energia i el límit de la durada de la sessió només s'han d'executar quan l'usuari realitzi la primera acció en una sessió.
 
           Si la política s'estableix com a True, els retards de la gestió de l'energia i el límit de la durada de la sessió no s'executen fins que l'usuari no realitza la primera acció en una sessió.
@@ -1151,15 +1145,15 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
 <translation id="4239720644496144453">La memòria cau no s'utilitza a les aplicacions per a Android. Si diversos usuaris instal·len la mateixa aplicació per a Android, es baixarà de nou en cada cas.</translation>
-<translation id="4243336580717651045">Activa la recollida de dades anònimes amb URL a <ph name="PRODUCT_NAME" /> impedeix que els usuaris puguin canviar aquesta opció.
+<translation id="4243336580717651045">Activa la recollida de dades anonimitzades mitjançant URL amb clau a <ph name="PRODUCT_NAME" /> impedeix que els usuaris puguin canviar aquesta opció.
 
-      La recollida de dades anònimes amb URL envia a Google els URL de pàgines que l'usuari visita per millorar les cerques i la navegació.
+      La recollida de dades anonimitzades mitjançant URL amb clau envia a Google els URL de pàgines que l'usuari visita per millorar les cerques i la navegació.
 
-      Si actives aquesta política, la recollida de dades anònimes amb URL estarà sempre activa.
+      Si actives aquesta política, la recollida de dades anonimitzades mitjançant URL amb clau estarà sempre activa.
 
-      Si desactives aquesta política, la recollida de dades anònimes amb URL no estarà mai activa.
+      Si desactives aquesta política, la recollida de dades anonimitzades mitjançant URL amb clau no estarà mai activa.
 
-      Si aquesta política es deixa sense definir, la recollida de dades anònimes amb URL s'activarà però l'usuari podrà canviar aquesta opció.</translation>
+      Si aquesta política es deixa sense definir, la recollida de dades anonimitzades mitjançant URL amb clau s'activarà però l'usuari podrà canviar aquesta opció.</translation>
 <translation id="4250680216510889253">No</translation>
 <translation id="4261820385751181068">Configuració regional de la pantalla d'inici de sessió del dispositiu</translation>
 <translation id="427220754384423013">Especifica les impressores que un usuari pot fer servir.
@@ -1783,7 +1777,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
           Per bloquejar la pantalla en mode inactiu, us recomanem que activeu el bloqueig de pantalla en mode de suspensió i que configureu <ph name="PRODUCT_OS_NAME" /> perquè se suspengui després del temps d'inactivitat. Aquesta política només s'ha d'utilitzar quan el bloqueig de pantalla s'hagi de produir molt abans que la suspensió o quan no vulgueu emprar la suspensió en mode inactiu.
 
           El valor de la política s'ha d'especificar en mil·lisegons. Els valors es fixen perquè siguin inferiors al temps d'inactivitat.</translation>
-<translation id="6097601282776163274">Activa la recollida de dades anònimes amb URL</translation>
+<translation id="6097601282776163274">Activa la recollida de dades anonimitzades mitjançant URL amb clau</translation>
 <translation id="6111936128861357925">Permet el joc sorpresa del dinosaure</translation>
 <translation id="6114416803310251055">obsolet</translation>
 <translation id="6133088669883929098">Permet que tots els llocs utilitzin la generació de claus</translation>
@@ -1909,9 +1903,9 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Si no s'estableix aquesta política o la llista és buida, es podrà accedir a tots els esquemes a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Configuració dels usuaris gestionats localment</translation>
 <translation id="6658245400435704251">Especifica el nombre de segons fins a què un dispositiu pot retardar aleatòriament la baixada d'una actualització des del moment en què l'actualització es transmet per primera vegada des del servidor. El dispositiu pot esperar una part d'aquest temps en termes de rellotge i la part restant en termes de nombre de comprovacions d'actualitzacions. En qualsevol cas, la dispersió tendeix cap amunt a una quantitat constant de temps, de manera que un dispositiu mai no es quedi encallat mentre espera que es baixi una actualització.</translation>
-<translation id="6665599130599311250">Si aquesta política s'estableix en "false" o es deixa sense establir, la sessió de convidat gestionada funcionarà com es descriu a la pàgina https://support.google.com/chrome/a/answer/3017014, és a dir, com una sessió pública estàndard.
+<translation id="6665599130599311250">Si aquesta política s'estableix en "false" o no s'estableix, la sessió de convidat gestionada funcionarà com es descriu a la pàgina https://support.google.com/chrome/a/answer/3017014, és a dir, com una sessió pública estàndard.
 
-      Si aquesta política s'estableix en "true" o es deixa sense establir, la sessió de convidat gestionada funcionarà com una sessió gestionada i se suprimiran moltes de les restriccions de les sessions públiques normals.
+      Si aquesta política s'estableix en "true", la sessió de convidat gestionada funcionarà com una sessió gestionada i se suprimiran moltes de les restriccions de les sessions públiques normals.
 
       Si aquesta política s'estableix, l'usuari no la podrà canviar ni substituir.</translation>
 <translation id="6665670272107384733">Defineix amb quina freqüència l'usuari ha d'introduir la contrasenya per utilitzar el desbloqueig ràpid</translation>
@@ -2070,17 +2064,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       Quan la pantalla està a punt d'atenuar-se, el model d'atenuació intel·ligent avalua si cal ajornar l'atenuació de la pantalla. Si l'ajorna, amplia el temps que passa fins que s'atenua la pantalla. En aquest cas, els retards per desactivar la pantalla, bloquejar-la i considerar-la inactiva s'ajusten per mantenir les mateixes distàncies amb el retard per atenuar la pantalla que es van configurar en un principi.
 
       Si aquesta política es defineix en "true" o es deixa sense definir, s'activarà el model d'atenuació intel·ligent i es permetrà que ampliï els temps fins que s'atenua la pantalla. Si aquesta política es defineix en "false", el model d'atenuació intel·ligent no tindrà cap efecte sobre l'atenuació de la pantalla.</translation>
-<translation id="6982028490425791294">
-      Si aquesta política s'estableix en "true", <ph name="PRODUCT_NAME" /> pot col·leccionar registres d'esdeveniments WebRTC dels serveis de Google (p. ex. Google Meet) i pujar-los a Google.
-
-      Si aquesta política s'estableix en "false" o es deixa sense establir, és possible que <ph name="PRODUCT_NAME" /> no col·leccioni ni pengi aquests registres.
-
-      Aquests registres contenen informació com ara l'hora i la mida dels paquets RTP rebuts i enviats, comentaris sobre la congestió de la xarxa, i metadades sobre l'hora i la qualitat dels marcs d'àudio i de vídeo. Aquesta informació resulta útil per depurar problemes de les trucades d'àudio o videotrucades de Chrome, com ara els problemes d'estimació de l'amplada de banda. Aquests registres no inclouen contingut d'àudio ni vídeo de les trucades.
-
-      Aquesta col·lecció de dades només la poden activar els serveis web de Google, com ara Google Hangouts i Google Meet.
-
-      Aquests registres es poden associar, mitjançant un ID de sessió, a altres registres col·leccionats pel servei de Google per tal de facilitar la depuració.
-      </translation>
 <translation id="6994082778848658360">Especifica de quina manera es pot utilitzar el maquinari de l'element de seguretat integrat per proporcionar una autenticació de dos factors si és compatible amb aquesta funció. El botó d'engegada de l'ordinador s'utilitza per detectar la presència física de l'usuari.
 
       Si se selecciona Desactivat, no es proporciona un segon factor.
@@ -2868,11 +2851,6 @@ per donar prioritat a OverrideSecurityRestrictionsOnInsecureOrigin. Si totes due
 <translation id="9035964157729712237">ID de les extensions que s'han d'excloure de la llista negra</translation>
 <translation id="9042911395677044526">Permet aplicar la configuració de la xarxa per usuari a un dispositiu <ph name="PRODUCT_OS_NAME" />. La configuració de la xarxa és una cadena en format JSON, segons la definició del format de la configuració de xarxa oberta que apareix a <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especifica si l'activitat de vídeo afecta la gestió d'alimentació</translation>
-<translation id="9085839450090699752">Et permet establir el període de temps, en mil·lisegons, durant el qual es notifica als usuaris que cal reiniciar <ph name="PRODUCT_NAME" /> o un dispositiu <ph name="PRODUCT_OS_NAME" /> per aplicar una actualització pendent.
-
-      Durant aquest període de temps, s'informa l'usuari repetidament de la necessitat d'actualitzar el navegador. En dispositius amb <ph name="PRODUCT_OS_NAME" />, es mostra una notificació de reinici a la safata del sistema quan es detecta una actualització. Aquesta notificació canvia de color quan ha transcorregut la meitat del període de notificació i, de nou, quan ha transcorregut el període de notificació complet. En navegadors <ph name="PRODUCT_NAME" />, el menú d'aplicacions canvia un cop transcorregut un terç del període de notificació per indicar que cal dur a terme un reinici. Aquesta notificació canvia de color quan han transcorregut dos terços del període de notificació i, de nou, quan ha transcorregut el període de notificació complet. Les notificacions addicionals que activa la política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> per a navegadors segueixen aquest mateix patró.
-
-      Si no s'estableix, s'utilitza el període predeterminat de 345600000 mil·lisegons (quatre dies) per a dispositius <ph name="PRODUCT_OS_NAME" /> i de 604800000 mil·lisegons (una setmana) per a navegadors.</translation>
 <translation id="9088433379343318874">Activa el proveïdor de contingut de l'usuari supervisat</translation>
 <translation id="9088444059179765143">Configura el mètode de detecció automàtica de la zona horària</translation>
 <translation id="9096086085182305205">Llista blanca del servidor d'autenticació</translation>

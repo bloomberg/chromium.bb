@@ -166,7 +166,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="3588820906588687999">Apri immagine in un'altra scheda</translation>
 <translation id="3603009562372709545">Copia URL link</translation>
 <translation id="3607167657931203000">Dati della Compilazione automatica</translation>
-<translation id="360930808415985584">Controlla la sincronizzazione, la personalizzazione e non solo</translation>
+<translation id="360930808415985584">Controlla la sincronizzazione, la personalizzazione e altro</translation>
 <translation id="3609785682760573515">Sincronizzazione in corso...</translation>
 <translation id="3628119975092896051">Il tuo elenco di lettura è disponibile offline. Per aggiungere una pagina all'elenco di lettura, tocca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="3638472932233958418">Precarica pagine web</translation>
@@ -248,6 +248,7 @@ I tuoi dati vengono criptati con la tua passphrase di sincronizzazione. Inserisc
 <translation id="5186185447130319458">Privata</translation>
 <translation id="5190835502935405962">Barra dei Preferiti</translation>
 <translation id="5197255632782567636">Internet</translation>
+<translation id="5215116848420601511">Metodi di pagamento e indirizzi che utilizzano Google Pay</translation>
 <translation id="5228579091201413441">Abilita sincronizzazione</translation>
 <translation id="5244474230056479698">Sincronizzazione con <ph name="EMAIL" /></translation>
 <translation id="5300589172476337783">Mostra</translation>

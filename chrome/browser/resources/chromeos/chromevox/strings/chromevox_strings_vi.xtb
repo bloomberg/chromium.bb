@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Nhập vào không hợp lệ</translation>
 <translation id="1080471004309605942">Cuối chữ in nghiêng</translation>
 <translation id="1082209053475788238">Không có tiêu đề cấp 6 trước nào.</translation>
+<translation id="1087788677726983142">Ẩn các bộ lọc luồng sự kiện</translation>
 <translation id="1088219014394087294">Không có tiêu đề nào.</translation>
 <translation id="1106741348836243114">Bật hoặc tắt phản hồi bằng âm thanh (kết nối tai nghe).</translation>
 <translation id="1108651818222110612">phụ đề</translation>
@@ -78,6 +79,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1618597272655350600">Thông báo mô tả đầy đủ của vị trí hiện tại</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{dấu lớn hơn}other{# dấu lớn hơn}}</translation>
 <translation id="1653266918374749391">Tiêu đề cấp 3 trước</translation>
+<translation id="1657616855184033958">Hiển thị các bộ lọc luồng sự kiện</translation>
 <translation id="1659072772017912254">Chưa chọn</translation>
 <translation id="1669290819662866522">tuần</translation>
 <translation id="1674262202423278359">Điều hướng ChromeVox</translation>
@@ -412,6 +414,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="4255943572433203166">Sử dụng các tùy chọn bên dưới để tùy chỉnh ChromeVox. Các thay đổi sẽ có hiệu lực ngay lập tức.</translation>
 <translation id="4271220233568730077">Biểu thức toán tiếp theo</translation>
 <translation id="4271521365602459209">Không còn kết quả nào nữa.</translation>
+<translation id="4275397969489577657">Bật tùy chọn ghi nhật ký luồng sự kiện</translation>
 <translation id="4287520460805643128">Không có bài viết tiếp theo nào.</translation>
 <translation id="4289540628985791613">Tổng quan</translation>
 <translation id="4300318234632215983">Thông báo URL ở sau liên kết</translation>
@@ -550,6 +553,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5407530583102765689">{COUNT,plural, =1{dấu chấm phẩy}other{# dấu chấm phẩy}}</translation>
 <translation id="5411891038905756502">Không có điểm nhảy trước nào.</translation>
 <translation id="5417034931411865818">Nhấp vào mục bên dưới phím định tuyến $1</translation>
+<translation id="5435274640623994081">Bật tùy chọn ghi nhật ký âm báo</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{dấu nhỏ hơn}other{# dấu nhỏ hơn}}</translation>
 <translation id="5444587279251314700">(hiện hoạt)</translation>
 <translation id="5446809554778706307">Không có tiêu điểm. Hãy nhấn tổ hợp phím Ctrl+T để mở tab mới.</translation>
@@ -899,6 +903,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8650576015643545550">Không có danh sách trước nào.</translation>
 <translation id="8651481478098336970">tắt tiếng</translation>
 <translation id="8653646212587894517">Hiển thị danh sách liên kết</translation>
+<translation id="8656888282555543604">Bật tùy chọn ghi nhật ký chữ nổi</translation>
 <translation id="8664519043722036194">giây</translation>
 <translation id="867187640362843212">Tiêu đề 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{dấu sổ thẳng}other{# dấu sổ thẳng}}</translation>
