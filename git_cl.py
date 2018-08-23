@@ -1114,6 +1114,7 @@ class Changelist(object):
     self.cc = None
     self.more_cc = []
     self._remote = None
+    self._cached_remote_url = (False, None)  # (is_cached, value)
 
     self._codereview_impl = None
     self._codereview = None
@@ -1343,6 +1344,10 @@ class Changelist(object):
 
     Returns None if there is no remote.
     """
+    is_cached, value = self._cached_remote_url
+    if is_cached:
+      return value
+
     remote, _ = self.GetRemoteBranch()
     url = RunGit(['config', 'remote.%s.url' % remote], error_ok=True).strip()
 
@@ -1351,6 +1356,7 @@ class Changelist(object):
       url = RunGit(['config', 'remote.%s.url' % remote],
                    error_ok=True,
                    cwd=url).strip()
+    self._cached_remote_url = (True, url)
     return url
 
   def GetIssue(self):
@@ -3084,13 +3090,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           'spaces not allowed in refspec: "%s"' % refspec_suffix)
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
-    # TODO(tandrii): hack to avoid messing with tests while resolving
-    # https://crbug.com/876910. Instead, remote_url should be cached inside this
-    # class, just like GetIssue caches issue.
-    remote_url = self.GetRemoteUrl()
     try:
       push_stdout = gclient_utils.CheckCallAndFilter(
-          ['git', 'push', remote_url, refspec],
+          ['git', 'push', self.GetRemoteUrl(), refspec],
           print_stdout=True,
           # Flush after every line: useful for seeing progress when running as
           # recipe.
@@ -3134,7 +3136,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       gerrit_util.AddReviewers(
           self._GetGerritHost(),
           gerrit_util.ChangeIdentifier(
-              self._GetGerritProject(remote_url), self.GetIssue()),
+              self._GetGerritProject(), self.GetIssue()),
           reviewers, cc,
           notify=bool(options.send_mail))
 
@@ -3147,7 +3149,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       gerrit_util.SetReview(
           self._GetGerritHost(),
           gerrit_util.ChangeIdentifier(
-              self._GetGerritProject(remote_url), self.GetIssue()),
+              self._GetGerritProject(), self.GetIssue()),
           msg='Self-approving for TBR',
           labels={'Code-Review': score})
 

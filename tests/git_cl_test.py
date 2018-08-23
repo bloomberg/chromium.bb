@@ -1091,8 +1091,6 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'branch.master.remote'],), 'origin'),
         ((['git', 'config', 'remote.origin.url'],),
          'https://chromium.googlesource.com/my/repo'),
-        ((['git', 'config', 'remote.origin.url'],),
-         'https://chromium.googlesource.com/my/repo'),
     ])
     return calls
 
@@ -1184,7 +1182,7 @@ class TestGitCl(TestCase):
                            expected_upstream_ref='origin/refs/heads/master',
                            title=None, notify=False,
                            post_amend_description=None, issue=None, cc=None,
-                           git_mirror=None, custom_cl_base=None, tbr=None):
+                           custom_cl_base=None, tbr=None):
     if post_amend_description is None:
       post_amend_description = description
     cc = cc or []
@@ -1295,25 +1293,9 @@ class TestGitCl(TestCase):
     if title:
       ref_suffix += ',m=' + title
 
-    if git_mirror is None:
-      calls += [
-          ((['git', 'config', 'remote.origin.url'],),
-           'https://chromium.googlesource.com/yyy/zzz'),
-      ]
-    else:
-      calls += [
-          ((['git', 'config', 'remote.origin.url'],),
-           '/cache/this-dir-exists'),
-          (('os.path.isdir', '/cache/this-dir-exists'),
-           True),
-          # Runs in /cache/this-dir-exists.
-          ((['git', 'config', 'remote.origin.url'],),
-           'https://chromium.googlesource.com/yyy/zzz'),
-      ]
-
     calls.append((
       (['git', 'push',
-        'https://chromium.googlesource.com/yyy/zzz',
+        'https://chromium.googlesource.com/my/repo',
         ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
       ('remote:\n'
        'remote: Processing changes: (\)\n'
@@ -1324,10 +1306,10 @@ class TestGitCl(TestCase):
        'remote: Processing changes: new: 1, done\n'
        'remote:\n'
        'remote: New Changes:\n'
-       'remote:   https://chromium-review.googlesource.com/#/c/yyy/zzz/+/123456'
+       'remote:   https://chromium-review.googlesource.com/#/c/my/repo/+/123456'
            ' XXX\n'
        'remote:\n'
-       'To https://chromium.googlesource.com/yyy/zzz\n'
+       'To https://chromium.googlesource.com/my/repo\n'
        ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')
     ))
     if squash:
@@ -1345,7 +1327,7 @@ class TestGitCl(TestCase):
     if squash:
       calls += [
           (('AddReviewers',
-            'chromium-review.googlesource.com', 'yyy%2Fzzz~123456',
+            'chromium-review.googlesource.com', 'my%2Frepo~123456',
             sorted(reviewers),
             ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
             cc, notify), ''),
@@ -1369,7 +1351,7 @@ class TestGitCl(TestCase):
           }),
         (('SetReview',
           'chromium-review.googlesource.com',
-          'yyy%2Fzzz~123456',
+          'my%2Frepo~123456',
           'Self-approving for TBR',
           {'Code-Review': 2}, None), ''),
       ]
@@ -1389,7 +1371,6 @@ class TestGitCl(TestCase):
       post_amend_description=None,
       issue=None,
       cc=None,
-      git_mirror=None,
       fetched_status=None,
       other_cl_owner=None,
       custom_cl_base=None,
@@ -1416,13 +1397,6 @@ class TestGitCl(TestCase):
     self.mock(git_cl, 'DownloadGerritHook', lambda force: self._mocked_call(
       'DownloadGerritHook', force))
 
-    original_os_path_isdir = os.path.isdir
-    def selective_os_path_isdir_mock(path):
-      if path == '/cache/this-dir-exists':
-        return self._mocked_call('os.path.isdir', path)
-      return original_os_path_isdir(path)
-    self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
-
     self.calls = self._gerrit_base_calls(
         issue=issue,
         fetched_description=description,
@@ -1439,7 +1413,7 @@ class TestGitCl(TestCase):
           expected_upstream_ref=expected_upstream_ref,
           title=title, notify=notify,
           post_amend_description=post_amend_description,
-          issue=issue, cc=cc, git_mirror=git_mirror,
+          issue=issue, cc=cc,
           custom_cl_base=custom_cl_base, tbr=tbr)
     # Uncomment when debugging.
     # print '\n'.join(map(lambda x: '%2i: %s' % x, enumerate(self.calls)))
@@ -1526,15 +1500,6 @@ class TestGitCl(TestCase):
     self.assertIn(
         'If you proceed with upload, more than 1 CL may be created by Gerrit',
         sys.stdout.getvalue())
-
-  def test_gerrit_upload_squash_first_with_mirror(self):
-    self._run_gerrit_upload_test(
-        ['--squash'],
-        'desc\nBUG=\n\nChange-Id: 123456789',
-        [],
-        squash=True,
-        expected_upstream_ref='origin/master',
-        git_mirror='https://chromium.googlesource.com/yyy/zzz')
 
   def test_gerrit_upload_squash_reupload(self):
     description = 'desc\nBUG=\n\nChange-Id: 123456789'
@@ -1949,8 +1914,6 @@ class TestGitCl(TestCase):
     self._patch_common(default_codereview='gerrit', git_short_host='chromium',
                        detect_gerrit_server=True)
     self.calls += [
-      ((['git', 'config', 'remote.origin.url'],),
-        'https://chromium.googlesource.com/my/repo'),
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
@@ -1969,8 +1932,6 @@ class TestGitCl(TestCase):
     self._patch_common(default_codereview='gerrit', force_codereview=True,
                        git_short_host='host', detect_gerrit_server=True)
     self.calls += [
-      ((['git', 'config', 'remote.origin.url'],),
-        'https://host.googlesource.com/my/repo'),
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
@@ -2059,8 +2020,6 @@ class TestGitCl(TestCase):
     self._patch_common(default_codereview='gerrit', detect_gerrit_server=True,
                        git_short_host='chromium')
     self.calls += [
-      ((['git', 'config', 'remote.origin.url'],),
-        'https://chromium.googlesource.com/my/repo'),
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), CERR1),
@@ -2092,22 +2051,6 @@ class TestGitCl(TestCase):
     ]
     with self.assertRaises(SystemExitMock):
       self.assertEqual(1, git_cl.main(['patch', '123456']))
-
-  def test_patch_gerrit_wrong_repo(self):
-    self._patch_common(default_codereview='gerrit', git_short_host='chromium',
-                       detect_gerrit_server=True)
-    self.calls += [
-      ((['git', 'config', 'remote.origin.url'],),
-        'https://chromium.googlesource.com/wrong/repo'),
-      ((['DieWithError',
-         'Trying to patch a change from '
-         'https://chromium.googlesource.com/my/repo but this repo appears '
-         'to be https://chromium.googlesource.com/wrong/repo.'],),
-        SystemExitMock()),
-    ]
-    with self.assertRaises(SystemExitMock):
-      self.assertEqual(1, git_cl.main(['patch', '123456']))
-
 
   def _checkout_calls(self):
     return [
@@ -3481,6 +3424,31 @@ class TestGitCl(TestCase):
         u'approval': False,
         u'disapproval': False,
         u'sender': u'reviewer@example.com'})
+
+  def test_get_remote_url_with_mirror(self):
+    original_os_path_isdir = os.path.isdir
+    def selective_os_path_isdir_mock(path):
+      if path == '/cache/this-dir-exists':
+        return self._mocked_call('os.path.isdir', path)
+      return original_os_path_isdir(path)
+    self.mock(os.path, 'isdir', selective_os_path_isdir_mock)
+
+    url = 'https://chromium.googlesource.com/my/repo'
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],),
+       '/cache/this-dir-exists'),
+      (('os.path.isdir', '/cache/this-dir-exists'),
+       True),
+      # Runs in /cache/this-dir-exists.
+      ((['git', 'config', 'remote.origin.url'],),
+       url),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit', issue=1)
+    self.assertEqual(cl.GetRemoteUrl(), url)
+    self.assertEqual(cl.GetRemoteUrl(), url)  # Must be cached.
 
 
 if __name__ == '__main__':
