@@ -313,6 +313,19 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   if (!GetPcFactory().get())
     return nullptr;
 
+  std::unique_ptr<P2PPortAllocator> port_allocator =
+      CreatePortAllocator(web_frame);
+  return GetPcFactory()
+      ->CreatePeerConnection(config, std::move(port_allocator), nullptr,
+                             observer)
+      .get();
+}
+
+std::unique_ptr<P2PPortAllocator>
+PeerConnectionDependencyFactory::CreatePortAllocator(
+    blink::WebLocalFrame* web_frame) {
+  DCHECK(web_frame);
+
   // Copy the flag from Preference associated with this WebLocalFrame.
   P2PPortAllocator::Config port_config;
   uint16_t min_port = 0;
@@ -417,16 +430,13 @@ PeerConnectionDependencyFactory::CreatePeerConnection(
   } else {
     network_manager.reset(new EmptyNetworkManager(network_manager_));
   }
-  std::unique_ptr<P2PPortAllocator> port_allocator(new P2PPortAllocator(
+  auto port_allocator = std::make_unique<P2PPortAllocator>(
       p2p_socket_dispatcher_, std::move(network_manager), socket_factory_.get(),
-      port_config, requesting_origin));
+      port_config, requesting_origin);
   if (IsValidPortRange(min_port, max_port))
     port_allocator->SetPortRange(min_port, max_port);
 
-  return GetPcFactory()
-      ->CreatePeerConnection(config, std::move(port_allocator),
-                             nullptr, observer)
-      .get();
+  return port_allocator;
 }
 
 scoped_refptr<webrtc::MediaStreamInterface>
@@ -559,6 +569,12 @@ PeerConnectionDependencyFactory::GetWebRtcWorkerThread() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return chrome_worker_thread_.IsRunning() ? chrome_worker_thread_.task_runner()
                                            : nullptr;
+}
+
+rtc::Thread* PeerConnectionDependencyFactory::GetWebRtcWorkerThreadRtcThread()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return chrome_worker_thread_.IsRunning() ? worker_thread_ : nullptr;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

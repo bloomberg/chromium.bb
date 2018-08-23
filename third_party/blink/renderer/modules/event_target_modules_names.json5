@@ -30,6 +30,7 @@
     "modules/netinfo/NetworkInformation",
     "modules/notifications/Notification",
     "modules/payments/PaymentRequest",
+    "modules/peerconnection/RTCIceTransport",
     "modules/permissions/PermissionStatus",
     "modules/picture_in_picture/HTMLVideoElementPictureInPicture",
     "modules/picture_in_picture/PictureInPictureWindow",

@@ -405,9 +405,24 @@ _CONFIG = [
             'third_party/blink/renderer/bindings/modules/v8/serialization',
         ],
         'allowed': [
-            'webrtc::.+',
+            'cricket::.*',
             'rtc::.+',
+            'webrtc::.+',
         ]
+    },
+    {
+        'paths': [
+            'third_party/blink/renderer/modules/peerconnection/adapters/',
+        ],
+        # The code in adapters/ wraps WebRTC APIs using STL/WebRTC types only.
+        # Thus, the restriction that objects should only be created and
+        # destroyed on the same thread can be relaxed since no Blink types (like
+        # AtomicString or HeapVector) are used cross thread. These Blink types
+        # are converted to the STL/WebRTC counterparts in the parent directory.
+        'allowed': [
+            'base::OnTaskRunnerDeleter',
+            'sigslot::.+',
+        ],
     }
 ]
 

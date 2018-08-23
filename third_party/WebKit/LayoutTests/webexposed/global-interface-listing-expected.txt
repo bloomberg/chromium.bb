@@ -5430,17 +5430,23 @@ interface RTCIceCandidate
     setter candidate
     setter sdpMLineIndex
     setter sdpMid
-interface RTCIceTransport
+interface RTCIceTransport : EventTarget
     attribute @@toStringTag
     getter gatheringState
+    getter ongatheringstatechange
+    getter onicecandidate
     getter role
     getter state
     method constructor
+    method gather
     method getLocalCandidates
     method getLocalParameters
     method getRemoteCandidates
     method getRemoteParameters
     method getSelectedCandidatePair
+    method stop
+    setter ongatheringstatechange
+    setter onicecandidate
 interface RTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag

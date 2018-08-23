@@ -162,6 +162,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter()
       override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
+  rtc::Thread* GetWebRtcWorkerThreadRtcThread() override;
+  std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
+      blink::WebLocalFrame* frame) override;
   std::unique_ptr<blink::WebCanvasCaptureHandler> CreateCanvasCaptureHandler(
       const blink::WebSize& size,
       double frame_rate,
