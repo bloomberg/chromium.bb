@@ -47,6 +47,7 @@
 #include "content/public/browser/notification_service.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkRRect.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/icon_util.h"
@@ -62,7 +63,8 @@ const char kProfileIconFileName[] = "Google Profile.ico";
 
 // Characters that are not allowed in Windows filenames. Taken from
 // http://msdn.microsoft.com/en-us/library/aa365247.aspx
-const base::char16 kReservedCharacters[] = L"<>:\"/\\|?*\x01\x02\x03\x04\x05"
+const base::char16 kReservedCharacters[] =
+    L"<>:\"/\\|?*\x01\x02\x03\x04\x05"
     L"\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17"
     L"\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F";
 
@@ -82,38 +84,25 @@ const int kProfileAvatarBadgeSize = kShortcutIconSize / 2;
 // Incrementing this number will cause profile icons to be regenerated on
 // profile startup (it should be incremented whenever the product/avatar icons
 // change, etc).
-const int kCurrentProfileIconVersion = 4;
+const int kCurrentProfileIconVersion = 5;
 
 // 2x sized profile avatar icons. Mirrors |kDefaultAvatarIconResources| in
 // profile_info_cache.cc.
 const int kProfileAvatarIconResources2x[] = {
-  IDR_PROFILE_AVATAR_2X_0,
-  IDR_PROFILE_AVATAR_2X_1,
-  IDR_PROFILE_AVATAR_2X_2,
-  IDR_PROFILE_AVATAR_2X_3,
-  IDR_PROFILE_AVATAR_2X_4,
-  IDR_PROFILE_AVATAR_2X_5,
-  IDR_PROFILE_AVATAR_2X_6,
-  IDR_PROFILE_AVATAR_2X_7,
-  IDR_PROFILE_AVATAR_2X_8,
-  IDR_PROFILE_AVATAR_2X_9,
-  IDR_PROFILE_AVATAR_2X_10,
-  IDR_PROFILE_AVATAR_2X_11,
-  IDR_PROFILE_AVATAR_2X_12,
-  IDR_PROFILE_AVATAR_2X_13,
-  IDR_PROFILE_AVATAR_2X_14,
-  IDR_PROFILE_AVATAR_2X_15,
-  IDR_PROFILE_AVATAR_2X_16,
-  IDR_PROFILE_AVATAR_2X_17,
-  IDR_PROFILE_AVATAR_2X_18,
-  IDR_PROFILE_AVATAR_2X_19,
-  IDR_PROFILE_AVATAR_2X_20,
-  IDR_PROFILE_AVATAR_2X_21,
-  IDR_PROFILE_AVATAR_2X_22,
-  IDR_PROFILE_AVATAR_2X_23,
-  IDR_PROFILE_AVATAR_2X_24,
-  IDR_PROFILE_AVATAR_2X_25,
-  IDR_PROFILE_AVATAR_2X_26,
+    IDR_PROFILE_AVATAR_2X_0,  IDR_PROFILE_AVATAR_2X_1,
+    IDR_PROFILE_AVATAR_2X_2,  IDR_PROFILE_AVATAR_2X_3,
+    IDR_PROFILE_AVATAR_2X_4,  IDR_PROFILE_AVATAR_2X_5,
+    IDR_PROFILE_AVATAR_2X_6,  IDR_PROFILE_AVATAR_2X_7,
+    IDR_PROFILE_AVATAR_2X_8,  IDR_PROFILE_AVATAR_2X_9,
+    IDR_PROFILE_AVATAR_2X_10, IDR_PROFILE_AVATAR_2X_11,
+    IDR_PROFILE_AVATAR_2X_12, IDR_PROFILE_AVATAR_2X_13,
+    IDR_PROFILE_AVATAR_2X_14, IDR_PROFILE_AVATAR_2X_15,
+    IDR_PROFILE_AVATAR_2X_16, IDR_PROFILE_AVATAR_2X_17,
+    IDR_PROFILE_AVATAR_2X_18, IDR_PROFILE_AVATAR_2X_19,
+    IDR_PROFILE_AVATAR_2X_20, IDR_PROFILE_AVATAR_2X_21,
+    IDR_PROFILE_AVATAR_2X_22, IDR_PROFILE_AVATAR_2X_23,
+    IDR_PROFILE_AVATAR_2X_24, IDR_PROFILE_AVATAR_2X_25,
+    IDR_PROFILE_AVATAR_2X_26,
 };
 
 // Badges |app_icon_bitmap| with |avatar_bitmap| at the bottom right corner and
@@ -121,16 +110,29 @@ const int kProfileAvatarIconResources2x[] = {
 SkBitmap BadgeIcon(const SkBitmap& app_icon_bitmap,
                    const SkBitmap& avatar_bitmap,
                    int scale_factor) {
+  // TODO(dfried): This function often doesn't actually do the thing it claims
+  // to. We should probably fix it.
   SkBitmap source_bitmap =
       profiles::GetAvatarIconAsSquare(avatar_bitmap, scale_factor);
-  int avatar_badge_size = kProfileAvatarBadgeSize;
+
+  int avatar_badge_width = kProfileAvatarBadgeSize;
   if (app_icon_bitmap.width() != kShortcutIconSize) {
-    avatar_badge_size =
-        app_icon_bitmap.width() * kProfileAvatarBadgeSize / kShortcutIconSize;
+    avatar_badge_width =
+        std::ceilf(app_icon_bitmap.width() *
+                   (float{kProfileAvatarBadgeSize} / float{kShortcutIconSize}));
   }
+
+  // Resize the avatar image down to the desired badge size, maintaining aspect
+  // ratio (but prefer more square than rectangular when rounding).
+  const int avatar_badge_height =
+      std::ceilf(avatar_badge_width * (float{source_bitmap.height()} /
+                                       float{source_bitmap.width()}));
   SkBitmap sk_icon = skia::ImageOperations::Resize(
-      source_bitmap, skia::ImageOperations::RESIZE_LANCZOS3, avatar_badge_size,
-      source_bitmap.height() * avatar_badge_size / source_bitmap.width());
+      source_bitmap, skia::ImageOperations::RESIZE_LANCZOS3,
+      avatar_badge_height, avatar_badge_width);
+
+  // Sanity check - avatars shouldn't be taller than they are wide.
+  DCHECK_GE(avatar_badge_width, avatar_badge_height);
 
   // Overlay the avatar on the icon, anchoring it to the bottom-right of the
   // icon.
@@ -139,11 +141,21 @@ SkBitmap BadgeIcon(const SkBitmap& app_icon_bitmap,
                                app_icon_bitmap.height());
   SkCanvas offscreen_canvas(badged_bitmap);
   offscreen_canvas.clear(SK_ColorTRANSPARENT);
-
   offscreen_canvas.drawBitmap(app_icon_bitmap, 0, 0);
-  offscreen_canvas.drawBitmap(sk_icon,
-                              app_icon_bitmap.width() - sk_icon.width(),
-                              app_icon_bitmap.height() - sk_icon.height());
+
+  // Render the avatar in a cutout circle. If the avatar is not square, center
+  // it in the circle but favor pushing it further down.
+  const int cutout_size = avatar_badge_width;
+  const int cutout_left = app_icon_bitmap.width() - cutout_size;
+  const int cutout_top = app_icon_bitmap.height() - cutout_size;
+  const int icon_left = cutout_left;
+  const int icon_top =
+      cutout_top + int{std::ceilf((cutout_size - avatar_badge_height) / 2.0f)};
+  const SkRRect clip_circle = SkRRect::MakeOval(
+      SkRect::MakeXYWH(cutout_left, cutout_top, cutout_size, cutout_size));
+
+  offscreen_canvas.clipRRect(clip_circle, true);
+  offscreen_canvas.drawBitmap(sk_icon, icon_left, icon_top);
   return badged_bitmap;
 }
 
@@ -480,10 +492,8 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
     const CreateOrUpdateShortcutsParams& params) {
   base::AssertBlockingAllowed();
 
-  const base::FilePath shortcut_icon =
-      CreateOrUpdateShortcutIconForProfile(params.profile_path,
-                                           params.avatar_image_1x,
-                                           params.avatar_image_2x);
+  const base::FilePath shortcut_icon = CreateOrUpdateShortcutIconForProfile(
+      params.profile_path, params.avatar_image_1x, params.avatar_image_2x);
   if (shortcut_icon.empty() ||
       params.create_mode ==
           ProfileShortcutManagerWin::CREATE_OR_UPDATE_ICON_ONLY) {
@@ -522,7 +532,6 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
   installer::Product product(distribution);
   product.AddDefaultShortcutProperties(chrome_exe, &properties);
 
-
   // Only set the profile-specific properties when |profile_name| is non empty.
   // If it is empty, it means the shortcut being created should be a regular,
   // non-profile Chrome shortcut.
@@ -554,7 +563,7 @@ void CreateOrUpdateDesktopShortcutsAndIconForProfile(
     const base::FilePath shortcut_name = shortcut.BaseName().RemoveExtension();
     properties.set_shortcut_name(shortcut_name.value());
     ShellUtil::CreateOrUpdateShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP,
-        distribution, properties, operation);
+                                      distribution, properties, operation);
   }
 }
 
@@ -764,10 +773,9 @@ bool ShortcutFilenameMatcher::IsCanonical(
 }
 
 base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path) {
-  return base::StringPrintf(L"--%ls=\"%ls\"",
-                            base::ASCIIToUTF16(
-                                switches::kProfileDirectory).c_str(),
-                            profile_path.BaseName().value().c_str());
+  return base::StringPrintf(
+      L"--%ls=\"%ls\"", base::ASCIIToUTF16(switches::kProfileDirectory).c_str(),
+      profile_path.BaseName().value().c_str());
 }
 
 }  // namespace internal
@@ -807,9 +815,8 @@ ProfileShortcutManager* ProfileShortcutManager::Create(
 
 ProfileShortcutManagerWin::ProfileShortcutManagerWin(ProfileManager* manager)
     : profile_manager_(manager) {
-  DCHECK_EQ(
-      arraysize(kProfileAvatarIconResources2x),
-      profiles::GetDefaultAvatarIconCount());
+  DCHECK_EQ(arraysize(kProfileAvatarIconResources2x),
+            profiles::GetDefaultAvatarIconCount());
 
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
                  content::NotificationService::AllSources());
@@ -823,9 +830,8 @@ ProfileShortcutManagerWin::~ProfileShortcutManagerWin() {
 
 void ProfileShortcutManagerWin::CreateOrUpdateProfileIcon(
     const base::FilePath& profile_path) {
-  CreateOrUpdateShortcutsForProfileAtPath(profile_path,
-                                          CREATE_OR_UPDATE_ICON_ONLY,
-                                          IGNORE_NON_PROFILE_SHORTCUTS);
+  CreateOrUpdateShortcutsForProfileAtPath(
+      profile_path, CREATE_OR_UPDATE_ICON_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
 }
 
 void ProfileShortcutManagerWin::CreateProfileShortcut(
@@ -872,10 +878,13 @@ void ProfileShortcutManagerWin::GetShortcutProperties(
     shortcut_profile_name = entry->GetName();
 
   *name = base::FilePath(profiles::internal::GetShortcutFilenameForProfile(
-      shortcut_profile_name,
-      BrowserDistribution::GetDistribution())).RemoveExtension().value();
+                             shortcut_profile_name,
+                             BrowserDistribution::GetDistribution()))
+              .RemoveExtension()
+              .value();
 
-  command_line->ParseFromString(L"\"" + chrome_exe.value() + L"\" " +
+  command_line->ParseFromString(
+      L"\"" + chrome_exe.value() + L"\" " +
       profiles::internal::CreateProfileShortcutFlags(profile_path));
 
   *icon_path = profiles::internal::GetProfileIconPath(profile_path);
@@ -885,7 +894,7 @@ void ProfileShortcutManagerWin::OnProfileAdded(
     const base::FilePath& profile_path) {
   CreateOrUpdateProfileIcon(profile_path);
   if (profile_manager_->GetProfileAttributesStorage().GetNumberOfProfiles() ==
-          2u) {
+      2u) {
     // When the second profile is added, make existing non-profile shortcuts
     // point to the first profile and be badged/named appropriately.
     CreateOrUpdateShortcutsForProfileAtPath(GetOtherProfilePath(profile_path),
@@ -907,8 +916,7 @@ void ProfileShortcutManagerWin::OnProfileWasRemoved(
     // This is needed to unbadge the icon.
     CreateOrUpdateShortcutsForProfileAtPath(
         storage.GetAllProfilesAttributes().front()->GetPath(),
-        UPDATE_EXISTING_ONLY,
-        IGNORE_NON_PROFILE_SHORTCUTS);
+        UPDATE_EXISTING_ONLY, IGNORE_NON_PROFILE_SHORTCUTS);
   }
 
   base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})
@@ -935,9 +943,10 @@ base::FilePath ProfileShortcutManagerWin::GetOtherProfilePath(
   DCHECK_EQ(2u, storage.GetNumberOfProfiles());
   // Get the index of the current profile, in order to find the index of the
   // other profile.
-  std::vector<ProfileAttributesEntry*> entries = g_browser_process->
-      profile_manager()->GetProfileAttributesStorage().
-          GetAllProfilesAttributes();
+  std::vector<ProfileAttributesEntry*> entries =
+      g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetAllProfilesAttributes();
   for (ProfileAttributesEntry* entry : entries) {
     base::FilePath path = entry->GetPath();
     if (path != profile_path)
@@ -959,6 +968,7 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
       profile_manager_->GetProfileAttributesStorage();
   ProfileAttributesEntry* entry;
   bool has_entry = storage.GetProfileAttributesWithPath(profile_path, &entry);
+
   if (!has_entry)
     return;
   bool remove_badging = (storage.GetNumberOfProfiles() == 1u);
@@ -968,8 +978,7 @@ void ProfileShortcutManagerWin::CreateOrUpdateShortcutsForProfileAtPath(
   // Exit early if the mode is to update existing profile shortcuts only and
   // none were ever created for this profile, per the shortcut name not being
   // set in the profile attributes storage.
-  if (params.old_profile_name.empty() &&
-      create_mode == UPDATE_EXISTING_ONLY &&
+  if (params.old_profile_name.empty() && create_mode == UPDATE_EXISTING_ONLY &&
       action == IGNORE_NON_PROFILE_SHORTCUTS) {
     return;
   }
