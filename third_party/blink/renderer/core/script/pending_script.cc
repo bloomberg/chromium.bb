@@ -138,12 +138,16 @@ void PendingScript::ExecuteScriptBlock(const KURL& document_url) {
     return;
   }
 
-  // Do not execute module scripts if they are moved between documents.
-  // TODO(hiroshige): Also do not execute classic scripts. crbug.com/721914
-  if (OriginalContextDocument() != context_document &&
-      GetScriptType() == ScriptType::kModule) {
-    Dispose();
-    return;
+  if (OriginalContextDocument() != context_document) {
+    if (GetScriptType() == ScriptType::kModule) {
+      // Do not execute module scripts if they are moved between documents.
+      Dispose();
+      return;
+    }
+
+    // TODO(hiroshige): Also do not execute classic scripts.
+    // https://crbug.com/721914
+    UseCounter::Count(frame, WebFeature::kEvaluateScriptMovedBetweenDocuments);
   }
 
   Script* script = GetSource(document_url);
