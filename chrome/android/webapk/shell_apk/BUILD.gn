@@ -221,6 +221,7 @@ junit_binary("webapk_shell_apk_junit_tests") {
   java_files = [
     "junit/src/org/chromium/webapk/shell_apk/HostBrowserClassLoaderTest.java",
     "junit/src/org/chromium/webapk/shell_apk/MainActivityTest.java",
+    "junit/src/org/chromium/webapk/shell_apk/ShareActivityTest.java",
     "junit/src/org/chromium/webapk/shell_apk/WebApkServiceImplWrapperTest.java",
     "junit/src/org/chromium/webapk/shell_apk/WebApkUtilsTest.java",
   ]

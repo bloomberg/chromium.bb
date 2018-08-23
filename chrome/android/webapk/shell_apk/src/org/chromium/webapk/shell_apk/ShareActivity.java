@@ -12,14 +12,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.text.TextUtils;
+import android.util.Pair;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
 
 /**
  * WebAPK's share handler Activity.
@@ -43,65 +41,60 @@ public class ShareActivity extends Activity {
     }
 
     private String extractShareTarget() {
-        ActivityInfo ai;
+        ActivityInfo shareActivityInfo;
         try {
-            ai = getPackageManager().getActivityInfo(
+            shareActivityInfo = getPackageManager().getActivityInfo(
                     getComponentName(), PackageManager.GET_META_DATA);
         } catch (PackageManager.NameNotFoundException e) {
             return null;
         }
-        if (ai == null || ai.metaData == null) {
+        if (shareActivityInfo == null || shareActivityInfo.metaData == null) {
+            return null;
+        }
+        Bundle metaData = shareActivityInfo.metaData;
+
+        String shareAction = metaData.getString(WebApkMetaDataKeys.SHARE_ACTION);
+        if (TextUtils.isEmpty(shareAction)) {
             return null;
         }
 
-        String shareTemplate = ai.metaData.getString(WebApkMetaDataKeys.SHARE_TEMPLATE);
-        if (TextUtils.isEmpty(shareTemplate)) {
-            return null;
-        }
+        // These can be null, they are checked downstream.
+        ArrayList<Pair<String, String>> entryList = new ArrayList<>();
+        entryList.add(new Pair<>(metaData.getString(WebApkMetaDataKeys.SHARE_PARAM_TITLE),
+                getIntent().getStringExtra(Intent.EXTRA_SUBJECT)));
+        entryList.add(new Pair<>(metaData.getString(WebApkMetaDataKeys.SHARE_PARAM_TEXT),
+                getIntent().getStringExtra(Intent.EXTRA_TEXT)));
 
-        String text = getIntent().getStringExtra(Intent.EXTRA_TEXT);
-        String shareUrl = getIntent().getStringExtra(Intent.EXTRA_SUBJECT);
-        Uri shareTemplateUri = Uri.parse(shareTemplate);
-        return shareTemplateUri.buildUpon()
-                .encodedQuery(
-                        replacePlaceholders(shareTemplateUri.getEncodedQuery(), text, shareUrl))
-                .encodedFragment(
-                        replacePlaceholders(shareTemplateUri.getEncodedFragment(), text, shareUrl))
-                .build()
-                .toString();
+        return createWebShareTargetUriString(shareAction, entryList);
     }
 
     /**
-     * Replace {} placeholders in {@link toFill}. "{text}" and "{title}" are replaced with the
-     * supplied strings. All other placeholders are deleted.
+     * Converts the action url and parameters of a webshare target into a URI.
+     * Example:
+     * - action = "https://example.org/includinator/share.html"
+     * - params
+     *     title param: "title"
+     *     title intent: "news"
+     *     text param: "description"
+     *     text intent: "story"
+     * Becomes:
+     *   https://example.org/includinator/share.html?title=news&description=story
+     * TODO(ckitagawa): The escaping behavior isn't entirely correct. The exact encoding is still
+     * being discussed at https://github.com/WICG/web-share-target/issues/59.
      */
-    private String replacePlaceholders(String toFill, String text, String title) {
-        if (toFill == null) {
-            return null;
-        }
-
-        Pattern placeholder = Pattern.compile("\\{.*?\\}");
-        Matcher matcher = placeholder.matcher(toFill);
-        StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            String replacement = "";
-            if (matcher.group().equals("{text}")) {
-                replacement = text;
-            } else if (matcher.group().equals("{title}")) {
-                replacement = title;
+    protected static String createWebShareTargetUriString(
+            String action, ArrayList<Pair<String, String>> entryList) {
+        Uri.Builder queryBuilder = new Uri.Builder();
+        for (Pair<String, String> nameValue : entryList) {
+            if (!TextUtils.isEmpty(nameValue.first) && !TextUtils.isEmpty(nameValue.second)) {
+                // Uri.Builder does URL escaping.
+                queryBuilder.appendQueryParameter(nameValue.first, nameValue.second);
             }
-
-            String encodedReplacement = "";
-            if (replacement != null) {
-                try {
-                    encodedReplacement = URLEncoder.encode(replacement, "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    // Should not be reached.
-                }
-            }
-            matcher.appendReplacement(buffer, encodedReplacement);
         }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+        Uri shareUri = Uri.parse(action);
+        Uri.Builder builder = shareUri.buildUpon();
+        // Uri.Builder uses %20 rather than + for spaces, the spec requires +.
+        builder.encodedQuery(queryBuilder.build().toString().replace("%20", "+").substring(1));
+        return builder.build().toString();
     }
 }

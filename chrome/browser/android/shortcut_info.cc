@@ -71,8 +71,16 @@ void ShortcutInfo::UpdateFromManifest(const blink::Manifest& manifest) {
   for (const auto& icon : manifest.icons)
     icon_urls.push_back(icon.src.spec());
 
-  if (manifest.share_target)
-    share_target_url_template = manifest.share_target->url_template;
+  if (manifest.share_target) {
+    share_target = ShareTarget();
+    share_target->action = manifest.share_target->action;
+    if (!manifest.share_target->params.text.is_null())
+      share_target->params.text = manifest.share_target->params.text.string();
+    if (!manifest.share_target->params.title.is_null())
+      share_target->params.title = manifest.share_target->params.title.string();
+    if (!manifest.share_target->params.url.is_null())
+      share_target->params.url = manifest.share_target->params.url.string();
+  }
 }
 
 void ShortcutInfo::UpdateSource(const Source new_source) {

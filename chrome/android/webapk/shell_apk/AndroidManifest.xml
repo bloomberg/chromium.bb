@@ -43,7 +43,10 @@
                   android:label="{{{title}}}"
                   android:theme="@android:style/Theme.Translucent.NoTitleBar"
                   android:excludeFromRecents="true">
-          <meta-data android:name="org.chromium.webapk.shell_apk.shareTemplate" android:value="{{{url_template}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareAction" android:value="{{{action}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamTitle" android:value="{{{param_title}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamText" android:value="{{{param_text}}}" />
+          <meta-data android:name="org.chromium.webapk.shell_apk.shareParamUrl" android:value="{{{param_url}}}" />
           <intent-filter>
             <action android:name="android.intent.action.SEND" />
             <category android:name="android.intent.category.DEFAULT" />
