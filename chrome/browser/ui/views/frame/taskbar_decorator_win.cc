@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/icon_util.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/win/hwnd_util.h"
@@ -22,6 +23,10 @@
 namespace chrome {
 
 namespace {
+
+constexpr int kOverlayIconSize = 16;
+static const SkRRect kOverlayIconClip =
+    SkRRect::MakeOval(SkRect::MakeWH(kOverlayIconSize, kOverlayIconSize));
 
 // Responsible for invoking TaskbarList::SetOverlayIcon(). The call to
 // TaskbarList::SetOverlayIcon() runs a nested run loop that proves
@@ -40,10 +45,13 @@ void SetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
   base::win::ScopedGDIObject<HICON> icon;
   if (bitmap.get()) {
     DCHECK_GE(bitmap.get()->width(), bitmap.get()->height());
-    // Maintain aspect ratio on resize.
-    const int kOverlayIconSize = 16;
-    int resized_height =
-        bitmap.get()->height() * kOverlayIconSize / bitmap.get()->width();
+
+    // Maintain aspect ratio on resize, but prefer more square.
+    // (We used to round down here, but rounding up produces nicer results.)
+    const int resized_height =
+        std::ceilf(kOverlayIconSize * (float{bitmap.get()->height()} /
+                                       float{bitmap.get()->width()}));
+
     DCHECK_GE(kOverlayIconSize, resized_height);
     // Since the target size is so small, we use our best resizer.
     SkBitmap sk_icon = skia::ImageOperations::Resize(
@@ -52,12 +60,21 @@ void SetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
         kOverlayIconSize, resized_height);
 
     // Paint the resized icon onto a 16x16 canvas otherwise Windows will badly
-    // hammer it to 16x16.
+    // hammer it to 16x16. We'll use a circular clip to be consistent with the
+    // way profile icons are rendered in the profile switcher.
     SkBitmap offscreen_bitmap;
     offscreen_bitmap.allocN32Pixels(kOverlayIconSize, kOverlayIconSize);
     SkCanvas offscreen_canvas(offscreen_bitmap);
     offscreen_canvas.clear(SK_ColorTRANSPARENT);
-    offscreen_canvas.drawBitmap(sk_icon, 0, kOverlayIconSize - resized_height);
+    offscreen_canvas.clipRRect(kOverlayIconClip, true);
+
+    // Note: the original code used kOverlayIconSize - resized_height, but in
+    // order to center the icon in the circle clip area, we're going to center
+    // it in the paintable region instead, rounding up to the closest pixel to
+    // avoid smearing.
+    const int y_offset = std::ceilf((kOverlayIconSize - resized_height) / 2.0f);
+    offscreen_canvas.drawBitmap(sk_icon, 0, y_offset);
+
     icon = IconUtil::CreateHICONFromSkBitmap(offscreen_bitmap);
     if (!icon.is_valid())
       return;
