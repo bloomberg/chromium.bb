@@ -940,6 +940,31 @@ TEST_P(WindowEventDispatcherTest, DispatchMouseExitWhenHidingWindow) {
             recorder.mouse_locations()[0].ToString());
 }
 
+// Tests that a mouse-exit event is not synthesized during shutdown.
+TEST_P(WindowEventDispatcherTest, NoMouseExitInShutdown) {
+  EventFilterRecorder recorder;
+  test::TestWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1, gfx::Rect(10, 10, 50, 50), root_window()));
+  window->Show();
+  window->AddPreTargetHandler(&recorder);
+
+  // Simulate mouse move into the window.
+  const gfx::Point event_location = window->bounds().CenterPoint();
+  ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, event_location, event_location,
+                       ui::EventTimeForNow(), 0, 0);
+  DispatchEventUsingWindowDispatcher(&mouse);
+  EXPECT_FALSE(recorder.events().empty());
+  recorder.Reset();
+
+  // Simulate shutdown.
+  host()->dispatcher()->Shutdown();
+
+  // Hiding the window does not generate a mouse-exit event.
+  window->Hide();
+  EXPECT_TRUE(recorder.events().empty());
+}
+
 // Verifies that a direct call to ProcessedTouchEvent() does not cause a crash.
 TEST_P(WindowEventDispatcherTest, CallToProcessedTouchEvent) {
   test::TestWindowDelegate delegate;
@@ -1116,6 +1141,29 @@ TEST_P(WindowEventDispatcherTest, DoNotSynthesizeWhileButtonDown) {
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(recorder.events().empty());
   root_window()->RemovePreTargetHandler(&recorder);
+}
+
+// Tests that a mouse-press event is not dispatched during shutdown.
+TEST_P(WindowEventDispatcherTest, DoNotDispatchInShutdown) {
+  EventFilterRecorder recorder;
+  test::TestWindowDelegate delegate;
+  std::unique_ptr<aura::Window> window(CreateTestWindowWithDelegate(
+      &delegate, 1234, gfx::Rect(5, 5, 100, 100), root_window()));
+  window->Show();
+  window->AddPreTargetHandler(&recorder);
+
+  // Simulate shutdown.
+  host()->dispatcher()->Shutdown();
+
+  // Attempt to dispatch a mouse press.
+  const gfx::Point center = window->bounds().CenterPoint();
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, center, center,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_LEFT_MOUSE_BUTTON);
+  DispatchEventUsingWindowDispatcher(&press);
+
+  // Event was not dispatched.
+  EXPECT_TRUE(recorder.events().empty());
 }
 
 #if defined(OS_WIN) && defined(ARCH_CPU_X86)
