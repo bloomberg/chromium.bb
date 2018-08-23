@@ -222,7 +222,7 @@ TEST_F(U2fSignOperationTest, FakeEnroll) {
   u2f_sign->Start();
   sign_callback_receiver().WaitForCallback();
 
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrCredentialNotValid,
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
             sign_callback_receiver().status());
   EXPECT_FALSE(sign_callback_receiver().value());
 }
@@ -253,7 +253,7 @@ TEST_F(U2fSignOperationTest, DelayedFakeEnrollment) {
   u2f_sign->Start();
   sign_callback_receiver().WaitForCallback();
 
-  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrCredentialNotValid,
+  EXPECT_EQ(CtapDeviceResponseCode::kCtap2ErrNoCredentials,
             sign_callback_receiver().status());
   EXPECT_FALSE(sign_callback_receiver().value());
 }

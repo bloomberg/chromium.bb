@@ -84,8 +84,7 @@ void U2fSignOperation::OnSignResponseReceived(
     case apdu::ApduResponse::Status::SW_NO_ERROR: {
       if (is_fake_enrollment) {
         std::move(callback())
-            .Run(CtapDeviceResponseCode::kCtap2ErrCredentialNotValid,
-                 base::nullopt);
+            .Run(CtapDeviceResponseCode::kCtap2ErrNoCredentials, base::nullopt);
       } else {
         auto application_parameter =
             application_parameter_type == ApplicationParameterType::kPrimary
