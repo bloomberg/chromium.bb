@@ -4,11 +4,11 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -111,14 +111,14 @@ class PasswordAccessorySheetViewBinder {
      */
     static class IconTextViewHolder extends TextViewHolder {
         private final TextView mSuggestionText;
-        private final int mMargin;
+        private final int mPadding;
         private final int mIconSize;
 
         IconTextViewHolder(View itemView) {
             super(itemView);
             mSuggestionText = itemView.findViewById(R.id.suggestion_text);
-            mMargin = itemView.getContext().getResources().getDimensionPixelSize(
-                    R.dimen.keyboard_accessory_suggestion_margin);
+            mPadding = itemView.getContext().getResources().getDimensionPixelSize(
+                    R.dimen.keyboard_accessory_suggestion_padding);
             mIconSize = itemView.getContext().getResources().getDimensionPixelSize(
                     R.dimen.keyboard_accessory_suggestion_icon_size);
         }
@@ -131,19 +131,27 @@ class PasswordAccessorySheetViewBinder {
         @Override
         protected void bind(Item item) {
             super.bind(item);
-            ViewGroup.MarginLayoutParams params =
-                    new ViewGroup.MarginLayoutParams(mSuggestionText.getLayoutParams());
-            MarginLayoutParamsCompat.setMarginEnd(params, mMargin);
             if (!item.isPassword()) {
                 setIconForBitmap(null); // Set the default icon, then try to get a better one.
                 item.fetchFavicon(this::setIconForBitmap);
-                MarginLayoutParamsCompat.setMarginStart(params, mMargin);
+                mSuggestionText.setPadding(mPadding, 0, mPadding, 0);
             } else {
                 ApiCompatibilityUtils.setCompoundDrawablesRelative(
                         mSuggestionText, null, null, null, null);
-                MarginLayoutParamsCompat.setMarginStart(params, 2 * mMargin + mIconSize);
+                mSuggestionText.setPadding(2 * mPadding + mIconSize, 0, mPadding, 0);
             }
-            mSuggestionText.setLayoutParams(params);
+
+            if (item.getItemSelectedCallback() == null) {
+                mSuggestionText.setEnabled(false);
+                mSuggestionText.setBackground(null);
+            } else {
+                mSuggestionText.setEnabled(true);
+                TypedArray a = mSuggestionText.getContext().obtainStyledAttributes(
+                        new int[] {R.attr.selectableItemBackground});
+                Drawable suggestionBackground = a.getDrawable(0);
+                a.recycle();
+                mSuggestionText.setBackground(suggestionBackground);
+            }
         }
 
         private void setIconForBitmap(@Nullable Bitmap favicon) {
@@ -157,7 +165,7 @@ class PasswordAccessorySheetViewBinder {
             if (icon != null) { // AppCompatResources.getDrawable is @Nullable.
                 icon.setBounds(0, 0, mIconSize, mIconSize);
             }
-            mSuggestionText.setCompoundDrawablePadding(mMargin);
+            mSuggestionText.setCompoundDrawablePadding(mPadding);
             ApiCompatibilityUtils.setCompoundDrawablesRelative(
                     mSuggestionText, icon, null, null, null);
         }

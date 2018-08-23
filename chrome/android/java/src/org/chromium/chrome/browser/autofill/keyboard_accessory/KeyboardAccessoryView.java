@@ -7,11 +7,10 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.design.widget.TabLayout;
+import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -94,6 +93,7 @@ class KeyboardAccessoryView extends LinearLayout {
         if (mTabLayout == null) return; // Inflation not done yet. Will be invoked again afterwards.
         TabLayout.Tab tab = mTabLayout.newTab();
         tab.setIcon(icon.mutate()); // mutate() needed to change the active tint.
+        DrawableCompat.setTint(tab.getIcon(), getResources().getColor(R.color.default_icon_color));
         tab.setContentDescription(contentDescription);
         mTabLayout.addTab(tab, position, false);
     }
@@ -129,11 +129,10 @@ class KeyboardAccessoryView extends LinearLayout {
         for (int i = mTabLayout.getTabCount() - 1; i >= 0; i--) {
             TabLayout.Tab t = mTabLayout.getTabAt(i);
             if (t == null || t.getIcon() == null) continue;
-            if (activeTab == null || i != activeTab) {
-                t.getIcon().clearColorFilter();
-            } else {
-                t.getIcon().setColorFilter(Color.BLUE, PorterDuff.Mode.SRC_ATOP);
-            }
+            int activeStateColor = (activeTab == null || i != activeTab)
+                    ? R.color.default_icon_color
+                    : R.color.default_icon_color_blue;
+            DrawableCompat.setTint(t.getIcon(), getResources().getColor(activeStateColor));
         }
     }
 
