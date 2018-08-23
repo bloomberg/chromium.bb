@@ -231,6 +231,7 @@ class NET_EXPORT HostResolverImpl
   // and |stale_info| must be null.
   int ResolveLocally(const HostPortPair& host,
                      DnsQueryType requested_address_family,
+                     HostResolverSource source,
                      HostResolverFlags flags,
                      bool allow_cache,
                      bool allow_stale,
@@ -286,6 +287,7 @@ class NET_EXPORT HostResolverImpl
   // family when the request leaves it unspecified.
   Key GetEffectiveKeyForRequest(const std::string& hostname,
                                 DnsQueryType dns_query_type,
+                                HostResolverSource source,
                                 HostResolverFlags flags,
                                 const IPAddress* ip_address,
                                 const NetLogWithSource& net_log);

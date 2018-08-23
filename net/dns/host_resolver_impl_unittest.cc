@@ -877,6 +877,26 @@ TEST_F(HostResolverImplTest, ResolveIPLiteralWithHostResolverSystemOnly) {
   EXPECT_TRUE(req->HasAddress(kIpLiteral, 80));
 }
 
+TEST_F(HostResolverImplTest,
+       ResolveIPLiteralWithHostResolverSystemOnly_ResolveHost) {
+  const char kIpLiteral[] = "178.78.32.1";
+  // Add a mapping to tell if the resolver proc was called (if it was called,
+  // then the result will be the remapped value. Otherwise it will be the IP
+  // literal).
+  proc_->AddRuleForAllFamilies(kIpLiteral, "183.45.32.1");
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::SYSTEM;
+  ResolveHostResponseHelper response(resolver_->CreateRequest(
+      HostPortPair(kIpLiteral, 80), NetLogWithSource(), parameters));
+
+  // IP literal resolution is expected to take precedence over source, so the
+  // result is expected to be the input IP, not the result IP from the proc rule
+  EXPECT_THAT(response.result_error(), IsOk());
+  EXPECT_THAT(response.request()->GetAddressResults().value().endpoints(),
+              testing::ElementsAre(CreateExpected(kIpLiteral, 80)));
+}
+
 TEST_F(HostResolverImplTest, EmptyListMeansNameNotResolved) {
   proc_->AddRuleForAllFamilies("just.testing", "");
   proc_->SignalMultiple(1u);
@@ -1575,8 +1595,6 @@ TEST_F(HostResolverImplTest, StartWithinCallback_ResolveHost) {
   EXPECT_THAT(new_response->result_error(), IsOk());
 }
 
-// TODO(crbug.com/821021): Create a ResolveHost test once bypassing the cache is
-// supported.
 TEST_F(HostResolverImplTest, BypassCache) {
   struct MyHandler : public Handler {
     void Handle(Request* req) override {
@@ -1608,6 +1626,29 @@ TEST_F(HostResolverImplTest, BypassCache) {
 
   // |verifier| will send quit message once all the requests have finished.
   base::RunLoop().Run();
+  EXPECT_EQ(2u, proc_->GetCaptureList().size());
+}
+
+TEST_F(HostResolverImplTest, BypassCache_ResolveHost) {
+  proc_->SignalMultiple(2u);
+
+  ResolveHostResponseHelper initial_response(resolver_->CreateRequest(
+      HostPortPair("a", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(initial_response.result_error(), IsOk());
+  EXPECT_EQ(1u, proc_->GetCaptureList().size());
+
+  ResolveHostResponseHelper cached_response(resolver_->CreateRequest(
+      HostPortPair("a", 80), NetLogWithSource(), base::nullopt));
+  EXPECT_THAT(cached_response.result_error(), IsOk());
+  // Expect no increase to calls to |proc_| because result was cached.
+  EXPECT_EQ(1u, proc_->GetCaptureList().size());
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.allow_cached_response = false;
+  ResolveHostResponseHelper cache_bypassed_response(resolver_->CreateRequest(
+      HostPortPair("a", 80), NetLogWithSource(), parameters));
+  EXPECT_THAT(cache_bypassed_response.result_error(), IsOk());
+  // Expect call to |proc_| because cache was bypassed.
   EXPECT_EQ(2u, proc_->GetCaptureList().size());
 }
 
@@ -3801,6 +3842,8 @@ TEST_F(HostResolverImplDnsTest, BypassDnsTask) {
     EXPECT_EQ(OK, requests_[i]->WaitForResult()) << i;
 }
 
+// Test that hosts ending in ".local" or ".local." are resolved using the system
+// resolver.
 TEST_F(HostResolverImplDnsTest, BypassDnsTask_ResolveHost) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -3834,8 +3877,31 @@ TEST_F(HostResolverImplDnsTest, BypassDnsTask_ResolveHost) {
     EXPECT_THAT(responses[i]->result_error(), IsOk());
 }
 
-// TODO(crbug.com/821021): Create a ResolveHost version of this test once
-// system-only resolves are supported.
+// Test that DNS task is always used when explicitly requested as the source,
+// even with a case that would normally bypass it eg hosts ending in ".local".
+TEST_F(HostResolverImplDnsTest, DnsNotBypassedWhenDnsSource) {
+  // Ensure DNS task requests will succeed and system (proc) requests will fail.
+  ChangeDnsConfig(CreateValidDnsConfig());
+  proc_->AddRuleForAllFamilies(std::string(), std::string());
+
+  HostResolver::ResolveHostParameters dns_parameters;
+  dns_parameters.source = HostResolverSource::DNS;
+
+  ResolveHostResponseHelper dns_response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), dns_parameters));
+  ResolveHostResponseHelper dns_local_response(resolver_->CreateRequest(
+      HostPortPair("ok.local", 80), NetLogWithSource(), dns_parameters));
+  ResolveHostResponseHelper normal_local_response(resolver_->CreateRequest(
+      HostPortPair("ok.local", 80), NetLogWithSource(), base::nullopt));
+
+  proc_->SignalMultiple(3u);
+
+  EXPECT_THAT(dns_response.result_error(), IsOk());
+  EXPECT_THAT(dns_local_response.result_error(), IsOk());
+  EXPECT_THAT(normal_local_response.result_error(),
+              IsError(ERR_NAME_NOT_RESOLVED));
+}
+
 TEST_F(HostResolverImplDnsTest, SystemOnlyBypassesDnsTask) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
@@ -3853,6 +3919,25 @@ TEST_F(HostResolverImplDnsTest, SystemOnlyBypassesDnsTask) {
 
   EXPECT_THAT(requests_[0]->WaitForResult(), IsError(ERR_NAME_NOT_RESOLVED));
   EXPECT_THAT(requests_[1]->WaitForResult(), IsOk());
+}
+
+TEST_F(HostResolverImplDnsTest, SystemOnlyBypassesDnsTask_ResolveHost) {
+  // Ensure DNS task requests will succeed and system (proc) requests will fail.
+  ChangeDnsConfig(CreateValidDnsConfig());
+  proc_->AddRuleForAllFamilies(std::string(), std::string());
+
+  ResolveHostResponseHelper dns_response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), base::nullopt));
+
+  HostResolver::ResolveHostParameters parameters;
+  parameters.source = HostResolverSource::SYSTEM;
+  ResolveHostResponseHelper system_response(resolver_->CreateRequest(
+      HostPortPair("ok", 80), NetLogWithSource(), parameters));
+
+  proc_->SignalMultiple(2u);
+
+  EXPECT_THAT(dns_response.result_error(), IsOk());
+  EXPECT_THAT(system_response.result_error(), IsError(ERR_NAME_NOT_RESOLVED));
 }
 
 TEST_F(HostResolverImplDnsTest, DisableDnsClientOnPersistentFailure) {
