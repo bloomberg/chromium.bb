@@ -30,7 +30,8 @@ def main():
     data = api.GetBuilders()
     print frames.BuildersDataFrame(data)
   elif args.action == 'results':
-    print api.GetTestResults(args.master, args.builder, args.test_type)
+    data = api.GetTestResults(args.master, args.builder, args.test_type)
+    print frames.TestResultsDataFrame(data)
   else:
     raise NotImplementedError(args.action)
 

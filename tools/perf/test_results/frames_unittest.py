@@ -64,3 +64,110 @@ class TestDataFrames(unittest.TestCase):
     self.assertItemsEqual(
         df[df['builder'] == 'my-new-android-bot']['master'].unique(),
         ['chromium.perf.fyi'])
+
+  def testRunLengthDecode(self):
+    encoded = [[3, 'F'], [4, 'P'], [2, 'F']]
+    decoded = ['F', 'F', 'F', 'P', 'P', 'P', 'P', 'F', 'F']
+
+    # pylint: disable=protected-access
+    self.assertSequenceEqual(
+        list(frames._RunLengthDecode(encoded)), decoded)
+
+  def testIterTestResults(self):
+    tests_dict = {
+        'A': {
+            '1': {'results': 'A/1'},
+            '2': {'results': 'A/2'}
+        },
+        'B': {
+            '3': {
+                'a': {'results': 'B/3/a'},
+                'b': {'results': 'B/3/b'},
+                'c': {'results': 'B/3/c'}
+            }
+        },
+        'C': {'results': 'C'}
+    }
+
+    expected = [
+        ('A', '1', {'results': 'A/1'}),
+        ('A', '2', {'results': 'A/2'}),
+        ('B', '3/a', {'results': 'B/3/a'}),
+        ('B', '3/b', {'results': 'B/3/b'}),
+        ('B', '3/c', {'results': 'B/3/c'}),
+        ('C', '', {'results': 'C'}),
+    ]
+
+    # pylint: disable=protected-access
+    self.assertItemsEqual(
+        list(frames._IterTestResults(tests_dict)), expected)
+
+  def testTestResultsDataFrame(self):
+    data = {
+        'android-bot': {
+            'secondsSinceEpoch': [1234567892, 1234567891, 1234567890],
+            'buildNumbers': [42, 41, 40],
+            'chromeRevision': [1234, 1233, 1232],
+            'tests': {
+                'some_benchmark': {
+                    'story_1': {
+                        'results': [[3, 'P']],
+                        'times': [[3, 1]]
+                    },
+                    'story_2': {
+                        'results': [[2, 'Q']],
+                        'times': [[2, 5]]
+                    }
+                },
+                'another_benchmark': {
+                    'story_3': {
+                        'results': [[1, 'Q'], [2, 'P']],
+                        'times': [[1, 3], [1, 2], [1, 3]]
+                    }
+                }
+            }
+        },
+        'version': 4
+    }
+    df = frames.TestResultsDataFrame(data)
+    # Poke and check a few simple facts about our sample data.
+    # We have data from 3 builds x 3 stories:
+    self.assertEqual(len(df), 9)
+    # All run on the same bot.
+    self.assertTrue((df['builder'] == 'android-bot').all())
+    # The most recent build number was 42.
+    self.assertEqual(df['build_number'].max(), 42)
+    # some_benchmark/story_1 passed on all builds.
+    selection = df[df['test_case'] == 'story_1']
+    self.assertTrue((selection['test_suite'] == 'some_benchmark').all())
+    self.assertTrue((selection['result'] == 'P').all())
+    # There was no data for story_2 on build 40.
+    selection = df[(df['test_case'] == 'story_2') & (df['build_number'] == 40)]
+    self.assertEqual(len(selection), 1)
+    self.assertTrue(selection.iloc[0]['result'], 'N')
+
+  def testTestResultsDataFrame_empty(self):
+    data = {
+        'android-bot': {
+            'secondsSinceEpoch': [1234567892, 1234567891, 1234567890],
+            'buildNumbers': [42, 41, 40],
+            'chromeRevision': [1234, 1233, 1232],
+            'tests': {}
+        },
+        'version': 4
+    }
+    df = frames.TestResultsDataFrame(data)
+    # The data frame is empty.
+    self.assertTrue(df.empty)
+    # Column names are still defined (although of course empty).
+    self.assertItemsEqual(df['test_case'].unique(), [])
+
+  def testTestResultsDataFrame_wrongVersionRejected(self):
+    data = {
+        'android-bot': {
+            'some': ['new', 'fancy', 'results', 'encoding']
+        },
+        'version': 5
+    }
+    with self.assertRaises(AssertionError):
+      frames.TestResultsDataFrame(data)
