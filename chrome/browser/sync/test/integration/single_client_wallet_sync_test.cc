@@ -32,9 +32,9 @@
 using autofill::AutofillProfile;
 using autofill::CreditCard;
 using autofill::data_util::TruncateUTF8;
+using autofill_helper::GetAccountWebDataService;
 using autofill_helper::GetPersonalDataManager;
 using autofill_helper::GetProfileWebDataService;
-using autofill_helper::GetAccountWebDataService;
 using base::ASCIIToUTF16;
 
 namespace {
@@ -121,10 +121,15 @@ std::vector<std::unique_ptr<AutofillProfile>> GetServerProfiles(
   return std::move(consumer.result());
 }
 
-void AddDefaultCard(fake_server::FakeServer* server) {
-  sync_pb::EntitySpecifics specifics;
+sync_pb::SyncEntity CreateDefaultSyncWalletCard() {
+  sync_pb::SyncEntity entity;
+  entity.set_name(kDefaultCardID);
+  entity.set_id_string(kDefaultCardID);
+  entity.set_version(0);  // Will be overridden by the fake server.
+  entity.set_ctime(12345);
+  entity.set_mtime(12345);
   sync_pb::AutofillWalletSpecifics* wallet_specifics =
-      specifics.mutable_autofill_wallet();
+      entity.mutable_specifics()->mutable_autofill_wallet();
   wallet_specifics->set_type(
       sync_pb::AutofillWalletSpecifics::MASKED_CREDIT_CARD);
 
@@ -138,10 +143,7 @@ void AddDefaultCard(fake_server::FakeServer* server) {
   credit_card->set_status(sync_pb::WalletMaskedCreditCard::VALID);
   credit_card->set_type(kDefaultCardType);
   credit_card->set_billing_address_id(kDefaultBillingAddressId);
-
-  server->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          kDefaultCardID, specifics, 12345, 12345));
+  return entity;
 }
 
 CreditCard GetDefaultCreditCard() {
@@ -158,10 +160,16 @@ CreditCard GetDefaultCreditCard() {
   return card;
 }
 
-void AddDefaultProfile(fake_server::FakeServer* server) {
-  sync_pb::EntitySpecifics specifics;
+sync_pb::SyncEntity CreateDefaultSyncWalletAddress() {
+  sync_pb::SyncEntity entity;
+  entity.set_name(kDefaultAddressID);
+  entity.set_id_string(kDefaultAddressID);
+  entity.set_version(0);  // Will be overridden by the fake server.
+  entity.set_ctime(12345);
+  entity.set_mtime(12345);
+
   sync_pb::AutofillWalletSpecifics* wallet_specifics =
-      specifics.mutable_autofill_wallet();
+      entity.mutable_specifics()->mutable_autofill_wallet();
   wallet_specifics->set_type(sync_pb::AutofillWalletSpecifics::POSTAL_ADDRESS);
 
   sync_pb::WalletPostalAddress* wallet_address =
@@ -179,9 +187,7 @@ void AddDefaultProfile(fake_server::FakeServer* server) {
   wallet_address->set_sorting_code(kDefaultSortingCode);
   wallet_address->set_language_code(kDefaultLanguageCode);
 
-  server->InjectEntity(
-      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-          kDefaultAddressID, specifics, 12345, 12345));
+  return entity;
 }
 
 // TODO(sebsg): Instead add a function to create a card, and one to inject in
@@ -279,7 +285,7 @@ class SingleClientWalletSyncTestIncludingUssTests
     : public UssSwitchToggler,
       public SingleClientWalletSyncTest {
  public:
-  SingleClientWalletSyncTestIncludingUssTests(){};
+  SingleClientWalletSyncTestIncludingUssTests() {}
   ~SingleClientWalletSyncTestIncludingUssTests() override {}
 
  private:
@@ -304,8 +310,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
       {},
       // Disabled.
       {autofill::features::kAutofillEnableAccountWalletStorage});
-  AddDefaultProfile(GetFakeServer());
-  AddDefaultCard(GetFakeServer());
+  GetFakeServer()->SetWalletData(
+      {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
 
   auto profile_data = GetProfileWebDataService(0);
@@ -345,8 +351,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
       {});
 
   ASSERT_TRUE(SetupClients());
-  AddDefaultCard(GetFakeServer());
-  AddDefaultProfile(GetFakeServer());
+
+  GetFakeServer()->SetWalletData(
+      {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
 
   ASSERT_TRUE(GetClient(0)->SignIn());
   ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization(
@@ -384,8 +391,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data should get cleared from the database when sync is disabled.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
-  AddDefaultCard(GetFakeServer());
-  AddDefaultProfile(GetFakeServer());
+  GetFakeServer()->SetWalletData(
+      {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
 
   // Make sure the card is in the DB.
@@ -403,8 +410,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
 // Wallet data should get cleared from the database when the wallet sync type
 // flag is disabled.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
-  AddDefaultCard(GetFakeServer());
-  AddDefaultProfile(GetFakeServer());
+  GetFakeServer()->SetWalletData(
+      {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
 
   // Make sure the card is in the DB.
@@ -423,8 +430,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
 // integration flag is disabled.
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        ClearOnDisableWalletAutofill) {
-  AddDefaultCard(GetFakeServer());
-  AddDefaultProfile(GetFakeServer());
+  GetFakeServer()->SetWalletData(
+      {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
 
   // Make sure the card is in the DB.
@@ -475,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                              profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
 
   // Add a new card from the server and sync it down.
-  AddDefaultCard(GetFakeServer());
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
 
   // The only card present on the client should be the one from the server.
@@ -522,7 +529,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ("a123", cards[0]->server_id());
 
   // Add a new profile from the server and sync it down.
-  AddDefaultProfile(GetFakeServer());
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletAddress()});
   ASSERT_TRUE(SetupSync());
 
   // The only profile present on the client should be the one from the server.
@@ -562,7 +569,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Sync the same card from the server, except with a default billing address
   // id.
-  AddDefaultCard(GetFakeServer());
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
 
   // The billing address is should still refer to the local profile.
@@ -597,7 +604,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
   // Sync the same card from the server, except with a default billing address
   // id.
-  AddDefaultCard(GetFakeServer());
+  GetFakeServer()->SetWalletData({CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
 
   // The billing address should be the one from the server card.

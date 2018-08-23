@@ -16,6 +16,21 @@
 
 namespace {
 
+// Compares two serialized progress markers for equivalence to determine client
+// side progress. Some aspects of the progress markers like
+// GarbageCollectionDirectives are irrelevant for this, as they can vary between
+// requests -- for example a version_watermark could be based on request time.
+bool AreProgressMarkersEquivalent(const std::string& serialized1,
+                                  const std::string& serialized2) {
+  sync_pb::DataTypeProgressMarker marker1;
+  sync_pb::DataTypeProgressMarker marker2;
+  CHECK(marker1.ParseFromString(serialized1));
+  CHECK(marker2.ParseFromString(serialized2));
+  marker1.clear_gc_directive();
+  marker2.clear_gc_directive();
+  return marker1.SerializeAsString() == marker2.SerializeAsString();
+}
+
 // Returns true if these services have matching progress markers.
 bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
                           const browser_sync::ProfileSyncService* service2) {
@@ -50,7 +65,7 @@ bool ProgressMarkersMatch(const browser_sync::ProfileSyncService* service1,
     }
 
     // Fail if any of them don't match.
-    if (pm_it1->second != pm_it2->second) {
+    if (!AreProgressMarkersEquivalent(pm_it1->second, pm_it2->second)) {
       return false;
     }
   }

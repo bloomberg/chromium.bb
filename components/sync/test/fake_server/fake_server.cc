@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/guid.h"
+#include "base/hash.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -48,6 +49,70 @@ FakeServer::FakeServer()
 }
 
 FakeServer::~FakeServer() {}
+
+namespace {
+
+std::unique_ptr<sync_pb::DataTypeProgressMarker> RemoveWalletProgressMarker(
+    sync_pb::ClientToServerMessage* message) {
+  google::protobuf::RepeatedPtrField<sync_pb::DataTypeProgressMarker>*
+      progress_markers =
+          message->mutable_get_updates()->mutable_from_progress_marker();
+  for (int index = 0; index < progress_markers->size(); ++index) {
+    if (syncer::GetModelTypeFromSpecificsFieldNumber(
+            progress_markers->Get(index).data_type_id()) ==
+        syncer::AUTOFILL_WALLET_DATA) {
+      auto result = std::make_unique<sync_pb::DataTypeProgressMarker>(
+          progress_markers->Get(index));
+      progress_markers->erase(progress_markers->begin() + index);
+      return result;
+    }
+  }
+  return nullptr;
+}
+
+sync_pb::DataTypeProgressMarker* GetMutableWalletDataProgressMarker(
+    sync_pb::GetUpdatesResponse* gu_response) {
+  for (sync_pb::DataTypeProgressMarker& marker :
+       *gu_response->mutable_new_progress_marker()) {
+    if (syncer::GetModelTypeFromSpecificsFieldNumber(marker.data_type_id()) ==
+        syncer::AUTOFILL_WALLET_DATA) {
+      return &marker;
+    }
+  }
+  auto* new_marker = gu_response->add_new_progress_marker();
+  new_marker->set_data_type_id(
+      GetSpecificsFieldNumberFromModelType(syncer::AUTOFILL_WALLET_DATA));
+  return new_marker;
+}
+
+void PopulateWalletResults(const std::vector<sync_pb::SyncEntity>& entities,
+                           sync_pb::GetUpdatesResponse* gu_response) {
+  int64_t version =
+      (base::Time::Now() - base::Time::UnixEpoch()).InMilliseconds();
+  for (const auto& entity : entities) {
+    sync_pb::SyncEntity* response_entity = gu_response->add_entries();
+    *response_entity = entity;
+    response_entity->set_version(version);
+  }
+  sync_pb::DataTypeProgressMarker* response_marker =
+      GetMutableWalletDataProgressMarker(gu_response);
+  // Make sure to pick a token that will be consistent across clients when
+  // receiving the same data. We sum up the hashes which has the nice side
+  // effect of being independent of the order.
+  int64_t token = 0;
+  for (const auto& entity : entities) {
+    // PersistentHash returns 32-bit integers, so summing them up is defined
+    // behavior.
+    token += base::PersistentHash(entity.id_string());
+  }
+  response_marker->set_token(base::Int64ToString(token));
+  // Set the GC directive to implement non-incremental reads.
+  response_marker->mutable_gc_directive()->set_type(
+      sync_pb::GarbageCollectionDirective::VERSION_WATERMARK);
+  response_marker->mutable_gc_directive()->set_version_watermark(version - 1);
+}
+
+}  // namespace
 
 void FakeServer::HandleCommand(const std::string& request,
                                const base::Closure& completion_closure,
@@ -98,8 +163,22 @@ void FakeServer::HandleCommand(const std::string& request,
         break;
         // Don't care.
     }
-    *response_code = SendToLoopbackServer(request, response);
+    // The loopback server does not know how to handle Wallet requests -- and
+    // should not. The FakeServer is handling those instead. The loopback server
+    // has a strong expectations about how progress tokens are structured. To
+    // not interfere with this, we remove wallet progress markers before passing
+    // the request to the loopback server and add them back again afterwards
+    // before handling those requests.
+    std::unique_ptr<sync_pb::DataTypeProgressMarker> wallet_marker =
+        RemoveWalletProgressMarker(&message);
+    *response_code =
+        SendToLoopbackServer(message.SerializeAsString(), response);
+    if (wallet_marker != nullptr) {
+      *message.mutable_get_updates()->add_from_progress_marker() =
+          *wallet_marker;
+    }
     if (*response_code == net::HTTP_OK) {
+      HandleWalletRequest(message, wallet_marker.get(), response);
       InjectClientCommand(response);
     }
     completion_closure.Run();
@@ -109,6 +188,21 @@ void FakeServer::HandleCommand(const std::string& request,
   response_proto.set_store_birthday(loopback_server_->GetStoreBirthday());
   *response = response_proto.SerializeAsString();
   completion_closure.Run();
+}
+
+void FakeServer::HandleWalletRequest(
+    const sync_pb::ClientToServerMessage& request,
+    sync_pb::DataTypeProgressMarker* wallet_marker,
+    std::string* response_string) {
+  if (request.message_contents() !=
+          sync_pb::ClientToServerMessage::GET_UPDATES ||
+      wallet_marker == nullptr) {
+    return;
+  }
+  sync_pb::ClientToServerResponse response_proto;
+  CHECK(response_proto.ParseFromString(*response_string));
+  PopulateWalletResults(wallet_entities_, response_proto.mutable_get_updates());
+  *response_string = response_proto.SerializeAsString();
 }
 
 int FakeServer::SendToLoopbackServer(const std::string& request,
@@ -167,7 +261,21 @@ std::vector<sync_pb::SyncEntity> FakeServer::GetSyncEntitiesByModelType(
 
 void FakeServer::InjectEntity(std::unique_ptr<LoopbackServerEntity> entity) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(entity->GetModelType() != syncer::AUTOFILL_WALLET_DATA)
+      << "Wallet data must be injected via SetWalletData()";
   loopback_server_->SaveEntity(std::move(entity));
+}
+
+void FakeServer::SetWalletData(
+    const std::vector<sync_pb::SyncEntity>& wallet_entities) {
+  for (const auto& entity : wallet_entities) {
+    DCHECK_EQ(GetModelTypeFromSpecifics(entity.specifics()),
+              syncer::AUTOFILL_WALLET_DATA);
+    DCHECK(!entity.has_client_defined_unique_tag())
+        << "The sync server doesn not provide a client tag for wallet entries";
+    DCHECK(!entity.id_string().empty()) << "server id required!";
+  }
+  wallet_entities_ = wallet_entities;
 }
 
 bool FakeServer::ModifyEntitySpecifics(
