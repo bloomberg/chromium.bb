@@ -182,9 +182,7 @@ FovRectangle ToUiFovRect(const gvr::Rectf& rect) {
 
 }  // namespace
 
-VrShellGl::VrShellGl(std::unique_ptr<UiInterface> ui,
-                     std::unique_ptr<ControllerDelegate> controller_delegate,
-                     GlBrowserInterface* browser,
+VrShellGl::VrShellGl(GlBrowserInterface* browser,
                      gvr::GvrApi* gvr_api,
                      bool reprojected_rendering,
                      bool daydream_support,
@@ -192,13 +190,7 @@ VrShellGl::VrShellGl(std::unique_ptr<UiInterface> ui,
                      bool pause_content,
                      bool low_density,
                      size_t sliding_time_size)
-    : RenderLoop(std::move(ui),
-                 this,
-                 this,
-                 std::move(controller_delegate),
-                 browser,
-                 sliding_time_size),
-      webvr_vsync_align_(
+    : webvr_vsync_align_(
           base::FeatureList::IsEnabled(features::kWebVrVsyncAlign)),
       gvr_api_(gvr_api),
       low_density_(low_density),
@@ -240,7 +232,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
       !gl::init::InitializeGLOneOff()) {
     LOG(ERROR) << "gl::init::InitializeGLOneOff failed";
-    ForceExitVr();
+    browser_->ForceExitVr();
     return;
   }
   scoped_refptr<gl::GLSurface> surface;
@@ -253,12 +245,12 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   }
   if (!surface.get()) {
     LOG(ERROR) << "gl::init::CreateOffscreenGLSurface failed";
-    ForceExitVr();
+    browser_->ForceExitVr();
     return;
   }
 
   if (!BaseCompositorDelegate::Initialize(surface)) {
-    ForceExitVr();
+    browser_->ForceExitVr();
     return;
   }
 
@@ -412,7 +404,7 @@ void VrShellGl::WebVrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
     // Exiting VR is a bit drastic, but this error shouldn't occur under normal
     // operation. If it's an issue in practice, look into other recovery
     // options such as shutting down the WebVR/WebXR presentation session.
-    ForceExitVr();
+    browser_->ForceExitVr();
     return;
   }
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, buffer->local_texture);
@@ -1548,10 +1540,6 @@ void VrShellGl::DrawFrameSubmitNow(FrameType frame_type,
   vr_ui_fps_meter_.AddFrame(base::TimeTicks::Now());
   DVLOG(1) << "fps: " << vr_ui_fps_meter_.GetFPS();
   TRACE_COUNTER1("gpu", "VR UI FPS", vr_ui_fps_meter_.GetFPS());
-  TRACE_COUNTER2("gpu", "VR UI timing (us)", "scene update",
-                 ui_processing_time().GetAverage().InMicroseconds(),
-                 "controller",
-                 ui_controller_update_time().GetAverage().InMicroseconds());
 
   if (frame_type == kWebXrFrame) {
     // We finished processing a frame, this may make pending WebVR
@@ -1571,14 +1559,14 @@ bool VrShellGl::ShouldDrawWebVr() {
   return web_vr_mode_ && !showing_vr_dialog_ && webvr_frames_received_ > 0;
 }
 
-void VrShellGl::OnSchedulerPause() {
+void VrShellGl::OnPause() {
   vsync_helper_.CancelVSyncRequest();
   gvr_api_->PauseTracking();
   webvr_frame_timeout_.Cancel();
   webvr_spinner_timeout_.Cancel();
 }
 
-void VrShellGl::OnSchedulerResume() {
+void VrShellGl::OnResume() {
   gvr_api_->RefreshViewerProfile();
   viewports_need_updating_ = true;
   gvr_api_->ResumeTracking();
@@ -1600,12 +1588,16 @@ void VrShellGl::SetDrawBrowserCallback(DrawCallback callback) {
   browser_draw_callback_ = std::move(callback);
 }
 
+void VrShellGl::SetWebXrInputCallback(WebXrInputCallback callback) {
+  webxr_input_callback_ = std::move(callback);
+}
+
 void VrShellGl::OnExitPresent() {
   webvr_frame_timeout_.Cancel();
   webvr_spinner_timeout_.Cancel();
 }
 
-void VrShellGl::SetWebVrMode(bool enabled) {
+void VrShellGl::SetWebXrMode(bool enabled) {
   web_vr_mode_ = enabled;
 
   if (web_vr_mode_ && submit_client_) {
@@ -1792,11 +1784,16 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // like app button presses, process the controller here.
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_,
                                                  &render_info_.head_pose);
-    input_states_.push_back(
-        ProcessControllerInputForWebXr(render_info_, frame_time));
+    DCHECK(webxr_input_callback_);
+    webxr_input_callback_.Run(render_info_.head_pose, frame_time);
   } else {
     DrawFrame(-1, frame_time);
   }
+}
+
+void VrShellGl::AddInputSourceState(
+    device::mojom::XRInputSourceStatePtr state) {
+  input_states_.push_back(std::move(state));
 }
 
 void VrShellGl::GetFrameData(

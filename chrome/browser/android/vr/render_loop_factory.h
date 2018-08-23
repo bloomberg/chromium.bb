@@ -22,9 +22,9 @@ class WaitableEvent;
 
 namespace vr {
 
+class RenderLoop;
 class UiFactory;
 class VrGLThread;
-class VrShellGl;
 
 class VR_EXPORT RenderLoopFactory {
  public:
@@ -48,10 +48,9 @@ class VR_EXPORT RenderLoopFactory {
     base::OnceCallback<gfx::AcceleratedWidget()> surface_callback;
   };
 
-  // TODO(acondor): Build an instance of RenderLoop owning VrShellGl.
-  static std::unique_ptr<VrShellGl> Create(VrGLThread* vr_gl_thread,
-                                           UiFactory* ui_factory,
-                                           std::unique_ptr<Params> params);
+  static std::unique_ptr<RenderLoop> Create(VrGLThread* vr_gl_thread,
+                                            UiFactory* ui_factory,
+                                            std::unique_ptr<Params> params);
 };
 
 }  // namespace vr

@@ -24,10 +24,11 @@ namespace vr {
 
 // VrShellGl talks to VrShell through this interface. This could be split up if
 // VrShellGl is refactored into components.
-class GlBrowserInterface : public RenderLoopBrowserInterface {
+class GlBrowserInterface {
  public:
-  ~GlBrowserInterface() override = default;
+  virtual ~GlBrowserInterface() {}
 
+  virtual void ForceExitVr() = 0;
   virtual void ContentSurfaceCreated(jobject surface,
                                      gl::SurfaceTexture* texture) = 0;
   virtual void ContentOverlaySurfaceCreated(jobject surface,

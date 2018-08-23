@@ -18,6 +18,7 @@
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/sound_id.h"
 #include "chrome/browser/vr/platform_input_handler.h"
+#include "chrome/browser/vr/render_loop_browser_interface.h"
 #include "chrome/browser/vr/text_input_delegate.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_test_input.h"
@@ -36,10 +37,10 @@ namespace vr {
 
 class VrInputConnection;
 class VrShell;
-class VrShellGl;
 
 class VrGLThread : public base::android::JavaHandlerThread,
                    public PlatformInputHandler,
+                   public RenderLoopBrowserInterface,
                    public GlBrowserInterface,
                    public UiBrowserInterface,
                    public BrowserUiInterface {
@@ -57,7 +58,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
       base::OnceCallback<gfx::AcceleratedWidget()> surface_callback);
 
   ~VrGLThread() override;
-  base::WeakPtr<VrShellGl> GetVrShellGl();
+  base::WeakPtr<RenderLoop> GetRenderLoop();
   void SetInputConnection(VrInputConnection* input_connection);
 
   // GlBrowserInterface implementation (GL calling to VrShell).
@@ -170,7 +171,7 @@ class VrGLThread : public base::android::JavaHandlerThread,
 
   // Created on GL thread.
   std::unique_ptr<UiFactory> ui_factory_;
-  std::unique_ptr<VrShellGl> vr_shell_gl_;
+  std::unique_ptr<RenderLoop> render_loop_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
 
   // This state is used for initializing the RenderLoop.

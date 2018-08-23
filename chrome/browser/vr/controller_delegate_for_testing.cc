@@ -97,7 +97,7 @@ bool ControllerDelegateForTesting::IsQueueEmpty() const {
 }
 
 void ControllerDelegateForTesting::UpdateController(
-    const RenderInfo& render_info,
+    const gfx::Transform& head_pose,
     base::TimeTicks current_time,
     bool is_webxr_frame) {
   if (!controller_model_queue_.empty()) {
@@ -109,7 +109,7 @@ void ControllerDelegateForTesting::UpdateController(
 }
 
 ControllerModel ControllerDelegateForTesting::GetModel(
-    const RenderInfo& render_info) {
+    const gfx::Transform& head_pose) {
   return cached_controller_model_;
 }
 

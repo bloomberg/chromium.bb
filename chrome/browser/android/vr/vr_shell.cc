@@ -27,7 +27,6 @@
 #include "chrome/browser/android/vr/vr_gl_thread.h"
 #include "chrome/browser/android/vr/vr_input_connection.h"
 #include "chrome/browser/android/vr/vr_shell_delegate.h"
-#include "chrome/browser/android/vr/vr_shell_gl.h"
 #include "chrome/browser/android/vr/vr_web_contents_observer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
@@ -44,6 +43,7 @@
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/omnibox_suggestions.h"
 #include "chrome/browser/vr/model/text_input_info.h"
+#include "chrome/browser/vr/render_loop.h"
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/ui_test_input.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -221,8 +221,8 @@ void VrShell::SwapContents(JNIEnv* env,
                            const JavaParamRef<jobject>& tab) {
   content_id_++;
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::OnSwapContents,
-                                gl_thread_->GetVrShellGl(), content_id_));
+                 base::BindOnce(&RenderLoop::OnSwapContents,
+                                gl_thread_->GetRenderLoop(), content_id_));
   TabAndroid* active_tab =
       tab.is_null()
           ? nullptr
@@ -492,13 +492,13 @@ void VrShell::OnTriggerEvent(JNIEnv* env,
   }
 
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::OnTriggerEvent,
-                                gl_thread_->GetVrShellGl(), touched));
+                 base::BindOnce(&RenderLoop::OnTriggerEvent,
+                                gl_thread_->GetRenderLoop(), touched));
 }
 
 void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::OnPause,
-                                           gl_thread_->GetVrShellGl()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::OnPause,
+                                           gl_thread_->GetRenderLoop()));
 
   // exit vr session
   SessionMetricsHelper* metrics_helper =
@@ -511,15 +511,15 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
-  // Calling WaitForAssets before VrShellGl::OnResume so that the UI won't
+  // Calling WaitForAssets before RenderLoop::OnResume so that the UI won't
   // accidentally produce an initial frame with UI.
   if (can_load_new_assets_) {
     ui_->WaitForAssets();
     LoadAssets();
   }
 
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::OnResume,
-                                           gl_thread_->GetVrShellGl()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::OnResume,
+                                           gl_thread_->GetRenderLoop()));
 
   SessionMetricsHelper* metrics_helper =
       SessionMetricsHelper::FromWebContents(web_contents_);
@@ -550,8 +550,8 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   if (metrics_helper)
     metrics_helper->SetWebVREnabled(enabled);
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::SetWebVrMode,
-                                gl_thread_->GetVrShellGl(), enabled));
+                 base::BindOnce(&RenderLoop::SetWebXrMode,
+                                gl_thread_->GetRenderLoop(), enabled));
   // We create and dispose a page info in order to get notifed of page
   // permissions.
   CreatePageInfo();
@@ -637,16 +637,16 @@ void VrShell::SetAlertDialog(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,
                              float width,
                              float height) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::EnableAlertDialog,
-                                           gl_thread_->GetVrShellGl(),
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::EnableAlertDialog,
+                                           gl_thread_->GetRenderLoop(),
                                            gl_thread_.get(), width, height));
 }
 
 void VrShell::CloseAlertDialog(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::DisableAlertDialog,
-                                           gl_thread_->GetVrShellGl()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::DisableAlertDialog,
+                                           gl_thread_->GetRenderLoop()));
   // This will refresh our permissions after an alert is closed which should
   // ensure that long press on the app button gives accurate results.
   CreatePageInfo();
@@ -667,24 +667,24 @@ void VrShell::SetAlertDialogSize(
     float width,
     float height) {
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::SetAlertDialogSize,
-                                gl_thread_->GetVrShellGl(), width, height));
+                 base::BindOnce(&RenderLoop::SetAlertDialogSize,
+                                gl_thread_->GetRenderLoop(), width, height));
 }
 
 void VrShell::SetDialogLocation(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 float x,
                                 float y) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::SetDialogLocation,
-                                           gl_thread_->GetVrShellGl(), x, y));
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::SetDialogLocation,
+                                           gl_thread_->GetRenderLoop(), x, y));
 }
 
 void VrShell::SetDialogFloating(JNIEnv* env,
                                 const base::android::JavaParamRef<jobject>& obj,
                                 bool floating) {
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::SetDialogFloating,
-                                gl_thread_->GetVrShellGl(), floating));
+                 base::BindOnce(&RenderLoop::SetDialogFloating,
+                                gl_thread_->GetRenderLoop(), floating));
 }
 
 void VrShell::ShowToast(JNIEnv* env,
@@ -692,22 +692,22 @@ void VrShell::ShowToast(JNIEnv* env,
                         jstring jtext) {
   base::string16 text;
   base::android::ConvertJavaStringToUTF16(env, jtext, &text);
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::ShowToast,
-                                           gl_thread_->GetVrShellGl(), text));
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::ShowToast,
+                                           gl_thread_->GetRenderLoop(), text));
 }
 
 void VrShell::CancelToast(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::CancelToast,
-                                           gl_thread_->GetVrShellGl()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::CancelToast,
+                                           gl_thread_->GetRenderLoop()));
 }
 
 void VrShell::ConnectPresentingService(
     device::mojom::VRDisplayInfoPtr display_info,
     device::mojom::XRRuntimeSessionOptionsPtr options) {
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::ConnectPresentingService,
-                                gl_thread_->GetVrShellGl(),
+                 base::BindOnce(&RenderLoop::ConnectPresentingService,
+                                gl_thread_->GetRenderLoop(),
                                 std::move(display_info), std::move(options)));
 }
 
@@ -772,16 +772,16 @@ void VrShell::BufferBoundsChanged(JNIEnv* env,
                                                    overlay_height);
   }
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::BufferBoundsChanged,
-                                gl_thread_->GetVrShellGl(),
+                 base::BindOnce(&RenderLoop::BufferBoundsChanged,
+                                gl_thread_->GetRenderLoop(),
                                 gfx::Size(content_width, content_height),
                                 gfx::Size(overlay_width, overlay_height)));
 }
 
 void VrShell::ResumeContentRendering(JNIEnv* env,
                                      const JavaParamRef<jobject>& object) {
-  PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::ResumeContentRendering,
-                                           gl_thread_->GetVrShellGl()));
+  PostToGlThread(FROM_HERE, base::BindOnce(&RenderLoop::ResumeContentRendering,
+                                           gl_thread_->GetRenderLoop()));
 }
 
 void VrShell::OnOverlayTextureEmptyChanged(JNIEnv* env,
@@ -952,9 +952,9 @@ void VrShell::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
                                  window_size.height(), dpr);
 
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::ContentBoundsChanged,
-                                gl_thread_->GetVrShellGl(), window_size.width(),
-                                window_size.height()));
+                 base::BindOnce(&RenderLoop::ContentBoundsChanged,
+                                gl_thread_->GetRenderLoop(),
+                                window_size.width(), window_size.height()));
 }
 
 void VrShell::SetVoiceSearchActive(bool active) {
@@ -1249,8 +1249,8 @@ void VrShell::AcceptDoffPromptForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::AcceptDoffPromptForTesting,
-                                gl_thread_->GetVrShellGl()));
+                 base::BindOnce(&RenderLoop::AcceptDoffPromptForTesting,
+                                gl_thread_->GetRenderLoop()));
 }
 
 void VrShell::SetUiExpectingActivityForTesting(
@@ -1260,8 +1260,8 @@ void VrShell::SetUiExpectingActivityForTesting(
   UiTestActivityExpectation ui_expectation;
   ui_expectation.quiescence_timeout_ms = quiescence_timeout_ms;
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::SetUiExpectingActivityForTesting,
-                                gl_thread_->GetVrShellGl(), ui_expectation));
+                 base::BindOnce(&RenderLoop::SetUiExpectingActivityForTesting,
+                                gl_thread_->GetRenderLoop(), ui_expectation));
 }
 
 void VrShell::ReportUiActivityResultForTesting(VrUiTestActivityResult result) {
@@ -1283,8 +1283,8 @@ void VrShell::PerformControllerActionForTesting(
   controller_input.action = static_cast<VrControllerTestAction>(action_type);
   controller_input.position = gfx::PointF(x, y);
   PostToGlThread(FROM_HERE,
-                 base::BindOnce(&VrShellGl::PerformControllerActionForTesting,
-                                gl_thread_->GetVrShellGl(), controller_input));
+                 base::BindOnce(&RenderLoop::PerformControllerActionForTesting,
+                                gl_thread_->GetRenderLoop(), controller_input));
 }
 
 std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
