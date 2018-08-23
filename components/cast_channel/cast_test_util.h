@@ -29,11 +29,9 @@ class MockCastTransport : public CastTransport {
   void SetReadDelegate(
       std::unique_ptr<CastTransport::Delegate> delegate) override;
 
-  MOCK_METHOD3(
-      SendMessage,
-      void(const CastMessage& message,
-           const net::CompletionCallback& callback,
-           const net::NetworkTrafficAnnotationTag& traffic_annotation));
+  MOCK_METHOD2(SendMessage,
+               void(const CastMessage& message,
+                    const net::CompletionCallback& callback));
 
   MOCK_METHOD0(Start, void(void));
 
@@ -75,17 +73,17 @@ class MockCastSocketService : public CastSocketService {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
   ~MockCastSocketService() override;
 
-  void OpenSocket(const CastSocketOpenParams& open_params,
+  void OpenSocket(NetworkContextGetter network_context_getter,
+                  const CastSocketOpenParams& open_params,
                   CastSocket::OnOpenCallback open_cb) override {
     // Unit test should not call |open_cb| more than once. Just use
     // base::AdaptCallbackForRepeating to pass |open_cb| to a mock method.
-    OpenSocketInternal(open_params.ip_endpoint, open_params.net_log,
+    OpenSocketInternal(open_params.ip_endpoint,
                        base::AdaptCallbackForRepeating(std::move(open_cb)));
   }
 
-  MOCK_METHOD3(OpenSocketInternal,
+  MOCK_METHOD2(OpenSocketInternal,
                void(const net::IPEndPoint& ip_endpoint,
-                    net::NetLog* net_log,
                     const base::Callback<void(CastSocket*)>& open_cb));
   MOCK_CONST_METHOD1(GetSocket, CastSocket*(int channel_id));
 };

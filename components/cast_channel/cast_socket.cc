@@ -29,25 +29,12 @@
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/keep_alive_delegate.h"
 #include "components/cast_channel/logger.h"
+#include "components/cast_channel/mojo_data_pump.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/cert_verify_result.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/multi_log_ct_verifier.h"
-#include "net/cert/x509_certificate.h"
-#include "net/http/transport_security_state.h"
-#include "net/log/net_log.h"
-#include "net/log/net_log_source_type.h"
-#include "net/socket/client_socket_factory.h"
-#include "net/socket/client_socket_handle.h"
-#include "net/socket/ssl_client_socket.h"
-#include "net/socket/stream_socket.h"
-#include "net/socket/tcp_client_socket.h"
-#include "net/socket/transport_client_socket.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
@@ -69,36 +56,51 @@ bool IsTerminalState(ConnectionState state) {
          state == ConnectionState::TIMEOUT;
 }
 
-// Cert verifier which blindly accepts all certificates, regardless of validity.
-class FakeCertVerifier : public net::CertVerifier {
- public:
-  FakeCertVerifier() {}
-  ~FakeCertVerifier() override {}
+void OnConnected(
+    network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback,
+    int result,
+    const base::Optional<net::IPEndPoint>& local_addr,
+    const base::Optional<net::IPEndPoint>& peer_addr,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::BindOnce(std::move(callback), result, local_addr, peer_addr,
+                     std::move(receive_stream), std::move(send_stream)));
+}
 
-  int Verify(const RequestParams& params,
-             net::CertVerifyResult* verify_result,
-             net::CompletionOnceCallback,
-             std::unique_ptr<Request>*,
-             const net::NetLogWithSource&) override {
-    verify_result->Reset();
-    verify_result->verified_cert = params.certificate();
-    return net::OK;
-  }
-  void SetConfig(const Config& config) override {}
-};
+void ConnectOnUIThread(
+    CastSocketImpl::NetworkContextGetter network_context_getter,
+    const net::AddressList& remote_address_list,
+    network::mojom::TCPConnectedSocketRequest request,
+    network::mojom::NetworkContext::CreateTCPConnectedSocketCallback callback) {
+  network_context_getter.Run()->CreateTCPConnectedSocket(
+      base::nullopt /* local_addr */, remote_address_list,
+      net::MutableNetworkTrafficAnnotationTag(
+          CastSocketImpl::GetNetworkTrafficAnnotationTag()),
+      std::move(request), nullptr /* observer */,
+      base::BindOnce(OnConnected, std::move(callback)));
+}
 
 }  // namespace
 
-CastSocketImpl::CastSocketImpl(const CastSocketOpenParams& open_params,
+CastSocketImpl::CastSocketImpl(NetworkContextGetter network_context_getter,
+                               const CastSocketOpenParams& open_params,
                                const scoped_refptr<Logger>& logger)
-    : CastSocketImpl(open_params, logger, AuthContext::Create()) {}
+    : CastSocketImpl(network_context_getter,
+                     open_params,
+                     logger,
+                     AuthContext::Create()) {}
 
-CastSocketImpl::CastSocketImpl(const CastSocketOpenParams& open_params,
+CastSocketImpl::CastSocketImpl(NetworkContextGetter network_context_getter,
+                               const CastSocketOpenParams& open_params,
                                const scoped_refptr<Logger>& logger,
                                const AuthContext& auth_context)
     : channel_id_(0),
       open_params_(open_params),
       logger_(logger),
+      network_context_getter_(network_context_getter),
       auth_context_(auth_context),
       connect_timeout_timer_(new base::OneShotTimer),
       is_canceled_(false),
@@ -106,12 +108,9 @@ CastSocketImpl::CastSocketImpl(const CastSocketOpenParams& open_params,
       connect_state_(ConnectionState::START_CONNECT),
       error_state_(ChannelError::NONE),
       ready_state_(ReadyState::NONE),
-      auth_delegate_(nullptr) {
+      auth_delegate_(nullptr),
+      weak_factory_(this) {
   DCHECK(open_params.ip_endpoint.address().IsValid());
-  if (open_params_.net_log) {
-    net_log_source_.type = net::NetLogSourceType::SOCKET;
-    net_log_source_.id = open_params_.net_log->NextID();
-  }
 }
 
 CastSocketImpl::~CastSocketImpl() {
@@ -153,48 +152,6 @@ bool CastSocketImpl::audio_only() const {
   return audio_only_;
 }
 
-std::unique_ptr<net::TransportClientSocket> CastSocketImpl::CreateTcpSocket() {
-  net::AddressList addresses(open_params_.ip_endpoint);
-  return std::unique_ptr<net::TCPClientSocket>(new net::TCPClientSocket(
-      addresses, nullptr, open_params_.net_log, net_log_source_));
-  // Options cannot be set on the TCPClientSocket yet, because the
-  // underlying platform socket will not be created until Bind()
-  // or Connect() is called.
-}
-
-std::unique_ptr<net::SSLClientSocket> CastSocketImpl::CreateSslSocket(
-    std::unique_ptr<net::StreamSocket> socket) {
-  net::SSLConfig ssl_config;
-  cert_verifier_ = base::WrapUnique(new FakeCertVerifier);
-  transport_security_state_.reset(new net::TransportSecurityState);
-  cert_transparency_verifier_.reset(new net::MultiLogCTVerifier());
-  ct_policy_enforcer_.reset(new net::DefaultCTPolicyEnforcer());
-
-  // Note that |context| fields remain owned by CastSocketImpl.
-  net::SSLClientSocketContext context;
-  context.cert_verifier = cert_verifier_.get();
-  context.transport_security_state = transport_security_state_.get();
-  context.cert_transparency_verifier = cert_transparency_verifier_.get();
-  context.ct_policy_enforcer = ct_policy_enforcer_.get();
-
-  std::unique_ptr<net::ClientSocketHandle> connection(
-      new net::ClientSocketHandle);
-  connection->SetSocket(std::move(socket));
-  net::HostPortPair host_and_port =
-      net::HostPortPair::FromIPEndPoint(open_params_.ip_endpoint);
-
-  return net::ClientSocketFactory::GetDefaultFactory()->CreateSSLClientSocket(
-      std::move(connection), host_and_port, ssl_config, context);
-}
-
-scoped_refptr<net::X509Certificate> CastSocketImpl::ExtractPeerCert() {
-  net::SSLInfo ssl_info;
-  if (!socket_->GetSSLInfo(&ssl_info) || !ssl_info.cert)
-    return nullptr;
-
-  return ssl_info.cert;
-}
-
 bool CastSocketImpl::VerifyChannelPolicy(const AuthResult& result) {
   audio_only_ = (result.channel_policies & AuthResult::POLICY_AUDIO_ONLY) != 0;
   if (audio_only_ && (open_params_.device_capabilities &
@@ -223,6 +180,11 @@ bool CastSocketImpl::VerifyChallengeReply() {
 void CastSocketImpl::SetTransportForTesting(
     std::unique_ptr<CastTransport> transport) {
   transport_ = std::move(transport);
+}
+
+void CastSocketImpl::SetPeerCertForTesting(
+    scoped_refptr<net::X509Certificate> peer_cert) {
+  peer_cert_ = peer_cert;
 }
 
 void CastSocketImpl::Connect(OnOpenCallback callback) {
@@ -285,6 +247,40 @@ void CastSocketImpl::AddObserver(Observer* observer) {
 void CastSocketImpl::RemoveObserver(Observer* observer) {
   DCHECK(observer);
   observers_.RemoveObserver(observer);
+}
+
+net::NetworkTrafficAnnotationTag
+CastSocketImpl::GetNetworkTrafficAnnotationTag() {
+  return net::DefineNetworkTrafficAnnotation("cast_socket", R"(
+        semantics {
+          sender: "Cast Socket"
+          description:
+            "Requests to a Cast device."
+          trigger:
+            "A new Cast device has been discovered via mDNS in the local "
+            "network or after it's connected."
+          data:
+            "A serialized Cast protocol or application-level protobuf message. "
+            "A non-exhaustive list of Cast protocol messages:\n"
+            "- nonce challenge,\n"
+            "- ping/pong data,\n"
+            "- Virtual connection requests,\n"
+            "- App availability / media status / receiver status requests,\n"
+            "- Launch / stop Cast session requests,\n"
+            "- Media commands, such as play/pause.\n"
+            "Application-level messages may contain data specific to the Cast "
+            "application."
+          destination: OTHER
+          destination_other:
+            "Data will be sent to a Cast device in local network."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be disabled, but it would not be sent if user "
+            "does not connect a Cast device to the local network."
+          policy_exception_justification: "Not implemented."
+        })");
 }
 
 void CastSocketImpl::OnConnectTimeout() {
@@ -377,13 +373,16 @@ int CastSocketImpl::DoTcpConnect() {
   DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoTcpConnect";
   SetConnectState(ConnectionState::TCP_CONNECT_COMPLETE);
-  tcp_socket_ = CreateTcpSocket();
 
-  int rv = tcp_socket_->Connect(
-      base::BindOnce(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(channel_id_, ChannelEvent::TCP_SOCKET_CONNECT,
-                                rv);
-  return rv;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(ConnectOnUIThread, network_context_getter_,
+                     net::AddressList(open_params_.ip_endpoint),
+                     mojo::MakeRequest(&tcp_socket_),
+                     base::BindOnce(&CastSocketImpl::OnConnect,
+                                    weak_factory_.GetWeakPtr())));
+
+  return net::ERR_IO_PENDING;
 }
 
 int CastSocketImpl::DoTcpConnectComplete(int connect_result) {
@@ -406,13 +405,22 @@ int CastSocketImpl::DoSslConnect() {
   DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoSslConnect";
   SetConnectState(ConnectionState::SSL_CONNECT_COMPLETE);
-  socket_ = CreateSslSocket(std::move(tcp_socket_));
 
-  int rv = socket_->Connect(
-      base::BindOnce(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(channel_id_, ChannelEvent::SSL_SOCKET_CONNECT,
-                                rv);
-  return rv;
+  net::HostPortPair host_port_pair =
+      net::HostPortPair::FromIPEndPoint(open_params_.ip_endpoint);
+  network::mojom::TLSClientSocketOptionsPtr options =
+      network::mojom::TLSClientSocketOptions::New();
+  // Cast code does its own authentication after SSL handshake since the devices
+  // don't have a known hostname.
+  options->skip_cert_verification = true;
+  tcp_socket_->UpgradeToTLS(
+      host_port_pair, std::move(options),
+      net::MutableNetworkTrafficAnnotationTag(GetNetworkTrafficAnnotationTag()),
+      mojo::MakeRequest(&socket_), nullptr /* observer */,
+      base::BindOnce(&CastSocketImpl::OnUpgradeToTLS,
+                     weak_factory_.GetWeakPtr()));
+
+  return net::ERR_IO_PENDING;
 }
 
 int CastSocketImpl::DoSslConnectComplete(int result) {
@@ -420,8 +428,6 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
       channel_id_, ChannelEvent::SSL_SOCKET_CONNECT_COMPLETE, result);
   VLOG_WITH_CONNECTION(1) << "DoSslConnectComplete: " << result;
   if (result == net::OK) {
-    peer_cert_ = ExtractPeerCert();
-
     if (!peer_cert_) {
       LOG_WITH_CONNECTION(WARNING) << "Could not extract peer cert.";
       SetConnectState(ConnectionState::FINISHED);
@@ -433,8 +439,9 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
     if (!transport_) {
       // Create a channel transport if one wasn't already set (e.g. by test
       // code).
-      transport_.reset(new CastTransportImpl(
-          this->socket_.get(), channel_id_, open_params_.ip_endpoint, logger_));
+      transport_.reset(new CastTransportImpl(mojo_data_pump_.get(), channel_id_,
+                                             open_params_.ip_endpoint,
+                                             logger_));
     }
     auth_delegate_ = new AuthTransportDelegate(this);
     transport_->SetReadDelegate(base::WrapUnique(auth_delegate_));
@@ -460,32 +467,7 @@ int CastSocketImpl::DoAuthChallengeSend() {
 
   ResetConnectLoopCallback();
 
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("cast_socket", R"(
-        semantics {
-          sender: "Cast Socket"
-          description:
-            "An auth challenge request sent to a Cast device as a part of "
-            "establishing a connection to it."
-          trigger:
-            "A new Cast device has been discovered via mDNS in the local "
-            "network."
-          data:
-            "A serialized protobuf message containing the nonce challenge. No "
-            "user data."
-          destination: OTHER
-          destination_other:
-            "Data will be sent to a Cast device in local network."
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "This request cannot be disabled, but it would not be sent if user "
-            "does not connect a Cast device to the local network."
-          policy_exception_justification: "Not implemented."
-        })");
-  transport_->SendMessage(challenge_message, connect_loop_callback_.callback(),
-                          traffic_annotation);
+  transport_->SendMessage(challenge_message, connect_loop_callback_.callback());
 
   // Always return IO_PENDING since the result is always asynchronous.
   return net::ERR_IO_PENDING;
@@ -563,6 +545,29 @@ int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
   return net::OK;
 }
 
+void CastSocketImpl::OnConnect(
+    int result,
+    const base::Optional<net::IPEndPoint>& local_addr,
+    const base::Optional<net::IPEndPoint>& peer_addr,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream) {
+  DoConnectLoop(result);
+}
+
+void CastSocketImpl::OnUpgradeToTLS(
+    int result,
+    mojo::ScopedDataPipeConsumerHandle receive_stream,
+    mojo::ScopedDataPipeProducerHandle send_stream,
+    const base::Optional<net::SSLInfo>& ssl_info) {
+  if (result == net::OK) {
+    mojo_data_pump_ = std::make_unique<MojoDataPump>(std::move(receive_stream),
+                                                     std::move(send_stream));
+  }
+  if (ssl_info.has_value() && ssl_info->cert)
+    peer_cert_ = ssl_info->cert;
+  DoConnectLoop(result);
+}
+
 void CastSocketImpl::DoConnectCallback() {
   VLOG(1) << "DoConnectCallback (error_state = "
           << ChannelErrorToString(error_state_) << ")";
@@ -611,7 +616,6 @@ void CastSocketImpl::CloseInternal() {
   transport_.reset();
   tcp_socket_.reset();
   socket_.reset();
-  transport_security_state_.reset();
   if (GetTimer()) {
     GetTimer()->Stop();
   }
@@ -670,21 +674,17 @@ void CastSocketImpl::CastSocketMessageDelegate::OnMessage(
 void CastSocketImpl::CastSocketMessageDelegate::Start() {}
 
 CastSocketOpenParams::CastSocketOpenParams(const net::IPEndPoint& ip_endpoint,
-                                           net::NetLog* net_log,
                                            base::TimeDelta connect_timeout)
     : ip_endpoint(ip_endpoint),
-      net_log(net_log),
       connect_timeout(connect_timeout),
       device_capabilities(cast_channel::CastDeviceCapability::NONE) {}
 
 CastSocketOpenParams::CastSocketOpenParams(const net::IPEndPoint& ip_endpoint,
-                                           net::NetLog* net_log,
                                            base::TimeDelta connect_timeout,
                                            base::TimeDelta liveness_timeout,
                                            base::TimeDelta ping_interval,
                                            uint64_t device_capabilities)
     : ip_endpoint(ip_endpoint),
-      net_log(net_log),
       connect_timeout(connect_timeout),
       liveness_timeout(liveness_timeout),
       ping_interval(ping_interval),

@@ -87,33 +87,9 @@ void KeepAliveDelegate::SendKeepAliveMessage(const CastMessage& message,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(2) << "Sending " << CastMessageTypeToString(message_type);
 
-  net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("cast_keep_alive_delegate", R"(
-        semantics {
-          sender: "Cast Socket Keep Alive Delegate"
-          description:
-            "A ping/pong message sent periodically to a Cast device to keep "
-            "the connection alive."
-          trigger:
-            "Periodically while a connection to a Cast device is established."
-          data:
-            "A protobuf message representing a ping/pong message. No user data."
-          destination: OTHER
-          destination_other:
-            "Data will be sent to a Cast device in local network."
-        }
-        policy {
-          cookies_allowed: NO
-          setting:
-            "This request cannot be disabled, but it would not be sent if user "
-            "does not connect to a Cast device."
-          policy_exception_justification: "Not implemented."
-        })");
   socket_->transport()->SendMessage(
-      message,
-      base::Bind(&KeepAliveDelegate::SendKeepAliveMessageComplete,
-                 base::Unretained(this), message_type),
-      traffic_annotation);
+      message, base::Bind(&KeepAliveDelegate::SendKeepAliveMessageComplete,
+                          base::Unretained(this), message_type));
 }
 
 void KeepAliveDelegate::SendKeepAliveMessageComplete(

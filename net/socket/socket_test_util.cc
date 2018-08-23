@@ -252,8 +252,20 @@ StaticSocketDataProvider::StaticSocketDataProvider(
 
 StaticSocketDataProvider::~StaticSocketDataProvider() = default;
 
+void StaticSocketDataProvider::Pause() {
+  paused_ = true;
+}
+
+void StaticSocketDataProvider::Resume() {
+  paused_ = false;
+}
+
 MockRead StaticSocketDataProvider::OnRead() {
-  CHECK(!helper_.AllReadDataConsumed());
+  if (AllReadDataConsumed()) {
+    const net::MockRead pending_read(net::SYNCHRONOUS, net::ERR_IO_PENDING);
+    return pending_read;
+  }
+
   return helper_.AdvanceRead();
 }
 
@@ -283,7 +295,7 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
 }
 
 bool StaticSocketDataProvider::AllReadDataConsumed() const {
-  return helper_.AllReadDataConsumed();
+  return paused_ || helper_.AllReadDataConsumed();
 }
 
 bool StaticSocketDataProvider::AllWriteDataConsumed() const {

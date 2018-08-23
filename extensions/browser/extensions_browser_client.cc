@@ -93,4 +93,9 @@ bool ExtensionsBrowserClient::IsWebUIAllowedToMakeNetworkRequests(
   return false;
 }
 
+network::mojom::NetworkContext*
+ExtensionsBrowserClient::GetSystemNetworkContext() {
+  return nullptr;
+}
+
 }  // namespace extensions

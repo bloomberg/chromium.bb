@@ -150,7 +150,8 @@ class TCPSocket : public Socket {
                               const net::IPEndPoint& peer_addr,
                               int result,
                               mojo::ScopedDataPipeConsumerHandle receive_stream,
-                              mojo::ScopedDataPipeProducerHandle send_stream);
+                              mojo::ScopedDataPipeProducerHandle send_stream,
+                              const base::Optional<net::SSLInfo>& ssl_info);
 
   content::StoragePartition* GetStoragePartitionHelper();
 

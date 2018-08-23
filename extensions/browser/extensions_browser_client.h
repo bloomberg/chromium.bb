@@ -45,6 +45,12 @@ class URLRequest;
 class URLRequestJob;
 }
 
+namespace network {
+namespace mojom {
+class NetworkContext;
+}
+}  // namespace network
+
 namespace update_client {
 class UpdateClient;
 }
@@ -346,6 +352,8 @@ class ExtensionsBrowserClient {
   // priviliged renderers). Fix these webui's to make requests through C++
   // code instead.
   virtual bool IsWebUIAllowedToMakeNetworkRequests(const url::Origin& origin);
+
+  virtual network::mojom::NetworkContext* GetSystemNetworkContext();
 
  private:
   std::vector<std::unique_ptr<ExtensionsBrowserAPIProvider>> providers_;

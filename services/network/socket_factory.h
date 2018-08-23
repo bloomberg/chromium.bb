@@ -75,7 +75,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) SocketFactory
       mojom::TCPConnectedSocket::UpgradeToTLSCallback callback) override;
 
   net::NetLog* const net_log_;
-  const net::SSLClientSocketContext ssl_client_socket_context_;
+
+  // The following are used when |skip_cert_verification| is specified in
+  // upgrade options.
+  net::SSLClientSocketContext no_verification_ssl_client_socket_context_;
+  std::unique_ptr<net::CertVerifier> no_verification_cert_verifier_;
+  std::unique_ptr<net::TransportSecurityState>
+      no_verification_transport_security_state_;
+  std::unique_ptr<net::CTVerifier> no_verification_cert_transparency_verifier_;
+  std::unique_ptr<net::CTPolicyEnforcer> no_verification_ct_policy_enforcer_;
+
+  net::SSLClientSocketContext ssl_client_socket_context_;
   net::ClientSocketFactory* client_socket_factory_;
   net::SSLConfigService* const ssl_config_service_;
   mojo::StrongBindingSet<mojom::UDPSocket> udp_socket_bindings_;

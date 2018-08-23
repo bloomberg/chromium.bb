@@ -1030,7 +1030,8 @@ TEST_F(TCPSocketWithMockSocketTest, SetNoDelayAndKeepAlive) {
         base::BindLambdaForTesting(
             [&](int result,
                 mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-                mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+                mojo::ScopedDataPipeProducerHandle send_pipe_handle,
+                const base::Optional<net::SSLInfo>& ssl_info) {
               EXPECT_EQ(net::ERR_FAILED, result);
               run_loop.Quit();
             }));

@@ -120,7 +120,8 @@ class TLSClientSocketTestBase {
                mojo::ScopedDataPipeConsumerHandle* consumer_handle,
                mojo::ScopedDataPipeProducerHandle* producer_handle, int result,
                mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-               mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+               mojo::ScopedDataPipeProducerHandle send_pipe_handle,
+               const base::Optional<net::SSLInfo>& ssl_info) {
               *consumer_handle = std::move(receive_pipe_handle);
               *producer_handle = std::move(send_pipe_handle);
               std::move(cb).Run(result);
@@ -307,7 +308,8 @@ TEST_F(TLSClientSocketTest, UpgradeToTLSTwice) {
       base::BindLambdaForTesting(
           [&](int result,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-              mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+              mojo::ScopedDataPipeProducerHandle send_pipe_handle,
+              const base::Optional<net::SSLInfo>& ssl_info) {
             net_error = result;
             run_loop.Quit();
           }));
@@ -353,7 +355,8 @@ TEST_F(TLSClientSocketTest, UpgradeToTLSWithCustomSSLConfig) {
       base::BindLambdaForTesting(
           [&](int result,
               mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
-              mojo::ScopedDataPipeProducerHandle send_pipe_handle) {
+              mojo::ScopedDataPipeProducerHandle send_pipe_handle,
+              const base::Optional<net::SSLInfo>& ssl_info) {
             net_error = result;
             run_loop.Quit();
           }));

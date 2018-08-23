@@ -126,7 +126,7 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillRepeatedly(Return(ReadyState::OPEN));
       EXPECT_CALL(*mock_cast_socket_->mock_transport(),
-                  SendMessage(A<const CastMessage&>(), _, _))
+                  SendMessage(A<const CastMessage&>(), _))
           .WillOnce(InvokeCompletionCallback<1>(net::OK));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillOnce(Return(ReadyState::OPEN));
@@ -150,7 +150,7 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
               })));
       EXPECT_CALL(*mock_cast_socket_, ready_state())
           .WillRepeatedly(Return(ReadyState::CLOSED));
-      EXPECT_CALL(*mock_cast_socket_->mock_transport(), SendMessage(_, _, _))
+      EXPECT_CALL(*mock_cast_socket_->mock_transport(), SendMessage(_, _))
           .Times(0);
       EXPECT_CALL(*mock_cast_socket_, Close(_))
           .WillOnce(InvokeCompletionCallback<0>(net::OK));

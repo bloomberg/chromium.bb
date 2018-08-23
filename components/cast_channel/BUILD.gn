@@ -26,6 +26,8 @@ static_library("cast_channel") {
     "keep_alive_delegate.h",
     "logger.cc",
     "logger.h",
+    "mojo_data_pump.cc",
+    "mojo_data_pump.h",
   ]
   deps = [
     "//base",
@@ -39,6 +41,9 @@ static_library("cast_channel") {
     "//content/public/common",
     "//crypto",
     "//net",
+  ]
+  public_deps = [
+    "//services/network/public/mojom",
   ]
 }
 
