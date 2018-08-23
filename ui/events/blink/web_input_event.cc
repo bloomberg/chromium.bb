@@ -502,6 +502,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 
   if (event.flags() & ui::EF_PRECISION_SCROLLING_DELTA)
     webkit_event.has_precise_scrolling_deltas = true;
+  if (event.flags() & ui::EF_SCROLL_BY_PAGE)
+    webkit_event.scroll_by_page = true;
 
   webkit_event.wheel_ticks_x =
       webkit_event.delta_x / MouseWheelEvent::kWheelDelta;

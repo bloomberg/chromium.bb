@@ -153,6 +153,9 @@ enum MouseEventFlags {
   EF_PRECISION_SCROLLING_DELTA =     // Indicates this mouse event is from high
   1 << 21,                           // precision touchpad and will come with a
                                      // high precision delta.
+  EF_SCROLL_BY_PAGE = 1 << 22,       // Indicates this mouse event is generated
+                                     // when users is requesting to scroll by
+                                     // pages.
 };
 
 // Result of dispatching an event.

@@ -18,7 +18,8 @@ SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams()
       speed_in_pixels_s(kDefaultSpeedInPixelsS),
       fling_velocity_x(0),
       fling_velocity_y(0),
-      precise_scrolling_deltas(false) {}
+      precise_scrolling_deltas(false),
+      scroll_by_page(false) {}
 
 SyntheticSmoothScrollGestureParams::SyntheticSmoothScrollGestureParams(
     const SyntheticSmoothScrollGestureParams& other) = default;
