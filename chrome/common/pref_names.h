@@ -282,6 +282,7 @@ extern const char kEnableSyncConsent[];
 extern const char kNetworkFileSharesAllowed[];
 extern const char kManagedSessionEnabled[];
 extern const char kTPMFirmwareUpdateCleanupDismissed[];
+extern const char kNetBiosShareDiscoveryEnabled[];
 #endif  // defined(OS_CHROMEOS)
 extern const char kShowHomeButton[];
 extern const char kSpeechRecognitionFilterProfanities[];

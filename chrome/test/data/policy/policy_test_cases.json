@@ -3222,6 +3222,14 @@
     "pref_mappings": [ { "pref": "ssl.client_certs.h2_coalescing_hosts", "local_state": true } ]
   },
 
+  "NetBiosShareDiscoveryEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "NetBiosShareDiscoveryEnabled": true },
+    "pref_mappings": [
+      { "pref": "network_file_shares.netbios_discovery.enabled" }
+    ]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {
