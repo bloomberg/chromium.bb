@@ -40,6 +40,9 @@ class GlRenderer : public BaseCompositorDelegate {
   void OnFinishedDrawingBuffer() override;
   void GetWebXrDrawParams(int* texture_id, Transform* uv_transform) override;
   bool IsContentQuadReady() override;
+  void ResumeContentRendering() override;
+  void BufferBoundsChanged(const gfx::Size& content_buffer_size,
+                           const gfx::Size& overlay_buffer_size) override;
   void GetContentQuadDrawParams(Transform* uv_transform,
                                 float* border_x,
                                 float* border_y) override;
@@ -47,6 +50,9 @@ class GlRenderer : public BaseCompositorDelegate {
   void SetUiInterface(CompositorUiInterface* ui) override;
   void SetShowingVrDialog(bool showing) override;
   int GetContentBufferWidth() override;
+  void ConnectPresentingService(
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::XRRuntimeSessionOptionsPtr options) override;
 
   void RenderFrame();
   void PostRenderFrameTask();

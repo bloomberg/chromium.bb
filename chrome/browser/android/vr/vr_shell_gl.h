@@ -26,7 +26,6 @@
 #include "chrome/browser/vr/scheduler_delegate.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/ui_test_input.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -60,13 +59,11 @@ struct SyncToken;
 namespace vr {
 
 class CompositorUiInterface;
-class ControllerDelegate;
 class FPSMeter;
 class GlBrowserInterface;
 class MailboxToSurfaceBridge;
 class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
-class UiInterface;
 class VrShell;
 
 struct WebVrBounds {
@@ -96,15 +93,12 @@ struct Viewport {
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VrShellGl : public RenderLoop,
-                  public BaseCompositorDelegate,
+class VrShellGl : public BaseCompositorDelegate,
                   public SchedulerDelegate,
                   public device::mojom::XRPresentationProvider,
                   public device::mojom::XRFrameDataProvider {
  public:
-  VrShellGl(std::unique_ptr<UiInterface> ui,
-            std::unique_ptr<ControllerDelegate> controller_delegate,
-            GlBrowserInterface* browser,
+  VrShellGl(GlBrowserInterface* browser,
             gvr::GvrApi* gvr_api,
             bool reprojected_rendering,
             bool daydream_support,
@@ -116,9 +110,6 @@ class VrShellGl : public RenderLoop,
 
   void Init(base::WaitableEvent* gl_surface_created_event,
             base::OnceCallback<gfx::AcceleratedWidget()> callback);
-
-  void OnTriggerEvent(bool pressed);
-  void OnExitPresent();
 
   // CompositorDelegate overrides.
   FovRectangles GetRecommendedFovs() override;
@@ -141,35 +132,32 @@ class VrShellGl : public RenderLoop,
   void SetUiInterface(CompositorUiInterface* ui) override;
   void SetShowingVrDialog(bool showing) override;
   int GetContentBufferWidth() override;
+  void ConnectPresentingService(
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::XRRuntimeSessionOptionsPtr options) override;
+  void BufferBoundsChanged(const gfx::Size& content_buffer_size,
+                           const gfx::Size& overlay_buffer_size) override;
+  void ResumeContentRendering() override;
 
   // SchedulerDelegate overrides.
   void SetDrawWebXrCallback(DrawCallback callback) override;
   void SetDrawBrowserCallback(DrawCallback callback) override;
-  // TODO(acondor): Drop "Scheduler" from these names once RenderLoop owns
-  // VrShellGl.
-  void OnSchedulerPause() override;
-  void OnSchedulerResume() override;
+  void SetWebXrInputCallback(WebXrInputCallback callback) override;
+  void AddInputSourceState(device::mojom::XRInputSourceStatePtr state) override;
+  void OnPause() override;
+  void OnResume() override;
+  void OnExitPresent() override;
+  void OnTriggerEvent(bool pressed) override;
+  void SetWebXrMode(bool enabled) override;
 
-  scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() {
-    return task_runner_;
-  }
-
-  void SetWebVrMode(bool enabled);
   void CreateSurfaceBridge(gl::SurfaceTexture* surface_texture);
   void CreateOrResizeWebVRSurface(const gfx::Size& size);
   void WebVrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
                                             const gfx::Size& size);
   void WebVrPrepareSharedBuffer(const gfx::Size& size);
-  void BufferBoundsChanged(const gfx::Size& content_buffer_size,
-                           const gfx::Size& overlay_buffer_size);
   void UIBoundsChanged(int width, int height);
-  void ResumeContentRendering();
 
   base::WeakPtr<VrShellGl> GetWeakPtr();
-
-  void ConnectPresentingService(
-      device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRRuntimeSessionOptionsPtr options);
 
  private:
   void InitializeGl(gfx::AcceleratedWidget surface);
@@ -408,6 +396,7 @@ class VrShellGl : public RenderLoop,
 
   DrawCallback web_xr_draw_callback_;
   DrawCallback browser_draw_callback_;
+  WebXrInputCallback webxr_input_callback_;
 
   std::vector<gvr::BufferSpec> specs_;
 

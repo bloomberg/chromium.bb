@@ -9,6 +9,8 @@
 #include "chrome/browser/vr/compositor_ui_interface.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/vr_export.h"
+#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
+#include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace gfx {
 class Transform;
@@ -43,6 +45,9 @@ class VR_EXPORT CompositorDelegate {
   virtual void OnFinishedDrawingBuffer() = 0;
   virtual void GetWebXrDrawParams(int* texture_id, Transform* uv_transform) = 0;
   virtual bool IsContentQuadReady() = 0;
+  virtual void ResumeContentRendering() = 0;
+  virtual void BufferBoundsChanged(const gfx::Size& content_buffer_size,
+                                   const gfx::Size& overlay_buffer_size) = 0;
   virtual void GetContentQuadDrawParams(Transform* uv_transform,
                                         float* border_x,
                                         float* border_y) = 0;
@@ -51,6 +56,10 @@ class VR_EXPORT CompositorDelegate {
   virtual void SetUiInterface(CompositorUiInterface* ui) = 0;
   virtual void SetShowingVrDialog(bool showing) = 0;
   virtual int GetContentBufferWidth() = 0;
+
+  virtual void ConnectPresentingService(
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::XRRuntimeSessionOptionsPtr options) = 0;
 
   // These methods return true when succeeded.
   virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface) = 0;

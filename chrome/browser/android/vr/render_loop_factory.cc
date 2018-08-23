@@ -43,7 +43,7 @@ RenderLoopFactory::Params::Params(
 
 RenderLoopFactory::Params::~Params() = default;
 
-std::unique_ptr<VrShellGl> RenderLoopFactory::Create(
+std::unique_ptr<RenderLoop> RenderLoopFactory::Create(
     VrGLThread* vr_gl_thread,
     UiFactory* ui_factory,
     std::unique_ptr<Params> params) {
@@ -65,22 +65,28 @@ std::unique_ptr<VrShellGl> RenderLoopFactory::Create(
   auto controller_delegate =
       std::make_unique<GvrControllerDelegate>(params->gvr_api, vr_gl_thread);
   auto vr_shell_gl = std::make_unique<VrShellGl>(
-      std::move(ui), std::move(controller_delegate), vr_gl_thread,
-      params->gvr_api, params->reprojected_rendering, params->daydream_support,
-      params->ui_initial_state.in_web_vr, params->pause_content,
-      params->low_density, kSlidingAverageSize);
-  vr_shell_gl->SetDrawWebXrCallback(base::BindRepeating(
-      &RenderLoop::Draw, base::Unretained(vr_shell_gl.get()),
-      CompositorDelegate::kWebXrFrame));
-  vr_shell_gl->SetDrawBrowserCallback(base::BindRepeating(
-      &RenderLoop::Draw, base::Unretained(vr_shell_gl.get()),
-      CompositorDelegate::kUiFrame));
+      vr_gl_thread, params->gvr_api, params->reprojected_rendering,
+      params->daydream_support, params->ui_initial_state.in_web_vr,
+      params->pause_content, params->low_density, kSlidingAverageSize);
   vr_gl_thread->task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(&VrShellGl::Init, vr_shell_gl->GetWeakPtr(),
                      base::Unretained(params->gl_surface_created_event),
                      base::Passed(std::move(params->surface_callback))));
-  return vr_shell_gl;
+  SchedulerDelegate* scheduler_delegate = vr_shell_gl.get();
+  auto render_loop = std::make_unique<RenderLoop>(
+      std::move(ui), std::move(vr_shell_gl), scheduler_delegate,
+      std::move(controller_delegate), vr_gl_thread, kSlidingAverageSize);
+  scheduler_delegate->SetDrawWebXrCallback(base::BindRepeating(
+      &RenderLoop::Draw, base::Unretained(render_loop.get()),
+      CompositorDelegate::kWebXrFrame));
+  scheduler_delegate->SetDrawBrowserCallback(base::BindRepeating(
+      &RenderLoop::Draw, base::Unretained(render_loop.get()),
+      CompositorDelegate::kUiFrame));
+  scheduler_delegate->SetWebXrInputCallback(
+      base::BindRepeating(&RenderLoop::ProcessControllerInputForWebXr,
+                          base::Unretained(render_loop.get())));
+  return render_loop;
 }
 
 }  // namespace vr

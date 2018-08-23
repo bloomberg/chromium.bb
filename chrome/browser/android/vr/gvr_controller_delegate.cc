@@ -25,10 +25,10 @@ GvrControllerDelegate::GvrControllerDelegate(gvr::GvrApi* gvr_api,
 
 GvrControllerDelegate::~GvrControllerDelegate() = default;
 
-void GvrControllerDelegate::UpdateController(const RenderInfo& render_info,
+void GvrControllerDelegate::UpdateController(const gfx::Transform& head_pose,
                                              base::TimeTicks current_time,
                                              bool is_webxr_frame) {
-  controller_->UpdateState(render_info.head_pose);
+  controller_->UpdateState(head_pose);
 
   device::GvrGamepadData controller_data = controller_->GetGamepadData();
   if (!is_webxr_frame)
@@ -36,8 +36,9 @@ void GvrControllerDelegate::UpdateController(const RenderInfo& render_info,
   browser_->UpdateGamepadData(controller_data);
 }
 
-ControllerModel GvrControllerDelegate::GetModel(const RenderInfo& render_info) {
-  gfx::Vector3dF head_direction = GetForwardVector(render_info.head_pose);
+ControllerModel GvrControllerDelegate::GetModel(
+    const gfx::Transform& head_pose) {
+  gfx::Vector3dF head_direction = GetForwardVector(head_pose);
 
   gfx::Vector3dF controller_direction;
   gfx::Quaternion controller_quat;

@@ -66,6 +66,9 @@ void GlRenderer::GetWebXrDrawParams(int* texture_id, Transform* uv_transform) {}
 bool GlRenderer::IsContentQuadReady() {
   return true;
 }
+void GlRenderer::ResumeContentRendering() {}
+void GlRenderer::BufferBoundsChanged(const gfx::Size& content_buffer_size,
+                                     const gfx::Size& overlay_buffer_size) {}
 void GlRenderer::GetContentQuadDrawParams(Transform* uv_transform,
                                           float* border_x,
                                           float* border_y) {}
@@ -75,6 +78,9 @@ void GlRenderer::SetShowingVrDialog(bool showing) {}
 int GlRenderer::GetContentBufferWidth() {
   return 0;
 }
+void GlRenderer::ConnectPresentingService(
+    device::mojom::VRDisplayInfoPtr display_info,
+    device::mojom::XRRuntimeSessionOptionsPtr options) {}
 
 void GlRenderer::RenderFrame() {
   // Checking and clearing GL errors can be expensive, but we can afford to do

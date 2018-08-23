@@ -8,11 +8,11 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/vr/compositor_delegate.h"
 #include "chrome/browser/vr/gl_texture_location.h"
 #include "chrome/browser/vr/sliding_average.h"
 #include "chrome/browser/vr/vr_export.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace base {
 class TimeDelta;
@@ -42,7 +42,7 @@ struct UiTestState;
 class VR_EXPORT RenderLoop {
  public:
   RenderLoop(std::unique_ptr<UiInterface> ui,
-             CompositorDelegate* compositor_delegate,
+             std::unique_ptr<CompositorDelegate> compositor_delegate,
              SchedulerDelegate* scheduler_delegate,
              std::unique_ptr<ControllerDelegate> controller_delegate,
              RenderLoopBrowserInterface* browser,
@@ -55,6 +55,9 @@ class VR_EXPORT RenderLoop {
   void OnPause();
   void OnResume();
 
+  void OnExitPresent();
+  void OnTriggerEvent(bool pressed);
+  void SetWebXrMode(bool enabled);
   void OnSwapContents(int new_content_id);
   void EnableAlertDialog(PlatformInputHandler* input_handler,
                          float width,
@@ -65,27 +68,23 @@ class VR_EXPORT RenderLoop {
   void SetDialogFloating(bool floating);
   void ShowToast(const base::string16& text);
   void CancelToast();
+  void ResumeContentRendering();
   void ContentBoundsChanged(int width, int height);
+  void BufferBoundsChanged(const gfx::Size& content_buffer_size,
+                           const gfx::Size& overlay_buffer_size);
 
+  base::WeakPtr<RenderLoop> GetWeakPtr();
   base::WeakPtr<BrowserUiInterface> GetBrowserUiWeakPtr();
 
   void PerformControllerActionForTesting(ControllerTestInput controller_input);
   void SetUiExpectingActivityForTesting(
       UiTestActivityExpectation ui_expectation);
   void AcceptDoffPromptForTesting();
-
- protected:
-  device::mojom::XRInputSourceStatePtr ProcessControllerInputForWebXr(
-      const RenderInfo& render_info,
-      base::TimeTicks current_time);
-  void ForceExitVr();
-
-  const SlidingTimeDeltaAverage& ui_controller_update_time() const {
-    return ui_controller_update_time_;
-  }
-  const SlidingTimeDeltaAverage& ui_processing_time() const {
-    return ui_processing_time_;
-  }
+  void ProcessControllerInputForWebXr(const gfx::Transform& head_pose,
+                                      base::TimeTicks current_time);
+  void ConnectPresentingService(
+      device::mojom::VRDisplayInfoPtr display_info,
+      device::mojom::XRRuntimeSessionOptionsPtr options);
 
  private:
   // Position, hide and/or show UI elements, process input and update textures.
@@ -105,7 +104,7 @@ class VR_EXPORT RenderLoop {
   void ReportUiActivityResultForTesting(VrUiTestActivityResult result);
 
   std::unique_ptr<UiInterface> ui_;
-  CompositorDelegate* compositor_delegate_;
+  std::unique_ptr<CompositorDelegate> compositor_delegate_;
   SchedulerDelegate* scheduler_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_;
   std::unique_ptr<ControllerDelegate> controller_delegate_for_testing_;
@@ -118,6 +117,8 @@ class VR_EXPORT RenderLoop {
   std::unique_ptr<UiTestState> ui_test_state_;
   SlidingTimeDeltaAverage ui_processing_time_;
   SlidingTimeDeltaAverage ui_controller_update_time_;
+
+  base::WeakPtrFactory<RenderLoop> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderLoop);
 };

@@ -53,8 +53,8 @@ VrGLThread::~VrGLThread() {
   Stop();
 }
 
-base::WeakPtr<VrShellGl> VrGLThread::GetVrShellGl() {
-  return vr_shell_gl_->GetWeakPtr();
+base::WeakPtr<RenderLoop> VrGLThread::GetRenderLoop() {
+  return render_loop_->GetWeakPtr();
 }
 
 void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
@@ -64,13 +64,13 @@ void VrGLThread::SetInputConnection(VrInputConnection* input_connection) {
 
 void VrGLThread::Init() {
   ui_factory_ = std::make_unique<UiFactory>();
-  vr_shell_gl_ = RenderLoopFactory::Create(this, ui_factory_.get(),
+  render_loop_ = RenderLoopFactory::Create(this, ui_factory_.get(),
                                            std::move(factory_params_));
-  weak_browser_ui_ = vr_shell_gl_->GetBrowserUiWeakPtr();
+  weak_browser_ui_ = render_loop_->GetBrowserUiWeakPtr();
 }
 
 void VrGLThread::CleanUp() {
-  vr_shell_gl_.reset();
+  render_loop_.reset();
 }
 
 void VrGLThread::ContentSurfaceCreated(jobject surface,
@@ -168,9 +168,7 @@ void VrGLThread::ExitPresent() {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VrShell::ExitPresent, weak_vr_shell_));
-  // TODO(vollick): Ui should hang onto the appropriate pointer rather than
-  // bouncing through VrGLThread.
-  vr_shell_gl_->OnExitPresent();
+  render_loop_->OnExitPresent();
 }
 
 void VrGLThread::ExitFullscreen() {

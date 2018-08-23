@@ -23,18 +23,19 @@
 namespace vr {
 
 RenderLoop::RenderLoop(std::unique_ptr<UiInterface> ui,
-                       CompositorDelegate* compositor_delegate,
+                       std::unique_ptr<CompositorDelegate> compositor_delegate,
                        SchedulerDelegate* scheduler_delegate,
                        std::unique_ptr<ControllerDelegate> controller_delegate,
                        RenderLoopBrowserInterface* browser,
                        size_t sliding_time_size)
     : ui_(std::move(ui)),
-      compositor_delegate_(compositor_delegate),
+      compositor_delegate_(std::move(compositor_delegate)),
       scheduler_delegate_(scheduler_delegate),
       controller_delegate_(std::move(controller_delegate)),
       browser_(browser),
       ui_processing_time_(sliding_time_size),
-      ui_controller_update_time_(sliding_time_size) {
+      ui_controller_update_time_(sliding_time_size),
+      weak_ptr_factory_(this) {
   compositor_delegate_->SetUiInterface(ui_.get());
 }
 
@@ -62,6 +63,10 @@ void RenderLoop::Draw(CompositorDelegate::FrameType frame_type,
     DrawBrowserUi(render_info);
   }
 
+  TRACE_COUNTER2("gpu", "VR UI timing (us)", "scene update",
+                 ui_processing_time_.GetAverage().InMicroseconds(),
+                 "controller",
+                 ui_controller_update_time_.GetAverage().InMicroseconds());
   compositor_delegate_->SubmitFrame(frame_type);
 }
 
@@ -116,14 +121,26 @@ void RenderLoop::DrawBrowserUi(const RenderInfo& render_info) {
 void RenderLoop::OnPause() {
   DCHECK(controller_delegate_);
   controller_delegate_->OnPause();
-  scheduler_delegate_->OnSchedulerPause();
+  scheduler_delegate_->OnPause();
   ui_->OnPause();
 }
 
 void RenderLoop::OnResume() {
   DCHECK(controller_delegate_);
-  scheduler_delegate_->OnSchedulerResume();
+  scheduler_delegate_->OnResume();
   controller_delegate_->OnResume();
+}
+
+void RenderLoop::OnExitPresent() {
+  scheduler_delegate_->OnExitPresent();
+}
+
+void RenderLoop::OnTriggerEvent(bool pressed) {
+  scheduler_delegate_->OnTriggerEvent(pressed);
+}
+
+void RenderLoop::SetWebXrMode(bool enabled) {
+  scheduler_delegate_->SetWebXrMode(enabled);
 }
 
 void RenderLoop::OnSwapContents(int new_content_id) {
@@ -188,9 +205,19 @@ void RenderLoop::CancelToast() {
   ui_->CancelPlatformToast();
 }
 
+void RenderLoop::ResumeContentRendering() {
+  compositor_delegate_->ResumeContentRendering();
+}
+
 void RenderLoop::ContentBoundsChanged(int width, int height) {
   TRACE_EVENT0("gpu", __func__);
   ui_->OnContentBoundsChanged(width, height);
+}
+
+void RenderLoop::BufferBoundsChanged(const gfx::Size& content_buffer_size,
+                                     const gfx::Size& overlay_buffer_size) {
+  compositor_delegate_->BufferBoundsChanged(content_buffer_size,
+                                            overlay_buffer_size);
 }
 
 base::WeakPtr<BrowserUiInterface> RenderLoop::GetBrowserUiWeakPtr() {
@@ -227,7 +254,7 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
   if (ui_->SceneHasDirtyTextures()) {
     if (!compositor_delegate_->RunInSkiaContext(base::BindOnce(
             &UiInterface::UpdateSceneTextures, base::Unretained(ui_.get())))) {
-      ForceExitVr();
+      browser_->ForceExitVr();
       return;
     }
     ui_updated = true;
@@ -237,23 +264,30 @@ void RenderLoop::UpdateUi(const RenderInfo& render_info,
   base::TimeDelta scene_time = base::TimeTicks::Now() - timing_start;
   // Don't double-count the controller time that was part of the scene time.
   ui_processing_time_.AddSample(scene_time - controller_time);
-  TRACE_EVENT_END0("gpu", "SceneUpdate");
 }
 
-device::mojom::XRInputSourceStatePtr RenderLoop::ProcessControllerInputForWebXr(
-    const RenderInfo& render_info,
-    base::TimeTicks current_time) {
+void RenderLoop::ProcessControllerInputForWebXr(const gfx::Transform& head_pose,
+                                                base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", __func__);
   DCHECK(controller_delegate_);
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();
 
-  controller_delegate_->UpdateController(render_info, current_time, true);
+  controller_delegate_->UpdateController(head_pose, current_time, true);
   auto input_event_list = controller_delegate_->GetGestures(current_time);
   ui_->HandleMenuButtonEvents(&input_event_list);
 
   ui_controller_update_time_.AddSample(base::TimeTicks::Now() - timing_start);
-  return controller_delegate_->GetInputSourceState();
+
+  scheduler_delegate_->AddInputSourceState(
+      controller_delegate_->GetInputSourceState());
+}
+
+void RenderLoop::ConnectPresentingService(
+    device::mojom::VRDisplayInfoPtr display_info,
+    device::mojom::XRRuntimeSessionOptionsPtr options) {
+  compositor_delegate_->ConnectPresentingService(std::move(display_info),
+                                                 std::move(options));
 }
 
 base::TimeDelta RenderLoop::ProcessControllerInput(
@@ -264,11 +298,12 @@ base::TimeDelta RenderLoop::ProcessControllerInput(
   DCHECK(ui_);
   base::TimeTicks timing_start = base::TimeTicks::Now();
 
-  controller_delegate_->UpdateController(render_info, current_time, false);
+  controller_delegate_->UpdateController(render_info.head_pose, current_time,
+                                         false);
   auto input_event_list = controller_delegate_->GetGestures(current_time);
   ReticleModel reticle_model;
   ControllerModel controller_model =
-      controller_delegate_->GetModel(render_info);
+      controller_delegate_->GetModel(render_info.head_pose);
   ui_->HandleInput(current_time, render_info, controller_model, &reticle_model,
                    &input_event_list);
   ui_->OnControllerUpdated(controller_model, reticle_model);
@@ -276,10 +311,6 @@ base::TimeDelta RenderLoop::ProcessControllerInput(
   auto controller_time = base::TimeTicks::Now() - timing_start;
   ui_controller_update_time_.AddSample(controller_time);
   return controller_time;
-}
-
-void RenderLoop::ForceExitVr() {
-  browser_->ForceExitVr();
 }
 
 void RenderLoop::PerformControllerActionForTesting(
@@ -334,6 +365,10 @@ void RenderLoop::ReportUiStatusForTesting(const base::TimeTicks& current_time,
       ReportUiActivityResultForTesting(VrUiTestActivityResult::kTimeoutNoStart);
     }
   }
+}
+
+base::WeakPtr<RenderLoop> RenderLoop::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void RenderLoop::ReportUiActivityResultForTesting(
