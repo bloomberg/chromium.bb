@@ -32,6 +32,13 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
     // Called when a link with the given tracking ID is pressed.
     virtual void TrackClick(int tracking_id) = 0;
 
+    // Called to open suggested offline content when it is pressed.
+    virtual void LaunchOfflineItem(const std::string& id,
+                                   const std::string& name_space) = 0;
+
+    // Called to show all available offline content.
+    virtual void LaunchDownloadsPage() = 0;
+
    protected:
     Delegate();
     virtual ~Delegate();
@@ -77,6 +84,9 @@ class NetErrorPageController : public gin::Wrappable<NetErrorPageController> {
 
   // Used internally by other button click methods.
   bool ButtonClick(NetErrorHelperCore::Button button);
+
+  void LaunchOfflineItem(gin::Arguments* args);
+  void LaunchDownloadsPage();
 
   // gin::WrappableBase
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(

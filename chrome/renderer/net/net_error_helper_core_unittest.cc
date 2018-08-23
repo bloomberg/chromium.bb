@@ -36,6 +36,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -2612,6 +2613,10 @@ class FakeAvailableOfflineContentProvider
       std::move(callback).Run({});
     }
   }
+
+  MOCK_METHOD2(LaunchItem,
+               void(const std::string& item_ID, const std::string& name_space));
+  MOCK_METHOD0(LaunchDownloadsPage, void());
 
   void AddBinding(mojo::ScopedMessagePipeHandle handle) {
     bindings_.AddBinding(this,

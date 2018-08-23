@@ -52,6 +52,9 @@ extern const char kOfflinePageHeadeReasonValueFromProgressBar[];
 // The offline page should be loaded because the user clicks an offlined
 // suggested item.
 extern const char kOfflinePageHeadeReasonValueFromSuggestion[];
+// The offline page should be loaded because the user clicks on a offline
+// content suggestion on the net error page.
+extern const char kOfflinePageHeaderNetErrorSuggestion[];
 
 // The name used in name-value pair of kOfflinePageHeader to denote the offline
 // ID of the offline page to load.
@@ -75,6 +78,7 @@ struct OfflinePageHeader {
     CONTENT_URL_INTENT,
     PROGRESS_BAR,
     SUGGESTION,
+    NET_ERROR_SUGGESTION,
   };
 
   OfflinePageHeader();

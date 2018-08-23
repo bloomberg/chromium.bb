@@ -29,6 +29,10 @@ class AvailableOfflineContentHelper {
       base::OnceCallback<void(const std::string& offline_content_json)>
           callback);
 
+  // These methods just forward to the AvailableOfflineContentProvider.
+  void LaunchItem(const std::string& id, const std::string& name_space);
+  void LaunchDownloadsPage();
+
   // Abort previous requests and free the mojo connection.
   void Reset();
 

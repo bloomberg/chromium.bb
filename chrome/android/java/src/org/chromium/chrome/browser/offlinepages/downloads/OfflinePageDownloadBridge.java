@@ -38,6 +38,7 @@ import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.LaunchLocation;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.widget.Toast;
@@ -95,12 +96,33 @@ public class OfflinePageDownloadBridge {
                     boolean openingFromDownloadsHome =
                             ApplicationStatus.getLastTrackedFocusedActivity()
                                     instanceof DownloadActivity;
-                    if (openInCct && openingFromDownloadsHome) {
+                    if (location == LaunchLocation.NET_ERROR_SUGGESTION) {
+                        openItemInCurrentTab(offlineId, params);
+                    } else if (openInCct && openingFromDownloadsHome) {
                         openItemInCct(offlineId, params);
                     } else {
                         openItemInNewTab(offlineId, params);
                     }
                 });
+    }
+
+    /**
+     * Opens the offline page identified by the given offlineId and the LoadUrlParams in the current
+     * tab. If no tab is current, the page is not opened.
+     * TODO(crbug.com/852872): The current tab could change at any time. We should instead pass the
+     *  tab or tab ID into this function to ensure we're using the right tab.
+     */
+    private static void openItemInCurrentTab(long offlineId, LoadUrlParams params) {
+        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
+        if (activity == null) return;
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(params.getUrl()));
+        setIntentHeaders(params, intent);
+        intent.putExtra(
+                Browser.EXTRA_APPLICATION_ID, activity.getApplicationContext().getPackageName());
+        intent.setPackage(activity.getApplicationContext().getPackageName());
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        IntentHandler.startActivityForTrustedIntent(intent);
     }
 
     /**
@@ -113,6 +135,14 @@ public class OfflinePageDownloadBridge {
                 : new AsyncTabCreationParams(params, componentName);
         final TabDelegate tabDelegate = new TabDelegate(false);
         tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI, Tab.INVALID_TAB_ID);
+    }
+
+    private static void setIntentHeaders(LoadUrlParams params, Intent intent) {
+        Bundle bundle = new Bundle();
+        for (Map.Entry<String, String> entry : params.getExtraHeaders().entrySet()) {
+            bundle.putString(entry.getKey(), entry.getValue());
+        }
+        intent.putExtra(Browser.EXTRA_HEADERS, bundle);
     }
 
     /**
@@ -143,11 +173,7 @@ public class OfflinePageDownloadBridge {
         IntentHandler.addTrustedIntentExtras(intent);
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        Bundle bundle = new Bundle();
-        for (Map.Entry<String, String> entry : params.getExtraHeaders().entrySet()) {
-            bundle.putString(entry.getKey(), entry.getValue());
-        }
-        intent.putExtra(Browser.EXTRA_HEADERS, bundle);
+        setIntentHeaders(params, intent);
 
         context.startActivity(intent);
     }

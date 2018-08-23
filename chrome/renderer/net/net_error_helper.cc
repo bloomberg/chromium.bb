@@ -159,6 +159,15 @@ void NetErrorHelper::TrackClick(int tracking_id) {
   core_->TrackClick(tracking_id);
 }
 
+void NetErrorHelper::LaunchOfflineItem(const std::string& id,
+                                       const std::string& name_space) {
+  core_->LaunchOfflineItem(id, name_space);
+}
+
+void NetErrorHelper::LaunchDownloadsPage() {
+  core_->LaunchDownloadsPage();
+}
+
 void NetErrorHelper::SendCommand(
     security_interstitials::SecurityInterstitialCommand command) {
   security_interstitials::mojom::InterstitialCommandsAssociatedPtr interface;

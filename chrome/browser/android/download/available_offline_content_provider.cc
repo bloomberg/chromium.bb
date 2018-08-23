@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/chrome_feature_list.h"
+#include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
@@ -221,6 +222,20 @@ void AvailableOfflineContentProvider::List(ListCallback callback) {
       OfflineContentAggregatorFactory::GetForBrowserContext(browser_context_);
   aggregator->GetAllItems(base::BindOnce(ListFinalize, std::move(callback),
                                          base::Unretained(aggregator)));
+}
+
+void AvailableOfflineContentProvider::LaunchItem(
+    const std::string& item_id,
+    const std::string& name_space) {
+  offline_items_collection::OfflineContentAggregator* aggregator =
+      OfflineContentAggregatorFactory::GetForBrowserContext(browser_context_);
+  aggregator->OpenItem(
+      offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION,
+      offline_items_collection::ContentId(name_space, item_id));
+}
+
+void AvailableOfflineContentProvider::LaunchDownloadsPage() {
+  DownloadManagerService::GetInstance()->ShowDownloadManager();
 }
 
 void AvailableOfflineContentProvider::Create(

@@ -21,6 +21,8 @@ enum class LaunchLocation {
   PROGRESS_BAR,
   // Due to clicking a suggested item in NTP.
   SUGGESTION,
+  // Due to clicking a suggestion on the net error page.
+  NET_ERROR_SUGGESTION,
 };
 
 }  // namespace offline_items_collection

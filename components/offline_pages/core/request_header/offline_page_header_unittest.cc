@@ -121,6 +121,14 @@ TEST_F(OfflinePageHeaderTest, Parse) {
   EXPECT_EQ("", id);
   EXPECT_TRUE(intent_url.is_empty());
 
+  EXPECT_TRUE(ParseFromHeaderValue("reason=net_error_suggestion",
+                                   &need_to_persist, &reason, &id,
+                                   &intent_url));
+  EXPECT_FALSE(need_to_persist);
+  EXPECT_EQ(OfflinePageHeader::Reason::NET_ERROR_SUGGESTION, reason);
+  EXPECT_EQ("", id);
+  EXPECT_TRUE(intent_url.is_empty());
+
   // Parse id field.
   EXPECT_TRUE(ParseFromHeaderValue("id=a1b2", &need_to_persist, &reason, &id,
                                    &intent_url));

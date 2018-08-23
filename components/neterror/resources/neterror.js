@@ -154,25 +154,48 @@ var primaryControlOnLeft = true;
 primaryControlOnLeft = false;
 // </if>
 
+function getSuggestedContentDiv(item) {
+  var visual = '';
+    if (item.thumbnail_data_uri) {
+      // html_inline.py will try to replace src attributes with data URIs using
+      // a simple regex. The following is obfuscated slightly to avoid that.
+      var src = 'src';
+      visual = `<img ${src}="${item.thumbnail_data_uri}">`;
+    }
+  return `
+<div class="offline-suggestion"
+  onclick="launchOfflineItem('${item.ID}', '${item.name_space}')">
+  <div class="offline-suggestion-image">${visual}</div>
+  <div>
+    <div class="offline-suggestion-title">${item.title}</div>
+    <span class="offline-suggestion-attribution">${item.attribution}</span>
+    <span class="offline-suggestion-freshness">${item.date_modified}</span>
+  </div>
+</div>`;
+}
+
+function launchOfflineItem(itemID, name_space) {
+  errorPageController.launchOfflineItem(itemID, name_space);
+}
+
+function launchDownloadsPage() {
+  errorPageController.launchDownloadsPage();
+}
+
 // Populates suggested offline content. Note: this UI is in development.
 // See https://crbug.com/852872.
 function offlineContentAvailable(content) {
   var div = document.getElementById('offline-suggestions');
-  var suggestionText = [];
-  for (var c of content) {
-    var visual = '';
-    if (c.thumbnail_data_uri) {
-      // html_inline.py will try to replace src attributes with data URIs using
-      // a simple regex. The following is obfuscated slightly to avoid that.
-      var src = 'src';
-      visual = `<img ${src}="${c.thumbnail_data_uri}"` +
-        ' class="suggested-thumbnail"></img>';
-    }
-    suggestionText.push(
-      `<li>${visual} ${c.title} ${c.date_modified} ${c.attribution}</li>`);
-  }
+  var suggestionsHTML = [];
+  for (var c of content)
+    suggestionsHTML.push(getSuggestedContentDiv(c));
+
+  suggestionsHTML.push(`
+<div>
+  <a onclick="launchDownloadsPage()">See All Offline Content [PLACEHOLDER]</a>
+</div>`);
   var htmlList = document.getElementById('offline-content-list');
-  htmlList.innerHTML = suggestionText.join('\n');
+  htmlList.innerHTML = suggestionsHTML.join('\n');
   div.hidden = false;
   document.getElementById('scroll-spacer').hidden = false;
   document.getElementById('suggestions-list').hidden = true;

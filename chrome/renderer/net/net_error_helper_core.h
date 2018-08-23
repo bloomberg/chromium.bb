@@ -215,6 +215,12 @@ class NetErrorHelperCore {
   // the same tracking ID are ignored.
   void TrackClick(int tracking_id);
 
+  // Opens a suggested offline item.
+  void LaunchOfflineItem(const std::string& id, const std::string& name_space);
+
+  // Shows all available offline content.
+  void LaunchDownloadsPage();
+
  private:
   struct ErrorPageInfo;
 

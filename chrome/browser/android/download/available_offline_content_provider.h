@@ -27,6 +27,9 @@ class AvailableOfflineContentProvider
 
   // chrome::mojom::AvailableOfflineContentProvider methods.
   void List(ListCallback callback) override;
+  void LaunchItem(const std::string& item_id,
+                  const std::string& name_space) override;
+  void LaunchDownloadsPage() override;
 
   static void Create(
       content::BrowserContext* browser_context,

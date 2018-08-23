@@ -1062,3 +1062,16 @@ void NetErrorHelperCore::TrackClick(int tracking_id) {
       committed_error_page_info_->navigation_correction_params->url,
       request_body);
 }
+
+void NetErrorHelperCore::LaunchOfflineItem(const std::string& id,
+                                           const std::string& name_space) {
+#if defined(OS_ANDROID)
+  available_content_helper_.LaunchItem(id, name_space);
+#endif
+}
+
+void NetErrorHelperCore::LaunchDownloadsPage() {
+#if defined(OS_ANDROID)
+  available_content_helper_.LaunchDownloadsPage();
+#endif
+}
