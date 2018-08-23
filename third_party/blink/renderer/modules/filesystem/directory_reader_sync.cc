@@ -100,10 +100,7 @@ EntrySyncHeapVector DirectoryReaderSync::readEntries(
         ErrorCallbackHelper::Create(this), DOMFileSystemBase::kSynchronous);
   }
 
-  if (error_code_ == FileError::kOK && has_more_entries_ &&
-      entries_.IsEmpty()) {
-    CHECK(Filesystem()->WaitForAdditionalResult(callbacks_id_));
-  }
+  DCHECK(!has_more_entries_);
 
   if (error_code_ != FileError::kOK) {
     FileError::ThrowDOMException(exception_state, error_code_);

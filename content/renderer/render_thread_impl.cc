@@ -773,7 +773,6 @@ void RenderThreadImpl::Init() {
       GetWebMainThreadScheduler()->IPCTaskRunner());
   dom_storage_dispatcher_.reset(new DomStorageDispatcher());
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
-  file_system_dispatcher_.reset(new FileSystemDispatcher());
 
   vc_manager_.reset(new VideoCaptureImplManager());
 
@@ -1015,7 +1014,6 @@ RenderThreadImpl::~RenderThreadImpl() {
 
 void RenderThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
-  file_system_dispatcher_.reset();
   WebFileSystemImpl::DeleteThreadSpecificInstance();
   // In a multi-process mode, we immediately exit the renderer.
   // Historically we had a graceful shutdown sequence here but it was

@@ -37,8 +37,8 @@ namespace content {
 class FileSystemOperationListenerImpl;
 
 // Dispatches and sends file system related messages sent to/from a child
-// process from/to the main browser process.  There is one instance
-// per child process.
+// process from/to the main browser process. There is an instance held by
+// each WebFileSystemImpl and WebFileWriterImpl object.
 class FileSystemDispatcher {
  public:
   typedef base::Callback<void(base::File::Error error)> StatusCallback;
@@ -68,57 +68,115 @@ class FileSystemDispatcher {
                               storage::QuotaLimitType quota_policy)>
       OpenFileCallback;
 
-  FileSystemDispatcher();
+  explicit FileSystemDispatcher(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~FileSystemDispatcher();
 
   void OpenFileSystem(const GURL& origin_url,
                       storage::FileSystemType type,
                       const OpenFileSystemCallback& success_callback,
                       const StatusCallback& error_callback);
+  void OpenFileSystemSync(const GURL& origin_url,
+                          storage::FileSystemType type,
+                          const OpenFileSystemCallback& success_callback,
+                          const StatusCallback& error_callback);
+
   void ResolveURL(const GURL& filesystem_url,
                   const ResolveURLCallback& success_callback,
                   const StatusCallback& error_callback);
+  void ResolveURLSync(const GURL& filesystem_url,
+                      const ResolveURLCallback& success_callback,
+                      const StatusCallback& error_callback);
+
   void Move(const GURL& src_path,
             const GURL& dest_path,
             const StatusCallback& callback);
+  void MoveSync(const GURL& src_path,
+                const GURL& dest_path,
+                const StatusCallback& callback);
+
   void Copy(const GURL& src_path,
             const GURL& dest_path,
             const StatusCallback& callback);
+  void CopySync(const GURL& src_path,
+                const GURL& dest_path,
+                const StatusCallback& callback);
+
   void Remove(const GURL& path, bool recursive, const StatusCallback& callback);
+  void RemoveSync(const GURL& path,
+                  bool recursive,
+                  const StatusCallback& callback);
+
   void ReadMetadata(const GURL& path,
                     const MetadataCallback& success_callback,
                     const StatusCallback& error_callback);
+  void ReadMetadataSync(const GURL& path,
+                        const MetadataCallback& success_callback,
+                        const StatusCallback& error_callback);
+
   void CreateFile(const GURL& path,
                   bool exclusive,
                   const StatusCallback& callback);
+  void CreateFileSync(const GURL& path,
+                      bool exclusive,
+                      const StatusCallback& callback);
+
   void CreateDirectory(const GURL& path,
                        bool exclusive,
                        bool recursive,
                        const StatusCallback& callback);
+  void CreateDirectorySync(const GURL& path,
+                           bool exclusive,
+                           bool recursive,
+                           const StatusCallback& callback);
+
   void Exists(const GURL& path,
               bool for_directory,
               const StatusCallback& callback);
+  void ExistsSync(const GURL& path,
+                  bool for_directory,
+                  const StatusCallback& callback);
+
   void ReadDirectory(const GURL& path,
                      const ReadDirectoryCallback& success_callback,
                      const StatusCallback& error_callback);
+  void ReadDirectorySync(const GURL& path,
+                         const ReadDirectoryCallback& success_callback,
+                         const StatusCallback& error_callback);
+
   void Truncate(const GURL& path,
                 int64_t offset,
                 int* request_id_out,
                 const StatusCallback& callback);
+  void TruncateSync(const GURL& path,
+                    int64_t offset,
+                    const StatusCallback& callback);
+
   void Write(const GURL& path,
              const std::string& blob_id,
              int64_t offset,
              int* request_id_out,
              const WriteCallback& success_callback,
              const StatusCallback& error_callback);
+  void WriteSync(const GURL& path,
+                 const std::string& blob_id,
+                 int64_t offset,
+                 const WriteCallback& success_callback,
+                 const StatusCallback& error_callback);
+
   void Cancel(int request_id_to_cancel, const StatusCallback& callback);
   void TouchFile(const GURL& file_path,
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time,
                  const StatusCallback& callback);
+
   void CreateSnapshotFile(const GURL& file_path,
                           const CreateSnapshotFileCallback& success_callback,
                           const StatusCallback& error_callback);
+  void CreateSnapshotFileSync(
+      const GURL& file_path,
+      const CreateSnapshotFileCallback& success_callback,
+      const StatusCallback& error_callback);
 
  private:
   class CallbackDispatcher;
@@ -160,8 +218,6 @@ class FileSystemDispatcher {
     cancellable_operations_.erase(request_id);
   }
 
-  void OnConnectionErrorHandler();
-
   blink::mojom::FileSystemManager& GetFileSystemManager();
 
   blink::mojom::FileSystemManagerPtr file_system_manager_ptr_;
@@ -174,6 +230,8 @@ class FileSystemDispatcher {
   using OperationsMap =
       std::unordered_map<int, blink::mojom::FileSystemCancellableOperationPtr>;
   OperationsMap cancellable_operations_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcher);
 };

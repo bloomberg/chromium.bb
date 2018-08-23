@@ -99,6 +99,22 @@ class FileSystemManagerImpl::ReceivedSnapshotListenerImpl
   FileSystemManagerImpl* const file_system_manager_impl_;
 };
 
+struct FileSystemManagerImpl::WriteSyncCallbackEntry {
+  WriteSyncCallback callback;
+  int64_t bytes;
+
+  explicit WriteSyncCallbackEntry(WriteSyncCallback cb)
+      : callback(std::move(cb)), bytes(0) {}
+};
+
+struct FileSystemManagerImpl::ReadDirectorySyncCallbackEntry {
+  ReadDirectorySyncCallback callback;
+  std::vector<filesystem::mojom::DirectoryEntryPtr> entries;
+
+  explicit ReadDirectorySyncCallbackEntry(ReadDirectorySyncCallback cb)
+      : callback(std::move(cb)) {}
+};
+
 FileSystemManagerImpl::FileSystemManagerImpl(
     int process_id,
     storage::FileSystemContext* file_system_context,
@@ -346,6 +362,30 @@ void FileSystemManagerImpl::ReadDirectory(
                                GetWeakPtr(), listener_id));
 }
 
+void FileSystemManagerImpl::ReadDirectorySync(
+    const GURL& path,
+    ReadDirectorySyncCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  FileSystemURL url(context_->CrackURL(path));
+  base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
+  if (opt_error) {
+    std::move(callback).Run(std::vector<filesystem::mojom::DirectoryEntryPtr>(),
+                            opt_error.value());
+    return;
+  }
+  if (!security_policy_->CanReadFileSystemFile(process_id_, url)) {
+    std::move(callback).Run(std::vector<filesystem::mojom::DirectoryEntryPtr>(),
+                            base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  operation_runner()->ReadDirectory(
+      url, base::BindRepeating(
+               &FileSystemManagerImpl::DidReadDirectorySync, GetWeakPtr(),
+               base::Owned(
+                   new ReadDirectorySyncCallbackEntry(std::move(callback)))));
+}
+
 void FileSystemManagerImpl::Write(
     const GURL& file_path,
     const std::string& blob_uuid,
@@ -378,6 +418,32 @@ void FileSystemManagerImpl::Write(
       std::move(op_request));
 }
 
+void FileSystemManagerImpl::WriteSync(const GURL& file_path,
+                                      const std::string& blob_uuid,
+                                      int64_t position,
+                                      WriteSyncCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  FileSystemURL url(context_->CrackURL(file_path));
+  base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
+  if (opt_error) {
+    std::move(callback).Run(0, opt_error.value());
+    return;
+  }
+  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
+    std::move(callback).Run(0, base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+  std::unique_ptr<storage::BlobDataHandle> blob =
+      blob_storage_context_->context()->GetBlobDataFromUUID(blob_uuid);
+
+  operation_runner()->Write(
+      url, std::move(blob), position,
+      base::BindRepeating(
+          &FileSystemManagerImpl::DidWriteSync, GetWeakPtr(),
+          base::Owned(new WriteSyncCallbackEntry(std::move(callback)))));
+}
+
 void FileSystemManagerImpl::Truncate(
     const GURL& file_path,
     int64_t length,
@@ -402,6 +468,27 @@ void FileSystemManagerImpl::Truncate(
   cancellable_operations_.AddBinding(
       std::make_unique<FileSystemCancellableOperationImpl>(op_id, this),
       std::move(op_request));
+}
+
+void FileSystemManagerImpl::TruncateSync(const GURL& file_path,
+                                         int64_t length,
+                                         TruncateSyncCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  FileSystemURL url(context_->CrackURL(file_path));
+  base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
+  if (opt_error) {
+    std::move(callback).Run(opt_error.value());
+    return;
+  }
+  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
+    std::move(callback).Run(base::File::FILE_ERROR_SECURITY);
+    return;
+  }
+
+  operation_runner()->Truncate(
+      url, length,
+      base::BindRepeating(&FileSystemManagerImpl::DidFinish, GetWeakPtr(),
+                          base::Passed(&callback)));
 }
 
 void FileSystemManagerImpl::TouchFile(const GURL& path,
@@ -546,6 +633,22 @@ void FileSystemManagerImpl::DidReadDirectory(
     RemoveOpListener(listener_id);
 }
 
+void FileSystemManagerImpl::DidReadDirectorySync(
+    ReadDirectorySyncCallbackEntry* callback_entry,
+    base::File::Error result,
+    std::vector<filesystem::mojom::DirectoryEntry> entries,
+    bool has_more) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const auto& entry : entries) {
+    callback_entry->entries.emplace_back(
+        filesystem::mojom::DirectoryEntry::New(std::move(entry)));
+  }
+  if (result != base::File::FILE_OK || !has_more) {
+    std::move(callback_entry->callback)
+        .Run(std::move(callback_entry->entries), result);
+  }
+}
+
 void FileSystemManagerImpl::DidWrite(OperationListenerID listener_id,
                                      base::File::Error result,
                                      int64_t bytes,
@@ -563,6 +666,15 @@ void FileSystemManagerImpl::DidWrite(OperationListenerID listener_id,
     listener->ErrorOccurred(result);
     RemoveOpListener(listener_id);
   }
+}
+
+void FileSystemManagerImpl::DidWriteSync(WriteSyncCallbackEntry* entry,
+                                         base::File::Error result,
+                                         int64_t bytes,
+                                         bool complete) {
+  entry->bytes += bytes;
+  if (complete || result != base::File::FILE_OK)
+    std::move(entry->callback).Run(entry->bytes, result);
 }
 
 void FileSystemManagerImpl::DidOpenFileSystem(

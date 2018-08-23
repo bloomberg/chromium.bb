@@ -128,7 +128,6 @@ class AudioRendererMixerManager;
 class BrowserPluginManager;
 class CategorizedWorkerPool;
 class DomStorageDispatcher;
-class FileSystemDispatcher;
 class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
 class IndexedDBDispatcher;
@@ -331,10 +330,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   DomStorageDispatcher* dom_storage_dispatcher() const {
     return dom_storage_dispatcher_.get();
-  }
-
-  FileSystemDispatcher* file_system_dispatcher() const {
-    return file_system_dispatcher_.get();
   }
 
   MidiMessageFilter* midi_message_filter() {
@@ -606,7 +601,6 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<blink::scheduler::WebThreadScheduler> main_thread_scheduler_;
   std::unique_ptr<RendererBlinkPlatformImpl> blink_platform_impl_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
-  std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
   std::unique_ptr<URLLoaderThrottleProvider> url_loader_throttle_provider_;
 
   // Used on the renderer and IPC threads.
