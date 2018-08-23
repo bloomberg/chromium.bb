@@ -73,8 +73,8 @@ BYTE* PEImageSafe::GetOptionalHeader() {
   PIMAGE_OPTIONAL_HEADER optional_header =
       reinterpret_cast<PIMAGE_OPTIONAL_HEADER>(
           reinterpret_cast<char*>(file_header) + sizeof(IMAGE_FILE_HEADER));
-  DWORD optional_header_offset = reinterpret_cast<char*>(optional_header) -
-                                 reinterpret_cast<char*>(dos_header_);
+  uintptr_t optional_header_offset = reinterpret_cast<char*>(optional_header) -
+                                     reinterpret_cast<char*>(dos_header_);
   if (optional_header_offset + sizeof(IMAGE_OPTIONAL_HEADER::Magic) >
       image_size_) {
     return nullptr;

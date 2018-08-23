@@ -4,6 +4,7 @@
 
 #include "chrome_elf/third_party_dlls/hook.h"
 
+#include <limits>
 #include <memory>
 
 #include <assert.h>
@@ -280,8 +281,15 @@ NTSTATUS NewNtMapViewOfSectionImpl(
   std::string image_name;
   std::string section_path;
   std::string section_basename;
-  if (!GetDataFromImage(*base, *view_size, &time_date_stamp, &image_size,
-                        &image_name, &section_path, &section_basename)) {
+
+  assert(*view_size < std::numeric_limits<DWORD>::max());
+  // A memory section can be > 32-bits, but an image/PE in memory can only be <=
+  // 32-bits in size.  That's a limitation of Windows and its interactions with
+  // processors.  No section that appears to be an image (checked above) should
+  // have such a large size.
+  if (!GetDataFromImage(*base, static_cast<DWORD>(*view_size), &time_date_stamp,
+                        &image_size, &image_name, &section_path,
+                        &section_basename)) {
     return ret;
   }
 

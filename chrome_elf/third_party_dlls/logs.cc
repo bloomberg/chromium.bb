@@ -122,9 +122,9 @@ class Log {
   //   logging events should be added via AddEntry().
   void InsertAtEnd(std::vector<LogEntryInternal>::iterator first_element,
                    uint32_t count) {
-    uint32_t elements = (entries_.size() + count <= kMaxLogEntries)
-                            ? count
-                            : kMaxLogEntries - entries_.size();
+    size_t elements = (entries_.size() + count <= kMaxLogEntries)
+                          ? count
+                          : kMaxLogEntries - entries_.size();
     assert(elements <= count);
 
     if (elements)
