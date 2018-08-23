@@ -32,18 +32,8 @@ AppWebContentsHelper::AppWebContentsHelper(
 // static
 bool AppWebContentsHelper::ShouldSuppressGestureEvent(
     const blink::WebGestureEvent& event) {
-  // Disable "smart zoom" (double-tap with two fingers on Mac trackpad).
-  if (event.GetType() == blink::WebInputEvent::kGestureDoubleTap)
-    return true;
-
   // Disable pinch zooming in app windows.
-  if (blink::WebInputEvent::IsPinchGestureEventType(event.GetType())) {
-    // Only suppress pinch events that cause a scale change. We still
-    // allow synthetic wheel events for touchpad pinch to go to the page.
-    return !event.NeedsWheelEvent();
-  }
-
-  return false;
+  return blink::WebInputEvent::IsPinchGestureEventType(event.GetType());
 }
 
 content::WebContents* AppWebContentsHelper::OpenURLFromTab(

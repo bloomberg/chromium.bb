@@ -683,11 +683,7 @@ bool GuestViewBase::ShouldFocusPageAfterCrash() {
 
 bool GuestViewBase::PreHandleGestureEvent(WebContents* source,
                                           const blink::WebGestureEvent& event) {
-  // Pinch events which cause a scale change should not be routed to a guest.
-  // We still allow synthetic wheel events for touchpad pinch to go to the page.
-  DCHECK(!blink::WebInputEvent::IsPinchGestureEventType(event.GetType()) ||
-         event.NeedsWheelEvent());
-  return false;
+  return blink::WebInputEvent::IsPinchGestureEventType(event.GetType());
 }
 
 void GuestViewBase::UpdatePreferredSize(WebContents* target_web_contents,
