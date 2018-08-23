@@ -237,12 +237,7 @@ mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
   return mojom::PdfCompositor::Status::SUCCESS;
 }
 
-sk_sp<SkPicture> PdfCompositorImpl::CompositeSubframe(uint64_t frame_guid) {
-  // The content of this frame should be available.
-  auto iter = frame_info_map_.find(frame_guid);
-  DCHECK(iter != frame_info_map_.end());
-
-  std::unique_ptr<FrameInfo>& frame_info = iter->second;
+void PdfCompositorImpl::CompositeSubframe(FrameInfo* frame_info) {
   frame_info->composited = true;
 
   // Composite subframes first.
@@ -250,11 +245,10 @@ sk_sp<SkPicture> PdfCompositorImpl::CompositeSubframe(uint64_t frame_guid) {
       GetDeserializationContext(frame_info->subframe_content_map);
 
   // Composite the entire frame.
-  SkMemoryStream stream(iter->second->serialized_content->memory(),
-                        iter->second->serialized_content->mapped_size());
+  SkMemoryStream stream(frame_info->serialized_content->memory(),
+                        frame_info->serialized_content->mapped_size());
   SkDeserialProcs procs = DeserializationProcs(&subframes);
-  iter->second->content = SkPicture::MakeFromStream(&stream, &procs);
-  return iter->second->content;
+  frame_info->content = SkPicture::MakeFromStream(&stream, &procs);
 }
 
 PdfCompositorImpl::DeserializationContext
@@ -268,9 +262,10 @@ PdfCompositorImpl::GetDeserializationContext(
     if (iter == frame_info_map_.end())
       continue;
 
-    subframes[content_id] = iter->second->composited
-                                ? iter->second->content
-                                : CompositeSubframe(iter->first);
+    FrameInfo* frame_info = iter->second.get();
+    if (!frame_info->composited)
+      CompositeSubframe(frame_info);
+    subframes[content_id] = frame_info->content;
   }
   return subframes;
 }
