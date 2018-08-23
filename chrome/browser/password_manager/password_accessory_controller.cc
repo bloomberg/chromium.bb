@@ -173,7 +173,7 @@ void PasswordAccessoryController::OnFilledIntoFocusedField(
     autofill::FillingStatus status) {
   if (status != autofill::FillingStatus::SUCCESS)
     return;                      // TODO(crbug/853766): Record success rate.
-  view_->OpenKeyboard();  // Bring up the keyboard for the still focused field.
+  view_->SwapSheetWithKeyboard();
 }
 
 void PasswordAccessoryController::RefreshSuggestionsForField(
@@ -184,7 +184,7 @@ void PasswordAccessoryController::RefreshSuggestionsForField(
     current_origin_ = origin;
     view_->OnItemsAvailable(CreateViewItems(origin, origin_suggestions_[origin],
                                             is_password_field));
-    view_->OpenKeyboard();  // Should happen automatically.
+    view_->SwapSheetWithKeyboard();
   } else {
     // For unfillable fields, reset the origin and send the empty state message.
     current_origin_ = url::Origin();

@@ -30,7 +30,7 @@ class PasswordAccessoryViewAndroid : public PasswordAccessoryViewInterface {
   void OnItemsAvailable(const std::vector<AccessoryItem>& items) override;
   void OnAutomaticGenerationStatusChanged(bool available) override;
   void CloseAccessorySheet() override;
-  void OpenKeyboard() override;
+  void SwapSheetWithKeyboard() override;
 
   // Called from Java via JNI:
   void OnFaviconRequested(

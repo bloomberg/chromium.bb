@@ -75,8 +75,8 @@ class PasswordAccessoryBridge {
     }
 
     @CalledByNative
-    private void openKeyboard() {
-        mManualFillingCoordinator.openKeyboard();
+    private void swapSheetWithKeyboard() {
+        mManualFillingCoordinator.swapSheetWithKeyboard();
     }
 
     @CalledByNative

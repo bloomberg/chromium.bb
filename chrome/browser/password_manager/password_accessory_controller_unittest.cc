@@ -65,7 +65,7 @@ class MockPasswordAccessoryView : public PasswordAccessoryViewInterface {
   MOCK_METHOD0(OnViewDestroyed, void());
   MOCK_METHOD1(OnAutomaticGenerationStatusChanged, void(bool));
   MOCK_METHOD0(CloseAccessorySheet, void());
-  MOCK_METHOD0(OpenKeyboard, void());
+  MOCK_METHOD0(SwapSheetWithKeyboard, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordAccessoryView);
@@ -259,7 +259,7 @@ class PasswordAccessoryControllerTest : public ChromeRenderViewHostTestHarness {
         mock_dialog_factory_.Get(), favicon_service());
     NavigateAndCommit(GURL(kExampleSite));
     EXPECT_CALL(*view(), CloseAccessorySheet()).Times(AnyNumber());
-    EXPECT_CALL(*view(), OpenKeyboard()).Times(AnyNumber());
+    EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(AnyNumber());
   }
 
   PasswordAccessoryController* controller() {
@@ -406,12 +406,12 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 TEST_F(PasswordAccessoryControllerTest, ClosesViewOnSuccessfullFillingOnly) {
   // If the filling wasn't successful, no call is expected.
   EXPECT_CALL(*view(), CloseAccessorySheet()).Times(0);
-  EXPECT_CALL(*view(), OpenKeyboard()).Times(0);
+  EXPECT_CALL(*view(), SwapSheetWithKeyboard()).Times(0);
   controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NOT_ALLOWED);
   controller()->OnFilledIntoFocusedField(FillingStatus::ERROR_NO_VALID_FIELD);
 
   // If the filling completed successfully, let the view know.
-  EXPECT_CALL(*view(), OpenKeyboard());
+  EXPECT_CALL(*view(), SwapSheetWithKeyboard());
   controller()->OnFilledIntoFocusedField(FillingStatus::SUCCESS);
 }
 
@@ -421,7 +421,8 @@ TEST_F(PasswordAccessoryControllerTest, ClosesViewWhenRefreshingSuggestions) {
   EXPECT_CALL(*view(), OnItemsAvailable(_)).Times(AnyNumber());
 
   EXPECT_CALL(*view(), CloseAccessorySheet());
-  EXPECT_CALL(*view(), OpenKeyboard()).Times(0);  // Don't touch the keyboard!
+  EXPECT_CALL(*view(), SwapSheetWithKeyboard())
+      .Times(0);  // Don't touch the keyboard!
   controller()->RefreshSuggestionsForField(
       url::Origin::Create(GURL(kExampleSite)),
       /*is_fillable=*/false,

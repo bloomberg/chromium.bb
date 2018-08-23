@@ -72,10 +72,10 @@ public class ManualFillingCoordinator {
     }
 
     /**
-     * Tries to reopen the keyboard which will implicitly show the keyboard accessory bar again.
+     * Opens the keyboard which implicitly dismisses the sheet. Without open sheet, this is a NoOp.
      */
-    public void openKeyboard() {
-        mMediator.onOpenKeyboard();
+    public void swapSheetWithKeyboard() {
+        mMediator.swapSheetWithKeyboard();
     }
 
     void registerActionProvider(
