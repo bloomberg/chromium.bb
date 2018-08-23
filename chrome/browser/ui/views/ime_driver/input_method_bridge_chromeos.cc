@@ -70,3 +70,8 @@ void InputMethodBridge::CancelComposition() {
   if (IsActiveInputContextHandler(input_method_chromeos_.get()))
     input_method_chromeos_->CancelComposition(client_.get());
 }
+
+void InputMethodBridge::ShowVirtualKeyboardIfEnabled() {
+  if (IsActiveInputContextHandler(input_method_chromeos_.get()))
+    input_method_chromeos_->ShowVirtualKeyboardIfEnabled();
+}

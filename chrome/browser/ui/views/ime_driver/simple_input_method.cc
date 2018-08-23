@@ -11,13 +11,24 @@ SimpleInputMethod::SimpleInputMethod() {}
 SimpleInputMethod::~SimpleInputMethod() {}
 
 void SimpleInputMethod::OnTextInputTypeChanged(
-    ui::TextInputType text_input_type) {}
+    ui::TextInputType text_input_type) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
 
-void SimpleInputMethod::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {}
+void SimpleInputMethod::OnCaretBoundsChanged(const gfx::Rect& caret_bounds) {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
 
 void SimpleInputMethod::ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
                                         ProcessKeyEventCallback callback) {
+  NOTIMPLEMENTED_LOG_ONCE();
   std::move(callback).Run(false);
 }
 
-void SimpleInputMethod::CancelComposition() {}
+void SimpleInputMethod::CancelComposition() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}
+
+void SimpleInputMethod::ShowVirtualKeyboardIfEnabled() {
+  NOTIMPLEMENTED_LOG_ONCE();
+}

@@ -1389,7 +1389,8 @@ ui::InputMethodKeyboardController*
 InputMethodManagerImpl::GetInputMethodKeyboardController() {
   // Callers expect a nullptr when the keyboard is disabled. See
   // https://crbug.com/850020.
-  return keyboard::KeyboardController::Get()->enabled()
+  return keyboard::KeyboardController::HasInstance() &&
+                 keyboard::KeyboardController::Get()->enabled()
              ? keyboard::KeyboardController::Get()
              : nullptr;
 }
