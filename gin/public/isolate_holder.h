@@ -58,14 +58,28 @@ class GIN_EXPORT IsolateHolder {
     kCreateSnapshot,
   };
 
-  explicit IsolateHolder(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  // Isolate type used for UMA/UKM reporting:
+  // - kBlinkMainThread: the main isolate of Blink.
+  // - kBlinkWorkerThread: the isolate of a Blink worker.
+  // - kTest: used only in tests.
+  // - kUtility: the isolate of PDFium and ProxyResolver.
+  enum class IsolateType {
+    kBlinkMainThread,
+    kBlinkWorkerThread,
+    kTest,
+    kUtility
+  };
+
   IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                AccessMode access_mode);
+                IsolateType isolate_type);
+  IsolateHolder(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                AccessMode access_mode,
+                IsolateType isolate_type);
   IsolateHolder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       AccessMode access_mode,
       AllowAtomicsWaitMode atomics_wait_mode,
+      IsolateType isolate_type,
       IsolateCreationMode isolate_creation_mode = IsolateCreationMode::kNormal);
   ~IsolateHolder();
 
@@ -90,6 +104,8 @@ class GIN_EXPORT IsolateHolder {
   // This method returns if v8::Locker is needed to access isolate.
   AccessMode access_mode() const { return access_mode_; }
 
+  IsolateType isolate_type() const { return isolate_type_; }
+
   v8::SnapshotCreator* snapshot_creator() const {
     return snapshot_creator_.get();
   }
@@ -111,6 +127,7 @@ class GIN_EXPORT IsolateHolder {
   std::unique_ptr<PerIsolateData> isolate_data_;
   std::unique_ptr<V8IsolateMemoryDumpProvider> isolate_memory_dump_provider_;
   AccessMode access_mode_;
+  IsolateType isolate_type_;
 
   DISALLOW_COPY_AND_ASSIGN(IsolateHolder);
 };

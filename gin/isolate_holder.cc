@@ -31,23 +31,29 @@ const intptr_t* g_reference_table = nullptr;
 }  // namespace
 
 IsolateHolder::IsolateHolder(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : IsolateHolder(std::move(task_runner), AccessMode::kSingleThread) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    IsolateType isolate_type)
+    : IsolateHolder(std::move(task_runner),
+                    AccessMode::kSingleThread,
+                    isolate_type) {}
 
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    AccessMode access_mode)
+    AccessMode access_mode,
+    IsolateType isolate_type)
     : IsolateHolder(std::move(task_runner),
                     access_mode,
                     kAllowAtomicsWait,
+                    isolate_type,
                     IsolateCreationMode::kNormal) {}
 
 IsolateHolder::IsolateHolder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     AccessMode access_mode,
     AllowAtomicsWaitMode atomics_wait_mode,
+    IsolateType isolate_type,
     IsolateCreationMode isolate_creation_mode)
-    : access_mode_(access_mode) {
+    : access_mode_(access_mode), isolate_type_(isolate_type) {
   DCHECK(task_runner);
   DCHECK(task_runner->BelongsToCurrentThread());
 
