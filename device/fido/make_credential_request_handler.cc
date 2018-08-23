@@ -35,11 +35,6 @@ bool CheckIfAuthenticatorSelectionCriteriaAreSatisfied(
        !options.is_platform_device()) ||
       (authenticator_selection_criteria.authenticator_attachement() ==
            AuthenticatorAttachment::kCrossPlatform &&
-       options.is_platform_device()) ||
-      // TODO(crbug.com/873710): Reenable platform authenticators for kAny,
-      // once Touch ID is integrated into the UI.
-      (authenticator_selection_criteria.authenticator_attachement() ==
-           AuthenticatorAttachment::kAny &&
        options.is_platform_device())) {
     return false;
   }
@@ -78,9 +73,8 @@ base::flat_set<FidoTransportProtocol> GetTransportsAllowedByRP(
               FidoTransportProtocol::kNearFieldCommunication,
               FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
     case AttachmentType::kAny:
-      // TODO(crbug.com/873710): Re-enable platform authenticators for kAny,
-      // once Touch ID is integrated into the UI.
-      return {FidoTransportProtocol::kNearFieldCommunication,
+      return {FidoTransportProtocol::kInternal,
+              FidoTransportProtocol::kNearFieldCommunication,
               FidoTransportProtocol::kUsbHumanInterfaceDevice,
               FidoTransportProtocol::kBluetoothLowEnergy,
               FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
@@ -151,6 +145,27 @@ void MakeCredentialRequestHandler::HandleResponse(
   }
 
   OnAuthenticatorResponse(authenticator, response_code, std::move(response));
+}
+
+void MakeCredentialRequestHandler::SetPlatformAuthenticatorOrMarkUnavailable(
+    base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info) {
+  if (platform_authenticator_info) {
+    // TODO(crbug.com/873710): In the case of a request with
+    // AuthenticatorAttachment::kAny and when there is no embedder-provided
+    // transport selection UI, disable the platform authenticator to avoid the
+    // Touch ID fingerprint prompt competing with external devices.
+    const bool has_transport_selection_ui =
+        observer() && observer()->EmbedderControlsAuthenticatorDispatch(
+                          *platform_authenticator_info->authenticator);
+    if (authenticator_selection_criteria_.authenticator_attachement() ==
+            AuthenticatorSelectionCriteria::AuthenticatorAttachment::kAny &&
+        !has_transport_selection_ui) {
+      platform_authenticator_info = base::nullopt;
+    }
+  }
+
+  FidoRequestHandlerBase::SetPlatformAuthenticatorOrMarkUnavailable(
+      std::move(platform_authenticator_info));
 }
 
 }  // namespace device

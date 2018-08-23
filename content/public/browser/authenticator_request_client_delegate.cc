@@ -48,12 +48,16 @@ void AuthenticatorRequestClientDelegate::UpdateLastTransportUsed(
 void AuthenticatorRequestClientDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {}
 
+bool AuthenticatorRequestClientDelegate::EmbedderControlsAuthenticatorDispatch(
+    const device::FidoAuthenticator& authenticator) {
+  return false;
+}
+
 void AuthenticatorRequestClientDelegate::BluetoothAdapterPowerChanged(
     bool is_powered_on) {}
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorAdded(
-    const device::FidoAuthenticator& authenticator,
-    bool* hold_off_request) {}
+    const device::FidoAuthenticator& authenticator) {}
 
 void AuthenticatorRequestClientDelegate::FidoAuthenticatorRemoved(
     base::StringPiece device_id) {}

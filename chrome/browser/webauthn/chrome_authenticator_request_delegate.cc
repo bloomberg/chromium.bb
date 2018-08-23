@@ -63,17 +63,6 @@ bool IsWebAuthnUiEnabled() {
       switches::kWebAuthenticationUI);
 }
 
-bool ShouldDispatchRequestImmediately(
-    const device::FidoAuthenticator& authenticator) {
-  // TODO(hongjunchoi): Change this so that requests for BLE authenticators are
-  // not dispatched immediately if WebAuthN UI is enabled.
-  if (!IsWebAuthnUiEnabled())
-    return true;
-
-  return authenticator.AuthenticatorTransport() !=
-         device::FidoTransportProtocol::kInternal;
-}
-
 }  // namespace
 
 #if defined(OS_MACOSX)
@@ -267,12 +256,19 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
 #endif
 }
 
-void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
-    const device::FidoAuthenticator& authenticator,
-    bool* hold_off_request) {
-  if (!ShouldDispatchRequestImmediately(authenticator))
-    *hold_off_request = true;
+bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(
+    const device::FidoAuthenticator& authenticator) {
+  // TODO(hongjunchoi): Change this so that requests for BLE authenticators are
+  // not dispatched immediately if WebAuthN UI is enabled.
+  if (!IsWebAuthnUiEnabled())
+    return false;
 
+  return authenticator.AuthenticatorTransport() ==
+         device::FidoTransportProtocol::kInternal;
+}
+
+void ChromeAuthenticatorRequestDelegate::FidoAuthenticatorAdded(
+    const device::FidoAuthenticator& authenticator) {
   if (!IsWebAuthnUiEnabled())
     return;
 

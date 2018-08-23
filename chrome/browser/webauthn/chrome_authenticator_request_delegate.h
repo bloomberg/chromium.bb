@@ -79,8 +79,10 @@ class ChromeAuthenticatorRequestDelegate
   // device::FidoRequestHandlerBase::TransportAvailabilityObserver:
   void OnTransportAvailabilityEnumerated(
       device::FidoRequestHandlerBase::TransportAvailabilityInfo data) override;
-  void FidoAuthenticatorAdded(const device::FidoAuthenticator& authenticator,
-                              bool* hold_off_request) override;
+  bool EmbedderControlsAuthenticatorDispatch(
+      const device::FidoAuthenticator& authenticator) override;
+  void FidoAuthenticatorAdded(
+      const device::FidoAuthenticator& authenticator) override;
   void FidoAuthenticatorRemoved(base::StringPiece authenticator_id) override;
 
   // AuthenticatorRequestDialogModel::Observer:

@@ -92,9 +92,22 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     // This method will not be invoked until the observer is set.
     virtual void OnTransportAvailabilityEnumerated(
         TransportAvailabilityInfo data) = 0;
+
+    // If true, the request handler will defer dispatch of its request onto the
+    // given authenticator to the embedder. The embedder needs to call
+    // |StartAuthenticatorRequest| when it wants to initiate request dispatch.
+    //
+    // This method is invoked before |FidoAuthenticatorAdded|, and may be
+    // invoked multiple times for the same authenticator. Depending on the
+    // result, the request handler might decide not to make the authenticator
+    // available, in which case it never gets passed to
+    // |FidoAuthenticatorAdded|.
+    virtual bool EmbedderControlsAuthenticatorDispatch(
+        const FidoAuthenticator& authenticator) = 0;
+
     virtual void BluetoothAdapterPowerChanged(bool is_powered_on) = 0;
-    virtual void FidoAuthenticatorAdded(const FidoAuthenticator& authenticator,
-                                        bool* hold_off_request) = 0;
+    virtual void FidoAuthenticatorAdded(
+        const FidoAuthenticator& authenticator) = 0;
     virtual void FidoAuthenticatorRemoved(base::StringPiece device_id) = 0;
   };
 
@@ -136,7 +149,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // Set the platform authenticator for this request, if one is available.
   // |AuthenticatorImpl| must call this method after invoking |set_oberver| even
   // if no platform authenticator is available, in which case it passes nullptr.
-  void SetPlatformAuthenticatorOrMarkUnavailable(
+  virtual void SetPlatformAuthenticatorOrMarkUnavailable(
       base::Optional<PlatformAuthenticatorInfo> platform_authenticator_info);
 
   TransportAvailabilityInfo& transport_availability_info() {
