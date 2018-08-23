@@ -1247,6 +1247,17 @@ class SitePerProcessEmulatedTouchBrowserTest
         [](blink::WebInputEvent::Type expected_type,
            const gfx::Point& expected_position, content::InputEventAckSource,
            content::InputEventAckState, const blink::WebInputEvent& event) {
+#if defined(OS_WIN)
+          // Add some logging to diagnose a potential source of flake:
+          // the hypothesis is that something is causing the gesture
+          // stream to cancel before kGestureShowPress is generated, so
+          // we'll dump the event stream that we actually see in this case.
+          // https://crbug.com/833380.
+          if (expected_type == blink::WebInputEvent::kGestureShowPress) {
+            LOG(ERROR) << "Waiting for: kGestureShowPress: ack seen for "
+                       << blink::WebInputEvent::GetName(event.GetType());
+          }
+#endif
           if (event.GetType() != expected_type)
             return false;
 
