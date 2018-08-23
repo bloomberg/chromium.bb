@@ -53,6 +53,7 @@ source_set("dns") {
       "host_resolver_impl.cc",
       "host_resolver_proc.cc",
       "host_resolver_proc.h",
+      "host_resolver_source.h",
       "mapped_host_resolver.cc",
       "notify_watcher_mac.cc",
       "notify_watcher_mac.h",

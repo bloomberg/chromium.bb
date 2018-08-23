@@ -20,6 +20,7 @@
 #include "net/base/request_priority.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/host_cache.h"
+#include "net/dns/host_resolver_source.h"
 
 namespace base {
 class Value;
@@ -197,6 +198,16 @@ class NET_EXPORT HostResolver {
     // The initial net priority for the host resolution request.
     RequestPriority initial_priority = RequestPriority::DEFAULT_PRIORITY;
 
+    // The source to use for resolved addresses. Default allows the resolver to
+    // pick an appropriate source. Only affects use of big external sources (eg
+    // calling the system for resolution or using DNS). Even if a source is
+    // specified, results can still come from cache, resolving "localhost" or
+    // IP literals, etc.
+    HostResolverSource source = HostResolverSource::ANY;
+
+    // If |false|, results will not come from the host cache.
+    bool allow_cached_response = true;
+
     // If |true|, requests that the resolver include AddressList::canonical_name
     // in the results. If the resolver can do so without significant
     // performance impact, canonical_name may still be included even if
@@ -358,6 +369,7 @@ class NET_EXPORT HostResolver {
   static ResolveHostParameters RequestInfoToResolveHostParameters(
       const RequestInfo& request_info,
       RequestPriority priority);
+  static HostResolverSource FlagsToSource(HostResolverFlags flags);
   static HostResolverFlags ParametersToHostResolverFlags(
       const ResolveHostParameters& parameters);
 

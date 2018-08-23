@@ -198,26 +198,44 @@ HostResolver::ResolveHostParameters
 HostResolver::RequestInfoToResolveHostParameters(
     const HostResolver::RequestInfo& request_info,
     RequestPriority priority) {
+  // Flag that should only be set internally, not used in input.
+  DCHECK(!(request_info.host_resolver_flags() &
+           HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6));
+
   ResolveHostParameters parameters;
 
   parameters.dns_query_type =
       AddressFamilyToDnsQueryType(request_info.address_family());
   parameters.initial_priority = priority;
+  parameters.source = FlagsToSource(request_info.host_resolver_flags());
+  parameters.allow_cached_response = request_info.allow_cached_response();
+  parameters.include_canonical_name =
+      request_info.host_resolver_flags() & HOST_RESOLVER_CANONNAME;
+  parameters.loopback_only =
+      request_info.host_resolver_flags() & HOST_RESOLVER_LOOPBACK_ONLY;
   parameters.is_speculative = request_info.is_speculative();
 
   return parameters;
 }
 
 // static
+HostResolverSource HostResolver::FlagsToSource(HostResolverFlags flags) {
+  if (flags & HOST_RESOLVER_SYSTEM_ONLY)
+    return HostResolverSource::SYSTEM;
+
+  return HostResolverSource::ANY;
+}
+
+// static
 HostResolverFlags HostResolver::ParametersToHostResolverFlags(
     const ResolveHostParameters& parameters) {
   HostResolverFlags flags = 0;
-  if (parameters.include_canonical_name) {
+  if (parameters.source == HostResolverSource::SYSTEM)
+    flags |= HOST_RESOLVER_SYSTEM_ONLY;
+  if (parameters.include_canonical_name)
     flags |= HOST_RESOLVER_CANONNAME;
-  }
-  if (parameters.loopback_only) {
+  if (parameters.loopback_only)
     flags |= HOST_RESOLVER_LOOPBACK_ONLY;
-  }
   return flags;
 }
 

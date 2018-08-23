@@ -619,28 +619,11 @@ class HostResolverImpl::RequestImpl
               const HostPortPair& request_host,
               const base::Optional<ResolveHostParameters>& optional_parameters,
               base::WeakPtr<HostResolverImpl> resolver)
-      : RequestImpl(source_net_log,
-                    request_host,
-                    optional_parameters,
-                    0 /* host_resolver_flags */,
-                    true /* allow_cached_response */,
-                    resolver) {}
-
-  // Overload for use by the legacy Resolve() API. Has more advanced parameters
-  // not yet supported by the CreateRequest() API.
-  RequestImpl(const NetLogWithSource& source_net_log,
-              const HostPortPair& request_host,
-              const base::Optional<ResolveHostParameters>& optional_parameters,
-              HostResolverFlags host_resolver_flags,
-              bool allow_cached_response,
-              base::WeakPtr<HostResolverImpl> resolver)
       : source_net_log_(source_net_log),
         request_host_(request_host),
-        allow_cached_response_(allow_cached_response),
         parameters_(optional_parameters ? optional_parameters.value()
                                         : ResolveHostParameters()),
-        host_resolver_flags_(host_resolver_flags |
-                             ParametersToHostResolverFlags(parameters_)),
+        host_resolver_flags_(ParametersToHostResolverFlags(parameters_)),
         priority_(parameters_.initial_priority),
         job_(nullptr),
         resolver_(resolver),
@@ -727,8 +710,6 @@ class HostResolverImpl::RequestImpl
 
   const HostPortPair& request_host() const { return request_host_; }
 
-  bool allow_cached_response() const { return allow_cached_response_; }
-
   const ResolveHostParameters& parameters() const { return parameters_; }
 
   HostResolverFlags host_resolver_flags() const { return host_resolver_flags_; }
@@ -752,7 +733,6 @@ class HostResolverImpl::RequestImpl
   const NetLogWithSource source_net_log_;
 
   const HostPortPair request_host_;
-  const bool allow_cached_response_;
   const ResolveHostParameters parameters_;
   const HostResolverFlags host_resolver_flags_;
 
@@ -1374,7 +1354,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
         priority_tracker_(priority),
         proc_task_runner_(std::move(proc_task_runner)),
         had_non_speculative_request_(false),
-        had_dns_config_(false),
         num_occupied_job_slots_(0),
         dns_task_error_(OK),
         tick_clock_(tick_clock),
@@ -1627,8 +1606,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     net_log_.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_JOB_STARTED);
 
-    had_dns_config_ = resolver_->HaveDnsConfig();
-
     start_time_ = tick_clock_->NowTicks();
     base::TimeDelta queue_time = start_time_ - creation_time_;
     base::TimeDelta queue_time_after_change =
@@ -1638,16 +1615,28 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     DNS_HISTOGRAM_BY_PRIORITY("Net.DNS.JobQueueTimeAfterChange", priority(),
                               queue_time_after_change);
 
-    bool system_only =
-        (key_.host_resolver_flags & HOST_RESOLVER_SYSTEM_ONLY) != 0;
+    switch (key_.host_resolver_source) {
+      case HostResolverSource::ANY:
+        if (resolver_->HaveDnsConfig() &&
+            !ResemblesMulticastDNSName(key_.hostname)) {
+          StartDnsTask();
+        } else {
+          StartProcTask();
+        }
+        break;
+      case HostResolverSource::SYSTEM:
+        StartProcTask();
+        break;
+      case HostResolverSource::DNS:
+        // DNS source should not be requested unless the resolver is configured
+        // to handle it.
+        DCHECK(resolver_->HaveDnsConfig());
+
+        StartDnsTask();
+        break;
+    }
 
     // Caution: Job::Start must not complete synchronously.
-    if (!system_only && had_dns_config_ &&
-        !ResemblesMulticastDNSName(key_.hostname)) {
-      StartDnsTask();
-    } else {
-      StartProcTask();
-    }
   }
 
   // TODO(szym): Since DnsTransaction does not consume threads, we can increase
@@ -1998,9 +1987,6 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
   bool had_non_speculative_request_;
 
-  // Distinguishes measurements taken while DnsClient was fully configured.
-  bool had_dns_config_;
-
   // Number of slots occupied by this Job in resolver's PrioritizedDispatcher.
   unsigned num_occupied_job_slots_;
 
@@ -2158,7 +2144,6 @@ int HostResolverImpl::Resolve(const RequestInfo& info,
   auto request = std::make_unique<RequestImpl>(
       source_net_log, info.host_port_pair(),
       RequestInfoToResolveHostParameters(info, priority),
-      info.host_resolver_flags(), info.allow_cached_response(),
       weak_ptr_factory_.GetWeakPtr());
   auto wrapped_request =
       std::make_unique<LegacyRequestImpl>(std::move(request));
@@ -2188,9 +2173,9 @@ int HostResolverImpl::ResolveFromCache(const RequestInfo& info,
   Key key;
   int rv = ResolveLocally(
       info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
-      info.host_resolver_flags(), info.allow_cached_response(),
-      false /* allow_stale */, nullptr /* stale_info */, source_net_log,
-      addresses, &key);
+      FlagsToSource(info.host_resolver_flags()), info.host_resolver_flags(),
+      info.allow_cached_response(), false /* allow_stale */,
+      nullptr /* stale_info */, source_net_log, addresses, &key);
 
   LogFinishRequest(source_net_log, rv);
   return rv;
@@ -2211,8 +2196,9 @@ int HostResolverImpl::ResolveStaleFromCache(
   Key key;
   int rv = ResolveLocally(
       info.host_port_pair(), AddressFamilyToDnsQueryType(info.address_family()),
-      info.host_resolver_flags(), info.allow_cached_response(),
-      true /* allow_stale */, stale_info, source_net_log, addresses, &key);
+      FlagsToSource(info.host_resolver_flags()), info.host_resolver_flags(),
+      info.allow_cached_response(), true /* allow_stale */, stale_info,
+      source_net_log, addresses, &key);
   LogFinishRequest(source_net_log, rv);
   return rv;
 }
@@ -2349,9 +2335,9 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
   Key key;
   int rv = ResolveLocally(
       request->request_host(), request->parameters().dns_query_type,
-      request->host_resolver_flags(), request->allow_cached_response(),
-      false /* allow_stale */, nullptr /* stale_info */,
-      request->source_net_log(), &addresses, &key);
+      request->parameters().source, request->host_resolver_flags(),
+      request->parameters().allow_cached_response, false /* allow_stale */,
+      nullptr /* stale_info */, request->source_net_log(), &addresses, &key);
   if (rv == OK && !request->parameters().is_speculative) {
     request->set_address_results(
         EnsurePortOnAddressList(addresses, request->request_host().port()));
@@ -2372,6 +2358,7 @@ int HostResolverImpl::Resolve(RequestImpl* request) {
 
 int HostResolverImpl::ResolveLocally(const HostPortPair& host,
                                      DnsQueryType dns_query_type,
+                                     HostResolverSource source,
                                      HostResolverFlags flags,
                                      bool allow_cache,
                                      bool allow_stale,
@@ -2391,7 +2378,7 @@ int HostResolverImpl::ResolveLocally(const HostPortPair& host,
 
   // Build a key that identifies the request in the cache and in the
   // outstanding jobs map.
-  *key = GetEffectiveKeyForRequest(host.host(), dns_query_type, flags,
+  *key = GetEffectiveKeyForRequest(host.host(), dns_query_type, source, flags,
                                    ip_address_ptr, source_net_log);
 
   DCHECK(allow_stale == !!stale_info);
@@ -2619,6 +2606,7 @@ std::unique_ptr<HostResolverImpl::Job> HostResolverImpl::RemoveJob(Job* job) {
 HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     const std::string& hostname,
     DnsQueryType dns_query_type,
+    HostResolverSource source,
     HostResolverFlags flags,
     const IPAddress* ip_address,
     const NetLogWithSource& net_log) {
@@ -2639,7 +2627,7 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
     effective_flags |= HOST_RESOLVER_DEFAULT_FAMILY_SET_DUE_TO_NO_IPV6;
   }
 
-  return Key(hostname, effective_address_family, effective_flags);
+  return Key(hostname, effective_address_family, effective_flags, source);
 }
 
 bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {
