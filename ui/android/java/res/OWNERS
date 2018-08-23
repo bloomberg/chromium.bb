@@ -3,11 +3,13 @@
 # we don't want them.
 set noparent
 
-file://ui/android/java/res/OWNERS
-
-# New Tab Page changes only:
-mvanouwerkerk@chromium.org
-peconn@chromium.org
+bauerb@chromium.org
+dtrainor@chromium.org
+huayinz@chromium.org
+mdjones@chromium.org
+tedchoc@chromium.org
+twellington@chromium.org
+yusufo@chromium.org
 
 # COMPONENT: UI>Browser>Mobile
 # OS: Android
