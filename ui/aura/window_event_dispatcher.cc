@@ -861,7 +861,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
 }
 
 void WindowEventDispatcher::PostSynthesizeMouseMove() {
-  if (synthesize_mouse_move_)
+  if (synthesize_mouse_move_ || in_shutdown_)
     return;
   synthesize_mouse_move_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
@@ -873,6 +873,8 @@ void WindowEventDispatcher::PostSynthesizeMouseMove() {
 
 void WindowEventDispatcher::SynthesizeMouseMoveAfterChangeToWindow(
     Window* window) {
+  if (in_shutdown_)
+    return;
   if (window->IsVisible() &&
       window->ContainsPointInRoot(GetLastMouseLocationInRoot())) {
     PostSynthesizeMouseMove();
@@ -881,7 +883,7 @@ void WindowEventDispatcher::SynthesizeMouseMoveAfterChangeToWindow(
 
 ui::EventDispatchDetails WindowEventDispatcher::SynthesizeMouseMoveEvent() {
   DispatchDetails details;
-  if (!synthesize_mouse_move_)
+  if (!synthesize_mouse_move_ || in_shutdown_)
     return details;
   synthesize_mouse_move_ = false;
 

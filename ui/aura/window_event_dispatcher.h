@@ -64,6 +64,7 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   WindowEventDispatcher(WindowTreeHost* host, bool are_events_in_pixels);
   ~WindowEventDispatcher() override;
 
+  // Stops dispatching/synthesizing mouse events.
   void Shutdown();
 
   WindowTreeHost* host() { return host_; }
