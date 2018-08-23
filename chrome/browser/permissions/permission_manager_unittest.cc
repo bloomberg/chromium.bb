@@ -22,9 +22,12 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/permission_type.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_renderer_host.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
@@ -58,6 +61,8 @@ class PermissionManagerTestingProfile final : public TestingProfile {
 class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
  public:
   void OnPermissionChange(PermissionStatus permission) {
+    if (!quit_closure_.is_null())
+      quit_closure_.Run();
     callback_called_ = true;
     callback_result_ = permission;
   }
@@ -98,6 +103,19 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
         ->SetContentSettingDefaultScope(url_, url_, type, std::string(), value);
   }
 
+  int RequestPermission(PermissionType type,
+                        content::RenderFrameHost* rfh,
+                        const GURL& origin) {
+    base::RunLoop loop;
+    quit_closure_ = loop.QuitClosure();
+    int result = GetPermissionControllerDelegate()->RequestPermission(
+        type, rfh, origin, true,
+        base::Bind(&PermissionManagerTest::OnPermissionChange,
+                   base::Unretained(this)));
+    loop.Run();
+    return result;
+  }
+
   const GURL& url() const {
     return url_;
   }
@@ -125,6 +143,31 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
     return GetPermissionControllerDelegate()->pending_requests_.IsEmpty();
   }
 
+  // The header policy should only be set once on page load, so we refresh the
+  // page to simulate that.
+  void RefreshPageAndSetHeaderPolicy(content::RenderFrameHost** rfh,
+                                     blink::mojom::FeaturePolicyFeature feature,
+                                     const std::vector<std::string>& origins) {
+    content::RenderFrameHost* current = *rfh;
+    SimulateNavigation(&current, current->GetLastCommittedURL());
+    std::vector<url::Origin> parsed_origins;
+    for (const std::string& origin : origins)
+      parsed_origins.push_back(url::Origin::Create(GURL(origin)));
+    content::RenderFrameHostTester::For(current)->SimulateFeaturePolicyHeader(
+        feature, parsed_origins);
+    *rfh = current;
+  }
+
+  content::RenderFrameHost* AddChildRFH(content::RenderFrameHost* parent,
+                                        const char* origin) {
+    content::RenderFrameHost* result =
+        content::RenderFrameHostTester::For(parent)->AppendChild("");
+    content::RenderFrameHostTester::For(result)
+        ->InitializeRenderFrameIfNeeded();
+    SimulateNavigation(&result, GURL(origin));
+    return result;
+  }
+
  private:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -148,10 +191,18 @@ class PermissionManagerTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
+  void SimulateNavigation(content::RenderFrameHost** rfh, const GURL& url) {
+    auto navigation_simulator =
+        content::NavigationSimulator::CreateRendererInitiated(url, *rfh);
+    navigation_simulator->Commit();
+    *rfh = navigation_simulator->GetFinalRenderFrameHost();
+  }
+
   const GURL url_;
   const GURL other_url_;
   bool callback_called_;
   PermissionStatus callback_result_;
+  base::Closure quit_closure_;
   std::unique_ptr<PermissionManagerTestingProfile> profile_;
 };
 
@@ -487,29 +538,20 @@ TEST_F(PermissionManagerTest, SuppressPermissionRequests) {
   NavigateAndCommit(url());
 
   SetPermission(CONTENT_SETTINGS_TYPE_NOTIFICATIONS, CONTENT_SETTING_ALLOW);
-  GetPermissionControllerDelegate()->RequestPermission(
-      PermissionType::NOTIFICATIONS, main_rfh(), url(), true,
-      base::Bind(&PermissionManagerTest::OnPermissionChange,
-                 base::Unretained(this)));
+  RequestPermission(PermissionType::NOTIFICATIONS, main_rfh(), url());
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 
   vr::VrTabHelper* vr_tab_helper = vr::VrTabHelper::FromWebContents(contents);
   vr_tab_helper->SetIsInVr(true);
-  EXPECT_EQ(
-      kNoPendingOperation,
-      GetPermissionControllerDelegate()->RequestPermission(
-          PermissionType::NOTIFICATIONS, contents->GetMainFrame(), url(), false,
-          base::Bind(&PermissionManagerTest::OnPermissionChange,
-                     base::Unretained(this))));
+  EXPECT_EQ(kNoPendingOperation,
+            RequestPermission(PermissionType::NOTIFICATIONS,
+                              contents->GetMainFrame(), url()));
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::DENIED, callback_result());
 
   vr_tab_helper->SetIsInVr(false);
-  GetPermissionControllerDelegate()->RequestPermission(
-      PermissionType::NOTIFICATIONS, main_rfh(), url(), false,
-      base::Bind(&PermissionManagerTest::OnPermissionChange,
-                 base::Unretained(this)));
+  RequestPermission(PermissionType::NOTIFICATIONS, main_rfh(), url());
   EXPECT_TRUE(callback_called());
   EXPECT_EQ(PermissionStatus::GRANTED, callback_result());
 #endif
@@ -624,4 +666,99 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
               GetPermissionControllerDelegate()->GetCanonicalOrigin(
                   extensions_requesting_origin, embedding_origin));
   }
+}
+
+TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
+  const char* kOrigin1 = "https://example.com";
+  const char* kOrigin2 = "https://google.com";
+
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
+
+  NavigateAndCommit(GURL(kOrigin1));
+  content::RenderFrameHost* parent = main_rfh();
+
+  content::RenderFrameHost* child = AddChildRFH(parent, kOrigin2);
+
+  // By default the parent should be able to request access, but not the child.
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              parent, GURL(kOrigin1))
+                .content_setting);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  // Enabling geolocation by FP should allow the child to request access also.
+  RefreshPageAndSetHeaderPolicy(
+      &parent, blink::mojom::FeaturePolicyFeature::kGeolocation,
+      {kOrigin1, kOrigin2});
+  child = AddChildRFH(parent, kOrigin2);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  // When the child requests location a prompt should be displayed for the
+  // parent.
+  PermissionRequestManager::CreateForWebContents(web_contents());
+  PermissionRequestManager* manager =
+      PermissionRequestManager::FromWebContents(web_contents());
+  auto prompt_factory = std::make_unique<MockPermissionPromptFactory>(manager);
+  prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  prompt_factory->DocumentOnLoadCompletedInMainFrame();
+
+  RequestPermission(PermissionType::GEOLOCATION, child, GURL(kOrigin2));
+
+  EXPECT_TRUE(prompt_factory->RequestOriginSeen(GURL(kOrigin1)));
+
+  // Now the child frame should have location, as well as the parent frame.
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              parent, GURL(kOrigin1))
+                .content_setting);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  // Revoking access from the parent should cause the child not to have access
+  // either.
+  GetPermissionControllerDelegate()->ResetPermission(
+      PermissionType::GEOLOCATION, GURL(kOrigin1), GURL(kOrigin1));
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              parent, GURL(kOrigin1))
+                .content_setting);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  // If the parent changes its policy, the child should be blocked.
+  RefreshPageAndSetHeaderPolicy(
+      &parent, blink::mojom::FeaturePolicyFeature::kGeolocation, {kOrigin1});
+  child = AddChildRFH(parent, kOrigin2);
+
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              parent, GURL(kOrigin1))
+                .content_setting);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            GetPermissionControllerDelegate()
+                ->GetPermissionStatusForFrame(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              child, GURL(kOrigin2))
+                .content_setting);
+
+  prompt_factory.reset();
 }

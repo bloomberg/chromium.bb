@@ -86,8 +86,9 @@ bool GeolocationPermissionContextExtensions::DecidePermission(
     }
   }
 
-  if (extensions::GetViewType(web_contents) !=
-      extensions::VIEW_TYPE_TAB_CONTENTS) {
+  extensions::ViewType view_type = extensions::GetViewType(web_contents);
+  if (view_type != extensions::VIEW_TYPE_TAB_CONTENTS &&
+      view_type != extensions::VIEW_TYPE_INVALID) {
     // The tab may have gone away, or the request may not be from a tab at all.
     // TODO(mpcomplete): the request could be from a background page or
     // extension popup (web_contents will have a different ViewType). But why do
