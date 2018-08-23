@@ -1413,6 +1413,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       CloseSubmenu();
       break;
 
+#if !defined(OS_MACOSX)
     case ui::VKEY_APPS: {
       Button* hot_view = GetFirstHotTrackedView(pending_state_.item);
       if (hot_view) {
@@ -1432,6 +1433,7 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
       }
       break;
     }
+#endif
 
 #if defined(OS_WIN)
     // On Windows, pressing Alt and F10 keys should hide the menu to match the
