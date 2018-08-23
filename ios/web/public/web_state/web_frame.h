@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "url/gurl.h"
 
+namespace base {
+class Value;
+}
+
 namespace web {
 
 class WebFrame {
@@ -21,6 +25,21 @@ class WebFrame {
   virtual bool IsMainFrame() const = 0;
   // The security origin associated with this frame.
   virtual GURL GetSecurityOrigin() const = 0;
+
+  // Calls the JavaScript function |name| in the frame context. For example, to
+  // call __gCrWeb.form.trackFormMutations(delay), pass
+  // 'form.trackFormMutations' as |name| and the value for the delay parameter
+  // to |parameters|. |name| must point to a function in the __gCrWeb object.
+  // |parameters| is a vector of values that will be passed to the function.
+  // This method returns immediately without waiting for the JavaScript
+  // execution. Calling the function is best effort and it is possible the
+  // webpage DOM could change in a way which prevents the function from
+  // executing.
+  // Returns true if function call was requested, false otherwise. Function call
+  // may still fail even if this function returns true.
+  virtual bool CallJavaScriptFunction(
+      const std::string& name,
+      const std::vector<base::Value>& parameters) = 0;
 
   virtual ~WebFrame() {}
 

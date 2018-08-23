@@ -38,6 +38,14 @@ var frameId_ = null;
 var frameSymmetricKey_ = null;
 
 /**
+ * The ID of the last processed message. If a received message has an ID less
+ * than or equal to |lastReceivedMessageId_|, it will be ignored.
+ * @type {number}
+ * @private
+ */
+var lastReceivedMessageId_ = -1;
+
+/**
  * Returns the frameId associated with this frame. A new value will be created
  * for this frame the first time it is called. The frameId will persist as long
  * as this JavaScript context lives. For example, the frameId will be the same
@@ -59,6 +67,19 @@ __gCrWeb.frameMessaging['getFrameId'] = function() {
 };
 
 /**
+ * Returns whether or not frame messaging is supported for this frame.
+ * @returns true if frame messaging is supported, false otherwise.
+ */
+var isFrameMessagingSupported_ = function() {
+  // - Only secure contexts support the crypto.subtle API.
+  // - Even though iOS 10 supports window.crypto.webkitSubtle instead of
+  //   window.crypto.subtle, the AES-GCM cipher suite is not supported, so
+  //   support will only be used from the official WebCrypto API.
+  //   TODO(crbug.com/872818): Remove comment once only iOS 11+ is supported.
+  return window.isSecureContext && typeof window.crypto.subtle === 'object';
+}
+
+/**
  * Exports |frameSymmetricKey_| as a base64 string. Key will be created if it
  * does not already exist.
  * @param {function(string)} callback A callback to be run with the exported
@@ -67,23 +88,24 @@ __gCrWeb.frameMessaging['getFrameId'] = function() {
 var exportKey_ = function(callback) {
   // Early return with an empty key string if encryption is not supported in
   // this frame.
-  // - Insecure contexts do not support the crypto.subtle API.
-  // - Even though iOS 10 supports window.crypto.webkitSubtle instead of
-  //   window.crypto.subtle, the AES-GCM cipher suite is not supported, so
-  //   support will only be used from the official WebCrypto API.
-  //   TODO(crbug.com/872818): Remove comment once only iOS 11+ is supported.
-  if (!window.isSecureContext || !window.crypto.subtle) {
+  if (!isFrameMessagingSupported_()) {
     callback("");
     return;
   }
-  getFrameSymmetricKey_(function(key) {
-    window.crypto.subtle.exportKey('raw', key)
-        .then(function(/** @type {ArrayBuffer} */ k) {
-      var keyBytes = new Uint8Array(k);
-      var key64 = btoa(String.fromCharCode.apply(null, keyBytes));
-      callback(key64);
+  try {
+    getFrameSymmetricKey_(function(key) {
+      window.crypto.subtle.exportKey('raw', key)
+          .then(function(/** @type {ArrayBuffer} */ k) {
+        var keyBytes = new Uint8Array(k);
+        var key64 = btoa(String.fromCharCode.apply(null, keyBytes));
+        callback(key64);
+      });
     });
-  });
+  } catch (error) {
+    // AES-GCM will not be supported if a web developer overrode
+    // window.crypto.subtle with window.crypto.webkitSubtle on iOS 10.
+    callback("");
+  }
 };
 
 /**
@@ -110,6 +132,110 @@ var getFrameSymmetricKey_ = function(callback) {
 };
 
 /**
+ * Executes |functionName| on __gCrWeb with the given |parameters|.
+ * @param {!string} functionPath The function to execute on __gCrWeb. Components
+ *                  may be separated by periods. For example: messaging.function
+ * @param {!Array} parameters The parameters to pass to |functionName|.
+ * @return The return value of executing |functionName| or null if it couldn't
+ *         be executed.
+ */
+var callGCrWebFunction_ = function(functionPath, parameters) {
+  var functionReference = __gCrWeb;
+  var functionComponents = functionPath.split('.');
+  for (var component in functionComponents) {
+    functionReference = functionReference[component];
+    if (!functionReference) {
+      return null;
+    }
+  }
+  return functionReference.apply(null, parameters);
+}
+
+/**
+ * Decrypts and executes the function specified in |payload|.
+ * @param {!string} payload The encrypted message payload.
+ * @param {!string} iv The initialization vector used to encrypt the |payload|.
+ */
+var executeMessage_ = function(payload, iv) {
+  if (!frameSymmetricKey_) {
+    // Payload cannot be decrypted without a key. This message could be spam or
+    // sent by the native application by mistake.
+    return;
+  }
+
+  // Decode the base64 payload.
+  var encryptedFunctionArray =
+      new Uint8Array(Array.from(atob(payload)).map(function(a) {
+    return a.charCodeAt(0);
+  }));
+
+  // Decode the base64 initialization buffer.
+  var ivbuf = new Uint8Array(Array.from(atob(iv)).map(function(a) {
+    return a.charCodeAt(0);
+  }));
+
+  var algorithm = {'name': 'AES-GCM', iv: ivbuf};
+  getFrameSymmetricKey_(function(frameKey) {
+    window.crypto.subtle.decrypt(algorithm, frameKey, encryptedFunctionArray)
+        .then(function(decrypted) {
+      var callJSON =
+          String.fromCharCode.apply(null, new Uint8Array(decrypted));
+      var callDict = JSON.parse(callJSON);
+
+      // Verify that message id is valid.
+      if (!Number.isInteger(callDict['messageId']) ||
+          callDict['messageId'] <= lastReceivedMessageId_) {
+              return;
+      }
+      lastReceivedMessageId_ = callDict['messageId'];
+
+      if (typeof callDict['functionName'] !== 'string' ||
+          callDict['functionName'].length < 1 ||
+          !Array.isArray(callDict['parameters'])) {
+        return;
+      }
+
+      callGCrWebFunction_(callDict['functionName'], callDict['parameters']);
+    });
+  });
+};
+
+/**
+ * Routes an encrypted message to the targeted frame. Once the target frame is
+ * found, the |payload| will be decrypted and executed. This function is called
+ * by the native code.
+ * @param {!string} payload The encrypted message payload.
+ * @param {!string} iv The initialization vector used to encrypt the |payload|.
+ * @param {!string} target_frame_id The |frameId_| of the frame which should
+ *                  process the |payload|.
+ */
+__gCrWeb.frameMessaging['routeMessage'] =
+    function(payload, iv, target_frame_id) {
+  if (!isFrameMessagingSupported_()) {
+    // API is unsupported.
+    return;
+  }
+
+  if (target_frame_id === __gCrWeb.frameMessaging['getFrameId']()) {
+    executeMessage_(payload, iv);
+    return;
+  }
+
+  var framecount = window.frames.length;
+  for (var i = 0; i < framecount; i++) {
+    window.frames[i].postMessage(
+      {
+        type: 'org.chromium.encryptedMessage',
+        payload: payload,
+        iv: iv,
+        target_frame_id: target_frame_id
+      },
+      '*'
+    );
+  }
+};
+
+/**
  * Creates (or gets the existing) encryption key and sends it to the native
  * application.
  */
@@ -117,7 +243,8 @@ __gCrWeb.frameMessaging['registerFrame'] = function() {
   exportKey_(function(frameKey) {
     __gCrWeb.common.sendWebKitMessage('FrameBecameAvailable', {
       'crwFrameId': __gCrWeb.frameMessaging['getFrameId'](),
-      'crwFrameKey': frameKey
+      'crwFrameKey': frameKey,
+      'crwFrameLastReceivedMessageId': lastReceivedMessageId_
     });
   });
 };
