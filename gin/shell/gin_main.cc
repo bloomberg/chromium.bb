@@ -84,7 +84,9 @@ int main(int argc, char** argv) {
     gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                    gin::IsolateHolder::kStableV8Extras,
                                    gin::ArrayBufferAllocator::SharedInstance());
-    gin::IsolateHolder instance(base::ThreadTaskRunnerHandle::Get());
+    gin::IsolateHolder instance(
+        base::ThreadTaskRunnerHandle::Get(),
+        gin::IsolateHolder::IsolateType::kBlinkMainThread);
 
     gin::GinShellRunnerDelegate delegate;
     gin::ShellRunner runner(&delegate, instance.isolate());

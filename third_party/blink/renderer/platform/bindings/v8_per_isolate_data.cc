@@ -66,10 +66,13 @@ V8PerIsolateData::V8PerIsolateData(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     V8ContextSnapshotMode v8_context_snapshot_mode)
     : v8_context_snapshot_mode_(v8_context_snapshot_mode),
-      isolate_holder_(task_runner,
-                      gin::IsolateHolder::kSingleThread,
-                      IsMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
-                                     : gin::IsolateHolder::kAllowAtomicsWait),
+      isolate_holder_(
+          task_runner,
+          gin::IsolateHolder::kSingleThread,
+          IsMainThread() ? gin::IsolateHolder::kDisallowAtomicsWait
+                         : gin::IsolateHolder::kAllowAtomicsWait,
+          IsMainThread() ? gin::IsolateHolder::IsolateType::kBlinkMainThread
+                         : gin::IsolateHolder::IsolateType::kBlinkWorkerThread),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
       string_cache_(std::make_unique<StringCache>(GetIsolate())),
       private_property_(V8PrivateProperty::Create()),
@@ -94,6 +97,7 @@ V8PerIsolateData::V8PerIsolateData()
       isolate_holder_(Platform::Current()->MainThread()->GetTaskRunner(),
                       gin::IsolateHolder::kSingleThread,
                       gin::IsolateHolder::kAllowAtomicsWait,
+                      gin::IsolateHolder::IsolateType::kBlinkMainThread,
                       gin::IsolateHolder::IsolateCreationMode::kCreateSnapshot),
       interface_template_map_for_v8_context_snapshot_(GetIsolate()),
       string_cache_(std::make_unique<StringCache>(GetIsolate())),

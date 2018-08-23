@@ -61,7 +61,8 @@ void DataConsumerHandleTestUtil::Thread::Initialize() {
   DCHECK(thread_->IsCurrentThread());
   if (initialization_policy_ >= kScriptExecution) {
     isolate_holder_ = std::make_unique<gin::IsolateHolder>(
-        scheduler::GetSingleThreadTaskRunnerForTesting());
+        scheduler::GetSingleThreadTaskRunnerForTesting(),
+        gin::IsolateHolder::IsolateType::kTest);
     GetIsolate()->Enter();
   }
   thread_->InitializeOnThread();
