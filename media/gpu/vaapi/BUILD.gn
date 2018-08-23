@@ -65,8 +65,6 @@ source_set("vaapi") {
     "vaapi_h264_accelerator.h",
     "vaapi_jpeg_decode_accelerator.cc",
     "vaapi_jpeg_decode_accelerator.h",
-    "vaapi_jpeg_decoder.cc",
-    "vaapi_jpeg_decoder.h",
     "vaapi_jpeg_encode_accelerator.cc",
     "vaapi_jpeg_encode_accelerator.h",
     "vaapi_jpeg_encoder.cc",
