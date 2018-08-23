@@ -22,6 +22,6 @@ public class CustomShadowAsyncTask<Result> extends ShadowAsyncTask<Result> {
     @Override
     @Implementation
     public final AsyncTask<Result> executeOnExecutor(Executor executor) {
-        return super.execute();
+        return super.executeInRobolectric();
     }
 }
