@@ -21,6 +21,7 @@
 #include "build/build_config.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/vsync_provider.h"
+#include "ui/gl/egl_timestamps.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_surface.h"
@@ -103,7 +104,8 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
 };
 
 // Encapsulates an EGL surface bound to a view.
-class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
+class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL,
+                                         public EGLTimestampClient {
  public:
   NativeViewGLSurfaceEGL(EGLNativeWindowType window,
                          std::unique_ptr<gfx::VSyncProvider> vsync_provider);
@@ -144,6 +146,15 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
                             std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   bool FlipsVertically() const override;
   bool BuffersFlipped() const override;
+  EGLTimestampClient* GetEGLTimestampClient() override;
+
+  // EGLTimestampClient implementation.
+  bool IsEGLTimestampSupported() const override;
+
+  bool GetFrameTimestampInfoIfAvailable(base::TimeTicks* presentation_time,
+                                        base::TimeDelta* composite_interval,
+                                        uint32_t* presentation_flags,
+                                        int frame_id) override;
 
   // Takes care of the platform dependant bits, of any, for creating the window.
   virtual bool InitializeNativeWindow();
@@ -167,7 +178,6 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   // Commit the |pending_overlays_| and clear the vector. Returns false if any
   // fail to be committed.
   bool CommitAndClearPendingOverlays();
-
   void UpdateSwapEvents(EGLuint64KHR newFrameId, bool newFrameIdIsValid);
   void TraceSwapEvents(EGLuint64KHR oldFrameId);
 
@@ -190,6 +200,10 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   bool use_egl_timestamps_ = false;
   std::vector<EGLint> supported_egl_timestamps_;
   std::vector<const char*> supported_event_names_;
+
+  // PresentationFeedback support.
+  int presentation_feedback_index_ = -1;
+  uint32_t presentation_flags_ = 0;
 
   base::queue<SwapInfo> swap_info_queue_;
 
