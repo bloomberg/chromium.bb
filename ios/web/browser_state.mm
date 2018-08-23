@@ -23,9 +23,7 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
-#include "services/network/network_change_manager.h"
 #include "services/network/network_context.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
@@ -109,13 +107,6 @@ class BrowserStateServiceManagerConnectionHolder
   DISALLOW_COPY_AND_ASSIGN(BrowserStateServiceManagerConnectionHolder);
 };
 
-// Passed to NetworkConnectionTracker to bind a NetworkChangeManagerRequest.
-void BindNetworkChangeManagerRequest(
-    network::NetworkChangeManager* network_change_manager,
-    network::mojom::NetworkChangeManagerRequest request) {
-  network_change_manager->AddRequest(std::move(request));
-}
-
 }  // namespace
 
 // static
@@ -196,19 +187,6 @@ network::mojom::CookieManager* BrowserState::GetCookieManager() {
     network_context_->GetCookieManager(mojo::MakeRequest(&cookie_manager_));
   }
   return cookie_manager_.get();
-}
-
-network::NetworkConnectionTracker* BrowserState::GetNetworkConnectionTracker() {
-  if (!network_connection_tracker_) {
-    DCHECK(!network_change_manager_);
-    network_change_manager_ =
-        std::make_unique<network::NetworkChangeManager>(nullptr);
-    network_connection_tracker_ =
-        std::make_unique<network::NetworkConnectionTracker>(base::BindRepeating(
-            &BindNetworkChangeManagerRequest,
-            base::Unretained(network_change_manager_.get())));
-  }
-  return network_connection_tracker_.get();
 }
 
 void BrowserState::GetProxyResolvingSocketFactory(
