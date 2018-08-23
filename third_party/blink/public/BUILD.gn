@@ -416,6 +416,7 @@ source_set("blink_headers") {
     "web/web_associated_url_loader_options.h",
     "web/web_autofill_client.h",
     "web/web_autofill_state.h",
+    "web/web_ax_context.h",
     "web/web_ax_enums.h",
     "web/web_ax_object.h",
     "web/web_blob.h",

@@ -54,7 +54,6 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetAcceleratedCompositingEnabled(bool) override;
   void SetAutoplayPolicy(AutoplayPolicy) override;
   void SetPreferCompositingToLCDTextEnabled(bool) override;
-  void SetAccessibilityEnabled(bool) override;
   void SetAccessibilityPasswordValuesEnabled(bool) override;
   void SetAllowFileAccessFromFileURLs(bool) override;
   void SetAllowCustomScrollbarInMainFrame(bool) override;

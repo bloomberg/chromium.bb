@@ -2370,10 +2370,6 @@ void RenderFrameImpl::OnSetAccessibilityMode(ui::AXMode new_mode) {
     render_accessibility_ = new RenderAccessibilityImpl(this, new_mode);
   } else if (!new_mode.has_mode(ui::AXMode::kWebContents) &&
              old_mode.has_mode(ui::AXMode::kWebContents)) {
-    // Note: this isn't called automatically by the destructor because
-    // there'd be no point in calling it in frame teardown, only if there's
-    // an accessibility mode change but the frame is persisting.
-    render_accessibility_->DisableAccessibility();
     delete render_accessibility_;
     render_accessibility_ = nullptr;
   }

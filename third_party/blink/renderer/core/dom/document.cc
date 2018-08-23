@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v0_custom_element_constructor_builder.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_element_creation_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
@@ -1654,7 +1655,7 @@ void Document::UpdateTitle(const String& title) {
     return;
   DispatchDidReceiveTitle();
 
-  if (AXObjectCache* cache = GetOrCreateAXObjectCache())
+  if (AXObjectCache* cache = ExistingAXObjectCache())
     cache->DocumentTitleChanged();
 }
 
@@ -2824,8 +2825,10 @@ void Document::Shutdown() {
   }
   sequential_focus_navigation_starting_point_ = nullptr;
 
-  if (this == &AXObjectCacheOwner())
+  if (this == &AXObjectCacheOwner()) {
+    ax_contexts_.clear();
     ClearAXObjectCache();
+  }
 
   layout_view_ = nullptr;
   ContainerNode::DetachLayoutTree();
@@ -2924,13 +2927,54 @@ Document& Document::AXObjectCacheOwner() const {
   return *doc;
 }
 
+void Document::AddAXContext(AXContext* context) {
+  // The only case when |&cache_owner| is not |this| is when this is a
+  // pop-up. We want pop-ups to share the AXObjectCache of their parent
+  // document. However, there's no valid reason to explicitly create an
+  // AXContext for a pop-up document, so check to make sure we're not
+  // trying to do that here.
+  DCHECK_EQ(&AXObjectCacheOwner(), this);
+
+  // If the document has already been detached, do not make a new AXObjectCache.
+  if (!GetLayoutView())
+    return;
+
+  ax_contexts_.push_back(context);
+  if (ax_contexts_.size() != 1)
+    return;
+
+  if (!ax_object_cache_)
+    ax_object_cache_ = AXObjectCache::Create(*this);
+}
+
+void Document::RemoveAXContext(AXContext* context) {
+  auto** iter =
+      std::find_if(ax_contexts_.begin(), ax_contexts_.end(),
+                   [&context](const auto& item) { return item == context; });
+  if (iter != ax_contexts_.end())
+    ax_contexts_.erase(iter);
+  if (ax_contexts_.size() == 0)
+    ClearAXObjectCache();
+}
+
 void Document::ClearAXObjectCache() {
   DCHECK_EQ(&AXObjectCacheOwner(), this);
+
   // Clear the cache member variable before calling delete because attempts
   // are made to access it during destruction.
   if (ax_object_cache_)
     ax_object_cache_->Dispose();
   ax_object_cache_.Clear();
+
+  // If there's at least one AXContext in scope and there's still a LayoutView
+  // around, recreate an empty AXObjectCache.
+  //
+  // TODO(dmazzoni): right now ClearAXObjectCache() is being used as a way
+  // to invalidate / reset the AXObjectCache while keeping it around. We
+  // should rewrite that as a method on AXObjectCache rather than destroying
+  // and recreating it here.
+  if (ax_contexts_.size() > 0 && GetLayoutView())
+    ax_object_cache_ = AXObjectCache::Create(*this);
 }
 
 AXObjectCache* Document::ExistingAXObjectCache() const {
@@ -2941,28 +2985,6 @@ AXObjectCache* Document::ExistingAXObjectCache() const {
   if (!cache_owner.GetLayoutView())
     return nullptr;
 
-  return cache_owner.ax_object_cache_.Get();
-}
-
-AXObjectCache* Document::GetOrCreateAXObjectCache() const {
-  Settings* settings = GetSettings();
-  if (!settings || !settings->GetAccessibilityEnabled())
-    return nullptr;
-
-  // Every document has its own AXObjectCache if accessibility is enabled,
-  // except for page popups (such as select popups or context menus),
-  // which share the AXObjectCache of their owner.
-  //
-  // See http://crbug.com/532249
-  Document& cache_owner = AXObjectCacheOwner();
-
-  // If the document has already been detached, do not make a new axObjectCache.
-  if (!cache_owner.GetLayoutView())
-    return nullptr;
-
-  DCHECK(&cache_owner == this || !ax_object_cache_);
-  if (!cache_owner.ax_object_cache_)
-    cache_owner.ax_object_cache_ = AXObjectCache::Create(cache_owner);
   return cache_owner.ax_object_cache_.Get();
 }
 
@@ -3431,7 +3453,7 @@ void Document::ImplicitClose() {
   load_event_progress_ = kLoadEventCompleted;
 
   if (GetFrame() && GetLayoutView()) {
-    if (AXObjectCache* cache = GetOrCreateAXObjectCache()) {
+    if (AXObjectCache* cache = ExistingAXObjectCache()) {
       if (this == &AXObjectCacheOwner())
         cache->HandleLoadComplete(this);
       else
@@ -4758,7 +4780,7 @@ bool Document::SetFocusedElement(Element* new_focused_element,
   if (!focus_change_blocked && focused_element_) {
     // Create the AXObject cache in a focus change because Chromium relies on
     // it.
-    if (AXObjectCache* cache = GetOrCreateAXObjectCache()) {
+    if (AXObjectCache* cache = ExistingAXObjectCache()) {
       cache->HandleFocusedUIElementChanged(old_focused_element,
                                            new_focused_element);
     }

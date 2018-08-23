@@ -162,9 +162,6 @@ AXObject* AXObjectCacheImpl::FocusedImageMapUIElement(
 }
 
 AXObject* AXObjectCacheImpl::FocusedObject() {
-  if (!AccessibilityEnabled())
-    return nullptr;
-
   Node* focused_node = document_->FocusedElement();
   if (!focused_node)
     focused_node = document_;
@@ -1032,13 +1029,6 @@ void AXObjectCacheImpl::InlineTextBoxesUpdated(
 
 Settings* AXObjectCacheImpl::GetSettings() {
   return document_->GetSettings();
-}
-
-bool AXObjectCacheImpl::AccessibilityEnabled() {
-  Settings* settings = this->GetSettings();
-  if (!settings)
-    return false;
-  return settings->GetAccessibilityEnabled();
 }
 
 bool AXObjectCacheImpl::InlineTextBoxAccessibilityEnabled() {

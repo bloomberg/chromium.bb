@@ -14,6 +14,7 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+class WebAXContext;
 class WebLocalFrame;
 class WebString;
 class WebView;
@@ -61,6 +62,8 @@ class AccessibilityController {
 
   blink::WebView* web_view();
   WebViewTestProxyBase* web_view_test_proxy_base_;
+
+  std::unique_ptr<blink::WebAXContext> ax_context_;
 
   base::WeakPtrFactory<AccessibilityController> weak_factory_;
 

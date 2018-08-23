@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -26,7 +27,6 @@ class AccessibilityTest : public RenderingTest {
 
  protected:
   void SetUp() override;
-  void TearDown() override;
 
   AXObjectCacheImpl& GetAXObjectCache() const;
 
@@ -43,6 +43,8 @@ class AccessibilityTest : public RenderingTest {
   std::ostringstream& PrintAXTreeHelper(std::ostringstream&,
                                         const AXObject* root,
                                         size_t level) const;
+
+  std::unique_ptr<AXContext> ax_context_;
 };
 
 }  // namespace blink

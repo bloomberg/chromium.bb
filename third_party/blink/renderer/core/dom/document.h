@@ -83,6 +83,7 @@ enum class PageVisibilityState : int32_t;
 }  // namespace mojom
 
 class AnimationClock;
+class AXContext;
 class AXObjectCache;
 class Attr;
 class CDATASection;
@@ -593,9 +594,12 @@ class CORE_EXPORT Document : public ContainerNode,
 
   LayoutView* GetLayoutView() const { return layout_view_; }
 
-  Document& AXObjectCacheOwner() const;
+  // This will return an AXObjectCache only if there's one or more
+  // AXContext associated with this document. When all associated
+  // AXContexts are deleted, the AXObjectCache will be removed.
   AXObjectCache* ExistingAXObjectCache() const;
-  AXObjectCache* GetOrCreateAXObjectCache() const;
+
+  Document& AXObjectCacheOwner() const;
   void ClearAXObjectCache();
 
   // to get visually ordered hebrew and arabic pages right
@@ -1490,6 +1494,10 @@ class CORE_EXPORT Document : public ContainerNode,
                            DuringOnFreeze);
   class NetworkStateObserver;
 
+  friend class AXContext;
+  void AddAXContext(AXContext*);
+  void RemoveAXContext(AXContext*);
+
   bool IsDocumentFragment() const =
       delete;  // This will catch anyone doing an unnecessary check.
   bool IsDocumentNode() const =
@@ -1721,6 +1729,7 @@ class CORE_EXPORT Document : public ContainerNode,
   String raw_title_;
   Member<Element> title_element_;
 
+  Vector<AXContext*> ax_contexts_;
   Member<AXObjectCache> ax_object_cache_;
   Member<DocumentMarkerController> markers_;
 

@@ -134,7 +134,6 @@ class WebSettings {
   // contents at an insecure URL. Otherwise, disallows it. The
   // LocalFrameClient set to the frame may override the value set by this
   // method.
-  virtual void SetAccessibilityEnabled(bool) = 0;
   virtual void SetAccessibilityPasswordValuesEnabled(bool) = 0;
   virtual void SetAllowFileAccessFromFileURLs(bool) = 0;
   virtual void SetAllowCustomScrollbarInMainFrame(bool) = 0;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 
 #include <memory>
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -487,21 +488,20 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
   LocalFrame* local_frame = document.GetFrame();
   if (!local_frame)
     return Response::Error("Frame is detached.");
-  std::unique_ptr<ScopedAXObjectCache> scoped_cache =
-      ScopedAXObjectCache::Create(document);
-  AXObjectCacheImpl* cache = ToAXObjectCacheImpl(scoped_cache->Get());
+  AXContext ax_context(document);
+  AXObjectCacheImpl& cache = ToAXObjectCacheImpl(ax_context.GetAXObjectCache());
 
-  AXObject* inspected_ax_object = cache->GetOrCreate(dom_node);
+  AXObject* inspected_ax_object = cache.GetOrCreate(dom_node);
   *nodes = protocol::Array<protocol::Accessibility::AXNode>::create();
   if (!inspected_ax_object || inspected_ax_object->AccessibilityIsIgnored()) {
     (*nodes)->addItem(BuildObjectForIgnoredNode(dom_node, inspected_ax_object,
                                                 fetch_relatives.fromMaybe(true),
-                                                *nodes, *cache));
+                                                *nodes, cache));
     return Response::OK();
   } else {
     (*nodes)->addItem(
         BuildProtocolAXObject(*inspected_ax_object, inspected_ax_object,
-                              fetch_relatives.fromMaybe(true), *nodes, *cache));
+                              fetch_relatives.fromMaybe(true), *nodes, cache));
   }
 
   if (!inspected_ax_object)
@@ -512,7 +512,7 @@ Response InspectorAccessibilityAgent::getPartialAXTree(
     return Response::OK();
 
   if (fetch_relatives.fromMaybe(true))
-    AddAncestors(*parent, inspected_ax_object, *nodes, *cache);
+    AddAncestors(*parent, inspected_ax_object, *nodes, cache);
 
   return Response::OK();
 }

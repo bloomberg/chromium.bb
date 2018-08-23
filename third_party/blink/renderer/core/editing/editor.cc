@@ -410,12 +410,9 @@ EphemeralRange Editor::SelectedRange() {
 }
 
 void Editor::RespondToChangedContents(const Position& position) {
-  if (GetFrame().GetSettings() &&
-      GetFrame().GetSettings()->GetAccessibilityEnabled()) {
-    Node* node = position.AnchorNode();
-    if (AXObjectCache* cache =
-            GetFrame().GetDocument()->ExistingAXObjectCache())
-      cache->HandleEditableTextContentChanged(node);
+  if (AXObjectCache* cache =
+          GetFrame().GetDocument()->ExistingAXObjectCache()) {
+    cache->HandleEditableTextContentChanged(position.AnchorNode());
   }
 
   GetSpellChecker().RespondToChangedContents();

@@ -15,6 +15,7 @@
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
+#include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_context_menu_data.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -1785,13 +1786,8 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   EXPECT_EQ(FloatSize(350, 260), visual_viewport.GetScrollOffset());
 }
 
-static void accessibilitySettings(WebSettings* settings) {
-  VisualViewportTest::ConfigureSettings(settings);
-  settings->SetAccessibilityEnabled(true);
-}
-
 TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
-  InitializeWithDesktopSettings(accessibilitySettings);
+  InitializeWithDesktopSettings();
 
   RegisterMockedHttpURLLoad("hit-test.html");
   NavigateTo(base_url_ + "hit-test.html");
@@ -1801,6 +1797,8 @@ TEST_P(VisualViewportTest, AccessibilityHitTestWhileZoomedIn) {
 
   WebDocument web_doc = WebView()->MainFrameImpl()->GetDocument();
   LocalFrameView& frame_view = *WebView()->MainFrameImpl()->GetFrameView();
+
+  WebAXContext ax_context(web_doc);
 
   WebView()->SetPageScaleFactor(2);
   WebView()->SetVisualViewportOffset(WebFloatPoint(200, 230));

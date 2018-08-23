@@ -9,6 +9,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -53,7 +54,8 @@ ComputedAccessibleNodePromiseResolver::ComputedAccessibleNodePromiseResolver(
     Element& element)
     : element_(element),
       resolver_(ScriptPromiseResolver::Create(script_state)),
-      resolve_with_node_(false) {}
+      resolve_with_node_(false),
+      ax_context_(std::make_unique<AXContext>(element_->GetDocument())) {}
 
 ScriptPromise ComputedAccessibleNodePromiseResolver::Promise() {
   return resolver_->Promise();
@@ -94,9 +96,8 @@ void ComputedAccessibleNodePromiseResolver::UpdateTreeAndResolve() {
 
   Document& document = element_->GetDocument();
   document.View()->UpdateLifecycleToCompositingCleanPlusScrolling();
-  AXObjectCache* cache = element_->GetDocument().GetOrCreateAXObjectCache();
-  DCHECK(cache);
-  AXID ax_id = cache->GetAXID(element_);
+  AXObjectCache& cache = ax_context_->GetAXObjectCache();
+  AXID ax_id = cache.GetAXID(element_);
 
   ComputedAccessibleNode* accessible_node =
       local_frame->GetOrCreateComputedAccessibleNode(ax_id, tree);
@@ -114,7 +115,10 @@ ComputedAccessibleNode* ComputedAccessibleNode::Create(AXID ax_id,
 ComputedAccessibleNode::ComputedAccessibleNode(AXID ax_id,
                                                WebComputedAXTree* tree,
                                                LocalFrame* frame)
-    : ax_id_(ax_id), tree_(tree), frame_(frame) {}
+    : ax_id_(ax_id),
+      tree_(tree),
+      frame_(frame),
+      ax_context_(std::make_unique<AXContext>(*frame->GetDocument())) {}
 
 ComputedAccessibleNode::~ComputedAccessibleNode() {}
 
@@ -124,7 +128,8 @@ bool ComputedAccessibleNode::atomic(bool& is_null) const {
 
 ScriptPromise ComputedAccessibleNode::ensureUpToDate(
     ScriptState* script_state) {
-  AXObjectCache* cache = frame_->GetDocument()->GetOrCreateAXObjectCache();
+  AXObjectCache* cache = frame_->GetDocument()->ExistingAXObjectCache();
+  DCHECK(cache);
   Element* element = cache->GetElementFromAXID(ax_id_);
   ComputedAccessibleNodePromiseResolver* resolver =
       ComputedAccessibleNodePromiseResolver::Create(script_state, *element);

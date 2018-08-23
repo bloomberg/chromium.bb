@@ -33,6 +33,7 @@
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 
+using blink::WebAXContext;
 using blink::WebAXObject;
 using blink::WebDocument;
 using blink::WebElement;
@@ -41,7 +42,6 @@ using blink::WebLocalFrame;
 using blink::WebNode;
 using blink::WebPoint;
 using blink::WebRect;
-using blink::WebScopedAXContext;
 using blink::WebSettings;
 using blink::WebView;
 
@@ -72,7 +72,7 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
     return;
 
   WebDocument document = render_frame->GetWebFrame()->GetDocument();
-  WebScopedAXContext context(document);
+  WebAXContext context(document);
   WebAXObject root = context.Root();
   if (!root.UpdateLayoutAndCheckValidity())
     return;
@@ -112,7 +112,6 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
   ack_token_ = g_next_ack_token++;
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();
-  settings->SetAccessibilityEnabled(true);
 
 #if defined(OS_ANDROID)
   // Password values are only passed through on Android.
@@ -128,6 +127,8 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
 
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
+    ax_context_.reset(new blink::WebAXContext(document));
+
     // It's possible that the webview has already loaded a webpage without
     // accessibility being enabled. Initialize the browser's cached
     // accessibility tree by sending it a notification.
@@ -137,6 +138,10 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
 }
 
 RenderAccessibilityImpl::~RenderAccessibilityImpl() {
+}
+
+void RenderAccessibilityImpl::DidCreateNewDocument() {
+  ax_context_.reset(new blink::WebAXContext(GetMainDocument()));
 }
 
 void RenderAccessibilityImpl::AccessibilityModeChanged() {
@@ -229,22 +234,6 @@ void RenderAccessibilityImpl::AccessibilityFocusedNodeChanged(
     HandleAXEvent(WebAXObject::FromWebDocument(document),
                   ax::mojom::Event::kBlur);
   }
-}
-
-void RenderAccessibilityImpl::DisableAccessibility() {
-  RenderView* render_view = render_frame_->GetRenderView();
-  if (!render_view)
-    return;
-
-  WebView* web_view = render_view->GetWebView();
-  if (!web_view)
-    return;
-
-  WebSettings* settings = web_view->GetSettings();
-  if (!settings)
-    return;
-
-  settings->SetAccessibilityEnabled(false);
 }
 
 void RenderAccessibilityImpl::HandleAXEvent(const blink::WebAXObject& obj,

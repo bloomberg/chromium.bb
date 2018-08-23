@@ -8,6 +8,7 @@
 #include "third_party/blink/public/platform/web_computed_ax_tree.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -39,6 +40,7 @@ class ComputedAccessibleNodePromiseResolver final
   Member<Element> element_;
   Member<ScriptPromiseResolver> resolver_;
   bool resolve_with_node_;
+  std::unique_ptr<AXContext> ax_context_;
 };
 
 class ComputedAccessibleNode : public ScriptWrappable {
@@ -105,6 +107,7 @@ class ComputedAccessibleNode : public ScriptWrappable {
   // This tree is owned by the RenderFrame.
   blink::WebComputedAXTree* tree_;
   Member<LocalFrame> frame_;
+  std::unique_ptr<AXContext> ax_context_;
 };
 
 }  // namespace blink

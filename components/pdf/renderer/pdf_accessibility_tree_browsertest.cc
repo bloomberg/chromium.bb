@@ -151,9 +151,7 @@ TEST_F(PdfAccessibilityTreeTest, TestAccessibilityDisabledDuringPDFLoad) {
 
   // Disable accessibility while the PDF is loading, make sure this
   // doesn't crash.
-  blink::WebView* web_view = render_frame->GetRenderView()->GetWebView();
-  blink::WebSettings* settings = web_view->GetSettings();
-  settings->SetAccessibilityEnabled(false);
+  render_frame->SetAccessibilityModeForTest(ui::AXMode());
 
   pdf_accessibility_tree.SetAccessibilityPageInfo(page_info_, text_runs_,
                                                   chars_);

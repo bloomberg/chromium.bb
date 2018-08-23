@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
@@ -1404,17 +1405,21 @@ DOMRect* Element::getBoundingClientRect() {
 }
 
 const AtomicString& Element::computedRole() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-  std::unique_ptr<ScopedAXObjectCache> cache =
-      ScopedAXObjectCache::Create(GetDocument());
-  return cache->Get()->ComputedRoleForNode(this);
+  Document& document = GetDocument();
+  if (!document.IsActive())
+    return g_null_atom;
+  document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  AXContext ax_context(document);
+  return ax_context.GetAXObjectCache().ComputedRoleForNode(this);
 }
 
 String Element::computedName() {
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-  std::unique_ptr<ScopedAXObjectCache> cache =
-      ScopedAXObjectCache::Create(GetDocument());
-  return cache->Get()->ComputedNameForNode(this);
+  Document& document = GetDocument();
+  if (!document.IsActive())
+    return String();
+  document.UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
+  AXContext ax_context(document);
+  return ax_context.GetAXObjectCache().ComputedNameForNode(this);
 }
 
 AccessibleNode* Element::ExistingAccessibleNode() const {

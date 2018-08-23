@@ -354,7 +354,7 @@ void ContainerNode::DidInsertNodeVector(
   }
   DispatchSubtreeModifiedEvent();
 
-  if (AXObjectCache* cache = GetDocument().GetOrCreateAXObjectCache())
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
     cache->DidInsertChildrenOfNode(this);
 }
 

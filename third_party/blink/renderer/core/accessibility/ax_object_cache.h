@@ -144,23 +144,6 @@ class CORE_EXPORT AXObjectCache
   DISALLOW_COPY_AND_ASSIGN(AXObjectCache);
 };
 
-class CORE_EXPORT ScopedAXObjectCache {
-  USING_FAST_MALLOC(ScopedAXObjectCache);
-
- public:
-  static std::unique_ptr<ScopedAXObjectCache> Create(Document&);
-  ~ScopedAXObjectCache();
-
-  AXObjectCache* Get();
-
- private:
-  explicit ScopedAXObjectCache(Document&);
-
-  Persistent<Document> document_;
-  Persistent<AXObjectCache> cache_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedAXObjectCache);
-};
-
 }  // namespace blink
 
 #endif
