@@ -2488,6 +2488,8 @@ jumbo_split_static_library("ui") {
 
     sources += cocoa_browser_sources
 
+    allow_circular_includes_from += [ "//chrome/browser/apps/app_shim" ]
+
     deps += [
       "//chrome/app/nibs:localizer_table",
       "//chrome/browser/apps/app_shim",

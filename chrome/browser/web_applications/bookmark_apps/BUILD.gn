@@ -19,7 +19,11 @@ source_set("bookmark_apps") {
   deps = [
     "//chrome/browser/extensions",
     "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications/components",
+    "//chrome/browser/web_applications/extensions",
     "//chrome/common",
+    "//components/favicon/content",
+    "//components/pref_registry",
     "//skia",
   ]
 }
@@ -34,9 +38,17 @@ source_set("unit_tests") {
 
   deps = [
     ":bookmark_apps",
+    "//base",
+    "//chrome/browser",
     "//chrome/browser/web_applications:web_app_group",
+    "//chrome/browser/web_applications/components",
     "//chrome/browser/web_applications/components:test_support",
+    "//chrome/common:constants",
+    "//components/sync_preferences:test_support",
+    "//content/test:test_support",
     "//skia",
     "//testing/gmock",
+    "//testing/gtest",
+    "//url",
   ]
 }

@@ -39,14 +39,18 @@ source_set("components") {
   }
 
   deps = [
+    "//chrome/app/resources:platform_locale_settings",
+    "//chrome/app/theme:chrome_unscaled_resources",
     "//chrome/browser/web_applications:web_app_group",
     "//chrome/common",
+    "//components/crx_file",
+    "//components/favicon/content",
     "//content/public/browser",
     "//skia",
   ]
 }
 
-static_library("test_support") {
+source_set("test_support") {
   testonly = true
 
   sources = [
@@ -57,6 +61,7 @@ static_library("test_support") {
   deps = [
     ":components",
     "//base",
+    "//url",
   ]
 }
 
@@ -78,8 +83,10 @@ source_set("unit_tests") {
 
   deps = [
     ":components",
+    "//base/test:test_support",
     "//chrome/app/theme:theme_resources",
     "//chrome/browser/web_applications:web_app_group",
+    "//chrome/test:test_support",
     "//content/public/browser",
     "//skia",
     "//testing/gmock",

@@ -67,6 +67,7 @@ source_set("chromeos") {
     "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
     "//chrome/browser/ssl:proto",
     "//chrome/browser/web_applications",
+    "//chrome/browser/web_applications/bookmark_apps",
     "//chrome/browser/web_applications/components",
     "//chrome/common",
     "//chrome/common/extensions/api",
@@ -244,7 +245,10 @@ source_set("chromeos") {
     ":dbus_service_files",
   ]
 
-  allow_circular_includes_from = [ "//chrome/browser/extensions" ]
+  allow_circular_includes_from = [
+    "//chrome/browser/extensions",
+    "//chrome/browser/web_applications/bookmark_apps",
+  ]
 
   sources = [
     "accessibility/accessibility_extension_loader.cc",

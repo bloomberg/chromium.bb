@@ -74,7 +74,7 @@ default_args = {
 # their includes checked for proper dependencies when you run either
 # "gn check" or "gn gen --check".
 check_targets = [
-  #"//apps/*",  # Medium-hard.
+  "//apps/*",
   "//ash/*",
   "//base/*",
   "//blink/*",
@@ -90,8 +90,7 @@ check_targets = [
   "//chrome/browser/accessibility/*",
   "//chrome/browser/android/*",
   "//chrome/browser/app_mode/*",
-
-  #"//chrome/browser/apps/*",  # 2 errors
+  "//chrome/browser/apps/*",
   "//chrome/browser/assist_ranker/*",
   "//chrome/browser/autocomplete/*",
   "//chrome/browser/autofill/*",
@@ -225,8 +224,7 @@ check_targets = [
   "//chrome/browser/upgrade_detector/*",
   "//chrome/browser/usb/*",
   "//chrome/browser/vr/*",
-
-  #"//chrome/browser/web_applications/*",  # 66 errors
+  "//chrome/browser/web_applications/*",
   "//chrome/browser/webauthn/*",
   "//chrome/browser/webshare/*",
   "//chrome/browser/win/*",

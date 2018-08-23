@@ -62,5 +62,6 @@ static_library("test_support") {
 
   public_deps = [
     "//content/public/browser",
+    "//extensions/browser",
   ]
 }
