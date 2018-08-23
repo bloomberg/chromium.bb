@@ -81,5 +81,10 @@ const base::Feature kResourceLoadingHints{"ResourceLoadingHints",
 const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Shows a Previews icon and string in the Android Omnibox instead of an Infobar
+// when enabled. Only works and is honored on Android..
+const base::Feature kAndroidOmniboxPreviewsBadge{
+    "AndroidOmniboxPreviewsBadge", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace previews

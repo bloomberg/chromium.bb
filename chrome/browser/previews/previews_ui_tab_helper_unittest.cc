@@ -10,7 +10,9 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
@@ -28,6 +30,7 @@
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/request_header/offline_page_header.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_user_data.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/navigation_handle.h"
@@ -168,6 +171,28 @@ TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationCreatesLitePageInfoBar) {
 
   EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
 }
+
+#if defined(OS_ANDROID)
+TEST_F(PreviewsUITabHelperUnitTest, DidFinishNavigationDisplaysOmniboxBadge) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      previews::features::kAndroidOmniboxPreviewsBadge);
+
+  PreviewsUITabHelper* ui_tab_helper =
+      PreviewsUITabHelper::FromWebContents(web_contents());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+  EXPECT_FALSE(ui_tab_helper->should_display_android_omnibox_badge());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+
+  SetCommittedPreviewsType(previews::PreviewsType::LITE_PAGE);
+  SimulateWillProcessResponse();
+  CallDidFinishNavigation();
+
+  EXPECT_TRUE(ui_tab_helper->should_display_android_omnibox_badge());
+  EXPECT_FALSE(ui_tab_helper->displayed_preview_ui());
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+}
+#endif
 
 TEST_F(PreviewsUITabHelperUnitTest,
        DidFinishNavigationCreatesNoScriptPreviewsInfoBar) {

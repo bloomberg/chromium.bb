@@ -41,6 +41,12 @@ class PreviewsUITabHelper
     displayed_preview_ui_ = displayed;
   }
 
+  // Indicates whether the Android Omnibox badge should be shown as the Previews
+  // UI.
+  bool should_display_android_omnibox_badge() const {
+    return should_display_android_omnibox_badge_;
+  }
+
   // Sets whether the timestamp on the UI for a preview has been shown for
   // the page. |displayed_preview_timestamp_| is reset to false on
   // DidStartProvisionalLoadForFrame for the main frame.
@@ -65,10 +71,13 @@ class PreviewsUITabHelper
       content::NavigationHandle* navigation_handle) override;
 
   // True if the UI for a preview has been shown for the page.
-  bool displayed_preview_ui_;
+  bool displayed_preview_ui_ = false;
 
   // True if the UI with a timestamp was shown for the page.
-  bool displayed_preview_timestamp_;
+  bool displayed_preview_timestamp_ = false;
+
+  // True if the Android Omnibox badge should be shown as the Previews UI.
+  bool should_display_android_omnibox_badge_ = false;
 
   // The Previews information related to the navigation that was most recently
   // finished.
