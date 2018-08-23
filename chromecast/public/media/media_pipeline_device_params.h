@@ -72,7 +72,7 @@ struct MediaPipelineDeviceParams {
   MediaPipelineDeviceParams(const MediaPipelineDeviceParams& other);
   MediaPipelineDeviceParams(MediaPipelineDeviceParams&& other);
 
-  const MediaSyncType sync_type;
+  MediaSyncType sync_type;
   const AudioStreamType audio_type;
 
   // task_runner allows backend implementations to post tasks to the media
