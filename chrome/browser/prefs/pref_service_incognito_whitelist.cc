@@ -119,6 +119,16 @@ const char* const kPersistentPrefNames[] = {
     metrics::prefs::kUninstallMetricsUptimeSec, metrics::prefs::kUkmCellDataUse,
     metrics::prefs::kUmaCellDataUse, metrics::prefs::kUserCellDataUse,
 
+    // Devtools preferences are stored cross profiles as they are not storing
+    // user data and just keep debugging environment settings.
+    prefs::kDevToolsAdbKey, prefs::kDevToolsAvailability,
+    prefs::kDevToolsDiscoverUsbDevicesEnabled, prefs::kDevToolsEditedFiles,
+    prefs::kDevToolsFileSystemPaths, prefs::kDevToolsPortForwardingEnabled,
+    prefs::kDevToolsPortForwardingDefaultSet,
+    prefs::kDevToolsPortForwardingConfig, prefs::kDevToolsPreferences,
+    prefs::kDevToolsDiscoverTCPTargetsEnabled,
+    prefs::kDevToolsTCPDiscoveryConfig,
+
     // Google URL prefs don't store user data and just keep track of the URL.
     prefs::kLastKnownGoogleURL, prefs::kLastPromptedGoogleURL,
 
@@ -381,17 +391,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif
     prefs::kSuppressUnsupportedOSWarning, prefs::kWasRestarted,
 #endif  // !defined(OS_ANDROID)
-
-    prefs::kDevToolsAdbKey, prefs::kDevToolsAvailability,
-    prefs::kDevToolsDiscoverUsbDevicesEnabled, prefs::kDevToolsEditedFiles,
-    prefs::kDevToolsFileSystemPaths, prefs::kDevToolsPortForwardingEnabled,
-    prefs::kDevToolsPortForwardingDefaultSet,
-    prefs::kDevToolsPortForwardingConfig, prefs::kDevToolsPreferences,
-    prefs::kDevToolsDiscoverTCPTargetsEnabled,
-    prefs::kDevToolsTCPDiscoveryConfig,
-#if defined(OS_ANDROID)
-    prefs::kDevToolsRemoteEnabled,
-#endif
 
     prefs::kGoogleServicesPasswordHash,
 

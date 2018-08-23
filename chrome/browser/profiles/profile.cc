@@ -185,10 +185,6 @@ void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
                              std::make_unique<base::ListValue>());
 #endif
 
-#if defined(OS_ANDROID)
-  registry->RegisterBooleanPref(prefs::kDevToolsRemoteEnabled, false);
-#endif
-
   registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   data_reduction_proxy::RegisterSyncableProfilePrefs(registry);
 
