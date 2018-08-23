@@ -73,7 +73,8 @@ class AwCrashReporterClient : public ::crash_reporter::CrashReporterClient {
                                 std::string* channel) override {
     *product_name = "AndroidWebView";
     *version = PRODUCT_VERSION;
-    *channel = version_info::GetChannelString(android_webview::GetChannel());
+    *channel =
+        version_info::GetChannelString(android_webview::GetChannelOrStable());
   }
   // Microdumps are always enabled in WebView builds, conversely to what happens
   // in the case of the other Chrome for Android builds (where they are enabled

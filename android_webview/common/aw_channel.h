@@ -9,7 +9,10 @@
 
 namespace android_webview {
 
-version_info::Channel GetChannel();
+// There are separate Monochrome APKs built for each channel, but only one
+// stand-alone WebView APK for all channels, so stand-alone WebView has channel
+// "unknown". Return the channel if it's known, or "stable" if it's "unknown".
+version_info::Channel GetChannelOrStable();
 
 }  // namespace android_webview
 
