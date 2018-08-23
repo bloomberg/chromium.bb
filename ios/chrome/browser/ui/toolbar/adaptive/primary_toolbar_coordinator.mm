@@ -42,6 +42,8 @@
   std::unique_ptr<FullscreenControllerObserver> _fullscreenObserver;
 }
 
+// Whether the coordinator is started.
+@property(nonatomic, assign, getter=isStarted) BOOL started;
 // Redefined as PrimaryToolbarViewController.
 @property(nonatomic, strong) PrimaryToolbarViewController* viewController;
 // The coordinator for the location bar in the toolbar.
@@ -55,6 +57,7 @@
 @implementation PrimaryToolbarCoordinator
 
 @dynamic viewController;
+@synthesize started = _started;
 @synthesize commandDispatcher = _commandDispatcher;
 @synthesize delegate = _delegate;
 @synthesize locationBarCoordinator = _locationBarCoordinator;
@@ -65,6 +68,8 @@
 
 - (void)start {
   DCHECK(self.commandDispatcher);
+  if (self.started)
+    return;
 
   [self.commandDispatcher startDispatchingToTarget:self
                                        forProtocol:@protocol(FakeboxFocuser)];
@@ -91,19 +96,27 @@
         [self.locationBarCoordinator editViewAnimatee];
   }
 
-  [super start];
-
   _fullscreenObserver =
       std::make_unique<FullscreenUIUpdater>(self.viewController);
   FullscreenControllerFactory::GetInstance()
       ->GetForBrowserState(self.browserState)
       ->AddObserver(_fullscreenObserver.get());
+
+  [super start];
+  self.started = YES;
 }
 
 - (void)stop {
+  if (!self.started)
+    return;
   [super stop];
   [self.commandDispatcher stopDispatchingToTarget:self];
   [self.locationBarCoordinator stop];
+  FullscreenControllerFactory::GetInstance()
+      ->GetForBrowserState(self.browserState)
+      ->RemoveObserver(_fullscreenObserver.get());
+  _fullscreenObserver = nullptr;
+  self.started = NO;
 }
 
 #pragma mark - PrimaryToolbarCoordinator
