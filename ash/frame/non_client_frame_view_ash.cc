@@ -13,7 +13,7 @@
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/header_view.h"
 #include "ash/public/cpp/ash_constants.h"
-#include "ash/public/cpp/frame_border_hit_test.h"
+#include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/window_properties.h"

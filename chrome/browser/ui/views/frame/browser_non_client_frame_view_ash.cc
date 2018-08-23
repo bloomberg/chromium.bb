@@ -8,14 +8,14 @@
 
 #include "ash/frame/caption_buttons/frame_back_button.h"  // mash-ok
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"  // mash-ok
-#include "ash/frame/default_frame_header.h"      // mash-ok
-#include "ash/frame/frame_header_util.h"         // mash-ok
+#include "ash/frame/default_frame_header.h"  // mash-ok
+#include "ash/frame/frame_header_util.h"     // mash-ok
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/cpp/frame_border_hit_test.h"
+#include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_state_type.mojom.h"
@@ -55,6 +55,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
@@ -397,7 +398,7 @@ void BrowserNonClientFrameViewAsh::UpdateClientArea() {
       // clicks in the frame decoration.
       static_cast<aura::WindowTreeHostMus*>(
           reveal_widget->GetNativeWindow()->GetHost())
-          ->SetClientArea(client_area_insets, additional_client_area);
+          ->SetClientArea(client_area_insets, {});
     }
   } else {
     window_tree_host_mus->SetClientArea(gfx::Insets(), additional_client_area);
@@ -508,12 +509,24 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (!ShouldPaint())
     return;
 
+  ImmersiveModeController* immersive_mode_controller =
+      browser_view()->immersive_mode_controller();
+
   if (frame_header_) {
     DCHECK(!IsMash());
     const ash::FrameHeader::Mode header_mode =
         ShouldPaintAsActive() ? ash::FrameHeader::MODE_ACTIVE
                               : ash::FrameHeader::MODE_INACTIVE;
     frame_header_->PaintHeader(canvas, header_mode);
+  } else if (IsMash() && immersive_mode_controller->IsEnabled() &&
+             immersive_mode_controller->IsRevealed()) {
+    // TODO(estade): GetTopInset() ignores its parameter in Mash. Fix for this
+    // case, where we truly want to force |restored| to true.
+    ash::PaintThemedFrame(canvas, GetFrameImage(kActive),
+                          GetFrameOverlayImage(kActive), GetFrameColor(kActive),
+                          gfx::Rect(width(), GetTopInset(false)),
+                          GetThemeBackgroundXInset(),
+                          GetFrameHeaderImageYInset(), SK_AlphaOPAQUE);
   }
 
   if (browser_view()->IsToolbarVisible() &&
