@@ -322,9 +322,13 @@ PaintInvalidationReason ObjectPaintInvalidatorWithContext::InvalidateSelection(
   if (full_invalidation)
     return reason;
 
+  const LayoutRect invalidation_rect =
+      UnionRect(new_selection_rect, old_selection_rect);
+  if (invalidation_rect.IsEmpty())
+    return reason;
+
   object_.GetMutableForPainting().SetPartialInvalidationVisualRect(
-      UnionRect(object_.PartialInvalidationVisualRect(),
-                UnionRect(new_selection_rect, old_selection_rect)));
+      UnionRect(object_.PartialInvalidationVisualRect(), invalidation_rect));
   return PaintInvalidationReason::kSelection;
 }
 
