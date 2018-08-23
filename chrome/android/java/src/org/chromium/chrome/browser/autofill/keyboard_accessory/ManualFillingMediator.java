@@ -262,6 +262,13 @@ class ManualFillingMediator
         mAccessorySheet.hide();
     }
 
+    /**
+     * Opens the keyboard which implicitly dismisses the sheet. Without open sheet, this is a NoOp.
+     */
+    void swapSheetWithKeyboard() {
+        if (mAccessorySheet.isShown()) onOpenKeyboard();
+    }
+
     @Override
     public void onOpenKeyboard() {
         assert mActivity != null : "ManualFillingMediator needs initialization.";

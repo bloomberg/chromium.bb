@@ -74,8 +74,8 @@ class PasswordAccessoryViewInterface {
   // Called to inform the view that the accessory sheet should be closed now.
   virtual void CloseAccessorySheet() = 0;
 
-  // Called to inform the view that the accessory sheet should be closed now.
-  virtual void OpenKeyboard() = 0;
+  // Opens a keyboard which dismisses the sheet. NoOp without open sheet.
+  virtual void SwapSheetWithKeyboard() = 0;
 
  private:
   friend class PasswordAccessoryController;

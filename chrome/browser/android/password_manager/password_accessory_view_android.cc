@@ -69,8 +69,8 @@ void PasswordAccessoryViewAndroid::CloseAccessorySheet() {
       base::android::AttachCurrentThread(), java_object_);
 }
 
-void PasswordAccessoryViewAndroid::OpenKeyboard() {
-  Java_PasswordAccessoryBridge_openKeyboard(
+void PasswordAccessoryViewAndroid::SwapSheetWithKeyboard() {
+  Java_PasswordAccessoryBridge_swapSheetWithKeyboard(
       base::android::AttachCurrentThread(), java_object_);
 }
 
