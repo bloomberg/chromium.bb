@@ -10,6 +10,8 @@
 #include "base/macros.h"
 #include "chromeos/account_manager/account_manager.h"
 
+class AccountId;
+struct AccountInfo;
 class AccountTrackerService;
 
 namespace chromeos {
@@ -29,6 +31,16 @@ class AccountMapperUtil {
   // chain (see |AccountInfo|) to an |AccountManager::AccountKey|.
   AccountManager::AccountKey OAuthAccountIdToAccountKey(
       const std::string& account_id) const;
+
+  // A utility method to map an |account_key| representing a GAIA account to
+  // |AccountInfo|. Returns an empty |AccountInfo| for non-GAIA accounts.
+  AccountInfo AccountKeyToGaiaAccountInfo(
+      const AccountManager::AccountKey& account_key) const;
+
+  // A utility method to check whether |account_key| and |account_id| represent
+  // the same account.
+  static bool IsEqual(const AccountManager::AccountKey& account_key,
+                      const AccountId& account_id);
 
  private:
   // A non-owning pointer to |AccountTrackerService|, which itself is a

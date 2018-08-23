@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/cloud/test_request_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
@@ -36,6 +37,8 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/account_manager/account_manager.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_bridge_service.h"
@@ -52,6 +55,7 @@
 #include "components/policy/core/common/policy_switches.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
@@ -97,7 +101,22 @@ class FakeAuthInstance : public mojom::AuthInstance {
     host_->RequestAccountInfo(true);
   }
 
+  void OnSecondaryAccountUpserted(const std::string& account_name) override {
+    ++num_account_upserted_calls_;
+    upserted_account_name_ = account_name;
+  }
+
+  void OnSecondaryAccountRemoved(const std::string& account_name) override {
+    ++num_account_removed_calls_;
+    removed_account_name_ = account_name;
+  }
+
   mojom::AccountInfo* account_info() { return account_info_.get(); }
+
+  int num_account_upserted_calls_ = 0;
+  std::string upserted_account_name_;
+  int num_account_removed_calls_ = 0;
+  std::string removed_account_name_;
 
  private:
   mojom::AuthHostPtr host_;
@@ -195,6 +214,16 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
     profile_ = profile_builder.Build();
 
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    chromeos::AccountManager* account_manager =
+        factory->GetAccountManager(profile_->GetPath().value());
+    account_manager->Initialize(
+        temp_dir_.GetPath(), test_shared_loader_factory_,
+        base::BindRepeating([](const base::RepeatingClosure& closure) -> void {
+          closure.Run();
+        }));
+
     FakeProfileOAuth2TokenService* token_service =
         static_cast<FakeProfileOAuth2TokenService*>(
             ProfileOAuth2TokenServiceFactory::GetForProfile(profile()));
@@ -228,6 +257,26 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
     DCHECK(arc_bridge_service_);
     arc_bridge_service_->auth()->SetInstance(&auth_instance_);
     WaitForInstanceReady(arc_bridge_service_->auth());
+  }
+
+  void SeedAccountInfo(const std::string& gaia_id, const std::string& email) {
+    AccountTrackerService* account_tracker_service =
+        AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile());
+
+    AccountInfo account_info;
+    account_info.gaia = gaia_id;
+    account_info.email = email;
+    account_info.full_name = "name";
+    account_info.given_name = "name";
+    account_info.hosted_domain = "example.com";
+    account_info.locale = "en";
+    account_info.picture_url = "https://example.com";
+    account_info.is_child_account = false;
+    account_info.account_id = account_tracker_service->PickAccountIdForAccount(
+        account_info.gaia, account_info.email);
+
+    ASSERT_TRUE(account_info.IsValid());
+    account_tracker_service->SeedAccountInfo(account_info);
   }
 
   Profile* profile() { return profile_.get(); }
@@ -276,6 +325,58 @@ IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest, SuccessfulBackgroundFetch) {
             auth_instance().account_info()->account_type);
   EXPECT_FALSE(auth_instance().account_info()->enrollment_token);
   EXPECT_FALSE(auth_instance().account_info()->is_managed);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       SecondaryAccountUpsertsArePropagated) {
+  const std::string gaia_id = "123999";
+  const std::string email = "email.111@gmail.com";
+
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(gaia_id, email);
+
+  EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
+
+  chromeos::AccountManager::AccountKey account_key{
+      gaia_id, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  auth_service().OnTokenUpserted(account_key);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, auth_instance().num_account_upserted_calls_);
+  EXPECT_EQ(email, auth_instance().upserted_account_name_);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       SecondaryAccountRemovalsArePropagated) {
+  const std::string gaia_id = "123999";
+  const std::string email = "email.111@gmail.com";
+
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+  SeedAccountInfo(gaia_id, email);
+
+  EXPECT_EQ(0, auth_instance().num_account_removed_calls_);
+
+  chromeos::AccountManager::AccountKey account_key{
+      gaia_id, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  auth_service().OnAccountRemoved(account_key);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(1, auth_instance().num_account_removed_calls_);
+  EXPECT_EQ(email, auth_instance().removed_account_name_);
+}
+
+IN_PROC_BROWSER_TEST_F(ArcAuthServiceTest,
+                       DeviceAccountUpsertsAreNotPropagated) {
+  SetAccountAndProfile(user_manager::USER_TYPE_REGULAR);
+
+  EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
+
+  chromeos::AccountManager::AccountKey account_key{
+      kFakeGaiaId, chromeos::account_manager::AccountType::ACCOUNT_TYPE_GAIA};
+  auth_service().OnTokenUpserted(account_key);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, auth_instance().num_account_upserted_calls_);
 }
 
 class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {

@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -16,9 +18,12 @@
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_data_removal_dialog.h"
+#include "chromeos/account_manager/account_manager_factory.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
@@ -151,6 +156,8 @@ ArcAuthService* ArcAuthService::GetForBrowserContext(
 ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
                                ArcBridgeService* arc_bridge_service)
     : profile_(Profile::FromBrowserContext(browser_context)),
+      account_mapper_util_(
+          AccountTrackerServiceFactory::GetInstance()->GetForProfile(profile_)),
       arc_bridge_service_(arc_bridge_service),
       url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
@@ -158,11 +165,36 @@ ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
       weak_ptr_factory_(this) {
   arc_bridge_service_->auth()->SetHost(this);
   arc_bridge_service_->auth()->AddObserver(this);
+
+  if (chromeos::switches::IsAccountManagerEnabled()) {
+    // TODO(sinhak): This will need to be independent of Profile, when
+    // Multi-Profile on Chrome OS is launched.
+    chromeos::AccountManagerFactory* factory =
+        g_browser_process->platform_part()->GetAccountManagerFactory();
+    account_manager_ = factory->GetAccountManager(profile_->GetPath().value());
+    account_manager_->AddObserver(this);
+  }
 }
 
 ArcAuthService::~ArcAuthService() {
+  if (chromeos::switches::IsAccountManagerEnabled()) {
+    account_manager_->RemoveObserver(this);
+  }
   arc_bridge_service_->auth()->RemoveObserver(this);
   arc_bridge_service_->auth()->SetHost(nullptr);
+}
+
+void ArcAuthService::OnConnectionReady() {
+  if (chromeos::switches::IsAccountManagerEnabled()) {
+    // The Mojo |OnSecondaryAccountUpserted| API is guaranteed to be called at
+    // least once for every account at startup. We need to get the list of
+    // accounts from |AccountManager|, just to be safe, since we may have missed
+    // the initial |AccountManager::Observer| notifications. We can safely call
+    // the Mojo |OnSecondaryAccountUpserted| API twice for every account since
+    // it is guaranteed to be idempotent.
+    account_manager_->GetAccounts(base::BindOnce(
+        &ArcAuthService::GetAccountsCallback, weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void ArcAuthService::OnConnectionClosed() {
@@ -317,6 +349,48 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
   fetcher_ = std::move(auth_code_fetcher);
 }
 
+void ArcAuthService::OnTokenUpserted(
+    const chromeos::AccountManager::AccountKey& account_key) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // We send only Secondary Account update notifications to ARC++. ARC++ has a
+  // polling mechanism for the Device Account (See the Mojo APIs
+  // |RequestAccountInfo| and |OnAccountInfoReady|).
+  if (IsDeviceAccount(account_key)) {
+    return;
+  }
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               OnSecondaryAccountUpserted);
+  if (!instance) {
+    LOG(ERROR) << "Auth instance is not available.";
+    return;
+  }
+
+  const std::string& account_name =
+      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
+  DCHECK(!account_name.empty());
+  instance->OnSecondaryAccountUpserted(account_name);
+}
+
+void ArcAuthService::OnAccountRemoved(
+    const chromeos::AccountManager::AccountKey& account_key) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!IsDeviceAccount(account_key));
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               OnSecondaryAccountRemoved);
+  if (!instance) {
+    LOG(ERROR) << "Auth instance is not available.";
+    return;
+  }
+
+  const std::string& account_name =
+      account_mapper_util_.AccountKeyToGaiaAccountInfo(account_key).email;
+  DCHECK(!account_name.empty());
+  instance->OnSecondaryAccountRemoved(account_name);
+}
+
 void ArcAuthService::OnEnrollmentTokenFetched(
     ArcActiveDirectoryEnrollmentTokenFetcher::Status status,
     const std::string& enrollment_token,
@@ -396,6 +470,22 @@ void ArcAuthService::OnDataRemovalAccepted(bool accepted) {
       << "Request for data removal on child transition failure is confirmed";
   ArcSessionManager::Get()->RequestArcDataRemoval();
   ArcSessionManager::Get()->StopAndEnableArc();
+}
+
+void ArcAuthService::GetAccountsCallback(
+    std::vector<chromeos::AccountManager::AccountKey> accounts) {
+  for (const auto& account_key : accounts) {
+    OnTokenUpserted(account_key);
+  }
+}
+
+bool ArcAuthService::IsDeviceAccount(
+    const chromeos::AccountManager::AccountKey& account_key) const {
+  const AccountId& device_account_id = chromeos::ProfileHelper::Get()
+                                           ->GetUserByProfile(profile_)
+                                           ->GetAccountId();
+
+  return account_mapper_util_.IsEqual(account_key, device_account_id);
 }
 
 }  // namespace arc
