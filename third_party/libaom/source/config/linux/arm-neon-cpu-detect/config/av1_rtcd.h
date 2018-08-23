@@ -544,6 +544,36 @@ void av1_highbd_dr_prediction_z3_c(uint16_t* dst,
                                    int bd);
 #define av1_highbd_dr_prediction_z3 av1_highbd_dr_prediction_z3_c
 
+void av1_highbd_inv_txfm_add_c(const tran_low_t* dqcoeff,
+                               uint8_t* dst,
+                               int stride,
+                               const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add av1_highbd_inv_txfm_add_c
+
+void av1_highbd_inv_txfm_add_16x16_c(const tran_low_t* dqcoeff,
+                                     uint8_t* dst,
+                                     int stride,
+                                     const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_16x16 av1_highbd_inv_txfm_add_16x16_c
+
+void av1_highbd_inv_txfm_add_32x32_c(const tran_low_t* dqcoeff,
+                                     uint8_t* dst,
+                                     int stride,
+                                     const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_32x32 av1_highbd_inv_txfm_add_32x32_c
+
+void av1_highbd_inv_txfm_add_4x4_c(const tran_low_t* dqcoeff,
+                                   uint8_t* dst,
+                                   int stride,
+                                   const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_4x4 av1_highbd_inv_txfm_add_4x4_c
+
+void av1_highbd_inv_txfm_add_8x8_c(const tran_low_t* dqcoeff,
+                                   uint8_t* dst,
+                                   int stride,
+                                   const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_8x8 av1_highbd_inv_txfm_add_8x8_c
+
 void av1_highbd_iwht4x4_16_add_c(const tran_low_t* input,
                                  uint8_t* dest,
                                  int dest_stride,
@@ -989,7 +1019,42 @@ void av1_warp_affine_c(const int32_t* mat,
                        int16_t beta,
                        int16_t gamma,
                        int16_t delta);
-#define av1_warp_affine av1_warp_affine_c
+void av1_warp_affine_neon(const int32_t* mat,
+                          const uint8_t* ref,
+                          int width,
+                          int height,
+                          int stride,
+                          uint8_t* pred,
+                          int p_col,
+                          int p_row,
+                          int p_width,
+                          int p_height,
+                          int p_stride,
+                          int subsampling_x,
+                          int subsampling_y,
+                          ConvolveParams* conv_params,
+                          int16_t alpha,
+                          int16_t beta,
+                          int16_t gamma,
+                          int16_t delta);
+RTCD_EXTERN void (*av1_warp_affine)(const int32_t* mat,
+                                    const uint8_t* ref,
+                                    int width,
+                                    int height,
+                                    int stride,
+                                    uint8_t* pred,
+                                    int p_col,
+                                    int p_row,
+                                    int p_width,
+                                    int p_height,
+                                    int p_stride,
+                                    int subsampling_x,
+                                    int subsampling_y,
+                                    ConvolveParams* conv_params,
+                                    int16_t alpha,
+                                    int16_t beta,
+                                    int16_t gamma,
+                                    int16_t delta);
 
 void av1_wiener_convolve_add_src_c(const uint8_t* src,
                                    ptrdiff_t src_stride,
@@ -1204,6 +1269,9 @@ static void setup_rtcd_internal(void) {
   av1_selfguided_restoration = av1_selfguided_restoration_c;
   if (flags & HAS_NEON)
     av1_selfguided_restoration = av1_selfguided_restoration_neon;
+  av1_warp_affine = av1_warp_affine_c;
+  if (flags & HAS_NEON)
+    av1_warp_affine = av1_warp_affine_neon;
   av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_c;
   if (flags & HAS_NEON)
     av1_wiener_convolve_add_src = av1_wiener_convolve_add_src_neon;

@@ -32,6 +32,7 @@ aom_av1_common_intrin_neon = [
   "//third_party/libaom/source/libaom/av1/common/arm/selfguided_neon.c",
   "//third_party/libaom/source/libaom/av1/common/arm/av1_inv_txfm_neon.c",
   "//third_party/libaom/source/libaom/av1/common/arm/av1_inv_txfm_neon.h",
+  "//third_party/libaom/source/libaom/av1/common/arm/warp_plane_neon.c",
   "//third_party/libaom/source/libaom/av1/common/cdef_block_neon.c",
 ]
 
@@ -185,6 +186,7 @@ aom_av1_encoder_intrin_avx2 = [
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_fwd_txfm_avx2.h",
   "//third_party/libaom/source/libaom/av1/encoder/x86/av1_fwd_txfm2d_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/wedge_utils_avx2.c",
+  "//third_party/libaom/source/libaom/av1/encoder/x86/encodetxb_avx2.c",
   "//third_party/libaom/source/libaom/av1/encoder/x86/pickrst_avx2.c",
 ]
 

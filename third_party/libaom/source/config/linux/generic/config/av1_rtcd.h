@@ -418,6 +418,36 @@ void av1_highbd_dr_prediction_z3_c(uint16_t* dst,
                                    int bd);
 #define av1_highbd_dr_prediction_z3 av1_highbd_dr_prediction_z3_c
 
+void av1_highbd_inv_txfm_add_c(const tran_low_t* dqcoeff,
+                               uint8_t* dst,
+                               int stride,
+                               const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add av1_highbd_inv_txfm_add_c
+
+void av1_highbd_inv_txfm_add_16x16_c(const tran_low_t* dqcoeff,
+                                     uint8_t* dst,
+                                     int stride,
+                                     const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_16x16 av1_highbd_inv_txfm_add_16x16_c
+
+void av1_highbd_inv_txfm_add_32x32_c(const tran_low_t* dqcoeff,
+                                     uint8_t* dst,
+                                     int stride,
+                                     const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_32x32 av1_highbd_inv_txfm_add_32x32_c
+
+void av1_highbd_inv_txfm_add_4x4_c(const tran_low_t* dqcoeff,
+                                   uint8_t* dst,
+                                   int stride,
+                                   const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_4x4 av1_highbd_inv_txfm_add_4x4_c
+
+void av1_highbd_inv_txfm_add_8x8_c(const tran_low_t* dqcoeff,
+                                   uint8_t* dst,
+                                   int stride,
+                                   const TxfmParam* txfm_param);
+#define av1_highbd_inv_txfm_add_8x8 av1_highbd_inv_txfm_add_8x8_c
+
 void av1_highbd_iwht4x4_16_add_c(const tran_low_t* input,
                                  uint8_t* dest,
                                  int dest_stride,
