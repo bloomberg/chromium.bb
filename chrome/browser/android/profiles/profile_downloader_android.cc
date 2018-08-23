@@ -66,9 +66,7 @@ class AccountInfoRetriever : public ProfileDownloaderDelegate {
     return profile_;
   }
 
-  std::string GetCachedPictureURL() const override {
-    return std::string();
-  }
+  GURL GetCachedPictureURL() const override { return GURL(); }
 
   bool IsPreSignin() const override {
     return is_pre_signin_;

@@ -107,14 +107,12 @@ ProfileDownloader::PictureStatus ProfileDownloader::GetProfilePictureStatus()
   return picture_status_;
 }
 
-std::string ProfileDownloader::GetProfilePictureURL() const {
-  GURL url(account_info_.picture_url);
+GURL ProfileDownloader::GetProfilePictureURL() const {
+  const GURL url(account_info_.picture_url);
   if (!url.is_valid())
-    return std::string();
+    return GURL();
   return signin::GetAvatarImageURLWithOptions(
-             GURL(account_info_.picture_url),
-             delegate_->GetDesiredImageSideLength(), true /* no_silhouette */)
-      .spec();
+      url, delegate_->GetDesiredImageSideLength(), true /* no_silhouette */);
 }
 
 void ProfileDownloader::StartFetchingImage() {
@@ -172,16 +170,15 @@ void ProfileDownloader::FetchImageData() {
     return;
   }
 
-  std::string image_url_with_size = GetProfilePictureURL();
-  if (!image_url_with_size.empty() &&
-      image_url_with_size == delegate_->GetCachedPictureURL()) {
+  GURL image_url_to_fetch = GetProfilePictureURL();
+  if (image_url_to_fetch.is_valid() &&
+      image_url_to_fetch == delegate_->GetCachedPictureURL()) {
     VLOG(1) << "Picture URL matches cached picture URL";
     picture_status_ = PICTURE_CACHED;
     delegate_->OnProfileDownloadSuccess(this);
     return;
   }
 
-  GURL image_url_to_fetch(image_url_with_size);
   if (!image_url_to_fetch.is_valid()) {
     VLOG(1) << "Profile picture URL with size |" << image_url_to_fetch << "| "
             << "is not valid (the account picture URL is "
