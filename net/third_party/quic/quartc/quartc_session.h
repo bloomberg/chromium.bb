@@ -40,7 +40,7 @@ class QUIC_EXPORT_PRIVATE QuartcSession
                 const QuicString& unique_remote_server_id,
                 Perspective perspective,
                 QuicConnectionHelperInterface* helper,
-                QuicClock* clock,
+                const QuicClock* clock,
                 std::unique_ptr<QuartcPacketWriter> packet_writer);
   QuartcSession(const QuartcSession&) = delete;
   QuartcSession& operator=(const QuartcSession&) = delete;
@@ -161,7 +161,7 @@ class QUIC_EXPORT_PRIVATE QuartcSession
   // Not owned by QuartcSession. From the QuartcFactory.
   QuicConnectionHelperInterface* helper_;
   // For recording packet receipt time
-  QuicClock* clock_;
+  const QuicClock* clock_;
   // Not owned by QuartcSession.
   Delegate* session_delegate_ = nullptr;
   // Used by QUIC crypto server stream to track most recently compressed certs.

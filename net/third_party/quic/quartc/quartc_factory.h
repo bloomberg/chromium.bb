@@ -22,7 +22,7 @@ struct QuartcFactoryConfig {
   QuicAlarmFactory* alarm_factory = nullptr;
   // The clock used by |QuicAlarm|s. Implemented by the Quartc user. Owned by
   // the user, and needs to stay alive for as long as the QuartcFactory exists.
-  QuicClock* clock = nullptr;
+  const QuicClock* clock = nullptr;
 };
 
 struct QuartcSessionConfig {
@@ -78,7 +78,7 @@ class QUIC_EXPORT_PRIVATE QuartcFactory : public QuicConnectionHelperInterface {
   QuicAlarmFactory* alarm_factory_;
   // Used to implement the QuicConnectionHelperInterface.  Owned by the user and
   // must outlive QuartcFactory.
-  QuicClock* clock_;
+  const QuicClock* clock_;
   SimpleBufferAllocator buffer_allocator_;
 };
 
