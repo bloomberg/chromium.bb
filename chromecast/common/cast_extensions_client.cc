@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/no_destructor.h"
 #include "chromecast/common/cast_extensions_api_provider.h"
-#include "chromecast/common/cast_redirect_manifest_handler.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/user_agent.h"
 #include "extensions/common/api/api_features.h"
@@ -19,28 +18,17 @@
 #include "extensions/common/api/generated_schemas.h"
 #include "extensions/common/api/manifest_features.h"
 #include "extensions/common/api/permission_features.h"
-#include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/core_extensions_api_provider.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/features/manifest_feature.h"
 #include "extensions/common/features/simple_feature.h"
-#include "extensions/common/manifest_handler.h"
-#include "extensions/common/manifest_handlers/automation.h"
-#include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/url_pattern_set.h"
 
 namespace extensions {
 
 namespace {
-
-void RegisterCastManifestHandlers() {
-  DCHECK(!ManifestHandler::IsRegistrationFinalized());
-  (new AutomationHandler)->Register();  // TODO(crbug/837773) De-dupe later.
-  (new chromecast::CastRedirectHandler)->Register();
-  (new ContentScriptsHandler)->Register();
-}
 
 // TODO(jamescook): Refactor ChromePermissionsMessageProvider so we can share
 // code. For now, this implementation does nothing.
@@ -85,9 +73,6 @@ CastExtensionsClient::CastExtensionsClient()
 CastExtensionsClient::~CastExtensionsClient() {}
 
 void CastExtensionsClient::Initialize() {
-  RegisterCommonManifestHandlers();
-  RegisterCastManifestHandlers();
-  ManifestHandler::FinalizeRegistration();
   // TODO(jamescook): Do we need to whitelist any extensions?
 }
 

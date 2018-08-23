@@ -17,13 +17,11 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/common/extensions/chrome_extensions_api_provider.h"
-#include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/manifest_handlers/theme_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/common/common_manifest_handlers.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/core_extensions_api_provider.h"
 #include "extensions/common/extension.h"
@@ -32,7 +30,6 @@
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/manifest_handler.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/url_pattern.h"
@@ -92,14 +89,6 @@ ChromeExtensionsClient::~ChromeExtensionsClient() {
 
 void ChromeExtensionsClient::Initialize() {
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.ChromeExtensionsClientInitTime");
-
-  // Registration could already be finalized in unit tests, where the utility
-  // thread runs in-process.
-  if (!ManifestHandler::IsRegistrationFinalized()) {
-    RegisterCommonManifestHandlers();
-    RegisterChromeManifestHandlers();
-    ManifestHandler::FinalizeRegistration();
-  }
 
   // Set up the scripting whitelist.
   // Whitelist ChromeVox, an accessibility extension from Google that needs

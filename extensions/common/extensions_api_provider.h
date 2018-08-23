@@ -43,6 +43,9 @@ class ExtensionsAPIProvider {
   // Adds any associated permissions.
   virtual void AddPermissionsProviders(PermissionsInfo* permissions_info) = 0;
 
+  // Registers manifest handlers for any associated API features.
+  virtual void RegisterManifestHandlers() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ExtensionsAPIProvider);
 };

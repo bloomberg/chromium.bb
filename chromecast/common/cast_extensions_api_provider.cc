@@ -4,6 +4,7 @@
 
 #include "chromecast/common/cast_extensions_api_provider.h"
 
+#include "chromecast/common/cast_redirect_manifest_handler.h"
 #include "chromecast/common/extensions_api/cast_aliases.h"
 #include "chromecast/common/extensions_api/cast_api_features.h"
 #include "chromecast/common/extensions_api/cast_api_permissions.h"
@@ -11,6 +12,9 @@
 #include "chromecast/common/extensions_api/cast_permission_features.h"
 #include "chromecast/common/extensions_api/generated_schemas.h"
 #include "extensions/common/features/json_feature_provider_source.h"
+#include "extensions/common/manifest_handler.h"
+#include "extensions/common/manifest_handlers/automation.h"
+#include "extensions/common/manifest_handlers/content_scripts_handler.h"
 #include "extensions/common/permissions/permissions_info.h"
 #include "extensions/shell/grit/app_shell_resources.h"
 
@@ -53,6 +57,12 @@ base::StringPiece CastExtensionsAPIProvider::GetAPISchema(
 void CastExtensionsAPIProvider::AddPermissionsProviders(
     PermissionsInfo* permissions_info) {
   permissions_info->AddProvider(api_permissions_, GetCastPermissionAliases());
+}
+
+void CastExtensionsAPIProvider::RegisterManifestHandlers() {
+  (new AutomationHandler)->Register();  // TODO(crbug/837773) De-dupe later.
+  (new chromecast::CastRedirectHandler)->Register();
+  (new ContentScriptsHandler)->Register();
 }
 
 }  // namespace extensions

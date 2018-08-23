@@ -50,4 +50,6 @@ base::StringPiece ShellExtensionsAPIProvider::GetAPISchema(
 void ShellExtensionsAPIProvider::AddPermissionsProviders(
     PermissionsInfo* permissions_info) {}
 
+void ShellExtensionsAPIProvider::RegisterManifestHandlers() {}
+
 }  // namespace extensions
