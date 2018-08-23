@@ -246,9 +246,9 @@ bool Manifest::GetList(
   return CanAccessPath(path) && value_->GetList(path, out_value);
 }
 
-Manifest* Manifest::DeepCopy() const {
-  Manifest* manifest = new Manifest(
-      location_, std::unique_ptr<base::DictionaryValue>(value_->DeepCopy()));
+std::unique_ptr<Manifest> Manifest::CreateDeepCopy() const {
+  auto manifest =
+      std::make_unique<Manifest>(location_, value_->CreateDeepCopy());
   manifest->SetExtensionId(extension_id_);
   return manifest;
 }

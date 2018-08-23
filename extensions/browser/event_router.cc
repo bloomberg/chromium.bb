@@ -930,8 +930,7 @@ Event::~Event() {}
 
 Event* Event::DeepCopy() const {
   Event* copy = new Event(
-      histogram_value, event_name,
-      std::unique_ptr<base::ListValue>(event_args->DeepCopy()),
+      histogram_value, event_name, event_args->CreateDeepCopy(),
       restrict_to_browser_context, event_url, user_gesture, filter_info);
   copy->will_dispatch_callback = will_dispatch_callback;
   return copy;

@@ -8,7 +8,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/memory/ptr_util.h"
 #include "components/guest_view/browser/guest_view_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/renderer_preferences.h"
@@ -200,8 +199,7 @@ void AppViewGuest::CreateWebContents(const base::DictionaryValue& create_params,
     queue->AddPendingTask(
         browser_context(), guest_extension->id(),
         base::BindOnce(&AppViewGuest::LaunchAppAndFireEvent,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Passed(base::WrapUnique(data->DeepCopy())),
+                       weak_ptr_factory_.GetWeakPtr(), data->CreateDeepCopy(),
                        std::move(callback)));
     return;
   }
@@ -210,8 +208,7 @@ void AppViewGuest::CreateWebContents(const base::DictionaryValue& create_params,
   ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(guest_extension->id());
   DCHECK(host);
-  LaunchAppAndFireEvent(base::WrapUnique(data->DeepCopy()), std::move(callback),
-                        host);
+  LaunchAppAndFireEvent(data->CreateDeepCopy(), std::move(callback), host);
 }
 
 void AppViewGuest::DidInitialize(const base::DictionaryValue& create_params) {

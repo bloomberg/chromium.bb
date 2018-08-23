@@ -16,7 +16,7 @@ namespace extensions {
 DictionaryBuilder::DictionaryBuilder() : dict_(new base::DictionaryValue) {}
 
 DictionaryBuilder::DictionaryBuilder(const base::DictionaryValue& init)
-    : dict_(init.DeepCopy()) {}
+    : dict_(init.CreateDeepCopy()) {}
 
 DictionaryBuilder::~DictionaryBuilder() {}
 
@@ -30,8 +30,8 @@ std::string DictionaryBuilder::ToJSON() const {
 // ListBuilder
 
 ListBuilder::ListBuilder() : list_(new base::ListValue) {}
-ListBuilder::ListBuilder(const base::ListValue& init) : list_(init.DeepCopy()) {
-}
+ListBuilder::ListBuilder(const base::ListValue& init)
+    : list_(init.CreateDeepCopy()) {}
 ListBuilder::~ListBuilder() {}
 
 }  // namespace extensions
