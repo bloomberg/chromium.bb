@@ -38,14 +38,34 @@ bool TestLocalCardMigrationManager::LocalCardMigrationWasTriggered() {
   return local_card_migration_was_triggered_;
 }
 
+bool TestLocalCardMigrationManager::IntermediatePromptWasShown() {
+  return intermediate_prompt_was_shown_;
+}
+
+bool TestLocalCardMigrationManager::MainPromptWasShown() {
+  return main_prompt_was_shown_;
+}
+
+void TestLocalCardMigrationManager::
+    OnUserAcceptedIntermediateMigrationDialog() {
+  intermediate_prompt_was_shown_ = true;
+  LocalCardMigrationManager::OnUserAcceptedIntermediateMigrationDialog();
+}
+
+void TestLocalCardMigrationManager::OnUserAcceptedMainMigrationDialog() {
+  main_prompt_was_shown_ = true;
+  LocalCardMigrationManager::OnUserAcceptedMainMigrationDialog();
+}
+
 void TestLocalCardMigrationManager::OnDidGetUploadDetails(
+    bool is_from_settings_page,
     AutofillClient::PaymentsRpcResult result,
     const base::string16& context_token,
     std::unique_ptr<base::DictionaryValue> legal_message) {
   if (result == AutofillClient::SUCCESS) {
     local_card_migration_was_triggered_ = true;
-    LocalCardMigrationManager::OnDidGetUploadDetails(result, context_token,
-                                                     std::move(legal_message));
+    LocalCardMigrationManager::OnDidGetUploadDetails(
+        is_from_settings_page, result, context_token, std::move(legal_message));
   }
 }
 

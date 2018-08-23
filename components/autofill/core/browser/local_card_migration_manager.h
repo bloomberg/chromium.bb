@@ -59,13 +59,22 @@ class LocalCardMigrationManager {
   // migration are satisfied. Initializes the local card list for upload.
   bool ShouldOfferLocalCardMigration(int imported_credit_card_record_type);
 
-  // Called from FormDataImporter when all migration requirements are met.
-  // Fetches legal documents and triggers the OnDidGetUploadDetails callback.
-  void AttemptToOfferLocalCardMigration();
+  // Called from FormDataImporter or settings page when all migration
+  // requirements are met. Fetches legal documents and triggers the
+  // OnDidGetUploadDetails callback. |is_from_settings_page| to denote the user
+  // triggers the migration from settings page. It will trigger the main prompt
+  // directly if the get upload details call returns success.
+  void AttemptToOfferLocalCardMigration(bool is_from_settings_page);
 
   // Callback function when user agrees to migration on the intermediate dialog.
   // Pops up a larger, modal dialog showing the local cards to be uploaded.
-  void OnUserAcceptedIntermediateMigrationDialog();
+  // Exposed for testing.
+  virtual void OnUserAcceptedIntermediateMigrationDialog();
+
+  // Callback function when user confirms migration on the main migration
+  // dialog. Sets |user_accepted_main_migration_dialog_| and sends the migration
+  // request once risk data is available. Exposed for testing.
+  virtual void OnUserAcceptedMainMigrationDialog();
 
   // Check that the user is signed in, syncing, and the proper experiment
   // flags are enabled. Override in the test class.
@@ -75,17 +84,19 @@ class LocalCardMigrationManager {
   // name if it exists on all cards, and existence of Payments customer).
   int GetDetectedValues() const;
 
+  // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
+  void GetMigratableCreditCards();
+
  protected:
   // Callback after successfully getting the legal documents. On success,
   // displays the offer-to-migrate dialog, which the user can accept or not.
-  // Exposed for testing.
+  // When |is_from_settings_page| is true, it will trigger the main prompt
+  // directly. If not, trigger the intermediate prompt. Exposed for testing.
   virtual void OnDidGetUploadDetails(
+      bool is_from_settings_page,
       AutofillClient::PaymentsRpcResult result,
       const base::string16& context_token,
       std::unique_ptr<base::DictionaryValue> legal_message);
-
-  // Fetch all migratable credit cards and store in |migratable_credit_cards_|.
-  void GetMigratableCreditCards();
 
   AutofillClient* const client_;
 
@@ -94,10 +105,16 @@ class LocalCardMigrationManager {
   payments::PaymentsClient* payments_client_;
 
  private:
-  // Callback function when user confirms migration on the main migration
-  // dialog. Sets |user_accepted_main_migration_dialog_| and sends the upload
-  // request.
-  void OnUserAcceptedMainMigrationDialog();
+  // Pops up a larger, modal dialog showing the local cards to be uploaded.
+  void ShowMainMigrationDialog();
+
+  // Callback function when migration risk data is ready. Saves risk data in
+  // |migration_risk_data_| and calls SendMigrateLocalCardsRequest if the user
+  // has accepted the main migration dialog.
+  void OnDidGetMigrationRiskData(const std::string& risk_data);
+
+  // Finalizes the migration request and calls PaymentsClient.
+  void SendMigrateLocalCardsRequest();
 
   std::unique_ptr<base::DictionaryValue> legal_message_;
 
@@ -118,6 +135,8 @@ class LocalCardMigrationManager {
   // |true| if the user has accepted migrating their local cards to Google Pay
   // on the main dialog.
   bool user_accepted_main_migration_dialog_ = false;
+
+  std::string migration_risk_data_;
 
   base::WeakPtrFactory<LocalCardMigrationManager> weak_ptr_factory_;
 

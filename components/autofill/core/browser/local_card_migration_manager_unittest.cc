@@ -595,4 +595,62 @@ TEST_F(LocalCardMigrationManagerTest,
       CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT);
 }
 
+// Verify that when triggering from settings page, intermediate prompt will not
+// be triggered.
+TEST_F(LocalCardMigrationManagerTest,
+       MigrateCreditCard_TriggerFromSettingsPage) {
+  EnableAutofillCreditCardLocalCardMigrationExperiment();
+  personal_data_.ClearCreditCards();
+  personal_data_.ClearProfiles();
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+  // Set the billing_customer_number Priority Preference to designate
+  // existence of a Payments account.
+  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
+                                         12345);
+  // Add a local credit card. One migratable credit card will still trigger
+  // migration on settings page.
+  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                    test::NextYear().c_str(), "1");
+
+  // Do the same operation as we bridge back from the settings page.
+  local_card_migration_manager_->GetMigratableCreditCards();
+  local_card_migration_manager_->AttemptToOfferLocalCardMigration(true);
+
+  EXPECT_FALSE(local_card_migration_manager_->IntermediatePromptWasShown());
+  EXPECT_TRUE(local_card_migration_manager_->MainPromptWasShown());
+}
+
+// Verify that when triggering from submitted form, intermediate prompt and main
+// prompt are both triggered.
+TEST_F(LocalCardMigrationManagerTest,
+       MigrateCreditCard_TriggerFromSubmittedForm) {
+  EnableAutofillCreditCardLocalCardMigrationExperiment();
+  personal_data_.ClearCreditCards();
+  personal_data_.ClearProfiles();
+  credit_card_save_manager_->SetCreditCardUploadEnabled(true);
+  // Set the billing_customer_number Priority Preference to designate
+  // existence of a Payments account.
+  autofill_client_.GetPrefs()->SetDouble(prefs::kAutofillBillingCustomerNumber,
+                                         12345);
+  // Add a local credit card whose |TypeAndLastFourDigits| matches what we will
+  // enter below.
+  AddLocalCrediCard(personal_data_, "Flo Master", "4111111111111111", "11",
+                    test::NextYear().c_str(), "1");
+  // Add another local credit card, so it will trigger migration.
+  AddLocalCrediCard(personal_data_, "Flo Master", "5555555555554444", "11",
+                    test::NextYear().c_str(), "1");
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  test::CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  EditCreditCardFrom(credit_card_form, "Flo Master", "4111111111111111", "11",
+                     test::NextYear().c_str(), "123");
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(local_card_migration_manager_->IntermediatePromptWasShown());
+  EXPECT_TRUE(local_card_migration_manager_->MainPromptWasShown());
+}
+
 }  // namespace autofill

@@ -138,7 +138,8 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
   if (local_card_migration_manager_ &&
       local_card_migration_manager_->ShouldOfferLocalCardMigration(
           imported_credit_card_record_type_)) {
-    local_card_migration_manager_->AttemptToOfferLocalCardMigration();
+    local_card_migration_manager_->AttemptToOfferLocalCardMigration(
+        /*is_from_settings_page=*/false);
     return;
   }
 
