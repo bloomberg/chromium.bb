@@ -238,14 +238,18 @@ class WebLocalFrame : public WebFrame {
                               const WebURL& unreachable_url = WebURL(),
                               bool replace = false) = 0;
 
-  // Navigates to the given data with specific mime type and optional text
-  // encoding.  For HTML data, baseURL indicates the security origin of
-  // the document and is used to resolve links.  If specified,
-  // unreachableURL is reported via WebDocumentLoader::unreachableURL.  If
-  // replace is false, then this data will be loaded as a normal
-  // navigation.  Otherwise, the current history item will be replaced.
+  // Navigates to the given |data| with specified |mime_type| and optional
+  // |text_encoding|.  For HTML data, |base_url| indicates the security origin
+  // of the document and is used to resolve links.  If specified,
+  // |unreachable_url| is reported via WebDocumentLoader::UnreachableURL.  If
+  // |replace| is false, then this data will be loaded as a normal navigation.
+  // Otherwise, the current history item will be replaced.  The request to
+  // commit will be based either on 1) the previous, provisional request (if
+  // |replace| is true and |unreachable_url| is present) or 2)
+  // |original_failed_request| (if present) or 3) will be constructed from
+  // scratch otherwise.
   virtual void CommitDataNavigation(
-      const WebData&,
+      const WebData& data,
       const WebString& mime_type,
       const WebString& text_encoding,
       const WebURL& base_url,
@@ -255,6 +259,7 @@ class WebLocalFrame : public WebFrame {
       const WebHistoryItem&,
       bool is_client_redirect,
       std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data,
+      const WebURLRequest* original_failed_request,
       const WebNavigationTimings& navigation_timings) = 0;
 
   // Returns the document loader that is currently loading.  May be null.

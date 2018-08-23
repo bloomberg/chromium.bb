@@ -466,6 +466,15 @@ WebURLRequest CreateURLRequestForNavigation(
     }
   }
 
+  if (common_params.post_data) {
+    request.SetHTTPBody(GetWebHTTPBodyForRequestBody(*common_params.post_data));
+    if (!request_params.post_content_type.empty()) {
+      request.AddHTTPHeaderField(
+          WebString::FromASCII(net::HttpRequestHeaders::kContentType),
+          WebString::FromASCII(request_params.post_content_type));
+    }
+  }
+
   if (!web_referrer.IsEmpty() ||
       common_params.referrer.policy != blink::kWebReferrerPolicyDefault) {
     request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
@@ -2651,7 +2660,8 @@ void RenderFrameImpl::LoadNavigationErrorPage(
   }
   LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
                                   error.url(), replace, frame_load_type,
-                                  history_item, std::move(navigation_data));
+                                  history_item, std::move(navigation_data),
+                                  failed_request);
 }
 
 void RenderFrameImpl::LoadNavigationErrorPageForHttpStatusError(
@@ -2671,9 +2681,9 @@ void RenderFrameImpl::LoadNavigationErrorPageForHttpStatusError(
   GetContentClient()->renderer()->PrepareErrorPageForHttpStatusError(
       this, failed_request, unreachable_url, http_status, &error_html, nullptr);
   std::unique_ptr<DocumentState> document_state(BuildDocumentState());
-  LoadNavigationErrorPageInternal(error_html, GURL(kUnreachableWebDataURL),
-                                  unreachable_url, replace, frame_load_type,
-                                  history_item, std::move(document_state));
+  LoadNavigationErrorPageInternal(
+      error_html, GURL(kUnreachableWebDataURL), unreachable_url, replace,
+      frame_load_type, history_item, std::move(document_state), failed_request);
 }
 
 void RenderFrameImpl::LoadNavigationErrorPageInternal(
@@ -2683,12 +2693,13 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
     bool replace,
     blink::WebFrameLoadType frame_load_type,
     const blink::WebHistoryItem& history_item,
-    std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data) {
+    std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
+    const WebURLRequest& failed_request) {
   frame_->CommitDataNavigation(error_html, WebString::FromUTF8("text/html"),
                                WebString::FromUTF8("UTF-8"), error_page_url,
                                error_url, replace, frame_load_type,
                                history_item, false, std::move(navigation_data),
-                               blink::WebNavigationTimings());
+                               &failed_request, blink::WebNavigationTimings());
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -2815,7 +2826,8 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
       error_html, WebString::FromUTF8("text/html"),
       WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL), error.url(),
       true, blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), true,
-      nullptr /* navigation_data */, blink::WebNavigationTimings());
+      nullptr /* navigation_data */, nullptr /* original_failed_request */,
+      blink::WebNavigationTimings());
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -3209,8 +3221,6 @@ void RenderFrameImpl::CommitFailedNavigation(
     CommitFailedNavigationCallback callback) {
   DCHECK(
       !FrameMsg_Navigate_Type::IsSameDocument(common_params.navigation_type));
-  bool is_reload =
-      FrameMsg_Navigate_Type::IsReload(common_params.navigation_type);
   RenderFrameImpl::PrepareRenderViewForNavigation(common_params.url,
                                                   request_params);
 
@@ -3286,7 +3296,10 @@ void RenderFrameImpl::CommitFailedNavigation(
   // specifically.
   // TODO(clamy): see if initial commits in subframes should be handled
   // separately.
-  bool replace = is_reload || common_params.url == GetLoadingUrl() ||
+  bool is_reload_or_history =
+      FrameMsg_Navigate_Type::IsReload(common_params.navigation_type) ||
+      FrameMsg_Navigate_Type::IsHistory(common_params.navigation_type);
+  bool replace = is_reload_or_history || common_params.url == GetLoadingUrl() ||
                  common_params.should_replace_current_entry;
   std::unique_ptr<HistoryEntry> history_entry;
   if (request_params.page_state.IsValid())
@@ -6513,15 +6526,6 @@ WebURLRequest RenderFrameImpl::CreateURLRequestForCommit(
                            ? network::mojom::RequestContextFrameType::kTopLevel
                            : network::mojom::RequestContextFrameType::kNested);
 
-  if (common_params.post_data) {
-    request.SetHTTPBody(GetWebHTTPBodyForRequestBody(*common_params.post_data));
-    if (!request_params.post_content_type.empty()) {
-      request.AddHTTPHeaderField(
-          WebString::FromASCII(net::HttpRequestHeaders::kContentType),
-          WebString::FromASCII(request_params.post_content_type));
-    }
-  }
-
 #if defined(OS_ANDROID)
   request.SetHasUserGesture(common_params.has_user_gesture);
 #endif
@@ -6872,6 +6876,7 @@ void RenderFrameImpl::LoadDataURL(
         params.history_url_for_data_url, replace, load_type,
         item_for_history_navigation, is_client_redirect,
         std::move(navigation_data),
+        nullptr,  // original_failed_request
         BuildNavigationTimings(params.navigation_start,
                                request_params.navigation_timing,
                                params.input_start));

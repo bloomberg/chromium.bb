@@ -948,7 +948,7 @@ void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
   CommitDataNavigation(data, WebString::FromUTF8("text/html"),
                        WebString::FromUTF8("UTF-8"), base_url, unreachable_url,
                        replace, WebFrameLoadType::kStandard, WebHistoryItem(),
-                       false, nullptr, WebNavigationTimings());
+                       false, nullptr, nullptr, WebNavigationTimings());
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -2122,23 +2122,25 @@ void WebLocalFrameImpl::CommitDataNavigation(
     const WebHistoryItem& item,
     bool is_client_redirect,
     std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data,
+    const WebURLRequest* original_failed_request,
     const WebNavigationTimings& navigation_timings) {
   DCHECK(GetFrame());
 
-  // If we are loading substitute data to replace an existing load, then
-  // inherit all of the properties of that original request. This way,
-  // reload will re-attempt the original request. It is essential that
-  // we only do this when there is an unreachableURL since a non-empty
-  // unreachableURL informs FrameLoader::CommitNavigation to load
-  // unreachableURL instead of the currently loaded URL.
   // TODO(dgozman): this whole logic of rewriting the params is odd,
   // and should be moved to the callsites instead.
   ResourceRequest request;
   HistoryItem* history_item = item;
   DocumentLoader* provisional_document_loader =
       GetFrame()->Loader().GetProvisionalDocumentLoader();
+  // If we are loading substitute data to replace an existing load, then
+  // inherit all of the properties of that original request. This way,
+  // reload will re-attempt the original request. It is essential that
+  // we only do this when there is an |unreachable_url| since a non-empty
+  // |unreachable_url| informs FrameLoader::CommitNavigation to load
+  // |unreachable_url| instead of the currently loaded URL.
   if (replace && !unreachable_url.IsEmpty() && provisional_document_loader) {
     request = provisional_document_loader->OriginalRequest();
+
     // When replacing a failed back/forward provisional navigation with an error
     // page, retain the HistoryItem for the failed provisional navigation
     // and reuse it for the error page navigation.
@@ -2152,6 +2154,17 @@ void WebLocalFrameImpl::CommitDataNavigation(
                previous_load_type == WebFrameLoadType::kReloadBypassingCache) {
       web_frame_load_type = previous_load_type;
     }
+  } else if (original_failed_request) {
+    // We should only come here when committing an error page.  In particular,
+    // outside of unit tests, unreachable_url should be non-empty.
+    //
+    // TODO(lukasza): Extract error handling to a separate method.  See a WIP CL
+    // @ https://crrev.com/c/1176230.
+    request = original_failed_request->ToResourceRequest();
+
+    // Locally generated error pages should not be cached (in particular they
+    // should not inherit the cache mode from |original_failed_request|).
+    request.SetCacheMode(mojom::FetchCacheMode::kNoStore);
   }
   request.SetURL(base_url);
 

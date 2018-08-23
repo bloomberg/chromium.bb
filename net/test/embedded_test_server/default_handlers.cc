@@ -140,6 +140,9 @@ std::unique_ptr<HttpResponse> HandleEchoTitle(const HttpRequest& request) {
 
 // /echoall?QUERY
 // Responds with the list of QUERY and the request headers.
+//
+// Alternative form:
+// /echoall/nocache?QUERY prevents caching of the response.
 std::unique_ptr<HttpResponse> HandleEchoAll(const HttpRequest& request) {
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
 
@@ -167,6 +170,13 @@ std::unique_ptr<HttpResponse> HandleEchoAll(const HttpRequest& request) {
 
   http_response->set_content_type("text/html");
   http_response->set_content(body);
+
+  if (base::EndsWith(request.GetURL().path_piece(), "/nocache",
+                     base::CompareCase::SENSITIVE)) {
+    http_response->AddCustomHeader("Cache-Control",
+                                   "no-cache, no-store, must-revalidate");
+  }
+
   return std::move(http_response);
 }
 

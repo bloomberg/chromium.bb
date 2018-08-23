@@ -56,8 +56,10 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
+#include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/common/shell_switches.h"
@@ -6395,6 +6397,171 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, PostViaOpenUrlMsg) {
   EXPECT_EQ(
       "text=value\n",
       EvalJs(shell(), "document.getElementsByTagName('pre')[0].innerText"));
+}
+
+// This test verifies that reloading a POST request that is uncacheable won't
+// incorrectly result in a GET request.  This is a regression test for
+// https://crbug.com/860807.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, UncacheablePost) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/form_that_posts_to_echoall_nocache.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContents* web_contents = shell()->web_contents();
+  EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Submit the form.
+  TestNavigationObserver form_post_observer(web_contents, 1);
+  EXPECT_TRUE(
+      ExecuteScript(web_contents, "document.getElementById('form').submit();"));
+  form_post_observer.Wait();
+
+  // Verify that we arrived at the expected location.
+  GURL target_url(embedded_test_server()->GetURL("/echoall/nocache"));
+  EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Verify that this was a POST request.
+  std::string request_headers;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[1].innerText);",
+      &request_headers));
+  EXPECT_THAT(request_headers, ::testing::HasSubstr("POST /echoall/nocache"));
+
+  // Verify that POST body was correctly passed to the server and ended up in
+  // the body of the page.
+  std::string body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &body));
+  EXPECT_EQ("text=value\n", body);
+
+  // Extract the response nonce.
+  std::string old_response_nonce;
+  std::string response_nonce_extraction_script = R"(
+      domAutomationController.send(
+          document.getElementById('response-nonce').innerText); )";
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents, response_nonce_extraction_script, &old_response_nonce));
+
+  // Go back.
+  {
+    TestNavigationObserver observer(web_contents);
+    web_contents->GetController().GoBack();
+    observer.Wait();
+  }
+  EXPECT_EQ(main_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Go forward.
+  {
+    TestNavigationObserver navigation_observer(web_contents);
+    NavigationHandleObserver handle_observer(web_contents, target_url);
+    web_contents->GetController().GoForward();
+    navigation_observer.Wait();
+
+    // Verify that the previous response response really was treated as
+    // uncacheable.
+    EXPECT_TRUE(handle_observer.is_error());
+    EXPECT_EQ(net::ERR_CACHE_MISS, handle_observer.net_error_code());
+  }
+  EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Reload
+  {
+    TestNavigationObserver observer(web_contents);
+    web_contents->GetController().Reload(content::ReloadType::NORMAL,
+                                         false);  // check_for_repost
+    observer.Wait();
+  }
+  EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // MAIN VERIFICATION for https://crbug.com/860807: Verify that the reload was
+  // a POST request.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[1].innerText);",
+      &request_headers));
+  EXPECT_THAT(request_headers, ::testing::HasSubstr("POST /echoall/nocache"));
+
+  // Verify that POST body was correctly passed to the server and ended up in
+  // the body of the page.  This is supplementary verification against
+  // https://crbug.com/860807.
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &body));
+  EXPECT_EQ("text=value\n", body);
+
+  // Extract the new response nonce and verify that it did change (e.g. that the
+  // reload did load fresh content).
+  std::string new_response_nonce;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents, response_nonce_extraction_script, &new_response_nonce));
+  EXPECT_NE(new_response_nonce, old_response_nonce);
+}
+
+// This test verifies that it is possible to reload a POST request that
+// initially failed (e.g. because the network was offline or the host was
+// unreachable during the initial navigation).  This is a regression test for
+// https://crbug.com/869117.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       ReloadOfInitiallyFailedPost) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/form_that_posts_to_echoall_nocache.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  WebContents* web_contents = shell()->web_contents();
+  EXPECT_EQ(0, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Submit the form while simulating "network down" conditions.
+  GURL target_url(embedded_test_server()->GetURL("/echoall/nocache"));
+  {
+    std::unique_ptr<URLLoaderInterceptor> interceptor =
+        URLLoaderInterceptor::SetupRequestFailForURL(
+            target_url, net::ERR_INTERNET_DISCONNECTED);
+    TestNavigationObserver form_post_observer(web_contents, 1);
+    EXPECT_TRUE(ExecuteScript(web_contents,
+                              "document.getElementById('form').submit();"));
+    form_post_observer.Wait();
+  }
+  EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Reload
+  {
+    TestNavigationObserver observer(web_contents);
+    web_contents->GetController().Reload(content::ReloadType::NORMAL,
+                                         false);  // check_for_repost
+    observer.Wait();
+  }
+  EXPECT_EQ(target_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(1, web_contents->GetController().GetLastCommittedEntryIndex());
+
+  // Verify that the reload was a POST request.
+  std::string request_headers;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[1].innerText);",
+      &request_headers));
+  EXPECT_THAT(request_headers, ::testing::HasSubstr("POST /echoall/nocache"));
+
+  // Verify that POST body was correctly passed to the server and ended up in
+  // the body of the page.
+  std::string body;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      web_contents,
+      "window.domAutomationController.send("
+      "document.getElementsByTagName('pre')[0].innerText);",
+      &body));
+  EXPECT_EQ("text=value\n", body);
 }
 
 // Tests that inserting a named subframe into the FrameTree clears any

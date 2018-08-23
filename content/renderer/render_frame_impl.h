@@ -1147,7 +1147,8 @@ class CONTENT_EXPORT RenderFrameImpl
       bool replace,
       blink::WebFrameLoadType frame_load_type,
       const blink::WebHistoryItem& history_item,
-      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
+      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
+      const blink::WebURLRequest& failed_request);
 
   void HandleJavascriptExecutionResult(const base::string16& javascript,
                                        int id,

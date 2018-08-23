@@ -4,6 +4,9 @@
 
 #include "content/public/test/url_loader_interceptor.h"
 
+#include <string>
+#include <utility>
+
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -470,6 +473,21 @@ void URLLoaderInterceptor::ShutdownOnIOThread(base::OnceClosure closure) {
   }
 
   std::move(closure).Run();
+}
+
+// static
+std::unique_ptr<content::URLLoaderInterceptor>
+URLLoaderInterceptor::SetupRequestFailForURL(const GURL& url,
+                                             net::Error error) {
+  return std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
+      [](const GURL& url, net::Error error,
+         content::URLLoaderInterceptor::RequestParams* params) {
+        if (params->url_request.url != url)
+          return false;
+        params->client->OnComplete(network::URLLoaderCompletionStatus(error));
+        return true;
+      },
+      url, error));
 }
 
 }  // namespace content
