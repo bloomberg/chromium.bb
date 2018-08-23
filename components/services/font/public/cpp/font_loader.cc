@@ -92,6 +92,13 @@ bool FontLoader::FontRenderStyleForStrike(
                                            out_font_render_style);
 }
 
+bool FontLoader::MatchFontByPostscriptNameOrFullFontName(
+    std::string postscript_name_or_full_font_name,
+    mojom::FontIdentityPtr* out_identity) {
+  return thread_->MatchFontByPostscriptNameOrFullFontName(
+      std::move(postscript_name_or_full_font_name), out_identity);
+}
+
 void FontLoader::MatchFontWithFallback(std::string family,
                                        bool is_bold,
                                        bool is_italic,

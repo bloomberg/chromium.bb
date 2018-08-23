@@ -15,6 +15,8 @@ source_set("lib") {
   sources = [
     "font_service_app.cc",
     "font_service_app.h",
+    "fontconfig_matching.cc",
+    "fontconfig_matching.h",
   ]
 
   deps = [
@@ -24,6 +26,7 @@ source_set("lib") {
     "//mojo/public/cpp/system",
     "//ppapi/buildflags:buildflags",
     "//services/service_manager/public/cpp",
+    "//third_party/fontconfig",
     "//ui/gfx",
   ]
 
@@ -51,7 +54,6 @@ if (is_linux && enable_plugins) {
       "//base:base",
       "//ppapi/buildflags:buildflags",
       "//ppapi/c",
-      "//third_party/fontconfig",
     ]
   }
 }

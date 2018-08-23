@@ -60,6 +60,9 @@ class FontServiceThread : public base::Thread,
       bool is_bold,
       float device_scale_factor,
       font_service::mojom::FontRenderStylePtr* out_font_render_style);
+  bool MatchFontByPostscriptNameOrFullFontName(
+      std::string postscript_name_or_full_font_name,
+      mojom::FontIdentityPtr* out_identity);
   void MatchFontWithFallback(std::string family,
                              bool is_bold,
                              bool is_italic,
@@ -139,6 +142,17 @@ class FontServiceThread : public base::Thread,
       bool* out_valid,
       mojom::FontRenderStylePtr* out_font_render_style,
       mojom::FontRenderStylePtr font_render_style);
+
+  void MatchFontByPostscriptNameOrFullFontNameImpl(
+      base::WaitableEvent* done_event,
+      bool* out_valid,
+      std::string postscript_name_or_full_font_name,
+      mojom::FontIdentityPtr* out_font_identity);
+  void OnMatchFontByPostscriptNameOrFullFontNameComplete(
+      base::WaitableEvent* done_event,
+      bool* out_valid,
+      mojom::FontIdentityPtr* out_font_identity,
+      mojom::FontIdentityPtr font_identity);
 
   void MatchFontWithFallbackImpl(base::WaitableEvent* done_event,
                                  std::string family,
