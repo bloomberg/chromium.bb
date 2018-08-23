@@ -2477,8 +2477,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/self-signed-invalid-name.pem",
     "data/ssl/certificates/self-signed-invalid-sig.pem",
     "data/ssl/certificates/sha1_2016.pem",
-    "data/ssl/certificates/sha1_dec_2015.pem",
-    "data/ssl/certificates/sha1_jan_2016.pem",
     "data/ssl/certificates/sha1_leaf.pem",
     "data/ssl/certificates/spdy_pooling.pem",
     "data/ssl/certificates/start_after_expiry.pem",

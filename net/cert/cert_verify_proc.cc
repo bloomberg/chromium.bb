@@ -185,18 +185,6 @@ bool ExaminePublicKeys(const scoped_refptr<X509Certificate>& cert,
   return weak_key;
 }
 
-// Beginning with Ballot 118, ratified in the Baseline Requirements v1.2.1,
-// CAs MUST NOT issue SHA-1 certificates beginning on 1 January 2016.
-bool IsPastSHA1DeprecationDate(const X509Certificate& cert) {
-  const base::Time& start = cert.valid_start();
-  if (start.is_max() || start.is_null())
-    return true;
-  // 2016-01-01 00:00:00 UTC.
-  const base::Time kSHA1DeprecationDate =
-      base::Time::FromInternalValue(INT64_C(13096080000000000));
-  return start >= kSHA1DeprecationDate;
-}
-
 // See
 // https://security.googleblog.com/2017/09/chromes-plan-to-distrust-symantec.html
 // for more details.
@@ -498,8 +486,7 @@ scoped_refptr<CertVerifyProc> CertVerifyProc::CreateDefault() {
 #endif
 }
 
-CertVerifyProc::CertVerifyProc()
-    : sha1_legacy_mode_enabled(base::FeatureList::IsEnabled(kSHA1LegacyMode)) {}
+CertVerifyProc::CertVerifyProc() {}
 
 CertVerifyProc::~CertVerifyProc() = default;
 
@@ -586,13 +573,6 @@ int CertVerifyProc::Verify(X509Certificate* cert,
 
   // Flag certificates using weak signature algorithms.
 
-  // Legacy SHA-1 behaviour:
-  // - Reject all publicly trusted SHA-1 leaf certs issued after
-  //   2016-01-01.
-  bool legacy_sha1_issue = verify_result->has_sha1_leaf &&
-                           verify_result->is_issued_by_known_root &&
-                           IsPastSHA1DeprecationDate(*cert);
-
   // Current SHA-1 behaviour:
   // - Reject all SHA-1
   // - ... unless it's not publicly trusted and SHA-1 is allowed
@@ -604,9 +584,7 @@ int CertVerifyProc::Verify(X509Certificate* cert,
       (verify_result->has_sha1_leaf ||
        (verify_result->has_sha1 && !AreSHA1IntermediatesAllowed()));
 
-  if (verify_result->has_md5 ||
-      (sha1_legacy_mode_enabled && legacy_sha1_issue) ||
-      (!sha1_legacy_mode_enabled && current_sha1_issue)) {
+  if (verify_result->has_md5 || current_sha1_issue) {
     verify_result->cert_status |= CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
     // Avoid replacing a more serious error, such as an OS/library failure,
     // by ensuring that if verification failed, it failed with a certificate
@@ -905,10 +883,6 @@ bool CertVerifyProc::HasTooLongValidity(const X509Certificate& cert) {
 
   return false;
 }
-
-// static
-const base::Feature CertVerifyProc::kSHA1LegacyMode{
-    "SHA1LegacyMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // static
 const base::Feature CertVerifyProc::kLegacySymantecPKIEnforcement{
