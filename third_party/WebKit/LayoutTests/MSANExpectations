@@ -186,7 +186,7 @@ crbug.com/869818 [ Linux ] http/tests/background_fetch/block-cors-preflights.htt
 
 # Disabled by sheriff due to repeated flakes
 crbug.com/873045 [ Linux ] external/wpt/WebCryptoAPI/idlharness.https.any.worker.html [ Pass Failure Timeout ]
+crbug.com/873045 [ Linux ] external/wpt/picture-in-picture/idlharness.window.html [ Pass Failure Timeout ]
 # Also flaking according to crbug.com/873045 but mentioned in existing entries above:
-# external/wpt/picture-in-picture/idlharness.window.html
 # external/wpt/notifications/idlharness.https.any.worker.html
 # external/wpt/xhr/idlharness.any.worker.html
