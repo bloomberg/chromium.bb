@@ -21,6 +21,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+class EventRewriter;
+}
+
 // See ash/mus/frame/README.md for description of how immersive mode works in
 // mash. This code works with both classic ash, and mash.
 class ImmersiveModeControllerAsh
@@ -80,6 +84,8 @@ class ImmersiveModeControllerAsh
                                intptr_t old) override;
   void OnWindowDestroying(aura::Window* window) override;
 
+  gfx::Rect GetScreenBoundsForRevealWidget();
+
   std::unique_ptr<ash::ImmersiveFullscreenController> controller_;
 
   BrowserView* browser_view_ = nullptr;
@@ -92,9 +98,12 @@ class ImmersiveModeControllerAsh
   // the top-of-window views are not revealed.
   double visible_fraction_ = 1.0;
 
-  // When running in mash a widget is created to draw the top container. This
-  // widget does not actually contain the top container, it just renders it.
+  // When running in mash a widget is created to draw window controls on top of
+  // the browser's |top_container|.
   std::unique_ptr<views::Widget> mash_reveal_widget_;
+
+  // See comment above LocatedEventRetargeter.
+  std::unique_ptr<ui::EventRewriter> event_rewriter_;
 
   content::NotificationRegistrar registrar_;
 

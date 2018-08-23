@@ -5,8 +5,10 @@
 #include "ash/frame/custom_frame_header.h"
 
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/frame/detached_title_area_renderer.h"
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/ash_layout_constants.h"
+#include "ash/public/cpp/frame_utils.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -51,58 +53,20 @@ SkPath MakeRoundRectPath(const gfx::Rect& bounds,
 void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                                  const gfx::ImageSkia& frame_image,
                                  const gfx::ImageSkia& frame_overlay_image,
-                                 int alpha,
-                                 SkColor opaque_background_color,
+                                 SkColor background_color,
                                  const gfx::Rect& bounds,
-                                 int corner_radius,
                                  int image_inset_x,
-                                 int image_inset_y) {
+                                 int image_inset_y,
+                                 int alpha,
+                                 int corner_radius) {
   SkPath frame_path = MakeRoundRectPath(bounds, corner_radius, corner_radius);
   bool antialias = corner_radius > 0;
 
   gfx::ScopedCanvas scoped_save(canvas);
   canvas->ClipPath(frame_path, antialias);
 
-  // When no images are used, just draw a color, with the animation |alpha|
-  // applied.
-  if (frame_image.isNull() && frame_overlay_image.isNull()) {
-    // We use kPlus blending mode so that between the active and inactive
-    // background colors, the result is 255 alpha (i.e. opaque).
-    canvas->DrawColor(SkColorSetA(opaque_background_color, alpha),
-                      SkBlendMode::kPlus);
-    return;
-  }
-
-  // This handles the case where blending is required between one or more images
-  // and the background color. In this case we use a SaveLayerWithFlags() call
-  // to draw all 2-3 components into a single layer then apply the alpha to them
-  // together.
-  const bool blending_required =
-      alpha < 0xFF || (!frame_image.isNull() && !frame_overlay_image.isNull());
-  if (blending_required) {
-    cc::PaintFlags flags;
-    // We use kPlus blending mode so that between the active and inactive
-    // background colors, the result is 255 alpha (i.e. opaque).
-    flags.setBlendMode(SkBlendMode::kPlus);
-    flags.setAlpha(alpha);
-    canvas->SaveLayerWithFlags(flags);
-  }
-
-  // Images can be transparent and we expect the background color to be present
-  // behind them. Here the |alpha| will be applied to the background color by
-  // the SaveLayer call, so use |opaque_background_color|.
-  canvas->DrawColor(opaque_background_color);
-  if (!frame_image.isNull()) {
-    canvas->TileImageInt(frame_image, image_inset_x, image_inset_y, 0, 0,
-                         bounds.width(), bounds.height(), 1.0f,
-                         SkShader::kRepeat_TileMode,
-                         SkShader::kMirror_TileMode);
-  }
-  if (!frame_overlay_image.isNull())
-    canvas->DrawImageInt(frame_overlay_image, 0, 0);
-
-  if (blending_required)
-    canvas->Restore();
+  PaintThemedFrame(canvas, frame_image, frame_overlay_image, background_color,
+                   bounds, image_inset_x, image_inset_y, alpha);
 }
 
 }  // namespace
@@ -129,9 +93,14 @@ CustomFrameHeader::~CustomFrameHeader() = default;
 // CustomFrameHeader, protected:
 
 void CustomFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
-  PaintFrameImages(canvas, false /* active */);
-  PaintFrameImages(canvas, true /* active */);
-  PaintTitleBar(canvas);
+  // If this is a detached title area renderer (i.e. for client-controlled
+  // immersive mode), then Mash only needs to render the window caption buttons.
+  if (!DetachedTitleAreaRendererForClient::ForWindow(
+          view()->GetWidget()->GetNativeView())) {
+    PaintFrameImages(canvas, false /* active */);
+    PaintFrameImages(canvas, true /* active */);
+    PaintTitleBar(canvas);
+  }
 }
 
 AshLayoutSize CustomFrameHeader::GetButtonLayoutSize() const {
@@ -170,19 +139,16 @@ void CustomFrameHeader::PaintFrameImages(gfx::Canvas* canvas, bool active) {
       appearance_provider_->GetFrameHeaderImage(active);
   gfx::ImageSkia frame_overlay_image =
       appearance_provider_->GetFrameHeaderOverlayImage(active);
-  // We ensure that the background color is opaque.
-  SkColor opaque_background_color =
-      SkColorSetA(appearance_provider_->GetFrameHeaderColor(active), 0xFF);
 
   int corner_radius = 0;
   if (!target_widget()->IsMaximized() && !target_widget()->IsFullscreen())
     corner_radius = FrameHeaderUtil::GetTopCornerRadiusWhenRestored();
 
   PaintFrameImagesInRoundRect(
-      canvas, frame_image, frame_overlay_image, alpha, opaque_background_color,
-      GetPaintedBounds(), corner_radius,
+      canvas, frame_image, frame_overlay_image,
+      appearance_provider_->GetFrameHeaderColor(active), GetPaintedBounds(),
       FrameHeaderUtil::GetThemeBackgroundXInset(),
-      appearance_provider_->GetFrameHeaderImageYInset());
+      appearance_provider_->GetFrameHeaderImageYInset(), alpha, corner_radius);
 }
 
 }  // namespace ash
