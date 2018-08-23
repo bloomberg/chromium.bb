@@ -36,6 +36,7 @@
 #include "components/arc/arc_supervision_transition.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -343,9 +344,12 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
     auth_code_fetcher = std::make_unique<ArcRobotAuthCodeFetcher>();
   } else {
     // Optionally retrieve auth code in silent mode.
+    const SigninManagerBase* const signin_manager =
+        SigninManagerFactory::GetForProfile(profile_);
     auto background_auth_code_fetcher =
         std::make_unique<ArcBackgroundAuthCodeFetcher>(
-            url_loader_factory_, profile_, initial_signin);
+            url_loader_factory_, profile_,
+            signin_manager->GetAuthenticatedAccountId(), initial_signin);
     if (skip_merge_session_for_testing_)
       background_auth_code_fetcher->SkipMergeSessionForTesting();
 

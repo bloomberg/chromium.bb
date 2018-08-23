@@ -27,7 +27,11 @@ class ArcAuthContext : public UbertokenConsumer,
                        public GaiaAuthConsumer,
                        public OAuth2TokenService::Observer {
  public:
-  explicit ArcAuthContext(Profile* profile);
+  // Creates an |ArcAuthContext| for the given |account_id|. This |account_id|
+  // must be the |account_id| used by the OAuth Token Service chain.
+  // Note: |account_id| can be the Device Account or a Secondary Account stored
+  // in Chrome OS Account Manager.
+  ArcAuthContext(Profile* profile, const std::string& account_id);
   ~ArcAuthContext() override;
 
   ProfileOAuth2TokenService* token_service() { return token_service_; }
@@ -68,9 +72,8 @@ class ArcAuthContext : public UbertokenConsumer,
 
   // Unowned pointer.
   Profile* const profile_;
-  ProfileOAuth2TokenService* token_service_;
-
-  std::string account_id_;
+  const std::string account_id_;
+  ProfileOAuth2TokenService* const token_service_;
 
   // Whether the merge session should be skipped. Set to true only in testing.
   bool skip_merge_session_for_testing_ = false;
