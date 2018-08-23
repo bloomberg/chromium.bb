@@ -15,8 +15,10 @@ WebViewTranslateService::TranslateRequestsAllowedListener::
     TranslateRequestsAllowedListener()
     : resource_request_allowed_notifier_(
           ios_web_view::ApplicationContext::GetInstance()->GetLocalState(),
-          /*disable_network_switch=*/nullptr) {
-  resource_request_allowed_notifier_.Init(this);
+          /*disable_network_switch=*/nullptr,
+          base::BindOnce(&ApplicationContext::GetNetworkConnectionTracker,
+                         base::Unretained(ApplicationContext::GetInstance()))) {
+  resource_request_allowed_notifier_.Init(this, /*leaky=*/false);
 }
 
 WebViewTranslateService::TranslateRequestsAllowedListener::

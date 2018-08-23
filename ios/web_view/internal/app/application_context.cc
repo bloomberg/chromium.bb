@@ -20,10 +20,22 @@
 #include "ios/web_view/cwv_web_view_features.h"
 #include "ios/web_view/internal/app/web_view_io_thread.h"
 #include "net/socket/client_socket_pool_manager.h"
+#include "services/network/network_change_manager.h"
+#include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace ios_web_view {
+namespace {
+
+// Passed to NetworkConnectionTracker to bind a NetworkChangeManagerRequest.
+void BindNetworkChangeManagerRequest(
+    network::NetworkChangeManager* network_change_manager,
+    network::mojom::NetworkChangeManagerRequest request) {
+  network_change_manager->AddRequest(std::move(request));
+}
+
+}  // namespace
 
 ApplicationContext* ApplicationContext::GetInstance() {
   return base::Singleton<ApplicationContext>::get();
@@ -135,6 +147,21 @@ network::mojom::NetworkContext* ApplicationContext::GetSystemNetworkContext() {
         GetSystemURLRequestContext(), &network_context_);
   }
   return network_context_.get();
+}
+
+network::NetworkConnectionTracker*
+ApplicationContext::GetNetworkConnectionTracker() {
+  if (!network_connection_tracker_) {
+    if (!network_change_manager_) {
+      network_change_manager_ =
+          std::make_unique<network::NetworkChangeManager>(nullptr);
+    }
+    network_connection_tracker_ =
+        std::make_unique<network::NetworkConnectionTracker>(base::BindRepeating(
+            &BindNetworkChangeManagerRequest,
+            base::Unretained(network_change_manager_.get())));
+  }
+  return network_connection_tracker_.get();
 }
 
 const std::string& ApplicationContext::GetApplicationLocale() {

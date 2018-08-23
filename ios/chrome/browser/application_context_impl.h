@@ -21,6 +21,7 @@ class SequencedTaskRunner;
 }
 
 namespace network {
+class NetworkChangeManager;
 class WeakWrapperSharedURLLoaderFactory;
 }
 
@@ -68,6 +69,7 @@ class ApplicationContextImpl : public ApplicationContext {
   gcm::GCMDriver* GetGCMDriver() override;
   component_updater::ComponentUpdateService* GetComponentUpdateService()
       override;
+  network::NetworkConnectionTracker* GetNetworkConnectionTracker() override;
 
  private:
   // Sets the locale used by the application.
@@ -101,6 +103,10 @@ class ApplicationContextImpl : public ApplicationContext {
 
   // Created on the UI thread, destroyed on the IO thread.
   std::unique_ptr<web::NetworkContextOwner> network_context_owner_;
+
+  std::unique_ptr<network::NetworkChangeManager> network_change_manager_;
+  std::unique_ptr<network::NetworkConnectionTracker>
+      network_connection_tracker_;
 
   bool was_last_shutdown_clean_;
 

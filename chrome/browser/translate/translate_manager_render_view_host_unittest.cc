@@ -474,7 +474,8 @@ class TranslateManagerRenderViewHostTest
     // Clears the translate script so it is fetched every time and sets the
     // expiration delay to a large value by default (in case it was zeroed in a
     // previous test).
-    TranslateService::InitializeForTesting();
+    TranslateService::InitializeForTesting(
+        network::mojom::ConnectionType::CONNECTION_WIFI);
     translate::TranslateDownloadManager* download_manager =
         translate::TranslateDownloadManager::GetInstance();
     download_manager->ClearTranslateScriptForTesting();
