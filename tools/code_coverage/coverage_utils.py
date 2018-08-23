@@ -242,7 +242,9 @@ class CoverageReportPostProcessor(object):
     """Initializes CoverageReportPostProcessor object."""
     # Caller provided parameters.
     self.output_dir = output_dir
-    self.src_root_dir = src_root_dir.rstrip(os.sep)
+    self.src_root_dir = os.path.normpath(GetFullPath(src_root_dir))
+    if not self.src_root_dir.endswith(os.sep):
+      self.src_root_dir += os.sep
     self.summary_data = json.loads(summary_data)
     assert len(self.summary_data['data']) == 1
     self.no_component_view = no_component_view
@@ -318,7 +320,7 @@ class CoverageReportPostProcessor(object):
       while True:
         per_directory_coverage_summary[parent_dir].AddSummary(summary)
 
-        if parent_dir == self.src_root_dir:
+        if os.path.normpath(parent_dir) == os.path.normpath(self.src_root_dir):
           break
         parent_dir = os.path.dirname(parent_dir)
 
@@ -457,7 +459,7 @@ class CoverageReportPostProcessor(object):
     per_file_coverage_summary = {}
     for file_coverage_data in files_coverage_data:
       file_path = file_coverage_data['filename']
-      assert file_path.startswith(self.src_root_dir + os.sep), (
+      assert file_path.startswith(self.src_root_dir), (
           'File path "%s" in coverage summary is outside source checkout.' %
           file_path)
 
