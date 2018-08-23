@@ -114,6 +114,16 @@ cr.googleTranslate = (function() {
    */
   var resultCallback;
 
+  /**
+   * Listens to security policy violations to set |errorCode|.
+   */
+  document.addEventListener('securitypolicyviolation', function(event) {
+    if (securityOrigin.startsWith(event.blockedURI)) {
+      errorCode = ERROR['BAD_ORIGIN'];
+      invokeReadyCallback();
+    }
+  });
+
   function checkLibReady() {
     if (lib.isAvailable()) {
       readyTime = performance.now();
