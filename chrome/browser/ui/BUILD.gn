@@ -3897,7 +3897,7 @@ jumbo_split_static_library("ui") {
   }
 
   if (is_win && is_chrome_branded) {
-    deps += [ "//components/nux_google_apps:nux_google_apps_feature" ]
+    deps += [ "//components/nux:google_apps_feature" ]
   }
 
   if (enable_plugins) {

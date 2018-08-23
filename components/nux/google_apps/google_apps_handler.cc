@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/nux_google_apps/google_apps_handler.h"
+#include "components/nux/google_apps/google_apps_handler.h"
 
 #include "base/bind.h"
 #include "base/metrics/field_trial_params.h"
@@ -14,8 +14,8 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/nux/google_apps/constants.h"
 #include "components/nux/show_promo_delegate.h"
-#include "components/nux_google_apps/constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -23,7 +23,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "ui/base/resource/resource_bundle.h"
 
-namespace nux_google_apps {
+namespace nux {
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -182,4 +182,4 @@ void GoogleAppsHandler::AddSources(content::WebUIDataSource* html_source) {
                                IDR_NUX_GOOGLE_APPS_YOUTUBE_2X);
 }
 
-}  // namespace nux_google_apps
+}  // namespace nux

@@ -28,8 +28,8 @@
 #endif  // defined(OS_WIN)
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
-#include "components/nux_google_apps/constants.h"
-#include "components/nux_google_apps/google_apps_handler.h"
+#include "components/nux/google_apps/constants.h"
+#include "components/nux/google_apps/google_apps_handler.h"
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
 namespace {
@@ -84,7 +84,7 @@ StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
 
 #if defined(OS_WIN)
 #if defined(GOOGLE_CHROME_BUILD)
-  if (base::FeatureList::IsEnabled(nux_google_apps::kNuxGoogleAppsFeature)) {
+  if (base::FeatureList::IsEnabled(nux::kNuxGoogleAppsFeature)) {
     standard_params.is_apps_promo_allowed = true;
     standard_params.has_seen_apps_promo =
         prefs && prefs->GetBoolean(prefs::kHasSeenGoogleAppsPromoPage);
@@ -214,8 +214,7 @@ StartupTabs StartupTabProviderImpl::GetStandardOnboardingTabsForState(
   // Should be shown before any other new user experience.
   if (ShouldShowNewUserExperience(params.is_apps_promo_allowed,
                                   params.has_seen_apps_promo)) {
-    return StartupTabs(
-        {StartupTab(GURL(nux_google_apps::kNuxGoogleAppsUrl), false)});
+    return StartupTabs({StartupTab(GURL(nux::kNuxGoogleAppsUrl), false)});
   }
 #endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 
@@ -253,8 +252,7 @@ StartupTabs StartupTabProviderImpl::GetWin10OnboardingTabsForState(
   // Should be shown before any other new user experience.
   if (ShouldShowNewUserExperience(standard_params.is_apps_promo_allowed,
                                   standard_params.has_seen_apps_promo)) {
-    return StartupTabs(
-        {StartupTab(GURL(nux_google_apps::kNuxGoogleAppsUrl), false)});
+    return StartupTabs({StartupTab(GURL(nux::kNuxGoogleAppsUrl), false)});
   }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

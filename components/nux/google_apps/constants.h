@@ -9,11 +9,11 @@ namespace base {
 struct Feature;
 }  // namespace base
 
-namespace nux_google_apps {
+namespace nux {
 
 extern const base::Feature kNuxGoogleAppsFeature;
 extern const char kNuxGoogleAppsUrl[];
 
-}  // namespace nux_google_apps
+}  // namespace nux
 
 #endif  // COMPONENTS_NUX_GOOGLE_APPS_CONSTANTS_H_

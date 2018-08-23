@@ -23,7 +23,7 @@ namespace favicon {
 class FaviconService;
 }  // namespace favicon
 
-namespace nux_google_apps {
+namespace nux {
 
 extern const char* kGoogleAppsInteractionHistogram;
 
@@ -66,6 +66,6 @@ class GoogleAppsHandler : public content::WebUIMessageHandler {
   DISALLOW_COPY_AND_ASSIGN(GoogleAppsHandler);
 };
 
-}  // namespace nux_google_apps
+}  // namespace nux
 
 #endif  // COMPONENTS_NUX_GOOGLE_APPS_GOOGLE_APPS_HANDLER_H_

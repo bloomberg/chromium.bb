@@ -1153,7 +1153,7 @@ if (closure_compile) {
       data_deps += [ "components/offline_pages/resources:closure_compile" ]
     }
     if (is_win && is_chrome_branded) {
-      data_deps += [ "components/nux_google_apps/resources:closure_compile" ]
+      data_deps += [ "components/nux/resources:closure_compile" ]
     }
   }
 }
