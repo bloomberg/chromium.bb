@@ -39,8 +39,6 @@ class BASE_EXPORT UncheckedObserverAdapter {
  private:
   void* ptr_;
 
-  // Although copying works, disallow it to be consistent with
-  // CheckedObserverAdapter.
   DISALLOW_COPY_AND_ASSIGN(UncheckedObserverAdapter);
 };
 
@@ -61,7 +59,7 @@ class BASE_EXPORT CheckedObserverAdapter {
 
   void MarkForRemoval() {
     DCHECK(weak_ptr_);
-    weak_ptr_.reset();
+    weak_ptr_ = nullptr;
   }
 
   bool IsMarkedForRemoval() const {
