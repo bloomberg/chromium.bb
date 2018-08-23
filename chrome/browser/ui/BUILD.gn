@@ -3899,7 +3899,10 @@ jumbo_split_static_library("ui") {
   }
 
   if (is_win && is_chrome_branded) {
-    deps += [ "//components/nux:google_apps_feature" ]
+    deps += [
+      "//components/nux:email_feature",
+      "//components/nux:google_apps_feature",
+    ]
   }
 
   if (enable_plugins) {

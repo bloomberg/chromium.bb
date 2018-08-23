@@ -25,6 +25,8 @@
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "components/nux/email/constants.h"
+#include "components/nux/email/email_handler.h"
 #include "components/nux/google_apps/constants.h"
 #include "components/nux/google_apps/google_apps_handler.h"
 #include "components/nux/show_promo_delegate.h"
@@ -111,6 +113,18 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
   }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+  if (base::FeatureList::IsEnabled(nux::kNuxEmailFeature)) {
+    content::BrowserContext* browser_context =
+        web_ui->GetWebContents()->GetBrowserContext();
+    web_ui->AddMessageHandler(std::make_unique<nux::EmailHandler>(
+        profile->GetPrefs(),
+        FaviconServiceFactory::GetForProfile(
+            profile, ServiceAccessType::EXPLICIT_ACCESS),
+        BookmarkModelFactory::GetForBrowserContext(browser_context)));
+
+    nux::EmailHandler::AddSources(html_source);
+  }
+
   if (base::FeatureList::IsEnabled(nux::kNuxGoogleAppsFeature)) {
     content::BrowserContext* browser_context =
         web_ui->GetWebContents()->GetBrowserContext();
