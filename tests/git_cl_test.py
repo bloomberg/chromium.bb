@@ -1311,25 +1311,25 @@ class TestGitCl(TestCase):
            'https://chromium.googlesource.com/yyy/zzz'),
       ]
 
-    calls += [
-        ((['git', 'push',
-           'https://chromium.googlesource.com/yyy/zzz',
-           ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
-         ('remote:\n'
-         'remote: Processing changes: (\)\n'
-         'remote: Processing changes: (|)\n'
-         'remote: Processing changes: (/)\n'
-         'remote: Processing changes: (-)\n'
-         'remote: Processing changes: new: 1 (/)\n'
-         'remote: Processing changes: new: 1, done\n'
-         'remote:\n'
-         'remote: New Changes:\n'
-         'remote:   https://chromium-review.googlesource.com/#/c/foo/+/123456 '
-             'XXX\n'
-         'remote:\n'
-         'To https://chromium.googlesource.com/yyy/zzz\n'
-         ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')),
-        ]
+    calls.append((
+      (['git', 'push',
+        'https://chromium.googlesource.com/yyy/zzz',
+        ref_to_push + ':refs/for/refs/heads/master' + ref_suffix],),
+      ('remote:\n'
+       'remote: Processing changes: (\)\n'
+       'remote: Processing changes: (|)\n'
+       'remote: Processing changes: (/)\n'
+       'remote: Processing changes: (-)\n'
+       'remote: Processing changes: new: 1 (/)\n'
+       'remote: Processing changes: new: 1, done\n'
+       'remote:\n'
+       'remote: New Changes:\n'
+       'remote:   https://chromium-review.googlesource.com/#/c/yyy/zzz/+/123456'
+           ' XXX\n'
+       'remote:\n'
+       'To https://chromium.googlesource.com/yyy/zzz\n'
+       ' * [new branch]      hhhh -> refs/for/refs/heads/master\n')
+    ))
     if squash:
       calls += [
           ((['git', 'config', 'branch.master.gerritissue', '123456'],),
@@ -1341,11 +1341,15 @@ class TestGitCl(TestCase):
       ]
     calls += [
         ((['git', 'config', 'rietveld.cc'],), ''),
-        (('AddReviewers', 'chromium-review.googlesource.com', 123456
-          if squash else None, sorted(reviewers),
-          ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
-          cc, notify), ''),
     ]
+    if squash:
+      calls += [
+          (('AddReviewers',
+            'chromium-review.googlesource.com', 'yyy%2Fzzz~123456',
+            sorted(reviewers),
+            ['joe@example.com', 'chromium-reviews+test-more-cc@chromium.org'] +
+            cc, notify), ''),
+      ]
     if tbr:
       calls += [
         (('GetChangeDetail', 'chromium-review.googlesource.com', '123456',
@@ -1363,8 +1367,10 @@ class TestGitCl(TestCase):
                  }
               }
           }),
-        (('SetReview', 'chromium-review.googlesource.com',
-          123456 if squash else None, 'Self-approving for TBR',
+        (('SetReview',
+          'chromium-review.googlesource.com',
+          'yyy%2Fzzz~123456',
+          'Self-approving for TBR',
           {'Code-Review': 2}, None), ''),
       ]
     calls += cls._git_post_upload_calls()

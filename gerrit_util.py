@@ -900,3 +900,14 @@ def tempdir():
   finally:
     if tdir:
       gclient_utils.rmtree(tdir)
+
+
+def ChangeIdentifier(project, change_number):
+  """Returns change identifier "project~number" suitable for |chagne| arg of
+  this module API.
+
+  Such format is allows for more efficient Gerrit routing of HTTP requests,
+  comparing to specifying just change_number.
+  """
+  assert int(change_number)
+  return '%s~%s' % (urllib.quote(project, safe=''), change_number)

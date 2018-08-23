@@ -2399,6 +2399,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         self._gerrit_server = 'https://%s' % self._gerrit_host
     return self._gerrit_server
 
+  def _GetGerritProject(self, remote_url=None):
+    """Returns Gerrit project name based on remote git URL."""
+    if remote_url is None:
+      remote_url = self.GetRemoteUrl()
+    project = urlparse.urlparse(remote_url).path.strip('/')
+    if project.endswith('.git'):
+      project = project[:-len('.git')]
+    return project
+
   @classmethod
   def IssueConfigKey(cls):
     return 'gerritissue'
@@ -3075,9 +3084,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           'spaces not allowed in refspec: "%s"' % refspec_suffix)
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
+    # TODO(tandrii): hack to avoid messing with tests while resolving
+    # https://crbug.com/876910. Instead, remote_url should be cached inside this
+    # class, just like GetIssue caches issue.
+    remote_url = self.GetRemoteUrl()
     try:
       push_stdout = gclient_utils.CheckCallAndFilter(
-          ['git', 'push', self.GetRemoteUrl(), refspec],
+          ['git', 'push', remote_url, refspec],
           print_stdout=True,
           # Flush after every line: useful for seeing progress when running as
           # recipe.
@@ -3115,9 +3128,15 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     if change_desc.get_cced():
       cc.extend(change_desc.get_cced())
 
-    gerrit_util.AddReviewers(
-        self._GetGerritHost(), self.GetIssue(), reviewers, cc,
-        notify=bool(options.send_mail))
+    if self.GetIssue():
+      # GetIssue() is not set in case of non-squash uploads according to tests.
+      # TODO(agable): non-squash uploads in git cl should be removed.
+      gerrit_util.AddReviewers(
+          self._GetGerritHost(),
+          gerrit_util.ChangeIdentifier(
+              self._GetGerritProject(remote_url), self.GetIssue()),
+          reviewers, cc,
+          notify=bool(options.send_mail))
 
     if change_desc.get_reviewers(tbr_only=True):
       labels = self._GetChangeDetail(['LABELS']).get('labels', {})
@@ -3126,7 +3145,9 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         score = max([int(x) for x in labels['Code-Review']['values'].keys()])
       print('Adding self-LGTM (Code-Review +%d) because of TBRs.' % score)
       gerrit_util.SetReview(
-          self._GetGerritHost(), self.GetIssue(),
+          self._GetGerritHost(),
+          gerrit_util.ChangeIdentifier(
+              self._GetGerritProject(remote_url), self.GetIssue()),
           msg='Self-approving for TBR',
           labels={'Code-Review': score})
 
