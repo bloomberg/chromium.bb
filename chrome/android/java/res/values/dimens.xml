@@ -273,9 +273,7 @@
     <dimen name="location_bar_google_g_container_width">40dp</dimen>
     <dimen name="location_bar_vertical_margin">8dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
-    <dimen name="location_bar_incognito_badge_padding">7dp</dimen>
     <dimen name="location_bar_icon_width">32dp</dimen>
-    <dimen name="location_bar_corner_radius">1dp</dimen>
 
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_start_padding_no_buttons">6dp</dimen>
