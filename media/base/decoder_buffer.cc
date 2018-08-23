@@ -51,7 +51,13 @@ DecoderBuffer::DecoderBuffer(std::unique_ptr<UnalignedSharedMemory> shm,
       shm_(std::move(shm)),
       is_key_frame_(false) {}
 
-DecoderBuffer::~DecoderBuffer() = default;
+DecoderBuffer::~DecoderBuffer() {
+  // TODO(crbug.com/794740). As a lot of the crashes have |side_data_size_|
+  // == 0 yet |side_data| is not null, check that here hoping to get better
+  // minidumps. This check verifies that size == 0 and |side_data_| is null,
+  // or size != 0 and |side_data_| not null.
+  CHECK_EQ(!!side_data_size_, !!side_data_);
+}
 
 void DecoderBuffer::Initialize() {
   data_.reset(AllocateFFmpegSafeBlock(size_));
