@@ -88,6 +88,22 @@ bool FontServiceThread::FontRenderStyleForStrike(
   return out_valid;
 }
 
+bool FontServiceThread::MatchFontByPostscriptNameOrFullFontName(
+    std::string postscript_name_or_full_font_name,
+    mojom::FontIdentityPtr* out_identity) {
+  DCHECK_NE(GetThreadId(), base::PlatformThread::CurrentId());
+  bool out_valid = false;
+  base::WaitableEvent done_event;
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &FontServiceThread::MatchFontByPostscriptNameOrFullFontNameImpl, this,
+          &done_event, &out_valid, std::move(postscript_name_or_full_font_name),
+          out_identity));
+  done_event.Wait();
+  return out_valid;
+}
+
 void FontServiceThread::MatchFontWithFallback(
     std::string family,
     bool is_bold,
@@ -133,7 +149,6 @@ scoped_refptr<MappedFontFile> FontServiceThread::OpenStream(
 }
 
 FontServiceThread::~FontServiceThread() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   Stop();
 }
 
@@ -304,6 +319,42 @@ void FontServiceThread::OnFontRenderStyleForStrikeComplete(
   *out_valid = !font_render_style.is_null();
   if (font_render_style) {
     *out_font_render_style = std::move(font_render_style);
+  }
+  done_event->Signal();
+}
+
+void FontServiceThread::MatchFontByPostscriptNameOrFullFontNameImpl(
+    base::WaitableEvent* done_event,
+    bool* out_valid,
+    std::string postscript_name_or_full_font_name,
+    mojom::FontIdentityPtr* out_font_identity) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (font_service_.encountered_error()) {
+    *out_valid = false;
+    done_event->Signal();
+    return;
+  }
+
+  pending_waitable_events_.insert(done_event);
+  font_service_->MatchFontByPostscriptNameOrFullFontName(
+      std::move(postscript_name_or_full_font_name),
+      base::BindOnce(
+          &FontServiceThread::OnMatchFontByPostscriptNameOrFullFontNameComplete,
+          this, done_event, out_valid, out_font_identity));
+}
+
+void FontServiceThread::OnMatchFontByPostscriptNameOrFullFontNameComplete(
+    base::WaitableEvent* done_event,
+    bool* out_valid,
+    mojom::FontIdentityPtr* out_font_identity,
+    mojom::FontIdentityPtr font_identity) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  pending_waitable_events_.erase(done_event);
+
+  *out_valid = !font_identity.is_null();
+  if (font_identity) {
+    *out_font_identity = std::move(font_identity);
   }
   done_event->Signal();
 }

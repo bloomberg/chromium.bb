@@ -232,4 +232,102 @@ TEST_F(FontLoaderTest, PPAPIFallback) {
 #endif
 }
 
+TEST_F(FontLoaderTest, LocalMatching) {
+  // The following fonts are ensured to be available by the test harnesses
+  // global FontConfig setup which makes the fonts in third_party/test_fonts
+  // available. (See SetUpFontConfig() in TestSuite::Initialize().
+  std::string postscript_names_test_fonts[] = {"Ahem",
+                                               "Arimo-Bold",
+                                               "Arimo-BoldItalic",
+                                               "Arimo-Italic",
+                                               "Arimo-Regular",
+                                               "Cousine-Bold",
+                                               "Cousine-BoldItalic",
+                                               "Cousine-Italic",
+                                               "Cousine-Regular",
+                                               "DejaVuSans",
+                                               "DejaVuSans-Bold",
+                                               "GardinerModBug",
+                                               "GardinerModCat",
+                                               "Garuda",
+                                               "Gelasio-Bold",
+                                               "Gelasio-BoldItalic",
+                                               "Gelasio-Italic",
+                                               "Gelasio-Regular",
+                                               "Lohit-Devanagari",
+                                               "Lohit-Gurmukhi",
+                                               "Lohit-Tamil",
+                                               "NotoSansKhmer-Regular",
+                                               "Tinos-Bold",
+                                               "Tinos-BoldItalic",
+                                               "Tinos-Italic",
+                                               "Tinos-Regular",
+                                               "muktinarrow"};
+  std::string full_font_names_test_fonts[] = {"Ahem",
+                                              "Arimo Bold Italic",
+                                              "Arimo Bold",
+                                              "Arimo Italic",
+                                              "Arimo Regular",
+                                              "Cousine Bold Italic",
+                                              "Cousine Bold",
+                                              "Cousine Italic",
+                                              "Cousine Regular",
+                                              "DejaVu Sans Bold",
+                                              "DejaVu Sans",
+                                              "GardinerMod",
+                                              "Garuda",
+                                              "Gelasio Bold Italic",
+                                              "Gelasio Bold",
+                                              "Gelasio Italic",
+                                              "Gelasio Regular",
+                                              "Lohit Devanagari",
+                                              "Lohit Gurmukhi",
+                                              "Lohit Tamil",
+                                              "Mukti",
+                                              "Mukti Narrow",
+                                              "Noto Sans Khmer Regular",
+                                              "Tinos Bold Italic",
+                                              "Tinos Bold",
+                                              "Tinos Italic",
+                                              "Tinos Regular"};
+
+  auto match_unique_names = [this](auto& font_list) {
+    for (auto unique_font_name : font_list) {
+      mojom::FontIdentityPtr font_identity;
+      EXPECT_TRUE(font_loader()->MatchFontByPostscriptNameOrFullFontName(
+          unique_font_name, &font_identity));
+      EXPECT_FALSE(font_identity.is_null());
+      EXPECT_TRUE(
+          IsInTestFontDirectory(font_identity->str_representation.c_str()));
+    }
+  };
+  match_unique_names(full_font_names_test_fonts);
+  match_unique_names(postscript_names_test_fonts);
+}
+
+TEST_F(FontLoaderTest, LocalMatchingExpectNoMatchForFamilyNames) {
+  std::string family_names_expect_no_match[] = {"Arimo", "Cousine",   "Gelasio",
+                                                "Lohit", "Noto Sans", "Tinos"};
+  for (auto& family_name : family_names_expect_no_match) {
+    mojom::FontIdentityPtr font_identity;
+    EXPECT_FALSE(font_loader()->MatchFontByPostscriptNameOrFullFontName(
+        family_name, &font_identity));
+    EXPECT_TRUE(font_identity.is_null());
+  }
+}
+
+TEST_F(FontLoaderTest, RejectNonUtf8) {
+  const char* invalid_utf8_font_names[] = {
+      // Trailing U+FDD0 U+FDD1 U+FDD2 U+FDD3
+      "FontNameWithNonCharacters\xEF\xB7\x90\x20\xEF\xB7\x91\x20\xEF\xB7"
+      "\x92\x20\xEF\xB7\x93",
+      "InvalidBytes\xfe\xff"};
+  for (std::string invalid_font_name : invalid_utf8_font_names) {
+    mojom::FontIdentityPtr font_identity;
+    EXPECT_FALSE(font_loader()->MatchFontByPostscriptNameOrFullFontName(
+        invalid_font_name, &font_identity));
+    EXPECT_TRUE(font_identity.is_null());
+  }
+}
+
 }  // namespace font_service

@@ -50,6 +50,9 @@ class FontServiceApp : public service_manager::Service,
       bool bold,
       float device_scale_factor,
       FontRenderStyleForStrikeCallback callback) override;
+  void MatchFontByPostscriptNameOrFullFontName(
+      const std::string& family,
+      MatchFontByPostscriptNameOrFullFontNameCallback callback) override;
   void MatchFontWithFallback(const std::string& family,
                              bool is_bold,
                              bool is_italic,
