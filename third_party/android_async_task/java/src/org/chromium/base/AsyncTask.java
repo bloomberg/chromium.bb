@@ -143,7 +143,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  *     <li>The AsyncTask class must be loaded on the UI thread. This is done
  *     automatically as of {@link android.os.Build.VERSION_CODES#JELLY_BEAN}.</li>
  *     <li>The task instance must be created on the UI thread.</li>
- *     <li>{@link #execute} must be invoked on the UI thread.</li>
+ *     <li>{@link #executeOnExecutor(Executor)} must be invoked on the UI thread.</li>
  *     <li>Do not call {@link #onPreExecute()}, {@link #onPostExecute},
  *     {@link #doInBackground} manually.</li>
  *     <li>The task can be executed only once (an exception will be thrown if
@@ -206,8 +206,6 @@ public abstract class AsyncTask<Result> {
 
     private static final int MESSAGE_POST_RESULT = 0x1;
     private static final int MESSAGE_POST_PROGRESS = 0x2;
-
-    private static volatile Executor sDefaultExecutor = SERIAL_EXECUTOR;
 
     private static final StealRunnableHandler STEAL_RUNNABLE_HANDLER = new StealRunnableHandler();
 
@@ -409,9 +407,7 @@ public abstract class AsyncTask<Result> {
     }
 
     /**
-     * Override this method to perform a computation on a background thread. The
-     * specified parameters are the parameters passed to {@link #execute}
-     * by the caller of this task.
+     * Override this method to perform a computation on a background thread.
      *
      * @return A result, defined by the subclass of this task.
      *
@@ -568,37 +564,6 @@ public abstract class AsyncTask<Result> {
      * Executes the task with the specified parameters. The task returns
      * itself (this) so that the caller can keep a reference to it.
      *
-     * <p>Note: this function schedules the task on a queue for a single background
-     * thread or pool of threads depending on the platform version.  When first
-     * introduced, AsyncTasks were executed serially on a single background thread.
-     * Starting with {@link android.os.Build.VERSION_CODES#DONUT}, this was changed
-     * to a pool of threads allowing multiple tasks to operate in parallel. Starting
-     * {@link android.os.Build.VERSION_CODES#HONEYCOMB}, tasks are back to being
-     * executed on a single thread to avoid common application errors caused
-     * by parallel execution.  If you truly want parallel execution, you can use
-     * the {@link #executeOnExecutor} version of this method
-     * with {@link #THREAD_POOL_EXECUTOR}; however, see commentary there for warnings
-     * on its use.
-     *
-     * <p>This method must be invoked on the UI thread.
-     *
-     * @return This instance of AsyncTask.
-     *
-     * @throws IllegalStateException If {@link #getStatus()} returns either
-     *         {@link AsyncTask.Status#RUNNING} or {@link AsyncTask.Status#FINISHED}.
-     *
-     * @see #executeOnExecutor(java.util.concurrent.Executor)
-     * @see #execute(Runnable)
-     */
-    @MainThread
-    public final AsyncTask<Result> execute() {
-        return executeOnExecutor(sDefaultExecutor);
-    }
-
-    /**
-     * Executes the task with the specified parameters. The task returns
-     * itself (this) so that the caller can keep a reference to it.
-     *
      * <p>This method is typically used with {@link #THREAD_POOL_EXECUTOR} to
      * allow multiple tasks to run in parallel on a pool of threads managed by
      * AsyncTask, however you can also use your own {@link Executor} for custom
@@ -624,8 +589,6 @@ public abstract class AsyncTask<Result> {
      *
      * @throws IllegalStateException If {@link #getStatus()} returns either
      *         {@link AsyncTask.Status#RUNNING} or {@link AsyncTask.Status#FINISHED}.
-     *
-     * @see #execute()
      */
     @SuppressWarnings({"MissingCasesInEnumSwitch"})
     @MainThread
@@ -649,19 +612,6 @@ public abstract class AsyncTask<Result> {
         exec.execute(mFuture);
 
         return this;
-    }
-
-    /**
-     * Convenience version of {@link #execute()} for use with
-     * a simple Runnable object. See {@link #execute()} for more
-     * information on the order of execution.
-     *
-     * @see #execute()
-     * @see #executeOnExecutor(java.util.concurrent.Executor)
-     */
-    @MainThread
-    public static void execute(Runnable runnable) {
-        sDefaultExecutor.execute(runnable);
     }
 
     private void finish(Result result) {
