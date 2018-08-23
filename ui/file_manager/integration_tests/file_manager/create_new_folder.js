@@ -42,92 +42,92 @@ function selectFirstFileListItem(windowId) {
 }
 
 /**
- * Creates new folder.
+ * Creates a new folder in the file list.
+ *
  * @param {string} windowId The Files app windowId.
- * @param {string} path Initial path.
  * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
- * @param {string} rootLabel label path's root.
+ * @param {string} selector Downloads or Drive directory tree item selector.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function createNewFolder(windowId, path, initialEntrySet, rootLabel) {
-  var caller = getCaller();
-  return Promise.resolve()
-    .then(function() {
-      return navigateWithDirectoryTree(windowId, path, rootLabel);
-    })
-    .then(function() {
-    // Push Ctrl + E.
-    return remoteCall.callRemoteTestUtil(
-        'fakeKeyDown', windowId,
-        // Ctrl + E
-        ['#file-list', 'e', 'U+0045', true, false, false]);
+function createNewFolder(windowId, initialEntrySet, selector) {
+  const textInput = '#file-list .table-row[renaming] input.rename';
+
+  return new Promise(function(resolve) {
+    // Focus the file-list.
+    remoteCall.callRemoteTestUtil('focus', windowId, ['#file-list'], resolve);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
+    // Press Ctrl+E to create a new folder.
+    const key = ['#file-list', 'e', 'U+0045', true, false, false];
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
+    // Check: a new folder should be shown in the file list.
+    const files = [['New Folder', '--', 'Folder', '']].concat(
+        TestEntryInfo.getExpectedRows(initialEntrySet));
+    return remoteCall.waitForFiles(
+        windowId, files, {ignoreLastModifiedTime: true});
   }).then(function() {
-    // Wait for rename text field.
-    return remoteCall.waitForElement(windowId, 'li[renaming] input.rename');
+    // Check: a new folder should be present in the directory tree.
+    const newSubtreeChildItem = selector +
+        ' .tree-children .tree-item[entry-label="New Folder"]';
+    return remoteCall.waitForElement(windowId, newSubtreeChildItem);
   }).then(function() {
+    // Check: the text input should be shown in the file list.
+    return remoteCall.waitForElement(windowId, textInput);
+  }).then(function() {
+    // Get all file list rows that have attribute 'renaming'.
+    const renamingFileListRows = ['#file-list .table-row[renaming]'];
     return remoteCall.callRemoteTestUtil(
-        'queryAllElements',
-        windowId,
-        ['div.detail-table > list > li[selected]']);
+        'queryAllElements', windowId, renamingFileListRows);
   }).then(function(elements) {
-    // Ensure that only the new directory is selected and being renamed.
+    // Check: the new folder only should be 'renaming'.
     chrome.test.assertEq(1, elements.length);
+    chrome.test.assertEq(0, elements[0].text.indexOf('New Folder--'));
+    chrome.test.assertTrue('selected' in elements[0].attributes);
+  }).then(function() {
+    // Get all file list rows that have attribute 'selected'.
+    const selectedFileListRows = ['#file-list .table-row[selected]'];
+    return remoteCall.callRemoteTestUtil(
+        'queryAllElements', windowId, selectedFileListRows);
+  }).then(function(elements) {
+    // Check: the new folder only should be 'selected'.
+    chrome.test.assertEq(1, elements.length);
+    chrome.test.assertEq(0, elements[0].text.indexOf('New Folder--'));
     chrome.test.assertTrue('renaming' in elements[0].attributes);
   }).then(function() {
-    // Check directory tree for new folder.
-    var expectedRows = [['New Folder', '--', 'Folder', '']].concat(
+    // Type the test folder name.
+    return remoteCall.callRemoteTestUtil(
+        'inputText', windowId, [textInput, 'Test Folder Name']);
+  }).then(function() {
+    // Press the Enter key.
+    const key = [textInput, 'Enter', 'Enter', false, false, false];
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
+    // Wait until renaming is complete.
+    const renamingItem = ['#file-list .table-row[renaming]'];
+    return remoteCall.waitForElementLost(windowId, renamingItem);
+  }).then(function() {
+    // Check: the test folder should be shown in the file list.
+    const files = [['Test Folder Name', '--', 'Folder', '']].concat(
         TestEntryInfo.getExpectedRows(initialEntrySet));
     return remoteCall.waitForFiles(
-        windowId, expectedRows, {ignoreLastModifiedTime: true});
+        windowId, files, {ignoreLastModifiedTime: true});
+  }).then(function(elements) {
+    // Check: the test folder should be present in the directory tree.
+    const testSubtreeChildItem = selector +
+        ' .tree-children .tree-item[entry-label="Test Folder Name"]';
+    return remoteCall.waitForElement(windowId, testSubtreeChildItem);
   }).then(function() {
-    // Type new folder name.
+    // Get all file list rows that have attribute 'selected'.
+    const selectedFileListRows = ['#file-list .table-row[selected]'];
     return remoteCall.callRemoteTestUtil(
-        'inputText', windowId, ['input.rename', 'Test Folder Name']);
-  }).then(function() {
-    // Push Enter.
-    return remoteCall.callRemoteTestUtil(
-        'fakeKeyDown',
-        windowId,
-        ['input.rename', 'Enter', 'Enter', false, false, false]);
-  }).then(function() {
-    // Wait until rename completes.
-    return remoteCall.waitForElementLost(windowId, 'input.rename');
-  }).then(function() {
-    // A newer entry is then added for the renamed folder.
-    var expectedRows = [['Test Folder Name', '--', 'Folder', '']].concat(
-        TestEntryInfo.getExpectedRows(initialEntrySet));
-    return remoteCall.waitForFiles(
-        windowId, expectedRows, {ignoreLastModifiedTime: true});
-  }).then(function() {
-    var expectedEntryRows = TestEntryInfo.getExpectedRows(initialEntrySet);
-    expectedEntryRows.push(['Test Folder Name', '--', 'Folder', '']);
-    // Wait for the new folder.
-    return remoteCall.waitForFiles(windowId,
-                                   expectedEntryRows,
-                                   {ignoreLastModifiedTime: true});
-  }).then(function() {
-    // Wait until the new created folder is selected.
-    var nameSpanQuery = 'div.detail-table > list > ' +
-                        'li[selected]:not([renaming]) span.entry-name';
-
-    return repeatUntil(function() {
-      var selectedNameRetrievePromise = remoteCall.callRemoteTestUtil(
-            'queryAllElements',
-            windowId,
-            ['div.detail-table > list > li[selected] span.entry-name']);
-
-      return selectedNameRetrievePromise.then(function(elements) {
-        if (elements.length !== 1) {
-          return pending(
-              caller, 'Selection is not ready (elements: %j)', elements);
-        } else if (elements[0].text !== 'Test Folder Name') {
-          return pending(
-              caller, 'Selected item is wrong. (actual: %s)', elements[0].text);
-        } else {
-          return true;
-        }
-      });
-    });
+        'queryAllElements', windowId, selectedFileListRows);
+  }).then(function(elements) {
+    // Check: the test folder only should be 'selected'.
+    chrome.test.assertEq(1, elements.length);
+    chrome.test.assertEq(0, elements[0].text.indexOf('Test Folder Name--'));
   });
 }
 
@@ -172,7 +172,7 @@ testcase.selectCreateFolderDownloads = function() {
   }).then(function() {
     return selectFirstFileListItem(windowId);
   }).then(function() {
-    return createNewFolder(windowId, '', BASIC_LOCAL_ENTRY_SET, 'Downloads');
+    return createNewFolder(windowId, BASIC_LOCAL_ENTRY_SET, TREEITEM_DOWNLOADS);
   });
 
   testPromise(promise);
@@ -188,7 +188,7 @@ testcase.createFolderDownloads = function() {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
-    return createNewFolder(windowId, '', BASIC_LOCAL_ENTRY_SET, 'Downloads');
+    return createNewFolder(windowId, BASIC_LOCAL_ENTRY_SET, TREEITEM_DOWNLOADS);
   });
 
   testPromise(promise);
@@ -204,8 +204,12 @@ testcase.createFolderNestedDownloads = function() {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
-    const photosEntrySet = [];
-    return createNewFolder(windowId, '/photos', photosEntrySet, 'Downloads');
+    return navigateWithDirectoryTree(windowId, '/photos', 'Downloads');
+  }).then(function() {
+    return remoteCall.waitForFiles(
+        windowId, [], {ignoreLastModifiedTime: true});
+  }).then(function() {
+    return createNewFolder(windowId, [], TREEITEM_DOWNLOADS);
   });
 
   testPromise(promise);
@@ -221,7 +225,7 @@ testcase.createFolderDrive = function() {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DRIVE);
   }).then(function() {
-    return createNewFolder(windowId, '', BASIC_DRIVE_ENTRY_SET, 'My Drive');
+    return createNewFolder(windowId, BASIC_DRIVE_ENTRY_SET, TREEITEM_DRIVE);
   });
 
   testPromise(promise);
