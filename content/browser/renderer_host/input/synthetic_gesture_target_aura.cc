@@ -81,9 +81,13 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
     return;
   }
   base::TimeTicks timestamp = web_wheel.TimeStamp();
-  int modifiers = web_wheel.has_precise_scrolling_deltas
-                      ? ui::EF_PRECISION_SCROLLING_DELTA
-                      : ui::EF_NONE;
+  int modifiers = ui::EF_NONE;
+  if (web_wheel.has_precise_scrolling_deltas)
+    modifiers |= ui::EF_PRECISION_SCROLLING_DELTA;
+
+  if (web_wheel.scroll_by_page)
+    modifiers |= ui::EF_SCROLL_BY_PAGE;
+
   ui::MouseWheelEvent wheel_event(
       gfx::Vector2d(web_wheel.delta_x, web_wheel.delta_y), gfx::Point(),
       gfx::Point(), timestamp, modifiers, ui::EF_NONE);

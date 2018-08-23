@@ -31,6 +31,7 @@ struct CONTENT_EXPORT SyntheticSmoothScrollGestureParams
   float fling_velocity_x;
   float fling_velocity_y;
   bool precise_scrolling_deltas;
+  bool scroll_by_page;
 
   static const SyntheticSmoothScrollGestureParams* Cast(
       const SyntheticGestureParams* gesture_params);

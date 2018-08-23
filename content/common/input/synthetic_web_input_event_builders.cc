@@ -50,23 +50,27 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
   return result;
 }
 
-WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
-                                                             float y,
-                                                             float dx,
-                                                             float dy,
-                                                             int modifiers,
-                                                             bool precise) {
-  return Build(x, y, 0, 0, dx, dy, modifiers, precise);
+WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
+    float x,
+    float y,
+    float dx,
+    float dy,
+    int modifiers,
+    bool precise,
+    bool scroll_by_page) {
+  return Build(x, y, 0, 0, dx, dy, modifiers, precise, scroll_by_page);
 }
 
-WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
-                                                             float y,
-                                                             float global_x,
-                                                             float global_y,
-                                                             float dx,
-                                                             float dy,
-                                                             int modifiers,
-                                                             bool precise) {
+WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(
+    float x,
+    float y,
+    float global_x,
+    float global_y,
+    float dx,
+    float dy,
+    int modifiers,
+    bool precise,
+    bool scroll_by_page) {
   WebMouseWheelEvent result(WebInputEvent::kMouseWheel, modifiers,
                             ui::EventTimeForNow());
   result.SetPositionInScreen(global_x, global_y);
@@ -78,6 +82,7 @@ WebMouseWheelEvent SyntheticWebMouseWheelEventBuilder::Build(float x,
   if (dy)
     result.wheel_ticks_y = dy > 0.0f ? 1.0f : -1.0f;
   result.has_precise_scrolling_deltas = precise;
+  result.scroll_by_page = scroll_by_page;
   return result;
 }
 

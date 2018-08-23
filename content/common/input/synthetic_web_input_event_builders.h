@@ -38,7 +38,8 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
                                          float dx,
                                          float dy,
                                          int modifiers,
-                                         bool precise);
+                                         bool precise,
+                                         bool scroll_by_page = false);
   static blink::WebMouseWheelEvent Build(float x,
                                          float y,
                                          float global_x,
@@ -46,7 +47,8 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
                                          float dx,
                                          float dy,
                                          int modifiers,
-                                         bool precise);
+                                         bool precise,
+                                         bool scroll_by_page = false);
 };
 
 class CONTENT_EXPORT SyntheticWebKeyboardEventBuilder {

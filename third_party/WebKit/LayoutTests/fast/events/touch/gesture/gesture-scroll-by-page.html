@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html>
-<head>
-<script src="../../../../resources/js-test.js"></script>
+<script src="../../../../resources/testharness.js"></script>
+<script src="../../../../resources/testharnessreport.js"></script>
+<script src="../../../../resources/gesture-util.js"></script>
 <style type="text/css">
 ::-webkit-scrollbar {
     width: 0px;
@@ -20,8 +20,8 @@
 }
 
 </style>
-</head>
-<body style="margin:0" onload="runTest();">
+
+<body style="margin:0">
 
 <div id="greenbox"></div>
 <div id="redbox"></div>
@@ -29,32 +29,20 @@
 <p id="description"></p>
 <div id="console"></div>
 <script type="text/javascript">
+  // Turn on smooth scrolling.
+  internals.settings.setScrollAnimatorEnabled(true);
 
-function gestureScroll()
-{
-    eventSender.gestureScrollBegin("touchpad", 10, 20);
-    eventSender.gestureScrollUpdate("touchpad", 0, -1, "Page");
-    eventSender.gestureScrollUpdate("touchpad", 0, -2, "Page");
-    eventSender.gestureScrollUpdate("touchpad", 0, 1, "Page");
-    eventSender.gestureScrollEnd("touchpad", 0, 0);
+  var x = 30;
+  var y = 30;
+  var mouse_input = GestureSourceType.MOUSE_INPUT;
 
-    // see kMinFractionToStepWhenPaging in ScrollableArea.cppP
-    // 2 is the expected number of pages scrolled (-1 + -2 + 1)
-    shouldBecomeEqual("document.scrollingElement.scrollTop >= window.innerHeight * 0.875 * 2", "true", finishJSTest, 1000);
-}
+promise_test (async () => {
+  await smoothScroll(1, x, y, mouse_input, 'down', SPEED_INSTANT, false, true);
+  await smoothScroll(1, x, y, mouse_input, 'down', SPEED_INSTANT, false, true);
+  await waitFor(() => {
+    return document.scrollingElement.scrollTop >= window.innerHeight * 0.875 * 2; })
+});
 
-jsTestIsAsync = true;
-
-function runTest()
-{
-    if (window.eventSender) {
-        description('This tests gesture scrolling by pages.');
-        gestureScroll();
-    } else {
-        debug("This test requires DumpRenderTree.  Gesture-scroll the page to validate the implementation.");
-    }
-}
 </script>
 
 </body>
-</html>

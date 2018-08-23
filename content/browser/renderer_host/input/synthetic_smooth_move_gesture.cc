@@ -33,7 +33,8 @@ SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams()
       fling_velocity_y(0),
       prevent_fling(true),
       add_slop(true),
-      precise_scrolling_deltas(false) {}
+      precise_scrolling_deltas(false),
+      scroll_by_page(false) {}
 
 SyntheticSmoothMoveGestureParams::SyntheticSmoothMoveGestureParams(
     const SyntheticSmoothMoveGestureParams& other) = default;
@@ -270,7 +271,8 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
     const base::TimeTicks& timestamp) const {
   blink::WebMouseWheelEvent mouse_wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(
-          0, 0, delta.x(), delta.y(), 0, params_.precise_scrolling_deltas);
+          0, 0, delta.x(), delta.y(), 0, params_.precise_scrolling_deltas,
+          params_.scroll_by_page);
 
   mouse_wheel_event.SetPositionInWidget(
       current_move_segment_start_position_.x(),
