@@ -533,6 +533,9 @@ TEST_F(FidoGetAssertionHandlerTest, SuccessWithOnlyInternalTransportAllowed) {
   EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
   device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestGetInfoResponsePlatformDevice);
+  device->ExpectCtap2CommandAndRespondWith(
       CtapRequestCommand::kAuthenticatorGetAssertion,
       test_data::kTestGetAssertionResponse);
   set_mock_platform_device(std::move(device));
@@ -592,15 +595,13 @@ TEST_F(FidoGetAssertionHandlerTest, IncorrectTransportType) {
 // cancelled.
 TEST_F(FidoGetAssertionHandlerTest,
        TestRequestWithOperationDeniedErrorPlatform) {
-  auto platform_device = MockFidoDevice::MakeCtap(
-      ReadCTAPGetInfoResponse(test_data::kTestGetInfoResponsePlatformDevice));
+  auto platform_device = MockFidoDevice::MakeCtapWithGetInfoExpectation(
+      test_data::kTestGetInfoResponsePlatformDevice);
   platform_device->SetDeviceTransport(FidoTransportProtocol::kInternal);
   platform_device->ExpectCtap2CommandAndRespondWithError(
       CtapRequestCommand::kAuthenticatorGetAssertion,
       CtapDeviceResponseCode::kCtap2ErrOperationDenied,
       base::TimeDelta::FromMicroseconds(10));
-  EXPECT_CALL(*platform_device, GetId())
-      .WillRepeatedly(testing::Return("device0"));
   set_mock_platform_device(std::move(platform_device));
 
   auto other_device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
