@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <tuple>
 
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
@@ -83,16 +84,14 @@ class HidConnection : public base::RefCountedThreadSafe<HidConnection> {
   void ProcessReadQueue();
 
  private:
-  struct PendingHidReport;
-  struct PendingHidRead;
-
   scoped_refptr<HidDeviceInfo> device_info_;
   bool has_protected_collection_;
   base::ThreadChecker thread_checker_;
   bool closed_;
 
-  base::queue<PendingHidReport> pending_reports_;
-  base::queue<PendingHidRead> pending_reads_;
+  base::queue<std::tuple<scoped_refptr<base::RefCountedBytes>, size_t>>
+      pending_reports_;
+  base::queue<ReadCallback> pending_reads_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnection);
 };
