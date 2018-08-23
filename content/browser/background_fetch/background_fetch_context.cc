@@ -466,6 +466,14 @@ void BackgroundFetchContext::DidGetSettledFetches(
     return;
   }
 
+  DCHECK(job_controllers_.count(registration_id.unique_id()));
+
+  if (job_controllers_[registration_id.unique_id()]->total_downloads() !=
+      static_cast<int>(settled_fetches.size())) {
+    // Something went wrong, and some information was lost.
+    background_fetch_succeeded = false;
+  }
+
   // The `backgroundfetchsuccess` event will be invoked when all requests in the
   // registration have completed successfully. In all other cases, the
   // `backgroundfetchfail` event will be invoked instead.
