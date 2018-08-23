@@ -32,14 +32,19 @@ std::string GetUserLocale(Profile* profile) {
   return user_locale.empty() ? kDefaultProfileLocale : user_locale;
 }
 
+// Returns the current input context. This may change during the session, even
+// if the IME engine does not change, because remote mojo applications have
+// their own instance of InputMethodChromeOS. See comment on InputMethodBridge.
+ui::IMEInputContextHandlerInterface* GetInputContext() {
+  return ui::IMEBridge::Get()->GetInputContextHandler();
+}
+
 }  // namespace
 
 DictationChromeos::DictationChromeos(Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {
-  composition_ = std::make_unique<ui::CompositionText>();
-  input_context_ = ui::IMEBridge::Get()->GetInputContextHandler();
-  ui::IMEBridge::Get()->SetObserver(this);
-}
+    : composition_(std::make_unique<ui::CompositionText>()),
+      profile_(profile),
+      weak_ptr_factory_(this) {}
 
 DictationChromeos::~DictationChromeos() = default;
 
@@ -68,8 +73,9 @@ void DictationChromeos::OnSpeechResult(const base::string16& query,
     if (AccessibilityManager::Get()->IsSpokenFeedbackEnabled())
       return;
 
-    if (input_context_)
-      input_context_->UpdateCompositionText(*composition_, 0, true);
+    ui::IMEInputContextHandlerInterface* input_context = GetInputContext();
+    if (input_context)
+      input_context->UpdateCompositionText(*composition_, 0, true);
     return;
   }
   DictationOff();
@@ -90,10 +96,6 @@ void DictationChromeos::OnSpeechRecognitionStateChanged(
 void DictationChromeos::GetSpeechAuthParameters(std::string* auth_scope,
                                                 std::string* auth_token) {}
 
-void DictationChromeos::OnRequestSwitchEngine() {
-  input_context_ = ui::IMEBridge::Get()->GetInputContextHandler();
-}
-
 void DictationChromeos::DictationOff() {
   if (!speech_recognizer_)
     return;
@@ -101,8 +103,9 @@ void DictationChromeos::DictationOff() {
   if (!composition_->text.empty()) {
     media::SoundsManager::Get()->Play(chromeos::SOUND_DICTATION_END);
 
-    if (input_context_)
-      input_context_->CommitText(base::UTF16ToASCII(composition_->text));
+    ui::IMEInputContextHandlerInterface* input_context = GetInputContext();
+    if (input_context)
+      input_context->CommitText(base::UTF16ToUTF8(composition_->text));
 
     composition_->text = base::string16();
   } else {
