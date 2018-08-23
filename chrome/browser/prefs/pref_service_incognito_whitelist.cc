@@ -131,6 +131,9 @@ const char* const kPersistentPrefNames[] = {
     // they need to be persisted.
     rappor::prefs::kRapporCohortSeed, rappor::prefs::kRapporSecret,
 
+    // Reading list preferences are common between incognito and regular mode.
+    reading_list::prefs::kReadingListHasUnseenEntries,
+
     // Although UKMs are not collected in incognito, theses preferences may be
     // changed by UMA/Sync/Unity consent, and need to be the same between
     // incognito and regular modes.
@@ -589,9 +592,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     // components/onc/onc_pref_names.h
     onc::prefs::kDeviceOpenNetworkConfiguration,
     onc::prefs::kOpenNetworkConfiguration,
-
-    // components/reading_list/core/reading_list_pref_names.h
-    reading_list::prefs::kReadingListHasUnseenEntries,
 
     // components/search_engines/search_engines_pref_names.h
     prefs::kSyncedDefaultSearchProviderGUID,
