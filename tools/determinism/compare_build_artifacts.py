@@ -81,6 +81,10 @@ def get_files_to_compare_using_isolate(build_dir):
           for inner_file in files:
             ret_files.add(os.path.join(root, inner_file))
 
+  # Also add any .isolated files that exist.
+  for isolated in glob.glob(os.path.join(build_dir, '*.isolated')):
+    ret_files.add(isolated)
+
   # Convert back to a relpath since that's what the caller is expecting.
   return set(os.path.relpath(f, build_dir) for f in ret_files)
 
