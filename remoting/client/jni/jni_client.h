@@ -145,6 +145,12 @@ class JniClient : public ChromotingSession::Delegate {
                             const base::android::JavaParamRef<jstring>& type,
                             const base::android::JavaParamRef<jstring>& data);
 
+  void SendClientResolution(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& caller,
+                            jint dips_width,
+                            jint dips_height,
+                            jfloat scale);
+
   // Deletes this object.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& caller);
 

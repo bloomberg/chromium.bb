@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -92,5 +93,17 @@ public abstract class ChromotingUtil {
     /** Launches an external web browser or application. */
     public static boolean openUrl(Activity parentActivity, Uri uri) {
         return startActivitySafely(parentActivity, new Intent(Intent.ACTION_VIEW, uri));
+    }
+
+    /**
+     * Converts a measurement in px to dp (density independent pixel).
+     *
+     * @param metrics The metrics used for conversion.
+     * @param value The value in px to be converted.
+     * @return The converted result in dp.
+     */
+    public static int pxToDp(DisplayMetrics metrics, int value) {
+        // +0.5f to round up the result.
+        return (int) (value / metrics.density + 0.5f);
     }
 }

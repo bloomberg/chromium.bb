@@ -292,6 +292,22 @@ public class Client implements InputStub {
         nativeSendExtensionMessage(mNativeJniClient, type, data);
     }
 
+    /**
+     * Sends client resolution to the host so that the host can resize itself to fit the client
+     * without showing letterboxes.
+     *
+     * @param dipsWidth The width of the screen in density independent pixels.
+     * @param dipsHeight The height of the screen in density independent pixels.
+     * @param density The pixel density of the screen.
+     */
+    public void sendClientResolution(int dipsWidth, int dipsHeight, float density) {
+        if (!mConnected) {
+            return;
+        }
+
+        nativeSendClientResolution(mNativeJniClient, dipsWidth, dipsHeight, density);
+    }
+
     private native long nativeInit();
 
     private native void nativeDestroy(long nativeJniClient);
@@ -336,4 +352,8 @@ public class Client implements InputStub {
 
     /** Passes extension message to the native code. */
     private native void nativeSendExtensionMessage(long nativeJniClient, String type, String data);
+
+    /** Sends client resolution to the host. */
+    private native void nativeSendClientResolution(
+            long nativeJniClient, int dipsWidth, int dipsHeight, float scale);
 }

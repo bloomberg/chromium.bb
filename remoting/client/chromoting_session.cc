@@ -100,7 +100,7 @@ class ChromotingSession::Core : public ClientUserInterface,
   void SendKeyEvent(int usb_key_code, bool key_down);
   void SendTextEvent(const std::string& text);
   void SendTouchEvent(const protocol::TouchEvent& touch_event);
-  void SendClientResolution(int dips_width, int dips_height, int scale);
+  void SendClientResolution(int dips_width, int dips_height, float scale);
   void EnableVideoChannel(bool enable);
   void SendClientMessage(const std::string& type, const std::string& data);
 
@@ -275,7 +275,7 @@ void ChromotingSession::Core::SendTouchEvent(
 
 void ChromotingSession::Core::SendClientResolution(int dips_width,
                                                    int dips_height,
-                                                   int scale) {
+                                                   float scale) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
   protocol::ClientResolution client_resolution;
   client_resolution.set_dips_width(dips_width);
@@ -708,7 +708,7 @@ void ChromotingSession::SendTouchEvent(
 
 void ChromotingSession::SendClientResolution(int dips_width,
                                              int dips_height,
-                                             int scale) {
+                                             float scale) {
   RunCoreTaskOnNetworkThread(FROM_HERE, &Core::SendClientResolution, dips_width,
                              dips_height, scale);
 }

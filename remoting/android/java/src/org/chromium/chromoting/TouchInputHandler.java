@@ -389,6 +389,8 @@ public class TouchInputHandler {
         mPanGestureBounds = new Rect(
                 mEdgeSlopInPx, mEdgeSlopInPx, width - mEdgeSlopInPx, height - mEdgeSlopInPx);
         resizeImageToFitScreen();
+
+        mDesktop.sendPreferredHostResolution();
     }
 
     private void handleHostSizeChanged(int width, int height) {

@@ -173,6 +173,9 @@ public class DesktopCanvas {
             return;
         }
 
+        // Reset to identity so that screen dimensions and image dimensions match up.
+        mRenderData.transform.reset();
+
         float widthRatio = getSafeScreenWidth() / mRenderData.imageWidth;
         float heightRatio = getSafeScreenHeight() / mRenderData.imageHeight;
         float screenToImageScale = Math.max(widthRatio, heightRatio);

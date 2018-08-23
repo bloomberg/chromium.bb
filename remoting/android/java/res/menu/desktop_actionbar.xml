@@ -27,6 +27,10 @@
     <item android:id="@+id/actionbar_send_ctrl_alt_del"
             android:title="@string/send_ctrl_alt_del"
             app:showAsAction="withText"/>
+    <item android:id="@+id/resize_to_client"
+        android:checkable="true"
+        android:title="@string/resize_to_client"
+        app:showAsAction="never|withText"/>
     <item android:id="@+id/actionbar_disconnect"
             android:title="@string/disconnect_myself_button"
             app:showAsAction="withText"/>
