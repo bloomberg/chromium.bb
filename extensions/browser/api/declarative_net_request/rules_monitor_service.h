@@ -98,7 +98,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
 
   // Guaranteed to be valid through-out the lifetime of this instance.
   InfoMap* const info_map_;
-  const ExtensionPrefs* const prefs_;
+  ExtensionPrefs* const prefs_;
   ExtensionRegistry* const extension_registry_;
   WarningService* const warning_service_;
 

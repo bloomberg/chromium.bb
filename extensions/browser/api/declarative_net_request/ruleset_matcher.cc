@@ -47,6 +47,9 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
   if (!base::ReadFileToString(indexed_ruleset_path, &ruleset_data))
     return kLoadErrorFileRead;
 
+  if (!StripVersionHeaderAndParseVersion(&ruleset_data))
+    return kLoadErrorVersionMismatch;
+
   // This guarantees that no memory access will end up outside the buffer.
   if (!IsValidRulesetData(
           base::make_span(reinterpret_cast<const uint8_t*>(ruleset_data.data()),

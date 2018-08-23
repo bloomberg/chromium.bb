@@ -39,10 +39,22 @@ class RulesetMatcher {
   // This is logged as part of UMA. Hence existing values should not be re-
   // numbered or deleted. New values should be added before kLoadRulesetMax.
   enum LoadRulesetResult {
+    // Ruleset loading succeeded.
     kLoadSuccess = 0,
+
+    // Ruleset loading failed since the provided path did not exist.
     kLoadErrorInvalidPath = 1,
+
+    // Ruleset loading failed due to a file read error.
     kLoadErrorFileRead = 2,
+
+    // Ruleset loading failed due to a checksum mismatch.
+    // TODO(karandeepb): Rename this to kLoadErrorChecksumMismatch.
     kLoadErrorRulesetVerification = 3,
+
+    // Ruleset loading failed due to version header mismatch.
+    kLoadErrorVersionMismatch = 4,
+
     kLoadResultMax
   };
 
