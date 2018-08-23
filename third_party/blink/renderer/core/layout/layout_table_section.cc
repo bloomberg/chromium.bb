@@ -106,9 +106,9 @@ LayoutTableSection::~LayoutTableSection() = default;
 
 void LayoutTableSection::StyleDidChange(StyleDifference diff,
                                         const ComputedStyle* old_style) {
-  DCHECK(Style()->Display() == EDisplay::kTableFooterGroup ||
-         Style()->Display() == EDisplay::kTableRowGroup ||
-         Style()->Display() == EDisplay::kTableHeaderGroup);
+  DCHECK(StyleRef().Display() == EDisplay::kTableFooterGroup ||
+         StyleRef().Display() == EDisplay::kTableRowGroup ||
+         StyleRef().Display() == EDisplay::kTableHeaderGroup);
 
   LayoutTableBoxComponent::StyleDidChange(diff, old_style);
   PropagateStyleToAnonymousChildren();
@@ -774,8 +774,8 @@ void LayoutTableSection::DistributeRowSpanHeightToRows(
 
 bool LayoutTableSection::RowHasVisibilityCollapse(unsigned row) const {
   return ((grid_[row].row &&
-           grid_[row].row->Style()->Visibility() == EVisibility::kCollapse) ||
-          Style()->Visibility() == EVisibility::kCollapse);
+           grid_[row].row->StyleRef().Visibility() == EVisibility::kCollapse) ||
+          StyleRef().Visibility() == EVisibility::kCollapse);
 }
 
 // Find out the baseline of the cell
@@ -1142,7 +1142,7 @@ int LayoutTableSection::DistributeExtraLogicalHeightToRows(
 }
 
 bool CellHasExplicitlySpecifiedHeight(const LayoutTableCell& cell) {
-  if (cell.Style()->LogicalHeight().IsFixed())
+  if (cell.StyleRef().LogicalHeight().IsFixed())
     return true;
   LayoutBlock* cb = cell.ContainingBlock();
   if (cb->AvailableLogicalHeightForPercentageComputation() == -1)
@@ -1154,8 +1154,8 @@ static bool ShouldFlexCellChild(const LayoutTableCell& cell,
                                 LayoutObject* cell_descendant) {
   if (!CellHasExplicitlySpecifiedHeight(cell))
     return false;
-  if (cell_descendant->Style()->OverflowY() == EOverflow::kVisible ||
-      cell_descendant->Style()->OverflowY() == EOverflow::kHidden)
+  if (cell_descendant->StyleRef().OverflowY() == EOverflow::kVisible ||
+      cell_descendant->StyleRef().OverflowY() == EOverflow::kHidden)
     return true;
   return cell_descendant->IsBox() &&
          ToLayoutBox(cell_descendant)->ShouldBeConsideredAsReplaced();
@@ -1244,7 +1244,7 @@ void LayoutTableSection::LayoutRows() {
                               LayoutUnit(r_height)))
         cell_vertical_align = EVerticalAlign::kTop;
       else
-        cell_vertical_align = cell->Style()->VerticalAlign();
+        cell_vertical_align = cell->StyleRef().VerticalAlign();
 
       // Calculate total collapsed height affecting one cell.
       int collapsed_height = 0;
@@ -1903,12 +1903,13 @@ void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
   // as we discover new bugs. :)
   bool cell_children_flex = false;
   bool flex_all_children = CellHasExplicitlySpecifiedHeight(cell) ||
-                           (!Table()->Style()->LogicalHeight().IsAuto() &&
+                           (!Table()->StyleRef().LogicalHeight().IsAuto() &&
                             row_height != cell.LogicalHeight());
 
   for (LayoutObject* child = cell.FirstChild(); child;
        child = child->NextSibling()) {
-    if (!child->IsText() && child->Style()->LogicalHeight().IsPercentOrCalc() &&
+    if (!child->IsText() &&
+        child->StyleRef().LogicalHeight().IsPercentOrCalc() &&
         (flex_all_children || ShouldFlexCellChild(cell, child)) &&
         (!child->IsTable() || ToLayoutTable(child)->HasSections())) {
       cell_children_flex = true;

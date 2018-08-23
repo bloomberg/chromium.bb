@@ -144,7 +144,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   }
 
   Length StyleOrColLogicalWidth() const {
-    Length style_width = Style()->LogicalWidth();
+    Length style_width = StyleRef().LogicalWidth();
     if (!style_width.IsAuto())
       return style_width;
     if (LayoutTableCol* first_column =
@@ -156,7 +156,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
   }
 
   int LogicalHeightFromStyle() const {
-    Length height = Style()->LogicalHeight();
+    Length height = StyleRef().LogicalHeight();
     int style_logical_height =
         height.IsIntrinsicOrAuto()
             ? 0
@@ -166,7 +166,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
     // add in the border and padding.
     // Call computedCSSPadding* directly to avoid including implicitPadding.
     if (!GetDocument().InQuirksMode() &&
-        Style()->BoxSizing() != EBoxSizing::kBorderBox) {
+        StyleRef().BoxSizing() != EBoxSizing::kBorderBox) {
       style_logical_height +=
           (ComputedCSSPaddingBefore() + ComputedCSSPaddingAfter()).Floor() +
           (BorderBefore() + BorderAfter()).Floor();
@@ -199,7 +199,7 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
 
   LayoutUnit CellBaselinePosition() const;
   bool IsBaselineAligned() const {
-    EVerticalAlign va = Style()->VerticalAlign();
+    EVerticalAlign va = StyleRef().VerticalAlign();
     return va == EVerticalAlign::kBaseline ||
            va == EVerticalAlign::kTextBottom ||
            va == EVerticalAlign::kTextTop || va == EVerticalAlign::kSuper ||

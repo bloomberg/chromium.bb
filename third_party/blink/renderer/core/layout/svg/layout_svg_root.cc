@@ -147,7 +147,7 @@ LayoutUnit LayoutSVGRoot::ComputeReplacedLogicalHeight(
     return ContainingBlock()->AvailableLogicalHeight(
         kIncludeMarginBorderPadding);
 
-  const Length& logical_height = Style()->LogicalHeight();
+  const Length& logical_height = StyleRef().LogicalHeight();
   if (IsDocumentElement() && logical_height.IsPercentOrCalc()) {
     return ValueForLength(
         logical_height,
@@ -242,9 +242,9 @@ bool LayoutSVGRoot::ShouldApplyViewportClip() const {
   // clipped. When the svg is stand-alone (isDocumentElement() == true) the
   // viewport clipping should always be applied, noting that the window
   // scrollbars should be hidden if overflow=hidden.
-  return Style()->OverflowX() == EOverflow::kHidden ||
-         Style()->OverflowX() == EOverflow::kAuto ||
-         Style()->OverflowX() == EOverflow::kScroll || IsDocumentElement();
+  return StyleRef().OverflowX() == EOverflow::kHidden ||
+         StyleRef().OverflowX() == EOverflow::kAuto ||
+         StyleRef().OverflowX() == EOverflow::kScroll || IsDocumentElement();
 }
 
 LayoutRect LayoutSVGRoot::VisualOverflowRect() const {
@@ -326,7 +326,7 @@ void LayoutSVGRoot::AddChild(LayoutObject* child, LayoutObject* before_child) {
   SVGResourcesCache::ClientWasAddedToTree(*child, child->StyleRef());
 
   bool should_isolate_descendants =
-      (child->IsBlendingAllowed() && child->Style()->HasBlendMode()) ||
+      (child->IsBlendingAllowed() && child->StyleRef().HasBlendMode()) ||
       child->HasNonIsolatedBlendingDescendants();
   if (should_isolate_descendants)
     DescendantIsolationRequirementsChanged(kDescendantIsolationRequired);
@@ -337,7 +337,7 @@ void LayoutSVGRoot::RemoveChild(LayoutObject* child) {
   LayoutReplaced::RemoveChild(child);
 
   bool had_non_isolated_descendants =
-      (child->IsBlendingAllowed() && child->Style()->HasBlendMode()) ||
+      (child->IsBlendingAllowed() && child->StyleRef().HasBlendMode()) ||
       child->HasNonIsolatedBlendingDescendants();
   if (had_non_isolated_descendants)
     DescendantIsolationRequirementsChanged(kDescendantIsolationNeedsUpdate);
@@ -411,7 +411,7 @@ SVGTransformChange LayoutSVGRoot::BuildLocalToBorderBoxTransform() {
   SVGTransformChangeDetector change_detector(local_to_border_box_transform_);
   SVGSVGElement* svg = ToSVGSVGElement(GetNode());
   DCHECK(svg);
-  float scale = Style()->EffectiveZoom();
+  float scale = StyleRef().EffectiveZoom();
   local_to_border_box_transform_ = svg->ViewBoxToViewTransform(
       ContentWidth() / scale, ContentHeight() / scale);
 

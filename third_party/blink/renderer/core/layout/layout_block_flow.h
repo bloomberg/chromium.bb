@@ -143,7 +143,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
       LayoutUnit position,
       IndentTextOrNot indent_text,
       LayoutUnit logical_height = LayoutUnit()) const {
-    return Style()->IsLeftToRightDirection()
+    return StyleRef().IsLeftToRightDirection()
                ? LogicalLeftOffsetForLine(position, indent_text, logical_height)
                : LogicalWidth() - LogicalRightOffsetForLine(
                                       position, indent_text, logical_height);
@@ -171,7 +171,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   LayoutUnit StartOffsetForAvoidingFloats(
       LayoutUnit position,
       LayoutUnit logical_height = LayoutUnit()) const {
-    return Style()->IsLeftToRightDirection()
+    return StyleRef().IsLeftToRightDirection()
                ? LogicalLeftOffsetForAvoidingFloats(position, logical_height)
                : LogicalWidth() - LogicalRightOffsetForAvoidingFloats(
                                       position, logical_height);
@@ -179,7 +179,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   LayoutUnit EndOffsetForAvoidingFloats(
       LayoutUnit position,
       LayoutUnit logical_height = LayoutUnit()) const {
-    return !Style()->IsLeftToRightDirection()
+    return !StyleRef().IsLeftToRightDirection()
                ? LogicalLeftOffsetForAvoidingFloats(position, logical_height)
                : LogicalWidth() - LogicalRightOffsetForAvoidingFloats(
                                       position, logical_height);
@@ -305,7 +305,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
   static bool ShouldSkipCreatingRunsForObject(LineLayoutItem obj) {
     return obj.IsFloating() || (obj.IsOutOfFlowPositioned() &&
-                                !obj.Style()->IsOriginalDisplayInlineType() &&
+                                !obj.StyleRef().IsOriginalDisplayInlineType() &&
                                 !obj.Container().IsLayoutInline());
   }
 

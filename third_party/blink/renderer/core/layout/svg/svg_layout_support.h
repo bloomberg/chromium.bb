@@ -216,7 +216,7 @@ bool SVGLayoutSupport::ComputeHasNonIsolatedBlendingDescendants(
     const LayoutObjectType* object) {
   for (LayoutObject* child = object->FirstChild(); child;
        child = child->NextSibling()) {
-    if (child->IsBlendingAllowed() && child->Style()->HasBlendMode())
+    if (child->IsBlendingAllowed() && child->StyleRef().HasBlendMode())
       return true;
     if (child->HasNonIsolatedBlendingDescendants() &&
         !WillIsolateBlendingDescendantsForObject(child))

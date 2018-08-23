@@ -258,7 +258,7 @@ void LayoutEmbeddedContent::StyleDidChange(StyleDifference diff,
   if (!embedded_content_view)
     return;
 
-  if (Style()->Visibility() != EVisibility::kVisible) {
+  if (StyleRef().Visibility() != EVisibility::kVisible) {
     embedded_content_view->Hide();
   } else {
     embedded_content_view->Show();
@@ -319,7 +319,7 @@ void LayoutEmbeddedContent::UpdateOnEmbeddedContentViewChange() {
   if (!NeedsLayout())
     UpdateGeometry(*embedded_content_view);
 
-  if (Style()->Visibility() != EVisibility::kVisible) {
+  if (StyleRef().Visibility() != EVisibility::kVisible) {
     embedded_content_view->Hide();
   } else {
     embedded_content_view->Show();

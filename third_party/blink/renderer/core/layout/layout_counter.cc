@@ -484,7 +484,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
           !before_after_container->IsPseudoElement())
         return nullptr;  // LayoutCounters are restricted to before and after
                          // pseudo elements
-      PseudoId container_style = before_after_container->Style()->StyleType();
+      PseudoId container_style = before_after_container->StyleRef().StyleType();
       if ((container_style == kPseudoIdBefore) ||
           (container_style == kPseudoIdAfter))
         break;
@@ -602,7 +602,7 @@ void LayoutCounter::LayoutObjectSubtreeWillBeDetached(
 static void UpdateCounters(LayoutObject& layout_object) {
   DCHECK(layout_object.Style());
   const CounterDirectiveMap* directive_map =
-      layout_object.Style()->GetCounterDirectives();
+      layout_object.StyleRef().GetCounterDirectives();
   if (!directive_map)
     return;
   CounterDirectiveMap::const_iterator end = directive_map->end();

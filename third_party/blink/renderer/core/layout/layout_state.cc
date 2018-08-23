@@ -85,7 +85,7 @@ LayoutState::LayoutState(LayoutBox& layout_object,
   if (!layout_object.IsOutOfFlowPositioned())
     return;
   if (LayoutObject* container = layout_object.Container()) {
-    if (container->Style()->HasInFlowPosition() &&
+    if (container->StyleRef().HasInFlowPosition() &&
         container->IsLayoutInline()) {
       pagination_offset_ +=
           ToLayoutInline(container)->OffsetForInFlowPositionedInline(

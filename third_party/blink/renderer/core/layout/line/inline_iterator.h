@@ -197,7 +197,7 @@ static inline void NotifyObserverWillExitObject(Observer* observer,
   if (!observer || !object || !object.IsLayoutInline())
     return;
 
-  UnicodeBidi unicode_bidi = object.Style()->GetUnicodeBidi();
+  UnicodeBidi unicode_bidi = object.StyleRef().GetUnicodeBidi();
   if (unicode_bidi == UnicodeBidi::kNormal)
     return;  // Nothing to do for unicode-bidi: normal
   if (TreatAsIsolated(object.StyleRef())) {
@@ -517,7 +517,7 @@ ALWAYS_INLINE WTF::Unicode::CharDirection InlineIterator::Direction() const {
     return WTF::Unicode::Direction(c);
 
   if (line_layout_item_ && line_layout_item_.IsListMarker())
-    return line_layout_item_.Style()->IsLeftToRightDirection()
+    return line_layout_item_.StyleRef().IsLeftToRightDirection()
                ? WTF::Unicode::kLeftToRight
                : WTF::Unicode::kRightToLeft;
 
@@ -549,7 +549,7 @@ static inline bool IsCollapsibleSpace(UChar character,
       character == kSoftHyphenCharacter)
     return true;
   if (character == '\n')
-    return !layout_text.Style()->PreserveNewline();
+    return !layout_text.StyleRef().PreserveNewline();
   return false;
 }
 

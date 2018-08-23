@@ -888,7 +888,7 @@ void LocalFrameView::UpdateLayout() {
         if (first_layout_) {
           first_layout_ = false;
           last_viewport_size_ = GetLayoutSize();
-          last_zoom_factor_ = GetLayoutView()->Style()->Zoom();
+          last_zoom_factor_ = GetLayoutView()->StyleRef().Zoom();
 
           ScrollbarMode h_mode;
           ScrollbarMode v_mode;
@@ -1264,7 +1264,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
   if (GetLayoutView() && frame_->IsMainFrame() &&
       frame_->GetPage()->GetBrowserControls().TotalHeight()) {
-    if (GetLayoutView()->Style()->HasFixedBackgroundImage()) {
+    if (GetLayoutView()->StyleRef().HasFixedBackgroundImage()) {
       // We've already issued a full invalidation above.
       GetLayoutView()->SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
           width_changed, height_changed);
@@ -1380,8 +1380,8 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
   for (auto* const viewport_constrained_object :
        *viewport_constrained_objects_) {
     LayoutObject* layout_object = viewport_constrained_object;
-    DCHECK(layout_object->Style()->HasViewportConstrainedPosition() ||
-           layout_object->Style()->HasStickyConstrainedPosition());
+    DCHECK(layout_object->StyleRef().HasViewportConstrainedPosition() ||
+           layout_object->StyleRef().HasStickyConstrainedPosition());
     DCHECK(layout_object->HasLayer());
     PaintLayer* layer = ToLayoutBoxModelObject(layout_object)->Layer();
 
@@ -3055,12 +3055,12 @@ void LocalFrameView::ForceLayoutForPagination(
   // Dumping externalRepresentation(m_frame->layoutObject()).ascii() is a good
   // trick to see the state of things before and after the layout
   if (LayoutView* layout_view = this->GetLayoutView()) {
-    float page_logical_width = layout_view->Style()->IsHorizontalWritingMode()
+    float page_logical_width = layout_view->StyleRef().IsHorizontalWritingMode()
                                    ? page_size.Width()
                                    : page_size.Height();
-    float page_logical_height = layout_view->Style()->IsHorizontalWritingMode()
-                                    ? page_size.Height()
-                                    : page_size.Width();
+    float page_logical_height =
+        layout_view->StyleRef().IsHorizontalWritingMode() ? page_size.Height()
+                                                          : page_size.Width();
 
     LayoutUnit floored_page_logical_width =
         static_cast<LayoutUnit>(page_logical_width);
@@ -3078,7 +3078,7 @@ void LocalFrameView::ForceLayoutForPagination(
     // FIXME: We are assuming a shrink-to-fit printing implementation.  A
     // cropping implementation should not do this!
     bool horizontal_writing_mode =
-        layout_view->Style()->IsHorizontalWritingMode();
+        layout_view->StyleRef().IsHorizontalWritingMode();
     const LayoutRect& document_rect = LayoutRect(layout_view->DocumentRect());
     LayoutUnit doc_logical_width = horizontal_writing_mode
                                        ? document_rect.Width()
@@ -3118,7 +3118,7 @@ void LocalFrameView::ForceLayoutForPagination(
                                          ? updated_document_rect.MaxX()
                                          : updated_document_rect.MaxY();
       LayoutUnit clipped_logical_left;
-      if (!layout_view->Style()->IsLeftToRightDirection()) {
+      if (!layout_view->StyleRef().IsLeftToRightDirection()) {
         clipped_logical_left =
             LayoutUnit(doc_logical_right - page_logical_width);
       }
@@ -4239,8 +4239,8 @@ bool LocalFrameView::HasVisibleSlowRepaintViewportConstrainedObjects() const {
     return false;
   for (const LayoutObject* layout_object : *ViewportConstrainedObjects()) {
     DCHECK(layout_object->IsBoxModelObject() && layout_object->HasLayer());
-    DCHECK(layout_object->Style()->GetPosition() == EPosition::kFixed ||
-           layout_object->Style()->GetPosition() == EPosition::kSticky);
+    DCHECK(layout_object->StyleRef().GetPosition() == EPosition::kFixed ||
+           layout_object->StyleRef().GetPosition() == EPosition::kSticky);
     if (ToLayoutBoxModelObject(layout_object)->IsSlowRepaintConstrainedObject())
       return true;
   }
@@ -4310,7 +4310,7 @@ MainThreadScrollingReasons LocalFrameView::MainThreadScrollingReasonsPerFrame()
   // smooth-scroll animations.  For this reason, we use HasOverflow instead of
   // ScrollsOverflow (which is false for overflow: hidden).
   if (LayoutViewport()->HasOverflow() &&
-      GetLayoutView()->Style()->VisibleToHitTesting() &&
+      GetLayoutView()->StyleRef().VisibleToHitTesting() &&
       HasVisibleSlowRepaintViewportConstrainedObjects()) {
     reasons |=
         MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;

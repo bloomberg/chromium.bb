@@ -76,7 +76,7 @@ void LayoutSliderContainer::ComputeLogicalHeight(
       int tick_length = LayoutTheme::GetTheme().SliderTickSize().Height();
       track_height = LayoutUnit(2 * (offset_from_center + tick_length));
     }
-    float zoom_factor = Style()->EffectiveZoom();
+    float zoom_factor = StyleRef().EffectiveZoom();
     if (zoom_factor != 1.0)
       track_height *= zoom_factor;
 
@@ -133,7 +133,7 @@ void LayoutSliderContainer::UpdateLayout() {
   if (is_vertical) {
     thumb_location.SetY(thumb_location.Y() + track->ContentHeight() -
                         thumb->Size().Height() - offset);
-  } else if (Style()->IsLeftToRightDirection()) {
+  } else if (StyleRef().IsLeftToRightDirection()) {
     thumb_location.SetX(thumb_location.X() + offset);
   } else {
     thumb_location.SetX(thumb_location.X() - offset);

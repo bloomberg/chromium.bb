@@ -63,7 +63,7 @@ LayoutBox* OrderIterator::Next() {
       current_child_ = current_child_->NextSiblingBox();
     }
   } while (!current_child_ ||
-           current_child_->Style()->Order() != *order_values_iterator_);
+           current_child_->StyleRef().Order() != *order_values_iterator_);
 
   return current_child_;
 }
@@ -79,7 +79,7 @@ OrderIteratorPopulator::~OrderIteratorPopulator() {
 }
 
 void OrderIteratorPopulator::CollectChild(const LayoutBox* child) {
-  iterator_.order_values_.insert(child->Style()->Order());
+  iterator_.order_values_.insert(child->StyleRef().Order());
 }
 
 }  // namespace blink

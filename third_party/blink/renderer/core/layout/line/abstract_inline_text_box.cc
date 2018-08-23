@@ -138,7 +138,7 @@ AbstractInlineTextBox::Direction LegacyAbstractInlineTextBox::GetDirection()
   if (!inline_text_box_ || !GetLineLayoutItem())
     return kLeftToRight;
 
-  if (GetLineLayoutItem().Style()->IsHorizontalWritingMode()) {
+  if (GetLineLayoutItem().StyleRef().IsHorizontalWritingMode()) {
     return (inline_text_box_->Direction() == TextDirection::kRtl
                 ? kRightToLeft
                 : kLeftToRight);

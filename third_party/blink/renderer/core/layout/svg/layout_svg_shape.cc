@@ -139,7 +139,7 @@ FloatRect LayoutSVGShape::ApproximateStrokeBoundingBox(
 }
 
 FloatRect LayoutSVGShape::HitTestStrokeBoundingBox() const {
-  if (Style()->SvgStyle().HasStroke())
+  if (StyleRef().SvgStyle().HasStroke())
     return stroke_bounding_box_;
 
   // Implementation of
@@ -360,7 +360,7 @@ bool LayoutSVGShape::NodeAtFloatPoint(HitTestResult& result,
 
   PointerEventsHitRules hit_rules(
       PointerEventsHitRules::SVG_GEOMETRY_HITTESTING,
-      result.GetHitTestRequest(), Style()->PointerEvents());
+      result.GetHitTestRequest(), StyleRef().PointerEvents());
   if (NodeAtFloatPointInternal(result.GetHitTestRequest(), local_point,
                                hit_rules)) {
     const LayoutPoint& local_layout_point = LayoutPoint(local_point);
@@ -406,7 +406,7 @@ FloatRect LayoutSVGShape::CalculateStrokeBoundingBox() const {
   DCHECK(path_);
   FloatRect stroke_bounding_box = fill_bounding_box_;
 
-  if (Style()->SvgStyle().HasStroke()) {
+  if (StyleRef().SvgStyle().HasStroke()) {
     StrokeData stroke_data;
     SVGLayoutSupport::ApplyStrokeStyleToStrokeData(stroke_data, StyleRef(),
                                                    *this, DashScaleFactor());
@@ -430,7 +430,7 @@ FloatRect LayoutSVGShape::CalculateStrokeBoundingBox() const {
 
 float LayoutSVGShape::StrokeWidth() const {
   SVGLengthContext length_context(GetElement());
-  return length_context.ValueForLength(Style()->SvgStyle().StrokeWidth());
+  return length_context.ValueForLength(StyleRef().SvgStyle().StrokeWidth());
 }
 
 LayoutSVGShapeRareData& LayoutSVGShape::EnsureRareData() const {

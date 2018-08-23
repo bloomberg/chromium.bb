@@ -269,8 +269,8 @@ void LayoutGeometryMap::PushMappingsToAncestor(
     base::AutoReset<size_t> position_change(&insertion_position_,
                                             mapping_.size());
     bool accumulating_transform =
-        layout_object.Style()->Preserves3D() ||
-        ancestor_layer->GetLayoutObject().Style()->Preserves3D();
+        layout_object.StyleRef().Preserves3D() ||
+        ancestor_layer->GetLayoutObject().StyleRef().Preserves3D();
     Push(&layout_object, ToLayoutSize(layer_offset),
          accumulating_transform ? kAccumulatingTransform : 0);
     return;

@@ -133,7 +133,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   LayoutSize RelativePositionOffset() const;
   LayoutSize RelativePositionLogicalOffset() const {
-    return Style()->IsHorizontalWritingMode()
+    return StyleRef().IsHorizontalWritingMode()
                ? RelativePositionOffset()
                : RelativePositionOffset().TransposedSize();
   }
@@ -191,34 +191,34 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
 
   // These return the CSS computed padding values.
   LayoutUnit ComputedCSSPaddingTop() const {
-    return ComputedCSSPadding(Style()->PaddingTop());
+    return ComputedCSSPadding(StyleRef().PaddingTop());
   }
   LayoutUnit ComputedCSSPaddingBottom() const {
-    return ComputedCSSPadding(Style()->PaddingBottom());
+    return ComputedCSSPadding(StyleRef().PaddingBottom());
   }
   LayoutUnit ComputedCSSPaddingLeft() const {
-    return ComputedCSSPadding(Style()->PaddingLeft());
+    return ComputedCSSPadding(StyleRef().PaddingLeft());
   }
   LayoutUnit ComputedCSSPaddingRight() const {
-    return ComputedCSSPadding(Style()->PaddingRight());
+    return ComputedCSSPadding(StyleRef().PaddingRight());
   }
   LayoutUnit ComputedCSSPaddingBefore() const {
-    return ComputedCSSPadding(Style()->PaddingBefore());
+    return ComputedCSSPadding(StyleRef().PaddingBefore());
   }
   LayoutUnit ComputedCSSPaddingAfter() const {
-    return ComputedCSSPadding(Style()->PaddingAfter());
+    return ComputedCSSPadding(StyleRef().PaddingAfter());
   }
   LayoutUnit ComputedCSSPaddingStart() const {
-    return ComputedCSSPadding(Style()->PaddingStart());
+    return ComputedCSSPadding(StyleRef().PaddingStart());
   }
   LayoutUnit ComputedCSSPaddingEnd() const {
-    return ComputedCSSPadding(Style()->PaddingEnd());
+    return ComputedCSSPadding(StyleRef().PaddingEnd());
   }
   LayoutUnit ComputedCSSPaddingOver() const {
-    return ComputedCSSPadding(Style()->PaddingOver());
+    return ComputedCSSPadding(StyleRef().PaddingOver());
   }
   LayoutUnit ComputedCSSPaddingUnder() const {
-    return ComputedCSSPadding(Style()->PaddingUnder());
+    return ComputedCSSPadding(StyleRef().PaddingUnder());
   }
 
   // These functions are used during layout.
@@ -242,16 +242,16 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   LayoutUnit PaddingUnder() const { return PhysicalPaddingToLogical().Under(); }
 
   virtual LayoutUnit BorderTop() const {
-    return LayoutUnit(Style()->BorderTopWidth());
+    return LayoutUnit(StyleRef().BorderTopWidth());
   }
   virtual LayoutUnit BorderBottom() const {
-    return LayoutUnit(Style()->BorderBottomWidth());
+    return LayoutUnit(StyleRef().BorderBottomWidth());
   }
   virtual LayoutUnit BorderLeft() const {
-    return LayoutUnit(Style()->BorderLeftWidth());
+    return LayoutUnit(StyleRef().BorderLeftWidth());
   }
   virtual LayoutUnit BorderRight() const {
-    return LayoutUnit(Style()->BorderRightWidth());
+    return LayoutUnit(StyleRef().BorderRightWidth());
   }
 
   LayoutUnit BorderBefore() const { return PhysicalBorderToLogical().Before(); }
@@ -281,7 +281,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   }
 
   bool HasBorderOrPadding() const {
-    return Style()->HasBorder() || Style()->HasPadding();
+    return StyleRef().HasBorder() || StyleRef().HasPadding();
   }
 
   LayoutUnit BorderAndPaddingStart() const {
@@ -315,17 +315,17 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
     return BorderStart() + BorderEnd() + PaddingStart() + PaddingEnd();
   }
   DISABLE_CFI_PERF LayoutUnit BorderAndPaddingLogicalLeft() const {
-    return Style()->IsHorizontalWritingMode() ? BorderLeft() + PaddingLeft()
-                                              : BorderTop() + PaddingTop();
+    return StyleRef().IsHorizontalWritingMode() ? BorderLeft() + PaddingLeft()
+                                                : BorderTop() + PaddingTop();
   }
 
   LayoutUnit BorderLogicalLeft() const {
-    return LayoutUnit(Style()->IsHorizontalWritingMode() ? BorderLeft()
-                                                         : BorderTop());
+    return LayoutUnit(StyleRef().IsHorizontalWritingMode() ? BorderLeft()
+                                                           : BorderTop());
   }
   LayoutUnit BorderLogicalRight() const {
-    return LayoutUnit(Style()->IsHorizontalWritingMode() ? BorderRight()
-                                                         : BorderBottom());
+    return LayoutUnit(StyleRef().IsHorizontalWritingMode() ? BorderRight()
+                                                           : BorderBottom());
   }
 
   LayoutUnit PaddingLogicalWidth() const {

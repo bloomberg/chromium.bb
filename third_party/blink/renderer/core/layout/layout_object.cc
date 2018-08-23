@@ -136,8 +136,8 @@ LayoutBlock* FindContainingBlock(LayoutObject* container,
   // LayoutObject::Container() method can actually be used to obtain the inline
   // directly.
   if (container && container->IsInline() && !container->IsAtomicInlineLevel()) {
-    DCHECK(container->Style()->HasInFlowPosition() ||
-           container->Style()->HasFilter());
+    DCHECK(container->StyleRef().HasInFlowPosition() ||
+           container->StyleRef().HasFilter());
     container = container->ContainingBlock(skip_info);
   }
 
@@ -381,7 +381,7 @@ void LayoutObject::AddChild(LayoutObject* new_child,
   }
 
   if (new_child->IsText() &&
-      new_child->Style()->TextTransform() == ETextTransform::kCapitalize)
+      new_child->StyleRef().TextTransform() == ETextTransform::kCapitalize)
     ToLayoutText(new_child)->TransformText();
 }
 
@@ -890,7 +890,7 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
     LayoutObject* container = object->Container();
     if (!container && !object->IsLayoutView())
       return;
-    if (!last->IsTextOrSVGChild() && last->Style()->HasOutOfFlowPosition()) {
+    if (!last->IsTextOrSVGChild() && last->StyleRef().HasOutOfFlowPosition()) {
       object = last->ContainingBlock();
       if (object->PosChildNeedsLayout())
         return;
@@ -942,7 +942,7 @@ void LayoutObject::SetPreferredLogicalWidthsDirty(
     MarkingBehavior mark_parents) {
   bitfields_.SetPreferredLogicalWidthsDirty(true);
   if (mark_parents == kMarkContainerChain &&
-      (IsText() || !Style()->HasOutOfFlowPosition()))
+      (IsText() || !StyleRef().HasOutOfFlowPosition()))
     InvalidateContainerPreferredLogicalWidths();
 }
 
@@ -981,7 +981,7 @@ inline void LayoutObject::InvalidateContainerPreferredLogicalWidths() {
     o->bitfields_.SetPreferredLogicalWidthsDirty(true);
     // A positioned object has no effect on the min/max width of its containing
     // block ever. We can optimize this case and not go up any further.
-    if (o->Style()->HasOutOfFlowPosition())
+    if (o->StyleRef().HasOutOfFlowPosition())
       break;
     o = container;
   }
@@ -1682,7 +1682,7 @@ bool LayoutObject::MapToVisualRectInAncestorSpaceInternal(
         transform_state.SetQuad(FloatQuad(FloatRect(rect)));
       }
 
-      bool preserve3d = parent->Style()->Preserves3D() && !parent->IsText();
+      bool preserve3d = parent->StyleRef().Preserves3D() && !parent->IsText();
 
       TransformState::TransformAccumulation accumulation =
           preserve3d ? TransformState::kAccumulateTransform
@@ -1807,8 +1807,8 @@ void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
 #endif  // NDEBUG
 
 bool LayoutObject::IsSelectable() const {
-  return !IsInert() && !(Style()->UserSelect() == EUserSelect::kNone &&
-                         Style()->UserModify() == EUserModify::kReadOnly);
+  return !IsInert() && !(StyleRef().UserSelect() == EUserSelect::kNone &&
+                         StyleRef().UserModify() == EUserModify::kReadOnly);
 }
 
 // Called when an object that was floating or positioned becomes a normal flow
@@ -1818,7 +1818,7 @@ static inline void HandleDynamicFloatPositionChange(LayoutObject* object) {
   // We have gone from not affecting the inline status of the parent flow to
   // suddenly having an impact.  See if there is a mismatch between the parent
   // flow's childrenInline() state and our state.
-  object->SetInline(object->Style()->IsDisplayInlineType());
+  object->SetInline(object->StyleRef().IsDisplayInlineType());
   if (object->IsInline() != object->Parent()->ChildrenInline()) {
     if (!object->IsInline()) {
       ToLayoutBoxModelObject(object->Parent())->ChildBecameNonInline(object);
@@ -1852,15 +1852,15 @@ StyleDifference LayoutObject::AdjustStyleDifference(
   // needed if we have style or text affected by these properties.
   if (diff.TextDecorationOrColorChanged() &&
       !diff.NeedsFullPaintInvalidation()) {
-    if (Style()->HasBorderColorReferencingCurrentColor() ||
-        Style()->HasOutlineWithCurrentColor() ||
-        Style()->HasBackgroundRelatedColorReferencingCurrentColor() ||
+    if (StyleRef().HasBorderColorReferencingCurrentColor() ||
+        StyleRef().HasOutlineWithCurrentColor() ||
+        StyleRef().HasBackgroundRelatedColorReferencingCurrentColor() ||
         // Skip any text nodes that do not contain text boxes. Whitespace cannot
         // be skipped or we will miss invalidating decorations (e.g.,
         // underlines).
         (IsText() && !IsBR() && ToLayoutText(this)->HasTextBoxes()) ||
-        (IsSVG() && Style()->SvgStyle().IsFillColorCurrentColor()) ||
-        (IsSVG() && Style()->SvgStyle().IsStrokeColorCurrentColor()) ||
+        (IsSVG() && StyleRef().SvgStyle().IsFillColorCurrentColor()) ||
+        (IsSVG() && StyleRef().SvgStyle().IsStrokeColorCurrentColor()) ||
         IsListMarker())
       diff.SetNeedsPaintInvalidationObject();
   }
@@ -2320,7 +2320,7 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
   // properties.
   for (LayoutObject* child = SlowFirstChild(); child;
        child = child->NextSibling()) {
-    if (!child->IsAnonymous() || child->Style()->StyleType() != kPseudoIdNone)
+    if (!child->IsAnonymous() || child->StyleRef().StyleType() != kPseudoIdNone)
       continue;
 
     if (child->AnonymousHasStylePropagationOverride())
@@ -2328,17 +2328,17 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
 
     scoped_refptr<ComputedStyle> new_style =
         ComputedStyle::CreateAnonymousStyleWithDisplay(
-            StyleRef(), child->Style()->Display());
+            StyleRef(), child->StyleRef().Display());
 
     // Preserve the position style of anonymous block continuations as they can
     // have relative position when they contain block descendants of relative
     // positioned inlines.
     if (child->IsInFlowPositioned() && child->IsLayoutBlockFlow() &&
         ToLayoutBlockFlow(child)->IsAnonymousBlockContinuation())
-      new_style->SetPosition(child->Style()->GetPosition());
+      new_style->SetPosition(child->StyleRef().GetPosition());
 
     if (child->IsLayoutNGListMarker())
-      new_style->SetWhiteSpace(child->Style()->WhiteSpace());
+      new_style->SetWhiteSpace(child->StyleRef().WhiteSpace());
 
     UpdateAnonymousChildStyle(child, *new_style);
 
@@ -2475,7 +2475,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     if (IsBox()) {
       mode &= ~kApplyContainerFlip;
     } else if (container->IsBox()) {
-      if (container->Style()->IsFlippedBlocksWritingMode()) {
+      if (container->StyleRef().IsFlippedBlocksWritingMode()) {
         IntPoint center_point = RoundedIntPoint(transform_state.MappedPoint());
         transform_state.Move(ToLayoutBox(container)->FlipForWritingMode(
                                  LayoutPoint(center_point)) -
@@ -2506,8 +2506,8 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   // them.
   bool preserve3d =
       mode & kUseTransforms &&
-      ((container->Style()->Preserves3D() && !container->IsText()) ||
-       (Style()->Preserves3D() && !IsText()));
+      ((container->StyleRef().Preserves3D() && !container->IsText()) ||
+       (StyleRef().Preserves3D() && !IsText()));
   if (mode & kUseTransforms && ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     GetTransformFromContainer(container, container_offset, t);
@@ -2531,7 +2531,7 @@ void LayoutObject::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                     : TransformState::kFlattenTransform);
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
-    if (ancestor->Style()->GetPosition() != EPosition::kFixed &&
+    if (ancestor->StyleRef().GetPosition() != EPosition::kFixed &&
         container->IsLayoutView() &&
         StyleRef().GetPosition() == EPosition::kFixed) {
       LayoutSize adjustment = ToLayoutView(container)->OffsetForFixedPosition();
@@ -2566,7 +2566,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     if (IsBox()) {
       mode &= ~kApplyContainerFlip;
     } else if (container->IsBox()) {
-      apply_container_flip = container->Style()->IsFlippedBlocksWritingMode();
+      apply_container_flip = container->StyleRef().IsFlippedBlocksWritingMode();
       mode &= ~kApplyContainerFlip;
     }
   }
@@ -2577,7 +2577,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
   LayoutSize container_offset = OffsetFromContainer(container);
   bool preserve3d =
       mode & kUseTransforms &&
-      (container->Style()->Preserves3D() || Style()->Preserves3D());
+      (container->StyleRef().Preserves3D() || StyleRef().Preserves3D());
   if (mode & kUseTransforms && ShouldUseTransformFromContainer(container)) {
     TransformationMatrix t;
     GetTransformFromContainer(container, container_offset, t);
@@ -2611,7 +2611,7 @@ void LayoutObject::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     transform_state.Move(-container_offset.Width(), -container_offset.Height());
     // If the ancestor is fixed, then the rect is already in its coordinates so
     // doesn't need viewport-adjusting.
-    if (ancestor->Style()->GetPosition() != EPosition::kFixed &&
+    if (ancestor->StyleRef().GetPosition() != EPosition::kFixed &&
         container->IsLayoutView() &&
         StyleRef().GetPosition() == EPosition::kFixed) {
       LayoutSize adjustment = ToLayoutView(container)->OffsetForFixedPosition();
@@ -2626,7 +2626,7 @@ bool LayoutObject::ShouldUseTransformFromContainer(
   // or perspective. We just care about transform, so check the layer's
   // transform directly.
   return (HasLayer() && ToLayoutBoxModelObject(this)->Layer()->Transform()) ||
-         (container_object && container_object->Style()->HasPerspective());
+         (container_object && container_object->StyleRef().HasPerspective());
 }
 
 void LayoutObject::GetTransformFromContainer(
@@ -2643,7 +2643,7 @@ void LayoutObject::GetTransformFromContainer(
                           offset_in_container.Height().ToFloat());
 
   if (container_object && container_object->HasLayer() &&
-      container_object->Style()->HasPerspective()) {
+      container_object->StyleRef().HasPerspective()) {
     // Perspective on the container affects us, so we have to factor it in here.
     DCHECK(container_object->HasLayer());
     FloatPoint perspective_origin =
@@ -2651,7 +2651,7 @@ void LayoutObject::GetTransformFromContainer(
 
     TransformationMatrix perspective_matrix;
     perspective_matrix.ApplyPerspective(
-        container_object->Style()->Perspective());
+        container_object->StyleRef().Perspective());
     perspective_matrix.ApplyTransformOrigin(perspective_origin.X(),
                                             perspective_origin.Y(), 0);
 
@@ -2871,7 +2871,7 @@ void LayoutObject::AddLayerHitTestRects(
     iter_value = &iter->value;
   }
   TouchAction whitelisted_touch_action =
-      Style()->GetEffectiveTouchAction() & supported_fast_actions;
+      StyleRef().GetEffectiveTouchAction() & supported_fast_actions;
   for (size_t i = 0; i < own_rects.size(); i++) {
     // If we have a different touch action than the container the rect needs to
     // be reported even if it is contained.
@@ -2946,7 +2946,7 @@ RespectImageOrientationEnum LayoutObject::ShouldRespectImageOrientation(
     return kRespectImageOrientation;
 
   if (layout_object->Style() &&
-      layout_object->Style()->RespectImageOrientation() ==
+      layout_object->StyleRef().RespectImageOrientation() ==
           kRespectImageOrientation)
     return kRespectImageOrientation;
 
@@ -3105,8 +3105,8 @@ void LayoutObject::InsertedIntoTree() {
   // If |this| is visible but this object was not, tell the layer it has some
   // visible content that needs to be drawn and layer visibility optimization
   // can't be used
-  if (Parent()->Style()->Visibility() != EVisibility::kVisible &&
-      Style()->Visibility() == EVisibility::kVisible && !HasLayer()) {
+  if (Parent()->StyleRef().Visibility() != EVisibility::kVisible &&
+      StyleRef().Visibility() == EVisibility::kVisible && !HasLayer()) {
     if (!layer)
       layer = Parent()->EnclosingLayer();
     if (layer)
@@ -3156,8 +3156,8 @@ void LayoutObject::WillBeRemovedFromTree() {
   // If we remove a visible child from an invisible parent, we don't know the
   // layer visibility any more.
   PaintLayer* layer = nullptr;
-  if (Parent()->Style()->Visibility() != EVisibility::kVisible &&
-      Style()->Visibility() == EVisibility::kVisible && !HasLayer()) {
+  if (Parent()->StyleRef().Visibility() != EVisibility::kVisible &&
+      StyleRef().Visibility() == EVisibility::kVisible && !HasLayer()) {
     layer = Parent()->EnclosingLayer();
     if (layer)
       layer->DirtyVisibleContentStatus();
@@ -3526,10 +3526,10 @@ scoped_refptr<ComputedStyle> LayoutObject::GetUncachedPseudoStyle(
 
 void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   // Convert the style regions to absolute coordinates.
-  if (Style()->Visibility() != EVisibility::kVisible || !IsBox())
+  if (StyleRef().Visibility() != EVisibility::kVisible || !IsBox())
     return;
 
-  if (Style()->DraggableRegionMode() == EDraggableRegionMode::kNone)
+  if (StyleRef().DraggableRegionMode() == EDraggableRegionMode::kNone)
     return;
 
   LayoutBox* box = ToLayoutBox(this);
@@ -3538,7 +3538,7 @@ void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
 
   AnnotatedRegionValue region;
   region.draggable =
-      Style()->DraggableRegionMode() == EDraggableRegionMode::kDrag;
+      StyleRef().DraggableRegionMode() == EDraggableRegionMode::kDrag;
   region.bounds = LayoutRect(abs_bounds);
   regions.push_back(region);
 }
@@ -3546,7 +3546,7 @@ void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
 bool LayoutObject::WillRenderImage() {
   // Without visibility we won't render (and therefore don't care about
   // animation).
-  if (Style()->Visibility() != EVisibility::kVisible)
+  if (StyleRef().Visibility() != EVisibility::kVisible)
     return false;
 
   // We will not render a new image when PausableObjects is paused
@@ -3609,7 +3609,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
   if (IsFixedPositioned())
     return nullptr;
 
-  float effective_zoom = Style()->EffectiveZoom();
+  float effective_zoom = StyleRef().EffectiveZoom();
   Node* node = nullptr;
   for (LayoutObject* ancestor = Parent(); ancestor;
        ancestor = ancestor->Parent()) {
@@ -3644,7 +3644,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
       break;
 
     // Webkit specific extension where offsetParent stops at zoom level changes.
-    if (effective_zoom != ancestor->Style()->EffectiveZoom())
+    if (effective_zoom != ancestor->StyleRef().EffectiveZoom())
       break;
   }
 
@@ -4057,7 +4057,7 @@ const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
 }
 
 bool LayoutObject::CanBeSelectionLeaf() const {
-  if (SlowFirstChild() || Style()->Visibility() != EVisibility::kVisible)
+  if (SlowFirstChild() || StyleRef().Visibility() != EVisibility::kVisible)
     return false;
   return CanBeSelectionLeafInternal();
 }

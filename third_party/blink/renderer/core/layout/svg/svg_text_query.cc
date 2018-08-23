@@ -108,7 +108,7 @@ static bool QueryTextBox(QueryData* query_data,
       LineLayoutSVGInlineText(text_box->GetLineLayoutItem());
 
   query_data->is_vertical_text =
-      !query_data->text_line_layout.Style()->IsHorizontalWritingMode();
+      !query_data->text_line_layout.StyleRef().IsHorizontalWritingMode();
 
   // Loop over all text fragments in this text box, firing a callback for each.
   for (const SVGTextFragment& fragment : text_box->TextFragments()) {

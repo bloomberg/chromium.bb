@@ -84,7 +84,7 @@ LayoutUnit SnapToLinesLayouter::ComputeInitialPositionAdjustment(
   // 7. Round line to an integer by adding 0.5 and then flooring it.
   LayoutUnit line_position(floorf(cue_box_.SnapToLinesPosition() + 0.5f));
 
-  WritingMode writing_mode = cue_box_.Style()->GetWritingMode();
+  WritingMode writing_mode = cue_box_.StyleRef().GetWritingMode();
   // 8. Vertical Growing Left: Add one to line then negate it.
   if (IsFlippedBlocksWritingMode(writing_mode))
     line_position = -(line_position + 1);
@@ -195,7 +195,7 @@ void SnapToLinesLayouter::UpdateLayout() {
   // into which cues will not be placed.
   // 2. Horizontal: Let full dimension be the height of video's rendering area
   //    Vertical: Let full dimension be the width of video's rendering area.
-  WritingMode writing_mode = cue_box_.Style()->GetWritingMode();
+  WritingMode writing_mode = cue_box_.StyleRef().GetWritingMode();
   LayoutBlock* parent_block = cue_box_.ContainingBlock();
   LayoutUnit full_dimension = blink::IsHorizontalWritingMode(writing_mode)
                                   ? parent_block->Size().Height()

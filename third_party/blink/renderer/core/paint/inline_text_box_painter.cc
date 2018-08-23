@@ -302,8 +302,8 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   bool ltr = inline_text_box_.IsLeftToRightDirection();
   bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
                          .ContainingBlock()
-                         .Style()
-                         ->IsLeftToRightDirection();
+                         .StyleRef()
+                         .IsLeftToRightDirection();
 
   const PaintOffsets& selection_offsets =
       ApplyTruncationToPaintOffsets({static_cast<unsigned>(selection_start),
@@ -451,8 +451,8 @@ InlineTextBoxPainter::ApplyTruncationToPaintOffsets(
   bool ltr = inline_text_box_.IsLeftToRightDirection();
   bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
                          .ContainingBlock()
-                         .Style()
-                         ->IsLeftToRightDirection();
+                         .StyleRef()
+                         .IsLeftToRightDirection();
 
   // truncation is relative to the start of the InlineTextBox, not the text
   // node.
@@ -647,8 +647,8 @@ void InlineTextBoxPainter::PaintDocumentMarker(GraphicsContext& context,
 
     // Calculate start & width
     int delta_y = (inline_text_box_.GetLineLayoutItem()
-                           .Style()
-                           ->IsFlippedLinesWritingMode()
+                           .StyleRef()
+                           .IsFlippedLinesWritingMode()
                        ? inline_text_box_.Root().SelectionBottom() -
                              inline_text_box_.LogicalBottom()
                        : inline_text_box_.LogicalTop() -
@@ -690,8 +690,8 @@ LayoutRect InlineTextBoxPainter::GetSelectionRect(
   bool ltr = inline_text_box_.IsLeftToRightDirection();
   bool flow_is_ltr = inline_text_box_.GetLineLayoutItem()
                          .ContainingBlock()
-                         .Style()
-                         ->IsLeftToRightDirection();
+                         .StyleRef()
+                         .IsLeftToRightDirection();
   if (inline_text_box_.Truncation() != kCNoTruncation) {
     // In a mixed-direction flow the ellipsis is at the start of the text
     // so we need to start after it. Otherwise we just need to make sure

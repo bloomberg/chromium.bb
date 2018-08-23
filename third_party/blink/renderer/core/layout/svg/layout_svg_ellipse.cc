@@ -75,7 +75,7 @@ void LayoutSVGEllipse::UpdateShapeFromElement() {
 
   fill_bounding_box_ = FloatRect(center_ - radii_, radii_.ScaledBy(2));
   stroke_bounding_box_ = fill_bounding_box_;
-  if (Style()->SvgStyle().HasStroke())
+  if (StyleRef().SvgStyle().HasStroke())
     stroke_bounding_box_.Inflate(StrokeWidth() / 2);
 }
 
@@ -131,7 +131,7 @@ bool LayoutSVGEllipse::ShapeDependentFillContains(
 }
 
 bool LayoutSVGEllipse::HasContinuousStroke() const {
-  const SVGComputedStyle& svg_style = Style()->SvgStyle();
+  const SVGComputedStyle& svg_style = StyleRef().SvgStyle();
   return svg_style.StrokeDashArray()->IsEmpty();
 }
 

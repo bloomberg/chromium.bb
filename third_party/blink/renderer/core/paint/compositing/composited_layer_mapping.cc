@@ -1176,8 +1176,8 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
     UpdateFilters();
 
   if (!GetLayoutObject()
-           .Style()
-           ->IsRunningBackdropFilterAnimationOnCompositor())
+           .StyleRef()
+           .IsRunningBackdropFilterAnimationOnCompositor())
     UpdateBackdropFilters();
 
   IntRect local_compositing_bounds;

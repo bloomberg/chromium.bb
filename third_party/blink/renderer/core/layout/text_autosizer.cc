@@ -101,7 +101,7 @@ static bool IsPotentialClusterRoot(const LayoutObject* layout_object) {
   if (!layout_object->IsLayoutBlock())
     return false;
   if (layout_object->IsInline() &&
-      !layout_object->Style()->IsDisplayReplacedType())
+      !layout_object->StyleRef().IsDisplayReplacedType())
     return false;
   if (layout_object->IsListItemIncludingNG())
     return (layout_object->IsFloating() ||
@@ -120,9 +120,9 @@ static bool IsIndependentDescendant(const LayoutBlock* layout_object) {
          layout_object->IsFlexibleBoxIncludingDeprecated() ||
          (containing_block && containing_block->IsHorizontalWritingMode() !=
                                   layout_object->IsHorizontalWritingMode()) ||
-         layout_object->Style()->IsDisplayReplacedType() ||
+         layout_object->StyleRef().IsDisplayReplacedType() ||
          layout_object->IsTextArea() ||
-         layout_object->Style()->UserModify() != EUserModify::kReadOnly;
+         layout_object->StyleRef().UserModify() != EUserModify::kReadOnly;
 }
 
 static bool BlockIsRowOfLinks(const LayoutBlock* block) {
@@ -145,12 +145,12 @@ static bool BlockIsRowOfLinks(const LayoutBlock* block) {
       if (!layout_object->IsInline() || layout_object->IsBR())
         return false;
     }
-    if (layout_object->Style()->IsLink()) {
+    if (layout_object->StyleRef().IsLink()) {
       link_count++;
       if (matching_font_size < 0)
-        matching_font_size = layout_object->Style()->SpecifiedFontSize();
+        matching_font_size = layout_object->StyleRef().SpecifiedFontSize();
       else if (matching_font_size !=
-               layout_object->Style()->SpecifiedFontSize())
+               layout_object->StyleRef().SpecifiedFontSize())
         return false;
 
       // Skip traversing descendants of the link.
@@ -211,7 +211,7 @@ static bool BlockSuppressesAutosizing(const LayoutBlock* block) {
 
   // Don't autosize block-level text that can't wrap (as it's likely to
   // expand sideways and break the page's layout).
-  if (!block->Style()->AutoWrap())
+  if (!block->StyleRef().AutoWrap())
     return true;
 
   if (BlockHeightConstrained(block))
@@ -223,7 +223,7 @@ static bool BlockSuppressesAutosizing(const LayoutBlock* block) {
 static bool HasExplicitWidth(const LayoutBlock* block) {
   // FIXME: This heuristic may need to be expanded to other ways a block can be
   // wider or narrower than its parent containing block.
-  return block->Style() && block->Style()->Width().IsSpecified();
+  return block->Style() && block->StyleRef().Width().IsSpecified();
 }
 
 static LayoutObject* GetParent(const LayoutObject* object) {
@@ -354,14 +354,14 @@ void TextAutosizer::BeginLayout(LayoutBlock* block,
   // Cells in auto-layout tables are handled separately by inflateAutoTable.
   bool is_auto_table_cell =
       block->IsTableCell() &&
-      !ToLayoutTableCell(block)->Table()->Style()->IsFixedTableLayout();
+      !ToLayoutTableCell(block)->Table()->StyleRef().IsFixedTableLayout();
   if (!is_auto_table_cell && !cluster_stack_.IsEmpty())
     Inflate(block, layouter);
 }
 
 void TextAutosizer::InflateAutoTable(LayoutTable* table) {
   DCHECK(table);
-  DCHECK(!table->Style()->IsFixedTableLayout());
+  DCHECK(!table->StyleRef().IsFixedTableLayout());
   DCHECK(table->ContainingBlock());
 
   Cluster* cluster = CurrentCluster();
@@ -727,7 +727,7 @@ bool TextAutosizer::ClusterHasEnoughTextToAutosize(
 
   // TextAreas and user-modifiable areas get a free pass to autosize regardless
   // of text content.
-  if (root->IsTextArea() || (root->Style() && root->Style()->UserModify() !=
+  if (root->IsTextArea() || (root->Style() && root->StyleRef().UserModify() !=
                                                   EUserModify::kReadOnly)) {
     cluster->has_enough_text_to_autosize_ = kHasEnoughText;
     return true;
@@ -763,7 +763,7 @@ bool TextAutosizer::ClusterHasEnoughTextToAutosize(
       // layout. These values can be different.
       // Note: This is an approximation assuming each character is 1em wide.
       length += ToLayoutText(descendant)->GetText().StripWhiteSpace().length() *
-                descendant->Style()->SpecifiedFontSize();
+                descendant->StyleRef().SpecifiedFontSize();
 
       if (length >= minimum_text_length_to_autosize) {
         cluster->has_enough_text_to_autosize_ = kHasEnoughText;
@@ -988,7 +988,7 @@ float TextAutosizer::WidthFromBlock(const LayoutBlock* block) const {
     Length specified_width =
         block->IsTableCell()
             ? ToLayoutTableCell(block)->StyleOrColLogicalWidth()
-            : block->Style()->LogicalWidth();
+            : block->StyleRef().LogicalWidth();
     if (specified_width.IsFixed()) {
       if ((width = specified_width.Value()) > 0)
         return width;

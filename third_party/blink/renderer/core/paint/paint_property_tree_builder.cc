@@ -360,8 +360,8 @@ void FragmentPaintPropertyTreeBuilder::UpdatePaintOffsetTranslation(
         context_.current.should_flatten_inherited_transform;
 
     state.affected_by_outer_viewport_bounds_delta =
-        object_.Style()->GetPosition() == EPosition::kFixed &&
-        !object_.Style()->Bottom().IsAuto();
+        object_.StyleRef().GetPosition() == EPosition::kFixed &&
+        !object_.StyleRef().Bottom().IsAuto();
 
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() ||
         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())

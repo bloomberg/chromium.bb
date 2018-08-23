@@ -134,11 +134,12 @@ void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
 
   if (IsBlendingAllowed()) {
     bool has_blend_mode_changed =
-        (old_style && old_style->HasBlendMode()) == !Style()->HasBlendMode();
-    if (Parent() && has_blend_mode_changed)
+        (old_style && old_style->HasBlendMode()) == !StyleRef().HasBlendMode();
+    if (Parent() && has_blend_mode_changed) {
       Parent()->DescendantIsolationRequirementsChanged(
-          Style()->HasBlendMode() ? kDescendantIsolationRequired
-                                  : kDescendantIsolationNeedsUpdate);
+          StyleRef().HasBlendMode() ? kDescendantIsolationRequired
+                                    : kDescendantIsolationNeedsUpdate);
+    }
 
     if (has_blend_mode_changed)
       SetNeedsPaintPropertyUpdate();

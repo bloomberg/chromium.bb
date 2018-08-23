@@ -96,7 +96,7 @@ void LayoutFrameSet::LayOutAxis(GridAxis& axis,
   int count_fixed = 0;
   int count_percent = 0;
 
-  float effective_zoom = Style()->EffectiveZoom();
+  float effective_zoom = StyleRef().EffectiveZoom();
 
   // First we need to investigate how many columns of each type we have and
   // how much space these columns are going to require.

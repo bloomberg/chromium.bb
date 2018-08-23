@@ -68,7 +68,7 @@ void LayoutAnalyzer::Push(const LayoutObject& o) {
     Increment(kLayoutObjectsThatAreTableCells);
   if (o.IsFloating())
     Increment(kLayoutObjectsThatAreFloating);
-  if (o.Style()->SpecifiesColumns())
+  if (o.StyleRef().SpecifiesColumns())
     Increment(kLayoutObjectsThatSpecifyColumns);
   if (o.HasLayer())
     Increment(kLayoutObjectsThatHaveALayer);

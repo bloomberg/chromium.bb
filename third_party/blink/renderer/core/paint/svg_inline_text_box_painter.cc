@@ -302,8 +302,8 @@ void SVGInlineTextBoxPainter::PaintDecoration(const PaintInfo& paint_info,
                                               TextDecoration decoration,
                                               const SVGTextFragment& fragment) {
   if (svg_inline_text_box_.GetLineLayoutItem()
-          .Style()
-          ->TextDecorationsInEffect() == TextDecoration::kNone)
+          .StyleRef()
+          .TextDecorationsInEffect() == TextDecoration::kNone)
     return;
 
   if (fragment.width <= 0)

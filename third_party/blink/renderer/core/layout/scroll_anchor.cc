@@ -285,7 +285,7 @@ ScrollAnchor::ExamineResult ScrollAnchor::Examine(
   if (!CandidateMayMoveWithScroller(candidate, scroller_))
     return ExamineResult(kSkip);
 
-  if (candidate->Style()->OverflowAnchor() == EOverflowAnchor::kNone)
+  if (candidate->StyleRef().OverflowAnchor() == EOverflowAnchor::kNone)
     return ExamineResult(kSkip);
 
   LayoutRect candidate_rect = RelativeBounds(candidate, scroller_);

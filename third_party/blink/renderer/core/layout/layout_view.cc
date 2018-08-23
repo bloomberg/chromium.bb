@@ -251,11 +251,11 @@ void LayoutView::SetShouldDoFullPaintInvalidationOnResizeIfNeeded(
   // should fully invalidate on viewport resize if the background image is not
   // composited and needs full paint invalidation on background positioning area
   // resize.
-  if (Style()->HasFixedBackgroundImage()) {
+  if (StyleRef().HasFixedBackgroundImage()) {
     if ((width_changed && MustInvalidateFillLayersPaintOnWidthChange(
-                              Style()->BackgroundLayers())) ||
+                              StyleRef().BackgroundLayers())) ||
         (height_changed && MustInvalidateFillLayersPaintOnHeightChange(
-                               Style()->BackgroundLayers())))
+                               StyleRef().BackgroundLayers())))
       SetShouldDoFullPaintInvalidation(PaintInvalidationReason::kBackground);
   }
 }
@@ -269,8 +269,8 @@ bool LayoutView::ShouldPlaceBlockDirectionScrollbarOnLogicalLeft() const {
   // sufficient.
   if (Element* body = GetDocument().body()) {
     if (LayoutObject* body_layout_object = body->GetLayoutObject()) {
-      return body_layout_object->Style()
-          ->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft();
+      return body_layout_object->StyleRef()
+          .ShouldPlaceBlockDirectionScrollbarOnLogicalLeft();
     }
   }
   return false;
@@ -294,9 +294,9 @@ void LayoutView::UpdateBlockLayout(bool relayout_children) {
         continue;
 
       if ((child->IsBox() && ToLayoutBox(child)->HasRelativeLogicalHeight()) ||
-          child->Style()->LogicalHeight().IsPercentOrCalc() ||
-          child->Style()->LogicalMinHeight().IsPercentOrCalc() ||
-          child->Style()->LogicalMaxHeight().IsPercentOrCalc())
+          child->StyleRef().LogicalHeight().IsPercentOrCalc() ||
+          child->StyleRef().LogicalMinHeight().IsPercentOrCalc() ||
+          child->StyleRef().LogicalMaxHeight().IsPercentOrCalc())
         layout_scope.SetChildNeedsLayout(child);
     }
 
@@ -761,14 +761,14 @@ IntSize LayoutView::GetLayoutSize(
 
 int LayoutView::ViewLogicalWidth(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  return Style()->IsHorizontalWritingMode() ? ViewWidth(scrollbar_inclusion)
-                                            : ViewHeight(scrollbar_inclusion);
+  return StyleRef().IsHorizontalWritingMode() ? ViewWidth(scrollbar_inclusion)
+                                              : ViewHeight(scrollbar_inclusion);
 }
 
 int LayoutView::ViewLogicalHeight(
     IncludeScrollbarsInRect scrollbar_inclusion) const {
-  return Style()->IsHorizontalWritingMode() ? ViewHeight(scrollbar_inclusion)
-                                            : ViewWidth(scrollbar_inclusion);
+  return StyleRef().IsHorizontalWritingMode() ? ViewHeight(scrollbar_inclusion)
+                                              : ViewWidth(scrollbar_inclusion);
 }
 
 LayoutUnit LayoutView::ViewLogicalHeightForPercentages() const {

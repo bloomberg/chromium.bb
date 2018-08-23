@@ -51,8 +51,8 @@ void LayoutListItem::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
   LayoutBlockFlow::StyleDidChange(diff, old_style);
 
-  StyleImage* current_image = Style()->ListStyleImage();
-  if (Style()->ListStyleType() != EListStyleType::kNone ||
+  StyleImage* current_image = StyleRef().ListStyleImage();
+  if (StyleRef().ListStyleType() != EListStyleType::kNone ||
       (current_image && !current_image->ErrorOccurred())) {
     if (!marker_)
       marker_ = LayoutListMarker::CreateAnonymous(this);
@@ -80,8 +80,8 @@ void LayoutListItem::WillBeDestroyed() {
 
   LayoutBlockFlow::WillBeDestroyed();
 
-  if (Style() && Style()->ListStyleImage())
-    Style()->ListStyleImage()->RemoveClient(this);
+  if (Style() && StyleRef().ListStyleImage())
+    StyleRef().ListStyleImage()->RemoveClient(this);
 }
 
 void LayoutListItem::InsertedIntoTree() {
@@ -397,7 +397,7 @@ void LayoutListItem::PositionListMarker() {
     // TODO(jchaffraix): Propagating the overflow to the line boxes seems
     // pretty wrong (https://crbug.com/554160).
     // FIXME: Need to account for relative positioning in the layout overflow.
-    if (Style()->IsLeftToRightDirection()) {
+    if (StyleRef().IsLeftToRightDirection()) {
       LayoutUnit marker_line_offset =
           std::min(marker_->LineOffset(),
                    LogicalLeftOffsetForLine(marker_->LogicalTop(),
@@ -482,7 +482,7 @@ void LayoutListItem::PositionListMarker() {
           LayoutPoint(marker_logical_left + line_offset,
                       block_offset + marker_inline_box->LogicalTop()),
           marker_->Size());
-      if (!Style()->IsHorizontalWritingMode())
+      if (!StyleRef().IsHorizontalWritingMode())
         marker_rect = marker_rect.TransposedRect();
       LayoutBox* o = marker_;
       bool propagate_visual_overflow = true;

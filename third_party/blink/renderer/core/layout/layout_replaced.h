@@ -81,7 +81,7 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   LayoutRect LocalSelectionRect() const final;
 
   bool HasObjectFit() const {
-    return Style()->GetObjectFit() !=
+    return StyleRef().GetObjectFit() !=
            ComputedStyleInitialValues::InitialObjectFit();
   }
 
