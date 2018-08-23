@@ -39721,7 +39721,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="8" label="HEADERS_AND_FOOTERS"/>
   <int value="9" label="CSS_BACKGROUND"/>
   <int value="10" label="SELECTION_ONLY"/>
-  <int value="11" label="EXTERNAL_PDF_PREVIEW"/>
+  <int value="11" label="EXTERNAL_PDF_PREVIEW_UNUSED"/>
   <int value="12" label="PAGE_RANGE"/>
   <int value="13" label="DEFAULT_MEDIA"/>
   <int value="14" label="NON_DEFAULT_MEDIA"/>
