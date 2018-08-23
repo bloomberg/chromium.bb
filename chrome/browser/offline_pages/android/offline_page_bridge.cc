@@ -199,7 +199,6 @@ void ValidateFileCallback(
     launch_url = url;
   else
     launch_url = net::FilePathToFileURL(file_path);
-
   offline_pages::OfflinePageHeader offline_header;
   switch (launch_location) {
     case offline_items_collection::LaunchLocation::NOTIFICATION:
@@ -218,8 +217,10 @@ void ValidateFileCallback(
       offline_header.reason =
           offline_pages::OfflinePageHeader::Reason::DOWNLOAD;
       break;
-    default:
-      NOTREACHED();
+    case offline_items_collection::LaunchLocation::NET_ERROR_SUGGESTION:
+      offline_header.reason =
+          offline_pages::OfflinePageHeader::Reason::NET_ERROR_SUGGESTION;
+      break;
   }
   offline_header.need_to_persist = true;
   offline_header.id = base::Int64ToString(offline_id);

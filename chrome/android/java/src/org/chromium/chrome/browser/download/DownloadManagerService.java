@@ -1663,6 +1663,11 @@ public class DownloadManagerService
     }
 
     @CalledByNative
+    private void showDownloadManager() {
+        DownloadManagerService.openDownloadsPage(ContextUtils.getApplicationContext());
+    }
+
+    @CalledByNative
     private void openDownloadItem(
             DownloadItem downloadItem, @DownloadMetrics.DownloadOpenSource int source) {
         DownloadInfo downloadInfo = downloadItem.getDownloadInfo();

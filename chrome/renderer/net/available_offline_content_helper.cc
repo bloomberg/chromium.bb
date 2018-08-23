@@ -76,3 +76,15 @@ bool AvailableOfflineContentHelper::BindProvider() {
       content::mojom::kBrowserServiceName, &provider_);
   return !!provider_;
 }
+void AvailableOfflineContentHelper::LaunchItem(const std::string& id,
+                                               const std::string& name_space) {
+  if (!BindProvider())
+    return;
+  provider_->LaunchItem(id, name_space);
+}
+
+void AvailableOfflineContentHelper::LaunchDownloadsPage() {
+  if (!BindProvider())
+    return;
+  provider_->LaunchDownloadsPage();
+}

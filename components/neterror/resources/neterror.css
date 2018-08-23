@@ -254,6 +254,59 @@ a {
   }
 }
 
+.offline-suggestion-image {
+  height: 35vw;
+  line-height: 0;
+  width: 35vw;
+  flex-basis: 35vw;
+  flex-grow: 0;
+  flex-shrink: 0;
+}
+
+.offline-suggestion-image > img {
+  border-bottom-left-radius: 15px;
+  border-top-left-radius: 15px;
+  height: 35vw;
+  line-height: 0;
+  width: 35vw;
+}
+
+.offline-suggestion-title {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  display: -webkit-box;
+  margin: 5%;
+  max-height: 65px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.offline-suggestion-freshness, .offline-suggestion-attribution {
+  color: #646464;
+  display: inline-block;
+  font-size: small;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.offline-suggestion-attribution {
+  margin-left: 5%;
+  max-width: 35%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+div.offline-suggestion {
+  background-color: #F1F3F4;
+  border-radius: 15px;
+  display: flex;
+  margin-bottom: 5%;
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 5%;
+}
+
 /* Don't allow overflow when in a subframe. */
 html[subframe] body {
   overflow: hidden;
@@ -433,7 +486,7 @@ TODO(https://crbug.com/852872): UI for offline suggested content is incomplete.
   overflow: hidden;
   position: absolute;
   top: 0;
-  z-index: 2;
+  z-index: 10;
 }
 
 .offline .controller {
@@ -443,7 +496,7 @@ TODO(https://crbug.com/852872): UI for offline suggested content is incomplete.
   position: absolute;
   top: 0;
   width: 100vw;
-  z-index: 1;
+  z-index: 9;
 }
 
 #offline-resources {

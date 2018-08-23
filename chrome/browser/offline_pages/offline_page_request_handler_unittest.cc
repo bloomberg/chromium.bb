@@ -860,6 +860,8 @@ OfflinePageRequestHandlerTestBase::GetExpectedAccessEntryPoint() const {
       return OfflinePageRequestHandler::AccessEntryPoint::FILE_URL_INTENT;
     case OfflinePageHeader::Reason::CONTENT_URL_INTENT:
       return OfflinePageRequestHandler::AccessEntryPoint::CONTENT_URL_INTENT;
+    case OfflinePageHeader::Reason::NET_ERROR_SUGGESTION:
+      return OfflinePageRequestHandler::AccessEntryPoint::NET_ERROR_PAGE;
     default:
       return OfflinePageRequestHandler::AccessEntryPoint::LINK;
   }
@@ -1489,6 +1491,24 @@ TYPED_TEST(OfflinePageRequestHandlerTest, PageNotFoundOnDisconnectedNetwork) {
   this->ExpectNoOfflinePageServed(
       offline_id, OfflinePageRequestHandler::AggregatedRequestResult::
                       PAGE_NOT_FOUND_ON_DISCONNECTED_NETWORK);
+}
+
+TYPED_TEST(OfflinePageRequestHandlerTest,
+           NetErrorPageSuggestionOnDisconnectedNetwork) {
+  this->SimulateHasNetworkConnectivity(false);
+
+  int64_t offline_id = this->SaveInternalPage(kUrl, GURL(), kFilename1,
+                                              kFileSize1, std::string());
+
+  net::HttpRequestHeaders extra_headers;
+  extra_headers.AddHeaderFromString(this->UseOfflinePageHeader(
+      OfflinePageHeader::Reason::NET_ERROR_SUGGESTION, 0));
+  this->LoadPageWithHeaders(kUrl, extra_headers);
+
+  this->ExpectOfflinePageServed(
+      offline_id, kFileSize1,
+      OfflinePageRequestHandler::AggregatedRequestResult::
+          SHOW_OFFLINE_ON_DISCONNECTED_NETWORK);
 }
 
 TYPED_TEST(OfflinePageRequestHandlerTest,

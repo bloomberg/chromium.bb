@@ -705,7 +705,11 @@ OfflinePageRequestHandler::GetAccessEntryPoint() const {
       return AccessEntryPoint::PROGRESS_BAR;
     case OfflinePageHeader::Reason::SUGGESTION:
       return AccessEntryPoint::NTP_SUGGESTIONS_OR_BOOKMARKS;
-    default:
+    case OfflinePageHeader::Reason::NET_ERROR_SUGGESTION:
+      return AccessEntryPoint::NET_ERROR_PAGE;
+    case OfflinePageHeader::Reason::NONE:
+    case OfflinePageHeader::Reason::NET_ERROR:
+    case OfflinePageHeader::Reason::RELOAD:
       break;
   }
 

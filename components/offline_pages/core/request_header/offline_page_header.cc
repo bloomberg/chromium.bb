@@ -18,6 +18,7 @@ const char kOfflinePageHeaderReasonValueReload[] = "reload";
 const char kOfflinePageHeaderReasonValueFromNotification[] = "notification";
 const char kOfflinePageHeadeReasonValueFromProgressBar[] = "progress_bar";
 const char kOfflinePageHeadeReasonValueFromSuggestion[] = "suggestion";
+const char kOfflinePageHeaderNetErrorSuggestion[] = "net_error_suggestion";
 const char kOfflinePageHeaderReasonFileUrlIntent[] = "file_url_intent";
 const char kOfflinePageHeaderReasonContentUrlIntent[] = "content_url_intent";
 const char kOfflinePageHeaderPersistKey[] = "persist";
@@ -70,6 +71,8 @@ bool ParseOfflineHeaderValue(const std::string& header_value,
         *reason = OfflinePageHeader::Reason::PROGRESS_BAR;
       else if (lower_value == kOfflinePageHeadeReasonValueFromSuggestion)
         *reason = OfflinePageHeader::Reason::SUGGESTION;
+      else if (lower_value == kOfflinePageHeaderNetErrorSuggestion)
+        *reason = OfflinePageHeader::Reason::NET_ERROR_SUGGESTION;
       else
         return false;
     } else if (key == kOfflinePageHeaderIDKey) {
@@ -108,10 +111,13 @@ std::string ReasonToString(OfflinePageHeader::Reason reason) {
       return kOfflinePageHeadeReasonValueFromProgressBar;
     case OfflinePageHeader::Reason::SUGGESTION:
       return kOfflinePageHeadeReasonValueFromSuggestion;
-    default:
-      NOTREACHED();
-      return "";
+    case OfflinePageHeader::Reason::NET_ERROR_SUGGESTION:
+      return kOfflinePageHeaderNetErrorSuggestion;
+    case OfflinePageHeader::Reason::NONE:
+      break;
   }
+  NOTREACHED();
+  return "";
 }
 
 }  // namespace

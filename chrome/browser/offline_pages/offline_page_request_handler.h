@@ -80,9 +80,9 @@ class OfflinePageRequestHandler {
   // This enum is used for UMA reporting of the UI location from which an
   // offline page was launched.
   // NOTE: because this is used for UMA reporting, these values should not be
-  // changed or reused; new values should be appended immediately before the MAX
-  // value. Make sure to update the histogram enum (OfflinePagesAcessEntryPoint
-  // in enums.xml) accordingly.
+  // changed or reused; new values should be appended immediately before COUNT.
+  // Make sure to update the histogram enum (OfflinePagesAcessEntryPoint in
+  // enums.xml) accordingly.
   enum class AccessEntryPoint {
     // Any other cases not listed below.
     UNKNOWN = 0,
@@ -107,7 +107,9 @@ class OfflinePageRequestHandler {
     CONTENT_URL_INTENT = 9,
     // Launched due to clicking "Open" link in the progress bar.
     PROGRESS_BAR = 10,
-    COUNT
+    // Launched from content suggestion on the net error page.
+    NET_ERROR_PAGE = 11,
+    COUNT  // Must be last.
   };
 
   enum class NetworkState {

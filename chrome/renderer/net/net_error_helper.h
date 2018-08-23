@@ -65,6 +65,9 @@ class NetErrorHelper
   // NetErrorPageController::Delegate implementation
   void ButtonPressed(NetErrorHelperCore::Button button) override;
   void TrackClick(int tracking_id) override;
+  void LaunchOfflineItem(const std::string& id,
+                         const std::string& name_space) override;
+  void LaunchDownloadsPage() override;
 
   // SSLCertificateErrorPageController::Delegate implementation
   void SendCommand(
