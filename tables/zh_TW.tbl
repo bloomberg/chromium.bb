@@ -1,9 +1,7 @@
-#+locale:zh-TW
+#-display-name: Taiwanese braille
 
-# TODO: Please correct the metadata above. It is not meant to be
-# accurate nor complete. It hasn't been verified by the table
-# author yet. It is merely an attempt by the liblouis maintainers
-# to get some sensible initial values in place.
+#+locale:cmn-TW
+#+type:literary
 
 # TODO: Please add a reference to official documentation about
 # the implemented braille code. Preferably submit the documents
