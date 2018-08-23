@@ -887,6 +887,34 @@ TEST_P(PaintAndRasterInvalidationTest, ResizeContainerOfFixedSizeSVG) {
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
+TEST_P(PaintAndRasterInvalidationTest, ScrollingInvalidatesStickyOffset) {
+  SetBodyInnerHTML(R"HTML(
+    <div id="scroller" style="width:300px; height:200px; overflow:scroll">
+      <div id="sticky" style="position:sticky; top:50px;
+          width:50px; height:100px; background:red;">
+        <div id="inner" style="width:100px; height:50px; background:red;">
+        </div>
+      </div>
+      <div style="height:1000px;"></div>
+    </div>
+  )HTML");
+
+  Element* scroller = GetDocument().getElementById("scroller");
+  scroller->setScrollTop(100);
+
+  const auto* sticky = GetLayoutObjectByElementId("sticky");
+  EXPECT_TRUE(sticky->ShouldCheckForPaintInvalidation());
+  EXPECT_EQ(LayoutPoint(0, 50), sticky->FirstFragment().PaintOffset());
+  const auto* inner = GetLayoutObjectByElementId("inner");
+  EXPECT_EQ(LayoutPoint(0, 50), inner->FirstFragment().PaintOffset());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(sticky->ShouldCheckForPaintInvalidation());
+  EXPECT_EQ(LayoutPoint(0, 150), sticky->FirstFragment().PaintOffset());
+  EXPECT_EQ(LayoutPoint(0, 150), inner->FirstFragment().PaintOffset());
+}
+
 class PaintInvalidatorTestClient : public EmptyChromeClient {
  public:
   void InvalidateRect(const IntRect&) override {

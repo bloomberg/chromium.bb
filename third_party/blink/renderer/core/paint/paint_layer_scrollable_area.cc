@@ -509,6 +509,8 @@ void PaintLayerScrollableArea::UpdateScrollOffset(
 
 void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
     bool offset_was_zero) {
+  InvalidatePaintForStickyDescendants();
+
   bool requires_paint_invalidation = false;
 
   // "background-attachment: local" causes the background of this element to
@@ -554,13 +556,9 @@ void PaintLayerScrollableArea::InvalidatePaintForScrollOffsetChange(
   bool is_root_layer = Layer()->IsRootLayer();
   frame_view->InvalidateBackgroundAttachmentFixedDescendants(*GetLayoutBox());
 
-  if (is_root_layer) {
-    // Some special invalidations for the root layer.
-    if (frame_view->HasViewportConstrainedObjects()) {
-      if (!frame_view->InvalidateViewportConstrainedObjects())
-        requires_paint_invalidation = true;
-    }
-    InvalidatePaintForStickyDescendants();
+  if (is_root_layer && frame_view->HasViewportConstrainedObjects() &&
+      !frame_view->InvalidateViewportConstrainedObjects()) {
+    requires_paint_invalidation = true;
   }
 
   if (requires_paint_invalidation) {
@@ -1893,7 +1891,7 @@ bool PaintLayerScrollableArea::HasNonCompositedStickyDescendants() const {
 void PaintLayerScrollableArea::InvalidatePaintForStickyDescendants() {
   if (PaintLayerScrollableAreaRareData* d = RareData()) {
     for (PaintLayer* sticky_layer : d->sticky_constraints_map_.Keys())
-      sticky_layer->GetLayoutObject().SetSubtreeShouldDoFullPaintInvalidation();
+      sticky_layer->GetLayoutObject().SetShouldCheckForPaintInvalidation();
   }
 }
 
