@@ -34,6 +34,14 @@ class TestAXHostService : public ax::mojom::AXHost {
     return ptr;
   }
 
+  void ResetCounts() {
+    add_client_count_ = 0;
+    event_count_ = 0;
+    last_tree_id_ = 0;
+    last_updates_.clear();
+    last_event_ = ui::AXEvent();
+  }
+
   // ax::mojom::AXHost:
   void SetRemoteHost(ax::mojom::AXRemoteHostPtr client) override {
     ++add_client_count_;
@@ -133,6 +141,28 @@ TEST_F(AXRemoteHostTest, AutomationEnabled) {
   EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(
                 widget->widget_delegate()->GetContentsView()),
             service.last_event_.id);
+}
+
+// Regression test for https://crbug.com/876407
+TEST_F(AXRemoteHostTest, AutomationEnabledTwice) {
+  // If ChromeVox has ever been open during the user session then the remote app
+  // can see automation enabled at startup.
+  TestAXHostService service(true /*automation_enabled*/);
+  AXRemoteHost* remote = CreateRemote(&service);
+  std::unique_ptr<Widget> widget = CreateTestWidget();
+  remote->FlushForTesting();
+
+  // Remote host sent load complete.
+  EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
+  service.ResetCounts();
+
+  // Simulate host service asking to enable again. This happens if ChromeVox is
+  // re-enabled after the remote app is open.
+  remote->OnAutomationEnabled(true);
+  remote->FlushForTesting();
+
+  // Load complete was sent again after the second enable.
+  EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
 }
 
 // Views can trigger accessibility events during Widget construction before the

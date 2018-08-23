@@ -57,7 +57,8 @@ void AXRemoteHost::StartMonitoringWidget(Widget* widget) {
   // Check if we're already tracking a widget.
   // TODO(jamescook): Support multiple widgets.
   if (widget_)
-    return;
+    StopMonitoringWidget();
+
   widget_ = widget;
   widget_->AddObserver(this);
 
@@ -174,9 +175,11 @@ void AXRemoteHost::BindAndSetRemote() {
 }
 
 void AXRemoteHost::Enable() {
-  // Extensions can send multiple enable events.
-  if (enabled_)
-    return;
+  // Don't early-exit if already enabled. AXRemoteHost can start up in the
+  // "enabled" state even if ChromeVox is on at the moment the app launches.
+  // Turning on ChromeVox later will generate another OnAutomationEnabled()
+  // call and we need to serialize the node tree again. This is similar to
+  // AutomationManagerAura's behavior. https://crbug.com/876407
   enabled_ = true;
 
   std::set<aura::Window*> roots =
@@ -188,7 +191,6 @@ void AXRemoteHost::Enable() {
     // widget.
     if (widget) {
       // TODO(jamescook): Support multiple roots.
-      DCHECK(!widget_);
       StartMonitoringWidget(widget);
     }
   }
