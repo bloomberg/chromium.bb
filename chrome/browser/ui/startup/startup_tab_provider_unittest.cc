@@ -15,7 +15,7 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #if defined(GOOGLE_CHROME_BUILD)
-#include "components/nux_google_apps/constants.h"
+#include "components/nux/google_apps/constants.h"
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_WIN)
 
@@ -334,7 +334,7 @@ TEST(StartupTabProviderTest, GetAppsPromoTabsForState) {
         StartupTabProviderImpl::GetStandardOnboardingTabsForState(params);
 
     ASSERT_EQ(1U, output.size());
-    EXPECT_EQ(nux_google_apps::kNuxGoogleAppsUrl, output[0].url);
+    EXPECT_EQ(nux::kNuxGoogleAppsUrl, output[0].url);
     EXPECT_FALSE(output[0].is_pinned);
   }
   {
@@ -351,7 +351,7 @@ TEST(StartupTabProviderTest, GetAppsPromoTabsForState) {
         standard_params, win10_params);
 
     ASSERT_EQ(1U, output.size());
-    EXPECT_EQ(nux_google_apps::kNuxGoogleAppsUrl, output[0].url);
+    EXPECT_EQ(nux::kNuxGoogleAppsUrl, output[0].url);
     EXPECT_FALSE(output[0].is_pinned);
   }
 }

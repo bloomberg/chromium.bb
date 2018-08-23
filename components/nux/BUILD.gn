@@ -5,12 +5,12 @@
 import("//build/config/chrome_build.gni")
 
 if (is_win && is_chrome_branded) {
-  static_library("nux_google_apps_feature") {
+  static_library("google_apps_feature") {
     sources = [
-      "constants.cc",
-      "constants.h",
-      "google_apps_handler.cc",
-      "google_apps_handler.h",
+      "google_apps/constants.cc",
+      "google_apps/constants.h",
+      "google_apps/google_apps_handler.cc",
+      "google_apps/google_apps_handler.h",
     ]
 
     public_deps = [

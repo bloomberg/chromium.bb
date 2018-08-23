@@ -29,7 +29,7 @@ include_rules = [
   "+components/net_log",
   "+components/network_session_configurator/common",
   "+components/ntp_tiles",
-  "+components/nux_google_apps",
+  "+components/nux",
   "+components/offline_pages/buildflags",
   "+components/password_manager/core/common",
   "+components/policy/core/common",
