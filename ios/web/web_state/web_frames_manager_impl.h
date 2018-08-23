@@ -30,13 +30,10 @@ class WebFramesManagerImpl : public WebFramesManager {
   // and keys of existing frames.
   void RegisterExistingFrames();
 
-  // Returns the web frame with |frame_id|, if one exisits, from the list of
-  // associated web frames.
-  WebFrame* GetFrameWithId(const std::string& frame_id);
-
   // WebFramesManager overrides
   const std::vector<WebFrame*>& GetAllWebFrames() override;
   WebFrame* GetMainWebFrame() override;
+  WebFrame* GetFrameWithId(const std::string& frame_id) override;
 
  private:
   friend class web::WebStateUserData<WebFramesManagerImpl>;
