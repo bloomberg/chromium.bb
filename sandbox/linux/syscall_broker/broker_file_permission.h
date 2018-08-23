@@ -25,40 +25,45 @@ class SANDBOX_EXPORT BrokerFilePermission {
   BrokerFilePermission& operator=(const BrokerFilePermission&) = default;
 
   static BrokerFilePermission ReadOnly(const std::string& path) {
-    return BrokerFilePermission(path, false, false, true, false, false);
+    return BrokerFilePermission(path, false, false, true, false, false, false);
   }
 
   static BrokerFilePermission ReadOnlyRecursive(const std::string& path) {
-    return BrokerFilePermission(path, true, false, true, false, false);
+    return BrokerFilePermission(path, true, false, true, false, false, false);
   }
 
   static BrokerFilePermission WriteOnly(const std::string& path) {
-    return BrokerFilePermission(path, false, false, false, true, false);
+    return BrokerFilePermission(path, false, false, false, true, false, false);
   }
 
   static BrokerFilePermission ReadWrite(const std::string& path) {
-    return BrokerFilePermission(path, false, false, true, true, false);
+    return BrokerFilePermission(path, false, false, true, true, false, false);
   }
 
   static BrokerFilePermission ReadWriteCreate(const std::string& path) {
-    return BrokerFilePermission(path, false, false, true, true, true);
+    return BrokerFilePermission(path, false, false, true, true, true, false);
   }
 
   static BrokerFilePermission ReadWriteCreateRecursive(
       const std::string& path) {
-    return BrokerFilePermission(path, true, false, true, true, true);
+    return BrokerFilePermission(path, true, false, true, true, true, false);
   }
 
   // Temporary files must always be newly created and do not confer rights to
   // use pre-existing files of the same name.
   static BrokerFilePermission ReadWriteCreateTemporary(
       const std::string& path) {
-    return BrokerFilePermission(path, false, true, true, true, true);
+    return BrokerFilePermission(path, false, true, true, true, true, false);
   }
 
   static BrokerFilePermission ReadWriteCreateTemporaryRecursive(
       const std::string& path) {
-    return BrokerFilePermission(path, true, true, true, true, true);
+    return BrokerFilePermission(path, true, true, true, true, true, false);
+  }
+
+  static BrokerFilePermission StatOnlyWithIntermediateDirs(
+      const std::string& path) {
+    return BrokerFilePermission(path, false, false, false, false, false, true);
   }
 
   // Returns true if |requested_filename| is allowed to be accessed
@@ -108,7 +113,8 @@ class SANDBOX_EXPORT BrokerFilePermission {
                        bool temporary_only,
                        bool allow_read,
                        bool allow_write,
-                       bool allow_create);
+                       bool allow_create,
+                       bool allow_stat_with_intermediates);
 
   // ValidatePath checks |path| and returns true if these conditions are met
   // * Greater than 0 length
@@ -138,6 +144,8 @@ class SANDBOX_EXPORT BrokerFilePermission {
   bool allow_read_;
   bool allow_write_;
   bool allow_create_;
+  // Allow stat() for |path| and all intermediate dirs.
+  bool allow_stat_with_intermediates_;
 };
 
 }  // namespace syscall_broker
