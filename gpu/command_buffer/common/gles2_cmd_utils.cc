@@ -11,6 +11,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 
 #include <sstream>
 
@@ -279,6 +280,26 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
     case GL_UNIFORM_BUFFER_START:
       return 1;
     case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:
+      return 1;
+
+    // ES31
+    case GL_ATOMIC_COUNTER_BUFFER_BINDING:
+      return 1;
+    case GL_ATOMIC_COUNTER_BUFFER_SIZE:
+      return 1;
+    case GL_ATOMIC_COUNTER_BUFFER_START:
+      return 1;
+    case GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS:
+      return 1;
+    case GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS:
+      return 1;
+    case GL_SHADER_STORAGE_BUFFER_BINDING:
+      return 1;
+    case GL_SHADER_STORAGE_BUFFER_SIZE:
+      return 1;
+    case GL_SHADER_STORAGE_BUFFER_START:
+      return 1;
+    case GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT:
       return 1;
 
     // -- glGetBooleanv, glGetFloatv, glGetIntergerv with
@@ -1646,6 +1667,8 @@ uint32_t GLES2Util::MapBufferTargetToBindingEnum(uint32_t target) {
   switch (target) {
     case GL_ARRAY_BUFFER:
       return GL_ARRAY_BUFFER_BINDING;
+    case GL_ATOMIC_COUNTER_BUFFER:
+      return GL_ATOMIC_COUNTER_BUFFER_BINDING;
     case GL_COPY_READ_BUFFER:
       return GL_COPY_READ_BUFFER_BINDING;
     case GL_COPY_WRITE_BUFFER:
@@ -1656,6 +1679,8 @@ uint32_t GLES2Util::MapBufferTargetToBindingEnum(uint32_t target) {
       return GL_PIXEL_PACK_BUFFER_BINDING;
     case GL_PIXEL_UNPACK_BUFFER:
       return GL_PIXEL_UNPACK_BUFFER_BINDING;
+    case GL_SHADER_STORAGE_BUFFER:
+      return GL_SHADER_STORAGE_BUFFER_BINDING;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
       return GL_TRANSFORM_FEEDBACK_BUFFER_BINDING;
     case GL_UNIFORM_BUFFER:

@@ -267,6 +267,12 @@ void PopulateNumericCapabilities(Capabilities* caps,
                   &caps->uniform_buffer_offset_alignment);
     caps->major_version = 3;
     if (feature_info->IsWebGL2ComputeContext()) {
+      glGetIntegerv(GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS,
+                    &caps->max_atomic_counter_buffer_bindings);
+      glGetIntegerv(GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS,
+                    &caps->max_shader_storage_buffer_bindings);
+      glGetIntegerv(GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT,
+                    &caps->shader_storage_buffer_offset_alignment);
       caps->minor_version = 1;
     } else {
       caps->minor_version = 0;

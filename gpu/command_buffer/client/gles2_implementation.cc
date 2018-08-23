@@ -10,6 +10,7 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 #include <GLES3/gl3.h>
+#include <GLES3/gl31.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <algorithm>
@@ -199,10 +200,12 @@ GLES2Implementation::GLES2Implementation(
       bound_renderbuffer_(0),
       current_program_(0),
       bound_array_buffer_(0),
+      bound_atomic_counter_buffer_(0),
       bound_copy_read_buffer_(0),
       bound_copy_write_buffer_(0),
       bound_pixel_pack_buffer_(0),
       bound_pixel_unpack_buffer_(0),
+      bound_shader_storage_buffer_(0),
       bound_transform_feedback_buffer_(0),
       bound_uniform_buffer_(0),
       bound_pixel_pack_transfer_buffer_id_(0),
@@ -1008,6 +1011,38 @@ bool GLES2Implementation::GetHelper(GLenum pname, GLint* params) {
     case GL_UNPACK_IMAGE_HEIGHT:
     case GL_UNPACK_ROW_LENGTH:
     case GL_VERTEX_ARRAY_BINDING:
+      return false;
+    default:
+      break;
+  }
+
+  if (capabilities_.minor_version < 1) {
+    return false;
+  }
+
+  // ES31 parameters.
+  switch (pname) {
+    case GL_MAX_ATOMIC_COUNTER_BUFFER_BINDINGS:
+      *params = capabilities_.max_atomic_counter_buffer_bindings;
+      return true;
+    case GL_MAX_SHADER_STORAGE_BUFFER_BINDINGS:
+      *params = capabilities_.max_shader_storage_buffer_bindings;
+      return true;
+    case GL_ATOMIC_COUNTER_BUFFER_BINDING:
+      *params = bound_atomic_counter_buffer_;
+      return true;
+    case GL_SHADER_STORAGE_BUFFER_BINDING:
+      *params = bound_shader_storage_buffer_;
+      return true;
+    case GL_SHADER_STORAGE_BUFFER_OFFSET_ALIGNMENT:
+      *params = capabilities_.shader_storage_buffer_offset_alignment;
+      return true;
+
+    // Non-cached ES31 parameters.
+    case GL_ATOMIC_COUNTER_BUFFER_SIZE:
+    case GL_ATOMIC_COUNTER_BUFFER_START:
+    case GL_SHADER_STORAGE_BUFFER_SIZE:
+    case GL_SHADER_STORAGE_BUFFER_START:
       return false;
     default:
       return false;
@@ -4138,6 +4173,12 @@ void GLES2Implementation::BindBufferHelper(GLenum target, GLuint buffer_id) {
         changed = true;
       }
       break;
+    case GL_ATOMIC_COUNTER_BUFFER:
+      if (bound_atomic_counter_buffer_ != buffer_id) {
+        bound_atomic_counter_buffer_ = buffer_id;
+        changed = true;
+      }
+      break;
     case GL_COPY_READ_BUFFER:
       if (bound_copy_read_buffer_ != buffer_id) {
         bound_copy_read_buffer_ = buffer_id;
@@ -4170,6 +4211,12 @@ void GLES2Implementation::BindBufferHelper(GLenum target, GLuint buffer_id) {
       break;
     case GL_PIXEL_UNPACK_TRANSFER_BUFFER_CHROMIUM:
       bound_pixel_unpack_transfer_buffer_id_ = buffer_id;
+      break;
+    case GL_SHADER_STORAGE_BUFFER:
+      if (bound_shader_storage_buffer_ != buffer_id) {
+        bound_shader_storage_buffer_ = buffer_id;
+        changed = true;
+      }
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
       if (bound_transform_feedback_buffer_ != buffer_id) {
@@ -4206,6 +4253,14 @@ bool GLES2Implementation::UpdateIndexedBufferState(GLenum target,
                                                    GLuint buffer_id,
                                                    const char* function_name) {
   switch (target) {
+    case GL_ATOMIC_COUNTER_BUFFER:
+      if (index >= static_cast<GLuint>(
+                       capabilities_.max_atomic_counter_buffer_bindings)) {
+        SetGLError(GL_INVALID_VALUE, function_name, "index out of range");
+        return false;
+      }
+      bound_atomic_counter_buffer_ = buffer_id;
+      break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
       if (index >= static_cast<GLuint>(
                        capabilities_.max_transform_feedback_separate_attribs)) {
@@ -4213,6 +4268,14 @@ bool GLES2Implementation::UpdateIndexedBufferState(GLenum target,
         return false;
       }
       bound_transform_feedback_buffer_ = buffer_id;
+      break;
+    case GL_SHADER_STORAGE_BUFFER:
+      if (index >= static_cast<GLuint>(
+                       capabilities_.max_shader_storage_buffer_bindings)) {
+        SetGLError(GL_INVALID_VALUE, function_name, "index out of range");
+        return false;
+      }
+      bound_shader_storage_buffer_ = buffer_id;
       break;
     case GL_UNIFORM_BUFFER:
       if (index >=
@@ -4437,6 +4500,9 @@ void GLES2Implementation::DeleteBuffersHelper(GLsizei n,
     if (buffers[ii] == bound_array_buffer_) {
       bound_array_buffer_ = 0;
     }
+    if (buffers[ii] == bound_atomic_counter_buffer_) {
+      bound_atomic_counter_buffer_ = 0;
+    }
     if (buffers[ii] == bound_copy_read_buffer_) {
       bound_copy_read_buffer_ = 0;
     }
@@ -4448,6 +4514,9 @@ void GLES2Implementation::DeleteBuffersHelper(GLsizei n,
     }
     if (buffers[ii] == bound_pixel_unpack_buffer_) {
       bound_pixel_unpack_buffer_ = 0;
+    }
+    if (buffers[ii] == bound_shader_storage_buffer_) {
+      bound_shader_storage_buffer_ = 0;
     }
     if (buffers[ii] == bound_transform_feedback_buffer_) {
       bound_transform_feedback_buffer_ = 0;
@@ -5184,11 +5253,13 @@ GLboolean GLES2Implementation::UnmapBuffer(GLenum target) {
                      << GLES2Util::GetStringEnum(target) << ")");
   switch (target) {
     case GL_ARRAY_BUFFER:
+    case GL_ATOMIC_COUNTER_BUFFER:
     case GL_ELEMENT_ARRAY_BUFFER:
     case GL_COPY_READ_BUFFER:
     case GL_COPY_WRITE_BUFFER:
     case GL_PIXEL_PACK_BUFFER:
     case GL_PIXEL_UNPACK_BUFFER:
+    case GL_SHADER_STORAGE_BUFFER:
     case GL_TRANSFORM_FEEDBACK_BUFFER:
     case GL_UNIFORM_BUFFER:
       break;
