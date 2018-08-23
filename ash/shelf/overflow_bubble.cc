@@ -11,6 +11,8 @@
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
+#include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 
@@ -19,12 +21,12 @@ namespace ash {
 OverflowBubble::OverflowBubble(Shelf* shelf)
     : shelf_(shelf), bubble_(nullptr), overflow_button_(nullptr) {
   DCHECK(shelf_);
-  Shell::Get()->AddPointerWatcher(this, views::PointerWatcherEventTypes::BASIC);
+  Shell::Get()->AddPreTargetHandler(this);
 }
 
 OverflowBubble::~OverflowBubble() {
   Hide();
-  Shell::Get()->RemovePointerWatcher(this);
+  Shell::Get()->RemovePreTargetHandler(this);
 }
 
 void OverflowBubble::Show(OverflowButton* overflow_button,
@@ -61,10 +63,16 @@ void OverflowBubble::Hide() {
   overflow_button->OnOverflowBubbleHidden();
 }
 
-void OverflowBubble::ProcessPressedEvent(
-    const gfx::Point& event_location_in_screen) {
-  if (!IsShowing() || bubble_->shelf_view()->IsShowingMenu() ||
-      bubble_->GetBoundsInScreen().Contains(event_location_in_screen) ||
+void OverflowBubble::ProcessPressedEvent(ui::LocatedEvent* event) {
+  if (!IsShowing() || bubble_->shelf_view()->IsShowingMenu())
+    return;
+
+  aura::Window* target = static_cast<aura::Window*>(event->target());
+  gfx::Point event_location_in_screen = event->location();
+  aura::client::GetScreenPositionClient(target->GetRootWindow())
+      ->ConvertPointToScreen(target, &event_location_in_screen);
+
+  if (bubble_->GetBoundsInScreen().Contains(event_location_in_screen) ||
       overflow_button_->GetBoundsInScreen().Contains(
           event_location_in_screen)) {
     return;
@@ -83,12 +91,14 @@ void OverflowBubble::ProcessPressedEvent(
   Hide();
 }
 
-void OverflowBubble::OnPointerEventObserved(
-    const ui::PointerEvent& event,
-    const gfx::Point& location_in_screen,
-    gfx::NativeView target) {
-  if (event.type() == ui::ET_POINTER_DOWN)
-    ProcessPressedEvent(location_in_screen);
+void OverflowBubble::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() == ui::ET_MOUSE_PRESSED)
+    ProcessPressedEvent(event);
+}
+
+void OverflowBubble::OnTouchEvent(ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED)
+    ProcessPressedEvent(event);
 }
 
 void OverflowBubble::OnWidgetDestroying(views::Widget* widget) {
