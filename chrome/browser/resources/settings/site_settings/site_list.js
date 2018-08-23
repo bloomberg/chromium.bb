@@ -102,6 +102,9 @@ Polymer({
 
     /** @private */
     lastFocused_: Object,
+
+    /** @private */
+    tooltipText_: String,
   },
 
   /**
@@ -202,6 +205,36 @@ Polymer({
   },
 
   /**
+   * Need to use common tooltip since the tooltip in the entry is cut off from
+   * the iron-list.
+   * @param {!{detail: {target: HTMLElement, text: string}}} e
+   * @private
+   */
+  onShowTooltip_: function(e) {
+    this.tooltipText_ = e.detail.text;
+    const target = e.detail.target;
+    // paper-tooltip normally determines the target from the |for| property,
+    // which is a selector. Here paper-tooltip is being reused by multiple
+    // potential targets. Since paper-tooltip does not expose a public property
+    // or method to update the target, the private property |_target| is
+    // updated directly.
+    this.$.tooltip._target = target;
+    /** @type {{updatePosition: Function}} */ (this.$.tooltip).updatePosition();
+    const hide = () => {
+      this.$.tooltip.hide();
+      target.removeEventListener('mouseleave', hide);
+      target.removeEventListener('blur', hide);
+      target.removeEventListener('tap', hide);
+      this.$.tooltip.removeEventListener('mouseenter', hide);
+    };
+    target.addEventListener('mouseleave', hide);
+    target.addEventListener('blur', hide);
+    target.addEventListener('tap', hide);
+    this.$.tooltip.addEventListener('mouseenter', hide);
+    this.$.tooltip.show();
+  },
+
+  /**
    * Populate the sites list for display.
    * @private
    */
@@ -224,14 +257,7 @@ Polymer({
                 site => site.setting != settings.ContentSetting.DEFAULT &&
                     site.setting == this.categorySubtype)
             .map(site => this.expandSiteException(site));
-    // iron-list needs to have display set to 'block' in order to render
-    // correctly. However, display also needs to be set to 'contents' so that
-    // the paper-tooltip in cr-policy-pref-indicator is not cutoff.
-    this.$.list.style.display = 'block';
     this.updateList('sites', x => x.origin, sites);
-    this.async(() => {
-      this.$.list.style.display = 'contents';
-    });
   },
 
   /**

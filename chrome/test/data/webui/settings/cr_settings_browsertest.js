@@ -831,7 +831,7 @@ CrSettingsCertificateManagerTest.prototype = {
   __proto__: CrSettingsBrowserTest.prototype,
 
   /**
-   * The certificate-manager subpage is embeded in privacy_page.html.
+   * The certificate-manager subpage is embedded in privacy_page.html.
    * @override
    */
   browsePreload: 'chrome://settings/privacy_page/privacy_page.html',
@@ -1133,6 +1133,30 @@ TEST_F('CrSettingsSiteListTest', 'EditExceptionDialog', function() {
 
 TEST_F('CrSettingsSiteListTest', 'AddExceptionDialog', function() {
   mocha.grep('AddExceptionDialog').run();
+});
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsSiteListEntryTest() {}
+
+CrSettingsSiteListEntryTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://settings/site_settings/site_list_entry.html',
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    '../cr_elements/cr_policy_strings.js',
+    'site_list_entry_tests.js',
+    'test_util.js',
+  ]),
+};
+
+TEST_F('CrSettingsSiteListEntryTest', 'All', function() {
+  mocha.run();
 });
 
 /**

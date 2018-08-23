@@ -4,6 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/web-animations.html">
 <link rel="import" href="../focus_row_behavior.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
@@ -18,6 +19,13 @@
     <style include="settings-shared">
       .settings-row {
         flex: 1
+      }
+
+      /* Tooltip is hidden since site-list will display a common tooltip. */
+      cr-policy-pref-indicator {
+        --cr-tooltip: {
+          display: none;
+        };
       }
     </style>
     <div class="list-item" focus-row-container>
@@ -48,7 +56,8 @@
       </div>
       <template is="dom-if" if="[[model.controlledBy]]">
         <cr-policy-pref-indicator pref="[[model]]"
-            icon-aria-label="[[label]]">
+            icon-aria-label="[[label]]" on-mouseenter="onShowTooltip_"
+            on-focus="onShowTooltip_" focus-row-control focus-type="policy">
         </cr-policy-pref-indicator>
       </template>
       <paper-icon-button-light id="resetSiteContainer"

@@ -46,6 +46,17 @@ Polymer({
     },
   },
 
+  /** @private */
+  onShowTooltip_: function() {
+    const indicator = assert(this.$$('cr-policy-pref-indicator'));
+    // The tooltip text is used by an paper-tooltip contained inside the
+    // cr-policy-pref-indicator. The text is currently held in a private
+    // property. This text is needed here to send up to the common tooltip
+    // component.
+    const text = indicator.indicatorTooltip_;
+    this.fire('show-tooltip', {target: indicator, text});
+  },
+
   /**
    * @return {boolean}
    * @private

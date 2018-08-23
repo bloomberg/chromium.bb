@@ -882,6 +882,35 @@ suite('SiteList', function() {
           assertEquals(settings.ContentSetting.ALLOW, args[3]);
         });
   });
+
+  test('show-tooltip event fires on entry shows common tooltip', function() {
+    setUpCategory(
+        settings.ContentSettingsTypes.GEOLOCATION,
+        settings.ContentSetting.ALLOW, prefsGeolocation);
+    return browserProxy.whenCalled('getExceptionList').then(() => {
+      Polymer.dom.flush();
+      const entry =
+          testElement.$.listContainer.querySelector('site-list-entry');
+      const tooltip = testElement.$.tooltip;
+
+      const testsParams = [
+        ['a', testElement, new MouseEvent('mouseleave')],
+        ['b', testElement, new MouseEvent('tap')],
+        ['c', testElement, new Event('blur')],
+        ['d', tooltip, new MouseEvent('mouseenter')],
+      ];
+      testsParams.forEach(params => {
+        const text = params[0];
+        const eventTarget = params[1];
+        const event = params[2];
+        entry.fire('show-tooltip', {target: testElement, text});
+        assertTrue(tooltip._showing);
+        assertEquals(text, tooltip.innerHTML.trim());
+        eventTarget.dispatchEvent(event);
+        assertFalse(tooltip._showing);
+      });
+    });
+  });
 });
 
 suite('EditExceptionDialog', function() {
