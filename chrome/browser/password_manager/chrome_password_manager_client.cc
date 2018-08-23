@@ -777,7 +777,9 @@ void ChromePasswordManagerClient::ShowPasswordEditingPopup(
   auto* driver = driver_factory_->GetDriverForFrame(
       password_manager_client_bindings_.GetCurrentTargetFrame());
   DCHECK(driver);
-  gfx::RectF element_bounds_in_screen_space = GetBoundsInScreenSpace(bounds);
+  gfx::RectF element_bounds_in_screen_space =
+      GetBoundsInScreenSpace(TransformToRootCoordinates(
+          password_manager_driver_bindings_.GetCurrentTargetFrame(), bounds));
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(
       popup_controller_, element_bounds_in_screen_space, form,
       base::string16(),  // No generation_element needed for editing.
@@ -1065,17 +1067,18 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   auto* driver = driver_factory_->GetDriverForFrame(
       password_manager_client_bindings_.GetCurrentTargetFrame());
   DCHECK(driver);
-  // Autofill drop-down and password generation use different coordinates.
-  gfx::RectF element_bounds_in_screen_space = TransformToRootCoordinates(
+  gfx::RectF element_bounds_in_top_frame_space = TransformToRootCoordinates(
       password_manager_client_bindings_.GetCurrentTargetFrame(),
       ui_data.bounds);
   if (!is_manually_triggered &&
       driver->GetPasswordAutofillManager()
           ->MaybeShowPasswordSuggestionsWithGeneration(
-              element_bounds_in_screen_space, ui_data.text_direction))
+              element_bounds_in_top_frame_space, ui_data.text_direction)) {
     return;
+  }
 
-  element_bounds_in_screen_space = GetBoundsInScreenSpace(ui_data.bounds);
+  gfx::RectF element_bounds_in_screen_space =
+      GetBoundsInScreenSpace(element_bounds_in_top_frame_space);
   password_manager_.SetGenerationElementAndReasonForForm(
       driver, ui_data.password_form, ui_data.generation_element,
       is_manually_triggered);
