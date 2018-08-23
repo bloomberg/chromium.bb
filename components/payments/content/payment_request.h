@@ -107,12 +107,9 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   bool IsIncognito() const;
 
-  // Returns true if this payment request supports skipping the Payment Sheet.
-  // Typically, this means only one payment method is supported, it's a URL
-  // based method, and no other info is requested from the user.
-  bool SatisfiesSkipUIConstraints() const;
-
   content::WebContents* web_contents() { return web_contents_; }
+
+  bool skipped_payment_request_ui() { return skipped_payment_request_ui_; }
 
   PaymentRequestSpec* spec() { return spec_.get(); }
   PaymentRequestState* state() { return state_.get(); }
@@ -121,6 +118,11 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestState* state() const { return state_.get(); }
 
  private:
+  // Returns true if this payment request supports skipping the Payment Sheet.
+  // Typically, this means only one payment method is supported, it's a URL
+  // based method, and no other info is requested from the user.
+  bool SatisfiesSkipUIConstraints() const;
+
   // Only records the abort reason if it's the first completion for this Payment
   // Request. This is necessary since the aborts cascade into one another with
   // the first one being the most precise.
@@ -171,6 +173,9 @@ class PaymentRequest : public mojom::PaymentRequest,
 
   // Whether PaymentRequest.show() was invoked with a user gesture.
   bool is_show_user_gesture_ = false;
+
+  // Whether PaymentRequest.show() was invoked by skipping payment request UI.
+  bool skipped_payment_request_ui_ = false;
 
   base::WeakPtrFactory<PaymentRequest> weak_ptr_factory_;
 

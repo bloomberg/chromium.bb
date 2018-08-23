@@ -22,10 +22,6 @@ class PaymentRequestDialog {
 
   virtual void ShowDialog() = 0;
 
-  virtual void ShowDialogAtPaymentHandlerSheet(
-      const GURL& url,
-      PaymentHandlerOpenWindowCallback callback) = 0;
-
   virtual void CloseDialog() = 0;
 
   virtual void ShowErrorMessage() = 0;
