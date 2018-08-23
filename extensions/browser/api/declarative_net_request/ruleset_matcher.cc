@@ -55,7 +55,7 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
           base::make_span(reinterpret_cast<const uint8_t*>(ruleset_data.data()),
                           ruleset_data.size()),
           expected_ruleset_checksum)) {
-    return kLoadErrorRulesetVerification;
+    return kLoadErrorChecksumMismatch;
   }
 
   UMA_HISTOGRAM_TIMES(

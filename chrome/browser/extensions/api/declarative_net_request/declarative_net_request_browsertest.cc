@@ -1838,7 +1838,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
     EXPECT_EQ(1, tester.GetBucketCount(
                      "Extensions.DeclarativeNetRequest.LoadRulesetResult",
                      RulesetMatcher::LoadRulesetResult::
-                         kLoadErrorRulesetVerification /*sample*/));
+                         kLoadErrorChecksumMismatch /*sample*/));
     EXPECT_EQ(1,
               tester.GetBucketCount(
                   "Extensions.DeclarativeNetRequest.LoadRulesetResult",
@@ -1898,7 +1898,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   EXPECT_EQ(1, tester.GetBucketCount(
                    "Extensions.DeclarativeNetRequest.LoadRulesetResult",
                    RulesetMatcher::LoadRulesetResult::
-                       kLoadErrorRulesetVerification /*sample*/));
+                       kLoadErrorChecksumMismatch /*sample*/));
 
   // Verify that re-indexing the ruleset failed.
   tester.ExpectUniqueSample(
