@@ -6,6 +6,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -33,6 +34,7 @@ BackgroundFetchDelegateFactory::BackgroundFetchDelegateFactory()
           "BackgroundFetchService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(DownloadServiceFactory::GetInstance());
+  DependsOn(HostContentSettingsMapFactory::GetInstance());
 }
 
 BackgroundFetchDelegateFactory::~BackgroundFetchDelegateFactory() {}

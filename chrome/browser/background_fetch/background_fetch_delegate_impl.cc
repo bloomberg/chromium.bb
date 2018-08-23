@@ -13,10 +13,13 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -157,20 +160,44 @@ void BackgroundFetchDelegateImpl::GetPermissionForOrigin(
     GetPermissionForOriginCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  if (!wc_getter) {
-    // TODO(crbug.com/692647): Check permission for non-framed contexts as well.
-    std::move(callback).Run(true /* has_permission */);
+  if (wc_getter) {
+    // There is an associated frame so we might need to expose some permission
+    // UI using the DownloadRequestLimiter.
+    DownloadRequestLimiter* limiter =
+        g_browser_process->download_request_limiter();
+    DCHECK(limiter);
+
+    // The fetch should be thought of as one download. So the origin will be
+    // used as the URL, and the |request_method| is set to GET.
+    limiter->CanDownload(wc_getter, origin.GetURL(), "GET",
+                         base::AdaptCallbackForRepeating(std::move(callback)));
     return;
   }
 
-  DownloadRequestLimiter* limiter =
-      g_browser_process->download_request_limiter();
-  DCHECK(limiter);
+  auto* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile_);
+  DCHECK(host_content_settings_map);
 
-  // The fetch should be thought of as one download. So the origin will be
-  // used as the URL, and the |request_method| is set to GET.
-  limiter->CanDownload(wc_getter, origin.GetURL(), "GET",
-                       base::AdaptCallbackForRepeating(std::move(callback)));
+  // This is running from a worker context, use the Automatic Downloads
+  // permission.
+  ContentSetting content_setting = host_content_settings_map->GetContentSetting(
+      origin.GetURL(), origin.GetURL(),
+      CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
+      std::string() /* resource_identifier */);
+
+  if (content_setting != CONTENT_SETTING_ALLOW) {
+    std::move(callback).Run(/* has_permission= */ false);
+    return;
+  }
+
+  // Also make sure that Background Sync has permission.
+  // TODO(crbug.com/616321): Remove this check after Automatic Downloads
+  // permissions can be modified from Android.
+  content_setting = host_content_settings_map->GetContentSetting(
+      origin.GetURL(), origin.GetURL(), CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
+      std::string() /* resource_identifier */);
+
+  std::move(callback).Run(content_setting == CONTENT_SETTING_ALLOW);
 }
 
 void BackgroundFetchDelegateImpl::CreateDownloadJob(
