@@ -37,6 +37,7 @@ source_set("cells") {
     "resources:table_view_cell_favicon_background",
     "//base",
     "//base:i18n",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
     "//ios/chrome/browser/ui/colors:colors",
@@ -47,6 +48,7 @@ source_set("cells") {
     "//ios/chrome/common/favicon",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios:material_components_ios",
+    "//ui/base",
     "//url:url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

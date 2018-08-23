@@ -200,10 +200,7 @@ id<GREYMatcher> TitleOfTestPage() {
   NSString* otherDevicesLabel =
       l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES);
   id<GREYMatcher> otherDevicesMatcher =
-      IsUIRefreshPhase1Enabled()
-          ? grey_allOf(grey_accessibilityLabel(otherDevicesLabel),
-                       grey_sufficientlyVisible(), nil)
-          : chrome_test_util::ButtonWithAccessibilityLabel(otherDevicesLabel);
+      chrome_test_util::ButtonWithAccessibilityLabel(otherDevicesLabel);
   [[EarlGrey selectElementWithMatcher:otherDevicesMatcher]
       performAction:grey_tap()];
   [SigninEarlGreyUI checkSigninPromoNotVisible];
