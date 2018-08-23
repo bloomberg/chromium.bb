@@ -193,7 +193,7 @@ cvox.ChromeVoxBackground.prototype.init = function() {
   if (localStorage['active'] == 'false') {
     // Warn the user when the browser first starts if ChromeVox is inactive.
     this.tts.speak(Msgs.getMsg('chromevox_inactive'), cvox.QueueMode.QUEUE);
-  } else if (cvox.PlatformUtil.matchesPlatform(cvox.PlatformFilter.WML)) {
+  } else if (!cvox.ChromeVox.isChromeOS) {
     // Introductory message.
     this.tts.speak(Msgs.getMsg('chromevox_intro'), cvox.QueueMode.QUEUE);
     cvox.ChromeVox.braille.write(
