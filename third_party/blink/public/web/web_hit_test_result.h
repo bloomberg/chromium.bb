@@ -56,6 +56,10 @@ class WebHitTestResult {
   // Coordinates of the point that was hit. Relative to the node.
   BLINK_EXPORT WebPoint LocalPoint() const;
 
+  // Coordinates of the point that was hit. Relative to the node, but with
+  // ContentBoxOffset removed if the node has box layout.
+  BLINK_EXPORT WebPoint LocalPointWithoutContentBoxOffset() const;
+
   // If a link (eg. anchor or area tag) is hit, return the element.
   // Return null otheriwse.
   BLINK_EXPORT WebElement UrlElement() const;

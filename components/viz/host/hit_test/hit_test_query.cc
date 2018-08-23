@@ -110,6 +110,17 @@ bool HitTestQuery::FindTargetInRegionForLocation(
     uint32_t region_index,
     Target* target) const {
   gfx::PointF location_transformed(location_in_parent);
+
+  // HasPerspective() is checked for the transform because the point will not
+  // be transformed correctly for a plane with a different normal.
+  // See https://crbug.com/854247.
+  if (hit_test_data_[region_index].transform().HasPerspective()) {
+    target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
+    target->location_in_target = gfx::PointF();
+    target->flags = HitTestRegionFlags::kHitTestAsk;
+    return true;
+  }
+
   hit_test_data_[region_index].transform().TransformPoint(
       &location_transformed);
   if (!gfx::RectF(hit_test_data_[region_index].rect)

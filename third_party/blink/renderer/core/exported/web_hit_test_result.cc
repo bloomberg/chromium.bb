@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -75,6 +76,16 @@ WebNode WebHitTestResult::GetNode() const {
 
 WebPoint WebHitTestResult::LocalPoint() const {
   return RoundedIntPoint(private_->Result().LocalPoint());
+}
+
+WebPoint WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
+  IntPoint local_point = RoundedIntPoint(private_->Result().LocalPoint());
+  LayoutObject* object = private_->Result().GetLayoutObject();
+  if (object->IsBox()) {
+    LayoutBox* box = ToLayoutBox(object);
+    local_point.Move(-RoundedIntSize(box->ContentBoxOffset()));
+  }
+  return local_point;
 }
 
 WebElement WebHitTestResult::UrlElement() const {
