@@ -183,6 +183,7 @@ jumbo_source_set("browser_sources") {
     "extension_web_contents_observer.h",
     "extension_zoom_request_client.cc",
     "extension_zoom_request_client.h",
+    "extensions_browser_api_provider.h",
     "extensions_browser_client.cc",
     "extensions_browser_client.h",
     "external_install_info.cc",
@@ -403,6 +404,21 @@ jumbo_source_set("browser_sources") {
 
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
+  ]
+}
+
+# NOTE: This is separate from ":browser" because it depends on
+# //extensions/browser/api:api_registration, which in turn depends on
+# :browser.
+source_set("core_api_provider") {
+  sources = [
+    "core_extensions_browser_api_provider.cc",
+    "core_extensions_browser_api_provider.h",
+  ]
+
+  deps = [
+    ":browser",
+    "//extensions/browser/api:api_registration",
   ]
 }
 
