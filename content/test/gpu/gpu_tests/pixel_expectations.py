@@ -62,8 +62,15 @@ class PixelExpectations(GpuTestExpectations):
     # TODO(kbr): flakily timing out on this configuration.
     self.Flaky('*', ['linux', 'intel', 'debug'], bug=648369)
 
-    self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
-    self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
+    # TODO(sunnyps): re-enable after rebaselining
+    # self.Flaky('Pixel_Video_MP4', ['android', 'nvidia'], bug=716564)
+    # self.Flaky('Pixel_Video_MP4', ['linux', 'nvidia'], bug=819635)
+
+    # TODO(sunnyps): temporarily disabling for rebaselining.
+    self.Fail('Pixel_Video_MP4', bug=869677)
+    self.Fail('Pixel_Video_VP9', bug=869677)
+    self.Fail('Pixel_DirectComposition_Video_MP4', bug=869677)
+    self.Fail('Pixel_DirectComposition_Video_VP9', bug=869677)
 
     # TODO(junov): rebaselining
     self.Fail('Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing',
@@ -86,10 +93,11 @@ class PixelExpectations(GpuTestExpectations):
         ['android', ('qualcomm', 'Adreno (TM) 330')], bug=773293)
 
     # Failing on Mac Intel HighSierra
-    self.Fail('Pixel_Video_MP4',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
-    self.Fail('Pixel_Video_VP9',
-        ['highsierra', ('intel', 0xa2e)], bug=774809)
+    # TODO(sunnyps): re-enable after rebaselining.
+    # self.Fail('Pixel_Video_MP4',
+    #     ['highsierra', ('intel', 0xa2e)], bug=774809)
+    # self.Fail('Pixel_Video_VP9',
+    #     ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Fail('Pixel_WebGLGreenTriangle_NonChromiumImage_NoAA_NoAlpha',
         ['highsierra', ('intel', 0xa2e)], bug=774809)
     self.Flaky('Pixel_OffscreenCanvasTransferBeforeStyleResize',
@@ -118,7 +126,8 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_WebGLSadCanvas', ['android'], bug=575305)
 
     # Flaky on Android: crbug.com/860548
-    self.Flaky('Pixel_Video_VP9', ['android'], bug=860548)
+    # TODO(sunnyps): re-enable after rebaselining.
+    # self.Flaky('Pixel_Video_VP9', ['android'], bug=860548)
 
     self.Fail('Pixel_CanvasLowLatencyWebGL', ['android', 'nvidia'], bug=868596)
     self.Fail('Pixel_OffscreenCanvasWebGLPaintAfterResize',
