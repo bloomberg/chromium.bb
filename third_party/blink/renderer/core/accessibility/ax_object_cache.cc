@@ -60,30 +60,6 @@ AXObjectCache::AXObjectCache(Document& document)
 
 AXObjectCache::~AXObjectCache() = default;
 
-std::unique_ptr<ScopedAXObjectCache> ScopedAXObjectCache::Create(
-    Document& document) {
-  return base::WrapUnique(new ScopedAXObjectCache(document));
-}
-
-ScopedAXObjectCache::ScopedAXObjectCache(Document& document)
-    : document_(&document) {
-  if (!document_->GetOrCreateAXObjectCache())
-    cache_ = AXObjectCache::Create(*document_);
-}
-
-ScopedAXObjectCache::~ScopedAXObjectCache() {
-  if (cache_)
-    cache_->Dispose();
-}
-
-AXObjectCache* ScopedAXObjectCache::Get() {
-  if (cache_)
-    return cache_.Get();
-  AXObjectCache* cache = document_->GetOrCreateAXObjectCache();
-  DCHECK(cache);
-  return cache;
-}
-
 namespace {
 
 typedef HashSet<String, CaseFoldingHash> ARIAWidgetSet;

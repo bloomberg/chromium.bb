@@ -111,18 +111,6 @@ static bool IsLayoutClean(Document* document) {
 }
 #endif
 
-WebScopedAXContext::WebScopedAXContext(WebDocument& root_document)
-    : private_(ScopedAXObjectCache::Create(*root_document.Unwrap<Document>())) {
-}
-
-WebScopedAXContext::~WebScopedAXContext() {
-  private_.reset(nullptr);
-}
-
-WebAXObject WebScopedAXContext::Root() const {
-  return WebAXObject(static_cast<AXObjectCacheImpl*>(private_->Get())->Root());
-}
-
 void WebAXObject::Reset() {
   private_.Reset();
 }
@@ -1446,7 +1434,7 @@ WebAXObject WebAXObject::FromWebNode(const WebNode& web_node) {
 WebAXObject WebAXObject::FromWebDocument(const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
   AXObjectCacheImpl* cache =
-      ToAXObjectCacheImpl(document->GetOrCreateAXObjectCache());
+      ToAXObjectCacheImpl(document->ExistingAXObjectCache());
   return cache ? WebAXObject(cache->GetOrCreate(document->GetLayoutView()))
                : WebAXObject();
 }
@@ -1456,7 +1444,7 @@ WebAXObject WebAXObject::FromWebDocumentByID(const WebDocument& web_document,
                                              int ax_id) {
   const Document* document = web_document.ConstUnwrap<Document>();
   AXObjectCacheImpl* cache =
-      ToAXObjectCacheImpl(document->GetOrCreateAXObjectCache());
+      ToAXObjectCacheImpl(document->ExistingAXObjectCache());
   return cache ? WebAXObject(cache->ObjectFromAXID(ax_id)) : WebAXObject();
 }
 
@@ -1465,7 +1453,7 @@ WebAXObject WebAXObject::FromWebDocumentFocused(
     const WebDocument& web_document) {
   const Document* document = web_document.ConstUnwrap<Document>();
   AXObjectCacheImpl* cache =
-      ToAXObjectCacheImpl(document->GetOrCreateAXObjectCache());
+      ToAXObjectCacheImpl(document->ExistingAXObjectCache());
   return cache ? WebAXObject(cache->FocusedObject()) : WebAXObject();
 }
 

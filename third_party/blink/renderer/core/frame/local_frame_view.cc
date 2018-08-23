@@ -961,7 +961,7 @@ void LocalFrameView::UpdateLayout() {
     GetLayoutView()->Compositor()->DidLayout();
     layout_count_for_testing_++;
 
-    if (AXObjectCache* cache = document->GetOrCreateAXObjectCache()) {
+    if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
       const KURL& url = document->Url();
       if (url.IsValid() && !url.IsAboutBlankURL())
         cache->HandleLayoutComplete(document);

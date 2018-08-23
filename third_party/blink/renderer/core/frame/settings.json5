@@ -656,13 +656,6 @@
       type: "HoverType",
     },
 
-    // Whether accessibility support is enabled at all.
-    {
-      name: "accessibilityEnabled",
-      initial: false,
-      invalidate: "AccessibilityState",
-    },
-
     // If true, the value in password fields is exposed to assistive technologies.
     {
       name: "accessibilityPasswordValuesEnabled",

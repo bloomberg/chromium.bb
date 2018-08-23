@@ -160,10 +160,6 @@ void WebSettingsImpl::SetAccessibilityFontScaleFactor(float font_scale_factor) {
   settings_->SetAccessibilityFontScaleFactor(font_scale_factor);
 }
 
-void WebSettingsImpl::SetAccessibilityEnabled(bool enabled) {
-  settings_->SetAccessibilityEnabled(enabled);
-}
-
 void WebSettingsImpl::SetAccessibilityPasswordValuesEnabled(bool enabled) {
   settings_->SetAccessibilityPasswordValuesEnabled(enabled);
 }

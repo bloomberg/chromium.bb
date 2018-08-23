@@ -14,6 +14,7 @@
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/accessibility/blink_ax_tree_source.h"
+#include "third_party/blink/public/web/web_ax_context.h"
 #include "third_party/blink/public/web/web_ax_object.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree.h"
@@ -73,6 +74,7 @@ class CONTENT_EXPORT RenderAccessibilityImpl
   void OnPluginRootNodeUpdated() override;
 
   // RenderFrameObserver implementation.
+  void DidCreateNewDocument() override;
   void AccessibilityModeChanged() override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
@@ -90,11 +92,6 @@ class CONTENT_EXPORT RenderAccessibilityImpl
       int end_offset);
 
   void AccessibilityFocusedNodeChanged(const blink::WebNode& node);
-
-  // This can be called before deleting a RenderAccessibilityImpl instance due
-  // to the accessibility mode changing, as opposed to during frame destruction
-  // (when there'd be no point).
-  void DisableAccessibility();
 
   void HandleAXEvent(const blink::WebAXObject& obj,
                      ax::mojom::Event event,
@@ -138,6 +135,9 @@ class CONTENT_EXPORT RenderAccessibilityImpl
 
   // The RenderFrameImpl that owns us.
   RenderFrameImpl* render_frame_;
+
+  // This keeps accessibility enabled as long as it lives.
+  std::unique_ptr<blink::WebAXContext> ax_context_;
 
   // Events from Blink are collected until they are ready to be
   // sent to the browser.

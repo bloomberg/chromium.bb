@@ -224,7 +224,7 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
   if (!owner->DocumentBeingDestroyed())
     owner->NotifyOfSubtreeChange();
 
-  if (AXObjectCache* cache = owner->GetDocument().GetOrCreateAXObjectCache())
+  if (AXObjectCache* cache = owner->GetDocument().ExistingAXObjectCache())
     cache->ChildrenChanged(owner);
 }
 

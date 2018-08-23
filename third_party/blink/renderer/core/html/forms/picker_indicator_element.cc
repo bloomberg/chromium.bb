@@ -159,8 +159,7 @@ Node::InsertionNotificationRequest PickerIndicatorElement::InsertedInto(
 }
 
 void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
-  if (!GetDocument().GetSettings() ||
-      !GetDocument().GetSettings()->GetAccessibilityEnabled())
+  if (!GetDocument().ExistingAXObjectCache())
     return;
   // Don't make this focusable if we are in layout tests in order to avoid to
   // break existing tests.

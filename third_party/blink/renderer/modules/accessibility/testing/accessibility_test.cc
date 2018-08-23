@@ -18,20 +18,12 @@ AccessibilityTest::AccessibilityTest(LocalFrameClient* local_frame_client)
 
 void AccessibilityTest::SetUp() {
   RenderingTest::SetUp();
-  DCHECK(GetDocument().GetSettings());
-  GetDocument().GetSettings()->SetAccessibilityEnabled(true);
-}
-
-void AccessibilityTest::TearDown() {
-  GetDocument().ClearAXObjectCache();
-  DCHECK(GetDocument().GetSettings());
-  GetDocument().GetSettings()->SetAccessibilityEnabled(false);
-  RenderingTest::TearDown();
+  ax_context_.reset(new AXContext(GetDocument()));
 }
 
 AXObjectCacheImpl& AccessibilityTest::GetAXObjectCache() const {
   auto* ax_object_cache =
-      ToAXObjectCacheImpl(GetDocument().GetOrCreateAXObjectCache());
+      ToAXObjectCacheImpl(GetDocument().ExistingAXObjectCache());
   DCHECK(ax_object_cache);
   return *ax_object_cache;
 }

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/bindings/core/v8/usv_string_or_trusted_url.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/aom/computed_accessible_node.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
@@ -1089,8 +1090,6 @@ ScriptPromise LocalDOMWindow::getComputedAccessibleNode(
     ScriptState* script_state,
     Element* element) {
   DCHECK(element);
-  // TODO(meredithl): Create finer grain method for enabling accessibility.
-  element->GetDocument().GetPage()->GetSettings().SetAccessibilityEnabled(true);
   ComputedAccessibleNodePromiseResolver* resolver =
       ComputedAccessibleNodePromiseResolver::Create(script_state, *element);
   ScriptPromise promise = resolver->Promise();

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/accessibility/ax_context.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
@@ -24,9 +25,8 @@ class AccessibilityObjectModelTest
 
  protected:
   AXObjectCacheImpl* AXObjectCache() {
-    GetDocument().GetSettings()->SetAccessibilityEnabled(true);
     return static_cast<AXObjectCacheImpl*>(
-        GetDocument().GetOrCreateAXObjectCache());
+        GetDocument().ExistingAXObjectCache());
   }
 };
 
@@ -34,6 +34,7 @@ TEST_F(AccessibilityObjectModelTest, DOMElementsHaveAnAccessibleNode) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<button id=button>Click me</button>");
+  AXContext ax_context(GetDocument());
 
   auto* button = GetDocument().getElementById("button");
   EXPECT_NE(nullptr, button->accessibleNode());
@@ -45,6 +46,7 @@ TEST_F(AccessibilityObjectModelTest, SetAccessibleNodeRole) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<button id=button>Click me</button>");
+  AXContext ax_context(GetDocument());
 
   auto* cache = AXObjectCache();
   ASSERT_NE(nullptr, cache);
@@ -66,6 +68,7 @@ TEST_F(AccessibilityObjectModelTest, AOMDoesNotReflectARIA) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<input id=textbox>");
+  AXContext ax_context(GetDocument());
 
   // Set ARIA attributes.
   auto* textbox = GetDocument().getElementById("textbox");
@@ -96,6 +99,7 @@ TEST_F(AccessibilityObjectModelTest, AOMPropertiesCanBeCleared) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<input type=button id=button>");
+  AXContext ax_context(GetDocument());
 
   // Set ARIA attributes.
   auto* button = GetDocument().getElementById("button");
@@ -141,6 +145,7 @@ TEST_F(AccessibilityObjectModelTest, RangeProperties) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<div role=slider id=slider>");
+  AXContext ax_context(GetDocument());
 
   auto* slider = GetDocument().getElementById("slider");
   ASSERT_NE(nullptr, slider);
@@ -164,6 +169,7 @@ TEST_F(AccessibilityObjectModelTest, Level) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<div role=heading id=heading>");
+  AXContext ax_context(GetDocument());
 
   auto* heading = GetDocument().getElementById("heading");
   ASSERT_NE(nullptr, heading);
@@ -180,6 +186,7 @@ TEST_F(AccessibilityObjectModelTest, ListItem) {
   LoadURL("https://example.com/");
   main_resource.Complete(
       "<div role=list><div role=listitem id=listitem></div></div>");
+  AXContext ax_context(GetDocument());
 
   auto* listitem = GetDocument().getElementById("listitem");
   ASSERT_NE(nullptr, listitem);
@@ -204,6 +211,7 @@ TEST_F(AccessibilityObjectModelTest, Grid) {
       </div>
     </div>
   )HTML");
+  AXContext ax_context(GetDocument());
 
   auto* grid = GetDocument().getElementById("grid");
   ASSERT_NE(nullptr, grid);
@@ -293,6 +301,7 @@ TEST_F(AccessibilityObjectModelTest, SparseAttributes) {
     <div id=error role=article>Error</div>
     <div id=error2 role=banner>Error 2</div>
   )HTML");
+  AXContext ax_context(GetDocument());
 
   auto* target = GetDocument().getElementById("target");
   auto* cache = AXObjectCache();
@@ -360,6 +369,7 @@ TEST_F(AccessibilityObjectModelTest, LabeledBy) {
     <label id=l2>Label 2</label>
     <label id=l3>Label 3</label>
   )HTML");
+  AXContext ax_context(GetDocument());
 
   auto* target = GetDocument().getElementById("target");
   auto* l1 = GetDocument().getElementById("l1");
