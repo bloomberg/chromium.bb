@@ -44,9 +44,6 @@
 #include "linked_list.h"
 #include "system-alloc.h"
 
-// Remove to enable singly linked lists (the default for open source tcmalloc).
-#define TCMALLOC_USE_DOUBLYLINKED_FREELIST
-
 namespace tcmalloc {
 
 #if defined(TCMALLOC_USE_DOUBLYLINKED_FREELIST)

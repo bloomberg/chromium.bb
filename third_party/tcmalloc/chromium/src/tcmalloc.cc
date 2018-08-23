@@ -135,9 +135,6 @@
 
 #include "maybe_emergency_malloc.h"
 
-// Remove to enable huge allocations (> 2GB), the default for gperftools.
-#define TCMALLOC_DISABLE_HUGE_ALLOCATIONS
-
 #if (defined(_WIN32) && !defined(__CYGWIN__) && !defined(__CYGWIN32__)) && !defined(WIN32_OVERRIDE_ALLOCATORS)
 # define WIN32_DO_PATCHING 1
 #endif
