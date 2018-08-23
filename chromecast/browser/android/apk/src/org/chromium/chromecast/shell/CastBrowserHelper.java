@@ -12,7 +12,6 @@ import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chromecast.base.ChromecastConfigAndroid;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.net.NetworkChangeNotifier;
@@ -37,8 +36,6 @@ public class CastBrowserHelper {
         if (sIsBrowserInitialized) return true;
 
         Log.d(TAG, "Performing one-time browser initialization");
-
-        ChromecastConfigAndroid.initializeForBrowser(context);
 
         // Initializing the command line must occur before loading the library.
         CastCommandLineHelper.initCommandLineWithSavedArgs(() -> {

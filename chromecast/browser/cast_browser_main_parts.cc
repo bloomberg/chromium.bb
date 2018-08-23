@@ -486,6 +486,10 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       base::Unretained(cast_browser_process_->browser_client())));
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
+#if defined(OS_ANDROID)
+  StartPeriodicCrashReportUpload();
+#endif  // defined(OS_ANDROID)
+
   cast_browser_process_->SetNetLog(net_log_.get());
   url_request_context_factory_->InitializeOnUIThread(net_log_.get());
 
@@ -597,6 +601,22 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   cast_browser_process_->cast_service()->Start();
 }
+
+#if defined(OS_ANDROID)
+void CastBrowserMainParts::StartPeriodicCrashReportUpload() {
+  OnStartPeriodicCrashReportUpload();
+  crash_reporter_timer_.reset(new base::RepeatingTimer());
+  crash_reporter_timer_->Start(
+      FROM_HERE, base::TimeDelta::FromMinutes(20), this,
+      &CastBrowserMainParts::OnStartPeriodicCrashReportUpload);
+}
+
+void CastBrowserMainParts::OnStartPeriodicCrashReportUpload() {
+  base::FilePath crash_dir;
+  CrashHandler::GetCrashDumpLocation(&crash_dir);
+  CrashHandler::UploadDumps(crash_dir, "", "");
+}
+#endif  // defined(OS_ANDROID)
 
 bool CastBrowserMainParts::MainMessageLoopRun(int* result_code) {
 #if defined(OS_ANDROID)
