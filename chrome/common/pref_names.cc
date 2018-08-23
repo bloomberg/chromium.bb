@@ -1148,16 +1148,9 @@ const char kPrintPreviewUseSystemDefaultPrinter[] =
 #endif  // !OS_CHROMEOS && !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-// List of all printers that the user has configured.
-const char kPrintingDevices[] = "printing.devices";
-
 // List of printers configured by policy.
 const char kRecommendedNativePrinters[] =
     "native_printing.recommended_printers";
-
-// External resource containing all printer configurations for an enterprise.
-const char kRecommendedNativePrintersFile[] =
-    "native_printing.recommended_printers_file";
 
 // Enum designating the type of restrictions bulk printers are using.
 const char kRecommendedNativePrintersAccessMode[] =
