@@ -57,7 +57,6 @@ WebRunnerMainDelegate* WebRunnerMainDelegate::GetInstanceForTest() {
 
 WebRunnerMainDelegate::WebRunnerMainDelegate(zx::channel context_channel)
     : context_channel_(std::move(context_channel)) {
-  DCHECK(context_channel_);
   g_current_webrunner_main_delegate = this;
 }
 
@@ -86,7 +85,6 @@ int WebRunnerMainDelegate::RunProcess(
 
 content::ContentBrowserClient*
 WebRunnerMainDelegate::CreateContentBrowserClient() {
-  DCHECK(context_channel_);
   DCHECK(!browser_client_);
   browser_client_ = std::make_unique<WebRunnerContentBrowserClient>(
       std::move(context_channel_));
