@@ -245,7 +245,8 @@ void RenderWidgetTargeter::FoundFrameSinkId(
     uint32_t request_id,
     const gfx::PointF& target_location,
     TracingUmaTracker tracker,
-    const viz::FrameSinkId& frame_sink_id) {
+    const viz::FrameSinkId& frame_sink_id,
+    const gfx::PointF& transformed_location) {
   tracker.Stop();
   if (request_id != last_request_id_ || !request_in_flight_) {
     // This is a response to a request that already timed out, so the event
@@ -267,10 +268,8 @@ void RenderWidgetTargeter::FoundFrameSinkId(
       unresponsive_views_.find(view) != unresponsive_views_.end()) {
     FoundTarget(root_view.get(), view, *event, latency, target_location, false);
   } else {
-    gfx::PointF location = target_location;
-    target->TransformPointToCoordSpaceForView(location, view, &location);
-    QueryClient(root_view.get(), view, *event, latency, location, target.get(),
-                target_location);
+    QueryClient(root_view.get(), view, *event, latency, transformed_location,
+                target.get(), target_location);
   }
 }
 

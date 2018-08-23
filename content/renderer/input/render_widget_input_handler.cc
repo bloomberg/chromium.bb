@@ -191,16 +191,18 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
 RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 
 viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
-    const gfx::Point& point) {
+    const gfx::Point& point,
+    gfx::PointF* local_point) {
   gfx::PointF point_in_pixel(point);
   if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
     point_in_pixel = gfx::ConvertPointToPixel(
         widget_->GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
   }
-  blink::WebNode result_node = widget_->GetWebWidget()
-                                   ->HitTestResultAt(blink::WebPoint(
-                                       point_in_pixel.x(), point_in_pixel.y()))
-                                   .GetNode();
+  blink::WebHitTestResult result = widget_->GetWebWidget()->HitTestResultAt(
+      blink::WebPoint(point_in_pixel.x(), point_in_pixel.y()));
+
+  blink::WebNode result_node = result.GetNode();
+  *local_point = gfx::PointF(point);
 
   // TODO(crbug.com/797828): When the node is null the caller may
   // need to do extra checks. Like maybe update the layout and then
@@ -217,6 +219,11 @@ viz::FrameSinkId RenderWidgetInputHandler::GetFrameSinkIdAtPoint(
     viz::FrameSinkId frame_sink_id =
         RenderFrameProxy::FromWebFrame(result_frame->ToWebRemoteFrame())
             ->frame_sink_id();
+    *local_point = gfx::PointF(result.LocalPointWithoutContentBoxOffset());
+    if (widget_->compositor_deps()->IsUseZoomForDSFEnabled()) {
+      *local_point = gfx::ConvertPointToDIP(
+          widget_->GetOriginalScreenInfo().device_scale_factor, *local_point);
+    }
     if (frame_sink_id.is_valid())
       return frame_sink_id;
   }

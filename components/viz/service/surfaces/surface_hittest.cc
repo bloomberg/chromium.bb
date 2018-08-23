@@ -108,12 +108,17 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
 
   // The |transform_to_root_target| matrix may have no back-projection if the
   // forward projection is degenerate.
+  // HasPerspective() is checked for the transform because the point will not
+  // be transformed correctly for a plane with a different normal.
+  // See https://crbug.com/854247.
   gfx::Transform transform_from_root_target;
   gfx::Transform transform_to_root_target =
       render_pass->transform_to_root_target;
   transform_to_root_target.FlattenTo2d();
-  if (!transform_to_root_target.GetInverse(&transform_from_root_target)) {
-    return false;
+  if (transform_to_root_target.HasPerspective() ||
+      !transform_to_root_target.GetInverse(&transform_from_root_target)) {
+    *out_query_renderer = true;
+    return true;
   }
 
   gfx::Point point_in_render_pass_space(point_in_root_target);
@@ -125,6 +130,10 @@ bool SurfaceHittest::GetTargetSurfaceAtPointInternal(
     gfx::Point point_in_quad_space;
     if (!PointInQuad(quad, point_in_render_pass_space,
                      &target_to_quad_transform, &point_in_quad_space)) {
+      if (target_to_quad_transform.HasPerspective()) {
+        *out_query_renderer = true;
+        return false;
+      }
       continue;
     }
 
@@ -335,7 +344,8 @@ bool SurfaceHittest::PointInQuad(const DrawQuad* quad,
   // rect.
   gfx::Transform transform = quad->shared_quad_state->quad_to_target_transform;
   transform.FlattenTo2d();
-  if (!transform.GetInverse(target_to_quad_transform)) {
+  if (!transform.GetInverse(target_to_quad_transform) ||
+      target_to_quad_transform->HasPerspective()) {
     return false;
   }
 

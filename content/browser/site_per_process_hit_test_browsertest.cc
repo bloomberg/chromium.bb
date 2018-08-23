@@ -217,7 +217,10 @@ void DispatchMouseEventAndWaitUntilDispatch(
   RouteMouseEventAndWaitUntilDispatch(router, root_view, expected_target,
                                       &down_event);
   EXPECT_TRUE(monitor.EventWasReceived());
-  EXPECT_NEAR(expected_location.x(), monitor.event().PositionInWidget().x, 2);
+  EXPECT_NEAR(expected_location.x(), monitor.event().PositionInWidget().x, 2)
+      << " & original location was " << location.x() << ", " << location.y()
+      << " & root_location was " << root_location.x() << ", "
+      << root_location.y();
   EXPECT_NEAR(expected_location.y(), monitor.event().PositionInWidget().y, 2);
 }
 
@@ -316,6 +319,44 @@ void NonFlatTransformedSurfaceHitTestHelper(
   DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_child,
                                          gfx::PointF(5, 5), rwhv_child,
                                          gfx::PointF(5, 5));
+}
+
+void PerspectiveTransformedSurfaceHitTestHelper(
+    Shell* shell,
+    net::test_server::EmbeddedTestServer* embedded_test_server) {
+  GURL main_url(embedded_test_server->GetURL(
+      "/frame_tree/page_with_perspective_transformed_frame.html"));
+  EXPECT_TRUE(NavigateToURL(shell, main_url));
+  auto* web_contents = static_cast<WebContentsImpl*>(shell->web_contents());
+
+  RenderFrameSubmissionObserver render_frame_submission_observer(web_contents);
+
+  FrameTreeNode* root = web_contents->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* child_node = root->child_at(0);
+  GURL site_url(embedded_test_server->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, child_node->current_url());
+  EXPECT_NE(shell->web_contents()->GetSiteInstance(),
+            child_node->current_frame_host()->GetSiteInstance());
+
+  RenderWidgetHostViewBase* rwhv_root = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_child = static_cast<RenderWidgetHostViewBase*>(
+      child_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  WaitForHitTestDataOrChildSurfaceReady(child_node->current_frame_host());
+
+  // (90, 75) hit tests into the child frame that is positioned at (50, 50).
+  // Without other transformations this should result in a translated point
+  // of (40, 25), but the 45 degree 3-dimensional rotation of the frame about
+  // a vertical axis skews it.
+  // We can't allow DispatchMouseEventAndWaitUntilDispatch to compute the
+  // coordinates in the root space unless browser conversions with
+  // perspective transforms are first fixed. See https://crbug.com/854257.
+  DispatchMouseEventAndWaitUntilDispatch(web_contents, rwhv_root,
+                                         gfx::PointF(90, 75), rwhv_child,
+                                         gfx::PointF(33, 23));
 }
 
 // Helper function that performs a surface hittest in nested frame.
@@ -1870,6 +1911,27 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
                        NonFlatTransformedSurfaceHitTestTest) {
   NonFlatTransformedSurfaceHitTestHelper(shell(), embedded_test_server());
+}
+
+// TODO(kenrb): Running this test on Android bots has slight discrepancies in
+// transformed event coordinates when we do manual calculation of expected
+// values. We can't rely on browser side transformation because it is broken
+// for perspective transforms. See https://crbug.com/854247.
+#if defined(OS_ANDROID)
+#define MAYBE_PerspectiveTransformedSurfaceHitTestTest \
+  DISABLED_PerspectiveTransformedSurfaceHitTestTest
+#else
+#define MAYBE_PerspectiveTransformedSurfaceHitTestTest \
+  PerspectiveTransformedSurfaceHitTestTest
+#endif
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       MAYBE_PerspectiveTransformedSurfaceHitTestTest) {
+  PerspectiveTransformedSurfaceHitTestHelper(shell(), embedded_test_server());
+}
+
+IN_PROC_BROWSER_TEST_P(SitePerProcessHighDPIHitTestBrowserTest,
+                       MAYBE_PerspectiveTransformedSurfaceHitTestTest) {
+  PerspectiveTransformedSurfaceHitTestHelper(shell(), embedded_test_server());
 }
 
 #if defined(OS_LINUX)
@@ -4583,37 +4645,46 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest, HitTestNestedFrames) {
   {
     base::RunLoop run_loop;
     viz::FrameSinkId received_frame_sink_id;
+    gfx::PointF returned_point;
     base::Closure quit_closure =
         content::GetDeferredQuitTaskForRunLoop(&run_loop);
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
     child_node->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
         point_in_child,
-        base::BindLambdaForTesting([&](const viz::FrameSinkId& id) {
-          received_frame_sink_id = id;
-          quit_closure.Run();
-        }));
+        base::BindLambdaForTesting(
+            [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
+              received_frame_sink_id = id;
+              returned_point = point;
+              quit_closure.Run();
+            }));
     content::RunThisRunLoop(&run_loop);
     // |point_in_child| should hit test to the view for |child_node|.
     ASSERT_EQ(rwhv_child->GetFrameSinkId(), received_frame_sink_id);
+    ASSERT_EQ(gfx::PointF(1, 1), returned_point);
   }
 
   {
     base::RunLoop run_loop;
     viz::FrameSinkId received_frame_sink_id;
+    gfx::PointF returned_point;
     base::Closure quit_closure =
         content::GetDeferredQuitTaskForRunLoop(&run_loop);
     DCHECK_NE(child_node->current_frame_host()->GetInputTargetClient(),
               nullptr);
     child_node->current_frame_host()->GetInputTargetClient()->FrameSinkIdAt(
         gfx::ToCeiledPoint(point_in_nested_child),
-        base::BindLambdaForTesting([&](const viz::FrameSinkId& id) {
-          received_frame_sink_id = id;
-          quit_closure.Run();
-        }));
+        base::BindLambdaForTesting(
+            [&](const viz::FrameSinkId& id, const gfx::PointF& point) {
+              received_frame_sink_id = id;
+              returned_point = point;
+              quit_closure.Run();
+            }));
     content::RunThisRunLoop(&run_loop);
     // |point_in_nested_child| should hit test to |rwhv_grandchild|.
     ASSERT_EQ(rwhv_grandchild->GetFrameSinkId(), received_frame_sink_id);
+    EXPECT_NEAR(returned_point.x(), 5, 2);
+    EXPECT_NEAR(returned_point.y(), 5, 2);
   }
 }
 
