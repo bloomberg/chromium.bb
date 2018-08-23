@@ -2,6 +2,7 @@
 
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
+<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_indicator.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -32,6 +33,8 @@
         [[i18n('certificateManagerUntrusted')]]
       </div>
       <div class="name">[[model.name]]</div>
+      <cr-policy-indicator indicator-type="[[getPolicyIndicatorType_(model)]]">
+      </cr-policy-indicator>
       <paper-icon-button-light class="icon-more-vert">
         <button id="dots" title="[[i18n('moreActions')]]" on-tap="onDotsTap_">
         </button>

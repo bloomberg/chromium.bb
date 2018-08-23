@@ -57,6 +57,8 @@ static const char kCertificatesHandlerWebTrustAnchorField[] = "webTrustAnchor";
 static const char kCertificatesHandlerReadonlyField[] = "readonly";
 static const char kCertificatesHandlerSslField[] = "ssl";
 static const char kCertificatesHandlerSubnodesField[] = "subnodes";
+static const char kCertificatesHandlerContainsPolicyCertsField[] =
+    "containsPolicyCerts";
 static const char kCertificatesHandlerUntrustedField[] = "untrusted";
 
 // Field names for communicating erros to JS.
@@ -1029,6 +1031,7 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
 
     // Populate second level (certs).
     base::ListValue subnodes;
+    bool contains_policy_certs = false;
     for (const auto& org_cert : org_grouping_map_entry.second) {
       base::DictionaryValue cert_dict;
       CERTCertificate* cert = org_cert->cert();
@@ -1053,9 +1056,15 @@ void CertificatesHandler::PopulateTree(const std::string& tab_name,
                        base::Value(!org_cert->hardware_backed()));
       // TODO(mattm): Other columns.
       subnodes.GetList().push_back(std::move(cert_dict));
+
+      contains_policy_certs |=
+          org_cert->source() ==
+          CertificateManagerModel::CertInfo::Source::kPolicy;
     }
     std::sort(subnodes.GetList().begin(), subnodes.GetList().end(), comparator);
 
+    org_dict.SetKey(kCertificatesHandlerContainsPolicyCertsField,
+                    base::Value(contains_policy_certs));
     org_dict.SetKey(kCertificatesHandlerSubnodesField, std::move(subnodes));
     nodes.GetList().push_back(std::move(org_dict));
   }

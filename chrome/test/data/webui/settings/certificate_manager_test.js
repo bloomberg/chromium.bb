@@ -143,11 +143,12 @@ cr.define('certificate_manager', function() {
     }
   }
 
-  /** @return {!Certificate} */
-  function createSampleCertificate() {
+  /** @return {!CertificatesOrgGroup} */
+  function createSampleCertificateOrgGroup() {
     return {
       id: 'dummyCertificateId',
       name: 'dummyCertificateName',
+      containsPolicyCerts: false,
       subnodes: [createSampleCertificateSubnode()],
     };
   }
@@ -682,10 +683,10 @@ cr.define('certificate_manager', function() {
         // Simulate response for personal and CA certificates.
         cr.webUIListenerCallback(
             'certificates-changed', 'personalCerts',
-            [createSampleCertificate()]);
-        cr.webUIListenerCallback(
-            'certificates-changed', 'caCerts',
-            [createSampleCertificate(), createSampleCertificate()]);
+            [createSampleCertificateOrgGroup()]);
+        cr.webUIListenerCallback('certificates-changed', 'caCerts', [
+          createSampleCertificateOrgGroup(), createSampleCertificateOrgGroup()
+        ]);
         Polymer.dom.flush();
 
         assertCertificateListLength(CertificateCategoryIndex.PERSONAL, 1);

@@ -46,6 +46,7 @@ js_library("certificate_entry") {
   deps = [
     ":certificate_manager_types",
     ":certificates_browser_proxy",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -105,6 +106,7 @@ js_library("certificate_subentry") {
     ":certificates_browser_proxy",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/cr_elements/cr_lazy_render:cr_lazy_render",
+    "//ui/webui/resources/cr_elements/policy:cr_policy_indicator",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
   ]
