@@ -37,6 +37,10 @@
 # https://crbug.com/827318
 -RenderThreadImplBrowserTest.NonResourceDispatchIPCTasksDontGoThroughScheduler
 
+# Flaky, temporarily disabling while investigating.
+# https://crbug.com/876911
+-ServiceWorkerNavigationPreloadTest.NetworkFallback
+
 # NOTE: if adding an exclusion for an existing failure (e.g. additional test for
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
