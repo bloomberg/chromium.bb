@@ -94,8 +94,6 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       // authenticator.
       case CtapDeviceResponseCode::kCtap2ErrCredentialExcluded:
         return FidoReturnCode::kUserConsentButCredentialExcluded;
-      case CtapDeviceResponseCode::kCtap2ErrInvalidCredential:
-      case CtapDeviceResponseCode::kCtap2ErrCredentialNotValid:
       case CtapDeviceResponseCode::kCtap2ErrNoCredentials:
         return FidoReturnCode::kUserConsentButCredentialNotRecognized;
 
@@ -114,6 +112,17 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
                    ? base::make_optional<FidoReturnCode>(
                          FidoReturnCode::kUserConsentDenied)
                    : base::nullopt;
+
+      // This error is returned by some authenticators (e.g. the "Yubico FIDO
+      // 2" CTAP2 USB keys) during GetAssertion **before the user interacted
+      // with the device**. The authenticator does this to avoid blinking (and
+      // possibly asking the user for their PIN) for requests it knows
+      // beforehand it cannot handle.
+      //
+      // Ignore this error to avoid canceling the request without user
+      // interaction.
+      case CtapDeviceResponseCode::kCtap2ErrInvalidCredential:
+        return base::nullopt;
 
       // For all other errors, the authenticator will be dropped, and other
       // authenticators may continue.
