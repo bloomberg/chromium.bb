@@ -310,8 +310,8 @@ enum EffectiveConnectionType {
     [CallWith=ScriptState] Promise createResolvedPromise(any value);
     [CallWith=ScriptState] Promise createRejectedPromise(any reason);
     [CallWith=ScriptState] Promise addOneToPromise(Promise promise);
-    [CallWith=ScriptState, RaisesException] Promise promiseCheck(long arg1, boolean arg2, Dictionary arg3, DOMString arg4, sequence<DOMString> arg5);
-    [CallWith=ScriptState] Promise promiseCheckWithoutExceptionState(Dictionary arg1, DOMString arg2, DOMString... variadic);
+    [CallWith=ScriptState, RaisesException] Promise promiseCheck(long arg1, boolean arg2, object arg3, DOMString arg4, sequence<DOMString> arg5);
+    [CallWith=ScriptState] Promise promiseCheckWithoutExceptionState(object arg1, DOMString arg2, DOMString... variadic);
     [CallWith=ScriptState] Promise promiseCheckRange([EnforceRange] octet arg1);
     [CallWith=ScriptState] Promise promiseCheckOverload(Location arg1);
     [CallWith=ScriptState] Promise promiseCheckOverload(Document arg1);

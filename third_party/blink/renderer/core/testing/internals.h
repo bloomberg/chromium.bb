@@ -49,7 +49,6 @@ class DOMRectReadOnly;
 class DOMArrayBuffer;
 class DOMPoint;
 class DOMWindow;
-class Dictionary;
 class DictionaryTest;
 class Document;
 class DocumentMarker;
@@ -469,12 +468,12 @@ class Internals final : public ScriptWrappable {
   ScriptPromise promiseCheck(ScriptState*,
                              long,
                              bool,
-                             const Dictionary&,
+                             const ScriptValue&,
                              const String&,
                              const Vector<String>&,
                              ExceptionState&);
   ScriptPromise promiseCheckWithoutExceptionState(ScriptState*,
-                                                  const Dictionary&,
+                                                  const ScriptValue&,
                                                   const String&,
                                                   const Vector<String>&);
   ScriptPromise promiseCheckRange(ScriptState*, long);
