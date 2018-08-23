@@ -171,6 +171,7 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     ruleset_dealer_ = std::make_unique<VerifiedRulesetDealer::Handle>(
         base::MessageLoopCurrent::Get()->task_runner());
     ruleset_dealer_->TryOpenAndSetRulesetFile(test_ruleset_pair_.indexed.path,
+                                              /*expected_checksum=*/0,
                                               base::DoNothing());
 
     auto* contents = RenderViewHostTestHarness::web_contents();

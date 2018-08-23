@@ -25,6 +25,7 @@ VerifiedRulesetDealer::VerifiedRulesetDealer() = default;
 VerifiedRulesetDealer::~VerifiedRulesetDealer() = default;
 
 base::File VerifiedRulesetDealer::OpenAndSetRulesetFile(
+    int expected_checksum,
     const base::FilePath& file_path) {
   DCHECK(CalledOnValidSequence());
   // On Windows, open the file with FLAG_SHARE_DELETE to allow deletion while
@@ -34,14 +35,17 @@ base::File VerifiedRulesetDealer::OpenAndSetRulesetFile(
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
                "VerifiedRulesetDealer::OpenAndSetRulesetFile", "file_valid",
                file.IsValid());
-  if (file.IsValid())
+  if (file.IsValid()) {
     SetRulesetFile(file.Duplicate());
+    expected_checksum_ = expected_checksum;
+  }
   return file;
 }
 
 void VerifiedRulesetDealer::SetRulesetFile(base::File ruleset_file) {
   RulesetDealer::SetRulesetFile(std::move(ruleset_file));
   status_ = RulesetVerificationStatus::kNotVerified;
+  expected_checksum_ = 0;
 }
 
 scoped_refptr<const MemoryMappedRuleset> VerifiedRulesetDealer::GetRuleset() {
@@ -53,7 +57,8 @@ scoped_refptr<const MemoryMappedRuleset> VerifiedRulesetDealer::GetRuleset() {
     case RulesetVerificationStatus::kNotVerified: {
       auto ruleset = RulesetDealer::GetRuleset();
       if (ruleset) {
-        if (IndexedRulesetMatcher::Verify(ruleset->data(), ruleset->length())) {
+        if (IndexedRulesetMatcher::Verify(ruleset->data(), ruleset->length(),
+                                          expected_checksum_)) {
           status_ = RulesetVerificationStatus::kIntact;
         } else {
           status_ = RulesetVerificationStatus::kCorrupt;
@@ -103,6 +108,7 @@ void VerifiedRulesetDealer::Handle::GetDealerAsync(
 
 void VerifiedRulesetDealer::Handle::TryOpenAndSetRulesetFile(
     const base::FilePath& path,
+    int expected_checksum,
     base::OnceCallback<void(base::File)> callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   // |base::Unretained| is safe here because the |OpenAndSetRulesetFile| task
@@ -111,7 +117,7 @@ void VerifiedRulesetDealer::Handle::TryOpenAndSetRulesetFile(
   base::PostTaskAndReplyWithResult(
       task_runner_, FROM_HERE,
       base::BindOnce(&VerifiedRulesetDealer::OpenAndSetRulesetFile,
-                     base::Unretained(dealer_.get()), path),
+                     base::Unretained(dealer_.get()), expected_checksum, path),
       std::move(callback));
 }
 

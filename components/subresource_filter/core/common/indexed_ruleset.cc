@@ -17,6 +17,15 @@ namespace {
 namespace proto = url_pattern_index::proto;
 using FindRuleStrategy =
     url_pattern_index::UrlPatternIndexMatcher::FindRuleStrategy;
+
+// A helper function to get the checksum on a data buffer.
+int LocalGetChecksum(const uint8_t* data, size_t size) {
+  uint32_t hash = base::PersistentHash(data, size);
+
+  // Strip off the sign bit since this needs to be persisted in preferences
+  // which don't support unsigned ints.
+  return static_cast<int>(hash & 0x7fffffff);
+}
 }  // namespace
 
 // RulesetIndexer --------------------------------------------------------------
@@ -62,16 +71,28 @@ void RulesetIndexer::Finish() {
   builder_.Finish(url_rules_index_offset);
 }
 
+int RulesetIndexer::GetChecksum() const {
+  return LocalGetChecksum(data(), size());
+}
+
 // IndexedRulesetMatcher -------------------------------------------------------
 
 // static
-bool IndexedRulesetMatcher::Verify(const uint8_t* buffer, size_t size) {
+bool IndexedRulesetMatcher::Verify(const uint8_t* buffer,
+                                   size_t size,
+                                   int expected_checksum) {
   TRACE_EVENT_BEGIN1(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "IndexedRulesetMatcher::Verify", "size", size);
   SCOPED_UMA_HISTOGRAM_TIMER(
       "SubresourceFilter.IndexRuleset.Verify2.WallDuration");
+  // TODO(ericrobinson): Log metrics for how often a zero checksum is
+  // encountered.  Remove the verifier once we've updated the ruleset at least
+  // once.  The verifier detects a subset of the errors detected by the
+  // checksum, and is unneeded once expected_checksum is consistently nonzero.
   flatbuffers::Verifier verifier(buffer, size);
-  bool valid = flat::VerifyIndexedRulesetBuffer(verifier);
+  bool valid = (!expected_checksum ||
+                expected_checksum == LocalGetChecksum(buffer, size)) &&
+               flat::VerifyIndexedRulesetBuffer(verifier);
   TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
                    "IndexedRulesetMatcher::Verify", "valid", valid);
   return valid;

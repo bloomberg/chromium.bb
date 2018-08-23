@@ -45,6 +45,8 @@ const char kSubresourceFilterRulesetContentVersion[] =
     "subresource_filter.ruleset_version.content";
 const char kSubresourceFilterRulesetFormatVersion[] =
     "subresource_filter.ruleset_version.format";
+const char kSubresourceFilterRulesetChecksum[] =
+    "subresource_filter.ruleset_version.checksum";
 
 void RecordIndexAndWriteRulesetResult(
     RulesetService::IndexAndWriteRulesetResult result) {
@@ -109,6 +111,7 @@ void IndexedRulesetVersion::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kSubresourceFilterRulesetContentVersion,
                                std::string());
   registry->RegisterIntegerPref(kSubresourceFilterRulesetFormatVersion, 0);
+  registry->RegisterIntegerPref(kSubresourceFilterRulesetChecksum, 0);
 }
 
 // static
@@ -121,6 +124,7 @@ void IndexedRulesetVersion::ReadFromPrefs(PrefService* local_state) {
       local_state->GetInteger(kSubresourceFilterRulesetFormatVersion);
   content_version =
       local_state->GetString(kSubresourceFilterRulesetContentVersion);
+  checksum = local_state->GetInteger(kSubresourceFilterRulesetChecksum);
 }
 
 bool IndexedRulesetVersion::IsValid() const {
@@ -136,6 +140,7 @@ void IndexedRulesetVersion::SaveToPrefs(PrefService* local_state) const {
                           format_version);
   local_state->SetString(kSubresourceFilterRulesetContentVersion,
                          content_version);
+  local_state->SetInteger(kSubresourceFilterRulesetChecksum, checksum);
 }
 
 std::unique_ptr<base::trace_event::TracedValue>
@@ -234,7 +239,9 @@ RulesetService::RulesetService(
   DCHECK(delegate_);
   DCHECK_NE(local_state_->GetInitializationStatus(),
             PrefService::INITIALIZATION_STATUS_WAITING);
+}
 
+void RulesetService::Initialize() {
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -258,9 +265,10 @@ void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
   if (unindexed_ruleset_info.content_version.empty())
     return;
 
-  // Trying to store a ruleset with the same version for a second time would not
-  // only be futile, but would fail on Windows due to "File System Tunneling" as
-  // long as the previously stored copy of the rules is still in use.
+  // Trying to store a ruleset with the same version for a second time would
+  // not only be futile, but would fail on Windows due to "File System
+  // Tunneling" as long as the previously stored copy of the rules is still
+  // in use.
   IndexedRulesetVersion most_recently_indexed_version;
   most_recently_indexed_version.ReadFromPrefs(local_state_);
   if (most_recently_indexed_version.IsCurrentFormatVersion() &&
@@ -279,6 +287,12 @@ void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
   IndexAndStoreRuleset(
       unindexed_ruleset_info,
       base::Bind(&RulesetService::OpenAndPublishRuleset, AsWeakPtr()));
+}
+
+IndexedRulesetVersion RulesetService::GetMostRecentlyIndexedVersion() const {
+  IndexedRulesetVersion version;
+  version.ReadFromPrefs(local_state_);
+  return version;
 }
 
 // static
@@ -335,7 +349,7 @@ IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
   }
 
   // --- End of guarded section.
-
+  indexed_version.checksum = indexer.GetChecksum();
   if (!sentinel_file.Remove()) {
     RecordIndexAndWriteRulesetResult(
         IndexAndWriteRulesetResult::FAILED_DELETING_SENTINEL_FILE);
@@ -488,7 +502,8 @@ void RulesetService::OpenAndPublishRuleset(
               indexed_ruleset_base_dir_, version));
 
   delegate_->TryOpenAndSetRulesetFile(
-      file_path, base::BindOnce(&RulesetService::OnRulesetSet, AsWeakPtr()));
+      file_path, version.checksum,
+      base::BindOnce(&RulesetService::OnRulesetSet, AsWeakPtr()));
 }
 
 void RulesetService::OnRulesetSet(base::File file) {

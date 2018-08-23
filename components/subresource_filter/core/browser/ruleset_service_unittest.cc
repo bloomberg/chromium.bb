@@ -109,6 +109,7 @@ class MockRulesetServiceDelegate : public RulesetServiceDelegate {
 
   void TryOpenAndSetRulesetFile(
       const base::FilePath& path,
+      int expected_checksum,
       base::OnceCallback<void(base::File)> callback) override {
     // Emulate |VerifiedRulesetDealer::Handle| behaviour:
     //   1. Open file on task runner.
@@ -201,6 +202,7 @@ class SubresourceFilteringRulesetServiceTest : public ::testing::Test {
     service_ = std::make_unique<RulesetService>(
         &pref_service_, background_task_runner_, mock_delegate_.get(),
         base_dir());
+    service_->Initialize();
   }
 
   void ClearRulesetService() {
