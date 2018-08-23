@@ -313,6 +313,9 @@ CHAR-LIMIT guidelines:
         Sync error occurred, tap to get details.
       </message>
       <!-- Unified consent preferences -->
+      <message name="IDS_SIGN_OUT_AND_TURN_OFF_SYNC" desc="The text for a preferences row that for signs out the user and turns off sync.">
+        Sign out and turn off sync
+      </message>
       <message name="IDS_USE_SYNC_AND_ALL_SERVICES" desc="Title for switch preference which enables sync'ing of all data types and turns on all Chrome services that communicate with Google.">
         Use sync and all services
       </message>

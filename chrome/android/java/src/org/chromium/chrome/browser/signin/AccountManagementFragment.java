@@ -34,6 +34,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
@@ -87,7 +88,10 @@ public class AccountManagementFragment extends PreferenceFragment
     public static final String PREF_CHILD_CONTENT = "child_content";
     public static final String PREF_CHILD_CONTENT_DIVIDER = "child_content_divider";
     public static final String PREF_GOOGLE_ACTIVITY_CONTROLS = "google_activity_controls";
+    public static final String PREF_GOOGLE_ACTIVITY_CONTROLS_DIVIDER =
+            "google_activity_controls_divider";
     public static final String PREF_SYNC_SETTINGS = "sync_settings";
+    public static final String PREF_SYNC_SETTINGS_DIVIDER = "sync_settings_divider";
     public static final String PREF_SIGN_OUT = "sign_out";
     public static final String PREF_SIGN_OUT_DIVIDER = "sign_out_divider";
 
@@ -221,6 +225,10 @@ public class AccountManagementFragment extends PreferenceFragment
             getPreferenceScreen().removePreference(signOutSwitch);
             getPreferenceScreen().removePreference(findPreference(PREF_SIGN_OUT_DIVIDER));
         } else {
+            signOutSwitch.setTitle(ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)
+                            ? R.string.sign_out_and_turn_off_sync
+                            : R.string.account_management_sign_out);
+
             signOutSwitch.setEnabled(getSignOutAllowedPreferenceValue());
             signOutSwitch.setOnPreferenceClickListener(preference -> {
                 if (!isVisible() || !isResumed()) return false;
@@ -260,8 +268,14 @@ public class AccountManagementFragment extends PreferenceFragment
     }
 
     private void configureSyncSettings() {
+        Preference syncSettings = findPreference(PREF_SYNC_SETTINGS);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            getPreferenceScreen().removePreference(syncSettings);
+            getPreferenceScreen().removePreference(findPreference(PREF_SYNC_SETTINGS_DIVIDER));
+            return;
+        }
         final Preferences preferences = (Preferences) getActivity();
-        findPreference(PREF_SYNC_SETTINGS).setOnPreferenceClickListener(preference -> {
+        syncSettings.setOnPreferenceClickListener(preference -> {
             if (!isVisible() || !isResumed()) return false;
 
             if (ProfileSyncService.get() == null) return true;
@@ -273,6 +287,12 @@ public class AccountManagementFragment extends PreferenceFragment
 
     private void configureGoogleActivityControls() {
         Preference pref = findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS);
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            getPreferenceScreen().removePreference(pref);
+            getPreferenceScreen().removePreference(
+                    findPreference(PREF_GOOGLE_ACTIVITY_CONTROLS_DIVIDER));
+            return;
+        }
         if (mProfile.isChild()) {
             pref.setSummary(R.string.sign_in_google_activity_controls_message_child_account);
         }
