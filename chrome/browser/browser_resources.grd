@@ -80,7 +80,7 @@
         <include name="IDR_WEBAUTHN_ILLUSTRATION_BLE_TAP_1X" file="resources\webauthn\ble_tap.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_BLE_PIN_1X" file="resources\webauthn\ble_pin.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_BLUETOOTH_1X" file="resources\webauthn\error_bt.png" type="BINDATA" />
-        <include name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_TIMEOUT_1X" file="resources\webauthn\error_timeout.png" type="BINDATA" />
+        <include name="IDR_WEBAUTHN_ILLUSTRATION_ERROR_1X" file="resources\webauthn\error.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_PHONE_1X" file="resources\webauthn\phone.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_USB_1X" file="resources\webauthn\usb.png" type="BINDATA" />
         <include name="IDR_WEBAUTHN_ILLUSTRATION_WELCOME_1X" file="resources\webauthn\welcome.png" type="BINDATA" />

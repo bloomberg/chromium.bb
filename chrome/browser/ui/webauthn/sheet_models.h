@@ -125,6 +125,38 @@ class AuthenticatorNoAvailableTransportsErrorModel
   base::string16 GetStepDescription() const override;
 };
 
+class AuthenticatorNotRegisteredErrorModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
+};
+
+class AuthenticatorAlreadyRegisteredErrorModel
+    : public AuthenticatorSheetModelBase {
+ public:
+  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+
+ private:
+  // AuthenticatorSheetModelBase:
+  gfx::ImageSkia* GetStepIllustration() const override;
+  base::string16 GetStepTitle() const override;
+  base::string16 GetStepDescription() const override;
+  bool IsAcceptButtonVisible() const override;
+  bool IsAcceptButtonEnabled() const override;
+  base::string16 GetAcceptButtonLabel() const override;
+  void OnAccept() override;
+};
+
 class AuthenticatorBlePowerOnManualSheetModel
     : public AuthenticatorSheetModelBase {
  public:

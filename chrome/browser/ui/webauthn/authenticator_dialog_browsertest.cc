@@ -42,12 +42,18 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "activate_usb") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivate);
-    } else if (name == "no_available_transports") {
-      model->SetCurrentStep(
-          AuthenticatorRequestDialogModel::Step::kErrorNoAvailableTransports);
     } else if (name == "timeout") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kErrorTimedOut);
+    } else if (name == "no_available_transports") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kErrorNoAvailableTransports);
+    } else if (name == "key_not_registered") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kErrorKeyNotRegistered);
+    } else if (name == "key_already_registered") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kErrorKeyAlreadyRegistered);
     } else if (name == "ble_power_on_manual") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kBlePowerOnManual);
@@ -109,6 +115,15 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_timeout) {
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_no_available_transports) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_key_not_registered) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_key_already_registered) {
   ShowAndVerifyUi();
 }
 
