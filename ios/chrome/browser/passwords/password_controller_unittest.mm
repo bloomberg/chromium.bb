@@ -23,6 +23,7 @@
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/password_manager/ios/js_password_manager.h"
+#import "components/password_manager/ios/password_controller_helper.h"
 #include "components/password_manager/ios/test_helpers.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -149,11 +150,6 @@ ACTION(InvokeEmptyConsumerWithForms) {
 - (void)findPasswordFormsWithCompletionHandler:
     (void (^)(const std::vector<PasswordForm>&))completionHandler;
 
-- (void)extractSubmittedPasswordForm:(const std::string&)formName
-                   completionHandler:
-                       (void (^)(BOOL found,
-                                 const PasswordForm& form))completionHandler;
-
 - (void)fillPasswordForm:(const PasswordFormFillData&)formData
        completionHandler:(void (^)(BOOL))completionHandler;
 
@@ -163,9 +159,19 @@ ACTION(InvokeEmptyConsumerWithForms) {
          fromDictionary:(const base::DictionaryValue*)dictionary
                 pageURL:(const GURL&)pageLocation;
 
-// Provides access to JavaScript Manager for testing with mocks.
-@property(readonly) JsPasswordManager* passwordJsManager;
+// Provides access to common helper logic for testing with mocks.
+@property(readonly) PasswordControllerHelper* helper;
 
+@end
+
+@interface PasswordControllerHelper (Testing)
+
+- (void)extractSubmittedPasswordForm:(const std::string&)formName
+                   completionHandler:
+                       (void (^)(BOOL found,
+                                 const PasswordForm& form))completionHandler;
+// Provides access to JavaScript Manager for testing with mocks.
+@property(readonly) JsPasswordManager* jsPasswordManager;
 @end
 
 // Real FormSuggestionController is wrapped to register the addition of
@@ -247,7 +253,7 @@ class PasswordControllerTest : public ChromeWebTest {
   // |failure_count| reaches |target_failure_count|, stop the partial mock
   // and let the original JavaScript manager execute.
   void SetFillPasswordFormFailureCount(int target_failure_count) {
-    id original_manager = [passwordController_ passwordJsManager];
+    id original_manager = passwordController_.helper.jsPasswordManager;
     OCPartialMockObject* failing_manager =
         [OCMockObject partialMockForObject:original_manager];
     __block int failure_count = 0;
@@ -482,7 +488,7 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
                   form.username_element);
       }
     };
-    [passwordController_
+    [passwordController_.helper
         extractSubmittedPasswordForm:FormName(data.number_of_forms_to_submit)
                    completionHandler:completion_handler];
     EXPECT_TRUE(
