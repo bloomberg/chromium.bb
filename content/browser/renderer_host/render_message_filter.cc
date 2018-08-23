@@ -48,6 +48,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
@@ -63,6 +64,7 @@
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -238,24 +240,10 @@ void RenderMessageFilter::DidGenerateCacheableMetadata(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!base::FeatureList::IsEnabled(features::kIsolatedCodeCache)) {
-    net::HttpCache* cache = request_context_->GetURLRequestContext()
-                                ->http_transaction_factory()
-                                ->GetCache();
-    if (!cache)
-      return;
-
-    // Use the same priority for the metadata write as for script
-    // resources (see defaultPriorityForResourceType() in WebKit's
-    // CachedResource.cpp). Note that WebURLRequest::PriorityMedium
-    // corresponds to net::LOW (see ConvertWebKitPriorityToNetPriority()
-    // in weburlloader_impl.cc).
-    const net::RequestPriority kPriority = net::LOW;
-    scoped_refptr<net::IOBuffer> buf(new net::IOBuffer(data.size()));
-
-    if (!data.empty())
-      memcpy(buf->data(), &data.front(), data.size());
-    cache->WriteMetadata(url, kPriority, expected_response_time, buf.get(),
-                         data.size());
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&RenderMessageFilter::DidGenerateCacheableMetadataOnUI,
+                       this, url, expected_response_time, data));
   } else {
     if (!generated_code_cache_context_->generated_code_cache())
       return;
@@ -354,6 +342,25 @@ void RenderMessageFilter::OnMediaLogEvents(
 
 void RenderMessageFilter::HasGpuProcess(HasGpuProcessCallback callback) {
   GpuProcessHost::GetHasGpuProcess(std::move(callback));
+}
+
+void RenderMessageFilter::DidGenerateCacheableMetadataOnUI(
+    const GURL& url,
+    base::Time expected_response_time,
+    const std::vector<uint8_t>& data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* host = RenderProcessHost::FromID(render_process_id_);
+  if (!host)
+    return;
+
+  // Use the same priority for the metadata write as for script
+  // resources (see defaultPriorityForResourceType() in WebKit's
+  // CachedResource.cpp). Note that WebURLRequest::PriorityMedium
+  // corresponds to net::LOW (see ConvertWebKitPriorityToNetPriority()
+  // in weburlloader_impl.cc).
+  const net::RequestPriority kPriority = net::LOW;
+  host->GetStoragePartition()->GetNetworkContext()->WriteCacheMetadata(
+      url, kPriority, expected_response_time, data);
 }
 
 }  // namespace content

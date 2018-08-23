@@ -140,6 +140,11 @@ class CONTENT_EXPORT RenderMessageFilter
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
 
+  // NetworkContext must be called from the UI thread.
+  void DidGenerateCacheableMetadataOnUI(const GURL& url,
+                                        base::Time expected_response_time,
+                                        const std::vector<uint8_t>& data);
+
   // Cached resource request dispatcher host, guaranteed to be non-null. We do
   // not own it; it is managed by the BrowserProcess, which has a wider scope
   // than we do.

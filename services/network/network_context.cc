@@ -833,6 +833,21 @@ void NetworkContext::CreateHostResolver(mojom::HostResolverRequest request) {
       url_request_context_->host_resolver(), network_service_->net_log()));
 }
 
+void NetworkContext::WriteCacheMetadata(const GURL& url,
+                                        net::RequestPriority priority,
+                                        base::Time expected_response_time,
+                                        const std::vector<uint8_t>& data) {
+  net::HttpCache* cache =
+      url_request_context_->http_transaction_factory()->GetCache();
+  if (!cache)
+    return;
+
+  auto buf = base::MakeRefCounted<net::IOBuffer>(data.size());
+  memcpy(buf->data(), data.data(), data.size());
+  cache->WriteMetadata(url, priority, expected_response_time, buf.get(),
+                       data.size());
+}
+
 void NetworkContext::AddHSTSForTesting(const std::string& host,
                                        base::Time expiry,
                                        bool include_subdomains,
