@@ -13,12 +13,21 @@ issues]].
   necesary for correct Braille translation. Replaced the longer rules
   with hyphenation for better cursor positioning. Corrected some words.
   Thanks to Bue Vester-Andersen
+- New Chinese Mandarin Braille Codes (Grade 1) and (Grade 2) thanks to
+  Sunian Loomee. The first one is for Chinese Common Braille, commonly
+  known as the old Braille where a Chinese character is composed of
+  three Braille Symbols, consonants, vowels and tones. The second
+  table is for Chinese double spelling Braille, commonly known as the
+  new Braille where Chinese character is composed of two Braille
+  Symbols, consonants and vowels and the tones are included in vowels.
+
 ** Other changes
 ** Deprecation notice
 ** Backwards incompatible changes
 ** New, renamed or removed tables
 *** New
-- None
+- zhcn-g1.ctb
+- zhcn-g2.ctb
 *** Renamed
 - None
 *** Removed
