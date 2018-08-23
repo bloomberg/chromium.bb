@@ -28,7 +28,10 @@ group("allocator") {
 }
 
 config("tcmalloc_flags") {
-  defines = []
+  defines = [
+    "TCMALLOC_USE_DOUBLYLINKED_FREELIST",
+    "TCMALLOC_DISABLE_HUGE_ALLOCATIONS",
+  ]
   if (enable_debugallocation) {
     defines += [
       # Use debugallocation for Debug builds to catch problems early
