@@ -7,12 +7,10 @@
 #include <utility>
 
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager_base.h"
@@ -66,9 +64,6 @@ ArcAuthContext::ArcAuthContext(Profile* profile)
       SigninManagerFactory::GetForProfile(profile);
   CHECK(token_service_ && signin_manager);
   account_id_ = signin_manager->GetAuthenticatedAccountId();
-
-  full_account_id_ = base::UTF16ToUTF8(
-      signin_ui_util::GetAuthenticatedUsername(signin_manager));
 }
 
 ArcAuthContext::~ArcAuthContext() {

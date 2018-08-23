@@ -31,11 +31,9 @@ class ArcAuthContext : public UbertokenConsumer,
   ~ArcAuthContext() override;
 
   ProfileOAuth2TokenService* token_service() { return token_service_; }
-  const std::string& account_id() const { return account_id_; }
 
-  // Returns full account id, including dots that are removed in CrOS for
-  // the default account id.
-  const std::string& full_account_id() const { return full_account_id_; }
+  // TODO(sinhak): Check usages of |account_id()| and see if we can remove it.
+  const std::string& account_id() const { return account_id_; }
 
   // Prepares the context. Calling while an inflight operation exists will
   // cancel the inflight operation.
@@ -73,7 +71,6 @@ class ArcAuthContext : public UbertokenConsumer,
   ProfileOAuth2TokenService* token_service_;
 
   std::string account_id_;
-  std::string full_account_id_;
 
   // Whether the merge session should be skipped. Set to true only in testing.
   bool skip_merge_session_for_testing_ = false;

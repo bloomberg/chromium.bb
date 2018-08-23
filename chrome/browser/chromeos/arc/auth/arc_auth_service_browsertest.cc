@@ -240,11 +240,6 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
 
     ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
 
-    // It is non-trivial to navigate through the merge session in a testing
-    // context; currently we just skip it.
-    // TODO(blundell): Figure out how to enable this flow.
-    ArcSessionManager::Get()->auth_context()->SkipMergeSessionForTesting();
-
     auth_service_ = ArcAuthService::GetForBrowserContext(profile());
     DCHECK(auth_service_);
 
@@ -252,6 +247,10 @@ class ArcAuthServiceTest : public InProcessBrowserTest {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
     auth_service_->SetURLLoaderFactoryForTesting(test_shared_loader_factory_);
+    // It is non-trivial to navigate through the merge session in a testing
+    // context; currently we just skip it.
+    // TODO(blundell): Figure out how to enable this flow.
+    auth_service_->SkipMergeSessionForTesting();
 
     arc_bridge_service_ = ArcServiceManager::Get()->arc_bridge_service();
     DCHECK(arc_bridge_service_);
