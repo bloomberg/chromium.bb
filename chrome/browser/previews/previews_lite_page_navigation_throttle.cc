@@ -85,7 +85,8 @@ PreviewsLitePageNavigationThrottle::~PreviewsLitePageNavigationThrottle() =
     default;
 
 bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
-  if (!navigation_handle()->GetURL().SchemeIs(url::kHttpsScheme))
+  const GURL& url = navigation_handle()->GetURL();
+  if (!url.SchemeIs(url::kHttpsScheme))
     return false;
 
   if (navigation_handle()->IsPost())
@@ -97,8 +98,17 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
   if (manager_->IsServerUnavailable())
     return false;
 
-  if (IsPreviewsDomain(navigation_handle()->GetURL()))
+  if (IsPreviewsDomain(url))
     return false;
+
+  std::vector<std::string> blacklisted_path_suffixes =
+      previews::params::LitePagePreviewsBlacklistedPathSuffixes();
+  for (std::string suffix : blacklisted_path_suffixes) {
+    if (base::EndsWith(url.path(), suffix,
+                       base::CompareCase::INSENSITIVE_ASCII)) {
+      return false;
+    }
+  }
 
   return true;
 }

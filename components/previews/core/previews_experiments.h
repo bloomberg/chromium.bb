@@ -95,6 +95,10 @@ GURL GetLitePagePreviewsDomainURL();
 // The duration of a single bypass for Lite Page Server Previews.
 base::TimeDelta LitePagePreviewsSingleBypassDuration();
 
+// A list of all path suffixes to blacklist from Lite Page Server Previews.
+// Primarily used to prohibit URLs that look like media requests.
+std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 

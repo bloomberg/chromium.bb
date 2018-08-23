@@ -80,17 +80,20 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
     // Set up https server with resource monitor.
     https_server_.reset(
         new net::EmbeddedTestServer(net::EmbeddedTestServer::TYPE_HTTPS));
-    https_server_->ServeFilesFromSourceDirectory("chrome/test/data/previews");
+    https_server_->ServeFilesFromSourceDirectory("chrome/test/data");
     https_server_->RegisterRequestMonitor(base::BindRepeating(
         &PreviewsBrowserTest::MonitorResourceRequest, base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
-    https_url_ = https_server_->GetURL("/noscript_test.html");
+    https_url_ = https_server_->GetURL("/previews/noscript_test.html");
     ASSERT_TRUE(https_url_.SchemeIs(url::kHttpsScheme));
 
-    https_no_transform_url_ =
-        https_server_->GetURL("/noscript_test_with_no_transform_header.html");
+    https_no_transform_url_ = https_server_->GetURL(
+        "/previews/noscript_test_with_no_transform_header.html");
     ASSERT_TRUE(https_no_transform_url_.SchemeIs(url::kHttpsScheme));
+
+    https_media_url_ = https_server_->GetURL("/image_decoding/droids.jpg");
+    ASSERT_TRUE(https_media_url_.SchemeIs(url::kHttpsScheme));
 
     // Set up http server with resource monitor and redirect handler.
     http_server_.reset(
@@ -124,6 +127,7 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
 
   const GURL& https_url() const { return https_url_; }
   const GURL& https_no_transform_url() const { return https_no_transform_url_; }
+  const GURL& https_media_url() const { return https_media_url_; }
   const GURL& http_url() const { return http_url_; }
   const GURL& redirect_url() const { return redirect_url_; }
   const GURL& subframe_url() const { return subframe_url_; }
@@ -159,6 +163,7 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> http_server_;
   GURL https_url_;
   GURL https_no_transform_url_;
+  GURL https_media_url_;
   GURL http_url_;
   GURL redirect_url_;
   GURL subframe_url_;
@@ -380,7 +385,8 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
       scoped_refptr<base::FieldTrial> trial =
           base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
       std::map<std::string, std::string> feature_parameters = {
-          {"previews_host", previews_server().spec()}};
+          {"previews_host", previews_server().spec()},
+          {"blacklisted_path_suffixes", ".mp4,.jpg"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
@@ -522,6 +528,10 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   // Verify the preview is triggered on HTTPS pageloads.
   ui_test_utils::NavigateToURL(browser(), https_lite_page_url(200));
   VerifyPreviewLoaded();
+
+  // Verify the preview is not triggered when loading a media resource.
+  ui_test_utils::NavigateToURL(browser(), https_media_url());
+  VerifyPreviewNotLoaded();
 
   // Verify the preview is not triggered for POST navigations.
   std::string post_data = "helloworld";
