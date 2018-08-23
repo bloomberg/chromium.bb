@@ -5,14 +5,14 @@
 module ui.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/ui/public/interfaces/cursor/cursor.mojom";
-import "services/ui/public/interfaces/screen_provider_observer.mojom";
-import "services/ui/public/interfaces/window_manager_constants.mojom";
-import "services/ui/public/interfaces/window_tree_constants.mojom";
 import "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom";
 import "services/viz/public/interfaces/compositing/frame_sink_id.mojom";
 import "services/viz/public/interfaces/compositing/local_surface_id.mojom";
 import "services/viz/public/interfaces/compositing/surface_info.mojom";
+import "services/ws/public/mojom/cursor/cursor.mojom";
+import "services/ws/public/mojom/screen_provider_observer.mojom";
+import "services/ws/public/mojom/window_manager_constants.mojom";
+import "services/ws/public/mojom/window_tree_constants.mojom";
 import "ui/base/mojo/ui_base_types.mojom";
 import "ui/events/mojo/event.mojom";
 import "ui/events/mojo/event_constants.mojom";

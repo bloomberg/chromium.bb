@@ -35,6 +35,7 @@ include_rules = [
   "+remoting/client/plugin",
   "+sandbox",
   "+services/ui/public",
+  "+services/ws/public",
   "+third_party/breakpad/breakpad",
   "+third_party/crashpad/crashpad",
 ]

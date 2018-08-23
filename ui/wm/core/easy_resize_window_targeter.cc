@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"

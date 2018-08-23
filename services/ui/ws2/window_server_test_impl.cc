@@ -4,9 +4,9 @@
 
 #include "services/ui/ws2/window_server_test_impl.h"
 
-#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_tree.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 
 namespace ui {
 namespace ws2 {

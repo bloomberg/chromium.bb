@@ -46,7 +46,7 @@
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller.h"
 #include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/ui_base_features.h"
 
 BrowserProcessPlatformPart::BrowserProcessPlatformPart()

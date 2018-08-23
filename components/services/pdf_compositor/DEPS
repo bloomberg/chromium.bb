@@ -9,7 +9,7 @@ include_rules = [
   "+printing/common",
   "+services/service_manager/public/cpp",
   "+services/service_manager/public/mojom",
-  "+services/ui/public/interfaces/constants.mojom.h",   # UI service name.
+  "+services/ws/public/mojom/constants.mojom.h",   # UI service name.
   "+skia",
   "+third_party/skia",
   "+third_party/blink/public/platform", # Test web sandbox support.

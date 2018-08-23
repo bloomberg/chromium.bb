@@ -9,10 +9,10 @@
 #include <memory>
 #include <queue>
 
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_test_setup.h"
 #include "services/ui/ws2/window_tree_test_helper.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"

@@ -2169,7 +2169,7 @@ jumbo_split_static_library("ui") {
       "//services/device/public/cpp:device_features",
       "//services/device/public/mojom",
       "//services/ui/public/cpp",
-      "//services/ui/public/interfaces",
+      "//services/ws/public/mojom",
       "//ui/base/ime",
       "//ui/chromeos",
       "//ui/chromeos/events",
@@ -3376,7 +3376,7 @@ jumbo_split_static_library("ui") {
       if (use_aura) {
         deps += [
           "//services/ui/public/cpp",
-          "//services/ui/public/interfaces",
+          "//services/ws/public/mojom",
         ]
       }
     }

@@ -45,7 +45,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"

@@ -49,7 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
 #include "content/public/common/service_names.mojom.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #endif
 
 using content::BrowsingDataFilterBuilder;

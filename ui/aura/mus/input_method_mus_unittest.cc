@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/base/ime/dummy_text_input_client.h"

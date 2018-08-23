@@ -24,7 +24,7 @@ source_set("gpu") {
     "//gpu/command_buffer/common",
     "//gpu/ipc/client",
     "//gpu/ipc/common",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//url",
   ]
 
@@ -39,7 +39,7 @@ source_set("gpu") {
     "//gpu/skia_bindings",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//ui/gl",
   ]
 }

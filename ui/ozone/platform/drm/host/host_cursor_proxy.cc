@@ -5,7 +5,7 @@
 #include "ui/ozone/platform/drm/host/host_cursor_proxy.h"
 
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 
 namespace ui {

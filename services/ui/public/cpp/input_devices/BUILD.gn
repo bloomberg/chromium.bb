@@ -15,7 +15,7 @@ source_set("input_devices") {
   ]
 
   public_deps = [
-    "//services/ui/public/interfaces/input_devices",
+    "//services/ws/public/mojom/input_devices",
   ]
 
   if (is_chromeos) {
@@ -24,7 +24,7 @@ source_set("input_devices") {
       "input_device_controller_client.h",
     ]
     public_deps += [
-      "//services/ui/public/interfaces:constants",
+      "//services/ws/public/mojom:constants",
       "//ui/ozone",
     ]
   }
@@ -44,7 +44,7 @@ source_set("test_support") {
 
   public_deps = [
     ":input_devices",
-    "//services/ui/public/interfaces/input_devices",
+    "//services/ws/public/mojom/input_devices",
   ]
 }
 
@@ -63,7 +63,7 @@ if (is_chromeos) {
     ]
 
     public_deps = [
-      "//services/ui/public/interfaces/input_devices",
+      "//services/ws/public/mojom/input_devices",
     ]
 
     # This target is really an implementation detail of the ui service, which

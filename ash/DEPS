@@ -36,6 +36,7 @@ include_rules = [
   "+services/ui/public",
   "+services/ui/ws2",
   "+services/viz/public",
+  "+services/ws/public",
   "+skia/ext",
   "+third_party/cros_system_api",
   "+third_party/icu",

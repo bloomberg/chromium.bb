@@ -8,7 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
+#include "services/ws/public/mojom/user_activity_monitor.mojom.h"
 #include "ui/aura/aura_export.h"
 
 namespace ui {

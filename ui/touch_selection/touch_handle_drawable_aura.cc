@@ -4,7 +4,7 @@
 
 #include "ui/touch_selection/touch_handle_drawable_aura.h"
 
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
 #include "ui/aura_extra/image_window_delegate.h"

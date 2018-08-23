@@ -14,7 +14,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/gfx/buffer_format_util.h"
 
 using DestructionCallback = base::Callback<void(const gpu::SyncToken& sync)>;

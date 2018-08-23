@@ -20,7 +20,7 @@
 #include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "chrome/browser/chromeos/prefs/pref_connector_service.h"
 #include "content/public/common/service_manager_connection.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 

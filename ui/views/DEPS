@@ -2,7 +2,7 @@ include_rules = [
   "+cc/paint",
   "+components/crash/core/common/crash_key.h",
   "+components/vector_icons",
-  "+services/ui/public/interfaces",
+  "+services/ws/public/mojom",
   "+skia/ext",
   "+third_party/iaccessible2",
   "+third_party/skia",

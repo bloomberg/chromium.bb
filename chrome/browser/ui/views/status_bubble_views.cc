@@ -44,7 +44,7 @@
 #include "ash/shell.h"                                           // mash-ok
 #include "ash/wm/window_state.h"                                 // mash-ok
 #include "services/ui/public/cpp/property_type_converters.h"     // nogncheck
-#include "services/ui/public/interfaces/window_manager.mojom.h"  // nogncheck
+#include "services/ws/public/mojom/window_manager.mojom.h"       // nogncheck
 #endif
 
 namespace {

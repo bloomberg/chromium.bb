@@ -6,8 +6,8 @@
 #define SERVICES_UI_TEST_WS_TEST_GPU_INTERFACE_PROVIDER_H_
 
 #include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
 #include "services/ui/ws2/gpu_interface_provider.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 
 namespace discardable_memory {
 class DiscardableSharedMemoryManager;

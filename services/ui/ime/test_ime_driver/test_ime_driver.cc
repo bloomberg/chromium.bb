@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 
 namespace ui {
 namespace test {

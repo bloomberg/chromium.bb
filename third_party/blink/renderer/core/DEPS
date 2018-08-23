@@ -40,7 +40,7 @@ include_rules = [
     "+services/network/public/mojom",
     "+services/resource_coordinator/public/cpp/resource_coordinator_features.h",
     "+services/service_manager/public",
-    "+services/ui/public/interfaces/ime/ime.mojom-shared.h",
+    "+services/ws/public/mojom/ime/ime.mojom-shared.h",
     "+skia/public/interfaces/bitmap_skbitmap_struct_traits.h",
     "+skia/ext/skia_utils_mac.h",
     "+third_party/blink/public/common",

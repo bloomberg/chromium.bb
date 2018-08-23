@@ -5,7 +5,7 @@
 #ifndef SERVICES_UI_WS2_TOPMOST_WINDOW_OBSERVER_H_
 #define SERVICES_UI_WS2_TOPMOST_WINDOW_OBSERVER_H_
 
-#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point.h"

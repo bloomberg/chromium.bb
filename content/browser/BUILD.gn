@@ -2328,7 +2328,7 @@ jumbo_source_set("browser") {
   if (use_aura) {
     deps += [
       "//services/ui/public/cpp",
-      "//services/ui/public/interfaces",
+      "//services/ws/public/mojom",
       "//ui/aura",
       "//ui/aura_extra",
       "//ui/strings",

@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 
 namespace aura {
 class Window;

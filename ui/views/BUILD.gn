@@ -476,7 +476,7 @@ jumbo_component("views") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
@@ -653,7 +653,7 @@ jumbo_component("views") {
       "widget/window_reorderer.cc",
     ]
     deps += [
-      "//services/ui/public/interfaces",
+      "//services/ws/public/mojom",
       "//ui/aura",
       "//ui/platform_window",
       "//ui/touch_selection",
@@ -1025,7 +1025,7 @@ source_set("views_unittests_sources") {
     "//cc",
     "//cc/paint",
     "//components/vector_icons",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",

@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "mojo/public/mojom/base/unguessable_token.mojom";
-import "services/ui/public/interfaces/window_tree.mojom";
+import "services/ws/public/mojom/window_tree.mojom";
 
 interface RenderWidgetWindowTreeClient {
   // Asks the renderer to create a Window for the frame with the routing id

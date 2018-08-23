@@ -34,7 +34,7 @@
 #include <string>
 #include <vector>
 
-#include "services/ui/public/interfaces/ime/ime.mojom-shared.h"
+#include "services/ws/public/mojom/ime/ime.mojom-shared.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace blink {

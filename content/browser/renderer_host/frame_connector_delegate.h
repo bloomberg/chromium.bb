@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(USE_AURA)
-#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #endif
 
 namespace blink {

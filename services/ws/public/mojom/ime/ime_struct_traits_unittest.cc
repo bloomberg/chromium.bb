@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/public/interfaces/ime/ime_struct_traits.h"
+#include "services/ws/public/mojom/ime/ime_struct_traits.h"
 
 #include <utility>
 
@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/ime/ime_struct_traits_test.mojom.h"
+#include "services/ws/public/mojom/ime/ime_struct_traits_test.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_text_span.h"

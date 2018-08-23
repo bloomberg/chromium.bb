@@ -9,7 +9,7 @@
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 
 namespace viz {
 namespace mojom {

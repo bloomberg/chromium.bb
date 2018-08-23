@@ -383,7 +383,7 @@ static_library("test_support") {
     deps += [
       "//ash/components/quick_launch/public/mojom:constants",
       "//mash/common",
-      "//services/ui/public/interfaces:constants",
+      "//services/ws/public/mojom:constants",
     ]
   }
 }

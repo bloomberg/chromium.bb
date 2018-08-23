@@ -49,8 +49,8 @@ service_test("services_unittests") {
       "//services/ui/ime:tests",
       "//services/ui/input_devices:tests",
       "//services/ui/public/cpp/tests",
-      "//services/ui/public/interfaces:tests",
       "//services/ui/ws2:tests",
+      "//services/ws/public/mojom:tests",
     ]
   }
 

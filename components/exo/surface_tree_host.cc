@@ -13,7 +13,7 @@
 #include "components/exo/wm_helper.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

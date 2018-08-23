@@ -23,7 +23,7 @@ service("window_type_launcher") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/ui/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",
     "//ui/gfx",

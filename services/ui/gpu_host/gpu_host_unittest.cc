@@ -13,7 +13,7 @@
 #include "gpu/config/gpu_info.h"
 #include "services/ui/gpu_host/gpu_client.h"
 #include "services/ui/gpu_host/gpu_host_delegate.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/init/gl_factory.h"
 

@@ -5,7 +5,7 @@
 #ifndef UI_AURA_MUS_INPUT_METHOD_MUS_DELEGATE_H_
 #define UI_AURA_MUS_INPUT_METHOD_MUS_DELEGATE_H_
 
-#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "services/ws/public/mojom/ime/ime.mojom.h"
 #include "ui/aura/aura_export.h"
 
 namespace aura {

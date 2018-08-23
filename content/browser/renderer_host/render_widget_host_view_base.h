@@ -46,7 +46,7 @@
 #if defined(USE_AURA)
 #include "base/containers/flat_map.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #endif
 
 struct ViewHostMsg_SelectionBounds_Params;

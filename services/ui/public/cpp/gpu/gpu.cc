@@ -19,8 +19,8 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
-#include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/gpu.mojom.h"
+#include "services/ws/public/mojom/constants.mojom.h"
+#include "services/ws/public/mojom/gpu.mojom.h"
 
 namespace ui {
 

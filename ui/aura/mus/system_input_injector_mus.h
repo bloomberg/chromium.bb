@@ -5,7 +5,7 @@
 #ifndef UI_AURA_MUS_SYSTEM_INPUT_INJECTOR_MUS_H_
 #define UI_AURA_MUS_SYSTEM_INPUT_INJECTOR_MUS_H_
 
-#include "services/ui/public/interfaces/remoting_event_injector.mojom.h"
+#include "services/ws/public/mojom/remoting_event_injector.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/events/event_modifiers.h"
 #include "ui/events/system_input_injector.h"

@@ -17,7 +17,7 @@
 #include "ui/views/view.h"                // nogncheck
 
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
-#include "services/ui/public/interfaces/window_tree_constants.mojom.h"  // nogncheck
+#include "services/ws/public/mojom/window_tree_constants.mojom.h"  // nogncheck
 #include "ui/base/ui_base_features.h"                   // nogncheck
 #include "ui/views/mus/remote_view/remote_view_host.h"  // nogncheck
 #endif  // BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)

@@ -12,7 +12,7 @@ include_rules = [
   "+services/service_manager/public/cpp",
   "+services/service_manager/public/mojom",
   "+services/ui/common",
-  "+services/ui/public/interfaces",
+  "+services/ws/public/mojom",
   "+skia/ext",
   "+third_party/skia",
   "+ui/base",

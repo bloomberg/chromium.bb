@@ -5,7 +5,7 @@
 #include "ui/aura/mus/focus_synchronizer.h"
 
 #include "base/auto_reset.h"
-#include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/mus/focus_synchronizer_delegate.h"

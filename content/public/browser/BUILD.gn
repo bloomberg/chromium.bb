@@ -341,7 +341,7 @@ jumbo_source_set("browser_sources") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
-    "//services/ui/public/interfaces",
+    "//services/ws/public/mojom",
     "//third_party/webrtc/modules/desktop_capture",
 
     # We expose skia headers in the public API.
