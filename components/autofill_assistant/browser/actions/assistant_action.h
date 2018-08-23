@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_ACTION_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "components/autofill_assistant/browser/assistant.pb.h"
 
 namespace autofill_assistant {

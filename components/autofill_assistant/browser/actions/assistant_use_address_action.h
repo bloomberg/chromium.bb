@@ -5,12 +5,11 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_USE_ADDRESS_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_USE_ADDRESS_ACTION_H_
 
-#include "components/autofill_assistant/browser/actions/assistant_action.h"
-
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/actions/assistant_action.h"
 
 namespace autofill_assistant {
 // An action to ask user to choose a local address to fill the form.
@@ -25,6 +24,13 @@ class AssistantUseAddressAction : public AssistantAction {
                      ProcessActionCallback callback) override;
 
  private:
+  void OnChooseAddress(AssistantActionDelegate* delegate,
+                       ProcessActionCallback callback,
+                       const std::string& guid);
+  void OnFillAddressForm(ProcessActionCallback callback, bool result);
+
+  base::WeakPtrFactory<AssistantUseAddressAction> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantUseAddressAction);
 };
 

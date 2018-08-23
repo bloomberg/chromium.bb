@@ -55,6 +55,18 @@ void AssistantUiControllerAndroid::HideOverlay() {
                                            java_assistant_ui_controller_);
 }
 
+void AssistantUiControllerAndroid::ChooseAddress(
+    base::OnceCallback<void(const std::string&)> callback) {
+  // TODO(crbug.com/806868): Implement ChooseAddress.
+  std::move(callback).Run("");
+}
+
+void AssistantUiControllerAndroid::ChooseCard(
+    base::OnceCallback<void(const std::string&)> callback) {
+  // TODO(crbug.com/806868): Implement ChooseCard.
+  std::move(callback).Run("");
+}
+
 void AssistantUiControllerAndroid::Destroy(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj) {
   ui_delegate_->OnDestroy();

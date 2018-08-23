@@ -5,15 +5,13 @@
 #ifndef COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_WAIT_FOR_DOM_ACTION_H_
 #define COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_ACTIONS_ASSISTANT_WAIT_FOR_DOM_ACTION_H_
 
-#include "components/autofill_assistant/browser/actions/assistant_action.h"
-#include "components/autofill_assistant/browser/assistant.pb.h"
-
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/autofill_assistant/browser/actions/assistant_action.h"
+#include "components/autofill_assistant/browser/assistant.pb.h"
 
 namespace autofill_assistant {
 // An action to ask Chrome to wait for a DOM element to process next action.

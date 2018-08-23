@@ -53,6 +53,32 @@ void AssistantScriptExecutor::ElementExists(
                                                         std::move(callback));
 }
 
+void AssistantScriptExecutor::ChooseAddress(
+    base::OnceCallback<void(const std::string&)> callback) {
+  delegate_->GetAssistantUiController()->ChooseAddress(std::move(callback));
+}
+
+void AssistantScriptExecutor::FillAddressForm(
+    const std::string& guid,
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  delegate_->GetAssistantWebController()->FillAddressForm(guid, selectors,
+                                                          std::move(callback));
+}
+
+void AssistantScriptExecutor::ChooseCard(
+    base::OnceCallback<void(const std::string&)> callback) {
+  delegate_->GetAssistantUiController()->ChooseCard(std::move(callback));
+}
+
+void AssistantScriptExecutor::FillCardForm(
+    const std::string& guid,
+    const std::vector<std::string>& selectors,
+    base::OnceCallback<void(bool)> callback) {
+  delegate_->GetAssistantWebController()->FillCardForm(guid, selectors,
+                                                       std::move(callback));
+}
+
 void AssistantScriptExecutor::OnGetAssistantActions(
     bool result,
     const std::string& response) {
