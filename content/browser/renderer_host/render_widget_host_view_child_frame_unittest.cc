@@ -282,7 +282,7 @@ TEST_F(RenderWidgetHostViewChildFrameTest, WasResizedOncePerChange) {
   constexpr gfx::Size compositor_viewport_pixel_size(100, 100);
   constexpr gfx::Rect screen_space_rect(compositor_viewport_pixel_size);
   viz::ParentLocalSurfaceIdAllocator allocator;
-  viz::LocalSurfaceId local_surface_id = allocator.GenerateId();
+  viz::LocalSurfaceId local_surface_id = allocator.GetCurrentLocalSurfaceId();
   constexpr viz::FrameSinkId frame_sink_id(1, 1);
   const viz::SurfaceId surface_id(frame_sink_id, local_surface_id);
 
