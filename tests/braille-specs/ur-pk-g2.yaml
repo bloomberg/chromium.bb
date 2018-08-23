@@ -1,5 +1,8 @@
 ﻿display: unicode.dis
-table: ../../tables/ur-pk-g2.ctb
+table:
+  locale: ur_PK
+  type: literary
+  __assert-match: ur-pk-g2.ctb
 
 flags: {testmode: forward}
 tests:

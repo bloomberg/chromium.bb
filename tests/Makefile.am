@@ -183,6 +183,7 @@ dist_braille_specs_TESTS =				  \
 	braille-specs/sr-g1_harness.yaml		  \
 	braille-specs/ta-ta-g1_harness.yaml		  \
 	braille-specs/uk.yaml				  \
+	braille-specs/ur-pk-g2.yaml			  \
 	braille-specs/vi-g1_backward.yaml		  \
 	braille-specs/vi-g1_harness.yaml		  \
 	braille-specs/zh-chn.yaml			  \
