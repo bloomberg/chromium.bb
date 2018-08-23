@@ -32,6 +32,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.IncognitoNewTabPage;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -536,7 +537,7 @@ public class VrBrowserTransitionTest {
 
     /**
      * Verifies that permissions granted outside of VR persist while in VR, even after the page is
-     * refreshed. Automation of a manutal test from https://crbug.com/861941.
+     * refreshed. Automation of a manual test from https://crbug.com/861941.
      */
     @Test
     @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM})
@@ -575,5 +576,23 @@ public class VrBrowserTransitionTest {
         mVrBrowserTestFramework.executeStepAndWait("stepRequestPermission()");
         mVrBrowserTestFramework.endTest();
         server.stopAndDestroyServer();
+    }
+
+    /**
+     * Verifies that an NFC scan in 2D Chrome while viewing a native page still successfully enters
+     * the VR browser. Automation of a manual test from https://crbug.com/862155.
+     */
+    @Test
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @MediumTest
+    public void testNfcScanOnNativePage() throws InterruptedException {
+        // We can't loop over all the native URLs since multiple NFC entries in a short timespan
+        // isn't possible. So, just pick the native history page as a suitable one.
+        mTestRule.loadUrl(UrlConstants.NATIVE_HISTORY_URL, PAGE_LOAD_TIMEOUT_S);
+        NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
+        Assert.assertTrue("Browser is not in VR", VrShellDelegate.isInVr());
+        Assert.assertTrue("Browser entered VR, but is not on a native page",
+                mTestRule.getActivity().getActivityTab().isNativePage());
+        VrBrowserTransitionUtils.forceExitVr();
     }
 }
