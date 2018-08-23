@@ -4,8 +4,6 @@
 
 #include "device/bluetooth/test/fake_bluetooth_le_manufacturer_data_winrt.h"
 
-#include <wrl/client.h>
-
 #include <utility>
 
 #include "base/win/winrt_storage_util.h"
@@ -14,14 +12,25 @@ namespace device {
 
 namespace {
 
+using ABI::Windows::Devices::Bluetooth::Advertisement::
+    IBluetoothLEManufacturerData;
 using ABI::Windows::Storage::Streams::IBuffer;
 using Microsoft::WRL::ComPtr;
+using Microsoft::WRL::Make;
 
 }  // namespace
 
 FakeBluetoothLEManufacturerData::FakeBluetoothLEManufacturerData(
     uint16_t company_id,
     std::vector<uint8_t> data)
+    : company_id_(company_id) {
+  base::win::CreateIBufferFromData(data.data(),
+                                   static_cast<uint32_t>(data.size()), &data_);
+}
+
+FakeBluetoothLEManufacturerData::FakeBluetoothLEManufacturerData(
+    uint16_t company_id,
+    ComPtr<IBuffer> data)
     : company_id_(company_id), data_(std::move(data)) {}
 
 FakeBluetoothLEManufacturerData::~FakeBluetoothLEManufacturerData() = default;
@@ -36,14 +45,24 @@ HRESULT FakeBluetoothLEManufacturerData::put_CompanyId(uint16_t value) {
 }
 
 HRESULT FakeBluetoothLEManufacturerData::get_Data(IBuffer** value) {
-  ComPtr<IBuffer> buffer;
-  HRESULT hr = base::win::CreateIBufferFromData(
-      data_.data(), static_cast<uint32_t>(data_.size()), &buffer);
-  return SUCCEEDED(hr) ? buffer.CopyTo(value) : hr;
+  return data_.CopyTo(value);
 }
 
 HRESULT FakeBluetoothLEManufacturerData::put_Data(IBuffer* value) {
   return E_NOTIMPL;
+}
+
+FakeBluetoothLEManufacturerDataFactory::
+    FakeBluetoothLEManufacturerDataFactory() = default;
+
+FakeBluetoothLEManufacturerDataFactory::
+    ~FakeBluetoothLEManufacturerDataFactory() = default;
+
+HRESULT FakeBluetoothLEManufacturerDataFactory::Create(
+    uint16_t company_id,
+    IBuffer* data,
+    IBluetoothLEManufacturerData** value) {
+  return Make<FakeBluetoothLEManufacturerData>(company_id, data).CopyTo(value);
 }
 
 }  // namespace device
