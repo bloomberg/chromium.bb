@@ -68,6 +68,12 @@
 
 #endif
 
+// When passed to mallopt() as first argument causes it to return
+// TC_MALLOPT_IS_OVERRIDDEN_BY_TCMALLOC. Used to detect the sanity of the
+// overriding mechanisms at runtime.
+#define TC_MALLOPT_IS_OVERRIDDEN_BY_TCMALLOC 0xbeef42
+
+// Annoying stuff for windows -- makes sure clients can import these functions
 #ifndef PERFTOOLS_DLL_DECL
 #ifdef _WIN32
 #define PERFTOOLS_DLL_DECL __declspec(dllimport)
