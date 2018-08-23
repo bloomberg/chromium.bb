@@ -588,22 +588,4 @@ CursorDirective LayoutFrameSet::GetCursor(const LayoutPoint& point,
   return LayoutBox::GetCursor(point, cursor);
 }
 
-void LayoutFrameSet::InsertedIntoTree() {
-  LayoutBox::InsertedIntoTree();
-  // User scrollability on the scroll paint property depends on framesets (see:
-  // LayoutView::CalculateScrollbarModes) so we need to ensure the property gets
-  // updated.
-  if (Parent() && Parent() == View())
-    Parent()->SetNeedsPaintPropertyUpdate();
-}
-
-void LayoutFrameSet::WillBeRemovedFromTree() {
-  LayoutBox::WillBeRemovedFromTree();
-  // User scrollability on the scroll paint property depends on framesets (see:
-  // LayoutView::CalculateScrollbarModes) so we need to ensure the property gets
-  // updated.
-  if (Parent() && Parent() == View())
-    Parent()->SetNeedsPaintPropertyUpdate();
-}
-
 }  // namespace blink

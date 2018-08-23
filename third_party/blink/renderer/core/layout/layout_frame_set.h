@@ -153,9 +153,6 @@ class LayoutFrameSet final : public LayoutBox {
     return false;
   }
 
-  void InsertedIntoTree() override;
-  void WillBeRemovedFromTree() override;
-
   LayoutObjectChildList children_;
 
   GridAxis rows_;
