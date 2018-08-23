@@ -297,22 +297,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kInvertNotificationShown,
 
-    prefs::kPrintingEnabled, prefs::kPrintPreviewDisabled,
-    prefs::kPrintPreviewDefaultDestinationSelectionRules,
-
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
-    prefs::kPrintPreviewUseSystemDefaultPrinter,
-#endif
-
-#if defined(OS_CHROMEOS)
-    prefs::kPrintingDevices, prefs::kRecommendedNativePrinters,
-    prefs::kRecommendedNativePrintersFile,
-    prefs::kRecommendedNativePrintersAccessMode,
-    prefs::kRecommendedNativePrintersBlacklist,
-    prefs::kRecommendedNativePrintersWhitelist,
-    prefs::kUserNativePrintersAllowed,
-#endif  // OS_CHROMEOS
-
     prefs::kMessageCenterDisabledExtensionIds,
     prefs::kMessageCenterDisabledSystemComponentIds,
 
@@ -417,8 +401,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kDefaultAudioCaptureDevice, prefs::kDefaultVideoCaptureDevice,
     prefs::kMediaDeviceIdSalt, prefs::kMediaStorageIdSalt,
-
-    prefs::kPrintPreviewStickySettings,
 
     prefs::kMaxConnectionsPerProxy,
 

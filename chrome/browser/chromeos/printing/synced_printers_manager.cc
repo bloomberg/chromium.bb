@@ -354,8 +354,6 @@ class SyncedPrintersManagerImpl : public SyncedPrintersManager,
 // static
 void SyncedPrintersManager::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterListPref(prefs::kPrintingDevices,
-                             user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterListPref(prefs::kRecommendedNativePrinters);
 
   ExternalPrintersPrefBridge::RegisterProfilePrefs(registry, UserPolicyNames());
