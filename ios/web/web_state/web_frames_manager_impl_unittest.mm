@@ -22,7 +22,7 @@ namespace {
 const char kFrameKey[] = "d1uJzdvOFIUT5kEpK4o+x5JCaSlYT/a45ISU7S9EzTo=";
 
 // Returns true if |web_frame| is contained in |frames|.
-bool ContainsWebFrame(std::vector<web::WebFrame*> frames,
+bool ContainsWebFrame(std::set<web::WebFrame*> frames,
                       web::WebFrame* web_frame) {
   return frames.end() != std::find(frames.begin(), frames.end(), web_frame);
 }
