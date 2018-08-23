@@ -24,7 +24,9 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 
 #include <stdint.h>
+#include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
@@ -74,7 +76,8 @@ class ImageResource::ImageResourceInfoImpl final
   USING_GARBAGE_COLLECTED_MIXIN(ImageResourceInfoImpl);
 
  public:
-  ImageResourceInfoImpl(ImageResource* resource) : resource_(resource) {
+  explicit ImageResourceInfoImpl(ImageResource* resource)
+      : resource_(resource) {
     DCHECK(resource_);
   }
   void Trace(blink::Visitor* visitor) override {
@@ -139,7 +142,7 @@ class ImageResource::ImageResourceFactory : public NonTextResourceFactory {
   STACK_ALLOCATED();
 
  public:
-  ImageResourceFactory(const FetchParameters& fetch_params)
+  explicit ImageResourceFactory(const FetchParameters& fetch_params)
       : NonTextResourceFactory(Resource::kImage),
         fetch_params_(&fetch_params) {}
 
@@ -234,9 +237,8 @@ void ImageResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
   Resource::OnMemoryDump(level_of_detail, memory_dump);
   const String name = GetMemoryDumpName() + "/image_content";
   auto* dump = memory_dump->CreateMemoryAllocatorDump(name);
-  size_t encoded_size =
-      content_->HasImage() ? content_->GetImage()->Data()->size() : 0;
-  dump->AddScalar("size", "bytes", encoded_size);
+  if (content_->HasImage() && content_->GetImage()->Data())
+    dump->AddScalar("size", "bytes", content_->GetImage()->Data()->size());
 }
 
 void ImageResource::Trace(blink::Visitor* visitor) {
