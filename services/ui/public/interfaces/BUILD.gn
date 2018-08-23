@@ -7,7 +7,6 @@ import("//testing/test.gni")
 
 mojom("interfaces") {
   sources = [
-    "accessibility_manager.mojom",
     "event_injector.mojom",
     "gpu.mojom",
     "remoting_event_injector.mojom",

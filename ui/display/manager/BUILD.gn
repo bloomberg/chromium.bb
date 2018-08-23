@@ -19,8 +19,6 @@ jumbo_component("manager") {
     "fake_display_delegate.h",
     "fake_display_snapshot.cc",
     "fake_display_snapshot.h",
-    "forwarding_display_delegate.cc",
-    "forwarding_display_delegate.h",
     "json_converter.cc",
     "json_converter.h",
     "managed_display_info.cc",

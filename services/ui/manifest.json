@@ -46,17 +46,13 @@
           "ui.mojom.EventInjector",
           "ui.mojom.RemotingEventInjector"
         ],
-        // TODO(sky): update this to reflect what is really possible.
         "window_manager": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
-          "display.mojom.NativeDisplayDelegate",
-          "ui.mojom.AccessibilityManager",
           "ui.mojom.EventInjector",
           "ui.mojom.Gpu",
           "ui.mojom.IMEDriver",
           "ui.mojom.InputDeviceController",
           "ui.mojom.InputDeviceServer",
-          "ui.mojom.TouchDeviceServer",
           "ui.mojom.UserActivityMonitor"
         ]
       },
