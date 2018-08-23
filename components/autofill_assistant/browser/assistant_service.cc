@@ -30,10 +30,9 @@ net::NetworkTrafficAnnotationTag traffic_annotation =
           sender: "Autofill Assistant"
           description:
             "Chromium posts requests to autofill assistant server to get
-            assistant scripts for a URL."
+            scripts for a URL."
           trigger:
-            "A user opens a URL that could be assisted by autofill
-            assistant server."
+            "Matching URL."
           data: "None."
           destination: GOOGLE_OWNED_SERVICE
         }
@@ -96,7 +95,7 @@ void AssistantService::GetAssistantActions(const std::string& script_path,
 
 void AssistantService::GetNextAssistantActions(
     const std::string& previous_server_payload,
-    const std::vector<ProcessedAssistantActionProto>& processed_actions,
+    const std::vector<ProcessedActionProto>& processed_actions,
     ResponseCallback callback) {
   DCHECK(!previous_server_payload.empty());
 

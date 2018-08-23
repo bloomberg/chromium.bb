@@ -12,8 +12,7 @@
 
 namespace autofill_assistant {
 
-AssistantUseCardAction::AssistantUseCardAction(
-    const AssistantActionProto& proto)
+AssistantUseCardAction::AssistantUseCardAction(const ActionProto& proto)
     : AssistantAction(proto), weak_ptr_factory_(this) {}
 
 AssistantUseCardAction::~AssistantUseCardAction() {}

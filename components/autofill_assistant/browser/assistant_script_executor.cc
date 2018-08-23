@@ -130,11 +130,10 @@ void AssistantScriptExecutor::OnProcessedAction(
     std::unique_ptr<AssistantAction> action,
     bool success) {
   processed_actions_.emplace_back();
-  ProcessedAssistantActionProto* proto = &processed_actions_.back();
+  ProcessedActionProto* proto = &processed_actions_.back();
   proto->mutable_action()->MergeFrom(action->proto());
-  proto->set_status(success
-                        ? ProcessedAssistantActionStatus::ACTION_APPLIED
-                        : ProcessedAssistantActionStatus::OTHER_ACTION_STATUS);
+  proto->set_status(success ? ProcessedActionStatus::ACTION_APPLIED
+                            : ProcessedActionStatus::OTHER_ACTION_STATUS);
   if (!success) {
     // Report error immediately, interrupting action processing.
     GetNextAssistantActions();

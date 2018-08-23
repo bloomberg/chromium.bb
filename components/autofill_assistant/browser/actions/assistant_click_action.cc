@@ -11,7 +11,7 @@
 
 namespace autofill_assistant {
 
-AssistantClickAction::AssistantClickAction(const AssistantActionProto& proto)
+AssistantClickAction::AssistantClickAction(const ActionProto& proto)
     : AssistantAction(proto) {
   DCHECK(proto_.has_click());
 }

@@ -36,16 +36,15 @@ class MockAssistantService : public AssistantService {
 
   void GetNextAssistantActions(
       const std::string& previous_server_payload,
-      const std::vector<ProcessedAssistantActionProto>& processed_actions,
+      const std::vector<ProcessedActionProto>& processed_actions,
       ResponseCallback callback) override {
     OnGetNextAssistantActions(previous_server_payload, processed_actions,
                               callback);
   }
-  MOCK_METHOD3(
-      OnGetNextAssistantActions,
-      void(const std::string& previous_server_payload,
-           const std::vector<ProcessedAssistantActionProto>& processed_actions,
-           ResponseCallback& callback));
+  MOCK_METHOD3(OnGetNextAssistantActions,
+               void(const std::string& previous_server_payload,
+                    const std::vector<ProcessedActionProto>& processed_actions,
+                    ResponseCallback& callback));
 };
 
 }  // namespace autofill_assistant

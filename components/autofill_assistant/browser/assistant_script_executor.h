@@ -14,9 +14,9 @@
 #include "base/memory/weak_ptr.h"
 #include "components/autofill_assistant/browser/actions/assistant_action.h"
 #include "components/autofill_assistant/browser/actions/assistant_action_delegate.h"
-#include "components/autofill_assistant/browser/assistant.pb.h"
 #include "components/autofill_assistant/browser/assistant_script.h"
 #include "components/autofill_assistant/browser/assistant_script_executor_delegate.h"
+#include "components/autofill_assistant/browser/service.pb.h"
 
 namespace autofill_assistant {
 // Class to execute an assistant script.
@@ -59,7 +59,7 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
   RunScriptCallback callback_;
 
   std::deque<std::unique_ptr<AssistantAction>> actions_;
-  std::vector<ProcessedAssistantActionProto> processed_actions_;
+  std::vector<ProcessedActionProto> processed_actions_;
   std::string last_server_payload_;
 
   base::WeakPtrFactory<AssistantScriptExecutor> weak_ptr_factory_;
