@@ -29,7 +29,7 @@ namespace ios_web_view {
 // Note that some methods are covered by other tests in this directory.
 class WebViewTest : public ios_web_view::WebViewInttestBase {
  public:
-  void SetUp() override {
+  WebViewTest() {
     test_server_->RegisterRequestHandler(base::BindRepeating(
         &WebViewTest::CaptureRequestHandler, base::Unretained(this)));
   }
