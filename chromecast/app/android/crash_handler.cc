@@ -28,19 +28,6 @@ namespace {
 
 chromecast::CrashHandler* g_crash_handler = NULL;
 
-// Debug builds: always to crash-staging
-// Release builds: only to crash-staging for local/invalid build numbers
-bool UploadCrashToStaging() {
-#if CAST_IS_DEBUG_BUILD()
-  return true;
-#else
-  int build_number;
-  if (base::StringToInt(CAST_BUILD_INCREMENTAL, &build_number))
-    return build_number == 0;
-  return true;
-#endif
-}
-
 }  // namespace
 
 namespace chromecast {
@@ -97,17 +84,19 @@ void CrashHandler::UploadDumps(const base::FilePath& crash_dump_path,
       base::android::ConvertUTF8ToJavaString(env, uuid);
   base::android::ScopedJavaLocalRef<jstring> application_feedback_java =
       base::android::ConvertUTF8ToJavaString(env, application_feedback);
+  // TODO(servolk): Remove the UploadToStaging param and clean up Java code, if
+  // dev crash uploading to prod server works fine (b/113130776)
   bool can_send_usage_stats =
       android::ChromecastConfigAndroid::GetInstance()->CanSendUsageStats();
 
   if (can_send_usage_stats) {
     Java_CastCrashHandler_uploadOnce(env, crash_dump_path_java, uuid_java,
                                      application_feedback_java,
-                                     UploadCrashToStaging());
+                                     /* UploadToStaging = */ false);
   } else {
     Java_CastCrashHandler_removeCrashDumps(env, crash_dump_path_java, uuid_java,
                                            application_feedback_java,
-                                           UploadCrashToStaging());
+                                           /* UploadToStaging = */ false);
   }
 }
 
