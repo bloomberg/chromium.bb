@@ -48,6 +48,24 @@ var OobeDialogHostBehavior = {
 
     this.propagateFullScreenMode();
   },
+
+  /**
+   * Triggers updateLocalizedContent() for elements matched by |selector|.
+   * @param {string} selector CSS selector.
+   */
+  propagateUpdateLocalizedContent: function(selector) {
+    if (!selector)
+      selector = 'oobe-dialog';
+
+    var screens = Polymer.dom(this.root).querySelectorAll(selector);
+    for (var i = 0; i < screens.length; ++i) {
+      screens[i].updateLocalizedContent();
+    }
+  },
+
+  updateLocalizedContent: function() {
+    this.propagateUpdateLocalizedContent();
+  },
 };
 
 /**
