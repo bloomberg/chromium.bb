@@ -530,7 +530,8 @@ PageInfoBubbleView::PageInfoBubbleView(
 
   layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
                               views::GridLayout::kFixedSize, 0);
-  layout->AddView(CreateSiteSettingsLink(side_margin, this).release());
+  if (!profile->IsGuestSession())
+    layout->AddView(CreateSiteSettingsLink(side_margin, this).release());
 
   views::BubbleDialogDelegateView::CreateBubble(this);
   presenter_.reset(new PageInfo(
