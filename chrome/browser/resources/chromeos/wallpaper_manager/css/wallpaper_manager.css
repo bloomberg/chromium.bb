@@ -535,6 +535,10 @@ body.v2 {
   top: 8px;
 }
 
+.v2 .image-picker [role=listitem][selected] .check:focus {
+  outline: none;
+}
+
 .v2 .image-picker::-webkit-scrollbar-thumb {
   background: #888;
   display: none;
