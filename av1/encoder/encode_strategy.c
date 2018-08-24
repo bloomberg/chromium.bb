@@ -947,7 +947,8 @@ static int get_refresh_frame_flags(const AV1_COMP *const cpi,
 int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
                         uint8_t *const dest, unsigned int *frame_flags,
                         int64_t *const time_stamp, int64_t *const time_end,
-                        const aom_rational_t *const timebase, int flush) {
+                        const aom_rational64_t *const timestamp_ratio,
+                        int flush) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
 
@@ -1027,7 +1028,7 @@ int av1_encode_strategy(AV1_COMP *const cpi, size_t *const size,
           cm->seq_params.film_grain_params_present;
     }
     // only one operating point supported now
-    const int64_t pts64 = ticks_to_timebase_units(timebase, *time_stamp);
+    const int64_t pts64 = ticks_to_timebase_units(timestamp_ratio, *time_stamp);
     if (pts64 < 0 || pts64 > UINT32_MAX) return AOM_CODEC_ERROR;
     cpi->common.frame_presentation_time = (uint32_t)pts64;
   }

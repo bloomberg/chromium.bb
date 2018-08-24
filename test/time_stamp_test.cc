@@ -92,7 +92,7 @@ TEST_P(TimestampTest, TestMicrosecondTimebase) {
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
 }
 
-TEST_P(TimestampTest, DISABLED_TestAv1Rollover) {
+TEST_P(TimestampTest, TestAv1Rollover) {
   DummyTimebaseVideoSource video(1, 1000);
   video.set_starting_pts(922337170351ll);
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));

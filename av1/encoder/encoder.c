@@ -5408,7 +5408,7 @@ static void compute_internal_stats(AV1_COMP *cpi, int frame_bytes) {
 int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
                             size_t *size, uint8_t *dest, int64_t *time_stamp,
                             int64_t *time_end, int flush,
-                            const aom_rational_t *timebase) {
+                            const aom_rational64_t *timestamp_ratio) {
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   AV1_COMMON *const cm = &cpi->common;
 
@@ -5444,8 +5444,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
   if (assign_cur_frame_new_fb(cm) == NULL) return AOM_CODEC_ERROR;
 
-  const int result = av1_encode_strategy(cpi, size, dest, frame_flags,
-                                         time_stamp, time_end, timebase, flush);
+  const int result =
+      av1_encode_strategy(cpi, size, dest, frame_flags, time_stamp, time_end,
+                          timestamp_ratio, flush);
   if (result != AOM_CODEC_OK && result != -1) {
     return AOM_CODEC_ERROR;
   } else if (result == -1) {
@@ -5455,7 +5456,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 #if CONFIG_INTERNAL_STATS
   aom_usec_timer_mark(&cmptimer);
   cpi->time_compress_data += aom_usec_timer_elapsed(&cmptimer);
-#endif
+#endif  // CONFIG_INTERNAL_STATS
   if (cpi->b_calculate_psnr) {
     if (cm->show_existing_frame || (oxcf->pass != 1 && cm->show_frame)) {
       generate_psnr_packet(cpi);
