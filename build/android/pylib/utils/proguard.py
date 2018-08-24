@@ -32,14 +32,14 @@ _PROGUARD_INDENT_WIDTH = 2
 _PROGUARD_ANNOTATION_VALUE_RE = re.compile(r'^(\s*?)- \S+? \[(.*)\]$')
 
 _PROGUARD_PATH_SDK = os.path.join(
-    constants.PROGUARD_ROOT, 'lib', 'proguard603.jar')
+    constants.PROGUARD_ROOT, 'lib', 'proguard.jar')
 _PROGUARD_PATH_BUILT = (
     os.path.join(os.environ['ANDROID_BUILD_TOP'], 'external', 'proguard',
                  'lib', 'proguard.jar')
     if 'ANDROID_BUILD_TOP' in os.environ else None)
 _PROGUARD_PATH = (
     _PROGUARD_PATH_SDK if os.path.exists(_PROGUARD_PATH_SDK)
-    else _PROGUARD_PATH_BUILT or _PROGUARD_PATH_SDK)
+    else _PROGUARD_PATH_BUILT)
 
 
 def Dump(jar_path):
