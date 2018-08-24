@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
+#include "chrome/browser/printing/cloud_print/privet_url_loader.h"
 #include "components/cloud_devices/common/cloud_device_description.h"
 #include "printing/buildflags/buildflags.h"
 #include "ui/gfx/geometry/size.h"
@@ -23,12 +24,16 @@ namespace base {
 class RefCountedMemory;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace cloud_print {
 
 class PrivetHTTPClient;
 
 class PrivetInfoOperationImpl : public PrivetJSONOperation,
-                                public PrivetURLFetcher::Delegate {
+                                public PrivetURLLoader::Delegate {
  public:
   PrivetInfoOperationImpl(PrivetHTTPClient* privet_client,
                           const PrivetJSONOperation::ResultCallback& callback);
@@ -38,8 +43,8 @@ class PrivetInfoOperationImpl : public PrivetJSONOperation,
   void Start() override;
   PrivetHTTPClient* GetHTTPClient() override;
 
-  // PrivetURLFetcher::Delegate:
-  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
+  // PrivetURLLoader::Delegate:
+  void OnError(int response_code, PrivetURLLoader::ErrorType error) override;
   void OnParsedJson(int response_code,
                     const base::DictionaryValue& value,
                     bool has_error) override;
@@ -47,12 +52,12 @@ class PrivetInfoOperationImpl : public PrivetJSONOperation,
  private:
   PrivetHTTPClient* const privet_client_;
   PrivetJSONOperation::ResultCallback callback_;
-  std::unique_ptr<PrivetURLFetcher> url_fetcher_;
+  std::unique_ptr<PrivetURLLoader> url_loader_;
 };
 
 class PrivetRegisterOperationImpl
     : public PrivetRegisterOperation,
-      public PrivetURLFetcher::Delegate,
+      public PrivetURLLoader::Delegate,
       public base::SupportsWeakPtr<PrivetRegisterOperationImpl> {
  public:
   PrivetRegisterOperationImpl(PrivetHTTPClient* privet_client,
@@ -66,12 +71,12 @@ class PrivetRegisterOperationImpl
   void CompleteRegistration() override;
   PrivetHTTPClient* GetHTTPClient() override;
 
-  // PrivetURLFetcher::Delegate:
-  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
+  // PrivetURLLoader::Delegate:
+  void OnError(int response_code, PrivetURLLoader::ErrorType error) override;
   void OnParsedJson(int response_code,
                     const base::DictionaryValue& value,
                     bool has_error) override;
-  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
+  void OnNeedPrivetToken(PrivetURLLoader::TokenCallback callback) override;
 
   // Used in test to skip delays when posting tasks for cancellation.
   class RunTasksImmediatelyForTesting final {
@@ -81,13 +86,13 @@ class PrivetRegisterOperationImpl
   };
 
  private:
-  class Cancelation : public PrivetURLFetcher::Delegate {
+  class Cancelation : public PrivetURLLoader::Delegate {
    public:
     Cancelation(PrivetHTTPClient* privet_client, const std::string& user);
     ~Cancelation() override;
 
-    // PrivetURLFetcher::Delegate:
-    void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
+    // PrivetURLLoader::Delegate:
+    void OnError(int response_code, PrivetURLLoader::ErrorType error) override;
     void OnParsedJson(int response_code,
                       const base::DictionaryValue& value,
                       bool has_error) override;
@@ -95,7 +100,7 @@ class PrivetRegisterOperationImpl
     void Cleanup();
 
    private:
-    std::unique_ptr<PrivetURLFetcher> url_fetcher_;
+    std::unique_ptr<PrivetURLLoader> url_loader_;
   };
 
   // Arguments is JSON value from request.
@@ -113,7 +118,7 @@ class PrivetRegisterOperationImpl
 
   const std::string user_;
   std::string current_action_;
-  std::unique_ptr<PrivetURLFetcher> url_fetcher_;
+  std::unique_ptr<PrivetURLLoader> url_loader_;
   PrivetRegisterOperation::Delegate* const delegate_;
   PrivetHTTPClient* const privet_client_;
   ResponseHandler next_response_handler_;
@@ -128,7 +133,7 @@ class PrivetRegisterOperationImpl
 };
 
 class PrivetJSONOperationImpl : public PrivetJSONOperation,
-                                public PrivetURLFetcher::Delegate {
+                                public PrivetURLLoader::Delegate {
  public:
   PrivetJSONOperationImpl(PrivetHTTPClient* privet_client,
                           const std::string& path,
@@ -140,12 +145,12 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   void Start() override;
   PrivetHTTPClient* GetHTTPClient() override;
 
-  // PrivetURLFetcher::Delegate:
-  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
+  // PrivetURLLoader::Delegate:
+  void OnError(int response_code, PrivetURLLoader::ErrorType error) override;
   void OnParsedJson(int response_code,
                     const base::DictionaryValue& value,
                     bool has_error) override;
-  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
+  void OnNeedPrivetToken(PrivetURLLoader::TokenCallback callback) override;
 
  private:
   PrivetHTTPClient* const privet_client_;
@@ -153,13 +158,12 @@ class PrivetJSONOperationImpl : public PrivetJSONOperation,
   const std::string query_params_;
   PrivetJSONOperation::ResultCallback callback_;
 
-  std::unique_ptr<PrivetURLFetcher> url_fetcher_;
+  std::unique_ptr<PrivetURLLoader> url_loader_;
 };
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-class PrivetLocalPrintOperationImpl
-    : public PrivetLocalPrintOperation,
-      public PrivetURLFetcher::Delegate {
+class PrivetLocalPrintOperationImpl : public PrivetLocalPrintOperation,
+                                      public PrivetURLLoader::Delegate {
  public:
   PrivetLocalPrintOperationImpl(PrivetHTTPClient* privet_client,
                                 PrivetLocalPrintOperation::Delegate* delegate);
@@ -178,12 +182,12 @@ class PrivetLocalPrintOperationImpl
       override;
   PrivetHTTPClient* GetHTTPClient() override;
 
-  // PrivetURLFetcher::Delegate:
-  void OnError(int response_code, PrivetURLFetcher::ErrorType error) override;
+  // PrivetURLLoader::Delegate:
+  void OnError(int response_code, PrivetURLLoader::ErrorType error) override;
   void OnParsedJson(int response_code,
                     const base::DictionaryValue& value,
                     bool has_error) override;
-  void OnNeedPrivetToken(PrivetURLFetcher::TokenCallback callback) override;
+  void OnNeedPrivetToken(PrivetURLLoader::TokenCallback callback) override;
 
   // Used in test to skip delays when posting tasks for cancellation.
   class RunTasksImmediatelyForTesting final {
@@ -233,7 +237,7 @@ class PrivetLocalPrintOperationImpl
 
   int invalid_job_retries_ = 0;
 
-  std::unique_ptr<PrivetURLFetcher> url_fetcher_;
+  std::unique_ptr<PrivetURLLoader> url_loader_;
   std::unique_ptr<PrivetJSONOperation> info_operation_;
   std::unique_ptr<printing::PwgRasterConverter> pwg_raster_converter_;
 
@@ -248,27 +252,27 @@ class PrivetHTTPClientImpl : public PrivetHTTPClient {
   PrivetHTTPClientImpl(
       const std::string& name,
       const net::HostPortPair& host_port,
-      const scoped_refptr<net::URLRequestContextGetter>& context_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PrivetHTTPClientImpl() override;
 
   // PrivetHTTPClient:
   const std::string& GetName() override;
   std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) override;
-  std::unique_ptr<PrivetURLFetcher> CreateURLFetcher(
+  std::unique_ptr<PrivetURLLoader> CreateURLLoader(
       const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      PrivetURLFetcher::Delegate* delegate) override;
+      const std::string& request_type,
+      PrivetURLLoader::Delegate* delegate) override;
   void RefreshPrivetToken(
-      PrivetURLFetcher::TokenCallback token_callback) override;
+      PrivetURLLoader::TokenCallback token_callback) override;
 
  private:
-  using TokenCallbackVector = std::vector<PrivetURLFetcher::TokenCallback>;
+  using TokenCallbackVector = std::vector<PrivetURLLoader::TokenCallback>;
 
   void OnPrivetInfoDone(const base::DictionaryValue* value);
 
   const std::string name_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const net::HostPortPair host_port_;
 
   std::unique_ptr<PrivetJSONOperation> info_operation_;

@@ -26,6 +26,7 @@
 #include "net/base/url_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -100,13 +101,13 @@ PrivetInfoOperationImpl::~PrivetInfoOperationImpl() {
 }
 
 void PrivetInfoOperationImpl::Start() {
-  url_fetcher_ = privet_client_->CreateURLFetcher(
-      CreatePrivetURL(kPrivetInfoPath), net::URLFetcher::GET, this);
+  url_loader_ = privet_client_->CreateURLLoader(
+      CreatePrivetURL(kPrivetInfoPath), "GET", this);
 
-  url_fetcher_->DoNotRetryOnTransientError();
-  url_fetcher_->SendEmptyPrivetToken();
+  url_loader_->DoNotRetryOnTransientError();
+  url_loader_->SendEmptyPrivetToken();
 
-  url_fetcher_->Start();
+  url_loader_->Start();
 }
 
 PrivetHTTPClient* PrivetInfoOperationImpl::GetHTTPClient() {
@@ -114,7 +115,7 @@ PrivetHTTPClient* PrivetInfoOperationImpl::GetHTTPClient() {
 }
 
 void PrivetInfoOperationImpl::OnError(int response_code,
-                                      PrivetURLFetcher::ErrorType error) {
+                                      PrivetURLLoader::ErrorType error) {
   callback_.Run(nullptr);
 }
 
@@ -156,7 +157,7 @@ void PrivetRegisterOperationImpl::Start() {
 }
 
 void PrivetRegisterOperationImpl::Cancel() {
-  url_fetcher_.reset();
+  url_loader_.reset();
 
   if (!ongoing_)
     return;
@@ -183,19 +184,19 @@ PrivetHTTPClient* PrivetRegisterOperationImpl::GetHTTPClient() {
 }
 
 void PrivetRegisterOperationImpl::OnError(int response_code,
-                                          PrivetURLFetcher::ErrorType error) {
+                                          PrivetURLLoader::ErrorType error) {
   ongoing_ = false;
   int visible_http_code = -1;
   FailureReason reason = FAILURE_NETWORK;
 
-  if (error == PrivetURLFetcher::RESPONSE_CODE_ERROR) {
+  if (error == PrivetURLLoader::RESPONSE_CODE_ERROR) {
     visible_http_code = response_code;
     reason = FAILURE_HTTP_ERROR;
-  } else if (error == PrivetURLFetcher::JSON_PARSE_ERROR) {
+  } else if (error == PrivetURLLoader::JSON_PARSE_ERROR) {
     reason = FAILURE_MALFORMED_RESPONSE;
-  } else if (error == PrivetURLFetcher::TOKEN_ERROR) {
+  } else if (error == PrivetURLLoader::TOKEN_ERROR) {
     reason = FAILURE_TOKEN;
-  } else if (error == PrivetURLFetcher::UNKNOWN_ERROR) {
+  } else if (error == PrivetURLLoader::UNKNOWN_ERROR) {
     reason = FAILURE_UNKNOWN;
   }
 
@@ -223,15 +224,15 @@ void PrivetRegisterOperationImpl::OnParsedJson(
 }
 
 void PrivetRegisterOperationImpl::OnNeedPrivetToken(
-    PrivetURLFetcher::TokenCallback callback) {
+    PrivetURLLoader::TokenCallback callback) {
   privet_client_->RefreshPrivetToken(std::move(callback));
 }
 
 void PrivetRegisterOperationImpl::SendRequest(const std::string& action) {
   current_action_ = action;
-  url_fetcher_ = privet_client_->CreateURLFetcher(
-      CreatePrivetRegisterURL(action, user_), net::URLFetcher::POST, this);
-  url_fetcher_->Start();
+  url_loader_ = privet_client_->CreateURLLoader(
+      CreatePrivetRegisterURL(action, user_), "POST", this);
+  url_loader_->Start();
 }
 
 void PrivetRegisterOperationImpl::StartResponse(
@@ -310,12 +311,10 @@ void PrivetRegisterOperationImpl::StartInfoOperation() {
 PrivetRegisterOperationImpl::Cancelation::Cancelation(
     PrivetHTTPClient* privet_client,
     const std::string& user) {
-  url_fetcher_ =
-      privet_client->CreateURLFetcher(
-          CreatePrivetRegisterURL(kPrivetActionCancel, user),
-          net::URLFetcher::POST, this);
-  url_fetcher_->DoNotRetryOnTransientError();
-  url_fetcher_->Start();
+  url_loader_ = privet_client->CreateURLLoader(
+      CreatePrivetRegisterURL(kPrivetActionCancel, user), "POST", this);
+  url_loader_->DoNotRetryOnTransientError();
+  url_loader_->Start();
 }
 
 PrivetRegisterOperationImpl::Cancelation::~Cancelation() {
@@ -323,7 +322,7 @@ PrivetRegisterOperationImpl::Cancelation::~Cancelation() {
 
 void PrivetRegisterOperationImpl::Cancelation::OnError(
     int response_code,
-    PrivetURLFetcher::ErrorType error) {}
+    PrivetURLLoader::ErrorType error) {}
 
 void PrivetRegisterOperationImpl::Cancelation::OnParsedJson(
     int response_code,
@@ -350,10 +349,10 @@ PrivetJSONOperationImpl::~PrivetJSONOperationImpl() {
 }
 
 void PrivetJSONOperationImpl::Start() {
-  url_fetcher_ = privet_client_->CreateURLFetcher(
-      CreatePrivetParamURL(path_, query_params_), net::URLFetcher::GET, this);
-  url_fetcher_->DoNotRetryOnTransientError();
-  url_fetcher_->Start();
+  url_loader_ = privet_client_->CreateURLLoader(
+      CreatePrivetParamURL(path_, query_params_), "GET", this);
+  url_loader_->DoNotRetryOnTransientError();
+  url_loader_->Start();
 }
 
 PrivetHTTPClient* PrivetJSONOperationImpl::GetHTTPClient() {
@@ -361,7 +360,7 @@ PrivetHTTPClient* PrivetJSONOperationImpl::GetHTTPClient() {
 }
 
 void PrivetJSONOperationImpl::OnError(int response_code,
-                                      PrivetURLFetcher::ErrorType error) {
+                                      PrivetURLLoader::ErrorType error) {
   callback_.Run(nullptr);
 }
 
@@ -372,7 +371,7 @@ void PrivetJSONOperationImpl::OnParsedJson(int response_code,
 }
 
 void PrivetJSONOperationImpl::OnNeedPrivetToken(
-    PrivetURLFetcher::TokenCallback callback) {
+    PrivetURLLoader::TokenCallback callback) {
   privet_client_->RefreshPrivetToken(std::move(callback));
 }
 
@@ -471,11 +470,11 @@ void PrivetLocalPrintOperationImpl::DoCreatejob() {
       base::BindOnce(&PrivetLocalPrintOperationImpl::OnCreatejobResponse,
                      weak_factory_.GetWeakPtr());
 
-  url_fetcher_ = privet_client_->CreateURLFetcher(
-      CreatePrivetURL(kPrivetCreatejobPath), net::URLFetcher::POST, this);
-  url_fetcher_->SetUploadData(kContentTypeJSON, ticket_.ToString());
+  url_loader_ = privet_client_->CreateURLLoader(
+      CreatePrivetURL(kPrivetCreatejobPath), "POST", this);
+  url_loader_->SetUploadData(kContentTypeJSON, ticket_.ToString());
 
-  url_fetcher_->Start();
+  url_loader_->Start();
 }
 
 void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
@@ -511,14 +510,13 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
                                     jobid_);
   }
 
-  url_fetcher_ =
-      privet_client_->CreateURLFetcher(url, net::URLFetcher::POST, this);
+  url_loader_ = privet_client_->CreateURLLoader(url, "POST", this);
 
   std::string data_str(reinterpret_cast<const char*>(data_->front()),
                        data_->size());
-  url_fetcher_->SetUploadData(
+  url_loader_->SetUploadData(
       use_pdf_ ? kPrivetContentTypePDF : kPrivetContentTypePWGRaster, data_str);
-  url_fetcher_->Start();
+  url_loader_->Start();
 }
 
 void PrivetLocalPrintOperationImpl::StartPrinting() {
@@ -621,7 +619,7 @@ PrivetHTTPClient* PrivetLocalPrintOperationImpl::GetHTTPClient() {
 }
 
 void PrivetLocalPrintOperationImpl::OnError(int response_code,
-                                            PrivetURLFetcher::ErrorType error) {
+                                            PrivetURLLoader::ErrorType error) {
   delegate_->OnPrivetPrintingError(this, -1);
 }
 
@@ -634,7 +632,7 @@ void PrivetLocalPrintOperationImpl::OnParsedJson(
 }
 
 void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
-    PrivetURLFetcher::TokenCallback callback) {
+    PrivetURLLoader::TokenCallback callback) {
   privet_client_->RefreshPrivetToken(std::move(callback));
 }
 
@@ -679,8 +677,12 @@ void PrivetLocalPrintOperationImpl::SetPwgRasterConverterForTesting(
 PrivetHTTPClientImpl::PrivetHTTPClientImpl(
     const std::string& name,
     const net::HostPortPair& host_port,
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter)
-    : name_(name), context_getter_(context_getter), host_port_(host_port) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : name_(name),
+      url_loader_factory_(url_loader_factory),
+      host_port_(host_port) {
+  DCHECK(url_loader_factory_);
+}
 
 PrivetHTTPClientImpl::~PrivetHTTPClientImpl() {
 }
@@ -694,10 +696,10 @@ std::unique_ptr<PrivetJSONOperation> PrivetHTTPClientImpl::CreateInfoOperation(
   return std::make_unique<PrivetInfoOperationImpl>(this, callback);
 }
 
-std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
+std::unique_ptr<PrivetURLLoader> PrivetHTTPClientImpl::CreateURLLoader(
     const GURL& url,
-    net::URLFetcher::RequestType request_type,
-    PrivetURLFetcher::Delegate* delegate) {
+    const std::string& request_type,
+    PrivetURLLoader::Delegate* delegate) {
   GURL::Replacements replacements;
   std::string host = host_port_.HostForURL();
   replacements.SetHostStr(host);
@@ -729,13 +731,13 @@ std::unique_ptr<PrivetURLFetcher> PrivetHTTPClientImpl::CreateURLFetcher(
           policy_exception_justification:
             "Not implemented, it's good to do so."
         })");
-  return std::make_unique<PrivetURLFetcher>(url.ReplaceComponents(replacements),
-                                            request_type, context_getter_,
-                                            traffic_annotation, delegate);
+  return std::make_unique<PrivetURLLoader>(url.ReplaceComponents(replacements),
+                                           request_type, url_loader_factory_,
+                                           traffic_annotation, delegate);
 }
 
 void PrivetHTTPClientImpl::RefreshPrivetToken(
-    PrivetURLFetcher::TokenCallback callback) {
+    PrivetURLLoader::TokenCallback callback) {
   token_callbacks_.push_back(std::move(callback));
 
   if (info_operation_)

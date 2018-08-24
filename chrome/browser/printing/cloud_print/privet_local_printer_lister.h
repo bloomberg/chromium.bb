@@ -13,7 +13,10 @@
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
-#include "net/url_request/url_request_context.h"
+
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace cloud_print {
 
@@ -33,7 +36,7 @@ class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate {
 
   PrivetLocalPrinterLister(
       local_discovery::ServiceDiscoveryClient* service_discovery_client,
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       Delegate* delegate);
   ~PrivetLocalPrinterLister() override;
 

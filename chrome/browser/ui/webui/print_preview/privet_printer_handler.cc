@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_utils.h"
 #include "chrome/common/chrome_switches.h"
 #include "services/identity/public/cpp/identity_manager.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace {
@@ -140,7 +141,7 @@ void PrivetPrinterHandler::StartLister(
          service_discovery_client_.get() == client.get());
   service_discovery_client_ = client;
   printer_lister_ = std::make_unique<cloud_print::PrivetLocalPrinterLister>(
-      service_discovery_client_.get(), profile_->GetRequestContext(), this);
+      service_discovery_client_.get(), profile_->GetURLLoaderFactory(), this);
   privet_lister_timer_ = std::make_unique<base::OneShotTimer>();
   privet_lister_timer_->Start(FROM_HERE,
                               base::TimeDelta::FromSeconds(kSearchTimeoutSec),
@@ -274,7 +275,7 @@ void PrivetPrinterHandler::CreateHTTP(
 
   privet_http_factory_ =
       cloud_print::PrivetHTTPAsynchronousFactory::CreateInstance(
-          profile_->GetRequestContext());
+          profile_->GetURLLoaderFactory());
   privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(name);
   privet_http_resolution_->Start(device_description->address, callback);
 }

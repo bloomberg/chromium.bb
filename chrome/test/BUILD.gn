@@ -3882,7 +3882,7 @@ test("unit_tests") {
       "../browser/printing/cloud_print/privet_confirm_api_flow_unittest.cc",
       "../browser/printing/cloud_print/privet_http_unittest.cc",
       "../browser/printing/cloud_print/privet_notifications_unittest.cc",
-      "../browser/printing/cloud_print/privet_url_fetcher_unittest.cc",
+      "../browser/printing/cloud_print/privet_url_loader_unittest.cc",
     ]
   }
 

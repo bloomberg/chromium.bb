@@ -5,36 +5,37 @@
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory_impl.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/bind.h"
 #include "chrome/browser/local_discovery/endpoint_resolver.h"
 #include "chrome/browser/printing/cloud_print/privet_http_impl.h"
+#include "net/base/ip_endpoint.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace cloud_print {
 
 PrivetHTTPAsynchronousFactoryImpl::PrivetHTTPAsynchronousFactoryImpl(
-    net::URLRequestContextGetter* request_context)
-    : request_context_(request_context) {
-}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : url_loader_factory_(url_loader_factory) {}
 
-PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {
-}
+PrivetHTTPAsynchronousFactoryImpl::~PrivetHTTPAsynchronousFactoryImpl() {}
 
 std::unique_ptr<PrivetHTTPResolution>
 PrivetHTTPAsynchronousFactoryImpl::CreatePrivetHTTP(
     const std::string& service_name) {
-  return std::unique_ptr<PrivetHTTPResolution>(
-      new ResolutionImpl(service_name, request_context_.get()));
+  return std::make_unique<ResolutionImpl>(service_name, url_loader_factory_);
 }
 
 PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolutionImpl(
     const std::string& service_name,
-    net::URLRequestContextGetter* request_context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : name_(service_name),
-      request_context_(request_context),
-      endpoint_resolver_(new local_discovery::EndpointResolver()) {}
+      url_loader_factory_(url_loader_factory),
+      endpoint_resolver_(
+          std::make_unique<local_discovery::EndpointResolver>()) {}
 
-PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {
-}
+PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {}
 
 const std::string&
 PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::GetName() {
@@ -63,8 +64,8 @@ void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolveComplete(
     return callback.Run(std::unique_ptr<PrivetHTTPClient>());
 
   net::HostPortPair new_address = net::HostPortPair::FromIPEndPoint(endpoint);
-  callback.Run(std::unique_ptr<PrivetHTTPClient>(
-      new PrivetHTTPClientImpl(name_, new_address, request_context_.get())));
+  callback.Run(std::make_unique<PrivetHTTPClientImpl>(name_, new_address,
+                                                      url_loader_factory_));
 }
 
 }  // namespace cloud_print
