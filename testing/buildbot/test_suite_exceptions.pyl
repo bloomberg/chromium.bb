@@ -262,17 +262,16 @@
     ],
   },
   'chrome_public_test_apk': {
+    'remove_from': [
+      # TODO(crbug.com/877280): Add it back when we have the capacity.
+      'android-marshmallow-arm64-rel',
+    ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
         'swarming': {
           'shards': 12,
         },
-      },
-      'android-marshmallow-arm64-rel': {
-        # TODO(crbug.com/731759): Enable this once we're confident that it
-        # passes.
-        'experiment_percentage': 100,
       },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
@@ -1031,12 +1030,13 @@
     },
   },
   'surface_sync_content_browsertests': {
+    'remove_from': [
+      # TODO(crbug.com/877280): Add it back when we have the capacity.
+      'android-marshmallow-arm64-rel',
+    ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
-        'experiment_percentage': 100,
-      },
-      'android-marshmallow-arm64-rel': {
         'experiment_percentage': 100,
       },
     },
@@ -1261,13 +1261,12 @@
       'KitKat Phone Tester (dbg)',
       # Currently flaky timeouts on Windows 10. crbug.com/839824
       'Win10 Tests x64 (dbg)',
+      # TODO(crbug.com/877280): Add it back when we have the capacity.
+      'android-marshmallow-arm64-rel',
     ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
-        'experiment_percentage': 100,
-      },
-      'android-marshmallow-arm64-rel': {
         'experiment_percentage': 100,
       },
       # chromium.clang
