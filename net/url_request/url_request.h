@@ -14,6 +14,7 @@
 #include "base/debug/leak_tracker.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/supports_user_data.h"
@@ -734,6 +735,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   }
   bool upgrade_if_insecure() const { return upgrade_if_insecure_; }
 
+  base::WeakPtr<URLRequest> GetWeakPtr();
+
  protected:
   // Allow the URLRequestJob class to control the is_pending() flag.
   void set_is_pending(bool value) { is_pending_ = value; }
@@ -962,6 +965,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   bool upgrade_if_insecure_;
 
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<URLRequest> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequest);
 };

@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/browsing_data/clear_site_data_throttle.h"
-
+#include <algorithm>
 #include <memory>
 
 #include "base/bind.h"
@@ -24,6 +23,9 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_switches.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/cache_test_util.h"
 #include "content/public/test/content_browser_test.h"
@@ -32,6 +34,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
 #include "net/base/escape.h"
+#include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mock_host_resolver.h"
@@ -39,6 +42,9 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service_test.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
@@ -154,14 +160,22 @@ class ServiceWorkerActivationObserver
 
 }  // namespace
 
-class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
+class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ContentBrowserTest::SetUpCommandLine(command_line);
 
-    // We're redirecting all hosts to localhost even on HTTPS, so we'll get
-    // certificate errors.
-    command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+      is_network_service_enabled_ = true;
+
+    if (is_network_service_enabled_) {
+      // |MockCertVerifier| only seems to work when Network Service was enabled.
+      command_line->AppendSwitch(switches::kUseMockCertVerifierForTesting);
+    } else {
+      // We're redirecting all hosts to localhost even on HTTPS, so we'll get
+      // certificate errors.
+      command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+    }
   }
 
   void SetUpOnMainThread() override {
@@ -173,17 +187,21 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
     // Set up HTTP and HTTPS test servers that handle all hosts.
     host_resolver()->AddRule("*", "127.0.0.1");
 
+    if (is_network_service_enabled_)
+      SetUpMockCertVerifier(net::OK);
+
     embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&ClearSiteDataThrottleBrowserTest::HandleRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ClearSiteDataHandlerBrowserTest::HandleRequest,
+                            base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
 
+    // Set up HTTPS server.
     https_server_.reset(new net::EmbeddedTestServer(
         net::test_server::EmbeddedTestServer::TYPE_HTTPS));
     https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
     https_server_->RegisterRequestHandler(
-        base::Bind(&ClearSiteDataThrottleBrowserTest::HandleRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ClearSiteDataHandlerBrowserTest::HandleRequest,
+                            base::Unretained(this)));
     ASSERT_TRUE(https_server_->Start());
 
     // Initialize the cookie store pointer on the IO thread.
@@ -191,17 +209,19 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(
-            &ClearSiteDataThrottleBrowserTest::InitializeCookieStore,
+            &ClearSiteDataHandlerBrowserTest::InitializeCookieStore,
             base::Unretained(this),
-            base::Unretained(
-                BrowserContext::GetDefaultStoragePartition(browser_context())
-                    ->GetURLRequestContext()),
+            base::Unretained(storage_partition()->GetURLRequestContext()),
             run_loop.QuitClosure()));
     run_loop.Run();
   }
 
   BrowserContext* browser_context() {
     return shell()->web_contents()->GetBrowserContext();
+  }
+
+  StoragePartition* storage_partition() {
+    return BrowserContext::GetDefaultStoragePartition(browser_context());
   }
 
   void InitializeCookieStore(
@@ -215,30 +235,30 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
   // Adds a cookie for the |url|. Used in the cookie integration tests.
   void AddCookie(const GURL& url) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    network::mojom::CookieManager* cookie_manager =
+        storage_partition()->GetCookieManagerForBrowserProcess();
+
+    std::unique_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+        url, "A=1", base::Time::Now(), net::CookieOptions()));
+
     base::RunLoop run_loop;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &net::CookieStore::SetCookieWithOptionsAsync,
-            base::Unretained(cookie_store_), url, "A=1", net::CookieOptions(),
-            base::Bind(&ClearSiteDataThrottleBrowserTest::AddCookieCallback,
-                       run_loop.QuitClosure())));
+    cookie_manager->SetCanonicalCookie(
+        *cookie, true /* secure_source */, false /* modify_http_only */,
+        base::BindOnce(&ClearSiteDataHandlerBrowserTest::AddCookieCallback,
+                       run_loop.QuitClosure()));
     run_loop.Run();
   }
 
   // Retrieves the list of all cookies. Used in the cookie integration tests.
   net::CookieList GetCookies() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    network::mojom::CookieManager* cookie_manager =
+        storage_partition()->GetCookieManagerForBrowserProcess();
     base::RunLoop run_loop;
     net::CookieList cookie_list;
-    BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &net::CookieStore::GetAllCookiesAsync,
-            base::Unretained(cookie_store_),
-            base::Bind(&ClearSiteDataThrottleBrowserTest::GetCookiesCallback,
-                       run_loop.QuitClosure(),
-                       base::Unretained(&cookie_list))));
+    cookie_manager->GetAllCookies(base::BindRepeating(
+        &ClearSiteDataHandlerBrowserTest::GetCookiesCallback,
+        run_loop.QuitClosure(), base::Unretained(&cookie_list)));
     run_loop.Run();
     return cookie_list;
   }
@@ -248,8 +268,7 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
-            BrowserContext::GetDefaultStoragePartition(browser_context())
-                ->GetServiceWorkerContext());
+            storage_partition()->GetServiceWorkerContext());
 
     GURL scope_url = https_server()->GetURL(origin, "/");
     GURL js_url = https_server()->GetURL(origin, "/?file=worker.js");
@@ -263,7 +282,7 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
             &ServiceWorkerContextWrapper::RegisterServiceWorker,
             base::Unretained(service_worker_context), js_url, options,
             base::Bind(
-                &ClearSiteDataThrottleBrowserTest::AddServiceWorkerCallback,
+                &ClearSiteDataHandlerBrowserTest::AddServiceWorkerCallback,
                 base::Unretained(this))));
 
     // Wait for its activation.
@@ -282,8 +301,7 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(
-            BrowserContext::GetDefaultStoragePartition(browser_context())
-                ->GetServiceWorkerContext());
+            storage_partition()->GetServiceWorkerContext());
 
     std::vector<ServiceWorkerUsageInfo> service_workers;
     base::RunLoop run_loop;
@@ -294,12 +312,50 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
             &ServiceWorkerContextWrapper::GetAllOriginsInfo,
             base::Unretained(service_worker_context),
             base::Bind(
-                &ClearSiteDataThrottleBrowserTest::GetServiceWorkersCallback,
+                &ClearSiteDataHandlerBrowserTest::GetServiceWorkersCallback,
                 base::Unretained(this), run_loop.QuitClosure(),
                 base::Unretained(&service_workers))));
     run_loop.Run();
 
     return service_workers;
+  }
+
+  void CreateCacheEntry(const GURL& url) {
+    if (is_network_service_enabled_) {
+      ASSERT_EQ(net::OK, LoadBasicRequest(
+                             storage_partition()->GetNetworkContext(), url));
+    } else {
+      if (!cache_test_util_)
+        cache_test_util_ = std::make_unique<CacheTestUtil>(storage_partition());
+      cache_test_util_->CreateCacheEntries({url.spec()});
+    }
+  }
+
+  bool TestCacheEntry(const GURL& url) {
+    if (is_network_service_enabled_) {
+      return LoadBasicRequest(storage_partition()->GetNetworkContext(), url,
+                              0 /* process_id */, 0 /* render_frame_id */,
+                              net::LOAD_ONLY_FROM_CACHE) == net::OK;
+    } else {
+      std::vector<std::string> cache_keys = cache_test_util_->GetEntryKeys();
+      return std::find(cache_keys.begin(), cache_keys.end(), url.spec()) !=
+             cache_keys.end();
+    }
+  }
+
+  // Causes |!g_base_sync_primitives_disallowed.Get().Get()| issue if we don't
+  // destroy it before test ends.
+  void DestroyCacheTestUtilIfNecessary() {
+    if (cache_test_util_)
+      cache_test_util_ = nullptr;
+  }
+
+  GURL GetURLForHTTPSHost1(const std::string& relative_url) {
+    return https_server_->GetURL("origin1.com", relative_url);
+  }
+
+  GURL GetURLForHTTPSHost2(const std::string& relative_url) {
+    return https_server_->GetURL("origin2.com", relative_url);
   }
 
   TestBrowsingDataRemoverDelegate* delegate() { return &embedder_delegate_; }
@@ -376,12 +432,32 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
       response->set_content(buffer.get());
     }
 
+    if (base::StartsWith(request.relative_url, "/cachetime",
+                         base::CompareCase::SENSITIVE)) {
+      response->set_content(
+          "<html><head><title>Cache: max-age=60</title></head></html>");
+      response->set_content_type("text/html");
+      response->AddCustomHeader("Cache-Control", "max-age=60");
+    }
+
     return std::move(response);
+  }
+
+  void SetUpMockCertVerifier(int32_t default_result) {
+    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+    network::mojom::NetworkServiceTestPtr network_service_test;
+    ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
+        mojom::kNetworkServiceName, &network_service_test);
+
+    base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+    network_service_test->MockCertVerifierSetDefaultResult(
+        default_result, run_loop.QuitClosure());
+    run_loop.Run();
   }
 
   // Callback handler for AddCookie().
   static void AddCookieCallback(const base::Closure& callback, bool success) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ASSERT_TRUE(success);
     callback.Run();
   }
@@ -390,7 +466,7 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
   static void GetCookiesCallback(const base::Closure& callback,
                                  net::CookieList* out_cookie_list,
                                  const net::CookieList& cookie_list) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
     *out_cookie_list = cookie_list;
     callback.Run();
   }
@@ -406,6 +482,12 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
     *out_service_workers = service_workers;
     callback.Run();
   }
+
+  // We can only use |MockCertVerifier| when Network Service was enabled.
+  bool is_network_service_enabled_ = false;
+
+  // Only used when |is_network_service_enabled_| is false.
+  std::unique_ptr<CacheTestUtil> cache_test_util_ = nullptr;
 
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   TestBrowsingDataRemoverDelegate embedder_delegate_;
@@ -423,7 +505,7 @@ class ClearSiteDataThrottleBrowserTest : public ContentBrowserTest {
 #else
 #define MAYBE_RedirectNavigation RedirectNavigation
 #endif
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        MAYBE_RedirectNavigation) {
   GURL page_urls[3] = {
       https_server()->GetURL("origin1.com", "/"),
@@ -471,7 +553,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
 #else
 #define MAYBE_RedirectResourceLoad RedirectResourceLoad
 #endif
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        MAYBE_RedirectResourceLoad) {
   GURL resource_urls[3] = {
       https_server()->GetURL("origin1.com", "/redirect-start"),
@@ -516,7 +598,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
 }
 
 // Tests that the Clear-Site-Data header is ignored for insecure origins.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, InsecureNavigation) {
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, InsecureNavigation) {
   // ClearSiteData() should not be called on HTTP.
   GURL url = embedded_test_server()->GetURL("example.com", "/");
   AddQuery(&url, "header", kClearCookiesHeader);
@@ -530,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, InsecureNavigation) {
 
 // Tests that the Clear-Site-Data header is honored for secure resource loads
 // and ignored for insecure ones.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        SecureAndInsecureResourceLoad) {
   GURL insecure_image =
       embedded_test_server()->GetURL("example.com", "/image.png");
@@ -594,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
 
 // Tests that the Clear-Site-Data header is ignored for service worker resource
 // loads.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, ServiceWorker) {
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, ServiceWorker) {
   GURL origin1 = https_server()->GetURL("origin1.com", "/");
   GURL origin2 = https_server()->GetURL("origin2.com", "/");
   GURL origin3 = https_server()->GetURL("origin3.com", "/");
@@ -652,7 +734,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, ServiceWorker) {
 #else
 #define MAYBE_Credentials Credentials
 #endif
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, MAYBE_Credentials) {
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, MAYBE_Credentials) {
   GURL page_template = https_server()->GetURL("origin1.com", "/");
   GURL same_origin_resource =
       https_server()->GetURL("origin1.com", "/resource");
@@ -711,8 +793,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, MAYBE_Credentials) {
 
 // Tests that the credentials flag is correctly taken into account when it
 // interpretation changes after redirect.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
-                       CredentialsOnRedirect) {
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, CredentialsOnRedirect) {
   GURL urls[2] = {
       https_server()->GetURL("origin1.com", "/image.png"),
       https_server()->GetURL("origin2.com", "/image.png"),
@@ -753,15 +834,15 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
 }
 
 // Tests that ClearSiteData() is called for the correct data types.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, Types) {
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, Types) {
   GURL base_url = https_server()->GetURL("example.com", "/");
 
-  struct TestCase {
+  const struct TestCase {
     const char* value;
     bool remove_cookies;
     bool remove_storage;
     bool remove_cache;
-  } test_cases[] = {
+  } kTestCases[] = {
       {"\"cookies\"", true, false, false},
       {"\"storage\"", false, true, false},
       {"\"cache\"", false, false, true},
@@ -771,7 +852,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, Types) {
       {"\"cookies\", \"storage\", \"cache\"", true, true, true},
   };
 
-  for (const TestCase& test_case : test_cases) {
+  for (const TestCase& test_case : kTestCases) {
     GURL url = base_url;
     AddQuery(&url, "header", test_case.value);
 
@@ -786,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, Types) {
 }
 
 // Integration test for the deletion of cookies.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        CookiesIntegrationTest) {
   AddCookie(https_server()->GetURL("origin1.com", "/abc"));
   AddCookie(https_server()->GetURL("subdomain.origin1.com", "/"));
@@ -810,7 +891,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
 }
 
 // Integration test for the unregistering of service workers.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        StorageServiceWorkersIntegrationTest) {
   AddServiceWorker("origin1.com");
   AddServiceWorker("origin2.com");
@@ -851,45 +932,41 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
 // local storage, indexed DB, etc.
 
 // Integration test for the deletion of cache entries.
-// NOTE: This test might be flaky. disk_cache::Backend calls back before cache
-// entries are actually written to the disk. Other tests using CacheTestUtil
-// show that a timeout of around 1s between cache operations is necessary to
-// avoid flakiness.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, CacheIntegrationTest) {
-  const int kTimeoutMs = 1000;
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, CacheIntegrationTest) {
+  GURL url1 = GetURLForHTTPSHost1("/cachetime/foo");
+  GURL url2 = GetURLForHTTPSHost1("/cachetime/bar");
+  GURL url3 = GetURLForHTTPSHost2("/cachetime/foo");
+  GURL url4 = GetURLForHTTPSHost2("/cachetime/bar");
 
-  CacheTestUtil util(
-      BrowserContext::GetDefaultStoragePartition(browser_context()));
-  std::string url1 = https_server()->GetURL("origin1.com", "/foo").spec();
-  std::string url2 = https_server()->GetURL("origin1.com", "/bar").spec();
-  std::string url3 = https_server()->GetURL("origin2.com", "/foo").spec();
-  std::string url4 = https_server()->GetURL("origin2.com", "/bar").spec();
-
-  std::set<std::string> entries_to_create = {url1, url2, url3, url4};
-  util.CreateCacheEntries(entries_to_create);
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
+  // Load the url to create cache entries.
+  CreateCacheEntry(url1);
+  CreateCacheEntry(url2);
+  CreateCacheEntry(url3);
+  CreateCacheEntry(url4);
 
   // There are four cache entries on two origins.
-  std::vector<std::string> cache_keys = util.GetEntryKeys();
-  EXPECT_EQ(4u, cache_keys.size());
+  EXPECT_TRUE(TestCacheEntry(url1));
+  EXPECT_TRUE(TestCacheEntry(url2));
+  EXPECT_TRUE(TestCacheEntry(url3));
+  EXPECT_TRUE(TestCacheEntry(url4));
 
-  // Let Clear-Site-Data delete the "cache" of "origin1.com".
-  GURL url = https_server()->GetURL("origin1.com", "/clear-site-data");
+  // Let Clear-Site-Data delete the "cache" of HTTPS host 2.
+  GURL url = GetURLForHTTPSHost2("/clear-site-data");
   AddQuery(&url, "header", "\"cache\"");
   NavigateToURL(shell(), url);
-  base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
 
-  // Only "origin2.com" now has cache entries.
-  cache_keys = util.GetEntryKeys();
-  ASSERT_EQ(2u, cache_keys.size());
-  std::sort(cache_keys.begin(), cache_keys.end());
-  EXPECT_EQ(url4, cache_keys[0]);
-  EXPECT_EQ(url3, cache_keys[1]);
+  // Only HTTPS host 1 now has cache entries.
+  EXPECT_TRUE(TestCacheEntry(url1));
+  EXPECT_TRUE(TestCacheEntry(url2));
+  EXPECT_FALSE(TestCacheEntry(url3));
+  EXPECT_FALSE(TestCacheEntry(url4));
+
+  DestroyCacheTestUtilIfNecessary();
 }
 
 // Tests that closing the tab right after executing Clear-Site-Data does
 // not crash.
-IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, ClosedTab) {
+IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, ClosedTab) {
   GURL url = https_server()->GetURL("example.com", "/");
   AddQuery(&url, "header", kClearCookiesHeader);
   shell()->LoadURL(url);

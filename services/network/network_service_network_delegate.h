@@ -18,9 +18,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
  public:
   // |network_context| is guaranteed to outlive this class.
   explicit NetworkServiceNetworkDelegate(NetworkContext* network_context);
+  ~NetworkServiceNetworkDelegate() override;
 
  private:
   // net::NetworkDelegateImpl implementation.
+  int OnHeadersReceived(
+      net::URLRequest* request,
+      net::CompletionOnceCallback callback,
+      const net::HttpResponseHeaders* original_response_headers,
+      scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+      GURL* allowed_unsafe_redirect_url) override;
   bool OnCanGetCookies(const net::URLRequest& request,
                        const net::CookieList& cookie_list,
                        bool allowed_from_caller) override;
@@ -41,7 +48,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
   bool OnCanUseReportingClient(const url::Origin& origin,
                                const GURL& endpoint) const override;
 
+  int HandleClearSiteDataHeader(
+      net::URLRequest* request,
+      net::CompletionOnceCallback callback,
+      const net::HttpResponseHeaders* original_response_headers);
+
+  void FinishedClearSiteData(base::WeakPtr<net::URLRequest> request,
+                             net::CompletionOnceCallback callback);
+
   NetworkContext* network_context_;
+
+  base::WeakPtrFactory<NetworkServiceNetworkDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegate);
 };

@@ -2,18 +2,6 @@
 # feature X that is already not working), please add it beside the existing
 # failures. Otherwise please reach out to network-service-dev@.
 
-# https://crbug.com/721398
--ClearSiteDataThrottleBrowserTest.CacheIntegrationTest
--ClearSiteDataThrottleBrowserTest.CookiesIntegrationTest
--ClearSiteDataThrottleBrowserTest.Credentials
--ClearSiteDataThrottleBrowserTest.CredentialsOnRedirect
--ClearSiteDataThrottleBrowserTest.RedirectNavigation
--ClearSiteDataThrottleBrowserTest.RedirectResourceLoad
--ClearSiteDataThrottleBrowserTest.SecureAndInsecureResourceLoad
--ClearSiteDataThrottleBrowserTest.ServiceWorker
--ClearSiteDataThrottleBrowserTest.StorageServiceWorkersIntegrationTest
--ClearSiteDataThrottleBrowserTest.Types
-
 # https://crbug.com/820060
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeNavigateBackThenForward
 -PreviewsStateBrowserTest.ShouldEnableLoFiModeOff

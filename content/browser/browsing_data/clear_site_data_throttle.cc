@@ -34,22 +34,24 @@ namespace content {
 
 namespace {
 
-const char kNameForLogging[] = "ClearSiteDataThrottle";
+// Appending '2' to avoid naming conflicts with 'clear_site_data_handler.h' in
+// jumbo builds. This file will be removed later as mentioned in the header.
+const char kNameForLogging2[] = "ClearSiteDataThrottle";
 
-const char kClearSiteDataHeader[] = "Clear-Site-Data";
+const char kClearSiteDataHeader2[] = "Clear-Site-Data";
 
 // Datatypes.
-const char kDatatypeWildcard[] = "\"*\"";
-const char kDatatypeCookies[] = "\"cookies\"";
-const char kDatatypeStorage[] = "\"storage\"";
-const char kDatatypeCache[] = "\"cache\"";
+const char kDatatypeWildcard2[] = "\"*\"";
+const char kDatatypeCookies2[] = "\"cookies\"";
+const char kDatatypeStorage2[] = "\"storage\"";
+const char kDatatypeCache2[] = "\"cache\"";
 
 // Pretty-printed log output.
-const char kConsoleMessageTemplate[] = "Clear-Site-Data header on '%s': %s";
-const char kConsoleMessageCleared[] = "Cleared data types: %s.";
-const char kConsoleMessageDatatypeSeparator[] = ", ";
+const char kConsoleMessageTemplate2[] = "Clear-Site-Data header on '%s': %s";
+const char kConsoleMessageCleared2[] = "Cleared data types: %s.";
+const char kConsoleMessageDatatypeSeparator2[] = ", ";
 
-bool AreExperimentalFeaturesEnabled() {
+bool AreExperimentalFeaturesEnabled2() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableExperimentalWebPlatformFeatures);
 }
@@ -60,7 +62,7 @@ bool IsNavigationRequest(net::URLRequest* request) {
 }
 
 // Represents the parameters as a single number to be recorded in a histogram.
-int ParametersMask(bool clear_cookies, bool clear_storage, bool clear_cache) {
+int ParametersMask2(bool clear_cookies, bool clear_storage, bool clear_cache) {
   return static_cast<int>(clear_cookies) * (1 << 0) +
          static_cast<int>(clear_storage) * (1 << 1) +
          static_cast<int>(clear_cache) * (1 << 2);
@@ -202,9 +204,9 @@ class UIThreadSiteDataClearer : public BrowsingDataRemover::Observer {
 };
 
 // Outputs a single |formatted_message| on the UI thread.
-void OutputFormattedMessage(WebContents* web_contents,
-                            ConsoleMessageLevel level,
-                            const std::string& formatted_text) {
+void OutputFormattedMessage2(WebContents* web_contents,
+                             ConsoleMessageLevel level,
+                             const std::string& formatted_text) {
   if (web_contents)
     web_contents->GetMainFrame()->AddMessageToConsole(level, formatted_text);
 }
@@ -222,10 +224,10 @@ void OutputMessagesOnUIThread(
   WebContents* web_contents = web_contents_getter.Run();
 
   for (const auto& message : messages) {
-    // Prefix each message with |kConsoleMessageTemplate|.
+    // Prefix each message with |kConsoleMessageTemplate2|.
     output_formatted_message_function.Run(
         web_contents, message.level,
-        base::StringPrintf(kConsoleMessageTemplate, message.url.spec().c_str(),
+        base::StringPrintf(kConsoleMessageTemplate2, message.url.spec().c_str(),
                            message.text.c_str()));
   }
 }
@@ -236,7 +238,8 @@ void OutputMessagesOnUIThread(
 // ConsoleMessagesDelegate
 
 ClearSiteDataThrottle::ConsoleMessagesDelegate::ConsoleMessagesDelegate()
-    : output_formatted_message_function_(base::Bind(&OutputFormattedMessage)) {}
+    : output_formatted_message_function_(
+          base::BindRepeating(&OutputFormattedMessage2)) {}
 
 ClearSiteDataThrottle::ConsoleMessagesDelegate::~ConsoleMessagesDelegate() {}
 
@@ -292,7 +295,7 @@ ClearSiteDataThrottle::~ClearSiteDataThrottle() {
 }
 
 const char* ClearSiteDataThrottle::GetNameForLogging() const {
-  return kNameForLogging;
+  return kNameForLogging2;
 }
 
 void ClearSiteDataThrottle::WillRedirectRequest(
@@ -351,7 +354,7 @@ bool ClearSiteDataThrottle::HandleHeader() {
 
   std::string header_value;
   if (!headers ||
-      !headers->GetNormalizedHeader(kClearSiteDataHeader, &header_value)) {
+      !headers->GetNormalizedHeader(kClearSiteDataHeader2, &header_value)) {
     return false;
   }
 
@@ -422,7 +425,7 @@ bool ClearSiteDataThrottle::HandleHeader() {
   // Record the call parameters.
   UMA_HISTOGRAM_ENUMERATION(
       "Navigation.ClearSiteData.Parameters",
-      ParametersMask(clear_cookies, clear_storage, clear_cache), (1 << 3));
+      ParametersMask2(clear_cookies, clear_storage, clear_cache), (1 << 3));
 
   base::WeakPtr<ClearSiteDataThrottle> weak_ptr =
       weak_ptr_factory_.GetWeakPtr();
@@ -463,17 +466,17 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
   for (unsigned i = 0; i < input_types.size(); i++) {
     bool* data_type = nullptr;
 
-    if (AreExperimentalFeaturesEnabled() &&
-        input_types[i] == kDatatypeWildcard) {
-      input_types.push_back(kDatatypeCookies);
-      input_types.push_back(kDatatypeStorage);
-      input_types.push_back(kDatatypeCache);
+    if (AreExperimentalFeaturesEnabled2() &&
+        input_types[i] == kDatatypeWildcard2) {
+      input_types.push_back(kDatatypeCookies2);
+      input_types.push_back(kDatatypeStorage2);
+      input_types.push_back(kDatatypeCache2);
       continue;
-    } else if (input_types[i] == kDatatypeCookies) {
+    } else if (input_types[i] == kDatatypeCookies2) {
       data_type = clear_cookies;
-    } else if (input_types[i] == kDatatypeStorage) {
+    } else if (input_types[i] == kDatatypeStorage2) {
       data_type = clear_storage;
-    } else if (input_types[i] == kDatatypeCache) {
+    } else if (input_types[i] == kDatatypeCache2) {
       data_type = clear_cache;
     } else {
       delegate->AddMessage(
@@ -490,7 +493,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
 
     *data_type = true;
     if (!output_types.empty())
-      output_types += kConsoleMessageDatatypeSeparator;
+      output_types += kConsoleMessageDatatypeSeparator2;
     output_types += input_types[i];
   }
 
@@ -503,7 +506,7 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
   // Pretty-print which types are to be cleared.
   // TODO(crbug.com/798760): Remove the disclaimer about cookies.
   std::string console_output =
-      base::StringPrintf(kConsoleMessageCleared, output_types.c_str());
+      base::StringPrintf(kConsoleMessageCleared2, output_types.c_str());
   if (*clear_cookies) {
     console_output +=
         " Clearing channel IDs and HTTP authentication cache is currently not"

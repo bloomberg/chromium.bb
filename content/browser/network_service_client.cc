@@ -6,6 +6,7 @@
 
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -453,6 +454,23 @@ void NetworkServiceClient::OnLoadingStateUpdate(
                                                   std::move(rdh_infos));
 
   std::move(callback).Run();
+}
+
+void NetworkServiceClient::OnClearSiteData(int process_id,
+                                           int routing_id,
+                                           const GURL& url,
+                                           const std::string& header_value,
+                                           int load_flags,
+                                           OnClearSiteDataCallback callback) {
+  base::RepeatingCallback<WebContents*(void)> web_contents_getter =
+      process_id
+          ? base::BindRepeating(WebContentsImpl::FromRenderFrameHostID,
+                                process_id, routing_id)
+          : base::BindRepeating(WebContents::FromFrameTreeNodeId, routing_id);
+
+  ClearSiteDataHandler::HandleHeader(std::move(web_contents_getter), url,
+                                     header_value, load_flags,
+                                     std::move(callback));
 }
 
 }  // namespace content
