@@ -1410,8 +1410,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     if len(func.GetOriginalArgs()):
       comma = " << "
     f.write(
-        '  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] gl%s("%s%s << ")");\n' %
-        (func.original_name, comma, func.MakeLogArgString()))
+        '  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] %s("%s%s << ")");\n' %
+        (func.prefixed_name, comma, func.MakeLogArgString()))
 
   def WriteClientGLReturnLog(self, func, f):
     """Writes the return value logging code."""
@@ -1457,7 +1457,8 @@ TEST_P(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
         arg.WriteClientSideValidationCode(f, func)
       f.write("  helper_->%s(%s);\n" %
                  (func.name, func.MakeHelperArgString("")))
-      f.write("  CheckGLError();\n")
+      if _prefix != 'WebGPU':
+        f.write("  CheckGLError();\n")
       self.WriteClientGLReturnLog(func, f)
       f.write("}\n")
       f.write("\n")
@@ -5599,6 +5600,7 @@ class Function(object):
     self.name = name
     self.named_type_info = named_type_info
 
+    self.prefixed_name = info['prefixed_name']
     self.original_name = info['original_name']
 
     self.original_args = self.ParseArgs(info['original_args'])
@@ -6387,12 +6389,14 @@ class GLGenerator(object):
         continue
       match = self._function_re.match(line)
       if match:
-        func_name = match.group(2)[2:]
+        prefixed_name = match.group(2)
+        func_name = prefixed_name[2:]
         func_info = self.GetFunctionInfo(func_name)
         if func_info['type'] == 'Noop':
           continue
 
         parsed_func_info = {
+          'prefixed_name': prefixed_name,
           'original_name': func_name,
           'original_args': match.group(3),
           'return_type': match.group(1).strip(),
@@ -6492,7 +6496,7 @@ class GLGenerator(object):
 
   def WriteFormatTest(self, filename):
     """Writes the command buffer format test."""
-    comment = ("// This file contains unit tests for %s commmands\n"
+    comment = ("// This file contains unit tests for %s commands\n"
                "// It is included by %s_cmd_format_test.cc\n\n" %
                (_lower_prefix, _lower_prefix))
     with CHeaderWriter(filename, self.year, comment) as f:
@@ -6870,7 +6874,7 @@ bool ClientContextState::SetCapabilityState(
     with CHeaderWriter(filename, self.year, comment) as f:
       for func in self.functions:
         func.WriteServiceImplementation(f)
-      if self.capability_flags and _prefix != 'Raster':
+      if self.capability_flags and _prefix == 'GLES2':
         f.write("""
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
@@ -7292,7 +7296,7 @@ extern const NameToFunc g_gles2_function_table[] = {
       f.write(" {\n");
       f.write("}\n\n");
 
-      if _prefix != 'Raster':
+      if _prefix == 'GLES2':
         f.write("void Validators::UpdateValuesES3() {\n")
         for name in names:
           named_type = NamedType(self.named_type_info[name])

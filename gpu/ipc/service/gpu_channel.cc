@@ -44,6 +44,7 @@
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/raster_command_buffer_stub.h"
+#include "gpu/ipc/service/webgpu_command_buffer_stub.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/message_filter.h"
 #include "ui/gl/gl_context.h"
@@ -624,10 +625,18 @@ void GpuChannel::OnCreateCommandBuffer(
       gpu_channel_manager_->gpu_feature_info()
           .status_values[GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
       kGpuFeatureStatusEnabled;
-  if (supports_oop_rasterization &&
-      init_params.attribs.enable_oop_rasterization &&
-      init_params.attribs.enable_raster_interface &&
-      !init_params.attribs.enable_gles2_interface) {
+  if (init_params.attribs.context_type == CONTEXT_TYPE_WEBGPU) {
+    if (!gpu_channel_manager_->gpu_preferences().enable_webgpu) {
+      DLOG(ERROR) << "ContextResult::kFatalFailure: WebGPU not enabled";
+      return;
+    }
+
+    stub = std::make_unique<WebGPUCommandBufferStub>(
+        this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
+  } else if (supports_oop_rasterization &&
+             init_params.attribs.enable_oop_rasterization &&
+             init_params.attribs.enable_raster_interface &&
+             !init_params.attribs.enable_gles2_interface) {
     stub = std::make_unique<RasterCommandBufferStub>(
         this, init_params, command_buffer_id, sequence_id, stream_id, route_id);
   } else {

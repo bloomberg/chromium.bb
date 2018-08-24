@@ -43,6 +43,12 @@ group("raster") {
   }
 }
 
+group("webgpu") {
+  public_deps = [
+    ":webgpu_sources",
+  ]
+}
+
 source_set("common_sources") {
   visibility = [ "//gpu/*" ]
 
@@ -153,6 +159,28 @@ source_set("raster_sources") {
   public_deps = [
     ":common",
     "//components/viz/common:resource_format",
+  ]
+}
+
+source_set("webgpu_sources") {
+  visibility = [ "//gpu/*" ]
+
+  sources = [
+    "webgpu_cmd_format.cc",
+    "webgpu_cmd_format.h",
+    "webgpu_cmd_format_autogen.h",
+    "webgpu_cmd_ids.h",
+    "webgpu_cmd_ids_autogen.h",
+  ]
+
+  configs += [ "//gpu:webgpu_implementation" ]
+
+  deps = [
+    ":gles2_utils",
+    "//base",
+  ]
+  public_deps = [
+    ":common",
   ]
 }
 

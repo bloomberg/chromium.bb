@@ -27,12 +27,6 @@
 namespace gpu {
 namespace raster {
 
-// Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
-#pragma pack(push, 4)
-static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,
-              "pragma pack alignment must be equal to "
-              "GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT");
-
 namespace id_namespaces {
 
 enum class IdNamespaces { kQueries, kTextures };
@@ -41,11 +35,15 @@ enum class IdNamespaces { kQueries, kTextures };
 
 namespace cmds {
 
+// Command buffer is GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT byte aligned.
+#pragma pack(push, 4)
+static_assert(GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT == 4,
+              "pragma pack alignment must be equal to "
+              "GPU_COMMAND_BUFFER_ENTRY_ALIGNMENT");
 #include "gpu/command_buffer/common/raster_cmd_format_autogen.h"
-
 #pragma pack(pop)
 
-}  // namespace cmd
+}  // namespace cmds
 }  // namespace raster
 }  // namespace gpu
 
