@@ -283,13 +283,6 @@ bool AutocompleteMatch::MoreRelevant(const AutocompleteMatch& elem1,
 }
 
 // static
-bool AutocompleteMatch::DestinationsEqual(const AutocompleteMatch& elem1,
-                                          const AutocompleteMatch& elem2) {
-  return !elem1.stripped_destination_url.is_empty() &&
-         (elem1.stripped_destination_url == elem2.stripped_destination_url);
-}
-
-// static
 void AutocompleteMatch::ClassifyMatchInString(
     const base::string16& find_text,
     const base::string16& text,

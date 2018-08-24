@@ -393,6 +393,6 @@ TEST(AutocompleteMatchTest, Duplicates) {
     m2.destination_url = GURL(cases[i].url2);
     m2.ComputeStrippedDestinationURL(input, nullptr);
     EXPECT_EQ(cases[i].expected_duplicate,
-              AutocompleteMatch::DestinationsEqual(m1, m2));
+              m1.stripped_destination_url == m2.stripped_destination_url);
   }
 }

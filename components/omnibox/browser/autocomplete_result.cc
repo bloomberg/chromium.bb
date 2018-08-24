@@ -29,6 +29,10 @@
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// A match attribute when a default match's score has been boosted
+// with a higher scoring non-default match.
+static const char kScoreBoostedFrom[] = "score_boosted_from";
+
 // static
 size_t AutocompleteResult::GetMaxMatches() {
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
@@ -352,29 +356,67 @@ GURL AutocompleteResult::ComputeAlternateNavUrl(
 void AutocompleteResult::SortAndDedupMatches(
     metrics::OmniboxEventProto::PageClassification page_classification,
     ACMatches* matches) {
-  // Sort matches such that duplicate matches are consecutive.
-  std::sort(matches->begin(), matches->end(),
-            DestinationSort<AutocompleteMatch>(page_classification));
+  // Group matches by stripped URL.
+  std::unordered_map<GURL, std::list<ACMatches::iterator>, MatchGURLHash>
+      url_to_matches;
+  for (auto i = matches->begin(); i != matches->end(); ++i)
+    url_to_matches[i->stripped_destination_url].push_back(i);
+  CompareWithDemoteByType<AutocompleteMatch> compare_demote_by_type(
+      page_classification);
+  // Find best default, and non-default, match in each group.
+  for (auto& group : url_to_matches) {
+    const GURL& gurl = group.first;
+    // The list of matches whose URL are equivalent.
+    auto& duplicate_matches = group.second;
+    if (gurl.is_empty() || duplicate_matches.size() == 1)
+      continue;
 
-  // Set duplicate_matches for the first match before erasing duplicate
-  // matches.
-  for (ACMatches::iterator i(matches->begin()); i != matches->end(); ++i) {
-    for (int j = 1; (i + j != matches->end()) &&
-                    AutocompleteMatch::DestinationsEqual(*i, *(i + j));
-         ++j) {
-      AutocompleteMatch& dup_match(*(i + j));
-      i->duplicate_matches.insert(i->duplicate_matches.end(),
-                                  dup_match.duplicate_matches.begin(),
-                                  dup_match.duplicate_matches.end());
-      dup_match.duplicate_matches.clear();
-      i->duplicate_matches.push_back(dup_match);
+    auto best_match = duplicate_matches.end();
+    auto best_default = duplicate_matches.end();
+    for (auto i = duplicate_matches.begin(); i != duplicate_matches.end();
+         ++i) {
+      if ((*i)->allowed_to_be_default_match) {
+        if (best_default == duplicate_matches.end() ||
+            // This object implements greater than.
+            compare_demote_by_type(**i, **best_default)) {
+          best_default = i;
+        }
+      }
+      if (best_match == duplicate_matches.end() ||
+          compare_demote_by_type(**i, **best_match)) {
+        best_match = i;
+      }
+    }
+    if (best_match != best_default && best_default != duplicate_matches.end()) {
+      (*best_default)
+          ->RecordAdditionalInfo(kScoreBoostedFrom, (*best_default)->relevance);
+      (*best_default)->relevance = (*best_match)->relevance;
+      best_match = best_default;
+    }
+    // Rotate best first if necessary, so we know to keep it.
+    if (best_match != duplicate_matches.begin()) {
+      duplicate_matches.splice(duplicate_matches.begin(), duplicate_matches,
+                               best_match);
+    }
+    for (auto i = std::next(best_match); i != duplicate_matches.end(); ++i) {
+      // For each duplicate match, append its duplicates to that of the best
+      // match, then append it, before we erase it.
+      (*best_match)->duplicate_matches.insert(
+          (*best_match)->duplicate_matches.end(),
+          (*i)->duplicate_matches.begin(),
+          (*i)->duplicate_matches.end());
+      (*best_match)->duplicate_matches.push_back(**i);
     }
   }
-
   // Erase duplicate matches.
-  matches->erase(std::unique(matches->begin(), matches->end(),
-                             &AutocompleteMatch::DestinationsEqual),
-                 matches->end());
+  matches->erase(
+      std::remove_if(
+          matches->begin(), matches->end(),
+          [&url_to_matches](const AutocompleteMatch& m) {
+            return !m.stripped_destination_url.is_empty() &&
+                   &(*url_to_matches[m.stripped_destination_url].front()) != &m;
+          }),
+      matches->end());
 }
 
 void AutocompleteResult::InlineTailPrefixes() {
