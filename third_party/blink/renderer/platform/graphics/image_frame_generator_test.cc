@@ -164,15 +164,15 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecode) {
 
   char buffer[100 * 100 * 4];
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(1, decode_request_count_);
   EXPECT_EQ(0, memory_allocator_set_count_);
 
   AddNewData();
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(2, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
   EXPECT_EQ(0, memory_allocator_set_count_);
@@ -191,8 +191,8 @@ TEST_F(ImageFrameGeneratorTest, LowEndDeviceDestroysDecoderOnPartialDecode) {
 
   char buffer[100 * 100 * 4];
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(1, decode_request_count_);
   EXPECT_EQ(1, decoders_destroyed_);
   // The memory allocator is set to the external one, then cleared after decode.
@@ -200,8 +200,8 @@ TEST_F(ImageFrameGeneratorTest, LowEndDeviceDestroysDecoderOnPartialDecode) {
 
   AddNewData();
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(2, decode_request_count_);
   EXPECT_EQ(2, decoders_destroyed_);
   // The memory allocator is set to the external one, then cleared after decode.
@@ -213,8 +213,8 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete) {
 
   char buffer[100 * 100 * 4];
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(1, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
   EXPECT_EQ(0, memory_allocator_set_count_);
@@ -223,15 +223,15 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesComplete) {
   AddNewData();
 
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(2, decode_request_count_);
   EXPECT_EQ(1, decoders_destroyed_);
 
   // Decoder created again.
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(3, decode_request_count_);
 }
 
@@ -239,7 +239,8 @@ static void DecodeThreadMain(ImageFrameGenerator* generator,
                              SegmentReader* segment_reader) {
   char buffer[100 * 100 * 4];
   generator->DecodeAndScale(segment_reader, false, 0, ImageInfo(), buffer,
-                            100 * 4, ImageDecoder::kAlphaPremultiplied);
+                            100 * 4, ImageDecoder::kAlphaPremultiplied,
+                            cc::PaintImage::kDefaultGeneratorClientId);
 }
 
 TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
@@ -247,8 +248,8 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
 
   char buffer[100 * 100 * 4];
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(1, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
 
@@ -268,8 +269,8 @@ TEST_F(ImageFrameGeneratorTest, incompleteDecodeBecomesCompleteMultiThreaded) {
 
   // Decoder created again.
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(3, decode_request_count_);
 
   AddNewData();
@@ -283,24 +284,26 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha) {
 
   char buffer[100 * 100 * 4];
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_TRUE(generator_->HasAlpha(0));
   EXPECT_EQ(1, decode_request_count_);
 
   ImageDecoder* temp_decoder = nullptr;
   EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
       generator_.get(), FullSize(), ImageDecoder::kAlphaPremultiplied,
-      &temp_decoder));
+      cc::PaintImage::kDefaultGeneratorClientId, &temp_decoder));
   ASSERT_TRUE(temp_decoder);
   temp_decoder->DecodeFrameBufferAtIndex(0)->SetHasAlpha(false);
-  ImageDecodingStore::Instance().UnlockDecoder(generator_.get(), temp_decoder);
+  ImageDecodingStore::Instance().UnlockDecoder(
+      generator_.get(), cc::PaintImage::kDefaultGeneratorClientId,
+      temp_decoder);
   EXPECT_EQ(2, decode_request_count_);
 
   SetFrameStatus(ImageFrame::kFrameComplete);
   generator_->DecodeAndScale(segment_reader_.get(), false, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(3, decode_request_count_);
   EXPECT_FALSE(generator_->HasAlpha(0));
 }
@@ -311,8 +314,8 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
 
   char buffer[100 * 100 * 4];
   generator_->DecodeAndScale(segment_reader_.get(), true, 0, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(1, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
   EXPECT_EQ(0U, requested_clear_except_frame_);
@@ -320,8 +323,8 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
   SetFrameStatus(ImageFrame::kFrameComplete);
 
   generator_->DecodeAndScale(segment_reader_.get(), true, 1, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(2, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
   EXPECT_EQ(1U, requested_clear_except_frame_);
@@ -332,8 +335,8 @@ TEST_F(ImageFrameGeneratorTest, clearMultiFrameDecoder) {
   // all the frame data, but not destroying the decoder.  See comments in
   // ImageFrameGenerator::tryToResumeDecode().
   generator_->DecodeAndScale(segment_reader_.get(), true, 2, ImageInfo(),
-                             buffer, 100 * 4,
-                             ImageDecoder::kAlphaPremultiplied);
+                             buffer, 100 * 4, ImageDecoder::kAlphaPremultiplied,
+                             cc::PaintImage::kDefaultGeneratorClientId);
   EXPECT_EQ(3, decode_request_count_);
   EXPECT_EQ(0, decoders_destroyed_);
   EXPECT_EQ(kNotFound, requested_clear_except_frame_);

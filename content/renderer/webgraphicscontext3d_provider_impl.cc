@@ -4,6 +4,7 @@
 
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 
+#include "cc/paint/paint_image.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
 #include "components/viz/common/gl_helper.h"
 #include "gpu/command_buffer/client/context_support.h"
@@ -83,7 +84,8 @@ cc::ImageDecodeCache* WebGraphicsContext3DProviderImpl::ImageDecodeCache() {
 
   image_decode_cache_ = std::make_unique<cc::GpuImageDecodeCache>(
       provider_.get(), use_transfer_cache, kN32_SkColorType,
-      kMaxWorkingSetBytes, provider_->ContextCapabilities().max_texture_size);
+      kMaxWorkingSetBytes, provider_->ContextCapabilities().max_texture_size,
+      cc::PaintImage::kDefaultGeneratorClientId);
   return image_decode_cache_.get();
 }
 

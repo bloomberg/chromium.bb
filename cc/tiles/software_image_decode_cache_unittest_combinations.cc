@@ -78,16 +78,18 @@ class BaseTest : public testing::Test {
 class N32Cache : public virtual BaseTest {
  protected:
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
-    return std::make_unique<SoftwareImageDecodeCache>(kN32_SkColorType,
-                                                      kLockedMemoryLimitBytes);
+    return std::make_unique<SoftwareImageDecodeCache>(
+        kN32_SkColorType, kLockedMemoryLimitBytes,
+        PaintImage::kDefaultGeneratorClientId);
   }
 };
 
 class RGBA4444Cache : public virtual BaseTest {
  protected:
   std::unique_ptr<SoftwareImageDecodeCache> CreateCache() override {
-    return std::make_unique<SoftwareImageDecodeCache>(kARGB_4444_SkColorType,
-                                                      kLockedMemoryLimitBytes);
+    return std::make_unique<SoftwareImageDecodeCache>(
+        kARGB_4444_SkColorType, kLockedMemoryLimitBytes,
+        PaintImage::kDefaultGeneratorClientId);
   }
 };
 

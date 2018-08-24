@@ -12,7 +12,6 @@
 #include "cc/paint/frame_metadata.h"
 #include "cc/paint/image_animation_count.h"
 #include "cc/paint/paint_export.h"
-#include "cc/paint/skia_paint_image_generator.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -36,6 +35,19 @@ class CC_PAINT_EXPORT PaintImage {
   // backing encoded data for this image changes. For instance, in the case of
   // images which can be progressively updated as more encoded data is received.
   using ContentId = int;
+
+  // A GeneratorClientId can be used to namespace different clients that are
+  // using the output of a PaintImageGenerator.
+  //
+  // This is used to allow multiple compositors to simultaneously decode the
+  // same image. Each compositor is assigned a unique GeneratorClientId which is
+  // passed through to the decoder from PaintImage::Decode. Internally the
+  // decoder ensures that requestes from different clients are executed in
+  // parallel. This is particularly important for animated images, where
+  // compositors displaying the same image can request decodes for different
+  // frames from this image.
+  using GeneratorClientId = int;
+  static const GeneratorClientId kDefaultGeneratorClientId;
 
   // The default frame index to use if no index is provided. For multi-frame
   // images, this would imply the first frame of the animation.
@@ -93,6 +105,7 @@ class CC_PAINT_EXPORT PaintImage {
 
   static Id GetNextId();
   static ContentId GetNextContentId();
+  static GeneratorClientId GetNextGeneratorClientId();
 
   // Creates a PaintImage wrapping |bitmap|. Note that the pixels will be copied
   // unless the bitmap is marked immutable.
@@ -128,7 +141,8 @@ class CC_PAINT_EXPORT PaintImage {
   bool Decode(void* memory,
               SkImageInfo* info,
               sk_sp<SkColorSpace> color_space,
-              size_t frame_index) const;
+              size_t frame_index,
+              GeneratorClientId client_id) const;
 
   Id stable_id() const { return id_; }
   const sk_sp<SkImage>& GetSkImage() const;
@@ -162,7 +176,8 @@ class CC_PAINT_EXPORT PaintImage {
   size_t FrameCount() const;
 
   // Returns an SkImage for the frame at |index|.
-  sk_sp<SkImage> GetSkImageForFrame(size_t index) const;
+  sk_sp<SkImage> GetSkImageForFrame(size_t index,
+                                    GeneratorClientId client_id) const;
 
   std::string ToString() const;
 
@@ -178,11 +193,13 @@ class CC_PAINT_EXPORT PaintImage {
   bool DecodeFromGenerator(void* memory,
                            SkImageInfo* info,
                            sk_sp<SkColorSpace> color_space,
-                           size_t frame_index) const;
+                           size_t frame_index,
+                           GeneratorClientId client_id) const;
   bool DecodeFromSkImage(void* memory,
                          SkImageInfo* info,
                          sk_sp<SkColorSpace> color_space,
-                         size_t frame_index) const;
+                         size_t frame_index,
+                         GeneratorClientId client_id) const;
   void CreateSkImage();
   PaintImage MakeSubset(const gfx::Rect& subset) const;
 

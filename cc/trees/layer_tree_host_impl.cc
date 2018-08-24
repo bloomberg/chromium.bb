@@ -335,7 +335,8 @@ LayerTreeHostImpl::LayerTreeHostImpl(
           settings_.enable_image_animation_resync),
       frame_metrics_(LTHI_FrameMetricsSettings(settings_)),
       skipped_frame_tracker_(&frame_metrics_),
-      is_animating_for_snap_(false) {
+      is_animating_for_snap_(false),
+      paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
 
@@ -2996,12 +2997,14 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
         use_oop_rasterization_,
         viz::ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true,
                                                 tile_format),
-        settings_.decoded_image_working_set_budget_bytes, max_texture_size_);
+        settings_.decoded_image_working_set_budget_bytes, max_texture_size_,
+        paint_image_generator_client_id_);
   } else {
     bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(gpu_compositing, tile_format),
-        settings_.decoded_image_working_set_budget_bytes);
+        settings_.decoded_image_working_set_budget_bytes,
+        paint_image_generator_client_id_);
   }
 
   // Pass the single-threaded synchronous task graph runner to the worker pool

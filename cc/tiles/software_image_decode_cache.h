@@ -35,7 +35,8 @@ class CC_EXPORT SoftwareImageDecodeCache
   enum class DecodeTaskType { USE_IN_RASTER_TASKS, USE_OUT_OF_RASTER_TASKS };
 
   SoftwareImageDecodeCache(SkColorType color_type,
-                           size_t locked_memory_limit_bytes);
+                           size_t locked_memory_limit_bytes,
+                           PaintImage::GeneratorClientId generator_client_id);
   ~SoftwareImageDecodeCache() override;
 
   // ImageDecodeCache overrides.
@@ -159,7 +160,9 @@ class CC_EXPORT SoftwareImageDecodeCache
 
   MemoryBudget locked_images_budget_;
 
-  SkColorType color_type_;
+  const SkColorType color_type_;
+  const PaintImage::GeneratorClientId generator_client_id_;
+
   size_t max_items_in_cache_;
   // Records the maximum number of items in the cache over the lifetime of the
   // cache. This is updated anytime we are requested to reduce cache usage.

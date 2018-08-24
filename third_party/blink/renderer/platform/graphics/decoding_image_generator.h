@@ -72,6 +72,7 @@ class PLATFORM_EXPORT DecodingImageGenerator final
                  void* pixels,
                  size_t row_bytes,
                  size_t frame_index,
+                 PaintImage::GeneratorClientId client_id,
                  uint32_t lazy_pixel_ref) override;
   bool QueryYUV8(SkYUVSizeInfo*, SkYUVColorSpace*) const override;
   bool GetYUV8Planes(const SkYUVSizeInfo&,

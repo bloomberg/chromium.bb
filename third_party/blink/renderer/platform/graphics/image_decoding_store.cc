@@ -56,15 +56,18 @@ ImageDecodingStore& ImageDecodingStore::Instance() {
   return store;
 }
 
-bool ImageDecodingStore::LockDecoder(const ImageFrameGenerator* generator,
-                                     const SkISize& scaled_size,
-                                     ImageDecoder::AlphaOption alpha_option,
-                                     ImageDecoder** decoder) {
+bool ImageDecodingStore::LockDecoder(
+    const ImageFrameGenerator* generator,
+    const SkISize& scaled_size,
+    ImageDecoder::AlphaOption alpha_option,
+    cc::PaintImage::GeneratorClientId client_id,
+    ImageDecoder** decoder) {
   DCHECK(decoder);
 
   MutexLocker lock(mutex_);
-  DecoderCacheMap::iterator iter = decoder_cache_map_.find(
-      DecoderCacheEntry::MakeCacheKey(generator, scaled_size, alpha_option));
+  DecoderCacheMap::iterator iter =
+      decoder_cache_map_.find(DecoderCacheEntry::MakeCacheKey(
+          generator, scaled_size, alpha_option, client_id));
   if (iter == decoder_cache_map_.end())
     return false;
 
@@ -77,11 +80,13 @@ bool ImageDecodingStore::LockDecoder(const ImageFrameGenerator* generator,
   return true;
 }
 
-void ImageDecodingStore::UnlockDecoder(const ImageFrameGenerator* generator,
-                                       const ImageDecoder* decoder) {
+void ImageDecodingStore::UnlockDecoder(
+    const ImageFrameGenerator* generator,
+    cc::PaintImage::GeneratorClientId client_id,
+    const ImageDecoder* decoder) {
   MutexLocker lock(mutex_);
   DecoderCacheMap::iterator iter = decoder_cache_map_.find(
-      DecoderCacheEntry::MakeCacheKey(generator, decoder));
+      DecoderCacheEntry::MakeCacheKey(generator, decoder, client_id));
   SECURITY_DCHECK(iter != decoder_cache_map_.end());
 
   CacheEntry* cache_entry = iter->value.get();
@@ -92,13 +97,15 @@ void ImageDecodingStore::UnlockDecoder(const ImageFrameGenerator* generator,
   ordered_cache_list_.Append(cache_entry);
 }
 
-void ImageDecodingStore::InsertDecoder(const ImageFrameGenerator* generator,
-                                       std::unique_ptr<ImageDecoder> decoder) {
+void ImageDecodingStore::InsertDecoder(
+    const ImageFrameGenerator* generator,
+    cc::PaintImage::GeneratorClientId client_id,
+    std::unique_ptr<ImageDecoder> decoder) {
   // Prune old cache entries to give space for the new one.
   Prune();
 
   std::unique_ptr<DecoderCacheEntry> new_cache_entry =
-      DecoderCacheEntry::Create(generator, std::move(decoder));
+      DecoderCacheEntry::Create(generator, std::move(decoder), client_id);
 
   MutexLocker lock(mutex_);
   DCHECK(!decoder_cache_map_.Contains(new_cache_entry->CacheKey()));
@@ -106,13 +113,15 @@ void ImageDecodingStore::InsertDecoder(const ImageFrameGenerator* generator,
                       &decoder_cache_key_map_);
 }
 
-void ImageDecodingStore::RemoveDecoder(const ImageFrameGenerator* generator,
-                                       const ImageDecoder* decoder) {
+void ImageDecodingStore::RemoveDecoder(
+    const ImageFrameGenerator* generator,
+    cc::PaintImage::GeneratorClientId client_id,
+    const ImageDecoder* decoder) {
   Vector<std::unique_ptr<CacheEntry>> cache_entries_to_delete;
   {
     MutexLocker lock(mutex_);
     DecoderCacheMap::iterator iter = decoder_cache_map_.find(
-        DecoderCacheEntry::MakeCacheKey(generator, decoder));
+        DecoderCacheEntry::MakeCacheKey(generator, decoder, client_id));
     SECURITY_DCHECK(iter != decoder_cache_map_.end());
 
     CacheEntry* cache_entry = iter->value.get();
@@ -241,6 +250,8 @@ void ImageDecodingStore::RemoveFromCacheInternal(
     U* cache_map,
     V* identifier_map,
     Vector<std::unique_ptr<CacheEntry>>* deletion_list) {
+  DCHECK_EQ(cache_entry->UseCount(), 0);
+
   const size_t cache_entry_bytes = cache_entry->MemoryUsageInBytes();
   DCHECK_GE(heap_memory_usage_in_bytes_, cache_entry_bytes);
   heap_memory_usage_in_bytes_ -= cache_entry_bytes;

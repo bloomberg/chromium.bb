@@ -80,7 +80,8 @@ cc::ImageDecodeCache& Image::SharedCCDecodeCache() {
   static const size_t kLockedMemoryLimitBytes = 64 * 1024 * 1024;
   DEFINE_THREAD_SAFE_STATIC_LOCAL(cc::SoftwareImageDecodeCache,
                                   image_decode_cache,
-                                  (kN32_SkColorType, kLockedMemoryLimitBytes));
+                                  (kN32_SkColorType, kLockedMemoryLimitBytes,
+                                   PaintImage::kDefaultGeneratorClientId));
   return image_decode_cache;
 }
 

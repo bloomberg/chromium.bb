@@ -141,10 +141,12 @@ void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
 
 SoftwareImageDecodeCache::SoftwareImageDecodeCache(
     SkColorType color_type,
-    size_t locked_memory_limit_bytes)
+    size_t locked_memory_limit_bytes,
+    PaintImage::GeneratorClientId generator_client_id)
     : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
       locked_images_budget_(locked_memory_limit_bytes),
       color_type_(color_type),
+      generator_client_id_(generator_client_id),
       max_items_in_cache_(kNormalMaxItemsInCacheForSoftware) {
   // In certain cases, ThreadTaskRunnerHandle isn't set (Android Webview).
   // Don't register a dump provider in these cases.
@@ -367,7 +369,8 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
   // If we can use the original decode, we'll definitely need a decode.
   if (key.type() == CacheKey::kOriginal) {
     base::AutoUnlock release(lock_);
-    local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_);
+    local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_,
+                                             generator_client_id_);
   } else {
     // Attempt to find a cached decode to generate a scaled/subrected decode
     // from.
@@ -394,7 +397,8 @@ void SoftwareImageDecodeCache::DecodeImageIfNecessary(
     DCHECK(!should_decode_to_scale || !key.is_nearest_neighbor());
     if (should_decode_to_scale) {
       base::AutoUnlock release(lock_);
-      local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_);
+      local_cache_entry = Utils::DoDecodeImage(key, paint_image, color_type_,
+                                               generator_client_id_);
     }
 
     // Couldn't decode to scale or find a cached candidate. Create the

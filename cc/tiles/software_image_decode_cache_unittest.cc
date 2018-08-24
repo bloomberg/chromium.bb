@@ -23,7 +23,9 @@ size_t kLockedMemoryLimitBytes = 128 * 1024 * 1024;
 class TestSoftwareImageDecodeCache : public SoftwareImageDecodeCache {
  public:
   TestSoftwareImageDecodeCache()
-      : SoftwareImageDecodeCache(kN32_SkColorType, kLockedMemoryLimitBytes) {}
+      : SoftwareImageDecodeCache(kN32_SkColorType,
+                                 kLockedMemoryLimitBytes,
+                                 PaintImage::kDefaultGeneratorClientId) {}
 };
 
 SkMatrix CreateMatrix(const SkSize& scale, bool is_decomposable) {

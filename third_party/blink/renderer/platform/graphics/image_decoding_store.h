@@ -33,6 +33,7 @@
 #include "SkTypes.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "cc/paint/paint_image_generator.h"
 #include "third_party/blink/renderer/platform/graphics/image_frame_generator.h"
 #include "third_party/blink/renderer/platform/graphics/skia/sk_size_hash.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
@@ -52,17 +53,19 @@ struct DecoderCacheKey {
   const blink::ImageFrameGenerator* gen_;
   SkISize size_;
   blink::ImageDecoder::AlphaOption alpha_option_;
+  cc::PaintImage::GeneratorClientId client_id_;
 
   DecoderCacheKey()
       : gen_(nullptr),
         size_(SkISize::Make(0, 0)),
-        alpha_option_(static_cast<blink::ImageDecoder::AlphaOption>(0)) {}
+        alpha_option_(static_cast<blink::ImageDecoder::AlphaOption>(0)),
+        client_id_(cc::PaintImage::kDefaultGeneratorClientId) {}
 };
 
 static inline bool operator==(const DecoderCacheKey& a,
                               const DecoderCacheKey& b) {
   return a.gen_ == b.gen_ && a.size_ == b.size_ &&
-         a.alpha_option_ == b.alpha_option_;
+         a.alpha_option_ == b.alpha_option_ && a.client_id_ == b.client_id_;
 }
 
 static inline bool operator!=(const DecoderCacheKey& a,
@@ -116,9 +119,10 @@ class DecoderCacheEntry final : public CacheEntry {
  public:
   static std::unique_ptr<DecoderCacheEntry> Create(
       const ImageFrameGenerator* generator,
-      std::unique_ptr<ImageDecoder> decoder) {
+      std::unique_ptr<ImageDecoder> decoder,
+      cc::PaintImage::GeneratorClientId client_id) {
     return base::WrapUnique(
-        new DecoderCacheEntry(generator, 0, std::move(decoder)));
+        new DecoderCacheEntry(generator, 0, std::move(decoder), client_id));
   }
 
   size_t MemoryUsageInBytes() const override {
@@ -126,40 +130,48 @@ class DecoderCacheEntry final : public CacheEntry {
   }
   CacheType GetType() const override { return kTypeDecoder; }
 
-  static DecoderCacheKey MakeCacheKey(const ImageFrameGenerator* generator,
-                                      const SkISize& size,
-                                      ImageDecoder::AlphaOption alpha_option) {
+  static DecoderCacheKey MakeCacheKey(
+      const ImageFrameGenerator* generator,
+      const SkISize& size,
+      ImageDecoder::AlphaOption alpha_option,
+      cc::PaintImage::GeneratorClientId client_id) {
     DecoderCacheKey key;
     key.gen_ = generator;
     key.size_ = size;
     key.alpha_option_ = alpha_option;
+    key.client_id_ = client_id;
     return key;
   }
-  static DecoderCacheKey MakeCacheKey(const ImageFrameGenerator* generator,
-                                      const ImageDecoder* decoder) {
+  static DecoderCacheKey MakeCacheKey(
+      const ImageFrameGenerator* generator,
+      const ImageDecoder* decoder,
+      cc::PaintImage::GeneratorClientId client_id) {
     return MakeCacheKey(generator,
                         SkISize::Make(decoder->DecodedSize().Width(),
                                       decoder->DecodedSize().Height()),
-                        decoder->GetAlphaOption());
+                        decoder->GetAlphaOption(), client_id);
   }
   DecoderCacheKey CacheKey() const {
-    return MakeCacheKey(generator_, size_, alpha_option_);
+    return MakeCacheKey(generator_, size_, alpha_option_, client_id_);
   }
   ImageDecoder* CachedDecoder() const { return cached_decoder_.get(); }
 
  private:
   DecoderCacheEntry(const ImageFrameGenerator* generator,
                     int count,
-                    std::unique_ptr<ImageDecoder> decoder)
+                    std::unique_ptr<ImageDecoder> decoder,
+                    cc::PaintImage::GeneratorClientId client_id)
       : CacheEntry(generator, count),
         cached_decoder_(std::move(decoder)),
         size_(SkISize::Make(cached_decoder_->DecodedSize().Width(),
                             cached_decoder_->DecodedSize().Height())),
-        alpha_option_(cached_decoder_->GetAlphaOption()) {}
+        alpha_option_(cached_decoder_->GetAlphaOption()),
+        client_id_(client_id) {}
 
   std::unique_ptr<ImageDecoder> cached_decoder_;
   SkISize size_;
   ImageDecoder::AlphaOption alpha_option_;
+  cc::PaintImage::GeneratorClientId client_id_;
 };
 
 }  // namespace blink
@@ -172,17 +184,19 @@ struct DefaultHash<blink::DecoderCacheKey> {
   struct Hash {
     STATIC_ONLY(Hash);
     static unsigned GetHash(const blink::DecoderCacheKey& p) {
-      return HashInts(
+      auto first =
           HashInts(DefaultHash<blink::ImageFrameGenerator*>::Hash::GetHash(
                        const_cast<blink::ImageFrameGenerator*>(p.gen_)),
-                   DefaultHash<SkISize>::Hash::GetHash(p.size_)),
-          DefaultHash<uint8_t>::Hash::GetHash(
-              static_cast<uint8_t>(p.alpha_option_)));
+                   DefaultHash<SkISize>::Hash::GetHash(p.size_));
+      auto second = HashInts(DefaultHash<uint8_t>::Hash::GetHash(
+                                 static_cast<uint8_t>(p.alpha_option_)),
+                             p.client_id_);
+      return HashInts(first, second);
     }
     static bool Equal(const blink::DecoderCacheKey& a,
                       const blink::DecoderCacheKey& b) {
       return a.gen_ == b.gen_ && a.size_ == b.size_ &&
-             a.alpha_option_ == b.alpha_option_;
+             a.alpha_option_ == b.alpha_option_ && a.client_id_ == b.client_id_;
     }
     static const bool safe_to_compare_to_empty_or_deleted = true;
   };
@@ -196,12 +210,14 @@ struct HashTraits<blink::DecoderCacheKey>
   static blink::DecoderCacheKey EmptyValue() {
     return blink::DecoderCacheEntry::MakeCacheKey(
         nullptr, SkISize::Make(0, 0),
-        static_cast<blink::ImageDecoder::AlphaOption>(0));
+        static_cast<blink::ImageDecoder::AlphaOption>(0),
+        cc::PaintImage::kDefaultGeneratorClientId);
   }
   static void ConstructDeletedValue(blink::DecoderCacheKey& slot, bool) {
     slot = blink::DecoderCacheEntry::MakeCacheKey(
         nullptr, SkISize::Make(-1, -1),
-        static_cast<blink::ImageDecoder::AlphaOption>(0));
+        static_cast<blink::ImageDecoder::AlphaOption>(0),
+        cc::PaintImage::kDefaultGeneratorClientId);
   }
   static bool IsDeletedValue(const blink::DecoderCacheKey& value) {
     return value.size_ == SkISize::Make(-1, -1);
@@ -248,10 +264,17 @@ class PLATFORM_EXPORT ImageDecodingStore final {
   bool LockDecoder(const ImageFrameGenerator*,
                    const SkISize& scaled_size,
                    ImageDecoder::AlphaOption,
+                   cc::PaintImage::GeneratorClientId client_id,
                    ImageDecoder**);
-  void UnlockDecoder(const ImageFrameGenerator*, const ImageDecoder*);
-  void InsertDecoder(const ImageFrameGenerator*, std::unique_ptr<ImageDecoder>);
-  void RemoveDecoder(const ImageFrameGenerator*, const ImageDecoder*);
+  void UnlockDecoder(const ImageFrameGenerator*,
+                     cc::PaintImage::GeneratorClientId client_id,
+                     const ImageDecoder*);
+  void InsertDecoder(const ImageFrameGenerator*,
+                     cc::PaintImage::GeneratorClientId client_id,
+                     std::unique_ptr<ImageDecoder>);
+  void RemoveDecoder(const ImageFrameGenerator*,
+                     cc::PaintImage::GeneratorClientId client_id,
+                     const ImageDecoder*);
 
   // Remove all cache entries indexed by ImageFrameGenerator.
   void RemoveCacheIndexedByGenerator(const ImageFrameGenerator*);

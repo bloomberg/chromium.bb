@@ -295,6 +295,7 @@ class VideoImageGenerator : public cc::PaintImageGenerator {
                  void* pixels,
                  size_t row_bytes,
                  size_t frame_index,
+                 cc::PaintImage::GeneratorClientId client_id,
                  uint32_t lazy_pixel_ref) override {
     DCHECK_EQ(frame_index, 0u);
 

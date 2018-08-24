@@ -52,7 +52,8 @@ class GpuImageDecodeCachePerfTest
                UseTransferCache(),
                kRGBA_8888_SkColorType,
                kCacheSize,
-               MaxTextureSize()) {}
+               MaxTextureSize(),
+               PaintImage::kDefaultGeneratorClientId) {}
 
  protected:
   size_t MaxTextureSize() const {

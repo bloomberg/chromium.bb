@@ -55,9 +55,11 @@ std::unique_ptr<base::DiscardableMemory> AllocateDiscardable(
 
 // static
 std::unique_ptr<SoftwareImageDecodeCacheUtils::CacheEntry>
-SoftwareImageDecodeCacheUtils::DoDecodeImage(const CacheKey& key,
-                                             const PaintImage& paint_image,
-                                             SkColorType color_type) {
+SoftwareImageDecodeCacheUtils::DoDecodeImage(
+    const CacheKey& key,
+    const PaintImage& paint_image,
+    SkColorType color_type,
+    PaintImage::GeneratorClientId client_id) {
   SkISize target_size =
       SkISize::Make(key.target_size().width(), key.target_size().height());
   DCHECK(target_size == paint_image.GetSupportedDecodeSize(target_size));
@@ -73,7 +75,7 @@ SoftwareImageDecodeCacheUtils::DoDecodeImage(const CacheKey& key,
                "decode");
   bool result = paint_image.Decode(target_pixels->data(), &target_info,
                                    key.target_color_space().ToSkColorSpace(),
-                                   key.frame_key().frame_index());
+                                   key.frame_key().frame_index(), client_id);
   if (!result) {
     target_pixels->Unlock();
     return nullptr;

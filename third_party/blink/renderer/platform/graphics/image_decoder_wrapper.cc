@@ -84,7 +84,8 @@ ImageDecoderWrapper::ImageDecoderWrapper(
     const SkImageInfo& info,
     void* pixels,
     size_t row_bytes,
-    bool all_data_received)
+    bool all_data_received,
+    cc::PaintImage::GeneratorClientId client_id)
     : generator_(generator),
       data_(data),
       scaled_size_(scaled_size),
@@ -95,7 +96,8 @@ ImageDecoderWrapper::ImageDecoderWrapper(
       info_(info),
       pixels_(pixels),
       row_bytes_(row_bytes),
-      all_data_received_(all_data_received) {}
+      all_data_received_(all_data_received),
+      client_id_(client_id) {}
 
 ImageDecoderWrapper::~ImageDecoderWrapper() = default;
 
@@ -109,7 +111,7 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
   std::unique_ptr<ImageDecoder> new_decoder;
 
   const bool resume_decoding = ImageDecodingStore::Instance().LockDecoder(
-      generator_, scaled_size_, alpha_option_, &decoder);
+      generator_, scaled_size_, alpha_option_, client_id_, &decoder);
   DCHECK(!resume_decoding || decoder);
 
   if (resume_decoding) {
@@ -150,8 +152,10 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
       !frame->Bitmap().isNull();
   if (!has_decoded_frame) {
     decode_failed_ = decoder->Failed();
-    if (resume_decoding)
-      ImageDecodingStore::Instance().UnlockDecoder(generator_, decoder);
+    if (resume_decoding) {
+      ImageDecodingStore::Instance().UnlockDecoder(generator_, client_id_,
+                                                   decoder);
+    }
     return false;
   }
 
@@ -185,17 +189,21 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
       frame->GetStatus() == ImageFrame::kFrameComplete || all_data_received_;
   PurgeAllFramesIfNecessary(decoder, frame_was_completely_decoded,
                             *frame_count);
+
   const bool should_remove_decoder = ShouldRemoveDecoder(
       frame_was_completely_decoded, decode_to_external_memory);
   if (resume_decoding) {
-    if (should_remove_decoder)
-      ImageDecodingStore::Instance().RemoveDecoder(generator_, decoder);
-    else
-      ImageDecodingStore::Instance().UnlockDecoder(generator_, decoder);
+    if (should_remove_decoder) {
+      ImageDecodingStore::Instance().RemoveDecoder(generator_, client_id_,
+                                                   decoder);
+    } else {
+      ImageDecodingStore::Instance().UnlockDecoder(generator_, client_id_,
+                                                   decoder);
+    }
   } else if (!should_remove_decoder) {
     // If we have a newly created decoder which we don't want to remove, add
     // it to the cache.
-    ImageDecodingStore::Instance().InsertDecoder(generator_,
+    ImageDecodingStore::Instance().InsertDecoder(generator_, client_id_,
                                                  std::move(new_decoder));
   }
 

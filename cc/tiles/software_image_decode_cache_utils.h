@@ -181,9 +181,11 @@ class SoftwareImageDecodeCacheUtils {
     bool cached_ = false;
   };
 
-  static std::unique_ptr<CacheEntry> DoDecodeImage(const CacheKey& key,
-                                                   const PaintImage& image,
-                                                   SkColorType color_type);
+  static std::unique_ptr<CacheEntry> DoDecodeImage(
+      const CacheKey& key,
+      const PaintImage& image,
+      SkColorType color_type,
+      PaintImage::GeneratorClientId client_id);
   static std::unique_ptr<CacheEntry> GenerateCacheEntryFromCandidate(
       const CacheKey& key,
       const DecodedDrawImage& candidate,
