@@ -1061,6 +1061,9 @@ WallpaperManager.prototype.onWallpaperChanged_ = function(
   $('wallpaper-set-by-message').textContent = '';
   $('wallpaper-grid').classList.remove('small');
 
+  if (this.useNewWallpaperPicker_)
+    this.wallpaperGrid_.checkmark.focus();
+
   // Disables daily refresh if user selects a non-daily wallpaper.
   if (activeItem && activeItem.source !== Constants.WallpaperSourceEnum.Daily)
     this.disableDailyRefresh_();

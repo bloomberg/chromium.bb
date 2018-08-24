@@ -324,9 +324,14 @@ cr.define('wallpapers', function() {
     __proto__: Grid.prototype,
 
     /**
-     * The checkbox element.
+     * The checkbox element shown with the currently set wallpaper.
+     * @type {Object}
      */
     checkmark_: undefined,
+
+    get checkmark() {
+      return this.checkmark_;
+    },
 
     /**
      * ID of spinner delay timer.
@@ -354,6 +359,7 @@ cr.define('wallpapers', function() {
      *     wallpaperInfo The information of the wallpaper to be set active.
      */
     activeItem_: undefined,
+
     set activeItem(activeItem) {
       if (this.activeItem_ != activeItem) {
         this.activeItem_ = activeItem;
@@ -603,6 +609,7 @@ cr.define('wallpapers', function() {
       this.checkmark_.classList.add('check');
       this.checkmark_.setAttribute(
           'aria-label', loadTimeData.getString('setSuccessfullyMessage'));
+      this.checkmark_.tabIndex = 0;
       this.dataModel = new ArrayDataModel([]);
       this.thumbnailList_ = new ArrayDataModel([]);
       this.useNewWallpaperPicker_ =
