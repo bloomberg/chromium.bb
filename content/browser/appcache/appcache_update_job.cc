@@ -688,8 +688,9 @@ void AppCacheUpdateJob::HandleManifestRefetchCompleted(URLFetcher* fetcher,
       StoreGroupAndCache();
     } else {
       manifest_response_writer_.reset(CreateResponseWriter());
-      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-          new HttpResponseInfoIOBuffer(manifest_response_info_.release()));
+      scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+          base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+              std::move(manifest_response_info_));
       manifest_response_writer_->WriteInfo(
           io_buffer.get(),
           base::BindOnce(&AppCacheUpdateJob::OnManifestInfoWriteComplete,
@@ -990,8 +991,8 @@ void AppCacheUpdateJob::FetchUrls() {
         DCHECK(existing_entry->response_id() ==
                url_to_fetch.existing_response_info->response_id());
         fetcher->set_existing_response_headers(
-            url_to_fetch.existing_response_info->http_response_info()->headers
-                .get());
+            url_to_fetch.existing_response_info->http_response_info()
+                .headers.get());
         fetcher->set_existing_entry(*existing_entry);
       }
       fetcher->Start();
@@ -1168,7 +1169,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
     AppCacheResponseInfo* response_info,
     int64_t response_id) {
   const net::HttpResponseInfo* http_info =
-      response_info ? response_info->http_response_info() : nullptr;
+      response_info ? &response_info->http_response_info() : nullptr;
 
   // Needed response info for a manifest fetch request.
   if (internal_state_ == FETCH_MANIFEST) {

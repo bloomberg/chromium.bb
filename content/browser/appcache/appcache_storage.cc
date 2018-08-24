@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/appcache_storage.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
@@ -71,9 +73,8 @@ void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
 
   scoped_refptr<AppCacheResponseInfo> info;
   if (result >= 0) {
-    info = new AppCacheResponseInfo(storage_, manifest_url_,
-                                    response_id_,
-                                    info_buffer_->http_info.release(),
+    info = new AppCacheResponseInfo(storage_, manifest_url_, response_id_,
+                                    std::move(info_buffer_->http_info),
                                     info_buffer_->response_data_size);
   }
   FOR_EACH_DELEGATE(delegates_, OnResponseInfoLoaded(info.get(), response_id_));

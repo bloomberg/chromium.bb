@@ -464,25 +464,22 @@ void AppCacheInternalsUI::OnFileDetailsReady(
     scoped_refptr<net::IOBuffer> response_data,
     int data_length) {
   std::string headers;
-  if (response_info->http_response_info()) {
-    headers.append("<hr><pre>");
-    headers.append(net::EscapeForHTML(
-        response_info->http_response_info()->headers->GetStatusLine()));
-    headers.push_back('\n');
+  headers.append("<hr><pre>");
+  headers.append(net::EscapeForHTML(
+      response_info->http_response_info().headers->GetStatusLine()));
+  headers.push_back('\n');
 
-    size_t iter = 0;
-    std::string name, value;
-    while (response_info->http_response_info()->headers->EnumerateHeaderLines(
-        &iter, &name, &value)) {
-      headers.append(net::EscapeForHTML(name));
-      headers.append(": ");
-      headers.append(net::EscapeForHTML(value));
-      headers.push_back('\n');
-    }
-    headers.append("</pre>");
-  } else {
-    headers.append("Failed to read response headers. <br>");
+  size_t iter = 0;
+  std::string name, value;
+  while (response_info->http_response_info().headers->EnumerateHeaderLines(
+      &iter, &name, &value)) {
+    headers.append(net::EscapeForHTML(name));
+    headers.append(": ");
+    headers.append(net::EscapeForHTML(value));
+    headers.push_back('\n');
   }
+  headers.append("</pre>");
+
   std::string hex_dump = base::StringPrintf(
       "<hr><pre> Showing %d of %d bytes\n\n", static_cast<int>(data_length),
       static_cast<int>(response_info->response_data_size()));

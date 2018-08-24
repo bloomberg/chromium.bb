@@ -118,13 +118,14 @@ class ServiceWorkerReadFromCacheJobTest : public testing::Test {
     std::unique_ptr<ServiceWorkerResponseWriter> writer =
         context()->storage()->CreateResponseWriter(resource_id);
 
-    std::unique_ptr<net::HttpResponseInfo> info(new net::HttpResponseInfo);
+    std::unique_ptr<net::HttpResponseInfo> info =
+        std::make_unique<net::HttpResponseInfo>();
     info->request_time = base::Time::Now();
     info->response_time = base::Time::Now();
     info->was_cached = false;
     info->headers = new net::HttpResponseHeaders(headers);
     scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-        new HttpResponseInfoIOBuffer(info.release());
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
     {
       net::TestCompletionCallback cb;
       writer->WriteInfo(info_buffer.get(), cb.callback());

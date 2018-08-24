@@ -35,23 +35,22 @@ using OnceCompletionCallback = base::OnceCallback<void(int)>;
 class CONTENT_EXPORT AppCacheResponseInfo
     : public base::RefCounted<AppCacheResponseInfo> {
  public:
-  // AppCacheResponseInfo takes ownership of the http_info.
   AppCacheResponseInfo(AppCacheStorage* storage,
                        const GURL& manifest_url,
                        int64_t response_id,
-                       net::HttpResponseInfo* http_info,
+                       std::unique_ptr<net::HttpResponseInfo> http_info,
                        int64_t response_data_size);
 
   const GURL& manifest_url() const { return manifest_url_; }
   int64_t response_id() const { return response_id_; }
-  const net::HttpResponseInfo* http_response_info() const {
-    return http_response_info_.get();
+  const net::HttpResponseInfo& http_response_info() const {
+    return *http_response_info_;
   }
   int64_t response_data_size() const { return response_data_size_; }
 
  private:
   friend class base::RefCounted<AppCacheResponseInfo>;
-  virtual ~AppCacheResponseInfo();
+  ~AppCacheResponseInfo();
 
   const GURL manifest_url_;
   const int64_t response_id_;
@@ -68,11 +67,12 @@ struct CONTENT_EXPORT HttpResponseInfoIOBuffer
   int response_data_size;
 
   HttpResponseInfoIOBuffer();
-  explicit HttpResponseInfoIOBuffer(net::HttpResponseInfo* info);
+  explicit HttpResponseInfoIOBuffer(
+      std::unique_ptr<net::HttpResponseInfo> info);
 
- protected:
+ private:
   friend class base::RefCountedThreadSafe<HttpResponseInfoIOBuffer>;
-  virtual ~HttpResponseInfoIOBuffer();
+  ~HttpResponseInfoIOBuffer();
 };
 
 // Low level storage API used by the response reader and writer.
@@ -93,7 +93,7 @@ class CONTENT_EXPORT AppCacheDiskCacheInterface {
     virtual int64_t GetSize(int index) = 0;
     virtual void Close() = 0;
    protected:
-    virtual ~Entry() {}
+    virtual ~Entry() = default;
   };
 
   // The uma_name pointer must remain valid for the life of the object.

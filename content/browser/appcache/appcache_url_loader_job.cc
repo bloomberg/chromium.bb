@@ -258,31 +258,30 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
   if (!data_pipe_.consumer_handle.is_valid())
     return;
 
-  const net::HttpResponseInfo* http_info = is_range_request()
-                                               ? range_response_info_.get()
-                                               : info_->http_response_info();
+  const net::HttpResponseInfo& http_info =
+      is_range_request() ? *range_response_info_ : info_->http_response_info();
   network::ResourceResponseHead response_head;
-  response_head.headers = http_info->headers;
+  response_head.headers = http_info.headers;
   response_head.appcache_id = cache_id_;
   response_head.appcache_manifest_url = manifest_url_;
 
-  http_info->headers->GetMimeType(&response_head.mime_type);
-  http_info->headers->GetCharset(&response_head.charset);
+  http_info.headers->GetMimeType(&response_head.mime_type);
+  http_info.headers->GetCharset(&response_head.charset);
 
   // TODO(ananta)
   // Verify if the times sent here are correct.
-  response_head.request_time = http_info->request_time;
-  response_head.response_time = http_info->response_time;
+  response_head.request_time = http_info.request_time;
+  response_head.response_time = http_info.response_time;
   response_head.content_length =
       is_range_request() ? range_response_info_->headers->GetContentLength()
                          : info_->response_data_size();
-  response_head.connection_info = http_info->connection_info;
-  response_head.socket_address = http_info->socket_address;
-  response_head.was_fetched_via_spdy = http_info->was_fetched_via_spdy;
-  response_head.was_alpn_negotiated = http_info->was_alpn_negotiated;
-  response_head.alpn_negotiated_protocol = http_info->alpn_negotiated_protocol;
-  if (http_info->ssl_info.cert)
-    response_head.ssl_info = http_info->ssl_info;
+  response_head.connection_info = http_info.connection_info;
+  response_head.socket_address = http_info.socket_address;
+  response_head.was_fetched_via_spdy = http_info.was_fetched_via_spdy;
+  response_head.was_alpn_negotiated = http_info.was_alpn_negotiated;
+  response_head.alpn_negotiated_protocol = http_info.alpn_negotiated_protocol;
+  if (http_info.ssl_info.cert)
+    response_head.ssl_info = http_info.ssl_info;
   response_head.load_timing = load_timing_info_;
 
   client_->OnReceiveResponse(response_head);
@@ -330,7 +329,7 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
   if (!error_code) {
     const net::HttpResponseInfo* http_info =
         is_range_request() ? range_response_info_.get()
-                           : (info_ ? info_->http_response_info() : nullptr);
+                           : (info_ ? &info_->http_response_info() : nullptr);
     status.exists_in_cache = http_info->was_cached;
     status.completion_time = base::TimeTicks::Now();
     status.encoded_body_length =

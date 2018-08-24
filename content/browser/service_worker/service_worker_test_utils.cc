@@ -105,7 +105,7 @@ void WriteBodyToDiskCache(std::unique_ptr<ServiceWorkerResponseWriter> writer,
                           const std::string& body,
                           base::OnceClosure callback) {
   scoped_refptr<HttpResponseInfoIOBuffer> info_buffer =
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(info.release());
+      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(info));
   info_buffer->response_data_size = body.size();
   ServiceWorkerResponseWriter* writer_rawptr = writer.get();
   writer_rawptr->WriteInfo(

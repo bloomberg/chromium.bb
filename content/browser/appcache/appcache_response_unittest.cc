@@ -177,19 +177,21 @@ class AppCacheResponseTest : public testing::Test {
 
   int basic_response_size() { return 5; }  // should match kHttpBody above
 
-  void WriteResponse(net::HttpResponseInfo* head,
-                     IOBuffer* body, int body_len) {
+  void WriteResponse(std::unique_ptr<net::HttpResponseInfo> head,
+                     IOBuffer* body,
+                     int body_len) {
     DCHECK(body);
     scoped_refptr<IOBuffer> body_ref(body);
     PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteResponseBody,
                                 base::Unretained(this), body_ref, body_len));
-    WriteResponseHead(head);
+    WriteResponseHead(std::move(head));
   }
 
-  void WriteResponseHead(net::HttpResponseInfo* head) {
+  void WriteResponseHead(std::unique_ptr<net::HttpResponseInfo> head) {
     EXPECT_FALSE(writer_->IsWritePending());
-    expected_write_result_ = GetHttpResponseInfoSize(head);
-    write_info_buffer_ = new HttpResponseInfoIOBuffer(head);
+    expected_write_result_ = GetHttpResponseInfoSize(*head);
+    write_info_buffer_ =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(head));
     writer_->WriteInfo(
         write_info_buffer_.get(),
         base::BindOnce(&AppCacheResponseTest::OnWriteInfoComplete,
@@ -198,7 +200,7 @@ class AppCacheResponseTest : public testing::Test {
 
   void WriteResponseBody(scoped_refptr<IOBuffer> io_buffer, int buf_len) {
     EXPECT_FALSE(writer_->IsWritePending());
-    write_buffer_ = io_buffer;
+    write_buffer_ = std::move(io_buffer);
     expected_write_result_ = buf_len;
     writer_->WriteData(write_buffer_.get(), buf_len,
                        base::BindOnce(&AppCacheResponseTest::OnWriteComplete,
@@ -268,36 +270,36 @@ class AppCacheResponseTest : public testing::Test {
 
   // Helpers to work with HttpResponseInfo objects
 
-  net::HttpResponseInfo* MakeHttpResponseInfo(const std::string& raw_headers) {
-    net::HttpResponseInfo* info = new net::HttpResponseInfo;
+  std::unique_ptr<net::HttpResponseInfo> MakeHttpResponseInfo(
+      const std::string& raw_headers) {
+    std::unique_ptr<net::HttpResponseInfo> info =
+        std::make_unique<net::HttpResponseInfo>();
     info->request_time = base::Time::Now();
     info->response_time = base::Time::Now();
     info->was_cached = false;
-    info->headers = new net::HttpResponseHeaders(raw_headers);
+    info->headers = base::MakeRefCounted<net::HttpResponseHeaders>(raw_headers);
     return info;
   }
 
-  int GetHttpResponseInfoSize(const net::HttpResponseInfo* info) {
-    base::Pickle pickle;
-    return PickleHttpResonseInfo(&pickle, info);
+  int GetHttpResponseInfoSize(const net::HttpResponseInfo& info) {
+    base::Pickle pickle = PickleHttpResonseInfo(info);
+    return pickle.size();
   }
 
-  bool CompareHttpResponseInfos(const net::HttpResponseInfo* info1,
-                                const net::HttpResponseInfo* info2) {
-    base::Pickle pickle1;
-    base::Pickle pickle2;
-    PickleHttpResonseInfo(&pickle1, info1);
-    PickleHttpResonseInfo(&pickle2, info2);
+  bool CompareHttpResponseInfos(const net::HttpResponseInfo& info1,
+                                const net::HttpResponseInfo& info2) {
+    base::Pickle pickle1 = PickleHttpResonseInfo(info1);
+    base::Pickle pickle2 = PickleHttpResonseInfo(info2);
     return (pickle1.size() == pickle2.size()) &&
            (0 == memcmp(pickle1.data(), pickle2.data(), pickle1.size()));
   }
 
-  int PickleHttpResonseInfo(base::Pickle* pickle,
-                            const net::HttpResponseInfo* info) {
+  base::Pickle PickleHttpResonseInfo(const net::HttpResponseInfo& info) {
     const bool kSkipTransientHeaders = true;
     const bool kTruncated = false;
-    info->Persist(pickle, kSkipTransientHeaders, kTruncated);
-    return pickle->size();
+    base::Pickle pickle;
+    info.Persist(&pickle, kSkipTransientHeaders, kTruncated);
+    return pickle;
   }
 
   // Helpers to fill and verify blocks of memory with a value
@@ -398,7 +400,7 @@ class AppCacheResponseTest : public testing::Test {
     EXPECT_EQ(written_response_id_, storage_delegate_->loaded_info_id_);
     EXPECT_TRUE(storage_delegate_->loaded_info_.get());
     EXPECT_TRUE(CompareHttpResponseInfos(
-        write_info_buffer_->http_info.get(),
+        *write_info_buffer_->http_info,
         storage_delegate_->loaded_info_->http_response_info()));
     EXPECT_EQ(basic_response_size(),
               storage_delegate_->loaded_info_->response_data_size());
@@ -469,20 +471,18 @@ class AppCacheResponseTest : public testing::Test {
   void Metadata_VerifyMetadata(const char* metadata) {
     EXPECT_EQ(written_response_id_, storage_delegate_->loaded_info_id_);
     EXPECT_TRUE(storage_delegate_->loaded_info_.get());
-    const net::HttpResponseInfo* read_head =
+    const net::HttpResponseInfo& read_head =
         storage_delegate_->loaded_info_->http_response_info();
-    EXPECT_TRUE(read_head);
     const int metadata_size = strlen(metadata);
     if (metadata_size) {
-      EXPECT_TRUE(read_head->metadata.get());
-      EXPECT_EQ(metadata_size, read_head->metadata->size());
-      EXPECT_EQ(0,
-                memcmp(metadata, read_head->metadata->data(), metadata_size));
+      EXPECT_TRUE(read_head.metadata.get());
+      EXPECT_EQ(metadata_size, read_head.metadata->size());
+      EXPECT_EQ(0, memcmp(metadata, read_head.metadata->data(), metadata_size));
     } else {
-      EXPECT_FALSE(read_head->metadata.get());
+      EXPECT_FALSE(read_head.metadata.get());
     }
     EXPECT_TRUE(CompareHttpResponseInfos(
-        write_info_buffer_->http_info.get(),
+        *write_info_buffer_->http_info,
         storage_delegate_->loaded_info_->http_response_info()));
     EXPECT_EQ(basic_response_size(),
               storage_delegate_->loaded_info_->response_data_size());
@@ -494,9 +494,10 @@ class AppCacheResponseTest : public testing::Test {
   void AmountWritten() {
     static const char kHttpHeaders[] = "HTTP/1.0 200 OK\0\0";
     std::string raw_headers(kHttpHeaders, arraysize(kHttpHeaders));
-    net::HttpResponseInfo* head = MakeHttpResponseInfo(raw_headers);
+    std::unique_ptr<net::HttpResponseInfo> head =
+        MakeHttpResponseInfo(raw_headers);
     int expected_amount_written =
-        GetHttpResponseInfoSize(head) + kNumBlocks * kBlockSize;
+        GetHttpResponseInfoSize(*head) + kNumBlocks * kBlockSize;
 
     // Push tasks in reverse order.
     PushNextTask(base::BindOnce(&AppCacheResponseTest::Verify_AmountWritten,
@@ -507,7 +508,7 @@ class AppCacheResponseTest : public testing::Test {
                                   base::Unretained(this), kNumBlocks - i));
     }
     PushNextTask(base::BindOnce(&AppCacheResponseTest::WriteResponseHead,
-                                base::Unretained(this), head));
+                                base::Unretained(this), std::move(head)));
 
     writer_.reset(service_->storage()->CreateResponseWriter(GURL()));
     written_response_id_ = writer_->response_id();

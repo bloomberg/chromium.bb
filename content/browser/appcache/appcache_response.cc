@@ -52,17 +52,18 @@ class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
 
 // AppCacheResponseInfo ----------------------------------------------
 
-AppCacheResponseInfo::AppCacheResponseInfo(AppCacheStorage* storage,
-                                           const GURL& manifest_url,
-                                           int64_t response_id,
-                                           net::HttpResponseInfo* http_info,
-                                           int64_t response_data_size)
+AppCacheResponseInfo::AppCacheResponseInfo(
+    AppCacheStorage* storage,
+    const GURL& manifest_url,
+    int64_t response_id,
+    std::unique_ptr<net::HttpResponseInfo> http_info,
+    int64_t response_data_size)
     : manifest_url_(manifest_url),
       response_id_(response_id),
-      http_response_info_(http_info),
+      http_response_info_(std::move(http_info)),
       response_data_size_(response_data_size),
       storage_(storage) {
-  DCHECK(http_info);
+  DCHECK(http_response_info_);
   DCHECK(response_id != kAppCacheNoResponseId);
   storage_->working_set()->AddResponseInfo(this);
 }
@@ -76,10 +77,11 @@ AppCacheResponseInfo::~AppCacheResponseInfo() {
 HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer()
     : response_data_size(kUnkownResponseDataSize) {}
 
-HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer(net::HttpResponseInfo* info)
-    : http_info(info), response_data_size(kUnkownResponseDataSize) {}
+HttpResponseInfoIOBuffer::HttpResponseInfoIOBuffer(
+    std::unique_ptr<net::HttpResponseInfo> info)
+    : http_info(std::move(info)), response_data_size(kUnkownResponseDataSize) {}
 
-HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() {}
+HttpResponseInfoIOBuffer::~HttpResponseInfoIOBuffer() = default;
 
 // AppCacheDiskCacheInterface ----------------------------------------
 

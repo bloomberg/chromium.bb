@@ -248,7 +248,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   }
 
   WriteHeaders(
-      base::MakeRefCounted<HttpResponseInfoIOBuffer>(response_info.release()));
+      base::MakeRefCounted<HttpResponseInfoIOBuffer>(std::move(response_info)));
 
   // Don't pass SSLInfo to the client when the original request doesn't ask
   // to send it.
