@@ -96,6 +96,10 @@ const NSInteger kItemTypeEnumZero = 100;
 // left in the section, they are removed.
 - (void)removeSectionWithIdentifier:(NSInteger)sectionIdentifier;
 
+// Deletes all items from |sectionIdentifier|, |sectionIdentifier| won't be
+// removed from the model.
+- (void)deleteAllItemsFromSectionWithIdentifier:(NSInteger)sectionIdentifier;
+
 // Sets the header item for the section with the given |sectionIdentifier|.
 - (void)setHeader:(SupplementalType)header
     forSectionWithIdentifier:(NSInteger)sectionIdentifier;

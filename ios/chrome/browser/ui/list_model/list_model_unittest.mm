@@ -384,6 +384,70 @@ TEST_F(ListModelTest, RemoveItems) {
   EXPECT_EQ(2, indexPath.item);
 }
 
+TEST_F(ListModelTest, RemoveAllItems) {
+  ListModel* model = [[ListModel alloc] init];
+
+  [model addSectionWithIdentifier:SectionIdentifierCheese];
+  [model addItemWithType:ItemTypeCheesePepperJack
+      toSectionWithIdentifier:SectionIdentifierCheese];
+  [model addItemWithType:ItemTypeCheeseGouda
+      toSectionWithIdentifier:SectionIdentifierCheese];
+
+  [model addSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyGinny
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyArthur
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+
+  [model deleteAllItemsFromSectionWithIdentifier:SectionIdentifierCheese];
+
+  // Check we still have two sections.
+  EXPECT_EQ(2, [model numberOfSections]);
+
+  // Check we have no more items in first section.
+  EXPECT_EQ(0, [model numberOfItemsInSection:0]);
+  EXPECT_EQ(2, [model numberOfItemsInSection:1]);
+
+  // Check the index path retrieval method for a single item.
+  NSIndexPath* indexPath =
+      [model indexPathForItemType:ItemTypeWeasleyGinny
+                sectionIdentifier:SectionIdentifierWeasley];
+  EXPECT_EQ(1, indexPath.section);
+  EXPECT_EQ(0, indexPath.item);
+
+  [model addItemWithType:ItemTypeCheeseGouda
+      toSectionWithIdentifier:SectionIdentifierCheese];
+
+  // Check we could still add to the section.
+  EXPECT_EQ(1, [model numberOfItemsInSection:0]);
+  EXPECT_EQ(2, [model numberOfItemsInSection:1]);
+}
+
+TEST_F(ListModelTest, RemoveAllItemsFromAnEmptySection) {
+  ListModel* model = [[ListModel alloc] init];
+
+  [model addSectionWithIdentifier:SectionIdentifierCheese];
+
+  [model addSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyGinny
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+  [model addItemWithType:ItemTypeWeasleyArthur
+      toSectionWithIdentifier:SectionIdentifierWeasley];
+
+  // Check we have no more items in first section.
+  EXPECT_EQ(0, [model numberOfItemsInSection:0]);
+  EXPECT_EQ(2, [model numberOfItemsInSection:1]);
+
+  [model deleteAllItemsFromSectionWithIdentifier:SectionIdentifierCheese];
+
+  // Check we still have two sections.
+  EXPECT_EQ(2, [model numberOfSections]);
+
+  // Check we still have no items in first section.
+  EXPECT_EQ(0, [model numberOfItemsInSection:0]);
+  EXPECT_EQ(2, [model numberOfItemsInSection:1]);
+}
+
 TEST_F(ListModelTest, RemoveSections) {
   ListModel* model = [[ListModel alloc] init];
 
