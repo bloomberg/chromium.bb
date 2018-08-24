@@ -63,13 +63,15 @@ class TestBookmarkAppInstallationTask : public BookmarkAppInstallationTask {
   void InstallWebAppOrShortcutFromWebContents(
       content::WebContents* web_contents,
       BookmarkAppInstallationTask::ResultCallback callback) override {
+    BookmarkAppInstallationTask::ResultCode result_code =
+        BookmarkAppInstallationTask::ResultCode::kInstallationFailed;
+    std::string app_id;
+    if (succeeds_) {
+      result_code = BookmarkAppInstallationTask::ResultCode::kSuccess;
+      app_id = "fake_app_id_for:" + app_info().url.spec();
+    }
     std::move(callback).Run(
-        succeeds_
-            ? BookmarkAppInstallationTask::Result(
-                  BookmarkAppInstallationTask::ResultCode::kSuccess, "12345")
-            : BookmarkAppInstallationTask::Result(
-                  BookmarkAppInstallationTask::ResultCode::kInstallationFailed,
-                  std::string()));
+        BookmarkAppInstallationTask::Result(result_code, app_id));
   }
 
  private:
