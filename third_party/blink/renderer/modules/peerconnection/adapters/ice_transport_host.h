@@ -56,11 +56,18 @@ class IceTransportHost final : public sigslot::has_slots<> {
       const std::vector<cricket::RelayServerConfig>& turn_servers,
       int32_t candidate_filter);
 
+  void SetRole(cricket::IceRole role);
+  void SetRemoteParameters(const cricket::IceParameters& remote_parameters);
+
+  void AddRemoteCandidate(const cricket::Candidate& candidate);
+  void ClearRemoteCandidates();
+
  private:
   // Callbacks from P2PTransportChannel.
   void OnGatheringStateChanged(cricket::IceTransportInternal* transport);
   void OnCandidateGathered(cricket::IceTransportInternal* transport,
                            const cricket::Candidate& candidate);
+  void OnStateChanged(cricket::IceTransportInternal* transport);
 
   const scoped_refptr<base::SingleThreadTaskRunner> proxy_thread_;
   std::unique_ptr<cricket::PortAllocator> port_allocator_;

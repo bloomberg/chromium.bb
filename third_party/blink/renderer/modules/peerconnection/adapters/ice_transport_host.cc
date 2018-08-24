@@ -48,6 +48,8 @@ void IceTransportHost::Initialize(rtc::Thread* host_thread_rtc_thread) {
       this, &IceTransportHost::OnGatheringStateChanged);
   transport_->SignalCandidateGathered.connect(
       this, &IceTransportHost::OnCandidateGathered);
+  transport_->SignalStateChanged.connect(this,
+                                         &IceTransportHost::OnStateChanged);
   // The ICE tiebreaker is used to determine which side is controlling/
   // controlled when both sides start in the same role. The number is randomly
   // generated so that each peer can calculate a.tiebreaker <= b.tiebreaker
@@ -71,6 +73,30 @@ void IceTransportHost::StartGathering(
   DCHECK_EQ(transport_->gathering_state(), cricket::kIceGatheringGathering);
 }
 
+void IceTransportHost::SetRole(cricket::IceRole role) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  transport_->SetIceRole(role);
+}
+
+void IceTransportHost::SetRemoteParameters(
+    const cricket::IceParameters& remote_parameters) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  transport_->SetRemoteIceParameters(remote_parameters);
+}
+
+void IceTransportHost::AddRemoteCandidate(const cricket::Candidate& candidate) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  transport_->AddRemoteCandidate(candidate);
+}
+
+void IceTransportHost::ClearRemoteCandidates() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto remote_candidates = transport_->remote_candidates();
+  for (const auto& remote_candidate : remote_candidates) {
+    transport_->RemoveRemoteCandidate(remote_candidate);
+  }
+}
+
 void IceTransportHost::OnGatheringStateChanged(
     cricket::IceTransportInternal* transport) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -89,6 +115,15 @@ void IceTransportHost::OnCandidateGathered(
   PostCrossThreadTask(*proxy_thread_, FROM_HERE,
                       CrossThreadBind(&IceTransportProxy::OnCandidateGathered,
                                       proxy_, candidate));
+}
+
+void IceTransportHost::OnStateChanged(
+    cricket::IceTransportInternal* transport) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_EQ(transport, transport_.get());
+  PostCrossThreadTask(*proxy_thread_, FROM_HERE,
+                      CrossThreadBind(&IceTransportProxy::OnStateChanged,
+                                      proxy_, transport_->GetState()));
 }
 
 }  // namespace blink

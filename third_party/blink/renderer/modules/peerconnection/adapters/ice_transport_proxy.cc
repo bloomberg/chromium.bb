@@ -59,6 +59,39 @@ void IceTransportProxy::StartGathering(
                       stun_servers, turn_servers, candidate_filter));
 }
 
+void IceTransportProxy::SetRole(cricket::IceRole role) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  PostCrossThreadTask(
+      *host_thread_, FROM_HERE,
+      CrossThreadBind(&IceTransportHost::SetRole,
+                      CrossThreadUnretained(host_.get()), role));
+}
+
+void IceTransportProxy::SetRemoteParameters(
+    const cricket::IceParameters& remote_parameters) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  PostCrossThreadTask(
+      *host_thread_, FROM_HERE,
+      CrossThreadBind(&IceTransportHost::SetRemoteParameters,
+                      CrossThreadUnretained(host_.get()), remote_parameters));
+}
+
+void IceTransportProxy::AddRemoteCandidate(
+    const cricket::Candidate& candidate) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  PostCrossThreadTask(
+      *host_thread_, FROM_HERE,
+      CrossThreadBind(&IceTransportHost::AddRemoteCandidate,
+                      CrossThreadUnretained(host_.get()), candidate));
+}
+
+void IceTransportProxy::ClearRemoteCandidates() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  PostCrossThreadTask(*host_thread_, FROM_HERE,
+                      CrossThreadBind(&IceTransportHost::ClearRemoteCandidates,
+                                      CrossThreadUnretained(host_.get())));
+}
+
 void IceTransportProxy::OnGatheringStateChanged(
     cricket::IceGatheringState new_state) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -69,6 +102,11 @@ void IceTransportProxy::OnCandidateGathered(
     const cricket::Candidate& candidate) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   delegate_->OnCandidateGathered(candidate);
+}
+
+void IceTransportProxy::OnStateChanged(cricket::IceTransportState new_state) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  delegate_->OnStateChanged(new_state);
 }
 
 }  // namespace blink

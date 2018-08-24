@@ -5436,8 +5436,10 @@ interface RTCIceTransport : EventTarget
     getter gatheringState
     getter ongatheringstatechange
     getter onicecandidate
+    getter onstatechange
     getter role
     getter state
+    method addRemoteCandidate
     method constructor
     method gather
     method getLocalCandidates
@@ -5445,9 +5447,11 @@ interface RTCIceTransport : EventTarget
     method getRemoteCandidates
     method getRemoteParameters
     method getSelectedCandidatePair
+    method start
     method stop
     setter ongatheringstatechange
     setter onicecandidate
+    setter onstatechange
 interface RTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
