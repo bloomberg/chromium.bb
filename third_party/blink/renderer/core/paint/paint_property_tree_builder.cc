@@ -2389,6 +2389,14 @@ void PaintPropertyTreeBuilder::CreateFragmentContextsInFlowThread(
     if (object_.HasLayer()) {
       // 1. Compute clip in flow thread space.
       fragment_clip = iterator.ClipRectInFlowThread();
+
+      // We skip empty clip fragments, since they can share the same logical top
+      // with the subsequent fragments. Since we skip drawing empty fragments
+      // anyway, it doesn't affect the paint output, but it allows us to use
+      // logical top to uniquely identify fragments in an object.
+      if (fragment_clip->IsEmpty())
+        continue;
+
       // 2. Convert #1 to visual coordinates in the space of the flow thread.
       fragment_clip->MoveBy(pagination_offset);
       // 3. Adjust #2 to visual coordinates in the containing "paint offset"
