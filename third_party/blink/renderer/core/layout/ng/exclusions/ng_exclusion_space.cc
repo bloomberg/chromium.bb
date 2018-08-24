@@ -585,6 +585,8 @@ const NGExclusionSpace::DerivedGeometry& NGExclusionSpace::GetDerivedGeometry()
 }
 
 bool NGExclusionSpace::operator==(const NGExclusionSpace& other) const {
+  if (num_exclusions_ == 0 && other.num_exclusions_ == 0)
+    return true;
   return num_exclusions_ == other.num_exclusions_ &&
          exclusions_ == other.exclusions_;
 }
