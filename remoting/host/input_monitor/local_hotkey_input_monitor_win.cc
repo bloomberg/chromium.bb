@@ -4,8 +4,8 @@
 
 #include "remoting/host/input_monitor/local_hotkey_input_monitor.h"
 
+#include "base/callback.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/host/client_session_control.h"
 
 namespace remoting {
 
@@ -13,7 +13,7 @@ std::unique_ptr<LocalHotkeyInputMonitor> LocalHotkeyInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::OnceClosure disconnect_callback) {
   return nullptr;
 }
 

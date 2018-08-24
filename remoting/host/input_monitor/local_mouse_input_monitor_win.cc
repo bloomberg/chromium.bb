@@ -5,6 +5,7 @@
 #include "remoting/host/input_monitor/local_mouse_input_monitor.h"
 
 #include <cstdint>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -15,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/message_window.h"
-#include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -31,7 +31,8 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
   LocalMouseInputMonitorWin(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      MouseMoveCallback on_mouse_move,
+      base::OnceClosure disconnect_callback);
   ~LocalMouseInputMonitorWin() override;
 
  private:
@@ -40,7 +41,8 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-         base::WeakPtr<ClientSessionControl> client_session_control);
+         MouseMoveCallback on_mouse_move,
+         base::OnceClosure disconnect_callback);
 
     void Start();
     void Stop();
@@ -71,7 +73,10 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
     std::unique_ptr<base::win::MessageWindow> window_;
 
     // Points to the object receiving mouse event notifications.
-    base::WeakPtr<ClientSessionControl> client_session_control_;
+    MouseMoveCallback on_mouse_move_;
+
+    // Used to disconnect the current session.
+    base::OnceClosure disconnect_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -86,10 +91,12 @@ class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
 LocalMouseInputMonitorWin::LocalMouseInputMonitorWin(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move,
+    base::OnceClosure disconnect_callback)
     : core_(new Core(caller_task_runner,
                      ui_task_runner,
-                     client_session_control)) {
+                     std::move(on_mouse_move),
+                     std::move(disconnect_callback))) {
   core_->Start();
 }
 
@@ -101,12 +108,12 @@ LocalMouseInputMonitorWin::~LocalMouseInputMonitorWin() {
 LocalMouseInputMonitorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move,
+    base::OnceClosure disconnect_callback)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
-      client_session_control_(client_session_control) {
-  DCHECK(client_session_control_);
-}
+      on_mouse_move_(std::move(on_mouse_move)),
+      disconnect_callback_(std::move(disconnect_callback)) {}
 
 void LocalMouseInputMonitorWin::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -137,9 +144,7 @@ void LocalMouseInputMonitorWin::Core::StartOnUiThread() {
 
     // If the local input cannot be monitored, the remote user can take over
     // the session. Disconnect the session now to prevent this.
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ClientSessionControl::DisconnectSession,
-                                  client_session_control_, protocol::OK));
+    caller_task_runner_->PostTask(FROM_HERE, std::move(disconnect_callback_));
   }
 }
 
@@ -194,10 +199,8 @@ LRESULT LocalMouseInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
     }
 
     caller_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ClientSessionControl::OnLocalMouseMoved,
-                       client_session_control_,
-                       webrtc::DesktopVector(position.x, position.y)));
+        FROM_HERE, base::BindOnce(on_mouse_move_, webrtc::DesktopVector(
+                                                      position.x, position.y)));
   }
 
   return DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
@@ -239,9 +242,11 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    MouseMoveCallback on_mouse_move,
+    base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorWin>(
-      caller_task_runner, ui_task_runner, client_session_control);
+      caller_task_runner, ui_task_runner, std::move(on_mouse_move),
+      std::move(disconnect_callback));
 }
 
 }  // namespace remoting

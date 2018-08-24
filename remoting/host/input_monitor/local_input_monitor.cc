@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
@@ -37,16 +38,22 @@ LocalInputMonitorImpl::LocalInputMonitorImpl(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
-    : hotkey_input_monitor_(
-          LocalHotkeyInputMonitor::Create(caller_task_runner,
-                                          input_task_runner,
-                                          ui_task_runner,
-                                          client_session_control)),
-      mouse_input_monitor_(
-          LocalMouseInputMonitor::Create(caller_task_runner,
-                                         input_task_runner,
-                                         ui_task_runner,
-                                         client_session_control)) {}
+    : hotkey_input_monitor_(LocalHotkeyInputMonitor::Create(
+          caller_task_runner,
+          input_task_runner,
+          ui_task_runner,
+          base::BindOnce(&ClientSessionControl::DisconnectSession,
+                         client_session_control,
+                         protocol::OK))),
+      mouse_input_monitor_(LocalMouseInputMonitor::Create(
+          caller_task_runner,
+          input_task_runner,
+          ui_task_runner,
+          base::BindRepeating(&ClientSessionControl::OnLocalMouseMoved,
+                              client_session_control),
+          base::BindOnce(&ClientSessionControl::DisconnectSession,
+                         client_session_control,
+                         protocol::OK))) {}
 
 LocalInputMonitorImpl::~LocalInputMonitorImpl() = default;
 

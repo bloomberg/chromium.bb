@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/gfx/x/x11.h"
 
@@ -31,7 +30,7 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
   LocalMouseInputMonitorX11(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      MouseMoveCallback on_mouse_move);
   ~LocalMouseInputMonitorX11() override;
 
  private:
@@ -40,7 +39,7 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-         base::WeakPtr<ClientSessionControl> client_session_control);
+         MouseMoveCallback on_mouse_move);
 
     void Start();
     void Stop();
@@ -66,9 +65,8 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
     // Task runner on which X Window events are received.
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
 
-    // Points to the object receiving mouse event notifications and session
-    // disconnect requests.
-    base::WeakPtr<ClientSessionControl> client_session_control_;
+    // Used to send mouse event notifications.
+    MouseMoveCallback on_mouse_move_;
 
     // Controls watching X events.
     std::unique_ptr<base::FileDescriptorWatcher::Controller> controller_;
@@ -91,10 +89,10 @@ class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
 LocalMouseInputMonitorX11::LocalMouseInputMonitorX11(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move)
     : core_(new Core(caller_task_runner,
                      input_task_runner,
-                     client_session_control)) {
+                     std::move(on_mouse_move))) {
   core_->Start();
 }
 
@@ -106,12 +104,11 @@ LocalMouseInputMonitorX11::~LocalMouseInputMonitorX11() {
 LocalMouseInputMonitorX11::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
-      client_session_control_(client_session_control) {
+      on_mouse_move_(std::move(on_mouse_move)) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(client_session_control_.get());
 }
 
 void LocalMouseInputMonitorX11::Core::Start() {
@@ -244,9 +241,8 @@ void LocalMouseInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
 
   webrtc::DesktopVector position(event->u.keyButtonPointer.rootX,
                                  event->u.keyButtonPointer.rootY);
-  caller_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ClientSessionControl::OnLocalMouseMoved,
-                                client_session_control_, position));
+  caller_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(on_mouse_move_, position));
 }
 
 // static
@@ -265,9 +261,10 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    MouseMoveCallback on_mouse_move,
+    base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorX11>(
-      caller_task_runner, input_task_runner, client_session_control);
+      caller_task_runner, input_task_runner, std::move(on_mouse_move));
 }
 
 }  // namespace remoting
