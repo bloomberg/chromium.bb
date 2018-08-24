@@ -1870,6 +1870,41 @@ TEST_F(ScrollbarsTest, AutosizeTest) {
   }
 }
 
+TEST_F(ScrollbarsTest, AutosizeAlmostRemovableScrollbar) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  WebView().EnableAutoResizeMode(WebSize(25, 25), WebSize(800, 600));
+
+  SimRequest resource("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  resource.Complete(R"HTML(
+    <style>
+    body { margin: 0; padding: 15px }
+    #b1, #b2 { display: inline-block; width: 205px; height: 45px; }
+    #b1 { background: #888; }
+    #b2 { background: #bbb; }
+    #spacer { width: 400px; height: 490px; background: #eee; }
+    </style>
+    <div id="b1"></div><div id="b2"></div>
+    <div id="spacer"></div>
+  )HTML");
+
+  // Finish loading.
+  test::RunPendingTasks();
+
+  LocalFrameView* frame_view = WebView().MainFrameImpl()->GetFrameView();
+  ScrollableArea* layout_viewport = frame_view->LayoutViewport();
+
+  // Check three times to verify stability.
+  for (int i = 0; i < 3; i++) {
+    frame_view->SetNeedsLayout();
+    Compositor().BeginFrame();
+    EXPECT_TRUE(layout_viewport->VerticalScrollbar());
+    EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
+    EXPECT_EQ(445, frame_view->Width());
+    EXPECT_EQ(600, frame_view->Height());
+  }
+}
+
 TEST_F(ScrollbarsTest,
        HideTheOverlayScrollbarNotCrashAfterPLSADisposedPaintLayer) {
   WebView().Resize(WebSize(200, 200));
