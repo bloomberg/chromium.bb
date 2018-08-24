@@ -1078,9 +1078,10 @@ void SAMLPolicyTest::SetUpInProcessBrowserTestFixture() {
   // Initialize device policy.
   std::set<std::string> device_affiliation_ids;
   device_affiliation_ids.insert(kAffiliationID);
-  policy::affiliation_test_helper::SetDeviceAffiliationIDs(
-      &test_helper_, fake_session_manager_client_,
-      nullptr /* fake_auth_policy_client */, device_affiliation_ids);
+  auto affiliation_helper = policy::AffiliationTestHelper::CreateForCloud(
+      fake_session_manager_client_);
+  ASSERT_NO_FATAL_FAILURE((affiliation_helper.SetDeviceAffiliationIDs(
+      &test_helper_, device_affiliation_ids)));
 
   // Initialize user policy.
   EXPECT_CALL(provider_, IsInitializationComplete(_))

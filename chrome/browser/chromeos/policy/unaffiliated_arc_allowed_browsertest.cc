@@ -56,7 +56,7 @@ class UnaffiliatedArcAllowedTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     DevicePolicyCrosBrowserTest::SetUpCommandLine(command_line);
     arc::SetArcAvailableCommandLineForTesting(command_line);
-    affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
+    AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
         command_line);
   }
 
@@ -70,14 +70,12 @@ class UnaffiliatedArcAllowedTest
     const std::set<std::string> user_affiliation_ids = {
         GetParam().affiliated ? kAffiliationID : kAnotherAffiliationID};
 
-    affiliation_test_helper::SetDeviceAffiliationIDs(
-        &test_helper, session_manager_client(),
-        nullptr /* fake_auth_policy_client */, device_affiliation_ids);
-
-    affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, session_manager_client(),
-        nullptr /* fake_auth_policy_client */, affiliated_account_id_,
-        user_affiliation_ids);
+    AffiliationTestHelper affiliation_helper =
+        AffiliationTestHelper::CreateForCloud(session_manager_client());
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
+        &test_helper, device_affiliation_ids));
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetUserAffiliationIDs(
+        &user_policy, affiliated_account_id_, user_affiliation_ids));
   }
 
   void TearDownOnMainThread() override {
@@ -115,11 +113,11 @@ class UnaffiliatedArcAllowedTest
 };
 
 IN_PROC_BROWSER_TEST_P(UnaffiliatedArcAllowedTest, PRE_ProfileTest) {
-  affiliation_test_helper::PreLoginUser(affiliated_account_id_);
+  AffiliationTestHelper::PreLoginUser(affiliated_account_id_);
 }
 
 IN_PROC_BROWSER_TEST_P(UnaffiliatedArcAllowedTest, ProfileTest) {
-  affiliation_test_helper::LoginUser(affiliated_account_id_);
+  AffiliationTestHelper::LoginUser(affiliated_account_id_);
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(affiliated_account_id_);
   const Profile* profile =

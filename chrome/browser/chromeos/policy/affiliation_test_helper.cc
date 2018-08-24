@@ -44,15 +44,12 @@
 
 namespace policy {
 
-namespace affiliation_test_helper {
+namespace {
 
-constexpr char kFakeRefreshToken[] = "fake-refresh-token";
-constexpr char kEnterpriseUserEmail[] = "testuser@example.com";
-constexpr char kEnterpriseUserGaiaId[] = "01234567890";
-
-void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
+// Creates policy key file for the user specified in |user_policy|.
+void SetUserKeys(const policy::UserPolicyBuilder& user_policy) {
   const AccountId account_id =
-      AccountId::FromUserEmail(user_policy->policy_data().username());
+      AccountId::FromUserEmail(user_policy.policy_data().username());
   base::FilePath user_keys_dir;
   ASSERT_TRUE(
       base::PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &user_keys_dir));
@@ -61,7 +58,7 @@ void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
           cryptohome::CreateAccountIdentifierFromAccountId(account_id));
   const base::FilePath user_key_file =
       user_keys_dir.AppendASCII(sanitized_username).AppendASCII("policy.pub");
-  std::string user_key_bits = user_policy->GetPublicSigningKeyAsString();
+  std::string user_key_bits = user_policy.GetPublicSigningKeyAsString();
   ASSERT_FALSE(user_key_bits.empty());
   ASSERT_TRUE(base::CreateDirectory(user_key_file.DirName()));
   ASSERT_EQ(base::WriteFile(user_key_file, user_key_bits.data(),
@@ -69,73 +66,105 @@ void SetUserKeys(policy::UserPolicyBuilder* user_policy) {
             base::checked_cast<int>(user_key_bits.length()));
 }
 
-void SetDeviceAffiliationIDs(
-    policy::DevicePolicyCrosTestHelper* test_helper,
+}  // namespace
+
+constexpr char AffiliationTestHelper::kFakeRefreshToken[] =
+    "fake-refresh-token";
+constexpr char AffiliationTestHelper::kEnterpriseUserEmail[] =
+    "testuser@example.com";
+constexpr char AffiliationTestHelper::kEnterpriseUserGaiaId[] = "01234567890";
+
+// static
+AffiliationTestHelper AffiliationTestHelper::CreateForCloud(
+    chromeos::FakeSessionManagerClient* fake_session_manager_client) {
+  return AffiliationTestHelper(ManagementType::kCloud,
+                               fake_session_manager_client,
+                               nullptr /* fake_auth_policy_client */);
+}
+
+// static
+AffiliationTestHelper AffiliationTestHelper::CreateForActiveDirectory(
     chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_auth_policy_client,
+    chromeos::FakeAuthPolicyClient* fake_auth_policy_client) {
+  return AffiliationTestHelper(ManagementType::kActiveDirectory,
+                               fake_session_manager_client,
+                               fake_auth_policy_client);
+}
+
+AffiliationTestHelper::AffiliationTestHelper(AffiliationTestHelper&& other) =
+    default;
+
+AffiliationTestHelper::AffiliationTestHelper(
+    ManagementType management_type,
+    chromeos::FakeSessionManagerClient* fake_session_manager_client,
+    chromeos::FakeAuthPolicyClient* fake_auth_policy_client)
+    : management_type_(management_type),
+      fake_session_manager_client_(fake_session_manager_client),
+      fake_auth_policy_client_(fake_auth_policy_client) {}
+
+void AffiliationTestHelper::CheckPreconditions() {
+  ASSERT_TRUE(fake_session_manager_client_);
+  ASSERT_TRUE(management_type_ != ManagementType::kActiveDirectory ||
+              fake_auth_policy_client_);
+}
+
+void AffiliationTestHelper::SetDeviceAffiliationIDs(
+    policy::DevicePolicyCrosTestHelper* test_helper,
     const std::set<std::string>& device_affiliation_ids) {
-  // Assume it's Active Directory when the AuthPolicyClient is started.
-  // Make sure we don't overwrite the install attributes in that case.
-  const bool is_active_directory =
-      fake_auth_policy_client && fake_auth_policy_client->started();
-  if (!is_active_directory) {
-    test_helper->InstallOwnerKey();
-    test_helper->MarkAsEnterpriseOwned();
-  }
+  ASSERT_NO_FATAL_FAILURE(CheckPreconditions());
+
   policy::DevicePolicyBuilder* device_policy = test_helper->device_policy();
   for (const auto& device_affiliation_id : device_affiliation_ids) {
     device_policy->policy_data().add_device_affiliation_ids(
         device_affiliation_id);
   }
-  if (!is_active_directory)
+  if (management_type_ != ManagementType::kActiveDirectory) {
+    // Create keys and sign policy. Note that Active Directory policy is
+    // unsigned.
+    test_helper->InstallOwnerKey();
+    test_helper->MarkAsEnterpriseOwned();
     device_policy->SetDefaultSigningKey();
+  }
   device_policy->Build();
 
-  fake_session_manager_client->set_device_policy(device_policy->GetBlob());
-  fake_session_manager_client->OnPropertyChangeComplete(true);
+  fake_session_manager_client_->set_device_policy(device_policy->GetBlob());
+  fake_session_manager_client_->OnPropertyChangeComplete(true);
 
-  // Need fake_auth_policy_client for Active Directory accounts.
-  if (fake_auth_policy_client)
-    fake_auth_policy_client->set_device_affiliation_ids(device_affiliation_ids);
+  if (management_type_ == ManagementType::kActiveDirectory) {
+    fake_auth_policy_client_->set_device_affiliation_ids(
+        device_affiliation_ids);
+  }
 }
 
-void SetUserAffiliationIDs(
+void AffiliationTestHelper::SetUserAffiliationIDs(
     policy::UserPolicyBuilder* user_policy,
-    chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_auth_policy_client,
     const AccountId& user_account_id,
     const std::set<std::string>& user_affiliation_ids) {
-  const bool is_active_directory =
-      user_account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY;
+  ASSERT_NO_FATAL_FAILURE(CheckPreconditions());
+  ASSERT_TRUE(management_type_ != ManagementType::kActiveDirectory ||
+              user_account_id.GetAccountType() ==
+                  AccountType::ACTIVE_DIRECTORY);
+
   user_policy->policy_data().set_username(user_account_id.GetUserEmail());
-  if (!is_active_directory) {
+  if (management_type_ != ManagementType::kActiveDirectory) {
     user_policy->policy_data().set_gaia_id(user_account_id.GetGaiaId());
-    SetUserKeys(user_policy);
+    ASSERT_NO_FATAL_FAILURE(SetUserKeys(*user_policy));
   }
   for (const auto& user_affiliation_id : user_affiliation_ids) {
     user_policy->policy_data().add_user_affiliation_ids(user_affiliation_id);
   }
   user_policy->Build();
 
-  // Make sure AD policy is stored using the proper cryptohome key. This code
-  // runs before the AD account is migrated, so it would use the email address.
-  // TODO(ljusten): Clean this up as soon as CL:1055509 lands.
-  cryptohome::Identification cryptohome_id =
-      is_active_directory ? cryptohome::Identification::FromString(
-                                user_account_id.GetAccountIdKey())
-                          : cryptohome::Identification(user_account_id);
-
-  fake_session_manager_client->set_user_policy(
-      cryptohome::CreateAccountIdentifierFromIdentification(cryptohome_id),
+  fake_session_manager_client_->set_user_policy(
+      cryptohome::CreateAccountIdentifierFromAccountId(user_account_id),
       user_policy->GetBlob());
 
-  // Need fake_auth_policy_client for Active Directory accounts.
-  DCHECK(!is_active_directory || fake_auth_policy_client);
-  if (fake_auth_policy_client)
-    fake_auth_policy_client->set_user_affiliation_ids(user_affiliation_ids);
+  if (management_type_ == ManagementType::kActiveDirectory)
+    fake_auth_policy_client_->set_user_affiliation_ids(user_affiliation_ids);
 }
 
-void PreLoginUser(const AccountId& account_id) {
+// static
+void AffiliationTestHelper::PreLoginUser(const AccountId& account_id) {
   ListPrefUpdate users_pref(g_browser_process->local_state(), "LoggedInUsers");
   users_pref->AppendIfNotPresent(
       std::make_unique<base::Value>(account_id.GetUserEmail()));
@@ -145,7 +174,8 @@ void PreLoginUser(const AccountId& account_id) {
   chromeos::StartupUtils::MarkOobeCompleted();
 }
 
-void LoginUser(const AccountId& account_id) {
+// static
+void AffiliationTestHelper::LoginUser(const AccountId& account_id) {
   chromeos::test::UserSessionManagerTestApi session_manager_test_api(
       chromeos::UserSessionManager::GetInstance());
   session_manager_test_api.SetShouldObtainTokenHandleInTests(false);
@@ -180,7 +210,9 @@ void LoginUser(const AccountId& account_id) {
                 << " was not added via PreLoginUser()";
 }
 
-void AppendCommandLineSwitchesForLoginManager(base::CommandLine* command_line) {
+// static
+void AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
+    base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
   // LoginManager tests typically don't stand up a policy test server but
@@ -189,7 +221,5 @@ void AppendCommandLineSwitchesForLoginManager(base::CommandLine* command_line) {
   command_line->AppendSwitch(
       chromeos::switches::kAllowFailedPolicyFetchForTest);
 }
-
-}  // namespace affiliation_test_helper
 
 }  // namespace policy

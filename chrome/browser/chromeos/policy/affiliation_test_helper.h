@@ -7,6 +7,8 @@
 
 #include <set>
 #include <string>
+
+#include "base/macros.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
 
 class AccountId;
@@ -24,102 +26,77 @@ namespace policy {
 
 class DevicePolicyCrosTestHelper;
 
-namespace affiliation_test_helper {
+class AffiliationTestHelper {
+ public:
+  // Creates an |AffiliationTestHelper| for Cloud management (regular Google
+  // accounts). The |fake_session_manager_client| pointer must outlive this
+  // object.
+  static AffiliationTestHelper CreateForCloud(
+      chromeos::FakeSessionManagerClient* fake_session_manager_client);
 
-// Creates policy key file for the user specified in |user_policy|.
-// TODO(peletskyi): Replace pointer with const reference and replace this
-// boilerplate in other places (http://crbug.com/549111).
-void SetUserKeys(policy::UserPolicyBuilder* user_policy);
+  // Creates an |AffiliationTestHelper| for Active Directory management (Active
+  // Directory accounts). The pointers must outlive this object.
+  static AffiliationTestHelper CreateForActiveDirectory(
+      chromeos::FakeSessionManagerClient* fake_session_manager_client,
+      chromeos::FakeAuthPolicyClient* fake_auth_policy_client);
 
-// Sets device affiliation ID to |fake_session_manager_client| from
-// |device_affiliation_ids| and modifies |test_helper| so that it contains
-// correct values of device affiliation IDs for future use. To add some device
-// policies and have device affiliation ID valid please use |test_helper|
-// modified by this function. Example:
-//
-// FakeSessionManagerClient* fake_session_manager_client =
-//   new chromeos::FakeSessionManagerClient;
-// DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-//   std::unique_ptr<SessionManagerClient>(fake_session_manager_client));
-//
-// policy::DevicePolicyCrosTestHelper test_helper;
-// std::set<std::string> device_affiliation_ids;
-// device_affiliation_ids.insert(some-affiliation-id);
-//
-// affiliation_test_helper::SetDeviceAffiliationIDs(
-//     &test_helper,
-//     fake_session_manager_client,
-//     nullptr /* fake_auth_policy_client */
-//     device_affiliation_ids);
-//
-// If it is used together with SetUserAffiliationIDs() (which is the most common
-// case) |fake_session_manager_client| must point to the same object as in
-// SetUserAffiliationIDs() call.
-// In browser tests one can call this function from
-// SetUpInProcessBrowserTestFixture().
-//
-// |fake_auth_policy_client| is only needed if the test supports Active
-// Directory user accounts. If not, it may be nullptr.
-void SetDeviceAffiliationIDs(
-    policy::DevicePolicyCrosTestHelper* test_helper,
-    chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_auth_policy_client,
-    const std::set<std::string>& device_affiliation_ids);
+  // Allow move construction, so the static constructors can be used despite
+  // DISALLOW_COPY_AND_ASSIGN.
+  AffiliationTestHelper(AffiliationTestHelper&& other);
 
-// Sets user affiliation ID for |user_account_id| to
-// |fake_session_manager_client| from |user_affiliation_ids| and modifies
-// |user_policy| so that it contains correct values of user affiliation IDs for
-// future use. To add user policies and have user affiliation IDs valid please
-// use |user_policy| modified by this function. Example:
-//
-// FakeSessionManagerClient* fake_session_manager_client =
-//    new chromeos::FakeSessionManagerClient;
-// DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
-//    std::unique_ptr<SessionManagerClient>(fake_session_manager_client));
-//
-// policy::UserPolicyBuilder user_policy;
-// std::set<std::string> user_affiliation_ids;
-// user_affiliation_ids.insert("some-affiliation-id");
-//
-// affiliation_test_helper::SetUserAffiliationIDs(
-//    &user_policy,
-//    fake_session_manager_client,
-//    nullptr /* fake_auth_policy_client */,
-//    account_id,
-//    user_affiliation_ids);
-//
-// If it is used together SetDeviceAffiliationIDs() (which is the most common
-// case) |fake_session_manager_client| must point to the same object as in
-// SetDeviceAffiliationIDs() call.
-// In browser tests one can call this function from
-// SetUpInProcessBrowserTestFixture().
-//
-// |fake_auth_policy_client| is only needed if the test supports Active
-// Directory user accounts. If not, it may be nullptr.
-void SetUserAffiliationIDs(
-    policy::UserPolicyBuilder* user_policy,
-    chromeos::FakeSessionManagerClient* fake_session_manager_client,
-    chromeos::FakeAuthPolicyClient* fake_auth_policy_client,
-    const AccountId& user_account_id,
-    const std::set<std::string>& user_affiliation_ids);
+  // Sets device affiliation IDs to |device_affiliation_ids| in
+  // |fake_session_manager_client_| and modifies |test_helper| so that it
+  // contains correct values of device affiliation IDs for future use. To add
+  // some device policies and have device affiliation ID valid use |test_helper|
+  // modified by this function.
+  void SetDeviceAffiliationIDs(
+      policy::DevicePolicyCrosTestHelper* test_helper,
+      const std::set<std::string>& device_affiliation_ids);
 
-// Registers the user with the given |account_id| on the device and marks OOBE
-// as completed. This method should be called in PRE_* test.
-void PreLoginUser(const AccountId& account_id);
+  // Sets user affiliation IDs to |user_affiliation_ids| in
+  // |fake_session_manager_client| and modifies |user_policy| so that it
+  // contains correct values of user affiliation IDs for future use. To add user
+  // policies and have user affiliation IDs valid please use |user_policy|
+  // modified by this function.
+  void SetUserAffiliationIDs(policy::UserPolicyBuilder* user_policy,
+                             const AccountId& user_account_id,
+                             const std::set<std::string>& user_affiliation_ids);
 
-// Log in user with |account_id|. User should be registered using
-// PreLoginUser().
-void LoginUser(const AccountId& user_id);
+  // Registers the user with the given |account_id| on the device and marks OOBE
+  // as completed. This method should be called in PRE_* test.
+  static void PreLoginUser(const AccountId& account_id);
 
-// Set necessary for login command line switches. Execute it in
-// SetUpCommandLine().
-void AppendCommandLineSwitchesForLoginManager(base::CommandLine* command_line);
+  // Log in user with |account_id|. User should be registered using
+  // PreLoginUser().
+  static void LoginUser(const AccountId& user_id);
 
-extern const char kFakeRefreshToken[];
-extern const char kEnterpriseUserEmail[];
-extern const char kEnterpriseUserGaiaId[];
+  // Set necessary for login command line switches. Execute it in
+  // SetUpCommandLine().
+  static void AppendCommandLineSwitchesForLoginManager(
+      base::CommandLine* command_line);
 
-}  // namespace affiliation_test_helper
+  static const char kFakeRefreshToken[];
+  static const char kEnterpriseUserEmail[];
+  static const char kEnterpriseUserGaiaId[];
+
+ private:
+  enum class ManagementType { kCloud, kActiveDirectory };
+
+  AffiliationTestHelper(
+      ManagementType management_type,
+      chromeos::FakeSessionManagerClient* fake_session_manager_client,
+      chromeos::FakeAuthPolicyClient* fake_auth_policy_client);
+
+  // ASSERTs on pointer validity.
+  void CheckPreconditions();
+
+  ManagementType management_type_;
+  chromeos::FakeSessionManagerClient*
+      fake_session_manager_client_;                          // Not owned.
+  chromeos::FakeAuthPolicyClient* fake_auth_policy_client_;  // Not owned.
+
+  DISALLOW_COPY_AND_ASSIGN(AffiliationTestHelper);
+};
 
 }  // namespace policy
 

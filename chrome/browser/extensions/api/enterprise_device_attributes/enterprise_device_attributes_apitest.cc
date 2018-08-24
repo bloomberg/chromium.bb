@@ -100,7 +100,7 @@ class EnterpriseDeviceAttributesTest
   // ExtensionApiTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    policy::affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
+    policy::AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
         command_line);
   }
 
@@ -113,11 +113,14 @@ class EnterpriseDeviceAttributesTest
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client));
 
+    policy::AffiliationTestHelper affiliation_helper =
+        policy::AffiliationTestHelper::CreateForCloud(
+            fake_session_manager_client);
+
     std::set<std::string> device_affiliation_ids;
     device_affiliation_ids.insert(kAffiliationID);
-    policy::affiliation_test_helper::SetDeviceAffiliationIDs(
-        &test_helper_, fake_session_manager_client,
-        nullptr /* fake_auth_policy_client */, device_affiliation_ids);
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
+        &test_helper_, device_affiliation_ids));
 
     std::set<std::string> user_affiliation_ids;
     if (GetParam().affiliated) {
@@ -126,10 +129,8 @@ class EnterpriseDeviceAttributesTest
       user_affiliation_ids.insert(kAnotherAffiliationID);
     }
     policy::UserPolicyBuilder user_policy;
-    policy::affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, fake_session_manager_client,
-        nullptr /* fake_auth_policy_client */, affiliated_account_id_,
-        user_affiliation_ids);
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetUserAffiliationIDs(
+        &user_policy, affiliated_account_id_, user_affiliation_ids));
 
     test_helper_.InstallOwnerKey();
     // Init the device policy.
@@ -158,7 +159,7 @@ class EnterpriseDeviceAttributesTest
     const base::ListValue* users =
         g_browser_process->local_state()->GetList("LoggedInUsers");
     if (!users->empty())
-      policy::affiliation_test_helper::LoginUser(affiliated_account_id_);
+      policy::AffiliationTestHelper::LoginUser(affiliated_account_id_);
 
     ExtensionApiTest::SetUpOnMainThread();
   }
@@ -231,7 +232,7 @@ class EnterpriseDeviceAttributesTest
 };
 
 IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, PRE_Success) {
-  policy::affiliation_test_helper::PreLoginUser(affiliated_account_id_);
+  policy::AffiliationTestHelper::PreLoginUser(affiliated_account_id_);
 }
 
 IN_PROC_BROWSER_TEST_P(EnterpriseDeviceAttributesTest, Success) {
