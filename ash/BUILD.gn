@@ -1343,7 +1343,6 @@ component("ash") {
     "//ash/app_menu",
     "//ash/assistant/ui:constants",
     "//ash/autoclick/common:autoclick",
-    "//ash/components/autoclick/public/mojom",
     "//ash/components/cursor",
     "//ash/components/fast_ink",
     "//ash/components/quick_launch/public/mojom",
@@ -1434,7 +1433,6 @@ component("ash") {
   ]
 
   data_deps = [
-    "//ash/components/autoclick:autoclick_app",
     ":dbus_service_files",
   ]
 

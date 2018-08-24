@@ -53,7 +53,6 @@ include_rules = [
   "-ash/components",
 
   # Ash can talk to public interfaces for mini-apps.
-  "+ash/components/autoclick/public",
   "+ash/components/quick_launch/public",
   "+ash/components/tap_visualizer/public",
 

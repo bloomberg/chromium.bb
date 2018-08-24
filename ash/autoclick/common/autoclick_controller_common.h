@@ -27,6 +27,7 @@ class AutoclickControllerCommonDelegate;
 // after a certain amout of time at that location.
 // AutoclickControllerCommon is the common code for both ash and mus to handle
 // events and to manage autoclick time delay and timer.
+// TODO(jamescook): Collapse with AutoclickController. https://crbug.com/876115
 class AutoclickControllerCommon {
  public:
   AutoclickControllerCommon(base::TimeDelta delay,

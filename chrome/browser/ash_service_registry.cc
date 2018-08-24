@@ -36,7 +36,6 @@ struct Service {
 
 // Services shared between mash and non-mash configs.
 constexpr Service kCommonServices[] = {
-    {"autoclick_app", IDS_ASH_AUTOCLICK_APP_NAME},
     {quick_launch::mojom::kServiceName, IDS_ASH_QUICK_LAUNCH_APP_NAME},
     {shortcut_viewer::mojom::kServiceName, IDS_ASH_SHORTCUT_VIEWER_APP_NAME},
     {tap_visualizer::mojom::kServiceName, IDS_ASH_TAP_VISUALIZER_APP_NAME},
