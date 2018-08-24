@@ -168,7 +168,7 @@
                 tools:text="@string/signin_google_services_description"/>
             <View
                 android:id="@+id/signin_divider"
-                style="@style/Divider"
+                style="@style/HorizontalDivider"
                 android:layout_below="@id/signin_google_services_description"
                 android:layout_marginStart="@dimen/signin_divider_margin_start"
                 android:layout_marginTop="20dp"

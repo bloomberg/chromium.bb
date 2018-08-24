@@ -45,7 +45,7 @@
                     android:textAppearance="@style/BlackHeadline1"
                     android:text="@string/sign_in_to_chrome"/>
 
-                <View style="@style/Divider"/>
+                <View style="@style/HorizontalDivider"/>
 
                 <TextView
                     android:id="@+id/signin_choice_description"
@@ -112,7 +112,7 @@
                         android:maxLines="1"/>
                 </LinearLayout>
 
-                <View style="@style/Divider"/>
+                <View style="@style/HorizontalDivider"/>
 
                 <TextView
                     android:id="@+id/signin_sync_title"
@@ -138,7 +138,7 @@
                     android:textSize="@dimen/text_size_medium" />
 
                 <View
-                    style="@style/Divider"
+                    style="@style/HorizontalDivider"
                     android:layout_marginStart="56dp"
                     android:layout_marginEnd="16dp"/>
 

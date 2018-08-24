@@ -11,7 +11,7 @@
     android:layout_height="wrap_content">
 
     <View
-        style="@style/Divider"
+        style="@style/HorizontalDivider"
         android:layout_marginStart="16dp" />
 
 </FrameLayout>
