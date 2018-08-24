@@ -119,7 +119,7 @@ bool EasyResizeWindowTargeter::ShouldUseExtendedBounds(
 
   // Only resizable windows benefit from the extended hit-test region.
   if ((window->GetProperty(aura::client::kResizeBehaviorKey) &
-       ui::mojom::kResizeBehaviorCanResize) == 0) {
+       ws::mojom::kResizeBehaviorCanResize) == 0) {
     return false;
   }
 

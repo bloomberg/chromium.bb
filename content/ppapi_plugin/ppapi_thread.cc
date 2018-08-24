@@ -123,7 +123,7 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
     if (features::IsUsingWindowService()) {
 #if defined(USE_AURA)
       GetServiceManagerConnection()->GetConnector()->BindInterface(
-          ui::mojom::kServiceName, &manager_ptr);
+          ws::mojom::kServiceName, &manager_ptr);
 #else
       NOTREACHED();
 #endif

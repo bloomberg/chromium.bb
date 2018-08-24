@@ -17,14 +17,16 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 
-namespace ui {
-class DropTargetEvent;
-class OSExchangeData;
-
+namespace ws {
 namespace mojom {
 class WindowTree;
 }
 }
+
+namespace ui {
+class DropTargetEvent;
+class OSExchangeData;
+}  // namespace ui
 
 namespace aura {
 
@@ -37,7 +39,7 @@ class WindowMus;
 class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
  public:
   DragDropControllerMus(DragDropControllerHost* drag_drop_controller_host,
-                        ui::mojom::WindowTree* window_tree);
+                        ws::mojom::WindowTree* window_tree);
   ~DragDropControllerMus() override;
 
   // Returns true if a drag was initiated and |id| identifies the change if of
@@ -45,7 +47,7 @@ class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
   bool DoesChangeIdMatchDragChangeId(uint32_t id) const;
 
   // Forwarded from WindowTreeClient. These correspond to the functions of the
-  // same name defined in ui::mojom::WindowTreeClient.
+  // same name defined in ws::mojom::WindowTreeClient.
   void OnDragDropStart(std::map<std::string, std::vector<uint8_t>> data);
   uint32_t OnDragEnter(WindowMus* window,
                        uint32_t event_flags,
@@ -93,7 +95,7 @@ class AURA_EXPORT DragDropControllerMus : public client::DragDropClient {
 
   DragDropControllerHost* drag_drop_controller_host_;
 
-  ui::mojom::WindowTree* window_tree_;
+  ws::mojom::WindowTree* window_tree_;
 
   // State related to being the initiator of a drag started with
   // PerformDragDrop(). If non-null a drag was started by this client and is

@@ -19,7 +19,7 @@ class Rect;
 class Transform;
 }
 
-namespace ui {
+namespace ws {
 namespace mojom {
 enum class OrderDirection;
 }
@@ -81,7 +81,7 @@ class AURA_EXPORT WindowMus {
   virtual void RemoveChildFromServer(WindowMus* child) = 0;
   virtual void ReorderFromServer(WindowMus* child,
                                  WindowMus* relative,
-                                 ui::mojom::OrderDirection) = 0;
+                                 ws::mojom::OrderDirection) = 0;
   virtual void SetBoundsFromServer(
       const gfx::Rect& bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) = 0;

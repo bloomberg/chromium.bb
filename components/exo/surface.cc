@@ -517,8 +517,8 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
 
     window_->SetEventTargetingPolicy(
         (state_.input_region.has_value() && state_.input_region->IsEmpty())
-            ? ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
-            : ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+            ? ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
+            : ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
 
     // We update contents if Attach() has been called since last commit.
     if (has_pending_contents_) {

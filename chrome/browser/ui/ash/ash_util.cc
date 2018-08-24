@@ -41,7 +41,7 @@ void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
   DCHECK_LE(container_id, ash::kShellWindowId_MaxContainer);
 
   if (features::IsUsingWindowService()) {
-    using ui::mojom::WindowManager;
+    using ws::mojom::WindowManager;
     params->mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);
     params->mus_properties[WindowManager::kDisplayId_InitProperty] =

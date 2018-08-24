@@ -90,7 +90,7 @@ SurfaceTreeHost::SurfaceTreeHost(const std::string& window_name)
   // The host window is a container of surface tree. It doesn't handle pointer
   // events.
   host_window_->SetEventTargetingPolicy(
-      ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+      ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   host_window_->SetEventTargeter(std::make_unique<CustomWindowTargeter>(this));
   layer_tree_frame_sink_holder_ = std::make_unique<LayerTreeFrameSinkHolder>(
       this, host_window_->CreateLayerTreeFrameSink());

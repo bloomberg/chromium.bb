@@ -226,7 +226,7 @@ bool WindowState::HasMaximumWidthOrHeight() const {
 bool WindowState::CanMaximize() const {
   // Window must allow maximization and have no maximum width or height.
   if ((window_->GetProperty(aura::client::kResizeBehaviorKey) &
-       ui::mojom::kResizeBehaviorCanMaximize) == 0) {
+       ws::mojom::kResizeBehaviorCanMaximize) == 0) {
     return false;
   }
 
@@ -235,12 +235,12 @@ bool WindowState::CanMaximize() const {
 
 bool WindowState::CanMinimize() const {
   return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
-          ui::mojom::kResizeBehaviorCanMinimize) != 0;
+          ws::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
 bool WindowState::CanResize() const {
   return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
-          ui::mojom::kResizeBehaviorCanResize) != 0;
+          ws::mojom::kResizeBehaviorCanResize) != 0;
 }
 
 bool WindowState::CanActivate() const {

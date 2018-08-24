@@ -149,7 +149,7 @@ bool AuraTestBase::DispatchEventUsingWindowDispatcher(ui::Event* event) {
   return event->handled();
 }
 
-ui::mojom::WindowTreeClient* AuraTestBase::window_tree_client() {
+ws::mojom::WindowTreeClient* AuraTestBase::window_tree_client() {
   return helper_->window_tree_client();
 }
 

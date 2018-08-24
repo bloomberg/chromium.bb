@@ -194,24 +194,24 @@ void ChromeNativeAppWindowViewsAuraAsh::OnBeforeWidgetInit(
     ash_util::SetupWidgetInitParamsForContainer(init_params, container_id);
   }
   init_params->mus_properties
-      [ui::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
+      [ws::mojom::WindowManager::kRemoveStandardFrame_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(init_params->remove_standard_frame);
   if (HasFrameColor()) {
     init_params
-        ->mus_properties[ui::mojom::WindowManager::kFrameActiveColor_Property] =
+        ->mus_properties[ws::mojom::WindowManager::kFrameActiveColor_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int64_t>(ActiveFrameColor()));
     init_params->mus_properties
-        [ui::mojom::WindowManager::kFrameInactiveColor_Property] =
+        [ws::mojom::WindowManager::kFrameInactiveColor_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<int64_t>(InactiveFrameColor()));
   }
   init_params
-      ->mus_properties[ui::mojom::WindowManager::kShelfItemType_Property] =
+      ->mus_properties[ws::mojom::WindowManager::kShelfItemType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(ash::TYPE_APP));
   init_params
-      ->mus_properties[ui::mojom::WindowManager::kWindowTitleShown_Property] =
+      ->mus_properties[ws::mojom::WindowManager::kWindowTitleShown_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int64_t>(false));
 }
 

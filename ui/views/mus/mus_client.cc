@@ -40,11 +40,11 @@
 #include "ui/base/cursor/ozone/cursor_data_factory_ozone.h"
 #endif
 
-// Widget::InitParams::Type must match that of ui::mojom::WindowType.
+// Widget::InitParams::Type must match that of ws::mojom::WindowType.
 #define WINDOW_TYPES_MATCH(NAME)                                      \
   static_assert(                                                      \
       static_cast<int32_t>(views::Widget::InitParams::TYPE_##NAME) == \
-          static_cast<int32_t>(ui::mojom::WindowType::NAME),          \
+          static_cast<int32_t>(ws::mojom::WindowType::NAME),          \
       "Window type constants must match")
 
 WINDOW_TYPES_MATCH(WINDOW);
@@ -56,7 +56,7 @@ WINDOW_TYPES_MATCH(MENU);
 WINDOW_TYPES_MATCH(TOOLTIP);
 WINDOW_TYPES_MATCH(BUBBLE);
 WINDOW_TYPES_MATCH(DRAG);
-// ui::mojom::WindowType::UNKNOWN does not correspond to a value in
+// ws::mojom::WindowType::UNKNOWN does not correspond to a value in
 // Widget::InitParams::Type.
 
 namespace views {
@@ -87,7 +87,7 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
   property_converter_ = std::make_unique<aura::PropertyConverter>();
   property_converter_->RegisterPrimitiveProperty(
       ::wm::kShadowElevationKey,
-      ui::mojom::WindowManager::kShadowElevation_Property,
+      ws::mojom::WindowManager::kShadowElevation_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 
   if (params.create_wm_state)
@@ -115,7 +115,7 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
   if (connector && !params.running_in_ws_process) {
     input_device_client_ = std::make_unique<ui::InputDeviceClient>();
     ui::mojom::InputDeviceServerPtr input_device_server;
-    connector->BindInterface(ui::mojom::kServiceName, &input_device_server);
+    connector->BindInterface(ws::mojom::kServiceName, &input_device_server);
     input_device_client_->Connect(std::move(input_device_server));
 
     screen_ = std::make_unique<ScreenMus>(this);
@@ -126,7 +126,7 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     window_tree_client_->WaitForDisplays();
 
     ui::mojom::ClipboardHostPtr clipboard_host_ptr;
-    connector->BindInterface(ui::mojom::kServiceName, &clipboard_host_ptr);
+    connector->BindInterface(ws::mojom::kServiceName, &clipboard_host_ptr);
     ui::Clipboard::SetClipboardForCurrentThread(
         std::make_unique<ui::ClipboardClient>(std::move(clipboard_host_ptr)));
 
@@ -207,12 +207,12 @@ std::map<std::string, std::vector<uint8_t>>
 MusClient::ConfigurePropertiesFromParams(
     const Widget::InitParams& init_params) {
   using PrimitiveType = aura::PropertyConverter::PrimitiveType;
-  using WindowManager = ui::mojom::WindowManager;
+  using WindowManager = ws::mojom::WindowManager;
   using TransportType = std::vector<uint8_t>;
 
   std::map<std::string, TransportType> properties = init_params.mus_properties;
 
-  // Widget::InitParams::Type matches ui::mojom::WindowType.
+  // Widget::InitParams::Type matches ws::mojom::WindowType.
   properties[WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<TransportType>(static_cast<int32_t>(init_params.type));
 
@@ -384,7 +384,7 @@ void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
 }
 
 void MusClient::OnDisplaysChanged(
-    std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+    std::vector<ws::mojom::WsDisplayPtr> ws_displays,
     int64_t primary_display_id,
     int64_t internal_display_id,
     int64_t display_id_for_new_windows) {

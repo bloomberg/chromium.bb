@@ -1209,7 +1209,7 @@ TEST_P(WindowEventDispatcherTest,
   recorder.Reset();
 
   // Set window to ignore events.
-  window->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::NONE);
+  window->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
 
   // Update the window bounds so that cursor is back inside the window.
   // This should not trigger a synthetic event.
@@ -1221,7 +1221,7 @@ TEST_P(WindowEventDispatcherTest,
 
   // Set window to accept events but invisible.
   window->SetEventTargetingPolicy(
-      ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
+      ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
   window->Hide();
   recorder.Reset();
 

@@ -117,7 +117,7 @@ TEST_F(NonClientFrameControllerMashTest, ContentRegionNotDrawnForClient) {
 
   std::map<std::string, std::vector<uint8_t>> properties;
   std::unique_ptr<aura::Window> window(CreateAndParentTopLevelWindow(
-      ui::mojom::WindowType::WINDOW,
+      ws::mojom::WindowType::WINDOW,
       /* property_converter */ nullptr, &properties));
   ASSERT_TRUE(window);
 

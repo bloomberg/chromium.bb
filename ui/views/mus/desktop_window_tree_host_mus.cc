@@ -390,7 +390,7 @@ void DesktopWindowTreeHostMus::Init(const Widget::InitParams& params) {
   }
 
   if (!params.accept_events)
-    window()->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::NONE);
+    window()->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   else
     aura::WindowPortMus::Get(content_window())->SetCanAcceptDrops(true);
 }
@@ -751,10 +751,10 @@ Widget::MoveLoopResult DesktopWindowTreeHostMus::RunMoveLoop(
 
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
 
-  ui::mojom::MoveLoopSource mus_source =
+  ws::mojom::MoveLoopSource mus_source =
       source == Widget::MOVE_LOOP_SOURCE_MOUSE
-          ? ui::mojom::MoveLoopSource::MOUSE
-          : ui::mojom::MoveLoopSource::TOUCH;
+          ? ws::mojom::MoveLoopSource::MOUSE
+          : ws::mojom::MoveLoopSource::TOUCH;
 
   bool success = false;
   gfx::Point cursor_location =
@@ -840,7 +840,7 @@ bool DesktopWindowTreeHostMus::IsTranslucentWindowOpacitySupported() const {
 }
 
 void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
-  int32_t behavior = ui::mojom::kResizeBehaviorNone;
+  int32_t behavior = ws::mojom::kResizeBehaviorNone;
   Widget* widget = native_widget_delegate_->AsWidget();
   if (widget->widget_delegate())
     behavior = widget->widget_delegate()->GetResizeBehavior();

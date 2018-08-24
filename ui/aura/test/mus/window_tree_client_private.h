@@ -14,12 +14,14 @@
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_tree_client.h"
 
-namespace ui {
-class Event;
-
+namespace ws {
 namespace mojom {
 class WindowTree;
 }
+}
+
+namespace ui {
+class Event;
 }
 
 namespace aura {
@@ -43,7 +45,7 @@ class WindowTreeClientPrivate {
       WindowTreeClientDelegate* window_tree_delegate);
 
   // Calls OnEmbed() on the WindowTreeClient.
-  void OnEmbed(ui::mojom::WindowTree* window_tree);
+  void OnEmbed(ws::mojom::WindowTree* window_tree);
 
   // Simulates |event| matching a pointer watcher on the window server.
   void CallOnPointerEventObserved(Window* window,
@@ -56,21 +58,21 @@ class WindowTreeClientPrivate {
   void CallOnEmbedFromToken(EmbedRoot* embed_root);
 
   // Sets the WindowTree.
-  void SetTree(ui::mojom::WindowTree* window_tree);
+  void SetTree(ws::mojom::WindowTree* window_tree);
 
   bool HasPointerWatcher();
 
   Window* GetWindowByServerId(ui::Id id);
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
-                                     const ui::mojom::WindowData& window_data);
+                                     const ws::mojom::WindowData& window_data);
 
   bool HasInFlightChanges();
 
   bool HasChangeInFlightOfType(ChangeType type);
 
  private:
-  ui::mojom::WindowDataPtr CreateWindowDataForEmbed();
+  ws::mojom::WindowDataPtr CreateWindowDataForEmbed();
 
   WindowTreeClient* tree_client_impl_;
 

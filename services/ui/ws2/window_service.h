@@ -71,7 +71,7 @@ class WindowTree;
 class WindowTreeFactory;
 
 // WindowService is the entry point into providing an implementation of
-// the ui::mojom::WindowTree related mojoms on top of an aura Window hierarchy.
+// the ws::mojom::WindowTree related mojoms on top of an aura Window hierarchy.
 // A WindowTree is created for each client.
 class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
     : public service_manager::Service {
@@ -89,7 +89,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   // Creates a new WindowTree, caller must call one of the Init() functions on
   // the returned object.
   std::unique_ptr<WindowTree> CreateWindowTree(
-      mojom::WindowTreeClient* window_tree_client,
+      ws::mojom::WindowTreeClient* window_tree_client,
       const std::string& client_name = std::string());
 
   // Sets the window frame metrics.
@@ -181,18 +181,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
       base::OnceCallback<void(const std::string&)> callback);
 
   void BindClipboardHostRequest(mojom::ClipboardHostRequest request);
-  void BindEventInjectorRequest(mojom::EventInjectorRequest request);
   void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
   void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
   void BindRemotingEventInjectorRequest(
-      mojom::RemotingEventInjectorRequest request);
+      ws::mojom::RemotingEventInjectorRequest request);
   void BindUserActivityMonitorRequest(
-      mojom::UserActivityMonitorRequest request);
-  void BindWindowServerTestRequest(mojom::WindowServerTestRequest request);
+      ws::mojom::UserActivityMonitorRequest request);
+  void BindWindowServerTestRequest(ws::mojom::WindowServerTestRequest request);
 
   void BindWindowTreeFactoryRequest(
-      mojom::WindowTreeFactoryRequest request,
+      ws::mojom::WindowTreeFactoryRequest request,
       const service_manager::BindSourceInfo& source_info);
 
   WindowServiceDelegate* delegate_;

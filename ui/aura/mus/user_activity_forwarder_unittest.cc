@@ -17,15 +17,15 @@
 
 namespace {
 
-// Fake implementation of ui::mojom::UserActivityMonitor for testing that just
+// Fake implementation of ws::mojom::UserActivityMonitor for testing that just
 // supports tracking and notifying observers.
-class FakeUserActivityMonitor : public ui::mojom::UserActivityMonitor {
+class FakeUserActivityMonitor : public ws::mojom::UserActivityMonitor {
  public:
   FakeUserActivityMonitor() : binding_(this) {}
   ~FakeUserActivityMonitor() override {}
 
-  ui::mojom::UserActivityMonitorPtr GetPtr() {
-    ui::mojom::UserActivityMonitorPtr ptr;
+  ws::mojom::UserActivityMonitorPtr GetPtr() {
+    ws::mojom::UserActivityMonitorPtr ptr;
     binding_.Bind(mojo::MakeRequest(&ptr));
     return ptr;
   }
@@ -38,20 +38,20 @@ class FakeUserActivityMonitor : public ui::mojom::UserActivityMonitor {
       observer->OnUserActivity();
   }
 
-  // ui::mojom::UserActivityMonitor:
+  // ws::mojom::UserActivityMonitor:
   void AddUserActivityObserver(
       uint32_t delay_between_notify_secs,
-      ui::mojom::UserActivityObserverPtr observer) override {
+      ws::mojom::UserActivityObserverPtr observer) override {
     activity_observers_.push_back(std::move(observer));
   }
   void AddUserIdleObserver(uint32_t idleness_in_minutes,
-                           ui::mojom::UserIdleObserverPtr observer) override {
+                           ws::mojom::UserIdleObserverPtr observer) override {
     NOTREACHED() << "Unexpected AddUserIdleObserver call";
   }
 
  private:
-  mojo::Binding<ui::mojom::UserActivityMonitor> binding_;
-  std::vector<ui::mojom::UserActivityObserverPtr> activity_observers_;
+  mojo::Binding<ws::mojom::UserActivityMonitor> binding_;
+  std::vector<ws::mojom::UserActivityObserverPtr> activity_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUserActivityMonitor);
 };

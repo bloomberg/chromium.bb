@@ -78,7 +78,7 @@ TEST(WindowDeleteImplTest, GetCursorForEmbeddingInterceptsEvents) {
   ASSERT_TRUE(embed_window);
   top_level->AddChild(embed_window);
   std::unique_ptr<EmbeddingHelper> embedding_helper = setup.CreateEmbedding(
-      embed_window, ui::mojom::kEmbedFlagEmbedderInterceptsEvents);
+      embed_window, ws::mojom::kEmbedFlagEmbedderInterceptsEvents);
 
   // Set a cursor on the embedding. Because the embedding was created with
   // kEmbedFlagEmbedderInterceptsEvents the cursor should come from the parent

@@ -50,6 +50,9 @@ class Transform;
 namespace ui {
 enum class DomCode;
 class Layer;
+}  // namespace ui
+
+namespace ws {
 namespace mojom {
 enum class EventTargetingPolicy;
 }
@@ -300,8 +303,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   void RemoveObserver(WindowObserver* observer);
   bool HasObserver(const WindowObserver* observer) const;
 
-  void SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy policy);
-  ui::mojom::EventTargetingPolicy event_targeting_policy() const {
+  void SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy);
+  ws::mojom::EventTargetingPolicy event_targeting_policy() const {
     return event_targeting_policy_;
   }
 
@@ -634,7 +637,7 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   std::unique_ptr<ui::EventTargeter> targeter_;
 
   // Makes the window pass all events through to any windows behind it.
-  ui::mojom::EventTargetingPolicy event_targeting_policy_;
+  ws::mojom::EventTargetingPolicy event_targeting_policy_;
 
   base::ObserverList<WindowObserver, true>::Unchecked observers_;
 

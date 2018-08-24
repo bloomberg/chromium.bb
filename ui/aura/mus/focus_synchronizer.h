@@ -12,7 +12,7 @@
 #include "ui/aura/mus/focus_synchronizer_observer.h"
 #include "ui/aura/window_observer.h"
 
-namespace ui {
+namespace ws {
 namespace mojom {
 class WindowTree;
 }
@@ -33,7 +33,7 @@ class AURA_EXPORT FocusSynchronizer : public client::FocusChangeObserver,
                                       public WindowObserver {
  public:
   FocusSynchronizer(FocusSynchronizerDelegate* delegate,
-                    ui::mojom::WindowTree* window_tree);
+                    ws::mojom::WindowTree* window_tree);
   ~FocusSynchronizer() override;
 
   client::FocusClient* active_focus_client() { return active_focus_client_; }
@@ -79,7 +79,7 @@ class AURA_EXPORT FocusSynchronizer : public client::FocusChangeObserver,
                                intptr_t old) override;
 
   FocusSynchronizerDelegate* delegate_;
-  ui::mojom::WindowTree* window_tree_;
+  ws::mojom::WindowTree* window_tree_;
 
   base::ObserverList<FocusSynchronizerObserver>::Unchecked observers_;
 

@@ -198,7 +198,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
-  void ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
+  void ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
                      base::OnceCallback<void(const base::UnguessableToken&)>
                          callback) override;
   void OnSynchronizedDisplayPropertiesChanged() override;

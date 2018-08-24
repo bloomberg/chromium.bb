@@ -674,7 +674,7 @@ void StatusBubbleViews::Init() {
     params.name = "StatusBubble";
 #if defined(OS_CHROMEOS)
     params.mus_properties
-        [ui::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty] =
+        [ws::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(true);
 #endif
     popup_->Init(params);

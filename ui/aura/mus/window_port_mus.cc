@@ -77,7 +77,7 @@ void WindowPortMus::SetCursor(const ui::CursorData& cursor) {
 }
 
 void WindowPortMus::SetEventTargetingPolicy(
-    ui::mojom::EventTargetingPolicy policy) {
+    ws::mojom::EventTargetingPolicy policy) {
   window_tree_client_->SetEventTargetingPolicy(this, policy);
 }
 
@@ -89,9 +89,9 @@ void WindowPortMus::SetHitTestMask(const base::Optional<gfx::Rect>& mask) {
   window_tree_client_->SetHitTestMask(this, mask);
 }
 
-void WindowPortMus::Embed(ui::mojom::WindowTreeClientPtr client,
+void WindowPortMus::Embed(ws::mojom::WindowTreeClientPtr client,
                           uint32_t flags,
-                          ui::mojom::WindowTree::EmbedCallback callback) {
+                          ws::mojom::WindowTree::EmbedCallback callback) {
   window_tree_client_->Embed(window_, std::move(client), flags,
                              std::move(callback));
 }
@@ -99,7 +99,7 @@ void WindowPortMus::Embed(ui::mojom::WindowTreeClientPtr client,
 void WindowPortMus::EmbedUsingToken(
     const base::UnguessableToken& token,
     uint32_t flags,
-    ui::mojom::WindowTree::EmbedCallback callback) {
+    ws::mojom::WindowTree::EmbedCallback callback) {
   window_tree_client_->EmbedUsingToken(window_, token, flags,
                                        std::move(callback));
 }
@@ -237,7 +237,7 @@ void WindowPortMus::RemoveChildFromServer(WindowMus* child) {
 
 void WindowPortMus::ReorderFromServer(WindowMus* child,
                                       WindowMus* relative,
-                                      ui::mojom::OrderDirection direction) {
+                                      ws::mojom::OrderDirection direction) {
   // Keying off solely the id isn't entirely accurate, in so far as if Window
   // does some other reordering then the server and client are out of sync.
   // But we assume only one client can make changes to a particular window at
@@ -245,7 +245,7 @@ void WindowPortMus::ReorderFromServer(WindowMus* child,
   ServerChangeData data;
   data.child_id = child->server_id();
   ScopedServerChange change(this, ServerChangeType::REORDER, data);
-  if (direction == ui::mojom::OrderDirection::BELOW)
+  if (direction == ws::mojom::OrderDirection::BELOW)
     window_->StackChildBelow(child->GetWindow(), relative->GetWindow());
   else
     window_->StackChildAbove(child->GetWindow(), relative->GetWindow());

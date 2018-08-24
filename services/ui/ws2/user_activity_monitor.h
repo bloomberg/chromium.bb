@@ -31,7 +31,7 @@ class UserActivityMonitorTestApi;
 // Monitors user interaction by installing itself as a PreTargetHandler on
 // ui::aura::Env, and updates observers accordingly. Exported for test.
 class COMPONENT_EXPORT(WINDOW_SERVICE) UserActivityMonitor
-    : public mojom::UserActivityMonitor,
+    : public ws::mojom::UserActivityMonitor,
       public ui::EventHandler {
  public:
   // |now_clock| is used to get the timestamp. If |now_clock| is nullptr, then
@@ -42,14 +42,14 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) UserActivityMonitor
   ~UserActivityMonitor() override;
 
   // Provides an implementation for the remote request.
-  void AddBinding(mojom::UserActivityMonitorRequest request);
+  void AddBinding(ws::mojom::UserActivityMonitorRequest request);
 
-  // mojom::UserActivityMonitor:
+  // ws::mojom::UserActivityMonitor:
   void AddUserActivityObserver(
       uint32_t delay_between_notify_secs,
-      mojom::UserActivityObserverPtr observer) override;
+      ws::mojom::UserActivityObserverPtr observer) override;
   void AddUserIdleObserver(uint32_t idleness_in_minutes,
-                           mojom::UserIdleObserverPtr observer) override;
+                           ws::mojom::UserIdleObserverPtr observer) override;
 
   // ui::EventHandler:
   void OnEvent(ui::Event* event) override;
@@ -63,27 +63,29 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) UserActivityMonitor
   // Called every minute when |idle_timer_| is active.
   void OnMinuteTimer();
 
-  void OnActivityObserverDisconnected(mojom::UserActivityObserver* observer);
-  void OnIdleObserverDisconnected(mojom::UserIdleObserver* observer);
+  void OnActivityObserverDisconnected(
+      ws::mojom::UserActivityObserver* observer);
+  void OnIdleObserverDisconnected(ws::mojom::UserIdleObserver* observer);
 
   aura::Env* env_;
 
-  mojo::BindingSet<mojom::UserActivityMonitor> bindings_;
+  mojo::BindingSet<ws::mojom::UserActivityMonitor> bindings_;
   std::unique_ptr<const base::TickClock> now_clock_;
 
   struct ActivityObserverInfo {
     base::TimeTicks last_activity_notification;
     base::TimeDelta delay;
   };
-  std::vector<std::pair<ActivityObserverInfo, mojom::UserActivityObserverPtr>>
+  std::vector<
+      std::pair<ActivityObserverInfo, ws::mojom::UserActivityObserverPtr>>
       activity_observers_;
 
   struct IdleObserverInfo {
     base::TimeTicks last_idle_state_notification;
     base::TimeDelta idle_duration;
-    mojom::UserIdleObserver::IdleState idle_state;
+    ws::mojom::UserIdleObserver::IdleState idle_state;
   };
-  std::vector<std::pair<IdleObserverInfo, mojom::UserIdleObserverPtr>>
+  std::vector<std::pair<IdleObserverInfo, ws::mojom::UserIdleObserverPtr>>
       idle_observers_;
   // Timer used to determine user's idleness. The timer is run only when at
   // least one of the idle-observers are notified ACTIVE.

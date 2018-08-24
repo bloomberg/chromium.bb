@@ -14,7 +14,6 @@ ArcClient::ArcClient(viz::mojom::GpuService* gpu_service)
 
 ArcClient::~ArcClient() {}
 
-// mojom::Arc overrides:
 void ArcClient::CreateVideoDecodeAccelerator(
     arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
   gpu_service_->CreateArcVideoDecodeAccelerator(std::move(vda_request));

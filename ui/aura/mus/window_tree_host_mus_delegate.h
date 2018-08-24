@@ -63,7 +63,7 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
   // moving a window during a drag.
   virtual void OnWindowTreeHostPerformWindowMove(
       WindowTreeHostMus* window_tree_host,
-      ui::mojom::MoveLoopSource mus_source,
+      ws::mojom::MoveLoopSource mus_source,
       const gfx::Point& cursor_location,
       const base::Callback<void(bool)>& callback) = 0;
 

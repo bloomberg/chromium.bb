@@ -25,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(LoginWebDialogTest, CannotMinimize) {
   aura::Window* window = dialog->get_dialog_window_for_test();
   ASSERT_TRUE(window);
   EXPECT_EQ(0, window->GetProperty(aura::client::kResizeBehaviorKey) &
-                   ui::mojom::kResizeBehaviorCanMinimize);
+                   ws::mojom::kResizeBehaviorCanMinimize);
 }
 
 // Tests that LoginWebDialog can be closed by 'Shift + BrowserBack' accelerator.
