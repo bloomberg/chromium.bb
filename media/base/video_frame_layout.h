@@ -56,11 +56,6 @@ class MEDIA_EXPORT VideoFrameLayout {
     strides_ = std::move(strides);
   }
 
-  // Sets buffer_sizes.
-  void set_buffer_sizes(std::vector<size_t> buffer_sizes) {
-    buffer_sizes_ = std::move(buffer_sizes);
-  }
-
   // Clones this as a explicitly copy constructor.
   VideoFrameLayout Clone() const;
 
