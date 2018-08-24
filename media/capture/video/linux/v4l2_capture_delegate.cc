@@ -718,7 +718,7 @@ void V4L2CaptureDelegate::ResetUserAndCameraControlsToDefault(int device_fd) {
   ext_controls.controls = special_camera_controls.data();
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) <
       0)
-    DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
+    DPLOG(INFO) << "VIDIOC_S_EXT_CTRLS";
 
   std::vector<struct v4l2_ext_control> camera_controls;
   for (const auto& control : kControls) {
@@ -750,7 +750,7 @@ void V4L2CaptureDelegate::ResetUserAndCameraControlsToDefault(int device_fd) {
       ext_controls.controls = camera_controls.data();
       if (HANDLE_EINTR(
               v4l2_->ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) < 0)
-        DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
+        DPLOG(INFO) << "VIDIOC_S_EXT_CTRLS";
     }
   }
 
@@ -786,7 +786,7 @@ void V4L2CaptureDelegate::ResetUserAndCameraControlsToDefault(int device_fd) {
   ext_controls.controls = special_camera_controls.data();
   if (HANDLE_EINTR(v4l2_->ioctl(device_fd, VIDIOC_S_EXT_CTRLS, &ext_controls)) <
       0)
-    DPLOG(ERROR) << "VIDIOC_S_EXT_CTRLS";
+    DPLOG(INFO) << "VIDIOC_S_EXT_CTRLS";
 }
 
 bool V4L2CaptureDelegate::MapAndQueueBuffer(int index) {
