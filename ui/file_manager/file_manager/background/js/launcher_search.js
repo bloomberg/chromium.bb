@@ -160,8 +160,8 @@ LauncherSearch.prototype.onOpenResult_ = function(itemId) {
             undefined, /* App ID */
             LaunchType.FOCUS_SAME_OR_CREATE);
       } else {
-        entry = util.toFilesAppEntry(entry);
-        if (entry.type_name === undefined) {
+        // getFileTasks supports only native entries.
+        if (!util.isNativeEntry(entry)) {
           return;
         }
         // If the file is not directory, try to execute default task.
