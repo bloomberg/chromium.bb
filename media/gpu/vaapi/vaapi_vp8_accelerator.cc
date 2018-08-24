@@ -4,6 +4,7 @@
 
 #include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
 
+#include "base/numerics/ranges.h"
 #include "media/gpu/vaapi/vaapi_common.h"
 #include "media/gpu/vaapi/vaapi_video_decode_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -45,12 +46,11 @@ bool VaapiVP8Accelerator::SubmitDecode(
     scoped_refptr<VP8Picture> pic,
     const Vp8ReferenceFrameVector& reference_frames) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  VAIQMatrixBufferVP8 iq_matrix_buf;
-  memset(&iq_matrix_buf, 0, sizeof(VAIQMatrixBufferVP8));
 
   const auto& frame_hdr = pic->frame_hdr;
   const Vp8SegmentationHeader& sgmnt_hdr = frame_hdr->segmentation_hdr;
   const Vp8QuantizationHeader& quant_hdr = frame_hdr->quantization_hdr;
+  VAIQMatrixBufferVP8 iq_matrix_buf{};
   static_assert(arraysize(iq_matrix_buf.quantization_index) == kMaxMBSegments,
                 "incorrect quantization matrix size");
   for (size_t i = 0; i < kMaxMBSegments; ++i) {
@@ -64,7 +64,7 @@ bool VaapiVP8Accelerator::SubmitDecode(
         q += sgmnt_hdr.quantizer_update_value[i];
     }
 
-#define CLAMP_Q(q) std::min(std::max(q, 0), 127)
+#define CLAMP_Q(q) base::ClampToRange(q, 0, 127)
     static_assert(arraysize(iq_matrix_buf.quantization_index[i]) == 6,
                   "incorrect quantization matrix size");
     iq_matrix_buf.quantization_index[i][0] = CLAMP_Q(q);
@@ -77,22 +77,21 @@ bool VaapiVP8Accelerator::SubmitDecode(
   }
 
   if (!vaapi_wrapper_->SubmitBuffer(
-          VAIQMatrixBufferType, sizeof(VAIQMatrixBufferVP8), &iq_matrix_buf))
+          VAIQMatrixBufferType, sizeof(VAIQMatrixBufferVP8), &iq_matrix_buf)) {
     return false;
-
-  VAProbabilityDataBufferVP8 prob_buf;
-  memset(&prob_buf, 0, sizeof(VAProbabilityDataBufferVP8));
+  }
 
   const Vp8EntropyHeader& entr_hdr = frame_hdr->entropy_hdr;
+  VAProbabilityDataBufferVP8 prob_buf{};
   ARRAY_MEMCPY_CHECKED(prob_buf.dct_coeff_probs, entr_hdr.coeff_probs);
 
   if (!vaapi_wrapper_->SubmitBuffer(VAProbabilityBufferType,
                                     sizeof(VAProbabilityDataBufferVP8),
-                                    &prob_buf))
+                                    &prob_buf)) {
     return false;
+  }
 
-  VAPictureParameterBufferVP8 pic_param;
-  memset(&pic_param, 0, sizeof(VAPictureParameterBufferVP8));
+  VAPictureParameterBufferVP8 pic_param{};
   pic_param.frame_width = frame_hdr->width;
   pic_param.frame_height = frame_hdr->height;
 
@@ -191,11 +190,11 @@ bool VaapiVP8Accelerator::SubmitDecode(
   pic_param.bool_coder_ctx.count = frame_hdr->bool_dec_count;
 
   if (!vaapi_wrapper_->SubmitBuffer(VAPictureParameterBufferType,
-                                    sizeof(pic_param), &pic_param))
+                                    sizeof(pic_param), &pic_param)) {
     return false;
+  }
 
-  VASliceParameterBufferVP8 slice_param;
-  memset(&slice_param, 0, sizeof(slice_param));
+  VASliceParameterBufferVP8 slice_param{};
   slice_param.slice_data_size = frame_hdr->frame_size;
   slice_param.slice_data_offset = frame_hdr->first_part_offset;
   slice_param.slice_data_flag = VA_SLICE_DATA_FLAG_ALL;
@@ -213,12 +212,14 @@ bool VaapiVP8Accelerator::SubmitDecode(
 
   if (!vaapi_wrapper_->SubmitBuffer(VASliceParameterBufferType,
                                     sizeof(VASliceParameterBufferVP8),
-                                    &slice_param))
+                                    &slice_param)) {
     return false;
+  }
 
   if (!vaapi_wrapper_->SubmitBuffer(VASliceDataBufferType,
-                                    frame_hdr->frame_size, frame_hdr->data))
+                                    frame_hdr->frame_size, frame_hdr->data)) {
     return false;
+  }
 
   return vaapi_wrapper_->ExecuteAndDestroyPendingBuffers(
       pic->AsVaapiVP8Picture()->va_surface()->id());
