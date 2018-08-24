@@ -78,20 +78,6 @@ class DOMAgentViz : public viz::FrameSinkObserver, public DOMAgent {
   // |frame_sink_elements_|.
   void RemoveFrameSinkElement(UIElement* element);
 
-  // These sets are used to create and update the DOM tree. We add/remove
-  // registered FrameSinks to |registered_frame_sink_ids_to_is_connected_| when
-  // FrameSink is registered/invalidated and initialize the bool to false to
-  // indicate that the FrameSink is not created yet. Then when a |frame_sink| is
-  // created/destroyed, we update |registered_frame_sink_ids_to_is_connected_|
-  // of |frame_sink| true or false accordingly. When we get events
-  // registered/unregistered hierarchy we don't change these sets because we
-  // detach a subtree from one node and attach it to another node and the list
-  // of registered/created FrameSinkIds doesn't change.
-  // TODO(yiyix): Removes this map because it saves duplicated information as
-  // |frame_sink_elements_|.
-  base::flat_map<viz::FrameSinkId, bool>
-      registered_frame_sink_ids_to_is_connected_;
-
   // This is used to track created FrameSinkElements in a FrameSink tree. Every
   // time we register/invalidate a FrameSinkId, create/destroy a FrameSink,
   // register/unregister hierarchy we change this set, because these actions

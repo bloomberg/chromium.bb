@@ -4,6 +4,7 @@
 
 #include "components/ui_devtools/viz_views/dom_agent_viz.h"
 
+#include "base/stl_util.h"
 #include "components/ui_devtools/root_element.h"
 #include "components/ui_devtools/ui_element.h"
 #include "components/ui_devtools/viz_views/frame_sink_element.h"
@@ -71,7 +72,6 @@ void DOMAgentViz::OnRegisteredFrameSinkId(
         element_root()->children().empty() ? nullptr
                                            : element_root()->children().back());
   }
-  registered_frame_sink_ids_to_is_connected_[frame_sink_id] = false;
 }
 
 void DOMAgentViz::OnInvalidatedFrameSinkId(
@@ -80,7 +80,6 @@ void DOMAgentViz::OnInvalidatedFrameSinkId(
   DCHECK(it != frame_sink_elements_.end());
 
   FrameSinkElement* element = it->second;
-  registered_frame_sink_ids_to_is_connected_.erase(frame_sink_id);
   element->SetRegistered(false);
 
   // If a FrameSink is destroyed and invalidated we should remove it from the
@@ -98,8 +97,6 @@ void DOMAgentViz::OnCreatedCompositorFrameSink(
   // should update its |is_client_connected_| and |is_root_| properties.
   frame_sink_element->second->SetClientConnected(true);
   frame_sink_element->second->SetRoot(is_root);
-
-  registered_frame_sink_ids_to_is_connected_[frame_sink_id] = true;
 }
 
 void DOMAgentViz::OnDestroyedCompositorFrameSink(
@@ -109,13 +106,6 @@ void DOMAgentViz::OnDestroyedCompositorFrameSink(
 
   FrameSinkElement* element = it->second;
   element->SetClientConnected(false);
-
-  // If the FrameSink is still registered, update its status on is_connected.
-  if (base::ContainsKey(registered_frame_sink_ids_to_is_connected_,
-                        frame_sink_id)) {
-    registered_frame_sink_ids_to_is_connected_[frame_sink_id] = false;
-    return;
-  }
 
   // If a FrameSink is invalidated and destroyed we should remove it from the
   // tree.
@@ -175,11 +165,12 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
   // subtree. So we iterate through |frame_sink_element|'s children and
   // recursively build the subtree for them.
   for (auto& child : frame_sink_manager_->GetChildrenByParent(frame_sink_id)) {
-    bool is_registered = base::ContainsKey(
-        registered_frame_sink_ids_to_is_connected_, frame_sink_id);
+    bool is_registered = base::ContainsValue(
+        frame_sink_manager_->GetRegisteredFrameSinkIds(), frame_sink_id);
     bool is_client_connected =
         is_registered &&
-        registered_frame_sink_ids_to_is_connected_.find(frame_sink_id)->second;
+        base::ContainsValue(frame_sink_manager_->GetCreatedFrameSinkIds(),
+                            frame_sink_id);
 
     FrameSinkElement* f_s_element = new FrameSinkElement(
         child, frame_sink_manager_, this, frame_sink_element,
@@ -210,13 +201,14 @@ std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
   std::vector<UIElement*> children;
 
   // Add created RootFrameSinks and detached FrameSinks.
-  for (auto& frame_sink_id : registered_frame_sink_ids_to_is_connected_) {
-    if (frame_sink_id.second) {
+  for (auto& frame_sink_id : frame_sink_manager_->GetRegisteredFrameSinkIds()) {
+    if (base::ContainsValue(frame_sink_manager_->GetCreatedFrameSinkIds(),
+                            frame_sink_id)) {
       const viz::CompositorFrameSinkSupport* support =
-          frame_sink_manager_->GetFrameSinkForId(frame_sink_id.first);
+          frame_sink_manager_->GetFrameSinkForId(frame_sink_id);
       // Do nothing if it's a non-detached non-root FrameSink.
       if (support && !support->is_root() &&
-          attached_frame_sinks_.find(frame_sink_id.first) !=
+          attached_frame_sinks_.find(frame_sink_id) !=
               attached_frame_sinks_.end()) {
         continue;
       }
@@ -224,8 +216,7 @@ std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
       bool is_root = support && support->is_root();
 
       UIElement* frame_sink_element = new FrameSinkElement(
-          frame_sink_id.first, frame_sink_manager_, this, element_root(),
-          is_root,
+          frame_sink_id, frame_sink_manager_, this, element_root(), is_root,
           /*is_registered=*/true, /*is_client_connected=*/true);
       children.push_back(frame_sink_element);
 
@@ -237,7 +228,7 @@ std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
       // consider them unembedded as well.
     } else {
       UIElement* frame_sink_element = new FrameSinkElement(
-          frame_sink_id.first, frame_sink_manager_, this, element_root(),
+          frame_sink_id, frame_sink_manager_, this, element_root(),
           /*is_root=*/false, /*is_registered=*/true,
           /*is_client_connected=*/false);
 
@@ -252,10 +243,13 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForUIElement(
     UIElement* ui_element) {
   if (ui_element->type() == UIElementType::FRAMESINK) {
     viz::FrameSinkId frame_sink_id = FrameSinkElement::From(ui_element);
-    bool is_registered = base::ContainsKey(
-        registered_frame_sink_ids_to_is_connected_, frame_sink_id);
+
+    bool is_registered = base::ContainsValue(
+        frame_sink_manager_->GetRegisteredFrameSinkIds(), frame_sink_id);
     bool is_client_connected =
-        registered_frame_sink_ids_to_is_connected_.find(frame_sink_id)->second;
+        is_registered &&
+        base::ContainsValue(frame_sink_manager_->GetCreatedFrameSinkIds(),
+                            frame_sink_id);
     FrameSinkElement* frame_sink_element = new FrameSinkElement(
         frame_sink_id, frame_sink_manager_, this, nullptr,
         /*is_root=*/false, is_registered, is_client_connected);
@@ -276,29 +270,21 @@ void DOMAgentViz::DestroyChildSubtree(UIElement* parent, UIElement* child) {
 void DOMAgentViz::Clear() {
   attached_frame_sinks_.clear();
   frame_sink_elements_.clear();
-  registered_frame_sink_ids_to_is_connected_.clear();
 }
 
 void DOMAgentViz::InitFrameSinkSets() {
-  for (auto& entry : frame_sink_manager_->GetRegisteredFrameSinkIds())
-    registered_frame_sink_ids_to_is_connected_[entry] = false;
-  for (auto& entry : frame_sink_manager_->GetCreatedFrameSinkIds()) {
-    DCHECK(
-        base::ContainsKey(registered_frame_sink_ids_to_is_connected_, entry));
-    registered_frame_sink_ids_to_is_connected_[entry] = true;
-  }
-
   // Init the |attached_frame_sinks_| set. All RootFrameSinks and accessible
   // from roots are attached. All the others are detached.
-  for (auto& frame_sink_id : registered_frame_sink_ids_to_is_connected_) {
-    if (frame_sink_id.second) {
+  for (auto& frame_sink_id : frame_sink_manager_->GetRegisteredFrameSinkIds()) {
+    if (base::ContainsValue(frame_sink_manager_->GetCreatedFrameSinkIds(),
+                            frame_sink_id)) {
       const viz::CompositorFrameSinkSupport* support =
-          frame_sink_manager_->GetFrameSinkForId(frame_sink_id.first);
+          frame_sink_manager_->GetFrameSinkForId(frame_sink_id);
       // Start only from roots.
       if (!support || !support->is_root())
         continue;
 
-      SetAttachedFrameSink(frame_sink_id.first);
+      SetAttachedFrameSink(frame_sink_id);
     }
   }
 }
