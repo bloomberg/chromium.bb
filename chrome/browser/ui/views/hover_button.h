@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_HOVER_BUTTON_H_
 #define CHROME_BROWSER_UI_VIEWS_HOVER_BUTTON_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -13,6 +14,11 @@ namespace gfx {
 enum ElideBehavior;
 class ImageSkia;
 }  // namespace gfx
+
+namespace media_router {
+FORWARD_DECLARE_TEST(CastDialogSinkButtonTest, SetTitleLabel);
+FORWARD_DECLARE_TEST(CastDialogSinkButtonTest, SetStatusLabel);
+}  // namespace media_router
 
 namespace views {
 class ButtonListener;
@@ -108,9 +114,15 @@ class HoverButton : public views::MenuButton, public views::MenuButtonListener {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
   views::StyledLabel* title() const { return title_; }
+  views::Label* subtitle() const { return subtitle_; }
   views::View* icon_view() const { return icon_view_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(media_router::CastDialogSinkButtonTest,
+                           SetTitleLabel);
+  FRIEND_TEST_ALL_PREFIXES(media_router::CastDialogSinkButtonTest,
+                           SetStatusLabel);
+
   views::StyledLabel* title_;
   views::Label* subtitle_;
   views::View* icon_view_;
