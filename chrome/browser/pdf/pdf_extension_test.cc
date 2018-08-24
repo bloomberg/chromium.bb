@@ -131,16 +131,8 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
   }
 
   bool PdfIsExpectedToLoad(const std::string& pdf_file) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // These files don't crash with the different timing of network service.
-      if (pdf_file == "pdf_private/cfuzz5.pdf") {
-        return true;
-      }
-    }
-
     const char* const kFailingPdfs[] = {
         "pdf_private/accessibility_crash_1.pdf",
-        "pdf_private/cfuzz5.pdf",
         "pdf_private/js.pdf",
         "pdf_private/segv-ecx.pdf",
         "pdf_private/tests.pdf",
@@ -255,6 +247,11 @@ class PDFExtensionTest : public extensions::ExtensionApiTest {
       if (static_cast<int>(base::Hash(filename) % kNumberLoadTestParts) == k) {
         LOG(INFO) << "Loading: " << pdf_file;
         bool success = LoadPdf(embedded_test_server()->GetURL("/" + pdf_file));
+        if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+          // This file has races in loading correctly or not.
+          if (pdf_file == "pdf_private/cfuzz5.pdf")
+            continue;
+        }
         EXPECT_EQ(PdfIsExpectedToLoad(pdf_file), success) << pdf_file;
       }
       ++count;
