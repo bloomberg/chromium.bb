@@ -135,6 +135,9 @@ UnifiedConsentService::UnifiedConsentService(
   if (GetMigrationState() == MigrationState::kNotInitialized)
     MigrateProfileToUnifiedConsent();
 
+  // Check if this profile is still eligible for the consent bump.
+  CheckConsentBumpEligibility();
+
   service_client_->AddObserver(this);
   identity_manager_->AddObserver(this);
   sync_service_->AddObserver(this);
@@ -233,6 +236,8 @@ void UnifiedConsentService::RecordConsentBumpSuppressReason(
     case ConsentBumpSuppressReason::kPrivacySettingOff:
     case ConsentBumpSuppressReason::kSettingsOptIn:
     case ConsentBumpSuppressReason::kUserSignedOut:
+    case ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff:
+    case ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff:
       pref_service_->SetBoolean(prefs::kShouldShowUnifiedConsentBump, false);
       break;
     case ConsentBumpSuppressReason::kSyncPaused:
@@ -488,6 +493,25 @@ void UnifiedConsentService::RecordSettingsHistogram() {
 
   if (!metric_recorded)
     RecordSettingsHistogramSample(SettingsHistogramValue::kNone);
+}
+
+void UnifiedConsentService::CheckConsentBumpEligibility() {
+  // Only check eligility if the user was eligible before.
+  if (!ShouldShowConsentBump())
+    return;
+
+  syncer::ModelTypeSet user_types_without_user_events =
+      syncer::UserSelectableTypes();
+  user_types_without_user_events.Remove(syncer::USER_EVENTS);
+
+  if (!sync_service_->GetPreferredDataTypes().HasAll(
+          user_types_without_user_events)) {
+    RecordConsentBumpSuppressReason(
+        ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff);
+  } else if (!AreAllOnByDefaultPrivacySettingsOn()) {
+    RecordConsentBumpSuppressReason(
+        ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff);
+  }
 }
 
 }  //  namespace unified_consent

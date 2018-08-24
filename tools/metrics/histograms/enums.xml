@@ -48119,12 +48119,15 @@ Full version information for the fingerprint enum values:
 
 <enum name="UnifiedConsentBumpSuppressReason">
   <int value="0" label="None (consent bump was shown)"/>
-  <int value="1" label="User wasn't signed in"/>
-  <int value="2" label="User wasn't syncing everything"/>
-  <int value="3" label="On-by-default privacy setting was off"/>
+  <int value="1" label="User wasn't signed in during migration"/>
+  <int value="2" label="User wasn't syncing everything during migration"/>
+  <int value="3"
+      label="On-by-default privacy setting was off during migration"/>
   <int value="4" label="User opted into Unity in settings"/>
   <int value="5" label="User signed out"/>
   <int value="6" label="Sync was paused"/>
+  <int value="7" label="User turned off sync data type"/>
+  <int value="8" label="User turned off on-by-default privacy setting"/>
 </enum>
 
 <enum name="UnifiedConsentSyncAndGoogleServicesSettings">
