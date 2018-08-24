@@ -374,7 +374,7 @@ camera.views.camera.Options.prototype.onTimerTicks = function() {
   var cancel;
   var ticks = new Promise((resolve, reject) => {
     // TODO(yuli): Set tick-counter by timer settings.
-    var tickCounter = 6;
+    var tickCounter = 3;
     var onTimerTick = () => {
       if (tickCounter == 0) {
         resolve();
