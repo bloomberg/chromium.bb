@@ -103,7 +103,7 @@ class NET_EXPORT_PRIVATE HttpAuthController
   // So that we can mock this object.
   friend class base::RefCounted<HttpAuthController>;
 
-  virtual ~HttpAuthController();
+  ~HttpAuthController();
 
   // Searches the auth cache for an entry that encompasses the request's path.
   // If such an entry is found, updates |identity_| and |handler_| with the
