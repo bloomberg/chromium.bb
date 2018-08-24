@@ -1226,21 +1226,23 @@ void CopyURL(Browser* browser) {
                                       .spec()));
 }
 
-void OpenInChrome(Browser* browser) {
+Browser* OpenInChrome(Browser* hosted_app_browser) {
+  DCHECK(hosted_app_browser->hosted_app_controller());
   // Find a non-incognito browser.
   Browser* target_browser =
-      chrome::FindTabbedBrowser(browser->profile(), false);
+      chrome::FindTabbedBrowser(hosted_app_browser->profile(), false);
 
   if (!target_browser) {
     target_browser =
-        new Browser(Browser::CreateParams(browser->profile(), true));
+        new Browser(Browser::CreateParams(hosted_app_browser->profile(), true));
   }
 
-  TabStripModel* source_tabstrip = browser->tab_strip_model();
+  TabStripModel* source_tabstrip = hosted_app_browser->tab_strip_model();
   target_browser->tab_strip_model()->AppendWebContents(
       source_tabstrip->DetachWebContentsAt(source_tabstrip->active_index()),
       true);
   target_browser->window()->Show();
+  return target_browser;
 }
 
 bool CanViewSource(const Browser* browser) {

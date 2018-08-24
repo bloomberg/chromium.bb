@@ -1393,10 +1393,10 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
       WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
   ASSERT_TRUE(app_window);
 
-  // Apps launched in a window from the NTP have an extensions tab helper but
-  // do not have extension_app set in it.
+  // Apps launched in a window from the NTP have an extensions tab helper with
+  // extension_app set.
   ASSERT_TRUE(extensions::TabHelper::FromWebContents(app_window));
-  EXPECT_FALSE(
+  EXPECT_TRUE(
       extensions::TabHelper::FromWebContents(app_window)->extension_app());
   EXPECT_EQ(extensions::AppLaunchInfo::GetFullLaunchURL(extension_app),
             app_window->GetURL());

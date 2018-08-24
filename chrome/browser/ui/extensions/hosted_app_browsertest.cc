@@ -207,6 +207,14 @@ bool TryToLoadImage(const content::ToRenderFrameHost& adapter,
   return image_loaded;
 }
 
+bool IsBrowserOpen(const Browser* test_browser) {
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser == test_browser)
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 class TestAppBannerManagerDesktop : public banners::AppBannerManagerDesktop {
@@ -1145,8 +1153,40 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallPwaWithWindowOpened) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
-  InstallMixedContentPWA();
+  InstallSecurePWA();
+
+  EXPECT_TRUE(IsBrowserOpen(app_browser_));
+
   UninstallExtension(app_->id());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(IsBrowserOpen(app_browser_));
+}
+
+// PWAs moved to tabbed browsers should not get closed when uninstalled.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallPwaWithWindowMovedToTab) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+
+  EXPECT_TRUE(IsBrowserOpen(app_browser_));
+
+  Browser* tabbed_browser = chrome::OpenInChrome(app_browser_);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(IsBrowserOpen(tabbed_browser));
+  EXPECT_EQ(tabbed_browser, browser());
+  EXPECT_FALSE(IsBrowserOpen(app_browser_));
+
+  UninstallExtension(app_->id());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(IsBrowserOpen(tabbed_browser));
+  EXPECT_EQ(tabbed_browser->tab_strip_model()
+                ->GetActiveWebContents()
+                ->GetLastCommittedURL(),
+            GetSecureAppURL());
 }
 
 IN_PROC_BROWSER_TEST_P(HostedAppTest,
