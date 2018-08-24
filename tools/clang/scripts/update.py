@@ -836,8 +836,9 @@ def UpdateClang(args):
       RunCommand(['ninja', 'asan', 'ubsan', 'profile'])
 
       # And copy them into the main build tree.
+      asan_lib_path_format = 'lib/linux/libclang_rt.asan-{0}-android.so',
       libs_want = [
-          'lib/linux/libclang_rt.asan-{0}-android.so',
+          asan_lib_path_format,
           'lib/linux/libclang_rt.ubsan_standalone-{0}-android.so',
           'lib/linux/libclang_rt.profile-{0}-android.a',
       ]
@@ -846,6 +847,11 @@ def UpdateClang(args):
           lib_path = os.path.join(build_dir, p.format(arch))
           if os.path.exists(lib_path):
             shutil.copy(lib_path, rt_lib_dst_dir)
+
+      # We also use ASan i686 build for fuzzing.
+      lib_path = os.path.join(build_dir, asan_lib_path_format.format('i686'))
+      if os.path.exists(lib_path):
+        shutil.copy(lib_path, rt_lib_dst_dir)
 
   # Run tests.
   if args.run_tests or use_head_revision:
