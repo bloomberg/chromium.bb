@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace blink {
 namespace mojom {
@@ -25,7 +26,7 @@ class WebContents;
 //
 // MediaSession allows clients to observe its changes via MediaSessionObserver,
 // and allows clients to resume/suspend/stop the managed players.
-class MediaSession {
+class MediaSession : public media_session::mojom::MediaSession {
  public:
   enum class SuspendType {
     // Suspended by the system because a transient sound needs to be played.
@@ -40,7 +41,7 @@ class MediaSession {
   // none is currently available.
   CONTENT_EXPORT static MediaSession* Get(WebContents* contents);
 
-  virtual ~MediaSession() = default;
+  ~MediaSession() override = default;
 
   // Resume the media session.
   // |type| represents the origin of the request.

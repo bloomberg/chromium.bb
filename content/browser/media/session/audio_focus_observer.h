@@ -6,33 +6,39 @@
 #define CONTENT_BROWSER_MEDIA_SESSION_AUDIO_FOCUS_OBSERVER_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "content/common/content_export.h"
-
-namespace media_session {
-namespace mojom {
-enum class AudioFocusType;
-}  // namespace mojom
-}  // namespace media_session
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
 
-class MediaSession;
-
 // The observer for observing audio focus events. This will not work on Android
 // as it does not use the internal AudioFocusManager implementation.
-class CONTENT_EXPORT AudioFocusObserver {
+class CONTENT_EXPORT AudioFocusObserver
+    : public media_session::mojom::AudioFocusObserver {
  public:
   AudioFocusObserver();
-  ~AudioFocusObserver();
+  ~AudioFocusObserver() override;
 
-  // The given |MediaSession| gained audio focus with the specified type.
-  virtual void OnFocusGained(MediaSession*,
-                             media_session::mojom::AudioFocusType) = 0;
+  // The given media session gained audio focus with the specified type.
+  void OnFocusGained(::media_session::mojom::MediaSessionPtr,
+                     media_session::mojom::AudioFocusType) override {}
 
-  // The given |NediaSession| lost audio focus.
-  virtual void OnFocusLost(MediaSession*) = 0;
+  // The given media session lost audio focus.
+  void OnFocusLost(::media_session::mojom::MediaSessionPtr) override {}
+
+ protected:
+  // Called by subclasses to (un-)register the observer with AudioFocusManager.
+  void RegisterAudioFocusObserver();
+  void UnregisterAudioFocusObserver();
 
  private:
+  base::Optional<mojo::InterfacePtrSetElementId> observer_id_;
+
+  mojo::Binding<media_session::mojom::AudioFocusObserver> binding_;
+
   DISALLOW_COPY_AND_ASSIGN(AudioFocusObserver);
 };
 

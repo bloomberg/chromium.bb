@@ -7,6 +7,7 @@ include_rules = [
   "+device/usb/public/mojom",
   "+device/fido",
   "+services/device/public",
+  "+services/media_session/public",
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/resource_coordinator/public",

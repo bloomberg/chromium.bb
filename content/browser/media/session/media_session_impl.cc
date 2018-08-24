@@ -5,6 +5,7 @@
 #include "content/browser/media/session/media_session_impl.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/numerics/ranges.h"
 #include "base/strings/string_util.h"
@@ -626,6 +627,11 @@ const MediaSessionImpl::DebugInfo MediaSessionImpl::GetDebugInfo() {
   debug_info.state = base::JoinString(state_parts, kDebugInfoStateSeparator);
 
   return debug_info;
+}
+
+void MediaSessionImpl::BindToMojoRequest(
+    mojo::InterfaceRequest<media_session::mojom::MediaSession> request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {

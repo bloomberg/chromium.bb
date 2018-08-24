@@ -11,16 +11,11 @@
 #include "base/memory/singleton.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
-
-namespace media_session {
-namespace mojom {
-enum class AudioFocusType;
-}  // namespace mojom
-}  // namespace media_session
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
 
-class AudioFocusObserver;
 class MediaSessionImpl;
 
 class CONTENT_EXPORT AudioFocusManager {
@@ -34,15 +29,23 @@ class CONTENT_EXPORT AudioFocusManager {
   void AbandonAudioFocus(MediaSessionImpl* media_session);
 
   // Adds/removes audio focus observers.
-  void AddObserver(AudioFocusObserver*);
-  void RemoveObserver(AudioFocusObserver*);
+  mojo::InterfacePtrSetElementId AddObserver(
+      media_session::mojom::AudioFocusObserverPtr);
+  void RemoveObserver(mojo::InterfacePtrSetElementId);
 
  private:
   friend struct base::DefaultSingletonTraits<AudioFocusManager>;
   friend class AudioFocusManagerTest;
 
   // Media internals UI needs access to internal state.
+  friend class MediaInternalsAudioFocusTest;
   friend class MediaInternals;
+
+  // Flush for testing will flush any pending messages to the observers.
+  void FlushForTesting();
+
+  // Reset for testing will clear any built up internal state.
+  void ResetForTesting();
 
   AudioFocusManager();
   ~AudioFocusManager();
@@ -51,7 +54,7 @@ class CONTENT_EXPORT AudioFocusManager {
 
   // Weak reference of managed observers. Observers are expected to remove
   // themselves before being destroyed.
-  std::list<AudioFocusObserver*> audio_focus_observers_;
+  mojo::InterfacePtrSet<media_session::mojom::AudioFocusObserver> observers_;
 
   // Weak reference of managed MediaSessions. A MediaSession must abandon audio
   // focus before its destruction.

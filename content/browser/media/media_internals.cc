@@ -647,6 +647,8 @@ void MediaInternals::AddUpdateCallback(const UpdateCallback& callback) {
 
   base::AutoLock auto_lock(lock_);
   can_update_ = true;
+
+  RegisterAudioFocusObserver();
 }
 
 void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
@@ -660,6 +662,9 @@ void MediaInternals::RemoveUpdateCallback(const UpdateCallback& callback) {
 
   base::AutoLock auto_lock(lock_);
   can_update_ = !update_callbacks_.empty();
+
+  if (!can_update_)
+    UnregisterAudioFocusObserver();
 }
 
 bool MediaInternals::CanUpdate() {
@@ -700,8 +705,8 @@ void MediaInternals::SendVideoCaptureDeviceCapabilities() {
                              &video_capture_capabilities_cached_data_));
 }
 
-#if !defined(OS_ANDROID)
 void MediaInternals::SendAudioFocusState() {
+#if !defined(OS_ANDROID)
   if (!CanUpdate())
     return;
 
@@ -725,8 +730,8 @@ void MediaInternals::SendAudioFocusState() {
 
   SendUpdate(
       SerializeUpdate("media.onReceiveAudioFocusState", &audio_focus_data));
-}
 #endif  // !defined(OS_ANDROID)
+}
 
 void MediaInternals::UpdateVideoCaptureDeviceCapabilities(
     const std::vector<std::tuple<media::VideoCaptureDeviceDescriptor,
@@ -808,9 +813,9 @@ void MediaInternals::OnProcessTerminatedForTesting(int process_id) {
   uma_handler_->OnProcessTerminated(process_id);
 }
 
-#if !defined(OS_ANDROID)
-void MediaInternals::OnFocusGained(MediaSession* media_session,
-                                   media_session::mojom::AudioFocusType type) {
+void MediaInternals::OnFocusGained(
+    media_session::mojom::MediaSessionPtr media_session,
+    media_session::mojom::AudioFocusType type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -818,14 +823,14 @@ void MediaInternals::OnFocusGained(MediaSession* media_session,
                                          base::Unretained(this)));
 }
 
-void MediaInternals::OnFocusLost(MediaSession* media_session) {
+void MediaInternals::OnFocusLost(
+    media_session::mojom::MediaSessionPtr media_session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::BindOnce(&MediaInternals::SendAudioFocusState,
                                          base::Unretained(this)));
 }
-#endif  // !defined(OS_ANDROID)
 
 void MediaInternals::SendUpdate(const base::string16& update) {
   // SendUpdate() may be called from any thread, but must run on the UI thread.
