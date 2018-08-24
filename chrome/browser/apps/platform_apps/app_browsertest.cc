@@ -1400,4 +1400,27 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, NewWindowAboutBlank) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/new_window_about_blank"));
 }
 
+// Test that an app window sees the synthetic wheel events of a touchpad pinch.
+// While the app window itself does not scale in response to a pinch, we
+// still offer the synthetic wheels for pages that want to implement custom
+// pinch zoom behaviour.
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
+                       TouchpadPinchSyntheticWheelEvents) {
+  LoadAndLaunchPlatformApp("touchpad_pinch", "Launched");
+
+  WebContents* web_contents = GetFirstAppWindowWebContents();
+  ASSERT_TRUE(web_contents);
+
+  ExtensionTestMessageListener synthetic_wheel_listener("Seen wheel event",
+                                                        false);
+
+  const gfx::Rect contents_rect = web_contents->GetContainerBounds();
+  const gfx::Point pinch_position(contents_rect.width() / 2,
+                                  contents_rect.height() / 2);
+  content::SimulateGesturePinchSequence(web_contents, pinch_position, 1.23,
+                                        blink::kWebGestureDeviceTouchpad);
+
+  ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
+}
+
 }  // namespace extensions

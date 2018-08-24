@@ -4430,3 +4430,21 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoResizeMessages) {
       embedder->GetRenderWidgetHostView()->GetRenderWidgetHost()->GetProcess(),
       guest->GetRenderWidgetHostView()->GetRenderWidgetHost()));
 }
+
+// Test that a guest sees the synthetic wheel events of a touchpad pinch.
+IN_PROC_BROWSER_TEST_F(WebViewTest, TouchpadPinchSyntheticWheelEvents) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  LoadAppWithGuest("web_view/touchpad_pinch");
+  content::WebContents* guest_contents = GetGuestWebContents();
+
+  ExtensionTestMessageListener synthetic_wheel_listener("Seen wheel event",
+                                                        false);
+
+  const gfx::Rect contents_rect = guest_contents->GetContainerBounds();
+  const gfx::Point pinch_position(contents_rect.width() / 2,
+                                  contents_rect.height() / 2);
+  content::SimulateGesturePinchSequence(guest_contents, pinch_position, 1.23,
+                                        blink::kWebGestureDeviceTouchpad);
+
+  ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
+}
