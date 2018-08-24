@@ -196,8 +196,8 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                   break;
               }
             } else {
-              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Match",
-                                  TimeTicks::Now() - start_time);
+              UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.CacheStorage.Match2",
+                                       TimeTicks::Now() - start_time);
               ScriptState::Scope scope(resolver->GetScriptState());
               resolver->Resolve(Response::Create(resolver->GetScriptState(),
                                                  *result->get_response()));
