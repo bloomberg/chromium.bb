@@ -603,25 +603,28 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
 // On Mac, shortcuts are automatically created for hosted apps when they are
 // installed, so there is no need to create them again.
 #if !defined(OS_MACOSX)
+  if (create_shortcuts_) {
 #if !defined(OS_CHROMEOS)
-  web_app::ShortcutLocations creation_locations;
+    web_app::ShortcutLocations creation_locations;
 #if defined(OS_LINUX) || defined(OS_WIN)
-  creation_locations.on_desktop = true;
+    creation_locations.on_desktop = true;
 #else
-  creation_locations.on_desktop = false;
+    creation_locations.on_desktop = false;
 #endif
-  creation_locations.applications_menu_location =
-      web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
-  creation_locations.in_quick_launch_bar = false;
-  web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
-                           creation_locations, current_profile, extension);
+    creation_locations.applications_menu_location =
+        web_app::APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
+    creation_locations.in_quick_launch_bar = false;
+
+    web_app::CreateShortcuts(web_app::SHORTCUT_CREATION_BY_USER,
+                             creation_locations, current_profile, extension);
 #else
-  // ChromeLauncherController does not exist in unit tests.
-  if (ChromeLauncherController::instance()) {
-    ChromeLauncherController::instance()->shelf_model()->PinAppWithID(
-        extension->id());
-  }
+    // ChromeLauncherController does not exist in unit tests.
+    if (ChromeLauncherController::instance()) {
+      ChromeLauncherController::instance()->shelf_model()->PinAppWithID(
+          extension->id());
+    }
 #endif  // !defined(OS_CHROMEOS)
+  }
 
   // Reparent the tab into an app window immediately when opening as a window.
   if (!silent_install &&

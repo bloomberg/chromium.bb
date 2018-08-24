@@ -104,6 +104,10 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   // is plumbed through this class.
   helper_ = helper_factory_.Run(profile_, *web_app_info, web_contents,
                                 WebappInstallSource::MENU_BROWSER_TAB);
+
+  if (!app_info_.create_shortcuts)
+    helper_->set_skip_shortcut_creation();
+
   helper_->Create(base::Bind(&BookmarkAppInstallationTask::OnInstalled,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Passed(&result_callback)));
