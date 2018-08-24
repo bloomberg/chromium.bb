@@ -42,7 +42,7 @@ void ScriptWrappableMarkingVisitor::TracePrologue() {
   ThreadState::Current()->EnableWrapperTracingBarrier();
 }
 
-void ScriptWrappableMarkingVisitor::EnterFinalPause() {
+void ScriptWrappableMarkingVisitor::EnterFinalPause(EmbedderStackState) {
   CHECK(ThreadState::Current());
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, this);
@@ -181,9 +181,7 @@ void ScriptWrappableMarkingVisitor::RegisterV8References(
   }
 }
 
-bool ScriptWrappableMarkingVisitor::AdvanceTracing(
-    double deadline_in_ms,
-    v8::EmbedderHeapTracer::AdvanceTracingActions actions) {
+bool ScriptWrappableMarkingVisitor::AdvanceTracing(double deadline_in_ms) {
   // Do not drain the marking deque in a state where we can generally not
   // perform a GC. This makes sure that TraceTraits and friends find
   // themselves in a well-defined environment, e.g., properly set up vtables.
@@ -193,15 +191,13 @@ bool ScriptWrappableMarkingVisitor::AdvanceTracing(
   base::AutoReset<bool>(&advancing_tracing_, true);
   TimeTicks deadline =
       TimeTicks() + TimeDelta::FromMillisecondsD(deadline_in_ms);
-  while (actions.force_completion ==
-             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION ||
-         WTF::CurrentTimeTicks() < deadline) {
+  while (WTF::CurrentTimeTicks() < deadline) {
     if (marking_deque_.IsEmpty()) {
-      return false;
+      return true;
     }
     marking_deque_.TakeFirst().Trace(this);
   }
-  return true;
+  return false;
 }
 
 void ScriptWrappableMarkingVisitor::MarkWrapperHeader(
