@@ -157,6 +157,7 @@ public class VrShellDelegate
     private static boolean sRegisteredVrAssetsComponent;
     private static @VrSupportLevel Integer sVrSupportLevel;
     private static Boolean sBootsToVr = null;
+    private static boolean sTestVrShellDelegateOnStartup;
 
     private ChromeActivity mActivity;
 
@@ -728,6 +729,10 @@ public class VrShellDelegate
         return isDaydreamReadyDevice() && DaydreamApi.supports2dInVr(context);
     }
 
+    protected static void enableTestVrShellDelegateOnStartupForTesting() {
+        sTestVrShellDelegateOnStartup = true;
+    }
+
     /* package */ static boolean isVrModeEnabled(Activity activity) {
         return sVrModeEnabledActivitys.contains(activity);
     }
@@ -1010,12 +1015,29 @@ public class VrShellDelegate
         return getInstance((ChromeActivity) activity);
     }
 
+    @SuppressWarnings("unchecked")
     private static VrShellDelegate getInstance(ChromeActivity activity) {
         if (!LibraryLoader.getInstance().isInitialized()) return null;
         if (activity == null || !activitySupportsPresentation(activity)) return null;
         if (sInstance != null) return sInstance;
         ThreadUtils.assertOnUiThread();
-        sInstance = new VrShellDelegate(activity);
+        if (sTestVrShellDelegateOnStartup) {
+            try {
+                // This should only ever be run during tests on standalone devices. Normally, we
+                // create a TestVrShellDelegate during pre-test setup after Chrome has started.
+                // However, since Chrome is started in VR on standalones, creating a
+                // TestVrShellDelegate after startup discards the existing VrShellDelegate instance
+                // that's in use, which is bad. So, in those cases, create a TestVrShellDelegate
+                // instead of the production version.
+                Class clazz = Class.forName("org.chromium.chrome.browser.vr.TestVrShellDelegate");
+                Method method = clazz.getMethod("createTestVrShellDelegate", ChromeActivity.class);
+                method.invoke(null, activity);
+            } catch (Exception e) {
+                assert false;
+            }
+        } else {
+            sInstance = new VrShellDelegate(activity);
+        }
         return sInstance;
     }
 

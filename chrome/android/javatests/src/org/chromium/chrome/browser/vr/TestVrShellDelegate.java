@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr;
 
 import android.graphics.PointF;
+import android.os.Build;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -24,6 +25,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private Boolean mAllow2dIntents;
 
     public static void createTestVrShellDelegate(final ChromeActivity activity) {
+        if (sInstance != null) return;
         ThreadUtils.runOnUiThreadBlocking(() -> { sInstance = new TestVrShellDelegate(activity); });
     }
 
@@ -37,6 +39,14 @@ public class TestVrShellDelegate extends VrShellDelegate {
 
     public static boolean isDisplayingUrlForTesting() {
         return TestVrShellDelegate.getInstance().getVrShell().isDisplayingUrlForTesting();
+    }
+
+    public static boolean isOnStandalone() {
+        return Build.DEVICE.equals("vega");
+    }
+
+    public static void enableTestVrShellDelegateOnStartupForTesting() {
+        VrShellDelegate.enableTestVrShellDelegateOnStartupForTesting();
     }
 
     protected TestVrShellDelegate(ChromeActivity activity) {

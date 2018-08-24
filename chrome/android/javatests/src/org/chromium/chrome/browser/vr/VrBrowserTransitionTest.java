@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_M
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.app.Activity;
 import android.content.Context;
@@ -173,7 +174,7 @@ public class VrBrowserTransitionTest {
      * browser when Chrome gets a VR intent, and returns to 2D when Chrome receives a 2D Intent.
      */
     @Test
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
     public void test2dIntentExitsVrShell() {
         TestVrShellDelegate.getInstance().setAllow2dIntents(true);
@@ -238,7 +239,7 @@ public class VrBrowserTransitionTest {
      */
     @Test
     @CommandLineFlags.Add("enable-webvr")
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
     public void testExitPresentationWebVrToVrShell()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -253,7 +254,7 @@ public class VrBrowserTransitionTest {
      */
     @Test
     @CommandLineFlags.Add("enable-features=WebXR")
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
     public void testExitPresentationWebXrToVrShell()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -290,7 +291,7 @@ public class VrBrowserTransitionTest {
      */
     @Test
     @CommandLineFlags.Add("enable-webvr")
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
     public void testWebVrReEntryFromVrBrowser() throws InterruptedException, TimeoutException {
         reEntryFromVrBrowserImpl(
@@ -304,7 +305,7 @@ public class VrBrowserTransitionTest {
      */
     @Test
     @CommandLineFlags.Add("enable-features=WebXR")
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @MediumTest
     public void testWebXrReEntryFromVrBrowser() throws InterruptedException, TimeoutException {
         reEntryFromVrBrowserImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(

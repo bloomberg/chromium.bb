@@ -58,7 +58,7 @@ public class WebXrArSessionTest {
 
     public WebXrArSessionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = XrTestRuleUtils.wrapRuleInActivityRestrictionRule(mTestRule);
     }
 
     @Before

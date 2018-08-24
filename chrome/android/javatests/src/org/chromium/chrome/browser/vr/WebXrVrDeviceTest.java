@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr;
 
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 
 import android.os.Build;
 import android.support.test.filters.MediumTest;
@@ -22,6 +23,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
 import org.chromium.chrome.browser.vr.util.VrShellDelegateUtils;
@@ -53,7 +55,7 @@ public class WebXrVrDeviceTest {
 
     public WebXrVrDeviceTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mTestRule);
     }
 
     @Before
@@ -87,6 +89,7 @@ public class WebXrVrDeviceTest {
     @MediumTest
     @CommandLineFlags.Add("enable-features=WebXROrientationSensorDevice")
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
+    @Restriction(RESTRICTION_TYPE_SVR)
     public void testGvrlessMagicWindowCapabilities() throws InterruptedException {
         // Make Chrome think that VrCore is not installed
         VrShellDelegateUtils.setVrCoreCompatibility(VrCoreCompatibility.VR_NOT_AVAILABLE);

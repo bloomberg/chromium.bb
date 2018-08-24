@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.vr;
 
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
+
 import android.os.Build;
 import android.support.test.filters.MediumTest;
 import android.view.View;
@@ -21,6 +23,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
+import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr.rules.XrActivityRestriction;
@@ -42,6 +45,7 @@ import java.util.concurrent.Callable;
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT) // WebVR is only supported on K+
+@Restriction(RESTRICTION_TYPE_SVR)
 public class VrInstallUpdateInfoBarTest {
     @ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -53,7 +57,7 @@ public class VrInstallUpdateInfoBarTest {
 
     public VrInstallUpdateInfoBarTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mVrTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mVrTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mVrTestRule);
     }
 
     /**

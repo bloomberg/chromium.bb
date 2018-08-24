@@ -10,7 +10,9 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_SVR;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VR_SETTINGS_SERVICE;
 
 import android.annotation.TargetApi;
@@ -77,7 +79,7 @@ public class WebXrVrTransitionTest {
 
     public WebXrVrTransitionTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mTestRule);
     }
 
     @Before
@@ -124,30 +126,33 @@ public class WebXrVrTransitionTest {
         final UiDevice uiDevice =
                 UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
 
-        CriteriaHelper.pollInstrumentationThread(
-                ()
-                        -> {
-                    Bitmap screenshot = InstrumentationRegistry.getInstrumentation()
-                                                .getUiAutomation()
-                                                .takeScreenshot();
+        // Screenshots are just black on standalones, so skip this part in that case.
+        if (!TestVrShellDelegate.isOnStandalone()) {
+            CriteriaHelper.pollInstrumentationThread(
+                    ()
+                            -> {
+                        Bitmap screenshot = InstrumentationRegistry.getInstrumentation()
+                                                    .getUiAutomation()
+                                                    .takeScreenshot();
 
-                    if (screenshot != null) {
-                        // Calculate center of eye coordinates.
-                        int height = uiDevice.getDisplayHeight() / 2;
-                        int width = uiDevice.getDisplayWidth() / 4;
+                        if (screenshot != null) {
+                            // Calculate center of eye coordinates.
+                            int height = uiDevice.getDisplayHeight() / 2;
+                            int width = uiDevice.getDisplayWidth() / 4;
 
-                        // Verify screen is blue.
-                        int pixel = screenshot.getPixel(width, height);
-                        // Workaround for the immersive mode popup sometimes being rendered over
-                        // the screen on K, which causes the pure blue to be darkened to (0, 0,
-                        // 127).
-                        // TODO(https://crbug.com/819021): Only check pure blue.
-                        return pixel == Color.BLUE || pixel == Color.rgb(0, 0, 127);
-                    }
-                    return false;
-                },
-                "Immersive session started, but browser not visibly in VR", POLL_TIMEOUT_LONG_MS,
-                POLL_CHECK_INTERVAL_LONG_MS);
+                            // Verify screen is blue.
+                            int pixel = screenshot.getPixel(width, height);
+                            // Workaround for the immersive mode popup sometimes being rendered over
+                            // the screen on K, which causes the pure blue to be darkened to (0, 0,
+                            // 127).
+                            // TODO(https://crbug.com/819021): Only check pure blue.
+                            return pixel == Color.BLUE || pixel == Color.rgb(0, 0, 127);
+                        }
+                        return false;
+                    },
+                    "Immersive session started, but browser not visibly in VR",
+                    POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_LONG_MS);
+        }
         framework.assertNoJavaScriptErrors();
     }
 
@@ -312,6 +317,7 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_SVR)
     public void testControlsVisibleAfterExitingVr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
@@ -326,6 +332,7 @@ public class WebXrVrTransitionTest {
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
+            @Restriction(RESTRICTION_TYPE_SVR)
             public void testControlsVisibleAfterExitingVr_WebXr() throws InterruptedException {
         controlsVisibleAfterExitingVrImpl(
                 WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
@@ -405,7 +412,7 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     public void testRendererKilledInWebVrStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         rendererKilledInVrStaysInVrImpl(
@@ -418,7 +425,7 @@ public class WebXrVrTransitionTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
