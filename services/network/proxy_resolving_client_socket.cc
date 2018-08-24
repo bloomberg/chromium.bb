@@ -264,8 +264,9 @@ int ProxyResolvingClientSocket::DoProxyResolveComplete(int result) {
   proxy_resolve_request_ = nullptr;
   if (result == net::OK) {
     // Removes unsupported proxies from the list. Currently, this removes
-    // just the SCHEME_QUIC proxy, which doesn't yet support tunneling.
-    // TODO(xunjieli): Allow QUIC proxy once it supports tunneling.
+    // just the SCHEME_QUIC proxy.
+    // TODO(crbug.com/876885): Allow QUIC proxy once net::QuicProxyClientSocket
+    // supports ReadIfReady() and CancelReadIfReady().
     proxy_info_.RemoveProxiesWithoutScheme(
         net::ProxyServer::SCHEME_DIRECT | net::ProxyServer::SCHEME_HTTP |
         net::ProxyServer::SCHEME_HTTPS | net::ProxyServer::SCHEME_SOCKS4 |
