@@ -323,7 +323,7 @@ void AccountTrackerService::SetAccountImage(const std::string& account_id,
 }
 
 void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
-                                              const bool& is_child_account) {
+                                              bool is_child_account) {
   DCHECK(base::ContainsKey(accounts_, account_id));
   AccountState& state = accounts_[account_id];
   if (state.info.is_child_account == is_child_account)
@@ -336,7 +336,7 @@ void AccountTrackerService::SetIsChildAccount(const std::string& account_id,
 
 void AccountTrackerService::SetIsAdvancedProtectionAccount(
     const std::string& account_id,
-    const bool& is_under_advanced_protection) {
+    bool is_under_advanced_protection) {
   DCHECK(base::ContainsKey(accounts_, account_id));
   AccountState& state = accounts_[account_id];
   if (state.info.is_under_advanced_protection == is_under_advanced_protection)

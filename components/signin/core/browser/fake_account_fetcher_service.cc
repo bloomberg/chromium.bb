@@ -34,7 +34,7 @@ void FakeAccountFetcherService::FakeUserInfoFetchSuccess(
 
 void FakeAccountFetcherService::FakeSetIsChildAccount(
     const std::string& account_id,
-    const bool& is_child_account) {
+    bool is_child_account) {
   SetIsChildAccount(account_id, is_child_account);
 }
 

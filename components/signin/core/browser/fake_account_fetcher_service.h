@@ -34,7 +34,7 @@ class FakeAccountFetcherService : public AccountFetcherService {
                                 const std::string& locale,
                                 const std::string& picture_url);
   void FakeSetIsChildAccount(const std::string& account_id,
-                             const bool& is_child_account);
+                             bool is_child_account);
 
   FakeAccountFetcherService();
 

@@ -124,12 +124,11 @@ class AccountTrackerService : public KeyedService {
   std::string SeedAccountInfo(AccountInfo info);
 
   // Sets whether the account is a Unicorn account.
-  void SetIsChildAccount(const std::string& account_id,
-                         const bool& is_child_account);
+  void SetIsChildAccount(const std::string& account_id, bool is_child_account);
 
   // Sets whether the account is under advanced protection.
   void SetIsAdvancedProtectionAccount(const std::string& account_id,
-                                      const bool& is_under_advanced_protection);
+                                      bool is_under_advanced_protection);
 
   void RemoveAccount(const std::string& account_id);
 
