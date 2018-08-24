@@ -3016,6 +3016,8 @@ jumbo_split_static_library("ui") {
       "views/webauthn/transport_list_view.cc",
       "views/webauthn/transport_list_view.h",
       "webauthn/authenticator_request_sheet_model.h",
+      "webauthn/other_transports_menu_model.cc",
+      "webauthn/other_transports_menu_model.h",
       "webauthn/sheet_models.cc",
       "webauthn/sheet_models.h",
       "webauthn/transport_utils.cc",

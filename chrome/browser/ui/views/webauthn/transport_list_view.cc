@@ -41,8 +41,8 @@ std::unique_ptr<HoverButton> CreateTransportListItemView(
   transport_image->SetImage(gfx::CreateVectorIcon(
       GetTransportVectorIcon(transport), kTransportIconSize, icon_color));
 
-  const base::string16 transport_name =
-      GetTransportHumanReadableName(transport);
+  const base::string16 transport_name = GetTransportHumanReadableName(
+      transport, TransportSelectionContext::kTransportSelectionSheet);
 
   auto chevron_image = std::make_unique<views::ImageView>();
   chevron_image->SetImage(

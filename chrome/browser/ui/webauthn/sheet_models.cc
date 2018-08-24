@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/webauthn/other_transports_menu_model.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -64,6 +65,10 @@ bool AuthenticatorSheetModelBase::IsAcceptButtonEnabled() const {
 base::string16 AuthenticatorSheetModelBase::GetAcceptButtonLabel() const {
   NOTREACHED();
   return base::string16();
+}
+
+ui::MenuModel* AuthenticatorSheetModelBase::GetOtherTransportsMenuModel() {
+  return nullptr;
 }
 
 void AuthenticatorSheetModelBase::OnBack() {
@@ -146,6 +151,17 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
 
 // AuthenticatorInsertAndActivateUsbSheetModel ----------------------
 
+AuthenticatorInsertAndActivateUsbSheetModel::
+    AuthenticatorInsertAndActivateUsbSheetModel(
+        AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kUsbHumanInterfaceDevice);
+}
+
+AuthenticatorInsertAndActivateUsbSheetModel::
+    ~AuthenticatorInsertAndActivateUsbSheetModel() = default;
+
 bool AuthenticatorInsertAndActivateUsbSheetModel::IsActivityIndicatorVisible()
     const {
   return true;
@@ -165,6 +181,11 @@ base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepTitle()
 base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepDescription()
     const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION);
+}
+
+ui::MenuModel*
+AuthenticatorInsertAndActivateUsbSheetModel::GetOtherTransportsMenuModel() {
+  return other_transports_menu_model_.get();
 }
 
 // AuthenticatorTimeoutErrorModel ---------------------------------------------
@@ -424,6 +445,16 @@ base::string16 AuthenticatorBleVerifyingSheetModel::GetStepDescription() const {
 
 // AuthenticatorBleActivateSheetModel -----------------------------------------
 
+AuthenticatorBleActivateSheetModel::AuthenticatorBleActivateSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kBluetoothLowEnergy);
+}
+
+AuthenticatorBleActivateSheetModel::~AuthenticatorBleActivateSheetModel() =
+    default;
+
 bool AuthenticatorBleActivateSheetModel::IsActivityIndicatorVisible() const {
   return true;
 }
@@ -442,7 +473,21 @@ base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION);
 }
 
+ui::MenuModel*
+AuthenticatorBleActivateSheetModel::GetOtherTransportsMenuModel() {
+  return other_transports_menu_model_.get();
+}
+
 // AuthenticatorTouchIdSheetModel -----------------------------------------
+
+AuthenticatorTouchIdSheetModel::AuthenticatorTouchIdSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kInternal);
+}
+
+AuthenticatorTouchIdSheetModel::~AuthenticatorTouchIdSheetModel() = default;
 
 bool AuthenticatorTouchIdSheetModel::IsActivityIndicatorVisible() const {
   return true;
@@ -476,7 +521,24 @@ base::string16 AuthenticatorTouchIdSheetModel::GetStepDescription() const {
   return base::string16();
 }
 
+ui::MenuModel* AuthenticatorTouchIdSheetModel::GetOtherTransportsMenuModel() {
+  if (!other_transports_menu_model_) {
+    other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+        dialog_model(), AuthenticatorTransport::kInternal);
+  }
+  return other_transports_menu_model_.get();
+}
+
 // AuthenticatorPaaskSheetModel -----------------------------------------
+
+AuthenticatorPaaskSheetModel::AuthenticatorPaaskSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {
+  other_transports_menu_model_ = std::make_unique<OtherTransportsMenuModel>(
+      dialog_model, AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy);
+}
+
+AuthenticatorPaaskSheetModel::~AuthenticatorPaaskSheetModel() = default;
 
 bool AuthenticatorPaaskSheetModel::IsActivityIndicatorVisible() const {
   return true;
@@ -492,4 +554,8 @@ base::string16 AuthenticatorPaaskSheetModel::GetStepTitle() const {
 
 base::string16 AuthenticatorPaaskSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CABLE_ACTIVATE_DESCRIPTION);
+}
+
+ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherTransportsMenuModel() {
+  return other_transports_menu_model_.get();
 }

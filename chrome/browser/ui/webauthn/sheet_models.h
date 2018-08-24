@@ -10,6 +10,12 @@
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/transport_list_model.h"
 
+namespace ui {
+class MenuModel;
+}
+
+class OtherTransportsMenuModel;
+
 // Base class for sheets, implementing the shared behavior used on most sheets,
 // as well as maintaining a weak pointer to the dialog model.
 class AuthenticatorSheetModelBase
@@ -40,6 +46,7 @@ class AuthenticatorSheetModelBase
   bool IsAcceptButtonVisible() const override;
   bool IsAcceptButtonEnabled() const override;
   base::string16 GetAcceptButtonLabel() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
   void OnBack() override;
   void OnAccept() override;
   void OnCancel() override;
@@ -90,7 +97,9 @@ class AuthenticatorTransportSelectorSheetModel
 class AuthenticatorInsertAndActivateUsbSheetModel
     : public AuthenticatorSheetModelBase {
  public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+  explicit AuthenticatorInsertAndActivateUsbSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorInsertAndActivateUsbSheetModel() override;
 
  private:
   // AuthenticatorSheetModelBase:
@@ -98,6 +107,9 @@ class AuthenticatorInsertAndActivateUsbSheetModel
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
+
+  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
 
 class AuthenticatorTimeoutErrorModel : public AuthenticatorSheetModelBase {
@@ -240,7 +252,9 @@ class AuthenticatorBleVerifyingSheetModel : public AuthenticatorSheetModelBase {
 
 class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
  public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+  explicit AuthenticatorBleActivateSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorBleActivateSheetModel() override;
 
  private:
   // AuthenticatorSheetModelBase:
@@ -248,11 +262,16 @@ class AuthenticatorBleActivateSheetModel : public AuthenticatorSheetModelBase {
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
+
+  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
 
 class AuthenticatorTouchIdSheetModel : public AuthenticatorSheetModelBase {
  public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+  explicit AuthenticatorTouchIdSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorTouchIdSheetModel() override;
 
  private:
   // AuthenticatorSheetModelBase:
@@ -261,11 +280,16 @@ class AuthenticatorTouchIdSheetModel : public AuthenticatorSheetModelBase {
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
+
+  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
 
 class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
  public:
-  using AuthenticatorSheetModelBase::AuthenticatorSheetModelBase;
+  explicit AuthenticatorPaaskSheetModel(
+      AuthenticatorRequestDialogModel* dialog_model);
+  ~AuthenticatorPaaskSheetModel() override;
 
  private:
   // AuthenticatorSheetModelBase:
@@ -273,6 +297,9 @@ class AuthenticatorPaaskSheetModel : public AuthenticatorSheetModelBase {
   gfx::ImageSkia* GetStepIllustration() const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
+  ui::MenuModel* GetOtherTransportsMenuModel() override;
+
+  std::unique_ptr<OtherTransportsMenuModel> other_transports_menu_model_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBAUTHN_SHEET_MODELS_H_
