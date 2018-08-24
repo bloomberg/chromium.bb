@@ -50,7 +50,74 @@
 						<array>
 							<dict>
 								<key>CHILDREN</key>
-								<array/>
+								<array>
+									<dict>
+										<key>CHILDREN</key>
+										<array>
+											<dict>
+												<key>CHILDREN</key>
+												<array>
+													<dict>
+														<key>CHILDREN</key>
+														<array/>
+														<key>GID</key>
+														<integer>0</integer>
+														<key>PATH</key>
+														<string>Config/Firefox/com.google.chrome.remote_assistance.json</string>
+														<key>PATH_TYPE</key>
+														<integer>1</integer>
+														<key>PERMISSIONS</key>
+														<integer>420</integer>
+														<key>TYPE</key>
+														<integer>3</integer>
+														<key>UID</key>
+														<integer>0</integer>
+													</dict>
+													<dict>
+														<key>CHILDREN</key>
+														<array/>
+														<key>GID</key>
+														<integer>0</integer>
+														<key>PATH</key>
+														<string>Config/Firefox/com.google.chrome.remote_desktop.json</string>
+														<key>PATH_TYPE</key>
+														<integer>1</integer>
+														<key>PERMISSIONS</key>
+														<integer>420</integer>
+														<key>TYPE</key>
+														<integer>3</integer>
+														<key>UID</key>
+														<integer>0</integer>
+													</dict>
+												</array>
+												<key>GID</key>
+												<integer>0</integer>
+												<key>PATH</key>
+												<string>NativeMessagingHosts</string>
+												<key>PATH_TYPE</key>
+												<integer>2</integer>
+												<key>PERMISSIONS</key>
+												<integer>493</integer>
+												<key>TYPE</key>
+												<integer>2</integer>
+												<key>UID</key>
+												<integer>0</integer>
+											</dict>
+										</array>
+										<key>GID</key>
+										<integer>0</integer>
+										<key>PATH</key>
+										<string>Mozilla</string>
+										<key>PATH_TYPE</key>
+										<integer>2</integer>
+										<key>PERMISSIONS</key>
+										<integer>493</integer>
+										<key>TYPE</key>
+										<integer>2</integer>
+										<key>UID</key>
+										<integer>0</integer>
+									</dict>
+								</array>
 								<key>GID</key>
 								<integer>80</integer>
 								<key>PATH</key>
