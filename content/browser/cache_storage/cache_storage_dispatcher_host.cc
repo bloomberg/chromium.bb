@@ -34,6 +34,7 @@ namespace content {
 namespace {
 
 using blink::mojom::CacheStorageError;
+using blink::mojom::CacheStorageVerboseError;
 
 const int32_t kCachePreservationSeconds = 5;
 
@@ -172,7 +173,8 @@ class CacheStorageDispatcherHost::CacheImpl
              BatchCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
-      std::move(callback).Run(CacheStorageError::kErrorNotFound);
+      std::move(callback).Run(CacheStorageVerboseError::New(
+          CacheStorageError::kErrorNotFound, base::nullopt));
       return;
     }
     cache->BatchOperation(
@@ -185,8 +187,8 @@ class CacheStorageDispatcherHost::CacheImpl
 
   void OnCacheBatchCallback(
       blink::mojom::CacheStorageCache::BatchCallback callback,
-      blink::mojom::CacheStorageError error) {
-    std::move(callback).Run(error);
+      blink::mojom::CacheStorageVerboseErrorPtr error) {
+    std::move(callback).Run(std::move(error));
   }
 
   void OnBadMessage(mojo::ReportBadMessageCallback bad_message_callback) {

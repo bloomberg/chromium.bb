@@ -53,6 +53,7 @@
 #include "url/origin.h"
 
 using blink::mojom::CacheStorageError;
+using blink::mojom::CacheStorageVerboseErrorPtr;
 using storage::BlobDataItem;
 
 namespace content {
@@ -501,7 +502,7 @@ class CacheStorageCacheTest : public testing::Test {
 
     cache_->BatchOperation(
         std::move(operations), fail_on_duplicates,
-        base::BindOnce(&CacheStorageCacheTest::ErrorTypeCallback,
+        base::BindOnce(&CacheStorageCacheTest::VerboseErrorTypeCallback,
                        base::Unretained(this), base::Unretained(loop.get())),
         base::BindOnce(&OnBadMessage, base::Unretained(&bad_message_reason_)));
     // TODO(jkarlin): These functions should use base::RunLoop().RunUntilIdle()
@@ -645,7 +646,14 @@ class CacheStorageCacheTest : public testing::Test {
       run_loop->Quit();
   }
 
+  void VerboseErrorTypeCallback(base::RunLoop* run_loop,
+                                CacheStorageVerboseErrorPtr error) {
+    ErrorTypeCallback(run_loop, error->value);
+    callback_message_ = error->message;
+  }
+
   void ErrorTypeCallback(base::RunLoop* run_loop, CacheStorageError error) {
+    callback_message_ = base::nullopt;
     callback_error_ = error;
     if (run_loop)
       run_loop->Quit();
@@ -654,9 +662,9 @@ class CacheStorageCacheTest : public testing::Test {
   void SequenceCallback(int sequence,
                         int* sequence_out,
                         base::RunLoop* run_loop,
-                        CacheStorageError error) {
+                        CacheStorageVerboseErrorPtr error) {
     *sequence_out = sequence;
-    callback_error_ = error;
+    callback_error_ = error->value;
     if (run_loop)
       run_loop->Quit();
   }
@@ -738,6 +746,7 @@ class CacheStorageCacheTest : public testing::Test {
   std::string expected_blob_data_;
 
   CacheStorageError callback_error_ = CacheStorageError::kSuccess;
+  base::Optional<std::string> callback_message_ = base::nullopt;
   blink::mojom::FetchAPIResponsePtr callback_response_;
   std::vector<std::string> callback_strings_;
   std::string bad_message_reason_;
@@ -899,7 +908,7 @@ TEST_P(CacheStorageCacheTestP, PutBodyDropBlobRef) {
   std::unique_ptr<base::RunLoop> loop(new base::RunLoop());
   cache_->BatchOperation(
       std::move(operations), true /* fail_on_duplicate */,
-      base::BindOnce(&CacheStorageCacheTestP::ErrorTypeCallback,
+      base::BindOnce(&CacheStorageCacheTestP::VerboseErrorTypeCallback,
                      base::Unretained(this), base::Unretained(loop.get())),
       CacheStorageCache::BadMessageCallback());
   // The handle should be held by the cache now so the deref here should be
@@ -968,6 +977,11 @@ TEST_P(CacheStorageCacheTestP, PutReplaceInBatchFails) {
   EXPECT_EQ(CacheStorageError::kErrorDuplicateOperation,
             BatchOperation(std::move(operations)));
 
+  // A duplicate operation error should provide an informative message
+  // containing the URL of the duplicate request.
+  ASSERT_TRUE(callback_message_);
+  EXPECT_NE(std::string::npos, callback_message_.value().find(kBodyUrl.spec()));
+
   // Neither operation should have completed.
   EXPECT_FALSE(Match(body_request_));
 }
@@ -992,6 +1006,11 @@ TEST_P(CacheStorageCacheTestP, PutReplaceInBatchWithDuplicateCheckingDisabled) {
   EXPECT_EQ(
       CacheStorageError::kSuccess,
       BatchOperation(std::move(operations), false /* fail_on_duplicates */));
+
+  // Even when we don't fail on duplicates we should still provide an
+  // informative message to the user that includes the duplicate URLs.
+  ASSERT_TRUE(callback_message_);
+  EXPECT_NE(std::string::npos, callback_message_.value().find(kBodyUrl.spec()));
 
   // |operation2| should win.
   EXPECT_TRUE(Match(body_request_));

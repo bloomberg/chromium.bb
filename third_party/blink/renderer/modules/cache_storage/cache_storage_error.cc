@@ -10,36 +10,67 @@
 
 namespace blink {
 
-DOMException* CacheStorageError::CreateException(
-    mojom::CacheStorageError web_error) {
+namespace {
+
+String GetDefaultMessage(mojom::CacheStorageError web_error) {
   switch (web_error) {
-    case mojom::CacheStorageError::kErrorNotImplemented:
-      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
-                                  "Method is not implemented.");
-    case mojom::CacheStorageError::kErrorNotFound:
-      return DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                  "Entry was not found.");
-    case mojom::CacheStorageError::kErrorExists:
-      return DOMException::Create(DOMExceptionCode::kInvalidAccessError,
-                                  "Entry already exists.");
-    case mojom::CacheStorageError::kErrorQuotaExceeded:
-      return DOMException::Create(DOMExceptionCode::kQuotaExceededError,
-                                  "Quota exceeded.");
-    case mojom::CacheStorageError::kErrorCacheNameNotFound:
-      return DOMException::Create(DOMExceptionCode::kNotFoundError,
-                                  "Cache was not found.");
-    case mojom::CacheStorageError::kErrorQueryTooLarge:
-      return DOMException::Create(DOMExceptionCode::kAbortError,
-                                  "Operation too large.");
-    case mojom::CacheStorageError::kErrorStorage:
-      return DOMException::Create(DOMExceptionCode::kUnknownError,
-                                  "Unexpected internal error.");
-    case mojom::CacheStorageError::kErrorDuplicateOperation:
-      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
-                                  "Duplicate operation.");
     case mojom::CacheStorageError::kSuccess:
       // This function should only be called with an error.
       break;
+    case mojom::CacheStorageError::kErrorExists:
+      return "Entry already exists.";
+    case mojom::CacheStorageError::kErrorStorage:
+      return "Unexpected internal error.";
+    case mojom::CacheStorageError::kErrorNotFound:
+      return "Entry was not found.";
+    case mojom::CacheStorageError::kErrorQuotaExceeded:
+      return "Quota exceeded.";
+    case mojom::CacheStorageError::kErrorCacheNameNotFound:
+      return "Cache was not found.";
+    case mojom::CacheStorageError::kErrorQueryTooLarge:
+      return "Operation too large.";
+    case mojom::CacheStorageError::kErrorNotImplemented:
+      return "Method is not implemented.";
+    case mojom::CacheStorageError::kErrorDuplicateOperation:
+      return "Duplicate operation.";
+  }
+  NOTREACHED();
+  return String();
+}
+
+}  // namespace
+
+DOMException* CacheStorageError::CreateException(
+    mojom::CacheStorageError web_error,
+    const String& message) {
+  String final_message = message ? message : GetDefaultMessage(web_error);
+  switch (web_error) {
+    case mojom::CacheStorageError::kSuccess:
+      // This function should only be called with an error.
+      break;
+    case mojom::CacheStorageError::kErrorExists:
+      return DOMException::Create(DOMExceptionCode::kInvalidAccessError,
+                                  final_message);
+    case mojom::CacheStorageError::kErrorStorage:
+      return DOMException::Create(DOMExceptionCode::kUnknownError,
+                                  final_message);
+    case mojom::CacheStorageError::kErrorNotFound:
+      return DOMException::Create(DOMExceptionCode::kNotFoundError,
+                                  final_message);
+    case mojom::CacheStorageError::kErrorQuotaExceeded:
+      return DOMException::Create(DOMExceptionCode::kQuotaExceededError,
+                                  final_message);
+    case mojom::CacheStorageError::kErrorCacheNameNotFound:
+      return DOMException::Create(DOMExceptionCode::kNotFoundError,
+                                  final_message);
+    case mojom::CacheStorageError::kErrorQueryTooLarge:
+      return DOMException::Create(DOMExceptionCode::kAbortError, final_message);
+    case mojom::CacheStorageError::kErrorNotImplemented:
+      return DOMException::Create(DOMExceptionCode::kNotSupportedError,
+                                  final_message);
+    case mojom::CacheStorageError::kErrorDuplicateOperation:
+      return DOMException::Create(DOMExceptionCode::kInvalidStateError,
+                                  final_message);
   }
   NOTREACHED();
   return nullptr;

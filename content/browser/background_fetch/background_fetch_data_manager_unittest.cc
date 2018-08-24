@@ -674,8 +674,8 @@ class BackgroundFetchDataManagerTest
   }
 
   void DidDeleteFromCache(base::OnceClosure quit_closure,
-                          blink::mojom::CacheStorageError error) {
-    DCHECK_EQ(error, blink::mojom::CacheStorageError::kSuccess);
+                          blink::mojom::CacheStorageVerboseErrorPtr error) {
+    DCHECK_EQ(error->value, blink::mojom::CacheStorageError::kSuccess);
     std::move(quit_closure).Run();
   }
 

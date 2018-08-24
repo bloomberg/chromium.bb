@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "net/base/io_buffer.h"
 #include "net/disk_cache/disk_cache.h"
@@ -63,6 +64,8 @@ class CONTENT_EXPORT CacheStorageCache {
  public:
   using ErrorCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError)>;
+  using VerboseErrorCallback =
+      base::OnceCallback<void(blink::mojom::CacheStorageVerboseErrorPtr)>;
   using BadMessageCallback = base::OnceCallback<void()>;
   using ResponseCallback =
       base::OnceCallback<void(blink::mojom::CacheStorageError,
@@ -145,12 +148,13 @@ class CONTENT_EXPORT CacheStorageCache {
   // http://crbug.com/486637
   void BatchOperation(std::vector<blink::mojom::BatchOperationPtr> operations,
                       bool fail_on_duplicates,
-                      ErrorCallback callback,
+                      VerboseErrorCallback callback,
                       BadMessageCallback bad_message_callback);
   void BatchDidGetUsageAndQuota(
       std::vector<blink::mojom::BatchOperationPtr> operations,
-      ErrorCallback callback,
+      VerboseErrorCallback callback,
       BadMessageCallback bad_message_callback,
+      base::Optional<std::string> message,
       uint64_t space_required,
       uint64_t side_data_size,
       blink::mojom::QuotaStatusCode status_code,
@@ -160,11 +164,13 @@ class CONTENT_EXPORT CacheStorageCache {
   // |error_callback|. Always invokes |completion_closure| to signal
   // completion.
   void BatchDidOneOperation(base::OnceClosure completion_closure,
-                            ErrorCallback error_callback,
+                            VerboseErrorCallback error_callback,
+                            base::Optional<std::string> message,
                             blink::mojom::CacheStorageError error);
   // Callback invoked once all BatchDidOneOperation() calls have run.
   // Invokes |error_callback|.
-  void BatchDidAllOperations(ErrorCallback error_callback);
+  void BatchDidAllOperations(VerboseErrorCallback error_callback,
+                             base::Optional<std::string> message);
 
   // Returns blink::mojom::CacheStorageError::kSuccess and a vector of
   // requests if there are no errors.

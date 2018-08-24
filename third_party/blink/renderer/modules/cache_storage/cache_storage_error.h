@@ -25,7 +25,8 @@ class CacheStorageError {
     return CreateException(web_error);
   }
 
-  static DOMException* CreateException(mojom::CacheStorageError web_error);
+  static DOMException* CreateException(mojom::CacheStorageError web_error,
+                                       const String& message = String());
 };
 
 }  // namespace blink
