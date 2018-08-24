@@ -386,7 +386,8 @@ class PreviewsLitePageServerBrowserTest : public PreviewsBrowserTest {
           base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
       std::map<std::string, std::string> feature_parameters = {
           {"previews_host", previews_server().spec()},
-          {"blacklisted_path_suffixes", ".mp4,.jpg"}};
+          {"blacklisted_path_suffixes", ".mp4,.jpg"},
+          {"trigger_on_localhost", "true"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
@@ -548,6 +549,15 @@ IN_PROC_BROWSER_TEST_F(PreviewsLitePageServerBrowserTest,
   // Verify the preview is not triggered when navigating to the previews server.
   ui_test_utils::NavigateToURL(browser(), previews_server());
   EXPECT_EQ(NavigatedURL(), previews_server());
+
+  // Verify the preview is not triggered when navigating to a private IP.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://0.0.0.0/"));
+  VerifyPreviewNotLoaded();
+
+  // Verify the preview is not triggered when navigating to a domain without a
+  // dot.
+  ui_test_utils::NavigateToURL(browser(), GURL("https://no-dots-here/"));
+  VerifyPreviewNotLoaded();
 
   // Verify a subframe navigation does not trigger a preview.
   const int starting_https_url_count = https_url_count();

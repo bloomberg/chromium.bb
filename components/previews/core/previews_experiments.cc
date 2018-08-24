@@ -150,6 +150,11 @@ int PreviewServerLoadshedMaxSeconds() {
       5 * 60 /* 5 minutes */);
 }
 
+bool LitePagePreviewsTriggerOnLocalhost() {
+  return base::GetFieldTrialParamByFeatureAsBool(
+      features::kLitePageServerPreviews, "trigger_on_localhost", false);
+}
+
 GURL GetLitePagePreviewsDomainURL() {
   std::string variable_host_str = GetFieldTrialParamValueByFeature(
       features::kLitePageServerPreviews, "previews_host");
