@@ -316,14 +316,15 @@ void ServiceWorkerNewScriptLoader::OnStartLoadingResponseBody(
 
 void ServiceWorkerNewScriptLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  DCHECK(network_loader_state_ == NetworkLoaderState::kWaitingForBody ||
-         network_loader_state_ == NetworkLoaderState::kLoadingBody);
   NetworkLoaderState previous_state = network_loader_state_;
   network_loader_state_ = NetworkLoaderState::kCompleted;
   if (status.error_code != net::OK) {
     CommitCompleted(status, kServiceWorkerFetchScriptError);
     return;
   }
+
+  DCHECK(previous_state == NetworkLoaderState::kWaitingForBody ||
+         previous_state == NetworkLoaderState::kLoadingBody);
 
   // Response body is empty.
   if (previous_state == NetworkLoaderState::kWaitingForBody) {
