@@ -115,6 +115,8 @@ class SocketWrapperImpl : public UDPSocket::SocketWrapper {
     int result = net::OK;
     if (options->allow_address_reuse)
       result = socket_.AllowAddressReuse();
+    if (result == net::OK && options->allow_broadcast)
+      result = socket_.SetBroadcast(true);
     if (result == net::OK && options->multicast_interface != 0)
       result = socket_.SetMulticastInterface(options->multicast_interface);
     if (result == net::OK && !options->multicast_loopback_mode) {
