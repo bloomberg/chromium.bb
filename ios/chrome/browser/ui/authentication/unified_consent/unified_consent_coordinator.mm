@@ -9,13 +9,14 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/identity_chooser/identity_chooser_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_mediator.h"
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller.h"
+#import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_view_controller_delegate.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-@interface UnifiedConsentCoordinator ()<UnifiedConsentViewControllerDelegate,
-                                        IdentityChooserCoordinatorDelegate>
+@interface UnifiedConsentCoordinator ()<IdentityChooserCoordinatorDelegate,
+                                        UnifiedConsentViewControllerDelegate>
 
 @property(nonatomic, strong) UnifiedConsentMediator* unifiedConsentMediator;
 @property(nonatomic, strong, readwrite)

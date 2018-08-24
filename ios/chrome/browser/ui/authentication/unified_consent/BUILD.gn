@@ -29,6 +29,7 @@ source_set("unified_consent_ui") {
     "identity_picker_view.mm",
     "unified_consent_view_controller.h",
     "unified_consent_view_controller.mm",
+    "unified_consent_view_controller_delegate.h",
   ]
   deps = [
     "resources:ic_assistant",
