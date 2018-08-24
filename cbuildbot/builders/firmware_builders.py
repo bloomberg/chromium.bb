@@ -37,6 +37,9 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
     self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
                    build_root=workspace_dir)
 
+    self._RunStage(workspace_stages.WorkspacePublishBuildspecStage,
+                   build_root=workspace_dir)
+
     self._RunStage(build_stages.InitSDKStage,
                    build_root=workspace_dir)
 

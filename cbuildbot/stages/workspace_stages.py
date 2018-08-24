@@ -161,6 +161,43 @@ class WorkspaceUprevAndPublishStage(WorkspaceStageBase):
                        workspace=self._build_root)
 
 
+class WorkspacePublishBuildspecStage(WorkspaceStageBase):
+  """Increment the ChromeOS version, and publish a buildspec."""
+
+  def PerformStage(self):
+    """Increment ChromeOS version, and publish buildpec."""
+    site_params = config_lib.GetSiteParams()
+
+    # Use the manifest-versions directories that exist in the original
+    # checkout. They may already be populated.
+    int_manifest_versions_path = os.path.join(
+        self._orig_root, site_params.INTERNAL_MANIFEST_VERSIONS_PATH)
+    manifest_version.RefreshManifestCheckout(
+        int_manifest_versions_path,
+        site_params.MANIFEST_VERSIONS_INT_GOB_URL)
+
+    ext_manifest_versions_path = os.path.join(
+        self._orig_root, site_params.EXTERNAL_MANIFEST_VERSIONS_PATH)
+    manifest_version.RefreshManifestCheckout(
+        ext_manifest_versions_path,
+        site_params.MANIFEST_VERSIONS_GOB_URL)
+
+    repo = self.GetWorkspaceRepo()
+
+    # TODO: Add 'patch' support somehow,
+    if repo.branch == 'master':
+      incr_type = 'build'
+    else:
+      incr_type = 'branch'
+
+    manifest_version.GenerateAndPublishOfficialAndBuildSpec(
+        repo,
+        incr_type,
+        manifest_versions_int=int_manifest_versions_path,
+        manifest_versions_ext=ext_manifest_versions_path,
+        dryrun=self._run.options.debug)
+
+
 class WorkspaceInitSDKStage(WorkspaceStageBase):
   """Stage that is responsible for initializing the SDK."""
 
