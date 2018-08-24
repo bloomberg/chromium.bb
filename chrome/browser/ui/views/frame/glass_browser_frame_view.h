@@ -74,7 +74,11 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   SkColor GetTitlebarColor() const;
 
-  HostedAppButtonContainer* GetHostedAppButtonContainerForTesting() const;
+  HostedAppButtonContainer* hosted_app_button_container_for_testing() {
+    return hosted_app_button_container_;
+  }
+
+  views::Label* window_title_for_testing() { return window_title_; }
 
  protected:
   // views::View:

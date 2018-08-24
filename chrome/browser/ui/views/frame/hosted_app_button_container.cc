@@ -268,6 +268,7 @@ void HostedAppButtonContainer::SetPaintAsActive(bool active) {
 
 int HostedAppButtonContainer::LayoutInContainer(int leading_x,
                                                 int trailing_x,
+                                                int y,
                                                 int available_height) {
   if (available_height == 0) {
     SetSize(gfx::Size());
@@ -279,7 +280,8 @@ int HostedAppButtonContainer::LayoutInContainer(int leading_x,
       std::min(preferred_size.width(), std::max(0, trailing_x - leading_x));
   const int height = preferred_size.height();
   DCHECK_LE(height, available_height);
-  SetBounds(trailing_x - width, (available_height - height) / 2, width, height);
+  SetBounds(trailing_x - width, y + (available_height - height) / 2, width,
+            height);
   Layout();
   return bounds().x();
 }
