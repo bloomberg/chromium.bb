@@ -304,7 +304,8 @@ gfx::ImageSkia ConnectingVpnImage(double animation) {
 }
 
 Badge ConnectingVpnBadge(double animation, IconType icon_type) {
-  return {&kNetworkBadgeVpnIcon,
+  return {features::IsSystemTrayUnifiedEnabled() ? &kUnifiedNetworkBadgeVpnIcon
+                                                 : &kNetworkBadgeVpnIcon,
           SkColorSetA(GetDefaultColorForIconType(icon_type), 0xFF * animation)};
 }
 
@@ -499,7 +500,10 @@ bool NetworkIconImpl::UpdateVPNBadge() {
           NetworkTypePattern::VPN());
   Badge vpn_badge = {};
   if (vpn)
-    vpn_badge = {&kNetworkBadgeVpnIcon, GetDefaultColorForIconType(icon_type_)};
+    vpn_badge = {features::IsSystemTrayUnifiedEnabled()
+                     ? &kUnifiedNetworkBadgeVpnIcon
+                     : &kNetworkBadgeVpnIcon,
+                 GetDefaultColorForIconType(icon_type_)};
   if (vpn_badge != vpn_badge_) {
     vpn_badge_ = vpn_badge;
     return true;
@@ -515,7 +519,10 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
   if (type == shill::kTypeWifi) {
     if (network->security_class() != shill::kSecurityNone &&
         !IsTrayIcon(icon_type_)) {
-      badges->bottom_right = {&kNetworkBadgeSecureIcon, icon_color};
+      badges->bottom_right = {features::IsSystemTrayUnifiedEnabled()
+                                  ? &kUnifiedNetworkBadgeSecureIcon
+                                  : &kNetworkBadgeSecureIcon,
+                              icon_color};
     }
   } else if (type == shill::kTypeWimax) {
     technology_badge_ = {&kNetworkBadgeTechnology4gIcon, icon_color};
@@ -539,7 +546,10 @@ void NetworkIconImpl::GetBadges(const NetworkState* network, Badges* badges) {
     badges->top_left = technology_badge_;
     badges->bottom_left = vpn_badge_;
     if (behind_captive_portal_)
-      badges->bottom_right = {&kNetworkBadgeCaptivePortalIcon, icon_color};
+      badges->bottom_right = {features::IsSystemTrayUnifiedEnabled()
+                                  ? &kUnifiedNetworkBadgeCaptivePortalIcon
+                                  : &kNetworkBadgeCaptivePortalIcon,
+                              icon_color};
   }
 }
 
