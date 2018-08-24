@@ -8,7 +8,6 @@
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetches.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_registration.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -45,11 +44,6 @@ class MODULES_EXPORT BackgroundFetchUpdateUIEvent final
 
   ~BackgroundFetchUpdateUIEvent() override;
 
-  // TODO(crbug.com/699957): Remove once matchAll() has been implemented on
-  // BackgroundFetchRegistration.
-  BackgroundFetchSettledFetches* fetches() const { return fetches_; }
-  void setFetches(BackgroundFetchSettledFetches* value) { fetches_ = value; }
-
   // Web Exposed method defined in the IDL file.
   ScriptPromise updateUI(ScriptState* script_state,
                          const BackgroundFetchUIOptions& ui_options);
@@ -76,7 +70,6 @@ class MODULES_EXPORT BackgroundFetchUpdateUIEvent final
 
   Member<ServiceWorkerRegistration> service_worker_registration_;
   Member<BackgroundFetchIconLoader> loader_;
-  Member<BackgroundFetchSettledFetches> fetches_;
 };
 
 }  // namespace blink

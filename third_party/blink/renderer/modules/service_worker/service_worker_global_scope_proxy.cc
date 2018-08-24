@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_registration.h"
-#include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_fetches.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_ui_event.h"
 #include "third_party/blink/renderer/modules/background_sync/sync_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
@@ -126,7 +125,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
       WorkerGlobalScope()->ScriptController()->GetScriptState();
 
   // Do not remove this, |scope| is needed by
-  // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
+  // BackgroundFetchEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
   BackgroundFetchEventInit init;
@@ -170,7 +169,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
       WorkerGlobalScope()->ScriptController()->GetScriptState();
 
   // Do not remove this, |scope| is needed by
-  // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
+  // BackgroundFetchSettledEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
   BackgroundFetchEventInit init;
@@ -181,8 +180,6 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
       EventTypeNames::backgroundfetchfail, init, observer,
       worker_global_scope_->registration());
-  event->setFetches(
-      BackgroundFetchSettledFetches::Create(script_state, fetches));
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -200,7 +197,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
       WorkerGlobalScope()->ScriptController()->GetScriptState();
 
   // Do not remove this, |scope| is needed by
-  // BackgroundFetchSettledFetches::Create which eventually calls ToV8.
+  // BackgroundFetchSettledEvent::Create which eventually calls ToV8.
   ScriptState::Scope scope(script_state);
 
   BackgroundFetchEventInit init;
@@ -211,8 +208,6 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchSuccessEvent(
   BackgroundFetchUpdateUIEvent* event = BackgroundFetchUpdateUIEvent::Create(
       EventTypeNames::backgroundfetchsuccess, init, observer,
       worker_global_scope_->registration());
-  event->setFetches(
-      BackgroundFetchSettledFetches::Create(script_state, fetches));
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }

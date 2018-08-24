@@ -152,7 +152,7 @@ interface BackgroundFetchService {
                 string developer_id,
                 string unique_id,
                 FetchAPIRequest? request_to_match,
-                QueryParams cache_query_params,
+                QueryParams? cache_query_params,
                 bool match_all) => (array<BackgroundFetchSettledFetch> fetches);
 
   // Registers the |observer| to receive events for the given registration
