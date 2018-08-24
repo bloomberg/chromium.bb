@@ -28,7 +28,9 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
 #include "ui/compositor/layer.h"
+#include "ui/compositor/layer_owner.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/accessible_pane_view.h"
@@ -40,6 +42,8 @@
 
 namespace ash {
 namespace {
+
+constexpr int kShelfRoundedCornerRadius = 28;
 
 // Return the first or last focusable child of |root|.
 views::View* FindFirstOrLastFocusableChild(views::View* root,
@@ -90,6 +94,7 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
 
   bool CanActivate() const override;
   void ReorderChildLayers(ui::Layer* parent_layer) override;
+  void UpdateOpaqueBackground();
   // This will be called when the parent local bounds change.
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
@@ -106,6 +111,9 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // ShelfBackgroundAnimator.
   ui::Layer opaque_background_;
 
+  // A mask to show rounded corners when appropriate.
+  std::unique_ptr<ui::LayerOwner> mask_ = nullptr;
+
   // When true, the default focus of the shelf is the last focusable child.
   bool default_last_focusable_child_ = false;
 
@@ -121,7 +129,8 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_allow_deactivate_on_esc(true);
-  opaque_background_.SetBounds(GetLocalBounds());
+
+  UpdateOpaqueBackground();
 }
 
 ShelfWidget::DelegateView::~DelegateView() = default;
@@ -175,8 +184,45 @@ void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
   parent_layer->StackAtBottom(&opaque_background_);
 }
 
+void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
+  const gfx::Rect local_bounds = GetLocalBounds();
+  gfx::Rect opaque_background_bounds = local_bounds;
+
+  if (chromeos::switches::ShouldUseShelfNewUi()) {
+    const Shelf* shelf = shelf_widget_->shelf();
+
+    // Show rounded corners in all states, except in maximized mode.
+    if (shelf_widget_->GetBackgroundType() == SHELF_BACKGROUND_MAXIMIZED) {
+      mask_ = nullptr;
+      opaque_background_.SetMaskLayer(nullptr);
+    } else {
+      const int radius = kShelfRoundedCornerRadius;
+      // Extend the opaque layer a little bit so that only two rounded
+      // corners are visible.
+      // TODO(manucornet): Add functionality to skia to draw a rounded
+      // rectangle with four different radiuses.
+      opaque_background_bounds = gfx::Rect(
+          local_bounds.x() - shelf->SelectValueForShelfAlignment(0, radius, 0),
+          local_bounds.y(),
+          local_bounds.width() +
+              shelf->SelectValueForShelfAlignment(0, radius, radius),
+          local_bounds.height() +
+              shelf->SelectValueForShelfAlignment(radius, 0, 0));
+      // Only re-create the mask if the bounds have changed.
+      if (!mask_ || mask_->layer()->bounds() != opaque_background_bounds) {
+        mask_ = views::Painter::CreatePaintedLayer(
+            views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
+        mask_->layer()->SetBounds(opaque_background_bounds);
+        opaque_background_.SetMaskLayer(mask_->layer());
+      }
+    }
+  }
+  opaque_background_.SetBounds(opaque_background_bounds);
+  SchedulePaint();
+}
+
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
-  opaque_background_.SetBounds(GetLocalBounds());
+  UpdateOpaqueBackground();
 }
 
 views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
@@ -190,6 +236,7 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
 
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
   opaque_background_.SetColor(color);
+  UpdateOpaqueBackground();
 }
 
 ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
