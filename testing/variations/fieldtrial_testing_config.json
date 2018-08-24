@@ -572,6 +572,24 @@
             ]
         }
     ],
+    "AutofillSaveCardSignInAfterLocalSave": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillSaveCardSignInAfterLocalSave"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillSingleClick": [
         {
             "platforms": [
