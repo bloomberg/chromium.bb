@@ -41,7 +41,6 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.browserservices.BrowserServicesMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
 import org.chromium.chrome.browser.browserservices.BrowserSessionDataProvider;
@@ -119,7 +118,6 @@ public class WebappActivity extends SingleTabActivity {
     private WebappDisclosureSnackbarController mDisclosureSnackbarController;
 
     private boolean mIsInitialized;
-    private long mOnResumeTimestampMs;
     private Integer mBrandColor;
 
     private Bitmap mLargestFavicon;
@@ -494,8 +492,6 @@ public class WebappActivity extends SingleTabActivity {
             updateTaskDescription();
         }
         super.onResume();
-
-        mOnResumeTimestampMs = SystemClock.elapsedRealtime();
     }
 
     @Override
@@ -513,11 +509,6 @@ public class WebappActivity extends SingleTabActivity {
     public void onPauseWithNative() {
         mNotificationManager.cancelNotification();
         super.onPauseWithNative();
-
-        if (getBrowserSession() != null && !didVerificationFail()) {
-            BrowserServicesMetrics.recordTwaOpenTime(
-                    SystemClock.elapsedRealtime() - mOnResumeTimestampMs, TimeUnit.MILLISECONDS);
-        }
     }
 
     @Override
@@ -602,8 +593,6 @@ public class WebappActivity extends SingleTabActivity {
                     getFullscreenManager().setPositionsForTabToNonFullscreen();
                     return;
                 }
-
-                BrowserServicesMetrics.recordTwaOpened();
 
                 // When verification occurs instantly (eg the result is cached) then it returns
                 // before there is an active tab.

@@ -861,6 +861,8 @@ public class CustomTabActivity extends ChromeActivity {
         } else if (isModuleLoading()) {
             mModuleOnResumePending = true;
         }
+
+        if (mTrustedWebActivityUi != null) mTrustedWebActivityUi.onResume();
     }
 
     @Override
@@ -871,6 +873,8 @@ public class CustomTabActivity extends ChromeActivity {
         }
         if (mModuleActivityDelegate != null) mModuleActivityDelegate.onPause();
         mModuleOnResumePending = false;
+
+        if (mTrustedWebActivityUi != null) mTrustedWebActivityUi.onPause();
     }
 
     @Override

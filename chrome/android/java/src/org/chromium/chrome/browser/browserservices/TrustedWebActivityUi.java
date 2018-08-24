@@ -27,6 +27,8 @@ public class TrustedWebActivityUi {
 
     private final TrustedWebActivityUiDelegate mDelegate;
     private final TrustedWebActivityDisclosure mDisclosure;
+    private final TrustedWebActivityOpenTimeRecorder mOpenTimeRecorder =
+            new TrustedWebActivityOpenTimeRecorder();
 
     private boolean mInTrustedWebActivity = true;
 
@@ -141,8 +143,21 @@ public class TrustedWebActivityUi {
         new OriginVerifier((packageName2, origin2, verified, online) -> {
             if (!origin.equals(new Origin(tab.getUrl()))) return;
 
+            BrowserServicesMetrics.recordTwaOpened();
             setTrustedWebActivityMode(verified, tab);
         }, packageName, RELATIONSHIP).start(origin);
+    }
+
+    /** Notify (for metrics purposes) that the TWA has been resumed. */
+    public void onResume() {
+        // TODO(peconn): Move this over to LifecycleObserver or something similar once available.
+        mOpenTimeRecorder.onResume();
+    }
+
+    /** Notify (for metrics purposes) that the TWA has been paused. */
+    public void onPause() {
+        // TODO(peconn): Move this over to LifecycleObserver or something similar once available.
+        mOpenTimeRecorder.onPause();
     }
 
     /**
