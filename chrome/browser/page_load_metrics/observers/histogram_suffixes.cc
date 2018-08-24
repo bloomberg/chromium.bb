@@ -14,6 +14,8 @@ const char kHistogramFirstContentfulPaintSuffix[] =
     "PaintTiming.NavigationToFirstContentfulPaint";
 const char kHistogramFirstImagePaintSuffix[] =
     "PaintTiming.NavigationToFirstImagePaint";
+const char kHistogramFirstInputDelaySuffix[] =
+    "InteractiveTiming.FirstInputDelay";
 const char kHistogramFirstLayoutSuffix[] =
     "DocumentTiming.NavigationToFirstLayout";
 const char kHistogramFirstMeaningfulPaintSuffix[] =
