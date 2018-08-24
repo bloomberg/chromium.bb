@@ -392,7 +392,7 @@ void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
   float top_content_offset_dip = IsUseZoomForDSFEnabled()
                                      ? top_content_offset / dip_scale
                                      : top_content_offset;
-  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
+  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset_dip});
   bool controls_changed = UpdateControls(
       view_.GetDipScale(), metadata.top_controls_height,
       metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
@@ -888,7 +888,8 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
     const gfx::Size& output_size,
     base::OnceCallback<void(const SkBitmap&)> callback) {
   TRACE_EVENT0("cc", "RenderWidgetHostViewAndroid::CopyFromSurface");
-  if (!IsSurfaceAvailableForCopy()) {
+  if (!features::IsSurfaceSynchronizationEnabled() &&
+      !IsSurfaceAvailableForCopy()) {
     std::move(callback).Run(SkBitmap());
     return;
   }
