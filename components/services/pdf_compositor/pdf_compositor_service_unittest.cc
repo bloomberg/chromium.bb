@@ -6,10 +6,7 @@
 #include <utility>
 
 #include "base/callback.h"
-#include "base/files/file_path.h"
-#include "base/files/file_util.h"
 #include "base/memory/read_only_shared_memory_region.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/test_discardable_memory_allocator.h"
 #include "cc/paint/paint_flags.h"

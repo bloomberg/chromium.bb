@@ -50,13 +50,19 @@ void PdfCompositorImpl::AddSubframeContent(
     uint64_t frame_guid,
     mojo::ScopedSharedBufferHandle serialized_content,
     const ContentToFrameMap& subframe_content_map) {
+  std::unique_ptr<base::SharedMemory> shared_memory =
+      GetShmFromMojoHandle(std::move(serialized_content));
+  if (!shared_memory) {
+    NotifyUnavailableSubframe(frame_guid);
+    return;
+  }
+
   // Add this frame and its serialized content.
   DCHECK(!base::ContainsKey(frame_info_map_, frame_guid));
   auto& frame_info =
       frame_info_map_.emplace(frame_guid, std::make_unique<FrameInfo>())
           .first->second;
-  frame_info->serialized_content =
-      GetShmFromMojoHandle(std::move(serialized_content));
+  frame_info->serialized_content = std::move(shared_memory);
 
   // Copy the subframe content information.
   frame_info->subframe_content_map = subframe_content_map;
@@ -172,11 +178,19 @@ void PdfCompositorImpl::HandleCompositionRequest(
     mojo::ScopedSharedBufferHandle serialized_content,
     const ContentToFrameMap& subframe_content_map,
     CompositeToPdfCallback callback) {
+  std::unique_ptr<base::SharedMemory> shared_memory =
+      GetShmFromMojoHandle(std::move(serialized_content));
+  if (!shared_memory) {
+    DLOG(ERROR) << "HandleCompositionRequest: Cannot map input.";
+    std::move(callback).Run(mojom::PdfCompositor::Status::HANDLE_MAP_ERROR,
+                            base::ReadOnlySharedMemoryRegion());
+    return;
+  }
+
   base::flat_set<uint64_t> pending_subframes;
   if (IsReadyToComposite(frame_guid, subframe_content_map,
                          &pending_subframes)) {
-    FulfillRequest(frame_guid, page_num,
-                   GetShmFromMojoHandle(std::move(serialized_content)),
+    FulfillRequest(frame_guid, page_num, std::move(shared_memory),
                    subframe_content_map, std::move(callback));
     return;
   }
@@ -188,8 +202,8 @@ void PdfCompositorImpl::HandleCompositionRequest(
     frame_info_map_[frame_guid] = std::make_unique<FrameInfo>();
 
   requests_.push_back(std::make_unique<RequestInfo>(
-      frame_guid, page_num, GetShmFromMojoHandle(std::move(serialized_content)),
-      subframe_content_map, std::move(pending_subframes), std::move(callback)));
+      frame_guid, page_num, std::move(shared_memory), subframe_content_map,
+      std::move(pending_subframes), std::move(callback)));
 }
 
 mojom::PdfCompositor::Status PdfCompositorImpl::CompositeToPdf(
