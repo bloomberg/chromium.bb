@@ -13,7 +13,7 @@
 
 #import "base/bind.h"
 #import "ios/third_party/material_components_ios/src/components/AnimationTiming/src/MaterialAnimationTiming.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MDCAppBarViewController.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowElevations/src/MaterialShadowElevations.h"
 #import "ios/third_party/material_components_ios/src/components/ShadowLayer/src/MaterialShadowLayer.h"
@@ -88,7 +88,7 @@ using remoting::HostListService;
                                      UIViewControllerAnimatedTransitioning,
                                      UIViewControllerTransitioningDelegate> {
   MDCDialogTransitionController* _dialogTransitionController;
-  MDCAppBar* _appBar;
+  MDCAppBarViewController* _appBarViewController;
   HostCollectionViewController* _collectionViewController;
   HostFetchingViewController* _fetchingViewController;
   HostFetchingErrorViewController* _fetchingErrorViewController;
@@ -135,8 +135,8 @@ using remoting::HostListService;
     _setupViewController = [[HostSetupViewController alloc] init];
     _setupViewController.scrollViewDelegate = self.headerViewController;
 
-    _appBar = [[MDCAppBar alloc] init];
-    [self addChildViewController:_appBar.headerViewController];
+    _appBarViewController = [[MDCAppBarViewController alloc] init];
+    [self addChildViewController:_appBarViewController];
 
     self.navigationItem.title =
         l10n_util::GetNSString(IDS_PRODUCT_NAME).lowercaseString;
@@ -149,13 +149,13 @@ using remoting::HostListService;
     remoting::SetAccessibilityInfoFromImage(menuButton);
     self.navigationItem.leftBarButtonItem = menuButton;
 
-    _appBar.headerViewController.headerView.backgroundColor =
+    _appBarViewController.headerView.backgroundColor =
         RemotingTheme.hostListBackgroundColor;
-    _appBar.navigationBar.backgroundColor =
+    _appBarViewController.navigationBar.backgroundColor =
         RemotingTheme.hostListBackgroundColor;
     MDCNavigationBarTextColorAccessibilityMutator* mutator =
         [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
-    [mutator mutate:_appBar.navigationBar];
+    [mutator mutate:_appBarViewController.navigationBar];
 
     MDCFlexibleHeaderView* headerView = self.headerViewController.headerView;
     headerView.backgroundColor = [UIColor clearColor];
@@ -202,7 +202,8 @@ using remoting::HostListService;
         constraintGreaterThanOrEqualToAnchor:[self.view heightAnchor]],
   ]];
 
-  [_appBar addSubviewsToParent];
+  [self.view addSubview:_appBarViewController.view];
+  [_appBarViewController didMoveToParentViewController:self];
 
   __weak __typeof(self) weakSelf = self;
   _hostListStateSubscription =

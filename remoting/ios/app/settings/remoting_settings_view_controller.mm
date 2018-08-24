@@ -25,7 +25,7 @@ static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
 static const CGFloat kSectionSeparatorHeight = 1.f;
 
 @interface RemotingSettingsViewController () {
-  MDCAppBar* _appBar;
+  MDCAppBarViewController* _appBarViewController;
   NSArray* _sections;
   NSMutableArray* _content;
 }
@@ -42,19 +42,19 @@ static const CGFloat kSectionSeparatorHeight = 1.f;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  _appBar = [[MDCAppBar alloc] init];
-  [self addChildViewController:_appBar.headerViewController];
+  _appBarViewController = [[MDCAppBarViewController alloc] init];
+  [self addChildViewController:_appBarViewController];
 
   self.view.backgroundColor = RemotingTheme.menuBlueColor;
-  _appBar.headerViewController.headerView.backgroundColor =
+  _appBarViewController.headerView.backgroundColor =
       RemotingTheme.menuBlueColor;
   MDCNavigationBarTextColorAccessibilityMutator* mutator =
       [[MDCNavigationBarTextColorAccessibilityMutator alloc] init];
-  [mutator mutate:_appBar.navigationBar];
+  [mutator mutate:_appBarViewController.navigationBar];
 
-  _appBar.headerViewController.headerView.trackingScrollView =
-      self.collectionView;
-  [_appBar addSubviewsToParent];
+  _appBarViewController.headerView.trackingScrollView = self.collectionView;
+  [self.view addSubview:_appBarViewController.view];
+  [_appBarViewController didMoveToParentViewController:self];
 
   self.collectionView.backgroundColor = RemotingTheme.menuBlueColor;
 
