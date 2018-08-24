@@ -1129,8 +1129,6 @@ component("ash") {
     "wm/immersive_gesture_handler_classic.h",
     "wm/immersive_handler_factory_ash.cc",
     "wm/immersive_handler_factory_ash.h",
-    "wm/immersive_handler_factory_mash.cc",
-    "wm/immersive_handler_factory_mash.h",
     "wm/lock_action_handler_layout_manager.cc",
     "wm/lock_action_handler_layout_manager.h",
     "wm/lock_layout_manager.cc",
