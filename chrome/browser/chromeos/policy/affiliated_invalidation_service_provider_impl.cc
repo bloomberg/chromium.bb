@@ -16,7 +16,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -151,7 +151,8 @@ void AffiliatedInvalidationServiceProviderImpl::Observe(
   DCHECK(!is_shut_down_);
   Profile* profile = content::Details<Profile>(details).ptr();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile);
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
+          profile);
   if (!invalidation_provider) {
     // If the Profile does not support invalidation (e.g. guest, incognito),
     // ignore it.

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INVALIDATION_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
-#define CHROME_BROWSER_INVALIDATION_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
+#ifndef CHROME_BROWSER_INVALIDATION_DEPRECATED_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
+#define CHROME_BROWSER_INVALIDATION_DEPRECATED_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -28,7 +28,7 @@ class ProfileInvalidationProvider;
 // may be completely different on different platforms; this class should help to
 // hide this complexity. It also exposes some factory methods that are useful
 // for setting up tests that rely on invalidations.
-class ProfileInvalidationProviderFactory
+class DeprecatedProfileInvalidationProviderFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   // Returns the ProfileInvalidationProvider for the given |profile|, lazily
@@ -36,20 +36,20 @@ class ProfileInvalidationProviderFactory
   // (Chrome OS login profile, Chrome OS guest), returns NULL instead.
   static ProfileInvalidationProvider* GetForProfile(Profile* profile);
 
-  static ProfileInvalidationProviderFactory* GetInstance();
+  static DeprecatedProfileInvalidationProviderFactory* GetInstance();
 
   // Switches service creation to go through |testing_factory| for all browser
   // contexts.
   void RegisterTestingFactory(TestingFactoryFunction testing_factory);
 
  private:
-  friend class ProfileInvalidationProviderFactoryTestBase;
+  friend class DeprecatedProfileInvalidationProviderFactoryTestBase;
   friend class policy::AffiliatedInvalidationServiceProviderImplTest;
   friend struct base::DefaultSingletonTraits<
-      ProfileInvalidationProviderFactory>;
+      DeprecatedProfileInvalidationProviderFactory>;
 
-  ProfileInvalidationProviderFactory();
-  ~ProfileInvalidationProviderFactory() override;
+  DeprecatedProfileInvalidationProviderFactory();
+  ~DeprecatedProfileInvalidationProviderFactory() override;
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
@@ -59,9 +59,9 @@ class ProfileInvalidationProviderFactory
 
   TestingFactoryFunction testing_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileInvalidationProviderFactory);
+  DISALLOW_COPY_AND_ASSIGN(DeprecatedProfileInvalidationProviderFactory);
 };
 
 }  // namespace invalidation
 
-#endif  // CHROME_BROWSER_INVALIDATION_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_
+#endif  // CHROME_BROWSER_INVALIDATION_DEPRECATED_PROFILE_INVALIDATION_PROVIDER_FACTORY_H_

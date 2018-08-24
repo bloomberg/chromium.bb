@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/invalidation/impl/invalidation_logger.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
@@ -44,7 +44,7 @@ void InvalidationsMessageHandler::RegisterMessages() {
 
 void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
   if (invalidation_provider) {
     logger_ = invalidation_provider->GetInvalidationService()->
@@ -58,7 +58,7 @@ void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {
 void InvalidationsMessageHandler::HandleRequestDetailedStatus(
     const base::ListValue* args) {
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
           Profile::FromWebUI(web_ui()));
   if (invalidation_provider) {
     invalidation_provider->GetInvalidationService()->RequestDetailedStatus(

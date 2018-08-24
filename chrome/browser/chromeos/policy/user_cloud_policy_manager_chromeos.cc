@@ -29,7 +29,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/user_commands_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/policy/wildcard_login_checker.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/cloud/remote_commands_invalidator_impl.h"
@@ -97,7 +97,8 @@ class UserCloudPolicyManagerChromeOSNotifierFactory
   UserCloudPolicyManagerChromeOSNotifierFactory()
       : BrowserContextKeyedServiceShutdownNotifierFactory(
             "UserRemoteCommandsInvalidator") {
-    DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
+    DependsOn(invalidation::DeprecatedProfileInvalidationProviderFactory::
+                  GetInstance());
   }
 
   ~UserCloudPolicyManagerChromeOSNotifierFactory() override = default;
@@ -677,7 +678,8 @@ void UserCloudPolicyManagerChromeOS::Observe(
                     content::Source<Profile>(profile_));
 
   invalidation::ProfileInvalidationProvider* const invalidation_provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
+          profile_);
 
   if (!invalidation_provider)
     return;

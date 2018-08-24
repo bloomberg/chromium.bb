@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -196,8 +196,8 @@ class CloudPolicyTest : public InProcessBrowserTest,
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     command_line->AppendSwitchASCII(switches::kDeviceManagementUrl, url);
 
-    invalidation::ProfileInvalidationProviderFactory::GetInstance()->
-        RegisterTestingFactory(BuildFakeProfileInvalidationProvider);
+    invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
+        ->RegisterTestingFactory(BuildFakeProfileInvalidationProvider);
   }
 
   void SetUpOnMainThread() override {
@@ -300,8 +300,10 @@ class CloudPolicyTest : public InProcessBrowserTest,
   invalidation::FakeInvalidationService* GetInvalidationService() {
     return static_cast<invalidation::FakeInvalidationService*>(
         static_cast<invalidation::ProfileInvalidationProvider*>(
-            invalidation::ProfileInvalidationProviderFactory::GetInstance()->
-                GetForProfile(browser()->profile()))->GetInvalidationService());
+            invalidation::DeprecatedProfileInvalidationProviderFactory::
+                GetInstance()
+                    ->GetForProfile(browser()->profile()))
+            ->GetInvalidationService());
   }
 
   void SetServerPolicy(const std::string& policy) {

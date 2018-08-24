@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 
 #include <memory>
 #include <utility>
@@ -53,8 +53,8 @@
 namespace invalidation {
 
 // static
-ProfileInvalidationProvider* ProfileInvalidationProviderFactory::GetForProfile(
-    Profile* profile) {
+ProfileInvalidationProvider*
+DeprecatedProfileInvalidationProviderFactory::GetForProfile(Profile* profile) {
 #if defined(OS_CHROMEOS)
   // Using ProfileHelper::GetSigninProfile() here would lead to an infinite loop
   // when this method is called during the creation of the sign-in profile
@@ -73,15 +73,16 @@ ProfileInvalidationProvider* ProfileInvalidationProviderFactory::GetForProfile(
 }
 
 // static
-ProfileInvalidationProviderFactory*
-ProfileInvalidationProviderFactory::GetInstance() {
-  return base::Singleton<ProfileInvalidationProviderFactory>::get();
+DeprecatedProfileInvalidationProviderFactory*
+DeprecatedProfileInvalidationProviderFactory::GetInstance() {
+  return base::Singleton<DeprecatedProfileInvalidationProviderFactory>::get();
 }
 
-ProfileInvalidationProviderFactory::ProfileInvalidationProviderFactory()
+DeprecatedProfileInvalidationProviderFactory::
+    DeprecatedProfileInvalidationProviderFactory()
     : BrowserContextKeyedServiceFactory(
-        "InvalidationService",
-        BrowserContextDependencyManager::GetInstance()),
+          "InvalidationService",
+          BrowserContextDependencyManager::GetInstance()),
       testing_factory_(NULL) {
 #if !defined(OS_ANDROID)
   DependsOn(IdentityManagerFactory::GetInstance());
@@ -89,22 +90,23 @@ ProfileInvalidationProviderFactory::ProfileInvalidationProviderFactory()
 #endif
 }
 
-ProfileInvalidationProviderFactory::~ProfileInvalidationProviderFactory() {
-}
+DeprecatedProfileInvalidationProviderFactory::
+    ~DeprecatedProfileInvalidationProviderFactory() {}
 
-void ProfileInvalidationProviderFactory::RegisterTestingFactory(
+void DeprecatedProfileInvalidationProviderFactory::RegisterTestingFactory(
     TestingFactoryFunction testing_factory) {
   testing_factory_ = testing_factory;
 }
 
-KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
+KeyedService*
+DeprecatedProfileInvalidationProviderFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   if (testing_factory_)
     return testing_factory_(context).release();
 
 #if defined(OS_ANDROID)
-  return new ProfileInvalidationProvider(
-      std::unique_ptr<InvalidationService>(new InvalidationServiceAndroid()));
+  auto service = std::make_unique<InvalidationServiceAndroid>();
+  return new ProfileInvalidationProvider(std::move(service));
 #else
 
   std::unique_ptr<IdentityProvider> identity_provider;
@@ -161,7 +163,7 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
 #endif
 }
 
-void ProfileInvalidationProviderFactory::RegisterProfilePrefs(
+void DeprecatedProfileInvalidationProviderFactory::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
   ProfileInvalidationProvider::RegisterProfilePrefs(registry);
   InvalidatorStorage::RegisterProfilePrefs(registry);
