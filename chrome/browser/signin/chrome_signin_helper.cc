@@ -54,6 +54,11 @@
 #include "extensions/browser/guest_view/web_view/web_view_renderer_state.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace signin {
 
 namespace {
@@ -198,9 +203,21 @@ void ProcessMirrorHeaderUIThread(
         account_reconcilor->GetState());
 
 #if defined(OS_CHROMEOS)
+    if (chromeos::switches::IsAccountManagerEnabled()) {
+      // Chrome OS Account Manager is available. The only allowed operations
+      // are:
+      //
+      // - Going Incognito (already handled in above switch-case).
+      // - Displaying the Account Manager for managing accounts.
+      chrome::SettingsWindowManager::GetInstance()->ShowChromePageForProfile(
+          profile, GURL("chrome://settings/accountManager"));
+      return;
+    }
+
+    // TODO(sinhak): Remove this when Chrome OS Account Manager is released.
     // Chrome OS does not have an account picker right now. To fix
-    // https://crbug.com/807568, this is a no-op here. This is OK because in the
-    // limited cases that Mirror is available on Chrome OS, 1:1 account
+    // https://crbug.com/807568, this is a no-op here. This is OK because in
+    // the limited cases where Mirror is available on Chrome OS, 1:1 account
     // consistency is enforced and adding/removing accounts is not allowed,
     // GAIA_SERVICE_TYPE_INCOGNITO may be allowed though.
     return;
