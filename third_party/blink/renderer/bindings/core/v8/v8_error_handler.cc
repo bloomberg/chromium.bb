@@ -53,9 +53,6 @@ v8::Local<v8::Value> V8ErrorHandler::CallListenerFunction(
   }
 
   ErrorEvent* error_event = static_cast<ErrorEvent*>(event);
-  if (error_event->World() && error_event->World() != &World())
-    return v8::Null(GetIsolate());
-
   v8::Local<v8::Context> context = script_state->GetContext();
   ExecutionContext* execution_context = ToExecutionContext(context);
   v8::Local<v8::Object> listener = GetListenerObjectInternal(execution_context);

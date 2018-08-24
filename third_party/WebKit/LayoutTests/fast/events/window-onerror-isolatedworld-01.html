@@ -18,8 +18,7 @@
             if (onerrorsHandled > 3)
                 testFailed("Only main-world exceptions should be caught by onerror handlers.");
 
-            // FIXME: This should be 6 once we correctly handle 'error' event dispatch for worlds: crbug.com/225513
-            if (errorsHandled === 9)
+            if (errorsHandled === 6)
                 finishJSTest();
         }
 
@@ -27,12 +26,10 @@
         function errorEventCallback(errorsHandled) {
             errorEventsHandled++;
             if (errorEventsHandled > 3) {
-                // FIXME: This currently fails. We need to correctly handle 'error' event dispatch for worlds: crbug.com/225513
                 testFailed("Only main-world exceptions should be caught by ErrorEvent listeners.");
             }
 
-            // FIXME: This should be 6 once we correctly handle 'error' event dispatch for worlds: crbug.com/225513
-            if (errorsHandled === 9)
+            if (errorsHandled === 6)
                 finishJSTest();
         }
 

@@ -82,6 +82,10 @@ const AtomicString& ErrorEvent::InterfaceName() const {
   return EventNames::ErrorEvent;
 }
 
+bool ErrorEvent::CanBeDispatchedInWorld(const DOMWrapperWorld& world) const {
+  return !world_ || world_ == &world;
+}
+
 ScriptValue ErrorEvent::error(ScriptState* script_state) const {
   // Don't return |m_error| when we are in the different worlds to avoid
   // leaking a V8 value.

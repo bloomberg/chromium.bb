@@ -88,6 +88,7 @@ class ErrorEvent final : public Event {
   SourceLocation* Location() const { return location_.get(); }
 
   const AtomicString& InterfaceName() const override;
+  bool CanBeDispatchedInWorld(const DOMWrapperWorld&) const override;
 
   DOMWrapperWorld* World() const { return world_.get(); }
 
