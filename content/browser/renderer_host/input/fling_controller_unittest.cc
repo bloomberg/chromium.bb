@@ -345,7 +345,8 @@ TEST_F(FlingControllerTest,
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
 }
 
-TEST_F(FlingControllerTest, EarlyTouchpadFlingCancelationOnFlingStop) {
+// Flaky. https://crbug.com/836996.
+TEST_F(FlingControllerTest, DISABLED_EarlyTouchpadFlingCancelationOnFlingStop) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchpad, gfx::Vector2dF(1000, 0));
   EXPECT_TRUE(FlingInProgress());
