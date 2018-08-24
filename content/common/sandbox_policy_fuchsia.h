@@ -5,6 +5,8 @@
 #ifndef CONTENT_COMMON_SANDBOX_POLICY_FUCHSIA_H_
 #define CONTENT_COMMON_SANDBOX_POLICY_FUCHSIA_H_
 
+#include <lib/zx/channel.h>
+
 #include "base/memory/ref_counted.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
@@ -40,6 +42,7 @@ class SandboxPolicyFuchsia {
 
   // Services directory used for the /svc namespace of the child process.
   std::unique_ptr<base::fuchsia::FilteredServiceDirectory> service_directory_;
+  zx::channel service_directory_client_channel_;
   scoped_refptr<base::SequencedTaskRunner> service_directory_task_runner_;
 };
 
