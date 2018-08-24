@@ -46,6 +46,13 @@ UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view) {
   }
 }
 
+UIEdgeInsets SafeAreaInsetsForView(UIView* view) {
+  if (@available(iOS 11, *)) {
+    return view.safeAreaInsets;
+  }
+  return UIEdgeInsetsZero;
+}
+
 void PostDelayedAccessibilityNotification(NSString* announcement) {
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC),
                  dispatch_get_main_queue(), ^{

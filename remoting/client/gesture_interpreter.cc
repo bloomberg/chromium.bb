@@ -182,6 +182,19 @@ void GestureInterpreter::OnSurfaceSizeChanged(int width, int height) {
 
 void GestureInterpreter::OnDesktopSizeChanged(int width, int height) {
   viewport_.SetDesktopSize(width, height);
+  if (viewport_.IsViewportReady()) {
+    input_strategy_->FocusViewportOnCursor(&viewport_);
+  }
+}
+
+void GestureInterpreter::OnSafeInsetsChanged(int left,
+                                             int top,
+                                             int right,
+                                             int bottom) {
+  viewport_.SetSafeInsets(left, top, right, bottom);
+  if (viewport_.IsViewportReady()) {
+    input_strategy_->FocusViewportOnCursor(&viewport_);
+  }
 }
 
 base::WeakPtr<GestureInterpreter> GestureInterpreter::GetWeakPtr() {

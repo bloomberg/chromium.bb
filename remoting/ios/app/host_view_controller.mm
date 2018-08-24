@@ -66,9 +66,9 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   // A placeholder view for anchoring views and calculating visible area.
   UIView* _keyboardPlaceholderView;
 
-  // A display link for animating host surface size change. Use the paused
+  // A display link for animating keyboard height change. Use the paused
   // property to start or stop the animation.
-  CADisplayLink* _surfaceSizeAnimationLink;
+  CADisplayLink* _keyboardHeightAnimationLink;
 }
 @end
 
@@ -104,17 +104,11 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   _hostView.accessibilityTraits = UIAccessibilityTraitAllowsDirectInteraction;
   [self.view addSubview:_hostView];
 
-  UILayoutGuide* safeAreaLayoutGuide =
-      remoting::SafeAreaLayoutGuideForView(self.view);
-
   [NSLayoutConstraint activateConstraints:@[
-    [_hostView.topAnchor constraintEqualToAnchor:safeAreaLayoutGuide.topAnchor],
-    [_hostView.bottomAnchor
-        constraintEqualToAnchor:safeAreaLayoutGuide.bottomAnchor],
-    [_hostView.leadingAnchor
-        constraintEqualToAnchor:safeAreaLayoutGuide.leadingAnchor],
-    [_hostView.trailingAnchor
-        constraintEqualToAnchor:safeAreaLayoutGuide.trailingAnchor],
+    [_hostView.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [_hostView.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
+    [_hostView.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
+    [_hostView.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
   ]];
 
   _hostView.displayTaskRunner =
@@ -243,12 +237,12 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
     [self applicationWillResignActive:UIApplication.sharedApplication];
   }
 
-  _surfaceSizeAnimationLink =
+  _keyboardHeightAnimationLink =
       [CADisplayLink displayLinkWithTarget:self
-                                  selector:@selector(animateHostSurfaceSize:)];
-  _surfaceSizeAnimationLink.paused = YES;
-  [_surfaceSizeAnimationLink addToRunLoop:NSRunLoop.currentRunLoop
-                                  forMode:NSDefaultRunLoopMode];
+                                  selector:@selector(animateKeyboardHeight:)];
+  _keyboardHeightAnimationLink.paused = YES;
+  [_keyboardHeightAnimationLink addToRunLoop:NSRunLoop.currentRunLoop
+                                     forMode:NSDefaultRunLoopMode];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -259,18 +253,23 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 
-  _surfaceSizeAnimationLink.paused = YES;
-  [_surfaceSizeAnimationLink invalidate];
+  _keyboardHeightAnimationLink.paused = YES;
+  [_keyboardHeightAnimationLink invalidate];
 }
 
 - (void)viewDidLayoutSubviews {
   [super viewDidLayoutSubviews];
 
+  [self updateViewportSafeInsets];
+
   // Pass the actual size of the view to the renderer.
   [_client.displayHandler setSurfaceSize:_hostView.bounds];
 
-  // Start the animation on the host's visible area.
-  _surfaceSizeAnimationLink.paused = NO;
+  _client.gestureInterpreter->OnSurfaceSizeChanged(
+      _hostView.bounds.size.width, _hostView.bounds.size.height);
+
+  // Start the safe insets animation.
+  _keyboardHeightAnimationLink.paused = NO;
 
   [self resizeHostToFitIfNeeded];
 }
@@ -402,24 +401,22 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 }
 
 - (void)resizeHostToFitIfNeeded {
-  // Don't adjust the host resolution if the keyboard is active. That would end
-  // up with a very narrow desktop.
-  // Also don't adjust if it's the phone and in portrait orientation. This is
-  // the most used orientation on phones but the aspect ratio is uncommon on
-  // desktop devices.
+  // Don't adjust if it's the phone and in portrait orientation because UI looks
+  // too tight.
   BOOL isPhonePortrait =
       self.traitCollection.horizontalSizeClass ==
           UIUserInterfaceSizeClassCompact &&
       self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
 
-  if (_settings.shouldResizeHostToFit && !isPhonePortrait &&
-      !_clientKeyboard.showsSoftKeyboard) {
-    [_client setHostResolution:_hostView.frame.size
+  if (_settings.shouldResizeHostToFit && !isPhonePortrait) {
+    UIEdgeInsets safeInsets = remoting::SafeAreaInsetsForView(_hostView);
+    CGRect safeRect = UIEdgeInsetsInsetRect(_hostView.frame, safeInsets);
+    [_client setHostResolution:safeRect.size
                          scale:_hostView.contentScaleFactor];
   }
 }
 
-- (void)animateHostSurfaceSize:(CADisplayLink*)link {
+- (void)animateKeyboardHeight:(CADisplayLink*)link {
   // The method is called when the keyboard animation is in-progress. It
   // calculates the intermediate visible area size during the animation and
   // passes it to DesktopViewport.
@@ -429,27 +426,36 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   // done on the display thread asynchronously, so unfortunately the animation
   // will not be perfectly synchronized with the keyboard animation.
 
-  CGSize viewSize = _hostView.frame.size;
-  CGFloat targetVisibleHeight =
-      viewSize.height - _keyboardPlaceholderView.frame.size.height;
+  [self updateViewportSafeInsets];
+
+  CALayer* kbPlaceholderLayer =
+      [_keyboardPlaceholderView.layer presentationLayer];
+  CGFloat currentKeyboardHeight = kbPlaceholderLayer.frame.size.height;
+  CGFloat targetKeyboardHeight = _keyboardPlaceholderView.frame.size.height;
+  if (currentKeyboardHeight == targetKeyboardHeight) {
+    // Animation is done.
+    _keyboardHeightAnimationLink.paused = YES;
+  }
+}
+
+- (void)updateViewportSafeInsets {
+  // The viewport safe insets consist of area that is (partially) obstructed by
+  // the notch and the soft keyboard.
   CALayer* kbPlaceholderLayer =
       [_keyboardPlaceholderView.layer presentationLayer];
   CGRect viewKeyboardIntersection =
       CGRectIntersection(kbPlaceholderLayer.frame, _hostView.frame);
-  CGFloat currentVisibleHeight =
-      _hostView.frame.size.height - viewKeyboardIntersection.size.height;
-  _client.gestureInterpreter->OnSurfaceSizeChanged(viewSize.width,
-                                                   currentVisibleHeight);
-  if (currentVisibleHeight == targetVisibleHeight) {
-    // Animation is done.
-    _surfaceSizeAnimationLink.paused = YES;
-  }
+  UIEdgeInsets safeInsets = remoting::SafeAreaInsetsForView(_hostView);
+  safeInsets.bottom =
+      std::max(safeInsets.bottom, viewKeyboardIntersection.size.height);
+  _client.gestureInterpreter->OnSafeInsetsChanged(
+      safeInsets.left, safeInsets.top, safeInsets.right, safeInsets.bottom);
 }
 
 - (void)disconnectFromHost {
   [_client disconnectFromHost];
-  [_surfaceSizeAnimationLink invalidate];
-  _surfaceSizeAnimationLink = nil;
+  [_keyboardHeightAnimationLink invalidate];
+  _keyboardHeightAnimationLink = nil;
 }
 
 - (void)applyInputMode {
