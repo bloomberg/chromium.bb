@@ -6,6 +6,7 @@
 #define SERVICES_METRICS_PUBLIC_CPP_UKM_SOURCE_H_
 
 #include <map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -27,13 +28,46 @@ class METRICS_EXPORT UkmSource {
     kCustomTabFalse,
   };
 
+  // Extra navigation data associated with a particular Source. Currently, all
+  // of these members except |url| are only set for navigation id sources.
+  struct METRICS_EXPORT NavigationData {
+    // Creates a copy of this struct, replacing the URL members with sanitized
+    // versions. Currently, |sanitized_urls| expects a one or two element
+    // vector. The last element in the vector will always be the final URL in
+    // the redirect chain. For two-element vectors, the first URL is assumed to
+    // be the first URL in the redirect chain.
+    NavigationData CopyWithSanitizedUrls(
+        std::vector<GURL> sanitized_urls) const;
+
+    // TODO(csharrison): Convert these URLs to vector<GURL>.
+    // The final, canonical URL for this source.
+    GURL url;
+
+    // The initial URL for this source.
+    GURL initial_url;
+
+    // The previous source id for this tab.
+    SourceId previous_source_id = kInvalidSourceId;
+
+    // The source id for the source which opened this tab. This should be set to
+    // kInvalidSourceId for all but the first navigation in the tab.
+    SourceId opener_source_id = kInvalidSourceId;
+
+    // A unique identifier for the tab the source navigated in. Tab ids should
+    // be increasing over time within a session.
+    int64_t tab_id = 0;
+  };
+
   UkmSource(SourceId id, const GURL& url);
+  UkmSource(SourceId id, const NavigationData& data);
   ~UkmSource();
 
   ukm::SourceId id() const { return id_; }
 
-  const GURL& initial_url() const { return initial_url_; }
-  const GURL& url() const { return url_; }
+  const GURL& initial_url() const { return navigation_data_.initial_url; }
+  const GURL& url() const { return navigation_data_.url; }
+
+  const NavigationData& navigation_data() const { return navigation_data_; }
 
   // The object creation time. This is for internal purposes only and is not
   // intended to be anything useful for UKM clients.
@@ -51,13 +85,7 @@ class METRICS_EXPORT UkmSource {
  private:
   const ukm::SourceId id_;
 
-  // The final, canonical URL for this source.
-  GURL url_;
-
-  // The initial URL for this source.
-  // Only set for navigation-id based sources where more than one value of URL
-  // was recorded.
-  GURL initial_url_;
+  NavigationData navigation_data_;
 
   // A flag indicating if metric was collected in a custom tab. This is set
   // automatically when the object is created and so represents the state when

@@ -50,14 +50,10 @@ class METRICS_EXPORT DelegatingUkmRecorder : public UkmRecorder {
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void UpdateAppURL(SourceId source_id, const GURL& url) override;
+  void RecordNavigation(
+      SourceId source_id,
+      const UkmSource::NavigationData& navigation_data) override;
   void AddEntry(mojom::UkmEntryPtr entry) override;
-
-  void UpdateSourceURLImpl(SourceId source_id, const GURL& url);
-
-  // UpdateNavigationURL provides a variation of the UpdateSourceURL API for
-  // recording NAVIGATION_ID sources. This method should only be called by
-  // SourceUrlRecorderWebContentsObserver.
-  void UpdateNavigationURL(SourceId source_id, const GURL& url);
 
   class Delegate final {
    public:
@@ -68,6 +64,8 @@ class METRICS_EXPORT DelegatingUkmRecorder : public UkmRecorder {
 
     void UpdateSourceURL(SourceId source_id, const GURL& url);
     void UpdateAppURL(SourceId source_id, const GURL& url);
+    void RecordNavigation(SourceId source_id,
+                          const UkmSource::NavigationData& navigation_data);
     void AddEntry(mojom::UkmEntryPtr entry);
 
    private:

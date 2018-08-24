@@ -39,28 +39,49 @@ void UkmSource::SetCustomTabVisible(bool visible) {
   g_custom_tab_state = visible ? kCustomTabTrue : kCustomTabFalse;
 }
 
+UkmSource::NavigationData UkmSource::NavigationData::CopyWithSanitizedUrls(
+    std::vector<GURL> sanitized_urls) const {
+  DCHECK_LE(sanitized_urls.size(), 2u);
+  DCHECK(!sanitized_urls.empty());
+
+  NavigationData sanitized_navigation_data;
+
+  // TODO(csharrison): Migrate this class to internally keep a vector<GURL>
+  // rather than two separate members.
+  sanitized_navigation_data.url = sanitized_urls.back();
+  if (sanitized_urls.size() == 2u)
+    sanitized_navigation_data.initial_url = sanitized_urls.front();
+
+  sanitized_navigation_data.previous_source_id = previous_source_id;
+  sanitized_navigation_data.opener_source_id = opener_source_id;
+  sanitized_navigation_data.tab_id = tab_id;
+  return sanitized_navigation_data;
+}
+
 UkmSource::UkmSource(ukm::SourceId id, const GURL& url)
     : id_(id),
-      url_(url),
       custom_tab_state_(g_custom_tab_state),
       creation_time_(base::TimeTicks::Now()) {
-  DCHECK(!url_.is_empty());
+  navigation_data_.url = url;
+  DCHECK(!url.is_empty());
+}
+
+UkmSource::UkmSource(ukm::SourceId id, const NavigationData& navigation_data)
+    : id_(id),
+      navigation_data_(navigation_data),
+      custom_tab_state_(g_custom_tab_state),
+      creation_time_(base::TimeTicks::Now()) {
+  DCHECK(GetSourceIdType(id_) == SourceIdType::NAVIGATION_ID);
+  DCHECK(!navigation_data.url.is_empty());
 }
 
 UkmSource::~UkmSource() = default;
 
-void UkmSource::UpdateUrl(const GURL& url) {
-  DCHECK(!url.is_empty());
-  if (url_ == url)
+void UkmSource::UpdateUrl(const GURL& new_url) {
+  DCHECK(!new_url.is_empty());
+  if (url() == new_url)
     return;
-  // We only track multiple URLs for navigation-based Sources.  These are
-  // currently the only sources that intentionally record multiple entries,
-  // and this makes it easier to compare other source URLs against a
-  // whitelist.
-  if (initial_url_.is_empty() &&
-      GetSourceIdType(id_) == SourceIdType::NAVIGATION_ID)
-    initial_url_ = url_;
-  url_ = url;
+  navigation_data_.url = new_url;
 }
 
 void UkmSource::PopulateProto(Source* proto_source) const {
@@ -69,14 +90,16 @@ void UkmSource::PopulateProto(Source* proto_source) const {
   DCHECK(!proto_source->has_initial_url());
 
   proto_source->set_id(id_);
-  proto_source->set_url(GetShortenedURL(url_));
-  if (!initial_url_.is_empty()) {
+  proto_source->set_url(GetShortenedURL(url()));
+  if (!initial_url().is_empty()) {
     DCHECK_EQ(SourceIdType::NAVIGATION_ID, GetSourceIdType(id_));
-    proto_source->set_initial_url(GetShortenedURL(initial_url_));
+    proto_source->set_initial_url(GetShortenedURL(initial_url()));
   }
 
   if (custom_tab_state_ != kCustomTabUnset)
     proto_source->set_is_custom_tab(custom_tab_state_ == kCustomTabTrue);
+
+  // TODO(csharrison): Populate other fields from |navigation_data_|.
 }
 
 }  // namespace ukm

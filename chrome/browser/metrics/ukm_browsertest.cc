@@ -21,19 +21,27 @@
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/unified_consent/unified_consent_service_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/test/fake_server/fake_server_network_resources.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/ukm_service.h"
 #include "components/unified_consent/scoped_unified_consent.h"
 #include "components/variations/service/variations_field_trial_creator.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
+#include "content/public/test/navigation_handle_observer.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -152,7 +160,22 @@ class UkmBrowserTestBase : public SyncTest {
     // Can be non-zero only if UpdateUploadPermissions(true) has been called.
     return service->client_id_;
   }
-  bool HasDummySource(ukm::SourceId source_id) const {
+  ukm::UkmSource* GetSource(ukm::SourceId source_id) {
+    auto* service = ukm_service();
+    if (!service)
+      return nullptr;
+    auto it = service->sources().find(source_id);
+    return it == service->sources().end() ? nullptr : it->second.get();
+  }
+  ukm::UkmSource* NavigateAndGetSource(Browser* browser, const GURL& url) {
+    content::NavigationHandleObserver observer(
+        browser->tab_strip_model()->GetActiveWebContents(), url);
+    ui_test_utils::NavigateToURL(browser, url);
+    const ukm::SourceId source_id = ukm::ConvertToSourceId(
+        observer.navigation_id(), ukm::SourceIdType::NAVIGATION_ID);
+    return GetSource(source_id);
+  }
+  bool HasSource(ukm::SourceId source_id) const {
     auto* service = ukm_service();
     return service ? !!service->sources().count(source_id) : false;
   }
@@ -689,6 +712,114 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
   CloseBrowserSynchronously(browser1);
 }
 
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogsTabId) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  MetricsConsentOverride metrics_consent(true);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  Browser* sync_browser = CreateBrowser(profile);
+
+  const ukm::UkmSource* first_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title1.html"));
+
+  // Tab ids are incremented starting from 1. Since we started a new sync
+  // browser, this is the second tab.
+  EXPECT_EQ(2, first_source->navigation_data().tab_id);
+
+  // Ensure the tab id is constant in a single tab.
+  const ukm::UkmSource* second_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_EQ(first_source->navigation_data().tab_id,
+            second_source->navigation_data().tab_id);
+
+  // Add a new tab, it should get a new tab id.
+  chrome::NewTab(sync_browser);
+  const ukm::UkmSource* third_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title3.html"));
+  EXPECT_EQ(3, third_source->navigation_data().tab_id);
+}
+
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogsPreviousSourceId) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  MetricsConsentOverride metrics_consent(true);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  Browser* sync_browser = CreateBrowser(profile);
+
+  const ukm::UkmSource* first_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title1.html"));
+
+  const ukm::UkmSource* second_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_EQ(first_source->id(),
+            second_source->navigation_data().previous_source_id);
+
+  // Open a new tab with window.open.
+  content::WebContents* opener =
+      sync_browser->tab_strip_model()->GetActiveWebContents();
+  GURL new_tab_url = embedded_test_server()->GetURL("/title3.html");
+  content::TestNavigationObserver waiter(new_tab_url);
+  waiter.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScript(
+      opener, content::JsReplace("window.open($1)", new_tab_url)));
+  waiter.Wait();
+  EXPECT_NE(opener, sync_browser->tab_strip_model()->GetActiveWebContents());
+  ukm::SourceId new_id = ukm::GetSourceIdForWebContentsDocument(
+      sync_browser->tab_strip_model()->GetActiveWebContents());
+  ukm::UkmSource* new_tab_source = GetSource(new_id);
+  EXPECT_NE(nullptr, new_tab_source);
+  EXPECT_EQ(ukm::kInvalidSourceId,
+            new_tab_source->navigation_data().previous_source_id);
+
+  // Subsequent navigations within the tab should get a previous_source_id field
+  // set.
+  const ukm::UkmSource* subsequent_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title3.html"));
+  EXPECT_EQ(new_tab_source->id(),
+            subsequent_source->navigation_data().previous_source_id);
+}
+
+IN_PROC_BROWSER_TEST_P(UkmBrowserTest, LogsOpenerSource) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  MetricsConsentOverride metrics_consent(true);
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  std::unique_ptr<ProfileSyncServiceHarness> harness =
+      EnableSyncForProfile(profile);
+  Browser* sync_browser = CreateBrowser(profile);
+
+  const ukm::UkmSource* first_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title1.html"));
+  // This tab was not opened by another tab, so it should not have an opener
+  // id.
+  EXPECT_EQ(ukm::kInvalidSourceId,
+            first_source->navigation_data().opener_source_id);
+
+  // Open a new tab with window.open.
+  content::WebContents* opener =
+      sync_browser->tab_strip_model()->GetActiveWebContents();
+  GURL new_tab_url = embedded_test_server()->GetURL("/title2.html");
+  content::TestNavigationObserver waiter(new_tab_url);
+  waiter.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScript(
+      opener, content::JsReplace("window.open($1)", new_tab_url)));
+  waiter.Wait();
+  EXPECT_NE(opener, sync_browser->tab_strip_model()->GetActiveWebContents());
+  ukm::SourceId new_id = ukm::GetSourceIdForWebContentsDocument(
+      sync_browser->tab_strip_model()->GetActiveWebContents());
+  ukm::UkmSource* new_tab_source = GetSource(new_id);
+  EXPECT_NE(nullptr, new_tab_source);
+  EXPECT_EQ(first_source->id(),
+            new_tab_source->navigation_data().opener_source_id);
+
+  // Subsequent navigations within the tab should not get an opener set.
+  const ukm::UkmSource* subsequent_source = NavigateAndGetSource(
+      sync_browser, embedded_test_server()->GetURL("/title3.html"));
+  EXPECT_EQ(ukm::kInvalidSourceId,
+            subsequent_source->navigation_data().opener_source_id);
+}
+
 // Make sure that UKM is disabled when an secondary passphrase is set.
 // Keep in sync with UkmTest.secondaryPassphraseCheck in
 // chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
@@ -845,12 +976,12 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTest, HistoryDeleteCheck) {
 
   const ukm::SourceId kDummySourceId = 0x54321;
   RecordDummySource(kDummySourceId);
-  EXPECT_TRUE(HasDummySource(kDummySourceId));
+  EXPECT_TRUE(HasSource(kDummySourceId));
 
   ClearBrowsingData(profile);
   // Other sources may already have been recorded since the data was cleared,
   // but the dummy source should be gone.
-  EXPECT_FALSE(HasDummySource(kDummySourceId));
+  EXPECT_FALSE(HasSource(kDummySourceId));
   // Client ID should NOT be reset.
   EXPECT_EQ(original_client_id, client_id());
   EXPECT_TRUE(ukm_enabled());
