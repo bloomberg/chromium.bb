@@ -151,6 +151,12 @@ void UseCounterCallback(v8::Isolate* isolate,
     case v8::Isolate::kFunctionTokenOffsetTooLongForToString:
       blink_feature = WebFeature::kV8FunctionTokenOffsetTooLongForToString;
       break;
+    case v8::Isolate::kWasmSharedMemory:
+      blink_feature = WebFeature::kV8WasmSharedMemory;
+      break;
+    case v8::Isolate::kWasmThreadOpcodes:
+      blink_feature = WebFeature::kV8WasmThreadOpcodes;
+      break;
     default:
       // This can happen if V8 has added counters that this version of Blink
       // does not know about. It's harmless.

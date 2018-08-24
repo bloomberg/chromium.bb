@@ -1985,6 +1985,8 @@ enum WebFeature {
   kReportingObserver = 2529,
   kDeprecationReport = 2530,
   kInterventionReport = 2531,
+  kV8WasmSharedMemory = 2532,
+  kV8WasmThreadOpcodes = 2533,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
