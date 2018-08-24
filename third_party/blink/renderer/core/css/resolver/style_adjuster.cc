@@ -573,9 +573,13 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
   }
   if (style.Display() != EDisplay::kNone) {
+    bool is_document_element =
+        element && element->GetDocument().documentElement() == element;
     // Per the spec, position 'static' and 'relative' in the top layer compute
-    // to 'absolute'.
-    if (IsInTopLayer(element, style) &&
+    // to 'absolute'. Root elements that are in the top layer should just
+    // be left alone because the fullscreen.css doesn't apply any style to
+    // them.
+    if (IsInTopLayer(element, style) && !is_document_element &&
         (style.GetPosition() == EPosition::kStatic ||
          style.GetPosition() == EPosition::kRelative))
       style.SetPosition(EPosition::kAbsolute);
@@ -586,7 +590,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
         (style.HasOutOfFlowPosition() || style.IsFloating()))
       style.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
-    if (element && element->GetDocument().documentElement() == element)
+    if (is_document_element)
       style.SetDisplay(EquivalentBlockDisplay(style.Display()));
 
     // We don't adjust the first letter style earlier because we may change the
