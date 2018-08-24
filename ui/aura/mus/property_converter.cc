@@ -295,12 +295,15 @@ void PropertyConverter::SetPropertyFromTransportValue(
 
   for (const auto& unguessable_token_property : unguessable_token_properties_) {
     if (unguessable_token_property.second == transport_name) {
-      auto* token = new base::UnguessableToken();
-      *token = mojo::ConvertTo<base::UnguessableToken>(*data);
-      if (token->is_empty())
+      base::UnguessableToken token =
+          mojo::ConvertTo<base::UnguessableToken>(*data);
+      if (token.is_empty()) {
         window->ClearProperty(unguessable_token_property.first);
-      else
-        window->SetProperty(unguessable_token_property.first, token);
+      } else {
+        // |window| takes ownership of the newly allocated token.
+        window->SetProperty(unguessable_token_property.first,
+                            new base::UnguessableToken(token));
+      }
       return;
     }
   }
