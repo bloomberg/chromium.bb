@@ -16,7 +16,6 @@ import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.FrameLayout;
 
-import org.chromium.base.BuildInfo;
 import org.chromium.base.TraceEvent;
 
 /**
@@ -70,14 +69,10 @@ public class VrViewContainer extends FrameLayout {
             // linter from complaining about lockHardwareCanvas. This won't be reached pre-N
             // anyways.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return;
-            Canvas surfaceCanvas = null;
-            if (BuildInfo.isAtLeastP()) {
-                // This seems to have stopped crashing with Android P. It's >10x faster than the
-                // software canvas rendering for Android UI.
-                surfaceCanvas = mSurface.lockHardwareCanvas();
-            } else {
-                surfaceCanvas = mSurface.lockCanvas(null);
-            }
+            // This should be replaced with using HardwareCanvas once HardwareCanvas is more
+            // stable. HardwareCanvas can be >10x faster than the software canvas rendering
+            // for Android UI.
+            Canvas surfaceCanvas = mSurface.lockCanvas(null);
             surfaceCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR);
             drawSuper(surfaceCanvas);
             mSurface.unlockCanvasAndPost(surfaceCanvas);
