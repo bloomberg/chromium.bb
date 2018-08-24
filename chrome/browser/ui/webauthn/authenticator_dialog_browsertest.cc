@@ -22,21 +22,18 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     ::device::FidoRequestHandlerBase::TransportAvailabilityInfo
         transport_availability;
     transport_availability.rp_id = "example.com";
+    transport_availability.available_transports = {
+        AuthenticatorTransport::kBluetoothLowEnergy,
+        AuthenticatorTransport::kUsbHumanInterfaceDevice,
+        AuthenticatorTransport::kNearFieldCommunication,
+        AuthenticatorTransport::kInternal,
+        AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy};
     model->StartFlow(std::move(transport_availability), base::nullopt);
 
     // The dialog should immediately close as soon as it is displayed.
     if (name == "completed") {
       model->SetCurrentStep(AuthenticatorRequestDialogModel::Step::kCompleted);
     } else if (name == "transports") {
-      TransportListModel* transports = model->transport_list_model();
-      transports->AppendTransport(AuthenticatorTransport::kBluetoothLowEnergy);
-      transports->AppendTransport(
-          AuthenticatorTransport::kUsbHumanInterfaceDevice);
-      transports->AppendTransport(
-          AuthenticatorTransport::kNearFieldCommunication);
-      transports->AppendTransport(AuthenticatorTransport::kInternal);
-      transports->AppendTransport(
-          AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy);
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kTransportSelection);
     } else if (name == "activate_usb") {

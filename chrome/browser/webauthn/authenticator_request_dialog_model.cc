@@ -113,6 +113,10 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
     AuthenticatorTransport transport) {
   DCHECK(current_step() == Step::kTransportSelection ||
          current_step() == Step::kWelcomeScreen ||
+         current_step() == Step::kUsbInsertAndActivate ||
+         current_step() == Step::kTouchId ||
+         current_step() == Step::kBleActivate ||
+         current_step() == Step::kCableActivate ||
          current_step() == Step::kNotStarted);
   switch (transport) {
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:

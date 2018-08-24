@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -32,7 +34,8 @@ class AuthenticatorRequestSheetView;
 class AuthenticatorRequestDialogView
     : public views::DialogDelegateView,
       public AuthenticatorRequestDialogModel::Observer,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public views::ButtonListener {
  public:
   AuthenticatorRequestDialogView(
       content::WebContents* web_contents,
@@ -47,6 +50,11 @@ class AuthenticatorRequestDialogView
   void ReplaceCurrentSheetWith(
       std::unique_ptr<AuthenticatorRequestSheetView> new_sheet);
 
+  // Shows or hides the "Choose another option" button based on whether the
+  // current sheet model defines a model for the other transports popup menu,
+  // and whether it has at least one element.
+  void ToggleOtherTransportsButtonVisibility();
+
   AuthenticatorRequestSheetView* sheet() const {
     DCHECK(sheet_);
     return sheet_;
@@ -54,6 +62,7 @@ class AuthenticatorRequestDialogView
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
+  views::View* CreateExtraView() override;
   bool Accept() override;
   bool Cancel() override;
   bool Close() override;
@@ -70,11 +79,17 @@ class AuthenticatorRequestDialogView
   void OnModelDestroyed() override;
   void OnStepTransition() override;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
  private:
   friend class test::AuthenticatorRequestDialogViewTestApi;
 
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
+
   AuthenticatorRequestSheetView* sheet_ = nullptr;
+  views::Button* other_transports_button_ = nullptr;
+  std::unique_ptr<views::MenuRunner> other_transports_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestDialogView);
 };

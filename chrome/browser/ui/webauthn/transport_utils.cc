@@ -10,25 +10,53 @@
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 
-base::string16 GetTransportHumanReadableName(AuthenticatorTransport transport) {
-  int message_id = 0;
+namespace {
+
+int GetMessageIdForTransportOnTransportSelectionSheet(
+    AuthenticatorTransport transport) {
   switch (transport) {
     case AuthenticatorTransport::kBluetoothLowEnergy:
-      message_id = IDS_WEBAUTHN_TRANSPORT_BLE;
-      break;
+      return IDS_WEBAUTHN_TRANSPORT_BLE;
     case AuthenticatorTransport::kNearFieldCommunication:
-      message_id = IDS_WEBAUTHN_TRANSPORT_NFC;
-      break;
+      return IDS_WEBAUTHN_TRANSPORT_NFC;
     case AuthenticatorTransport::kUsbHumanInterfaceDevice:
-      message_id = IDS_WEBAUTHN_TRANSPORT_USB;
-      break;
+      return IDS_WEBAUTHN_TRANSPORT_USB;
     case AuthenticatorTransport::kInternal:
-      message_id = IDS_WEBAUTHN_TRANSPORT_INTERNAL;
-      break;
+      return IDS_WEBAUTHN_TRANSPORT_INTERNAL;
     case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
-      message_id = IDS_WEBAUTHN_TRANSPORT_CABLE;
-      break;
+      return IDS_WEBAUTHN_TRANSPORT_CABLE;
   }
+  NOTREACHED();
+  return 0;
+}
+
+int GetMessageIdForTransportOnOtherTransportsPopup(
+    AuthenticatorTransport transport) {
+  switch (transport) {
+    case AuthenticatorTransport::kBluetoothLowEnergy:
+      return IDS_WEBAUTHN_TRANSPORT_POPUP_BLE;
+    case AuthenticatorTransport::kNearFieldCommunication:
+      return IDS_WEBAUTHN_TRANSPORT_POPUP_NFC;
+    case AuthenticatorTransport::kUsbHumanInterfaceDevice:
+      return IDS_WEBAUTHN_TRANSPORT_POPUP_USB;
+    case AuthenticatorTransport::kInternal:
+      return IDS_WEBAUTHN_TRANSPORT_POPUP_INTERNAL;
+    case AuthenticatorTransport::kCloudAssistedBluetoothLowEnergy:
+      return IDS_WEBAUTHN_TRANSPORT_POPUP_CABLE;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+}  // namespace
+
+base::string16 GetTransportHumanReadableName(
+    AuthenticatorTransport transport,
+    TransportSelectionContext context) {
+  int message_id =
+      context == TransportSelectionContext::kTransportSelectionSheet
+          ? GetMessageIdForTransportOnTransportSelectionSheet(transport)
+          : GetMessageIdForTransportOnOtherTransportsPopup(transport);
   DCHECK_NE(message_id, 0);
   return l10n_util::GetStringUTF16(message_id);
 }

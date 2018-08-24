@@ -12,9 +12,14 @@ namespace gfx {
 struct VectorIcon;
 }
 
-// Returns the human readable name of |transport| to show in the manual
-// transport selection list.
-base::string16 GetTransportHumanReadableName(AuthenticatorTransport transport);
+enum class TransportSelectionContext {
+  kTransportSelectionSheet,
+  kOtherTransportsMenu,
+};
+
+// Returns the human readable name shown for |transport| in the given |context|.
+base::string16 GetTransportHumanReadableName(AuthenticatorTransport transport,
+                                             TransportSelectionContext context);
 
 // Returns the vector icon to show next to the |transport| in the manual
 // transport selection list.

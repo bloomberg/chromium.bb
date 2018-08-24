@@ -59,6 +59,8 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
         "Line Because Life Would Be Just Too Simple That Way");
   }
 
+  ui::MenuModel* GetOtherTransportsMenuModel() override { return nullptr; }
+
   void OnBack() override {}
   void OnAccept() override {}
   void OnCancel() override {}

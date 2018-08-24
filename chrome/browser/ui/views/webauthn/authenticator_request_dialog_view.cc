@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
@@ -18,6 +19,7 @@
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -75,6 +77,13 @@ gfx::Size AuthenticatorRequestDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
   return gfx::Size(width, GetHeightForWidth(width));
+}
+
+views::View* AuthenticatorRequestDialogView::CreateExtraView() {
+  other_transports_button_ = views::MdTextButton::CreateSecondaryUiButton(
+      this, l10n_util::GetStringUTF16(IDS_WEBAUTHN_TRANSPORT_POPUP_LABEL));
+  ToggleOtherTransportsButtonVisibility();
+  return other_transports_button_;
 }
 
 bool AuthenticatorRequestDialogView::Accept() {
@@ -166,15 +175,36 @@ void AuthenticatorRequestDialogView::OnStepTransition() {
   }
 }
 
+void AuthenticatorRequestDialogView::ButtonPressed(views::Button* sender,
+                                                   const ui::Event& event) {
+  DCHECK_EQ(sender, other_transports_button_);
+
+  auto* other_transports_menu_model =
+      sheet_->model()->GetOtherTransportsMenuModel();
+  DCHECK(other_transports_menu_model);
+  DCHECK_GE(other_transports_menu_model->GetItemCount(), 1);
+
+  other_transports_menu_runner_ = std::make_unique<views::MenuRunner>(
+      other_transports_menu_model, views::MenuRunner::COMBOBOX);
+
+  gfx::Rect anchor_bounds = other_transports_button_->GetBoundsInScreen();
+  other_transports_menu_runner_->RunMenuAt(
+      other_transports_button_->GetWidget(), nullptr /* menu_button */,
+      anchor_bounds, views::MENU_ANCHOR_BUBBLE_BELOW, ui::MENU_SOURCE_MOUSE);
+}
+
 void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
     std::unique_ptr<AuthenticatorRequestSheetView> new_sheet) {
   DCHECK(new_sheet);
+
+  other_transports_menu_runner_.reset();
 
   delete sheet_;
   DCHECK(!has_children());
 
   sheet_ = new_sheet.get();
   AddChildView(new_sheet.release());
+  ToggleOtherTransportsButtonVisibility();
 
   // The dialog button configuration is delegated to the |sheet_|, and the new
   // sheet likely wants to provide a new configuration.
@@ -213,4 +243,15 @@ void AuthenticatorRequestDialogView::ReplaceCurrentSheetWith(
       web_modal::WebContentsModalDialogManager::FromWebContents(web_contents())
           ->delegate()
           ->GetWebContentsModalDialogHost());
+}
+
+void AuthenticatorRequestDialogView::ToggleOtherTransportsButtonVisibility() {
+  // The button is not yet created when this is called for the first time.
+  if (!other_transports_button_)
+    return;
+
+  bool has_other_transports_menu =
+      sheet_->model()->GetOtherTransportsMenuModel() &&
+      sheet_->model()->GetOtherTransportsMenuModel()->GetItemCount();
+  other_transports_button_->SetVisible(has_other_transports_menu);
 }

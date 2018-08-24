@@ -13,6 +13,10 @@ namespace gfx {
 class ImageSkia;
 }
 
+namespace ui {
+class MenuModel;
+}
+
 // The basic interface of models backing a given UI sheet shown in the WebAuthn
 // request dialog; where each sheet, in turn, corresponds to one of `steps`
 // defined by AuthenticatorRequestDialogModel.
@@ -49,6 +53,8 @@ class AuthenticatorRequestSheetModel {
   virtual gfx::ImageSkia* GetStepIllustration() const = 0;
   virtual base::string16 GetStepTitle() const = 0;
   virtual base::string16 GetStepDescription() const = 0;
+
+  virtual ui::MenuModel* GetOtherTransportsMenuModel() = 0;
 
   virtual void OnBack() = 0;
   virtual void OnAccept() = 0;

@@ -124,7 +124,8 @@ class AuthenticatorRequestDialogModel {
   // through using the Secutity Key with the given |transport|.
   //
   // Valid action when at step: kNotStarted, kWelcomeScreen,
-  // kTransportSelection.
+  // kTransportSelection, and steps where the other transports menu is shown,
+  // namely, kUsbInsertAndActivate, kTouchId, kBleActivate, kCableActivate.
   void StartGuidedFlowForTransport(AuthenticatorTransport transport);
 
   // Tries if the BLE adapter is now powered -- the user claims they turned it
