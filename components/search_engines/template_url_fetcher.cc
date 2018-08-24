@@ -115,6 +115,7 @@ TemplateURLFetcher::RequestDelegate::RequestDelegate(
                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), kTrafficAnnotation);
+  simple_url_loader_->SetAllowHttpErrorResults(true);
   simple_url_loader_->DownloadToString(
       url_loader_factory,
       base::BindOnce(
