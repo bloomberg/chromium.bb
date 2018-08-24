@@ -377,9 +377,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   // of changing it.
   [[NSHTTPCookieStorage sharedHTTPCookieStorage]
       setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
-  std::unique_ptr<net::CookieStore> cookie_store =
-      std::make_unique<net::CookieStoreIOS>(
-          [NSHTTPCookieStorage sharedHTTPCookieStorage]);
+  auto cookie_store = std::make_unique<net::CookieStoreIOS>(
+      [NSHTTPCookieStorage sharedHTTPCookieStorage], nullptr /* net_log */);
   context_builder.SetCookieAndChannelIdStores(std::move(cookie_store), nullptr);
 
   context_builder.set_enable_brotli(brotli_enabled_);
