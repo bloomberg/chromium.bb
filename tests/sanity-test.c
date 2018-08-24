@@ -70,8 +70,10 @@ FAIL_TEST(fail_kill)
 
 FAIL_TEST(fail_segv)
 {
+	char * volatile *null = 0;
+
 	test_disable_coredumps();
-	* (char **) 0 = "Goodbye, world";
+	*null = "Goodbye, world";
 }
 
 FAIL_TEST(sanity_assert)
