@@ -1327,6 +1327,11 @@ make_names("make_core_generated_input_mode_names") {
   output_dir = blink_core_output_dir
 }
 
+make_names("make_core_generated_performance_entry_names") {
+  in_files = [ "timing/performance_entry_names.json5" ]
+  output_dir = blink_core_output_dir
+}
+
 # make_qualified_names ---------------------------------------------------------
 
 make_qualified_names("make_core_generated_math_ml_names") {
@@ -1587,6 +1592,7 @@ targets_generating_sources = [
   ":make_core_generated_math_ml_names",
   ":make_core_generated_media_feature_names",
   ":make_core_generated_media_type_names",
+  ":make_core_generated_performance_entry_names",
   ":make_core_generated_origin_trials",
   ":make_core_generated_style_property_shorthand",
   ":make_core_generated_svg_names",

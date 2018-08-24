@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 
 namespace blink {
 
@@ -30,7 +31,7 @@ ScriptValue PerformanceMeasure::detail(ScriptState* script_state) const {
 }
 
 AtomicString PerformanceMeasure::entryType() const {
-  return PerformanceEntry::MeasureKeyword();
+  return PerformanceEntryNames::measure;
 }
 
 PerformanceEntryType PerformanceMeasure::EntryTypeEnum() const {
