@@ -589,6 +589,9 @@
       <message desc="The title of ChromeVox Learn Mode page.  The keyboard explorer voices the name of each key when the user presses it." name="IDS_CHROMEVOX_KBEXPLORER_TITLE">
         ChromeVox Learn Mode
       </message>
+      <message desc="The title of ChromeVox Log page." name="IDS_CHROMEVOX_LOG_TITLE">
+        ChromeVox Log
+      </message>
       <message desc="The instructions for ChromeVox Learn Mode.  The keyboard explorer voices the name of each key when the user presses it. * These instructions describe how to use the keyboard explorer." name="IDS_CHROMEVOX_KBEXPLORER_INSTRUCTIONS">
         Press any key to learn its name. Ctrl+W will close learn mode.
       </message>

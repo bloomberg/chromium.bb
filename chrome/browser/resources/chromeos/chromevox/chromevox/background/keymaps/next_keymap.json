@@ -586,6 +586,15 @@
       }
     },
     {
+      "command": "showLogPage",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [79, 87]
+        }
+      }
+    },
+    {
       "command": "help",
       "sequence": {
         "cvoxModifier": true,
