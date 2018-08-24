@@ -54,11 +54,10 @@ class LocatedEventRetargeter : public ui::EventRewriter {
     if (!event.IsLocatedEvent())
       return ui::EVENT_REWRITE_CONTINUE;
 
-    // Before being sent to the rewriters, the event is already cloned which
-    // strips its EventTarget. The only goal of this EventRewriter is to null
-    // the target, so there's no need to do anything extra here.
-    DCHECK(!event.target());
     *rewritten_event = ui::Event::Clone(event);
+    // Cloning strips the EventTarget. The only goal of this EventRewriter is to
+    // null the target, so there's no need to do anything extra here.
+    DCHECK(!(*rewritten_event)->target());
 
     return ui::EVENT_REWRITE_REWRITTEN;
   }
