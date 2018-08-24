@@ -81,6 +81,8 @@ class ASH_EXPORT FrameCaptionButton : public views::Button {
 
   CaptionButtonIcon icon() const { return icon_; }
 
+  const gfx::ImageSkia& icon_image() { return icon_image_; }
+
   const gfx::VectorIcon* icon_definition_for_test() const {
     return icon_definition_;
   }
