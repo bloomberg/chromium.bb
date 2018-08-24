@@ -32,21 +32,14 @@ void ScopedBoxClipper::InitializeScopedProperties(
   DCHECK(paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly &&
          paint_info.phase != PaintPhase::kSelfOutlineOnly &&
          paint_info.phase != PaintPhase::kMask);
-  if (!fragment_data)
+  if (!fragment_data || !fragment_data->HasLocalBorderBoxProperties())
     return;
 
-  const auto* properties = fragment_data->PaintProperties();
-  if (!properties)
-    return;
-
-  const auto* clip = properties->OverflowClip()
-                         ? properties->OverflowClip()
-                         : properties->InnerBorderRadiusClip();
-  if (!clip)
-    return;
-
-  scoped_properties_.emplace(paint_info.context.GetPaintController(), clip,
-                             client, paint_info.DisplayItemTypeForClipping());
+  const PropertyTreeState& contents_properties =
+      fragment_data->ContentsProperties();
+  scoped_properties_.emplace(paint_info.context.GetPaintController(),
+                             contents_properties.Clip(), client,
+                             paint_info.DisplayItemTypeForClipping());
 }
 
 }  // namespace blink
