@@ -315,6 +315,7 @@ void EnrollmentHandlerChromeOS::OnRegistrationStateChanged(
     device_mode_ = client_->device_mode();
     switch (device_mode_) {
       case DEVICE_MODE_ENTERPRISE:
+      case DEVICE_MODE_DEMO:
         // Do nothing.
         break;
       case DEVICE_MODE_ENTERPRISE_AD:
@@ -438,7 +439,7 @@ void EnrollmentHandlerChromeOS::HandleRegistrationCertificateResult(
 void EnrollmentHandlerChromeOS::StartOfflineDemoEnrollmentFlow() {
   DCHECK(!enrollment_config_.offline_policy_path.empty());
 
-  device_mode_ = policy::DeviceMode::DEVICE_MODE_ENTERPRISE;
+  device_mode_ = policy::DeviceMode::DEVICE_MODE_DEMO;
   domain_ = enrollment_config_.management_domain;
   skip_robot_auth_ = true;
   SetStep(STEP_POLICY_FETCH);

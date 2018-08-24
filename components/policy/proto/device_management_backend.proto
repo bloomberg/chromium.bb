@@ -165,13 +165,17 @@ message DeviceRegisterResponse {
     // controlled through the cloud policy infrastructure. Auto-enrollment is
     // supported in that mode.
     ENTERPRISE = 0;
-    // Devices in RETAIL mode also have no local owner and get their device
-    // settings from the cloud, but additionally this mode enables the demo
-    // account on the device.
-    RETAIL = 1;
+    // DEPRECATED: Devices in RETAIL mode also have no local owner and get their
+    // device settings from the cloud, but additionally this mode enables the
+    // demo account on the device.
+    RETAIL_DEPRECATED = 1;
     // Devices in CHROME_AD mode are in enterprises with AD.  Device settings
     // are controlled through the AD policy infrastructure.
     CHROME_AD = 2;
+    // Devices in DEMO mode have no local owner and get their device settings
+    // from the cloud. They are controlled by demo mode domain and provide
+    // customized demo experience to the users.
+    DEMO = 3;
   }
   optional DeviceMode enrollment_type = 3 [default = ENTERPRISE];
 

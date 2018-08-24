@@ -114,8 +114,7 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
   ~DemoExtensionsExternalLoaderTest() override = default;
 
   void SetUp() override {
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(
-        DemoSession::EnrollmentType::kOnline);
+    DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
 
     ASSERT_TRUE(offline_demo_resources_.CreateUniqueTempDir());
 
@@ -133,8 +132,7 @@ class DemoExtensionsExternalLoaderTest : public testing::Test {
     DBusThreadManager::Shutdown();
 
     DemoSession::ShutDownIfInitialized();
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(
-        DemoSession::EnrollmentType::kNone);
+    DemoSession::ResetDemoConfigForTesting();
   }
 
  protected:
@@ -458,8 +456,7 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
   void TearDown() override {
     DBusThreadManager::Shutdown();
     DemoSession::ShutDownIfInitialized();
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(
-        DemoSession::EnrollmentType::kNone);
+    DemoSession::ResetDemoConfigForTesting();
   }
 
  protected:
@@ -471,10 +468,10 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
     return profile;
   }
 
-  void StartDemoSession(DemoSession::EnrollmentType demo_enrollment) {
-    ASSERT_NE(DemoSession::EnrollmentType::kNone, demo_enrollment);
+  void StartDemoSession(DemoSession::DemoModeConfig demo_config) {
+    ASSERT_NE(DemoSession::DemoModeConfig::kNone, demo_config);
 
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(demo_enrollment);
+    DemoSession::SetDemoConfigForTesting(demo_config);
     DemoSession::StartIfInDemoMode();
 
     base::RunLoop run_loop;
@@ -494,7 +491,7 @@ class ShouldCreateDemoExtensionsExternalLoaderTest : public testing::Test {
 };
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, PrimaryDemoProfile) {
-  StartDemoSession(DemoSession::EnrollmentType::kOnline);
+  StartDemoSession(DemoSession::DemoModeConfig::kOnline);
 
   std::unique_ptr<TestingProfile> profile = AddTestUser(
       AccountId::FromUserEmailGaiaId("primary@test.com", "primary_user"));
@@ -504,7 +501,7 @@ TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, PrimaryDemoProfile) {
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest,
        PrimaryOfflineEnrolledDemoProfile) {
-  StartDemoSession(DemoSession::EnrollmentType::kOffline);
+  StartDemoSession(DemoSession::DemoModeConfig::kOffline);
 
   std::unique_ptr<TestingProfile> profile = AddTestUser(
       AccountId::FromUserEmailGaiaId("primary@test.com", "primary_user"));
@@ -513,14 +510,14 @@ TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest,
 }
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, ProfileWithNoUser) {
-  StartDemoSession(DemoSession::EnrollmentType::kOnline);
+  StartDemoSession(DemoSession::DemoModeConfig::kOnline);
   TestingProfile profile;
 
   EXPECT_FALSE(DemoExtensionsExternalLoader::SupportedForProfile(&profile));
 }
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, MultiProfile) {
-  StartDemoSession(DemoSession::EnrollmentType::kOnline);
+  StartDemoSession(DemoSession::DemoModeConfig::kOnline);
 
   std::unique_ptr<TestingProfile> primary_profile = AddTestUser(
       AccountId::FromUserEmailGaiaId("primary@test.com", "primary_user"));
@@ -535,8 +532,7 @@ TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, MultiProfile) {
 }
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, NotDemoMode) {
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kUnenrolled);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kNone);
 
   // This should be no-op, given that the default demo session enrollment state
   // is not-enrolled.
@@ -551,8 +547,7 @@ TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, NotDemoMode) {
 }
 
 TEST_F(ShouldCreateDemoExtensionsExternalLoaderTest, DemoSessionNotStarted) {
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kOnline);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
 
   std::unique_ptr<TestingProfile> profile = AddTestUser(
       AccountId::FromUserEmailGaiaId("primary@test.com", "primary_user"));

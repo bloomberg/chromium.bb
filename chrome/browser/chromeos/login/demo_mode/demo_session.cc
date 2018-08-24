@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/sys_info.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
@@ -18,10 +19,13 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
+#include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -30,9 +34,8 @@ namespace {
 // Global DemoSession instance.
 DemoSession* g_demo_session = nullptr;
 
-// Type of demo setup forced on for tests.
-DemoSession::EnrollmentType g_force_enrollment_type =
-    DemoSession::EnrollmentType::kNone;
+// Type of demo config forced on for tests.
+base::Optional<DemoSession::DemoModeConfig> g_force_demo_config;
 
 // The name of the offline demo resource image loader component.
 constexpr char kDemoResourcesComponentName[] = "demo-mode-resources";
@@ -55,8 +58,7 @@ constexpr char kDefaultHighlightsAppResourcesPath[] = "default";
 
 bool IsDemoModeOfflineEnrolled() {
   DCHECK(DemoSession::IsDeviceInDemoMode());
-  return DemoSession::GetEnrollmentType() ==
-         DemoSession::EnrollmentType::kOffline;
+  return DemoSession::GetDemoConfig() == DemoSession::DemoModeConfig::kOffline;
 }
 
 }  // namespace
@@ -71,28 +73,75 @@ base::FilePath DemoSession::GetPreInstalledDemoResourcesPath() {
 }
 
 // static
-bool DemoSession::IsDeviceInDemoMode() {
-  const EnrollmentType enrollment_type = GetEnrollmentType();
-  return enrollment_type != EnrollmentType::kNone &&
-         enrollment_type != EnrollmentType::kUnenrolled;
+std::string DemoSession::DemoConfigToString(
+    DemoSession::DemoModeConfig config) {
+  switch (config) {
+    case DemoSession::DemoModeConfig::kNone:
+      return "none";
+    case DemoSession::DemoModeConfig::kOnline:
+      return "online";
+    case DemoSession::DemoModeConfig::kOffline:
+      return "offline";
+  }
+  NOTREACHED() << "Unknown demo mode configuration";
+  return std::string();
 }
 
 // static
-DemoSession::EnrollmentType DemoSession::GetEnrollmentType() {
-  if (g_force_enrollment_type != EnrollmentType::kNone)
-    return g_force_enrollment_type;
+bool DemoSession::IsDeviceInDemoMode() {
+  return GetDemoConfig() != DemoModeConfig::kNone;
+}
+
+// static
+DemoSession::DemoModeConfig DemoSession::GetDemoConfig() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (g_force_demo_config.has_value())
+    return *g_force_demo_config;
 
   const policy::BrowserPolicyConnectorChromeOS* const connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  bool enrolled = connector->GetInstallAttributes()->GetDomain() ==
-                  DemoSetupController::kDemoModeDomain;
-  return enrolled ? EnrollmentType::kOnline : EnrollmentType::kUnenrolled;
+  bool is_demo_device_mode = connector->GetInstallAttributes()->GetMode() ==
+                             policy::DeviceMode::DEVICE_MODE_DEMO;
+  bool is_demo_device_domain = connector->GetInstallAttributes()->GetDomain() ==
+                               DemoSetupController::kDemoModeDomain;
+
+  // TODO(agawronska): We check device mode and domain to allow for dev/test
+  // setup that is done by manual enrollment into demo domain. Device mode is
+  // not set to DeviceMode::DEVICE_MODE_DEMO then. This extra condition
+  // can be removed when all following conditions are fulfilled:
+  // * DMServer is returning DeviceMode::DEVICE_MODE_DEMO for demo devices
+  // * Offline policies specify DeviceMode::DEVICE_MODE_DEMO
+  // * Demo mode setup flow is available to external developers
+  bool is_demo_mode = is_demo_device_mode || is_demo_device_domain;
+
+  const PrefService* prefs = g_browser_process->local_state();
+  // Demo mode config preference is set at the end of the demo setup after
+  // device is enrolled.
+  auto demo_config = DemoModeConfig::kNone;
+  int demo_config_pref = prefs->GetInteger(prefs::kDemoModeConfig);
+  if (demo_config_pref >= static_cast<int>(DemoModeConfig::kNone) &&
+      demo_config_pref <= static_cast<int>(DemoModeConfig::kLast)) {
+    demo_config = static_cast<DemoModeConfig>(demo_config_pref);
+  }
+
+  if (is_demo_mode && demo_config == DemoModeConfig::kNone) {
+    LOG(WARNING) << "Device mode is demo, but no demo mode config set";
+  } else if (!is_demo_mode && demo_config != DemoModeConfig::kNone) {
+    LOG(WARNING) << "Device mode is not demo, but demo mode config is set";
+  }
+
+  return is_demo_mode ? demo_config : DemoModeConfig::kNone;
 }
 
 // static
-void DemoSession::SetDemoModeEnrollmentTypeForTesting(
-    EnrollmentType enrollment_type) {
-  g_force_enrollment_type = enrollment_type;
+void DemoSession::SetDemoConfigForTesting(DemoModeConfig demo_config) {
+  g_force_demo_config = demo_config;
+}
+
+// static
+void DemoSession::ResetDemoConfigForTesting() {
+  g_force_demo_config = base::nullopt;
 }
 
 // static
@@ -170,22 +219,6 @@ void DemoSession::EnsureOfflineResourcesLoaded(
   }
 }
 
-void DemoSession::InstalledComponentLoaded(
-    component_updater::CrOSComponentManager::Error error,
-    const base::FilePath& path) {
-  if (error == component_updater::CrOSComponentManager::Error::NONE) {
-    OnOfflineResourcesLoaded(base::make_optional(path));
-    return;
-  }
-
-  chromeos::DBusThreadManager::Get()
-      ->GetImageLoaderClient()
-      ->LoadComponentAtPath(
-          kDemoResourcesComponentName, GetPreInstalledDemoResourcesPath(),
-          base::BindOnce(&DemoSession::OnOfflineResourcesLoaded,
-                         weak_ptr_factory_.GetWeakPtr()));
-}
-
 base::FilePath DemoSession::GetDemoAppsPath() const {
   if (offline_resources_path_.empty())
     return base::FilePath();
@@ -216,6 +249,22 @@ DemoSession::DemoSession()
 }
 
 DemoSession::~DemoSession() = default;
+
+void DemoSession::InstalledComponentLoaded(
+    component_updater::CrOSComponentManager::Error error,
+    const base::FilePath& path) {
+  if (error == component_updater::CrOSComponentManager::Error::NONE) {
+    OnOfflineResourcesLoaded(base::make_optional(path));
+    return;
+  }
+
+  chromeos::DBusThreadManager::Get()
+      ->GetImageLoaderClient()
+      ->LoadComponentAtPath(
+          kDemoResourcesComponentName, GetPreInstalledDemoResourcesPath(),
+          base::BindOnce(&DemoSession::OnOfflineResourcesLoaded,
+                         weak_ptr_factory_.GetWeakPtr()));
+}
 
 void DemoSession::OnOfflineResourcesLoaded(
     base::Optional<base::FilePath> mounted_path) {

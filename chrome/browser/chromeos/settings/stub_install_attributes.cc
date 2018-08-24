@@ -4,8 +4,7 @@
 
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 
-#include <string>
-
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
@@ -48,6 +47,14 @@ StubInstallAttributes::CreateActiveDirectoryManaged(
   return result;
 }
 
+// static
+std::unique_ptr<StubInstallAttributes> StubInstallAttributes::CreateDemoMode(
+    const std::string& device_id) {
+  auto result = std::make_unique<StubInstallAttributes>();
+  result->SetDemoMode(device_id);
+  return result;
+}
+
 void StubInstallAttributes::Clear() {
   registration_mode_ = policy::DEVICE_MODE_NOT_SET;
   registration_domain_.clear();
@@ -76,6 +83,13 @@ void StubInstallAttributes::SetActiveDirectoryManaged(
   registration_mode_ = policy::DEVICE_MODE_ENTERPRISE_AD;
   registration_realm_ = realm;
   registration_domain_.clear();
+  registration_device_id_ = device_id;
+}
+
+void StubInstallAttributes::SetDemoMode(const std::string& device_id) {
+  registration_mode_ = policy::DEVICE_MODE_DEMO;
+  registration_domain_ = DemoSetupController::kDemoModeDomain;
+  registration_realm_.clear();
   registration_device_id_ = device_id;
 }
 

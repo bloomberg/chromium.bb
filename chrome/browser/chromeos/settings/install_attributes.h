@@ -162,6 +162,7 @@ class InstallAttributes {
   static const char kEnterpriseADDeviceMode[];
   static const char kLegacyRetailDeviceMode[];
   static const char kConsumerKioskDeviceMode[];
+  static const char kDemoDeviceMode[];
 
   // Field names in the lockbox.
   static const char kAttrEnterpriseDeviceId[];

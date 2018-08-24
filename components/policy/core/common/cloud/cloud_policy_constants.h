@@ -142,6 +142,10 @@ enum DeviceMode {
   DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH,  // The device is locally owned as
                                           // consumer kiosk with ability to auto
                                           // launch a kiosk webapp.
+  DEVICE_MODE_DEMO,                       // The device is in demo mode. It was
+                                          // either enrolled online or setup
+                                          // offline into demo mode domain
+                                          // cros-demo-mode.com.
 };
 
 // License types available for enrollment.

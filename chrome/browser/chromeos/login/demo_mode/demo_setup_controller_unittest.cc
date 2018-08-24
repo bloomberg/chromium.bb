@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
@@ -126,8 +127,7 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
           &mock_store, &policy::MockCloudPolicyStore::NotifyStoreLoaded));
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
   tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
@@ -147,8 +147,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyLoadFailure) {
   EXPECT_CALL(mock_store, Store(_)).Times(0);
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
   tested_controller_->SetOfflineDataDirForTest(
       base::FilePath(FILE_PATH_LITERAL("/no/such/path")));
   tested_controller_->Enroll(
@@ -174,8 +173,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
           &mock_store, &policy::MockCloudPolicyStore::NotifyStoreError));
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
   tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
@@ -195,8 +193,7 @@ TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
       &MockDemoModeOfflineEnrollmentHelperCreator<
           DemoModeSetupResult::SUCCESS>);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
   tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
@@ -219,8 +216,7 @@ TEST_F(DemoSetupControllerTest, OfflineError) {
   EXPECT_CALL(mock_store, Store(_)).Times(0);
   tested_controller_->SetDeviceLocalAccountPolicyStoreForTest(&mock_store);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOffline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOffline);
   tested_controller_->SetOfflineDataDirForTest(temp_dir.GetPath());
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
@@ -236,8 +232,7 @@ TEST_F(DemoSetupControllerTest, OnlineSuccess) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
@@ -251,8 +246,7 @@ TEST_F(DemoSetupControllerTest, OnlineError) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
@@ -267,8 +261,7 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),
@@ -283,8 +276,7 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
       &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
 
-  tested_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOnline);
+  tested_controller_->set_demo_config(DemoSession::DemoModeConfig::kOnline);
   tested_controller_->Enroll(
       base::BindOnce(&DemoSetupControllerTestHelper::OnSetupSuccess,
                      base::Unretained(helper_.get())),

@@ -5,9 +5,12 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 
 #include "base/macros.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 
 namespace chromeos {
 
@@ -16,16 +19,67 @@ namespace {
 constexpr char kFakeDeviceId[] = "device_id";
 constexpr char kNonDemoDomain[] = "non-demo-mode.com";
 
+void SetDemoConfigPref(DemoSession::DemoModeConfig demo_config) {
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetInteger(prefs::kDemoModeConfig, static_cast<int>(demo_config));
+}
+
 }  // namespace
 
+// Tests locking device to policy::DEVICE_MODE_DEMO mode. It is an equivalent to
+// going through online demo mode setup or using offline setup.
+class DemoSessionDemoDeviceModeTest : public LoginManagerTest {
+ protected:
+  DemoSessionDemoDeviceModeTest()
+      : LoginManagerTest(true /*should_launch_browser*/),
+        install_attributes_(
+            StubInstallAttributes::CreateDemoMode(kFakeDeviceId)) {}
+  ~DemoSessionDemoDeviceModeTest() override = default;
+
+  // LoginManagerTest:
+  void SetUpOnMainThread() override {
+    LoginManagerTest::SetUpOnMainThread();
+    SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  }
+
+ private:
+  const ScopedStubInstallAttributes install_attributes_;
+
+  DISALLOW_COPY_AND_ASSIGN(DemoSessionDemoDeviceModeTest);
+};
+
+IN_PROC_BROWSER_TEST_F(DemoSessionDemoDeviceModeTest, IsDemoMode) {
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOffline,
+            DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOnline, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOffline,
+            DemoSession::GetDemoConfig());
+}
+
+// Tests locking device to demo mode domain without policy::DEVICE_MODE_DEMO
+// mode. It is an equivalent to enrolling device directly by using enterprise
+// enrollment flow.
 class DemoSessionDemoEnrolledDeviceTest : public LoginManagerTest {
- public:
+ protected:
   DemoSessionDemoEnrolledDeviceTest()
       : LoginManagerTest(true /*should_launch_browser*/),
         install_attributes_(StubInstallAttributes::CreateCloudManaged(
             DemoSetupController::kDemoModeDomain,
             kFakeDeviceId)) {}
   ~DemoSessionDemoEnrolledDeviceTest() override = default;
+
+  // LoginManagerTest:
+  void SetUpOnMainThread() override {
+    LoginManagerTest::SetUpOnMainThread();
+    SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  }
 
  private:
   const ScopedStubInstallAttributes install_attributes_;
@@ -35,8 +89,17 @@ class DemoSessionDemoEnrolledDeviceTest : public LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(DemoSessionDemoEnrolledDeviceTest, IsDemoMode) {
   EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
-  EXPECT_EQ(DemoSession::EnrollmentType::kOnline,
-            DemoSession::GetEnrollmentType());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOffline,
+            DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOnline, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_TRUE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kOffline,
+            DemoSession::GetDemoConfig());
 }
 
 class DemoSessionNonDemoEnrolledDeviceTest : public LoginManagerTest {
@@ -56,8 +119,15 @@ class DemoSessionNonDemoEnrolledDeviceTest : public LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(DemoSessionNonDemoEnrolledDeviceTest, NotDemoMode) {
   EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
-  EXPECT_EQ(DemoSession::EnrollmentType::kUnenrolled,
-            DemoSession::GetEnrollmentType());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
 class DemoSessionConsumerDeviceTest : public LoginManagerTest {
@@ -75,8 +145,15 @@ class DemoSessionConsumerDeviceTest : public LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(DemoSessionConsumerDeviceTest, NotDemoMode) {
   EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
-  EXPECT_EQ(DemoSession::EnrollmentType::kUnenrolled,
-            DemoSession::GetEnrollmentType());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
 class DemoSessionUnownedDeviceTest : public LoginManagerTest {
@@ -94,8 +171,15 @@ class DemoSessionUnownedDeviceTest : public LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(DemoSessionUnownedDeviceTest, NotDemoMode) {
   EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
-  EXPECT_EQ(DemoSession::EnrollmentType::kUnenrolled,
-            DemoSession::GetEnrollmentType());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
 class DemoSessionActiveDirectoryDeviceTest : public LoginManagerTest {
@@ -115,8 +199,15 @@ class DemoSessionActiveDirectoryDeviceTest : public LoginManagerTest {
 
 IN_PROC_BROWSER_TEST_F(DemoSessionActiveDirectoryDeviceTest, NotDemoMode) {
   EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
-  EXPECT_EQ(DemoSession::EnrollmentType::kUnenrolled,
-            DemoSession::GetEnrollmentType());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOnline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
+
+  SetDemoConfigPref(DemoSession::DemoModeConfig::kOffline);
+  EXPECT_FALSE(DemoSession::IsDeviceInDemoMode());
+  EXPECT_EQ(DemoSession::DemoModeConfig::kNone, DemoSession::GetDemoConfig());
 }
 
 }  // namespace chromeos

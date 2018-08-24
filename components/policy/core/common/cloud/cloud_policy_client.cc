@@ -36,10 +36,12 @@ DeviceMode TranslateProtobufDeviceMode(
   switch (mode) {
     case em::DeviceRegisterResponse::ENTERPRISE:
       return DEVICE_MODE_ENTERPRISE;
-    case em::DeviceRegisterResponse::RETAIL:
+    case em::DeviceRegisterResponse::RETAIL_DEPRECATED:
       return DEVICE_MODE_LEGACY_RETAIL_MODE;
     case em::DeviceRegisterResponse::CHROME_AD:
       return DEVICE_MODE_ENTERPRISE_AD;
+    case em::DeviceRegisterResponse::DEMO:
+      return DEVICE_MODE_DEMO;
   }
   LOG(ERROR) << "Unknown enrollment mode in registration response: " << mode;
   return DEVICE_MODE_NOT_SET;

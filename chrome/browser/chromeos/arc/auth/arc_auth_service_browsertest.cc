@@ -487,8 +487,8 @@ class ArcRobotAccountAuthServiceTest : public ArcAuthServiceTest {
 // Tests that when ARC requests account info for a demo session account,
 // Chrome supplies the info configured in SetAccountAndProfile() above.
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
-  chromeos::DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      chromeos::DemoSession::EnrollmentType::kOnline);
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
@@ -511,8 +511,8 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetDemoAccount) {
 }
 
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
-  chromeos::DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      chromeos::DemoSession::EnrollmentType::kOffline);
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOffline);
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);
@@ -532,8 +532,8 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest, GetOfflineDemoAccount) {
 
 IN_PROC_BROWSER_TEST_F(ArcRobotAccountAuthServiceTest,
                        GetDemoAccountOnAuthTokenFetchFailure) {
-  chromeos::DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      chromeos::DemoSession::EnrollmentType::kOnline);
+  chromeos::DemoSession::SetDemoConfigForTesting(
+      chromeos::DemoSession::DemoModeConfig::kOnline);
   chromeos::DemoSession::StartIfInDemoMode();
 
   SetAccountAndProfile(user_manager::USER_TYPE_PUBLIC_ACCOUNT);

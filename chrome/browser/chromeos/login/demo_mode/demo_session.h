@@ -26,33 +26,40 @@ namespace chromeos {
 // started, and whether the demo session offline resources have been loaded.
 class DemoSession : public session_manager::SessionManagerObserver {
  public:
-  enum class EnrollmentType {
-    // Demo mode enrollment unset/unknown.
-    kNone,
-
-    // Device was not enrolled into demo mode.
-    kUnenrolled,
-
-    // Device was enrolled into demo mode using online enrollment flow.
-    kOnline,
-
-    // Device was enrolled into demo mode using offline enrollment flow - i.e.
-    // policies are retrieved from the device, rather than from DM server.
-    kOffline,
+  // Type of demo mode configuration.
+  // Warning: DemoModeConfig is stored in local state. Existing entries should
+  // not be reordered and new values should be added at the end.
+  enum class DemoModeConfig : int {
+    // No demo mode configuration or configuration unknown.
+    kNone = 0,
+    // Online enrollment into demo mode was established with DMServer.
+    // Policies are applied from the cloud.
+    kOnline = 1,
+    // Offline enrollment into demo mode was established locally.
+    // Offline policy set is applied to the device.
+    kOffline = 2,
+    // Add new entries above this line and make sure to update kLast value.
+    kLast = kOffline,
   };
 
   // Location on disk where pre-installed demo mode resources are expected to be
   // found.
   static base::FilePath GetPreInstalledDemoResourcesPath();
 
+  static std::string DemoConfigToString(DemoModeConfig config);
+
   // Whether the device is set up to run demo sessions.
   static bool IsDeviceInDemoMode();
 
-  // Returns the type of demo mode setup.
-  static EnrollmentType GetEnrollmentType();
+  // Returns current demo mode configuration.
+  static DemoModeConfig GetDemoConfig();
 
-  static void SetDemoModeEnrollmentTypeForTesting(
-      EnrollmentType enrollment_type);
+  // Sets demo mode configuration for tests. Should be cleared by calling
+  // ResetDemoConfigForTesting().
+  static void SetDemoConfigForTesting(DemoModeConfig demo_config);
+
+  // Resets demo mode configuration that was used for tests.
+  static void ResetDemoConfigForTesting();
 
   // If the device is set up to run in demo mode, marks demo session as started,
   // and requests load of demo session resources.
