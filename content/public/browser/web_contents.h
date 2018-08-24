@@ -916,10 +916,11 @@ class WebContents : public PageNavigator,
 
   // Returns true if other views are allowed, false otherwise.
   virtual bool GetAllowOtherViews() = 0;
-
-  // Returns true if the WebContents has completed its first meaningful paint.
-  virtual bool CompletedFirstVisuallyNonEmptyPaint() const = 0;
 #endif  // OS_ANDROID
+
+  // Returns true if the WebContents has completed its first meaningful paint
+  // since the last navigation.
+  virtual bool CompletedFirstVisuallyNonEmptyPaint() const = 0;
 
   // TODO(https://crbug.com/826293): This is a simple mitigation to validate
   // that an action that requires a user gesture actually has one in the
