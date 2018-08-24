@@ -42,6 +42,9 @@
 // Text field to display the title or the URL of the bookmark node.
 @property(nonatomic, strong) UITextField* textField;
 
+// Returns the appropriate text color to use for the given |editing| state.
++ (UIColor*)textColorForEditing:(BOOL)editing;
+
 @end
 
 @interface LegacyBookmarkTextFieldCell : UITableViewCell

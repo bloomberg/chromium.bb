@@ -515,6 +515,14 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
   }
 }
 
+- (void)textFieldDidBeginEditing:(UITextField*)textField {
+  textField.textColor = [BookmarkTextFieldCell textColorForEditing:YES];
+}
+
+- (void)textFieldDidEndEditing:(UITextField*)textField {
+  textField.textColor = [BookmarkTextFieldCell textColorForEditing:NO];
+}
+
 - (BOOL)textFieldShouldReturn:(UITextField*)textField {
   [textField resignFirstResponder];
   return YES;
