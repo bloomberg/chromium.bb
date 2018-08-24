@@ -20,6 +20,26 @@ import org.gradle.maven.MavenPomArtifact
 class ChromiumDepGraph {
     final def dependencies = new HashMap<String, DependencyDescription>()
 
+    // Some libraries don't properly fill their POM with the appropriate licensing information.
+    // It is provided here from manual lookups.
+    final def FALLBACK_PROPERTIES = [
+        'com_google_googlejavaformat_google_java_format': new DependencyDescription(
+          url: "https://github.com/google/google-java-format",
+          licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+          licenseName: "Apache 2.0"),
+        'com_google_guava_guava': new DependencyDescription(
+          url: "https://github.com/google/guava",
+          licenseUrl: "https://www.apache.org/licenses/LICENSE-2.0.txt",
+          licenseName: "Apache 2.0"),
+        'org_codehaus_mojo_animal_sniffer_annotations': new DependencyDescription(
+          url: "http://www.mojohaus.org/animal-sniffer/animal-sniffer-annotations/",
+          licenseUrl: "https://opensource.org/licenses/mit-license.php",
+          licenseName: "MIT"),
+        'org_checkerframework_checker_compat_qual' :new DependencyDescription(
+          licenseUrl: "https://github.com/typetools/checker-framework/blob/master/LICENSE.txt",
+          licenseName: "GPL v2 (with the classpath exception)"),
+    ]
+
     Project project
 
     void collectDependencies() {
@@ -142,6 +162,13 @@ class ChromiumDepGraph {
             //     com_google_android_gms_play_services_auth_api_phone_license
             if (dep.id?.endsWith("_license")) {
                 dep.exclude = true
+            }
+        } else if (dep.licenseName?.isEmpty()) {
+            def fallbackProperties = FALLBACK_PROPERTIES.get(id)
+            if (fallbackProperties != null) {
+                project.logger.debug("Using fallback properties for ${id}")
+                dep.licenseName = fallbackProperties.licenseName
+                dep.licenseUrl = fallbackProperties.licenseUrl
             }
         }
 
