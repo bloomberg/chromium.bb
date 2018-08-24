@@ -7980,6 +7980,12 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Tap not suppressed"/>
 </enum>
 
+<enum name="ContextualSuggestions.ClickDuration">
+  <int value="0" label="Short"/>
+  <int value="1" label="Medium"/>
+  <int value="2" label="Long"/>
+</enum>
+
 <enum name="ContextualSuggestions.Event">
   <int value="0" label="Uninitialized"/>
   <int value="1" label="Fetch delayed"/>

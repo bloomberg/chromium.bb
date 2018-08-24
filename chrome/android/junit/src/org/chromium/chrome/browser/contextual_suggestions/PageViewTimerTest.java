@@ -22,6 +22,8 @@ import org.robolectric.shadows.ShadowSystemClock;
 
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer.DurationBucket;
+import org.chromium.chrome.browser.contextual_suggestions.PageViewTimer.NavigationSource;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -29,6 +31,9 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +47,12 @@ public final class PageViewTimerTest {
     private static final int SAMPLE_PAGE_VIEW_TIME = 5678;
     private static final String PAGE_VIEW_TIME_METRIC = "ContextualSuggestions.PageViewTime";
 
+    @Mock
+    private WebContents mWebContents;
+    @Mock
+    private NavigationController mNavigationController;
+    @Mock
+    private NavigationEntry mNavigationEntry;
     @Mock
     private TabModelSelector mTabModelSelector;
     @Mock
@@ -69,6 +80,15 @@ public final class PageViewTimerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+
+        // Navigation stack setup.
+        doReturn("https://goto.google.com/explore-on-content-viewer")
+                .when(mNavigationEntry)
+                .getReferrerUrl();
+        doReturn(0).when(mNavigationController).getLastCommittedEntryIndex();
+        doReturn(mNavigationEntry).when(mNavigationController).getEntryAtIndex(0);
+        doReturn(mNavigationController).when(mWebContents).getNavigationController();
+        doReturn(mWebContents).when(mTab).getWebContents();
 
         // Default tab setup.
         doReturn(false).when(mTab).isIncognito();
@@ -196,6 +216,76 @@ public final class PageViewTimerTest {
     @Test
     public void selectTab_notLoaded_closeChrome_reported() {
         selectTab_showContent_stopTimer(doNothingToShowContent(), stopTimerByClosingChrome(), 0);
+    }
+
+    @Test
+    public void getNavigationSource_nullEntry() {
+        PageViewTimer timer = createPageViewTimer();
+        doReturn(0).when(mNavigationController).getLastCommittedEntryIndex();
+        doReturn(null).when(mNavigationController).getEntryAtIndex(0);
+        doReturn(mNavigationController).when(mWebContents).getNavigationController();
+
+        assertEquals(timer.getNavigationSource(mWebContents), NavigationSource.OTHER);
+    }
+
+    @Test
+    public void getNavigationSource_nullReferrer() {
+        PageViewTimer timer = createPageViewTimer();
+        doReturn(null).when(mNavigationEntry).getReferrerUrl();
+        doReturn(0).when(mNavigationController).getLastCommittedEntryIndex();
+        doReturn(mNavigationEntry).when(mNavigationController).getEntryAtIndex(0);
+        doReturn(mNavigationController).when(mWebContents).getNavigationController();
+
+        assertEquals(timer.getNavigationSource(mWebContents), NavigationSource.OTHER);
+    }
+
+    @Test
+    public void getNavigationSource_emptyReferrer() {
+        PageViewTimer timer = createPageViewTimer();
+        doReturn("").when(mNavigationEntry).getReferrerUrl();
+        doReturn(0).when(mNavigationController).getLastCommittedEntryIndex();
+        doReturn(mNavigationEntry).when(mNavigationController).getEntryAtIndex(0);
+        doReturn(mNavigationController).when(mWebContents).getNavigationController();
+
+        assertEquals(timer.getNavigationSource(mWebContents), NavigationSource.OTHER);
+    }
+
+    @Test
+    public void getNavigationSource_ContextualSuggestion() {
+        PageViewTimer timer = createPageViewTimer();
+        doReturn("https://goto.google.com/explore-on-content-viewer")
+                .when(mNavigationEntry)
+                .getReferrerUrl();
+        doReturn(0).when(mNavigationController).getLastCommittedEntryIndex();
+        doReturn(mNavigationEntry).when(mNavigationController).getEntryAtIndex(0);
+        doReturn(mNavigationController).when(mWebContents).getNavigationController();
+
+        assertEquals(
+                timer.getNavigationSource(mWebContents), NavigationSource.CONTEXTUAL_SUGGESTIONS);
+    }
+
+    @Test
+    public void calculateDurationBucket_Short() {
+        PageViewTimer timer = createPageViewTimer();
+        assertEquals(timer.calculateDurationBucket(0), DurationBucket.SHORT_CLICK);
+        assertEquals(timer.calculateDurationBucket(PageViewTimer.SHORT_BUCKET_THRESHOLD_MS),
+                DurationBucket.SHORT_CLICK);
+    }
+
+    @Test
+    public void calculateDurationBucket_Medium() {
+        PageViewTimer timer = createPageViewTimer();
+        assertEquals(timer.calculateDurationBucket(PageViewTimer.SHORT_BUCKET_THRESHOLD_MS + 1),
+                DurationBucket.MEDIUM_CLICK);
+        assertEquals(timer.calculateDurationBucket(PageViewTimer.MEDIUM_BUCKET_THRESHOLD_MS),
+                DurationBucket.MEDIUM_CLICK);
+    }
+
+    @Test
+    public void calculateDurationBucket_Long() {
+        PageViewTimer timer = createPageViewTimer();
+        assertEquals(timer.calculateDurationBucket(PageViewTimer.MEDIUM_BUCKET_THRESHOLD_MS + 1),
+                DurationBucket.LONG_CLICK);
     }
 
     private Runnable doNothingToShowContent() {
