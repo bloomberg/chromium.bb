@@ -10,33 +10,16 @@
 namespace ash {
 
 RoundedRectView::RoundedRectView(int corner_radius, SkColor background_color)
-    : RoundedRectView(corner_radius,
-                      corner_radius,
-                      corner_radius,
-                      corner_radius,
-                      background_color) {}
-
-RoundedRectView::RoundedRectView(int top_left_radius,
-                                 int top_right_radius,
-                                 int bottom_right_radius,
-                                 int bottom_left_radius,
-                                 SkColor background_color)
-    : top_left_radius_(top_left_radius),
-      top_right_radius_(top_right_radius),
-      bottom_right_radius_(bottom_right_radius),
-      bottom_left_radius_(bottom_left_radius),
-      background_color_(background_color) {}
+    : corner_radius_(corner_radius), background_color_(background_color) {}
 
 RoundedRectView::~RoundedRectView() = default;
 
 void RoundedRectView::OnPaint(gfx::Canvas* canvas) {
   views::View::OnPaint(canvas);
 
-  const SkScalar kRadius[8] = {
-      SkIntToScalar(top_left_radius_),     SkIntToScalar(top_left_radius_),
-      SkIntToScalar(top_right_radius_),    SkIntToScalar(top_right_radius_),
-      SkIntToScalar(bottom_right_radius_), SkIntToScalar(bottom_right_radius_),
-      SkIntToScalar(bottom_left_radius_),  SkIntToScalar(bottom_left_radius_)};
+  SkScalar radius = SkIntToScalar(corner_radius_);
+  const SkScalar kRadius[8] = {radius, radius, radius, radius,
+                               radius, radius, radius, radius};
   SkPath path;
   gfx::Rect bounds(size());
   path.addRoundRect(gfx::RectToSkRect(bounds), kRadius);
@@ -53,26 +36,12 @@ void RoundedRectView::SetBackgroundColor(SkColor background_color) {
   SchedulePaint();
 }
 
-void RoundedRectView::SetCornerRadius(int top_left_radius,
-                                      int top_right_radius,
-                                      int bottom_right_radius,
-                                      int bottom_left_radius) {
-  if (top_left_radius_ == top_left_radius &&
-      top_right_radius_ == top_right_radius &&
-      bottom_right_radius_ == bottom_right_radius &&
-      bottom_left_radius_ == bottom_left_radius) {
-    return;
-  }
-
-  top_left_radius_ = top_left_radius;
-  top_right_radius_ = top_right_radius;
-  bottom_right_radius_ = bottom_right_radius;
-  bottom_left_radius_ = bottom_left_radius;
-  SchedulePaint();
-}
-
 void RoundedRectView::SetCornerRadius(int radius) {
-  SetCornerRadius(radius, radius, radius, radius);
+  if (corner_radius_ == radius)
+    return;
+
+  corner_radius_ = radius;
+  SchedulePaint();
 }
 
 }  // namespace ash
