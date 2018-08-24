@@ -151,13 +151,10 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PRE_PersistRules) {
   ASSERT_TRUE(RunExtensionTest("declarative/redirect_to_data")) << message_;
 }
 
-// Disabled on Linux for flakiness: https://crbug.com/347159
-#if defined(OS_LINUX)
-#define MAYBE_PersistRules DISABLED_PersistRules
-#else
-#define MAYBE_PersistRules PersistRules
-#endif
-IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, MAYBE_PersistRules) {
+IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, PersistRules) {
+  // Wait for declarative rules to be set up from PRE test.
+  content::BrowserContext::GetDefaultStoragePartition(profile())
+      ->FlushNetworkInterfaceForTesting();
   ui_test_utils::NavigateToURL(browser(), GURL(kArbitraryUrl));
   EXPECT_EQ(kTestTitle, GetTitle());
 }
