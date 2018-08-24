@@ -7,6 +7,7 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -41,6 +42,10 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "url/gurl.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
+#endif
+
 namespace app_list {
 
 namespace {
@@ -73,7 +78,14 @@ const std::vector<InternalApp>& GetInternalAppList(bool is_guest_mode) {
             /*recommendable=*/true,
             /*searchable=*/false,
             /*show_in_launcher=*/false, InternalAppName::kContinueReading,
-            /*searchable_string_resource_id=*/0}});
+            /*searchable_string_resource_id=*/0},
+
+           {kInternalAppIdDiscover, IDS_INTERNAL_APP_DISCOVER,
+            IDR_DISCOVER_APP_192,
+            /*recommendable=*/false,
+            /*searchable=*/true,
+            /*show_in_launcher=*/true, InternalAppName::kDiscover,
+            /*searchable_string_resource_id=*/IDS_INTERNAL_APP_DISCOVER}});
 
   static base::NoDestructor<std::vector<InternalApp>> internal_app_list;
   internal_app_list->clear();
@@ -164,6 +176,12 @@ void OpenInternalApp(const std::string& app_id,
     chrome::ShowSettingsSubPageForProfile(profile, std::string());
   } else if (app_id == kInternalAppIdCamera) {
     ShowCameraApp(app_id, profile, event_flags);
+  } else if (app_id == kInternalAppIdDiscover) {
+#if defined(OS_CHROMEOS)
+    base::RecordAction(base::UserMetricsAction("ShowDiscover"));
+    chromeos::DiscoverWindowManager::GetInstance()
+        ->ShowChromeDiscoverPageForProfile(profile);
+#endif
   }
 }
 
