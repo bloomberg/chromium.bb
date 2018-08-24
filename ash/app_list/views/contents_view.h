@@ -226,6 +226,9 @@ class APP_LIST_EXPORT ContentsView : public views::View,
                         ash::AppListState current_state,
                         ash::AppListState target_state) const;
 
+  // Converts rect to widget without applying transform.
+  gfx::Rect ConvertRectToWidgetWithoutTransform(const gfx::Rect& rect);
+
   // Unowned pointer to application list model.
   AppListModel* model_ = nullptr;
 
