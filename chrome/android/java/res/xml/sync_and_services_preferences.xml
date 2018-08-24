@@ -4,6 +4,10 @@
      found in the LICENSE file. -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <org.chromium.chrome.browser.preferences.SignInPreference
+        android:key="sign_in"
+        android:title="@string/sign_in_to_chrome"/>
+
     <org.chromium.chrome.browser.preferences.ChromeSwitchPreference
         android:persistent="false"
         android:key="use_sync_and_all_services"

@@ -57,12 +57,14 @@ public class SignInPreference
         int SIGNED_IN = 3;
     }
 
+    private boolean mPersonalizedPromoEnabled = true;
     private boolean mWasGenericSigninPromoDisplayed;
     private boolean mViewEnabled;
     private @Nullable SigninPromoController mSigninPromoController;
     private final ProfileDataCache mProfileDataCache;
     private @State int mState;
     private @Nullable Runnable mStateChangedCallback;
+    private boolean mObserversAdded;
 
     /**
      * Constructor for inflating from XML.
@@ -93,6 +95,7 @@ public class SignInPreference
         if (syncService != null) {
             syncService.addSyncStateChangedListener(this);
         }
+        mObserversAdded = true;
 
         update();
     }
@@ -110,6 +113,7 @@ public class SignInPreference
         if (syncService != null) {
             syncService.removeSyncStateChangedListener(this);
         }
+        mObserversAdded = false;
     }
 
     /**
@@ -128,6 +132,14 @@ public class SignInPreference
         if (mStateChangedCallback != null) {
             mStateChangedCallback.run();
         }
+    }
+
+    /** Enables/disables personalized promo mode. */
+    public void setPersonalizedPromoEnabled(boolean personalizedPromoEnabled) {
+        if (mPersonalizedPromoEnabled == personalizedPromoEnabled) return;
+        mPersonalizedPromoEnabled = personalizedPromoEnabled;
+        // Can't update until observers are added.
+        if (mObserversAdded) update();
     }
 
     /** Returns the state of the preference. Not valid until registerForUpdates is called. */
@@ -154,9 +166,9 @@ public class SignInPreference
             return;
         }
 
-        if (ChromePreferenceManager.getInstance().readBoolean(
-                    ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false)) {
-            // Don't show the new promo if it was dismissed by the user.
+        boolean personalizedPromoDismissed = ChromePreferenceManager.getInstance().readBoolean(
+                ChromePreferenceManager.SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED, false);
+        if (!mPersonalizedPromoEnabled || personalizedPromoDismissed) {
             setupGenericPromo();
             return;
         }
