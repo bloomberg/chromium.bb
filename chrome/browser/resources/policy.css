@@ -39,3 +39,7 @@ html[dir='rtl'] div.left-aligned-button {
 section.status-box-section {
   clear: both;
 }
+
+div.preformatted {
+  white-space: pre;
+}

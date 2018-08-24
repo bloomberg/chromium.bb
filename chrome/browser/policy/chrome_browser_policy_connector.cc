@@ -111,6 +111,7 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
   auto providers = BrowserPolicyConnector::CreatePolicyProviders();
   std::unique_ptr<ConfigurationPolicyProvider> platform_provider =
       CreatePlatformProvider();
+  // TODO(crbug/869958): Add migrators here.
   if (platform_provider) {
     platform_provider_ = platform_provider.get();
     // PlatformProvider should be before all other providers (highest priority).
@@ -121,6 +122,7 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
   std::unique_ptr<MachineLevelUserCloudPolicyManager>
       machine_level_user_cloud_policy_manager =
           MachineLevelUserCloudPolicyController::CreatePolicyManager();
+  // TODO(crbug/869958): Add migrators here.
   if (machine_level_user_cloud_policy_manager) {
     machine_level_user_cloud_policy_manager_ =
         machine_level_user_cloud_policy_manager.get();

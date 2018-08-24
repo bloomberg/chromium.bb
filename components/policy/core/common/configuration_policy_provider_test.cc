@@ -12,6 +12,7 @@
 #include "base/task/task_traits.h"
 #include "base/values.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/extension_policy_migrator.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_bundle.h"
@@ -351,6 +352,19 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
            std::make_unique<base::Value>("value"), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(bundle));
   provider_->RemoveObserver(&observer);
+}
+
+class MockPolicyMigrator : public ExtensionPolicyMigrator {
+ public:
+  MOCK_METHOD1(Migrate, void(PolicyBundle* bundle));
+};
+
+TEST_P(ConfigurationPolicyProviderTest, AddMigrator) {
+  MockPolicyMigrator* migrator = new MockPolicyMigrator;
+  EXPECT_CALL(*migrator, Migrate(_));
+  provider_->AddMigrator(std::unique_ptr<ExtensionPolicyMigrator>(migrator));
+  provider_->RefreshPolicies();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 Configuration3rdPartyPolicyProviderTest::

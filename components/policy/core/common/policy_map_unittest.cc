@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "components/policy/core/common/external_data_manager.h"
 #include "components/policy/core/common/policy_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -68,14 +70,16 @@ TEST_F(PolicyMapTest, SetAndGet) {
   base::Value expected_b("bbb");
   EXPECT_TRUE(expected_b.Equals(map.GetValue(kTestPolicyName1)));
   SetPolicy(&map, kTestPolicyName1, CreateExternalDataFetcher("dummy"));
-  map.SetError(kTestPolicyName1, kTestError);
+  map.AddError(kTestPolicyName1, kTestError);
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   const PolicyMap::Entry* entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != nullptr);
   EXPECT_EQ(POLICY_LEVEL_MANDATORY, entry->level);
   EXPECT_EQ(POLICY_SCOPE_USER, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_CLOUD, entry->source);
-  EXPECT_EQ(kTestError, entry->error);
+  PolicyMap::Entry::L10nLookupFunction lookup = base::BindRepeating(
+      static_cast<base::string16 (*)(int)>(&base::NumberToString16));
+  EXPECT_EQ(base::UTF8ToUTF16(kTestError), entry->GetLocalizedErrors(lookup));
   EXPECT_TRUE(
       ExternalDataFetcher::Equals(entry->external_data_fetcher.get(),
                                   CreateExternalDataFetcher("dummy").get()));
@@ -87,8 +91,24 @@ TEST_F(PolicyMapTest, SetAndGet) {
   EXPECT_EQ(POLICY_LEVEL_RECOMMENDED, entry->level);
   EXPECT_EQ(POLICY_SCOPE_MACHINE, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_ENTERPRISE_DEFAULT, entry->source);
-  EXPECT_EQ("", entry->error);
+  EXPECT_EQ(base::string16(), entry->GetLocalizedErrors(lookup));
   EXPECT_FALSE(entry->external_data_fetcher);
+}
+
+TEST_F(PolicyMapTest, AddError) {
+  PolicyMap map;
+  SetPolicy(&map, kTestPolicyName1, std::make_unique<base::Value>(0));
+  PolicyMap::Entry* entry = map.GetMutable(kTestPolicyName1);
+  PolicyMap::Entry::L10nLookupFunction lookup = base::BindRepeating(
+      static_cast<base::string16 (*)(int)>(&base::NumberToString16));
+  EXPECT_EQ(base::string16(), entry->GetLocalizedErrors(lookup));
+  map.AddError(kTestPolicyName1, 1234);
+  EXPECT_EQ(base::UTF8ToUTF16("1234"), entry->GetLocalizedErrors(lookup));
+  map.AddError(kTestPolicyName1, 5678);
+  EXPECT_EQ(base::UTF8ToUTF16("1234\n5678"), entry->GetLocalizedErrors(lookup));
+  map.AddError(kTestPolicyName1, "abcd");
+  EXPECT_EQ(base::UTF8ToUTF16("abcd\n1234\n5678"),
+            entry->GetLocalizedErrors(lookup));
 }
 
 TEST_F(PolicyMapTest, Equals) {

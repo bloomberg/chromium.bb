@@ -26,11 +26,11 @@ class POLICY_EXPORT PolicyMap {
  public:
   // Each policy maps to an Entry which keeps the policy value as well as other
   // relevant data about the policy.
-  struct POLICY_EXPORT Entry {
+  class POLICY_EXPORT Entry {
+   public:
     PolicyLevel level = POLICY_LEVEL_RECOMMENDED;
     PolicyScope scope = POLICY_SCOPE_USER;
     std::unique_ptr<base::Value> value;
-    std::string error;
     std::unique_ptr<ExternalDataFetcher> external_data_fetcher;
 
     // For debugging and displaying only. Set by provider delivering the policy.
@@ -51,6 +51,24 @@ class POLICY_EXPORT PolicyMap {
 
     // Returns true if |this| equals |other|.
     bool Equals(const Entry& other) const;
+
+    // Add a non-localized error given its UTF-8 string contents.
+    void AddError(base::StringPiece error);
+    // Add a localized error given its l10n message ID.
+    void AddError(int message_id);
+
+    // Callback used to look up a localized string given its l10n message ID. It
+    // should return a UTF-16 string.
+    typedef base::RepeatingCallback<base::string16(int message_id)>
+        L10nLookupFunction;
+
+    // Returns localized errors added through AddError(), as UTF-16, and
+    // separated with LF characters.
+    base::string16 GetLocalizedErrors(L10nLookupFunction lookup) const;
+
+   private:
+    std::string error_strings_;
+    std::vector<int> error_message_ids_;
   };
 
   typedef std::map<std::string, Entry> PolicyMapType;
@@ -81,11 +99,15 @@ class POLICY_EXPORT PolicyMap {
 
   void Set(const std::string& policy, Entry entry);
 
-  // Adds an |error| to the map for the key |policy| that should be shown to the
-  // user alongside the value in the policy UI. This is equivalent to calling
-  // |GetMutableValue(policy)->error = error|, so should only be called for
-  // policies that are already stored in this map.
-  void SetError(const std::string& policy, const std::string& error);
+  // Adds non-localized |error| to the map for the key |policy| that should be
+  // shown to the user alongside the value in the policy UI. This should only be
+  // called for policies that are already stored in this map.
+  void AddError(const std::string& policy, const std::string& error);
+
+  // Adds a localized error with |message_id| to the map for the key |policy|
+  // that should be shown to the user alongisde the value in the policy UI. This
+  // should only be called for policies that are already stored in the map.
+  void AddError(const std::string& policy, int message_id);
 
   // For all policies, overwrite the PolicySource with |source|.
   void SetSourceForAll(PolicySource source);

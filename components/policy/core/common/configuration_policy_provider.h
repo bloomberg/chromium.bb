@@ -17,6 +17,8 @@
 
 namespace policy {
 
+class ExtensionPolicyMigrator;
+
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.
@@ -71,6 +73,10 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 
+  // Adds an ExtensionPolicyMigrator to be run before OnUpdatePolicy() is
+  // called.
+  void AddMigrator(std::unique_ptr<ExtensionPolicyMigrator> migrator);
+
   // SchemaRegistry::Observer:
   void OnSchemaRegistryUpdated(bool has_new_schemas) override;
   void OnSchemaRegistryReady() override;
@@ -96,6 +102,8 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   SchemaRegistry* schema_registry_;
 
   base::ObserverList<Observer, true>::Unchecked observer_list_;
+
+  std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfigurationPolicyProvider);
 };

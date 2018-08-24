@@ -5,6 +5,7 @@
 #include "components/policy/core/common/configuration_policy_provider.h"
 
 #include "base/callback.h"
+#include "components/policy/core/common/extension_policy_migrator.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_map.h"
 
@@ -40,12 +41,21 @@ bool ConfigurationPolicyProvider::IsInitializationComplete(
   return true;
 }
 
+void ConfigurationPolicyProvider::AddMigrator(
+    std::unique_ptr<ExtensionPolicyMigrator> migrator) {
+  DCHECK(migrator);
+  migrators_.push_back(std::move(migrator));
+}
+
 void ConfigurationPolicyProvider::UpdatePolicy(
     std::unique_ptr<PolicyBundle> bundle) {
-  if (bundle)
+  if (bundle) {
+    for (const auto& migrator : migrators_)
+      migrator->Migrate(bundle.get());
     policy_bundle_.Swap(bundle.get());
-  else
+  } else {
     policy_bundle_.Clear();
+  }
   for (auto& observer : observer_list_)
     observer.OnUpdatePolicy(this);
 }
