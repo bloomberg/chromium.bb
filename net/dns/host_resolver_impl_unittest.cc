@@ -5266,8 +5266,8 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAfterConfig) {
   ChangeDnsConfig(CreateValidDnsConfig());
 
   resolver_->SetDnsClientEnabled(true);
-  std::string spec("https://dns.example.com/");
-  resolver_->AddDnsOverHttpsServer(spec, true);
+  std::string server("https://dnsserver.example.net/dns-query{?dns}");
+  resolver_->AddDnsOverHttpsServer(server, true);
   base::DictionaryValue* config;
 
   auto value = resolver_->GetDnsConfigAsValue();
@@ -5286,9 +5286,9 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAfterConfig) {
   bool use_post;
   EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
   EXPECT_TRUE(use_post);
-  std::string server_spec;
-  EXPECT_TRUE(server_method->GetString("server", &server_spec));
-  EXPECT_EQ(server_spec, spec);
+  std::string server_template;
+  EXPECT_TRUE(server_method->GetString("server_template", &server_template));
+  EXPECT_EQ(server_template, server);
 }
 
 TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeConfig) {
@@ -5296,8 +5296,8 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeConfig) {
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
   resolver_->SetDnsClientEnabled(true);
-  std::string spec("https://dns.example.com/");
-  resolver_->AddDnsOverHttpsServer(spec, true);
+  std::string server("https://dnsserver.example.net/dns-query{?dns}");
+  resolver_->AddDnsOverHttpsServer(server, true);
 
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_WIFI);
@@ -5320,17 +5320,17 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeConfig) {
   bool use_post;
   EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
   EXPECT_TRUE(use_post);
-  std::string server_spec;
-  EXPECT_TRUE(server_method->GetString("server", &server_spec));
-  EXPECT_EQ(server_spec, spec);
+  std::string server_template;
+  EXPECT_TRUE(server_method->GetString("server_template", &server_template));
+  EXPECT_EQ(server_template, server);
 }
 
 TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeClient) {
   resolver_ = nullptr;
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
-  std::string spec("https://dns.example.com/");
-  resolver_->AddDnsOverHttpsServer(spec, true);
+  std::string server("https://dnsserver.example.net/dns-query{?dns}");
+  resolver_->AddDnsOverHttpsServer(server, true);
 
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_WIFI);
@@ -5355,17 +5355,17 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerBeforeClient) {
   bool use_post;
   EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
   EXPECT_TRUE(use_post);
-  std::string server_spec;
-  EXPECT_TRUE(server_method->GetString("server", &server_spec));
-  EXPECT_EQ(server_spec, spec);
+  std::string server_template;
+  EXPECT_TRUE(server_method->GetString("server_template", &server_template));
+  EXPECT_EQ(server_template, server);
 }
 
 TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAndThenRemove) {
   resolver_ = nullptr;
   test::ScopedMockNetworkChangeNotifier notifier;
   CreateSerialResolver();  // To guarantee order of resolutions.
-  std::string spec("https://dns.example.com/");
-  resolver_->AddDnsOverHttpsServer(spec, true);
+  std::string server("https://dns.example.com/");
+  resolver_->AddDnsOverHttpsServer(server, true);
 
   notifier.mock_network_change_notifier()->SetConnectionType(
       NetworkChangeNotifier::CONNECTION_WIFI);
@@ -5390,9 +5390,9 @@ TEST_F(HostResolverImplDnsTest, AddDnsOverHttpsServerAndThenRemove) {
   bool use_post;
   EXPECT_TRUE(server_method->GetBoolean("use_post", &use_post));
   EXPECT_TRUE(use_post);
-  std::string server_spec;
-  EXPECT_TRUE(server_method->GetString("server", &server_spec));
-  EXPECT_EQ(server_spec, spec);
+  std::string server_template;
+  EXPECT_TRUE(server_method->GetString("server_template", &server_template));
+  EXPECT_EQ(server_template, server);
 
   resolver_->ClearDnsOverHttpsServers();
   value = resolver_->GetDnsConfigAsValue();

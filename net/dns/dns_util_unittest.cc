@@ -118,4 +118,41 @@ TEST_F(DNSUtilTest, IsValidDNSDomain) {
   }
 }
 
+TEST_F(DNSUtilTest, GetURLFromTemplateWithoutParameters) {
+  EXPECT_EQ("https://dnsserver.example.net/dns-query",
+            GetURLFromTemplateWithoutParameters(
+                "https://dnsserver.example.net/dns-query{?dns}"));
+}
+
+TEST_F(DNSUtilTest, IsValidDoHTemplate) {
+  EXPECT_TRUE(IsValidDoHTemplate(
+      "https://dnsserver.example.net/dns-query{?dns}", "GET"));
+  EXPECT_TRUE(IsValidDoHTemplate(
+      "https://dnsserver.example.net/dns-query{?dns,extra}", "GET"));
+  EXPECT_TRUE(IsValidDoHTemplate(
+      "https://dnsserver.example.net/dns-query{?dns}", "POST"));
+  EXPECT_TRUE(IsValidDoHTemplate(
+      "https://dnsserver.example.net/dns-query{?query}", "POST"));
+  EXPECT_TRUE(
+      IsValidDoHTemplate("https://dnsserver.example.net/dns-query", "POST"));
+  EXPECT_TRUE(
+      IsValidDoHTemplate("https://query:{dns}@dnsserver.example.net", "GET"));
+  EXPECT_TRUE(IsValidDoHTemplate("https://dnsserver.example.net{/dns}", "GET"));
+  // Invalid template format
+  EXPECT_FALSE(IsValidDoHTemplate(
+      "https://dnsserver.example.net/dns-query{{?dns}}", "GET"));
+  // Must be HTTPS
+  EXPECT_FALSE(
+      IsValidDoHTemplate("http://dnsserver.example.net/dns-query", "POST"));
+  EXPECT_FALSE(IsValidDoHTemplate(
+      "http://dnsserver.example.net/dns-query{?dns}", "GET"));
+  // GET requests require the template to have a dns variable
+  EXPECT_FALSE(IsValidDoHTemplate(
+      "https://dnsserver.example.net/dns-query{?query}", "GET"));
+  // Template must expand to a valid URL
+  EXPECT_FALSE(IsValidDoHTemplate("https://{?dns}", "GET"));
+  // The hostname must not contain the dns variable
+  EXPECT_FALSE(IsValidDoHTemplate("https://{dns}.dnsserver.net", "GET"));
+}
+
 }  // namespace net

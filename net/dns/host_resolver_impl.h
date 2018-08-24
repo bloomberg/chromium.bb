@@ -172,7 +172,7 @@ class NET_EXPORT HostResolverImpl
   bool GetNoIPv6OnWifi() override;
 
   void SetRequestContext(URLRequestContext* request_context) override;
-  void AddDnsOverHttpsServer(std::string server, bool use_post) override;
+  void AddDnsOverHttpsServer(std::string uri_template, bool use_post) override;
   void ClearDnsOverHttpsServers() override;
   const std::vector<DnsConfig::DnsOverHttpsServerConfig>*
   GetDnsOverHttpsServersForTesting() const override;

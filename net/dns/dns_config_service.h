@@ -52,9 +52,9 @@ struct NET_EXPORT DnsConfig {
   }
 
   struct NET_EXPORT DnsOverHttpsServerConfig {
-    DnsOverHttpsServerConfig(const GURL& server, bool use_post);
+    DnsOverHttpsServerConfig(const std::string& server_template, bool use_post);
 
-    GURL server;
+    std::string server_template;
     bool use_post;
   };
 
@@ -95,7 +95,7 @@ struct NET_EXPORT DnsConfig {
   bool use_local_ipv6;
 
   // List of servers to query over HTTPS, queried in order
-  // (https://tools.ietf.org/id/draft-ietf-doh-dns-over-https-02.txt).
+  // (https://tools.ietf.org/id/draft-ietf-doh-dns-over-https-12.txt).
   std::vector<DnsOverHttpsServerConfig> dns_over_https_servers;
 };
 
