@@ -368,7 +368,9 @@
       # TODO(crbug.com/828467): Remove 'Linux Builder Perf'
       'Linux Builder Perf': 'official_goma_perf',
       'linux-builder-perf': 'official_goma_perf',
+      # TODO(crbug.com/828468): Remove 'Mac Builder Perf'
       'Mac Builder Perf': 'official_goma',
+      'mac-builder-perf': 'official_goma',
       # TODO(crbug.com/828472): Remove 'Win Builder Perf'
       'Win Builder Perf': 'official_goma_x86',
       'win32-builder-perf': 'official_goma_x86',
@@ -378,12 +380,16 @@
     },
 
     'chromium.perf.fyi': {
+      # TODO(crbug.com/828445): Remove 'Linux Compile Perf FYI'
       'Linux Compile Perf FYI': 'official_goma_perf',
+      # TODO(crbug.com/828444): Remove 'Android Builder Perf FYI'
       'Android Builder Perf FYI': 'official_goma_minimal_symbols_android',
       'Android arm64 Builder Perf FYI': 'official_goma_minimal_symbols_android_arm64',
       'Android CFI Builder Perf FYI': 'official_goma_minimal_symbols_android_thin_lto',
       'Android CFI arm64 Builder Perf FYI': 'official_goma_minimal_symbols_android_thin_lto_arm64',
+      # TODO(crbug.com/828443): Remove 'Mac Builder Perf FYI'
       'Mac Builder Perf FYI': 'official_goma',
+      # TODO(crbug.com/835288): Remove 'Win Builder Perf FYI'
       'Win Builder Perf FYI': 'official_goma_x86',
     },
 
