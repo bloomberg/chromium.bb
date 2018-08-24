@@ -4,6 +4,7 @@
 
 /**
  * A namespace class for image encoding functions. All methods are static.
+ * @constructor
  */
 function ImageEncoder() {}
 

@@ -22,6 +22,21 @@ function MockGalleryItem(
       opt_thumbnailMetadataItem || null, opt_original || false);
 }
 
+/**
+ * Helper to construct a MockGalleryItem with a given |path| and dummy metadata.
+ *
+ * @param {!string} path
+ * @param {!FileSystem} fileSystem
+ * @param {boolean} isReadOnly
+ * @return MockGalleryItem
+ */
+MockGalleryItem.makeWithPath = function(path, fileSystem, isReadOnly) {
+  return new MockGalleryItem(
+      new MockFileEntry(fileSystem, path),
+      /** @type {EntryLocation} */ ({isReadOnly: isReadOnly}), {size: 100},
+      null, true /* original */);
+};
+
 MockGalleryItem.prototype = {
   __proto__: GalleryItem.prototype
 };

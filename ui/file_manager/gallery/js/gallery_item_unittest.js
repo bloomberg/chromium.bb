@@ -15,12 +15,6 @@ var metrics = {
 };
 
 /**
- * Mock of ImageEncoder. Since some test changes the behavior of ImageEncoder,
- * this is initialized in setUp().
- */
-var ImageEncoder;
-
-/**
  * Load time data.
  */
 loadTimeData.data = {
@@ -29,14 +23,38 @@ loadTimeData.data = {
 };
 
 function setUp() {
-  ImageEncoder = {
-    encodeMetadata: function() {},
-    getBlob: function() {}
-  };
+  // Replace the real ImageEncoder with a mock.
+  ImageEncoder = /** @lends{ImageEncoder} */ (
+      {encodeMetadata: function() {}, getBlob: function() {}});
 }
 
 function getMockMetadataModel() {
   return new MockMetadataModel({size: 200});
+}
+
+/**
+ * Creates a mock result for GalleryItem#saveToFile.
+ *
+ * @param{!GalleryItem} item
+ * @param{!MetadataModel} metadataModel
+ * @param{boolean} overwrite
+ * @return {Promise}
+ */
+function makeMockSavePromise(item, metadataModel, overwrite) {
+  let canvas =
+      assertInstanceof(document.createElement('canvas'), HTMLCanvasElement);
+  let mockVolumeManager = /**@type{!VolumeManagerWrapper} */ ({
+    getLocationInfo: function() {
+      return {};
+    },
+    getVolumeInfo: function() {
+      return {};
+    }
+  });
+  return new Promise(item.saveToFile.bind(
+      item, mockVolumeManager, metadataModel,
+      /** @type{!DirectoryEntry} */ ({}),  // fallbackDir.
+      canvas, overwrite /* overwrite */));
 }
 
 /**
@@ -45,18 +63,19 @@ function getMockMetadataModel() {
 function testSaveToFile(callback) {
   var fileSystem = new MockFileSystem('volumeId');
   fileSystem.populate(['/test.jpg']);
-  var entry = fileSystem.entries['/test.jpg'];
+  var entry = assertInstanceof(fileSystem.entries['/test.jpg'], MockFileEntry);
   entry.createWriter = function(callback) {
-    callback({
+    let mockWriter = /**@lends {FileWriter} */ ({
       write: function() {
         Promise.resolve().then(function() {
-          this.onwriteend();
-        }.bind(this));
+          mockWriter.onwriteend();
+        });
       },
       truncate: function() {
-        this.write();
+        mockWriter.write();
       }
     });
+    callback(mockWriter);
   };
   var entryChanged = false;
   var metadataModel = getMockMetadataModel();
@@ -64,28 +83,16 @@ function testSaveToFile(callback) {
     entryChanged = true;
   };
 
-  var item = new GalleryItem(
-      entry,
-      {isReadOnly: false},
-      {size: 100},
-      {},
-      /* original */ true);
+  var item =
+      new MockGalleryItem(entry, null, {size: 100}, null, true /*original */);
   assertEquals(100, item.getMetadataItem().size);
   assertFalse(entryChanged);
   reportPromise(
-      new Promise(item.saveToFile.bind(
-          item,
-          {
-            getLocationInfo: function() { return {}; },
-            getVolumeInfo: function() { return {}; }
-          },
-          metadataModel,
-          /* fallbackDir */ null,
-          document.createElement('canvas'),
-          true /* overwrite */)).then(function() {
-            assertEquals(200, item.getMetadataItem().size);
-            assertTrue(entryChanged);
-          }), callback);
+      makeMockSavePromise(item, metadataModel, true).then(function() {
+        assertEquals(200, item.getMetadataItem().size);
+        assertTrue(entryChanged);
+      }),
+      callback);
 }
 
 /**
@@ -95,42 +102,32 @@ function testSaveToFile(callback) {
 function testSaveToFileWriteFailCase(callback) {
   var fileSystem = new MockFileSystem('volumeId');
   fileSystem.populate(['/test.jpg']);
-  var entry = fileSystem.entries['/test.jpg'];
+  var entry = assertInstanceof(fileSystem.entries['/test.jpg'], MockFileEntry);
 
   entry.createWriter = function(callback) {
-    callback({
+    let mockWriter = /**@lends {FileWriter} */ ({
       write: function() {
         Promise.resolve().then(function() {
-          this.onerror(new Error());
-        }.bind(this));
+          mockWriter.onerror(new Error());
+        });
       },
       truncate: function() {
         Promise.resolve().then(function() {
-          this.onwriteend();
-        }.bind(this));
+          mockWriter.onwriteend();
+        });
       }
     });
+    callback(mockWriter);
   };
 
-  var item = new GalleryItem(
-      entry,
-      {isReadOnly: false},
-      {size: 100},
-      {},
-      /* original */ true);
+  var item =
+      new MockGalleryItem(entry, null, {size: 100}, null, true /*original */);
   reportPromise(
-      new Promise(item.saveToFile.bind(
-          item,
-          {
-            getLocationInfo: function() { return {}; },
-            getVolumeInfo: function() { return {}; }
-          },
-          getMockMetadataModel(),
-          /* fallbackDir */ null,
-          document.createElement('canvas'),
-          true /* overwrite */)).then(function(result) {
+      makeMockSavePromise(item, getMockMetadataModel(), true)
+          .then(function(result) {
             assertFalse(result);
-          }), callback);
+          }),
+      callback);
 }
 
 /**
@@ -145,46 +142,36 @@ function testSaveToFileGetBlobFailCase(callback) {
 
   var fileSystem = new MockFileSystem('volumeId');
   fileSystem.populate(['/test.jpg']);
-  var entry = fileSystem.entries['/test.jpg'];
+  var entry = assertInstanceof(fileSystem.entries['/test.jpg'], MockFileEntry);
 
   var writeOperationRun = false;
   entry.createWriter = function(callback) {
-    callback({
+    let mockWriter = /**@lends {FileWriter} */ ({
       write: function() {
         Promise.resolve().then(function() {
           writeOperationRun = true;
-          this.onwriteend();
-        }.bind(this));
+          mockWriter.onwriteend();
+        });
       },
       truncate: function() {
         Promise.resolve().then(function() {
           writeOperationRun = true;
-          this.onwriteend();
-        }.bind(this));
+          mockWriter.onwriteend();
+        });
       }
     });
+    callback(mockWriter);
   };
 
-  var item = new GalleryItem(
-      entry,
-      {isReadOnly: false},
-      {size: 100},
-      {},
-      /* original */ true);
+  var item =
+      new MockGalleryItem(entry, null, {size: 100}, null, true /*original */);
   reportPromise(
-      new Promise(item.saveToFile.bind(
-          item,
-          {
-            getLocationInfo: function() { return {}; },
-            getVolumeInfo: function() { return {}; }
-          },
-          getMockMetadataModel(),
-          /* fallbackDir */ null,
-          document.createElement('canvas'),
-          true /* overwrite*/)).then(function(result) {
+      makeMockSavePromise(item, getMockMetadataModel(), true)
+          .then(function(result) {
             assertFalse(result);
             assertFalse(writeOperationRun);
-          }), callback);
+          }),
+      callback);
 }
 
 function testSaveToFileRaw(callback) {
@@ -196,16 +183,17 @@ function testSaveToFileRaw(callback) {
       fileSystem.populate(['/test - Edited.jpg']);
       var entry = fileSystem.entries['/test - Edited.jpg'];
       entry.createWriter = function(callback) {
-        callback({
+        let mockWriter = /**@lends {FileWriter} */ ({
           write: function() {
             Promise.resolve().then(function() {
-              this.onwriteend();
-            }.bind(this));
+              mockWriter.onwriteend();
+            });
           },
           truncate: function() {
-            this.write();
+            mockWriter.write();
           }
         });
+        callback(mockWriter);
       };
     }
     MockDirectoryEntry.prototype.getFile.apply(this, arguments);
@@ -216,30 +204,19 @@ function testSaveToFileRaw(callback) {
     entryChanged = true;
   };
 
-  var item = new GalleryItem(
-      fileSystem.entries['/test.arw'],
-      {isReadOnly: false},
-      {size: 100},
-      {},
-      /* original */ true);
+  var item = new MockGalleryItem(
+      assertInstanceof(fileSystem.entries['/test.arw'], MockFileEntry), null,
+      {size: 100}, null, true /*original */);
   assertEquals(100, item.getMetadataItem().size);
   assertFalse(entryChanged);
   reportPromise(
-      new Promise(item.saveToFile.bind(
-          item,
-          {
-            getLocationInfo: function() { return {}; },
-            getVolumeInfo: function() { return {}; }
-          },
-          metadataModel,
-          /* fallbackDir */ null,
-          document.createElement('canvas'),
-          false /* not overwrite */)).then(function(success) {
-            assertTrue(success);
-            assertEquals(200, item.getMetadataItem().size);
-            assertTrue(entryChanged);
-            assertFalse(item.isOriginal());
-          }), callback);
+      makeMockSavePromise(item, metadataModel, false).then(function(success) {
+        assertTrue(success);
+        assertEquals(200, item.getMetadataItem().size);
+        assertTrue(entryChanged);
+        assertFalse(item.isOriginal());
+      }),
+      callback);
 }
 
 function testIsWritableFile() {
@@ -262,59 +239,52 @@ function testIsWritableFile() {
     }
   };
 
-  var getGalleryItem = function(path, fileSystem, isReadOnly) {
-    return new GalleryItem(new MockEntry(fileSystem, path),
-        {isReadOnly: isReadOnly},
-        {size: 100},
-        {},
-        true /* original */);
-  };
-
   // Jpeg file on downloads.
-  assertTrue(getGalleryItem(
-      '/test.jpg', downloads, false /* not read only */).
-      isWritableFile(volumeManager));
+  assertTrue(
+      MockGalleryItem
+          .makeWithPath('/test.jpg', downloads, false /* not read only */)
+          .isWritableFile(volumeManager));
 
   // Png file on downloads.
-  assertTrue(getGalleryItem(
-      '/test.png', downloads, false /* not read only */).
-      isWritableFile(volumeManager));
+  assertTrue(
+      MockGalleryItem
+          .makeWithPath('/test.png', downloads, false /* not read only */)
+          .isWritableFile(volumeManager));
 
   // Webp file on downloads.
-  assertFalse(getGalleryItem(
-      '/test.webp', downloads, false /* not read only */).
-      isWritableFile(volumeManager));
+  assertFalse(
+      MockGalleryItem
+          .makeWithPath('/test.webp', downloads, false /* not read only */)
+          .isWritableFile(volumeManager));
 
   // Jpeg file on non-writable volume.
-  assertFalse(getGalleryItem(
-      '/test.jpg', removable, true /* read only */).
-      isWritableFile(volumeManager));
+  assertFalse(
+      MockGalleryItem.makeWithPath('/test.jpg', removable, true /* read only */)
+          .isWritableFile(volumeManager));
 
   // Jpeg file on mtp volume.
-  assertFalse(getGalleryItem(
-      '/test.jpg', mtp, false /* not read only */).
-      isWritableFile(volumeManager));
+  assertFalse(
+      MockGalleryItem.makeWithPath('/test.jpg', mtp, false /* not read only */)
+          .isWritableFile(volumeManager));
 }
 
 function testIsEditableFile() {
   var downloads = new MockFileSystem('downloads');
-  var getGalleryItem = function(path, fileSystem, isReadOnly) {
-    return new GalleryItem(
-        new MockEntry(fileSystem, path), {isReadOnly: isReadOnly}, {size: 100},
-        {}, true /* original */);
+  var getGalleryItem = function(path, isReadOnly) {
+    return MockGalleryItem.makeWithPath(path, downloads, isReadOnly);
   };
 
   // Images and raw files are editable, even if read-only (a copy is made).
-  assertTrue(getGalleryItem('/test.jpg', downloads, false).isEditable());
-  assertTrue(getGalleryItem('/test.png', downloads, false).isEditable());
-  assertTrue(getGalleryItem('/test.webp', downloads, false).isEditable());
-  assertTrue(getGalleryItem('/test.arw', downloads, false).isEditable());
-  assertTrue(getGalleryItem('/test.jpg', downloads, true).isEditable());
+  assertTrue(getGalleryItem('/test.jpg', false).isEditable());
+  assertTrue(getGalleryItem('/test.png', false).isEditable());
+  assertTrue(getGalleryItem('/test.webp', false).isEditable());
+  assertTrue(getGalleryItem('/test.arw', false).isEditable());
+  assertTrue(getGalleryItem('/test.jpg', true).isEditable());
 
   // Video files are not editable.
-  assertFalse(getGalleryItem('/test.avi', downloads, false).isEditable());
-  assertFalse(getGalleryItem('/test.mkv', downloads, false).isEditable());
-  assertFalse(getGalleryItem('/test.mp4', downloads, false).isEditable());
-  assertFalse(getGalleryItem('/test.mov', downloads, false).isEditable());
-  assertFalse(getGalleryItem('/test.webm', downloads, false).isEditable());
+  assertFalse(getGalleryItem('/test.avi', false).isEditable());
+  assertFalse(getGalleryItem('/test.mkv', false).isEditable());
+  assertFalse(getGalleryItem('/test.mp4', false).isEditable());
+  assertFalse(getGalleryItem('/test.mov', false).isEditable());
+  assertFalse(getGalleryItem('/test.webm', false).isEditable());
 }
