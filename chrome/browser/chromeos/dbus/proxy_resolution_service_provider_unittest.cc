@@ -115,88 +115,25 @@ class TestProxyResolverFactory : public net::ProxyResolverFactory {
   DISALLOW_COPY_AND_ASSIGN(TestProxyResolverFactory);
 };
 
-// Test ProxyResolutionServiceProvider::Delegate implementation.
-class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
- public:
-  explicit TestDelegate(
-      const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner,
-      net::ProxyResolver* proxy_resolver)
-      : proxy_resolver_(proxy_resolver),
-        context_getter_(
-            new net::TestURLRequestContextGetter(network_task_runner)) {
-    network_task_runner->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &TestDelegate::CreateProxyResolutionServiceOnNetworkThread,
-            base::Unretained(this)));
-    RunPendingTasks(network_task_runner);
-  }
-
-  ~TestDelegate() override {
-    context_getter_->GetNetworkTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&TestDelegate::DeleteProxyServiceOnNetworkThread,
-                       base::Unretained(this)));
-    RunPendingTasks(context_getter_->GetNetworkTaskRunner());
-  }
-
-  // ProxyResolutionServiceProvider::Delegate:
-  scoped_refptr<net::URLRequestContextGetter> GetRequestContext() override {
-    return context_getter_;
-  }
-
- private:
-  // Helper method for the constructor that initializes
-  // |proxy_resolution_service_| and injects it into |context_getter_|'s
-  // context.
-  void CreateProxyResolutionServiceOnNetworkThread() {
-    CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
-
-    // Setting a mandatory PAC URL makes |proxy_resolution_service_| query
-    // |proxy_resolver_| and also lets us generate
-    // net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED errors.
-    net::ProxyConfig config;
-    config.set_pac_url(GURL("http://www.example.com"));
-    config.set_pac_mandatory(true);
-    proxy_resolution_service_ = std::make_unique<net::ProxyResolutionService>(
-        std::make_unique<net::ProxyConfigServiceFixed>(
-            net::ProxyConfigWithAnnotation(config,
-                                           TRAFFIC_ANNOTATION_FOR_TESTS)),
-        std::make_unique<TestProxyResolverFactory>(proxy_resolver_),
-        nullptr /* net_log */);
-    context_getter_->GetURLRequestContext()->set_proxy_resolution_service(
-        proxy_resolution_service_.get());
-  }
-
-  // Helper method for the destructor that resets |proxy_resolution_service_|.
-  void DeleteProxyServiceOnNetworkThread() {
-    CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
-    proxy_resolution_service_.reset();
-  }
-
-  net::ProxyResolver* proxy_resolver_;  // Not owned.
-
-  // Created, used, and destroyed on the network thread (since
-  // net::ProxyResolutionService is thread-affine (uses ThreadChecker)).
-  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
-
-  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDelegate);
-};
-
 }  // namespace
 
 class ProxyResolutionServiceProviderTest : public testing::Test {
  public:
   ProxyResolutionServiceProviderTest() : network_thread_("NetworkThread") {
     CHECK(network_thread_.Start());
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        network_thread_.task_runner();
 
-    proxy_resolver_ =
-        std::make_unique<TestProxyResolver>(network_thread_.task_runner());
-    service_provider_ = std::make_unique<ProxyResolutionServiceProvider>(
-        std::make_unique<TestDelegate>(network_thread_.task_runner(),
-                                       proxy_resolver_.get()));
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ProxyResolutionServiceProviderTest ::
+                           CreateProxyResolutionServiceOnNetworkThread,
+                       base::Unretained(this)));
+    RunPendingTasks(task_runner);
+
+    service_provider_ = std::make_unique<ProxyResolutionServiceProvider>();
+    service_provider_->set_request_context_getter_for_test(context_getter_);
+
     test_helper_.SetUp(
         kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
         kNetworkProxyServiceInterface, kNetworkProxyServiceResolveProxyMethod,
@@ -209,12 +146,50 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     // URLRequestContextGetter posts a task to delete itself to its task runner,
     // so give it a chance to do that.
     service_provider_.reset();
+    network_thread_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&ProxyResolutionServiceProviderTest::
+                                      DeleteProxyServiceOnNetworkThread,
+                                  base::Unretained(this)));
     RunPendingTasks(network_thread_.task_runner());
 
     network_thread_.Stop();
   }
 
  protected:
+  // Helper method for the constructor that initializes
+  // |proxy_resolution_service_| and injects it into |context_getter_|'s
+  // context. Also initializes |context_getter_| and |proxy_resolver_|.
+  void CreateProxyResolutionServiceOnNetworkThread() {
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+        network_thread_.task_runner();
+    CHECK(task_runner->BelongsToCurrentThread());
+
+    context_getter_ = new net::TestURLRequestContextGetter(task_runner);
+    proxy_resolver_ = std::make_unique<TestProxyResolver>(task_runner);
+
+    // Setting a mandatory PAC URL makes |proxy_resolution_service_| query
+    // |proxy_resolver_| and also lets us generate
+    // net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED errors.
+    net::ProxyConfig config;
+    config.set_pac_url(GURL("http://www.example.com"));
+    config.set_pac_mandatory(true);
+    proxy_resolution_service_ = std::make_unique<net::ProxyResolutionService>(
+        std::make_unique<net::ProxyConfigServiceFixed>(
+            net::ProxyConfigWithAnnotation(config,
+                                           TRAFFIC_ANNOTATION_FOR_TESTS)),
+        std::make_unique<TestProxyResolverFactory>(proxy_resolver_.get()),
+        nullptr /* net_log */);
+    context_getter_->GetURLRequestContext()->set_proxy_resolution_service(
+        proxy_resolution_service_.get());
+  }
+
+  // Helper method for the destructor that resets |proxy_resolution_service_|.
+  void DeleteProxyServiceOnNetworkThread() {
+    CHECK(network_thread_.task_runner()->BelongsToCurrentThread());
+    proxy_resolution_service_.reset();
+    context_getter_ = nullptr;
+  }
+
   // Makes a D-Bus call to |service_provider_|'s ResolveProxy method and returns
   // the response.
   std::unique_ptr<dbus::Response> CallMethod(const std::string& source_url) {
@@ -229,6 +204,12 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   base::Thread network_thread_;
 
   std::unique_ptr<TestProxyResolver> proxy_resolver_;
+
+  // Created, used, and destroyed on the network thread (since
+  // net::ProxyResolutionService is thread-affine (uses ThreadChecker)).
+  std::unique_ptr<net::ProxyResolutionService> proxy_resolution_service_;
+
+  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
   std::unique_ptr<ProxyResolutionServiceProvider> service_provider_;
   ServiceProviderTestHelper test_helper_;
 

@@ -11,6 +11,8 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "net/base/net_errors.h"
@@ -63,10 +65,8 @@ struct ProxyResolutionServiceProvider::Request {
   DISALLOW_COPY_AND_ASSIGN(Request);
 };
 
-ProxyResolutionServiceProvider::ProxyResolutionServiceProvider(
-    std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)),
-      origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+ProxyResolutionServiceProvider::ProxyResolutionServiceProvider()
+    : origin_thread_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
 ProxyResolutionServiceProvider::~ProxyResolutionServiceProvider() {
@@ -118,7 +118,9 @@ void ProxyResolutionServiceProvider::ResolveProxy(
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   scoped_refptr<net::URLRequestContextGetter> context_getter =
-      delegate_->GetRequestContext();
+      request_context_getter_for_test_
+          ? request_context_getter_for_test_
+          : ProfileManager::GetPrimaryUserProfile()->GetRequestContext();
 
   std::unique_ptr<Request> request = std::make_unique<Request>(
       source_url, std::move(response), response_sender, context_getter);

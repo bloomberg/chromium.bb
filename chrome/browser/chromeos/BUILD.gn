@@ -595,8 +595,6 @@ source_set("chromeos") {
     "customization/customization_wallpaper_util.h",
     "dbus/chrome_features_service_provider.cc",
     "dbus/chrome_features_service_provider.h",
-    "dbus/chrome_proxy_resolution_service_provider_delegate.cc",
-    "dbus/chrome_proxy_resolution_service_provider_delegate.h",
     "dbus/component_updater_service_provider.cc",
     "dbus/component_updater_service_provider.h",
     "dbus/drive_file_stream_service_provider.cc",

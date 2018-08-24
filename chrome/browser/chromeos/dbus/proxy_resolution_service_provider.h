@@ -56,20 +56,13 @@ namespace chromeos {
 class ProxyResolutionServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  // Delegate interface providing additional resources to
-  // ProxyResolutionServiceProvider.
-  // TODO(derat): Move the delegate into this class.
-  class CHROMEOS_EXPORT Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Returns the request context used to perform proxy resolution.
-    // Always called on UI thread.
-    virtual scoped_refptr<net::URLRequestContextGetter> GetRequestContext() = 0;
-  };
-
-  explicit ProxyResolutionServiceProvider(std::unique_ptr<Delegate> delegate);
+  ProxyResolutionServiceProvider();
   ~ProxyResolutionServiceProvider() override;
+
+  void set_request_context_getter_for_test(
+      const scoped_refptr<net::URLRequestContextGetter>& getter) {
+    request_context_getter_for_test_ = getter;
+  }
 
   // CrosDBusService::ServiceProviderInterface:
   void Start(scoped_refptr<dbus::ExportedObject> exported_object) override;
@@ -118,9 +111,9 @@ class ProxyResolutionServiceProvider
   // information to the client over D-Bus.
   void NotifyProxyResolved(std::unique_ptr<Request> request);
 
-  std::unique_ptr<Delegate> delegate_;
   scoped_refptr<dbus::ExportedObject> exported_object_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_getter_for_test_;
   base::WeakPtrFactory<ProxyResolutionServiceProvider> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProvider);
