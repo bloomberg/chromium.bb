@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/input_monitor/local_input_monitor.h"
 
 #include <memory>
 
@@ -68,12 +68,9 @@ TEST_F(LocalInputMonitorTest, Basic) {
   EXPECT_CALL(client_session_control_, client_jid())
       .Times(AnyNumber())
       .WillRepeatedly(ReturnRef(client_jid_));
-  EXPECT_CALL(client_session_control_, DisconnectSession(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(client_session_control_, OnLocalMouseMoved(_))
-      .Times(AnyNumber());
-  EXPECT_CALL(client_session_control_, SetDisableInputs(_))
-      .Times(0);
+  EXPECT_CALL(client_session_control_, DisconnectSession(_)).Times(AnyNumber());
+  EXPECT_CALL(client_session_control_, OnLocalMouseMoved(_)).Times(AnyNumber());
+  EXPECT_CALL(client_session_control_, SetDisableInputs(_)).Times(0);
 
   {
     std::unique_ptr<LocalInputMonitor> local_input_monitor =

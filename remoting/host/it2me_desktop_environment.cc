@@ -13,7 +13,7 @@
 #include "remoting/host/client_session_control.h"
 #include "remoting/host/host_window.h"
 #include "remoting/host/host_window_proxy.h"
-#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/input_monitor/local_input_monitor.h"
 
 #if defined(OS_POSIX)
 #include <sys/types.h>

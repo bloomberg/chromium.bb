@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/input_monitor/local_input_monitor.h"
 
 #include <utility>
 
@@ -10,8 +10,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
-#include "remoting/host/local_hotkey_input_monitor.h"
-#include "remoting/host/local_mouse_input_monitor.h"
+#include "remoting/host/input_monitor/local_hotkey_input_monitor.h"
+#include "remoting/host/input_monitor/local_mouse_input_monitor.h"
 
 namespace remoting {
 namespace {

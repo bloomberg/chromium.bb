@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_mouse_input_monitor.h"
+#include "remoting/host/input_monitor/local_mouse_input_monitor.h"
 
 #include <cstdint>
 
@@ -166,10 +166,7 @@ LRESULT LocalMouseInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
 
   // Get the size of the input record.
   UINT size = 0;
-  UINT result = GetRawInputData(input_handle,
-                                RID_INPUT,
-                                nullptr,
-                                &size,
+  UINT result = GetRawInputData(input_handle, RID_INPUT, nullptr, &size,
                                 sizeof(RAWINPUTHEADER));
   if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";
@@ -179,10 +176,7 @@ LRESULT LocalMouseInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
   // Retrieve the input record itself.
   std::unique_ptr<uint8_t[]> buffer(new uint8_t[size]);
   RAWINPUT* input = reinterpret_cast<RAWINPUT*>(buffer.get());
-  result = GetRawInputData(input_handle,
-                           RID_INPUT,
-                           buffer.get(),
-                           &size,
+  result = GetRawInputData(input_handle, RID_INPUT, buffer.get(), &size,
                            sizeof(RAWINPUTHEADER));
   if (result == static_cast<UINT>(-1)) {
     PLOG(ERROR) << "GetRawInputData() failed";

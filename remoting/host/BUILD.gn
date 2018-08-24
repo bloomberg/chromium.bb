@@ -207,18 +207,6 @@ static_library("host") {
     "ipc_video_frame_capturer.h",
     "it2me_desktop_environment.cc",
     "it2me_desktop_environment.h",
-    "local_hotkey_input_monitor.h",
-    "local_hotkey_input_monitor_chromeos.cc",
-    "local_hotkey_input_monitor_mac.mm",
-    "local_hotkey_input_monitor_win.cc",
-    "local_hotkey_input_monitor_x11.cc",
-    "local_input_monitor.cc",
-    "local_input_monitor.h",
-    "local_mouse_input_monitor.h",
-    "local_mouse_input_monitor_chromeos.cc",
-    "local_mouse_input_monitor_mac.mm",
-    "local_mouse_input_monitor_win.cc",
-    "local_mouse_input_monitor_x11.cc",
     "logging.h",
     "logging_linux.cc",
     "logging_mac.cc",
@@ -308,6 +296,7 @@ static_library("host") {
     "//media",
     "//remoting/base",
     "//remoting/base:authorization",
+    "//remoting/host/input_monitor",
     "//remoting/host/security_key",
     "//remoting/protocol",
     "//remoting/resources",
@@ -355,8 +344,6 @@ static_library("host") {
       "clipboard_x11.cc",
       "desktop_resizer_x11.cc",
       "input_injector_x11.cc",
-      "local_hotkey_input_monitor_x11.cc",
-      "local_mouse_input_monitor_x11.cc",
     ]
   }
 
@@ -390,8 +377,6 @@ static_library("host") {
         "desktop_resizer_x11.cc",
         "input_injector_chromeos.cc",
         "input_injector_chromeos.h",
-        "local_hotkey_input_monitor_x11.cc",
-        "local_mouse_input_monitor_x11.cc",
       ]
     }
   }
@@ -480,11 +465,11 @@ source_set("unit_tests") {
     "host_extension_session_manager_unittest.cc",
     "host_power_save_blocker_unittest.cc",
     "host_status_logger_unittest.cc",
+    "input_monitor/local_input_monitor_unittest.cc",
     "ipc_desktop_environment_unittest.cc",
     "it2me/it2me_confirmation_dialog_proxy_unittest.cc",
     "it2me/it2me_host_unittest.cc",
     "it2me/it2me_native_messaging_host_unittest.cc",
-    "local_input_monitor_unittest.cc",
     "mouse_cursor_monitor_proxy_unittest.cc",
     "mouse_shape_pump_unittest.cc",
     "native_messaging/native_messaging_reader_unittest.cc",
@@ -509,7 +494,7 @@ source_set("unit_tests") {
   ]
 
   if (use_ozone || is_chromeos) {
-    sources -= [ "local_input_monitor_unittest.cc" ]
+    sources -= [ "input_monitor/local_input_monitor_unittest.cc" ]
   }
 
   configs += [ "//remoting/build/config:version" ]
