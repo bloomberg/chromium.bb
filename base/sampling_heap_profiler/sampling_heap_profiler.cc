@@ -26,6 +26,10 @@
 #include "base/trace_event/cfi_backtrace_android.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include <pthread.h>
+#endif
+
 namespace base {
 
 using base::allocator::AllocatorDispatch;
@@ -33,6 +37,46 @@ using base::subtle::Atomic32;
 using base::subtle::AtomicWord;
 
 namespace {
+
+#if defined(OS_MACOSX)
+
+// On MacOS the implementation of libmalloc sometimes calls malloc recursively,
+// delegating allocations between zones. That causes our hooks being called
+// twice. The scoped guard allows us to detect that.
+class ReentryGuard {
+ public:
+  ReentryGuard() : allowed_(!pthread_getspecific(entered_key_)) {
+    pthread_setspecific(entered_key_, reinterpret_cast<void*>(1));
+  }
+
+  ~ReentryGuard() {
+    if (LIKELY(allowed_))
+      pthread_setspecific(entered_key_, reinterpret_cast<void*>(0));
+  }
+
+  operator bool() { return allowed_; }
+
+  static void Init() {
+    int result = pthread_key_create(&entered_key_, nullptr);
+    DCHECK(!result);
+  }
+
+ private:
+  bool allowed_;
+  static pthread_key_t entered_key_;
+};
+
+pthread_key_t ReentryGuard::entered_key_;
+
+#else
+
+class ReentryGuard {
+ public:
+  operator bool() { return true; }
+  static void Init() {}
+};
+
+#endif
 
 // Control how many top frames to skip when recording call stack.
 // These frames correspond to the profiler own frames.
@@ -56,10 +100,13 @@ void (*g_hooks_install_callback)();
 Atomic32 g_hooks_installed;
 
 void* AllocFn(const AllocatorDispatch* self, size_t size, void* context) {
+  ReentryGuard guard;
   void* address = self->next->alloc_function(self->next, size, context);
-  SamplingHeapProfiler::RecordAlloc(address, size,
-                                    SamplingHeapProfiler::kMalloc, nullptr,
-                                    kSkipBaseAllocatorFrames);
+  if (LIKELY(guard)) {
+    SamplingHeapProfiler::RecordAlloc(address, size,
+                                      SamplingHeapProfiler::kMalloc, nullptr,
+                                      kSkipBaseAllocatorFrames);
+  }
   return address;
 }
 
@@ -67,11 +114,14 @@ void* AllocZeroInitializedFn(const AllocatorDispatch* self,
                              size_t n,
                              size_t size,
                              void* context) {
+  ReentryGuard guard;
   void* address =
       self->next->alloc_zero_initialized_function(self->next, n, size, context);
-  SamplingHeapProfiler::RecordAlloc(address, n * size,
-                                    SamplingHeapProfiler::kMalloc, nullptr,
-                                    kSkipBaseAllocatorFrames);
+  if (LIKELY(guard)) {
+    SamplingHeapProfiler::RecordAlloc(address, n * size,
+                                      SamplingHeapProfiler::kMalloc, nullptr,
+                                      kSkipBaseAllocatorFrames);
+  }
   return address;
 }
 
@@ -79,11 +129,14 @@ void* AllocAlignedFn(const AllocatorDispatch* self,
                      size_t alignment,
                      size_t size,
                      void* context) {
+  ReentryGuard guard;
   void* address =
       self->next->alloc_aligned_function(self->next, alignment, size, context);
-  SamplingHeapProfiler::RecordAlloc(address, size,
-                                    SamplingHeapProfiler::kMalloc, nullptr,
-                                    kSkipBaseAllocatorFrames);
+  if (LIKELY(guard)) {
+    SamplingHeapProfiler::RecordAlloc(address, size,
+                                      SamplingHeapProfiler::kMalloc, nullptr,
+                                      kSkipBaseAllocatorFrames);
+  }
   return address;
 }
 
@@ -91,16 +144,24 @@ void* ReallocFn(const AllocatorDispatch* self,
                 void* address,
                 size_t size,
                 void* context) {
+  ReentryGuard guard;
   // Note: size == 0 actually performs free.
   SamplingHeapProfiler::RecordFree(address);
   address = self->next->realloc_function(self->next, address, size, context);
-  SamplingHeapProfiler::RecordAlloc(address, size,
-                                    SamplingHeapProfiler::kMalloc, nullptr,
-                                    kSkipBaseAllocatorFrames);
+  if (LIKELY(guard)) {
+    SamplingHeapProfiler::RecordAlloc(address, size,
+                                      SamplingHeapProfiler::kMalloc, nullptr,
+                                      kSkipBaseAllocatorFrames);
+  }
   return address;
 }
 
 void FreeFn(const AllocatorDispatch* self, void* address, void* context) {
+  // Note: The RecordFree should be called before free_function
+  // (here and in other places).
+  // That is because we need to remove the recorded allocation sample before
+  // free_function, as once the latter is executed the address becomes available
+  // and can be allocated by another thread. That would be racy otherwise.
   SamplingHeapProfiler::RecordFree(address);
   self->next->free_function(self->next, address, context);
 }
@@ -116,12 +177,15 @@ unsigned BatchMallocFn(const AllocatorDispatch* self,
                        void** results,
                        unsigned num_requested,
                        void* context) {
+  ReentryGuard guard;
   unsigned num_allocated = self->next->batch_malloc_function(
       self->next, size, results, num_requested, context);
-  for (unsigned i = 0; i < num_allocated; ++i) {
-    SamplingHeapProfiler::RecordAlloc(results[i], size,
-                                      SamplingHeapProfiler::kMalloc, nullptr,
-                                      kSkipBaseAllocatorFrames);
+  if (LIKELY(guard)) {
+    for (unsigned i = 0; i < num_allocated; ++i) {
+      SamplingHeapProfiler::RecordAlloc(results[i], size,
+                                        SamplingHeapProfiler::kMalloc, nullptr,
+                                        kSkipBaseAllocatorFrames);
+    }
   }
   return num_allocated;
 }
@@ -201,6 +265,7 @@ void SamplingHeapProfiler::InitTLSSlot() {
   // Preallocate the TLS slot early, so it can't cause reentracy issues
   // when sampling is started.
   ignore_result(AccumulatedBytesTLS().Get());
+  ReentryGuard::Init();
 }
 
 // static
@@ -304,9 +369,6 @@ void SamplingHeapProfiler::RecordAlloc(void* address,
     return;
   if (UNLIKELY(base::ThreadLocalStorage::HasBeenDestroyed()))
     return;
-
-  // TODO(alph): On MacOS it may call the hook several times for a single
-  // allocation. Handle the case.
 
   intptr_t accumulated_bytes =
       reinterpret_cast<intptr_t>(AccumulatedBytesTLS().Get());
