@@ -5,7 +5,6 @@
 #include "content/browser/background_fetch/storage/database_helpers.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
@@ -89,31 +88,76 @@ DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
   return DatabaseStatus::kFailed;
 }
 
-BackgroundFetchRegistration ToBackgroundFetchRegistration(
-    const proto::BackgroundFetchMetadata& metadata_proto) {
+bool ToBackgroundFetchRegistration(
+    const proto::BackgroundFetchMetadata& metadata_proto,
+    BackgroundFetchRegistration* registration) {
+  DCHECK(registration);
   const auto& registration_proto = metadata_proto.registration();
 
-  BackgroundFetchRegistration registration;
-  registration.developer_id = registration_proto.developer_id();
-  registration.unique_id = registration_proto.unique_id();
-  registration.upload_total = registration_proto.upload_total();
-  registration.uploaded = registration_proto.uploaded();
-  registration.download_total = registration_proto.download_total();
-  registration.downloaded = registration_proto.downloaded();
+  registration->developer_id = registration_proto.developer_id();
+  registration->unique_id = registration_proto.unique_id();
+  registration->upload_total = registration_proto.upload_total();
+  registration->uploaded = registration_proto.uploaded();
+  registration->download_total = registration_proto.download_total();
+  registration->downloaded = registration_proto.downloaded();
   switch (registration_proto.state()) {
     case proto::BackgroundFetchRegistration_BackgroundFetchState_PENDING:
-      registration.state = blink::mojom::BackgroundFetchState::PENDING;
+      registration->state = blink::mojom::BackgroundFetchState::PENDING;
       break;
     case proto::BackgroundFetchRegistration_BackgroundFetchState_FAILURE:
-      registration.state = blink::mojom::BackgroundFetchState::FAILURE;
+      registration->state = blink::mojom::BackgroundFetchState::FAILURE;
       break;
     case proto::BackgroundFetchRegistration_BackgroundFetchState_SUCCESS:
-      registration.state = blink::mojom::BackgroundFetchState::SUCCESS;
+      registration->state = blink::mojom::BackgroundFetchState::SUCCESS;
       break;
     default:
       NOTREACHED();
   }
-  return registration;
+
+  bool did_convert = MojoFailureReasonFromRegistrationProto(
+      registration_proto.failure_reason(), &registration->failure_reason);
+  return did_convert;
+}
+
+bool MojoFailureReasonFromRegistrationProto(
+    proto::BackgroundFetchRegistration::BackgroundFetchFailureReason
+        proto_failure_reason,
+    blink::mojom::BackgroundFetchFailureReason* failure_reason) {
+  DCHECK(failure_reason);
+  switch (proto_failure_reason) {
+    case proto::BackgroundFetchRegistration::NONE:
+      *failure_reason = blink::mojom::BackgroundFetchFailureReason::NONE;
+      return true;
+    case proto::BackgroundFetchRegistration::CANCELLED_FROM_UI:
+      *failure_reason =
+          blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI;
+      return true;
+    case proto::BackgroundFetchRegistration::CANCELLED_BY_DEVELOPER:
+      *failure_reason =
+          blink::mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER;
+      return true;
+    case proto::BackgroundFetchRegistration::SERVICE_WORKER_UNAVAILABLE:
+      *failure_reason = blink::mojom::BackgroundFetchFailureReason::
+          SERVICE_WORKER_UNAVAILABLE;
+      return true;
+    case proto::BackgroundFetchRegistration::QUOTA_EXCEEDED:
+      *failure_reason =
+          blink::mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED;
+      return true;
+    case proto::BackgroundFetchRegistration::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+      *failure_reason = blink::mojom::BackgroundFetchFailureReason::
+          TOTAL_DOWNLOAD_SIZE_EXCEEDED;
+      return true;
+    case proto::BackgroundFetchRegistration::FETCH_ERROR:
+      *failure_reason = blink::mojom::BackgroundFetchFailureReason::FETCH_ERROR;
+      return true;
+    case proto::BackgroundFetchRegistration::BAD_STATUS:
+      *failure_reason = blink::mojom::BackgroundFetchFailureReason::BAD_STATUS;
+      return true;
+  }
+  LOG(ERROR) << "BackgroundFetchFailureReason from the metadata proto doesn't"
+             << " match any enum value. Possible database corruption.";
+  return false;
 }
 
 }  // namespace background_fetch

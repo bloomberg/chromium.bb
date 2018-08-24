@@ -25,6 +25,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
   last_developer_id_ = registration.developer_id;
   last_unique_id_ = registration.unique_id;
   last_state_ = registration.state;
+  last_failure_reason_ = registration.failure_reason;
 
   if (fail_abort_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
@@ -44,6 +45,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
   last_developer_id_ = registration.developer_id;
   last_unique_id_ = registration.unique_id;
   last_state_ = registration.state;
+  last_failure_reason_ = registration.failure_reason;
 
   if (fail_click_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
@@ -64,6 +66,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
   last_developer_id_ = registration.developer_id;
   last_unique_id_ = registration.unique_id;
   last_state_ = registration.state;
+  last_failure_reason_ = registration.failure_reason;
   last_fetches_ = fetches;
 
   if (fail_fetch_fail_event_) {
@@ -86,6 +89,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
   last_developer_id_ = registration.developer_id;
   last_unique_id_ = registration.unique_id;
   last_state_ = registration.state;
+  last_failure_reason_ = registration.failure_reason;
   last_fetches_ = fetches;
 
   if (fail_fetched_event_) {

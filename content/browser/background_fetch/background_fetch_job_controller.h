@@ -113,6 +113,10 @@ class CONTENT_EXPORT BackgroundFetchJobController final
   void Abort(BackgroundFetchReasonToAbort reason_to_abort) override;
 
  private:
+  // Returns reason_to_abort_ as blink::mojom::BackgroundFetchFailureReason.
+  // TODO(crbug.com/876691): Get rid of BackgroundFetchReasonToAbort and remove
+  // this converter.
+  blink::mojom::BackgroundFetchFailureReason MojoFailureReason() const;
 
   // Options for the represented background fetch registration.
   BackgroundFetchOptions options_;
@@ -145,6 +149,10 @@ class CONTENT_EXPORT BackgroundFetchJobController final
 
   // Number of the requests that have been completed so far.
   int completed_downloads_ = 0;
+
+  // The reason background fetch was aborted.
+  BackgroundFetchReasonToAbort reason_to_abort_ =
+      BackgroundFetchReasonToAbort::NONE;
 
   base::WeakPtrFactory<BackgroundFetchJobController> weak_ptr_factory_;
 

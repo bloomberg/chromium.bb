@@ -55,6 +55,10 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   const base::Optional<blink::mojom::BackgroundFetchState>& last_state() const {
     return last_state_;
   }
+  const base::Optional<blink::mojom::BackgroundFetchFailureReason>&
+  last_failure_reason() const {
+    return last_failure_reason_;
+  }
   const base::Optional<std::vector<BackgroundFetchSettledFetch>> last_fetches()
       const {
     return last_fetches_;
@@ -95,6 +99,8 @@ class BackgroundFetchEmbeddedWorkerTestHelper
   base::Optional<std::string> last_developer_id_;
   base::Optional<std::string> last_unique_id_;
   base::Optional<blink::mojom::BackgroundFetchState> last_state_;
+  base::Optional<blink::mojom::BackgroundFetchFailureReason>
+      last_failure_reason_;
   base::Optional<std::vector<BackgroundFetchSettledFetch>> last_fetches_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchEmbeddedWorkerTestHelper);

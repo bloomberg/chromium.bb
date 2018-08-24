@@ -16,6 +16,7 @@
 
 namespace blink {
 namespace mojom {
+enum class BackgroundFetchFailureReason;
 enum class BackgroundFetchState;
 }  // namespace mojom
 }  // namespace blink
@@ -40,13 +41,15 @@ struct CONTENT_EXPORT BackgroundFetchOptions {
 // https://wicg.github.io/background-fetch/#background-fetch-registration
 struct CONTENT_EXPORT BackgroundFetchRegistration {
   BackgroundFetchRegistration();
-  BackgroundFetchRegistration(const std::string& developer_id,
-                              const std::string& unique_id,
-                              uint64_t upload_total,
-                              uint64_t uploaded,
-                              uint64_t download_total,
-                              uint64_t downloaded,
-                              blink::mojom::BackgroundFetchState state);
+  BackgroundFetchRegistration(
+      const std::string& developer_id,
+      const std::string& unique_id,
+      uint64_t upload_total,
+      uint64_t uploaded,
+      uint64_t download_total,
+      uint64_t downloaded,
+      blink::mojom::BackgroundFetchState state,
+      blink::mojom::BackgroundFetchFailureReason failure_reason);
   BackgroundFetchRegistration(const BackgroundFetchRegistration& other);
   ~BackgroundFetchRegistration();
 
@@ -63,6 +66,7 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
   uint64_t download_total = 0;
   uint64_t downloaded = 0;
   blink::mojom::BackgroundFetchState state;
+  blink::mojom::BackgroundFetchFailureReason failure_reason;
 };
 
 // Represents a request/response pair for a settled Background Fetch fetch.
