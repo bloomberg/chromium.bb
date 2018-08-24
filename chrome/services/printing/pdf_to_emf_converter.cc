@@ -112,8 +112,8 @@ void PdfToEmfConverter::LoadPdf(base::ReadOnlySharedMemoryRegion pdf_region) {
     return;
 
   int page_count = 0;
-  auto pdf_span = base::make_span(
-      reinterpret_cast<const uint8_t*>(pdf_mapping_.memory()), size);
+  auto pdf_span =
+      base::make_span(static_cast<const uint8_t*>(pdf_mapping_.memory()), size);
   chrome_pdf::GetPDFDocInfo(pdf_span, &page_count, nullptr);
   total_page_count_ = page_count;
 }
@@ -152,9 +152,8 @@ base::ReadOnlySharedMemoryRegion PdfToEmfConverter::RenderPdfPageToMetafile(
   int offset_y = postscript ? pdf_render_settings_.offsets.y() : 0;
 
   base::ReadOnlySharedMemoryRegion invalid_emf_region;
-  auto pdf_span =
-      base::make_span(reinterpret_cast<const uint8_t*>(pdf_mapping_.memory()),
-                      pdf_mapping_.size());
+  auto pdf_span = base::make_span(
+      static_cast<const uint8_t*>(pdf_mapping_.memory()), pdf_mapping_.size());
   if (!chrome_pdf::RenderPDFPageToDC(
           pdf_span, page_number, metafile.context(),
           pdf_render_settings_.dpi.width(), pdf_render_settings_.dpi.height(),

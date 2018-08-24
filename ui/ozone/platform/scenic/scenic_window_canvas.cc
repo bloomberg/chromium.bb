@@ -43,7 +43,7 @@ void ScenicWindowCanvas::Frame::CopyDirtyRegionFrom(const Frame& frame) {
   int stride = surface->width() * SkColorTypeBytesPerPixel(kN32_SkColorType);
   for (SkRegion::Iterator i(dirty_region); !i.done(); i.next()) {
     uint8_t* dst_ptr =
-        reinterpret_cast<uint8_t*>(memory.memory()) +
+        static_cast<uint8_t*>(memory.memory()) +
         i.rect().x() * SkColorTypeBytesPerPixel(kN32_SkColorType) +
         i.rect().y() * stride;
     frame.surface->readPixels(

@@ -486,7 +486,7 @@ void GLES2DecoderTestBase::InitDecoderWithWorkarounds(
                                                           &shared_memory_id_);
   shared_memory_offset_ = kSharedMemoryOffset;
   shared_memory_address_ =
-      reinterpret_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
+      static_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
   shared_memory_base_ = buffer->memory();
   ClearSharedMemory();
 
@@ -792,12 +792,11 @@ void GLES2DecoderTestBase::SetBucketAsCStrings(uint32_t bucket_id,
   for (GLsizei ii = 0; ii < count; ++ii) {
     if (str && str[ii]) {
       size_t str_len = strlen(str[ii]);
-      memcpy(reinterpret_cast<char*>(shared_memory_address_) + offset,
-             str[ii], str_len);
+      memcpy(static_cast<char*>(shared_memory_address_) + offset, str[ii],
+             str_len);
       offset += str_len;
     }
-    memcpy(reinterpret_cast<char*>(shared_memory_address_) + offset,
-           &str_end, 1);
+    memcpy(static_cast<char*>(shared_memory_address_) + offset, &str_end, 1);
     offset += 1;
   }
   cmd::SetBucketData cmd2;
@@ -1668,7 +1667,7 @@ void GLES2DecoderTestBase::DoVertexAttribDivisorANGLE(
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-void GLES2DecoderTestBase::AddExpectationsForGenVertexArraysOES(){
+void GLES2DecoderTestBase::AddExpectationsForGenVertexArraysOES() {
   if (group_->feature_info()->feature_flags().native_vertex_array_object) {
       EXPECT_CALL(*gl_, GenVertexArraysOES(1, _))
           .WillOnce(SetArgPointee<1>(kServiceVertexArrayId))
@@ -1676,7 +1675,7 @@ void GLES2DecoderTestBase::AddExpectationsForGenVertexArraysOES(){
   }
 }
 
-void GLES2DecoderTestBase::AddExpectationsForDeleteVertexArraysOES(){
+void GLES2DecoderTestBase::AddExpectationsForDeleteVertexArraysOES() {
   if (group_->feature_info()->feature_flags().native_vertex_array_object) {
       EXPECT_CALL(*gl_, DeleteVertexArraysOES(1, _))
           .Times(1)
@@ -2244,11 +2243,11 @@ void GLES2DecoderTestBase::SetupTexture() {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                shared_memory_id_, kSharedMemoryOffset);
-};
+}
 
 void GLES2DecoderTestBase::SetupSampler() {
   DoBindSampler(0, client_sampler_id_, kServiceSamplerId);
-};
+}
 
 void GLES2DecoderTestBase::DeleteVertexBuffer() {
   DoDeleteBuffer(client_buffer_id_, kServiceBufferId);
@@ -2462,7 +2461,7 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
                                                           &shared_memory_id_);
   shared_memory_offset_ = kSharedMemoryOffset;
   shared_memory_address_ =
-      reinterpret_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
+      static_cast<int8_t*>(buffer->memory()) + shared_memory_offset_;
   shared_memory_base_ = buffer->memory();
   shared_memory_size_ = kSharedBufferSize - shared_memory_offset_;
 

@@ -70,7 +70,7 @@ AudioSyncReader::AudioSyncReader(
   DCHECK_EQ(base::checked_cast<uint32_t>(shared_memory_mapping_.size()),
             ComputeAudioOutputBufferSize(params));
   AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
+      static_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
   output_bus_ = AudioBus::WrapMemory(params, buffer->audio);
   output_bus_->Zero();
   output_bus_->set_is_bitstream_format(params.IsBitstreamFormat());
@@ -157,7 +157,7 @@ void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
   // bytes might lead to being descheduled. The reading side will zero
   // them when consumed.
   AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
+      static_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
   // Increase the number of skipped frames stored in shared memory.
   buffer->params.frames_skipped += prior_frames_skipped;
   buffer->params.delay_us = delay.InMicroseconds();
@@ -223,7 +223,7 @@ void AudioSyncReader::Read(AudioBus* dest) {
   if (output_bus_->is_bitstream_format()) {
     // For bitstream formats, we need the real data size and PCM frame count.
     AudioOutputBuffer* buffer =
-        reinterpret_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
+        static_cast<AudioOutputBuffer*>(shared_memory_mapping_.memory());
     uint32_t data_size = buffer->params.bitstream_data_size;
     uint32_t bitstream_frames = buffer->params.bitstream_frames;
     // |bitstream_frames| is cast to int below, so it must fit.

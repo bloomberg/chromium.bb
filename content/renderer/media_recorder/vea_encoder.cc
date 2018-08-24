@@ -133,7 +133,7 @@ void VEAEncoder::BitstreamBufferReady(
   base::SharedMemory* output_buffer =
       output_buffers_[bitstream_buffer_id].get();
   std::unique_ptr<std::string> data(new std::string);
-  data->append(reinterpret_cast<char*>(output_buffer->memory()),
+  data->append(static_cast<char*>(output_buffer->memory()),
                metadata.payload_size_bytes);
 
   const auto front_frame = frames_in_encode_.front();
@@ -231,7 +231,7 @@ void VEAEncoder::EncodeOnEncodingTaskRunner(scoped_refptr<VideoFrame> frame,
     video_frame = media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, vea_requested_input_coded_size_,
         gfx::Rect(input_visible_size_), input_visible_size_,
-        reinterpret_cast<uint8_t*>(input_buffer->memory()),
+        static_cast<uint8_t*>(input_buffer->memory()),
         input_buffer->mapped_size(), input_buffer->handle(), 0,
         frame->timestamp());
     if (!video_frame) {

@@ -183,8 +183,7 @@ class RasterImplementationTest : public testing::Test {
 
   bool NoCommandsWritten() {
     scoped_refptr<Buffer> ring_buffer = helper_->get_ring_buffer();
-    const uint8_t* cmds =
-        reinterpret_cast<const uint8_t*>(ring_buffer->memory());
+    const uint8_t* cmds = static_cast<const uint8_t*>(ring_buffer->memory());
     const uint8_t* end = cmds + ring_buffer->size();
     for (; cmds < end; ++cmds) {
       if (*cmds != kInitialValue) {

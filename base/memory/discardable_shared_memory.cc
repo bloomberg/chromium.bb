@@ -264,7 +264,7 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   //
   // For more information, see
   // https://bugs.chromium.org/p/chromium/issues/detail?id=823915.
-  madvise(reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
+  madvise(static_cast<char*>(shared_memory_mapping_.memory()) +
               AlignToPageSize(sizeof(SharedState)),
           AlignToPageSize(mapped_size_), MADV_FREE_REUSE);
   return DiscardableSharedMemory::SUCCESS;
@@ -335,7 +335,7 @@ void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
 }
 
 void* DiscardableSharedMemory::memory() const {
-  return reinterpret_cast<uint8_t*>(shared_memory_mapping_.memory()) +
+  return static_cast<uint8_t*>(shared_memory_mapping_.memory()) +
          AlignToPageSize(sizeof(SharedState));
 }
 
@@ -385,7 +385,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
   // Advise the kernel to remove resources associated with purged pages.
   // Subsequent accesses of memory pages will succeed, but might result in
   // zero-fill-on-demand pages.
-  if (madvise(reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
+  if (madvise(static_cast<char*>(shared_memory_mapping_.memory()) +
                   AlignToPageSize(sizeof(SharedState)),
               AlignToPageSize(mapped_size_), MADV_PURGE_ARGUMENT)) {
     DPLOG(ERROR) << "madvise() failed";
@@ -401,7 +401,7 @@ bool DiscardableSharedMemory::Purge(Time current_time) {
             GetModuleHandle(L"kernel32.dll"), "DiscardVirtualMemory"));
     if (discard_virtual_memory) {
       DWORD discard_result = discard_virtual_memory(
-          reinterpret_cast<char*>(shared_memory_mapping_.memory()) +
+          static_cast<char*>(shared_memory_mapping_.memory()) +
               AlignToPageSize(sizeof(SharedState)),
           AlignToPageSize(mapped_size_));
       if (discard_result != ERROR_SUCCESS) {

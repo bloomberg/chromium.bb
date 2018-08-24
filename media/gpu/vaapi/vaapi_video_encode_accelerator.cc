@@ -416,7 +416,7 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
     std::unique_ptr<BitstreamBufferRef> buffer) {
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
-  uint8_t* target_data = reinterpret_cast<uint8_t*>(buffer->shm->memory());
+  uint8_t* target_data = static_cast<uint8_t*>(buffer->shm->memory());
   size_t data_size = 0;
 
   if (!vaapi_wrapper_->DownloadAndDestroyCodedBuffer(

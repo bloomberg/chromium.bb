@@ -30,7 +30,7 @@ class GLImageSharedMemoryTestDelegate : public GLImageTestDelegateBase {
     GLImageTestSupport::SetBufferDataToColor(
         size.width(), size.height(),
         static_cast<int>(RowSizeForBufferFormat(size.width(), format, 0)), 0,
-        format, color, reinterpret_cast<uint8_t*>(shared_memory.memory()));
+        format, color, static_cast<uint8_t*>(shared_memory.memory()));
     scoped_refptr<GLImageSharedMemory> image(new GLImageSharedMemory(
         size, GLImageMemory::GetInternalFormatForTesting(format)));
     rv = image->Initialize(
@@ -97,7 +97,7 @@ class GLImageSharedMemoryPoolTestDelegate : public GLImageTestDelegateBase {
     GLImageTestSupport::SetBufferDataToColor(
         size.width(), size.height(), static_cast<int>(stride), 0,
         gfx::BufferFormat::RGBA_8888, color,
-        reinterpret_cast<uint8_t*>(shared_memory.memory()) + buffer_offset);
+        static_cast<uint8_t*>(shared_memory.memory()) + buffer_offset);
     scoped_refptr<GLImageSharedMemory> image(
         new GLImageSharedMemory(size, GL_RGBA));
     rv = image->Initialize(

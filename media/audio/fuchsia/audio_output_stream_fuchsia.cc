@@ -192,9 +192,8 @@ void AudioOutputStreamFuchsia::PumpSamples() {
 
   audio_bus_->ToInterleaved<media::Float32SampleTypeTraits>(
       audio_bus_->frames(),
-      reinterpret_cast<float*>(
-          reinterpret_cast<uint8_t*>(payload_buffer_.memory()) +
-          payload_buffer_pos_));
+      reinterpret_cast<float*>(static_cast<uint8_t*>(payload_buffer_.memory()) +
+                               payload_buffer_pos_));
 
   fuchsia::media::StreamPacket packet;
   packet.pts = stream_position_samples_;

@@ -450,7 +450,7 @@ void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
   size_t used_buffer_size = 0;
   const bool copy_rv = video_toolbox::CopySampleBufferToAnnexBBuffer(
       encode_output->sample_buffer.get(), keyframe, buffer_ref->size,
-      reinterpret_cast<char*>(buffer_ref->shm->memory()), &used_buffer_size);
+      static_cast<char*>(buffer_ref->shm->memory()), &used_buffer_size);
   if (!copy_rv) {
     DLOG(ERROR) << "Cannot copy output from SampleBuffer to AnnexBBuffer.";
     used_buffer_size = 0;

@@ -876,9 +876,8 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
     schedule_task = true;
   } else {
     // This is a buffer queued from the client, with actual contents.  Decode.
-    const uint8_t* const data =
-        reinterpret_cast<const uint8_t*>(shm->memory()) +
-        decoder_current_bitstream_buffer_->bytes_used;
+    const uint8_t* const data = static_cast<const uint8_t*>(shm->memory()) +
+                                decoder_current_bitstream_buffer_->bytes_used;
     const size_t data_size =
         shm->size() - decoder_current_bitstream_buffer_->bytes_used;
     if (!AdvanceFrameFragment(data, data_size, &decoded_size)) {
