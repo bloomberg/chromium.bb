@@ -72,7 +72,7 @@
 
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodDoubleArgFloatArg(double doubleArg, float floatArg);
-    void voidMethodNullableAndOptionalObjectArgs(object objectArg, optional object optionalObjectArg, object? nullableObjectArg);
+    void voidMethodNullableAndOptionalObjectArgs(object objectArg, object? nullableObjectArg, optional object optionalObjectArg);
     void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestricted double unrestrictedDoubleArg, unrestricted float unrestrictedFloatArg);
     void voidMethodTestEnumArg(TestEnum testEnumArg);
     [PerWorldBindings] void voidMethod();

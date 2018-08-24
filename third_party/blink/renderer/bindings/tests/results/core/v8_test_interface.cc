@@ -1564,8 +1564,8 @@ static void voidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCall
   }
 
   ScriptValue objectArg;
-  ScriptValue optionalObjectArg;
   ScriptValue nullableObjectArg;
+  ScriptValue optionalObjectArg;
   int numArgsPassed = info.Length();
   while (numArgsPassed > 0) {
     if (!info[numArgsPassed - 1]->IsUndefined())
@@ -1579,29 +1579,29 @@ static void voidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCall
     return;
   }
 
-  if (UNLIKELY(numArgsPassed <= 1)) {
-    impl->voidMethodNullableAndOptionalObjectArgs(objectArg);
-    return;
-  }
   if (info[1]->IsObject()) {
-    optionalObjectArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
-  } else if (info[1]->IsUndefined()) {
-    optionalObjectArg = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Undefined(info.GetIsolate()));
-  } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 2 ('optionalObjectArg') is not an object."));
-    return;
-  }
-
-  if (info[2]->IsObject()) {
-    nullableObjectArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[2]);
-  } else if (info[2]->IsNullOrUndefined()) {
+    nullableObjectArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+  } else if (info[1]->IsNullOrUndefined()) {
     nullableObjectArg = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Null(info.GetIsolate()));
   } else {
-    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 3 ('nullableObjectArg') is not an object."));
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 2 ('nullableObjectArg') is not an object."));
     return;
   }
 
-  impl->voidMethodNullableAndOptionalObjectArgs(objectArg, optionalObjectArg, nullableObjectArg);
+  if (UNLIKELY(numArgsPassed <= 2)) {
+    impl->voidMethodNullableAndOptionalObjectArgs(objectArg, nullableObjectArg);
+    return;
+  }
+  if (info[2]->IsObject()) {
+    optionalObjectArg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[2]);
+  } else if (info[2]->IsUndefined()) {
+    optionalObjectArg = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Undefined(info.GetIsolate()));
+  } else {
+    V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 3 ('optionalObjectArg') is not an object."));
+    return;
+  }
+
+  impl->voidMethodNullableAndOptionalObjectArgs(objectArg, nullableObjectArg, optionalObjectArg);
 }
 
 static void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
