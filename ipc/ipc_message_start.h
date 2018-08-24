@@ -49,7 +49,6 @@ enum IPCMessageStart {
   TtsMsgStart,
   NaClHostMsgStart,
   EncryptedMediaMsgStart,
-  ServiceWorkerMsgStart,
   CastMsgStart,
   ChromeExtensionMsgStart,
   GinJavaBridgeMsgStart,

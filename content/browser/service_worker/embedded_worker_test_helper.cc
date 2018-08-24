@@ -24,7 +24,6 @@
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"

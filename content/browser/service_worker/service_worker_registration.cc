@@ -13,7 +13,6 @@
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
