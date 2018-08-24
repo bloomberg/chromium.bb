@@ -209,6 +209,14 @@ bool FindDuplicateOperations(
   for (auto outer = sorted->cbegin(); outer != sorted->cend(); ++outer) {
     const BatchOperation* outer_op = *outer;
 
+    // Note, the spec checks CacheQueryOptions like ignoreSearch, etc, but
+    // currently there is no way for script to trigger a batch operation with
+    // multiple entries and non-default options.  The only exposed API that
+    // supports multiple operations is addAll() and it does not allow options
+    // to be passed.  Therefore we assume we do not need to take any options
+    // into account here.
+    DCHECK(!outer_op->match_params);
+
     // If this entry already matches a duplicate we found, then just skip
     // ahead to find any remaining duplicates.
     if (!duplicate_url_list_out->empty() &&
@@ -631,12 +639,6 @@ void CacheStorageCache::BatchOperation(
   // "If the result of running Query Cache with operation’s request,
   //  operation’s options, and addedItems is not empty, throw an
   //  InvalidStateError DOMException."
-  //
-  // Note, the spec checks CacheQueryOptions like ignoreSearch, etc, but
-  // currently there is no way for script to trigger a batch operation with
-  // those set.  The only exposed API is addAll() which does not allow
-  // options to be passed.  Therefore, assume default options below.  This
-  // is enforced in the mojo interface by not passing any options arguments.
   //
   // Note, we are currently only rejecting on duplicates based on a feature
   // flag while web compat is assessed.  (https://crbug.com/720919)
