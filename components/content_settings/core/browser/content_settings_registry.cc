@@ -253,14 +253,25 @@ void ContentSettingsRegistry::Init() {
            ContentSettingsInfo::PERSISTENT);
 
   Register(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-           "protected-media-identifier", CONTENT_SETTING_ASK,
+           "protected-media-identifier",
+// On Android, the default value is ALLOW. See https://crbug.com/854737 for
+// details. On ChromeOS the default value is still ASK.
+#if defined(OS_ANDROID)
+           CONTENT_SETTING_ALLOW,
+#else
+           CONTENT_SETTING_ASK,
+#endif  // defined(OS_ANDROID)
            WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_AND_TOP_LEVEL_ORIGIN_SCOPE,
            WebsiteSettingsRegistry::PLATFORM_ANDROID |
                WebsiteSettingsRegistry::PLATFORM_CHROMEOS,
+#if defined(OS_ANDROID)
+           ContentSettingsInfo::INHERIT_IN_INCOGNITO,
+#else
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE,
+#endif  // defined(OS_ANDROID)
            ContentSettingsInfo::PERSISTENT);
 
   Register(CONTENT_SETTINGS_TYPE_DURABLE_STORAGE, "durable-storage",
