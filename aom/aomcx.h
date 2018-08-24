@@ -862,6 +862,12 @@ enum aome_enc_control_id {
 
   /*!\brief Sets the denoisers block size */
   AV1E_SET_DENOISE_BLOCK_SIZE,
+
+  /*!\brief Sets the chroma subsampling x value */
+  AV1E_SET_CHROMA_SUBSAMPLING_X,
+
+  /*!\brief Sets the chroma subsampling y value */
+  AV1E_SET_CHROMA_SUBSAMPLING_Y,
 };
 
 /*!\brief aom 1-D scaling mode
@@ -1142,10 +1148,6 @@ AOM_CTRL_USE_TYPE(AV1E_GET_ACTIVEMAP, aom_active_map_t *)
 AOM_CTRL_USE_TYPE(AV1E_SET_COLOR_RANGE, int)
 #define AOM_CTRL_AV1E_SET_COLOR_RANGE
 
-/*!\brief
- *
- * TODO(rbultje) : add support of the control in ffmpeg
- */
 #define AOM_CTRL_AV1E_SET_RENDER_SIZE
 AOM_CTRL_USE_TYPE(AV1E_SET_RENDER_SIZE, int *)
 
@@ -1183,6 +1185,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_DENOISE_NOISE_LEVEL, int);
 AOM_CTRL_USE_TYPE(AV1E_SET_DENOISE_BLOCK_SIZE, unsigned int);
 #define AOM_CTRL_AV1E_SET_DENOISE_BLOCK_SIZE
 #endif
+
+AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SUBSAMPLING_X, unsigned int)
+#define AOM_CTRL_AV1E_SET_CHROMA_SUBSAMPLING_X
+
+AOM_CTRL_USE_TYPE(AV1E_SET_CHROMA_SUBSAMPLING_Y, unsigned int)
+#define AOM_CTRL_AV1E_SET_CHROMA_SUBSAMPLING_Y
 
 /*!\endcond */
 /*! @} - end defgroup aom_encoder */

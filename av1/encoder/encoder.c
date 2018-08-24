@@ -1067,6 +1067,11 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
         10;  // Default value (not signaled)
   }
 
+  if (cm->seq_params.bit_depth == AOM_BITS_12) {
+    cm->seq_params.subsampling_x = oxcf->chroma_subsampling_x;
+    cm->seq_params.subsampling_y = oxcf->chroma_subsampling_y;
+  }
+
   cm->width = oxcf->width;
   cm->height = oxcf->height;
   set_sb_size(&cm->seq_params,

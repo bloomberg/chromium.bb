@@ -309,6 +309,9 @@ typedef struct AV1EncoderConfig {
   float noise_level;
   int noise_block_size;
 #endif
+
+  unsigned int chroma_subsampling_x;
+  unsigned int chroma_subsampling_y;
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {

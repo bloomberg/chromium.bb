@@ -99,6 +99,9 @@ struct av1_extracfg {
   float noise_level;
   int noise_block_size;
 #endif
+
+  unsigned int chroma_subsampling_x;
+  unsigned int chroma_subsampling_y;
 };
 
 static struct av1_extracfg default_extra_cfg = {
@@ -169,6 +172,8 @@ static struct av1_extracfg default_extra_cfg = {
   0,   // noise_level
   32,  // noise_block_size
 #endif
+  0,  // chroma_subsampling_x
+  0,  // chroma_subsampling_y
 };
 
 struct aom_codec_alg_priv {
@@ -370,6 +375,9 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
       ERROR("dist-8x8 cannot be used with lossless compression.");
 #endif
   }
+
+  RANGE_CHECK_HI(extra_cfg, chroma_subsampling_x, 1);
+  RANGE_CHECK_HI(extra_cfg, chroma_subsampling_y, 1);
 
   return AOM_CODEC_OK;
 }
@@ -706,6 +714,9 @@ static aom_codec_err_t set_encoder_config(
     oxcf->resize_kf_scale_denominator = SCALE_NUMERATOR;
   }
 #endif  // CONFIG_REDUCED_ENCODER_BORDER
+
+  oxcf->chroma_subsampling_x = extra_cfg->chroma_subsampling_x;
+  oxcf->chroma_subsampling_y = extra_cfg->chroma_subsampling_y;
 
   return AOM_CODEC_OK;
 }
@@ -1685,6 +1696,20 @@ static aom_codec_err_t ctrl_set_superblock_size(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
+static aom_codec_err_t ctrl_set_chroma_subsampling_x(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.chroma_subsampling_x = CAST(AV1E_SET_CHROMA_SUBSAMPLING_X, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_chroma_subsampling_y(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.chroma_subsampling_y = CAST(AV1E_SET_CHROMA_SUBSAMPLING_Y, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
 static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1_COPY_REFERENCE, ctrl_copy_reference },
   { AOME_USE_REFERENCE, ctrl_use_reference },
@@ -1770,7 +1795,8 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_GET_ACTIVEMAP, ctrl_get_active_map },
   { AV1_GET_NEW_FRAME_IMAGE, ctrl_get_new_frame_image },
   { AV1_COPY_NEW_FRAME_IMAGE, ctrl_copy_new_frame_image },
-
+  { AV1E_SET_CHROMA_SUBSAMPLING_X, ctrl_set_chroma_subsampling_x },
+  { AV1E_SET_CHROMA_SUBSAMPLING_Y, ctrl_set_chroma_subsampling_y },
   { -1, NULL },
 };
 

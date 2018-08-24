@@ -203,6 +203,12 @@ static const arg_def_t bitdeptharg = ARG_DEF_ENUM(
     bitdepth_enum);
 static const arg_def_t inbitdeptharg =
     ARG_DEF(NULL, "input-bit-depth", 1, "Bit depth of input");
+
+static const arg_def_t input_chroma_subsampling_x = ARG_DEF(
+    NULL, "input-chroma-subsampling-x", 1, "chroma subsampling x value.");
+static const arg_def_t input_chroma_subsampling_y = ARG_DEF(
+    NULL, "input-chroma-subsampling-y", 1, "chroma subsampling y value.");
+
 static const arg_def_t *main_args[] = { &help,
 #if CONFIG_FILEOPTIONS
                                         &use_cfg,
@@ -671,6 +677,8 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_ref_frame_mvs,
                                        &bitdeptharg,
                                        &inbitdeptharg,
+                                       &input_chroma_subsampling_x,
+                                       &input_chroma_subsampling_y,
                                        &sframe_dist,
                                        &sframe_mode,
                                        &save_as_annexb,
@@ -831,6 +839,8 @@ struct stream_state {
   struct aom_image *img;
   aom_codec_ctx_t decoder;
   int mismatch_seen;
+  unsigned int chroma_subsampling_x;
+  unsigned int chroma_subsampling_y;
 };
 
 static void validate_positive_rational(const char *msg,
@@ -1180,6 +1190,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_bit_depth = arg_parse_enum_or_int(&arg);
     } else if (arg_match(&arg, &inbitdeptharg, argi)) {
       config->cfg.g_input_bit_depth = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &input_chroma_subsampling_x, argi)) {
+      stream->chroma_subsampling_x = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &input_chroma_subsampling_y, argi)) {
+      stream->chroma_subsampling_y = arg_parse_uint(&arg);
 #if CONFIG_WEBM_IO
     } else if (arg_match(&arg, &stereo_mode, argi)) {
       config->stereo_fmt = arg_parse_enum_or_int(&arg);
@@ -2049,6 +2063,20 @@ int main(int argc, const char **argv_) {
                         input.fmt == AOM_IMG_FMT_I42016)) {
               stream->config.cfg.g_profile = 0;
               profile_updated = 1;
+            } else if (input.bit_depth == 12 &&
+                       input.file_type == FILE_TYPE_Y4M) {
+              // Note that here the input file values for chroma subsampling
+              // are used instead of those from the command line.
+              aom_codec_control(&stream->encoder, AV1E_SET_CHROMA_SUBSAMPLING_X,
+                                input.y4m.dst_c_dec_h >> 1);
+              aom_codec_control(&stream->encoder, AV1E_SET_CHROMA_SUBSAMPLING_Y,
+                                input.y4m.dst_c_dec_v >> 1);
+            } else if (input.bit_depth == 12 &&
+                       input.file_type == FILE_TYPE_RAW) {
+              aom_codec_control(&stream->encoder, AV1E_SET_CHROMA_SUBSAMPLING_X,
+                                stream->chroma_subsampling_x);
+              aom_codec_control(&stream->encoder, AV1E_SET_CHROMA_SUBSAMPLING_Y,
+                                stream->chroma_subsampling_y);
             }
             break;
           default: break;
