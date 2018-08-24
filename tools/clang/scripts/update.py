@@ -331,7 +331,7 @@ def AddCMakeToPath(args):
     dir_name = ['cmake-3.12.1-Darwin-x86_64', 'CMake.app', 'Contents', 'bin']
   else:
     zip_name = 'cmake-3.12.1-Linux-x86_64.tar.gz'
-    dir_name = ['cmake-3.12.1-Linux-x86_64', 'bin', 'cmake']
+    dir_name = ['cmake-3.12.1-Linux-x86_64', 'bin']
 
   cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, *dir_name)
   if not os.path.exists(cmake_dir):
