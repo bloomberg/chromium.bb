@@ -530,9 +530,9 @@ TEST_F(BackgroundFetchServiceTest, FetchSuccessEventDispatch) {
   // Spin the |event_dispatched_loop| to wait for the dispatched event.
   event_dispatched_loop.Run();
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_developer_id().value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
 
@@ -633,9 +633,9 @@ TEST_F(BackgroundFetchServiceTest, FetchFailEventDispatch) {
   // Spin the |event_dispatched_loop| to wait for the dispatched event.
   event_dispatched_loop.Run();
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_developer_id().value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
 
@@ -842,9 +842,9 @@ TEST_F(BackgroundFetchServiceTest, AbortEventDispatch) {
 
   event_dispatched_loop.Run();
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_developer_id().value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
 }
 
 TEST_F(BackgroundFetchServiceTest, UniqueId) {
