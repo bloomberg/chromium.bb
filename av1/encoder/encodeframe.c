@@ -609,6 +609,8 @@ static void rd_pick_sb_modes(AV1_COMP *const cpi, TileDataEnc *tile_data,
     // If segment is boosted, use rdmult for that segment.
     if (cyclic_refresh_segment_id_boosted(mbmi->segment_id))
       x->rdmult = av1_cyclic_refresh_get_rdmult(cpi->cyclic_refresh);
+  } else if (cpi->oxcf.enable_tpl_model) {
+    x->rdmult = x->cb_rdmult;
   }
 
   if (deltaq_mode > 0) x->rdmult = set_deltaq_rdmult(cpi, xd);
@@ -1427,6 +1429,10 @@ static void encode_b(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   MB_MODE_INFO *mbmi = xd->mi[0];
   mbmi->partition = partition;
   update_state(cpi, tile_data, td, ctx, mi_row, mi_col, bsize, dry_run);
+  if (cpi->oxcf.enable_tpl_model && cpi->oxcf.aq_mode == NO_AQ &&
+      cpi->oxcf.deltaq_mode == 0) {
+    x->rdmult = x->cb_rdmult;
+  }
 
   if (!dry_run) av1_set_coeff_buffer(cpi, x, mi_row, mi_col);
 
@@ -4424,6 +4430,55 @@ static INLINE void clear_pc_tree_stats(PC_TREE *pt) {
 // mode_pruning_based_on_two_pass_partition_search feature.
 #define FIRST_PARTITION_PASS_MIN_SAMPLES 16
 
+int get_rdmult_delta(AV1_COMP *cpi, BLOCK_SIZE bsize, int mi_row, int mi_col,
+                     int orig_rdmult) {
+  TplDepFrame *tpl_frame = &cpi->tpl_stats[cpi->twopass.gf_group.index];
+  TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+  int tpl_stride = tpl_frame->stride;
+  int64_t intra_cost = 0;
+  int64_t mc_dep_cost = 0;
+  int mi_wide = mi_size_wide[bsize];
+  int mi_high = mi_size_high[bsize];
+  int row, col;
+
+  int dr = 0;
+  int count = 0;
+  double r0, rk, beta;
+
+  if (tpl_frame->is_valid == 0) return orig_rdmult;
+
+  if (cpi->common.show_frame) return orig_rdmult;
+
+  if (cpi->twopass.gf_group.index >= MAX_LAG_BUFFERS) return orig_rdmult;
+
+  for (row = mi_row; row < mi_row + mi_high; ++row) {
+    for (col = mi_col; col < mi_col + mi_wide; ++col) {
+      TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
+
+      if (row >= cpi->common.mi_rows || col >= cpi->common.mi_cols) continue;
+
+      intra_cost += this_stats->intra_cost;
+      mc_dep_cost += this_stats->mc_dep_cost;
+
+      ++count;
+    }
+  }
+
+  aom_clear_system_state();
+
+  r0 = cpi->rd.r0;
+  rk = (double)intra_cost / mc_dep_cost;
+  beta = r0 / rk;
+  dr = av1_get_adaptive_rdmult(cpi, beta);
+
+  dr = AOMMIN(dr, orig_rdmult * 3 / 2);
+  dr = AOMMAX(dr, orig_rdmult * 1 / 2);
+
+  dr = AOMMAX(1, dr);
+
+  return dr;
+}
+
 static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                              TileDataEnc *tile_data, int mi_row,
                              TOKENEXTRA **tp) {
@@ -4573,6 +4628,17 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
                        cm->seq_params.sb_size, &dummy_rate, &dummy_dist, 1,
                        pc_root);
     } else {
+      int orig_rdmult = cpi->rd.RDMULT;
+      x->cb_rdmult = orig_rdmult;
+      if (cpi->twopass.gf_group.index > 0 && cpi->oxcf.enable_tpl_model &&
+          cpi->oxcf.aq_mode == NO_AQ && cpi->oxcf.deltaq_mode == 0) {
+        int dr =
+            get_rdmult_delta(cpi, BLOCK_128X128, mi_row, mi_col, orig_rdmult);
+
+        x->cb_rdmult = dr;
+        x->rdmult = x->cb_rdmult;
+      }
+
       // If required set upper and lower partition size limits
       if (sf->auto_min_max_partition_size) {
         set_offsets(cpi, tile_info, x, mi_row, mi_col, cm->seq_params.sb_size);
@@ -5271,6 +5337,32 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   // update delta_q_present_flag and delta_lf_present_flag based on base_qindex
   cm->delta_q_present_flag &= cm->base_qindex > 0;
   cm->delta_lf_present_flag &= cm->base_qindex > 0;
+
+  if (cpi->twopass.gf_group.index &&
+      cpi->twopass.gf_group.index < MAX_LAG_BUFFERS &&
+      cpi->oxcf.enable_tpl_model) {
+    TplDepFrame *tpl_frame = &cpi->tpl_stats[cpi->twopass.gf_group.index];
+    TplDepStats *tpl_stats = tpl_frame->tpl_stats_ptr;
+
+    int tpl_stride = tpl_frame->stride;
+    int64_t intra_cost_base = 0;
+    int64_t mc_dep_cost_base = 0;
+    int row, col;
+
+    for (row = 0; row < cm->mi_rows; ++row) {
+      for (col = 0; col < cm->mi_cols; ++col) {
+        TplDepStats *this_stats = &tpl_stats[row * tpl_stride + col];
+        intra_cost_base += this_stats->intra_cost;
+        mc_dep_cost_base += this_stats->mc_dep_cost;
+      }
+    }
+
+    aom_clear_system_state();
+
+    if (tpl_frame->is_valid)
+      cpi->rd.r0 =
+          (double)intra_cost_base / (intra_cost_base + mc_dep_cost_base);
+  }
 
   av1_frame_init_quantizer(cpi);
 

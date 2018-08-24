@@ -131,6 +131,30 @@ typedef enum {
   SUPERRES_MODES
 } SUPERRES_MODE;
 
+typedef struct TplDepStats {
+  int64_t intra_cost;
+  int64_t inter_cost;
+  int64_t mc_flow;
+  int64_t mc_dep_cost;
+  int64_t mc_ref_cost;
+
+  int ref_frame_index;
+  int_mv mv;
+} TplDepStats;
+
+typedef struct TplDepFrame {
+  uint8_t is_valid;
+  TplDepStats *tpl_stats_ptr;
+  int stride;
+  int width;
+  int height;
+  int mi_rows;
+  int mi_cols;
+  int base_qindex;
+} TplDepFrame;
+
+#define TPL_DEP_COST_SCALE_LOG2 4
+
 typedef struct AV1EncoderConfig {
   BITSTREAM_PROFILE profile;
   aom_bit_depth_t bit_depth;     // Codec bit-depth.
@@ -258,6 +282,8 @@ typedef struct AV1EncoderConfig {
   int tile_height_count;
   int tile_widths[MAX_TILE_COLS];
   int tile_heights[MAX_TILE_ROWS];
+
+  int enable_tpl_model;
 
   int max_threads;
 
@@ -551,6 +577,9 @@ typedef struct AV1_COMP {
   YV12_BUFFER_CONFIG scaled_source;
   YV12_BUFFER_CONFIG *unscaled_last_source;
   YV12_BUFFER_CONFIG scaled_last_source;
+
+  TplDepFrame tpl_stats[MAX_LAG_BUFFERS];
+  YV12_BUFFER_CONFIG *tpl_recon_frames[INTER_REFS_PER_FRAME + 1];
 
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;

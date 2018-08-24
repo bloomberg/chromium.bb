@@ -324,6 +324,13 @@ enum aome_enc_control_id {
    */
   AV1E_SET_TILE_ROWS,
 
+  /*!\brief Codec control function to enable RDO modulated by frame temporal
+   * dependency.
+   *
+   * By default, this feature is off.
+   */
+  AV1E_SET_ENABLE_TPL_MODEL,
+
   /*!\brief Codec control function to enable frame parallel decoding feature.
    *
    * AV1 has a bitstream feature to reduce decoding dependency between frames
@@ -1005,6 +1012,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_TILE_COLUMNS, int)
 #define AOM_CTRL_AV1E_SET_TILE_COLUMNS
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_ROWS, int)
 #define AOM_CTRL_AV1E_SET_TILE_ROWS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_TPL_MODEL, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_TPL_MODEL
 
 AOM_CTRL_USE_TYPE(AV1E_SET_TILE_DEPENDENT_ROWS, int)
 #define AOM_CTRL_AV1E_SET_TILE_DEPENDENT_ROWS

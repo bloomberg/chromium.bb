@@ -290,6 +290,8 @@ typedef struct RD_OPT {
   int64_t prediction_type_threshes[REF_FRAMES][REFERENCE_MODES];
 
   int RDMULT;
+
+  double r0;
 } RD_OPT;
 
 static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
@@ -456,6 +458,8 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 
 void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
                           const int num_planes);
+
+int av1_get_adaptive_rdmult(const struct AV1_COMP *cpi, double beta);
 
 #ifdef __cplusplus
 }  // extern "C"

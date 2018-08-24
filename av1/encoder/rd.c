@@ -377,6 +377,35 @@ int av1_compute_rd_mult(const AV1_COMP *cpi, int qindex) {
   return (int)rdmult;
 }
 
+int av1_get_adaptive_rdmult(const AV1_COMP *cpi, double beta) {
+  const AV1_COMMON *cm = &cpi->common;
+  int64_t q =
+      av1_dc_quant_Q3(cm->base_qindex, 0, cpi->common.seq_params.bit_depth);
+  int64_t rdmult = 0;
+
+  switch (cpi->common.seq_params.bit_depth) {
+    case AOM_BITS_8: rdmult = (int)((88 * q * q / beta) / 24); break;
+    case AOM_BITS_10:
+      rdmult = ROUND_POWER_OF_TWO((int)((88 * q * q / beta) / 24), 4);
+      break;
+    default:
+      assert(cpi->common.seq_params.bit_depth == AOM_BITS_12);
+      rdmult = ROUND_POWER_OF_TWO((int)((88 * q * q / beta) / 24), 8);
+      break;
+  }
+
+  if (cpi->oxcf.pass == 2 && (cpi->common.frame_type != KEY_FRAME)) {
+    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+    const FRAME_UPDATE_TYPE frame_type = gf_group->update_type[gf_group->index];
+    const int boost_index = AOMMIN(15, (cpi->rc.gfu_boost / 100));
+
+    rdmult = (rdmult * rd_frame_type_factor[frame_type]) >> 7;
+    rdmult += ((rdmult * rd_boost_factor[boost_index]) >> 7);
+  }
+  if (rdmult < 1) rdmult = 1;
+  return (int)rdmult;
+}
+
 static int compute_rd_thresh_factor(int qindex, aom_bit_depth_t bit_depth) {
   double q;
   switch (bit_depth) {

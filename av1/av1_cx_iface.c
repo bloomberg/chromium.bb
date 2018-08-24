@@ -39,6 +39,7 @@ struct av1_extracfg {
   unsigned int row_mt;
   unsigned int tile_columns;  // log2 number of tile columns
   unsigned int tile_rows;     // log2 number of tile rows
+  unsigned int enable_tpl_model;
   unsigned int arnr_max_frames;
   unsigned int arnr_strength;
   unsigned int min_gf_interval;
@@ -114,6 +115,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                       // row_mt
   0,                       // tile_columns
   0,                       // tile_rows
+  0,                       // enable_tpl_model
   7,                       // arnr_max_frames
   5,                       // arnr_strength
   0,                       // min_gf_interval; 0 -> default decision
@@ -531,6 +533,7 @@ static aom_codec_err_t set_encoder_config(
   // In large-scale tile encoding mode, num_tile_groups is always 1.
   if (cfg->large_scale_tile) oxcf->num_tile_groups = 1;
   oxcf->mtu = extra_cfg->mtu_size;
+  oxcf->enable_tpl_model = extra_cfg->enable_tpl_model;
 
   // FIXME(debargha): Should this be:
   // oxcf->allow_ref_frame_mvs = extra_cfg->allow_ref_frame_mvs &
@@ -848,6 +851,13 @@ static aom_codec_err_t ctrl_set_tile_rows(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.tile_rows = CAST(AV1E_SET_TILE_ROWS, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_enable_tpl_model(aom_codec_alg_priv_t *ctx,
+                                                 va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.enable_tpl_model = CAST(AV1E_SET_ENABLE_TPL_MODEL, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1736,6 +1746,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ROW_MT, ctrl_set_row_mt },
   { AV1E_SET_TILE_COLUMNS, ctrl_set_tile_columns },
   { AV1E_SET_TILE_ROWS, ctrl_set_tile_rows },
+  { AV1E_SET_ENABLE_TPL_MODEL, ctrl_set_enable_tpl_model },
   { AOME_SET_ARNR_MAXFRAMES, ctrl_set_arnr_max_frames },
   { AOME_SET_ARNR_STRENGTH, ctrl_set_arnr_strength },
   { AOME_SET_TUNING, ctrl_set_tuning },

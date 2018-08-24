@@ -1294,6 +1294,151 @@ static void update_golden_frame_stats(AV1_COMP *cpi) {
   }
 }
 
+// Define the reference buffers that will be updated post encode.
+void av1_configure_buffer_updates(AV1_COMP *cpi) {
+  TWO_PASS *const twopass = &cpi->twopass;
+
+  // NOTE(weitinglin): Should we define another function to take care of
+  // cpi->rc.is_$Source_Type to make this function as it is in the comment?
+
+  cpi->rc.is_src_frame_alt_ref = 0;
+  cpi->rc.is_bwd_ref_frame = 0;
+  cpi->rc.is_last_bipred_frame = 0;
+  cpi->rc.is_bipred_frame = 0;
+  cpi->rc.is_src_frame_ext_arf = 0;
+
+  switch (twopass->gf_group.update_type[twopass->gf_group.index]) {
+    case KF_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 1;
+      cpi->refresh_bwd_ref_frame = 1;
+      cpi->refresh_alt2_ref_frame = 1;
+      cpi->refresh_alt_ref_frame = 1;
+      break;
+
+    case LF_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+      break;
+
+    case GF_UPDATE:
+      // TODO(zoeliu): To further investigate whether 'refresh_last_frame' is
+      //               needed.
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 1;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+      break;
+
+    case OVERLAY_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 1;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_src_frame_alt_ref = 1;
+      break;
+
+    case ARF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      // NOTE: BWDREF does not get updated along with ALTREF_FRAME.
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 1;
+      break;
+
+    case BRF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 1;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_bwd_ref_frame = 1;
+      break;
+
+    case LAST_BIPRED_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_last_bipred_frame = 1;
+      break;
+
+    case BIPRED_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_bipred_frame = 1;
+      break;
+
+    case INTNL_OVERLAY_UPDATE:
+      cpi->refresh_last_frame = 1;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      cpi->rc.is_src_frame_alt_ref = 1;
+      cpi->rc.is_src_frame_ext_arf = 1;
+      break;
+
+    case INTNL_ARF_UPDATE:
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+#if USE_SYMM_MULTI_LAYER
+      if (cpi->new_bwdref_update_rule == 1) {
+        cpi->refresh_bwd_ref_frame = 1;
+        cpi->refresh_alt2_ref_frame = 0;
+      } else {
+#endif
+        cpi->refresh_bwd_ref_frame = 0;
+        cpi->refresh_alt2_ref_frame = 1;
+#if USE_SYMM_MULTI_LAYER
+      }
+#endif
+      cpi->refresh_alt_ref_frame = 0;
+      break;
+
+    default: assert(0); break;
+  }
+}
+
+void av1_estimate_qp_gop(AV1_COMP *cpi) {
+  AV1_COMMON *const cm = &cpi->common;
+  int gop_length = cpi->rc.baseline_gf_interval;
+  int bottom_index, top_index;
+  int idx;
+  const int gf_index = cpi->twopass.gf_group.index;
+
+  for (idx = 1; idx <= gop_length + 1 && idx < MAX_LAG_BUFFERS; ++idx) {
+    TplDepFrame *tpl_frame = &cpi->tpl_stats[idx];
+    int target_rate = cpi->twopass.gf_group.bit_allocation[idx];
+    int arf_q = 0;
+
+    cpi->twopass.gf_group.index = idx;
+    rc_set_frame_target(cpi, target_rate, cm->width, cm->height);
+    av1_configure_buffer_updates(cpi);
+    tpl_frame->base_qindex = rc_pick_q_and_bounds_two_pass(
+        cpi, cm->width, cm->height, &bottom_index, &top_index, &arf_q);
+    tpl_frame->base_qindex = AOMMAX(tpl_frame->base_qindex, 1);
+  }
+  // Reset the actual index and frame update
+  cpi->twopass.gf_group.index = gf_index;
+  av1_configure_buffer_updates(cpi);
+}
+
 void av1_rc_postencode_update(AV1_COMP *cpi, uint64_t bytes_used) {
   const AV1_COMMON *const cm = &cpi->common;
   RATE_CONTROL *const rc = &cpi->rc;
