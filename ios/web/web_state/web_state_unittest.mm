@@ -284,7 +284,12 @@ TEST_F(WebStateTest, RestoreLargeSession) {
 
   // Verify that session was fully restored.
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
-    return navigation_manager->GetItemCount() == kItemCount;
+    bool restored = navigation_manager->GetItemCount() == kItemCount;
+    if (!restored) {
+      EXPECT_FALSE(navigation_manager->CanGoBack());
+      EXPECT_FALSE(navigation_manager->CanGoForward());
+    }
+    return restored;
   }));
   EXPECT_EQ(kItemCount, navigation_manager->GetItemCount());
 }

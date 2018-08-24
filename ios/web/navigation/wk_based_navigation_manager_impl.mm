@@ -381,6 +381,9 @@ bool WKBasedNavigationManagerImpl::CanGoForward() const {
 }
 
 bool WKBasedNavigationManagerImpl::CanGoToOffset(int offset) const {
+  if (is_restore_session_in_progress_)
+    return false;
+
   // If the last committed item is the empty window.open item, no back-forward
   // navigation is allowed.
   if (empty_window_open_item_) {
