@@ -11,6 +11,7 @@ import os
 import re
 import signal
 import sys
+import tempfile
 
 import psutil  # pylint: disable=import-error
 
@@ -114,11 +115,11 @@ class RemoteTest(object):
       if test_proc.returncode == 0:
         break
 
-    self.handle_results(test_proc.returncode)
+    self.post_run(test_proc.returncode)
     return test_proc.returncode
 
-  def handle_results(self, return_code):
-    pass
+  def post_run(self, return_code):
+    raise NotImplementedError()
 
 
 class GTestTest(RemoteTest):
@@ -138,6 +139,8 @@ class GTestTest(RemoteTest):
     self._test_launcher_shard_index = args.test_launcher_shard_index
     self._test_launcher_total_shards = args.test_launcher_total_shards
 
+    self._on_vm_script = None
+
   def build_test_command(self):
     # To keep things easy for us, ensure both types of output locations are
     # the same.
@@ -147,26 +150,6 @@ class GTestTest(RemoteTest):
         raise TestFormatError(
             '--test-launcher-summary-output and --vm-logs-dir must point to '
             'the same directory.')
-
-    runtime_files = self._read_runtime_files()
-    if self._vpython_dir:
-      # --vpython-dir is relative to the out dir, but --files expects paths
-      # relative to src dir, so fix the path up a bit.
-      runtime_files.append(
-          os.path.relpath(
-              os.path.abspath(os.path.join(self._path_to_outdir,
-                                           self._vpython_dir)),
-              CHROMIUM_SRC_PATH))
-      # TODO(bpastene): Add the vpython spec to the test's runtime deps instead
-      # of handling it here.
-      runtime_files.append('.vpython')
-
-    # If we're pushing files, we need to set the cwd.
-    if runtime_files:
-        self._vm_test_cmd.extend(
-            ['--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH)])
-    for f in runtime_files:
-      self._vm_test_cmd.extend(['--files', f])
 
     if self._test_launcher_summary_output:
       result_dir, result_file = os.path.split(
@@ -182,49 +165,75 @@ class GTestTest(RemoteTest):
           '--results-dest-dir', result_dir,
       ]
 
-    pre_test_cmds = [
-        # /home is mounted with "noexec" in the VM, but some of our tools
-        # and tests use the home dir as a workspace (eg: vpython downloads
-        # python binaries to ~/.vpython-root). /tmp doesn't have this
-        # restriction, so change the location of the home dir for the
-        # duration of the test.
-        'export HOME=/tmp', '\\;',
-    ]
+    # Build the shell script that will be used on the VM to invoke the test.
+    vm_test_script_contents = ['#!/bin/sh']
+
+    # /home is mounted with "noexec" in the VM, but some of our tools
+    # and tests use the home dir as a workspace (eg: vpython downloads
+    # python binaries to ~/.vpython-root). /tmp doesn't have this
+    # restriction, so change the location of the home dir for the
+    # duration of the test.
+    vm_test_script_contents.append('export HOME=/tmp')
+
     if self._vpython_dir:
       vpython_spec_path = os.path.relpath(
           os.path.join(CHROMIUM_SRC_PATH, '.vpython'),
           self._path_to_outdir)
-      pre_test_cmds += [
-          # Backslash is needed to prevent $PATH from getting prematurely
-          # executed on the host.
-          'export PATH=\\$PATH:\\$PWD/%s' % self._vpython_dir, '\\;',
-          # Initialize the vpython cache. This can take 10-20s, and some tests
-          # can't afford to wait that long on the first invocation.
-          'vpython', '-vpython-spec', vpython_spec_path, '-vpython-tool',
-          'install', '\\;',
-      ]
+      # Initialize the vpython cache. This can take 10-20s, and some tests
+      # can't afford to wait that long on the first invocation.
+      vm_test_script_contents.extend([
+          'export PATH=$PATH:$PWD/%s' % (self._vpython_dir),
+          'vpython -vpython-spec %s -vpython-tool install' % (
+              vpython_spec_path),
+      ])
+
+    test_invocation = (
+        './%s --test-launcher-shard-index=%d '
+        '--test-launcher-total-shards=%d' % (
+            self._test_exe, self._test_launcher_shard_index,
+            self._test_launcher_total_shards)
+    )
+    if self._test_launcher_summary_output:
+      test_invocation += ' --test-launcher-summary-output=%s' % vm_result_file
+    if self._additional_args:
+      test_invocation += ' %s' % ' '.join(self._additional_args)
+    vm_test_script_contents.append(test_invocation)
+
+    logging.info('Running the following command in the VM:')
+    logging.info('\n'.join(vm_test_script_contents))
+    fd, tmp_path = tempfile.mkstemp(suffix='.sh', dir=self._path_to_outdir)
+    os.fchmod(fd, 0755)
+    with os.fdopen(fd, 'wb') as f:
+      f.write('\n'.join(vm_test_script_contents))
+    self._on_vm_script = tmp_path
+
+    runtime_files = [os.path.relpath(self._on_vm_script)]
+    runtime_files += self._read_runtime_files()
+    if self._vpython_dir:
+      # --vpython-dir is relative to the out dir, but --files expects paths
+      # relative to src dir, so fix the path up a bit.
+      runtime_files.append(
+          os.path.relpath(
+              os.path.abspath(os.path.join(self._path_to_outdir,
+                                           self._vpython_dir)),
+              CHROMIUM_SRC_PATH))
+      # TODO(bpastene): Add the vpython spec to the test's runtime deps instead
+      # of handling it here.
+      runtime_files.append('.vpython')
+
+    # Since we're pushing files, we need to set the cwd.
+    self._vm_test_cmd.extend(
+        ['--cwd', os.path.relpath(self._path_to_outdir, CHROMIUM_SRC_PATH)])
+    for f in runtime_files:
+      self._vm_test_cmd.extend(['--files', f])
 
     self._vm_test_cmd += [
         # Some tests fail as root, so run as the less privileged user 'chronos'.
         '--as-chronos',
         '--cmd',
         '--',
-        # Wrap the cmd to run in the VM around quotes (") so that the
-        # interpreter on the host doesn't stop at any ";" or "&&" tokens in the
-        # cmd.
-        '"',
-    ] + pre_test_cmds + [
-        './' + self._test_exe,
-        '--test-launcher-shard-index=%d' % self._test_launcher_shard_index,
-        '--test-launcher-total-shards=%d' % self._test_launcher_total_shards,
-    ] + self._additional_args + [
-        '"',
+        './' + os.path.relpath(self._on_vm_script, self._path_to_outdir)
     ]
-
-    if self._test_launcher_summary_output:
-      self._vm_test_cmd += [
-        '--test-launcher-summary-output=%s' % vm_result_file,
-      ]
 
   def _read_runtime_files(self):
     if not self._runtime_deps_path:
@@ -237,12 +246,14 @@ class GTestTest(RemoteTest):
     rel_file_paths = []
     for f in files:
       rel_file_path = os.path.relpath(
-          os.path.abspath(os.path.join(self._path_to_outdir, f)),
-          os.getcwd())
+          os.path.abspath(os.path.join(self._path_to_outdir, f)))
       if not any(regex.match(rel_file_path) for regex in self._FILE_BLACKLIST):
         rel_file_paths.append(rel_file_path)
-
     return rel_file_paths
+
+  def post_run(self, _):
+    if self._on_vm_script:
+      os.remove(self._on_vm_script)
 
 
 class BrowserSanityTest(RemoteTest):
@@ -285,7 +296,7 @@ class BrowserSanityTest(RemoteTest):
     self._test_env['PATH'] = (
         self._test_env['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin'))
 
-  def handle_results(self, return_code):
+  def post_run(self, return_code):
     # Create a simple json results file for the sanity test if needed. The
     # results will contain only one test (SANITY_TEST_TARGET), and will
     # either be a PASS or FAIL depending on the return code of cros_run_vm_test.
@@ -314,7 +325,7 @@ def vm_test(args, unknown_args):
     test = GTestTest(args, unknown_args)
 
   test.build_test_command()
-  logging.info('Running the following command:')
+  logging.info('Running the following command on the host:')
   logging.info(' '.join(test.vm_test_cmd))
 
   return test.run_test()
