@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
@@ -142,6 +143,7 @@ const CGFloat kBubblePresentationDelay = 1;
   [self.tabTipBubblePresenter dismissAnimated:NO];
   [self.incognitoTabTipBubblePresenter dismissAnimated:NO];
   [self.bottomToolbarTipBubblePresenter dismissAnimated:NO];
+  [self.longPressToolbarTipBubblePresenter dismissAnimated:NO];
 }
 
 - (void)userEnteredTabSwitcher {
@@ -208,7 +210,7 @@ const CGFloat kBubblePresentationDelay = 1;
   if (!presenter)
     return;
 
-  self.bottomToolbarTipBubblePresenter = presenter;
+  self.longPressToolbarTipBubblePresenter = presenter;
 }
 
 // Presents and returns a bubble view controller for the |feature| with an arrow
@@ -266,6 +268,8 @@ presentBubbleForFeature:(const base::Feature&)feature
     return;
 
   self.bottomToolbarTipBubblePresenter = presenter;
+  feature_engagement::TrackerFactory::GetForBrowserState(self.browserState)
+      ->NotifyEvent(feature_engagement::events::kBottomToolbarOpened);
 }
 
 // Optionally presents a bubble associated with the new tab tip in-product help
