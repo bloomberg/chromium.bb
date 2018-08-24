@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -320,4 +321,58 @@ TEST_P(ToolbarActionsBarUnitTest, GrayscaleIcon) {
       permissions_modifier.RemoveGrantedHostPermission(kUrl);
     action_runner->ClearInjectionsForTesting(*extension);
   }
+}
+
+// Tests the tooltip shown when an extension requests or has access to a page
+// with the runtime host permissions feature enabled.
+TEST_P(ToolbarActionsBarUnitTest, RuntimeHostsTooltip) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      extensions::features::kRuntimeHostPermissions);
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("extension name")
+          .SetAction(extensions::ExtensionBuilder::ActionType::BROWSER_ACTION)
+          .SetLocation(extensions::Manifest::INTERNAL)
+          .AddPermission("https://www.google.com/*")
+          .Build();
+  extensions::ExtensionService* service =
+      extensions::ExtensionSystem::Get(profile())->extension_service();
+  service->GrantPermissions(extension.get());
+  service->AddExtension(extension.get());
+
+  extensions::ScriptingPermissionsModifier permissions_modifier(profile(),
+                                                                extension);
+  permissions_modifier.SetWithholdHostPermissions(true);
+  ASSERT_EQ(1u, toolbar_actions_bar()->GetIconCount());
+  const GURL kUrl("https://www.google.com/");
+  AddTab(browser(), kUrl);
+
+  auto* controller = static_cast<ExtensionActionViewController*>(
+      toolbar_actions_bar()->GetActions()[0]);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  int tab_id = SessionTabHelper::IdForTab(web_contents).id();
+
+  // Page access should already be withheld.
+  EXPECT_EQ(extensions::PermissionsData::PageAccess::kWithheld,
+            extension->permissions_data()->GetPageAccess(kUrl, tab_id,
+                                                         /*error=*/nullptr));
+  EXPECT_EQ("extension name",
+            base::UTF16ToUTF8(controller->GetTooltip(web_contents)));
+
+  // Request access.
+  extensions::ExtensionActionRunner* action_runner =
+      extensions::ExtensionActionRunner::GetForWebContents(web_contents);
+  action_runner->RequestScriptInjectionForTesting(
+      extension.get(), extensions::UserScript::DOCUMENT_IDLE,
+      base::DoNothing());
+  EXPECT_EQ("extension name\nWants access to this site",
+            base::UTF16ToUTF8(controller->GetTooltip(web_contents)));
+
+  // Grant access.
+  action_runner->ClearInjectionsForTesting(*extension);
+  permissions_modifier.GrantHostPermission(kUrl);
+  EXPECT_EQ("extension name\nHas access to this site",
+            base::UTF16ToUTF8(controller->GetTooltip(web_contents)));
 }
