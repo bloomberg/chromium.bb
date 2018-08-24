@@ -11,63 +11,128 @@
 #include "base/gtest_prod_util.h"
 #include "base/optional.h"
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 namespace content {
 
 class SignedExchangeDevToolsProxy;
 
-// SignedExchangePrologue maps to the first bytes of
-// the "application/signed-exchange" format.
-// SignedExchangePrologue derives the lengths of the variable-length sections
-// following the prologue bytes.
-class CONTENT_EXPORT SignedExchangePrologue {
+// signed_exchange_prologue namespace contains parsers for the first bytes of
+// the "application/signed-exchange" format, preceding the cbor-encoded
+// response header.
+namespace signed_exchange_prologue {
+
+// Parse 2-byte encoded length of the variable-length field in the signed
+// exchange. Note: |input| must be pointing to a valid memory address that has
+// at least 2 bytes.
+CONTENT_EXPORT size_t Parse2BytesEncodedLength(base::span<const uint8_t> input);
+
+// Parse 3-byte encoded length of the variable-length field in the signed
+// exchange. Note: |input| must be pointing to a valid memory address that has
+// at least 3 bytes.
+CONTENT_EXPORT size_t Parse3BytesEncodedLength(base::span<const uint8_t> input);
+
+// BeforeFallbackUrl holds the decoded data from the first
+// |BeforeFallbackUrl::kEncodedSizeInBytes| bytes of the
+// "application/signed-exchange" format.
+class CONTENT_EXPORT BeforeFallbackUrl {
  public:
-  // Parse encoded length of the variable-length field in the signed exchange.
-  // Note: |input| must be pointing to a valid memory address that has at least
-  // |kEncodedLengthInBytes|.
-  static size_t ParseEncodedLength(base::span<const uint8_t> input);
+  // Size of the BeforeFallbackUrl part of "application/signed-exchange"
+  // prologue.
+  static const size_t kEncodedSizeInBytes;
 
-  // Size of the prologue bytes of the "application/signed-exchange" format
-  // which maps to this class.
-  static size_t kEncodedPrologueInBytes;
+  BeforeFallbackUrl() = default;
+  BeforeFallbackUrl(bool is_valid, size_t fallback_url_length)
+      : is_valid_(is_valid), fallback_url_length_(fallback_url_length) {}
+  BeforeFallbackUrl(const BeforeFallbackUrl&) = default;
+  ~BeforeFallbackUrl() = default;
 
-  // Parses the first bytes of the "application/signed-exchange" format.
-  // |input| must be a valid span with length of kEncodedPrologueInBytes.
-  // If success, returns the result. Otherwise, returns nullopt and
-  // reports the error to |devtools_proxy|.
-  static base::Optional<SignedExchangePrologue> Parse(
-      base::span<const uint8_t> input,
-      SignedExchangeDevToolsProxy* devtools_proxy);
+  // Parses the first |kEncodedSizeInBytes| bytes of the
+  // "application/signed-exchange" format.
+  // |input| must be a valid span with length of |kEncodedSizeInBytes|.
+  // If success, returns a |is_valid()| result.
+  // Otherwise, returns a |!is_valid()| result and report the error to
+  // |devtools_proxy|.
+  static BeforeFallbackUrl Parse(base::span<const uint8_t> input,
+                                 SignedExchangeDevToolsProxy* devtools_proxy);
 
-  SignedExchangePrologue(size_t signature_header_field_length,
-                         size_t cbor_header_length)
-      : signature_header_field_length_(signature_header_field_length),
-        cbor_header_length_(cbor_header_length) {}
-  SignedExchangePrologue(const SignedExchangePrologue&) = default;
-  ~SignedExchangePrologue() = default;
+  size_t ComputeFallbackUrlAndAfterLength() const;
 
-  size_t signature_header_field_length() const {
-    return signature_header_field_length_;
-  }
-  size_t cbor_header_length() const { return cbor_header_length_; }
+  // |is_valid()| returns false if magic string was invalid.
+  bool is_valid() const { return is_valid_; }
+
+  size_t fallback_url_length() const { return fallback_url_length_; }
+
+ private:
+  bool is_valid_ = false;
+
+  // Corresponds to `fallbackUrlLength` in the spec text.
+  // Encoded length of the Signature header field's value.
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#application-signed-exchange
+  size_t fallback_url_length_ = 0;
+};
+
+class CONTENT_EXPORT FallbackUrlAndAfter {
+ public:
+  FallbackUrlAndAfter() = default;
+  FallbackUrlAndAfter(const FallbackUrlAndAfter&) = default;
+  ~FallbackUrlAndAfter() = default;
+
+  // Parses the bytes of the "application/signed-exchange" format,
+  // proceeding the BeforeFallbackUrl bytes.
+  // |input| must be a valid span with length of
+  // |before_fallback_url.ComputeFallbackUrlAndAfterLength()|.
+  // If success, returns a |is_valid()| result.
+  // Otherwise, returns a |!is_valid()| result and report the error to
+  // |devtools_proxy|.
+  static FallbackUrlAndAfter Parse(base::span<const uint8_t> input,
+                                   const BeforeFallbackUrl& before_fallback_url,
+                                   SignedExchangeDevToolsProxy* devtools_proxy);
+
+  bool is_valid() const { return is_valid_; }
+
+  // Note: fallback_url() may still be called even if |!is_valid()|,
+  //       for trigering fallback redirect.
+  const GURL& fallback_url() const { return fallback_url_; }
+
+  size_t signature_header_field_length() const;
+  size_t cbor_header_length() const;
 
   size_t ComputeFollowingSectionsLength() const;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SignedExchangePrologueTest, ParseEncodedLength);
+  static FallbackUrlAndAfter ParseFailedButFallbackUrlAvailable(
+      GURL fallback_url);
 
-  static constexpr size_t kEncodedLengthInBytes = 3;
+  FallbackUrlAndAfter(bool is_valid,
+                      GURL fallback_url,
+                      size_t signature_header_field_length,
+                      size_t cbor_header_length)
+      : is_valid_(is_valid),
+        fallback_url_(std::move(fallback_url)),
+        signature_header_field_length_(signature_header_field_length),
+        cbor_header_length_(cbor_header_length) {}
+
+  bool is_valid_ = false;
+
+  // Corresponds to `fallbackUrl` in the spec text.
+  // The URL to redirect navigation to when the signed exchange processing steps
+  // has failed.
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#application-signed-exchange
+  GURL fallback_url_;
 
   // Corresponds to `sigLength` in the spec text.
   // Encoded length of the Signature header field's value.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#application-signed-exchange
-  size_t signature_header_field_length_;
+  size_t signature_header_field_length_ = 0;
 
   // Corresponds to `headerLength` in the spec text.
   // Length of the CBOR representation of the request and response headers.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#application-signed-exchange
-  size_t cbor_header_length_;
+  size_t cbor_header_length_ = 0;
 };
+
+}  // namespace signed_exchange_prologue
 
 }  // namespace content
 

@@ -10,6 +10,8 @@
 
 namespace content {
 
+namespace signed_exchange_prologue {
+
 struct IcuEnvironment {
   IcuEnvironment() { CHECK(base::i18n::InitializeICU()); }
   // used by ICU integration.
@@ -18,34 +20,56 @@ struct IcuEnvironment {
 
 IcuEnvironment* env = new IcuEnvironment();
 
+std::vector<uint8_t> CopyIntoSeparateBufferToSurfaceOutOfBoundAccess(
+    base::span<const uint8_t> data) {
+  return std::vector<uint8_t>(data.begin(), data.end());
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  if (size < SignedExchangePrologue::kEncodedPrologueInBytes)
+  if (size < BeforeFallbackUrl::kEncodedSizeInBytes)
     return 0;
-  auto prologue_bytes =
-      base::make_span(data, SignedExchangePrologue::kEncodedPrologueInBytes);
-  base::Optional<SignedExchangePrologue> prologue =
-      SignedExchangePrologue::Parse(prologue_bytes,
-                                    nullptr /* devtools_proxy */);
-  if (!prologue)
+  auto before_fallback_url_bytes =
+      CopyIntoSeparateBufferToSurfaceOutOfBoundAccess(
+          base::make_span(data, BeforeFallbackUrl::kEncodedSizeInBytes));
+  auto before_fallback_url = BeforeFallbackUrl::Parse(
+      base::make_span(before_fallback_url_bytes), nullptr /* devtools_proxy */);
+
+  data += BeforeFallbackUrl::kEncodedSizeInBytes;
+  size -= BeforeFallbackUrl::kEncodedSizeInBytes;
+
+  size_t fallback_url_and_after_length =
+      before_fallback_url.ComputeFallbackUrlAndAfterLength();
+  if (size < fallback_url_and_after_length)
     return 0;
 
-  data += SignedExchangePrologue::kEncodedPrologueInBytes;
-  size -= SignedExchangePrologue::kEncodedPrologueInBytes;
+  auto fallback_url_and_after_bytes =
+      CopyIntoSeparateBufferToSurfaceOutOfBoundAccess(
+          base::make_span(data, fallback_url_and_after_length));
+  auto fallback_url_and_after = FallbackUrlAndAfter::Parse(
+      base::make_span(fallback_url_and_after_bytes), before_fallback_url,
+      nullptr /* devtools_proxy */);
+  if (!fallback_url_and_after.is_valid())
+    return 0;
 
-  // Copy the headers into separate buffers so that out-of-bounds access can be
-  // detected.
+  data += fallback_url_and_after_length;
+  size -= fallback_url_and_after_length;
+
   std::string signature_header_field(
       reinterpret_cast<const char*>(data),
-      std::min(size, prologue->signature_header_field_length()));
+      std::min(size, fallback_url_and_after.signature_header_field_length()));
   data += signature_header_field.size();
   size -= signature_header_field.size();
-  std::vector<uint8_t> cbor_header(
-      data, data + std::min(size, prologue->cbor_header_length()));
 
-  SignedExchangeEnvelope::Parse(signature_header_field,
-                                base::make_span(cbor_header),
-                                nullptr /* devtools_proxy */);
+  auto cbor_header =
+      CopyIntoSeparateBufferToSurfaceOutOfBoundAccess(base::make_span(
+          data, std::min(size, fallback_url_and_after.cbor_header_length())));
+
+  SignedExchangeEnvelope::Parse(
+      fallback_url_and_after.fallback_url(), signature_header_field,
+      base::make_span(cbor_header), nullptr /* devtools_proxy */);
   return 0;
 }
+
+}  // namespace signed_exchange_prologue
 
 }  // namespace content

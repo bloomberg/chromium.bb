@@ -28,6 +28,7 @@ gen-certurl  \
 
 # Generate the signed exchange file.
 gen-signedexchange \
+  -version 1b2 \
   -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
@@ -42,6 +43,7 @@ gen-signedexchange \
 
 # Generate the signed exchange file which certificate file is not available.
 gen-signedexchange \
+  -version 1b2 \
   -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
@@ -57,6 +59,7 @@ gen-signedexchange \
 # Generate the signed exchange file which validity URL is different origin from
 # request URL.
 gen-signedexchange \
+  -version 1b2 \
   -uri https://127.0.0.1:8443/loading/sxg/resources/inner-url.html \
   -status 200 \
   -content sxg-location.html \
@@ -72,6 +75,7 @@ gen-signedexchange \
 # Generate the signed exchange whose certUrl is 404 and fallback URL is another
 # signed exchange.
 gen-signedexchange \
+  -version 1b2 \
   -uri https://127.0.0.1:8443/loading/sxg/resources/sxg-location.sxg \
   -status 200 \
   -content failure.html \

@@ -191,7 +191,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
         if (request.relative_url == "/sxg/test.example.org_test.sxg") {
           const auto& accept_value = request.headers.find("accept")->second;
           EXPECT_THAT(accept_value,
-                      ::testing::HasSubstr("application/signed-exchange;v=b1"));
+                      ::testing::HasSubstr("application/signed-exchange;v=b2"));
         }
       }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
         if (request.relative_url == "/sxg/test.example.org_test.sxg") {
           const auto& accept_value = request.headers.find("accept")->second;
           EXPECT_THAT(accept_value,
-                      ::testing::HasSubstr("application/signed-exchange;v=b1"));
+                      ::testing::HasSubstr("application/signed-exchange;v=b2"));
         }
       }));
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");

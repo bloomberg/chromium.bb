@@ -82,7 +82,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
 
  private:
   enum class State {
-    kReadingPrologue,
+    kReadingPrologueBeforeFallbackUrl,
+    kReadingPrologueFallbackUrlAndAfter,
     kReadingHeaders,
     kFetchingCertificate,
     kHeadersCallbackCalled,
@@ -91,7 +92,8 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void SetupBuffers(size_t size);
   void DoHeaderLoop();
   void DidReadHeader(bool completed_syncly, int result);
-  bool ParsePrologue();
+  bool ParsePrologueBeforeFallbackUrl();
+  bool ParsePrologueFallbackUrlAndAfter();
   bool ParseHeadersAndFetchCertificate();
   void RunErrorCallback(net::Error);
 
@@ -106,12 +108,15 @@ class CONTENT_EXPORT SignedExchangeHandler {
   base::Optional<SignedExchangeVersion> version_;
   std::unique_ptr<net::SourceStream> source_;
 
-  State state_ = State::kReadingPrologue;
+  State state_ = State::kReadingPrologueBeforeFallbackUrl;
   // Buffer used for prologue and envelope reading.
   scoped_refptr<net::IOBuffer> header_buf_;
   // Wrapper around |header_buf_| to progressively read fixed-size data.
   scoped_refptr<net::DrainableIOBuffer> header_read_buf_;
-  base::Optional<SignedExchangePrologue> prologue_;
+
+  signed_exchange_prologue::BeforeFallbackUrl prologue_before_fallback_url_;
+  signed_exchange_prologue::FallbackUrlAndAfter
+      prologue_fallback_url_and_after_;
   base::Optional<SignedExchangeEnvelope> envelope_;
 
   std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory_;

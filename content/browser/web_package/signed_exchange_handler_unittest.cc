@@ -164,7 +164,7 @@ class SignedExchangeHandlerTest
             url::Origin::Create(GURL("https://sxg.example.com/test.sxg"))) {}
 
   virtual std::string ContentType() {
-    return "application/signed-exchange;v=b1";
+    return "application/signed-exchange;v=b2";
   }
 
   void SetUp() override {
@@ -405,7 +405,7 @@ TEST_P(SignedExchangeHandlerTest, MimeType) {
 }
 
 TEST_P(SignedExchangeHandlerTest, HeaderParseError) {
-  const uint8_t data[] = {'s',  'x',  'g',  '1',  '-',  'b',  '1',  '\0',
+  const uint8_t data[] = {'s',  'x',  'g',  '1',  '-',  'b',  '2',  '\0',
                           0x00, 0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00};
   source_->AddReadResult(reinterpret_cast<const char*>(data), sizeof(data),
                          net::OK, GetParam());
