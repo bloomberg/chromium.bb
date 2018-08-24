@@ -212,7 +212,7 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDefault) {
   CheckPermissionStatus(PermissionType::GEOLOCATION, PermissionStatus::ASK);
 #if defined(OS_ANDROID)
   CheckPermissionStatus(PermissionType::PROTECTED_MEDIA_IDENTIFIER,
-                        PermissionStatus::ASK);
+                        PermissionStatus::GRANTED);
 #endif
 }
 
@@ -245,7 +245,7 @@ TEST_F(PermissionManagerTest, CheckPermissionResultDefault) {
                         PermissionStatusSource::UNSPECIFIED);
 #if defined(OS_ANDROID)
   CheckPermissionResult(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-                        CONTENT_SETTING_ASK,
+                        CONTENT_SETTING_ALLOW,
                         PermissionStatusSource::UNSPECIFIED);
 #endif
 }
