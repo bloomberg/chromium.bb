@@ -17,11 +17,14 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "base/win/registry.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
@@ -763,6 +766,67 @@ TEST_F(SwReporterOnDemandFetcherTest, TestUpdateFailure) {
   CreateOnDemandFetcherAndVerifyExpectations(false);
 
   EXPECT_TRUE(on_demand_update_called_);
+}
+
+class SwReporterInstallerHistogramTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    ASSERT_NO_FATAL_FAILURE(
+        registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
+
+    const base::string16 cleaner_key_name =
+        base::StrCat({chrome_cleaner::kSoftwareRemovalToolRegistryKey, L"\\",
+                      chrome_cleaner::kCleanerSubKey});
+    cleaner_key_ = std::make_unique<base::win::RegKey>(
+        HKEY_CURRENT_USER, cleaner_key_name.c_str(),
+        KEY_QUERY_VALUE | KEY_SET_VALUE);
+    ASSERT_TRUE(cleaner_key_->Valid());
+  }
+
+  base::HistogramTester& histograms() { return histograms_; }
+
+  base::win::RegKey& cleaner_key() { return *cleaner_key_; }
+
+  // TODO(crbug.com/872824): use chrome_cleaner::RegistryLogger::WriteStartTime
+  //                         once it moves to components/chrome_cleaner
+  void WriteStartTime(base::Time start_time) {
+    const int64_t serialized =
+        start_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
+    ASSERT_EQ(ERROR_SUCCESS, cleaner_key().WriteValue(
+                                 chrome_cleaner::kStartTimeValueName,
+                                 &serialized, sizeof(serialized), REG_QWORD));
+  }
+
+  // TODO(crbug.com/872824): use chrome_cleaner::RegistryLogger::WriteEndTime
+  //                         once it moves to components/chrome_cleaner
+  void WriteEndTime(base::Time end_time) {
+    const int64_t serialized =
+        end_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
+    ASSERT_EQ(ERROR_SUCCESS, cleaner_key().WriteValue(
+                                 chrome_cleaner::kEndTimeValueName, &serialized,
+                                 sizeof(serialized), REG_QWORD));
+  }
+
+ private:
+  base::HistogramTester histograms_;
+  registry_util::RegistryOverrideManager registry_override_manager_;
+  std::unique_ptr<base::win::RegKey> cleaner_key_;
+};
+
+TEST_F(SwReporterInstallerHistogramTest, WithStartAndEndTimes) {
+  const base::Time start_time =
+      base::Time::Now() - base::TimeDelta::FromHours(1);
+  const base::Time end_time = start_time + base::TimeDelta::FromSeconds(10);
+
+  WriteStartTime(start_time);
+  WriteEndTime(end_time);
+
+  ReportUMAForLastCleanerRun();
+
+  histograms().ExpectUniqueSample("SoftwareReporter.Cleaner.HasCompleted",
+                                  1 /* SRT_COMPLETED_YES */, 1);
+  histograms().ExpectUniqueSample("SoftwareReporter.Cleaner.RunningTime",
+                                  (end_time - start_time).InMilliseconds(), 1);
 }
 
 }  // namespace component_updater
