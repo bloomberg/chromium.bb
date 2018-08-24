@@ -11,6 +11,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
@@ -132,7 +133,13 @@ INSTANTIATE_TEST_CASE_P(MimeHandlerViewTests,
                         MimeHandlerViewTest,
                         testing::Bool());
 
-IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, Fullscreen) {
+// Test is flaky on Linux.  https://crbug.com/877627
+#if defined(OS_LINUX)
+#define MAYBE_Fullscreen DISABLED_Fullscreen
+#else
+#define MAYBE_Fullscreen Fullscreen
+#endif
+IN_PROC_BROWSER_TEST_P(MimeHandlerViewTest, MAYBE_Fullscreen) {
   RunTest("testFullscreen.csv");
 }
 
