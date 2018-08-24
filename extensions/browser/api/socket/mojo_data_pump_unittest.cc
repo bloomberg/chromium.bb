@@ -73,7 +73,7 @@ TEST(MojoDataPumpTest, ReceiveStreamClosed) {
   pump->Read(10 /*count*/,
              base::BindLambdaForTesting(
                  [&](int result, scoped_refptr<net::IOBuffer> io_buffer) {
-                   EXPECT_EQ(net::ERR_FAILED, result);
+                   EXPECT_EQ(0, result);
                    EXPECT_EQ(nullptr, io_buffer);
                    run_loop.Quit();
                  }));

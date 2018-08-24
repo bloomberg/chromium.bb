@@ -457,13 +457,15 @@ void TCPSocket::OnWriteComplete(const net::CompletionCallback& callback,
 void TCPSocket::OnReadComplete(int result,
                                scoped_refptr<net::IOBuffer> io_buffer) {
   DCHECK(read_callback_);
+  DCHECK_GE(result, 0);
 
   // Use a local variable for |read_callback_|, because otherwise Disconnect()
   // will try to invoke |read_callback_| with a hardcoded result code.
   ReadCompletionCallback callback = std::move(read_callback_);
-  if (result < 0) {
+  if (result == 0) {
     // Read side has terminated. This can be an error or a graceful close.
-    // TCPSocketEventDispatcher doesn't distinguish between the two.
+    // TCPSocketEventDispatcher doesn't distinguish between the two. Treat them
+    // as connection close.
     Disconnect(false /* socket_destroying */);
   }
   std::move(callback).Run(result, io_buffer, false /* socket_destroying */);
