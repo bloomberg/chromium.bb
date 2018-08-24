@@ -667,6 +667,13 @@ void BridgedNativeWidget::ToggleDesiredFullscreenState(bool async) {
                   withObject:nil
                   afterDelay:0];
   } else {
+    // Suppress synchronous CA transactions during AppKit fullscreen transition
+    // since there is no need for updates during such transition.
+    // Re-layout and re-paint will be done after the transtion. See
+    // https://crbug.com/875707 for potiential problems if we don't suppress.
+    // |ca_transaction_sync_suppressed_| will be reset to false when the next
+    // frame comes in.
+    ca_transaction_sync_suppressed_ = true;
     [window_ toggleFullScreen:nil];
   }
 }
