@@ -28,6 +28,13 @@ namespace {
 constexpr char kWebAppManifestUrl[] = "web_app_manifest_url";
 constexpr char kWebAppStartUrl[] = "web_app_start_url";
 
+#if defined(OS_CHROMEOS)
+// The sub-directory of the extensions directory in which to scan for external
+// web apps (as opposed to external extensions or external ARC apps).
+const base::FilePath::CharType kWebAppsSubDirectory[] =
+    FILE_PATH_LITERAL("web_apps");
+#endif
+
 std::vector<web_app::PendingAppManager::AppInfo> ScanDir(base::FilePath dir) {
   base::AssertBlockingAllowed();
   base::FilePath::StringType extension(FILE_PATH_LITERAL(".json"));
@@ -94,18 +101,14 @@ base::FilePath DetermineScanDir(Profile* profile) {
 
   if (chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     // For manual testing, you can change s/STANDALONE/USER/, as writing to
-    // "$HOME/.config/chromium/test-user/.config/chromium/External Extensions"
-    // does not require root ACLs, unlike "/usr/share/chromium/extensions".
-    //
-    // TODO(nigeltao): do we want to append a sub-directory name, analogous to
-    // the "arc" in "/usr/share/chromium/extensions/arc" as per
-    // chrome/browser/ui/app_list/arc/arc_default_app_list.cc? Or should we not
-    // sort "system apps" into directories based on their platform (e.g. ARC,
-    // PWA, etc.), and instead examine the JSON contents (e.g. an "activity"
-    // key means ARC, "web_app_start_url" key means PWA, etc.)?
+    // "$HOME/.config/chromium/test-user/.config/chromium/External
+    // Extensions/web_apps" does not require root ACLs, unlike
+    // "/usr/share/chromium/extensions/web_apps".
     if (!base::PathService::Get(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
                                 &dir)) {
       LOG(ERROR) << "ScanForExternalWebApps: base::PathService::Get failed";
+    } else {
+      dir = dir.Append(kWebAppsSubDirectory);
     }
   }
 
