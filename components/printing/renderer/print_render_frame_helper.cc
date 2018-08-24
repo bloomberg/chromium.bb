@@ -22,7 +22,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/grit/components_resources.h"
@@ -634,9 +633,8 @@ void PrintRenderFrameHelper::PrintHeaderAndFooter(
   blink::WebWidgetClient web_widget_client;
   blink::WebFrameWidget::Create(&web_widget_client, frame);
 
-  base::Value html(base::UTF8ToUTF16(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE)));
+  base::Value html(ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_PRINT_HEADER_FOOTER_TEMPLATE_PAGE));
   // Load page with script to avoid async operations.
   ExecuteScript(frame, kPageLoadScriptFormat, html);
 
@@ -1850,7 +1848,6 @@ bool PrintRenderFrameHelper::UpdatePrintSettings(
   }
 
   bool source_is_html = !PrintingNodeOrPdfFrame(frame, node);
-
   if (!source_is_html) {
     modified_job_settings.MergeDictionary(job_settings);
     modified_job_settings.SetBoolean(kSettingHeaderFooterEnabled, false);
@@ -2408,7 +2405,7 @@ void PrintRenderFrameHelper::SetPrintPagesParams(
                                              settings.params.document_cookie));
 }
 
-PrintRenderFrameHelper::ScriptingThrottler::ScriptingThrottler() : count_(0) {}
+PrintRenderFrameHelper::ScriptingThrottler::ScriptingThrottler() = default;
 
 bool PrintRenderFrameHelper::ScriptingThrottler::IsAllowed(
     blink::WebLocalFrame* frame) {
@@ -2442,7 +2439,7 @@ bool PrintRenderFrameHelper::ScriptingThrottler::IsAllowed(
   }
 
   blink::WebString message(
-      blink::WebString::FromUTF8("Ignoring too frequent calls to print()."));
+      blink::WebString::FromASCII("Ignoring too frequent calls to print()."));
   frame->AddMessageToConsole(blink::WebConsoleMessage(
       blink::WebConsoleMessage::kLevelWarning, message));
   return false;
