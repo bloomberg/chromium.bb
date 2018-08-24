@@ -326,7 +326,6 @@ public class AccountManagementFragment extends PreferenceFragment
                 parentText = res.getString(R.string.account_management_no_parental_data);
             }
             parentAccounts.setSummary(parentText);
-            parentAccounts.setSelectable(false);
 
             final int childContentSummary;
             int defaultBehavior = prefService.getDefaultSupervisedUserFilteringBehavior();
@@ -338,7 +337,6 @@ public class AccountManagementFragment extends PreferenceFragment
                 childContentSummary = R.string.account_management_child_content_all;
             }
             childContent.setSummary(childContentSummary);
-            childContent.setSelectable(false);
 
             Drawable newIcon = ApiCompatibilityUtils.getDrawable(
                     getResources(), R.drawable.ic_drive_site_white_24dp);
