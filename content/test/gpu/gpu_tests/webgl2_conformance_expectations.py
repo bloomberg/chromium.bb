@@ -460,6 +460,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['sierra', 'intel'], bug=705865)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['sierra', 'intel'], bug=705865)
+    self.Fail('conformance2/textures/misc/tex-base-level-bug.html',
+        ['sierra', 'amd'], bug=870856)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['sierra', 'amd'], bug=870856)
 
