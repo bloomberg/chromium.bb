@@ -17,6 +17,7 @@
 #include "chrome/browser/web_applications/extensions/bookmark_app_installer.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
 namespace extensions {
@@ -104,6 +105,15 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
   // is plumbed through this class.
   helper_ = helper_factory_.Run(profile_, *web_app_info, web_contents,
                                 WebappInstallSource::MENU_BROWSER_TAB);
+
+  switch (app_info_.launch_container) {
+    case web_app::PendingAppManager::LaunchContainer::kTab:
+      helper_->set_forced_launch_type(LAUNCH_TYPE_REGULAR);
+      break;
+    case web_app::PendingAppManager::LaunchContainer::kWindow:
+      helper_->set_forced_launch_type(LAUNCH_TYPE_WINDOW);
+      break;
+  }
 
   if (!app_info_.create_shortcuts)
     helper_->set_skip_shortcut_creation();

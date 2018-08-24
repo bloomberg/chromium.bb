@@ -29,6 +29,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
@@ -368,6 +369,50 @@ TEST_F(BookmarkAppInstallationTaskTest,
   EXPECT_TRUE(app_installed());
 
   EXPECT_FALSE(test_helper().create_shortcuts());
+}
+
+TEST_F(BookmarkAppInstallationTaskTest,
+       WebAppOrShortcutFromContents_ForcedContainerWindow) {
+  const GURL app_url(kWebAppUrl);
+
+  web_app::PendingAppManager::AppInfo app_info(
+      app_url, web_app::PendingAppManager::LaunchContainer::kWindow);
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), std::move(app_info));
+  SetTestingFactories(task.get(), app_url);
+
+  task->InstallWebAppOrShortcutFromWebContents(
+      web_contents(),
+      base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
+                     base::Unretained(this), base::DoNothing().Once()));
+  content::RunAllTasksUntilIdle();
+
+  test_helper().CompleteInstallation();
+
+  EXPECT_TRUE(app_installed());
+  EXPECT_EQ(LAUNCH_TYPE_WINDOW, test_helper().forced_launch_type().value());
+}
+
+TEST_F(BookmarkAppInstallationTaskTest,
+       WebAppOrShortcutFromContents_ForcedContainerTab) {
+  const GURL app_url(kWebAppUrl);
+
+  web_app::PendingAppManager::AppInfo app_info(
+      app_url, web_app::PendingAppManager::LaunchContainer::kTab);
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), std::move(app_info));
+  SetTestingFactories(task.get(), app_url);
+
+  task->InstallWebAppOrShortcutFromWebContents(
+      web_contents(),
+      base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
+                     base::Unretained(this), base::DoNothing().Once()));
+  content::RunAllTasksUntilIdle();
+
+  test_helper().CompleteInstallation();
+
+  EXPECT_TRUE(app_installed());
+  EXPECT_EQ(LAUNCH_TYPE_REGULAR, test_helper().forced_launch_type().value());
 }
 
 }  // namespace extensions

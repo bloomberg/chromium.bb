@@ -30,6 +30,7 @@
 #include "extensions/common/extension_icon_set.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/skia_util.h"
 
@@ -435,6 +436,52 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     EXPECT_TRUE(extension);
     EXPECT_EQ(LAUNCH_CONTAINER_TAB,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
+  }
+}
+
+TEST_F(BookmarkAppHelperExtensionServiceTest,
+       CreateBookmarkAppForcedLauncherContainers) {
+  auto scoped_feature_list = std::make_unique<base::test::ScopedFeatureList>();
+  scoped_feature_list->InitAndEnableFeature(features::kDesktopPWAWindowing);
+
+  WebApplicationInfo web_app_info;
+  std::map<GURL, std::vector<SkBitmap>> icon_map;
+
+  blink::Manifest manifest;
+  manifest.start_url = GURL(kAppUrl);
+  manifest.name = base::NullableString16(base::UTF8ToUTF16(kAppTitle), false);
+  manifest.scope = GURL(kAppScope);
+  {
+    TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
+    helper.set_forced_launch_type(LAUNCH_TYPE_REGULAR);
+    helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                             base::Unretained(&helper)));
+
+    helper.CompleteInstallableCheck(kManifestUrl, manifest,
+                                    ForInstallableSite::kYes);
+    helper.CompleteIconDownload(true, icon_map);
+
+    content::RunAllTasksUntilIdle();
+    ASSERT_TRUE(helper.extension());
+    EXPECT_EQ(
+        LAUNCH_CONTAINER_TAB,
+        GetLaunchContainer(ExtensionPrefs::Get(profile()), helper.extension()));
+  }
+  {
+    TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
+    helper.set_forced_launch_type(LAUNCH_TYPE_WINDOW);
+    helper.Create(base::Bind(&TestBookmarkAppHelper::CreationComplete,
+                             base::Unretained(&helper)));
+
+    helper.CompleteInstallableCheck(kManifestUrl, manifest,
+                                    ForInstallableSite::kNo);
+    helper.CompleteIconDownload(true, icon_map);
+
+    content::RunAllTasksUntilIdle();
+    ASSERT_TRUE(helper.extension());
+    EXPECT_EQ(
+        LAUNCH_CONTAINER_WINDOW,
+        GetLaunchContainer(ExtensionPrefs::Get(profile()), helper.extension()));
   }
 }
 
