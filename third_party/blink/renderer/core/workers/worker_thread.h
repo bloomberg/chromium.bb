@@ -32,6 +32,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/thread_annotations.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -43,7 +44,6 @@
 #include "third_party/blink/renderer/core/workers/worker_backing_thread_startup_data.h"
 #include "third_party/blink/renderer/core/workers/worker_inspector_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_scheduler.h"
-#include "third_party/blink/renderer/platform/waitable_event.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -182,7 +182,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   bool IsForciblyTerminated() LOCKS_EXCLUDED(mutex_);
 
-  void WaitForShutdownForTesting() { shutdown_event_->Wait(); }
+  void WaitForShutdownForTesting();
   ExitCode GetExitCodeForTesting() LOCKS_EXCLUDED(mutex_);
 
   ParentExecutionContextTaskRunners* GetParentExecutionContextTaskRunners()
@@ -262,7 +262,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   void EnsureScriptExecutionTerminates(ExitCode) LOCKS_EXCLUDED(mutex_);
 
   // These are called in this order during worker thread startup.
-  void InitializeSchedulerOnWorkerThread(WaitableEvent*);
+  void InitializeSchedulerOnWorkerThread(base::WaitableEvent*);
   void InitializeOnWorkerThread(
       std::unique_ptr<GlobalScopeCreationParams>,
       const base::Optional<WorkerBackingThreadStartupData>&,
@@ -323,8 +323,11 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
   CrossThreadPersistent<WorkerOrWorkletGlobalScope> global_scope_;
   CrossThreadPersistent<WorkerInspectorController> worker_inspector_controller_;
 
-  // Signaled when the thread completes termination on the worker thread.
-  std::unique_ptr<WaitableEvent> shutdown_event_;
+  // Signaled when the thread completes termination on the worker thread. Only
+  // the parent context thread should wait on this event after calling
+  // Terminate().
+  class RefCountedWaitableEvent;
+  scoped_refptr<RefCountedWaitableEvent> shutdown_event_;
 
   // Used to cancel a scheduled forcible termination task. See
   // mayForciblyTerminateExecution() for details.

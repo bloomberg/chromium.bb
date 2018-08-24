@@ -86,6 +86,28 @@ static int GetNextWorkerThreadId() {
   return next_worker_thread_id;
 }
 
+// RefCountedWaitableEvent makes WaitableEvent thread-safe refcounted.
+// WorkerThread retains references to the event from both the parent context
+// thread and the worker thread with this wrapper. See
+// WorkerThread::PerformShutdownOnWorkerThread() for details.
+class WorkerThread::RefCountedWaitableEvent
+    : public WTF::ThreadSafeRefCounted<RefCountedWaitableEvent> {
+ public:
+  static scoped_refptr<RefCountedWaitableEvent> Create() {
+    return base::AdoptRef<RefCountedWaitableEvent>(new RefCountedWaitableEvent);
+  }
+
+  void Wait() { event_.Wait(); }
+  void Signal() { event_.Signal(); }
+
+ private:
+  RefCountedWaitableEvent() = default;
+
+  base::WaitableEvent event_;
+
+  DISALLOW_COPY_AND_ASSIGN(RefCountedWaitableEvent);
+};
+
 WorkerThread::~WorkerThread() {
   MutexLocker lock(ThreadSetMutex());
   DCHECK(WorkerThreads().Contains(this));
@@ -111,7 +133,7 @@ void WorkerThread::Start(
 
   // Synchronously initialize the per-global-scope scheduler to prevent someone
   // from posting a task to the thread before the scheduler is ready.
-  WaitableEvent waitable_event;
+  base::WaitableEvent waitable_event;
   GetWorkerBackingThread().BackingThread().PostTask(
       FROM_HERE,
       CrossThreadBind(&WorkerThread::InitializeSchedulerOnWorkerThread,
@@ -200,7 +222,7 @@ void WorkerThread::TerminateAllWorkersForTesting() {
   }
 
   for (WorkerThread* thread : threads)
-    thread->shutdown_event_->Wait();
+    thread->WaitForShutdownForTesting();
 
   // Destruct base::Thread and join the underlying system threads.
   for (WorkerThread* thread : threads)
@@ -302,6 +324,11 @@ bool WorkerThread::IsForciblyTerminated() {
   return false;
 }
 
+void WorkerThread::WaitForShutdownForTesting() {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
+  shutdown_event_->Wait();
+}
+
 ExitCode WorkerThread::GetExitCodeForTesting() {
   MutexLocker lock(mutex_);
   return exit_code_;
@@ -336,9 +363,7 @@ WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
       forcible_termination_delay_(kForcibleTerminationDelay),
       devtools_worker_token_(base::UnguessableToken::Create()),
       worker_reporting_proxy_(worker_reporting_proxy),
-      shutdown_event_(std::make_unique<WaitableEvent>(
-          WaitableEvent::ResetPolicy::kManual,
-          WaitableEvent::InitialState::kNonSignaled)) {
+      shutdown_event_(RefCountedWaitableEvent::Create()) {
   MutexLocker lock(ThreadSetMutex());
   WorkerThreads().insert(this);
 }
@@ -389,7 +414,7 @@ void WorkerThread::EnsureScriptExecutionTerminates(ExitCode exit_code) {
 }
 
 void WorkerThread::InitializeSchedulerOnWorkerThread(
-    WaitableEvent* waitable_event) {
+    base::WaitableEvent* waitable_event) {
   DCHECK(IsCurrentThread());
   DCHECK(!worker_scheduler_);
   scheduler::WebThreadImplForWorkerScheduler& web_thread_for_worker =
@@ -550,14 +575,22 @@ void WorkerThread::PerformShutdownOnWorkerThread() {
 
   if (IsOwningBackingThread())
     GetWorkerBackingThread().ShutdownOnBackingThread();
-  // We must not touch workerBackingThread() from now on.
+  // We must not touch GetWorkerBackingThread() from now on.
+
+  // Keep the reference to the shutdown event in a local variable so that the
+  // worker thread can signal it even after calling DidTerminateWorkerThread(),
+  // which may destroy |this|.
+  scoped_refptr<RefCountedWaitableEvent> shutdown_event = shutdown_event_;
 
   // Notify the proxy that the WorkerOrWorkletGlobalScope has been disposed
   // of. This can free this thread object, hence it must not be touched
   // afterwards.
   GetWorkerReportingProxy().DidTerminateWorkerThread();
 
-  shutdown_event_->Signal();
+  // This should be signaled at the end because this may induce the main thread
+  // to clear the worker backing thread and stop thread execution in the system
+  // level.
+  shutdown_event->Signal();
 }
 
 void WorkerThread::SetThreadState(ThreadState next_thread_state) {
