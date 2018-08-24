@@ -182,6 +182,10 @@ SkColor GetDefaultColorForIconType(IconType icon_type) {
 }
 
 bool IconTypeIsDark(IconType icon_type) {
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    // Dark icon is used for OOBE tray icon because the background is white.
+    return icon_type == ICON_TYPE_TRAY_OOBE;
+  }
   return icon_type != ICON_TYPE_TRAY_REGULAR;
 }
 
