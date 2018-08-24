@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
+#include "ash/session/session_observer.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -23,7 +24,8 @@ class DetailedViewDelegate;
 
 // The system tray item for audio input and output.
 class ASH_EXPORT TrayAudio : public TrayImageItem,
-                             public chromeos::CrasAudioHandler::AudioObserver {
+                             public chromeos::CrasAudioHandler::AudioObserver,
+                             public SessionObserver {
  public:
   explicit TrayAudio(SystemTray* system_tray);
   ~TrayAudio() override;
@@ -54,6 +56,9 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   void OnActiveOutputNodeChanged() override;
   void OnActiveInputNodeChanged() override;
 
+  // Overridden from SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+
   // Updates the UI views.
   void Update();
 
@@ -64,6 +69,8 @@ class ASH_EXPORT TrayAudio : public TrayImageItem,
   bool pop_up_volume_view_;
 
   tray::AudioDetailedView* audio_detail_view_;
+
+  ScopedSessionObserver session_observer_{this};
 
   const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
 

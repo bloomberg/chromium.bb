@@ -8,12 +8,14 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/audio/audio_detailed_view.h"
 #include "ash/system/audio/volume_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_utils.h"
 #include "ui/views/view.h"
 
 namespace ash {
@@ -137,7 +139,14 @@ void TrayAudio::OnActiveInputNodeChanged() {
   Update();
 }
 
+void TrayAudio::OnSessionStateChanged(session_manager::SessionState state) {
+  Update();
+}
+
 void TrayAudio::Update() {
+  SetIconColor(TrayIconColor(
+      ash::Shell::Get()->session_controller()->GetSessionState()));
+
   if (tray_view())
     tray_view()->SetVisible(GetInitialVisibility());
   if (volume_view_) {
