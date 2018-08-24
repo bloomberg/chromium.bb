@@ -55,6 +55,10 @@ static_library("proximity_auth") {
     "//chromeos",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/proximity_auth/public/interfaces",
+
+    # TODO(hansberry): Remove this dependency once https://crbug.com/870123 is
+    # fixed.
+    "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/secure_channel/public/cpp/client",
     "//chromeos/services/secure_channel/public/mojom",
     "//components/account_id",
@@ -116,6 +120,10 @@ source_set("unit_tests") {
     "//chromeos",
     "//chromeos/components/proximity_auth/logging",
     "//chromeos/components/proximity_auth/logging:unit_tests",
+
+    # TODO(hansberry): Remove this dependency once https://crbug.com/870123 is
+    # fixed.
+    "//chromeos/services/multidevice_setup/public/cpp:prefs",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
     "//components/cryptauth:test_support",
     "//components/prefs:test_support",

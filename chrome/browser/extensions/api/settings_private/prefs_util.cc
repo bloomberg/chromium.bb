@@ -51,7 +51,6 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_method_short.h"
 #include "chrome/browser/extensions/api/settings_private/chromeos_resolve_time_zone_by_geolocation_on_off.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_prefs.h"
 #include "ui/chromeos/events/pref_names.h"
@@ -486,13 +485,6 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[::prefs::kLanguageXkbAutoRepeatInterval] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
-
-  // Multidevice settings.
-  (*s_whitelist)[chromeos::multidevice_setup::kSuiteEnabledPrefName] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
-  (*s_whitelist)
-      [chromeos::multidevice_setup::kAndroidMessagesFeatureEnabledPrefName] =
-          settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // Native Printing settings.
   (*s_whitelist)[::prefs::kUserNativePrintersAllowed] =

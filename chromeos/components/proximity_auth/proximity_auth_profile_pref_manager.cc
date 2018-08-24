@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -29,8 +30,6 @@ ProximityAuthProfilePrefManager::~ProximityAuthProfilePrefManager() {
 // static
 void ProximityAuthProfilePrefManager::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kEasyUnlockAllowed, true);
-  registry->RegisterBooleanPref(prefs::kEasyUnlockEnabled, false);
   registry->RegisterBooleanPref(prefs::kEasyUnlockEnabledStateSet, false);
   registry->RegisterInt64Pref(
       prefs::kProximityAuthLastPromotionCheckTimestampMs, 0L);
@@ -60,8 +59,10 @@ void ProximityAuthProfilePrefManager::StartSyncingToLocalState(
                  weak_ptr_factory_.GetWeakPtr());
 
   registrar_.Init(pref_service_);
-  registrar_.Add(prefs::kEasyUnlockAllowed, on_pref_changed_callback);
-  registrar_.Add(prefs::kEasyUnlockEnabled, on_pref_changed_callback);
+  registrar_.Add(chromeos::multidevice_setup::kSmartLockAllowedPrefName,
+                 on_pref_changed_callback);
+  registrar_.Add(chromeos::multidevice_setup::kSmartLockEnabledPrefName,
+                 on_pref_changed_callback);
   registrar_.Add(proximity_auth::prefs::kEasyUnlockProximityThreshold,
                  on_pref_changed_callback);
   registrar_.Add(proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
@@ -74,10 +75,12 @@ void ProximityAuthProfilePrefManager::SyncPrefsToLocalState() {
   std::unique_ptr<base::DictionaryValue> user_prefs_dict(
       new base::DictionaryValue());
 
-  user_prefs_dict->SetKey(prefs::kEasyUnlockAllowed,
-                          base::Value(IsEasyUnlockAllowed()));
-  user_prefs_dict->SetKey(prefs::kEasyUnlockEnabled,
-                          base::Value(IsEasyUnlockEnabled()));
+  user_prefs_dict->SetKey(
+      chromeos::multidevice_setup::kSmartLockAllowedPrefName,
+      base::Value(IsEasyUnlockAllowed()));
+  user_prefs_dict->SetKey(
+      chromeos::multidevice_setup::kSmartLockEnabledPrefName,
+      base::Value(IsEasyUnlockEnabled()));
   user_prefs_dict->SetKey(prefs::kEasyUnlockProximityThreshold,
                           base::Value(GetProximityThreshold()));
   user_prefs_dict->SetKey(prefs::kProximityAuthIsChromeOSLoginEnabled,
@@ -90,16 +93,20 @@ void ProximityAuthProfilePrefManager::SyncPrefsToLocalState() {
 }
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockAllowed() const {
-  return pref_service_->GetBoolean(prefs::kEasyUnlockAllowed);
+  return pref_service_->GetBoolean(
+      chromeos::multidevice_setup::kSmartLockAllowedPrefName);
 }
 
 void ProximityAuthProfilePrefManager::SetIsEasyUnlockEnabled(
     bool is_easy_unlock_enabled) const {
-  pref_service_->SetBoolean(prefs::kEasyUnlockEnabled, is_easy_unlock_enabled);
+  pref_service_->SetBoolean(
+      chromeos::multidevice_setup::kSmartLockEnabledPrefName,
+      is_easy_unlock_enabled);
 }
 
 bool ProximityAuthProfilePrefManager::IsEasyUnlockEnabled() const {
-  return pref_service_->GetBoolean(prefs::kEasyUnlockEnabled);
+  return pref_service_->GetBoolean(
+      chromeos::multidevice_setup::kSmartLockEnabledPrefName);
 }
 
 void ProximityAuthProfilePrefManager::SetEasyUnlockEnabledStateSet() const {

@@ -124,10 +124,10 @@ ChromeCryptAuthService::ChromeCryptAuthService(
   gcm_manager_->StartListening();
 
   registrar_.Init(profile_->GetPrefs());
-  registrar_.Add(prefs::kEasyUnlockAllowed,
+  registrar_.Add(multidevice_setup::kSmartLockAllowedPrefName,
                  base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
-  registrar_.Add(multidevice_setup::kInstantTetheringFeatureAllowedPrefName,
+  registrar_.Add(multidevice_setup::kInstantTetheringAllowedPrefName,
                  base::Bind(&ChromeCryptAuthService::OnPrefsChanged,
                             weak_ptr_factory_.GetWeakPtr()));
 
@@ -210,7 +210,11 @@ void ChromeCryptAuthService::OnRefreshTokenUpdatedForAccount(
 void ChromeCryptAuthService::PerformEnrollmentAndDeviceSyncIfPossible() {
   DCHECK(identity_manager_->HasPrimaryAccountWithRefreshToken());
 
-  if (!IsEnrollmentAllowedByPolicy()) {
+  // CryptAuth enrollment is allowed only if at least one multi-device feature
+  // is enabled. This ensures that we do not unnecessarily register devices on
+  // the CryptAuth back-end when the registration would never actually be used.
+  if (!multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
+          profile_->GetPrefs())) {
     PA_LOG(INFO) << "CryptAuth enrollment is disabled by enterprise policy.";
     return;
   }
@@ -226,15 +230,6 @@ void ChromeCryptAuthService::PerformEnrollmentAndDeviceSyncIfPossible() {
   // Even if enrollment was valid, CryptAuthEnrollmentManager must be started in
   // order to schedule the next enrollment attempt.
   enrollment_manager_->Start();
-}
-
-bool ChromeCryptAuthService::IsEnrollmentAllowedByPolicy() {
-  // We allow CryptAuth enrollments if at least one of the features which
-  // depends on CryptAuth is enabled by enterprise policy.
-  PrefService* pref_service = profile_->GetPrefs();
-  return pref_service->GetBoolean(prefs::kEasyUnlockAllowed) ||
-         pref_service->GetBoolean(
-             multidevice_setup::kInstantTetheringFeatureAllowedPrefName);
 }
 
 void ChromeCryptAuthService::OnPrefsChanged() {

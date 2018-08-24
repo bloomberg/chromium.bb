@@ -11,6 +11,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -63,9 +64,9 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
     user1_prefs->SetKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
         base::Value(kIsChromeOSLoginEnabled1));
-    user1_prefs->SetKey(proximity_auth::prefs::kEasyUnlockAllowed,
+    user1_prefs->SetKey(chromeos::multidevice_setup::kSmartLockAllowedPrefName,
                         base::Value(kIsEasyUnlockAllowed1));
-    user1_prefs->SetKey(proximity_auth::prefs::kEasyUnlockEnabled,
+    user1_prefs->SetKey(chromeos::multidevice_setup::kSmartLockEnabledPrefName,
                         base::Value(kIsEasyUnlockEnabled1));
     DictionaryPrefUpdate update1(&local_state_,
                                  prefs::kEasyUnlockLocalStateUserPrefs);
@@ -79,9 +80,9 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
     user2_prefs->SetKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
         base::Value(kIsChromeOSLoginEnabled2));
-    user2_prefs->SetKey(proximity_auth::prefs::kEasyUnlockAllowed,
+    user2_prefs->SetKey(chromeos::multidevice_setup::kSmartLockAllowedPrefName,
                         base::Value(kIsEasyUnlockAllowed2));
-    user2_prefs->SetKey(proximity_auth::prefs::kEasyUnlockEnabled,
+    user2_prefs->SetKey(chromeos::multidevice_setup::kSmartLockEnabledPrefName,
                         base::Value(kIsEasyUnlockEnabled2));
 
     DictionaryPrefUpdate update2(&local_state_,

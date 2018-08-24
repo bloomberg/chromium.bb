@@ -22,12 +22,6 @@ namespace multidevice_setup {
 
 namespace {
 
-// TODO(jordynass): Use constants declared in
-// chromeos/services/multidevice_setup/public/cpp/prefs.h once migration is
-// complete, then delete these fields which are duplicates.
-const char kSmartLockFeatureEnabledPrefName[] = "easy_unlock.enabled";
-const char kSmartLockFeatureAllowedPrefName[] = "easy_unlock.allowed";
-
 cryptauth::RemoteDeviceRef CreateTestHostDevice() {
   cryptauth::RemoteDeviceRef host_device =
       cryptauth::CreateRemoteDeviceRefForTest();
@@ -63,10 +57,6 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     user_prefs::PrefRegistrySyncable* registry = test_pref_service_->registry();
     RegisterFeaturePrefs(registry);
-    // TODO(jordynass): Remove the registration of these preferences once they
-    // are migrated.
-    registry->RegisterBooleanPref(kSmartLockFeatureAllowedPrefName, true);
-    registry->RegisterBooleanPref(kSmartLockFeatureEnabledPrefName, true);
 
     fake_host_status_provider_ = std::make_unique<FakeHostStatusProvider>();
 
@@ -210,7 +200,7 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, BetterTogetherSuite) {
                            mojom::Feature::kBetterTogetherSuite,
                            mojom::FeatureState::kEnabledByUser);
 
-  test_pref_service()->SetBoolean(kSuiteEnabledPrefName, false);
+  test_pref_service()->SetBoolean(kBetterTogetherSuiteEnabledPrefName, false);
   EXPECT_EQ(
       mojom::FeatureState::kDisabledByUser,
       manager()->GetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
@@ -245,16 +235,14 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, InstantTethering) {
                            mojom::Feature::kInstantTethering,
                            mojom::FeatureState::kEnabledByUser);
 
-  test_pref_service()->SetBoolean(kInstantTetheringFeatureEnabledPrefName,
-                                  false);
+  test_pref_service()->SetBoolean(kInstantTetheringEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kInstantTethering]);
   VerifyFeatureStateChange(3u /* expected_index */,
                            mojom::Feature::kInstantTethering,
                            mojom::FeatureState::kDisabledByUser);
 
-  test_pref_service()->SetBoolean(kInstantTetheringFeatureAllowedPrefName,
-                                  false);
+  test_pref_service()->SetBoolean(kInstantTetheringAllowedPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByPolicy,
             manager()->GetFeatureStates()[mojom::Feature::kInstantTethering]);
   VerifyFeatureStateChange(4u /* expected_index */,
@@ -285,8 +273,7 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, Messages) {
   VerifyFeatureStateChange(2u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kEnabledByUser);
 
-  test_pref_service()->SetBoolean(kAndroidMessagesFeatureEnabledPrefName,
-                                  false);
+  test_pref_service()->SetBoolean(kMessagesEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
   VerifyFeatureStateChange(3u /* expected_index */, mojom::Feature::kMessages,
@@ -317,13 +304,13 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, SmartLock) {
   VerifyFeatureStateChange(2u /* expected_index */, mojom::Feature::kSmartLock,
                            mojom::FeatureState::kEnabledByUser);
 
-  test_pref_service()->SetBoolean(kSmartLockFeatureEnabledPrefName, false);
+  test_pref_service()->SetBoolean(kSmartLockEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kSmartLock]);
   VerifyFeatureStateChange(3u /* expected_index */, mojom::Feature::kSmartLock,
                            mojom::FeatureState::kDisabledByUser);
 
-  test_pref_service()->SetBoolean(kSmartLockFeatureAllowedPrefName, false);
+  test_pref_service()->SetBoolean(kSmartLockAllowedPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByPolicy,
             manager()->GetFeatureStates()[mojom::Feature::kSmartLock]);
   VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kSmartLock,

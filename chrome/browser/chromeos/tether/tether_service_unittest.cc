@@ -994,8 +994,7 @@ TEST_F(TetherServiceTest, TestNoTetherHosts) {
 
 TEST_F(TetherServiceTest, TestProhibitedByPolicy) {
   profile_->GetPrefs()->SetBoolean(
-      chromeos::multidevice_setup::kInstantTetheringFeatureAllowedPrefName,
-      false);
+      chromeos::multidevice_setup::kInstantTetheringAllowedPrefName, false);
 
   CreateTetherService();
 
@@ -1207,8 +1206,7 @@ TEST_F(TetherServiceTest, TestCellularIsAvailable) {
 
 TEST_F(TetherServiceTest, TestDisabled) {
   profile_->GetPrefs()->SetBoolean(
-      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName,
-      false);
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName, false);
 
   CreateTetherService();
 
@@ -1217,7 +1215,7 @@ TEST_F(TetherServiceTest, TestDisabled) {
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
   EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
-      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName));
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName));
   VerifyTetherActiveStatus(false /* expected_active */);
 
   VerifyTetherFeatureStateRecorded(
@@ -1239,7 +1237,7 @@ TEST_F(TetherServiceTest, TestEnabled) {
       network_state_handler()->GetTechnologyState(
           chromeos::NetworkTypePattern::Tether()));
   EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
-      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName));
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName));
   VerifyTetherActiveStatus(false /* expected_active */);
   histogram_tester_.ExpectBucketCount(
       "InstantTethering.UserPreference.OnToggle", false,
@@ -1250,7 +1248,7 @@ TEST_F(TetherServiceTest, TestEnabled) {
             network_state_handler()->GetTechnologyState(
                 chromeos::NetworkTypePattern::Tether()));
   EXPECT_TRUE(profile_->GetPrefs()->GetBoolean(
-      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName));
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName));
   VerifyTetherActiveStatus(true /* expected_active */);
   histogram_tester_.ExpectBucketCount(
       "InstantTethering.UserPreference.OnToggle", true,

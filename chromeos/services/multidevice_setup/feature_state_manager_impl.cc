@@ -21,29 +21,21 @@ namespace multidevice_setup {
 
 namespace {
 
-// TODO(jordynass): Use constants declared in
-// chromeos/services/multidevice_setup/public/cpp/prefs.h once migration is
-// complete, then delete these fields which are duplicates. See
-// https://crbug.com/870065.
-const char kSmartLockFeatureEnabledPrefName[] = "easy_unlock.enabled";
-const char kSmartLockFeatureAllowedPrefName[] = "easy_unlock.allowed";
-
 base::flat_map<mojom::Feature, std::string>
 GenerateFeatureToEnabledPrefNameMap() {
   return base::flat_map<mojom::Feature, std::string>{
-      {mojom::Feature::kBetterTogetherSuite, kSuiteEnabledPrefName},
-      {mojom::Feature::kInstantTethering,
-       kInstantTetheringFeatureEnabledPrefName},
-      {mojom::Feature::kMessages, kAndroidMessagesFeatureEnabledPrefName},
-      {mojom::Feature::kSmartLock, kSmartLockFeatureEnabledPrefName}};
+      {mojom::Feature::kBetterTogetherSuite,
+       kBetterTogetherSuiteEnabledPrefName},
+      {mojom::Feature::kInstantTethering, kInstantTetheringEnabledPrefName},
+      {mojom::Feature::kMessages, kMessagesEnabledPrefName},
+      {mojom::Feature::kSmartLock, kSmartLockEnabledPrefName}};
 }
 
 base::flat_map<mojom::Feature, std::string>
 GenerateFeatureToAllowedPrefNameMap() {
   return base::flat_map<mojom::Feature, std::string>{
-      {mojom::Feature::kInstantTethering,
-       kInstantTetheringFeatureAllowedPrefName},
-      {mojom::Feature::kSmartLock, kSmartLockFeatureAllowedPrefName}};
+      {mojom::Feature::kInstantTethering, kInstantTetheringAllowedPrefName},
+      {mojom::Feature::kSmartLock, kSmartLockAllowedPrefName}};
 }
 
 // Each feature's default value is kUnavailableNoVerifiedHost until proven
