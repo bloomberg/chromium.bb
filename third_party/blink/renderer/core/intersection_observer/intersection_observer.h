@@ -97,6 +97,10 @@ class CORE_EXPORT IntersectionObserver final
 
   void Trace(blink::Visitor*) override;
 
+  // Enable/disable throttling of visibility checking, so we don't have to add
+  // 100ms sleep() calls to tests.
+  static void SetV2ThrottleDelayEnabledForTesting(bool);
+
  private:
   explicit IntersectionObserver(IntersectionObserverDelegate&,
                                 Element*,
@@ -109,6 +113,10 @@ class CORE_EXPORT IntersectionObserver final
   // deleted; true otherwise.
   bool RootIsValid() const;
 
+  // If trackVisibility is true, don't compute observations more frequently
+  // than this many milliseconds.
+  static const DOMHighResTimeStamp s_v2_throttle_delay_;
+
   const TraceWrapperMember<IntersectionObserverDelegate> delegate_;
   WeakMember<Element> root_;
   HeapLinkedHashSet<WeakMember<IntersectionObservation>> observations_;
@@ -118,6 +126,7 @@ class CORE_EXPORT IntersectionObserver final
   Length right_margin_;
   Length bottom_margin_;
   Length left_margin_;
+  DOMHighResTimeStamp last_run_time_;
   unsigned root_is_implicit_ : 1;
   unsigned track_visibility_ : 1;
 };

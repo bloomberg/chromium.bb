@@ -135,6 +135,15 @@ void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
 
 }  // anonymous namespace
 
+// Minimum time, in milliseconds, between observations. See:
+//   http://szager-chromium.github.io/IntersectionObserver/#dom-intersectionobserver-trackvisibility
+const DOMHighResTimeStamp IntersectionObserver::s_v2_throttle_delay_ = 100;
+static bool v2_throttle_delay_enabled = true;
+
+void IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(bool enabled) {
+  v2_throttle_delay_enabled = enabled;
+}
+
 IntersectionObserver* IntersectionObserver::Create(
     const IntersectionObserverInit& observer_init,
     IntersectionObserverDelegate& delegate,
@@ -196,6 +205,7 @@ IntersectionObserver::IntersectionObserver(
       right_margin_(kFixed),
       bottom_margin_(kFixed),
       left_margin_(kFixed),
+      last_run_time_(-s_v2_throttle_delay_),
       root_is_implicit_(root ? 0 : 1),
       track_visibility_(track_visibility ? 1 : 0) {
   switch (root_margin.size()) {
@@ -311,8 +321,13 @@ void IntersectionObserver::ComputeIntersectionObservations() {
     return;
   DOMHighResTimeStamp timestamp =
       DOMWindowPerformance::performance(*delegate_dom_window)->now();
+  if (track_visibility_ && v2_throttle_delay_enabled &&
+      timestamp - last_run_time_ < s_v2_throttle_delay_) {
+    return;
+  }
+  last_run_time_ = timestamp;
   for (auto& observation : observations_)
-    observation->ComputeIntersectionObservations(timestamp);
+    observation->ComputeIntersectionObservations(last_run_time_);
 }
 
 void IntersectionObserver::disconnect(ExceptionState& exception_state) {
