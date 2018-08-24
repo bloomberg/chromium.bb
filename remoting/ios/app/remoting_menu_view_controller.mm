@@ -58,7 +58,7 @@ std::string GetAuthorizationCodeUri() {
 }  // namespace
 
 @interface RemotingMenuViewController () {
-  MDCAppBar* _appBar;
+  MDCAppBarViewController* _appBarViewController;
   NSArray<NSArray<SideMenuItem*>*>* _content;
 }
 @end
@@ -78,12 +78,12 @@ std::string GetAuthorizationCodeUri() {
   if (self) {
     self.title = l10n_util::GetNSString(IDS_SETTINGS_BUTTON);
 
-    _appBar = [[MDCAppBar alloc] init];
-    [self addChildViewController:_appBar.headerViewController];
+    _appBarViewController = [[MDCAppBarViewController alloc] init];
+    [self addChildViewController:_appBarViewController];
 
-    _appBar.headerViewController.headerView.backgroundColor = kBackgroundColor;
-    _appBar.navigationBar.tintColor = [UIColor whiteColor];
-    _appBar.navigationBar.titleTextAttributes =
+    _appBarViewController.headerView.backgroundColor = kBackgroundColor;
+    _appBarViewController.navigationBar.tintColor = [UIColor whiteColor];
+    _appBarViewController.navigationBar.titleTextAttributes =
         @{NSForegroundColorAttributeName : [UIColor whiteColor]};
   }
   return self;
@@ -94,9 +94,9 @@ std::string GetAuthorizationCodeUri() {
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  _appBar.headerViewController.headerView.trackingScrollView =
-      self.collectionView;
-  [_appBar addSubviewsToParent];
+  _appBarViewController.headerView.trackingScrollView = self.collectionView;
+  [self.view addSubview:_appBarViewController.view];
+  [_appBarViewController didMoveToParentViewController:self];
 
   UIBarButtonItem* backButton =
       [[UIBarButtonItem alloc] initWithImage:RemotingTheme.backIcon
