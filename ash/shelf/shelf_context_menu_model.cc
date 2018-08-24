@@ -76,18 +76,23 @@ void AddLocalMenuItems(MenuItemList* menu, int64_t display_id) {
   if (CanUserModifyShelfAutoHide(prefs) && !IsFullScreenMode(display_id) &&
       !skip_clamshell_only_options) {
     mojom::MenuItemPtr auto_hide(mojom::MenuItem::New());
+    const bool is_autohide_set =
+        GetShelfAutoHideBehaviorPref(prefs, display_id) ==
+        SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
     if (features::IsTouchableAppContextMenuEnabled()) {
       auto_hide->type = ui::MenuModel::TYPE_COMMAND;
-      auto_hide->image =
-          gfx::CreateVectorIcon(kAutoHideIcon, menu_config.touchable_icon_size,
-                                menu_config.touchable_icon_color);
+      auto_hide->image = gfx::CreateVectorIcon(
+          is_autohide_set ? kAlwaysShowShelfIcon : kAutoHideIcon,
+          menu_config.touchable_icon_size, menu_config.touchable_icon_color);
+      auto_hide->label = GetStringUTF16(
+          is_autohide_set ? IDS_ASH_SHELF_CONTEXT_MENU_ALWAYS_SHOW_SHELF
+                          : IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
     } else {
+      auto_hide->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
       auto_hide->type = ui::MenuModel::TYPE_CHECK;
-      auto_hide->checked = GetShelfAutoHideBehaviorPref(prefs, display_id) ==
-                           SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS;
+      auto_hide->checked = is_autohide_set;
     }
     auto_hide->command_id = ShelfContextMenuModel::MENU_AUTO_HIDE;
-    auto_hide->label = GetStringUTF16(IDS_ASH_SHELF_CONTEXT_MENU_AUTO_HIDE);
     auto_hide->enabled = !is_tablet_mode;
     menu->push_back(std::move(auto_hide));
   }
