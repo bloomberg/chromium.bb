@@ -141,6 +141,9 @@ check_base(const char *tableList, const char *input, const char *expected,
 			outputPos = malloc(sizeof(int) * inlen);
 		}
 		actualInlen = inlen;
+		// Note that this loop is not strictly needed to make the current tests pass, but
+		// in the general case it is needed because it is theoretically possible that we
+		// provided a too short output buffer.
 		for (int k = 1; k <= 3; k++) {
 			if (direction == 1) {
 				funcStatus = lou_backTranslate(tableList, inbuf, &actualInlen, outbuf,
@@ -260,7 +263,7 @@ check_base(const char *tableList, const char *input, const char *expected,
 					in.expected_cursorPos, cursorPos);
 			retval = 1;
 		}
-		if (in.max_outlen < 0 && inlen != actualInlen && direction != 1) {
+		if (in.max_outlen < 0 && inlen != actualInlen) {
 			fprintf(stderr,
 					"Unexpected error happened: input length is not the same before as "
 					"after the translation:\n");
