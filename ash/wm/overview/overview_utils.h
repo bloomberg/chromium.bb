@@ -11,6 +11,7 @@
 #include "ash/wm/overview/overview_animation_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer_type.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 class Window;
@@ -60,6 +61,14 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
                                                       float initial_opacity,
                                                       aura::Window* parent,
                                                       bool stack_on_top);
+
+// Calculates the bounds of the |transformed_window|. Those bounds are a union
+// of all regular (normal and panel) windows in the |transformed_window|'s
+// transient hierarchy. The returned Rect is in virtual screen coordinates. The
+// returned bounds are adjusted to allow the original |transformed_window|'s
+// header to be hidden if |top_inset| is not zero.
+gfx::Rect GetTransformedBounds(aura::Window* transformed_window, int top_inset);
+
 }  // namespace ash
 
 #endif  // ASH_WM_OVERVIEW_OVERVIEW_UTILS_H_
