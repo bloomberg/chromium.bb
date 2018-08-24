@@ -48,6 +48,7 @@ class FakeStreamFactory : public mojom::StreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
+      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) override {}
   void BindMuter(mojom::LocalMuterAssociatedRequest request,
                  const base::UnguessableToken& group_id) override {}
@@ -61,7 +62,14 @@ class FakeStreamFactory : public mojom::StreamFactory {
       CreateLoopbackStreamCallback created_callback) override {}
 
   mojo::Binding<mojom::StreamFactory> binding_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FakeStreamFactory);
 };
+
+static_assert(
+    !std::is_abstract<FakeStreamFactory>(),
+    "FakeStreamFactory should implement all of the StreamFactory interface.");
 
 }  // namespace audio
 

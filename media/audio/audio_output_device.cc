@@ -182,7 +182,7 @@ void AudioOutputDevice::CreateStreamOnIOThread() {
   if (state_ == IDLE && !(did_receive_auth_.IsSignaled() && device_id_.empty()))
     RequestDeviceAuthorizationOnIOThread();
 
-  ipc_->CreateStream(this, audio_parameters_ /* TODO(ossu):, processing_id_ */);
+  ipc_->CreateStream(this, audio_parameters_, processing_id_);
   // By default, start playing right away.
   ipc_->PlayStream();
   state_ = STREAM_CREATION_REQUESTED;

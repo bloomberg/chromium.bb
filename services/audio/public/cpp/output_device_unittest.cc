@@ -75,6 +75,7 @@ class FakeOutputStreamFactory : public audio::FakeStreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
+      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final {
     EXPECT_FALSE(observer_info);
     EXPECT_FALSE(log);

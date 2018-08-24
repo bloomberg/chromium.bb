@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/cpp/device_factory.h"
+#include "services/audio/public/cpp/fake_stream_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,10 +34,10 @@ class MockStream : public media::mojom::AudioInputStream {
   MOCK_METHOD1(SetVolume, void(double));
 };
 
-class FakeStreamFactory : public audio::mojom::StreamFactory {
+class TestStreamFactory : public audio::FakeStreamFactory {
  public:
-  FakeStreamFactory() : binding_(this), stream_(), stream_binding_(&stream_) {}
-  ~FakeStreamFactory() override = default;
+  TestStreamFactory() : stream_(), stream_binding_(&stream_) {}
+  ~TestStreamFactory() override = default;
   void CreateInputStream(media::mojom::AudioInputStreamRequest stream_request,
                          media::mojom::AudioInputStreamClientPtr client,
                          media::mojom::AudioInputStreamObserverPtr observer,
@@ -74,34 +75,10 @@ class FakeStreamFactory : public audio::mojom::StreamFactory {
                void(const base::UnguessableToken& input_stream_id,
                     const std::string& output_device_id));
 
-  MOCK_METHOD7(CreateOutputStream,
-               void(media::mojom::AudioOutputStreamRequest stream_request,
-                    media::mojom::AudioOutputStreamObserverAssociatedPtrInfo
-                        observer_info,
-                    media::mojom::AudioLogPtr log,
-                    const std::string& output_device_id,
-                    const media::AudioParameters& params,
-                    const base::UnguessableToken& group_id,
-                    CreateOutputStreamCallback created_callback));
-
-  MOCK_METHOD2(BindMuter,
-               void(mojom::LocalMuterAssociatedRequest request,
-                    const base::UnguessableToken& group_id));
-
-  MOCK_METHOD7(CreateLoopbackStream,
-               void(media::mojom::AudioInputStreamRequest stream_request,
-                    media::mojom::AudioInputStreamClientPtr client,
-                    media::mojom::AudioInputStreamObserverPtr observer,
-                    const media::AudioParameters& params,
-                    uint32_t shared_memory_count,
-                    const base::UnguessableToken& group_id,
-                    CreateLoopbackStreamCallback created_callback));
-
   void Bind(mojo::ScopedMessagePipeHandle handle) {
     binding_.Bind(audio::mojom::StreamFactoryRequest(std::move(handle)));
   }
 
-  mojo::Binding<audio::mojom::StreamFactory> binding_;
   StrictMock<MockStream> stream_;
   media::mojom::AudioInputStreamClientPtr client_;
   mojo::Binding<media::mojom::AudioInputStream> stream_binding_;
@@ -142,21 +119,21 @@ class InputIPCTest : public ::testing::Test {
       : scoped_task_environment(
             base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED) {}
-  std::unique_ptr<StrictMock<FakeStreamFactory>> factory_;
+  std::unique_ptr<StrictMock<TestStreamFactory>> factory_;
 
   void SetUp() override {
     service_manager::mojom::ConnectorRequest request;
     std::unique_ptr<service_manager::Connector> connector =
         service_manager::Connector::Create(&request);
 
-    factory_ = std::make_unique<StrictMock<FakeStreamFactory>>();
+    factory_ = std::make_unique<StrictMock<TestStreamFactory>>();
     {
       service_manager::Connector::TestApi test_api(connector.get());
 
       test_api.OverrideBinderForTesting(
           service_manager::Identity(audio::mojom::kServiceName),
           audio::mojom::StreamFactory::Name_,
-          base::BindRepeating(&FakeStreamFactory::Bind,
+          base::BindRepeating(&TestStreamFactory::Bind,
                               base::Unretained(factory_.get())));
     }
     ipc = std::make_unique<InputIPC>(std::move(connector), kDeviceId, nullptr);

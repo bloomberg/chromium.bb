@@ -44,7 +44,8 @@ class MEDIA_MOJO_EXPORT MojoAudioOutputStreamProvider
   // mojom::AudioOutputStreamProvider implementation.
   void Acquire(
       const AudioParameters& params,
-      mojom::AudioOutputStreamProviderClientPtr provider_client) override;
+      mojom::AudioOutputStreamProviderClientPtr provider_client,
+      const base::Optional<base::UnguessableToken>& processing_id) override;
 
   // Called when |audio_output_| had an error.
   void CleanUp(bool had_error);

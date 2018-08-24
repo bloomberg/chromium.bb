@@ -9,6 +9,7 @@
 
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "base/sync_socket.h"
+#include "base/unguessable_token.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 #include "media/base/output_device_info.h"
@@ -81,8 +82,10 @@ class MEDIA_EXPORT AudioOutputIPC {
   // the default device will be used.
   // Once the stream has been created, the implementation will notify
   // |delegate| by calling OnStreamCreated().
-  virtual void CreateStream(AudioOutputIPCDelegate* delegate,
-                            const AudioParameters& params) = 0;
+  virtual void CreateStream(
+      AudioOutputIPCDelegate* delegate,
+      const AudioParameters& params,
+      const base::Optional<base::UnguessableToken>& processing_id) = 0;
 
   // Starts playing the stream.  This should generate a call to
   // AudioOutputController::Play().

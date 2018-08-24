@@ -4,6 +4,7 @@
 
 module media.mojom;
 
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "media/mojo/interfaces/audio_data_pipe.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
 import "media/mojo/interfaces/media_types.mojom";
@@ -68,9 +69,12 @@ interface AudioOutputStreamProvider {
   // Creates a new AudioOutputStream using |params|. |client| is notified when
   // the stream is ready. The stream lifetime is bound by the lifetime of
   // |client|. On error, the |client| will have a disconnect reason among the
-  // specified ones in AudioOutputStreamProviderClient.
+  // specified ones in AudioOutputStreamProviderClient. |processing_id|, if
+  // provided, identifies the group of input and output streams that are related
+  // during audio processing.
   // Can only be called once.
-  Acquire(AudioParameters params, AudioOutputStreamProviderClient client);
+  Acquire(AudioParameters params, AudioOutputStreamProviderClient client,
+          mojo_base.mojom.UnguessableToken? processing_id);
 };
 
 interface AudioOutputStreamProviderClient {

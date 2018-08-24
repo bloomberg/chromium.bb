@@ -6,8 +6,10 @@
 
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include "base/numerics/math_constants.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_bus.h"
 
 namespace audio {
@@ -54,8 +56,7 @@ const media::AudioParameters& FakeLoopbackGroupMember::GetAudioParameters()
 }
 
 std::string FakeLoopbackGroupMember::GetDeviceId() const {
-  // FIXME(ossu): Provide a device ID or return default!
-  return "";
+  return media::AudioDeviceDescription::kDefaultDeviceId;
 }
 
 void FakeLoopbackGroupMember::StartSnooping(Snooper* snooper,

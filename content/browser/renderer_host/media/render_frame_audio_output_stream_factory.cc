@@ -37,7 +37,8 @@ class RenderFrameAudioOutputStreamFactory::ProviderImpl final
 
   void Acquire(
       const media::AudioParameters& params,
-      media::mojom::AudioOutputStreamProviderClientPtr provider_client) final {
+      media::mojom::AudioOutputStreamProviderClientPtr provider_client,
+      const base::Optional<base::UnguessableToken>& processing_id) final {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     TRACE_EVENT1("audio",
                  "RenderFrameAudioOutputStreamFactory::ProviderImpl::Acquire",
@@ -50,7 +51,7 @@ class RenderFrameAudioOutputStreamFactory::ProviderImpl final
       // It's possible that |frame| has already been destroyed, in which case we
       // don't need to create a stream. In this case, the renderer will get a
       // connection error since |provider_client| is dropped.
-      factory->CreateOutputStream(frame, device_id_, params,
+      factory->CreateOutputStream(frame, device_id_, params, processing_id,
                                   std::move(provider_client));
     }
 

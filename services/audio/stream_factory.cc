@@ -76,6 +76,7 @@ void StreamFactory::CreateOutputStream(
     const std::string& output_device_id,
     const media::AudioParameters& params,
     const base::UnguessableToken& group_id,
+    const base::Optional<base::UnguessableToken>& processing_id,
     CreateOutputStreamCallback created_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
@@ -93,7 +94,9 @@ void StreamFactory::CreateOutputStream(
   output_streams_.insert(std::make_unique<OutputStream>(
       std::move(created_callback), std::move(deleter_callback),
       std::move(stream_request), std::move(observer), std::move(log),
-      audio_manager_, output_device_id, params, &coordinator_, group_id));
+      audio_manager_, output_device_id, params, &coordinator_, group_id,
+      &stream_monitor_coordinator_,
+      processing_id.value_or(base::UnguessableToken())));
 }
 
 void StreamFactory::BindMuter(mojom::LocalMuterAssociatedRequest request,

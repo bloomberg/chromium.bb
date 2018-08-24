@@ -74,6 +74,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
       RenderFrameHost* frame,
       const std::string& device_id,
       const media::AudioParameters& params,
+      const base::Optional<base::UnguessableToken>& processing_id,
       media::mojom::AudioOutputStreamProviderClientPtr client);
 
   void CreateLoopbackStream(

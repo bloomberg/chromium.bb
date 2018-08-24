@@ -28,7 +28,9 @@ OutputStream::OutputStream(
     const std::string& output_device_id,
     const media::AudioParameters& params,
     LoopbackCoordinator* coordinator,
-    const base::UnguessableToken& loopback_group_id)
+    const base::UnguessableToken& loopback_group_id,
+    StreamMonitorCoordinator* stream_monitor_coordinator,
+    const base::UnguessableToken& processing_id)
     : foreign_socket_(),
       delete_callback_(std::move(delete_callback)),
       binding_(this, std::move(stream_request)),
@@ -42,7 +44,13 @@ OutputStream::OutputStream(
                    : base::DoNothing(),
               params,
               &foreign_socket_),
-      controller_(audio_manager, this, params, output_device_id, &reader_),
+      controller_(audio_manager,
+                  this,
+                  params,
+                  output_device_id,
+                  &reader_,
+                  stream_monitor_coordinator,
+                  processing_id),
       loopback_group_id_(loopback_group_id),
       weak_factory_(this) {
   DCHECK(binding_.is_bound());

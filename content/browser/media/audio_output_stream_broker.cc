@@ -23,12 +23,14 @@ AudioOutputStreamBroker::AudioOutputStreamBroker(
     const std::string& output_device_id,
     const media::AudioParameters& params,
     const base::UnguessableToken& group_id,
+    const base::Optional<base::UnguessableToken>& processing_id,
     DeleterCallback deleter,
     media::mojom::AudioOutputStreamProviderClientPtr client)
     : AudioStreamBroker(render_process_id, render_frame_id),
       output_device_id_(output_device_id),
       params_(params),
       group_id_(group_id),
+      processing_id_(processing_id),
       deleter_(std::move(deleter)),
       client_(std::move(client)),
       observer_(render_process_id, render_frame_id, stream_id),
@@ -94,7 +96,7 @@ void AudioOutputStreamBroker::CreateStream(
       MediaInternals::GetInstance()->CreateMojoAudioLog(
           media::AudioLogFactory::AudioComponent::AUDIO_OUTPUT_CONTROLLER,
           log_component_id, render_process_id(), render_frame_id()),
-      output_device_id_, params_, group_id_,
+      output_device_id_, params_, group_id_, processing_id_,
       base::BindOnce(&AudioOutputStreamBroker::StreamCreated,
                      weak_ptr_factory_.GetWeakPtr(), std::move(stream)));
 }

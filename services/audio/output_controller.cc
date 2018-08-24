@@ -18,6 +18,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/audio_timestamp_helper.h"
+#include "services/audio/stream_monitor.h"
 
 using base::TimeDelta;
 
@@ -88,11 +89,14 @@ void OutputController::ErrorStatisticsTracker::WedgeCheck() {
                         on_more_io_data_called_.IsOne());
 }
 
-OutputController::OutputController(media::AudioManager* audio_manager,
-                                   EventHandler* handler,
-                                   const media::AudioParameters& params,
-                                   const std::string& output_device_id,
-                                   SyncReader* sync_reader)
+OutputController::OutputController(
+    media::AudioManager* audio_manager,
+    EventHandler* handler,
+    const media::AudioParameters& params,
+    const std::string& output_device_id,
+    SyncReader* sync_reader,
+    StreamMonitorCoordinator* stream_monitor_coordinator,
+    const base::UnguessableToken& processing_id)
     : audio_manager_(audio_manager),
       params_(params),
       handler_(handler),
@@ -104,6 +108,8 @@ OutputController::OutputController(media::AudioManager* audio_manager,
       volume_(1.0),
       state_(kEmpty),
       sync_reader_(sync_reader),
+      stream_monitor_coordinator_(stream_monitor_coordinator),
+      processing_id_(processing_id),
       power_monitor_(
           params.sample_rate(),
           TimeDelta::FromMilliseconds(kPowerMeasurementTimeConstantMillis)),
@@ -112,6 +118,7 @@ OutputController::OutputController(media::AudioManager* audio_manager,
   DCHECK(handler_);
   DCHECK(sync_reader_);
   DCHECK(task_runner_.get());
+  DCHECK(stream_monitor_coordinator_ || processing_id.is_empty());
 }
 
 OutputController::~OutputController() {
@@ -178,6 +185,16 @@ bool OutputController::Create(bool is_for_device_change) {
 
   // Finally set the state to kCreated.
   state_ = kCreated;
+
+  if (processing_id_) {
+    // Ensure new monitors know that we're active.
+    stream_monitor_coordinator_->AddObserver(processing_id_, this);
+    // Ensure existing monitors do as well.
+    for (StreamMonitor* monitor :
+         stream_monitor_coordinator_->GetCurrentMembers(processing_id_)) {
+      monitor->OnStreamActive(this);
+    }
+  }
 
   return true;
 }
@@ -300,6 +317,15 @@ int OutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->Read(dest);
 
+  const base::TimeTicks reference_time = delay_timestamp + delay;
+
+  {
+    base::AutoLock lock(realtime_snooper_lock_);
+    for (Snooper* snooper : realtime_snoopers_) {
+      snooper->OnData(*dest, reference_time, volume_);
+    }
+  }
+
   const int frames =
       dest->is_bitstream_format() ? dest->GetBitstreamFrames() : dest->frames();
   delay +=
@@ -308,7 +334,6 @@ int OutputController::OnMoreData(base::TimeDelta delay,
   sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
 
   if (!should_duplicate_.IsZero()) {
-    const base::TimeTicks reference_time = delay_timestamp + delay;
     std::unique_ptr<media::AudioBus> copy(media::AudioBus::Create(params_));
     dest->CopyTo(copy.get());
     task_runner_->PostTask(
@@ -380,7 +405,18 @@ void OutputController::StopCloseAndClearStream() {
 
     // De-register from state change callbacks if stream_ was created via
     // AudioManager.
-      audio_manager_->RemoveOutputDeviceChangeListener(this);
+    audio_manager_->RemoveOutputDeviceChangeListener(this);
+
+    // Only notify and remove ourselves if startup was successful.
+    if (processing_id_ && state_ != kEmpty) {
+      // Don't send out activation messages for now.
+      stream_monitor_coordinator_->RemoveObserver(processing_id_, this);
+      // Ensure everyone monitoring us knows we're no-longer active.
+      for (StreamMonitor* monitor :
+           stream_monitor_coordinator_->GetCurrentMembers(processing_id_)) {
+        monitor->OnStreamInactive(this);
+      }
+    }
 
     StopStream();
     stream_->Close();
@@ -397,31 +433,47 @@ const media::AudioParameters& OutputController::GetAudioParameters() const {
 }
 
 std::string OutputController::GetDeviceId() const {
-  // FIXME(ossu): Should this return "" or
-  // AudioDeviceDescription::kDefaultDeviceId for the default device.
-  return output_device_id_;
+  return output_device_id_.empty()
+             ? media::AudioDeviceDescription::kDefaultDeviceId
+             : output_device_id_;
 }
 
 void OutputController::StartSnooping(Snooper* snooper, SnoopingMode mode) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(snooper);
-  DCHECK_EQ(mode, SnoopingMode::kDeferred);
 
-  if (snoopers_.empty())
-    should_duplicate_.Increment();
-  DCHECK(!base::ContainsValue(snoopers_, snooper));
-  snoopers_.push_back(snooper);
+  if (mode == SnoopingMode::kDeferred) {
+    if (snoopers_.empty())
+      should_duplicate_.Increment();
+    DCHECK(!base::ContainsValue(snoopers_, snooper));
+    snoopers_.push_back(snooper);
+  } else {  // SnoopingMode::kRealtime
+    // The list will only update on this thread, but may be read from another.
+    DCHECK(!base::ContainsValue(realtime_snoopers_, snooper));
+    base::AutoLock lock(realtime_snooper_lock_);
+    realtime_snoopers_.push_back(snooper);
+  }
 }
 
 void OutputController::StopSnooping(Snooper* snooper, SnoopingMode mode) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(mode, SnoopingMode::kDeferred);
 
-  const auto it = std::find(snoopers_.begin(), snoopers_.end(), snooper);
-  DCHECK(it != snoopers_.end());
-  snoopers_.erase(it);
-  if (snoopers_.empty())
-    should_duplicate_.Decrement();
+  if (mode == SnoopingMode::kDeferred) {
+    const auto it = std::find(snoopers_.begin(), snoopers_.end(), snooper);
+    DCHECK(it != snoopers_.end());
+    snoopers_.erase(it);
+    if (snoopers_.empty())
+      should_duplicate_.Decrement();
+  } else {  // SnoopingMode::kRealtime
+    // The list will only update on this thread, but may be read from another.
+    const auto it = std::find(realtime_snoopers_.begin(),
+                              realtime_snoopers_.end(), snooper);
+    DCHECK(it != realtime_snoopers_.end());
+    // We also don't care about ordering, so swap and pop rather than erase.
+    base::AutoLock lock(realtime_snooper_lock_);
+    *it = realtime_snoopers_.back();
+    realtime_snoopers_.pop_back();
+  }
 }
 
 void OutputController::StartMuting() {
@@ -448,6 +500,15 @@ void OutputController::StopMuting() {
   // invoke a device change to switch back to the normal AudioOutputStream.
   if (state_ != kClosed && stream_)
     OnDeviceChange();
+}
+
+void OutputController::OnMemberJoinedGroup(StreamMonitor* monitor) {
+  // We're only observing the group when we're active.
+  monitor->OnStreamActive(this);
+}
+
+void OutputController::OnMemberLeftGroup(StreamMonitor* monitor) {
+  // Do nothing. The monitor will have already cleaned up.
 }
 
 void OutputController::OnDeviceChange() {

@@ -123,6 +123,7 @@ void ForwardingAudioStreamFactory::CreateOutputStream(
     RenderFrameHost* frame,
     const std::string& device_id,
     const media::AudioParameters& params,
+    const base::Optional<base::UnguessableToken>& processing_id,
     media::mojom::AudioOutputStreamProviderClientPtr client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -132,7 +133,7 @@ void ForwardingAudioStreamFactory::CreateOutputStream(
   outputs_
       .insert(broker_factory_->CreateAudioOutputStreamBroker(
           process_id, frame_id, ++stream_id_counter_, device_id, params,
-          group_id_,
+          group_id_, processing_id,
           base::BindOnce(&ForwardingAudioStreamFactory::RemoveOutput,
                          base::Unretained(this)),
           std::move(client)))
