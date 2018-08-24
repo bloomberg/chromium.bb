@@ -244,6 +244,9 @@ gfx::Path GetRefreshInteriorPath(float scale,
   const float left = aligned_bounds.x() + stroke_thickness;
   const float top = aligned_bounds.y() + stroke_thickness;
   const float right = aligned_bounds.right() - stroke_thickness;
+
+  // Overlap the toolbar below us so that gaps don't occur when rendering at
+  // non-integral display scale factors.
   const float extended_bottom = aligned_bounds.bottom();
   const float bottom_extension =
       GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) * scale;
@@ -256,7 +259,8 @@ gfx::Path GetRefreshInteriorPath(float scale,
 
   // Bottom right.
   gfx::Path right_path;
-  right_path.moveTo(right - corner_gap, bottom);
+  right_path.moveTo(right - corner_gap, extended_bottom);
+  right_path.lineTo(right - corner_gap, bottom);
   right_path.rArcTo(bottom_radius, bottom_radius, 0, SkPath::kSmall_ArcSize,
                     SkPath::kCW_Direction, -bottom_radius, -bottom_radius);
 
@@ -372,6 +376,9 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
   const float left = aligned_bounds.x();
   const float top = aligned_bounds.y();
   const float right = aligned_bounds.right();
+
+  // Overlap the toolbar below us so that gaps don't occur when rendering at
+  // non-integral display scale factors.
   const float extended_bottom = aligned_bounds.bottom();
   const float bottom_extension =
       GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) * scale;
