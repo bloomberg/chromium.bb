@@ -27,6 +27,10 @@
 - (void)unifiedConsentViewControllerDidReachBottom:
     (UnifiedConsentViewController*)controller;
 
+// Called when the view appears.
+- (void)unifiedConsentViewControllerViewDidAppear:
+    (UnifiedConsentViewController*)controller;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_AUTHENTICATION_UNIFIED_CONSENT_UNIFIED_CONSENT_VIEW_CONTROLLER_DELEGATE_H_

@@ -18,12 +18,19 @@
 @interface UnifiedConsentCoordinator ()<IdentityChooserCoordinatorDelegate,
                                         UnifiedConsentViewControllerDelegate>
 
+// Unified consent mediator.
 @property(nonatomic, strong) UnifiedConsentMediator* unifiedConsentMediator;
-@property(nonatomic, strong, readwrite)
+// Unified consent view controller.
+@property(nonatomic, strong)
     UnifiedConsentViewController* unifiedConsentViewController;
-@property(nonatomic, readwrite) BOOL settingsLinkWasTapped;
+// YES if the user tapped on the setting link.
+@property(nonatomic, assign) BOOL settingsLinkWasTapped;
+// Identity chooser coordinator.
 @property(nonatomic, strong)
     IdentityChooserCoordinator* identityChooserCoordinator;
+// YES if no default identity as been set before starting the coordinator.
+@property(nonatomic, assign) BOOL shouldOpenIdentityChooserDialogWhenAppearing;
+
 @end
 
 @implementation UnifiedConsentCoordinator
@@ -34,6 +41,8 @@
 @synthesize settingsLinkWasTapped = _settingsLinkWasTapped;
 @synthesize interactable = _interactable;
 @synthesize identityChooserCoordinator = _identityChooserCoordinator;
+@synthesize shouldOpenIdentityChooserDialogWhenAppearing =
+    _shouldOpenIdentityChooserDialogWhenAppearing;
 
 - (instancetype)init {
   self = [super init];
@@ -48,6 +57,11 @@
 
 - (void)start {
   self.unifiedConsentViewController.interactable = self.interactable;
+  // If no selected identity has been set, the identity chooser dialog needs
+  // to be opened when the view will appear. This test has to be done before
+  // to start the mediator since it will select a default one on start.
+  self.shouldOpenIdentityChooserDialogWhenAppearing =
+      !self.unifiedConsentMediator.selectedIdentity;
   [self.unifiedConsentMediator start];
 }
 
@@ -79,7 +93,29 @@
   return self.unifiedConsentViewController.isScrolledToBottom;
 }
 
+#pragma mark - Private
+
+// Opens the identity chooser dialog with an animation from |point|.
+- (void)showIdentityChooserDialogWithPoint:(CGPoint)point {
+  self.identityChooserCoordinator = [[IdentityChooserCoordinator alloc]
+      initWithBaseViewController:self.unifiedConsentViewController];
+  self.identityChooserCoordinator.delegate = self;
+  self.identityChooserCoordinator.origin = point;
+  [self.identityChooserCoordinator start];
+  self.identityChooserCoordinator.selectedIdentity = self.selectedIdentity;
+}
+
 #pragma mark - UnifiedConsentViewControllerDelegate
+
+- (void)unifiedConsentViewControllerViewDidAppear:
+    (UnifiedConsentViewController*)controller {
+  if (!self.shouldOpenIdentityChooserDialogWhenAppearing)
+    return;
+  CGFloat midX = CGRectGetMidX(self.unifiedConsentViewController.view.bounds);
+  CGFloat midY = CGRectGetMidY(self.unifiedConsentViewController.view.bounds);
+  CGPoint point = CGPointMake(midX, midY);
+  [self showIdentityChooserDialogWithPoint:point];
+}
 
 - (void)unifiedConsentViewControllerDidTapSettingsLink:
     (UnifiedConsentViewController*)controller {
@@ -93,12 +129,7 @@
             (UnifiedConsentViewController*)controller
                                                      atPoint:(CGPoint)point {
   DCHECK_EQ(self.unifiedConsentViewController, controller);
-  self.identityChooserCoordinator = [[IdentityChooserCoordinator alloc]
-      initWithBaseViewController:self.unifiedConsentViewController];
-  self.identityChooserCoordinator.delegate = self;
-  self.identityChooserCoordinator.origin = point;
-  [self.identityChooserCoordinator start];
-  self.identityChooserCoordinator.selectedIdentity = self.selectedIdentity;
+  [self showIdentityChooserDialogWithPoint:point];
 }
 
 - (void)unifiedConsentViewControllerDidReachBottom:

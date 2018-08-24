@@ -325,6 +325,10 @@ NSString* const kSyncCompleteIconName = @"ic_sync_complete";
   [self updateScrollViewAndImageBackgroundView];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [self.delegate unifiedConsentViewControllerViewDidAppear:self];
+}
+
 // Updates the scroll view content inset, used by pre iOS 11.
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
