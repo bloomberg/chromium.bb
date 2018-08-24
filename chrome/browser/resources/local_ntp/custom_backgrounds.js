@@ -496,11 +496,11 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
     };
 
     tile.onclick = tileInteraction;
-    tile.onkeyup = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
+    tile.onkeydown = function(event) {
 
       if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+        event.preventDefault();
+        event.stopPropagation();
         tileInteraction(event);
       }
 
@@ -515,6 +515,8 @@ customBackgrounds.showCollectionSelectionDialog = function(collectionsSource) {
         target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
       }
       if (target) {
+        event.preventDefault();
+        event.stopPropagation();
         target.focus();
       }
     };
@@ -667,11 +669,11 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
             this.dataset.attributionActionUrl);
       }
     };
-    tile.onkeyup = function(event) {
-      event.preventDefault();
-      event.stopPropagation();
+    tile.onkeydown = function(event) {
 
       if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+        event.preventDefault();
+        event.stopPropagation();
         tileInteraction(event);
       }
 
@@ -686,6 +688,8 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
         target = customBackgrounds.getNextTile(0, 1, this.dataset.tile_num);
       }
       if (target) {
+        event.preventDefault();
+        event.stopPropagation();
         target.focus();
       }
     };
@@ -1137,11 +1141,12 @@ customBackgrounds.initCustomBackgrounds = function() {
   };
 
   // On any arrow key event in the tiles area, focus the first tile.
-  $(customBackgrounds.IDS.TILES).onkeyup = function(event) {
+  $(customBackgrounds.IDS.TILES).onkeydown = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.LEFT ||
         event.keyCode === customBackgrounds.KEYCODES.UP ||
         event.keyCode === customBackgrounds.KEYCODES.RIGHT ||
         event.keyCode === customBackgrounds.KEYCODES.DOWN) {
+      event.preventDefault();
       if ($(customBackgrounds.IDS.MENU)
               .classList.contains(
                   customBackgrounds.CLASSES.COLLECTION_DIALOG)) {
