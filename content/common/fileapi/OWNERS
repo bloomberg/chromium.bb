@@ -1,7 +1,4 @@
-mek@chromium.org
-jianli@chromium.org
-tzik@chromium.org
-nhiroki@chromium.org
+file://content/browser/fileapi/OWNERS
 
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS

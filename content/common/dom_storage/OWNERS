@@ -1,5 +1,4 @@
-dmurph@chromium.org
-mek@chromium.org
+file://content/browser/dom_storage/OWNERS
 
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS

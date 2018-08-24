@@ -1,8 +1,4 @@
-jsbell@chromium.org
-pwnall@chromium.org
-jianli@chromium.org
-tzik@chromium.org
-nhiroki@chromium.org
+file://content/browser/fileapi/OWNERS
 
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>Storage>FileSystem
