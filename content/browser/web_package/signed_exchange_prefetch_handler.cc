@@ -54,10 +54,10 @@ SignedExchangePrefetchHandler::SignedExchangePrefetchHandler(
       load_flags, false /* should_redirect_to_fallback */,
       throttling_profile_id,
       std::make_unique<SignedExchangeDevToolsProxy>(
-          outer_request_url, response, std::move(frame_tree_node_id_getter),
+          outer_request_url, response, frame_tree_node_id_getter,
           base::nullopt /* devtools_navigation_token */, report_raw_headers),
       std::move(url_loader_factory), loader_throttles_getter,
-      request_context_getter);
+      frame_tree_node_id_getter);
 }
 
 SignedExchangePrefetchHandler::~SignedExchangePrefetchHandler() = default;

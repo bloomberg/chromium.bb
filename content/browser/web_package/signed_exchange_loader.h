@@ -19,7 +19,6 @@
 
 namespace net {
 class SourceStream;
-class URLRequestContextGetter;
 }  // namespace net
 
 namespace network {
@@ -60,7 +59,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
       std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
+      base::RepeatingCallback<int(void)> frame_tree_node_id_getter);
   ~SignedExchangeLoader() override;
 
   bool HasRedirectedToFallbackURL() const {
@@ -152,7 +151,7 @@ class SignedExchangeLoader final : public network::mojom::URLLoaderClient,
   std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
 
   base::Optional<net::SSLInfo> ssl_info_;
 

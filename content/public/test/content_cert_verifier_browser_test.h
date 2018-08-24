@@ -28,7 +28,10 @@ class CertVerifierBrowserTest : public ContentBrowserTest {
     return mock_cert_verifier_.mock_cert_verifier();
   }
 
+  void disable_mock_cert_verifier() { mock_cert_verifier_disabled_ = true; }
+
  private:
+  bool mock_cert_verifier_disabled_ = false;
   ContentMockCertVerifier mock_cert_verifier_;
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifierBrowserTest);

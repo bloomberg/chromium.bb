@@ -22,6 +22,8 @@
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "net/cert/cert_verifier.h"
+#include "net/cert/cert_verify_result.h"
 #include "services/network/http_cache_data_counter.h"
 #include "services/network/http_cache_data_remover.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
@@ -215,6 +217,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                           net::RequestPriority priority,
                           base::Time expected_response_time,
                           const std::vector<uint8_t>& data) override;
+  void VerifyCertForSignedExchange(
+      const scoped_refptr<net::X509Certificate>& certificate,
+      const GURL& url,
+      const std::string& ocsp_result,
+      const std::string& sct_list,
+      VerifyCertForSignedExchangeCallback callback) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -277,6 +285,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   GURL GetHSTSRedirect(const GURL& original_url);
 
   void DestroySocketManager(P2PSocketManager* socket_manager);
+
+  void OnCertVerifyForSignedExchangeComplete(int cert_verify_id, int result);
 
   NetworkService* const network_service_;
 
@@ -353,6 +363,23 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<HostResolver> internal_host_resolver_;
   std::set<std::unique_ptr<HostResolver>, base::UniquePtrComparator>
       host_resolvers_;
+
+  // Used for Signed Exchange certificate verification.
+  int next_cert_verify_id_ = 0;
+  struct PendingCertVerify {
+    PendingCertVerify();
+    ~PendingCertVerify();
+    // CertVerifyResult must be freed after the Request has been destructed.
+    // So |result| must be written before |request|.
+    std::unique_ptr<net::CertVerifyResult> result;
+    std::unique_ptr<net::CertVerifier::Request> request;
+    VerifyCertForSignedExchangeCallback callback;
+    scoped_refptr<net::X509Certificate> certificate;
+    GURL url;
+    std::string ocsp_result;
+    std::string sct_list;
+  };
+  std::map<int, std::unique_ptr<PendingCertVerify>> cert_verifier_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

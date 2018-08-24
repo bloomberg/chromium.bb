@@ -15,7 +15,6 @@
 #include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -39,8 +38,7 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
     bool report_raw_headers,
     int load_flags,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    URLLoaderThrottlesGetter url_loader_throttles_getter,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    URLLoaderThrottlesGetter url_loader_throttles_getter)
     : request_initiator_(std::move(request_initiator)),
       url_(url),
       url_loader_options_(url_loader_options),
@@ -51,7 +49,6 @@ SignedExchangeRequestHandler::SignedExchangeRequestHandler(
       load_flags_(load_flags),
       url_loader_factory_(url_loader_factory),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
-      request_context_getter_(std::move(request_context_getter)),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
 }
@@ -106,7 +103,7 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
           base::BindRepeating([](int id) { return id; }, frame_tree_node_id_),
           devtools_navigation_token_, report_raw_headers_),
       url_loader_factory_, url_loader_throttles_getter_,
-      request_context_getter_);
+      base::BindRepeating([](int id) { return id; }, frame_tree_node_id_));
   return true;
 }
 

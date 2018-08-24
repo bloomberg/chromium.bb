@@ -7,7 +7,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/loader/merkle_integrity_source_stream.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
@@ -17,31 +20,26 @@
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/system/string_data_pipe_producer.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
 #include "net/cert/cert_status_flags.h"
-#include "net/cert/cert_verifier.h"
-#include "net/cert/ct_policy_enforcer.h"
-#include "net/cert/ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/filter/source_stream.h"
-#include "net/http/transport_security_state.h"
-#include "net/ssl/ssl_config.h"
-#include "net/ssl/ssl_config_service.h"
 #include "net/ssl/ssl_info.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 
@@ -49,7 +47,7 @@ namespace {
 
 constexpr char kDigestHeader[] = "Digest";
 
-net::CertVerifier* g_cert_verifier_for_testing = nullptr;
+network::mojom::NetworkContext* g_network_context_for_testing = nullptr;
 
 base::Optional<base::Time> g_verification_time_for_testing;
 
@@ -59,12 +57,53 @@ base::Time GetVerificationTime() {
   return base::Time::Now();
 }
 
+using VerifyCallback = base::OnceCallback<void(int32_t,
+                                               const net::CertVerifyResult&,
+                                               const net::ct::CTVerifyResult&)>;
+
+void OnVerifyCertUI(VerifyCallback callback,
+                    int32_t error_code,
+                    const net::CertVerifyResult& cv_result,
+                    const net::ct::CTVerifyResult& ct_result) {
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(std::move(callback), error_code, cv_result, ct_result));
+}
+
+void VerifyCert(const scoped_refptr<net::X509Certificate>& certificate,
+                const GURL& url,
+                const std::string& ocsp_result,
+                const std::string& sct_list,
+                base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
+                VerifyCallback callback) {
+  VerifyCallback wrapped_callback = mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      base::BindOnce(OnVerifyCertUI, std::move(callback)), net::ERR_FAILED,
+      net::CertVerifyResult(), net::ct::CTVerifyResult());
+
+  network::mojom::NetworkContext* network_context =
+      g_network_context_for_testing;
+  if (!network_context) {
+    auto* frame =
+        FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
+    if (!frame)
+      return;
+
+    network_context = frame->current_frame_host()
+                          ->GetProcess()
+                          ->GetStoragePartition()
+                          ->GetNetworkContext();
+  }
+
+  network_context->VerifyCertForSignedExchange(
+      certificate, url, ocsp_result, sct_list, std::move(wrapped_callback));
+}
+
 }  // namespace
 
 // static
-void SignedExchangeHandler::SetCertVerifierForTesting(
-    net::CertVerifier* cert_verifier) {
-  g_cert_verifier_for_testing = cert_verifier;
+void SignedExchangeHandler::SetNetworkContextForTesting(
+    network::mojom::NetworkContext* network_context) {
+  g_network_context_for_testing = network_context;
 }
 
 // static
@@ -79,17 +118,14 @@ SignedExchangeHandler::SignedExchangeHandler(
     ExchangeHeadersCallback headers_callback,
     std::unique_ptr<SignedExchangeCertFetcherFactory> cert_fetcher_factory,
     int load_flags,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
-    std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy)
+    std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
     : headers_callback_(std::move(headers_callback)),
       source_(std::move(body)),
       cert_fetcher_factory_(std::move(cert_fetcher_factory)),
       load_flags_(load_flags),
-      request_context_getter_(std::move(request_context_getter)),
-      net_log_(net::NetLogWithSource::Make(
-          request_context_getter_->GetURLRequestContext()->net_log(),
-          net::NetLogSourceType::CERT_VERIFIER_JOB)),
       devtools_proxy_(std::move(devtools_proxy)),
+      frame_tree_node_id_getter_(frame_tree_node_id_getter),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -348,36 +384,25 @@ void SignedExchangeHandler::OnCertReceived(
     return;
   }
 
-  // TODO(https://crbug.com/849935): The code below reaching into
-  // URLRequestContext will not work with Network service.
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  net::URLRequestContext* request_context =
-      request_context_getter_->GetURLRequestContext();
-  if (!request_context) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy_.get(), "No request context available.");
-    RunErrorCallback(net::ERR_CONTEXT_SHUT_DOWN);
-    return;
-  }
+  auto certificate = unverified_cert_chain_->cert();
+  auto url = envelope_->request_url();
 
-  net::SSLConfig config;
-  request_context->ssl_config_service()->GetSSLConfig(&config);
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
+  // Step 6.4 Validate that valid SCTs from trusted logs are available from any
+  // of:
+  // - The SignedCertificateTimestampList in main-certificate’s sct property
+  //   (Section 3.3),
+  const std::string& sct_list_from_cert_cbor = unverified_cert_chain_->sct();
+  // - An OCSP extension in the OCSP response in main-certificate’s ocsp
+  //   property, or
+  const std::string& stapled_ocsp_response = unverified_cert_chain_->ocsp();
 
-  net::CertVerifier* cert_verifier = g_cert_verifier_for_testing
-                                         ? g_cert_verifier_for_testing
-                                         : request_context->cert_verifier();
-  int result = cert_verifier->Verify(
-      net::CertVerifier::RequestParams(
-          unverified_cert_chain_->cert(), envelope_->request_url().host(),
-          0 /* cert_verify_flags */, unverified_cert_chain_->ocsp()),
-      &cert_verify_result_,
-      base::BindRepeating(&SignedExchangeHandler::OnCertVerifyComplete,
-                          base::Unretained(this)),
-      &cert_verifier_request_, net_log_);
-  // TODO(https://crbug.com/803774): Avoid these recursive patterns by using
-  // explicit state machines (eg: DoLoop() in //net).
-  if (result != net::ERR_IO_PENDING)
-    OnCertVerifyComplete(result);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&VerifyCert, certificate, url, stapled_ocsp_response,
+                     sct_list_from_cert_cbor, frame_tree_node_id_getter_,
+                     base::BindOnce(&SignedExchangeHandler::OnVerifyCert,
+                                    weak_factory_.GetWeakPtr())));
 }
 
 bool SignedExchangeHandler::CheckCertExtension(
@@ -410,109 +435,34 @@ bool SignedExchangeHandler::CheckOCSPStatus(
   return true;
 }
 
-// TODO(https://crbug.com/815025, https://crbug.com/849935): This is temporary
-// code until we have Network Service friendly CT verification.
-int SignedExchangeHandler::VerifyCT(net::ct::CTVerifyResult* ct_verify_result) {
-  // This function will not work with Network Service.
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-
-  net::URLRequestContext* request_context =
-      request_context_getter_->GetURLRequestContext();
-  if (!request_context)
-    return net::ERR_CONTEXT_SHUT_DOWN;
-
-  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cross-origin-trust
-  // Step 6.4 Validate that valid SCTs from trusted logs are available from any
-  // of:
-  // - The SignedCertificateTimestampList in main-certificate’s sct property
-  //   (Section 3.3),
-  const std::string& sct_list_from_cert_cbor = unverified_cert_chain_->sct();
-  // - An OCSP extension in the OCSP response in main-certificate’s ocsp
-  //   property, or
-  const std::string& stapled_ocsp_response = unverified_cert_chain_->ocsp();
-  // - An X.509 extension in the certificate in main-certificate’s cert
-  //   property,
-  net::X509Certificate* verified_cert = cert_verify_result_.verified_cert.get();
-  // as described by Section 3.3 of [RFC6962]. [spec text]
-  request_context->cert_transparency_verifier()->Verify(
-      envelope_->request_url().host(), verified_cert, stapled_ocsp_response,
-      sct_list_from_cert_cbor, &ct_verify_result->scts, net_log_);
-
-  net::ct::SCTList verified_scts = net::ct::SCTsMatchingStatus(
-      ct_verify_result->scts, net::ct::SCT_STATUS_OK);
-
-  ct_verify_result->policy_compliance =
-      request_context->ct_policy_enforcer()->CheckCompliance(
-          verified_cert, verified_scts, net_log_);
-
-  // TODO(https://crbug.com/803774): We should determine whether EV & SXG
-  // should be a thing (due to the online/offline signing difference)
-  if (cert_verify_result_.cert_status & net::CERT_STATUS_IS_EV &&
-      ct_verify_result->policy_compliance !=
-          net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
-      ct_verify_result->policy_compliance !=
-          net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
-    cert_verify_result_.cert_status |= net::CERT_STATUS_CT_COMPLIANCE_FAILED;
-    cert_verify_result_.cert_status &= ~net::CERT_STATUS_IS_EV;
-  }
-
-  net::TransportSecurityState::CTRequirementsStatus ct_requirement_status =
-      request_context->transport_security_state()->CheckCTRequirements(
-          net::HostPortPair::FromURL(envelope_->request_url()),
-          cert_verify_result_.is_issued_by_known_root,
-          cert_verify_result_.public_key_hashes, verified_cert,
-          unverified_cert_chain_->cert().get(), ct_verify_result->scts,
-          net::TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
-          ct_verify_result->policy_compliance);
-
-  switch (ct_requirement_status) {
-    case net::TransportSecurityState::CT_REQUIREMENTS_NOT_MET:
-      return net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
-    case net::TransportSecurityState::CT_REQUIREMENTS_MET:
-      ct_verify_result->policy_compliance_required = true;
-      break;
-    case net::TransportSecurityState::CT_NOT_REQUIRED:
-      // CT is not required if the certificate does not chain to a publicly
-      // trusted root certificate.
-      if (!cert_verify_result_.is_issued_by_known_root) {
-        ct_verify_result->policy_compliance_required = false;
-        break;
-      }
-      // For old certificates (issued before 2018-05-01), CheckCTRequirements()
-      // may return CT_NOT_REQUIRED, so we check the compliance status here.
-      // TODO(https://crbug.com/851778): Remove this condition once we require
-      // signing certificates to have CanSignHttpExchanges extension, because
-      // such certificates should be naturally after 2018-05-01.
-      if (ct_verify_result->policy_compliance ==
-              net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS ||
-          ct_verify_result->policy_compliance ==
-              net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
-        ct_verify_result->policy_compliance_required = true;
-        break;
-      }
-      // Require CT compliance, by overriding CT_NOT_REQUIRED and treat it as
-      // ERR_CERTIFICATE_TRANSPARENCY_REQUIRED.
-      return net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
-  }
-  return net::OK;
-}
-
-void SignedExchangeHandler::OnCertVerifyComplete(int result) {
+void SignedExchangeHandler::OnVerifyCert(
+    int32_t error_code,
+    const net::CertVerifyResult& cv_result,
+    const net::ct::CTVerifyResult& ct_result) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::OnCertVerifyComplete");
 
-  if (result != net::OK) {
+  if (error_code != net::OK) {
+    std::string error_message;
+    if (error_code == net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED) {
+      error_message = base::StringPrintf(
+          "CT verification failed. result: %s, policy compliance: %d",
+          net::ErrorToShortString(error_code).c_str(),
+          ct_result.policy_compliance);
+    } else {
+      error_message =
+          base::StringPrintf("Certificate verification error: %s",
+                             net::ErrorToShortString(error_code).c_str());
+    }
     signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy_.get(),
-        base::StringPrintf("Certificate verification error: %s",
-                           net::ErrorToShortString(result).c_str()),
+        devtools_proxy_.get(), error_message,
         std::make_pair(0 /* signature_index */,
                        SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
     return;
   }
 
-  if (!CheckCertExtension(cert_verify_result_.verified_cert.get())) {
+  if (!CheckCertExtension(cv_result.verified_cert.get())) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
         "Certificate must have CanSignHttpExchangesDraft extension. To ignore "
@@ -524,28 +474,13 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
     return;
   }
 
-  if (!CheckOCSPStatus(cert_verify_result_.ocsp_result)) {
+  if (!CheckOCSPStatus(cv_result.ocsp_result)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_.get(),
         base::StringPrintf(
             "OCSP check failed. response status: %d, revocation status: %d",
-            cert_verify_result_.ocsp_result.response_status,
-            cert_verify_result_.ocsp_result.revocation_status),
-        std::make_pair(0 /* signature_index */,
-                       SignedExchangeError::Field::kSignatureCertUrl));
-    RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
-    return;
-  }
-
-  net::ct::CTVerifyResult ct_verify_result;
-  int ct_result = VerifyCT(&ct_verify_result);
-  if (ct_result != net::OK) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy_.get(),
-        base::StringPrintf(
-            "CT verification failed. result: %s, policy compliance: %d",
-            net::ErrorToShortString(ct_result).c_str(),
-            ct_verify_result.policy_compliance),
+            cv_result.ocsp_result.response_status,
+            cv_result.ocsp_result.revocation_status),
         std::make_pair(0 /* signature_index */,
                        SignedExchangeError::Field::kSignatureCertUrl));
     RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
@@ -578,17 +513,16 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
       digest_header_value, std::move(source_));
 
   net::SSLInfo ssl_info;
-  ssl_info.cert = cert_verify_result_.verified_cert;
+  ssl_info.cert = cv_result.verified_cert;
   ssl_info.unverified_cert = unverified_cert_chain_->cert();
-  ssl_info.cert_status = cert_verify_result_.cert_status;
-  ssl_info.is_issued_by_known_root =
-      cert_verify_result_.is_issued_by_known_root;
-  ssl_info.public_key_hashes = cert_verify_result_.public_key_hashes;
-  ssl_info.ocsp_result = cert_verify_result_.ocsp_result;
+  ssl_info.cert_status = cv_result.cert_status;
+  ssl_info.is_issued_by_known_root = cv_result.is_issued_by_known_root;
+  ssl_info.public_key_hashes = cv_result.public_key_hashes;
+  ssl_info.ocsp_result = cv_result.ocsp_result;
   ssl_info.is_fatal_cert_error =
       net::IsCertStatusError(ssl_info.cert_status) &&
       !net::IsCertStatusMinorError(ssl_info.cert_status);
-  ssl_info.UpdateCertificateTransparencyInfo(ct_verify_result);
+  ssl_info.UpdateCertificateTransparencyInfo(ct_result);
 
   if (devtools_proxy_) {
     devtools_proxy_->OnSignedExchangeReceived(

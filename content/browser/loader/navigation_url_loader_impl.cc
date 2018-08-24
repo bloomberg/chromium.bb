@@ -472,8 +472,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               resource_context_, url_request_context_getter),
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this)),
-          url_request_context_getter));
+              base::Unretained(this))));
     }
 
     uint32_t options = GetURLLoaderOptions(request_info->is_main_frame);
@@ -595,7 +594,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   }
 
   void Start(
-      net::URLRequestContextGetter* url_request_context_getter,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           network_loader_factory_info,
       ServiceWorkerNavigationHandleCore* service_worker_navigation_handle_core,
@@ -688,8 +686,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
           request_info->begin_params->load_flags, network_loader_factory_,
           base::BindRepeating(
               &URLLoaderRequestController::CreateURLLoaderThrottles,
-              base::Unretained(this)),
-          url_request_context_getter));
+              base::Unretained(this))));
     }
 
     std::vector<std::unique_ptr<URLLoaderRequestInterceptor>>
@@ -1556,7 +1553,6 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
       base::BindOnce(
           &URLLoaderRequestController::Start,
           base::Unretained(request_controller_.get()),
-          base::RetainedRef(storage_partition->GetURLRequestContext()),
           partition->url_loader_factory_getter()->GetNetworkFactoryInfo(),
           service_worker_navigation_handle_core, appcache_handle_core,
           std::move(request_info), std::move(navigation_ui_data),

@@ -21,8 +21,8 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/page_type.h"
 #include "content/public/test/browser_test_utils.h"
-#include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/content_cert_verifier_browser_test.h"
 #include "content/public/test/test_navigation_throttle.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
@@ -72,10 +72,9 @@ class NavigationFailureObserver : public WebContentsObserver {
 
 }  // namespace
 
-class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
+class SignedExchangeRequestHandlerBrowserTest : public CertVerifierBrowserTest {
  public:
-  SignedExchangeRequestHandlerBrowserTest()
-      : mock_cert_verifier_(std::make_unique<net::MockCertVerifier>()) {
+  SignedExchangeRequestHandlerBrowserTest() {
     // This installs "root_ca_cert.pem" from which our test certificates are
     // created. (Needed for the tests that use real certificate, i.e.
     // RealCertVerifier)
@@ -83,25 +82,22 @@ class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
   }
 
   void SetUp() override {
-    SignedExchangeHandler::SetCertVerifierForTesting(mock_cert_verifier_.get());
     SignedExchangeHandler::SetVerificationTimeForTesting(
         base::Time::UnixEpoch() +
         base::TimeDelta::FromSeconds(kSignatureHeaderDate));
     SetUpFeatures();
-    ContentBrowserTest::SetUp();
+    CertVerifierBrowserTest::SetUp();
   }
 
   void TearDownOnMainThread() override {
     interceptor_.reset();
-    SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
     SignedExchangeHandler::SetVerificationTimeForTesting(
         base::Optional<base::Time>());
   }
 
  protected:
   virtual void SetUpFeatures() {
-    feature_list_.InitWithFeatures({features::kSignedHTTPExchange},
-                                   {network::features::kNetworkService});
+    feature_list_.InitWithFeatures({features::kSignedHTTPExchange}, {});
   }
 
   static scoped_refptr<net::X509Certificate> LoadCertificate(
@@ -132,12 +128,10 @@ class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
   }
 
   base::test::ScopedFeatureList feature_list_;
-  std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 
  private:
   static void InstallMockInterceptors(const GURL& url,
                                       const std::string& data_path) {
-    DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
     base::FilePath root_path;
     CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &root_path));
     net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
@@ -146,7 +140,6 @@ class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
   }
 
   bool OnInterceptCallback(URLLoaderInterceptor::RequestParams* params) {
-    DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
     const auto it = interceptor_data_path_map_.find(params->url_request.url);
     if (it == interceptor_data_path_map_.end())
       return false;
@@ -158,15 +151,6 @@ class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
   std::map<GURL, std::string> interceptor_data_path_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeRequestHandlerBrowserTest);
-};
-
-class SignedExchangeRequestHandlerWithNetworkServiceBrowserTest
-    : public SignedExchangeRequestHandlerBrowserTest {
-  void SetUpFeatures() override {
-    feature_list_.InitWithFeatures(
-        {features::kSignedHTTPExchange, network::features::kNetworkService},
-        {});
-  }
 };
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
@@ -183,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, Simple) {
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier_->AddResultForCertAndHost(
+  mock_cert_verifier()->AddResultForCertAndHost(
       original_cert, "test.example.org", dummy_result, net::OK);
 
   embedded_test_server()->RegisterRequestMonitor(
@@ -236,7 +220,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
   dummy_result.cert_status = net::OK;
   dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
   dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier_->AddResultForCertAndHost(
+  mock_cert_verifier()->AddResultForCertAndHost(
       original_cert, "test.example.org", dummy_result, net::OK);
 
   embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
@@ -268,47 +252,22 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest, CertNotFound) {
   EXPECT_EQ(title, title_watcher.WaitAndGetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(
-    SignedExchangeRequestHandlerWithNetworkServiceBrowserTest,
-    NetworkServiceEnabled) {
-  InstallUrlInterceptor(
-      GURL("https://test.example.org/cert.msg"),
-      "content/test/data/sxg/test.example.org.public.pem.cbor");
+class SignedExchangeRequestHandlerRealCertVerifierBrowserTest
+    : public SignedExchangeRequestHandlerBrowserTest {
+ public:
+  SignedExchangeRequestHandlerRealCertVerifierBrowserTest() {
+    // Use "real" CertVerifier.
+    disable_mock_cert_verifier();
+  }
+};
 
-  // Make the MockCertVerifier treat the certificate
-  // "prime256v1-sha256.public.pem" as valid for "test.example.org".
-  scoped_refptr<net::X509Certificate> original_cert =
-      LoadCertificate("prime256v1-sha256.public.pem");
-  net::CertVerifyResult dummy_result;
-  dummy_result.verified_cert = original_cert;
-  dummy_result.cert_status = net::OK;
-  dummy_result.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
-  dummy_result.ocsp_result.revocation_status = net::OCSPRevocationStatus::GOOD;
-  mock_cert_verifier_->AddResultForCertAndHost(
-      original_cert, "test.example.org", dummy_result, net::OK);
-
-  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_test.sxg");
-
-  NavigationFailureObserver failure_observer(shell()->web_contents());
-  NavigateToURL(shell(), url);
-  EXPECT_TRUE(failure_observer.did_fail());
-  NavigationEntry* entry =
-      shell()->web_contents()->GetController().GetVisibleEntry();
-  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
-}
-
-IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
-                       RealCertVerifier) {
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerRealCertVerifierBrowserTest,
+                       Basic) {
   InstallUrlInterceptor(
       GURL("https://cert.example.org/cert.msg"),
       "content/test/data/sxg/test.example.org.public.pem.cbor");
   InstallUrlInterceptor(GURL("https://test.example.org/test/"),
                         "content/test/data/sxg/fallback.html");
-
-  // Use "real" CertVerifier.
-  SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
 
   embedded_test_server()->RegisterRequestMonitor(
       base::BindRepeating([](const net::test_server::HttpRequest& request) {

@@ -228,6 +228,9 @@ void OnClearedChannelIds(net::SSLConfigService* ssl_config_service,
 
 constexpr bool NetworkContext::enable_resource_scheduler_;
 
+NetworkContext::PendingCertVerify::PendingCertVerify() = default;
+NetworkContext::PendingCertVerify::~PendingCertVerify() = default;
+
 // net::NetworkDelegate that wraps the main NetworkDelegate to remove the
 // Referrer from requests, if needed.
 // TODO(mmenke): Once the network service has shipped, this can be done in
@@ -363,8 +366,8 @@ NetworkContext::NetworkContext(
   binding_.set_connection_error_handler(base::BindOnce(
       &NetworkContext::OnConnectionError, base::Unretained(this)));
 
-  socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
-                                                    url_request_context_);
+  socket_factory_ = std::make_unique<SocketFactory>(
+      url_request_context_->net_log(), url_request_context_);
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 }
@@ -384,8 +387,8 @@ NetworkContext::NetworkContext(
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
-  socket_factory_ = std::make_unique<SocketFactory>(network_service_->net_log(),
-                                                    url_request_context_);
+  socket_factory_ = std::make_unique<SocketFactory>(
+      url_request_context_->net_log(), url_request_context_);
   resource_scheduler_ =
       std::make_unique<ResourceScheduler>(enable_resource_scheduler_);
 }
@@ -401,9 +404,9 @@ NetworkContext::NetworkContext(NetworkService* network_service,
                                           nullptr,
                                           nullptr,
                                           nullptr)),
-      socket_factory_(std::make_unique<SocketFactory>(
-          network_service_ ? network_service_->net_log() : nullptr,
-          url_request_context)) {
+      socket_factory_(
+          std::make_unique<SocketFactory>(url_request_context_->net_log(),
+                                          url_request_context)) {
   // May be nullptr in tests.
   if (network_service_)
     network_service_->RegisterNetworkContext(this);
@@ -818,7 +821,7 @@ void NetworkContext::ResolveHost(
     mojom::ResolveHostClientPtr response_client) {
   if (!internal_host_resolver_) {
     internal_host_resolver_ = std::make_unique<HostResolver>(
-        url_request_context_->host_resolver(), network_service_->net_log());
+        url_request_context_->host_resolver(), url_request_context_->net_log());
   }
 
   internal_host_resolver_->ResolveHost(host, std::move(optional_parameters),
@@ -830,7 +833,39 @@ void NetworkContext::CreateHostResolver(mojom::HostResolverRequest request) {
       std::move(request),
       base::BindOnce(&NetworkContext::OnHostResolverShutdown,
                      base::Unretained(this)),
-      url_request_context_->host_resolver(), network_service_->net_log()));
+      url_request_context_->host_resolver(), url_request_context_->net_log()));
+}
+
+void NetworkContext::VerifyCertForSignedExchange(
+    const scoped_refptr<net::X509Certificate>& certificate,
+    const GURL& url,
+    const std::string& ocsp_result,
+    const std::string& sct_list,
+    VerifyCertForSignedExchangeCallback callback) {
+  int cert_verify_id = ++next_cert_verify_id_;
+  auto pending_cert_verify = std::make_unique<PendingCertVerify>();
+  pending_cert_verify->callback = std::move(callback);
+  pending_cert_verify->result = std::make_unique<net::CertVerifyResult>();
+  pending_cert_verify->certificate = certificate;
+  pending_cert_verify->url = url;
+  pending_cert_verify->ocsp_result = ocsp_result;
+  pending_cert_verify->sct_list = sct_list;
+  net::CertVerifier* cert_verifier =
+      g_cert_verifier_for_testing ? g_cert_verifier_for_testing
+                                  : url_request_context_->cert_verifier();
+  int result = cert_verifier->Verify(
+      net::CertVerifier::RequestParams(certificate, url.host(),
+                                       0 /* cert_verify_flags */, ocsp_result),
+      pending_cert_verify->result.get(),
+      base::BindOnce(&NetworkContext::OnCertVerifyForSignedExchangeComplete,
+                     base::Unretained(this), cert_verify_id),
+      &pending_cert_verify->request,
+      net::NetLogWithSource::Make(url_request_context_->net_log(),
+                                  net::NetLogSourceType::CERT_VERIFIER_JOB));
+  cert_verifier_requests_[cert_verify_id] = std::move(pending_cert_verify);
+
+  if (result != net::ERR_IO_PENDING)
+    OnCertVerifyForSignedExchangeComplete(cert_verify_id, result);
 }
 
 void NetworkContext::WriteCacheMetadata(const GURL& url,
@@ -1349,6 +1384,94 @@ void NetworkContext::DestroySocketManager(P2PSocketManager* socket_manager) {
   auto iter = socket_managers_.find(socket_manager);
   DCHECK(iter != socket_managers_.end());
   socket_managers_.erase(iter);
+}
+
+void NetworkContext::OnCertVerifyForSignedExchangeComplete(int cert_verify_id,
+                                                           int result) {
+  auto iter = cert_verifier_requests_.find(cert_verify_id);
+  DCHECK(iter != cert_verifier_requests_.end());
+
+  auto pending_cert_verify = std::move(iter->second);
+  cert_verifier_requests_.erase(iter);
+
+  net::ct::CTVerifyResult ct_verify_result;
+  if (result == net::OK) {
+    net::X509Certificate* verified_cert =
+        pending_cert_verify->result->verified_cert.get();
+    url_request_context_->cert_transparency_verifier()->Verify(
+        pending_cert_verify->url.host(), verified_cert,
+        pending_cert_verify->ocsp_result, pending_cert_verify->sct_list,
+        &ct_verify_result.scts,
+        net::NetLogWithSource::Make(
+            network_service_ ? url_request_context_->net_log() : nullptr,
+            net::NetLogSourceType::CERT_VERIFIER_JOB));
+
+    net::ct::SCTList verified_scts = net::ct::SCTsMatchingStatus(
+        ct_verify_result.scts, net::ct::SCT_STATUS_OK);
+
+    ct_verify_result.policy_compliance =
+        url_request_context_->ct_policy_enforcer()->CheckCompliance(
+            verified_cert, verified_scts,
+            net::NetLogWithSource::Make(
+                network_service_ ? url_request_context_->net_log() : nullptr,
+                net::NetLogSourceType::CERT_VERIFIER_JOB));
+
+    // TODO(https://crbug.com/803774): We should determine whether EV & SXG
+    // should be a thing (due to the online/offline signing difference)
+    if (pending_cert_verify->result->cert_status & net::CERT_STATUS_IS_EV &&
+        ct_verify_result.policy_compliance !=
+            net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS &&
+        ct_verify_result.policy_compliance !=
+            net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
+      pending_cert_verify->result->cert_status |=
+          net::CERT_STATUS_CT_COMPLIANCE_FAILED;
+      pending_cert_verify->result->cert_status &= ~net::CERT_STATUS_IS_EV;
+    }
+
+    net::TransportSecurityState::CTRequirementsStatus ct_requirement_status =
+        url_request_context_->transport_security_state()->CheckCTRequirements(
+            net::HostPortPair::FromURL(pending_cert_verify->url),
+            pending_cert_verify->result->is_issued_by_known_root,
+            pending_cert_verify->result->public_key_hashes, verified_cert,
+            pending_cert_verify->certificate.get(), ct_verify_result.scts,
+            net::TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
+            ct_verify_result.policy_compliance);
+
+    switch (ct_requirement_status) {
+      case net::TransportSecurityState::CT_REQUIREMENTS_NOT_MET:
+        result = net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+        break;
+      case net::TransportSecurityState::CT_REQUIREMENTS_MET:
+        ct_verify_result.policy_compliance_required = true;
+        break;
+      case net::TransportSecurityState::CT_NOT_REQUIRED:
+        // CT is not required if the certificate does not chain to a publicly
+        // trusted root certificate.
+        if (!pending_cert_verify->result->is_issued_by_known_root) {
+          ct_verify_result.policy_compliance_required = false;
+          break;
+        }
+        // For old certificates (issued before 2018-05-01),
+        // CheckCTRequirements() may return CT_NOT_REQUIRED, so we check the
+        // compliance status here.
+        // TODO(https://crbug.com/851778): Remove this condition once we require
+        // signing certificates to have CanSignHttpExchanges extension, because
+        // such certificates should be naturally after 2018-05-01.
+        if (ct_verify_result.policy_compliance ==
+                net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS ||
+            ct_verify_result.policy_compliance ==
+                net::ct::CTPolicyCompliance::CT_POLICY_BUILD_NOT_TIMELY) {
+          ct_verify_result.policy_compliance_required = true;
+          break;
+        }
+        // Require CT compliance, by overriding CT_NOT_REQUIRED and treat it as
+        // ERR_CERTIFICATE_TRANSPARENCY_REQUIRED.
+        result = net::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED;
+    }
+  }
+
+  std::move(pending_cert_verify->callback)
+      .Run(result, *pending_cert_verify->result.get(), ct_verify_result);
 }
 
 }  // namespace network
