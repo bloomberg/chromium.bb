@@ -72,11 +72,8 @@ void WebAppPolicyManager::RefreshPolicyInstalledApps() {
            launch_container->GetString() == kLaunchContainerTabValue);
 
     PendingAppManager::LaunchContainer container;
-
-    // TODO(crbug.com/864904): Remove this default once PendingAppManager
-    // supports not setting the launch container.
     if (!launch_container)
-      container = PendingAppManager::LaunchContainer::kTab;
+      container = PendingAppManager::LaunchContainer::kDefault;
     else if (launch_container->GetString() == kLaunchContainerWindowValue)
       container = PendingAppManager::LaunchContainer::kWindow;
     else
