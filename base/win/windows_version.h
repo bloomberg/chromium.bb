@@ -13,6 +13,14 @@
 #include "base/macros.h"
 
 typedef void* HANDLE;
+struct _OSVERSIONINFOEXW;
+struct _SYSTEM_INFO;
+
+namespace base {
+namespace test {
+class ScopedOSInfoOverride;
+}  // namespace test
+}  // namespace base
 
 namespace base {
 namespace win {
@@ -116,7 +124,12 @@ class BASE_EXPORT OSInfo {
   static WOW64Status GetWOW64StatusForProcess(HANDLE process_handle);
 
  private:
-  OSInfo();
+  friend class base::test::ScopedOSInfoOverride;
+  static OSInfo** GetInstanceStorage();
+
+  OSInfo(const _OSVERSIONINFOEXW& version_info,
+         const _SYSTEM_INFO& system_info,
+         int os_type);
   ~OSInfo();
 
   Version version_;

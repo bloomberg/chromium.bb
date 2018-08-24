@@ -6,10 +6,17 @@
 
 #include <memory>
 #include <string>
+#include <tuple>
 
+#include "base/strings/stringprintf.h"
+#include "base/test/scoped_os_info_override_win.h"
+#include "base/test/test_reg_util_win.h"
 #include "base/version.h"
 #include "base/win/registry.h"
+#include "base/win/win_util.h"
+#include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -43,7 +50,10 @@ using ::testing::Return;
 using ::testing::StrCaseEq;
 using ::testing::StrEq;
 using ::testing::StrictMock;
+using ::testing::TestParamInfo;
 using ::testing::Values;
+
+namespace {
 
 // Mock classes to help with testing
 //------------------------------------------------------------------------------
@@ -165,6 +175,75 @@ class MockInstallerState : public InstallerState {
   }
 };
 
+void AddChromeToInstallationState(bool system_level,
+                                  base::Version* current_version,
+                                  MockInstallationState* installation_state) {
+  MockProductState product_state;
+  product_state.set_version(new base::Version(*current_version));
+  product_state.set_brand(L"TEST");
+  product_state.set_eula_accepted(1);
+  base::FilePath install_path = installer::GetChromeInstallPath(system_level);
+  product_state.SetUninstallProgram(
+      install_path.AppendASCII(current_version->GetString())
+          .Append(installer::kInstallerDir)
+          .Append(installer::kSetupExe));
+  product_state.AddUninstallSwitch(installer::switches::kUninstall);
+  if (system_level)
+    product_state.AddUninstallSwitch(installer::switches::kSystemLevel);
+
+  installation_state->SetProductState(system_level, product_state);
+}
+
+MockInstallationState* BuildChromeInstallationState(
+    bool system_level,
+    base::Version* current_version) {
+  std::unique_ptr<MockInstallationState> installation_state(
+      new MockInstallationState());
+  AddChromeToInstallationState(system_level, current_version,
+                               installation_state.get());
+  return installation_state.release();
+}
+
+MockInstallerState* BuildBasicInstallerState(
+    bool system_install,
+    const InstallationState& machine_state,
+    InstallerState::Operation operation) {
+  std::unique_ptr<MockInstallerState> installer_state(new MockInstallerState());
+
+  InstallerState::Level level = system_install ? InstallerState::SYSTEM_LEVEL
+                                               : InstallerState::USER_LEVEL;
+  installer_state->set_level(level);
+  installer_state->set_operation(operation);
+  // Hope this next one isn't checked for now.
+  installer_state->set_state_key(L"PROBABLY_INVALID_REG_PATH");
+  return installer_state.release();
+}
+
+void AddChromeToInstallerState(const InstallationState& machine_state,
+                               MockInstallerState* installer_state) {
+  // Fresh install or upgrade?
+  const ProductState* chrome =
+      machine_state.GetProductState(installer_state->system_install());
+  if (chrome) {
+    installer_state->AddProductFromState(*chrome);
+  } else {
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    installer_state->AddProduct(std::make_unique<Product>(dist));
+  }
+}
+
+MockInstallerState* BuildChromeInstallerState(
+    bool system_install,
+    const InstallationState& machine_state,
+    InstallerState::Operation operation) {
+  std::unique_ptr<MockInstallerState> installer_state(
+      BuildBasicInstallerState(system_install, machine_state, operation));
+  AddChromeToInstallerState(machine_state, installer_state.get());
+  return installer_state.release();
+}
+
+}  // namespace
+
 // The test fixture
 //------------------------------------------------------------------------------
 
@@ -188,72 +267,6 @@ class InstallWorkerTest : public testing::Test {
     setup_path_ = base::FilePath(
         L"C:\\UnlikelyPath\\Temp\\CR_123.tmp\\setup.exe");
     temp_dir_ = base::FilePath(L"C:\\UnlikelyPath\\Temp\\chrome_123");
-  }
-
-  void AddChromeToInstallationState(
-      bool system_level,
-      MockInstallationState* installation_state) {
-    MockProductState product_state;
-    product_state.set_version(new base::Version(*current_version_));
-    product_state.set_brand(L"TEST");
-    product_state.set_eula_accepted(1);
-    base::FilePath install_path = installer::GetChromeInstallPath(system_level);
-    product_state.SetUninstallProgram(
-      install_path.AppendASCII(current_version_->GetString())
-          .Append(installer::kInstallerDir)
-          .Append(installer::kSetupExe));
-    product_state.AddUninstallSwitch(installer::switches::kUninstall);
-    if (system_level)
-      product_state.AddUninstallSwitch(installer::switches::kSystemLevel);
-
-    installation_state->SetProductState(system_level, product_state);
-  }
-
-  MockInstallationState* BuildChromeInstallationState(bool system_level) {
-    std::unique_ptr<MockInstallationState> installation_state(
-        new MockInstallationState());
-    AddChromeToInstallationState(system_level, installation_state.get());
-    return installation_state.release();
-  }
-
-  static MockInstallerState* BuildBasicInstallerState(
-      bool system_install,
-      const InstallationState& machine_state,
-      InstallerState::Operation operation) {
-    std::unique_ptr<MockInstallerState> installer_state(
-        new MockInstallerState());
-
-    InstallerState::Level level = system_install ?
-        InstallerState::SYSTEM_LEVEL : InstallerState::USER_LEVEL;
-    installer_state->set_level(level);
-    installer_state->set_operation(operation);
-    // Hope this next one isn't checked for now.
-    installer_state->set_state_key(L"PROBABLY_INVALID_REG_PATH");
-    return installer_state.release();
-  }
-
-  static void AddChromeToInstallerState(
-      const InstallationState& machine_state,
-      MockInstallerState* installer_state) {
-    // Fresh install or upgrade?
-    const ProductState* chrome =
-        machine_state.GetProductState(installer_state->system_install());
-    if (chrome) {
-      installer_state->AddProductFromState(*chrome);
-    } else {
-      BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-      installer_state->AddProduct(std::make_unique<Product>(dist));
-    }
-  }
-
-  static MockInstallerState* BuildChromeInstallerState(
-      bool system_install,
-      const InstallationState& machine_state,
-      InstallerState::Operation operation) {
-    std::unique_ptr<MockInstallerState> installer_state(
-        BuildBasicInstallerState(system_install, machine_state, operation));
-    AddChromeToInstallerState(machine_state, installer_state.get());
-    return installer_state.release();
   }
 
  protected:
@@ -288,7 +301,7 @@ TEST_F(InstallWorkerTest, TestInstallChromeSystem) {
                                            WorkItem::kWow64Default));
 
   std::unique_ptr<InstallationState> installation_state(
-      BuildChromeInstallationState(system_level));
+      BuildChromeInstallationState(system_level, current_version_.get()));
 
   std::unique_ptr<InstallerState> installer_state(
       BuildChromeInstallerState(system_level, *installation_state,
@@ -317,3 +330,123 @@ TEST_F(InstallWorkerTest, TestInstallChromeSystem) {
                       *new_version_.get(),
                       &work_item_list);
 }
+
+// Tests for installer::AddUpdateBrandCodeWorkItem().
+//------------------------------------------------------------------------------
+
+// Parameters for AddUpdateBrandCodeWorkItem tests:
+//   bool: is domain joined
+//   bool: is registered with MDM
+//   bool: is Windows 10 home edition
+using AddUpdateBrandCodeWorkItemTestParams = std::tuple<bool, bool, bool>;
+
+// These tests run at system level.
+static const bool kSystemLevel = true;
+
+class AddUpdateBrandCodeWorkItemTest
+    : public ::testing::TestWithParam<AddUpdateBrandCodeWorkItemTestParams> {
+ public:
+  AddUpdateBrandCodeWorkItemTest()
+      : is_domain_joined_(std::get<0>(GetParam())),
+        is_registered_(std::get<1>(GetParam())),
+        is_home_edition_(std::get<2>(GetParam())),
+        scoped_install_details_(kSystemLevel),
+        current_version_(new base::Version("1.0.0.0")),
+        installation_state_(
+            BuildChromeInstallationState(kSystemLevel, current_version_.get())),
+        installer_state_(BuildChromeInstallerState(
+            kSystemLevel,
+            *installation_state_,
+            InstallerState::SINGLE_INSTALL_OR_UPDATE)),
+        scoped_domain_state_(is_domain_joined_),
+        scoped_registration_state_(is_registered_),
+        scoped_os_info_override_(
+            is_home_edition_
+                ? base::test::ScopedOSInfoOverride::Type::kWin10Home
+                : base::test::ScopedOSInfoOverride::Type::kWin10Pro) {}
+
+  void SetUp() override {
+    // Override registry so that tests don't mess up the machine's state.
+    ASSERT_NO_FATAL_FAILURE(registry_override_.OverrideRegistry(
+        HKEY_LOCAL_MACHINE, &registry_override_hklm_path_));
+  }
+
+  void SetupExpectations(const base::string16& brand,
+                         StrictMock<MockWorkItemList>* work_item_list) {
+    if (!brand.empty()) {
+      BrowserDistribution* browser_dist =
+          installer_state_->product().distribution();
+      DCHECK(browser_dist);
+      base::win::RegKey key(installer_state_->root_key(),
+                            browser_dist->GetStateKey().c_str(), KEY_WRITE);
+      ASSERT_TRUE(key.Valid());
+      ASSERT_EQ(
+          0, key.WriteValue(google_update::kRegRLZBrandField, brand.c_str()));
+    }
+
+    if (!installer::GetUpdatedBrandCode(brand).empty() &&
+        (is_domain_joined_ || (is_registered_ && !is_home_edition_))) {
+      EXPECT_CALL(*work_item_list,
+                  AddSetRegStringValueWorkItem(_, _, _, _, _, _))
+          .WillOnce(Return(nullptr));  // Return value ignored.
+    }
+  }
+
+  const InstallerState* installer_state() { return installer_state_.get(); }
+
+ private:
+  const bool is_domain_joined_;
+  const bool is_registered_;
+  const bool is_home_edition_;
+
+  install_static::ScopedInstallDetails scoped_install_details_;
+  std::unique_ptr<base::Version> current_version_;
+  std::unique_ptr<InstallationState> installation_state_;
+  std::unique_ptr<InstallerState> installer_state_;
+  registry_util::RegistryOverrideManager registry_override_;
+  base::string16 registry_override_hklm_path_;
+  base::win::ScopedDomainStateForTesting scoped_domain_state_;
+  base::win::ScopedDeviceRegisteredWithManagementForTesting
+      scoped_registration_state_;
+  base::test::ScopedOSInfoOverride scoped_os_info_override_;
+};
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, NoBrand) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"", &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GGRV) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GGRV", &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, GGLS) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"GGLS", &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+TEST_P(AddUpdateBrandCodeWorkItemTest, TEST) {
+  StrictMock<MockWorkItemList> work_item_list;
+  SetupExpectations(L"TEST", &work_item_list);
+  installer::AddUpdateBrandCodeWorkItem(*installer_state(), &work_item_list);
+}
+
+struct AddUpdateBrandCodeWorkItemTestParamToString {
+  std::string operator()(
+      const TestParamInfo<AddUpdateBrandCodeWorkItemTestParams>& info) const {
+    const char* joined = std::get<0>(info.param) ? "joined" : "notjoined";
+    const char* registered =
+        std::get<1>(info.param) ? "registered" : "notregistered";
+    const char* home = std::get<2>(info.param) ? "home" : "nothome";
+    return base::StringPrintf("%s_%s_%s", joined, registered, home);
+  }
+};
+
+INSTANTIATE_TEST_CASE_P(AddUpdateBrandCodeWorkItemTest,
+                        AddUpdateBrandCodeWorkItemTest,
+                        Combine(Bool(), Bool(), Bool()),
+                        AddUpdateBrandCodeWorkItemTestParamToString());

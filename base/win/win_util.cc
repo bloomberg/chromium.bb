@@ -121,6 +121,36 @@ bool SetProcessDpiAwarenessWrapper(PROCESS_DPI_AWARENESS value) {
   return false;
 }
 
+bool* GetDomainEnrollmentStateStorage() {
+  static bool state = IsOS(OS_DOMAINMEMBER);
+  return &state;
+}
+
+bool* GetRegisteredWithManagementStateStorage() {
+  static bool state = []() {
+    ScopedNativeLibrary library(
+        FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
+    if (!library.is_valid())
+      return false;
+
+    using IsDeviceRegisteredWithManagementFunction =
+        decltype(&::IsDeviceRegisteredWithManagement);
+    IsDeviceRegisteredWithManagementFunction
+        is_device_registered_with_management_function =
+            reinterpret_cast<IsDeviceRegisteredWithManagementFunction>(
+                library.GetFunctionPointer("IsDeviceRegisteredWithManagement"));
+    if (!is_device_registered_with_management_function)
+      return false;
+
+    BOOL is_managed = FALSE;
+    HRESULT hr =
+        is_device_registered_with_management_function(&is_managed, 0, nullptr);
+    return SUCCEEDED(hr) && is_managed;
+  }();
+
+  return &state;
+}
+
 }  // namespace
 
 // Uses the Windows 10 WRL API's to query the current system state. The API's
@@ -529,44 +559,17 @@ bool IsDeviceUsedAsATablet(std::string* reason) {
   return is_tablet;
 }
 
-enum DomainEnrollmentState {UNKNOWN = -1, NOT_ENROLLED, ENROLLED};
-static volatile long int g_domain_state = UNKNOWN;
-
 bool IsEnrolledToDomain() {
-  // Doesn't make any sense to retry inside a user session because joining a
-  // domain will only kick in on a restart.
-  if (g_domain_state == UNKNOWN) {
-    ::InterlockedCompareExchange(&g_domain_state,
-                                 IsOS(OS_DOMAINMEMBER) ?
-                                     ENROLLED : NOT_ENROLLED,
-                                 UNKNOWN);
-  }
+  return *GetDomainEnrollmentStateStorage();
+}
 
-  return g_domain_state == ENROLLED;
+// This function is deprecated, prefer class ScopedDomainStateForTesting.
+void SetDomainStateForTesting(bool state) {
+  *GetDomainEnrollmentStateStorage() = state;
 }
 
 bool IsDeviceRegisteredWithManagement() {
-  static bool is_device_registered_with_management = []() {
-    ScopedNativeLibrary library(
-        FilePath(FILE_PATH_LITERAL("MDMRegistration.dll")));
-    if (!library.is_valid())
-      return false;
-
-    using IsDeviceRegisteredWithManagementFunction =
-        decltype(&::IsDeviceRegisteredWithManagement);
-    IsDeviceRegisteredWithManagementFunction
-        is_device_registered_with_management_function =
-            reinterpret_cast<IsDeviceRegisteredWithManagementFunction>(
-                library.GetFunctionPointer("IsDeviceRegisteredWithManagement"));
-    if (!is_device_registered_with_management_function)
-      return false;
-
-    BOOL is_managed = false;
-    HRESULT hr =
-        is_device_registered_with_management_function(&is_managed, 0, nullptr);
-    return SUCCEEDED(hr) && is_managed;
-  }();
-  return is_device_registered_with_management;
+  return *GetRegisteredWithManagementStateStorage();
 }
 
 bool IsEnterpriseManaged() {
@@ -577,10 +580,6 @@ bool IsEnterpriseManaged() {
   // However, for now it is decided to collect some UMA metrics about
   // IsDeviceRegisteredWithMdm() before changing chrome's behavior.
   return IsEnrolledToDomain();
-}
-
-void SetDomainStateForTesting(bool state) {
-  g_domain_state = state ? ENROLLED : NOT_ENROLLED;
 }
 
 bool IsUser32AndGdi32Available() {
@@ -703,6 +702,26 @@ void EnableHighDPISupport() {
     BOOL result = ::SetProcessDPIAware();
     DCHECK(result) << "SetProcessDPIAware failed.";
   }
+}
+
+ScopedDomainStateForTesting::ScopedDomainStateForTesting(bool state)
+    : initial_state_(IsEnrolledToDomain()) {
+  *GetDomainEnrollmentStateStorage() = state;
+}
+
+ScopedDomainStateForTesting::~ScopedDomainStateForTesting() {
+  *GetDomainEnrollmentStateStorage() = initial_state_;
+}
+
+ScopedDeviceRegisteredWithManagementForTesting::
+    ScopedDeviceRegisteredWithManagementForTesting(bool state)
+    : initial_state_(IsDeviceRegisteredWithManagement()) {
+  *GetRegisteredWithManagementStateStorage() = state;
+}
+
+ScopedDeviceRegisteredWithManagementForTesting::
+    ~ScopedDeviceRegisteredWithManagementForTesting() {
+  *GetRegisteredWithManagementStateStorage() = initial_state_;
 }
 
 }  // namespace win
