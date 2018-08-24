@@ -129,6 +129,15 @@ declare_args() {
   # Turn this on to use ghash feature of lld for faster debug link on Windows.
   # http://blog.llvm.org/2018/01/improving-link-time-on-windows-with.html
   use_ghash = false
+
+  # Whether to enable ThinLTO optimizations. Turning ThinLTO optimizations on
+  # can substantially increase link time and binary size, but they generally
+  # also make binaries a fair bit faster.
+  #
+  # TODO(gbiv): We disable optimizations by default on most platforms because
+  # the space overhead is too great. We should use some mixture of profiles and
+  # optimization settings to better tune the size increase.
+  thin_lto_enable_optimizations = is_chromeos
 }
 
 declare_args() {
@@ -656,10 +665,20 @@ config("compiler") {
       }
     }
 
-    # Disable optimization for now because they increase binary size by too
-    # much.
-    if (use_lld && (is_android || (is_linux && !is_chromeos))) {
-      ldflags += [ "-Wl,--lto-O0" ]
+    if (use_lld) {
+      if (thin_lto_enable_optimizations) {
+        ldflags += [ "-Wl,--lto-O2" ]
+        if (is_android) {
+          # TODO(gbiv): We ideally shouldn't need to specify this; ThinLTO
+          # should be able to better manage binary size increases on its own.
+          ldflags += [
+            "-Wl,-mllvm",
+            "-Wl,-import-instr-limit=5",
+          ]
+        }
+      } else {
+        ldflags += [ "-Wl,--lto-O0" ]
+      }
     }
 
     # TODO(pcc): Re-enable this flag on Android. This will require libc++ to be
