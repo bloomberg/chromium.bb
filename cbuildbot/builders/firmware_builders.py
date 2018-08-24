@@ -27,14 +27,12 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
   def RunStages(self):
     """Run the stages."""
     workspace_dir = self._run.options.workspace
-    firmware_branch = self._run.config.workspace_branch
 
     self._RunStage(workspace_stages.WorkspaceCleanStage,
                    build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   build_root=workspace_dir,
-                   workspace_branch=firmware_branch)
+                   build_root=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceUprevAndPublishStage,
                    build_root=workspace_dir)
@@ -53,5 +51,4 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
 
       self._RunStage(firmware_stages.FirmwareArchiveStage,
                      build_root=workspace_dir,
-                     board=board,
-                     workspace_branch=firmware_branch)
+                     board=board)

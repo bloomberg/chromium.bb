@@ -43,18 +43,15 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
   a dummy version of metadata.json.
   """
 
-  def __init__(self, builder_run, build_root, workspace_branch, **kwargs):
+  def __init__(self, builder_run, build_root, **kwargs):
     """Initializer.
 
     Args:
       builder_run: BuilderRun object.
       build_root: Fully qualified path to use as a string.
-      workspace_branch: branch to sync into the workspace.
     """
     super(FirmwareArchiveStage, self).__init__(
-        builder_run, build_root, **kwargs)
-
-    self.workspace_branch = workspace_branch
+        builder_run, build_root=build_root, **kwargs)
 
     self.dummy_firmware_config = None
     self.workspace_version_info = None
@@ -96,7 +93,7 @@ class FirmwareArchiveStage(workspace_stages.WorkspaceStageBase,
     # Use the metadata for the main build, with selected fields modified.
     board_metadata = self._run.attrs.metadata.GetDict()
     board_metadata['boards'] = [self._current_board]
-    board_metadata['branch'] = self.workspace_branch
+    board_metadata['branch'] = self._run.config.workspace_branch
     board_metadata['version_full'] = self.firmware_version
     board_metadata['version_milestone'] = \
         self.workspace_version_info.chrome_branch

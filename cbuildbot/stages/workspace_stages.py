@@ -53,12 +53,29 @@ class WorkspaceStageBase(generic_stages.BuilderStage):
       build_root: Fully qualified path to use as a string.
     """
     super(WorkspaceStageBase, self).__init__(
-        builder_run, build_root=build_root, **kwargs)
+        builder_run, build_root=build_root,
+        **kwargs)
 
     self._orig_root = builder_run.buildroot
 
+  def GetWorkspaceRepo(self):
+    """Fetch a repo object for the workspace.
+
+    Returns:
+      repository.RepoRepository instance for the workspace.
+    """
+    # TODO: Properly select the manifest. Currently hard coded to internal
+    # branch checkouts.
+    site_config = config_lib.GetConfig()
+    manifest_url = site_config.params['MANIFEST_INT_URL']
+
+    return repository.RepoRepository(
+        manifest_url, self._build_root,
+        branch=self._run.config.workspace_branch,
+        git_cache_dir=self._run.options.git_cache_dir)
+
   def GetWorkspaceVersionInfo(self):
-    """WorkspaceVersion
+    """Fetch a VersionInfo for the workspace.
 
     Only valid after the workspace has been synced.
 
@@ -77,9 +94,7 @@ class WorkspaceCleanStage(WorkspaceStageBase):
     """Clean stuff!."""
     logging.info('Cleaning: %s', self._build_root)
 
-    site_config = config_lib.GetConfig()
-    manifest_url = site_config.params['MANIFEST_INT_URL']
-    repo = repository.RepoRepository(manifest_url, self._build_root)
+    repo = self.GetWorkspaceRepo()
 
     #
     # TODO: This logic is copied from cbuildbot_launch, need to share.
@@ -111,34 +126,12 @@ class WorkspaceSyncStage(WorkspaceStageBase):
 
   category = constants.CI_INFRA_STAGE
 
-  def __init__(self, builder_run, build_root, workspace_branch, **kwargs):
-    """Initializer.
-
-    Args:
-      builder_run: BuilderRun object.
-      build_root: Fully qualified path to use as a string.
-      workspace_branch: branch to sync into the workspace.
-    """
-    super(WorkspaceSyncStage, self).__init__(
-        builder_run, build_root, **kwargs)
-    self.workspace_branch = workspace_branch
-
   def PerformStage(self):
     """Sync stuff!."""
     logging.info('Syncing %s branch into %s',
-                 self.workspace_branch, self._build_root)
+                 self._run.config.workspace_branch, self._build_root)
 
-    #
-    # TODO: This logic is copied from cbuildbot_launch, need to share.
-    #
-
-    site_config = config_lib.GetConfig()
-    manifest_url = site_config.params['MANIFEST_INT_URL']
-    repo = repository.RepoRepository(
-        manifest_url, self._build_root,
-        branch=self.workspace_branch,
-        git_cache_dir=self._run.options.git_cache_dir)
-
+    repo = self.GetWorkspaceRepo()
     repo.Sync(detach=True)
 
 
