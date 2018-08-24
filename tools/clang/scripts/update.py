@@ -803,7 +803,7 @@ def UpdateClang(args):
       RunCommand(['ninja', 'asan', 'ubsan', 'profile'])
 
       # And copy them into the main build tree.
-      asan_lib_path_format = 'lib/linux/libclang_rt.asan-{0}-android.so',
+      asan_lib_path_format = 'lib/linux/libclang_rt.asan-{0}-android.so'
       libs_want = [
           asan_lib_path_format,
           'lib/linux/libclang_rt.ubsan_standalone-{0}-android.so',
