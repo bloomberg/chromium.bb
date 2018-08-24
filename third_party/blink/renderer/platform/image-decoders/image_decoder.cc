@@ -150,6 +150,8 @@ size_t ImageDecoder::FrameCount() {
 }
 
 ImageFrame* ImageDecoder::DecodeFrameBufferAtIndex(size_t index) {
+  TRACE_EVENT0("blink", "ImageDecoder::DecodeFrameBufferAtIndex");
+
   if (index >= FrameCount())
     return nullptr;
   ImageFrame* frame = &frame_buffer_cache_[index];
