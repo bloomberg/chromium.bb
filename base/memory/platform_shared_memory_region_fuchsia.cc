@@ -41,6 +41,19 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
   return PlatformSharedMemoryRegion(std::move(handle), mode, size, guid);
 }
 
+// static
+PlatformSharedMemoryRegion
+PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
+    const SharedMemoryHandle& handle,
+    Mode mode) {
+  CHECK(mode == Mode::kReadOnly || mode == Mode::kUnsafe);
+  if (!handle.IsValid())
+    return {};
+
+  return Take(zx::vmo(handle.GetHandle()), mode, handle.GetSize(),
+              handle.GetGUID());
+}
+
 zx_handle_t PlatformSharedMemoryRegion::GetPlatformHandle() const {
   return handle_.get();
 }

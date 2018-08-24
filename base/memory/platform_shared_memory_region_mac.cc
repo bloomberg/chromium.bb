@@ -39,6 +39,20 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Take(
   return PlatformSharedMemoryRegion(std::move(handle), mode, size, guid);
 }
 
+// static
+PlatformSharedMemoryRegion
+PlatformSharedMemoryRegion::TakeFromSharedMemoryHandle(
+    const SharedMemoryHandle& handle,
+    Mode mode) {
+  CHECK(mode == Mode::kReadOnly || mode == Mode::kUnsafe);
+  CHECK(handle.GetType() == SharedMemoryHandle::MACH);
+  if (!handle.IsValid())
+    return {};
+
+  return Take(base::mac::ScopedMachSendRight(handle.GetMemoryObject()), mode,
+              handle.GetSize(), handle.GetGUID());
+}
+
 mach_port_t PlatformSharedMemoryRegion::GetPlatformHandle() const {
   return handle_.get();
 }

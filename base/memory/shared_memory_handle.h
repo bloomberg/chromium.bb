@@ -122,6 +122,8 @@ class BASE_EXPORT SharedMemoryHandle {
                      mach_vm_size_t size,
                      const base::UnguessableToken& guid);
 
+  Type GetType() const { return type_; }
+
   // Exposed so that the SharedMemoryHandle can be transported between
   // processes.
   mach_port_t GetMemoryObject() const;
