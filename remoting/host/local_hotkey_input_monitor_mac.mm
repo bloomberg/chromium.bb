@@ -1,12 +1,12 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/local_hotkey_input_monitor.h"
 
 #import <AppKit/AppKit.h>
-#include <stdint.h>
 
+#include <cstdint>
 #include <set>
 
 #include "base/bind.h"
@@ -31,72 +31,57 @@ static const NSUInteger kEscKeyCode = 53;
 namespace remoting {
 namespace {
 
-class LocalInputMonitorMac : public LocalInputMonitor {
+class LocalHotkeyInputMonitorMac : public LocalHotkeyInputMonitor {
  public:
-  // Invoked by LocalInputMonitorManager.
+  // Invoked by LocalHotkeyInputMonitorManager.
   class EventHandler {
    public:
-    virtual ~EventHandler() {}
+    virtual ~EventHandler() = default;
 
-    virtual void OnLocalMouseMoved(const webrtc::DesktopVector& position) = 0;
     virtual void OnDisconnectShortcut() = 0;
   };
 
-  LocalInputMonitorMac(
+  LocalHotkeyInputMonitorMac(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  ~LocalInputMonitorMac() override;
+  ~LocalHotkeyInputMonitorMac() override;
 
  private:
-  // The actual implementation resides in LocalInputMonitorMac::Core class.
+  // The implementation resides in LocalHotkeyInputMonitorMac::Core class.
   class Core;
   scoped_refptr<Core> core_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorMac);
+  DISALLOW_COPY_AND_ASSIGN(LocalHotkeyInputMonitorMac);
 };
 
 }  // namespace
 }  // namespace remoting
 
-@interface LocalInputMonitorManager : NSObject {
+@interface LocalHotkeyInputMonitorManager : NSObject {
  @private
   GTMCarbonHotKey* hotKey_;
-  CFRunLoopSourceRef mouseRunLoopSource_;
-  base::ScopedCFTypeRef<CFMachPortRef> mouseMachPort_;
-  remoting::LocalInputMonitorMac::EventHandler* monitor_;
+  remoting::LocalHotkeyInputMonitorMac::EventHandler* monitor_;
 }
 
-- (id)initWithMonitor:(remoting::LocalInputMonitorMac::EventHandler*)monitor;
+- (id)initWithMonitor:
+    (remoting::LocalHotkeyInputMonitorMac::EventHandler*)monitor;
 
 // Called when the hotKey is hit.
 - (void)hotKeyHit:(GTMCarbonHotKey*)hotKey;
 
-// Called when the local mouse moves
-- (void)localMouseMoved:(const webrtc::DesktopVector&)mousePos;
-
-// Must be called when the LocalInputMonitorManager is no longer to be used.
+// Must be called when the LocalHotkeyInputMonitorManager is no longer needed.
 // Similar to NSTimer in that more than a simple release is required.
 - (void)invalidate;
 
 @end
 
-static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
-                                  CGEventRef event, void* context) {
-  int64_t pid = CGEventGetIntegerValueField(event, kCGEventSourceUnixProcessID);
-  if (pid == 0) {
-    CGPoint cgMousePos = CGEventGetLocation(event);
-    webrtc::DesktopVector mousePos(cgMousePos.x, cgMousePos.y);
-    [static_cast<LocalInputMonitorManager*>(context) localMouseMoved:mousePos];
-  }
-  return nullptr;
-}
+@implementation LocalHotkeyInputMonitorManager
 
-@implementation LocalInputMonitorManager
-
-- (id)initWithMonitor:(remoting::LocalInputMonitorMac::EventHandler*)monitor {
+- (id)initWithMonitor:
+    (remoting::LocalHotkeyInputMonitorMac::EventHandler*)monitor {
   if ((self = [super init])) {
     monitor_ = monitor;
 
@@ -110,19 +95,6 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
                            whenPressed:YES];
     if (!hotKey_) {
       LOG(ERROR) << "registerHotKey failed.";
-    }
-    mouseMachPort_.reset(CGEventTapCreate(
-        kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
-        1 << kCGEventMouseMoved, LocalMouseMoved, self));
-    if (mouseMachPort_) {
-      mouseRunLoopSource_ = CFMachPortCreateRunLoopSource(
-          nullptr, mouseMachPort_, 0);
-      CFRunLoopAddSource(
-          CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
-    } else {
-      LOG(ERROR) << "CGEventTapCreate failed.";
-    }
-    if (!hotKey_ && !mouseMachPort_) {
       [self release];
       return nil;
     }
@@ -134,24 +106,12 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
   monitor_->OnDisconnectShortcut();
 }
 
-- (void)localMouseMoved:(const webrtc::DesktopVector&)mousePos {
-  monitor_->OnLocalMouseMoved(mousePos);
-}
-
 - (void)invalidate {
   if (hotKey_) {
     GTMCarbonEventDispatcherHandler* handler =
         [GTMCarbonEventDispatcherHandler sharedEventDispatcherHandler];
     [handler unregisterHotKey:hotKey_];
     hotKey_ = nullptr;
-  }
-  if (mouseRunLoopSource_) {
-    CFMachPortInvalidate(mouseMachPort_);
-    CFRunLoopRemoveSource(
-        CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
-    CFRelease(mouseRunLoopSource_);
-    mouseMachPort_.reset(0);
-    mouseRunLoopSource_ = nullptr;
   }
 }
 
@@ -160,7 +120,7 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
 namespace remoting {
 namespace {
 
-class LocalInputMonitorMac::Core
+class LocalHotkeyInputMonitorMac::Core
     : public base::RefCountedThreadSafe<Core>,
       public EventHandler {
  public:
@@ -179,7 +139,6 @@ class LocalInputMonitorMac::Core
   void StopOnUiThread();
 
   // EventHandler interface.
-  void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void OnDisconnectShortcut() override;
 
   // Task runner on which public methods of this class must be called.
@@ -188,18 +147,16 @@ class LocalInputMonitorMac::Core
   // Task runner on which |window_| is created.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
-  LocalInputMonitorManager* manager_;
+  LocalHotkeyInputMonitorManager* manager_;
 
-  // Invoked in the |caller_task_runner_| thread to report local mouse events
-  // and session disconnect requests.
+  // Invoked in the |caller_task_runner_| thread to report session disconnect
+  // requests.
   base::WeakPtr<ClientSessionControl> client_session_control_;
-
-  webrtc::DesktopVector mouse_position_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
 
-LocalInputMonitorMac::LocalInputMonitorMac(
+LocalHotkeyInputMonitorMac::LocalHotkeyInputMonitorMac(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
@@ -209,12 +166,12 @@ LocalInputMonitorMac::LocalInputMonitorMac(
   core_->Start();
 }
 
-LocalInputMonitorMac::~LocalInputMonitorMac() {
+LocalHotkeyInputMonitorMac::~LocalHotkeyInputMonitorMac() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 
-LocalInputMonitorMac::Core::Core(
+LocalHotkeyInputMonitorMac::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
@@ -225,30 +182,31 @@ LocalInputMonitorMac::Core::Core(
   DCHECK(client_session_control_);
 }
 
-void LocalInputMonitorMac::Core::Start() {
+void LocalHotkeyInputMonitorMac::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Core::StartOnUiThread, this));
+                            base::BindOnce(&Core::StartOnUiThread, this));
 }
 
-void LocalInputMonitorMac::Core::Stop() {
+void LocalHotkeyInputMonitorMac::Core::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::StopOnUiThread, this));
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&Core::StopOnUiThread, this));
 }
 
-LocalInputMonitorMac::Core::~Core() {
-  DCHECK(manager_ == nil);
+LocalHotkeyInputMonitorMac::Core::~Core() {
+  DCHECK_EQ(manager_, nil);
 }
 
-void LocalInputMonitorMac::Core::StartOnUiThread() {
+void LocalHotkeyInputMonitorMac::Core::StartOnUiThread() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
-  manager_ = [[LocalInputMonitorManager alloc] initWithMonitor:this];
+  manager_ = [[LocalHotkeyInputMonitorManager alloc] initWithMonitor:this];
 }
 
-void LocalInputMonitorMac::Core::StopOnUiThread() {
+void LocalHotkeyInputMonitorMac::Core::StopOnUiThread() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   [manager_ invalidate];
@@ -256,38 +214,21 @@ void LocalInputMonitorMac::Core::StopOnUiThread() {
   manager_ = nil;
 }
 
-void LocalInputMonitorMac::Core::OnLocalMouseMoved(
-    const webrtc::DesktopVector& position) {
-  // In some cases OS may emit bogus mouse-move events even when cursor is not
-  // actually moving. To handle this case properly verify that mouse position
-  // has changed. See crbug.com/360912 .
-  if (position.equals(mouse_position_)) {
-    return;
-  }
-
-  mouse_position_ = position;
-
+void LocalHotkeyInputMonitorMac::Core::OnDisconnectShortcut() {
   caller_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
-                            client_session_control_,
-                            position));
-}
-
-void LocalInputMonitorMac::Core::OnDisconnectShortcut() {
-  caller_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
-                            client_session_control_, protocol::OK));
+      FROM_HERE, base::BindOnce(&ClientSessionControl::DisconnectSession,
+                                client_session_control_, protocol::OK));
 }
 
 }  // namespace
 
-std::unique_ptr<LocalInputMonitor> LocalInputMonitor::Create(
+std::unique_ptr<LocalHotkeyInputMonitor> LocalHotkeyInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return base::WrapUnique(new LocalInputMonitorMac(
-      caller_task_runner, ui_task_runner, client_session_control));
+  return std::make_unique<LocalHotkeyInputMonitorMac>(
+      caller_task_runner, ui_task_runner, client_session_control);
 }
 
 }  // namespace remoting

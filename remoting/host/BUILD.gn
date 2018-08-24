@@ -207,11 +207,18 @@ static_library("host") {
     "ipc_video_frame_capturer.h",
     "it2me_desktop_environment.cc",
     "it2me_desktop_environment.h",
+    "local_hotkey_input_monitor.h",
+    "local_hotkey_input_monitor_chromeos.cc",
+    "local_hotkey_input_monitor_mac.mm",
+    "local_hotkey_input_monitor_win.cc",
+    "local_hotkey_input_monitor_x11.cc",
+    "local_input_monitor.cc",
     "local_input_monitor.h",
-    "local_input_monitor_chromeos.cc",
-    "local_input_monitor_mac.mm",
-    "local_input_monitor_win.cc",
-    "local_input_monitor_x11.cc",
+    "local_mouse_input_monitor.h",
+    "local_mouse_input_monitor_chromeos.cc",
+    "local_mouse_input_monitor_mac.mm",
+    "local_mouse_input_monitor_win.cc",
+    "local_mouse_input_monitor_x11.cc",
     "logging.h",
     "logging_linux.cc",
     "logging_mac.cc",
@@ -348,7 +355,8 @@ static_library("host") {
       "clipboard_x11.cc",
       "desktop_resizer_x11.cc",
       "input_injector_x11.cc",
-      "local_input_monitor_x11.cc",
+      "local_hotkey_input_monitor_x11.cc",
+      "local_mouse_input_monitor_x11.cc",
     ]
   }
 
@@ -382,7 +390,8 @@ static_library("host") {
         "desktop_resizer_x11.cc",
         "input_injector_chromeos.cc",
         "input_injector_chromeos.h",
-        "local_input_monitor_x11.cc",
+        "local_hotkey_input_monitor_x11.cc",
+        "local_mouse_input_monitor_x11.cc",
       ]
     }
   }

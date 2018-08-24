@@ -18,15 +18,10 @@ namespace remoting {
 
 class ClientSessionControl;
 
-// Monitors the local input to notify about mouse movements. On Mac and Linux
-// catches the disconnection keyboard shortcut (Ctlr-Alt-Esc) and invokes
-// SessionController::Delegate::DisconnectSession() when this key combination is
-// pressed.
-//
-// TODO(sergeyu): Refactor shortcut code to a separate class.
+// Monitors the local input to notify about mouse movements and keyboard events.
 class LocalInputMonitor {
  public:
-  virtual ~LocalInputMonitor() {}
+  virtual ~LocalInputMonitor() = default;
 
   // Creates a platform-specific instance of LocalInputMonitor.
   // |client_session_control| is called on the |caller_task_runner| thread.
@@ -37,7 +32,7 @@ class LocalInputMonitor {
       base::WeakPtr<ClientSessionControl> client_session_control);
 
  protected:
-  LocalInputMonitor() {}
+  LocalInputMonitor() = default;
 };
 
 }  // namespace remoting

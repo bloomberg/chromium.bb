@@ -1,11 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/local_mouse_input_monitor.h"
 
 #include <sys/select.h>
 #include <unistd.h>
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -14,7 +16,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/client_session_control.h"
@@ -25,16 +26,16 @@ namespace remoting {
 
 namespace {
 
-class LocalInputMonitorX11 : public LocalInputMonitor {
+class LocalMouseInputMonitorX11 : public LocalMouseInputMonitor {
  public:
-  LocalInputMonitorX11(
+  LocalMouseInputMonitorX11(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  ~LocalInputMonitorX11() override;
+  ~LocalMouseInputMonitorX11() override;
 
  private:
-  // The actual implementation resides in LocalInputMonitorX11::Core class.
+  // The actual implementation resides in LocalMouseInputMonitorX11::Core class.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
@@ -72,16 +73,10 @@ class LocalInputMonitorX11 : public LocalInputMonitor {
     // Controls watching X events.
     std::unique_ptr<base::FileDescriptorWatcher::Controller> controller_;
 
-    // True when Alt is pressed.
-    bool alt_pressed_;
-
-    // True when Ctrl is pressed.
-    bool ctrl_pressed_;
-
-    Display* display_;
-    Display* x_record_display_;
-    XRecordRange* x_record_range_[2];
-    XRecordContext x_record_context_;
+    Display* display_ = nullptr;
+    Display* x_record_display_ = nullptr;
+    XRecordRange* x_record_range_ = nullptr;
+    XRecordContext x_record_context_ = 0;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -90,10 +85,10 @@ class LocalInputMonitorX11 : public LocalInputMonitor {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorX11);
+  DISALLOW_COPY_AND_ASSIGN(LocalMouseInputMonitorX11);
 };
 
-LocalInputMonitorX11::LocalInputMonitorX11(
+LocalMouseInputMonitorX11::LocalMouseInputMonitorX11(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
@@ -103,58 +98,48 @@ LocalInputMonitorX11::LocalInputMonitorX11(
   core_->Start();
 }
 
-LocalInputMonitorX11::~LocalInputMonitorX11() {
+LocalMouseInputMonitorX11::~LocalMouseInputMonitorX11() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 
-LocalInputMonitorX11::Core::Core(
+LocalMouseInputMonitorX11::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
-      client_session_control_(client_session_control),
-      alt_pressed_(false),
-      ctrl_pressed_(false),
-      display_(nullptr),
-      x_record_display_(nullptr),
-      x_record_context_(0) {
+      client_session_control_(client_session_control) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(client_session_control_.get());
-
-  x_record_range_[0] = nullptr;
-  x_record_range_[1] = nullptr;
 }
 
-void LocalInputMonitorX11::Core::Start() {
+void LocalMouseInputMonitorX11::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   input_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&Core::StartOnInputThread, this));
+                               base::BindOnce(&Core::StartOnInputThread, this));
 }
 
-void LocalInputMonitorX11::Core::Stop() {
+void LocalMouseInputMonitorX11::Core::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   input_task_runner_->PostTask(FROM_HERE,
-                               base::Bind(&Core::StopOnInputThread, this));
+                               base::BindOnce(&Core::StopOnInputThread, this));
 }
 
-LocalInputMonitorX11::Core::~Core() {
+LocalMouseInputMonitorX11::Core::~Core() {
   DCHECK(!display_);
   DCHECK(!x_record_display_);
-  DCHECK(!x_record_range_[0]);
-  DCHECK(!x_record_range_[1]);
+  DCHECK(!x_record_range_);
   DCHECK(!x_record_context_);
 }
 
-void LocalInputMonitorX11::Core::StartOnInputThread() {
+void LocalMouseInputMonitorX11::Core::StartOnInputThread() {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
   DCHECK(!display_);
   DCHECK(!x_record_display_);
-  DCHECK(!x_record_range_[0]);
-  DCHECK(!x_record_range_[1]);
+  DCHECK(!x_record_range_);
   DCHECK(!x_record_context_);
 
   // TODO(jamiewalch): We should pass the display in. At that point, since
@@ -175,21 +160,17 @@ void LocalInputMonitorX11::Core::StartOnInputThread() {
     return;
   }
 
-  x_record_range_[0] = XRecordAllocRange();
-  x_record_range_[1] = XRecordAllocRange();
-  if (!x_record_range_[0] || !x_record_range_[1]) {
+  x_record_range_ = XRecordAllocRange();
+  if (!x_record_range_) {
     LOG(ERROR) << "XRecordAllocRange failed.";
     return;
   }
-  x_record_range_[0]->device_events.first = MotionNotify;
-  x_record_range_[0]->device_events.last = MotionNotify;
-  x_record_range_[1]->device_events.first = KeyPress;
-  x_record_range_[1]->device_events.last = KeyRelease;
+  x_record_range_->device_events.first = MotionNotify;
+  x_record_range_->device_events.last = MotionNotify;
   XRecordClientSpec client_spec = XRecordAllClients;
 
-  x_record_context_ = XRecordCreateContext(
-      x_record_display_, 0, &client_spec, 1, x_record_range_,
-      arraysize(x_record_range_));
+  x_record_context_ = XRecordCreateContext(x_record_display_, 0, &client_spec,
+                                           1, &x_record_range_, 1);
   if (!x_record_context_) {
     LOG(ERROR) << "XRecordCreateContext failed.";
     return;
@@ -206,7 +187,7 @@ void LocalInputMonitorX11::Core::StartOnInputThread() {
   // something to read from |x_record_display_|.
   controller_ = base::FileDescriptorWatcher::WatchReadable(
       ConnectionNumber(x_record_display_),
-      base::Bind(&Core::OnPendingXEvents, base::Unretained(this)));
+      base::BindRepeating(&Core::OnPendingXEvents, base::Unretained(this)));
 
   // Fetch pending events if any.
   while (XPending(x_record_display_)) {
@@ -215,7 +196,7 @@ void LocalInputMonitorX11::Core::StartOnInputThread() {
   }
 }
 
-void LocalInputMonitorX11::Core::StopOnInputThread() {
+void LocalMouseInputMonitorX11::Core::StopOnInputThread() {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   // Context must be disabled via the control channel because we can't send
@@ -227,13 +208,9 @@ void LocalInputMonitorX11::Core::StopOnInputThread() {
 
   controller_.reset();
 
-  if (x_record_range_[0]) {
-    XFree(x_record_range_[0]);
-    x_record_range_[0] = nullptr;
-  }
-  if (x_record_range_[1]) {
-    XFree(x_record_range_[1]);
-    x_record_range_[1] = nullptr;
+  if (x_record_range_) {
+    XFree(x_record_range_);
+    x_record_range_ = nullptr;
   }
   if (x_record_context_) {
     XRecordFreeContext(x_record_display_, x_record_context_);
@@ -249,7 +226,7 @@ void LocalInputMonitorX11::Core::StopOnInputThread() {
   }
 }
 
-void LocalInputMonitorX11::Core::OnPendingXEvents() {
+void LocalMouseInputMonitorX11::Core::OnPendingXEvents() {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
   // Fetch pending events if any.
@@ -259,35 +236,22 @@ void LocalInputMonitorX11::Core::OnPendingXEvents() {
   }
 }
 
-void LocalInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
+void LocalMouseInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
-
-  if (event->u.u.type == MotionNotify) {
-    webrtc::DesktopVector position(event->u.keyButtonPointer.rootX,
-                                   event->u.keyButtonPointer.rootY);
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
-                              client_session_control_,
-                              position));
-  } else {
-    int key_code = event->u.u.detail;
-    bool down = event->u.u.type == KeyPress;
-    KeySym key_sym = XkbKeycodeToKeysym(display_, key_code, 0, 0);
-    if (key_sym == XK_Control_L || key_sym == XK_Control_R) {
-      ctrl_pressed_ = down;
-    } else if (key_sym == XK_Alt_L || key_sym == XK_Alt_R) {
-      alt_pressed_ = down;
-    } else if (key_sym == XK_Escape && down && alt_pressed_ && ctrl_pressed_) {
-      caller_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
-                                client_session_control_, protocol::OK));
-    }
+  if (event->u.u.type != MotionNotify) {
+    return;
   }
+
+  webrtc::DesktopVector position(event->u.keyButtonPointer.rootX,
+                                 event->u.keyButtonPointer.rootY);
+  caller_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&ClientSessionControl::OnLocalMouseMoved,
+                                client_session_control_, position));
 }
 
 // static
-void LocalInputMonitorX11::Core::ProcessReply(XPointer self,
-                                                XRecordInterceptData* data) {
+void LocalMouseInputMonitorX11::Core::ProcessReply(XPointer self,
+                                                   XRecordInterceptData* data) {
   if (data->category == XRecordFromServer) {
     xEvent* event = reinterpret_cast<xEvent*>(data->data);
     reinterpret_cast<Core*>(self)->ProcessXEvent(event);
@@ -297,13 +261,13 @@ void LocalInputMonitorX11::Core::ProcessReply(XPointer self,
 
 }  // namespace
 
-std::unique_ptr<LocalInputMonitor> LocalInputMonitor::Create(
+std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return base::WrapUnique(new LocalInputMonitorX11(
-      caller_task_runner, input_task_runner, client_session_control));
+  return std::make_unique<LocalMouseInputMonitorX11>(
+      caller_task_runner, input_task_runner, client_session_control);
 }
 
 }  // namespace remoting
