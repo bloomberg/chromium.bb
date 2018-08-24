@@ -853,12 +853,6 @@ base::Time GetConsoleSessionStartTime() {
   return base::Time::FromFileTime(filetime);
 }
 
-bool OsSupportsDarkTextTiles() {
-  auto windows_version = base::win::GetVersion();
-  return windows_version == base::win::VERSION_WIN8_1 ||
-         windows_version >= base::win::VERSION_WIN10_RS1;
-}
-
 base::Optional<std::string> DecodeDMTokenSwitchValue(
     const base::string16& encoded_token) {
   if (encoded_token.empty()) {

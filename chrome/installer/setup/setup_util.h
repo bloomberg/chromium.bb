@@ -155,10 +155,6 @@ void DoLegacyCleanups(const InstallerState& installer_state,
 // a null time in case of error.
 base::Time GetConsoleSessionStartTime();
 
-// Returns true if the current OS vesion suppors drawing dark text on Start Menu
-// tiles.
-bool OsSupportsDarkTextTiles();
-
 // Returns a DM token decoded from the base-64 |encoded_token|, or null in case
 // of a decoding error.  The returned DM token is an opaque binary blob and
 // should not be treated as an ASCII or UTF-8 string.
