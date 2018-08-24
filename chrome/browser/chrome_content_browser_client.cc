@@ -4456,6 +4456,7 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     content::RenderFrameHost* frame,
     bool is_navigation,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(

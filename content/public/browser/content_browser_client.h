@@ -1138,6 +1138,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Note that |frame| may be null if this is a browser-initiated,
   // non-navigation request, e.g. a request made via
   // |StoragePartition::GetURLLoaderFactoryForBrowserProcess()|.
+  //
+  // This is only called when the network service is enabled.
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
       RenderFrameHost* frame,

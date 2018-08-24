@@ -860,9 +860,14 @@ bool RenderFrameHostImpl::CreateNetworkServiceDefaultFactory(
   SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(params.get());
 
   auto* context = GetSiteInstance()->GetBrowserContext();
-  bool bypass_redirect_checks =
-      GetContentClient()->browser()->WillCreateURLLoaderFactory(
-          context, this, false /* is_navigation */, &default_factory_request);
+  bool bypass_redirect_checks = false;
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    bypass_redirect_checks =
+        GetContentClient()->browser()->WillCreateURLLoaderFactory(
+            context, this, false /* is_navigation */, &default_factory_request);
+  }
+
   // Keep DevTools proxy lasy, i.e. closest to the network.
   RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
       this, false /* is_navigation */, false /* is_download */,
