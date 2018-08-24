@@ -79,10 +79,8 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
         pending_token_(base::UnguessableToken::Create()),
         binding_(this) {
     source_path_ = base::StrCat({kMountScheme, pending_token_.ToString()});
-    std::string datadir_option = base::StrCat(
-        {"datadir=", host_->profile_path_.Append(kDataPath)
-                         .Append(host_->delegate_->GetObfuscatedAccountId())
-                         .value()});
+    std::string datadir_option =
+        base::StrCat({"datadir=", host_->GetDataPath().value()});
     auto bootstrap =
         mojo::MakeProxy(mojo_connection_delegate_->InitializeMojoConnection());
     mojom::DriveFsDelegatePtr delegate;
@@ -363,6 +361,11 @@ bool DriveFsHost::IsMounted() const {
 const base::FilePath& DriveFsHost::GetMountPath() const {
   DCHECK(mount_state_);
   return mount_state_->mount_path();
+}
+
+base::FilePath DriveFsHost::GetDataPath() const {
+  return profile_path_.Append(kDataPath).Append(
+      delegate_->GetObfuscatedAccountId());
 }
 
 mojom::DriveFs* DriveFsHost::GetDriveFsInterface() const {
