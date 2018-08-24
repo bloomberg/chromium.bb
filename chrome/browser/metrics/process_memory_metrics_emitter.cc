@@ -322,6 +322,19 @@ void EmitGpuMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
   builder.Record(ukm_recorder);
 }
 
+void EmitUtilityMemoryMetrics(const GlobalMemoryDump::ProcessDump& pmd,
+                              ukm::SourceId ukm_source_id,
+                              ukm::UkmRecorder* ukm_recorder,
+                              const base::Optional<base::TimeDelta>& uptime,
+                              bool record_uma) {
+  Memory_Experimental builder(ukm_source_id);
+  builder.SetProcessType(static_cast<int64_t>(
+      memory_instrumentation::mojom::ProcessType::UTILITY));
+  EmitProcessUkm(pmd, "Utility", uptime, record_uma, &builder);
+
+  builder.Record(ukm_recorder);
+}
+
 void EmitAudioServiceMemoryMetrics(
     const GlobalMemoryDump::ProcessDump& pmd,
     ukm::SourceId ukm_source_id,
@@ -521,10 +534,15 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
         break;
       }
       case memory_instrumentation::mojom::ProcessType::UTILITY: {
-        if (pmd.pid() == content::GetProcessIdForAudioService())
+        if (pmd.pid() == content::GetProcessIdForAudioService()) {
           EmitAudioServiceMemoryMetrics(
               pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
               GetProcessUptime(now, pmd.pid()), record_uma);
+        } else {
+          EmitUtilityMemoryMetrics(
+              pmd, ukm::UkmRecorder::GetNewSourceID(), GetUkmRecorder(),
+              GetProcessUptime(now, pmd.pid()), record_uma);
+        }
         break;
       }
       case memory_instrumentation::mojom::ProcessType::PLUGIN:
