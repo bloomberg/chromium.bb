@@ -22,8 +22,7 @@ enum class InternalAppName {
   kSettings = 1,
   kContinueReading = 2,
   kCamera = 3,
-  kDiscover = 4,
-  kMaxValue = kDiscover,
+  kMaxValue = kCamera,
 };
 
 // Metadata about an internal app.

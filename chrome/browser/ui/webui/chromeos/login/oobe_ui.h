@@ -218,10 +218,6 @@ class OobeUI : public content::WebUIController,
   void AddWebUIHandler(std::unique_ptr<BaseWebUIHandler> handler);
   void AddScreenHandler(std::unique_ptr<BaseScreenHandler> handler);
 
-  // Configures all the relevant screen shandlers and resources for OOBE/Login
-  // display type.
-  void ConfigureOobeDisplay();
-
   // Type of UI.
   std::string display_type_;
 

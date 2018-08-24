@@ -16211,14 +16211,6 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ShowDiscover">
-  <owner>alemate@chromium.org</owner>
-  <owner>zalcorn@chromium.org</owner>
-  <description>
-    The Chrome OS Discover App was displayed to the user.
-  </description>
-</action>
-
 <action name="ShowDisplayOptions">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

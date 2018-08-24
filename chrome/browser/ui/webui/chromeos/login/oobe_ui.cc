@@ -100,9 +100,9 @@ namespace chromeos {
 
 namespace {
 
-const char* kKnownDisplayTypes[] = {OobeUI::kAppLaunchSplashDisplay,
+const char* kKnownDisplayTypes[] = {
+                                    OobeUI::kAppLaunchSplashDisplay,
                                     OobeUI::kArcKioskSplashDisplay,
-                                    OobeUI::kDiscoverDisplay,
                                     OobeUI::kGaiaSigninDisplay,
                                     OobeUI::kLockDisplay,
                                     OobeUI::kLoginDisplay,
@@ -119,7 +119,6 @@ constexpr char kCustomElementsHTMLPath[] = "custom_elements.html";
 constexpr char kCustomElementsJSPath[] = "custom_elements.js";
 constexpr char kCustomElementsUserPodHTMLPath[] =
     "custom_elements_user_pod.html";
-constexpr char kDiscoverJSPath[] = "discover_app.js";
 constexpr char kKeyboardUtilsJSPath[] = "keyboard_utils.js";
 constexpr char kLockJSPath[] = "lock.js";
 constexpr char kLoginJSPath[] = "login.js";
@@ -186,7 +185,6 @@ void AddEnterpriseEnrollmentResources(content::WebUIDataSource* source) {
 }
 
 // Default and non-shared resource definition for kOobeDisplay display type.
-// chrome://oobe/oobe
 void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->SetDefaultResource(IDR_OOBE_HTML);
   source->AddResourcePath(kOobeJSPath, IDR_OOBE_JS);
@@ -195,8 +193,6 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_OOBE_JS);
 }
 
-// Default and non-shared resource definition for kLockDisplay display type.
-// chrome://oobe/lock
 void AddLockDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   // TODO(crbug.com/810170): Remove the resource files associated with
   // kShowNonMdLogin switch (IDR_LOCK_HTML/JS and IDR_LOGIN_HTML/JS and the
@@ -206,23 +202,18 @@ void AddLockDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kCustomElementsHTMLPath,
                           IDR_CUSTOM_ELEMENTS_LOCK_HTML);
   source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOCK_JS);
+  source->AddResourcePath(kCustomElementsUserPodHTMLPath,
+                          IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
 }
 
-// Default and non-shared resource definition for kDiscoverDisplay display type.
-// chrome://oobe/discover
-void AddDiscoverDisplayTypeDefaultResources(content::WebUIDataSource* source) {
-  source->SetDefaultResource(IDR_CHROMEOS_DISCOVER_APP_HTML);
-  source->AddResourcePath(kDiscoverJSPath, IDR_CHROMEOS_DISCOVER_APP_JS);
-}
-
-// Default and non-shared resource definition for kLoginDisplay display type.
-// chrome://oobe/login
 void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   source->SetDefaultResource(IDR_MD_LOGIN_HTML);
   source->AddResourcePath(kLoginJSPath, IDR_MD_LOGIN_JS);
   source->AddResourcePath(kCustomElementsHTMLPath,
                           IDR_CUSTOM_ELEMENTS_LOGIN_HTML);
   source->AddResourcePath(kCustomElementsJSPath, IDR_CUSTOM_ELEMENTS_LOGIN_JS);
+  source->AddResourcePath(kCustomElementsUserPodHTMLPath,
+                          IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
 }
 
 // Creates a WebUIDataSource for chrome://oobe
@@ -242,8 +233,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     AddOobeDisplayTypeDefaultResources(source);
   } else if (display_type == OobeUI::kLockDisplay) {
     AddLockDisplayTypeDefaultResources(source);
-  } else if (display_type == OobeUI::kDiscoverDisplay) {
-    AddDiscoverDisplayTypeDefaultResources(source);
   } else {
     AddLoginDisplayTypeDefaultResources(source);
   }
@@ -255,11 +244,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
     AddSyncConsentResources(source);
     AddArcScreensResources(source);
     AddEnterpriseEnrollmentResources(source);
-  }
-  if (display_type == OobeUI::kLockDisplay ||
-      display_type == OobeUI::kLoginDisplay) {
-    source->AddResourcePath(kCustomElementsUserPodHTMLPath,
-                            IDR_CUSTOM_ELEMENTS_USER_POD_HTML);
   }
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
@@ -279,7 +263,6 @@ content::WebUIDataSource* CreateOobeUIDataSource(
 
 std::string GetDisplayType(const GURL& url) {
   std::string path = url.path().size() ? url.path().substr(1) : "";
-
   if (std::find(kKnownDisplayTypes,
                 kKnownDisplayTypes + arraysize(kKnownDisplayTypes),
                 path) == kKnownDisplayTypes + arraysize(kKnownDisplayTypes)) {
@@ -300,18 +283,27 @@ bool IsRemoraRequisitioned() {
 }  // namespace
 
 // static
+const char OobeUI::kOobeDisplay[] = "oobe";
+const char OobeUI::kLoginDisplay[] = "login";
+const char OobeUI::kLockDisplay[] = "lock";
+const char OobeUI::kUserAddingDisplay[] = "user-adding";
 const char OobeUI::kAppLaunchSplashDisplay[] = "app-launch-splash";
 const char OobeUI::kArcKioskSplashDisplay[] = "arc-kiosk-splash";
-const char OobeUI::kDiscoverDisplay[] = "discover";
 const char OobeUI::kGaiaSigninDisplay[] = "gaia-signin";
-const char OobeUI::kLockDisplay[] = "lock";
-const char OobeUI::kLoginDisplay[] = "login";
-const char OobeUI::kOobeDisplay[] = "oobe";
-const char OobeUI::kUserAddingDisplay[] = "user-adding";
 
-void OobeUI::ConfigureOobeDisplay() {
+OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
+    : WebUIController(web_ui) {
+  display_type_ = GetDisplayType(url);
+
   network_state_informer_ = new NetworkStateInformer();
   network_state_informer_->Init();
+
+  js_calls_container = std::make_unique<JSCallsContainer>();
+
+  auto core_handler =
+      std::make_unique<CoreOobeHandler>(this, js_calls_container.get());
+  core_handler_ = core_handler.get();
+  AddWebUIHandler(std::move(core_handler));
 
   AddWebUIHandler(std::make_unique<NetworkDropdownHandler>());
 
@@ -371,6 +363,8 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<DemoPreferencesScreenHandler>());
 
+  AddScreenHandler(std::make_unique<DiscoverScreenHandler>());
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   ActiveDirectoryPasswordChangeScreenHandler*
@@ -421,9 +415,12 @@ void OobeUI::ConfigureOobeDisplay() {
   auto kiosk_app_menu_handler =
       std::make_unique<KioskAppMenuHandler>(network_state_informer_);
   kiosk_app_menu_handler_ = kiosk_app_menu_handler.get();
-  web_ui()->AddMessageHandler(std::move(kiosk_app_menu_handler));
+  web_ui->AddMessageHandler(std::move(kiosk_app_menu_handler));
 
-  Profile* profile = Profile::FromWebUI(web_ui());
+  base::DictionaryValue localized_strings;
+  GetLocalizedStrings(&localized_strings);
+
+  Profile* profile = Profile::FromWebUI(web_ui);
   // Set up the chrome://theme/ source, for Chrome logo.
   ThemeSource* theme = new ThemeSource(profile);
   content::URLDataSource::Add(profile, theme);
@@ -433,44 +430,21 @@ void OobeUI::ConfigureOobeDisplay() {
       new AboutUIHTMLSource(chrome::kChromeUITermsHost, profile);
   content::URLDataSource::Add(profile, about_source);
 
+  // Set up the chrome://oobe/ source.
+  content::WebUIDataSource* html_source =
+      CreateOobeUIDataSource(localized_strings, display_type_);
+  content::WebUIDataSource::Add(profile, html_source);
+
   // Set up the chrome://userimage/ source.
   UserImageSource* user_image_source = new UserImageSource();
   content::URLDataSource::Add(profile, user_image_source);
 
   // TabHelper is required for OOBE webui to make webview working on it.
-  content::WebContents* contents = web_ui()->GetWebContents();
+  content::WebContents* contents = web_ui->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
 
   if (IsRemoraRequisitioned())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
-}
-
-OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
-    : WebUIController(web_ui) {
-  display_type_ = GetDisplayType(url);
-
-  js_calls_container = std::make_unique<JSCallsContainer>();
-
-  auto core_handler =
-      std::make_unique<CoreOobeHandler>(this, js_calls_container.get());
-  core_handler_ = core_handler.get();
-
-  AddWebUIHandler(std::move(core_handler));
-
-  if (display_type_ != OobeUI::kDiscoverDisplay)
-    ConfigureOobeDisplay();
-
-  if (display_type_ != OobeUI::kLockDisplay) {
-    AddScreenHandler(std::make_unique<DiscoverScreenHandler>());
-  }
-
-  base::DictionaryValue localized_strings;
-  GetLocalizedStrings(&localized_strings);
-
-  // Set up the chrome://oobe/ source.
-  content::WebUIDataSource* html_source =
-      CreateOobeUIDataSource(localized_strings, display_type_);
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
 }
 
 OobeUI::~OobeUI() {
