@@ -64,7 +64,13 @@ class MODULES_EXPORT RTCIceTransport final
   void getRemoteParameters(base::Optional<RTCIceParameters>& result) const;
   void gather(const RTCIceGatherOptions& options,
               ExceptionState& exception_state);
+  void start(const RTCIceParameters& remote_parameters,
+             const String& role,
+             ExceptionState& exception_state);
   void stop();
+  void addRemoteCandidate(RTCIceCandidate* remote_candidate,
+                          ExceptionState& exception_state);
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(gatheringstatechange);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(icecandidate);
 
@@ -87,6 +93,7 @@ class MODULES_EXPORT RTCIceTransport final
   // IceTransportProxy::Delegate overrides.
   void OnGatheringStateChanged(cricket::IceGatheringState new_state) override;
   void OnCandidateGathered(const cricket::Candidate& candidate) override;
+  void OnStateChanged(cricket::IceTransportState new_state) override;
 
   // Fills in |local_parameters_| with a random usernameFragment and a random
   // password.
@@ -95,6 +102,7 @@ class MODULES_EXPORT RTCIceTransport final
   bool IsClosed() const { return state_ == RTCIceTransportState::kClosed; }
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
 
+  cricket::IceRole role_ = cricket::ICEROLE_UNKNOWN;
   RTCIceTransportState state_ = RTCIceTransportState::kNew;
   cricket::IceGatheringState gathering_state_ = cricket::kIceGatheringNew;
 
@@ -102,6 +110,7 @@ class MODULES_EXPORT RTCIceTransport final
   HeapVector<Member<RTCIceCandidate>> remote_candidates_;
 
   RTCIceParameters local_parameters_;
+  base::Optional<RTCIceParameters> remote_parameters_;
 
   base::Optional<RTCIceCandidatePair> selected_candidate_pair_;
 

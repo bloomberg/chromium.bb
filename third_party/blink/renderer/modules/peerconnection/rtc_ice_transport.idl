@@ -45,13 +45,16 @@ enum RTCIceGatheringState {
     RTCIceCandidatePair? getSelectedCandidatePair();
     RTCIceParameters? getLocalParameters();
     RTCIceParameters? getRemoteParameters();
+    attribute EventHandler onstatechange;
     attribute EventHandler ongatheringstatechange;
+    // TODO(crbug.com/864871): Implement onselectedcandidatepairchange.
 
     // The following is defined in the WebRTC-ICE extension specification.
     // https://w3c.github.io/webrtc-ice/#rtcicetransport*
     [RaisesException] void gather(RTCIceGatherOptions options);
+    [RaisesException] void start(RTCIceParameters remoteParameters, optional RTCIceRole role = "controlled");
     void stop();
+    [RaisesException] void addRemoteCandidate(RTCIceCandidate remoteCandidate);
+    // TODO(crbug.com/864871): Implement onerror.
     attribute EventHandler onicecandidate;
-
-    // TODO(crbug.com/864871): Implement remaining events and extension methods.
 };

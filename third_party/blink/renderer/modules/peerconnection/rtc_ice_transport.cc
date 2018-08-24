@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_ice_server.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection_ice_event_init.h"
+#include "third_party/webrtc/api/jsepicecandidate.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/p2p/base/portallocator.h"
 #include "third_party/webrtc/p2p/base/transportdescription.h"
@@ -24,6 +25,29 @@
 #include "third_party/webrtc/pc/webrtcsdp.h"
 
 namespace blink {
+namespace {
+
+const char* kIceRoleControllingStr = "controlling";
+const char* kIceRoleControlledStr = "controlled";
+
+base::Optional<cricket::Candidate> ConvertToCricketIceCandidate(
+    const RTCIceCandidate& candidate) {
+  webrtc::JsepIceCandidate jsep_candidate("", 0);
+  webrtc::SdpParseError error;
+  if (!webrtc::SdpDeserializeCandidate(WebString(candidate.candidate()).Utf8(),
+                                       &jsep_candidate, &error)) {
+    LOG(WARNING) << "Failed to deserialize candidate: " << error.description;
+    return base::nullopt;
+  }
+  return jsep_candidate.candidate();
+}
+
+RTCIceCandidate* ConvertToRtcIceCandidate(const cricket::Candidate& candidate) {
+  return RTCIceCandidate::Create(WebRTCICECandidate::Create(
+      WebString::FromUTF8(webrtc::SdpSerializeCandidate(candidate)), "", 0));
+}
+
+}  // namespace
 
 RTCIceTransport* RTCIceTransport::Create(ExecutionContext* context) {
   return new RTCIceTransport(context);
@@ -51,6 +75,15 @@ RTCIceTransport::~RTCIceTransport() {
 }
 
 String RTCIceTransport::role() const {
+  switch (role_) {
+    case cricket::ICEROLE_CONTROLLING:
+      return kIceRoleControllingStr;
+    case cricket::ICEROLE_CONTROLLED:
+      return kIceRoleControlledStr;
+    case cricket::ICEROLE_UNKNOWN:
+      return String();
+  }
+  NOTREACHED();
   return String();
 }
 
@@ -111,7 +144,7 @@ void RTCIceTransport::getLocalParameters(
 
 void RTCIceTransport::getRemoteParameters(
     base::Optional<RTCIceParameters>& result) const {
-  result = base::nullopt;
+  result = remote_parameters_;
 }
 
 static webrtc::PeerConnectionInterface::IceServer ConvertIceServer(
@@ -191,12 +224,93 @@ void RTCIceTransport::gather(const RTCIceGatherOptions& options,
                          turn_servers, candidate_filter);
 }
 
+static cricket::IceRole IceRoleFromString(const String& role_string) {
+  if (role_string == kIceRoleControllingStr) {
+    return cricket::ICEROLE_CONTROLLING;
+  }
+  if (role_string == kIceRoleControlledStr) {
+    return cricket::ICEROLE_CONTROLLED;
+  }
+  NOTREACHED();
+  return cricket::ICEROLE_UNKNOWN;
+}
+
+static bool RTCIceParametersAreEqual(const RTCIceParameters& a,
+                                     const RTCIceParameters& b) {
+  return a.usernameFragment() == b.usernameFragment() &&
+         a.password() == b.password();
+}
+
+void RTCIceTransport::start(const RTCIceParameters& remote_parameters,
+                            const String& role_string,
+                            ExceptionState& exception_state) {
+  if (RaiseExceptionIfClosed(exception_state)) {
+    return;
+  }
+  if (!remote_parameters.hasUsernameFragment() ||
+      !remote_parameters.hasPassword()) {
+    exception_state.ThrowTypeError(
+        "remoteParameters must have usernameFragment and password fields set.");
+    return;
+  }
+  cricket::IceRole role = IceRoleFromString(role_string);
+  if (role_ != cricket::ICEROLE_UNKNOWN && role != role_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot change role once start() has been called.");
+    return;
+  }
+  if (remote_parameters_ &&
+      RTCIceParametersAreEqual(*remote_parameters_, remote_parameters)) {
+    // No change to remote parameters: do nothing.
+    return;
+  }
+  if (!remote_parameters_) {
+    // Calling start() for the first time.
+    proxy_->SetRole(role);
+    role_ = role;
+    if (remote_candidates_.size() > 0) {
+      for (RTCIceCandidate* remote_candidate : remote_candidates_) {
+        // This conversion is safe since we throw an exception in
+        // addRemoteCandidate on malformed ICE candidates.
+        proxy_->AddRemoteCandidate(
+            *ConvertToCricketIceCandidate(*remote_candidate));
+      }
+      state_ = RTCIceTransportState::kChecking;
+    }
+  } else {
+    proxy_->ClearRemoteCandidates();
+    remote_candidates_.clear();
+    state_ = RTCIceTransportState::kNew;
+  }
+  remote_parameters_ = remote_parameters;
+}
+
 void RTCIceTransport::stop() {
   if (IsClosed()) {
     return;
   }
   state_ = RTCIceTransportState::kClosed;
   proxy_.reset();
+}
+
+void RTCIceTransport::addRemoteCandidate(RTCIceCandidate* remote_candidate,
+                                         ExceptionState& exception_state) {
+  if (RaiseExceptionIfClosed(exception_state)) {
+    return;
+  }
+  base::Optional<cricket::Candidate> converted_remote_candidate =
+      ConvertToCricketIceCandidate(*remote_candidate);
+  if (!converted_remote_candidate) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                      "Invalid ICE candidate.");
+    return;
+  }
+  remote_candidates_.push_back(remote_candidate);
+  if (remote_parameters_) {
+    proxy_->AddRemoteCandidate(*converted_remote_candidate);
+    state_ = RTCIceTransportState::kChecking;
+  }
 }
 
 void RTCIceTransport::GenerateLocalParameters() {
@@ -221,15 +335,38 @@ void RTCIceTransport::OnGatheringStateChanged(
 
 void RTCIceTransport::OnCandidateGathered(
     const cricket::Candidate& parsed_candidate) {
-  RTCIceCandidate* candidate =
-      RTCIceCandidate::Create(WebRTCICECandidate::Create(
-          WebString::FromUTF8(webrtc::SdpSerializeCandidate(parsed_candidate)),
-          g_empty_string, 0));
+  RTCIceCandidate* candidate = ConvertToRtcIceCandidate(parsed_candidate);
   local_candidates_.push_back(candidate);
   RTCPeerConnectionIceEventInit event_init;
   event_init.setCandidate(candidate);
   DispatchEvent(*RTCPeerConnectionIceEvent::Create(EventTypeNames::icecandidate,
                                                    event_init));
+}
+
+static RTCIceTransportState ConvertIceTransportState(
+    cricket::IceTransportState state) {
+  switch (state) {
+    case cricket::IceTransportState::STATE_INIT:
+      return RTCIceTransportState::kNew;
+    case cricket::IceTransportState::STATE_CONNECTING:
+      return RTCIceTransportState::kChecking;
+    case cricket::IceTransportState::STATE_COMPLETED:
+      return RTCIceTransportState::kConnected;
+    case cricket::IceTransportState::STATE_FAILED:
+      return RTCIceTransportState::kFailed;
+    default:
+      NOTREACHED();
+      return RTCIceTransportState::kClosed;
+  }
+}
+
+void RTCIceTransport::OnStateChanged(cricket::IceTransportState new_state) {
+  RTCIceTransportState local_new_state = ConvertIceTransportState(new_state);
+  if (local_new_state == state_) {
+    return;
+  }
+  state_ = local_new_state;
+  DispatchEvent(*Event::Create(EventTypeNames::statechange));
 }
 
 bool RTCIceTransport::RaiseExceptionIfClosed(

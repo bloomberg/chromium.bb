@@ -46,6 +46,7 @@ class IceTransportProxy final {
     virtual void OnGatheringStateChanged(cricket::IceGatheringState new_state) {
     }
     virtual void OnCandidateGathered(const cricket::Candidate& candidate) {}
+    virtual void OnStateChanged(cricket::IceTransportState new_state) {}
   };
 
   // Construct a Proxy with the underlying ICE implementation running on the
@@ -65,11 +66,18 @@ class IceTransportProxy final {
       const std::vector<cricket::RelayServerConfig>& turn_servers,
       int32_t candidate_filter);
 
+  void SetRole(cricket::IceRole role);
+  void SetRemoteParameters(const cricket::IceParameters& remote_parameters);
+
+  void AddRemoteCandidate(const cricket::Candidate& candidate);
+  void ClearRemoteCandidates();
+
  private:
   // Callbacks from RTCIceTransportHost.
   friend class IceTransportHost;
   void OnGatheringStateChanged(cricket::IceGatheringState new_state);
   void OnCandidateGathered(const cricket::Candidate& candidate);
+  void OnStateChanged(cricket::IceTransportState new_state);
 
   const scoped_refptr<base::SingleThreadTaskRunner> host_thread_;
   // Since the Host is deleted on the host thread (via OnTaskRunnerDeleter), as
