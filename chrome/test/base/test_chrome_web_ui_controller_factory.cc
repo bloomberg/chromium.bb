@@ -4,7 +4,6 @@
 
 #include "chrome/test/base/test_chrome_web_ui_controller_factory.h"
 
-#include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
@@ -48,7 +47,7 @@ TestChromeWebUIControllerFactory::CreateWebUIControllerForURL(
     const GURL& url) const {
   Profile* profile = Profile::FromWebUI(web_ui);
   WebUIProvider* provider = GetWebUIProvider(profile, url);
-  return provider ? base::WrapUnique(provider->NewWebUI(web_ui, url))
+  return provider ? provider->NewWebUI(web_ui, url)
                   : ChromeWebUIControllerFactory::CreateWebUIControllerForURL(
                         web_ui, url);
 }

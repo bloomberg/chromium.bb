@@ -182,10 +182,9 @@ class TestingPeopleHandler : public PeopleHandler {
 class TestWebUIProvider
     : public TestChromeWebUIControllerFactory::WebUIProvider {
  public:
-  content::WebUIController* NewWebUI(content::WebUI* web_ui,
-                                     const GURL& url) override {
-    content::WebUIController* controller = new content::WebUIController(web_ui);
-    return controller;
+  std::unique_ptr<content::WebUIController> NewWebUI(content::WebUI* web_ui,
+                                                     const GURL& url) override {
+    return std::make_unique<content::WebUIController>(web_ui);
   }
 };
 

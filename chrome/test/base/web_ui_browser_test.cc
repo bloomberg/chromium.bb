@@ -242,7 +242,8 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
         preload_test_fixture_(preload_test_fixture),
         preload_test_name_(preload_test_name),
         preview_dialog_(nullptr),
-        message_loop_runner_(new content::MessageLoopRunner) {}
+        message_loop_runner_(
+            base::MakeRefCounted<content::MessageLoopRunner>()) {}
 
   void Wait() {
     message_loop_runner_->Run();
@@ -254,10 +255,9 @@ class PrintContentBrowserClient : public ChromeContentBrowserClient {
   content::WebContentsViewDelegate* GetWebContentsViewDelegate(
       content::WebContents* web_contents) override {
     preview_dialog_ = web_contents;
-    observer_.reset(new WebUIJsInjectionReadyObserver(preview_dialog_,
-                                                      browser_test_,
-                                                      preload_test_fixture_,
-                                                      preload_test_name_));
+    observer_ = std::make_unique<WebUIJsInjectionReadyObserver>(
+        preview_dialog_, browser_test_, preload_test_fixture_,
+        preload_test_name_);
     message_loop_runner_->Quit();
     return nullptr;
   }
@@ -300,7 +300,7 @@ void WebUIBrowserTest::BrowsePrintPreload(const GURL& browse_to) {
 const char WebUIBrowserTest::kDummyURL[] = "chrome://DummyURL";
 
 WebUIBrowserTest::WebUIBrowserTest()
-    : test_handler_(new WebUITestHandler()),
+    : test_handler_(std::make_unique<WebUITestHandler>()),
       libraries_preloaded_(false),
       override_selected_web_ui_(nullptr) {}
 
@@ -358,14 +358,15 @@ class MockWebUIDataSource : public content::URLDataSource {
 class MockWebUIProvider
     : public TestChromeWebUIControllerFactory::WebUIProvider {
  public:
-  MockWebUIProvider() {}
+  MockWebUIProvider() = default;
+  ~MockWebUIProvider() override = default;
 
   // Returns a new WebUI
-  WebUIController* NewWebUI(content::WebUI* web_ui, const GURL& url) override {
-    WebUIController* controller = new content::WebUIController(web_ui);
+  std::unique_ptr<WebUIController> NewWebUI(content::WebUI* web_ui,
+                                            const GURL& url) override {
     Profile* profile = Profile::FromWebUI(web_ui);
     content::URLDataSource::Add(profile, new MockWebUIDataSource());
-    return controller;
+    return std::make_unique<content::WebUIController>(web_ui);
   }
 
  private:
@@ -395,7 +396,7 @@ void WebUIBrowserTest::SetUpOnMainThread() {
   content::WebUIControllerFactory::UnregisterFactoryForTesting(
       ChromeWebUIControllerFactory::GetInstance());
 
-  test_factory_.reset(new TestChromeWebUIControllerFactory);
+  test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();
 
   content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
 

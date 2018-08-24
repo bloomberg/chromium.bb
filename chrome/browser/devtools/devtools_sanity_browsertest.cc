@@ -300,7 +300,7 @@ DevToolsWindowBeforeUnloadObserver::DevToolsWindowBeforeUnloadObserver(
 void DevToolsWindowBeforeUnloadObserver::Wait() {
   if (m_fired)
     return;
-  message_loop_runner_ = new content::MessageLoopRunner;
+  message_loop_runner_ = base::MakeRefCounted<content::MessageLoopRunner>();
   message_loop_runner_->Run();
 }
 
@@ -339,8 +339,7 @@ class DevToolsBeforeUnloadTest: public DevToolsSanityTest {
                                  base::Callback<void(void)> close_method,
                                  bool wait_for_browser_close = true) {
     OpenDevToolsWindow(kDebuggerTestPage, is_docked);
-    scoped_refptr<content::MessageLoopRunner> runner =
-        new content::MessageLoopRunner;
+    auto runner = base::MakeRefCounted<content::MessageLoopRunner>();
     DevToolsWindowTesting::Get(window_)->
         SetCloseCallback(runner->QuitClosure());
     InjectBeforeUnloadListener(main_web_contents());
@@ -728,8 +727,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
       GetInspectedTab(), false);
 
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
+  auto runner = base::MakeRefCounted<content::MessageLoopRunner>();
   DevToolsWindowTesting::Get(devtools_window)->SetCloseCallback(
       runner->QuitClosure());
 
@@ -762,19 +760,19 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   LoadTestPage(kDebuggerTestPage);
 
   std::vector<DevToolsWindow*> windows;
-  std::vector<content::WindowedNotificationObserver*> close_observers;
+  std::vector<std::unique_ptr<content::WindowedNotificationObserver>>
+      close_observers;
   content::WebContents* inspected_web_contents = GetInspectedTab();
   for (int i = 0; i < 3; ++i) {
     DevToolsWindow* devtools_window = OpenDevToolWindowOnWebContents(
       inspected_web_contents, i == 0);
     windows.push_back(devtools_window);
-    content::WindowedNotificationObserver* close_observer =
-        new content::WindowedNotificationObserver(
-                content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                content::Source<content::WebContents>(
-                    DevToolsWindowTesting::Get(devtools_window)->
-                        main_web_contents()));
-    close_observers.push_back(close_observer);
+    close_observers.push_back(
+        std::make_unique<content::WindowedNotificationObserver>(
+            content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
+            content::Source<content::WebContents>(
+                DevToolsWindowTesting::Get(devtools_window)
+                    ->main_web_contents())));
     inspected_web_contents =
         DevToolsWindowTesting::Get(devtools_window)->main_web_contents();
   }
@@ -812,10 +810,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
     AcceptModalDialog();
     close_observer.Wait();
   }
-  for (size_t i = 0; i < close_observers.size(); ++i) {
-    close_observers[i]->Wait();
-    delete close_observers[i];
-  }
+  for (auto& close_observer : close_observers)
+    close_observer->Wait();
 }
 
 // Tests scripts panel showing.
@@ -1362,8 +1358,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        DevToolsExtensionSecurityPolicyGrants) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  std::unique_ptr<extensions::TestExtensionDir> dir(
-      new extensions::TestExtensionDir());
+  auto dir = std::make_unique<extensions::TestExtensionDir>();
 
   extensions::DictionaryBuilder manifest;
   dir->WriteManifest(extensions::DictionaryBuilder()
@@ -1752,7 +1747,7 @@ class DevToolsAutoOpenerTest : public DevToolsSanityTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kAutoOpenDevToolsForTabs);
-    observer_.reset(new DevToolsWindowCreationObserver());
+    observer_ = std::make_unique<DevToolsWindowCreationObserver>();
   }
  protected:
   std::unique_ptr<DevToolsWindowCreationObserver> observer_;
@@ -2097,12 +2092,13 @@ class MockWebUIProvider
  public:
   MockWebUIProvider(const std::string& source, const std::string& content)
       : source_(source), content_(content) {}
+  ~MockWebUIProvider() override = default;
 
-  content::WebUIController* NewWebUI(content::WebUI* web_ui,
-                                     const GURL& url) override {
+  std::unique_ptr<content::WebUIController> NewWebUI(content::WebUI* web_ui,
+                                                     const GURL& url) override {
     content::URLDataSource::Add(Profile::FromWebUI(web_ui),
                                 new StaticURLDataSource(source_, content_));
-    return new content::WebUIController(web_ui);
+    return std::make_unique<content::WebUIController>(web_ui);
   }
 
  private:
