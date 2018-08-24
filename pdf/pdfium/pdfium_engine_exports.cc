@@ -16,6 +16,7 @@
 #include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_ppo.h"
 #include "third_party/pdfium/public/fpdfview.h"
+#include "ui/gfx/geometry/size.h"
 
 using printing::ConvertUnitDouble;
 using printing::kPointsPerInch;
@@ -118,12 +119,14 @@ ScopedFPDFDocument CreatePdfDoc(
 
 bool CreateNupPdfDocument(FPDF_DOCUMENT doc,
                           size_t pages_per_sheet,
-                          size_t page_size_width,
-                          size_t page_size_height,
+                          const gfx::Size& page_size,
                           void** dest_pdf_buffer,
                           size_t* dest_pdf_buffer_size) {
   if (!dest_pdf_buffer || !dest_pdf_buffer_size)
     return false;
+
+  int page_size_width = page_size.width();
+  int page_size_height = page_size.height();
 
   printing::NupParameters nup_params;
   bool is_landscape = PDFiumPrint::IsSourcePdfLandscape(doc);
@@ -308,33 +311,29 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
 bool PDFiumEngineExports::ConvertPdfPagesToNupPdf(
     std::vector<base::span<const uint8_t>> input_buffers,
     size_t pages_per_sheet,
-    size_t page_size_width,
-    size_t page_size_height,
+    const gfx::Size& page_size,
     void** dest_pdf_buffer,
     size_t* dest_pdf_buffer_size) {
   ScopedFPDFDocument doc = CreatePdfDoc(std::move(input_buffers));
   if (!doc)
     return false;
 
-  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size_width,
-                              page_size_height, dest_pdf_buffer,
-                              dest_pdf_buffer_size);
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size,
+                              dest_pdf_buffer, dest_pdf_buffer_size);
 }
 
 bool PDFiumEngineExports::ConvertPdfDocumentToNupPdf(
     base::span<const uint8_t> input_buffer,
     size_t pages_per_sheet,
-    size_t page_size_width,
-    size_t page_size_height,
+    const gfx::Size& page_size,
     void** dest_pdf_buffer,
     size_t* dest_pdf_buffer_size) {
   ScopedFPDFDocument doc = LoadPdfData(input_buffer);
   if (!doc)
     return false;
 
-  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size_width,
-                              page_size_height, dest_pdf_buffer,
-                              dest_pdf_buffer_size);
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size,
+                              dest_pdf_buffer, dest_pdf_buffer_size);
 }
 
 bool PDFiumEngineExports::GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,

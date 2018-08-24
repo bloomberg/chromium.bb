@@ -5,8 +5,7 @@ include_rules = [
   "+printing/units.h",
   "+ui/base/window_open_disposition.h",
   "+ui/events/keycodes/keyboard_codes.h",
-  "+ui/gfx/geometry/point_f.h",
-  "+ui/gfx/geometry/rect.h",
+  "+ui/gfx/geometry",
   "+ui/gfx/range/range.h",
   "+v8/include/v8.h"
 ]
