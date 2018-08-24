@@ -8,9 +8,15 @@ issues]].
 ** Bug fixes
 - Fix another stack-based buffer overflow in input parsing reported by
   Henri Salo thanks to Christian Egli.
+- Fix input/output positions for back-translation. Thanks to excellent
+  bug reports and patches by Timothy Lee, Bert Frees heroically sat down and
+  reworked the handling of the input/output positions for
+  back-translation. This solves numerous issues with backward
+  translation.
+
 ** Braille table improvements
 - Danish grade 2 tables: Reduced hyphenation to only the hyphens
-  necesary for correct Braille translation. Replaced the longer rules
+  necessary for correct Braille translation. Replaced the longer rules
   with hyphenation for better cursor positioning. Corrected some words.
   Thanks to Bue Vester-Andersen
 - New Chinese Mandarin Braille Codes (Grade 1) and (Grade 2) thanks to
