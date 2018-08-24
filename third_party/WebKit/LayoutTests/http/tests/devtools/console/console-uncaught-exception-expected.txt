@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that uncaught exceptions are logged into console.Bug 47250.
 
 uncaught-in-iframe.html:18 Uncaught Error: Exception in inline script.

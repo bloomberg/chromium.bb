@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that url(...) with space-delimited color names as filename segments do not contain color swatches. Bug 106770. Also tests that CSS variables such as var(--blue) do not contain color swatches. Bug 595231.
 
 url(red green blue.jpg)
