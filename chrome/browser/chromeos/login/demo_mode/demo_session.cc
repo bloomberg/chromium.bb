@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -26,6 +28,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/base/network_change_notifier.h"
 
 namespace chromeos {
 
@@ -59,6 +62,18 @@ constexpr char kDefaultHighlightsAppResourcesPath[] = "default";
 bool IsDemoModeOfflineEnrolled() {
   DCHECK(DemoSession::IsDeviceInDemoMode());
   return DemoSession::GetDemoConfig() == DemoSession::DemoModeConfig::kOffline;
+}
+
+// Returns the list of apps normally pinned by Demo Mode policy that shouldn't
+// be pinned if the device is offline.
+std::vector<std::string> GetIgnorePinPolicyApps() {
+  return {
+      // Popular third-party game preinstalled in Demo Mode that is
+      // online-only, so shouldn't be featured in the shelf when offline.
+      "com.pixonic.wwr.chbkdemo",
+      // TODO(michaelpg): YouTube is also pinned as a *default* app.
+      extension_misc::kYoutubeAppId,
+  };
 }
 
 }  // namespace
@@ -219,6 +234,11 @@ void DemoSession::EnsureOfflineResourcesLoaded(
   }
 }
 
+void DemoSession::SetOfflineResourcesLoadedForTesting(
+    const base::FilePath& path) {
+  OnOfflineResourcesLoaded(path);
+}
+
 base::FilePath DemoSession::GetDemoAppsPath() const {
   if (offline_resources_path_.empty())
     return base::FilePath();
@@ -240,8 +260,28 @@ base::FilePath DemoSession::GetOfflineResourceAbsolutePath(
   return offline_resources_path_.Append(relative_path);
 }
 
+bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
+  if (!g_demo_session || !g_demo_session->started())
+    return false;
+
+  // TODO(michaelpg): Update shelf when network status changes.
+  // TODO(michaelpg): Also check for captive portal.
+  if (!net::NetworkChangeNotifier::IsOffline())
+    return false;
+
+  return std::find(ignore_pin_policy_offline_apps_.begin(),
+                   ignore_pin_policy_offline_apps_.end(),
+                   app_id_or_package) != ignore_pin_policy_offline_apps_.end();
+}
+
+void DemoSession::OverrideIgnorePinPolicyAppsForTesting(
+    std::vector<std::string> apps) {
+  ignore_pin_policy_offline_apps_ = std::move(apps);
+}
+
 DemoSession::DemoSession()
     : offline_enrolled_(IsDemoModeOfflineEnrolled()),
+      ignore_pin_policy_offline_apps_(GetIgnorePinPolicyApps()),
       session_manager_observer_(this),
       weak_ptr_factory_(this) {
   session_manager_observer_.Add(session_manager::SessionManager::Get());

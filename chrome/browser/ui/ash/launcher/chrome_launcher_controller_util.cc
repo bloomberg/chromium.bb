@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
@@ -35,12 +36,12 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
   // (package name + activity). This means that we must identify the package
   // from the hash, and check if this package is pinned by policy.
   const ArcAppListPrefs* const arc_prefs = ArcAppListPrefs::Get(profile);
-  std::string arc_app_packege_name;
+  std::string arc_app_package_name;
   if (arc_prefs) {
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
         arc_prefs->GetApp(app_id);
     if (app_info)
-      arc_app_packege_name = app_info->package_name;
+      arc_app_package_name = app_info->package_name;
   }
   for (size_t index = 0; index < pref->GetSize(); ++index) {
     const base::DictionaryValue* app = nullptr;
@@ -48,7 +49,12 @@ AppListControllerDelegate::Pinnable GetPinnableForAppID(
     if (pref->GetDictionary(index, &app) &&
         app->GetString(kPinnedAppsPrefAppIDPath, &app_id_or_package) &&
         (app_id == app_id_or_package ||
-         arc_app_packege_name == app_id_or_package)) {
+         arc_app_package_name == app_id_or_package)) {
+      if (chromeos::DemoSession::Get() &&
+          chromeos::DemoSession::Get()->ShouldIgnorePinPolicy(
+              app_id_or_package)) {
+        return AppListControllerDelegate::PIN_EDITABLE;
+      }
       return AppListControllerDelegate::PIN_FIXED;
     }
   }

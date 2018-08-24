@@ -39,6 +39,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
@@ -82,6 +83,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_image_loader_client.h"
 #include "components/account_id/account_id.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/arc_util.h"
@@ -91,6 +94,7 @@
 #include "components/exo/shell_surface.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_notifier_impl.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -108,6 +112,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/grit/extensions_browser_resources.h"
+#include "net/base/mock_network_change_notifier.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -4394,4 +4400,158 @@ TEST_F(ChromeLauncherControllerTest, InternalAppWindowPropertyChanged) {
   internal_app_window->Close();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(launcher_controller_->GetItem(shelf_id));
+}
+
+class ChromeLauncherControllerDemoModeTest
+    : public ChromeLauncherControllerTest {
+ protected:
+  ChromeLauncherControllerDemoModeTest() { auto_start_arc_test_ = true; }
+  ~ChromeLauncherControllerDemoModeTest() override {}
+
+  void SetUp() override {
+    arc::SetArcAlwaysStartForTesting(true);
+
+    // To prevent crash on test exit and pending decode request.
+    ArcAppIcon::DisableSafeDecodingForTesting();
+
+    // Fake online Demo Mode.
+    session_manager_ = std::make_unique<session_manager::SessionManager>();
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
+        std::make_unique<chromeos::FakeImageLoaderClient>());
+    chromeos::DemoSession::SetDemoConfigForTesting(
+        chromeos::DemoSession::DemoModeConfig::kOnline);
+    ASSERT_TRUE(chromeos::DemoSession::StartIfInDemoMode());
+    chromeos::DemoSession::Get()->SetOfflineResourcesLoadedForTesting(
+        base::FilePath());
+
+    ChromeLauncherControllerTest::SetUp();
+  }
+
+  void TearDown() override {
+    ChromeLauncherControllerTest::TearDown();
+
+    chromeos::DemoSession::ShutDownIfInitialized();
+    chromeos::DemoSession::ResetDemoConfigForTesting();
+    chromeos::DBusThreadManager::Shutdown();
+  }
+
+ private:
+  std::unique_ptr<session_manager::SessionManager> session_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerDemoModeTest);
+};
+
+TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOnline) {
+  net::test::MockNetworkChangeNotifier notifier;
+  notifier.SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET);
+
+  InitLauncherControllerWithBrowser();
+
+  base::ListValue policy_value;
+
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension2_.get());
+  InsertPrefValue(&policy_value, 0, extension1_->id());
+  InsertPrefValue(&policy_value, 1, extension2_->id());
+
+  arc::mojom::AppInfo appinfo =
+      CreateAppInfo("Some App", "SomeActivity", "com.example.app");
+  const std::string app_id = AddArcAppAndShortcut(appinfo);
+
+  arc::mojom::AppInfo online_only_appinfo =
+      CreateAppInfo("Some App", "SomeActivity", "com.example.onlineonly");
+  const std::string online_only_app_id =
+      AddArcAppAndShortcut(online_only_appinfo);
+
+  InsertPrefValue(&policy_value, 2, appinfo.package_name);
+  InsertPrefValue(&policy_value, 3, online_only_appinfo.package_name);
+
+  // If the device is offline, extension2 and onlineonly should be unpinned.
+  chromeos::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
+      {extension2_->id(), online_only_appinfo.package_name});
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
+
+  // Since the device is online, all policy pinned apps are pinned.
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            GetPinnableForAppID(extension1_->id(), profile()));
+
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            GetPinnableForAppID(extension2_->id(), profile()));
+
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            GetPinnableForAppID(app_id, profile()));
+
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(online_only_app_id));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            GetPinnableForAppID(online_only_app_id, profile()));
+}
+
+TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
+  net::test::MockNetworkChangeNotifier notifier;
+  notifier.SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE);
+
+  InitLauncherControllerWithBrowser();
+
+  base::ListValue policy_value;
+
+  extension_service_->AddExtension(extension1_.get());
+  extension_service_->AddExtension(extension2_.get());
+  InsertPrefValue(&policy_value, 0, extension1_->id());
+  InsertPrefValue(&policy_value, 1, extension2_->id());
+
+  arc::mojom::AppInfo appinfo =
+      CreateAppInfo("Some App", "SomeActivity", "com.example.app");
+  const std::string app_id = AddArcAppAndShortcut(appinfo);
+
+  arc::mojom::AppInfo online_only_appinfo =
+      CreateAppInfo("Some App", "SomeActivity", "com.example.onlineonly");
+  const std::string online_only_app_id =
+      AddArcAppAndShortcut(online_only_appinfo);
+
+  InsertPrefValue(&policy_value, 2, appinfo.package_name);
+  InsertPrefValue(&policy_value, 3, online_only_appinfo.package_name);
+
+  // If the device is offline, extension2 and onlineonly should be unpinned.
+  chromeos::DemoSession::Get()->OverrideIgnorePinPolicyAppsForTesting(
+      {extension2_->id(), online_only_appinfo.package_name});
+
+  profile()->GetTestingPrefService()->SetManagedPref(
+      prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
+
+  // Since the device is online, the policy pinned apps that shouldn't be pinned
+  // in Demo Mode are unpinned.
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            GetPinnableForAppID(extension1_->id(), profile()));
+
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            GetPinnableForAppID(extension2_->id(), profile()));
+
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(AppListControllerDelegate::PIN_FIXED,
+            GetPinnableForAppID(app_id, profile()));
+
+  EXPECT_FALSE(launcher_controller_->IsAppPinned(online_only_app_id));
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            GetPinnableForAppID(online_only_app_id, profile()));
+
+  // Pin a Chrome app that would have been pinned by policy but was suppressed
+  // for Demo Mode.
+  launcher_controller_->PinAppWithID(extension2_->id());
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension2_->id()));
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            GetPinnableForAppID(extension2_->id(), profile()));
+
+  // Pin an ARC app that would have been pinned by policy but was suppressed
+  // for Demo Mode.
+  launcher_controller_->PinAppWithID(online_only_app_id);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
+  EXPECT_EQ(AppListControllerDelegate::PIN_EDITABLE,
+            GetPinnableForAppID(online_only_app_id, profile()));
 }
