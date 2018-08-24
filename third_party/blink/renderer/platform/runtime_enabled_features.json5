@@ -1028,6 +1028,11 @@
       origin_trial_feature_name: "RtcPeerConnectionId",
       status: "experimental",
     },
+    // Enables the use of the RTCQuicTransport object.
+    {
+      name: "RTCQuicTransport",
+      status: "test",
+    },
     {
       name: "RTCRtpSenderParameters",
       status: "stable",

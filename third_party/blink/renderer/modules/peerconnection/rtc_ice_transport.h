@@ -52,6 +52,8 @@ class MODULES_EXPORT RTCIceTransport final
 
   ~RTCIceTransport() override;
 
+  bool IsClosed() const { return state_ == RTCIceTransportState::kClosed; }
+
   // rtc_ice_transport.idl
   String role() const;
   String state() const;
@@ -99,7 +101,6 @@ class MODULES_EXPORT RTCIceTransport final
   // password.
   void GenerateLocalParameters();
 
-  bool IsClosed() const { return state_ == RTCIceTransportState::kClosed; }
   bool RaiseExceptionIfClosed(ExceptionState& exception_state) const;
 
   cricket::IceRole role_ = cricket::ICEROLE_UNKNOWN;
