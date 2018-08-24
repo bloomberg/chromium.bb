@@ -1761,6 +1761,7 @@ crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoo
 crbug.com/840017 virtual/threaded/fast/events/pinch/pinch-zoom-into-center.html [ Failure Pass ]
 crbug.com/840017 virtual/threaded/fast/events/pinch/pinch-zoom-pan-position-fixed.html [ Failure Pass ]
 crbug.com/840017 virtual/threaded/fast/events/pinch/pinch-zoom-pan-within-zoomed-viewport.html [ Failure Pass ]
+crbug.com/877361 virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Timeout Pass ]
 
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
