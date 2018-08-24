@@ -286,7 +286,7 @@ void RegistryTestHarness::SetUp() {
 ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
     SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  base::win::SetDomainStateForTesting(true);
+  base::win::ScopedDomainStateForTesting scoped_domain(true);
   std::unique_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderWin(task_runner, kTestPolicyKey));
   return new AsyncPolicyProvider(registry, std::move(loader));
@@ -406,11 +406,10 @@ class PolicyLoaderWinTest : public PolicyTestBase {
   // files in chrome/test/data/policy/gpo.
   static const base::char16 kTestPolicyKey[];
 
-  PolicyLoaderWinTest() {}
+  PolicyLoaderWinTest() : scoped_domain_(false) {}
   ~PolicyLoaderWinTest() override {}
 
   void SetUp() override {
-    base::win::SetDomainStateForTesting(false);
     PolicyTestBase::SetUp();
 
     // Activate overrides of registry keys. gtest documentation guarantees
@@ -428,6 +427,7 @@ class PolicyLoaderWinTest : public PolicyTestBase {
   }
 
   ScopedGroupPolicyRegistrySandbox registry_sandbox_;
+  base::win::ScopedDomainStateForTesting scoped_domain_;
 };
 
 const base::char16 PolicyLoaderWinTest::kTestPolicyKey[] =

@@ -563,11 +563,6 @@ bool IsEnrolledToDomain() {
   return *GetDomainEnrollmentStateStorage();
 }
 
-// This function is deprecated, prefer class ScopedDomainStateForTesting.
-void SetDomainStateForTesting(bool state) {
-  *GetDomainEnrollmentStateStorage() = state;
-}
-
 bool IsDeviceRegisteredWithManagement() {
   return *GetRegisteredWithManagementStateStorage();
 }

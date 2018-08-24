@@ -375,7 +375,7 @@ TEST(ExtensionSettingsPolicyHandlerTest, CheckPolicySettings) {
 TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
 // Mark as enterprise managed.
 #if defined(OS_WIN)
-  base::win::SetDomainStateForTesting(true);
+  base::win::ScopedDomainStateForTesting scoped_domain(true);
 #endif
 
   std::string error;
@@ -408,7 +408,7 @@ TEST(ExtensionSettingsPolicyHandlerTest, ApplyPolicySettings) {
 #if defined(OS_WIN)
 TEST(ExtensionSettingsPolicyHandlerTest, NonManagedOffWebstoreExtension) {
   // Mark as not enterprise managed.
-  base::win::SetDomainStateForTesting(false);
+  base::win::ScopedDomainStateForTesting scoped_domain(false);
 
   std::string error;
   std::unique_ptr<base::Value> policy_value =

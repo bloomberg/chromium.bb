@@ -2582,7 +2582,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionRecommendedInstallationMode) {
 
 // Mark as enterprise managed.
 #if defined(OS_WIN)
-  base::win::SetDomainStateForTesting(true);
+  base::win::ScopedDomainStateForTesting scoped_domain(true);
 #endif
 
   extensions::ExtensionService* service = extension_service();
@@ -2875,7 +2875,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ExtensionMinimumVersionForceInstalled) {
 
 // Mark as enterprise managed.
 #if defined(OS_WIN)
-  base::win::SetDomainStateForTesting(true);
+  base::win::ScopedDomainStateForTesting scoped_domain(true);
 #endif
   extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(browser()->profile());
