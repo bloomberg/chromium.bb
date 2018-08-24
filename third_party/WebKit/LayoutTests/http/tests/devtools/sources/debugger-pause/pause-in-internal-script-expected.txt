@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that internal scripts unknown to front-end are processed correctly when appear in debugger call frames. Bug 64995
 
 

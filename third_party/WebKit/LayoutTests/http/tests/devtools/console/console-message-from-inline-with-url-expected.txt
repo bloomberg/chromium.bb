@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that log message and syntax errors from inline scripts with sourceURL are logged into console, contains correct link and doesn't cause browser crash.
 
 foo.js:13 foo

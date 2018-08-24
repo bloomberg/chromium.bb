@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that there is no exception in front-end on page reload when breakpoint is set in HTML document and some dynamic scripts are loaded before the script with the breakpoint is loaded.
 Setting breakpoint:
 Reloading page.
