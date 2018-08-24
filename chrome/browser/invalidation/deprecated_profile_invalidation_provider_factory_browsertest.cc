@@ -6,7 +6,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -20,91 +20,89 @@
 
 namespace invalidation {
 
-class ProfileInvalidationProviderFactoryTestBase : public InProcessBrowserTest {
+class DeprecatedProfileInvalidationProviderFactoryTestBase
+    : public InProcessBrowserTest {
  protected:
-  ProfileInvalidationProviderFactoryTestBase();
-  ~ProfileInvalidationProviderFactoryTestBase() override;
+  DeprecatedProfileInvalidationProviderFactoryTestBase();
+  ~DeprecatedProfileInvalidationProviderFactoryTestBase() override;
 
   bool CanConstructProfileInvalidationProvider(Profile* profile);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileInvalidationProviderFactoryTestBase);
+  DISALLOW_COPY_AND_ASSIGN(
+      DeprecatedProfileInvalidationProviderFactoryTestBase);
 };
 
-ProfileInvalidationProviderFactoryTestBase::
-    ProfileInvalidationProviderFactoryTestBase() {
-}
+DeprecatedProfileInvalidationProviderFactoryTestBase::
+    DeprecatedProfileInvalidationProviderFactoryTestBase() {}
 
-ProfileInvalidationProviderFactoryTestBase::
-    ~ProfileInvalidationProviderFactoryTestBase() {
-}
+DeprecatedProfileInvalidationProviderFactoryTestBase::
+    ~DeprecatedProfileInvalidationProviderFactoryTestBase() {}
 
-bool
-ProfileInvalidationProviderFactoryTestBase::
+bool DeprecatedProfileInvalidationProviderFactoryTestBase::
     CanConstructProfileInvalidationProvider(Profile* profile) {
   return static_cast<bool>(
-      ProfileInvalidationProviderFactory::GetInstance()->
-          GetServiceForBrowserContext(profile, false));
+      DeprecatedProfileInvalidationProviderFactory::GetInstance()
+          ->GetServiceForBrowserContext(profile, false));
 }
 
-class ProfileInvalidationProviderFactoryLoginScreenBrowserTest
-    : public ProfileInvalidationProviderFactoryTestBase {
+class DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest
+    : public DeprecatedProfileInvalidationProviderFactoryTestBase {
  protected:
-  ProfileInvalidationProviderFactoryLoginScreenBrowserTest();
-  ~ProfileInvalidationProviderFactoryLoginScreenBrowserTest() override;
+  DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest();
+  ~DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest()
+      override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(
-      ProfileInvalidationProviderFactoryLoginScreenBrowserTest);
+      DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest);
 };
 
-ProfileInvalidationProviderFactoryLoginScreenBrowserTest::
-    ProfileInvalidationProviderFactoryLoginScreenBrowserTest() {
-}
+DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest::
+    DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest() {}
 
-ProfileInvalidationProviderFactoryLoginScreenBrowserTest::
-    ~ProfileInvalidationProviderFactoryLoginScreenBrowserTest() {
-}
+DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest::
+    ~DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest() {}
 
-void ProfileInvalidationProviderFactoryLoginScreenBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
+void DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest::
+    SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kLoginManager);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 }
 
 // Verify that no InvalidationService is instantiated for the login profile on
 // the login screen.
-IN_PROC_BROWSER_TEST_F(ProfileInvalidationProviderFactoryLoginScreenBrowserTest,
-                       NoInvalidationService) {
+IN_PROC_BROWSER_TEST_F(
+    DeprecatedProfileInvalidationProviderFactoryLoginScreenBrowserTest,
+    NoInvalidationService) {
   Profile* login_profile =
       chromeos::ProfileHelper::GetSigninProfile()->GetOriginalProfile();
   EXPECT_FALSE(CanConstructProfileInvalidationProvider(login_profile));
 }
 
-class ProfileInvalidationProviderFactoryGuestBrowserTest
-    : public ProfileInvalidationProviderFactoryTestBase {
+class DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest
+    : public DeprecatedProfileInvalidationProviderFactoryTestBase {
  protected:
-  ProfileInvalidationProviderFactoryGuestBrowserTest();
-  ~ProfileInvalidationProviderFactoryGuestBrowserTest() override;
+  DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest();
+  ~DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest() override;
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ProfileInvalidationProviderFactoryGuestBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(
+      DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest);
 };
 
-ProfileInvalidationProviderFactoryGuestBrowserTest::
-    ProfileInvalidationProviderFactoryGuestBrowserTest() {
-}
+DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest::
+    DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest() {}
 
-ProfileInvalidationProviderFactoryGuestBrowserTest::
-    ~ProfileInvalidationProviderFactoryGuestBrowserTest() {
-}
+DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest::
+    ~DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest() {}
 
-void ProfileInvalidationProviderFactoryGuestBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
+void DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest::
+    SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(chromeos::switches::kGuestSession);
   command_line->AppendSwitch(::switches::kIncognito);
   command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
@@ -115,8 +113,9 @@ void ProfileInvalidationProviderFactoryGuestBrowserTest::SetUpCommandLine(
 
 // Verify that no InvalidationService is instantiated for the login profile or
 // the guest profile while a guest session is in progress.
-IN_PROC_BROWSER_TEST_F(ProfileInvalidationProviderFactoryGuestBrowserTest,
-                       NoInvalidationService) {
+IN_PROC_BROWSER_TEST_F(
+    DeprecatedProfileInvalidationProviderFactoryGuestBrowserTest,
+    NoInvalidationService) {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   EXPECT_TRUE(user_manager->IsLoggedInAsGuest());
   Profile* guest_profile =

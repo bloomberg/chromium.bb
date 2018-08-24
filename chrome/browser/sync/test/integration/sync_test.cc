@@ -33,7 +33,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -651,11 +651,12 @@ void SyncTest::InitializeInvalidations(int index) {
     fake_server::FakeServerInvalidationService* invalidation_service =
         static_cast<fake_server::FakeServerInvalidationService*>(
             static_cast<invalidation::ProfileInvalidationProvider*>(
-                invalidation::ProfileInvalidationProviderFactory::
-                    GetInstance()->SetTestingFactoryAndUse(
-                        GetProfile(index),
-                        BuildFakeServerProfileInvalidationProvider))->
-                            GetInvalidationService());
+                invalidation::DeprecatedProfileInvalidationProviderFactory::
+                    GetInstance()
+                        ->SetTestingFactoryAndUse(
+                            GetProfile(index),
+                            BuildFakeServerProfileInvalidationProvider))
+                ->GetInvalidationService());
     fake_server_->AddObserver(invalidation_service);
     if (TestUsesSelfNotifications()) {
       invalidation_service->EnableSelfNotifications();
@@ -666,16 +667,17 @@ void SyncTest::InitializeInvalidations(int index) {
     configuration_refresher_->Observe(
         ProfileSyncServiceFactory::GetForProfile(GetProfile(index)));
   } else {
-    invalidation::P2PInvalidationService* p2p_invalidation_service =
-        static_cast<invalidation::P2PInvalidationService*>(
-            static_cast<invalidation::ProfileInvalidationProvider*>(
-                invalidation::ProfileInvalidationProviderFactory::
-                    GetInstance()->SetTestingFactoryAndUse(
+    invalidation::P2PInvalidationService* p2p_invalidation_service = static_cast<
+        invalidation::P2PInvalidationService*>(
+        static_cast<invalidation::ProfileInvalidationProvider*>(
+            invalidation::DeprecatedProfileInvalidationProviderFactory::
+                GetInstance()
+                    ->SetTestingFactoryAndUse(
                         GetProfile(index),
-                        TestUsesSelfNotifications() ?
-                            BuildSelfNotifyingP2PProfileInvalidationProvider :
-                            BuildRealisticP2PProfileInvalidationProvider))->
-                                GetInvalidationService());
+                        TestUsesSelfNotifications()
+                            ? BuildSelfNotifyingP2PProfileInvalidationProvider
+                            : BuildRealisticP2PProfileInvalidationProvider))
+            ->GetInvalidationService());
     p2p_invalidation_service->UpdateCredentials(username_, password_);
     // Start listening for and emitting notifications of commits.
     DCHECK(!invalidation_forwarders_[index]);

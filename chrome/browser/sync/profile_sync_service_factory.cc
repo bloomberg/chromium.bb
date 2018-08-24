@@ -20,7 +20,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -145,7 +145,8 @@ ProfileSyncServiceFactory::ProfileSyncServiceFactory()
 #endif  // !defined(OS_ANDROID)
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(invalidation::DeprecatedProfileInvalidationProviderFactory::
+                GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
   DependsOn(SpellcheckServiceFactory::GetInstance());

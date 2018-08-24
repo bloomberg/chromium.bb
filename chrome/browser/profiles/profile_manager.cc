@@ -35,7 +35,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -1350,7 +1350,8 @@ void ProfileManager::DoFinalInitForServices(Profile* profile,
 
   GaiaCookieManagerServiceFactory::GetForProfile(profile)->Init();
   invalidation::ProfileInvalidationProvider* invalidation_provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile);
+      invalidation::DeprecatedProfileInvalidationProviderFactory::GetForProfile(
+          profile);
   // Chrome OS login and guest profiles do not support invalidation. This is
   // fine as they do not have GAIA credentials anyway. http://crbug.com/358169
   invalidation::InvalidationService* invalidation_service =

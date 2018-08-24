@@ -5,7 +5,7 @@
 #include "chrome/browser/invalidation/invalidation_service_factory_android.h"
 
 #include "base/android/jni_android.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/invalidation/impl/invalidation_service_android.h"
@@ -22,7 +22,7 @@ ScopedJavaLocalRef<jobject> InvalidationServiceFactoryAndroid::GetForProfile(
     const JavaRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   invalidation::ProfileInvalidationProvider* provider =
-      ProfileInvalidationProviderFactory::GetForProfile(profile);
+      DeprecatedProfileInvalidationProviderFactory::GetForProfile(profile);
   InvalidationServiceAndroid* service_android =
       static_cast<InvalidationServiceAndroid*>(
           provider->GetInvalidationService());

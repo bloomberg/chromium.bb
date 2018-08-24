@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
@@ -210,8 +210,8 @@ void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   chromeos::DeviceOAuth2TokenServiceFactory::Initialize(
       test_shared_loader_factory_);
 
-  invalidation::ProfileInvalidationProviderFactory::GetInstance()->
-      RegisterTestingFactory(BuildProfileInvalidationProvider);
+  invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
+      ->RegisterTestingFactory(BuildProfileInvalidationProvider);
 
   provider_ = std::make_unique<AffiliatedInvalidationServiceProviderImpl>();
 }
@@ -222,8 +222,8 @@ void AffiliatedInvalidationServiceProviderImplTest::TearDown() {
   provider_.reset();
   test_shared_loader_factory_->Detach();
 
-  invalidation::ProfileInvalidationProviderFactory::GetInstance()->
-      RegisterTestingFactory(nullptr);
+  invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance()
+      ->RegisterTestingFactory(nullptr);
   chromeos::DeviceOAuth2TokenServiceFactory::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
   chromeos::SystemSaltGetter::Shutdown();
@@ -340,8 +340,9 @@ AffiliatedInvalidationServiceProviderImplTest::GetProfileInvalidationService(
     Profile* profile, bool create) {
   invalidation::ProfileInvalidationProvider* invalidation_provider =
       static_cast<invalidation::ProfileInvalidationProvider*>(
-          invalidation::ProfileInvalidationProviderFactory::GetInstance()->
-              GetServiceForBrowserContext(profile, create));
+          invalidation::DeprecatedProfileInvalidationProviderFactory::
+              GetInstance()
+                  ->GetServiceForBrowserContext(profile, create));
   if (!invalidation_provider)
     return nullptr;
   return static_cast<invalidation::FakeInvalidationService*>(

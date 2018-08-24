@@ -4,7 +4,7 @@
 
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -20,7 +20,8 @@ AccountFetcherServiceFactory::AccountFetcherServiceFactory()
         BrowserContextDependencyManager::GetInstance()) {
   DependsOn(AccountTrackerServiceFactory::GetInstance());
   DependsOn(ChromeSigninClientFactory::GetInstance());
-  DependsOn(invalidation::ProfileInvalidationProviderFactory::GetInstance());
+  DependsOn(invalidation::DeprecatedProfileInvalidationProviderFactory::
+                GetInstance());
   DependsOn(ProfileOAuth2TokenServiceFactory::GetInstance());
 }
 

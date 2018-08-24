@@ -32,7 +32,7 @@
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter_factory.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
 #include "chrome/browser/language/language_model_manager_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/media/media_engagement_service.h"
@@ -277,7 +277,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   HistoryServiceFactory::GetInstance();
   HostContentSettingsMapFactory::GetInstance();
   InMemoryURLIndexFactory::GetInstance();
-  invalidation::ProfileInvalidationProviderFactory::GetInstance();
+  invalidation::DeprecatedProfileInvalidationProviderFactory::GetInstance();
 #if !defined(OS_ANDROID)
   InstantServiceFactory::GetInstance();
 #endif
