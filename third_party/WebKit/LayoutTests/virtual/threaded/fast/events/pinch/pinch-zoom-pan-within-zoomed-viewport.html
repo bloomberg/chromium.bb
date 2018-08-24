@@ -34,10 +34,9 @@
     internals.setPageScaleFactor(2);
 
     // Test that panning the visual viewport works when zoomed in.
-    // TODO(bokan): smoothScroll seems to have an off-by-one.
     await waitForCompositorCommit();
-    await smoothScroll(601, 400, 300, GestureSourceType.TOUCH_INPUT, "down", SPEED_INSTANT);
-    await waitFor(() => { return true; });
+    await smoothScroll(600, 400, 300, GestureSourceType.TOUCHPAD_INPUT, "down", SPEED_INSTANT);
+    await waitForCompositorCommit();
 
     testRunner.notifyDone();
   }

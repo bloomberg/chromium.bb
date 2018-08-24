@@ -61,10 +61,9 @@
     // position-fixed elements to move. Scroll down 1.5 screen heights so that
     // the visual viewport scrolls down for 0.5 and then the layout viewport
     // for 1.
-    // TODO(bokan): smoothScroll seems to have an off-by-one.
     await waitForCompositorCommit();
-    await smoothScroll(1801, 400, 300, GestureSourceType.TOUCH_INPUT, "down", SPEED_INSTANT);
-    await waitFor(() => { return true; });
+    await smoothScroll(1800, 400, 300, GestureSourceType.TOUCHPAD_INPUT, "down", SPEED_INSTANT);
+    await waitForCompositorCommit();
 
     testRunner.notifyDone();
   }
