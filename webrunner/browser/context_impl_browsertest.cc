@@ -148,8 +148,7 @@ IN_PROC_BROWSER_TEST_F(ContextImplTest, NavigateFrame) {
   frame.Unbind();
 }
 
-// TODO(crbug.com/876894): Disabled due to flakiness under QEMU.
-IN_PROC_BROWSER_TEST_F(ContextImplTest, DISABLED_FrameDeletedBeforeContext) {
+IN_PROC_BROWSER_TEST_F(ContextImplTest, FrameDeletedBeforeContext) {
   chromium::web::FramePtr frame = CreateFrame();
 
   // Process the frame creation message.
@@ -519,8 +518,7 @@ struct WebContentsObserverForStop : public content::WebContentsObserver {
   MOCK_METHOD0(NavigationStopped, void());
 };
 
-// TODO(crbug.com/876894): Disabled due to flakiness.
-IN_PROC_BROWSER_TEST_F(ContextImplTest, DISABLED_Stop) {
+IN_PROC_BROWSER_TEST_F(ContextImplTest, Stop) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
