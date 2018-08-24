@@ -75,10 +75,7 @@ class InterceptingScriptWrappableMarkingVisitor
 
   void end() {
     // Gracefully terminate tracing.
-    AdvanceTracing(
-        0,
-        v8::EmbedderHeapTracer::AdvanceTracingActions(
-            v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+    AdvanceTracing(std::numeric_limits<double>::infinity());
     AbortTracing();
   }
 
@@ -147,9 +144,7 @@ TEST(ScriptWrappableMarkingVisitorTest,
   visitor->RegisterV8Reference(pair);
   EXPECT_EQ(visitor->MarkingDeque()->size(), 1ul);
 
-  visitor->AdvanceTracing(
-      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
-             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+  visitor->AdvanceTracing(std::numeric_limits<double>::infinity());
   EXPECT_EQ(visitor->MarkingDeque()->size(), 0ul);
   EXPECT_TRUE(target_header->IsWrapperHeaderMarked());
   EXPECT_TRUE(dependency_header->IsWrapperHeaderMarked());
@@ -442,9 +437,7 @@ TEST(ScriptWrappableMarkingVisitorTest, MixinTracing) {
   EXPECT_FALSE(visitor->MarkingDeque()->IsEmpty());
   EXPECT_TRUE(visitor->MarkingDequeContains(base));
 
-  visitor->AdvanceTracing(
-      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
-             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+  visitor->AdvanceTracing(std::numeric_limits<double>::infinity());
   EXPECT_EQ(visitor->MarkingDeque()->size(), 0ul);
   EXPECT_TRUE(base_header->IsWrapperHeaderMarked());
   EXPECT_TRUE(
