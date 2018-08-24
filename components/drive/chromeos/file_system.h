@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
+#include "components/drive/chromeos/drive_operation_queue.h"
 #include "components/drive/chromeos/file_system/operation_delegate.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/chromeos/team_drive_change_list_loader.h"
@@ -199,6 +200,11 @@ class FileSystem : public FileSystemInterface,
   }
   internal::SyncClient* sync_client_for_testing() { return sync_client_.get(); }
 
+  internal::DriveBackgroundOperationQueue<internal::TeamDriveChangeListLoader>*
+  team_drive_operation_queue_for_testing() {
+    return team_drive_operation_queue_.get();
+  }
+
  private:
   struct CreateDirectoryParams;
 
@@ -288,6 +294,10 @@ class FileSystem : public FileSystemInterface,
   // Used to retrieve changelists from the default corpus.
   std::unique_ptr<internal::DriveChangeListLoader>
       default_corpus_change_list_loader_;
+
+  std::unique_ptr<internal::DriveBackgroundOperationQueue<
+      internal::TeamDriveChangeListLoader>>
+      team_drive_operation_queue_;
 
   // Used to retrieve changelists for team drives. The key for the map is the
   // team_drive_id.

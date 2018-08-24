@@ -48,6 +48,9 @@
 namespace drive {
 namespace {
 
+// Desired QPS for team drive background operations (update checking etc)
+constexpr int kTeamDriveBackgroundOperationQPS = 10;
+
 // Gets a ResourceEntry from the metadata, and overwrites its file info when the
 // cached file is dirty.
 FileError GetLocallyStoredResourceEntry(
@@ -344,6 +347,11 @@ void FileSystem::ResetComponents() {
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
       cache_, loader_controller_.get(), temporary_file_directory_);
 
+  team_drive_operation_queue_ =
+      std::make_unique<internal::DriveBackgroundOperationQueue<
+          internal::TeamDriveChangeListLoader>>(
+          kTeamDriveBackgroundOperationQPS);
+
   copy_operation_ = std::make_unique<file_system::CopyOperation>(
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
       cache_);
@@ -392,7 +400,10 @@ void FileSystem::CheckForUpdates() {
                                     weak_ptr_factory_.GetWeakPtr()));
 
   for (auto& team_drive : team_drive_change_list_loaders_) {
-    team_drive.second->CheckForUpdates(
+    team_drive_operation_queue_->AddOperation(
+        team_drive.second->GetWeakPtr(),
+        base::BindOnce(&internal::TeamDriveChangeListLoader::CheckForUpdates,
+                       team_drive.second->GetWeakPtr()),
         base::Bind(&FileSystem::OnUpdateChecked, weak_ptr_factory_.GetWeakPtr(),
                    team_drive.first, closure));
   }
@@ -896,7 +907,11 @@ void FileSystem::OnTeamDrivesChanged(const FileChange& changed_team_drives) {
             blocking_task_runner_.get(), resource_metadata_, scheduler_,
             loader_controller_.get());
         loader->AddChangeListLoaderObserver(this);
-        loader->LoadIfNeeded(base::DoNothing());
+        team_drive_operation_queue_->AddOperation(
+            loader->GetWeakPtr(),
+            base::BindOnce(&internal::TeamDriveChangeListLoader::LoadIfNeeded,
+                           loader->GetWeakPtr()),
+            base::DoNothing());
         team_drive_change_list_loaders_.emplace(change.team_drive_id(),
                                                 std::move(loader));
       }
@@ -934,7 +949,11 @@ void FileSystem::OnTeamDriveListLoaded(
         blocking_task_runner_.get(), resource_metadata_, scheduler_,
         loader_controller_.get());
     loader->AddChangeListLoaderObserver(this);
-    loader->LoadIfNeeded(base::DoNothing());
+    team_drive_operation_queue_->AddOperation(
+        loader->GetWeakPtr(),
+        base::BindOnce(&internal::TeamDriveChangeListLoader::LoadIfNeeded,
+                       loader->GetWeakPtr()),
+        base::DoNothing());
     team_drive_change_list_loaders_.emplace(team_drive.team_drive_id(),
                                             std::move(loader));
   }

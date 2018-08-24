@@ -114,6 +114,7 @@ if (is_chromeos) {
       "chromeos/drive_change_list_loader.h",
       "chromeos/drive_file_util.cc",
       "chromeos/drive_file_util.h",
+      "chromeos/drive_operation_queue.h",
       "chromeos/file_cache.cc",
       "chromeos/file_cache.h",
       "chromeos/file_system.cc",

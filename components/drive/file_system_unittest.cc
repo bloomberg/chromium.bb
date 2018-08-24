@@ -153,6 +153,9 @@ class FileSystemTest : public testing::Test {
     // Disable delaying so that the sync starts immediately.
     file_system_->sync_client_for_testing()->set_delay_for_testing(
         base::TimeDelta::FromSeconds(0));
+
+    file_system_->team_drive_operation_queue_for_testing()
+        ->DisableQueueForTesting();
   }
 
   // Loads the full resource list via FakeDriveService.
@@ -873,6 +876,7 @@ TEST_F(FileSystemTest, ReadDirectory_TeamDriveFolder) {
 
   // Notify the update to the file system.
   file_system_->CheckForUpdates();
+  base::RunLoop().RunUntilIdle();
 
   std::unique_ptr<ResourceEntryVector> entries(ReadDirectorySync(
       base::FilePath::FromUTF8Unsafe("drive/team_drives/team_drive_1")));
@@ -902,6 +906,7 @@ TEST_F(FileSystemTest, AddTeamDriveInChangeList) {
 
   // Notify the update to the file system, which will add the team drive
   file_system_->CheckForUpdates();
+  base::RunLoop().RunUntilIdle();
 
   std::unique_ptr<ResourceEntryVector> entries(
       ReadDirectorySync(base::FilePath::FromUTF8Unsafe("drive/team_drives/")));
@@ -929,6 +934,7 @@ TEST_F(FileSystemTest, AddTeamDriveInChangeList) {
 
   // Notify the update to the file system.
   file_system_->CheckForUpdates();
+  base::RunLoop().RunUntilIdle();
 
   entries = ReadDirectorySync(
       base::FilePath::FromUTF8Unsafe("drive/team_drives/team_drive_3"));
