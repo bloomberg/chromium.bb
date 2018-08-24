@@ -40,6 +40,8 @@ ShapeCache* CachingWordShaper::GetShapeCache() const {
   return font_.font_fallback_list_->GetShapeCache(font_.font_description_);
 }
 
+// Returns the total advance width of the TextRun run. If glyph_bounds
+// is specified it constructs on it the smallest bounding box covering all ink.
 float CachingWordShaper::Width(const TextRun& run,
                                HashSet<const SimpleFontData*>* fallback_fonts,
                                FloatRect* glyph_bounds) {
@@ -48,6 +50,11 @@ float CachingWordShaper::Width(const TextRun& run,
   CachingWordShapeIterator iterator(GetShapeCache(), run, &font_);
   while (iterator.Next(&word_result)) {
     if (word_result) {
+      // For every word_result we need to accumulate its width to adjust the
+      // glyph_bounds. When the word_result is in RTL we accumulate in the
+      // opposite direction (negative).
+      if (run.Rtl())
+        width -= word_result->Width();
       if (glyph_bounds) {
         FloatRect adjusted_bounds = word_result->Bounds();
         // Translate glyph bounds to the current glyph position which
@@ -55,9 +62,18 @@ float CachingWordShaper::Width(const TextRun& run,
         adjusted_bounds.SetX(adjusted_bounds.X() + width);
         glyph_bounds->Unite(adjusted_bounds);
       }
-      width += word_result->Width();
+      if (!run.Rtl())
+        width += word_result->Width();
       if (fallback_fonts)
         word_result->FallbackFonts(fallback_fonts);
+    }
+  }
+
+  if (run.Rtl()) {
+    // Finally, convert width back to positive if run is RTL.
+    width = -width;
+    if (glyph_bounds) {
+      glyph_bounds->SetX(glyph_bounds->X() + width);
     }
   }
 

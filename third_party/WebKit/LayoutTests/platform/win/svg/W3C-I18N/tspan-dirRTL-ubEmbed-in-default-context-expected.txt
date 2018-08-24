@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (88.09,133.19) size 148.19x21
           chunk 1 (middle anchor) text run 1 at (88.10,150.00) startOffset 0 endOffset 16 width 148.20: "dirRTL ubEmbed \""
         LayoutSVGTSpan {tspan} at (88.09,133.19) size 283.80x21
-          LayoutSVGInlineText {#text} at (236.30,133.19) size 123.59x21
+          LayoutSVGInlineText {#text} at (236.30,133.19) size 123.58x21
             chunk 1 (middle anchor) text run 1 at (236.30,150.00) startOffset 0 endOffset 3 width 41.40: "W3C"
             chunk 1 (middle anchor) text run 1 at (277.70,150.00) startOffset 0 endOffset 14 width 82.20 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C} "
         LayoutSVGInlineText {#text} at (359.89,133.19) size 12x21

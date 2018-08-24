@@ -70,16 +70,18 @@ void TextMetrics::Update(const Font& font,
 
   // x direction
   width_ = bbox.Width();
+  FloatRect glyph_bounds;
+  double real_width = font.Width(text_run, nullptr, &glyph_bounds);
 
   float dx = 0.0f;
   if (align == kCenterTextAlign)
-    dx = -width_ / 2.0f;
+    dx = real_width / 2.0f;
   else if (align == kRightTextAlign ||
            (align == kStartTextAlign && direction == TextDirection::kRtl) ||
            (align == kEndTextAlign && direction != TextDirection::kRtl))
-    dx = -width_;
-  actual_bounding_box_left_ = -bbox.X() - dx;
-  actual_bounding_box_right_ = bbox.MaxX() + dx;
+    dx = real_width;
+  actual_bounding_box_left_ = -glyph_bounds.X() + dx;
+  actual_bounding_box_right_ = glyph_bounds.MaxX() - dx;
 
   // y direction
   const float ascent = font_metrics.FloatAscent();

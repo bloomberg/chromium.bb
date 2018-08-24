@@ -28,11 +28,10 @@ function getMetric(ctx, text, baseline, align, rtl, metric) {
   }
 }
 
-function testMetric(name, ctx, text, baseline, align, rtl, metric, expected_value, epsilon = 0) {
+function testMetric(name, ctx, text, baseline, align, rtl, metric, expected_value, epsilon = 0.3) {
   const value = getMetric(ctx, text, baseline, align, rtl, metric);
-  assert_approx_equals(value, expected_value, epsilon ? Math.ceil(epsilon * expected_value) : 1.0,
-    name + ": " + metric + " for '" + text +
-    "' (" + baseline + ", " + align + ")");
+  assert_approx_equals(value, expected_value, Math.ceil(Math.abs(epsilon * expected_value)) + 10,
+    name + ": " + metric + " for '" + text + "' (" + baseline + ", " + align + ")");
   return value;
 }
 
@@ -43,13 +42,13 @@ const kBaselines =  ['top','hanging','middle','alphabetic',
 // Those bbox are given from alphabetic,left.
 // bbox = [ left, right, ascent, descent ].
 const kTexts = [
-  { text: "", bbox: [0, 0, 0, 0], rtl: false },
-  { text: "hello", bbox: [0, 101, 35, 1], rtl: false },
-  { text: "gypsy", bbox: [0, 122, 24, 12], rtl: false },
-  { text: "傳統是假的", bbox: [0, 250, 42, 7], rtl: false },
-  { text: "フェミニズム", bbox: [0, 300, 42, 3], rtl: false },
-  { text: "एक आम भाषा", bbox: [0, 240, 34, 5], rtl: false },
-  { text: "ليس في اسمنا", bbox: [0, 221, 41, 12], rtl: true },
+  { text: "", width: 0, bbox: [0, 0, 0, 0], rtl: false },
+  { text: "hello", width: 100, bbox: [0, 99, 35, 1], rtl: false },
+  { text: "gypsy", width: 122, bbox: [-1, 122, 23, 12], rtl: false },
+  { text: "傳統是假的", width: 250, bbox: [-1, 247, 43, 5], rtl: false },
+  { text: "フェミニズム", width: 300, bbox: [-7, 297, 43, 3], rtl: false },
+  { text: "एक आम भाषा", width: 250, bbox: [1, 251, 35, 7], rtl: false },
+  { text: "ليس في اسمنا", width: 301, bbox: [-4, 297, 38, 13], rtl: true },
 ]
 
 function forEachExample(fn) {
@@ -65,7 +64,7 @@ function forEachExample(fn) {
 // Widths shouldn't change over baseline/align.
 function testWidth(ctx) {
   forEachExample((ex, bline, align) => {
-    testMetric("width", ctx, ex.text, bline, align, ex.rtl, "width", ex.bbox[1] + ex.bbox[0]);
+    testMetric("width", ctx, ex.text, bline, align, ex.rtl, "width", ex.width);
   });
 }
 
@@ -73,12 +72,11 @@ function testWidth(ctx) {
 // match the returned values with a big confidence interval.
 // If it does, we adapt to the actual values to accomodate for different OSes.
 function testAndFixBasicExpectations(ctx) {
-  const max_diff = 0.75;
   for (const ex of kTexts) {
-    ex.bbox[0] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxLeft", ex.bbox[0], max_diff);
-    ex.bbox[1] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxRight", ex.bbox[1], max_diff);
-    ex.bbox[2] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxAscent", ex.bbox[2], max_diff);
-    ex.bbox[3] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxDescent", ex.bbox[3], max_diff);
+    ex.bbox[0] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxLeft", ex.bbox[0]);
+    ex.bbox[1] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxRight", ex.bbox[1]);
+    ex.bbox[2] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxAscent", ex.bbox[2]);
+    ex.bbox[3] = testMetric("expectations", ctx, ex.text, "alphabetic", "left", ex.rtl, "actualBoundingBoxDescent", ex.bbox[3]);
   }
 }
 
@@ -118,28 +116,28 @@ function testBoundingBox(ctx) {
 
   // Left changes depending on what is the alignment.
   forEachExample((ex, bline, align) => {
-    let left = 0;
+    let left = ex.bbox[0];
     let calign = align;
     if (align == "start") calign = ex.rtl ? "right" : "left";
     if (align == "end") calign = ex.rtl ? "left" : "right";
 
-    if (calign == "left") left = 0;
-    else if (calign == "right") left = ex.bbox[1] + ex.bbox[0];
-    else if (calign == "center") left = (ex.bbox[1] + ex.bbox[0])/2.0;
+    if (calign == "left") left = ex.bbox[0];
+    else if (calign == "right") left = ex.bbox[0] + ex.width
+    else if (calign == "center") left = (ex.bbox[0] + ex.width)/2.0;
 
     testMetric("boundigbox alignment", ctx, ex.text, bline, align, ex.rtl, "actualBoundingBoxLeft", left);
   });
 
   // Right changes depending on what is the alignment.
   forEachExample((ex, bline, align) => {
-    let right = 0;
+    let right = ex.bbox[0];
     let calign = align;
     if (align == "start") calign = ex.rtl ? "right" : "left";
     if (align == "end") calign = ex.rtl ? "left" : "right";
 
-    if (calign == "left") right = ex.bbox[1] + ex.bbox[0];
-    else if (calign == "right") right = 0;
-    else if (calign == "center") right = (ex.bbox[1] + ex.bbox[0])/2.0;
+    if (calign == "left") right = ex.bbox[0] + ex.width;
+    else if (calign == "right") right = ex.bbox[0];
+    else if (calign == "center") right = (ex.bbox[0] + ex.width)/2.0;
 
     testMetric("boundingbox alignment", ctx, ex.text, bline, align, ex.rtl, "actualBoundingBoxRight", right);
   });
