@@ -107,6 +107,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON;
     case WebLocalizedString::kAXMediaExitFullscreenButton:
       return IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON;
+    case WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton:
+      return IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON;
     case WebLocalizedString::kAXMediaEnterPictureInPictureButton:
       return IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON;
     case WebLocalizedString::kAXMediaExitPictureInPictureButton:
@@ -147,6 +149,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON_HELP;
     case WebLocalizedString::kAXMediaExitFullscreenButtonHelp:
       return IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON_HELP;
+    case WebLocalizedString::kAXMediaDisplayCutoutFullscreenButtonHelp:
+      return IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON_HELP;
     case WebLocalizedString::kAXMediaEnterPictureInPictureButtonHelp:
       return IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON_HELP;
     case WebLocalizedString::kAXMediaExitPictureInPictureButtonHelp:

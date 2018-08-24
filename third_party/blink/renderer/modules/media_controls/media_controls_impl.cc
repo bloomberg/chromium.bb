@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_button_panel_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_cast_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_current_time_display_element.h"
+#include "third_party/blink/renderer/modules/media_controls/elements/media_control_display_cutout_fullscreen_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_fullscreen_button_element.h"
@@ -369,6 +370,7 @@ MediaControlsImpl::MediaControlsImpl(HTMLMediaElement& media_element)
       picture_in_picture_button_(nullptr),
       cast_button_(nullptr),
       fullscreen_button_(nullptr),
+      display_cutout_fullscreen_button_(nullptr),
       download_button_(nullptr),
       media_event_listener_(new MediaControlsMediaEventListener(this)),
       orientation_lock_delegate_(nullptr),
@@ -513,6 +515,8 @@ MediaControlsImpl* MediaControlsImpl::Create(HTMLMediaElement& media_element,
 //  |    (-internal-media-controls-text-track-list-kind-captions)
 //  +-MediaControlTextTrackListItemSubtitles
 //       (-internal-media-controls-text-track-list-kind-subtitles)
+// +-MediaControlDisplayCutoutFullscreenElement
+//       (-internal-media-controls-display-cutout-fullscreen-button)
 void MediaControlsImpl::InitializeControls() {
   if (IsModern() && ShouldShowVideoControls()) {
     loading_panel_ = new MediaControlLoadingPanelElement(*this);
@@ -573,6 +577,12 @@ void MediaControlsImpl::InitializeControls() {
         ShouldShowPictureInPictureButton(MediaElement()));
   }
 
+  if (RuntimeEnabledFeatures::DisplayCutoutAPIEnabled() &&
+      MediaElement().IsHTMLVideoElement()) {
+    display_cutout_fullscreen_button_ =
+        new MediaControlDisplayCutoutFullscreenButtonElement(*this);
+  }
+
   fullscreen_button_ = new MediaControlFullscreenButtonElement(*this);
   download_button_ = new MediaControlDownloadButtonElement(*this);
   cast_button_ = new MediaControlCastButtonElement(*this, false);
@@ -627,6 +637,9 @@ void MediaControlsImpl::PopulatePanel() {
   Element* button_panel = panel_;
   if (IsModern() && ShouldShowVideoControls()) {
     MaybeParserAppendChild(panel_, scrubbing_message_);
+    if (display_cutout_fullscreen_button_)
+      panel_->ParserAppendChild(display_cutout_fullscreen_button_);
+
     panel_->ParserAppendChild(overlay_play_button_);
     panel_->ParserAppendChild(media_button_panel_);
     button_panel = media_button_panel_;
@@ -1705,12 +1718,18 @@ void MediaControlsImpl::OnLoadedMetadata() {
 
 void MediaControlsImpl::OnEnteredFullscreen() {
   fullscreen_button_->SetIsFullscreen(true);
+  if (display_cutout_fullscreen_button_)
+    display_cutout_fullscreen_button_->SetIsWanted(true);
+
   StopHideMediaControlsTimer();
   StartHideMediaControlsTimer();
 }
 
 void MediaControlsImpl::OnExitedFullscreen() {
   fullscreen_button_->SetIsFullscreen(false);
+  if (display_cutout_fullscreen_button_)
+    display_cutout_fullscreen_button_->SetIsWanted(false);
+
   StopHideMediaControlsTimer();
   StartHideMediaControlsTimer();
 }
@@ -2065,6 +2084,7 @@ void MediaControlsImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(download_iph_manager_);
   visitor->Trace(media_button_panel_);
   visitor->Trace(loading_panel_);
+  visitor->Trace(display_cutout_fullscreen_button_);
   MediaControls::Trace(visitor);
   HTMLDivElement::Trace(visitor);
 }

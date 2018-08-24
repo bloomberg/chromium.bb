@@ -15,6 +15,8 @@ blink_modules_sources("media_controls") {
     "elements/media_control_cast_button_element.h",
     "elements/media_control_current_time_display_element.cc",
     "elements/media_control_current_time_display_element.h",
+    "elements/media_control_display_cutout_fullscreen_button_element.cc",
+    "elements/media_control_display_cutout_fullscreen_button_element.h",
     "elements/media_control_div_element.cc",
     "elements/media_control_div_element.h",
     "elements/media_control_download_button_element.cc",

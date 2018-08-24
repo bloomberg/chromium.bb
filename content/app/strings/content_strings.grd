@@ -660,6 +660,10 @@ below:
         exit full screen
       </message>
 
+      <message name="IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON" desc="Accessibility role description for display cutout fullscreen button">
+        toggle display cutout fullscreen
+      </message>
+
       <message name="IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON" desc="Accessibility role description for enter Picture-in-Picture button">
         enter picture-in-picture
       </message>
@@ -738,6 +742,10 @@ below:
 
       <message name="IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON_HELP" desc="Accessibility help description for exit fullscreen button">
         exit full screen
+      </message>
+
+      <message name="IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON_HELP" desc="Accessibility help description for display cutout fullscreen button">
+        toggle fullscreen into display cutout area
       </message>
 
       <message name="IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON_HELP" desc="Accessibility help description for enter Picture-in-Picture button">

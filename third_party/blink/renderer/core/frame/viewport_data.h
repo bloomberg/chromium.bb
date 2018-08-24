@@ -31,6 +31,9 @@ class ViewportData : public GarbageCollectedFinalized<ViewportData> {
   // When true this will force a kCover viewport fit value which will result in
   // the document expanding into the display cutout area.
   CORE_EXPORT void SetExpandIntoDisplayCutout(bool expand);
+  CORE_EXPORT bool GetExpandIntoDisplayCutout() const {
+    return force_expand_display_cutout_;
+  }
   mojom::ViewportFit GetCurrentViewportFitForTests() const {
     return viewport_fit_;
   }
