@@ -351,9 +351,9 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   RegisterResponse(
       target_sxg,
       // We mock the SignedExchangeHandler, so just return a HTML content
-      // as "application/signed-exchange;v=b1".
+      // as "application/signed-exchange;v=b2".
       ResponseEntry("<head><title>Prefetch Target (SXG)</title></head>",
-                    "application/signed-exchange;v=b1"));
+                    "application/signed-exchange;v=b2"));
   RegisterResponse(preload_url_in_sxg,
                    ResponseEntry("function foo() {}", "text/javascript"));
 
@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(1));
   if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
     EXPECT_EQ(prefetch_headers["Accept"],
-              "application/signed-exchange;v=b1;q=0.9,*/*;q=0.8");
+              "application/signed-exchange;v=b2;q=0.9,*/*;q=0.8");
   else
     EXPECT_EQ(prefetch_headers["Accept"], "*/*");
 
