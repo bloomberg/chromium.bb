@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/segmented_font_data.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/text/icu_error.h"
 
 namespace blink {
 
@@ -80,6 +79,22 @@ scoped_refptr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
   if (candidate->IsEntireRange())
     unique_font_data_for_range_sets_returned_.insert(candidate_id);
   return candidate;
+}
+
+bool FontFallbackIterator::NeedsHintList() const {
+  if (fallback_stage_ == kSegmentedFace)
+    return true;
+
+  if (fallback_stage_ != kFontGroupFonts)
+    return false;
+
+  const FontData* font_data = font_fallback_list_->FontDataAt(
+      font_description_, current_font_data_index_);
+
+  if (!font_data)
+    return false;
+
+  return font_data->IsSegmented();
 }
 
 scoped_refptr<FontDataForRangeSet> FontFallbackIterator::Next(
@@ -209,16 +224,8 @@ static inline unsigned ChooseHintIndex(const Vector<UChar32>& hint_list) {
   if (hint_list.size() <= 1)
     return 0;
 
-  ICUError err;
-  UScriptCode hint_char_script = uscript_getScript(hint_list[0], &err);
-  if (!U_SUCCESS(err) || hint_char_script > USCRIPT_INHERITED)
-    return 0;
-
   for (size_t i = 1; i < hint_list.size(); ++i) {
-    UScriptCode new_hint_script = uscript_getScript(hint_list[i], &err);
-    if (!U_SUCCESS(err))
-      return 0;
-    if (new_hint_script > USCRIPT_INHERITED)
+    if (Character::HasDefiniteScript(hint_list[i]))
       return i;
   }
   return 0;

@@ -303,4 +303,13 @@ bool Character::IsNonCharacter(UChar32 character) {
   return U_IS_UNICODE_NONCHAR(character);
 }
 
+bool Character::HasDefiniteScript(UChar32 character) {
+  ICUError err;
+  UScriptCode hint_char_script = uscript_getScript(character, &err);
+  if (!U_SUCCESS(err))
+    return false;
+  return hint_char_script != USCRIPT_INHERITED &&
+         hint_char_script != USCRIPT_COMMON;
+}
+
 }  // namespace blink

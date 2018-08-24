@@ -2,7 +2,7 @@
   var documentNodeId = (await session.protocol.DOM.getDocument()).result.root.nodeId;
   await session.protocol.CSS.enable();
   var testNodes = await session.evaluate(`
-    Array.prototype.map.call(document.querySelectorAll('.test *'), e => ({selector: '#' + e.id, textContent: e.textContent}))
+    Array.prototype.map.call(document.querySelectorAll('.test div'), e => ({selector: '#' + e.id, textContent: e.textContent}))
   `);
 
   for (var testNode of testNodes) {
@@ -11,7 +11,7 @@
     var usedFonts = response.result.fonts;
     usedFonts.sort((a, b) => b.glyphCount - a.glyphCount);
 
-    testRunner.log(testNode.textContent);
+    testRunner.log(testNode.textContent.trim());
     testRunner.log(testNode.selector + ':');
     for (var i = 0; i < usedFonts.length; i++) {
       var usedFont = usedFonts[i];

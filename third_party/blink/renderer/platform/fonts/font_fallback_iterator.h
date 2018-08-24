@@ -28,6 +28,13 @@ class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
                                              FontFallbackPriority);
 
   bool HasNext() const { return fallback_stage_ != kOutOfLuck; };
+  // Returns whether the next call to Next() needs a full hint list, or whether
+  // a single character is sufficient. Intended to serve as an optimization in
+  // HarfBuzzShaper to avoid spending too much time and resources collecting a
+  // full hint character list. Returns true when the next font in line is a
+  // segmented font, i.e. one that requires the hint list to work out which
+  // unicode range segment should be used.
+  bool NeedsHintList() const;
 
   // Some system fallback APIs (Windows, Android) require a character, or a
   // portion of the string to be passed.  On Mac and Linux, we get a list of

@@ -95,6 +95,7 @@ class PLATFORM_EXPORT HarfBuzzShaper final {
                            ShapeResult*) const;
 
   bool CollectFallbackHintChars(const Deque<ReshapeQueueItem>&,
+                                bool needs_hint_list,
                                 Vector<UChar32>& hint) const;
 
   void CommitGlyphs(RangeData*,

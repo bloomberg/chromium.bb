@@ -1,4 +1,6 @@
-<head>
+(async function(testRunner) {
+  var page = await testRunner.createPage();
+  await page.loadHTML(`
     <style>
         div { border: 1px solid; padding: 0 8px; margin: 8px 0; }
         span.ahem { font-family: 'Ahem'; }
@@ -73,80 +75,59 @@
             src: url('../../resources/Ahem.ttf');
             unicode-range: U+0027;  /* missing glyph */
         }
-        
-        p {
-            height: 30px;
+
+        @font-face {
+            font-family: dummy;
+            src: local(fails_to_find_font);
         }
     </style>
-</head>
-<body onload="finished()">
-    <p>
-        Each box should contain two identical lines
-    </p>
-
-    <div>
-        <p style="font-family: 'test1';">
+    <div class="test">
+    <div id="test_1" style="font-family: test1;">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        </p>
-        <p>
+    </div>
+    <div id="font_usage_reference__must_match_test_1">
             <span class="ahem">A</span>BCDEFGHIJKLMNOPQRSTUVWXYZ
-        </p>
     </div>
-
-    <div>
-        <p style="font-family: 'test2';">
+    <div id="test_2" style="font-family: test2;">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        </p>
-        <p>
+    </div>
+    <div id="font_usage_reference__must_match_test_2">
             <span class="ahem">ABCDEFGHIJKLMNO</span>PQRSTUVWXYZ
-        </p>
     </div>
-
-    <div>
-        <p style="font-family: 'test3';">
+    <div id="test_3" style="font-family: test3;">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        </p>
-        <p>
+    </div>
+    <div id="font_usage_reference__must_match_test_3">
             A<span class="ahem">BCD</span>EFGHIJKLMNOPQRSTUVWXYZ
-        </p>
     </div>
-
-    <div>
-        <p style="font-family: 'test4';">
+    <div id="test_4" style="font-family: test4;">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        </p>
-        <p>
+    </div>
+    <div id="font_usage_reference__must_match_test_4">
             ABCDEFGHIJKLMN<span class="courier">OPQ</span><span class="ahem">RSTUVWX</span>YZ
-        </p>
     </div>
-
-    <div>
-        <p style="font-family: 'test5';">
+    <div id="test_5" style="font-family: test5;">
             ABCDEFGHIJKLMNOPQRSTUVWXYZ
-        </p>
-        <p>
-            ABCDEFGHIJKLMNO<span class="ahem">PQ<span class="courier">RSTU</span>VWX</span>YZ
-        </p>
     </div>
-
-    <div>
-        <p style="font-family: 'test6';">
+    <div id="font_usage_must_match_test_5">
+            ABCDEFGHIJKLMNO<span class="ahem">PQ</span><span class="courier">RSTU</span><span class="Ahem">VWX</span>YZ
+    </div>
+    <div id="test_5a" style="font-family: dummy, test5;">
+            ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    </div>
+    <div id="font_usage_reference__must_match_test_5a">
+            ABCDEFGHIJKLMNO<span class="ahem">PQ</span><span class="courier">RSTU</span><span class="Ahem">VWX</span>YZ
+    </div>
+    <div id="test_6" style="font-family: test6;">
             '''
-        </p>
-        <p>
-            <span class="courier">'''</span>
-        </p>
     </div>
-    <script>
-        function finished()
-        {
-            if (window.testRunner)
-                testRunner.notifyDone();
-        }
+    <div id="font_usage_reference__must_match_test_6">
+            <span class="courier">'''</span>
+    </div>
+  `);
+  var session = await page.createSession();
 
-        document.body.offsetTop;
-
-        if (window.testRunner)
-            testRunner.waitUntilDone();
-    </script>
-</body>
+  var helper = await testRunner.loadScript('./resources/layout-font-test.js');
+  await helper(testRunner, session);
+  testRunner.completeTest();
+})
