@@ -13,8 +13,11 @@
 #include <set>
 
 #include "base/containers/adapters.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -853,8 +856,19 @@ void LayerTreeImpl::UpdatePageScaleNode() {
 void LayerTreeImpl::SetPageScaleOnActiveTree(float active_page_scale) {
   DCHECK(IsActiveTree());
   DCHECK(lifecycle().AllowsPropertyTreeAccess());
-  if (page_scale_factor()->SetCurrent(
-          ClampPageScaleFactorToLimits(active_page_scale))) {
+  float clamped_page_scale = ClampPageScaleFactorToLimits(active_page_scale);
+  // Temporary crash logging for https://crbug.com/845097.
+  static bool has_dumped_without_crashing = false;
+  if (host_impl_->settings().is_layer_tree_for_subframe &&
+      clamped_page_scale != 1.f && !has_dumped_without_crashing) {
+    has_dumped_without_crashing = true;
+    static auto* psf_oopif_error = base::debug::AllocateCrashKeyString(
+        "psf_oopif_error", base::debug::CrashKeySize::Size32);
+    base::debug::SetCrashKeyString(
+        psf_oopif_error, base::StringPrintf("%f", clamped_page_scale));
+    base::debug::DumpWithoutCrashing();
+  }
+  if (page_scale_factor()->SetCurrent(clamped_page_scale)) {
     DidUpdatePageScale();
     UpdatePageScaleNode();
   }
