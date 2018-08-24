@@ -13,6 +13,7 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "components/translate/core/common/translate_metrics.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
@@ -226,16 +227,15 @@ bool IOSTranslateDriver::IsPageValid(int page_seq_no) const {
 
 // TranslateController::Observer implementation.
 
-void IOSTranslateDriver::OnTranslateScriptReady(
-    TranslateErrors::Type error_type,
-    double load_time,
-    double ready_time) {
+void IOSTranslateDriver::OnTranslateScriptReady(bool success,
+                                                double load_time,
+                                                double ready_time) {
   if (!IsPageValid(pending_page_seq_no_))
     return;
 
-  if (error_type != TranslateErrors::NONE) {
+  if (!success) {
     translate_manager_->PageTranslated(source_language_, target_language_,
-                                       error_type);
+                                       TranslateErrors::INITIALIZATION_ERROR);
     return;
   }
 
@@ -249,15 +249,16 @@ void IOSTranslateDriver::OnTranslateScriptReady(
 }
 
 void IOSTranslateDriver::OnTranslateComplete(
-    TranslateErrors::Type error_type,
+    bool success,
     const std::string& original_language,
     double translation_time) {
   if (!IsPageValid(pending_page_seq_no_))
     return;
 
-  if (error_type != TranslateErrors::NONE) {
+  if (!success) {
+    // TODO(toyoshim): Check |errorCode| of translate.js and notify it here.
     translate_manager_->PageTranslated(source_language_, target_language_,
-                                       error_type);
+                                       TranslateErrors::TRANSLATION_ERROR);
   }
 
   TranslationDidSucceed(source_language_, target_language_,

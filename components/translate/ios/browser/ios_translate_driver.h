@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/language/ios/browser/ios_language_detection_tab_helper.h"
 #include "components/translate/core/browser/translate_driver.h"
-#include "components/translate/core/common/translate_errors.h"
 #include "components/translate/ios/browser/language_detection_controller.h"
 #include "components/translate/ios/browser/translate_controller.h"
 #include "ios/web/public/web_state/web_state_observer.h"
@@ -87,10 +86,10 @@ class IOSTranslateDriver : public TranslateDriver,
   void OnLanguageDetermined(const LanguageDetectionDetails& details);
 
   // TranslateController::Observer methods.
-  void OnTranslateScriptReady(TranslateErrors::Type error_type,
+  void OnTranslateScriptReady(bool success,
                               double load_time,
                               double ready_time) override;
-  void OnTranslateComplete(TranslateErrors::Type error_type,
+  void OnTranslateComplete(bool success,
                            const std::string& original_language,
                            double translation_time) override;
 
