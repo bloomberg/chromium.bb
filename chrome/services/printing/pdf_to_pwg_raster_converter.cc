@@ -30,8 +30,7 @@ base::ReadOnlySharedMemoryRegion RenderPdfPagesToPwgRaster(
   if (!pdf_mapping.IsValid())
     return invalid_pwg_region;
 
-  auto pdf_data = base::make_span(
-      static_cast<const uint8_t*>(pdf_mapping.memory()), pdf_mapping.size());
+  auto pdf_data = pdf_mapping.GetMemoryAsSpan<const uint8_t>();
 
   // Get the page count and reserve 64 KB per page in |pwg_data| below.
   static constexpr size_t kEstimatedSizePerPage = 64 * 1024;

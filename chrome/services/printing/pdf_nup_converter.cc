@@ -27,10 +27,7 @@ std::vector<base::span<const uint8_t>> CreatePdfPagesVector(
 
   for (auto& pdf_page_region : pdf_page_regions) {
     base::ReadOnlySharedMemoryMapping pdf_mapping = pdf_page_region.Map();
-    base::span<const uint8_t> pdf_page =
-        base::make_span(reinterpret_cast<const uint8_t*>(pdf_mapping.memory()),
-                        pdf_mapping.size());
-    pdf_page_span.push_back(pdf_page);
+    pdf_page_span.push_back(pdf_mapping.GetMemoryAsSpan<const uint8_t>());
     pdf_mappings->push_back(std::move(pdf_mapping));
   }
 
@@ -94,9 +91,7 @@ void PdfNupConverter::NupDocumentConvert(
     base::ReadOnlySharedMemoryRegion src_pdf_region,
     NupDocumentConvertCallback callback) {
   base::ReadOnlySharedMemoryMapping pdf_document_mapping = src_pdf_region.Map();
-  base::span<const uint8_t> input_pdf_buffer = base::make_span(
-      static_cast<const uint8_t*>(pdf_document_mapping.memory()),
-      pdf_document_mapping.size());
+  auto input_pdf_buffer = pdf_document_mapping.GetMemoryAsSpan<const uint8_t>();
   void* output_pdf_buffer = nullptr;
   size_t output_pdf_buffer_size = 0;
   if (!chrome_pdf::ConvertPdfDocumentToNupPdf(
