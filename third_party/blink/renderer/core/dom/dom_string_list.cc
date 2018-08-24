@@ -29,7 +29,7 @@
 
 namespace blink {
 
-String DOMStringList::item(unsigned index) const {
+String DOMStringList::item(uint32_t index) const {
   if (index >= strings_.size())
     return String();
   return strings_[index];

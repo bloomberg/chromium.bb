@@ -48,9 +48,9 @@ class CORE_EXPORT DOMStringList final : public ScriptWrappable {
   void Sort();
 
   // Implements the IDL.
-  size_t length() const { return strings_.size(); }
+  uint32_t length() const { return strings_.size(); }
 
-  String item(unsigned index) const;
+  String item(uint32_t index) const;
   bool contains(const String&) const;
 
   operator const Vector<String>&() const { return strings_; }
