@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_transform_tear_off.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
 
 namespace blink {

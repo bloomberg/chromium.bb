@@ -20,7 +20,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_string_list.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_parser_utilities.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
