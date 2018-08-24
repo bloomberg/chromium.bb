@@ -132,29 +132,29 @@ void AssistantMainView::InitLayout() {
 void AssistantMainView::OnUiVisibilityChanged(bool visible,
                                               AssistantSource source) {
   if (visible) {
-    // When Assistant UI is shown and the motion spec is enabled, we animate in
-    // the appearance of the caption bar and dialog plate.
-    if (assistant::ui::kIsMotionSpecEnabled) {
-      using namespace assistant::util;
+    // When Assistant UI is shown, we animate in the appearance of the caption
+    // bar and dialog plate.
+    using assistant::util::CreateLayerAnimationSequence;
+    using assistant::util::CreateOpacityElement;
 
-      // Animate the caption bar from 0% to 100% opacity with delay.
-      caption_bar_->layer()->SetOpacity(0.f);
-      caption_bar_->layer()->GetAnimator()->StartAnimation(
-          CreateLayerAnimationSequence(
-              ui::LayerAnimationElement::CreatePauseElement(
-                  ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                  kCaptionBarAnimationFadeInDelay),
-              CreateOpacityElement(1.f, kCaptionBarAnimationFadeInDuration)));
+    // Animate the caption bar from 0% to 100% opacity with delay.
+    caption_bar_->layer()->SetOpacity(0.f);
+    caption_bar_->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            ui::LayerAnimationElement::CreatePauseElement(
+                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                kCaptionBarAnimationFadeInDelay),
+            CreateOpacityElement(1.f, kCaptionBarAnimationFadeInDuration)));
 
-      // Animate the dialog plate from 0% to 100% opacity with delay.
-      dialog_plate_->layer()->SetOpacity(0.f);
-      dialog_plate_->layer()->GetAnimator()->StartAnimation(
-          CreateLayerAnimationSequence(
-              ui::LayerAnimationElement::CreatePauseElement(
-                  ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                  kDialogPlateAnimationFadeInDelay),
-              CreateOpacityElement(1.f, kDialogPlateAnimationFadeInDuration)));
-    }
+    // Animate the dialog plate from 0% to 100% opacity with delay.
+    dialog_plate_->layer()->SetOpacity(0.f);
+    dialog_plate_->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            ui::LayerAnimationElement::CreatePauseElement(
+                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                kDialogPlateAnimationFadeInDelay),
+            CreateOpacityElement(1.f, kDialogPlateAnimationFadeInDuration)));
+
     return;
   }
 

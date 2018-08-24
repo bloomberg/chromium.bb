@@ -321,11 +321,28 @@ void AssistantMainStage::InitOverlayLayoutContainer() {
 }
 
 void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
-  // When the motion spec is disabled and a query is committed, we...
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    // ...hide the greeting label...
-    greeting_label_->layer()->SetOpacity(0.f);
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
 
+  if (is_first_query_) {
+    // Hide the greeting label (for the first query)...
+    greeting_label_->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
+  }
+
+  // ...and always show the progress indicator.
+  progress_indicator_->layer()->GetAnimator()->StartAnimation(
+      CreateLayerAnimationSequence(
+          // Delay...
+          ui::LayerAnimationElement::CreatePauseElement(
+              ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+              kProgressAnimationFadeInDelay),
+          // ...then fade in.
+          CreateOpacityElement(1.f, kProgressAnimationFadeInDuration)));
+
+  // After the first query, the progress indicator should be left aligned.
+  if (!is_first_query_) {
     const int overlay_width = overlay_layout_container_->width();
     const int indicator_width = progress_indicator_->width();
     const int translation = -(overlay_width - indicator_width) / 2 +
@@ -334,43 +351,7 @@ void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
     gfx::Transform transform;
     transform.Translate(translation, 0);
 
-    // ...and show the progress indicator, having translated it from being
-    // center aligned, to left aligned in its parent.
     progress_indicator_->layer()->SetTransform(transform);
-    progress_indicator_->layer()->SetOpacity(1.f);
-  } else {
-    // When the motion spec is enabled we...
-    using namespace assistant::util;
-
-    if (is_first_query_) {
-      // ...hide the greeting label (for the first query)...
-      greeting_label_->layer()->GetAnimator()->StartAnimation(
-          CreateLayerAnimationSequence(
-              CreateOpacityElement(0.f, kGreetingAnimationFadeOutDuration)));
-    }
-
-    // ...and always show the progress indicator.
-    progress_indicator_->layer()->GetAnimator()->StartAnimation(
-        CreateLayerAnimationSequence(
-            // Delay...
-            ui::LayerAnimationElement::CreatePauseElement(
-                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                kProgressAnimationFadeInDelay),
-            // ...then fade in.
-            CreateOpacityElement(1.f, kProgressAnimationFadeInDuration)));
-
-    // After the first query, the progress indicator should be left aligned.
-    if (!is_first_query_) {
-      const int overlay_width = overlay_layout_container_->width();
-      const int indicator_width = progress_indicator_->width();
-      const int translation = -(overlay_width - indicator_width) / 2 +
-                              kProgressIndicatorMarginLeftDip;
-
-      gfx::Transform transform;
-      transform.Translate(translation, 0);
-
-      progress_indicator_->layer()->SetTransform(transform);
-    }
   }
 
   is_first_query_ = false;
@@ -381,15 +362,13 @@ void AssistantMainStage::OnCommittedQueryChanged(const AssistantQuery& query) {
 
   // Update the view.
   committed_query_view_->SetQuery(query);
-
-  // When the motion spec is disabled, we will immediately activate the
-  // committed query to prevent deviation from current UI behavior. When the
-  // motion spec is enabled, we activate the query upon receipt of the response.
-  if (!assistant::ui::kIsMotionSpecEnabled)
-    OnActivateQuery();
 }
 
 void AssistantMainStage::OnActivateQuery() {
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  using assistant::util::CreateTransformElement;
+
   // Clear the previously active query.
   OnActiveQueryCleared();
 
@@ -397,34 +376,28 @@ void AssistantMainStage::OnActivateQuery() {
   committed_query_view_ = nullptr;
 
   // Upon response delivery, we consider a query active. The view for the query
-  // should move from the bottom of its parent to the top. This transition is
-  // animated when the motion spec is enabled.
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    active_query_view_->layer()->SetTransform(gfx::Transform());
-  } else {
-    using namespace assistant::util;
-    active_query_view_->layer()->GetAnimator()->StartTogether(
-        {// Animate transformation.
-         CreateLayerAnimationSequence(
-             // Pause...
-             ui::LayerAnimationElement::CreatePauseElement(
-                 ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
-                 kAnimationTranslateUpDelay),
-             // ...then translate up to top of parent.
-             CreateTransformElement(gfx::Transform(),
-                                    kAnimationTranslateUpDuration,
-                                    gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
-         // Animate opacity.
-         CreateLayerAnimationSequence(
-             // Fade out to 0%...
-             CreateOpacityElement(0.f, kAnimationFadeOutDuration),
-             // ...then pause...
-             ui::LayerAnimationElement::CreatePauseElement(
-                 ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                 kAnimationFadeInDelay),
-             // ...then fade in to 100%.
-             CreateOpacityElement(1.f, kAnimationFadeInDuration))});
-  }
+  // should animate from the bottom of its parent to the top.
+  active_query_view_->layer()->GetAnimator()->StartTogether(
+      {// Animate transformation.
+       CreateLayerAnimationSequence(
+           // Pause...
+           ui::LayerAnimationElement::CreatePauseElement(
+               ui::LayerAnimationElement::AnimatableProperty::TRANSFORM,
+               kAnimationTranslateUpDelay),
+           // ...then translate up to top of parent.
+           CreateTransformElement(gfx::Transform(),
+                                  kAnimationTranslateUpDuration,
+                                  gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+       // Animate opacity.
+       CreateLayerAnimationSequence(
+           // Fade out to 0%...
+           CreateOpacityElement(0.f, kAnimationFadeOutDuration),
+           // ...then pause...
+           ui::LayerAnimationElement::CreatePauseElement(
+               ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+               kAnimationFadeInDelay),
+           // ...then fade in to 100%.
+           CreateOpacityElement(1.f, kAnimationFadeInDuration))});
 
   UpdateTopPadding();
   UpdateFooter();
@@ -434,13 +407,10 @@ void AssistantMainStage::OnActiveQueryCleared() {
   if (!active_query_view_)
     return;
 
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    delete active_query_view_;
-    active_query_view_ = nullptr;
-    return;
-  }
-
-  using namespace assistant::util;
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  using assistant::util::CreateTransformElement;
+  using assistant::util::StartLayerAnimationSequencesTogether;
 
   // The active query view will translate off stage.
   gfx::Transform transform;
@@ -488,6 +458,9 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
   }
 
   if (!pending_query_view_) {
+    using assistant::util::CreateLayerAnimationSequence;
+    using assistant::util::CreateOpacityElement;
+
     pending_query_view_ = new AssistantQueryView();
     pending_query_view_->AddObserver(this);
 
@@ -497,17 +470,13 @@ void AssistantMainStage::OnPendingQueryChanged(const AssistantQuery& query) {
 
     query_layout_container_->AddChildView(pending_query_view_);
 
-    if (assistant::ui::kIsMotionSpecEnabled) {
-      using namespace assistant::util;
+    // Starting from 0% opacity...
+    pending_query_view_->layer()->SetOpacity(0.f);
 
-      // Starting from 0% opacity...
-      pending_query_view_->layer()->SetOpacity(0.f);
-
-      // ...animate the pending query view to 100% opacity.
-      pending_query_view_->layer()->GetAnimator()->StartAnimation(
-          CreateLayerAnimationSequence(
-              CreateOpacityElement(1.f, kPendingQueryAnimationFadeInDuration)));
-    }
+    // ...animate the pending query view to 100% opacity.
+    pending_query_view_->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            CreateOpacityElement(1.f, kPendingQueryAnimationFadeInDuration)));
 
     UpdateFooter();
   }
@@ -529,63 +498,58 @@ void AssistantMainStage::OnPendingQueryCleared() {
 }
 
 void AssistantMainStage::OnResponseChanged(const AssistantResponse& response) {
-  // When the response changes, we hide the progress indicator.
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    progress_indicator_->layer()->SetOpacity(0.f);
-    return;
-  }
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
 
   // Animate the progress indicator to 0% opacity.
-  using namespace assistant::util;
   progress_indicator_->layer()->GetAnimator()->StartAnimation(
       CreateLayerAnimationSequence(
           CreateOpacityElement(0.f, kProgressAnimationFadeOutDuration)));
 
-  // If the motion spec is enabled, we only consider the query active once
-  // the response has been received. When the motion spec is disabled, we
-  // immediately activate the query as it is committed.
+  // We only consider the query active once the response has been received.
   OnActivateQuery();
 }
 
 void AssistantMainStage::OnUiVisibilityChanged(bool visible,
                                                AssistantSource source) {
   if (visible) {
-    // When Assistant UI is shown and the motion spec is enabled, we animate in
-    // the appearance of the greeting label and footer.
-    if (assistant::ui::kIsMotionSpecEnabled) {
-      using namespace assistant::util;
+    // When Assistant UI is shown, we animate in the appearance of the greeting
+    // label and footer.
+    using assistant::util::CreateLayerAnimationSequence;
+    using assistant::util::CreateOpacityElement;
+    using assistant::util::CreateTransformElement;
 
-      // We're going to animate the greeting label up into position so we'll
-      // need to apply an initial transformation.
-      gfx::Transform transform;
-      transform.Translate(0, kGreetingAnimationTranslationDip);
+    // We're going to animate the greeting label up into position so we'll
+    // need to apply an initial transformation.
+    gfx::Transform transform;
+    transform.Translate(0, kGreetingAnimationTranslationDip);
 
-      // Set up our pre-animation values.
-      greeting_label_->layer()->SetOpacity(0.f);
-      greeting_label_->layer()->SetTransform(transform);
+    // Set up our pre-animation values.
+    greeting_label_->layer()->SetOpacity(0.f);
+    greeting_label_->layer()->SetTransform(transform);
 
-      // Start animating greeting label.
-      greeting_label_->layer()->GetAnimator()->StartTogether(
-          {// Animate the transformation.
-           CreateLayerAnimationSequence(CreateTransformElement(
-               gfx::Transform(), kGreetingAnimationTranslateUpDuration,
-               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
-           // Animate the opacity to 100% with delay.
-           CreateLayerAnimationSequence(
-               ui::LayerAnimationElement::CreatePauseElement(
-                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                   kGreetingAnimationFadeInDelay),
-               CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
+    // Start animating greeting label.
+    greeting_label_->layer()->GetAnimator()->StartTogether(
+        {// Animate the transformation.
+         CreateLayerAnimationSequence(CreateTransformElement(
+             gfx::Transform(), kGreetingAnimationTranslateUpDuration,
+             gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+         // Animate the opacity to 100% with delay.
+         CreateLayerAnimationSequence(
+             ui::LayerAnimationElement::CreatePauseElement(
+                 ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                 kGreetingAnimationFadeInDelay),
+             CreateOpacityElement(1.f, kGreetingAnimationFadeInDuration))});
 
-      // Animate the footer from 0% to 100% opacity with delay.
-      footer_->layer()->SetOpacity(0.f);
-      footer_->layer()->GetAnimator()->StartAnimation(
-          CreateLayerAnimationSequence(
-              ui::LayerAnimationElement::CreatePauseElement(
-                  ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                  kFooterEntryAnimationFadeInDelay),
-              CreateOpacityElement(1.f, kFooterEntryAnimationFadeInDuration)));
-    }
+    // Animate the footer from 0% to 100% opacity with delay.
+    footer_->layer()->SetOpacity(0.f);
+    footer_->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            ui::LayerAnimationElement::CreatePauseElement(
+                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                kFooterEntryAnimationFadeInDelay),
+            CreateOpacityElement(1.f, kFooterEntryAnimationFadeInDuration)));
+
     return;
   }
 
@@ -651,17 +615,15 @@ void AssistantMainStage::UpdateQueryViewTransform(views::View* query_view) {
 }
 
 void AssistantMainStage::UpdateFooter() {
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  using assistant::util::CreateTransformElement;
+  using assistant::util::StartLayerAnimationSequence;
+  using assistant::util::StartLayerAnimationSequencesTogether;
+
   // The footer is only visible when the committed/pending query views are not.
   // When it is not visible, it should not process events.
   bool visible = !committed_query_view_ && !pending_query_view_;
-
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    footer_->layer()->SetOpacity(visible ? 1.f : 0.f);
-    footer_->set_can_process_events_within_subtree(visible ? true : false);
-    return;
-  }
-
-  using namespace assistant::util;
 
   if (visible) {
     // The footer will animate up into position so we need to set an initial

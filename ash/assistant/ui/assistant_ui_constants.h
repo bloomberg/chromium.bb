@@ -29,11 +29,6 @@ constexpr SkColor kTextColorSecondary = gfx::kGoogleGrey700;
 namespace assistant {
 namespace ui {
 
-// TODO(dmblack): Remove when enabling. This is used to gate aspects of the
-// motion spec which are being developed in pieces which should be enabled
-// together.
-constexpr bool kIsMotionSpecEnabled = true;
-
 // Returns the default font list for Assistant UI.
 const gfx::FontList& GetDefaultFontList();
 

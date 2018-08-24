@@ -105,6 +105,10 @@ void AssistantFooterView::InitLayout() {
 }
 
 void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  using assistant::util::StartLayerAnimationSequence;
+
   // When the consent state changes, we need to hide/show the appropriate views.
   views::View* hide_view =
       completed ? static_cast<views::View*>(opt_in_view_)
@@ -113,19 +117,6 @@ void AssistantFooterView::OnVoiceInteractionSetupCompleted(bool completed) {
   views::View* show_view =
       completed ? static_cast<views::View*>(suggestion_container_)
                 : static_cast<views::View*>(opt_in_view_);
-
-  // When the motion spec is disabled, we don't animate the transition.
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    OnAnimationStarted(*animation_observer_);
-
-    hide_view->layer()->SetOpacity(0.f);
-    show_view->layer()->SetOpacity(1.f);
-
-    OnAnimationEnded(*animation_observer_);
-    return;
-  }
-
-  using namespace assistant::util;
 
   // Hide the view for the previous consent state by fading to 0% opacity.
   hide_view->layer()->GetAnimator()->StartAnimation(
