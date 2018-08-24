@@ -1525,6 +1525,72 @@ TEST_F(WindowOcclusionTrackerTest, HideTreeBranch) {
   EXPECT_FALSE(delegate_c->is_expecting_call());
 }
 
+// Verify that a window covered by a shaped window isn't considered occluded.
+TEST_F(WindowOcclusionTrackerTest, WindowWithAlphaShape) {
+  // Create 2 superposed tracked windows.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED);
+  delegate_b->set_expectation(Window::OcclusionState::VISIBLE);
+  Window* window_b = CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  // Set a shape for the top window. The window underneath should no longer be
+  // occluded.
+  auto shape = std::make_unique<ui::Layer::ShapeRects>();
+  shape->emplace_back(0, 0, 5, 5);
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
+  window_b->layer()->SetAlphaShape(std::move(shape));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Clear the shape for the top window. The window underneath should be
+  // occluded.
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED);
+  window_b->layer()->SetAlphaShape(nullptr);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
+// Verify that a window covered by a window whose parent has an alpha shape
+// isn't considered occluded.
+TEST_F(WindowOcclusionTrackerTest, WindowWithParentAlphaShape) {
+  // Create a child and parent that cover another window.
+  MockWindowDelegate* delegate_a = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
+  CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 20, 20));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  MockWindowDelegate* delegate_b = new MockWindowDelegate();
+  delegate_b->set_expectation(Window::OcclusionState::VISIBLE);
+  Window* window_b = CreateTrackedWindow(delegate_b, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  MockWindowDelegate* delegate_c = new MockWindowDelegate();
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED);
+  delegate_c->set_expectation(Window::OcclusionState::VISIBLE);
+  CreateTrackedWindow(delegate_c, gfx::Rect(0, 0, 20, 20), window_b);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_c->is_expecting_call());
+
+  // Set a shape for |window_b|. |window_a| and |window_b| should no longer be
+  // occluded.
+  auto shape = std::make_unique<ui::Layer::ShapeRects>();
+  shape->emplace_back(0, 0, 5, 5);
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
+  window_b->layer()->SetAlphaShape(std::move(shape));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  // Clear the shape for |window_b|. |window_a| and |window_b| should be
+  // occluded.
+  delegate_a->set_expectation(Window::OcclusionState::OCCLUDED);
+  window_b->layer()->SetAlphaShape(nullptr);
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+}
+
 namespace {
 
 class WindowDelegateHidingWindow : public MockWindowDelegate {
