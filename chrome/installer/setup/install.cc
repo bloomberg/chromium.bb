@@ -264,27 +264,21 @@ InstallStatus InstallNewVersion(const InstallationState& original_state,
   return INSTALL_FAILED;
 }
 
-std::string GenerateVisualElementsManifest(const base::Version& version,
-                                           bool use_light_assets) {
+std::string GenerateVisualElementsManifest(const base::Version& version) {
   // A printf-style format string for generating the visual elements manifest.
   // Required arguments, in order, are thrice:
   //   - Relative path to the VisualElements directory.
   //   - Logo suffix for the channel.
-  //   - "Light" or "", according to |use_light_assets|.
-  // followed by:
-  //   - Foreground text value (light or dark).
-  //   - Background color.
   static constexpr char kManifestTemplate[] =
       "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
       "  <VisualElements\r\n"
       "      ShowNameOnSquare150x150Logo='on'\r\n"
-      "      Square150x150Logo='%ls\\Logo%ls%ls.png'\r\n"
-      "      Square70x70Logo='%ls\\SmallLogo%ls%ls.png'\r\n"
-      "      Square44x44Logo='%ls\\SmallLogo%ls%ls.png'\r\n"
-      "      ForegroundText='%ls'\r\n"
-      "      BackgroundColor='%ls'/>\r\n"
+      "      Square150x150Logo='%ls\\Logo%ls.png'\r\n"
+      "      Square70x70Logo='%ls\\SmallLogo%ls.png'\r\n"
+      "      Square44x44Logo='%ls\\SmallLogo%ls.png'\r\n"
+      "      ForegroundText='light'\r\n"
+      "      BackgroundColor='#5F6368'/>\r\n"
       "</Application>\r\n";
-  static constexpr wchar_t kLight[] = L"Light";
 
   // Construct the relative path to the versioned VisualElements directory.
   base::string16 elements_dir(base::ASCIIToUTF16(version.GetString()));
@@ -296,57 +290,45 @@ std::string GenerateVisualElementsManifest(const base::Version& version,
   // Fill the manifest with the desired values.
   const base::char16* logo_suffix =
       install_static::InstallDetails::Get().logo_suffix();
-  const wchar_t* const light_suffix = use_light_assets ? kLight : L"";
   base::string16 manifest16(base::StringPrintf(
       manifest_template.c_str(), elements_dir.c_str(), logo_suffix,
-      light_suffix, elements_dir.c_str(), logo_suffix, light_suffix,
-      elements_dir.c_str(), logo_suffix, light_suffix,
-      use_light_assets ? L"dark" : L"light",
-      use_light_assets ? L"#FFFFFF" : L"#5F6368"));
+      elements_dir.c_str(), logo_suffix, elements_dir.c_str(), logo_suffix));
 
   return base::UTF16ToUTF8(manifest16);
 }
 
-enum class VEAssetType {
-  kNone,          // No VisualElements for this install.
-  kDarkOnly,      // No "light" assets that require dark text.
-  kDarkAndLight,  // "light" and "dark" assets are present.
-};
-
-// Returns the type of VisualElements assets present for this brand and mode.
-VEAssetType DetermineVisualElementAssetType(const base::FilePath& base_path,
-                                            const base::Version& version) {
+// Whether VisualElements assets exist for this brand and mode.
+bool HasVisualElementAssets(const base::FilePath& base_path,
+                            const base::Version& version) {
   // There are no assets at all if there's no VisualElements directory.
   base::FilePath visual_elements_dir =
       base_path.AppendASCII(version.GetString()).Append(kVisualElements);
   if (!base::DirectoryExists(visual_elements_dir))
-    return VEAssetType::kNone;
+    return false;
 
-  // Dark assets are unconditionally required.
+// Assets are unconditionally required if there is a VisualElements directory.
+#if DCHECK_IS_ON()
   const wchar_t* const logo_suffix =
       install_static::InstallDetails::Get().logo_suffix();
   DCHECK(base::PathExists(visual_elements_dir.Append(
       base::StringPrintf(L"Logo%ls.png", logo_suffix))));
+#endif
 
-  return VEAssetType::kDarkOnly;
+  return true;
 }
 
 }  // namespace
 
 bool CreateVisualElementsManifest(const base::FilePath& src_path,
-                                  const base::Version& version,
-                                  bool supports_dark_text) {
-  VEAssetType asset_type = DetermineVisualElementAssetType(src_path, version);
-  if (asset_type == VEAssetType::kNone) {
+                                  const base::Version& version) {
+  if (!HasVisualElementAssets(src_path, version)) {
     VLOG(1) << "No visual elements found, not writing "
             << kVisualElementsManifest << " to " << src_path.value();
     return true;
   }
 
-  // Generate the manifest, using "light" assets if and only if the OS supports
-  // drawing dark text.
-  const std::string manifest(GenerateVisualElementsManifest(
-      version, supports_dark_text && asset_type == VEAssetType::kDarkAndLight));
+  // Generate the manifest.
+  const std::string manifest(GenerateVisualElementsManifest(version));
 
   // Write the manifest to |src_path|.
   int size = base::checked_cast<int>(manifest.size());
@@ -359,64 +341,6 @@ bool CreateVisualElementsManifest(const base::FilePath& src_path,
   PLOG(ERROR) << "Error writing " << kVisualElementsManifest << " to "
               << src_path.value();
   return false;
-}
-
-void UpdateVisualElementsManifest(const base::FilePath& target_path,
-                                  const base::Version& version,
-                                  bool supports_dark_text) {
-  VEAssetType asset_type =
-      DetermineVisualElementAssetType(target_path, version);
-  if (asset_type == VEAssetType::kNone) {
-    VLOG(1) << "No visual elements found, not updating "
-            << kVisualElementsManifest << " in " << target_path.value();
-    return;
-  }
-
-  // Generate the manifest, using "light" assets if and only if the OS supports
-  // drawing dark text.
-  const std::string manifest(GenerateVisualElementsManifest(
-      version, supports_dark_text && asset_type == VEAssetType::kDarkAndLight));
-
-  // Load existing manifest.
-  base::FilePath manifest_path(target_path.Append(kVisualElementsManifest));
-  std::string old_manifest;
-
-  // Nothing to do if the manifest hasn't changed.
-  if (base::ReadFileToString(manifest_path, &old_manifest) &&
-      manifest == old_manifest) {
-    VLOG(1) << "No need to update " << kVisualElementsManifest << " in "
-            << target_path.value();
-    return;
-  }
-
-  if (!base::ImportantFileWriter::WriteFileAtomically(manifest_path,
-                                                      manifest)) {
-    PLOG(ERROR) << "Error updating " << kVisualElementsManifest << " in "
-                << target_path.value();
-    return;
-  }
-  VLOG(1) << "Successfully updated " << kVisualElementsManifest << " in "
-          << target_path.value();
-
-  // Touch the shortcut to force the Start Menu to refresh the tile.
-  base::FilePath start_menu_shortcut;
-  base::Time now(base::Time::Now());
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  if (!ShellUtil::GetShortcutPath(
-          ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, dist,
-          install_static::IsSystemInstall() ? ShellUtil::SYSTEM_LEVEL
-                                            : ShellUtil::CURRENT_USER,
-          &start_menu_shortcut)) {
-    LOG(ERROR) << "Failed finding the Start Menu shortcut directory.";
-    return;
-  }
-  start_menu_shortcut =
-      start_menu_shortcut.Append(dist->GetShortcutName() + kLnkExt);
-  if (base::TouchFile(start_menu_shortcut, now, now)) {
-    VLOG(1) << "Successfully touched " << start_menu_shortcut.value();
-  } else {
-    PLOG(ERROR) << "Error touching " << start_menu_shortcut.value();
-  }
 }
 
 void CreateOrUpdateShortcuts(const base::FilePath& target,
@@ -570,8 +494,7 @@ InstallStatus InstallOrUpdateProduct(const InstallationState& original_state,
   // looks as if it had been extracted from the archive when calling
   // InstallNewVersion() below.
   installer_state.SetStage(CREATING_VISUAL_MANIFEST);
-  CreateVisualElementsManifest(src_path, new_version,
-                               OsSupportsDarkTextTiles());
+  CreateVisualElementsManifest(src_path, new_version);
 
   std::unique_ptr<base::Version> existing_version;
   InstallStatus result =
@@ -700,11 +623,6 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
   // Read master_preferences copied beside chrome.exe at install.
   const MasterPreferences prefs(
       installer_state.target_path().AppendASCII(kDefaultMasterPrefs));
-
-  // Update chrome.VisualElementsManifest.xml in case the upgrade was to an OS
-  // version that supports dark text on light backgrounds.
-  UpdateVisualElementsManifest(installer_state.target_path(), installed_version,
-                               OsSupportsDarkTextTiles());
 
   // Update shortcuts at this install level (per-user shortcuts on system-level
   // installs will be updated through Active Setup).

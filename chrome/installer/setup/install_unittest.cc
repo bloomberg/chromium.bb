@@ -48,22 +48,15 @@ namespace {
 // installer::CreateVisualElementsManifest. The parameters are:
 // 0: an index into a brand's install_static::kInstallModes array.
 // 1: the expected manifest.
-// 2: true to test for OS versions that support dark text on light images.
-// 3: true to test brands that include light assets.
 class CreateVisualElementsManifestTest
     : public ::testing::TestWithParam<
-          std::tuple<install_static::InstallConstantIndex,
-                     const char*,
-                     bool,
-                     bool>> {
+          std::tuple<install_static::InstallConstantIndex, const char*>> {
  protected:
   CreateVisualElementsManifestTest()
       : scoped_install_details_(false /* !system_level */,
                                 std::get<0>(GetParam())),
         start_menu_override_(base::DIR_START_MENU),
         expected_manifest_(std::get<1>(GetParam())),
-        supports_dark_text_(std::get<2>(GetParam())),
-        has_light_assets_(std::get<3>(GetParam())),
         version_("0.0.0.0") {}
 
   void SetUp() override {
@@ -104,13 +97,6 @@ class CreateVisualElementsManifestTest
         L"Logo%ls.png", install_static::InstallDetails::Get().logo_suffix());
     ASSERT_NO_FATAL_FAILURE(
         CreateTestFile(visual_elements_dir.Append(light_logo_file_name)));
-    if (has_light_assets_) {
-      base::string16 light_logo_file_name = base::StringPrintf(
-          L"Logo%lsLight.png",
-          install_static::InstallDetails::Get().logo_suffix());
-      ASSERT_NO_FATAL_FAILURE(
-          CreateTestFile(visual_elements_dir.Append(light_logo_file_name)));
-    }
   }
 
   // Creates a bogus file at the location of the start menu shortcut.
@@ -126,12 +112,6 @@ class CreateVisualElementsManifestTest
 
   // The expected contents of the manifest.
   const char* const expected_manifest_;
-
-  // True to generate the manifest for systems that support dark text.
-  const bool supports_dark_text_;
-
-  // True to test for brands that include light assets.
-  const bool has_light_assets_;
 
   // A dummy version number used to create the version directory.
   const base::Version version_;
@@ -163,17 +143,6 @@ constexpr char kExpectedPrimaryManifest[] =
     "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
-constexpr char kExpectedPrimaryLightManifest[] =
-    "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
-    "  <VisualElements\r\n"
-    "      ShowNameOnSquare150x150Logo='on'\r\n"
-    "      Square150x150Logo='0.0.0.0\\VisualElements\\Logo.png'\r\n"
-    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
-    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogo.png'\r\n"
-    "      ForegroundText='light'\r\n"
-    "      BackgroundColor='#5F6368'/>\r\n"
-    "</Application>\r\n";
-
 #if defined(GOOGLE_CHROME_BUILD)
 constexpr char kExpectedBetaManifest[] =
     "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
@@ -186,31 +155,7 @@ constexpr char kExpectedBetaManifest[] =
     "      BackgroundColor='#5F6368'/>\r\n"
     "</Application>\r\n";
 
-constexpr char kExpectedBetaLightManifest[] =
-    "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
-    "  <VisualElements\r\n"
-    "      ShowNameOnSquare150x150Logo='on'\r\n"
-    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoBeta.png'\r\n"
-    "      "
-    "Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
-    "      "
-    "Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoBeta.png'\r\n"
-    "      ForegroundText='light'\r\n"
-    "      BackgroundColor='#5F6368'/>\r\n"
-    "</Application>\r\n";
-
 constexpr char kExpectedDevManifest[] =
-    "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
-    "  <VisualElements\r\n"
-    "      ShowNameOnSquare150x150Logo='on'\r\n"
-    "      Square150x150Logo='0.0.0.0\\VisualElements\\LogoDev.png'\r\n"
-    "      Square70x70Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
-    "      Square44x44Logo='0.0.0.0\\VisualElements\\SmallLogoDev.png'\r\n"
-    "      ForegroundText='light'\r\n"
-    "      BackgroundColor='#5F6368'/>\r\n"
-    "</Application>\r\n";
-
-constexpr char kExpectedDevLightManifest[] =
     "<Application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>\r\n"
     "  <VisualElements\r\n"
     "      ShowNameOnSquare150x150Logo='on'\r\n"
@@ -236,94 +181,28 @@ INSTANTIATE_TEST_CASE_P(
     GoogleChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::STABLE_INDEX),
-                     testing::Values(kExpectedPrimaryManifest),
-                     testing::Bool(),
-                     testing::Values(false)));
-INSTANTIATE_TEST_CASE_P(
-    GoogleChromeLightAssetNoSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::STABLE_INDEX),
-                     testing::Values(kExpectedPrimaryManifest),
-                     testing::Values(false),
-                     testing::Values(true)));
-INSTANTIATE_TEST_CASE_P(
-    GoogleChromeLightAssetWithSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::STABLE_INDEX),
-                     testing::Values(kExpectedPrimaryLightManifest),
-                     testing::Values(true),
-                     testing::Values(true)));
+                     testing::Values(kExpectedPrimaryManifest)));
 INSTANTIATE_TEST_CASE_P(
     BetaChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::BETA_INDEX),
-                     testing::Values(kExpectedBetaManifest),
-                     testing::Bool(),
-                     testing::Values(false)));
-INSTANTIATE_TEST_CASE_P(
-    BetaChromeLightAssetNoSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::BETA_INDEX),
-                     testing::Values(kExpectedBetaManifest),
-                     testing::Values(false),
-                     testing::Values(true)));
-INSTANTIATE_TEST_CASE_P(
-    BetaChromeLightAssetWithSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::BETA_INDEX),
-                     testing::Values(kExpectedBetaLightManifest),
-                     testing::Values(true),
-                     testing::Values(true)));
+                     testing::Values(kExpectedBetaManifest)));
 INSTANTIATE_TEST_CASE_P(
     DevChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::DEV_INDEX),
-                     testing::Values(kExpectedDevManifest),
-                     testing::Bool(),
-                     testing::Values(false)));
-INSTANTIATE_TEST_CASE_P(
-    DevChromeLightAssetsNoSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::DEV_INDEX),
-                     testing::Values(kExpectedDevManifest),
-                     testing::Values(false),
-                     testing::Values(true)));
-INSTANTIATE_TEST_CASE_P(
-    DevChromeLightAssetsWithSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::DEV_INDEX),
-                     testing::Values(kExpectedDevLightManifest),
-                     testing::Values(true),
-                     testing::Values(true)));
+                     testing::Values(kExpectedDevManifest)));
 INSTANTIATE_TEST_CASE_P(
     CanaryChrome,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::CANARY_INDEX),
-                     testing::Values(kExpectedCanaryManifest),
-                     testing::Bool(),
-                     testing::Values(false)));
+                     testing::Values(kExpectedCanaryManifest)));
 #else
 INSTANTIATE_TEST_CASE_P(
     Chromium,
     CreateVisualElementsManifestTest,
     testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),
-                     testing::Values(kExpectedPrimaryManifest),
-                     testing::Bool(),
-                     testing::Values(false)));
-INSTANTIATE_TEST_CASE_P(
-    ChromiumLightAssetNoSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),
-                     testing::Values(kExpectedPrimaryManifest),
-                     testing::Values(false),
-                     testing::Values(true)));
-INSTANTIATE_TEST_CASE_P(
-    ChromiumLightAssetWithSupport,
-    CreateVisualElementsManifestTest,
-    testing::Combine(testing::Values(install_static::CHROMIUM_INDEX),
-                     testing::Values(kExpectedPrimaryLightManifest),
-                     testing::Values(true),
-                     testing::Values(true)));
+                     testing::Values(kExpectedPrimaryManifest)));
 #endif
 
 class InstallShortcutTest : public testing::Test {
@@ -461,8 +340,8 @@ class InstallShortcutTest : public testing::Test {
 // Test that VisualElementsManifest.xml is not created when VisualElements are
 // not present.
 TEST_P(CreateVisualElementsManifestTest, VisualElementsManifestNotCreated) {
-  ASSERT_TRUE(installer::CreateVisualElementsManifest(
-      test_dir_.GetPath(), version_, supports_dark_text_));
+  ASSERT_TRUE(
+      installer::CreateVisualElementsManifest(test_dir_.GetPath(), version_));
   ASSERT_FALSE(base::PathExists(manifest_path_));
 }
 
@@ -470,80 +349,14 @@ TEST_P(CreateVisualElementsManifestTest, VisualElementsManifestNotCreated) {
 // VisualElements are present.
 TEST_P(CreateVisualElementsManifestTest, VisualElementsManifestCreated) {
   ASSERT_NO_FATAL_FAILURE(PrepareTestVisualElementsDirectory());
-  ASSERT_TRUE(installer::CreateVisualElementsManifest(
-      test_dir_.GetPath(), version_, supports_dark_text_));
+  ASSERT_TRUE(
+      installer::CreateVisualElementsManifest(test_dir_.GetPath(), version_));
   ASSERT_TRUE(base::PathExists(manifest_path_));
 
   std::string read_manifest;
   ASSERT_TRUE(base::ReadFileToString(manifest_path_, &read_manifest));
 
   ASSERT_STREQ(expected_manifest_, read_manifest.c_str());
-}
-
-// Test that the VisualElementsManifest is not modified when not needed.
-TEST_P(CreateVisualElementsManifestTest, UpdateVisualElementsNoChange) {
-  // Put the correct manifest into place.
-  const int expected_manifest_length =
-      static_cast<int>(strlen(expected_manifest_));
-  ASSERT_NO_FATAL_FAILURE(PrepareTestVisualElementsDirectory());
-  ASSERT_EQ(expected_manifest_length,
-            base::WriteFile(manifest_path_, expected_manifest_,
-                            expected_manifest_length));
-
-  // Create a bogus start menu shortcut.
-  ASSERT_NO_FATAL_FAILURE(CreateStartMenuShortcut());
-
-  // Push those files back in time to avoid flakes in case the test is so fast
-  // that the times aren't modified when the files are touched/rewritten.
-  base::Time the_past = base::Time::Now() - base::TimeDelta::FromSeconds(5);
-  FILETIME creation_time = the_past.ToFileTime();
-  FILETIME last_access_time = the_past.ToFileTime();
-  FILETIME last_write_time = the_past.ToFileTime();
-  ASSERT_TRUE(::SetFileTime(
-      base::File(manifest_path_,
-                 base::File::FLAG_OPEN | base::File::FLAG_WRITE_ATTRIBUTES)
-          .GetPlatformFile(),
-      &creation_time, &last_access_time, &last_write_time));
-  ASSERT_TRUE(::SetFileTime(
-      base::File(start_menu_shortcut_path_,
-                 base::File::FLAG_OPEN | base::File::FLAG_WRITE_ATTRIBUTES)
-          .GetPlatformFile(),
-      &creation_time, &last_access_time, &last_write_time));
-
-  // Get the filetimes.
-  base::File::Info manifest_info_before = {};
-  ASSERT_TRUE(base::GetFileInfo(manifest_path_, &manifest_info_before));
-  base::File::Info shortcut_info_before = {};
-  ASSERT_TRUE(
-      base::GetFileInfo(start_menu_shortcut_path_, &shortcut_info_before));
-
-  // Perform a no-op update.
-  installer::UpdateVisualElementsManifest(test_dir_.GetPath(), version_,
-                                          supports_dark_text_);
-
-  // Make sure neither file was modified.
-  base::File::Info manifest_info_after = {};
-  ASSERT_TRUE(base::GetFileInfo(manifest_path_, &manifest_info_after));
-  EXPECT_EQ(manifest_info_before.last_modified,
-            manifest_info_after.last_modified);
-  base::File::Info shortcut_info_after = {};
-  ASSERT_TRUE(
-      base::GetFileInfo(start_menu_shortcut_path_, &shortcut_info_after));
-  EXPECT_EQ(shortcut_info_before.last_modified,
-            shortcut_info_after.last_modified);
-
-  // Perform an update where OS support flips.
-  installer::UpdateVisualElementsManifest(test_dir_.GetPath(), version_,
-                                          !supports_dark_text_);
-
-  // The file should remain using the dark assets.
-  ASSERT_TRUE(base::GetFileInfo(manifest_path_, &manifest_info_after));
-  EXPECT_EQ(manifest_info_before.last_modified,
-            manifest_info_after.last_modified);
-  ASSERT_TRUE(
-      base::GetFileInfo(start_menu_shortcut_path_, &shortcut_info_after));
-  EXPECT_EQ(shortcut_info_before.last_modified,
-            shortcut_info_after.last_modified);
 }
 
 TEST_F(InstallShortcutTest, CreateAllShortcuts) {
