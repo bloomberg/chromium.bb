@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -25,9 +26,11 @@
 #include "ash/wm/workspace/two_step_edge_cycler.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/user_metrics.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/display.h"
@@ -69,8 +72,11 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
       !window_state->IsPip()) {
     // We still don't allow any dragging or resizing happening on the area other
     // then caption area.
-    if (window_component != HTCAPTION)
+    if (window_component != HTCAPTION ||
+        window->GetProperty(aura::client::kAppType) !=
+            static_cast<int>(AppType::BROWSER)) {
       return nullptr;
+    }
 
     window_state->CreateDragDetails(point_in_parent, window_component, source);
     window_resizer =

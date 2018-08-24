@@ -156,7 +156,7 @@ class SplitViewControllerTest : public AshTestBase {
 
   int divider_position() { return split_view_controller()->divider_position(); }
 
- private:
+ protected:
   class SplitViewTestWindowDelegate : public aura::test::TestWindowDelegate {
    public:
     SplitViewTestWindowDelegate() = default;
@@ -167,6 +167,7 @@ class SplitViewControllerTest : public AshTestBase {
     void OnWindowDestroyed(aura::Window* window) override { delete this; }
   };
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SplitViewControllerTest);
 };
 
@@ -1606,6 +1607,16 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
   ~SplitViewTabDraggingTest() override = default;
 
  protected:
+  aura::Window* CreateBrowserTypeWindow(
+      const gfx::Rect& bounds,
+      aura::client::WindowType type = aura::client::WINDOW_TYPE_NORMAL) {
+    aura::Window* window = CreateTestWindowInShellWithDelegateAndType(
+        new SplitViewTestWindowDelegate, type, -1, bounds);
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(AppType::BROWSER));
+    return window;
+  }
+
   // Starts tab dragging on |dragged_window|. |source_window| indicates which
   // window the drag originates from. Returns the newly created WindowResizer
   // for the |dragged_window|.
@@ -1701,11 +1712,28 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
   DISALLOW_COPY_AND_ASSIGN(SplitViewTabDraggingTest);
 };
 
+// Test that in tablet mode, we only allow dragging on browser window's caption
+// area.
+TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnBrowserWindow) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  std::unique_ptr<WindowResizer> resizer =
+      CreateResizerForTest(window1.get(), gfx::Point(), HTCAPTION);
+  EXPECT_TRUE(resizer.get());
+  resizer->CompleteDrag();
+  resizer.reset();
+
+  resizer = CreateResizerForTest(window2.get(), gfx::Point(), HTCAPTION);
+  EXPECT_FALSE(resizer.get());
+}
+
 // Test that in tablet mode, we only allow dragging that happens on window
 // caption area.
 TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionArea) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window(CreateBrowserTypeWindow(bounds));
 
   // Only dragging on HTCAPTION area is allowed.
   std::unique_ptr<WindowResizer> resizer =
@@ -1737,7 +1765,7 @@ TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionArea) {
 // cursor should be properly locked.
 TEST_F(SplitViewTabDraggingTest, LockCursor) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window(CreateBrowserTypeWindow(bounds));
   SetIsInTabDragging(window.get(), /*is_dragging=*/true);
   EXPECT_FALSE(Shell::Get()->cursor_manager()->IsCursorLocked());
 
@@ -1755,7 +1783,7 @@ TEST_F(SplitViewTabDraggingTest, LockCursor) {
 // backdrop is disabled during dragging process.
 TEST_F(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window(CreateBrowserTypeWindow(bounds));
   EXPECT_EQ(window->GetProperty(kBackdropWindowMode),
             BackdropWindowMode::kAuto);
 
@@ -1778,8 +1806,8 @@ TEST_F(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
 // not be shown in overview mode.
 TEST_F(SplitViewTabDraggingTest, DoNotShowDraggedWindowInOverview) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
 
   Shell::Get()->window_selector_controller()->ToggleOverview();
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
@@ -1808,8 +1836,8 @@ TEST_F(SplitViewTabDraggingTest, DoNotShowDraggedWindowInOverview) {
 // below the current dragged window.
 TEST_F(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
 
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
@@ -1835,8 +1863,8 @@ TEST_F(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
 TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
   wm::GetWindowState(window1.get())->Maximize();
   wm::GetWindowState(window2.get())->Maximize();
   EXPECT_TRUE(wm::GetWindowState(window1.get())->IsMaximized());
@@ -1960,9 +1988,9 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
 TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateBrowserTypeWindow(bounds));
 
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
@@ -2036,7 +2064,7 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
   EXPECT_TRUE(Shell::Get()->window_selector_controller()->IsSelecting());
 
   // Recreate |window1| and snap it to test the following senarioes.
-  window1.reset(CreateWindow(bounds));
+  window1.reset(CreateBrowserTypeWindow(bounds));
   split_view_controller()->SnapWindow(window1.get(),
                                       SplitViewController::RIGHT);
   EXPECT_EQ(split_view_controller()->state(),
@@ -2105,9 +2133,9 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
 TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateBrowserTypeWindow(bounds));
 
   // Prepare the testing senario:
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
@@ -2226,9 +2254,9 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
 // the drag ends.
 TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateBrowserTypeWindow(bounds));
 
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller()->SnapWindow(window2.get(),
@@ -2284,9 +2312,9 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
 // should not do animation when exiting overview.
 TEST_F(SplitViewTabDraggingTest, OverviewExitAnimationTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateBrowserTypeWindow(bounds));
   std::unique_ptr<OverviewStatesObserver> overview_observer =
       std::make_unique<OverviewStatesObserver>(window1->GetRootWindow());
 
@@ -2342,7 +2370,7 @@ TEST_F(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
             OrientationLockType::kLandscapePrimary);
 
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window(CreateBrowserTypeWindow(bounds));
   wm::GetWindowState(window.get())->Maximize();
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
   std::unique_ptr<WindowResizer> resizer =
@@ -2375,9 +2403,9 @@ TEST_F(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
 // should be adjusted accordingly.
 TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateBrowserTypeWindow(bounds));
 
   WindowSelectorController* selector_controller =
       Shell::Get()->window_selector_controller();
@@ -2476,7 +2504,7 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
 // the new selector item to add into overview.
 TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
   const gfx::Rect tablet_mode_bounds = window1->bounds();
   EXPECT_NE(bounds, tablet_mode_bounds);
 
@@ -2518,8 +2546,8 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
 // dragging.
 TEST_F(SplitViewTabDraggingTest, DraggedWindowShouldHaveActiveWindowShadow) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
   wm::ActivateWindow(window1.get());
   wm::ActivateWindow(window2.get());
   window1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
@@ -2560,10 +2588,10 @@ TEST_F(SplitViewTabDraggingTest, DraggedWindowShouldHaveActiveWindowShadow) {
 // visibility should change accordingly.
 TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window1(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateBrowserTypeWindow(bounds));
+  std::unique_ptr<aura::Window> window4(CreateBrowserTypeWindow(bounds));
   EXPECT_TRUE(window1->IsVisible());
   EXPECT_TRUE(window2->IsVisible());
   EXPECT_TRUE(window3->IsVisible());
