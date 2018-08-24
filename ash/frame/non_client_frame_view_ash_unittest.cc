@@ -903,6 +903,19 @@ TEST_P(NonClientFrameViewAshFrameColorTest, kFrameActiveColorKey) {
   EXPECT_EQ(active_color, new_color);
   EXPECT_EQ(new_color,
             delegate->non_client_frame_view()->GetActiveFrameColorForTest());
+
+  // Test that changing the property updates the caption button images.
+  FrameCaptionButtonContainerView::TestApi test_api(
+      delegate->non_client_frame_view()
+          ->GetHeaderView()
+          ->caption_button_container());
+  ui::DrawWaiterForTest::WaitForCommit(widget->GetLayer()->GetCompositor());
+  gfx::ImageSkia original_icon_image = test_api.size_button()->icon_image();
+  widget->GetNativeWindow()->SetProperty(ash::kFrameActiveColorKey,
+                                         SK_ColorBLACK);
+  ui::DrawWaiterForTest::WaitForCommit(widget->GetLayer()->GetCompositor());
+  EXPECT_FALSE(original_icon_image.BackedBySameObjectAs(
+      test_api.size_button()->icon_image()));
 }
 
 // Verify that NonClientFrameViewAsh updates the inactive color based on the

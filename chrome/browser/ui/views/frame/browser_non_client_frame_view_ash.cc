@@ -1026,6 +1026,13 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
     window->SetProperty(ash::kFrameActiveColorKey, *active_color);
     window->SetProperty(ash::kFrameInactiveColorKey,
                         inactive_color.value_or(*active_color));
+    if (!IsMash()) {
+      // In Mash, HeaderView takes care of this by listening for the property
+      // change.
+      frame_header_->SetFrameColors(
+          window->GetProperty(ash::kFrameActiveColorKey),
+          window->GetProperty(ash::kFrameInactiveColorKey));
+    }
   } else {
     window->ClearProperty(ash::kFrameActiveColorKey);
     window->ClearProperty(ash::kFrameInactiveColorKey);
