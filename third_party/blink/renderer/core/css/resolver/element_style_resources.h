@@ -42,7 +42,7 @@ class CSSImageValue;
 class CSSURIValue;
 class CSSValue;
 class ComputedStyle;
-class Document;
+class Element;
 class SVGResource;
 class StyleImage;
 class StylePendingImage;
@@ -54,7 +54,7 @@ class ElementStyleResources {
   STACK_ALLOCATED();
 
  public:
-  ElementStyleResources(Document&, float device_scale_factor);
+  ElementStyleResources(Element&, float device_scale_factor);
 
   StyleImage* GetStyleImage(CSSPropertyID, const CSSValue&);
   StyleImage* CachedOrPendingFromValue(CSSPropertyID, const CSSImageValue&);
@@ -81,7 +81,7 @@ class ElementStyleResources {
       FetchParameters::ImageRequestOptimization,
       CrossOriginAttributeValue = kCrossOriginAttributeNotSet);
 
-  Member<Document> document_;
+  Member<Element> element_;
   HashSet<CSSPropertyID> pending_image_properties_;
   float device_scale_factor_;
   DISALLOW_COPY_AND_ASSIGN(ElementStyleResources);

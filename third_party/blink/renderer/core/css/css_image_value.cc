@@ -78,8 +78,9 @@ StyleImage* CSSImageValue::CacheImage(
         document.GetFrame()->IsClientLoFiAllowed(params.GetResourceRequest())) {
       params.SetClientLoFiPlaceholder();
     }
-
-    cached_image_ = StyleFetchedImage::Create(document, params);
+    cached_image_ = StyleFetchedImage::Create(
+        document, params,
+        image_request_optimization == FetchParameters::kDeferImageLoad);
   }
 
   return cached_image_.Get();

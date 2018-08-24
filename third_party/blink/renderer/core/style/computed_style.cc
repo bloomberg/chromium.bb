@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/style/quotes_data.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
+#include "third_party/blink/renderer/core/style/style_fetched_image.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
@@ -1017,6 +1018,18 @@ InterpolationQuality ComputedStyle::GetInterpolationQuality() const {
     return kInterpolationLow;
 
   return kInterpolationDefault;
+}
+
+void ComputedStyle::LoadDeferredImages(Document& document) const {
+  if (HasBackgroundImage()) {
+    for (const FillLayer* background_layer = &BackgroundLayers();
+         background_layer; background_layer = background_layer->Next()) {
+      if (StyleImage* image = background_layer->GetImage()) {
+        if (image->IsImageResource() && image->IsLazyloadPossiblyDeferred())
+          ToStyleFetchedImage(image)->LoadDeferredImage(document);
+      }
+    }
+  }
 }
 
 void ComputedStyle::ApplyTransform(

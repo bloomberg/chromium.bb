@@ -60,6 +60,9 @@ class PLATFORM_EXPORT FetchParameters {
   enum ImageRequestOptimization {
     kNone = 0,          // No optimization.
     kAllowPlaceholder,  // The image is allowed to be a placeholder.
+    kDeferImageLoad,  // Defer loading the image from network. Full image might
+                      // still load if the request is already-loaded or in
+                      // memory cache.
   };
   struct ResourceWidth {
     DISALLOW_NEW();
@@ -178,7 +181,7 @@ class PLATFORM_EXPORT FetchParameters {
   // Configures the request to load an image placeholder if the request is
   // eligible (e.g. the url's protocol is HTTP, etc.). If this request is
   // non-eligible, this method doesn't modify the ResourceRequest. Calling this
-  // method sets placeholder_image_request_type_ to the appropriate value.
+  // method sets image_request_optimization_ to the appropriate value.
   void SetAllowImagePlaceholder();
 
   // Configures the request to load an image as a placeholder and sets the

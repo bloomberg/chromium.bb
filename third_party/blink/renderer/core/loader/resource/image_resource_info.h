@@ -58,6 +58,8 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
       const KURL&,
       const AtomicString& initiator_name) = 0;
 
+  virtual void LoadDeferredImage(ResourceFetcher* fetcher) = 0;
+
   void Trace(blink::Visitor* visitor) override {}
 };
 

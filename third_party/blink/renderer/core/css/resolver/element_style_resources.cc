@@ -28,7 +28,10 @@
 #include "third_party/blink/renderer/core/css/css_uri_value.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
@@ -47,9 +50,9 @@
 
 namespace blink {
 
-ElementStyleResources::ElementStyleResources(Document& document,
+ElementStyleResources::ElementStyleResources(Element& element,
                                              float device_scale_factor)
-    : document_(&document), device_scale_factor_(device_scale_factor) {}
+    : element_(&element), device_scale_factor_(device_scale_factor) {}
 
 StyleImage* ElementStyleResources::GetStyleImage(CSSPropertyID property,
                                                  const CSSValue& value) {
@@ -93,7 +96,7 @@ StyleImage* ElementStyleResources::CachedOrPendingFromValue(
     pending_image_properties_.insert(property);
     return StylePendingImage::Create(value);
   }
-  value.RestoreCachedResourceIfNeeded(*document_);
+  value.RestoreCachedResourceIfNeeded(element_->GetDocument());
   return value.CachedImage();
 }
 
@@ -101,7 +104,7 @@ SVGResource* ElementStyleResources::GetSVGResourceFromValue(
     TreeScope& tree_scope,
     const CSSURIValue& value,
     AllowExternal allow_external) const {
-  if (value.IsLocal(*document_)) {
+  if (value.IsLocal(element_->GetDocument())) {
     SVGTreeScopeResources& tree_scope_resources =
         tree_scope.EnsureSVGTreeScopedResources();
     AtomicString decoded_fragment(
@@ -125,7 +128,7 @@ void ElementStyleResources::LoadPendingSVGResources(
     ReferenceFilterOperation& reference_operation =
         ToReferenceFilterOperation(*filter_operation);
     if (SVGResource* resource = reference_operation.Resource())
-      resource->Load(*document_);
+      resource->Load(element_->GetDocument());
   }
 }
 
@@ -145,8 +148,8 @@ StyleImage* ElementStyleResources::LoadPendingImage(
     FetchParameters::ImageRequestOptimization image_request_optimization,
     CrossOriginAttributeValue cross_origin) {
   if (CSSImageValue* image_value = pending_image->CssImageValue()) {
-    return image_value->CacheImage(*document_, image_request_optimization,
-                                   cross_origin);
+    return image_value->CacheImage(element_->GetDocument(),
+                                   image_request_optimization, cross_origin);
   }
 
   if (CSSPaintValue* paint_value = pending_image->CssPaintValue()) {
@@ -157,14 +160,14 @@ StyleImage* ElementStyleResources::LoadPendingImage(
 
   if (CSSImageGeneratorValue* image_generator_value =
           pending_image->CssImageGeneratorValue()) {
-    image_generator_value->LoadSubimages(*document_);
+    image_generator_value->LoadSubimages(element_->GetDocument());
     return StyleGeneratedImage::Create(*image_generator_value);
   }
 
   if (CSSImageSetValue* image_set_value = pending_image->CssImageSetValue()) {
-    return image_set_value->CacheImage(*document_, device_scale_factor_,
-                                       image_request_optimization,
-                                       cross_origin);
+    return image_set_value->CacheImage(
+        element_->GetDocument(), device_scale_factor_,
+        image_request_optimization, cross_origin);
   }
 
   NOTREACHED();
@@ -195,13 +198,28 @@ void ElementStyleResources::LoadPendingImages(ComputedStyle* style) {
       case CSSPropertyBackgroundImage: {
         for (FillLayer* background_layer = &style->AccessBackgroundLayers();
              background_layer; background_layer = background_layer->Next()) {
-          if (background_layer->GetImage() &&
-              background_layer->GetImage()->IsPendingImage()) {
-            background_layer->SetImage(LoadPendingImage(
-                style, ToStylePendingImage(background_layer->GetImage()),
-                BackgroundLayerMayBeSprite(*background_layer)
-                    ? FetchParameters::kNone
-                    : FetchParameters::kAllowPlaceholder));
+          StyleImage* background_image = background_layer->GetImage();
+          if (background_image && background_image->IsPendingImage()) {
+            FetchParameters::ImageRequestOptimization
+                image_request_optimization = FetchParameters::kNone;
+            if (!BackgroundLayerMayBeSprite(*background_layer)) {
+              if (element_->GetDocument()
+                      .GetFrame()
+                      ->IsLazyLoadingImageAllowed()) {
+                background_image->SetIsLazyloadPossiblyDeferred(true);
+                image_request_optimization = FetchParameters::kDeferImageLoad;
+              } else {
+                image_request_optimization = FetchParameters::kAllowPlaceholder;
+              }
+            }
+            StyleImage* new_image =
+                LoadPendingImage(style, ToStylePendingImage(background_image),
+                                 image_request_optimization);
+            if (new_image && new_image->IsImageResource() &&
+                ToStyleFetchedImage(new_image)->IsLazyloadPossiblyDeferred()) {
+              LazyLoadImageObserver::StartMonitoring(element_);
+            }
+            background_layer->SetImage(new_image);
           }
         }
         break;

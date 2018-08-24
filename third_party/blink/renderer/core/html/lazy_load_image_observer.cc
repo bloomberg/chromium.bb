@@ -7,6 +7,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html_element_type_helpers.h"
@@ -58,6 +59,10 @@ void LazyLoadImageObserver::LoadIfNearViewport(
     Element* element = entry->target();
     if (auto* image_element = ToHTMLImageElementOrNull(element))
       image_element->LoadDeferredImage();
+
+    // Load the background image if the element has one deferred.
+    if (const ComputedStyle* style = element->GetComputedStyle())
+      style->LoadDeferredImages(element->GetDocument());
 
     lazy_load_intersection_observer_->unobserve(element);
   }

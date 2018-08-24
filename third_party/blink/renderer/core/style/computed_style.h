@@ -2232,6 +2232,9 @@ class ComputedStyle : public ComputedStyleBase,
     return pseudo == kPseudoIdBefore || pseudo == kPseudoIdAfter;
   }
 
+  // Load the images of CSS properties that were deferred by LazyLoad.
+  void LoadDeferredImages(Document&) const;
+
  private:
   void SetVisitedLinkBackgroundColor(const StyleColor& v) {
     SetVisitedLinkBackgroundColorInternal(v);

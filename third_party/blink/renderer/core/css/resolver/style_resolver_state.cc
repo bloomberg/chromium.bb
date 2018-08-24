@@ -46,7 +46,7 @@ StyleResolverState::StyleResolverState(
       apply_property_to_visited_link_style_(false),
       has_dir_auto_attribute_(false),
       font_builder_(&document),
-      element_style_resources_(document, document.DevicePixelRatio()) {
+      element_style_resources_(*GetElement(), document.DevicePixelRatio()) {
   DCHECK(!!parent_style_ == !!layout_parent_style_);
 
   if (!parent_style_) {
