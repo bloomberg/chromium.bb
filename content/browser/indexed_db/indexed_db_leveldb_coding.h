@@ -18,8 +18,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "content/common/indexed_db/indexed_db_key_path.h"
+#include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 
 namespace content {
 
@@ -52,7 +53,7 @@ CONTENT_EXPORT void EncodeBinary(const std::string& value, std::string* into);
 CONTENT_EXPORT void EncodeDouble(double value, std::string* into);
 CONTENT_EXPORT void EncodeIDBKey(const blink::IndexedDBKey& value,
                                  std::string* into);
-CONTENT_EXPORT void EncodeIDBKeyPath(const IndexedDBKeyPath& value,
+CONTENT_EXPORT void EncodeIDBKeyPath(const blink::IndexedDBKeyPath& value,
                                      std::string* into);
 CONTENT_EXPORT void EncodeBlobJournal(const BlobJournalType& journal,
                                       std::string* into);
@@ -79,7 +80,7 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKey(
     std::unique_ptr<blink::IndexedDBKey>* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKeyPath(
     base::StringPiece* slice,
-    IndexedDBKeyPath* value);
+    blink::IndexedDBKeyPath* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBlobJournal(
     base::StringPiece* slice,
     BlobJournalType* journal);

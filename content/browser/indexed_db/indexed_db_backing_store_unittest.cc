@@ -40,6 +40,7 @@
 
 using base::ASCIIToUTF16;
 using blink::IndexedDBKey;
+using blink::IndexedDBKeyPath;
 using url::Origin;
 
 namespace content {

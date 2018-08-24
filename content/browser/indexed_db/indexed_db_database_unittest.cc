@@ -34,6 +34,7 @@
 using base::ASCIIToUTF16;
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
+using blink::IndexedDBKeyPath;
 
 namespace {
 const int kFakeChildProcessId = 0;

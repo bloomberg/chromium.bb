@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
-#include "content/common/indexed_db/indexed_db_key_path.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 namespace content {
@@ -62,7 +62,7 @@ class FakeIndexedDBMetadataCoding : public IndexedDBMetadataCoding {
       int64_t database_id,
       int64_t object_store_id,
       base::string16 name,
-      IndexedDBKeyPath key_path,
+      blink::IndexedDBKeyPath key_path,
       bool auto_increment,
       IndexedDBObjectStoreMetadata* metadata) override;
 
@@ -83,7 +83,7 @@ class FakeIndexedDBMetadataCoding : public IndexedDBMetadataCoding {
                               int64_t object_store_id,
                               int64_t index_id,
                               base::string16 name,
-                              IndexedDBKeyPath key_path,
+                              blink::IndexedDBKeyPath key_path,
                               bool is_unique,
                               bool is_multi_entry,
                               IndexedDBIndexMetadata* metadata) override;

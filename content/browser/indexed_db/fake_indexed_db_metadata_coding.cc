@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
-#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_metadata.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 
 using leveldb::Status;
 
@@ -62,7 +62,7 @@ leveldb::Status FakeIndexedDBMetadataCoding::CreateObjectStore(
     int64_t database_id,
     int64_t object_store_id,
     base::string16 name,
-    IndexedDBKeyPath key_path,
+    blink::IndexedDBKeyPath key_path,
     bool auto_increment,
     IndexedDBObjectStoreMetadata* metadata) {
   metadata->name = std::move(name);
@@ -97,7 +97,7 @@ leveldb::Status FakeIndexedDBMetadataCoding::CreateIndex(
     int64_t object_store_id,
     int64_t index_id,
     base::string16 name,
-    IndexedDBKeyPath key_path,
+    blink::IndexedDBKeyPath key_path,
     bool is_unique,
     bool is_multi_entry,
     IndexedDBIndexMetadata* metadata) {

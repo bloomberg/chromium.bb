@@ -32,10 +32,10 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
-#include "content/common/indexed_db/indexed_db_key_path.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "content/public/common/content_switches.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/platform/modules/indexeddb/web_idb_database_exception.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "url/origin.h"
@@ -44,6 +44,7 @@ using base::ASCIIToUTF16;
 using base::Int64ToString16;
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
+using blink::IndexedDBKeyPath;
 using blink::kWebIDBKeyTypeNumber;
 using leveldb::Status;
 

@@ -5,6 +5,7 @@
 mojom = "//third_party/blink/public/mojom/indexeddb/indexeddb.mojom"
 public_headers = [
   "//third_party/blink/public/common/indexeddb/indexeddb_key.h",
+  "//third_party/blink/public/common/indexeddb/indexeddb_key_path.h",
   "//third_party/blink/public/common/indexeddb/web_idb_types.h",
 ]
 traits_headers =
@@ -13,5 +14,6 @@ type_mappings = [
   "blink.mojom.IDBCursorDirection=blink::WebIDBCursorDirection",
   "blink.mojom.IDBDataLoss=blink::WebIDBDataLoss",
   "blink.mojom.IDBKey=blink::IndexedDBKey",
+  "blink.mojom.IDBKeyPath=blink::IndexedDBKeyPath",
   "blink.mojom.IDBOperationType=blink::WebIDBOperationType",
 ]

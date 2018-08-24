@@ -32,6 +32,10 @@
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
+namespace blink {
+class IndexedDBKeyPath;
+}
+
 namespace url {
 class Origin;
 }
@@ -41,7 +45,6 @@ namespace content {
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBFactory;
-class IndexedDBKeyPath;
 class IndexedDBKeyRange;
 class IndexedDBMetadataCoding;
 class IndexedDBTransaction;
@@ -86,7 +89,7 @@ class CONTENT_EXPORT IndexedDBDatabase
   void CreateObjectStore(IndexedDBTransaction* transaction,
                          int64_t object_store_id,
                          const base::string16& name,
-                         const IndexedDBKeyPath& key_path,
+                         const blink::IndexedDBKeyPath& key_path,
                          bool auto_increment);
   void DeleteObjectStore(IndexedDBTransaction* transaction,
                          int64_t object_store_id);
@@ -115,7 +118,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                    int64_t object_store_id,
                    int64_t index_id,
                    const base::string16& name,
-                   const IndexedDBKeyPath& key_path,
+                   const blink::IndexedDBKeyPath& key_path,
                    bool unique,
                    bool multi_entry);
   void DeleteIndex(IndexedDBTransaction* transaction,

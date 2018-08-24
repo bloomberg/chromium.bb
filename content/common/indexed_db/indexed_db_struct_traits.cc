@@ -10,66 +10,12 @@
 
 using blink::IndexedDBKey;
 using blink::IndexedDBIndexKeys;
-using content::IndexedDBKeyPath;
 using content::IndexedDBKeyRange;
 using indexed_db::mojom::PutMode;
 using indexed_db::mojom::TaskType;
 using indexed_db::mojom::TransactionMode;
 
 namespace mojo {
-
-// static
-indexed_db::mojom::KeyPathDataPtr
-StructTraits<indexed_db::mojom::KeyPathDataView, IndexedDBKeyPath>::data(
-    const IndexedDBKeyPath& key_path) {
-  if (key_path.IsNull())
-    return nullptr;
-
-  auto data = indexed_db::mojom::KeyPathData::New();
-  switch (key_path.type()) {
-    case blink::kWebIDBKeyPathTypeString:
-      data->set_string(key_path.string());
-      return data;
-    case blink::kWebIDBKeyPathTypeArray:
-      data->set_string_array(key_path.array());
-      return data;
-    default:
-      NOTREACHED();
-      return data;
-  }
-}
-
-// static
-bool StructTraits<indexed_db::mojom::KeyPathDataView, IndexedDBKeyPath>::Read(
-    indexed_db::mojom::KeyPathDataView data,
-    IndexedDBKeyPath* out) {
-  indexed_db::mojom::KeyPathDataDataView data_view;
-  data.GetDataDataView(&data_view);
-
-  if (data_view.is_null()) {
-    *out = IndexedDBKeyPath();
-    return true;
-  }
-
-  switch (data_view.tag()) {
-    case indexed_db::mojom::KeyPathDataDataView::Tag::STRING: {
-      base::string16 string;
-      if (!data_view.ReadString(&string))
-        return false;
-      *out = IndexedDBKeyPath(string);
-      return true;
-    }
-    case indexed_db::mojom::KeyPathDataDataView::Tag::STRING_ARRAY: {
-      std::vector<base::string16> array;
-      if (!data_view.ReadStringArray(&array))
-        return false;
-      *out = IndexedDBKeyPath(array);
-      return true;
-    }
-  }
-
-  return false;
-}
 
 // static
 bool StructTraits<indexed_db::mojom::KeyRangeDataView, IndexedDBKeyRange>::Read(

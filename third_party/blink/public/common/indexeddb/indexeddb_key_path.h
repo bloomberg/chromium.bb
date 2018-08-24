@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_PATH_H_
-#define CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_PATH_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_PATH_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_PATH_H_
 
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
-namespace content {
+namespace blink {
 
-class CONTENT_EXPORT IndexedDBKeyPath {
+class BLINK_COMMON_EXPORT IndexedDBKeyPath {
  public:
   IndexedDBKeyPath();  // Defaults to blink::WebIDBKeyPathTypeNull.
   explicit IndexedDBKeyPath(const base::string16&);
@@ -39,6 +39,6 @@ class CONTENT_EXPORT IndexedDBKeyPath {
   std::vector<base::string16> array_;
 };
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_INDEXED_DB_INDEXED_DB_KEY_PATH_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_INDEXEDDB_INDEXEDDB_KEY_PATH_H_

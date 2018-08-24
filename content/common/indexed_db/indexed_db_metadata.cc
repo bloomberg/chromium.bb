@@ -4,6 +4,8 @@
 
 #include "content/common/indexed_db/indexed_db_metadata.h"
 
+using blink::IndexedDBKeyPath;
+
 namespace content {
 
 IndexedDBIndexMetadata::IndexedDBIndexMetadata() = default;

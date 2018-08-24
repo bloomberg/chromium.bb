@@ -16,17 +16,6 @@ import "third_party/blink/public/mojom/blob/blob.mojom";
 import "third_party/blink/public/mojom/indexeddb/indexeddb.mojom";
 import "url/mojom/origin.mojom";
 
-// Represents WebIDBKeyPathTypeString and WebIDBKeyPathTypeArray in a key path.
-union KeyPathData {
-  mojo_base.mojom.String16 string;
-  array<mojo_base.mojom.String16> string_array;
-};
-
-struct KeyPath {
-  // A null value here corresponds to WebIDBKeyPathTypeNull.
-  KeyPathData? data;
-};
-
 struct KeyRange {
   blink.mojom.IDBKey lower;
   blink.mojom.IDBKey upper;
@@ -63,7 +52,7 @@ enum Status {
 struct IndexMetadata {
   int64 id;
   mojo_base.mojom.String16 name;
-  KeyPath key_path;
+  blink.mojom.IDBKeyPath key_path;
   bool unique;
   bool multi_entry;
 };
@@ -71,7 +60,7 @@ struct IndexMetadata {
 struct ObjectStoreMetadata {
   int64 id;
   mojo_base.mojom.String16 name;
-  KeyPath key_path;
+  blink.mojom.IDBKeyPath key_path;
   bool auto_increment;
   int64 max_index_id;
   array<IndexMetadata> indexes;
@@ -93,7 +82,7 @@ struct IndexKeys {
 struct ReturnValue {
   blink.mojom.IDBValue value;
   blink.mojom.IDBKey primary_key;
-  KeyPath key_path;
+  blink.mojom.IDBKeyPath key_path;
 };
 
 struct Observation {
@@ -188,7 +177,7 @@ interface Database {
   CreateObjectStore(int64 transaction_id,
                     int64 object_store_id,
                     mojo_base.mojom.String16 name,
-                    KeyPath key_path,
+                    blink.mojom.IDBKeyPath key_path,
                     bool auto_increment);
   DeleteObjectStore(int64 transaction_id,
                     int64 object_store_id);
@@ -258,7 +247,7 @@ interface Database {
               int64 object_store_id,
               int64 index_id,
               mojo_base.mojom.String16 name,
-              KeyPath key_path,
+              blink.mojom.IDBKeyPath key_path,
               bool unique,
               bool multi_entry);
   DeleteIndex(int64 transaction_id,
