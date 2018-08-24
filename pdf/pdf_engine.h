@@ -467,20 +467,16 @@ class PDFEngineExports {
                                      void* bitmap_buffer) = 0;
 
   // See the definition of ConvertPdfPagesToNupPdf in pdf.cc for details.
-  virtual bool ConvertPdfPagesToNupPdf(
+  virtual std::vector<uint8_t> ConvertPdfPagesToNupPdf(
       std::vector<base::span<const uint8_t>> input_buffers,
       size_t pages_per_sheet,
-      const gfx::Size& page_size,
-      void** dest_pdf_buffer,
-      size_t* dest_pdf_buffer_size) = 0;
+      const gfx::Size& page_size) = 0;
 
   // See the definition of ConvertPdfDocumentToNupPdf in pdf.cc for details.
-  virtual bool ConvertPdfDocumentToNupPdf(
+  virtual std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
       base::span<const uint8_t> input_buffer,
       size_t pages_per_sheet,
-      const gfx::Size& page_size,
-      void** dest_pdf_buffer,
-      size_t* dest_pdf_buffer_size) = 0;
+      const gfx::Size& page_size) = 0;
 
   virtual bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                              int* page_count,

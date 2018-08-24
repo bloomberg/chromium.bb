@@ -471,7 +471,7 @@ pp::Buffer_Dev PDFiumPrint::GetPrintData(FPDF_DOCUMENT doc) {
     size_t size = output_file_write.size();
     buffer = pp::Buffer_Dev(engine_->GetPluginInstance(), size);
     if (!buffer.is_null())
-      memcpy(buffer.data(), output_file_write.buffer().c_str(), size);
+      memcpy(buffer.data(), output_file_write.buffer().data(), size);
   }
   return buffer;
 }

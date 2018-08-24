@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include <string>
+#include <vector>
 
 #include "third_party/pdfium/public/fpdf_save.h"
 
@@ -19,16 +19,19 @@ class PDFiumMemBufferFileWrite : public FPDF_FILEWRITE {
   PDFiumMemBufferFileWrite();
   ~PDFiumMemBufferFileWrite();
 
-  const std::basic_string<unsigned char>& buffer() { return buffer_; }
-  size_t size() { return buffer_.size(); }
+  const std::vector<uint8_t>& buffer() const { return buffer_; }
+  size_t size() const { return buffer_.size(); }
+
+  std::vector<uint8_t> TakeBuffer();
 
  private:
-  int DoWriteBlock(const void* data, unsigned long size);
   static int WriteBlockImpl(FPDF_FILEWRITE* this_file_write,
                             const void* data,
                             unsigned long size);
 
-  std::basic_string<unsigned char> buffer_;
+  int DoWriteBlock(const uint8_t* data, unsigned long size);
+
+  std::vector<uint8_t> buffer_;
 };
 
 }  // namespace chrome_pdf

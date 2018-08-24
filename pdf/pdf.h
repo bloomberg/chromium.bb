@@ -132,9 +132,6 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
 //     document is used.
 // |pages_per_sheet| is the number of pages to put on one sheet.
 // |page_size| is the output page size, measured in PDF "user space" units.
-// |dest_pdf_buffer| is the output N-up PDF page.  Caller takes ownership, and
-//     needs to free the memory.
-// |dest_pdf_buffer_size| is the size of output N-up PDF page.
 //
 // |page_size| is the print media size.  The page size of the output N-up PDF is
 // determined by the |pages_per_sheet|, the orientation of the PDF pages
@@ -145,30 +142,24 @@ bool RenderPDFPageToBitmap(base::span<const uint8_t> pdf_buffer,
 // See printing::NupParameters for more details on how the output page
 // orientation is determined, to understand why |page_size| may be swapped in
 // some cases.
-bool ConvertPdfPagesToNupPdf(
+std::vector<uint8_t> ConvertPdfPagesToNupPdf(
     std::vector<base::span<const uint8_t>> input_buffers,
     size_t pages_per_sheet,
-    const gfx::Size& page_size,
-    void** dest_pdf_buffer,
-    size_t* dest_pdf_buffer_size);
+    const gfx::Size& page_size);
 
 // Convert a PDF document to a N-up PDF document.
 // |input_buffer| is the buffer that contains the entire PDF document to be
 //     converted to a N-up PDF document.
 // |pages_per_sheet| is the number of pages to put on one sheet.
 // |page_size| is the output page size, measured in PDF "user space" units.
-// |dest_pdf_buffer| is the output N-up PDF page.  Caller takes ownership, and
-//     needs to free the memory.
-// |dest_pdf_buffer_size| is the size of output N-up PDF document.
 //
 // Refer to the description of ConvertPdfPagesToNupPdf to understand how the
 // output page size will be calculated.
 // The algorithm used to determine the output page size is the same.
-bool ConvertPdfDocumentToNupPdf(base::span<const uint8_t> input_buffer,
-                                size_t pages_per_sheet,
-                                const gfx::Size& page_size,
-                                void** dest_pdf_buffer,
-                                size_t* dest_pdf_buffer_size);
+std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
+    base::span<const uint8_t> input_buffer,
+    size_t pages_per_sheet,
+    const gfx::Size& page_size);
 
 }  // namespace chrome_pdf
 

@@ -104,8 +104,10 @@ ScopedFPDFDocument LoadPdfData(base::span<const uint8_t> pdf_buffer) {
 
 ScopedFPDFDocument CreatePdfDoc(
     std::vector<base::span<const uint8_t>> input_buffers) {
-  ScopedFPDFDocument doc(FPDF_CreateNewDocument());
+  if (input_buffers.empty())
+    return nullptr;
 
+  ScopedFPDFDocument doc(FPDF_CreateNewDocument());
   size_t index = 0;
   for (auto input_buffer : input_buffers) {
     ScopedFPDFDocument single_page_doc = LoadPdfData(input_buffer);
@@ -117,14 +119,9 @@ ScopedFPDFDocument CreatePdfDoc(
   return doc;
 }
 
-bool CreateNupPdfDocument(FPDF_DOCUMENT doc,
-                          size_t pages_per_sheet,
-                          const gfx::Size& page_size,
-                          void** dest_pdf_buffer,
-                          size_t* dest_pdf_buffer_size) {
-  if (!dest_pdf_buffer || !dest_pdf_buffer_size)
-    return false;
-
+std::vector<uint8_t> CreateNupPdfDocument(FPDF_DOCUMENT doc,
+                                          size_t pages_per_sheet,
+                                          const gfx::Size& page_size) {
   int page_size_width = page_size.width();
   int page_size_height = page_size.height();
 
@@ -140,19 +137,13 @@ bool CreateNupPdfDocument(FPDF_DOCUMENT doc,
       nup_params.num_pages_on_y_axis()));
 
   if (!output_doc_nup)
-    return false;
+    return std::vector<uint8_t>();
 
-  // Copy data to the |dest_pdf_buffer| here.
-  // TODO(thestig): Avoid this copy.
   PDFiumMemBufferFileWrite output_file_write;
-  if (!FPDF_SaveAsCopy(output_doc_nup.get(), &output_file_write, 0)) {
-    return false;
-  }
-  *dest_pdf_buffer = malloc(output_file_write.size());
-  memcpy(*dest_pdf_buffer, output_file_write.buffer().c_str(),
-         output_file_write.size());
-  *dest_pdf_buffer_size = output_file_write.size();
-  return true;
+  if (!FPDF_SaveAsCopy(output_doc_nup.get(), &output_file_write, 0))
+    return std::vector<uint8_t>();
+
+  return output_file_write.TakeBuffer();
 }
 
 }  // namespace
@@ -308,32 +299,26 @@ bool PDFiumEngineExports::RenderPDFPageToBitmap(
   return true;
 }
 
-bool PDFiumEngineExports::ConvertPdfPagesToNupPdf(
+std::vector<uint8_t> PDFiumEngineExports::ConvertPdfPagesToNupPdf(
     std::vector<base::span<const uint8_t>> input_buffers,
     size_t pages_per_sheet,
-    const gfx::Size& page_size,
-    void** dest_pdf_buffer,
-    size_t* dest_pdf_buffer_size) {
+    const gfx::Size& page_size) {
   ScopedFPDFDocument doc = CreatePdfDoc(std::move(input_buffers));
   if (!doc)
-    return false;
+    return std::vector<uint8_t>();
 
-  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size,
-                              dest_pdf_buffer, dest_pdf_buffer_size);
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size);
 }
 
-bool PDFiumEngineExports::ConvertPdfDocumentToNupPdf(
+std::vector<uint8_t> PDFiumEngineExports::ConvertPdfDocumentToNupPdf(
     base::span<const uint8_t> input_buffer,
     size_t pages_per_sheet,
-    const gfx::Size& page_size,
-    void** dest_pdf_buffer,
-    size_t* dest_pdf_buffer_size) {
+    const gfx::Size& page_size) {
   ScopedFPDFDocument doc = LoadPdfData(input_buffer);
   if (!doc)
-    return false;
+    return std::vector<uint8_t>();
 
-  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size,
-                              dest_pdf_buffer, dest_pdf_buffer_size);
+  return CreateNupPdfDocument(doc.get(), pages_per_sheet, page_size);
 }
 
 bool PDFiumEngineExports::GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
