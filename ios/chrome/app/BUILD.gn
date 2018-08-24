@@ -42,12 +42,14 @@ source_set("unit_tests") {
   sources = [
     "chrome_overlay_window_testing.h",
     "deferred_initialization_runner_unittest.mm",
+    "firebase_utils_unittest.mm",
     "main_application_delegate_unittest.mm",
     "tab_opener_unittest.mm",
   ]
   deps = [
     ":app",
     ":app_internal",
+    ":firebase_buildflags",
     "//base",
     "//base/test:test_support",
     "//ios/chrome/app/application_delegate:application_delegate_internal",
@@ -114,6 +116,8 @@ source_set("app_internal") {
     "application_mode.h",
     "chrome_overlay_window.h",
     "chrome_overlay_window.mm",
+    "firebase_utils.h",
+    "firebase_utils.mm",
     "main_application_delegate.h",
     "main_application_delegate.mm",
     "main_application_delegate_testing.h",
