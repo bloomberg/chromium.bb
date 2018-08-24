@@ -38,7 +38,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
     return;
 
   GraphicsContext& context = paint_info.context;
-  LayoutRect content_rect = layout_video_.ContentBoxRect();
+  LayoutRect content_rect = layout_video_.PhysicalContentBoxRect();
   content_rect.MoveBy(paint_offset);
 
   // Video frames are only painted in software for printing or capturing node

@@ -127,7 +127,7 @@ void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
   // box. https://drafts.csswg.org/css-overflow-3/#scrollport. So we use the
   // LayoutRect of the padding box here. The coordinate is relative to the
   // container's border box.
-  LayoutRect container_rect(snap_container.PaddingBoxRect());
+  LayoutRect container_rect(snap_container.PhysicalPaddingBoxRect());
 
   const ComputedStyle* container_style = snap_container.Style();
   LayoutRectOutsets container_padding(

@@ -504,14 +504,14 @@ unsigned HTMLImageElement::naturalHeight() const {
 unsigned HTMLImageElement::LayoutBoxWidth() const {
   LayoutBox* box = GetLayoutBox();
   return box ? AdjustForAbsoluteZoom::AdjustInt(
-                   box->ContentBoxRect().PixelSnappedWidth(), box)
+                   box->PhysicalContentBoxRect().PixelSnappedWidth(), box)
              : 0;
 }
 
 unsigned HTMLImageElement::LayoutBoxHeight() const {
   LayoutBox* box = GetLayoutBox();
   return box ? AdjustForAbsoluteZoom::AdjustInt(
-                   box->ContentBoxRect().PixelSnappedHeight(), box)
+                   box->PhysicalContentBoxRect().PixelSnappedHeight(), box)
              : 0;
 }
 

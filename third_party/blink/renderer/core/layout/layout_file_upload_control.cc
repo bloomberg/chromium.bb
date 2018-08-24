@@ -71,7 +71,7 @@ int LayoutFileUploadControl::MaxFilenameWidth() const {
       (UploadButton() && UploadButton()->GetLayoutBox())
           ? UploadButton()->GetLayoutBox()->PixelSnappedWidth()
           : 0;
-  return std::max(0, ContentBoxRect().PixelSnappedWidth() -
+  return std::max(0, PhysicalContentBoxRect().PixelSnappedWidth() -
                          upload_button_width - kAfterButtonSpacing);
 }
 

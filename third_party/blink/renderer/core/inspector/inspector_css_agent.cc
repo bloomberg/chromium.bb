@@ -2314,7 +2314,7 @@ Response InspectorCSSAgent::getBackgroundColors(
   if (content_bounds.Size().IsEmpty() && element_layout->IsBox()) {
     // Return content box instead - may have indirect text children.
     LayoutBox* layout_box = ToLayoutBox(element_layout);
-    content_bounds = layout_box->ContentBoxRect();
+    content_bounds = layout_box->PhysicalContentBoxRect();
     content_bounds = LayoutRect(
         element_layout->LocalToAbsoluteQuad(FloatRect(content_bounds))
             .BoundingBox());

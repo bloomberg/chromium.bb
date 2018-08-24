@@ -388,7 +388,8 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   if (mode & kTraverseDocumentBoundaries) {
     auto* parent_doc_layout_object = GetFrame()->OwnerLayoutObject();
     if (parent_doc_layout_object) {
-      transform_state.Move(parent_doc_layout_object->ContentBoxOffset());
+      transform_state.Move(
+          parent_doc_layout_object->PhysicalContentBoxOffset());
       parent_doc_layout_object->MapLocalToAncestor(ancestor, transform_state,
                                                    mode);
     } else {
@@ -405,7 +406,7 @@ const LayoutObject* LayoutView::PushMappingToContainer(
 
   if (geometry_map.GetMapCoordinatesFlags() & kTraverseDocumentBoundaries) {
     if (auto* parent_doc_layout_object = GetFrame()->OwnerLayoutObject()) {
-      offset += parent_doc_layout_object->ContentBoxOffset();
+      offset += parent_doc_layout_object->PhysicalContentBoxOffset();
       container = parent_doc_layout_object;
     }
   }
@@ -437,7 +438,8 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
       parent_doc_layout_object->MapAncestorToLocal(ancestor, transform_state,
                                                    mode & ~kIsFixed);
 
-      transform_state.Move(parent_doc_layout_object->ContentBoxOffset());
+      transform_state.Move(
+          parent_doc_layout_object->PhysicalContentBoxOffset());
     }
   } else {
     DCHECK(this == ancestor || !ancestor);
@@ -566,7 +568,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
     rect = LayoutRect(EnclosingIntRect(rect));
 
     // Adjust for frame border.
-    rect.Move(obj->ContentBoxOffset());
+    rect.Move(obj->PhysicalContentBoxOffset());
     transform_state.SetQuad(FloatQuad(FloatRect(rect)));
 
     return obj->MapToVisualRectInAncestorSpaceInternal(

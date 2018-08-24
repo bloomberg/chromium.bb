@@ -858,25 +858,26 @@ void LayoutBox::SetLocationAndUpdateOverflowControlsIfNeeded(
 
 IntRect LayoutBox::AbsoluteContentBox() const {
   // This is wrong with transforms and flipped writing modes.
-  IntRect rect = PixelSnappedIntRect(ContentBoxRect());
+  IntRect rect = PixelSnappedIntRect(PhysicalContentBoxRect());
   FloatPoint abs_pos = LocalToAbsolute();
   rect.Move(abs_pos.X(), abs_pos.Y());
   return rect;
 }
 
 IntSize LayoutBox::AbsoluteContentBoxOffset() const {
-  IntPoint offset = RoundedIntPoint(ContentBoxOffset());
+  IntPoint offset = RoundedIntPoint(PhysicalContentBoxOffset());
   FloatPoint abs_pos = LocalToAbsolute();
   offset.Move(abs_pos.X(), abs_pos.Y());
   return ToIntSize(offset);
 }
 
 FloatQuad LayoutBox::AbsoluteContentQuad(MapCoordinatesFlags flags) const {
-  LayoutRect rect = ContentBoxRect();
+  LayoutRect rect = PhysicalContentBoxRect();
   return LocalToAbsoluteQuad(FloatRect(rect), flags);
 }
 
-LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
+LayoutRect LayoutBox::PhysicalBackgroundRect(
+    BackgroundRectType rect_type) const {
   EFillBox background_box = EFillBox::kText;
   // Find the largest background rect of the given opaqueness.
   if (const FillLayer* current = &(StyleRef().BackgroundLayers())) {
@@ -934,10 +935,10 @@ LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
       return BorderBoxRect();
       break;
     case EFillBox::kPadding:
-      return PaddingBoxRect();
+      return PhysicalPaddingBoxRect();
       break;
     case EFillBox::kContent:
-      return ContentBoxRect();
+      return PhysicalContentBoxRect();
       break;
     default:
       break;
@@ -1676,7 +1677,8 @@ bool LayoutBox::BackgroundIsKnownToBeOpaqueInRect(
     return false;
   if (StyleRef().HasBlendMode())
     return false;
-  return BackgroundRect(kBackgroundKnownOpaqueRect).Contains(local_rect);
+  return PhysicalBackgroundRect(kBackgroundKnownOpaqueRect)
+      .Contains(local_rect);
 }
 
 static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
@@ -6079,7 +6081,8 @@ void LayoutBox::MutableForPainting::
     SavePreviousContentBoxRectAndLayoutOverflowRect() {
   auto& rare_data = GetLayoutBox().EnsureRareData();
   rare_data.has_previous_content_box_rect_and_layout_overflow_rect_ = true;
-  rare_data.previous_content_box_rect_ = GetLayoutBox().ContentBoxRect();
+  rare_data.previous_physical_content_box_rect_ =
+      GetLayoutBox().PhysicalContentBoxRect();
   rare_data.previous_physical_layout_overflow_rect_ =
       GetLayoutBox().PhysicalLayoutOverflowRect();
 }

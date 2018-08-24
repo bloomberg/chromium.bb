@@ -80,8 +80,8 @@ bool CheckForMaxDownscalingImagePolicy(const LocalFrame& frame,
     return false;
   // Invert the image if the image's size is more than 2 times bigger than the
   // size it is being laid-out by.
-  LayoutUnit layout_width = layout_image->ContentBoxRect().Width();
-  LayoutUnit layout_height = layout_image->ContentBoxRect().Height();
+  LayoutUnit layout_width = layout_image->ContentWidth();
+  LayoutUnit layout_height = layout_image->ContentHeight();
   auto image_width = element->naturalWidth();
   auto image_height = element->naturalHeight();
   if (layout_width > 0 && layout_height > 0 && image_width > 0 &&
@@ -305,7 +305,7 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   ImageResourceContent* image_content = image_resource_->CachedImage();
   if (!image_content || !image_content->IsLoaded())
     return false;
-  if (!ContentBoxRect().Contains(local_rect))
+  if (!PhysicalContentBoxRect().Contains(local_rect))
     return false;
   EFillBox background_clip = StyleRef().BackgroundClip();
   // Background paints under borders.

@@ -1086,7 +1086,7 @@ void WebPluginContainerImpl::ComputeClipRectsForPlugin(
   // the containing view space, and rounded off.  See
   // LayoutEmbeddedContent::UpdateGeometry. To remove the lossy effect of
   // rounding off, use contentBoxRect directly.
-  LayoutRect unclipped_absolute_rect(box->ContentBoxRect());
+  LayoutRect unclipped_absolute_rect(box->PhysicalContentBoxRect());
   box->MapToVisualRectInAncestorSpace(root_view, unclipped_absolute_rect);
   unclipped_absolute_rect =
       box->View()->GetFrameView()->DocumentToFrame(unclipped_absolute_rect);

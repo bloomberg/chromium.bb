@@ -623,11 +623,11 @@ bool InspectorHighlight::BuildNodeQuads(Node* node,
     const int vertical_scrollbar_width = layout_box->VerticalScrollbarWidth();
     const int horizontal_scrollbar_height =
         layout_box->HorizontalScrollbarHeight();
-    content_box = layout_box->ContentBoxRect();
+    content_box = layout_box->PhysicalContentBoxRect();
     content_box.SetWidth(content_box.Width() + vertical_scrollbar_width);
     content_box.SetHeight(content_box.Height() + horizontal_scrollbar_height);
 
-    padding_box = layout_box->PaddingBoxRect();
+    padding_box = layout_box->PhysicalPaddingBoxRect();
     padding_box.SetWidth(padding_box.Width() + vertical_scrollbar_width);
     padding_box.SetHeight(padding_box.Height() + horizontal_scrollbar_height);
 

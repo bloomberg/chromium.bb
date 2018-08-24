@@ -127,7 +127,7 @@ void IntersectionGeometry::InitializeRootRect() {
     // we can zoom out to fit the entire element width.
     root_rect_ = ToLayoutView(root_)->OverflowClipRect(LayoutPoint());
   } else if (root_->IsBox() && root_->HasOverflowClip()) {
-    root_rect_ = LayoutRect(ToLayoutBox(root_)->ContentBoxRect());
+    root_rect_ = LayoutRect(ToLayoutBox(root_)->PhysicalContentBoxRect());
   } else {
     root_rect_ = LayoutRect(ToLayoutBoxModelObject(root_)->BorderBoundingBox());
   }

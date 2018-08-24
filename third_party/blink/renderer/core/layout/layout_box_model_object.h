@@ -119,8 +119,9 @@ enum LineDirectionMode { kHorizontalLine, kVerticalLine };
 // extra details.
 //
 // - physical coordinates with flipped block-flow direction: those are physical
-//   coordinates but we flipped the block direction. See
-//   LayoutBox::noOverflowRect.
+//   coordinates but we flipped the block direction. Almost all geometries
+//   in box layout use this coordinate space, except those having explicit
+//   "Logical" or "Physical" prefix in their names.
 //
 // For more, see Source/core/layout/README.md ### Coordinate Spaces.
 class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {

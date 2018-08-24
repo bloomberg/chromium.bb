@@ -296,7 +296,7 @@ LayoutRect LayoutMenuList::ControlClipRect(
   // inner box. This will leave room for the arrows which sit in the inner box
   // padding, and if the inner box ever spills out of the outer box, that will
   // get clipped too.
-  LayoutRect outer_box = ContentBoxRect();
+  LayoutRect outer_box = PhysicalContentBoxRect();
   outer_box.MoveBy(additional_offset);
 
   LayoutRect inner_box(

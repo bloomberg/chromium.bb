@@ -84,7 +84,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info) {
 
   bool skip_clip = layout_replaced_.IsSVGRoot() &&
                    !ToLayoutSVGRoot(layout_replaced_).ShouldApplyViewportClip();
-  if (skip_clip || !layout_replaced_.ContentBoxRect().IsEmpty()) {
+  if (skip_clip || !layout_replaced_.PhysicalContentBoxRect().IsEmpty()) {
     PaintInfo transformed_paint_info = local_paint_info;
     base::Optional<ScopedPaintChunkProperties> chunk_properties;
     if (const auto* fragment = paint_info.FragmentToPaint(layout_replaced_)) {

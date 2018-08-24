@@ -95,7 +95,8 @@ static IntRect ContentsRect(const LayoutObject& layout_object) {
         ToLayoutVideo(layout_object).ReplacedContentRect());
   }
 
-  return PixelSnappedIntRect(ToLayoutBox(layout_object).ContentBoxRect());
+  return PixelSnappedIntRect(
+      ToLayoutBox(layout_object).PhysicalContentBoxRect());
 }
 
 static IntRect BackgroundRect(const LayoutObject& layout_object) {
@@ -103,7 +104,7 @@ static IntRect BackgroundRect(const LayoutObject& layout_object) {
     return IntRect();
 
   const LayoutBox& box = ToLayoutBox(layout_object);
-  return PixelSnappedIntRect(box.BackgroundRect(kBackgroundClipRect));
+  return PixelSnappedIntRect(box.PhysicalBackgroundRect(kBackgroundClipRect));
 }
 
 static inline bool IsTextureLayerCanvas(const LayoutObject& layout_object) {
@@ -471,7 +472,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
       // this for solid color backgrounds the answer will be the same.
       scrolling_contents_layer_->SetContentsOpaque(
           owning_layer_.BackgroundIsKnownToBeOpaqueInRect(
-              ToLayoutBox(GetLayoutObject()).PaddingBoxRect()));
+              ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect()));
 
       if (owning_layer_.GetBackgroundPaintLocation() &
           kBackgroundPaintInGraphicsLayer) {
@@ -1528,8 +1529,8 @@ void CompositedLayerMapping::UpdateChildContainmentLayerGeometry() {
   if (GetLayoutObject().IsLayoutEmbeddedContent()) {
     // Embedded content layers do not have a clipping rect defined,
     // so use the PaddingBoxRect.
-    IntRect clipping_box =
-        PixelSnappedIntRect(ToLayoutBox(GetLayoutObject()).PaddingBoxRect());
+    IntRect clipping_box = PixelSnappedIntRect(
+        ToLayoutBox(GetLayoutObject()).PhysicalPaddingBoxRect());
     child_containment_layer_->SetSize(clipping_box.Size());
     child_containment_layer_->SetOffsetFromLayoutObject(
         ToIntSize(clipping_box.Location()));
@@ -1694,7 +1695,7 @@ void CompositedLayerMapping::UpdateChildClippingMaskLayerGeometry() {
       !GetLayoutObject().IsBox())
     return;
   LayoutBox& layout_box = ToLayoutBox(GetLayoutObject());
-  IntRect padding_box = EnclosingIntRect(layout_box.PaddingBoxRect());
+  IntRect padding_box = EnclosingIntRect(layout_box.PhysicalPaddingBoxRect());
 
   child_clipping_mask_layer_->SetPosition(graphics_layer_->GetPosition());
   if (child_clipping_mask_layer_->Size() != graphics_layer_->Size()) {

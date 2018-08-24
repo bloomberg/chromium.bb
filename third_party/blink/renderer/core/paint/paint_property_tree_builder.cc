@@ -1159,7 +1159,7 @@ static bool CanOmitOverflowClip(const LayoutObject& object) {
       return false;
     LayoutRect replaced_content_rect = replaced.ReplacedContentRect();
     return replaced_content_rect.IsEmpty() ||
-           replaced.ContentBoxRect().Contains(replaced_content_rect);
+           replaced.PhysicalContentBoxRect().Contains(replaced_content_rect);
   }
 
   // We need OverflowClip for hit-testing if the clip rect excluding overlay
@@ -1787,7 +1787,7 @@ void FragmentPaintPropertyTreeBuilder::SetNeedsPaintPropertyUpdateIfNeeded() {
   }
 
   if (box.IsLayoutReplaced() &&
-      box.PreviousContentBoxRect() != box.ContentBoxRect())
+      box.PreviousPhysicalContentBoxRect() != box.PhysicalContentBoxRect())
     box.GetMutableForPainting().SetNeedsPaintPropertyUpdate();
 
   if (box.Size() == box.PreviousSize())

@@ -455,7 +455,7 @@ bool ThemePainterDefault::PaintSearchFieldCancelButton(
   if (!base_layout_object.IsBox())
     return false;
   const LayoutBox& input_layout_box = ToLayoutBox(base_layout_object);
-  LayoutRect input_content_box = input_layout_box.ContentBoxRect();
+  LayoutRect input_content_box = input_layout_box.PhysicalContentBoxRect();
 
   // Make sure the scaled button stays square and will fit in its parent's box.
   LayoutUnit cancel_button_size =

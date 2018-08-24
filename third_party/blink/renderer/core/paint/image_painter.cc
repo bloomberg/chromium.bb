@@ -76,7 +76,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   // https://crbug.com/251206
 
   paint_info.context.Save();
-  LayoutRect focus_rect = layout_image_.ContentBoxRect();
+  LayoutRect focus_rect = layout_image_.PhysicalContentBoxRect();
   focus_rect.MoveBy(paint_offset);
   paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
   paint_info.context.DrawFocusRing(
@@ -115,8 +115,8 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
       layout_image_.ImageResource()->MaybeAnimated())
     cache_skipper.emplace(context);
 
-  LayoutRect content_rect(paint_offset + layout_image_.ContentBoxOffset(),
-                          content_size);
+  LayoutRect content_rect(
+      paint_offset + layout_image_.PhysicalContentBoxOffset(), content_size);
 
   if (!has_image) {
     // Draw an outline rect where the image should be.
