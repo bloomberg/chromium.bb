@@ -57,9 +57,10 @@ class TestStreamProvider : public media::mojom::AudioOutputStreamProvider {
       EXPECT_TRUE(binding_);
   }
 
-  void Acquire(const media::AudioParameters& params,
-               media::mojom::AudioOutputStreamProviderClientPtr provider_client)
-      override {
+  void Acquire(
+      const media::AudioParameters& params,
+      media::mojom::AudioOutputStreamProviderClientPtr provider_client,
+      const base::Optional<base::UnguessableToken>& processing_id) override {
     EXPECT_EQ(binding_, base::nullopt);
     EXPECT_NE(stream_, nullptr);
     std::swap(provider_client, provider_client_);
@@ -228,7 +229,7 @@ TEST(MojoAudioOutputIPC,
           NullAccessor(),
           blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 
-  ipc->CreateStream(&delegate, Params());
+  ipc->CreateStream(&delegate, Params(), base::nullopt);
 
   // No call to OnDeviceAuthorized since authotization wasn't explicitly
   // requested.
@@ -273,7 +274,7 @@ TEST(MojoAudioOutputIPC, OnDeviceCreated_Propagates) {
       kSessionId, kDeviceId, std::make_unique<TestStreamProvider>(&stream));
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
-  ipc->CreateStream(&delegate, Params());
+  ipc->CreateStream(&delegate, Params(), base::nullopt);
 
   EXPECT_CALL(delegate, OnDeviceAuthorized(
                             media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_OK,
@@ -304,7 +305,7 @@ TEST(MojoAudioOutputIPC,
       0, std::string(media::AudioDeviceDescription::kDefaultDeviceId),
       std::make_unique<TestStreamProvider>(&stream));
 
-  ipc->CreateStream(&delegate, Params());
+  ipc->CreateStream(&delegate, Params(), base::nullopt);
 
   EXPECT_CALL(delegate, GotOnStreamCreated());
   base::RunLoop().RunUntilIdle();
@@ -329,7 +330,7 @@ TEST(MojoAudioOutputIPC, IsReusable) {
         kSessionId, kDeviceId, std::make_unique<TestStreamProvider>(&stream));
 
     ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
-    ipc->CreateStream(&delegate, Params());
+    ipc->CreateStream(&delegate, Params(), base::nullopt);
 
     EXPECT_CALL(
         delegate,
@@ -377,7 +378,7 @@ TEST(MojoAudioOutputIPC, IsReusableAfterError) {
         kSessionId, kDeviceId, std::make_unique<TestStreamProvider>(&stream));
 
     ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
-    ipc->CreateStream(&delegate, Params());
+    ipc->CreateStream(&delegate, Params(), base::nullopt);
 
     EXPECT_CALL(
         delegate,
@@ -519,7 +520,7 @@ TEST(MojoAudioOutputIPC, CreateNoClose_DCHECKs) {
           stream_factory.GetAccessor(),
           blink::scheduler::GetSingleThreadTaskRunnerForTesting());
 
-  ipc->CreateStream(&delegate, Params());
+  ipc->CreateStream(&delegate, Params(), base::nullopt);
   EXPECT_DCHECK_DEATH(ipc.reset());
   ipc->CloseStream();
   ipc.reset();
@@ -546,7 +547,7 @@ TEST(MojoAudioOutputIPC, Play_Plays) {
       kSessionId, kDeviceId, std::make_unique<TestStreamProvider>(&stream));
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
-  ipc->CreateStream(&delegate, Params());
+  ipc->CreateStream(&delegate, Params(), base::nullopt);
   base::RunLoop().RunUntilIdle();
   ipc->PlayStream();
   base::RunLoop().RunUntilIdle();
@@ -574,7 +575,7 @@ TEST(MojoAudioOutputIPC, Pause_Pauses) {
       kSessionId, kDeviceId, std::make_unique<TestStreamProvider>(&stream));
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
-  ipc->CreateStream(&delegate, Params());
+  ipc->CreateStream(&delegate, Params(), base::nullopt);
   base::RunLoop().RunUntilIdle();
   ipc->PauseStream();
   base::RunLoop().RunUntilIdle();
@@ -602,7 +603,7 @@ TEST(MojoAudioOutputIPC, SetVolume_SetsVolume) {
       kSessionId, kDeviceId, std::make_unique<TestStreamProvider>(&stream));
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId);
-  ipc->CreateStream(&delegate, Params());
+  ipc->CreateStream(&delegate, Params(), base::nullopt);
   base::RunLoop().RunUntilIdle();
   ipc->SetVolume(kNewVolume);
   base::RunLoop().RunUntilIdle();

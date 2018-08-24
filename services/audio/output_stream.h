@@ -24,6 +24,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/loopback_coordinator.h"
 #include "services/audio/output_controller.h"
+#include "services/audio/stream_monitor_coordinator.h"
 #include "services/audio/sync_reader.h"
 
 namespace base {
@@ -53,7 +54,9 @@ class OutputStream final : public media::mojom::AudioOutputStream,
                const std::string& output_device_id,
                const media::AudioParameters& params,
                LoopbackCoordinator* coordinator,
-               const base::UnguessableToken& loopback_group_id);
+               const base::UnguessableToken& loopback_group_id,
+               StreamMonitorCoordinator* stream_monitor_coordinator,
+               const base::UnguessableToken& processing_id);
 
   ~OutputStream() final;
 

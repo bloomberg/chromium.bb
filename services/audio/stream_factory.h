@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/audio/loopback_coordinator.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
+#include "services/audio/stream_monitor_coordinator.h"
 #include "services/audio/traced_service_ref.h"
 
 namespace base {
@@ -71,6 +72,7 @@ class StreamFactory final : public mojom::StreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
+      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final;
   void BindMuter(mojom::LocalMuterAssociatedRequest request,
                  const base::UnguessableToken& group_id) final;
@@ -104,6 +106,7 @@ class StreamFactory final : public mojom::StreamFactory {
   LoopbackCoordinator coordinator_;
   std::vector<std::unique_ptr<LocalMuter>> muters_;
   std::vector<std::unique_ptr<LoopbackStream>> loopback_streams_;
+  StreamMonitorCoordinator stream_monitor_coordinator_;
   InputStreamSet input_streams_;
   OutputStreamSet output_streams_;
 

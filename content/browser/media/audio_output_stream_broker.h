@@ -34,6 +34,7 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
+      const base::Optional<base::UnguessableToken>& processing_id,
       DeleterCallback deleter,
       media::mojom::AudioOutputStreamProviderClientPtr client);
 
@@ -54,6 +55,7 @@ class CONTENT_EXPORT AudioOutputStreamBroker final : public AudioStreamBroker {
   const std::string output_device_id_;
   const media::AudioParameters params_;
   const base::UnguessableToken group_id_;
+  const base::Optional<base::UnguessableToken> processing_id_;
 
   // Indicates that CreateStream has been called, but not StreamCreated.
   bool awaiting_created_ = false;

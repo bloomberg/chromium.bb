@@ -27,6 +27,7 @@
 #include "media/audio/audio_power_monitor.h"
 #include "media/audio/audio_source_diverter.h"
 #include "services/audio/loopback_group_member.h"
+#include "services/audio/stream_monitor_coordinator.h"
 
 // An OutputController controls an AudioOutputStream and provides data to this
 // output stream. It executes audio operations like play, pause, stop, etc. on
@@ -61,7 +62,8 @@ namespace audio {
 
 class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                          public LoopbackGroupMember,
-                         public media::AudioManager::AudioDeviceListener {
+                         public media::AudioManager::AudioDeviceListener,
+                         public StreamMonitorCoordinator::Observer {
  public:
   // An event handler that receives events from the OutputController. The
   // following methods are called on the audio manager thread.
@@ -108,7 +110,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
                    EventHandler* handler,
                    const media::AudioParameters& params,
                    const std::string& output_device_id,
-                   SyncReader* sync_reader);
+                   SyncReader* sync_reader,
+                   StreamMonitorCoordinator* stream_monitor_coordinator,
+                   const base::UnguessableToken& processing_id);
   ~OutputController() override;
 
   // Indicates whether audio power level analysis will be performed.  If false,
@@ -155,6 +159,10 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   void StopSnooping(Snooper* snooper, SnoopingMode mode) override;
   void StartMuting() override;
   void StopMuting() override;
+
+  // StreamMonitorCoordinator::Observer implementation.
+  void OnMemberJoinedGroup(StreamMonitor* monitor) override;
+  void OnMemberLeftGroup(StreamMonitor* monitor) override;
 
   // AudioDeviceListener implementation.  When called OutputController will
   // shutdown the existing |stream_|, create a new stream, and then transition
@@ -250,6 +258,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
   std::vector<Snooper*> snoopers_;
   base::AtomicRefCount should_duplicate_;
 
+  base::Lock realtime_snooper_lock_;
+  std::vector<Snooper*> realtime_snoopers_;
+
   // The current volume of the audio stream.
   double volume_;
 
@@ -257,6 +268,9 @@ class OutputController : public media::AudioOutputStream::AudioSourceCallback,
 
   // SyncReader is used only in low latency mode for synchronous reading.
   SyncReader* const sync_reader_;
+
+  StreamMonitorCoordinator* const stream_monitor_coordinator_;
+  base::UnguessableToken const processing_id_;
 
   // Scans audio samples from OnMoreData() as input to compute power levels.
   media::AudioPowerMonitor power_monitor_;

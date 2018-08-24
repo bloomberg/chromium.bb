@@ -61,8 +61,10 @@ void MojoAudioOutputIPC::RequestDeviceAuthorization(
           media::AudioParameters::UnavailableDeviceParams(), std::string()));
 }
 
-void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
-                                      const media::AudioParameters& params) {
+void MojoAudioOutputIPC::CreateStream(
+    media::AudioOutputIPCDelegate* delegate,
+    const media::AudioParameters& params,
+    const base::Optional<base::UnguessableToken>& processing_id) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(delegate);
   DCHECK(!StreamCreationRequested());
@@ -87,7 +89,7 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
   binding_.set_connection_error_with_reason_handler(
       base::BindOnce(&MojoAudioOutputIPC::ProviderClientBindingDisconnected,
                      base::Unretained(this)));
-  stream_provider_->Acquire(params, std::move(client_ptr));
+  stream_provider_->Acquire(params, std::move(client_ptr), processing_id);
 }
 
 void MojoAudioOutputIPC::PlayStream() {

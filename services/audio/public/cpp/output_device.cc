@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/optional.h"
 #include "base/threading/thread_restrictions.h"
 #include "media/audio/audio_output_device_thread_callback.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -32,7 +33,7 @@ OutputDevice::OutputDevice(
       &OutputDevice::OnConnectionError, weak_factory_.GetWeakPtr()));
   stream_factory_->CreateOutputStream(
       std::move(stream_request), nullptr, nullptr, device_id, params,
-      base::UnguessableToken::Create(),
+      base::UnguessableToken::Create(), base::nullopt,
       base::BindOnce(&OutputDevice::StreamCreated, weak_factory_.GetWeakPtr()));
 }
 

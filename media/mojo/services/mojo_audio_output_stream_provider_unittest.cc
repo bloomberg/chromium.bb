@@ -84,12 +84,12 @@ TEST(MojoAudioOutputStreamProviderTest, AcquireTwice_BadMessage) {
   mojom::AudioOutputStreamProviderClientPtr client_1;
   mojo::MakeRequest(&client_1);
   provider_ptr->Acquire(media::AudioParameters::UnavailableDeviceParams(),
-                        std::move(client_1));
+                        std::move(client_1), base::nullopt);
 
   mojom::AudioOutputStreamProviderClientPtr client_2;
   mojo::MakeRequest(&client_2);
   provider_ptr->Acquire(media::AudioParameters::UnavailableDeviceParams(),
-                        std::move(client_2));
+                        std::move(client_2), base::nullopt);
 
   EXPECT_CALL(deleter, Run(provider)).WillOnce(DeleteArg<0>());
   base::RunLoop().RunUntilIdle();
@@ -121,7 +121,7 @@ TEST(MojoAudioOutputStreamProviderTest,
 
   mojom::AudioOutputStreamProviderClientPtr client;
   mojo::MakeRequest(&client);
-  provider_ptr->Acquire(params, std::move(client));
+  provider_ptr->Acquire(params, std::move(client), base::nullopt);
 
 #if defined(OS_ANDROID)
   base::RunLoop().RunUntilIdle();

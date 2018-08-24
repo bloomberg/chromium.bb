@@ -235,7 +235,11 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, CreateStream) {
             GetTestAudioParameters().AsHumanReadableString());
   EXPECT_TRUE(id.empty());
 
-  provider->Acquire(params, client.MakeProviderClientPtr());
+  // Ensure that we don't blow up getting a processing ID, despite not using it.
+  const base::UnguessableToken kUnusedProcessingId =
+      base::UnguessableToken::Create();
+  provider->Acquire(params, client.MakeProviderClientPtr(),
+                    kUnusedProcessingId);
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
 
@@ -295,7 +299,8 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest,
                         const std::string& id) {}));
   base::RunLoop().RunUntilIdle();
 
-  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr());
+  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr(),
+                    base::nullopt);
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
   EXPECT_FALSE(delegate_is_destructed);
@@ -325,7 +330,8 @@ TEST(OldRenderFrameAudioOutputStreamFactoryTest, DelegateError_DeletesStream) {
                         const std::string& id) {}));
   base::RunLoop().RunUntilIdle();
 
-  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr());
+  provider->Acquire(GetTestAudioParameters(), client.MakeProviderClientPtr(),
+                    base::nullopt);
   base::RunLoop().RunUntilIdle();
   ASSERT_NE(event_handler, nullptr);
   EXPECT_FALSE(delegate_is_destructed);

@@ -133,7 +133,8 @@ class TestEnvironment {
     stream_factory_ptr_->CreateOutputStream(
         mojo::MakeRequest(&stream_ptr), observer_.MakePtrInfo(), log_.MakePtr(),
         "", media::AudioParameters::UnavailableDeviceParams(),
-        base::UnguessableToken::Create(), created_callback_.Get());
+        base::UnguessableToken::Create(), base::nullopt,
+        created_callback_.Get());
     return stream_ptr;
   }
 
@@ -142,7 +143,8 @@ class TestEnvironment {
     stream_factory_ptr_->CreateOutputStream(
         mojo::MakeRequest(&stream_ptr), nullptr, log_.MakePtr(), "",
         media::AudioParameters::UnavailableDeviceParams(),
-        base::UnguessableToken::Create(), created_callback_.Get());
+        base::UnguessableToken::Create(), base::nullopt,
+        created_callback_.Get());
     return stream_ptr;
   }
 
@@ -151,7 +153,8 @@ class TestEnvironment {
     stream_factory_ptr_->CreateOutputStream(
         mojo::MakeRequest(&stream_ptr), observer_.MakePtrInfo(), nullptr, "",
         media::AudioParameters::UnavailableDeviceParams(),
-        base::UnguessableToken::Create(), created_callback_.Get());
+        base::UnguessableToken::Create(), base::nullopt,
+        created_callback_.Get());
     return stream_ptr;
   }
 

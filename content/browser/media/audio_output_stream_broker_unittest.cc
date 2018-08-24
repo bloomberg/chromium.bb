@@ -115,6 +115,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
       const std::string& output_device_id,
       const media::AudioParameters& params,
       const base::UnguessableToken& group_id,
+      const base::Optional<base::UnguessableToken>& processing_id,
       CreateOutputStreamCallback created_callback) final {
     // No way to cleanly exit the test here in case of failure, so use CHECK.
     CHECK(stream_request_data_);
@@ -143,6 +144,7 @@ struct TestEnvironment {
             kDeviceId,
             TestParams(),
             group,
+            base::nullopt,
             deleter.Get(),
             provider_client.MakePtr())) {}
 
@@ -164,10 +166,10 @@ TEST(AudioOutputStreamBrokerTest, StoresProcessAndFrameId) {
   MockDeleterCallback deleter;
   StrictMock<MockAudioOutputStreamProviderClient> provider_client;
 
-  AudioOutputStreamBroker broker(kRenderProcessId, kRenderFrameId, kStreamId,
-                                 kDeviceId, TestParams(),
-                                 base::UnguessableToken::Create(),
-                                 deleter.Get(), provider_client.MakePtr());
+  AudioOutputStreamBroker broker(
+      kRenderProcessId, kRenderFrameId, kStreamId, kDeviceId, TestParams(),
+      base::UnguessableToken::Create(), base::nullopt, deleter.Get(),
+      provider_client.MakePtr());
 
   EXPECT_EQ(kRenderProcessId, broker.render_process_id());
   EXPECT_EQ(kRenderFrameId, broker.render_frame_id());

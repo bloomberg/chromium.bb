@@ -100,6 +100,7 @@ class RenderFrameAudioOutputStreamFactoryTest
         const std::string& output_device_id,
         const media::AudioParameters& params,
         const base::UnguessableToken& group_id,
+        const base::Optional<base::UnguessableToken>& processing_id,
         CreateOutputStreamCallback created_callback) override {
       last_created_callback = std::move(created_callback);
     }
@@ -214,7 +215,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   {
     media::mojom::AudioOutputStreamProviderClientPtr client;
     mojo::MakeRequest(&client);
-    provider_ptr->Acquire(kParams, std::move(client));
+    provider_ptr->Acquire(kParams, std::move(client), base::nullopt);
   }
 
   audio::mojom::StreamFactory::CreateOutputStreamCallback created_callback;
@@ -251,7 +252,7 @@ TEST_F(RenderFrameAudioOutputStreamFactoryTest,
   {
     media::mojom::AudioOutputStreamProviderClientPtr client;
     mojo::MakeRequest(&client);
-    provider_ptr->Acquire(kParams, std::move(client));
+    provider_ptr->Acquire(kParams, std::move(client), base::nullopt);
   }
 
   base::RunLoop().RunUntilIdle();
