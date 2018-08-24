@@ -33,12 +33,12 @@ AudioSummingJunction::AudioSummingJunction(DeferredTaskHandler& handler)
     : deferred_task_handler_(&handler), rendering_state_need_updating_(false) {}
 
 AudioSummingJunction::~AudioSummingJunction() {
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
   GetDeferredTaskHandler().RemoveMarkedSummingJunction(this);
 }
 
 void AudioSummingJunction::ChangedOutputs() {
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
   if (!rendering_state_need_updating_) {
     GetDeferredTaskHandler().MarkSummingJunctionDirty(this);
     rendering_state_need_updating_ = true;
@@ -47,7 +47,7 @@ void AudioSummingJunction::ChangedOutputs() {
 
 void AudioSummingJunction::UpdateRenderingState() {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
   if (rendering_state_need_updating_) {
     // Copy from m_outputs to m_renderingOutputs.
     rendering_outputs_.resize(outputs_.size());

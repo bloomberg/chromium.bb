@@ -104,7 +104,7 @@ void AudioHandler::Uninitialize() {
 
 void AudioHandler::Dispose() {
   DCHECK(IsMainThread());
-  DCHECK(Context()->IsGraphOwner());
+  Context()->AssertGraphOwner();
 
   Context()->GetDeferredTaskHandler().RemoveChangedChannelCountMode(this);
   Context()->GetDeferredTaskHandler().RemoveChangedChannelInterpretation(this);
@@ -364,7 +364,7 @@ void AudioHandler::ProcessIfNecessary(size_t frames_to_process) {
 
 void AudioHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  DCHECK(Context()->IsGraphOwner());
+  Context()->AssertGraphOwner();
 
   DCHECK(inputs_.Contains(input));
   if (!inputs_.Contains(input))
@@ -406,7 +406,7 @@ void AudioHandler::UnsilenceOutputs() {
 
 void AudioHandler::EnableOutputsIfNecessary() {
   DCHECK(IsMainThread());
-  DCHECK(Context()->IsGraphOwner());
+  Context()->AssertGraphOwner();
 
   // We're enabling outputs for this handler.  Remove this from the tail
   // processing list (if it's there) so that we don't inadvertently disable the
@@ -431,7 +431,7 @@ void AudioHandler::EnableOutputsIfNecessary() {
 void AudioHandler::DisableOutputsIfNecessary() {
   // This function calls other functions that require graph ownership,
   // so assert that this needs graph ownership too.
-  DCHECK(Context()->IsGraphOwner());
+  Context()->AssertGraphOwner();
 
   // Disable outputs if appropriate. We do this if the number of connections is
   // 0 or 1. The case of 0 is from deref() where there are no connections left.
@@ -511,7 +511,7 @@ void AudioHandler::BreakConnection() {
 }
 
 void AudioHandler::BreakConnectionWithLock() {
-  DCHECK(Context()->IsGraphOwner());
+  Context()->AssertGraphOwner();
 
   AtomicDecrement(&connection_ref_count_);
 

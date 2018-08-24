@@ -262,8 +262,8 @@ class MODULES_EXPORT BaseAudioContext
   bool TryLock() { return GetDeferredTaskHandler().TryLock(); }
   void unlock() { GetDeferredTaskHandler().unlock(); }
 
-  // Returns true if this thread owns the context's lock.
-  bool IsGraphOwner() { return GetDeferredTaskHandler().IsGraphOwner(); }
+  // In DCHECK builds, fails if this thread does not own the context's lock.
+  void AssertGraphOwner() const { GetDeferredTaskHandler().AssertGraphOwner(); }
 
   using GraphAutoLocker = DeferredTaskHandler::GraphAutoLocker;
 
