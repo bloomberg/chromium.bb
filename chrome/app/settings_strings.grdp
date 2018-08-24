@@ -3517,7 +3517,7 @@
     Show sync settings
   </message>
   <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL" desc="Title for a section that shows options for various Google services">
-    Non-personalized services
+    Other Google services
   </message>
   <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the google services settings. Only visible by screen reader software.">
     Show Google services settings
