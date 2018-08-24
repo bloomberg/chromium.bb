@@ -25,6 +25,8 @@ class Deobfuscator(object):
     cmd = [script_path, mapping_path]
     # Allow only one thread to call TransformLines() at a time.
     self._lock = threading.Lock()
+    # Ensure that only one thread attempts to kill self._proc in Close().
+    self._close_lock = threading.Lock()
     self._closed_called = False
     # Assign to None so that attribute exists if Popen() throws.
     self._proc = None
@@ -114,8 +116,11 @@ class Deobfuscator(object):
         return lines
 
   def Close(self):
-    self._closed_called = True
-    if not self.IsClosed():
+    with self._close_lock:
+      needs_closing = not self.IsClosed()
+      self._closed_called = True
+
+    if needs_closing:
       self._proc.stdin.close()
       self._proc.kill()
       self._proc.wait()
