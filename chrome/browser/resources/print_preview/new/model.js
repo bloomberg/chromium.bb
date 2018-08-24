@@ -360,10 +360,12 @@ Polymer({
 
   /** @private */
   updateSettingsAvailabilityFromDestinationAndDocumentInfo_: function() {
-    const knownSizeToSaveAsPdf = this.destination.id ==
-            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF &&
+    const isSaveAsPDF = this.destination.id ==
+        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+    const knownSizeToSaveAsPdf = isSaveAsPDF &&
         (!this.documentInfo.isModifiable ||
          this.documentInfo.hasCssMediaStyles);
+    this.set('settings.fitToPage.unavailableValue', !isSaveAsPDF);
     this.set(
         'settings.fitToPage.available',
         !knownSizeToSaveAsPdf && !this.documentInfo.isModifiable);
