@@ -2336,9 +2336,6 @@ crbug.com/613672 [ Mac ] virtual/paint-touchaction-rects/fast/events/touch/gestu
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic-manual.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
 
-# We should send PointerLeave events for stylus devices.
-crbug.com/583413 external/wpt/pointerevents/pointerevent_pointerleave_pen-manual.html  [ Failure ]
-
 # Chrome touch-action computation ignores div transforms.
 crbug.com/715148 external/wpt/pointerevents/pointerevent_touch-action-rotated-divs_touch-manual.html  [ Skip ]
 

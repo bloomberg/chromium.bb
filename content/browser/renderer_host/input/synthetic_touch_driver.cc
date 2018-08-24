@@ -53,6 +53,10 @@ void SyntheticTouchDriver::Release(
   index_map_[index] = -1;
 }
 
+void SyntheticTouchDriver::Leave(int index) {
+  NOTIMPLEMENTED();
+}
+
 bool SyntheticTouchDriver::UserInputCheck(
     const SyntheticPointerActionParams& params) const {
   if (params.index() < 0 ||

@@ -29,16 +29,16 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
   void Release(int index = 0,
                SyntheticPointerActionParams::Button button =
                    SyntheticPointerActionParams::Button::LEFT) override;
+  void Leave(int index = 0) override;
 
   bool UserInputCheck(
       const SyntheticPointerActionParams& params) const override;
 
  protected:
   blink::WebMouseEvent mouse_event_;
-
- private:
   unsigned last_modifiers_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticMouseDriver);
 };
 

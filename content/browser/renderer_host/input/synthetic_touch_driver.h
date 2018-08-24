@@ -31,6 +31,7 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
   void Release(int index,
                SyntheticPointerActionParams::Button button =
                    SyntheticPointerActionParams::Button::LEFT) override;
+  void Leave(int index) override;
 
   bool UserInputCheck(
       const SyntheticPointerActionParams& params) const override;

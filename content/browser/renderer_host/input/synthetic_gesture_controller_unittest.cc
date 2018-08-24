@@ -68,6 +68,7 @@ WebTouchPoint::State ToWebTouchPointState(
       return WebTouchPoint::kStateReleased;
     case SyntheticPointerActionParams::PointerActionType::IDLE:
       return WebTouchPoint::kStateStationary;
+    case SyntheticPointerActionParams::PointerActionType::LEAVE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()
           << "Invalid SyntheticPointerActionParams::PointerActionType.";
@@ -86,6 +87,8 @@ WebInputEvent::Type ToWebMouseEventType(
       return WebInputEvent::kMouseMove;
     case SyntheticPointerActionParams::PointerActionType::RELEASE:
       return WebInputEvent::kMouseUp;
+    case SyntheticPointerActionParams::PointerActionType::LEAVE:
+      return WebInputEvent::kMouseLeave;
     case SyntheticPointerActionParams::PointerActionType::IDLE:
     case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
       NOTREACHED()
@@ -1889,6 +1892,94 @@ TEST_F(SyntheticGestureControllerTest, PointerMouseAction) {
   EXPECT_EQ(pointer_mouse_target->num_dispatched_pointer_actions(), 4);
   EXPECT_TRUE(
       pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
+}
+
+TEST_F(SyntheticGestureControllerTest, PointerPenAction) {
+  CreateControllerAndTarget<MockSyntheticPointerMouseActionTarget>();
+
+  // First, send a pen move.
+  SyntheticPointerActionListParams::ParamList param_list;
+  SyntheticPointerActionParams param = SyntheticPointerActionParams(
+      SyntheticPointerActionParams::PointerActionType::MOVE);
+
+  param.set_position(gfx::PointF(54, 89));
+  SyntheticPointerActionListParams params;
+  params.PushPointerActionParams(param);
+  params.gesture_source_type = SyntheticGestureParams::PEN_INPUT;
+  std::unique_ptr<SyntheticPointerAction> gesture(
+      new SyntheticPointerAction(params));
+  QueueSyntheticGesture(std::move(gesture));
+  FlushInputUntilComplete();
+
+  MockSyntheticPointerMouseActionTarget* pointer_pen_target =
+      static_cast<MockSyntheticPointerMouseActionTarget*>(target_);
+  EXPECT_EQ(1, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pointer_pen_target->num_dispatched_pointer_actions(), 1);
+  EXPECT_TRUE(
+      pointer_pen_target->SyntheticMouseActionDispatchedCorrectly(param, 0));
+
+  // Second, send a pen press.
+  param.set_pointer_action_type(
+      SyntheticPointerActionParams::PointerActionType::PRESS);
+  param.set_position(gfx::PointF(183, 239));
+  params.PushPointerActionParams(param);
+  gesture.reset(new SyntheticPointerAction(params));
+  QueueSyntheticGesture(std::move(gesture));
+  pointer_pen_target->reset_num_dispatched_pointer_actions();
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(2, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pointer_pen_target->num_dispatched_pointer_actions(), 2);
+  EXPECT_TRUE(
+      pointer_pen_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
+
+  // Third, send a pen move.
+  param.set_pointer_action_type(
+      SyntheticPointerActionParams::PointerActionType::MOVE);
+  param.set_position(gfx::PointF(254, 279));
+  params.PushPointerActionParams(param);
+  gesture.reset(new SyntheticPointerAction(params));
+  QueueSyntheticGesture(std::move(gesture));
+  pointer_pen_target->reset_num_dispatched_pointer_actions();
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(3, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pointer_pen_target->num_dispatched_pointer_actions(), 3);
+  EXPECT_TRUE(
+      pointer_pen_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
+
+  // Fourth, send a pen release.
+  param.set_pointer_action_type(
+      SyntheticPointerActionParams::PointerActionType::RELEASE);
+  params.PushPointerActionParams(param);
+  gesture.reset(new SyntheticPointerAction(params));
+  QueueSyntheticGesture(std::move(gesture));
+  pointer_pen_target->reset_num_dispatched_pointer_actions();
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(4, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pointer_pen_target->num_dispatched_pointer_actions(), 4);
+  EXPECT_TRUE(
+      pointer_pen_target->SyntheticMouseActionDispatchedCorrectly(param, 1));
+
+  // Fifth, send a pen leave.
+  param.set_pointer_action_type(
+      SyntheticPointerActionParams::PointerActionType::LEAVE);
+  params.PushPointerActionParams(param);
+  gesture.reset(new SyntheticPointerAction(params));
+  QueueSyntheticGesture(std::move(gesture));
+  pointer_pen_target->reset_num_dispatched_pointer_actions();
+  FlushInputUntilComplete();
+
+  EXPECT_EQ(5, num_success_);
+  EXPECT_EQ(0, num_failure_);
+  EXPECT_EQ(pointer_pen_target->num_dispatched_pointer_actions(), 5);
+  EXPECT_TRUE(
+      pointer_pen_target->SyntheticMouseActionDispatchedCorrectly(param, 0));
 }
 
 }  // namespace content
