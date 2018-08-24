@@ -12,6 +12,7 @@ extern const char kHistogramDOMContentLoadedEventFiredBackgroundSuffix[];
 extern const char kHistogramDOMContentLoadedEventFiredSuffix[];
 extern const char kHistogramFirstContentfulPaintSuffix[];
 extern const char kHistogramFirstImagePaintSuffix[];
+extern const char kHistogramFirstInputDelaySuffix[];
 extern const char kHistogramFirstLayoutSuffix[];
 extern const char kHistogramFirstMeaningfulPaintSuffix[];
 extern const char kHistogramFirstPaintSuffix[];
