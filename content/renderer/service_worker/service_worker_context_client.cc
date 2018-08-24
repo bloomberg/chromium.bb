@@ -200,7 +200,8 @@ blink::WebBackgroundFetchRegistration ToWebBackgroundFetchRegistration(
       blink::WebString::FromUTF8(registration.developer_id),
       blink::WebString::FromUTF8(registration.unique_id),
       registration.upload_total, registration.uploaded,
-      registration.download_total, registration.downloaded, registration.state);
+      registration.download_total, registration.downloaded, registration.state,
+      registration.failure_reason);
 }
 
 // If |is_for_fetch_event| is true, some headers may be omitted according

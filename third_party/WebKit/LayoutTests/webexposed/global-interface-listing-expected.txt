@@ -431,6 +431,7 @@ interface BackgroundFetchRegistration : EventTarget
     attribute @@toStringTag
     getter downloadTotal
     getter downloaded
+    getter failureReason
     getter id
     getter onprogress
     getter state

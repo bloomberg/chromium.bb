@@ -30,6 +30,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter downloadTotal
 [Worker]     getter downloaded
+[Worker]     getter failureReason
 [Worker]     getter id
 [Worker]     getter onprogress
 [Worker]     getter state

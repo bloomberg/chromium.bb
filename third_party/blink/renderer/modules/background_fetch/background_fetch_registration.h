@@ -32,13 +32,15 @@ class BackgroundFetchRegistration final
   USING_PRE_FINALIZER(BackgroundFetchRegistration, Dispose);
 
  public:
-  BackgroundFetchRegistration(const String& developer_id,
-                              const String& unique_id,
-                              unsigned long long upload_total,
-                              unsigned long long uploaded,
-                              unsigned long long download_total,
-                              unsigned long long downloaded,
-                              mojom::BackgroundFetchState state);
+  BackgroundFetchRegistration(
+      const String& developer_id,
+      const String& unique_id,
+      unsigned long long upload_total,
+      unsigned long long uploaded,
+      unsigned long long download_total,
+      unsigned long long downloaded,
+      mojom::BackgroundFetchState state,
+      mojom::BackgroundFetchFailureReason failure_reason);
 
   BackgroundFetchRegistration(
       ServiceWorkerRegistration* registration,
@@ -76,6 +78,7 @@ class BackgroundFetchRegistration final
   unsigned long long downloadTotal() const;
   unsigned long long downloaded() const;
   const String state() const;
+  const String failureReason() const;
 
   const String& unique_id() const { return unique_id_; }
 
@@ -120,6 +123,7 @@ class BackgroundFetchRegistration final
   unsigned long long download_total_;
   unsigned long long downloaded_;
   mojom::BackgroundFetchState state_;
+  mojom::BackgroundFetchFailureReason failure_reason_;
 
   mojo::Binding<blink::mojom::blink::BackgroundFetchRegistrationObserver>
       observer_binding_;
