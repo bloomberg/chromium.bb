@@ -7,6 +7,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
+#import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
@@ -96,6 +97,18 @@ const CGFloat kIconSizeLegacy = 48;
     self.isAccessibilityElement = YES;
   }
   return self;
+}
+
+- (void)setHighlighted:(BOOL)highlighted {
+  [super setHighlighted:highlighted];
+
+  [UIView transitionWithView:self
+                    duration:ios::material::kDuration8
+                     options:UIViewAnimationOptionCurveEaseInOut
+                  animations:^{
+                    self.alpha = highlighted ? 0.5 : 1.0;
+                  }
+                  completion:nil];
 }
 
 + (CGSize)defaultSize {

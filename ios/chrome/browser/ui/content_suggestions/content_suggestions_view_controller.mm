@@ -527,6 +527,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
+  if (IsUIRefreshPhase1Enabled())
+    return YES;
   ContentSuggestionType itemType = [self.collectionUpdater
       contentSuggestionTypeForItem:[self.collectionViewModel
                                        itemAtIndexPath:indexPath]];
