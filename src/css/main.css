@@ -2,13 +2,6 @@ html {
   height: 100%;  /* Required for printing. */
 }
 
-*:focus {
-  /* Make buttons have the same focus-outline style. */
-  outline: none;
-  /* TODO(yuli): Find a better fix instead of using up box-shadow. */
-  box-shadow: 0 0 2px 3px rgba(37, 129, 223, 0.8);
-}
-
 body {
   background: black;
   bottom: 0;
@@ -87,6 +80,14 @@ body {
   padding: 0;
 }
 
+.buttons button:focus,
+.buttons input:focus {
+  /* Make buttons have the same focus-outline style. */
+  outline: none;
+  /* TODO(yuli): Find a better fix instead of using up box-shadow. */
+  box-shadow: 0 0 2px 3px rgba(37, 129, 223, 0.8);
+}
+
 .buttons input {
   -webkit-appearance: none;
 }
@@ -105,14 +106,9 @@ body {
   opacity: 0.75;
 }
 
-.buttons button:not([disabled]):hover,
-.buttons input:not([disabled]):hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.buttons button:not([disabled]):active,
-.buttons input:not([disabled]):active {
-  background-color: rgba(255, 255, 255, 0.2);
+.buttons button:active,
+.buttons input:active {
+  -webkit-transform: scale(1.07);
 }
 
 #browser-print {
@@ -296,13 +292,6 @@ body.record-mode.taking #shutter {
 
 body.record-mode.taking #shutter:hover {
   background-image: url(../images/camera_shutter_recording_stop_hover.svg);
-}
-
-#shutter:active,
-#switch-recordvideo:active,
-#switch-takephoto:active,
-#gallery-enter:active {
-  -webkit-transform: scale(1.06);
 }
 
 #switch-recordvideo,
@@ -607,8 +596,6 @@ body.capturing.grid #preview-grid-vertical {
   bottom: 0;
   right: 0;
   margin: 10px;
-  /* Fix crbug.com/638500: button background flickers when hovered. */
-  transform: translate3d(0, 0, 0);
 }
 
 #browser .buttons button {
