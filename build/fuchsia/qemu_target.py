@@ -51,8 +51,9 @@ class QemuTarget(target.Target):
   # Used by the context manager to ensure that QEMU is killed when the Python
   # process exits.
   def __exit__(self, exc_type, exc_val, exc_tb):
-    if self.IsStarted():
-      self.Shutdown()
+    if self._IsQemuStillRunning():
+      logging.info('Shutting down QEMU.')
+      self._qemu_process.kill()
 
   def Start(self):
     qemu_path = os.path.join(QEMU_ROOT, 'bin',
@@ -153,10 +154,6 @@ class QemuTarget(target.Target):
     self._qemu_process = subprocess.Popen(qemu_command, stdin=open(os.devnull),
                                           stdout=stdout, stderr=stderr)
     self._WaitUntilReady();
-
-  def Shutdown(self):
-    logging.info('Shutting down QEMU.')
-    self._qemu_process.kill()
 
   def _IsQemuStillRunning(self):
     return os.waitpid(self._qemu_process.pid, os.WNOHANG)[0] == 0
