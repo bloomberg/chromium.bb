@@ -500,23 +500,40 @@ body.capturing.grid #preview-grid {
 }
 
 #preview-grid-horizontal {
+  border-bottom: 1px solid white;
+  border-top: 1px solid white;
   position: absolute;
   left: 0;
   right: 0;
-  top: 33.333%;
-  height: 33.333%;
-  border-bottom: 1px solid white;
-  border-top: 1px solid white;
+  top: 50%;
+  height: 100%;
+  -webkit-transform: translateY(-50%);
+}
+
+body.capturing.grid #preview-grid-horizontal {
+  border-bottom-width: 3px;
+  border-top-width: 3px;
+  -webkit-transform: translateY(-50%) scaleY(0.33333);
+  transition: transform 500ms;
 }
 
 #preview-grid-vertical {
+  border-left: 1px solid white;
+  border-right: 1px solid white;
   position: absolute;
   bottom: 0;
   top: 0;
-  left: 33.333%;
-  width: 33.333%;
-  border-left: 1px solid white;
-  border-right: 1px solid white;
+  left: 50%;
+  width: 100%;
+  -webkit-transform: translateX(-50%);
+}
+
+
+body.capturing.grid #preview-grid-vertical {
+  border-left-width: 3px;
+  border-right-width: 3px;
+  -webkit-transform: translateX(-50%) scaleX(0.33333);
+  transition: transform 500ms;
 }
 
 #toast {
