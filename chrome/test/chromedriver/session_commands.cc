@@ -160,22 +160,22 @@ Status CheckSessionCreated(Session* session) {
   WebView* web_view = NULL;
   Status status = session->GetTargetWindow(&web_view);
   if (status.IsError())
-    return Status(kSessionNotCreatedException, status);
+    return Status(kSessionNotCreated, status);
 
   status = web_view->ConnectIfNecessary();
   if (status.IsError())
-    return Status(kSessionNotCreatedException, status);
+    return Status(kSessionNotCreated, status);
 
   base::ListValue args;
   std::unique_ptr<base::Value> result(new base::Value(0));
   status = web_view->CallFunction(session->GetCurrentFrameId(),
                                   "function(s) { return 1; }", args, &result);
   if (status.IsError())
-    return Status(kSessionNotCreatedException, status);
+    return Status(kSessionNotCreated, status);
 
   int response;
   if (!result->GetAsInteger(&response) || response != 1) {
-    return Status(kSessionNotCreatedException,
+    return Status(kSessionNotCreated,
                   "unexpected response from browser");
   }
 
@@ -214,7 +214,7 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
         continue;
       }
       if (!MergeCapabilities(desired_caps, first_match, &merged_caps)) {
-        return Status(kSessionNotCreatedException, "Invalid capabilities");
+        return Status(kSessionNotCreated, "Invalid capabilities");
       }
       if (MatchCapabilities(&merged_caps)) {
         // If a match is found, we want to use these matched setcapabilities.
@@ -231,7 +231,7 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
     // TODO(johnchen): Remove when clients stop using this.
     session->w3c_compliant = true;
   } else if (!params.GetDictionary("desiredCapabilities", &desired_caps)) {
-    return Status(kSessionNotCreatedException,
+    return Status(kSessionNotCreated,
                   "Missing or invalid capabilities");
   }
 

@@ -1115,7 +1115,7 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=547
     self.assertRaises(chromedriver.UnknownError,
                       self._driver.Load, 'chrome://crash')
-    self.assertRaises(chromedriver.NoSuchSession,
+    self.assertRaises(chromedriver.InvalidSessionId,
                       self._driver.GetCurrentUrl)
 
   def testDoesntHangOnDebugger(self):
@@ -2515,7 +2515,7 @@ class MobileEmulationCapabilityTest(ChromeDriverBaseTest):
 
   def testW3cCompliantResponses(self):
     # It's an error to send W3C format request without W3C capability flag.
-    with self.assertRaises(chromedriver.SessionNotCreatedException):
+    with self.assertRaises(chromedriver.SessionNotCreated):
       self.CreateDriver(send_w3c_request=True)
 
     # W3C capability flag is ignored in a legacy format request.

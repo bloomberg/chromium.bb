@@ -14,8 +14,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
   switch (code) {
     case kOk:
       return "ok";
-    case kNoSuchSession:
-      return "no such session";
+    case kInvalidSessionId:
+      return "invalid session id";
     case kNoSuchElement:
       return "no such element";
     case kNoSuchFrame:
@@ -25,7 +25,7 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
     case kStaleElementReference:
       return "stale element reference";
     case kElementNotVisible:
-      return "element not visible";
+      return "element not interactable";
     case kInvalidElementState:
       return "invalid element state";
     case kUnknownError:
@@ -41,7 +41,7 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
     case kJavaScriptError:
       return "javascript error";
     case kXPathLookupError:
-      return "xpath lookup error";
+      return "invalid selector";
     case kTimeout:
       return "timeout";
     case kNoSuchWindow:
@@ -53,11 +53,11 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
     case kNoSuchAlert:
       return "no such alert";
     case kScriptTimeout:
-      return "asynchronous script timeout";
+      return "script timeout";
     case kInvalidSelector:
       return "invalid selector";
-    case kSessionNotCreatedException:
-      return "session not created exception";
+    case kSessionNotCreated:
+      return "session not created";
     case kNoSuchExecutionContext:
       return "no such execution context";
     case kChromeNotReachable:
