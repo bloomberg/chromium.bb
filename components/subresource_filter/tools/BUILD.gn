@@ -100,7 +100,7 @@ if (!is_ios) {
     ]
 
     inputs = [
-      "//components/subresource_filter/core/common/perftests/data/UnindexedRules_7.54",
+      "//components/subresource_filter/core/common/perftests/data/UnindexedRules_8.0",
     ]
     deps = [
       ":subresource_indexing_tool",
