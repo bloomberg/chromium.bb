@@ -593,6 +593,12 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
 }
 
 gfx::ImageSkia GetImageForWiFiEnabledState(bool enabled, IconType icon_type) {
+  if (features::IsSystemTrayUnifiedEnabled() && !enabled) {
+    return gfx::CreateVectorIcon(kUnifiedMenuWifiOffIcon,
+                                 GetSizeForIconType(icon_type).width(),
+                                 GetDefaultColorForIconType(icon_type));
+  }
+
   gfx::ImageSkia image =
       GetBasicImage(true /* connected */, icon_type, shill::kTypeWifi);
   Badges badges;
