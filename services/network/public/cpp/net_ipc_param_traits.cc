@@ -106,6 +106,26 @@ void ParamTraits<net::CertVerifyResult>::Log(const param_type& p,
   l->append("<CertVerifyResult>");
 }
 
+void ParamTraits<net::ct::CTVerifyResult>::Write(base::Pickle* m,
+                                                 const param_type& p) {
+  WriteParam(m, p.scts);
+  WriteParam(m, p.policy_compliance);
+  WriteParam(m, p.policy_compliance_required);
+}
+
+bool ParamTraits<net::ct::CTVerifyResult>::Read(const base::Pickle* m,
+                                                base::PickleIterator* iter,
+                                                param_type* r) {
+  return ReadParam(m, iter, &r->scts) &&
+         ReadParam(m, iter, &r->policy_compliance) &&
+         ReadParam(m, iter, &r->policy_compliance_required);
+}
+
+void ParamTraits<net::ct::CTVerifyResult>::Log(const param_type& p,
+                                               std::string* l) {
+  l->append("<CTVerifyResult>");
+}
+
 void ParamTraits<net::HashValue>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.ToString());
 }

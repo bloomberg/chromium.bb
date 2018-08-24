@@ -113,6 +113,12 @@ class TestNetworkContext : public mojom::NetworkContext {
                           net::RequestPriority priority,
                           base::Time expected_response_time,
                           const std::vector<uint8_t>& data) override {}
+  void VerifyCertForSignedExchange(
+      const scoped_refptr<net::X509Certificate>& certificate,
+      const GURL& url,
+      const std::string& ocsp_result,
+      const std::string& sct_list,
+      VerifyCertForSignedExchangeCallback callback) override {}
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,

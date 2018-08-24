@@ -29,11 +29,8 @@
 namespace content {
 
 struct PrefetchBrowserTestParam {
-  PrefetchBrowserTestParam(bool network_service_enabled,
-                           bool signed_exchange_enabled)
-      : network_service_enabled(network_service_enabled),
-        signed_exchange_enabled(signed_exchange_enabled) {}
-  const bool network_service_enabled;
+  PrefetchBrowserTestParam(bool signed_exchange_enabled)
+      : signed_exchange_enabled(signed_exchange_enabled) {}
   const bool signed_exchange_enabled;
 };
 
@@ -69,8 +66,6 @@ class PrefetchBrowserTest
 
   void SetUp() override {
     std::vector<base::Feature> enable_features;
-    if (GetParam().network_service_enabled)
-      enable_features.push_back(network::features::kNetworkService);
     if (GetParam().signed_exchange_enabled)
       enable_features.push_back(features::kSignedHTTPExchange);
     feature_list_.InitWithFeatures(enable_features, {});
@@ -128,8 +123,7 @@ class PrefetchBrowserTest
   void OnPrefetchURLLoaderCalled() { prefetch_url_loader_called_++; }
 
   bool CheckPrefetchURLLoaderCountIfSupported(int expected) const {
-    if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchange) &&
-        !base::FeatureList::IsEnabled(network::features::kNetworkService))
+    if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
       return true;
     return prefetch_url_loader_called_ == expected;
   }
@@ -374,7 +368,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   EXPECT_TRUE(CheckPrefetchURLLoaderCountIfSupported(0));
 
   MockSignedExchangeHandlerFactory factory(
-      net::OK, GURL(target_url), "text/html",
+      net::OK, GURL(embedded_test_server()->GetURL(target_url)), "text/html",
       {base::StringPrintf(
           "Link: <%s>;rel=\"preload\";as=\"script\"",
           embedded_test_server()->GetURL(preload_url_in_sxg).spec().c_str())});
@@ -392,12 +386,8 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
   else
     EXPECT_EQ(prefetch_headers["Accept"], "*/*");
 
-  // Test after this point requires SignedHTTPExchange support, which is now
-  // disabled when Network Service is enabled.
-  // TODO(https://crbug.com/849935): Remove the second condition once we
-  // re-enable Signed Exchange with Network Service.
-  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
-      base::FeatureList::IsEnabled(network::features::kNetworkService))
+  // Test after this point requires SignedHTTPExchange support
+  if (!base::FeatureList::IsEnabled(features::kSignedHTTPExchange))
     return;
 
   // If the header in the .sxg file is correctly extracted, we should
@@ -408,10 +398,7 @@ IN_PROC_BROWSER_TEST_P(PrefetchBrowserTest, WebPackageWithPreload) {
 
 INSTANTIATE_TEST_CASE_P(PrefetchBrowserTest,
                         PrefetchBrowserTest,
-                        testing::Values(PrefetchBrowserTestParam(true, true),
-                                        PrefetchBrowserTestParam(true, false),
-                                        PrefetchBrowserTestParam(false, true),
-                                        PrefetchBrowserTestParam(false,
-                                                                 false)));
+                        testing::Values(PrefetchBrowserTestParam(true),
+                                        PrefetchBrowserTestParam(false)));
 
 }  // namespace content

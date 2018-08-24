@@ -12,10 +12,6 @@
 #include "content/public/common/resource_type.h"
 #include "url/origin.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
-
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -42,8 +38,7 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       bool report_raw_headers,
       int load_flags,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      URLLoaderThrottlesGetter url_loader_throttles_getter,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter);
+      URLLoaderThrottlesGetter url_loader_throttles_getter);
   ~SignedExchangeRequestHandler() override;
 
   // NavigationLoaderInterceptor implementation
@@ -78,7 +73,6 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
   const int load_flags_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   base::WeakPtrFactory<SignedExchangeRequestHandler> weak_factory_;
 

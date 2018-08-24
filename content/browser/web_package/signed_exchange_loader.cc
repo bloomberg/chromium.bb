@@ -20,7 +20,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
@@ -101,7 +100,7 @@ SignedExchangeLoader::SignedExchangeLoader(
     std::unique_ptr<SignedExchangeDevToolsProxy> devtools_proxy,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     URLLoaderThrottlesGetter url_loader_throttles_getter,
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter)
+    base::RepeatingCallback<int(void)> frame_tree_node_id_getter)
     : outer_request_url_(outer_request_url),
       outer_response_timing_info_(
           std::make_unique<ResponseTimingInfo>(outer_response)),
@@ -116,7 +115,7 @@ SignedExchangeLoader::SignedExchangeLoader(
       devtools_proxy_(std::move(devtools_proxy)),
       url_loader_factory_(std::move(url_loader_factory)),
       url_loader_throttles_getter_(std::move(url_loader_throttles_getter)),
-      request_context_getter_(std::move(request_context_getter)),
+      frame_tree_node_id_getter_(frame_tree_node_id_getter),
       weak_factory_(this) {
   DCHECK(signed_exchange_utils::IsSignedExchangeHandlingEnabled());
   DCHECK(outer_request_url_.is_valid());
@@ -130,25 +129,6 @@ SignedExchangeLoader::SignedExchangeLoader(
   if (!IsOriginSecure(outer_request_url)) {
     devtools_proxy_->ReportError(
         "Signed exchange response from non secure origin is not supported.",
-        base::nullopt /* error_field */);
-    // Calls OnSignedExchangeReceived() to show the outer response in DevTool's
-    // Network panel and the error message in the Preview panel.
-    devtools_proxy_->OnSignedExchangeReceived(base::nullopt /* header */,
-                                              nullptr /* certificate */,
-                                              nullptr /* ssl_info */);
-    // This will asynchronously delete |this|.
-    forwarding_client_->OnComplete(
-        network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
-    return;
-  }
-
-  // TODO(https://crbug.com/849935): Remove this once we have Network Service
-  // friendly cert, OCSP, and CT verification.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    devtools_proxy_->ReportError(
-        "Currently, signed exchange does not work when "
-        "chrome://flags/#network-service is enabled. "
-        "See http://crbug.com/849935 for details.",
         base::nullopt /* error_field */);
     // Calls OnSignedExchangeReceived() to show the outer response in DevTool's
     // Network panel and the error message in the Preview panel.
@@ -241,8 +221,8 @@ void SignedExchangeLoader::OnStartLoadingResponseBody(
       content_type_, std::make_unique<DataPipeToSourceStream>(std::move(body)),
       base::BindOnce(&SignedExchangeLoader::OnHTTPExchangeFound,
                      weak_factory_.GetWeakPtr()),
-      std::move(cert_fetcher_factory), load_flags_,
-      std::move(request_context_getter_), std::move(devtools_proxy_));
+      std::move(cert_fetcher_factory), load_flags_, std::move(devtools_proxy_),
+      frame_tree_node_id_getter_);
 }
 
 void SignedExchangeLoader::OnComplete(
@@ -256,9 +236,6 @@ void SignedExchangeLoader::FollowRedirect(
 }
 
 void SignedExchangeLoader::ProceedWithResponse() {
-  // TODO(https://crbug.com/791049): Remove this when NetworkService is
-  // enabled by default.
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
   DCHECK(body_data_pipe_adapter_);
   DCHECK(pending_body_consumer_.is_valid());
 

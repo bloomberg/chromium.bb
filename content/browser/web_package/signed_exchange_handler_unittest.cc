@@ -12,11 +12,11 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/test_completion_callback.h"
@@ -28,6 +28,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -189,14 +190,15 @@ class SignedExchangeHandlerTest
   }
 
   void TearDown() override {
-    SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
+    SignedExchangeHandler::SetNetworkContextForTesting(nullptr);
+    network::NetworkContext::SetCertVerifierForTesting(nullptr);
     SignedExchangeHandler::SetVerificationTimeForTesting(
         base::Optional<base::Time>());
   }
 
   void SetCertVerifier(std::unique_ptr<net::CertVerifier> cert_verifier) {
     cert_verifier_ = std::move(cert_verifier);
-    SignedExchangeHandler::SetCertVerifierForTesting(cert_verifier_.get());
+    network::NetworkContext::SetCertVerifierForTesting(cert_verifier_.get());
   }
 
   // Reads from |stream| until an error occurs or the EOF is reached.
@@ -252,28 +254,32 @@ class SignedExchangeHandlerTest
 
   void CreateSignedExchangeHandler(
       std::unique_ptr<net::TestURLRequestContext> context) {
-    request_context_getter_ = new net::TestURLRequestContextGetter(
-        scoped_task_environment_.GetMainThreadTaskRunner(), std::move(context));
+    url_request_context_ = std::move(context);
+    network_context_ = std::make_unique<network::NetworkContext>(
+        nullptr, mojo::MakeRequest(&network_context_ptr_),
+        url_request_context_.get());
+    SignedExchangeHandler::SetNetworkContextForTesting(network_context_.get());
 
     handler_ = std::make_unique<SignedExchangeHandler>(
         ContentType(), std::move(source_stream_),
         base::BindOnce(&SignedExchangeHandlerTest::OnHeaderFound,
                        base::Unretained(this)),
         std::move(cert_fetcher_factory_), net::LOAD_NORMAL,
-        request_context_getter_, nullptr /* devtools_proxy */);
+        nullptr /* devtools_proxy */, base::RepeatingCallback<int(void)>());
   }
 
   void WaitForHeader() {
     while (!read_header()) {
       while (source_->awaiting_completion())
         source_->CompleteNextRead();
-      scoped_task_environment_.RunUntilIdle();
+      browser_thread_bundle_.RunUntilIdle();
     }
   }
 
  protected:
   MockSignedExchangeCertFetcherFactory* mock_cert_fetcher_factory_;
   std::unique_ptr<net::CertVerifier> cert_verifier_;
+  std::unique_ptr<MockCTVerifier> mock_ct_verifier_;
   std::unique_ptr<MockCTPolicyEnforcer> mock_ct_policy_enforcer_;
   net::MockSourceStream* source_;
   std::unique_ptr<SignedExchangeHandler> handler_;
@@ -292,8 +298,10 @@ class SignedExchangeHandlerTest
   }
 
   base::test::ScopedFeatureList feature_list_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
+  content::TestBrowserThreadBundle browser_thread_bundle_;
+  std::unique_ptr<net::TestURLRequestContext> url_request_context_;
+  std::unique_ptr<network::NetworkContext> network_context_;
+  network::mojom::NetworkContextPtr network_context_ptr_;
   const url::Origin request_initiator_;
   std::unique_ptr<net::MockSourceStream> source_stream_;
   std::unique_ptr<MockSignedExchangeCertFetcherFactory> cert_fetcher_factory_;
@@ -904,9 +912,8 @@ TEST_P(SignedExchangeHandlerTest, CTVerifierParams) {
       .WillOnce(
           Return(net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS));
 
-  std::unique_ptr<MockCTVerifier> ct_verifier =
-      std::make_unique<MockCTVerifier>();
-  EXPECT_CALL(*ct_verifier,
+  mock_ct_verifier_ = std::make_unique<MockCTVerifier>();
+  EXPECT_CALL(*mock_ct_verifier_,
               Verify(base::StringPiece("test.example.org"),
                      CertEqualsIncludingChain(original_cert), kDummyOCSPDer,
                      kDummySCTList, _ /* output_scts */, _ /* net_log */))
@@ -916,7 +923,8 @@ TEST_P(SignedExchangeHandlerTest, CTVerifierParams) {
       true /* delay_initialization */);
   test_url_request_context->set_ct_policy_enforcer(
       mock_ct_policy_enforcer_.get());
-  test_url_request_context->set_cert_transparency_verifier(ct_verifier.get());
+  test_url_request_context->set_cert_transparency_verifier(
+      mock_ct_verifier_.get());
   test_url_request_context->Init();
 
   // Make the MockCertVerifier treat the certificate

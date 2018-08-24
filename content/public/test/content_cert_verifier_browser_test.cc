@@ -14,10 +14,16 @@ CertVerifierBrowserTest::~CertVerifierBrowserTest() = default;
 
 void CertVerifierBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
+  if (mock_cert_verifier_disabled_)
+    return;
+
   mock_cert_verifier_.SetUpCommandLine(command_line);
 }
 
 void CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture() {
+  if (mock_cert_verifier_disabled_)
+    return;
+
   ShellURLRequestContextGetter::SetCertVerifierForTesting(
       mock_cert_verifier_.mock_cert_verifier_internal());
 
@@ -25,6 +31,9 @@ void CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture() {
 }
 
 void CertVerifierBrowserTest::TearDownInProcessBrowserTestFixture() {
+  if (mock_cert_verifier_disabled_)
+    return;
+
   ShellURLRequestContextGetter::SetCertVerifierForTesting(nullptr);
   mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
 }
