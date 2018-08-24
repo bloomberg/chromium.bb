@@ -1,13 +1,12 @@
 <div style="display: contents"><a href="#"></a></div>
 Shouldn't crash.
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <script>
-testRunner.dumpAsText();
-testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
-testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
-
-function runTest() {
-  eventSender.keyDown("ArrowLeft");
-}
-
-window.onload = runTest;
+    test(() => {
+        assert_true(!!window.testRunner);
+        testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
+        testRunner.overridePreference("WebKitSpatialNavigationEnabled", 1);
+        eventSender.keyDown("ArrowLeft");
+    }, "No crash or assertion failure");
 </script>
