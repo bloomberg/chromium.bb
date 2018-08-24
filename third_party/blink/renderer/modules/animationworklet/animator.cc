@@ -61,7 +61,7 @@ bool Animator::Animate(ScriptState* script_state,
   if (block.HasCaught())
     return false;
 
-  output->local_time = effect_->GetLocalTime();
+  output->local_time = effect_->local_time();
   return true;
 }
 
