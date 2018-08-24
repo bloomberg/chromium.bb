@@ -70,6 +70,7 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Gets the alpha value of |background_type|.
   int GetBackgroundAlphaValue(ShelfBackgroundType background_type) const;
 
+  const Shelf* shelf() const { return shelf_; }
   ShelfLayoutManager* shelf_layout_manager() { return shelf_layout_manager_; }
   StatusAreaWidget* status_area_widget() const {
     return status_area_widget_.get();
