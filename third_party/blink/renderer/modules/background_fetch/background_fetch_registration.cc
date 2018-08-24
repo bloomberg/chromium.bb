@@ -30,7 +30,8 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
     unsigned long long uploaded,
     unsigned long long download_total,
     unsigned long long downloaded,
-    blink::mojom::BackgroundFetchState state)
+    mojom::BackgroundFetchState state,
+    mojom::BackgroundFetchFailureReason failure_reason)
     : developer_id_(developer_id),
       unique_id_(unique_id),
       upload_total_(upload_total),
@@ -38,6 +39,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       download_total_(download_total),
       downloaded_(downloaded),
       state_(state),
+      failure_reason_(failure_reason),
       observer_binding_(this) {}
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
@@ -50,6 +52,7 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
       download_total_(web_registration.download_total),
       downloaded_(web_registration.downloaded),
       state_(web_registration.state),
+      failure_reason_(web_registration.failure_reason),
       observer_binding_(this) {
   DCHECK(registration);
   Initialize(registration);
@@ -253,12 +256,32 @@ void BackgroundFetchRegistration::DidAbort(
 
 const String BackgroundFetchRegistration::state() const {
   switch (state_) {
-    case blink::mojom::BackgroundFetchState::SUCCESS:
+    case mojom::BackgroundFetchState::SUCCESS:
       return "success";
-    case blink::mojom::BackgroundFetchState::FAILURE:
+    case mojom::BackgroundFetchState::FAILURE:
       return "failure";
-    case blink::mojom::BackgroundFetchState::PENDING:
+    case mojom::BackgroundFetchState::PENDING:
       return "pending";
+  }
+  NOTREACHED();
+}
+
+const String BackgroundFetchRegistration::failureReason() const {
+  switch (failure_reason_) {
+    case mojom::BackgroundFetchFailureReason::NONE:
+      return "";
+    case mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI:
+    case mojom::BackgroundFetchFailureReason::CANCELLED_BY_DEVELOPER:
+      return "aborted";
+    case mojom::BackgroundFetchFailureReason::BAD_STATUS:
+      return "bad-status";
+    case mojom::BackgroundFetchFailureReason::SERVICE_WORKER_UNAVAILABLE:
+    case mojom::BackgroundFetchFailureReason::FETCH_ERROR:
+      return "fetch-error";
+    case mojom::BackgroundFetchFailureReason::QUOTA_EXCEEDED:
+      return "quota-exceeded";
+    case mojom::BackgroundFetchFailureReason::TOTAL_DOWNLOAD_SIZE_EXCEEDED:
+      return "total-download-exceeded";
   }
   NOTREACHED();
 }
@@ -267,7 +290,7 @@ void BackgroundFetchRegistration::Dispose() {
   observer_binding_.Close();
 }
 
-void BackgroundFetchRegistration::Trace(blink::Visitor* visitor) {
+void BackgroundFetchRegistration::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   EventTargetWithInlineData::Trace(visitor);
 }

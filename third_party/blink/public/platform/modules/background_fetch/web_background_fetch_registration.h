@@ -15,20 +15,23 @@ namespace blink {
 // Analogous to the following structure in the spec:
 // https://wicg.github.io/background-fetch/#background-fetch-registration
 struct WebBackgroundFetchRegistration {
-  WebBackgroundFetchRegistration(const WebString& developer_id,
-                                 const WebString& unique_id,
-                                 uint64_t upload_total,
-                                 uint64_t uploaded,
-                                 uint64_t download_total,
-                                 uint64_t downloaded,
-                                 mojom::BackgroundFetchState state)
+  WebBackgroundFetchRegistration(
+      const WebString& developer_id,
+      const WebString& unique_id,
+      uint64_t upload_total,
+      uint64_t uploaded,
+      uint64_t download_total,
+      uint64_t downloaded,
+      mojom::BackgroundFetchState state,
+      mojom::BackgroundFetchFailureReason failure_reason)
       : developer_id(developer_id),
         unique_id(unique_id),
         upload_total(upload_total),
         uploaded(uploaded),
         download_total(download_total),
         downloaded(downloaded),
-        state(state) {}
+        state(state),
+        failure_reason(failure_reason) {}
 
   ~WebBackgroundFetchRegistration() = default;
 
@@ -39,6 +42,7 @@ struct WebBackgroundFetchRegistration {
   uint64_t download_total;
   uint64_t downloaded;
   mojom::BackgroundFetchState state;
+  mojom::BackgroundFetchFailureReason failure_reason;
 };
 
 }  // namespace blink
