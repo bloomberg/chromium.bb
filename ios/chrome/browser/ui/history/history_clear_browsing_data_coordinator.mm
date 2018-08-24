@@ -101,12 +101,19 @@
   [self.historyClearBrowsingDataNavigationController
       dismissViewControllerAnimated:YES
                          completion:^() {
-                           if (completionHandler) {
-                             completionHandler();
-                           }
+                           // completionHandler might trigger
+                           // dismissHistoryWithCompletion, which will call
+                           // stopWithCompletion:, so
+                           // historyClearBrowsingDataNavigationController needs
+                           // to be nil, otherwise stopWithCompletion: will call
+                           // dismiss with nothing to dismiss and therefore not
+                           // trigger its own completionHandler.
                            self.clearBrowsingDataTableViewController = nil;
                            self.historyClearBrowsingDataNavigationController =
                                nil;
+                           if (completionHandler) {
+                             completionHandler();
+                           }
                          }];
 }
 
