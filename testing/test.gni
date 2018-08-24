@@ -261,6 +261,10 @@ template("test") {
       runner_script = "//build/fuchsia/test_runner.py"
       package = ":$_pkg_target"
       package_name_override = _output_name
+
+      deps = [
+        "//testing/buildbot/filters:fuchsia_filters",
+      ]
     }
 
     executable(_exec_target) {
