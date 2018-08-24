@@ -196,11 +196,15 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   split_view_drag_indicators_->SetIndicatorState(IndicatorState::kNone,
                                                  location_in_screen);
 
-  // If |dragged_window_|'s transform has changed during dragging, and it has
-  // not been added into overview grid, restore its transform to identity.
+  const bool snapped_or_into_overview =
+      snap_position != SplitViewController::NONE ||
+      (GetWindowSelector() &&
+       GetWindowSelector()->IsWindowInOverview(dragged_window_));
+  // If |dragged_window_|'s transform has changed during dragging, and it was
+  // not snapped into splitscreen or dropped into overview. Then restore its
+  // transform to identity.
   if (!dragged_window_->layer()->GetTargetTransform().IsIdentity() &&
-      (!GetWindowSelector() ||
-       !GetWindowSelector()->IsWindowInOverview(dragged_window_))) {
+      !snapped_or_into_overview) {
     SetTransform(dragged_window_, gfx::Transform());
   }
 

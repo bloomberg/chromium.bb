@@ -325,6 +325,10 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // called before trying to snap the window.
   void RemoveWindowFromOverviewIfApplicable(aura::Window* window);
 
+  // Updates the |snapping_window_transformed_bounds_map_| on |window|. It
+  // should be called before trying to snap the window.
+  void UpdateSnappingWindowTransformedBounds(aura::Window* window);
+
   // Inserts |window| into overview window grid if overview mode is active. Do
   // nothing if overview mode is inactive at the moment.
   void InsertWindowToOverview(aura::Window* window);
@@ -405,9 +409,9 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // The time when splitview starts. Used for metric collection purpose.
   base::Time splitview_start_time_;
 
-  // The map from a to-be-snapped window to its overview item's bounds if the
-  // window comes from the overview.
-  base::flat_map<aura::Window*, gfx::Rect> overview_window_item_bounds_map_;
+  // The map from a to-be-snapped window to its transformed bounds.
+  base::flat_map<aura::Window*, gfx::Rect>
+      snapping_window_transformed_bounds_map_;
 
   base::ObserverList<Observer>::Unchecked observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;

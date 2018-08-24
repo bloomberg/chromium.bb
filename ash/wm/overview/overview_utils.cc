@@ -12,13 +12,16 @@
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_transient_descendant_iterator.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/transform_util.h"
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace ash {
@@ -215,6 +218,39 @@ std::unique_ptr<views::Widget> CreateBackgroundWidget(aura::Window* root_window,
   widget->Show();
   widget_window->layer()->SetOpacity(initial_opacity);
   return widget;
+}
+
+gfx::Rect GetTransformedBounds(aura::Window* transformed_window,
+                               int top_inset) {
+  gfx::Rect bounds;
+  for (auto* window : wm::GetTransientTreeIterator(transformed_window)) {
+    // Ignore other window types when computing bounding box of window
+    // selector target item.
+    if (window != transformed_window &&
+        (window->type() != aura::client::WINDOW_TYPE_NORMAL &&
+         window->type() != aura::client::WINDOW_TYPE_PANEL)) {
+      continue;
+    }
+    gfx::RectF window_bounds(window->GetTargetBounds());
+    gfx::Transform new_transform =
+        TransformAboutPivot(gfx::Point(window_bounds.x(), window_bounds.y()),
+                            window->layer()->GetTargetTransform());
+    new_transform.TransformRect(&window_bounds);
+
+    // The preview title is shown above the preview window. Hide the window
+    // header for apps or browser windows with no tabs (web apps) to avoid
+    // showing both the window header and the preview title.
+    if (top_inset > 0) {
+      gfx::RectF header_bounds(window_bounds);
+      header_bounds.set_height(top_inset);
+      new_transform.TransformRect(&header_bounds);
+      window_bounds.Inset(0, gfx::ToCeiledInt(header_bounds.height()), 0, 0);
+    }
+    gfx::Rect enclosing_bounds = ToEnclosingRect(window_bounds);
+    ::wm::ConvertRectToScreen(window->parent(), &enclosing_bounds);
+    bounds.Union(enclosing_bounds);
+  }
+  return bounds;
 }
 
 }  // namespace ash

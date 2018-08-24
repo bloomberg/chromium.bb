@@ -102,11 +102,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow
   // Returns the original target bounds of all transformed windows.
   gfx::Rect GetTargetBoundsInScreen() const;
 
-  // Calculates the bounds of a |window_| after being transformed to the
-  // selector's space. Those bounds are a union of all regular (normal and
-  // panel) windows in the |window_|'s transient hierarchy. The returned Rect is
-  // in virtual screen coordinates. The returned bounds are adjusted to allow
-  // the original |window_|'s header to be hidden.
+  // Returns transformed bounds of the overview window. See
+  // OverviewUtil::GetTransformedBounds for more details.
   gfx::Rect GetTransformedBounds() const;
 
   // Returns the kTopViewInset property of |window_| unless there are transient
