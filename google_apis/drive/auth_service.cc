@@ -47,9 +47,9 @@ class AuthRequest : public OAuth2TokenService::Consumer {
 
  private:
   // Overridden from OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
+  void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
@@ -77,13 +77,13 @@ AuthRequest::~AuthRequest() {}
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
 // used to start fetching user data.
-void AuthRequest::OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                    const std::string& access_token,
-                                    const base::Time& expiration_time) {
+void AuthRequest::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   RecordAuthResultHistogram(kSuccessRatioHistogramSuccess);
-  callback_.Run(HTTP_SUCCESS, access_token);
+  callback_.Run(HTTP_SUCCESS, token_response.access_token);
   delete this;
 }
 

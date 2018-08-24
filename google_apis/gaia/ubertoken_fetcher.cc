@@ -124,10 +124,9 @@ void UbertokenFetcher::OnUberAuthTokenFailure(
 
 void UbertokenFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  DCHECK(!access_token.empty());
-  access_token_ = access_token;
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  DCHECK(!token_response.access_token.empty());
+  access_token_ = token_response.access_token;
   access_token_request_.reset();
   ExchangeTokens();
 }

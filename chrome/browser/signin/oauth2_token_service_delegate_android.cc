@@ -112,7 +112,8 @@ void AndroidAccessTokenFetcher::OnAccessTokenResponse(
     return;
   }
   if (error.state() == GoogleServiceAuthError::NONE) {
-    FireOnGetTokenSuccess(access_token, expiration_time);
+    FireOnGetTokenSuccess(OAuth2AccessTokenConsumer::TokenResponse(
+        access_token, expiration_time, std::string()));
   } else {
     FireOnGetTokenFailure(error);
   }

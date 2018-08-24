@@ -593,10 +593,10 @@ void IdentityGetAuthTokenFunction::OnGetAccessTokenComplete(
 #if defined(OS_CHROMEOS)
 void IdentityGetAuthTokenFunction::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   login_token_request_.reset();
-  OnGetAccessTokenComplete(access_token, expiration_time,
+  OnGetAccessTokenComplete(token_response.access_token,
+                           token_response.expiration_time,
                            GoogleServiceAuthError::AuthErrorNone());
 }
 

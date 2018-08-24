@@ -169,8 +169,7 @@ void PermissionRequestCreatorApiary::StartFetching(Request* request) {
 
 void PermissionRequestCreatorApiary::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   auto it = requests_.begin();
   while (it != requests_.end()) {
     if (request == (*it)->access_token_request.get())
@@ -178,7 +177,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
     ++it;
   }
   DCHECK(it != requests_.end());
-  (*it)->access_token = access_token;
+  (*it)->access_token = token_response.access_token;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("permission_request_creator", R"(
@@ -222,7 +221,7 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf(supervised_users::kAuthorizationHeaderFormat,
-                         access_token.c_str()));
+                         token_response.access_token.c_str()));
   (*it)->simple_url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   (*it)->simple_url_loader->AttachStringForUpload(body, "application/json");

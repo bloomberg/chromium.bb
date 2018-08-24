@@ -188,11 +188,10 @@ void CRDHostDelegate::FetchOAuthToken(
 
 void CRDHostDelegate::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   oauth_request_.reset();
   error_callback_.Reset();
-  std::move(oauth_success_callback_).Run(access_token);
+  std::move(oauth_success_callback_).Run(token_response.access_token);
 }
 
 void CRDHostDelegate::OnGetTokenFailure(

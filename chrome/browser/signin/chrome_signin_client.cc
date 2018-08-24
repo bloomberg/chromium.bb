@@ -271,15 +271,15 @@ void ChromeSigninClient::OnNetworkError(int response_code) {
 
 void ChromeSigninClient::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   // Exchange the access token for a handle that can be used for later
   // verification that the token is still valid (i.e. the password has not
   // been changed).
     if (!oauth_client_) {
       oauth_client_.reset(new gaia::GaiaOAuthClient(GetURLLoaderFactory()));
     }
-    oauth_client_->GetTokenInfo(access_token, 3 /* retries */, this);
+    oauth_client_->GetTokenInfo(token_response.access_token, 3 /* retries */,
+                                this);
 }
 
 void ChromeSigninClient::OnGetTokenFailure(

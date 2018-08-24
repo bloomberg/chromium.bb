@@ -54,8 +54,7 @@ void FakeOAuth2TokenService::RemoveAccount(const std::string& account_id) {
 
 void FakeOAuth2TokenService::IssueAllTokensForAccount(
     const std::string& account_id,
-    const std::string& access_token,
-    const base::Time& expiration) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   // Walk the requests and notify the callbacks.
   // Using a copy of pending requests to make sure a new token request triggered
   // from the handling code does not invalidate the iterator.
@@ -64,8 +63,8 @@ void FakeOAuth2TokenService::IssueAllTokensForAccount(
        it != pending_requests_copy.end();
        ++it) {
     if (it->request && (account_id == it->account_id)) {
-      it->request->InformConsumer(
-          GoogleServiceAuthError::AuthErrorNone(), access_token, expiration);
+      it->request->InformConsumer(GoogleServiceAuthError::AuthErrorNone(),
+                                  token_response);
     }
   }
 }
@@ -81,7 +80,8 @@ void FakeOAuth2TokenService::IssueErrorForAllPendingRequestsForAccount(
        it != pending_requests_copy.end();
        ++it) {
     if (it->request && (account_id == it->account_id)) {
-      it->request->InformConsumer(auth_error, std::string(), base::Time());
+      it->request->InformConsumer(auth_error,
+                                  OAuth2AccessTokenConsumer::TokenResponse());
     }
   }
 }

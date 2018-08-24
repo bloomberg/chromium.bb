@@ -56,9 +56,9 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
   void OnPrepared(net::URLRequestContextGetter* request_context_getter);
 
   // OAuth2TokenService::Consumer:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
+  void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 

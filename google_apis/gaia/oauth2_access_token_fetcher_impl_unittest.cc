@@ -33,7 +33,8 @@ constexpr char kValidTokenResponse[] = R"(
     {
       "access_token": "at1",
       "expires_in": 3600,
-      "token_type": "Bearer"
+      "token_type": "Bearer",
+      "id_token": "id_token"
     })";
 
 constexpr char kTokenResponseNoAccessToken[] = R"(
@@ -52,9 +53,8 @@ class MockOAuth2AccessTokenConsumer : public OAuth2AccessTokenConsumer {
   MockOAuth2AccessTokenConsumer() {}
   ~MockOAuth2AccessTokenConsumer() override {}
 
-  MOCK_METHOD2(OnGetTokenSuccess,
-               void(const std::string& access_token,
-                    const base::Time& expiration_time));
+  MOCK_METHOD1(OnGetTokenSuccess,
+               void(const OAuth2AccessTokenConsumer::TokenResponse&));
   MOCK_METHOD1(OnGetTokenFailure, void(const GoogleServiceAuthError& error));
 };
 
@@ -129,7 +129,7 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, GetAccessTokenResponseCodeFailure) {
 
 TEST_F(OAuth2AccessTokenFetcherImplTest, Success) {
   SetupGetAccessToken(net::OK, net::HTTP_OK, kValidTokenResponse);
-  EXPECT_CALL(consumer_, OnGetTokenSuccess("at1", _)).Times(1);
+  EXPECT_CALL(consumer_, OnGetTokenSuccess(_)).Times(1);
   fetcher_.Start("client_id", "client_secret", ScopeList());
   base::RunLoop().RunUntilIdle();
 }
@@ -175,17 +175,19 @@ TEST_F(OAuth2AccessTokenFetcherImplTest, MakeGetAccessTokenBodyMultipleScopes) {
 TEST_F(OAuth2AccessTokenFetcherImplTest, ParseGetAccessTokenResponseNoBody) {
   std::string at;
   int expires_in;
+  std::string id_token;
   auto empty_body = std::make_unique<std::string>("");
   EXPECT_FALSE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
-      std::move(empty_body), &at, &expires_in));
+      std::move(empty_body), &at, &expires_in, &id_token));
   EXPECT_TRUE(at.empty());
 }
 
 TEST_F(OAuth2AccessTokenFetcherImplTest, ParseGetAccessTokenResponseBadJson) {
   std::string at;
   int expires_in;
+  std::string id_token;
   EXPECT_FALSE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
-      std::make_unique<std::string>("foo"), &at, &expires_in));
+      std::make_unique<std::string>("foo"), &at, &expires_in, &id_token));
   EXPECT_TRUE(at.empty());
 }
 
@@ -193,19 +195,23 @@ TEST_F(OAuth2AccessTokenFetcherImplTest,
        ParseGetAccessTokenResponseNoAccessToken) {
   std::string at;
   int expires_in;
+  std::string id_token;
   EXPECT_FALSE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
       std::make_unique<std::string>(kTokenResponseNoAccessToken), &at,
-      &expires_in));
+      &expires_in, &id_token));
   EXPECT_TRUE(at.empty());
 }
 
 TEST_F(OAuth2AccessTokenFetcherImplTest, ParseGetAccessTokenResponseSuccess) {
   std::string at;
   int expires_in;
+  std::string id_token;
   EXPECT_TRUE(OAuth2AccessTokenFetcherImpl::ParseGetAccessTokenSuccessResponse(
-      std::make_unique<std::string>(kValidTokenResponse), &at, &expires_in));
+      std::make_unique<std::string>(kValidTokenResponse), &at, &expires_in,
+      &id_token));
   EXPECT_EQ("at1", at);
   EXPECT_EQ(3600, expires_in);
+  EXPECT_EQ("id_token", id_token);
 }
 
 TEST_F(OAuth2AccessTokenFetcherImplTest,

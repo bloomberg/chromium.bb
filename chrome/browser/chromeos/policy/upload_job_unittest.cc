@@ -110,20 +110,19 @@ void MockOAuth2TokenService::FetchOAuth2Token(
     const FakeOAuth2TokenService::ScopeSet& scopes) {
   GoogleServiceAuthError response_error =
       GoogleServiceAuthError::AuthErrorNone();
-  const base::Time response_expiration = base::Time::Now();
-  std::string access_token;
+  OAuth2AccessTokenConsumer::TokenResponse token_response;
   if (token_replies_.empty()) {
     response_error =
         GoogleServiceAuthError::FromServiceError("Service unavailable.");
   } else {
-    access_token = token_replies_.front();
+    token_response.access_token = token_replies_.front();
+    token_response.expiration_time = base::Time::Now();
     token_replies_.pop();
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&OAuth2TokenService::RequestImpl::InformConsumer,
-                     request->AsWeakPtr(), response_error, access_token,
-                     response_expiration));
+                     request->AsWeakPtr(), response_error, token_response));
 }
 
 void MockOAuth2TokenService::AddTokenToQueue(const std::string& token) {

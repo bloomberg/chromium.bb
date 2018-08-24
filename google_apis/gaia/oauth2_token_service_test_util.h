@@ -19,9 +19,9 @@ class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
   ~TestingOAuth2TokenServiceConsumer() override;
 
   // OAuth2TokenService::Consumer overrides.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& token,
-                         const base::Time& expiration_date) override;
+  void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 

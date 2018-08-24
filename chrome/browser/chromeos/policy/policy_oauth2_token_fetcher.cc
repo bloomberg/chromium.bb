@@ -75,8 +75,8 @@ class PolicyOAuth2TokenFetcherImpl : public PolicyOAuth2TokenFetcher,
   void OnClientOAuthFailure(const GoogleServiceAuthError& error) override;
 
   // OAuth2AccessTokenConsumer overrides.
-  void OnGetTokenSuccess(const std::string& access_token,
-                         const base::Time& expiration_time) override;
+  void OnGetTokenSuccess(
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const GoogleServiceAuthError& error) override;
 
   // Starts fetching OAuth2 refresh token.
@@ -220,11 +220,10 @@ void PolicyOAuth2TokenFetcherImpl::OnClientOAuthFailure(
 }
 
 void PolicyOAuth2TokenFetcherImpl::OnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   VLOG(1) << "OAuth2 access token (device management) fetching succeeded.";
-  oauth2_access_token_ = access_token;
-  ForwardPolicyToken(access_token,
+  oauth2_access_token_ = token_response.access_token;
+  ForwardPolicyToken(token_response.access_token,
                      GoogleServiceAuthError(GoogleServiceAuthError::NONE));
 }
 

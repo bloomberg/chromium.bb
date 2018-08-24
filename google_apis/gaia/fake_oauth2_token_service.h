@@ -25,9 +25,9 @@ class FakeOAuth2TokenService : public OAuth2TokenService {
 
   // Helper routines to issue tokens for pending requests or complete them with
   // error.
-  void IssueAllTokensForAccount(const std::string& account_id,
-                                const std::string& access_token,
-                                const base::Time& expiration);
+  void IssueAllTokensForAccount(
+      const std::string& account_id,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
   void IssueErrorForAllPendingRequestsForAccount(
       const std::string& account_id,
       const GoogleServiceAuthError& auth_error);

@@ -31,15 +31,16 @@ class TestingOAuth2TokenServiceConsumer : public OAuth2TokenService::Consumer {
   TestingOAuth2TokenServiceConsumer();
   ~TestingOAuth2TokenServiceConsumer() override;
 
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
+  void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
   int num_get_token_success_;
   int num_get_token_failure_;
   std::string last_token_;
+  std::string last_id_token_;
   GoogleServiceAuthError last_error_;
 };
 
@@ -55,9 +56,9 @@ TestingOAuth2TokenServiceConsumer::~TestingOAuth2TokenServiceConsumer() {
 
 void TestingOAuth2TokenServiceConsumer::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& token,
-    const base::Time& expiration_date) {
-  last_token_ = token;
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  last_token_ = token_response.access_token;
+  last_id_token_ = token_response.id_token;
   ++num_get_token_success_;
 }
 
@@ -78,7 +79,8 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
 
   void SetResponse(const GoogleServiceAuthError& error,
                    const std::string& access_token,
-                   const base::Time& expiration);
+                   const base::Time& expiration,
+                   const std::string& id_token);
 
   int num_invalidate_token() const { return num_invalidate_token_; }
 
@@ -104,6 +106,7 @@ class MockOAuth2TokenService : public FakeOAuth2TokenService {
   GoogleServiceAuthError response_error_;
   std::string response_access_token_;
   base::Time response_expiration_;
+  std::string response_id_token_;
   int num_invalidate_token_;
   std::string last_token_invalidated_;
 };
@@ -120,10 +123,12 @@ MockOAuth2TokenService::~MockOAuth2TokenService() {
 
 void MockOAuth2TokenService::SetResponse(const GoogleServiceAuthError& error,
                                          const std::string& access_token,
-                                         const base::Time& expiration) {
+                                         const base::Time& expiration,
+                                         const std::string& id_token) {
   response_error_ = error;
   response_access_token_ = access_token;
   response_expiration_ = expiration;
+  response_id_token_ = id_token;
 }
 
 void MockOAuth2TokenService::FetchOAuth2Token(
@@ -134,9 +139,12 @@ void MockOAuth2TokenService::FetchOAuth2Token(
     const std::string& client_secret,
     const ScopeSet& scopes) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&OAuth2TokenService::RequestImpl::InformConsumer,
-                            request->AsWeakPtr(), response_error_,
-                            response_access_token_, response_expiration_));
+      FROM_HERE,
+      base::BindOnce(&OAuth2TokenService::RequestImpl::InformConsumer,
+                     request->AsWeakPtr(), response_error_,
+                     OAuth2AccessTokenConsumer::TokenResponse(
+                         response_access_token_, response_expiration_,
+                         response_id_token_)));
 }
 
 void MockOAuth2TokenService::InvalidateAccessTokenImpl(
@@ -211,8 +219,7 @@ OAuth2TokenServiceRequestTest::Provider::~Provider() {
 TEST_F(OAuth2TokenServiceRequestTest, CreateAndStart_Failure) {
   oauth2_service_->SetResponse(
       GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_UNAVAILABLE),
-      std::string(),
-      base::Time());
+      std::string(), base::Time(), std::string());
   std::unique_ptr<OAuth2TokenServiceRequest> request(
       OAuth2TokenServiceRequest::CreateAndStart(provider_.get(), kAccountId,
                                                 scopes_, &consumer_));

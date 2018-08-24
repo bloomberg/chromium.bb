@@ -159,8 +159,8 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
   // OAuth2AccessTokenConusmer implementation
-  void OnGetTokenSuccess(const std::string& access_token,
-                         const base::Time& expiration_time) override {
+  void OnGetTokenSuccess(
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override {
     ++access_token_success_count_;
   }
 

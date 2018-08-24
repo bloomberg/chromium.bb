@@ -96,10 +96,9 @@ void TokenHandleFetcher::RequestAccessToken(const std::string& user_email) {
 
 void TokenHandleFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   oauth2_access_token_request_.reset();
-  FillForAccessToken(access_token);
+  FillForAccessToken(token_response.access_token);
 }
 
 void TokenHandleFetcher::OnGetTokenFailure(

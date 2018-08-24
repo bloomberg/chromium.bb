@@ -76,14 +76,14 @@ void AccessTokenFetcher::OnRefreshTokenAvailable(
 
 void AccessTokenFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_EQ(request, access_token_request_.get());
   std::unique_ptr<OAuth2TokenService::Request> request_deleter(
       std::move(access_token_request_));
 
   RunCallbackAndMaybeDie(GoogleServiceAuthError::AuthErrorNone(),
-                         AccessTokenInfo(access_token, expiration_time));
+                         AccessTokenInfo(token_response.access_token,
+                                         token_response.expiration_time));
 
   // Potentially dead after the above invocation; nothing to do except return.
 }

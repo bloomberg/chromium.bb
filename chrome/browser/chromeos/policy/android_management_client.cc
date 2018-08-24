@@ -44,12 +44,11 @@ void AndroidManagementClient::StartCheckAndroidManagement(
 
 void AndroidManagementClient::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_EQ(token_request_.get(), request);
   token_request_.reset();
 
-  CheckAndroidManagement(access_token);
+  CheckAndroidManagement(token_response.access_token);
 }
 
 void AndroidManagementClient::OnGetTokenFailure(

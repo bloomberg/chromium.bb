@@ -1601,7 +1601,9 @@ class ExtensionUpdaterTest : public testing::Test {
 
     if (service->fake_token_service()) {
       service->fake_token_service()->IssueAllTokensForAccount(
-          service->fake_account_id(), kFakeOAuth2Token, base::Time::Now());
+          service->fake_account_id(),
+          OAuth2AccessTokenConsumer::TokenResponse(
+              kFakeOAuth2Token, base::Time::Now(), std::string()));
     }
 
     bool using_oauth2 = false;

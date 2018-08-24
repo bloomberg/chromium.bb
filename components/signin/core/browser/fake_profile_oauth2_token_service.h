@@ -62,6 +62,11 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
                                 const std::string& access_token,
                                 const base::Time& expiration);
 
+  // Helper routines to issue token for pending requests based on TokenResponse.
+  void IssueAllTokensForAccount(
+      const std::string& account_id,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
+
   void IssueErrorForAllPendingRequestsForAccount(
       const std::string& account_id,
       const GoogleServiceAuthError& error);
@@ -111,12 +116,12 @@ class FakeProfileOAuth2TokenService : public ProfileOAuth2TokenService {
   // matching |scopes| are completed.  If |account_id| is empty, then pending
   // requests for all accounts are completed, otherwise only requests for the
   // given account.
-  void CompleteRequests(const std::string& account_id,
-                        bool all_scopes,
-                        const ScopeSet& scopes,
-                        const GoogleServiceAuthError& error,
-                        const std::string& access_token,
-                        const base::Time& expiration);
+  void CompleteRequests(
+      const std::string& account_id,
+      bool all_scopes,
+      const ScopeSet& scopes,
+      const GoogleServiceAuthError& error,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
   std::vector<PendingRequest> pending_requests_;
 

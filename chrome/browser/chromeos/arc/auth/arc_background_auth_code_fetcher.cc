@@ -88,8 +88,7 @@ void ArcBackgroundAuthCodeFetcher::OnPrepared(
 
 void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   ResetFetchers();
 
   const std::string device_id = user_manager::known_user::GetDeviceId(
@@ -97,7 +96,7 @@ void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
   DCHECK(!device_id.empty());
 
   base::DictionaryValue request_data;
-  request_data.SetString(kLoginScopedToken, access_token);
+  request_data.SetString(kLoginScopedToken, token_response.access_token);
   request_data.SetString(kDeviceType, kDeviceTypeArc);
   request_data.SetString(kDeviceId, device_id);
   std::string request_string;

@@ -12,8 +12,6 @@
 #include "google_apis/gaia/oauth2_access_token_consumer.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class OAuth2AccessTokenConsumer;
-
 // Interface of a OAuth2 access token fetcher.
 //
 // Usage:
@@ -44,8 +42,8 @@ class OAuth2AccessTokenFetcher {
 
  protected:
   // Fires |OnGetTokenSuccess| on |consumer_|.
-  void FireOnGetTokenSuccess(const std::string& access_token,
-                             const base::Time& expiration_time);
+  void FireOnGetTokenSuccess(
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
   // Fires |OnGetTokenFailure| on |consumer_|.
   void FireOnGetTokenFailure(const GoogleServiceAuthError& error);

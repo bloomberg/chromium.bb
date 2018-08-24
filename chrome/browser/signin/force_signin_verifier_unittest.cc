@@ -58,7 +58,8 @@ TEST_F(ForceSigninVerifierTest, OnGetTokenSuccess) {
   ASSERT_FALSE(verifier_->IsDelayTaskPosted());
   EXPECT_CALL(*verifier_.get(), CloseAllBrowserWindows()).Times(0);
 
-  verifier_->OnGetTokenSuccess(verifier_->request(), "", base::Time::Now());
+  verifier_->OnGetTokenSuccess(verifier_->request(),
+                               OAuth2AccessTokenConsumer::TokenResponse());
   ASSERT_EQ(nullptr, verifier_->request());
   ASSERT_TRUE(verifier_->HasTokenBeenVerified());
   ASSERT_FALSE(verifier_->IsDelayTaskPosted());

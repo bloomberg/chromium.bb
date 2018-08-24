@@ -39,15 +39,15 @@ void AccountInfoFetcher::Start() {
 
 void AccountInfoFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   TRACE_EVENT_ASYNC_STEP_PAST0("AccountFetcherService", "AccountIdFetcher",
                                this, "OnGetTokenSuccess");
   DCHECK_EQ(request, login_token_request_.get());
 
   gaia_oauth_client_.reset(new gaia::GaiaOAuthClient(url_loader_factory_));
   const int kMaxRetries = 3;
-  gaia_oauth_client_->GetUserInfo(access_token, kMaxRetries, this);
+  gaia_oauth_client_->GetUserInfo(token_response.access_token, kMaxRetries,
+                                  this);
 }
 
 void AccountInfoFetcher::OnGetTokenFailure(

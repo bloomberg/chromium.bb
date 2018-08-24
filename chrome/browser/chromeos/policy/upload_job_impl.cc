@@ -340,15 +340,14 @@ void UploadJobImpl::StartUpload() {
 
 void UploadJobImpl::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_EQ(ACQUIRING_TOKEN, state_);
   DCHECK_EQ(access_token_request_.get(), request);
   access_token_request_.reset();
   SYSLOG(INFO) << "Token successfully acquired.";
 
   // Also cache the token locally, so that we can revoke it later if necessary.
-  access_token_ = access_token;
+  access_token_ = token_response.access_token;
   StartUpload();
 }
 

@@ -513,10 +513,10 @@ class PrintPreviewHandler::AccessTokenService
     requests_[type].callback_id = callback_id;
   }
 
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override {
-    OnServiceResponse(request, access_token);
+  void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override {
+    OnServiceResponse(request, token_response.access_token);
   }
 
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,

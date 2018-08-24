@@ -162,10 +162,9 @@ void FamilyInfoFetcher::OnRefreshTokensLoaded() {
 
 void FamilyInfoFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_EQ(access_token_request_.get(), request);
-  access_token_ = access_token;
+  access_token_ = token_response.access_token;
 
   GURL url = kids_management_api::GetURL(request_path_);
 
@@ -204,7 +203,7 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
   resource_request->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf(supervised_users::kAuthorizationHeaderFormat,
-                         access_token.c_str()));
+                         access_token_.c_str()));
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->SetRetryOptions(

@@ -142,8 +142,9 @@ void DeviceOAuth2TokenService::FailRequest(
                     CREDENTIALS_REJECTED_BY_SERVER)
           : GoogleServiceAuthError(error);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(),
-                            auth_error, std::string(), base::Time()));
+      FROM_HERE,
+      base::BindOnce(&RequestImpl::InformConsumer, request->AsWeakPtr(),
+                     auth_error, OAuth2AccessTokenConsumer::TokenResponse()));
 }
 
 DeviceOAuth2TokenServiceDelegate*
