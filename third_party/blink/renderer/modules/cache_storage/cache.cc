@@ -90,10 +90,11 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
   static v8::Local<v8::Function> Create(
       ScriptState* script_state,
       Cache* cache,
+      const String& method_name,
       const HeapVector<Member<Request>>& requests,
       const ExceptionState& exception_state) {
-    FetchResolvedForAdd* self =
-        new FetchResolvedForAdd(script_state, cache, requests, exception_state);
+    FetchResolvedForAdd* self = new FetchResolvedForAdd(
+        script_state, cache, method_name, requests, exception_state);
     return self->BindToV8Function();
   }
 
@@ -130,8 +131,8 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
     for (const auto& response : responses)
       RecordResponseTypeForAdd(response);
 
-    ScriptPromise put_promise = cache_->PutImpl(GetScriptState(), requests_,
-                                                responses, exception_state);
+    ScriptPromise put_promise = cache_->PutImpl(
+        GetScriptState(), method_name_, requests_, responses, exception_state);
     return ScriptValue(GetScriptState(), put_promise.V8Value());
   }
 
@@ -144,16 +145,19 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
  private:
   FetchResolvedForAdd(ScriptState* script_state,
                       Cache* cache,
+                      const String& method_name,
                       const HeapVector<Member<Request>>& requests,
                       const ExceptionState& exception_state)
       : ScriptFunction(script_state),
         cache_(cache),
+        method_name_(method_name),
         requests_(requests),
         context_type_(exception_state.Context()),
         property_name_(exception_state.PropertyName()),
         interface_name_(exception_state.InterfaceName()) {}
 
   Member<Cache> cache_;
+  const String method_name_;
   HeapVector<Member<Request>> requests_;
   ExceptionState::ContextType context_type_;
   const char* property_name_;
@@ -165,9 +169,11 @@ class Cache::BarrierCallbackForPut final
  public:
   BarrierCallbackForPut(int number_of_operations,
                         Cache* cache,
+                        const String& method_name,
                         ScriptPromiseResolver* resolver)
       : number_of_remaining_operations_(number_of_operations),
         cache_(cache),
+        method_name_(method_name),
         resolver_(resolver) {
     DCHECK_LT(0, number_of_remaining_operations_);
     batch_operations_.resize(number_of_operations);
@@ -186,20 +192,32 @@ class Cache::BarrierCallbackForPut final
         std::move(batch_operations_),
         RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
         WTF::Bind(
-            [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-               mojom::blink::CacheStorageError error) {
-              if (!resolver->GetExecutionContext() ||
-                  resolver->GetExecutionContext()->IsContextDestroyed())
+            [](const String& method_name, ScriptPromiseResolver* resolver,
+               TimeTicks start_time,
+               mojom::blink::CacheStorageVerboseErrorPtr error) {
+              ExecutionContext* context = resolver->GetExecutionContext();
+              if (!context || context->IsContextDestroyed())
                 return;
-              if (error == mojom::blink::CacheStorageError::kSuccess) {
+              String message;
+              if (error->message) {
+                message.append(method_name);
+                message.append(": ");
+                message.append(error->message);
+              }
+              if (error->value == mojom::blink::CacheStorageError::kSuccess) {
                 UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Batch",
                                     TimeTicks::Now() - start_time);
                 resolver->Resolve();
+                if (message) {
+                  context->AddConsoleMessage(ConsoleMessage::Create(
+                      kJSMessageSource, kWarningMessageLevel, message));
+                }
               } else {
-                resolver->Reject(CacheStorageError::CreateException(error));
+                resolver->Reject(
+                    CacheStorageError::CreateException(error->value, message));
               }
             },
-            WrapPersistent(resolver_.Get()), TimeTicks::Now()));
+            method_name_, WrapPersistent(resolver_.Get()), TimeTicks::Now()));
   }
 
   void OnError(const String& error_message) {
@@ -268,6 +286,7 @@ class Cache::BarrierCallbackForPut final
   bool completed_ = false;
   int number_of_remaining_operations_;
   Member<Cache> cache_;
+  const String method_name_;
   Member<ScriptPromiseResolver> resolver_;
   Vector<mojom::blink::BatchOperationPtr> batch_operations_;
 };
@@ -457,7 +476,7 @@ ScriptPromise Cache::add(ScriptState* script_state,
       return ScriptPromise();
   }
 
-  return AddAllImpl(script_state, requests, exception_state);
+  return AddAllImpl(script_state, "Cache.add()", requests, exception_state);
 }
 
 ScriptPromise Cache::addAll(ScriptState* script_state,
@@ -475,7 +494,7 @@ ScriptPromise Cache::addAll(ScriptState* script_state,
     }
   }
 
-  return AddAllImpl(script_state, requests, exception_state);
+  return AddAllImpl(script_state, "Cache.addAll()", requests, exception_state);
 }
 
 ScriptPromise Cache::Delete(ScriptState* script_state,
@@ -498,7 +517,7 @@ ScriptPromise Cache::put(ScriptState* script_state,
                          ExceptionState& exception_state) {
   DCHECK(!request.IsNull());
   if (request.IsRequest()) {
-    return PutImpl(script_state,
+    return PutImpl(script_state, "Cache.put()",
                    HeapVector<Member<Request>>(1, request.GetAsRequest()),
                    HeapVector<Member<Response>>(1, response), exception_state);
   }
@@ -506,7 +525,8 @@ ScriptPromise Cache::put(ScriptState* script_state,
       Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
-  return PutImpl(script_state, HeapVector<Member<Request>>(1, new_request),
+  return PutImpl(script_state, "Cache.put()",
+                 HeapVector<Member<Request>>(1, new_request),
                  HeapVector<Member<Response>>(1, response), exception_state);
 }
 
@@ -639,6 +659,7 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
 }
 
 ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
+                                const String& method_name,
                                 const HeapVector<Member<Request>>& requests,
                                 ExceptionState& exception_state) {
   if (requests.IsEmpty())
@@ -670,8 +691,8 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
   }
 
   return ScriptPromise::All(script_state, promises)
-      .Then(FetchResolvedForAdd::Create(script_state, this, requests,
-                                        exception_state));
+      .Then(FetchResolvedForAdd::Create(script_state, this, method_name,
+                                        requests, exception_state));
 }
 
 ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
@@ -696,23 +717,36 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
       RuntimeEnabledFeatures::CacheStorageAddAllRejectsDuplicatesEnabled(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
-             mojom::blink::CacheStorageError error) {
-            if (!resolver->GetExecutionContext() ||
-                resolver->GetExecutionContext()->IsContextDestroyed())
+             mojom::blink::CacheStorageVerboseErrorPtr error) {
+            ExecutionContext* context = resolver->GetExecutionContext();
+            if (!context || context->IsContextDestroyed())
               return;
-            if (error != mojom::blink::CacheStorageError::kSuccess) {
-              switch (error) {
+            String message;
+            if (error->message) {
+              message.append("Cache.delete(): ");
+              message.append(error->message);
+            }
+            bool report_to_console = false;
+            if (error->value != mojom::blink::CacheStorageError::kSuccess) {
+              switch (error->value) {
                 case mojom::blink::CacheStorageError::kErrorNotFound:
+                  report_to_console = true;
                   resolver->Resolve(false);
                   break;
                 default:
-                  resolver->Reject(CacheStorageError::CreateException(error));
+                  resolver->Reject(CacheStorageError::CreateException(
+                      error->value, message));
                   break;
               }
             } else {
               UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Batch",
                                   TimeTicks::Now() - start_time);
+              report_to_console = true;
               resolver->Resolve(true);
+            }
+            if (report_to_console && message) {
+              context->AddConsoleMessage(ConsoleMessage::Create(
+                  kJSMessageSource, kWarningMessageLevel, message));
             }
           },
           WrapPersistent(resolver), TimeTicks::Now()));
@@ -720,13 +754,14 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
 }
 
 ScriptPromise Cache::PutImpl(ScriptState* script_state,
+                             const String& method_name,
                              const HeapVector<Member<Request>>& requests,
                              const HeapVector<Member<Response>>& responses,
                              ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
   BarrierCallbackForPut* barrier_callback =
-      new BarrierCallbackForPut(requests.size(), this, resolver);
+      new BarrierCallbackForPut(requests.size(), this, method_name, resolver);
 
   for (size_t i = 0; i < requests.size(); ++i) {
     KURL url(NullURL(), requests[i]->url());

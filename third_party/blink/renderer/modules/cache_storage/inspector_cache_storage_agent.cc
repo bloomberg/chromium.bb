@@ -560,13 +560,14 @@ void InspectorCacheStorageAgent::deleteEntry(
                   WTF::Bind(
                       [](mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr,
                          std::unique_ptr<DeleteEntryCallback> callback,
-                         mojom::blink::CacheStorageError error) {
-                        if (error !=
+                         mojom::blink::CacheStorageVerboseErrorPtr error) {
+                        if (error->value !=
                             mojom::blink::CacheStorageError::kSuccess) {
                           callback->sendFailure(
                               ProtocolResponse::Error(String::Format(
                                   "Error deleting cache entry: %s",
-                                  CacheStorageErrorString(error).data())));
+                                  CacheStorageErrorString(error->value)
+                                      .data())));
                         } else {
                           callback->sendSuccess();
                         }

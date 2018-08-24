@@ -57,6 +57,7 @@
 #include "url/origin.h"
 
 using blink::mojom::CacheStorageError;
+using blink::mojom::CacheStorageVerboseErrorPtr;
 using network::mojom::FetchResponseType;
 
 namespace content {
@@ -212,13 +213,15 @@ class CacheStorageManagerTest : public testing::Test {
     return cache_names;
   }
 
-  void CachePutCallback(base::RunLoop* run_loop, CacheStorageError error) {
-    callback_error_ = error;
+  void CachePutCallback(base::RunLoop* run_loop,
+                        CacheStorageVerboseErrorPtr error) {
+    callback_error_ = error->value;
     run_loop->Quit();
   }
 
-  void CacheDeleteCallback(base::RunLoop* run_loop, CacheStorageError error) {
-    callback_error_ = error;
+  void CacheDeleteCallback(base::RunLoop* run_loop,
+                           CacheStorageVerboseErrorPtr error) {
+    callback_error_ = error->value;
     run_loop->Quit();
   }
 

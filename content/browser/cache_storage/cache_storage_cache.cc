@@ -23,6 +23,7 @@
 #include "base/numerics/checked_math.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/cache_storage/cache_storage.pb.h"
 #include "content/browser/cache_storage/cache_storage_blob_to_disk_cache.h"
@@ -52,6 +53,7 @@
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::CacheStorageError;
+using blink::mojom::CacheStorageVerboseError;
 
 namespace content {
 
@@ -168,10 +170,14 @@ bool VaryMatches(const ServiceWorkerHeaderMap& request,
   return true;
 }
 
-// Check batch operation list for duplicate entries.
-bool HasDuplicateOperations(
-    const std::vector<blink::mojom::BatchOperationPtr>& operations) {
+// Check a batch operation list for duplicate entries.  A StackVector
+// must be passed to store any resulting duplicate URL strings.  Returns
+// true if any duplicates were found.
+bool FindDuplicateOperations(
+    const std::vector<blink::mojom::BatchOperationPtr>& operations,
+    std::vector<std::string>* duplicate_url_list_out) {
   using blink::mojom::BatchOperation;
+  DCHECK(duplicate_url_list_out);
 
   if (operations.size() < 2) {
     return false;
@@ -202,6 +208,14 @@ bool HasDuplicateOperations(
   // headers then this devolves into O(n^2).
   for (auto outer = sorted->cbegin(); outer != sorted->cend(); ++outer) {
     const BatchOperation* outer_op = *outer;
+
+    // If this entry already matches a duplicate we found, then just skip
+    // ahead to find any remaining duplicates.
+    if (!duplicate_url_list_out->empty() &&
+        outer_op->request.url.spec() == duplicate_url_list_out->back()) {
+      continue;
+    }
+
     for (auto inner = std::next(outer); inner != sorted->cend(); ++inner) {
       const BatchOperation* inner_op = *inner;
       // Since the list is sorted we can stop looking at neighbors after
@@ -217,12 +231,13 @@ bool HasDuplicateOperations(
                       inner_op->response->headers) ||
           VaryMatches(outer_op->request.headers, inner_op->request.headers,
                       outer_op->response->headers)) {
-        return true;
+        duplicate_url_list_out->push_back(inner_op->request.url.spec());
+        break;
       }
     }
   }
 
-  return false;
+  return !duplicate_url_list_out->empty();
 }
 
 GURL RemoveQueryParam(const GURL& url) {
@@ -593,12 +608,19 @@ void CacheStorageCache::WriteSideData(ErrorCallback callback,
 void CacheStorageCache::BatchOperation(
     std::vector<blink::mojom::BatchOperationPtr> operations,
     bool fail_on_duplicates,
-    ErrorCallback callback,
+    VerboseErrorCallback callback,
     BadMessageCallback bad_message_callback) {
+  // This method may produce a warning message that should be returned in the
+  // final VerboseErrorCallback.  A message may be present in both the failure
+  // and success paths.
+  base::Optional<std::string> message;
+
   if (backend_state_ == BACKEND_CLOSED) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), CacheStorageError::kErrorStorage));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  CacheStorageVerboseError::New(
+                                      CacheStorageError::kErrorStorage,
+                                      std::move(message))));
     return;
   }
 
@@ -618,12 +640,27 @@ void CacheStorageCache::BatchOperation(
   //
   // Note, we are currently only rejecting on duplicates based on a feature
   // flag while web compat is assessed.  (https://crbug.com/720919)
+  std::vector<std::string> duplicate_url_list;
+  if (FindDuplicateOperations(operations, &duplicate_url_list)) {
+    // If we found any duplicates we need to at least warn the user.  Format
+    // the URL list into a comma-separated list.
+    std::string url_list_string = base::JoinString(duplicate_url_list, ", ");
 
-  if (fail_on_duplicates && HasDuplicateOperations(operations)) {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  CacheStorageError::kErrorDuplicateOperation));
-    return;
+    // Place the duplicate list into an error message.
+    message.emplace(
+        base::StringPrintf("duplicate requests (%s)", url_list_string.c_str()));
+
+    // Depending on the feature flag, we may treat this as an error or allow
+    // the batch operation to continue.
+    if (fail_on_duplicates) {
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback),
+                         CacheStorageVerboseError::New(
+                             CacheStorageError::kErrorDuplicateOperation,
+                             std::move(message))));
+      return;
+    }
   }
 
   // Estimate the required size of the put operations. The size of the deletes
@@ -643,8 +680,10 @@ void CacheStorageCache::BatchOperation(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, std::move(bad_message_callback));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), CacheStorageError::kErrorStorage));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  CacheStorageVerboseError::New(
+                                      CacheStorageError::kErrorStorage,
+                                      std::move(message))));
     return;
   }
   uint64_t space_required = safe_space_required.ValueOrDie();
@@ -661,12 +700,12 @@ void CacheStorageCache::BatchOperation(
         base::BindOnce(&CacheStorageCache::BatchDidGetUsageAndQuota,
                        weak_ptr_factory_.GetWeakPtr(), std::move(operations),
                        std::move(callback), std::move(bad_message_callback),
-                       space_required, side_data_size));
+                       std::move(message), space_required, side_data_size));
     return;
   }
 
   BatchDidGetUsageAndQuota(std::move(operations), std::move(callback),
-                           std::move(bad_message_callback),
+                           std::move(bad_message_callback), std::move(message),
                            0 /* space_required */, 0 /* side_data_size */,
                            blink::mojom::QuotaStatusCode::kOk, 0 /* usage */,
                            0 /* quota */);
@@ -674,8 +713,9 @@ void CacheStorageCache::BatchOperation(
 
 void CacheStorageCache::BatchDidGetUsageAndQuota(
     std::vector<blink::mojom::BatchOperationPtr> operations,
-    ErrorCallback callback,
+    VerboseErrorCallback callback,
     BadMessageCallback bad_message_callback,
+    base::Optional<std::string> message,
     uint64_t space_required,
     uint64_t side_data_size,
     blink::mojom::QuotaStatusCode status_code,
@@ -690,15 +730,19 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, std::move(bad_message_callback));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), CacheStorageError::kErrorStorage));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  CacheStorageVerboseError::New(
+                                      CacheStorageError::kErrorStorage,
+                                      std::move(message))));
     return;
   }
   if (status_code != blink::mojom::QuotaStatusCode::kOk ||
       safe_space_required.ValueOrDie() > quota) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback),
-                                  CacheStorageError::kErrorQuotaExceeded));
+                                  CacheStorageVerboseError::New(
+                                      CacheStorageError::kErrorQuotaExceeded,
+                                      std::move(message))));
     return;
   }
   bool skip_side_data = safe_space_required_with_side_data.ValueOrDie() > quota;
@@ -711,10 +755,10 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
   auto barrier_closure = base::BarrierClosure(
       operations.size(),
       base::BindOnce(&CacheStorageCache::BatchDidAllOperations,
-                     weak_ptr_factory_.GetWeakPtr(), callback_copy));
+                     weak_ptr_factory_.GetWeakPtr(), callback_copy, message));
   auto completion_callback = base::BindRepeating(
       &CacheStorageCache::BatchDidOneOperation, weak_ptr_factory_.GetWeakPtr(),
-      std::move(barrier_closure), std::move(callback_copy));
+      std::move(barrier_closure), std::move(callback_copy), std::move(message));
 
   // Operations may synchronously invoke |callback| which could release the
   // last reference to this instance. Hold a handle for the duration of this
@@ -748,21 +792,26 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
 
 void CacheStorageCache::BatchDidOneOperation(
     base::OnceClosure completion_closure,
-    ErrorCallback error_callback,
+    VerboseErrorCallback error_callback,
+    base::Optional<std::string> message,
     CacheStorageError error) {
   if (error != CacheStorageError::kSuccess) {
     // This relies on |callback| being created by AdaptCallbackForRepeating
     // and ignoring anything but the first invocation.
-    std::move(error_callback).Run(error);
+    std::move(error_callback)
+        .Run(CacheStorageVerboseError::New(error, std::move(message)));
   }
 
   std::move(completion_closure).Run();
 }
 
-void CacheStorageCache::BatchDidAllOperations(ErrorCallback callback) {
+void CacheStorageCache::BatchDidAllOperations(
+    VerboseErrorCallback callback,
+    base::Optional<std::string> message) {
   // This relies on |callback| being created by AdaptCallbackForRepeating
   // and ignoring anything but the first invocation.
-  std::move(callback).Run(CacheStorageError::kSuccess);
+  std::move(callback).Run(CacheStorageVerboseError::New(
+      CacheStorageError::kSuccess, std::move(message)));
 }
 
 void CacheStorageCache::Keys(std::unique_ptr<ServiceWorkerFetchRequest> request,

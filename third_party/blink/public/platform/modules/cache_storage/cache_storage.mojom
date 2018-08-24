@@ -25,6 +25,16 @@ enum CacheStorageError {
   // Add new values here.
 };
 
+// A result value that may include an optional message string.  The renderer
+// may prepend the API method name that produced this result.  If the main
+// result value is kSuccess the message may be reported to the console as
+// a warning.  If the result value is a failure code then the message string
+// will be set as the DOMException's message directly.
+struct CacheStorageVerboseError {
+  CacheStorageError value;
+  string? message;
+};
+
 // Controls how requests are matched in the Cache API.
 struct QueryParams {
   bool ignore_search;
@@ -100,7 +110,7 @@ interface CacheStorageCache {
 
   // Perform a batch of operations, used for PUT and DELETE operations.
   Batch(array<BatchOperation> batch_operations, bool fail_on_duplicates)
-      => (CacheStorageError result);
+      => (CacheStorageVerboseError result);
 };
 
 // Handles global CacheStorage methods, directly relates to methods available on
