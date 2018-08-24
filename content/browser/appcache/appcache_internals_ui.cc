@@ -127,7 +127,7 @@ GetDictionaryValueForAppCacheResourceInfo(
 }
 
 std::unique_ptr<base::ListValue> GetListValueForAppCacheResourceInfoVector(
-    AppCacheResourceInfoVector* resource_info_vector) {
+    std::vector<AppCacheResourceInfo>* resource_info_vector) {
   std::unique_ptr<base::ListValue> list(new base::ListValue);
   for (const AppCacheResourceInfo& res_info : *resource_info_vector)
     list->Append(GetDictionaryValueForAppCacheResourceInfo(res_info));
@@ -238,9 +238,9 @@ void AppCacheInternalsUI::Proxy::RequestAppCacheDetails(
 
 void AppCacheInternalsUI::Proxy::OnGroupLoaded(AppCacheGroup* appcache_group,
                                                const GURL& manifest_gurl) {
-  std::unique_ptr<AppCacheResourceInfoVector> resource_info_vector;
+  std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector;
   if (appcache_group && appcache_group->newest_complete_cache()) {
-    resource_info_vector.reset(new AppCacheResourceInfoVector);
+    resource_info_vector.reset(new std::vector<AppCacheResourceInfo>);
     appcache_group->newest_complete_cache()->ToResourceInfoVector(
         resource_info_vector.get());
     std::sort(resource_info_vector->begin(), resource_info_vector->end(),
@@ -445,7 +445,7 @@ void AppCacheInternalsUI::OnAppCacheInfoDeleted(
 void AppCacheInternalsUI::OnAppCacheDetailsReady(
     const base::FilePath& partition_path,
     const std::string& manifest_url,
-    std::unique_ptr<AppCacheResourceInfoVector> resource_info_vector) {
+    std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector) {
   if (resource_info_vector) {
     web_ui()->CallJavascriptFunctionUnsafe(
         kFunctionOnAppCacheDetailsReady, base::Value(manifest_url),

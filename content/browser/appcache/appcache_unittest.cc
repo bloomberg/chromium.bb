@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_host.h"
@@ -136,7 +138,7 @@ TEST_F(AppCacheTest, InitializeWithManifest) {
   EXPECT_EQ(GURL("http://fb1.com"), fallbacks[0].namespace_url);
   EXPECT_EQ(GURL("http://fbone.com"), fallbacks[0].target_url);
   EXPECT_TRUE(fallbacks[0].is_pattern);
-  const AppCacheNamespaceVector& whitelist =
+  const std::vector<AppCacheNamespace>& whitelist =
       cache->online_whitelist_namespaces_;
   expected = 2;
   EXPECT_EQ(expected, whitelist.size());

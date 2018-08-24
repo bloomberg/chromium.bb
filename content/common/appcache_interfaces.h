@@ -42,8 +42,6 @@ enum AppCacheNamespaceType {
   APPCACHE_NETWORK_NAMESPACE
 };
 
-typedef std::vector<AppCacheResourceInfo> AppCacheResourceInfoVector;
-
 struct CONTENT_EXPORT AppCacheNamespace {
   AppCacheNamespace();  // Type is APPCACHE_FALLBACK_NAMESPACE by default.
   AppCacheNamespace(AppCacheNamespaceType type, const GURL& url,
@@ -57,8 +55,6 @@ struct CONTENT_EXPORT AppCacheNamespace {
   GURL target_url;
   bool is_pattern;
 };
-
-typedef std::vector<AppCacheNamespace> AppCacheNamespaceVector;
 
 // Interface used by backend (browser-process) to talk to frontend (renderer).
 class CONTENT_EXPORT AppCacheFrontend {
@@ -116,9 +112,6 @@ class CONTENT_EXPORT AppCacheBackend {
 // Useful string constants.
 CONTENT_EXPORT extern const char kHttpGETMethod[];
 CONTENT_EXPORT extern const char kHttpHEADMethod[];
-
-// base::CommandLine flag to turn this experimental feature on.
-CONTENT_EXPORT extern const char kEnableExecutableHandlers[];
 
 CONTENT_EXPORT bool IsSchemeSupportedForAppCache(const GURL& url);
 CONTENT_EXPORT bool IsMethodSupportedForAppCache(
