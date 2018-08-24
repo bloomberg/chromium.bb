@@ -6,7 +6,10 @@
 #define CHROME_BROWSER_RESOURCE_COORDINATOR_LOCAL_SITE_CHARACTERISTICS_NON_RECORDING_DATA_STORE_H_
 
 #include "base/macros.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
+
+class Profile;
 
 namespace resource_coordinator {
 
@@ -15,10 +18,17 @@ namespace resource_coordinator {
 // SiteCharacteristicsDataReader are obtained from another
 // SiteCharacteristicsDataStore.
 class LocalSiteCharacteristicsNonRecordingDataStore
-    : public SiteCharacteristicsDataStore {
+    : public SiteCharacteristicsDataStore,
+      public LocalSiteCharacteristicsDataStoreInspector {
  public:
-  // |data_store_for_readers| should outlive this object.
-  explicit LocalSiteCharacteristicsNonRecordingDataStore(
+  // |profile| is the profile this data store is associated with.
+  // |data_store_inspector| is the inspector instance this instance will
+  // delegate to, may be null, but this is typically the inspector instance
+  // associated with |data_store_for_readers|. |data_store_for_readers| should
+  // outlive this object.
+  LocalSiteCharacteristicsNonRecordingDataStore(
+      Profile* profile,
+      LocalSiteCharacteristicsDataStoreInspector* data_store_inspector,
       SiteCharacteristicsDataStore* data_store_for_readers);
   ~LocalSiteCharacteristicsNonRecordingDataStore() override;
 
@@ -30,11 +40,25 @@ class LocalSiteCharacteristicsNonRecordingDataStore
       TabVisibility tab_visibility) override;
   bool IsRecordingForTesting() override;
 
+  // LocalSiteCharacteristicsDataStoreInspector:
+  const char* GetDataStoreName() override;
+  std::vector<url::Origin> GetAllInMemoryOrigins() override;
+  void GetDatabaseSize(DatabaseSizeCallback on_have_data) override;
+  bool GetaDataForOrigin(
+      const url::Origin& origin,
+      std::unique_ptr<SiteCharacteristicsProto>* data) override;
+
  private:
   // The data store to use to create the readers served by this data store. E.g.
   // during an incognito session it should point to the data store used by the
   // parent session.
   SiteCharacteristicsDataStore* data_store_for_readers_;
+
+  // The inspector implementation this instance delegates to.
+  LocalSiteCharacteristicsDataStoreInspector* data_store_inspector_;
+
+  // The profile this data store is associated with.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsNonRecordingDataStore);
 };

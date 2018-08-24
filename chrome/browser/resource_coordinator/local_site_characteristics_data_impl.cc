@@ -204,18 +204,7 @@ LocalSiteCharacteristicsDataImpl::~LocalSiteCharacteristicsDataImpl() {
   // not completed, add some metrics to measure if this is really an issue.
   if (is_dirty_ && fully_initialized_) {
     DCHECK(site_characteristics_.IsInitialized());
-
-    // Update the proto with the most current performance measurement averages.
-    if (cpu_usage_estimate_.num_datums() ||
-        private_footprint_kb_estimate_.num_datums()) {
-      auto* estimates = site_characteristics_.mutable_load_time_estimates();
-      if (cpu_usage_estimate_.num_datums())
-        estimates->set_avg_cpu_usage_us(cpu_usage_estimate_.value());
-      if (private_footprint_kb_estimate_.num_datums()) {
-        estimates->set_avg_footprint_kb(private_footprint_kb_estimate_.value());
-      }
-    }
-    database_->WriteSiteCharacteristicsIntoDB(origin_, site_characteristics_);
+    database_->WriteSiteCharacteristicsIntoDB(origin_, FlushStateToProto());
   }
 }
 
@@ -453,6 +442,22 @@ void LocalSiteCharacteristicsDataImpl::DecrementNumLoadedBackgroundTabs() {
   // Update the observation duration fields.
   for (auto* iter : GetAllFeaturesFromProto(&site_characteristics_))
     IncrementFeatureObservationDuration(iter, extra_observation_duration);
+}
+
+const SiteCharacteristicsProto&
+LocalSiteCharacteristicsDataImpl::FlushStateToProto() {
+  // Update the proto with the most current performance measurement averages.
+  if (cpu_usage_estimate_.num_datums() ||
+      private_footprint_kb_estimate_.num_datums()) {
+    auto* estimates = site_characteristics_.mutable_load_time_estimates();
+    if (cpu_usage_estimate_.num_datums())
+      estimates->set_avg_cpu_usage_us(cpu_usage_estimate_.value());
+    if (private_footprint_kb_estimate_.num_datums()) {
+      estimates->set_avg_footprint_kb(private_footprint_kb_estimate_.value());
+    }
+  }
+
+  return site_characteristics_;
 }
 
 }  // namespace internal

@@ -12,13 +12,21 @@ namespace resource_coordinator {
 
 LocalSiteCharacteristicsNonRecordingDataStore::
     LocalSiteCharacteristicsNonRecordingDataStore(
+        Profile* profile,
+        LocalSiteCharacteristicsDataStoreInspector* data_store_inspector,
         SiteCharacteristicsDataStore* data_store_for_readers)
-    : data_store_for_readers_(data_store_for_readers) {
+    : data_store_for_readers_(data_store_for_readers),
+      data_store_inspector_(data_store_inspector),
+      profile_(profile) {
   DCHECK(data_store_for_readers_);
+  // Register the debug interface against the profile.
+  LocalSiteCharacteristicsDataStoreInspector::SetForProfile(this, profile);
 }
 
 LocalSiteCharacteristicsNonRecordingDataStore::
-    ~LocalSiteCharacteristicsNonRecordingDataStore() = default;
+    ~LocalSiteCharacteristicsNonRecordingDataStore() {
+  LocalSiteCharacteristicsDataStoreInspector::SetForProfile(nullptr, profile_);
+}
 
 std::unique_ptr<SiteCharacteristicsDataReader>
 LocalSiteCharacteristicsNonRecordingDataStore::GetReaderForOrigin(
@@ -38,6 +46,35 @@ LocalSiteCharacteristicsNonRecordingDataStore::GetWriterForOrigin(
 
 bool LocalSiteCharacteristicsNonRecordingDataStore::IsRecordingForTesting() {
   return false;
+}
+
+const char* LocalSiteCharacteristicsNonRecordingDataStore::GetDataStoreName() {
+  return "LocalSiteCharacteristicsNonRecordingDataStore";
+}
+
+std::vector<url::Origin>
+LocalSiteCharacteristicsNonRecordingDataStore::GetAllInMemoryOrigins() {
+  if (!data_store_inspector_)
+    return std::vector<url::Origin>();
+
+  return data_store_inspector_->GetAllInMemoryOrigins();
+}
+
+void LocalSiteCharacteristicsNonRecordingDataStore::GetDatabaseSize(
+    DatabaseSizeCallback on_have_data) {
+  if (!data_store_inspector_)
+    std::move(on_have_data).Run(base::nullopt, base::nullopt);
+
+  data_store_inspector_->GetDatabaseSize(std::move(on_have_data));
+}
+
+bool LocalSiteCharacteristicsNonRecordingDataStore::GetaDataForOrigin(
+    const url::Origin& origin,
+    std::unique_ptr<SiteCharacteristicsProto>* data) {
+  if (!data_store_inspector_)
+    return false;
+
+  return data_store_inspector_->GetaDataForOrigin(origin, data);
 }
 
 }  // namespace resource_coordinator

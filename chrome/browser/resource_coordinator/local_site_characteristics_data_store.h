@@ -11,6 +11,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/site_characteristics_data_writer.h"
 #include "components/history/core/browser/history_service_observer.h"
@@ -28,6 +29,7 @@ class LocalSiteCharacteristicsDatabase;
 // LocalSiteCharacteristicsNonRecordingDataStore class should be used instead.
 class LocalSiteCharacteristicsDataStore
     : public SiteCharacteristicsDataStore,
+      public LocalSiteCharacteristicsDataStoreInspector,
       public internal::LocalSiteCharacteristicsDataImpl::OnDestroyDelegate,
       public history::HistoryServiceObserver {
  public:
@@ -56,6 +58,14 @@ class LocalSiteCharacteristicsDataStore
       std::unique_ptr<LocalSiteCharacteristicsDatabase> database) {
     database_ = std::move(database);
   }
+
+  // LocalSiteCharacteristicsDataStoreInspector:
+  const char* GetDataStoreName() override;
+  std::vector<url::Origin> GetAllInMemoryOrigins() override;
+  void GetDatabaseSize(DatabaseSizeCallback on_have_data) override;
+  bool GetaDataForOrigin(
+      const url::Origin& origin,
+      std::unique_ptr<SiteCharacteristicsProto>* data) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(LocalSiteCharacteristicsDataStoreTest, EndToEnd);
@@ -86,6 +96,9 @@ class LocalSiteCharacteristicsDataStore
       history_observer_;
 
   std::unique_ptr<LocalSiteCharacteristicsDatabase> database_;
+
+  // The profile this data store is associated with.
+  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalSiteCharacteristicsDataStore);
 };

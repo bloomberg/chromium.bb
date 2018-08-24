@@ -133,9 +133,11 @@ class LocalSiteCharacteristicsDataImpl
 
  protected:
   friend class base::RefCounted<LocalSiteCharacteristicsDataImpl>;
+  friend class resource_coordinator::LocalSiteCharacteristicsDataStore;
+
+  // Friend all the tests.
   friend class LocalSiteCharacteristicsDataImplTest;
   friend class resource_coordinator::LocalSiteCharacteristicsDataReaderTest;
-  friend class resource_coordinator::LocalSiteCharacteristicsDataStore;
   friend class resource_coordinator::LocalSiteCharacteristicsDataStoreTest;
   friend class resource_coordinator::LocalSiteCharacteristicsDataWriterTest;
 
@@ -212,6 +214,9 @@ class LocalSiteCharacteristicsDataImpl
   // Decrement the |loaded_tabs_in_background_count_| counter and update the
   // local feature observation durations if necessary.
   void DecrementNumLoadedBackgroundTabs();
+
+  // Flush any state that's maintained in member variables to the proto.
+  const SiteCharacteristicsProto& FlushStateToProto();
 
   // This site's characteristics, contains the features and other values are
   // measured.

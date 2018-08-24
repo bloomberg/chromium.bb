@@ -26,7 +26,7 @@ constexpr char kSiteCharacteristicsDirectoryName[] =
 
 LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
     Profile* profile)
-    : history_observer_(this) {
+    : history_observer_(this), profile_(profile) {
   DCHECK(base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase));
 
   database_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
@@ -36,10 +36,14 @@ LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
       HistoryServiceFactory::GetForProfileWithoutCreating(profile);
   if (history)
     history_observer_.Add(history);
+
+  // Register the debug interface against the profile.
+  LocalSiteCharacteristicsDataStoreInspector::SetForProfile(this, profile);
 }
 
-LocalSiteCharacteristicsDataStore::~LocalSiteCharacteristicsDataStore() =
-    default;
+LocalSiteCharacteristicsDataStore::~LocalSiteCharacteristicsDataStore() {
+  LocalSiteCharacteristicsDataStoreInspector::SetForProfile(nullptr, profile_);
+}
 
 std::unique_ptr<SiteCharacteristicsDataReader>
 LocalSiteCharacteristicsDataStore::GetReaderForOrigin(
@@ -65,6 +69,42 @@ LocalSiteCharacteristicsDataStore::GetWriterForOrigin(
 }
 
 bool LocalSiteCharacteristicsDataStore::IsRecordingForTesting() {
+  return true;
+}
+
+const char* LocalSiteCharacteristicsDataStore::GetDataStoreName() {
+  return "LocalSiteCharacteristicsDataStore";
+}
+
+std::vector<url::Origin>
+LocalSiteCharacteristicsDataStore::GetAllInMemoryOrigins() {
+  std::vector<url::Origin> ret;
+
+  ret.reserve(origin_data_map_.size());
+  for (const auto& entry : origin_data_map_)
+    ret.push_back(entry.first);
+
+  return ret;
+}
+
+void LocalSiteCharacteristicsDataStore::GetDatabaseSize(
+    DatabaseSizeCallback on_have_data) {
+  // TODO(siggi): implement me.
+  std::move(on_have_data).Run(base::nullopt, base::nullopt);
+}
+
+bool LocalSiteCharacteristicsDataStore::GetaDataForOrigin(
+    const url::Origin& origin,
+    std::unique_ptr<SiteCharacteristicsProto>* data) {
+  DCHECK_NE(nullptr, data);
+  const auto it = origin_data_map_.find(origin);
+  if (it == origin_data_map_.end())
+    return false;
+
+  std::unique_ptr<SiteCharacteristicsProto> ret =
+      std::make_unique<SiteCharacteristicsProto>();
+  ret->CopyFrom(it->second->FlushStateToProto());
+  *data = std::move(ret);
   return true;
 }
 
