@@ -128,22 +128,22 @@ void ScanForExternalWebApps(Profile* profile,
   base::FilePath dir = DetermineScanDir(profile);
   if (dir.empty()) {
     std::move(callback).Run(std::vector<web_app::PendingAppManager::AppInfo>());
-  } else {
-    // Do a two-part callback dance, across different TaskRunners.
-    //
-    // 1. Schedule ScanDir to happen on a background thread, so that we don't
-    // block the UI thread. When that's done,
-    // base::PostTaskWithTraitsAndReplyWithResult will bounce us back to the
-    // originating thread (the UI thread).
-    //
-    // 2. In |callback|, forward the vector of AppInfo's on to the
-    // pending_app_manager_, which can only be called on the UI thread.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE,
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(&ScanDir, dir), std::move(callback));
+    return;
   }
+  // Do a two-part callback dance, across different TaskRunners.
+  //
+  // 1. Schedule ScanDir to happen on a background thread, so that we don't
+  // block the UI thread. When that's done,
+  // base::PostTaskWithTraitsAndReplyWithResult will bounce us back to the
+  // originating thread (the UI thread).
+  //
+  // 2. In |callback|, forward the vector of AppInfo's on to the
+  // pending_app_manager_, which can only be called on the UI thread.
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&ScanDir, dir), std::move(callback));
 }
 
 }  //  namespace web_app
