@@ -96,6 +96,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   unsigned Length() const { return end_offset_ - start_offset_; }
   StringView Text() const { return StringView(text_, start_offset_, Length()); }
+  const String& TextContent() const { return text_; }
 
   // ShapeResult may be nullptr if |IsFlowControl()|.
   const ShapeResult* TextShapeResult() const { return shape_result_.get(); }

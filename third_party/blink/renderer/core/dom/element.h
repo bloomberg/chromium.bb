@@ -663,7 +663,8 @@ class CORE_EXPORT Element : public ContainerNode {
       Element* new_focused_element,
       InputDeviceCapabilities* source_capabilities = nullptr);
 
-  virtual String innerText();
+  // The implementation of |innerText()| is found in "element_inner_text.cc".
+  String innerText();
   String outerText();
   String InnerHTMLAsString() const;
   String OuterHTMLAsString() const;

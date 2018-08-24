@@ -4,6 +4,7 @@ This test checks text editor indent autodetection functionality
 function foo() {
         return 42;
 }
+
 --------------TEST 2--------------
 console.log("Hello!");
 --------------TEST 3--------------
@@ -29,6 +30,7 @@ console.log("Hello!");
 function foo() {
   return 42;
 }
+
 --------------TEST 4--------------
 function MyClass()
 {
@@ -52,6 +54,7 @@ MyClass.prototype = {
         }
     },
 }
+
 --------------TEST 5--------------
   a
   a
@@ -60,11 +63,13 @@ MyClass.prototype = {
     b
 c
 c
+
 --------------TEST 6--------------
 	tab
 		tab
 	tab
 	tab
+
 --------------TEST 7-------------- (empty content)
 --------------TEST 8--------------
 function foo() {

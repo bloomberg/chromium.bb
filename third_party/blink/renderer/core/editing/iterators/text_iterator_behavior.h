@@ -46,6 +46,7 @@ class CORE_EXPORT TextIteratorBehavior final {
   bool ExcludeAutofilledValue() const {
     return values_.bits.exclude_autofilled_value;
   }
+  // TODO(editing-dev): We should remove unused flag |ForInnerText()|.
   bool ForInnerText() const { return values_.bits.for_inner_text; }
   bool ForSelectionToString() const {
     return values_.bits.for_selection_to_string;

@@ -5,9 +5,9 @@
 <div id="test2">foo <table style="display:inline-table"><tr><td>2</td></tr></table> bar</div>
 <script>
 test(() => {
-  assert_equals('hello 1 world', document.getElementById('test1').innerText,
+  assert_equals(document.getElementById('test1').innerText, 'hello1world',
     'test1.innerText');
-  assert_equals('foo  2  bar', document.getElementById('test2').innerText,
+  assert_equals(document.getElementById('test2').innerText, 'foo 2 bar',
     'test2.innerText');
 }, 'Checks that the text iterator is emitting a space before and after an inline table');
 </script>

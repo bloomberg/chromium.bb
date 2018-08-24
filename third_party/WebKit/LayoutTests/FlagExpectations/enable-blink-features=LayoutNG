@@ -30,6 +30,9 @@ crbug.com/854840 fast/table/backgr_border-table-quirks.html [ Failure ]
 # Superscript text off by 1px
 crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
 
+# text-overflow:ellipsis and paint fragment
+crbug.com/873957 http/tests/devtools/network/network-cookies-pane.js [ Failure ]
+
 # rightsizing-grid.html is truly flaky, show flakiness on reload
 
 # Features that do not have active plans to support or turn on.
