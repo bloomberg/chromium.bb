@@ -82,13 +82,17 @@ bool X11InputMethodContextImplGtk::DispatchKeyEvent(
 
   // Convert the last known caret bounds relative to the screen coordinates
   // to a GdkRectangle relative to the client window.
-  gint x = 0;
-  gint y = 0;
-  gdk_window_get_origin(event->key.window, &x, &y);
+  gint win_x = 0;
+  gint win_y = 0;
+  gdk_window_get_origin(event->key.window, &win_x, &win_y);
 
-  GdkRectangle gdk_rect = {
-      last_caret_bounds_.x() - x, last_caret_bounds_.y() - y,
-      last_caret_bounds_.width(), last_caret_bounds_.height()};
+  gint factor = gdk_window_get_scale_factor(event->key.window);
+  gint caret_x = last_caret_bounds_.x() / factor;
+  gint caret_y = last_caret_bounds_.y() / factor;
+  gint caret_w = last_caret_bounds_.width() / factor;
+  gint caret_h = last_caret_bounds_.height() / factor;
+
+  GdkRectangle gdk_rect = {caret_x - win_x, caret_y - win_y, caret_w, caret_h};
   gtk_im_context_set_cursor_location(gtk_context_, &gdk_rect);
 
   const bool handled =
