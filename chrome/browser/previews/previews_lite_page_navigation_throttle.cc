@@ -9,6 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/base32/base32.h"
 #include "components/previews/core/previews_experiments.h"
@@ -20,6 +21,7 @@
 #include "content/public/common/referrer.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
+#include "net/base/ip_address.h"
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
@@ -32,6 +34,22 @@ bool IsPreviewsDomain(const GURL& url) {
   GURL previews_host = previews::params::GetLitePagePreviewsDomainURL();
   return url.DomainIs(previews_host.host()) &&
          url.EffectiveIntPort() == previews_host.EffectiveIntPort();
+}
+
+bool IsPrivateDomain(const GURL& url) {
+  if (url.host().find(".") == base::StringPiece::npos)
+    return true;
+
+  // Allow localhost check to be skipped if needed, like in testing.
+  if (net::IsLocalhost(url))
+    return !previews::params::LitePagePreviewsTriggerOnLocalhost();
+
+  net::IPAddress ip_addr;
+  if (url.HostIsIPAddress() && ip_addr.AssignFromIPLiteral(url.host()) &&
+      !ip_addr.IsPubliclyRoutable()) {
+    return true;
+  }
+  return false;
 }
 
 content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
@@ -99,6 +117,9 @@ bool PreviewsLitePageNavigationThrottle::IsEligibleForPreview() const {
     return false;
 
   if (IsPreviewsDomain(url))
+    return false;
+
+  if (IsPrivateDomain(url))
     return false;
 
   std::vector<std::string> blacklisted_path_suffixes =

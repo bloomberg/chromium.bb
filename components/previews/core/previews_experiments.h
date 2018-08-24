@@ -99,6 +99,10 @@ base::TimeDelta LitePagePreviewsSingleBypassDuration();
 // Primarily used to prohibit URLs that look like media requests.
 std::vector<std::string> LitePagePreviewsBlacklistedPathSuffixes();
 
+// Whether or not to trigger a preview for a navigation to localhost. Provided
+// as an experiment for automated and manual testing.
+bool LitePagePreviewsTriggerOnLocalhost();
+
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();
 
