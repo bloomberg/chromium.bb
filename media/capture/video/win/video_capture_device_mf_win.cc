@@ -387,16 +387,15 @@ class MFVideoCallback final
   }
 
   STDMETHOD(OnSample)(IMFSample* sample) override {
-    base::TimeTicks reference_time(base::TimeTicks::Now());
+    if (!sample) {
+      return S_OK;
+    }
 
+    base::TimeTicks reference_time(base::TimeTicks::Now());
     LONGLONG raw_time_stamp = 0;
     sample->GetSampleTime(&raw_time_stamp);
     base::TimeDelta timestamp =
         base::TimeDelta::FromMicroseconds(raw_time_stamp / 10);
-    if (!sample) {
-      observer_->OnIncomingCapturedData(NULL, 0, reference_time, timestamp);
-      return S_OK;
-    }
 
     DWORD count = 0;
     sample->GetBufferCount(&count);
