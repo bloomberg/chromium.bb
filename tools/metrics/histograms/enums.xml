@@ -19828,6 +19828,8 @@ Called by update_net_error_codes.py.-->
   <int value="2529" label="ReportingObserver"/>
   <int value="2530" label="DeprecationReport"/>
   <int value="2531" label="InterventionReport"/>
+  <int value="2532" label="V8WasmSharedMemory"/>
+  <int value="2533" label="V8WasmThreadOpcodes"/>
 </enum>
 
 <enum name="FeedbackSource">
