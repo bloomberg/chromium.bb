@@ -54,7 +54,7 @@
         <div id="mv-tiles"></div>
         <!-- Notification shown when a tile is blacklisted. -->
         <div id="mv-notice-container">
-          <div id="mv-notice" class="mv-notice-hide" role="alert">
+          <div id="mv-notice" class="notice-hide" role="alert">
             <span id="mv-msg"></span>
             <!-- Links in the notification. -->
             <span id="mv-notice-links">
@@ -68,17 +68,20 @@
       </div>
       <div id="attribution"><div id="attribution-text"></div></div>
 
+      <div id="error-notice-container">
+        <div id="error-notice" class="notice-hide" role="alert">
+          <span id="error-notice-icon-container">
+            <div id="error-notice-icon"></div>
+          </span>
+          <span id="error-notice-msg"></span>
+          <span id="error-notice-link" class="ripple" tabindex="0" role="button"></span>
+        </div>
+      </div>
+
       <div id="edit-bg" hidden>
         <button id="edit-bg-gear"></button>
       </div>
 
-      <div id="message-box-container" class="message-box-hide">
-        <div id="message-box">
-          <div id="message-box-icon"></div>
-          <div id="message-box-message"></div>
-          <div id="message-box-link" class="ripple"></div>
-        </div>
-      </div>
       <div id="custom-bg-attr"></div>
     </div>
 

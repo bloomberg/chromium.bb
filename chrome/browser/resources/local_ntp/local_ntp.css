@@ -553,7 +553,7 @@ html[dir=rtl] #mv-notice-x {
   bottom: 0;
 }
 
-.md-icons #mv-notice-container.mv-notice-hide {
+.md-icons #mv-notice-container.notice-hide {
   display: none;
 }
 
@@ -570,7 +570,7 @@ html[dir=rtl] #mv-notice-x {
   border: 1px solid rgb(218, 220, 224);
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
-  font-family: 'Roboto';
+  font-family: 'Roboto', arial, sans-serif;
   font-weight: normal;
   height: 32px;
   margin: 0 auto;
@@ -605,7 +605,7 @@ html[dir=rtl] #mv-notice-x {
 .md-icons #mv-notice-links span {
   /* Necessary for a "pill" shape. Using 50% creates an oval. */
   border-radius: 500px;
-  color: rgb(26,115,232);
+  color: rgb(26, 115, 232);
   margin-inline-start: 0;
   padding: 0 16px;
   position: relative;
@@ -645,7 +645,7 @@ html[dir=rtl] #mv-notice-x {
   transition-property: opacity;
 }
 
-#mv-notice.mv-notice-hide {
+#mv-notice.notice-hide {
   display: none;
 }
 
@@ -807,56 +807,94 @@ input:checked + .toggle::before {
   transform: translateX(26px);
 }
 
-#message-box-container {
+#error-notice-container {
   bottom: -50px;
   margin-bottom: 16px;
   position: fixed;
   transition: bottom 400ms;
-  vertical-align: middle;
-  visibility: hidden;
+  user-select: none;
   width: 100%;
 }
 
-#message-box {
-  background-color: white;
-  border: 1px solid rgb(218, 220, 224);
-  border-radius: 16px;
-  color: rgb(255, 0, 0);
-  font-family: 'Roboto', arial, sans-serif;
-  font-size: 12px;
-  height: 32px;
-  left: 50%;
-  margin: 0 auto;
-  padding: 0 16px 0 4px;
-  text-align: center;
-  visibility: visible;
-  width: fit-content;
-}
-
-#message-box-container.float-up {
+#error-notice-container.float-up {
   bottom: 0;
 }
 
-#message-box-container.message-box-hide {
+#error-notice {
+  background-color: white;
+  border: 1px solid rgb(218, 220, 224);
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 500px;
+  color: rgb(217, 48, 37);
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+  height: 32px;
+  margin: 0 auto;
+  opacity: 1;
+  padding: 0;
+  width: fit-content;
+}
+
+#error-notice.notice-hide {
   display: none;
 }
 
-#message-box-icon {
+#error-notice-icon-container {
+  position: relative;
+}
+
+#error-notice-icon {
   background: url(../../../../ui/webui/resources/images/error.svg) no-repeat center;
-  height: 18px;
-  margin-right: 4px;
+  background-size: 18px 18px;
+  height: 32px;
+  margin-left: 8px;
+  position: absolute;
   width: 18px;
 }
 
-#message-box-link.has-link {
-  color: rgb(66, 133, 244);
-  margin-left: 6px;
+#error-notice-msg {
+  cursor: default;
+  padding: 0 16px 0 36px;
 }
 
-#message-box-message,
-#message-box-link,
-#message-box-icon {
-  vertical-align: middle;
+#error-notice.has-link #error-notice-msg {
+  padding-right: 0;
+}
+
+#error-notice span:not(#error-notice-icon-container) {
   display: inline-block;
+  height: auto;
   line-height: 32px;
+  vertical-align: unset;
+}
+
+#error-notice-link {
+  /* Necessary for a "pill" shape. Using 50% creates an oval. */
+  border-radius: 500px;
+  color: rgb(26, 115, 232);
+  cursor: pointer;
+  display: none;
+  outline: none;
+  padding: 0 16px;
+}
+
+#error-notice:not(.has-link) #error-notice-link {
+  display: none;
+}
+
+#error-notice.has-link #error-notice-link {
+  display: inline;
+}
+
+#error-notice-link:hover,
+#error-notice-link:focus {
+  text-decoration: underline;
+}
+
+#error-notice-link:hover,
+#error-notice-link:active {
+  background-color: rgba(26,115,232, 0.1);
+  text-decoration: none;
+  transition: background-color 200ms;
 }
