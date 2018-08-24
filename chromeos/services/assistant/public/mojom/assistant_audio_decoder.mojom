@@ -1,0 +1,39 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module chromeos.assistant.mojom;
+
+import "media/mojo/interfaces/media_types.mojom";
+
+// A factory for creating an assistant audio decoder.
+interface AssistantAudioDecoderFactory {
+  // Creates an AssistantAudioDecoder. |client|'s methods will be called when
+  // certain events happen.
+  CreateAssistantAudioDecoder(AssistantAudioDecoder& audio_decoder,
+                              AssistantAudioDecoderClient client);
+};
+
+// Interface to communicate with assistant audio decoder service.
+interface AssistantAudioDecoder {
+  // Starts to parse and decode |data|.
+  Decode(array<uint8> data);
+};
+
+// Interface for assistant audio decoder service to call into client.
+interface AssistantAudioDecoderClient {
+  // Called when the decoder has been initialized.
+  OnDecoderInitialized(bool success,
+                       int32 samples_per_second,
+                       int32 channels);
+
+  // Called when new buffers have been parsed.
+  // |total_frames| is the total number of new buffers.
+  OnNewBuffers(int32 total_frames);
+
+  // Called when an audio buffer has been decoded.
+  OnBufferDecoded(media.mojom.AudioBuffer buffer);
+
+  // Called when there is error.
+  OnDecoderError();
+};
