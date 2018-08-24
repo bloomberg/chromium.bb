@@ -1705,9 +1705,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
     return;
 
   // Remove empty profiles from input.
-  profiles->erase(std::remove_if(profiles->begin(), profiles->end(),
-                                 IsEmptyFunctor<AutofillProfile>(app_locale_)),
-                  profiles->end());
+  base::EraseIf(*profiles, IsEmptyFunctor<AutofillProfile>(app_locale_));
 
   if (!database_helper_->GetLocalDatabase())
     return;
@@ -1748,9 +1746,7 @@ void PersonalDataManager::SetCreditCards(
     return;
 
   // Remove empty credit cards from input.
-  credit_cards->erase(std::remove_if(credit_cards->begin(), credit_cards->end(),
-                                     IsEmptyFunctor<CreditCard>(app_locale_)),
-                      credit_cards->end());
+  base::EraseIf(*credit_cards, IsEmptyFunctor<CreditCard>(app_locale_));
 
   if (!database_helper_->GetLocalDatabase())
     return;

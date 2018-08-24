@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 
 namespace zucchini {
@@ -30,9 +31,7 @@ void EnsembleMatcher::Trim() {
   auto num_dex = std::count_if(matches_.begin(), matches_.end(), is_match_dex);
   if (num_dex > 1) {
     LOG(WARNING) << "Found " << num_dex << " DEX: Ignoring all.";
-    matches_.erase(
-        std::remove_if(matches_.begin(), matches_.end(), is_match_dex),
-        matches_.end());
+    base::EraseIf(matches_, is_match_dex);
   }
 }
 

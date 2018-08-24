@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_hash_data.h"
@@ -245,13 +246,10 @@ void PasswordReuseDetector::ClearGaiaPasswordHash(const std::string& username) {
   if (!gaia_password_hash_data_list_)
     return;
 
-  gaia_password_hash_data_list_->erase(
-      std::remove_if(gaia_password_hash_data_list_->begin(),
-                     gaia_password_hash_data_list_->end(),
-                     [&username](const PasswordHashData& data) {
-                       return data.username == username;
-                     }),
-      gaia_password_hash_data_list_->end());
+  base::EraseIf(*gaia_password_hash_data_list_,
+                [&username](const PasswordHashData& data) {
+                  return data.username == username;
+                });
 }
 
 void PasswordReuseDetector::ClearAllGaiaPasswordHash() {

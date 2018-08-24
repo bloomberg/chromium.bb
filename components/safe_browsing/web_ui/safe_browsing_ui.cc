@@ -17,6 +17,7 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -171,9 +172,7 @@ void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
 }
 
 void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
-  webui_instances_.erase(
-      std::remove(webui_instances_.begin(), webui_instances_.end(), webui),
-      webui_instances_.end());
+  base::Erase(webui_instances_, webui);
   if (webui_instances_.empty()) {
     ClearCSBRRsSent();
     ClearClientDownloadRequestsSent();

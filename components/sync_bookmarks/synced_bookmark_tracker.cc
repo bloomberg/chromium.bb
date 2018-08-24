@@ -9,6 +9,7 @@
 
 #include "base/base64.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/time.h"
 #include "components/sync/base/unique_position.h"
@@ -169,10 +170,7 @@ void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
   const Entity* entity = GetEntityForSyncId(sync_id);
   DCHECK(entity);
   bookmark_node_to_entities_map_.erase(entity->bookmark_node());
-  ordered_local_tombstones_.erase(
-      std::remove(ordered_local_tombstones_.begin(),
-                  ordered_local_tombstones_.end(), entity),
-      ordered_local_tombstones_.end());
+  base::Erase(ordered_local_tombstones_, entity);
   sync_id_to_entities_map_.erase(sync_id);
 }
 

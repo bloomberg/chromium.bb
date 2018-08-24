@@ -449,9 +449,7 @@ std::vector<std::string> AccountReconcilor::LoadValidAccountsFromTokenService()
     }
   }
 
-  chrome_accounts.erase(std::remove(chrome_accounts.begin(),
-                                    chrome_accounts.end(), std::string()),
-                        chrome_accounts.end());
+  base::Erase(chrome_accounts, std::string());
 
   VLOG(1) << "AccountReconcilor::ValidateAccountsFromTokenService: "
           << "Chrome " << chrome_accounts.size() << " accounts";

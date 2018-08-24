@@ -4,6 +4,8 @@
 
 #include "components/variations/synthetic_trial_registry.h"
 
+#include "base/stl_util.h"
+
 namespace variations {
 
 SyntheticTrialRegistry::SyntheticTrialRegistry() = default;
@@ -46,10 +48,7 @@ void SyntheticTrialRegistry::RegisterSyntheticMultiGroupFieldTrial(
   auto has_same_trial_name = [trial_name_hash](const SyntheticTrialGroup& x) {
     return x.id.name == trial_name_hash;
   };
-  synthetic_trial_groups_.erase(
-      std::remove_if(synthetic_trial_groups_.begin(),
-                     synthetic_trial_groups_.end(), has_same_trial_name),
-      synthetic_trial_groups_.end());
+  base::EraseIf(synthetic_trial_groups_, has_same_trial_name);
 
   if (group_name_hashes.empty())
     return;

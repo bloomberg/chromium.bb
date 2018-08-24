@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -506,9 +507,9 @@ void BaseSearchProvider::DeleteMatchFromMatches(
 void BaseSearchProvider::OnDeletionComplete(
     bool success, SuggestionDeletionHandler* handler) {
   RecordDeletionResult(success);
-  deletion_handlers_.erase(std::remove_if(
-      deletion_handlers_.begin(), deletion_handlers_.end(),
+  base::EraseIf(
+      deletion_handlers_,
       [handler](const std::unique_ptr<SuggestionDeletionHandler>& elem) {
         return elem.get() == handler;
-      }));
+      });
 }

@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -435,9 +436,7 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // unlikely, as we normally would expect the search-what-you-typed suggestion
   // as a default match (and that's a non-tail suggestion).
   if (non_tail_default == matches->end()) {
-    matches->erase(
-        std::remove_if(matches->begin(), matches->end(), std::not1(is_tail)),
-        matches->end());
+    base::EraseIf(*matches, std::not1(is_tail));
     return;
   }
   // Determine if there are both tail and non-tail matches, excluding the
@@ -457,8 +456,7 @@ void AutocompleteResult::MaybeCullTailSuggestions(ACMatches* matches) {
   // remove the highest rated suggestions.
   if (any_tail) {
     if (any_non_tail) {
-      matches->erase(std::remove_if(matches->begin(), matches->end(), is_tail),
-                     matches->end());
+      base::EraseIf(*matches, is_tail);
     } else {
       // We want the non-tail default match to be first. Mark tail suggestions
       // as not a legal default match, so that the default match will be moved

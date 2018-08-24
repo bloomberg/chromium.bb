@@ -210,14 +210,10 @@ void RemoveFieldsWithNegativeWords(
       kNegativeLatin, kNegativeLatinSize, kNegativeNonLatin,
       kNegativeNonLatinSize};
 
-  possible_usernames_data->erase(
-      std::remove_if(possible_usernames_data->begin(),
-                     possible_usernames_data->end(),
-                     [](const UsernameFieldData& possible_username) {
-                       return ContainsWordFromCategory(possible_username,
-                                                       kNegativeCategory);
-                     }),
-      possible_usernames_data->end());
+  base::EraseIf(
+      *possible_usernames_data, [](const UsernameFieldData& possible_username) {
+        return ContainsWordFromCategory(possible_username, kNegativeCategory);
+      });
 }
 
 // Check if any word from the given category (|category|) appears in fields from

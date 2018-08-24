@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
@@ -98,12 +99,10 @@ void DataReductionProxyDelegate::OnResolveProxy(
           : config_->GetProxiesForHttp();
 
   // Remove the proxies that are unsupported for this request.
-  proxies_for_http.erase(
-      std::remove_if(proxies_for_http.begin(), proxies_for_http.end(),
-                     [content_type](const DataReductionProxyServer& proxy) {
-                       return !proxy.SupportsResourceType(content_type);
-                     }),
-      proxies_for_http.end());
+  base::EraseIf(proxies_for_http,
+                [content_type](const DataReductionProxyServer& proxy) {
+                  return !proxy.SupportsResourceType(content_type);
+                });
 
   base::Optional<std::pair<bool /* is_secure_proxy */, bool /*is_core_proxy */>>
       warmup_proxy = config_->GetInFlightWarmupProxyDetails();
@@ -120,14 +119,11 @@ void DataReductionProxyDelegate::OnResolveProxy(
     bool is_core_proxy = warmup_proxy->second;
     // Remove the proxies with properties that do not match the properties of
     // the proxy that is being probed.
-    proxies_for_http.erase(
-        std::remove_if(proxies_for_http.begin(), proxies_for_http.end(),
-                       [is_secure_proxy,
-                        is_core_proxy](const DataReductionProxyServer& proxy) {
-                         return proxy.IsSecureProxy() != is_secure_proxy ||
-                                proxy.IsCoreProxy() != is_core_proxy;
-                       }),
-        proxies_for_http.end());
+    base::EraseIf(proxies_for_http, [is_secure_proxy, is_core_proxy](
+                                        const DataReductionProxyServer& proxy) {
+      return proxy.IsSecureProxy() != is_secure_proxy ||
+             proxy.IsCoreProxy() != is_core_proxy;
+    });
   }
 
   // If the proxy is disabled due to warmup URL fetch failing in the past,
