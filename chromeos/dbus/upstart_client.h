@@ -48,6 +48,9 @@ class CHROMEOS_EXPORT UpstartClient : public DBusClient {
   // Provides an interface for stopping the media analytics process.
   virtual void StopMediaAnalytics(VoidDBusMethodCallback callback) = 0;
 
+  // Starts the bluetooth logging service.
+  virtual void StartBluetoothLogging() = 0;
+
  protected:
   // Create() should be used instead.
   UpstartClient();

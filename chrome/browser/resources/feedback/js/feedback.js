@@ -95,8 +95,8 @@ const btRegEx = new RegExp('[b]lu[e]?[ ]?tooth|\b[b][ ]?[t]\b', 'i');
  * @type {RegExp}
  */
 const cantConnectRegEx = new RegExp(
-    '((headphones|keyboard|mouse|speaker)((?!connect).*)connect)|' +
-        '(connect.*(headphones|keyboard|mouse|speaker))',
+    '((headphone|keyboard|mouse|speaker)((?!(connect|pair)).*)(connect|pair))' +
+        '|((connect|pair).*(headphone|keyboard|mouse|speaker))',
     'i');
 
 /**
@@ -542,7 +542,7 @@ function initialize() {
 
             chrome.app.window.create(
                 '/html/bluetooth_logs_info.html',
-                {width: 360, height: 120, resizable: false},
+                {width: 400, height: 120, resizable: false},
                 function(appWindow) {
                   appWindow.contentWindow.onload = function() {
                     i18nTemplate.process(
