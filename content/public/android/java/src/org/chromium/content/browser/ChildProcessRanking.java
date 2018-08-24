@@ -19,17 +19,17 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
         public final ChildProcessConnection connection;
 
         // Info for ranking a connection.
-        public boolean foreground;
+        public boolean visible;
         public long frameDepth;
         public boolean intersectsViewport;
         @ChildProcessImportance
         public int importance;
 
-        public ConnectionWithRank(ChildProcessConnection connection, boolean foreground,
+        public ConnectionWithRank(ChildProcessConnection connection, boolean visible,
                 long frameDepth, boolean intersectsViewport,
                 @ChildProcessImportance int importance) {
             this.connection = connection;
-            this.foreground = foreground;
+            this.visible = visible;
             this.frameDepth = frameDepth;
             this.intersectsViewport = intersectsViewport;
             this.importance = importance;
@@ -52,16 +52,16 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
             assert o2 != null;
 
             // Ranking order:
-            // * foreground or ChildProcessImportance.IMPORTANT
+            // * visible or ChildProcessImportance.IMPORTANT
             // * ChildProcessImportance.MODERATE
             // * intersectsViewport
             // * frameDepth (lower value is higher rank)
             // Note boostForPendingViews is not used for ranking.
 
             boolean o1IsForeground =
-                    o1.foreground || o1.importance == ChildProcessImportance.IMPORTANT;
+                    o1.visible || o1.importance == ChildProcessImportance.IMPORTANT;
             boolean o2IsForeground =
-                    o2.foreground || o2.importance == ChildProcessImportance.IMPORTANT;
+                    o2.visible || o2.importance == ChildProcessImportance.IMPORTANT;
 
             if (o1IsForeground && !o2IsForeground) {
                 return -1;
@@ -133,13 +133,13 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
         return new ReverseRankIterator();
     }
 
-    public void addConnection(ChildProcessConnection connection, boolean foreground,
-            long frameDepth, boolean intersectsViewport, @ChildProcessImportance int importance) {
+    public void addConnection(ChildProcessConnection connection, boolean visible, long frameDepth,
+            boolean intersectsViewport, @ChildProcessImportance int importance) {
         assert connection != null;
         assert indexOf(connection) == -1;
         assert mSize < mRankings.length;
         mRankings[mSize] = new ConnectionWithRank(
-                connection, foreground, frameDepth, intersectsViewport, importance);
+                connection, visible, frameDepth, intersectsViewport, importance);
         mSize++;
         sort();
     }
@@ -156,14 +156,14 @@ public class ChildProcessRanking implements Iterable<ChildProcessConnection> {
         mSize--;
     }
 
-    public void updateConnection(ChildProcessConnection connection, boolean foreground,
+    public void updateConnection(ChildProcessConnection connection, boolean visible,
             long frameDepth, boolean intersectsViewport, @ChildProcessImportance int importance) {
         assert connection != null;
         assert mSize > 0;
         int i = indexOf(connection);
         assert i != -1;
 
-        mRankings[i].foreground = foreground;
+        mRankings[i].visible = visible;
         mRankings[i].frameDepth = frameDepth;
         mRankings[i].intersectsViewport = intersectsViewport;
         mRankings[i].importance = importance;

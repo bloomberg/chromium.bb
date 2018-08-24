@@ -56,21 +56,23 @@ static_assert(static_cast<int>(LAUNCH_RESULT_START) >
 #endif
 
 struct ChildProcessLauncherPriority {
-  ChildProcessLauncherPriority(bool foreground,
+  ChildProcessLauncherPriority(bool visible,
                                bool has_media_stream,
                                unsigned int frame_depth,
                                bool intersects_viewport,
-                               bool boost_for_pending_views
+                               bool boost_for_pending_views,
+                               bool should_boost_for_pending_views
 #if defined(OS_ANDROID)
                                ,
                                ChildProcessImportance importance
 #endif
                                )
-      : foreground(foreground),
+      : visible(visible),
         has_media_stream(has_media_stream),
         frame_depth(frame_depth),
         intersects_viewport(intersects_viewport),
-        boost_for_pending_views(boost_for_pending_views)
+        boost_for_pending_views(boost_for_pending_views),
+        should_boost_for_pending_views(should_boost_for_pending_views)
 #if defined(OS_ANDROID)
         ,
         importance(importance)
@@ -78,22 +80,59 @@ struct ChildProcessLauncherPriority {
   {
   }
 
-  bool foreground;
-  bool has_media_stream;
-  unsigned int frame_depth;
-  bool intersects_viewport;
-  bool boost_for_pending_views;
-#if defined(OS_ANDROID)
-  ChildProcessImportance importance;
-#endif
-
   // Returns true if the child process is backgrounded.
-  bool is_background() const { return !foreground && !has_media_stream; }
+  bool is_background() const {
+    return !visible && !has_media_stream &&
+           !(should_boost_for_pending_views && boost_for_pending_views);
+  }
 
   bool operator==(const ChildProcessLauncherPriority& other) const;
   bool operator!=(const ChildProcessLauncherPriority& other) const {
     return !(*this == other);
   }
+
+  // Prefer |is_background()| to inspecting these fields individually (to ensure
+  // all logic uses the same notion of "backgrounded").
+
+  // |visible| is true if the process is responsible for one or more widget(s)
+  // in foreground tabs. The notion of "visible" is determined by the embedder
+  // but is ideally a widget in a non-minimized, non-background, non-occluded
+  // tab (i.e. with pixels visible on the screen).
+  bool visible;
+
+  // |has_media_stream| is true when the process is responsible for "hearable"
+  // content.
+  bool has_media_stream;
+
+  // |frame_depth| is the depth of the shallowest frame this process is
+  // responsible for which has |visible| visibility. It only makes sense to
+  // compare this property for two ChildProcessLauncherPriority instances with
+  // matching |visible| properties.
+  unsigned int frame_depth;
+
+  // |intersects_viewport| is true if this process is responsible for a frame
+  // which intersects a viewport which has |visible| visibility. It only makes
+  // sense to compare this property for two ChildProcessLauncherPriority
+  // instances with matching |visible| properties.
+  bool intersects_viewport;
+
+  // |boost_for_pending_views| is true if this process is responsible for a
+  // pending view (this is used to boost priority of a process responsible for
+  // foreground content which hasn't yet been added as a visible widget -- i.e.
+  // during navigation).
+  bool boost_for_pending_views;
+
+  // True iff |boost_for_pending_views| should be considered in
+  // |is_background()|. This needs to be a separate parameter as opposed to
+  // having the experiment set |boost_for_pending_views == false| when
+  // |!should_boost_for_pending_views| as that would result in different
+  // |is_background()| logic than before and defeat the purpose of the
+  // experiment. TODO(gab): Remove this field when the
+  // BoostRendererPriorityForPendingViews desktop experiment is over.
+  bool should_boost_for_pending_views;
+#if defined(OS_ANDROID)
+  ChildProcessImportance importance;
+#endif
 };
 
 // Launches a process asynchronously and notifies the client of the process
