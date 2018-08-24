@@ -52,7 +52,6 @@ class ContextualContentSuggestionsServiceProxy {
   // Reports user interface event to the service.
   void ReportEvent(ukm::SourceId,
                    const std::string& url,
-                   ArticleSource article_source,
                    ContextualSuggestionsEvent event);
 
   // Ensures that all metrics are properly flushed.

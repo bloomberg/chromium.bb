@@ -20,10 +20,8 @@ class TestReporter : public ContextualSuggestionsReporter {
   /* ContextualSuggestionsReporter */
 
   void SetupForPage(const std::string& url,
-                    ArticleSource article_source,
                     ukm::SourceId source_id) override {
     this->url_ = url;
-    this->article_source_ = article_source;
     this->source_id_ = source_id;
     called_setup_for_page_count_++;
   }
@@ -49,7 +47,6 @@ class TestReporter : public ContextualSuggestionsReporter {
   static int reporter_destroy_count_;
 
   std::string url_;
-  ArticleSource article_source_;
   ukm::SourceId source_id_;
   int called_setup_for_page_count_ = 0;
   int called_record_event_count_ = 0;
@@ -69,8 +66,7 @@ TEST(ContextualSuggestionsCompositeReporterTest, AddAndReportUnique) {
     composite_reporter->AddOwnedReporter(std::move(reporter));
   }
 
-  composite_reporter->SetupForPage(
-      kTestUrl, ArticleSource::CONTEXTUAL_SUGGESTIONS, kSourceId);
+  composite_reporter->SetupForPage(kTestUrl, kSourceId);
   composite_reporter->RecordEvent(ContextualSuggestionsEvent::FETCH_REQUESTED);
   composite_reporter->Flush();
 
@@ -95,8 +91,7 @@ TEST(ContextualSuggestionsCompositeReporterTest, AddAndReportRaw) {
     reporters.push_back(std::move(reporter));
   }
 
-  composite_reporter->SetupForPage(
-      kTestUrl, ArticleSource::CONTEXTUAL_SUGGESTIONS, kSourceId);
+  composite_reporter->SetupForPage(kTestUrl, kSourceId);
   composite_reporter->RecordEvent(ContextualSuggestionsEvent::FETCH_REQUESTED);
   composite_reporter->Flush();
 

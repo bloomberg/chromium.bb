@@ -55,7 +55,6 @@ class ContextualSuggestionsDebuggingReporter
 
   // ContextualSuggestionsReporter
   void SetupForPage(const std::string& url,
-                    ArticleSource article_source,
                     ukm::SourceId source_id) override;
   void RecordEvent(
       contextual_suggestions::ContextualSuggestionsEvent event) override;
