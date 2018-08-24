@@ -46,6 +46,16 @@ void AddVersionKeyWorkItems(HKEY root,
                             bool add_language_identifier,
                             WorkItemList* list);
 
+// Updates the RLZ brand code or distribution tag.  This is called by the
+// installer to update deprecated, organic enterprise brand codes.
+void AddUpdateBrandCodeWorkItem(const InstallerState& installer_state,
+                                WorkItemList* install_list);
+
+// Checks to see if the given brand code is one that should be updated if
+// the current install is considered an enterprise install.  If so the updated
+// brand code is returned, otherwise an empty string is returned.
+base::string16 GetUpdatedBrandCode(const base::string16& brand_code);
+
 // After a successful copying of all the files, this function is called to
 // do a few post install tasks:
 // - Handle the case of in-use-update by updating "opv" (old version) key or

@@ -120,29 +120,45 @@ int GetUBR() {
 }  // namespace
 
 // static
-OSInfo* OSInfo::GetInstance() {
+OSInfo** OSInfo::GetInstanceStorage() {
   // Note: we don't use the Singleton class because it depends on AtExitManager,
-  // and it's convenient for other modules to use this classs without it. This
-  // pattern is copied from gurl.cc.
-  static OSInfo* info;
-  if (!info) {
-    OSInfo* new_info = new OSInfo();
-    if (InterlockedCompareExchangePointer(
-        reinterpret_cast<PVOID*>(&info), new_info, NULL)) {
-      delete new_info;
+  // and it's convenient for other modules to use this class without it.
+  static OSInfo* info = []() {
+    _OSVERSIONINFOEXW version_info = {sizeof(version_info)};
+    ::GetVersionEx(reinterpret_cast<_OSVERSIONINFOW*>(&version_info));
+
+    _SYSTEM_INFO system_info = {};
+    ::GetNativeSystemInfo(&system_info);
+
+    DWORD os_type = 0;
+    if (version_info.dwMajorVersion == 6 || version_info.dwMajorVersion == 10) {
+      // Only present on Vista+.
+      GetProductInfoPtr get_product_info =
+          reinterpret_cast<GetProductInfoPtr>(::GetProcAddress(
+              ::GetModuleHandle(L"kernel32.dll"), "GetProductInfo"));
+      get_product_info(version_info.dwMajorVersion, version_info.dwMinorVersion,
+                       0, 0, &os_type);
     }
-  }
-  return info;
+
+    return new OSInfo(version_info, system_info, os_type);
+  }();
+
+  return &info;
 }
 
-OSInfo::OSInfo()
+// static
+OSInfo* OSInfo::GetInstance() {
+  return *GetInstanceStorage();
+}
+
+OSInfo::OSInfo(const _OSVERSIONINFOEXW& version_info,
+               const _SYSTEM_INFO& system_info,
+               int os_type)
     : version_(VERSION_PRE_XP),
       kernel32_version_(VERSION_PRE_XP),
       got_kernel32_version_(false),
       architecture_(OTHER_ARCHITECTURE),
       wow64_status_(GetWOW64StatusForProcess(GetCurrentProcess())) {
-  OSVERSIONINFOEX version_info = { sizeof version_info };
-  ::GetVersionEx(reinterpret_cast<OSVERSIONINFO*>(&version_info));
   version_number_.major = version_info.dwMajorVersion;
   version_number_.minor = version_info.dwMinorVersion;
   version_number_.build = version_info.dwBuildNumber;
@@ -153,8 +169,6 @@ OSInfo::OSInfo()
   service_pack_.minor = version_info.wServicePackMinor;
   service_pack_str_ = base::WideToUTF8(version_info.szCSDVersion);
 
-  SYSTEM_INFO system_info = {};
-  ::GetNativeSystemInfo(&system_info);
   switch (system_info.wProcessorArchitecture) {
     case PROCESSOR_ARCHITECTURE_INTEL: architecture_ = X86_ARCHITECTURE; break;
     case PROCESSOR_ARCHITECTURE_AMD64: architecture_ = X64_ARCHITECTURE; break;
@@ -163,16 +177,8 @@ OSInfo::OSInfo()
   processors_ = system_info.dwNumberOfProcessors;
   allocation_granularity_ = system_info.dwAllocationGranularity;
 
-  GetProductInfoPtr get_product_info;
-  DWORD os_type;
-
   if (version_info.dwMajorVersion == 6 || version_info.dwMajorVersion == 10) {
     // Only present on Vista+.
-    get_product_info = reinterpret_cast<GetProductInfoPtr>(
-        ::GetProcAddress(::GetModuleHandle(L"kernel32.dll"), "GetProductInfo"));
-
-    get_product_info(version_info.dwMajorVersion, version_info.dwMinorVersion,
-                     0, 0, &os_type);
     switch (os_type) {
       case PRODUCT_CLUSTER_SERVER:
       case PRODUCT_DATACENTER_SERVER:

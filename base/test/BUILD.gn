@@ -100,6 +100,8 @@ static_library("test_support") {
     "scoped_mock_clock_override.h",
     "scoped_mock_time_message_loop_task_runner.cc",
     "scoped_mock_time_message_loop_task_runner.h",
+    "scoped_os_info_override_win.cc",
+    "scoped_os_info_override_win.h",
     "scoped_path_override.cc",
     "scoped_path_override.h",
     "scoped_task_environment.cc",

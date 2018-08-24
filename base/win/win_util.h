@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/macros.h"
 #include "base/strings/string16.h"
 
 struct IPropertyStore;
@@ -164,6 +165,7 @@ BASE_EXPORT bool IsEnterpriseManaged();
 
 // Used by tests to mock any wanted state. Call with |state| set to true to
 // simulate being in a domain and false otherwise.
+// This function is deprecated, prefer class ScopedDomainStateForTesting below.
 BASE_EXPORT void SetDomainStateForTesting(bool state);
 
 // Returns true if the current process can make USER32 or GDI32 calls such as
@@ -191,6 +193,30 @@ BASE_EXPORT bool IsProcessPerMonitorDpiAware();
 
 // Enable high-DPI support for the current process.
 BASE_EXPORT void EnableHighDPISupport();
+
+// Allows changing the domain enrolled state for the life time of the object.
+// The original state is restored upon destruction.
+class BASE_EXPORT ScopedDomainStateForTesting {
+ public:
+  ScopedDomainStateForTesting(bool state);
+  ~ScopedDomainStateForTesting();
+
+ private:
+  bool initial_state_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedDomainStateForTesting);
+};
+
+// Allows changing the management registration state for the life time of the
+// object.  The original state is restored upon destruction.
+class BASE_EXPORT ScopedDeviceRegisteredWithManagementForTesting {
+ public:
+  ScopedDeviceRegisteredWithManagementForTesting(bool state);
+  ~ScopedDeviceRegisteredWithManagementForTesting();
+
+ private:
+  bool initial_state_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedDeviceRegisteredWithManagementForTesting);
+};
 
 }  // namespace win
 }  // namespace base
