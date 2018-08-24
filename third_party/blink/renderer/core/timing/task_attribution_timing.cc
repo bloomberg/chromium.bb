@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 
 namespace blink {
 
@@ -27,7 +28,7 @@ TaskAttributionTiming::TaskAttributionTiming(const AtomicString& name,
 TaskAttributionTiming::~TaskAttributionTiming() = default;
 
 AtomicString TaskAttributionTiming::entryType() const {
-  return PerformanceEntry::TaskattributionKeyword();
+  return PerformanceEntryNames::taskattribution;
 }
 
 PerformanceEntryType TaskAttributionTiming::EntryTypeEnum() const {

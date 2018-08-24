@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/timing/performance_paint_timing.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 
 namespace blink {
 
@@ -38,7 +39,7 @@ PerformancePaintTiming::PerformancePaintTiming(PaintType type,
 PerformancePaintTiming::~PerformancePaintTiming() = default;
 
 AtomicString PerformancePaintTiming::entryType() const {
-  return PerformanceEntry::PaintKeyword();
+  return PerformanceEntryNames::paint;
 }
 
 PerformanceEntryType PerformancePaintTiming::EntryTypeEnum() const {

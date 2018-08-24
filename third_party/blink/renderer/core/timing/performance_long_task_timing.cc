@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/timing/sub_task_attribution.h"
 #include "third_party/blink/renderer/core/timing/task_attribution_timing.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -56,7 +57,7 @@ PerformanceLongTaskTiming::PerformanceLongTaskTiming(
 PerformanceLongTaskTiming::~PerformanceLongTaskTiming() = default;
 
 AtomicString PerformanceLongTaskTiming::entryType() const {
-  return PerformanceEntry::LongtaskKeyword();
+  return PerformanceEntryNames::longtask;
 }
 
 PerformanceEntryType PerformanceLongTaskTiming::EntryTypeEnum() const {

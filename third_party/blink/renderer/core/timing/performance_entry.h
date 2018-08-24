@@ -89,15 +89,6 @@ class CORE_EXPORT PerformanceEntry : public ScriptWrappable {
     return a->startTime() < b->startTime();
   }
 
-  static const AtomicString& EventKeyword();
-  static const AtomicString& FirstInputKeyword();
-  static const AtomicString& LongtaskKeyword();
-  static const AtomicString& MarkKeyword();
-  static const AtomicString& MeasureKeyword();
-  static const AtomicString& NavigationKeyword();
-  static const AtomicString& PaintKeyword();
-  static const AtomicString& ResourceKeyword();
-  static const AtomicString& TaskattributionKeyword();
   static PerformanceEntry::EntryType ToEntryTypeEnum(
       const AtomicString& entry_type);
 

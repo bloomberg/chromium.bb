@@ -33,6 +33,7 @@
 #include "base/atomic_sequence_num.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 
 namespace blink {
 
@@ -58,89 +59,25 @@ DOMHighResTimeStamp PerformanceEntry::duration() const {
   return duration_;
 }
 
-const AtomicString& PerformanceEntry::EventKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, event, ());
-  if (!event.IsSet())
-    *event = "event";
-  return *event;
-}
-
-const AtomicString& PerformanceEntry::FirstInputKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, firstInput, ());
-  if (!firstInput.IsSet())
-    *firstInput = "firstInput";
-  return *firstInput;
-}
-
-const AtomicString& PerformanceEntry::LongtaskKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, longtask, ());
-  if (!longtask.IsSet())
-    *longtask = "longtask";
-  return *longtask;
-}
-
-const AtomicString& PerformanceEntry::MarkKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, mark, ());
-  if (!mark.IsSet())
-    *mark = "mark";
-  return *mark;
-}
-
-const AtomicString& PerformanceEntry::MeasureKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, measure, ());
-  if (!measure.IsSet())
-    *measure = "measure";
-  return *measure;
-}
-
-const AtomicString& PerformanceEntry::NavigationKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, navigation, ());
-  if (!navigation.IsSet())
-    *navigation = "navigation";
-  return *navigation;
-}
-
-const AtomicString& PerformanceEntry::PaintKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, paint, ());
-  if (!paint.IsSet())
-    *paint = "paint";
-  return *paint;
-}
-
-const AtomicString& PerformanceEntry::ResourceKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, resource, ());
-  if (!resource.IsSet())
-    *resource = "resource";
-  return *resource;
-}
-
-const AtomicString& PerformanceEntry::TaskattributionKeyword() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<AtomicString>, taskattribution,
-                                  ());
-  if (!taskattribution.IsSet())
-    *taskattribution = "taskattribution";
-  return *taskattribution;
-}
-
 PerformanceEntry::EntryType PerformanceEntry::ToEntryTypeEnum(
     const AtomicString& entry_type) {
-  if (entry_type == LongtaskKeyword())
+  if (entry_type == PerformanceEntryNames::longtask)
     return kLongTask;
-  if (entry_type == MarkKeyword())
+  if (entry_type == PerformanceEntryNames::mark)
     return kMark;
-  if (entry_type == MeasureKeyword())
+  if (entry_type == PerformanceEntryNames::measure)
     return kMeasure;
-  if (entry_type == ResourceKeyword())
+  if (entry_type == PerformanceEntryNames::resource)
     return kResource;
-  if (entry_type == NavigationKeyword())
+  if (entry_type == PerformanceEntryNames::navigation)
     return kNavigation;
-  if (entry_type == TaskattributionKeyword())
+  if (entry_type == PerformanceEntryNames::taskattribution)
     return kTaskAttribution;
-  if (entry_type == PaintKeyword())
+  if (entry_type == PerformanceEntryNames::paint)
     return kPaint;
-  if (entry_type == EventKeyword())
+  if (entry_type == PerformanceEntryNames::event)
     return kEvent;
-  if (entry_type == FirstInputKeyword())
+  if (entry_type == PerformanceEntryNames::firstInput)
     return kFirstInput;
   return kInvalid;
 }

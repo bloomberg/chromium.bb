@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
+#include "third_party/blink/renderer/core/performance_entry_names.h"
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/core/xlink_names.h"
@@ -104,7 +105,8 @@ void CoreInitializer::Initialize() {
       InputModeNames::InputModeNamesCount +
       InputTypeNames::InputTypeNamesCount +
       MediaFeatureNames::MediaFeatureNamesCount +
-      MediaTypeNames::MediaTypeNamesCount;
+      MediaTypeNames::MediaTypeNamesCount +
+      PerformanceEntryNames::PerformanceEntryNamesCount;
 
   StringImpl::ReserveStaticStringsCapacityForSize(
       kCoreStaticStringsCount + StringImpl::AllStaticStrings().size());
@@ -130,6 +132,7 @@ void CoreInitializer::Initialize() {
   InputTypeNames::init();
   MediaFeatureNames::init();
   MediaTypeNames::init();
+  PerformanceEntryNames::init();
 
   MediaQueryEvaluator::Init();
   CSSParserTokenRange::InitStaticEOFToken();
