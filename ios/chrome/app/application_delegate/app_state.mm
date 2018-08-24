@@ -205,6 +205,10 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       UIViewController* launchScreenController =
           base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
       [_incognitoBlocker addSubview:[launchScreenController view]];
+      [launchScreenController view].autoresizingMask =
+          UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
+      _incognitoBlocker.autoresizingMask =
+          UIViewAutoresizingFlexibleHeight | UIViewAutoresizingFlexibleWidth;
     } else {
       InstallBackgroundInView(_incognitoBlocker);
     }
