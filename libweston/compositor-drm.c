@@ -346,6 +346,8 @@ struct drm_backend {
 
 	bool aspect_ratio_supported;
 
+	bool fb_modifiers;
+
 	struct weston_debug_scope *debug;
 };
 
@@ -961,7 +963,7 @@ drm_fb_destroy_gbm(struct gbm_bo *bo, void *data)
 }
 
 static int
-drm_fb_addfb(struct drm_fb *fb)
+drm_fb_addfb(struct drm_backend *b, struct drm_fb *fb)
 {
 	int ret = -EINVAL;
 #ifdef HAVE_DRM_ADDFB2_MODIFIERS
@@ -971,7 +973,7 @@ drm_fb_addfb(struct drm_fb *fb)
 
 	/* If we have a modifier set, we must only use the WithModifiers
 	 * entrypoint; we cannot import it through legacy ioctls. */
-	if (fb->modifier != DRM_FORMAT_MOD_INVALID) {
+	if (b->fb_modifiers && fb->modifier != DRM_FORMAT_MOD_INVALID) {
 		/* KMS demands that if a modifier is set, it must be the same
 		 * for all planes. */
 #ifdef HAVE_DRM_ADDFB2_MODIFIERS
@@ -1055,7 +1057,7 @@ drm_fb_create_dumb(struct drm_backend *b, int width, int height,
 	fb->height = height;
 	fb->fd = b->drm.fd;
 
-	if (drm_fb_addfb(fb) != 0) {
+	if (drm_fb_addfb(b, fb) != 0) {
 		weston_log("failed to create kms fb: %m\n");
 		goto err_bo;
 	}
@@ -1228,7 +1230,7 @@ drm_fb_get_from_dmabuf(struct linux_dmabuf_buffer *dmabuf,
 			goto err_free;
 	}
 
-	if (drm_fb_addfb(fb) != 0)
+	if (drm_fb_addfb(backend, fb) != 0)
 		goto err_free;
 
 	return fb;
@@ -1301,7 +1303,7 @@ drm_fb_get_from_bo(struct gbm_bo *bo, struct drm_backend *backend,
 		goto err_free;
 	}
 
-	if (drm_fb_addfb(fb) != 0) {
+	if (drm_fb_addfb(backend, fb) != 0) {
 		if (type == BUFFER_GBM_SURFACE)
 			weston_log("failed to create kms fb: %m\n");
 		goto err_free;
@@ -4061,6 +4063,14 @@ init_kms_caps(struct drm_backend *b)
 #endif
 	weston_log("DRM: %s atomic modesetting\n",
 		   b->atomic_modeset ? "supports" : "does not support");
+
+#ifdef HAVE_DRM_ADDFB2_MODIFIERS
+	ret = drmGetCap(b->drm.fd, DRM_CAP_ADDFB2_MODIFIERS, &cap);
+	if (ret == 0)
+		b->fb_modifiers = cap;
+	else
+#endif
+		b->fb_modifiers = 0;
 
 	/*
 	 * KMS support for hardware planes cannot properly synchronize
