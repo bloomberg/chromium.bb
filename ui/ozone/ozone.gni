@@ -46,8 +46,8 @@ declare_args() {
 
     if (is_cast_audio_only) {
       # Just use headless for audio-only Cast platforms.
-    } else if (is_chromecast) {
-      # Enable the Cast ozone platform on all A/V Cast builds.
+    } else if (is_chromecast && !is_fuchsia) {
+      # Enable the Cast ozone platform on all A/V Cast builds except Fuchsia.
       ozone_platform_cast = true
 
       # For visual desktop Chromecast builds, override the default "headless"
