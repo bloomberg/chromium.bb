@@ -2448,16 +2448,15 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   DCHECK(IsSelfPaintingLayer());
   DCHECK(root_layer);
 
-  LayoutRect reference_box(
-      ClipPathClipper::LocalReferenceBox(GetLayoutObject()));
+  LayoutRect origin;
   if (EnclosingPaginationLayer())
-    ConvertFromFlowThreadToVisualBoundingBoxInAncestor(root_layer,
-                                                       reference_box);
+    ConvertFromFlowThreadToVisualBoundingBoxInAncestor(root_layer, origin);
   else
-    ConvertToLayerCoords(root_layer, reference_box);
+    ConvertToLayerCoords(root_layer, origin);
 
-  FloatPoint point(hit_test_location.Point());
-  FloatRect float_reference_box(reference_box);
+  FloatPoint point(hit_test_location.Point() - origin.Location());
+  FloatRect reference_box(
+      ClipPathClipper::LocalReferenceBox(GetLayoutObject()));
 
   ClipPathOperation* clip_path_operation =
       GetLayoutObject().StyleRef().ClipPath();
@@ -2465,7 +2464,7 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   if (clip_path_operation->GetType() == ClipPathOperation::SHAPE) {
     ShapeClipPathOperation* clip_path =
         ToShapeClipPathOperation(clip_path_operation);
-    return !clip_path->GetPath(float_reference_box).Contains(point);
+    return !clip_path->GetPath(reference_box).Contains(point);
   }
   DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::REFERENCE);
   SVGResource* resource =
@@ -2484,8 +2483,8 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   // not zoomed.
   float inverse_zoom = 1 / GetLayoutObject().StyleRef().EffectiveZoom();
   point.Scale(inverse_zoom, inverse_zoom);
-  float_reference_box.Scale(inverse_zoom);
-  return !clipper->HitTestClipContent(float_reference_box, point);
+  reference_box.Scale(inverse_zoom);
+  return !clipper->HitTestClipContent(reference_box, point);
 }
 
 bool PaintLayer::IntersectsDamageRect(
