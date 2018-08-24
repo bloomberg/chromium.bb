@@ -32,6 +32,12 @@ issues]].
 - Test suite improvements: In addition to checking the translation the
   tests now also check if the provided ~inlen~ is the same as the
   returned ~inlen~ and retry the test with a larger output buffer.
+- Removal of the code for the /scripting language/ for multipass
+  opcodes. This code was originaly introduced in 2012 but never
+  documented. Consequently it was never used. Meanwhile the original
+  code for multipass opcodes was much improved. So there is no more
+  need for this (duplicate) code and we are removing it.
+
 ** Deprecation notice
 ** Backwards incompatible changes
 ** New, renamed or removed tables
