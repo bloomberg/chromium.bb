@@ -16,7 +16,7 @@
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/common/console_message_level.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "url/origin.h"
 
 namespace content {
@@ -262,10 +262,12 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::OnIconFetched(
     return;
   }
 
-  gfx::Image decoded_image = gfx::Image::CreateFrom1xBitmap(icon);
-  scoped_refptr<base::RefCountedMemory> raw_data = decoded_image.As1xPNGBytes();
+  std::vector<unsigned char> bitmap_data;
+  bool success = gfx::PNGCodec::EncodeBGRASkBitmap(icon, false, &bitmap_data);
+  DCHECK(success);
   base::Base64Encode(
-      base::StringPiece(raw_data->front_as<char>(), raw_data->size()),
+      base::StringPiece(reinterpret_cast<const char*>(&bitmap_data[0]),
+                        bitmap_data.size()),
       &(fetched_payment_app_info_->icon));
   RunCallbackAndDestroy();
 }

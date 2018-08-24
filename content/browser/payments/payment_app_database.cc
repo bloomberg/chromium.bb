@@ -19,7 +19,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -106,12 +106,13 @@ std::unique_ptr<StoredPaymentApp> ToStoredPaymentApp(const std::string& input) {
   if (!app_proto.icon().empty()) {
     std::string icon_raw_data;
     base::Base64Decode(app_proto.icon(), &icon_raw_data);
+    app->icon = std::make_unique<SkBitmap>();
     // Note that the icon has been decoded to PNG raw data regardless of the
     // original icon format that was downloaded.
-    gfx::Image icon_image = gfx::Image::CreateFrom1xPNGBytes(
+    bool success = gfx::PNGCodec::Decode(
         reinterpret_cast<const unsigned char*>(icon_raw_data.data()),
-        icon_raw_data.size());
-    app->icon = std::make_unique<SkBitmap>(icon_image.AsBitmap());
+        icon_raw_data.size(), app->icon.get());
+    DCHECK(success);
   }
 
   return app;
