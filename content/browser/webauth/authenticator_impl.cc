@@ -336,7 +336,12 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
     protocols_.insert(device::FidoTransportProtocol::kBluetoothLowEnergy);
   }
 
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(features::kWebAuthCable) &&
+      base::FeatureList::IsEnabled(features::kWebAuthCableWin)) {
+#else
   if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
+#endif  // defined(OS_WIN)
     protocols_.insert(
         device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
