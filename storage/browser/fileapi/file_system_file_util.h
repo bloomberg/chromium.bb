@@ -125,14 +125,17 @@ class STORAGE_EXPORT FileSystemFileUtil {
                                      const FileSystemURL& url,
                                      int64_t length) = 0;
 
-  // Copies or moves a single file from |src_url| to |dest_url|.
-  // The filesystem type of |src_url| and |dest_url| MUST be same.
-  // For |option|, please see file_system_operation.h
+  // Copies a single file or moves a single file or directory from |src_url| to
+  // |dest_url|. Whether moving a directory is supported is
+  // implementation-defined. The filesystem type of |src_url| and |dest_url|
+  // MUST be same. For |option|, please see file_system_operation.h
   //
   // This returns:
   // - File::FILE_ERROR_NOT_FOUND if |src_url|
   //   or the parent directory of |dest_url| does not exist.
-  // - File::FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file.
+  // - File::FILE_ERROR_NOT_A_FILE if |src_url| exists but is not a file and the
+  //   operation is copy or the implementation does not support moving
+  //   directories.
   // - File::FILE_ERROR_INVALID_OPERATION if |dest_url| exists and
   //   is not a file.
   // - File::FILE_ERROR_FAILED if |dest_url| does not exist and
