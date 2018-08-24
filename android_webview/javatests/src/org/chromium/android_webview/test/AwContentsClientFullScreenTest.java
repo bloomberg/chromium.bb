@@ -153,7 +153,7 @@ public class AwContentsClientFullScreenTest {
     /*
     @MediumTest
     @Feature({"AndroidWebView"})
-    @SkipCommandLineParameterization  // crbug.com/616501
+    // Originally flaked only in multi-process mode (http://crbug.com/616501)
     */
     @Test
     @DisabledTest(message = "crbug.com/618749")

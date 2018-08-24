@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
+
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -19,6 +21,7 @@ import org.chromium.components.heap_profiling.HeapProfilingTestShim;
  * Tests suite for heap profiling.
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@OnlyRunIn(MULTI_PROCESS)
 public class HeapProfilingTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();
@@ -29,7 +32,6 @@ public class HeapProfilingTest {
     @Test
     @MediumTest
     @CommandLineFlags.Add({"memlog=browser", "memlog-stack-mode=native-include-thread-names"})
-    @SkipSingleProcessTests
     public void testModeBrowser() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(
@@ -38,7 +40,6 @@ public class HeapProfilingTest {
 
     @Test
     @MediumTest
-    @SkipSingleProcessTests
     public void testModeBrowserDynamicPseudo() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", false, false));
@@ -46,7 +47,6 @@ public class HeapProfilingTest {
 
     @Test
     @MediumTest
-    @SkipSingleProcessTests
     public void testModeBrowserDynamicPseudoSampleEverything() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, true));
@@ -54,7 +54,6 @@ public class HeapProfilingTest {
 
     @Test
     @MediumTest
-    @SkipSingleProcessTests
     public void testModeBrowserDynamicPseudoSamplePartial() throws Exception {
         HeapProfilingTestShim shim = new HeapProfilingTestShim();
         Assert.assertTrue(shim.runTestForMode("browser", true, "pseudo", true, false));

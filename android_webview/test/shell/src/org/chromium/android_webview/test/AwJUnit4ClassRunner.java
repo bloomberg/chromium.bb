@@ -11,25 +11,25 @@ import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
 import org.chromium.android_webview.AwSwitches;
+import org.chromium.android_webview.test.OnlyRunIn.ProcessMode;
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.BaseTestResult.PreTestHook;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.policy.test.annotations.Policies;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A custom runner for //android_webview instrumentation tests. WebView only runs on KitKat and
- * later, so make sure no one attempts to run the tests on earlier OS releases.
- * By default, all tests run both in single-process mode, and with sandboxed
- * renderer. If a test doesn't yet work with sandboxed renderer, an entire
- * class, or an individual test method can be marked for single-process testing
- * only by adding @SkipCommandLineParameterization to the test.
+ * A custom runner for //android_webview instrumentation tests. Because WebView runs in
+ * single-process mode on L-N and multi-process (AKA sandboxed renderer) mode on O+, this test
+ * runner defaults to duplicating each test in both modes.
  *
- * Single process tests can be skipped by adding @SkipSingleProcessTests.
+ * <p>
+ * Tests can instead be run in either single or multi-process only with {@link OnlyRunIn}. This can
+ * be done if the test case needs this for correctness or to save infrastructure resources for tests
+ * which exercise code which cannot depend on single vs. multi process.
  */
 public final class AwJUnit4ClassRunner extends BaseJUnit4ClassRunner {
     /**
@@ -48,15 +48,41 @@ public final class AwJUnit4ClassRunner extends BaseJUnit4ClassRunner {
         return addToList(super.getPreTestHooks(), Policies.getRegistrationHook());
     }
 
+    private ProcessMode processModeForMethod(FrameworkMethod method) {
+        // Prefer per-method annotations.
+        //
+        // Note: a per-class annotation might disagree with this. This can be confusing, but there's
+        // no good option for us to forbid this (users won't see any exceptions we throw), and so we
+        // instead enforce a priority.
+        OnlyRunIn methodAnnotation = method.getAnnotation(OnlyRunIn.class);
+        if (methodAnnotation != null) {
+            return methodAnnotation.value();
+        }
+        // Per-class annotations have second priority.
+        OnlyRunIn classAnnotation = method.getDeclaringClass().getAnnotation(OnlyRunIn.class);
+        if (classAnnotation != null) {
+            return classAnnotation.value();
+        }
+        // Default: run in both modes.
+        return ProcessMode.SINGLE_AND_MULTI_PROCESS;
+    }
+
     @Override
     protected List<FrameworkMethod> getChildren() {
         List<FrameworkMethod> result = new ArrayList<>();
         for (FrameworkMethod method : computeTestMethods()) {
-            if (method.getAnnotation(SkipCommandLineParameterization.class) == null) {
-                result.add(new WebViewMultiProcessFrameworkMethod(method));
-            }
-            if (method.getAnnotation(SkipSingleProcessTests.class) == null) {
-                result.add(method);
+            switch (processModeForMethod(method)) {
+                case SINGLE_PROCESS:
+                    result.add(method);
+                    break;
+                case MULTI_PROCESS:
+                    result.add(new WebViewMultiProcessFrameworkMethod(method));
+                    break;
+                case SINGLE_AND_MULTI_PROCESS:
+                default:
+                    result.add(new WebViewMultiProcessFrameworkMethod(method));
+                    result.add(method);
+                    break;
             }
         }
         return result;

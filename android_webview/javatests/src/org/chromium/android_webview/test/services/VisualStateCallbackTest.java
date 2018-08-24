@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test.services;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
+
 import android.content.Context;
 import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
@@ -22,19 +24,17 @@ import org.chromium.android_webview.AwContents.NativeDrawGLFunctorFactory;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.test.AwActivityTestRule;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
 import org.chromium.android_webview.test.AwTestContainerView;
+import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.android_webview.test.RenderProcessGoneHelper;
 import org.chromium.android_webview.test.TestAwContents;
 import org.chromium.android_webview.test.TestAwContentsClient;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -158,8 +158,7 @@ public class VisualStateCallbackTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testAddVisualStateCallbackAfterRendererGone() throws Throwable {
         final VisualStateCallbackImpl vsImpl = new VisualStateCallbackImpl();
         mHelper.setOnRenderProcessGoneTask(
@@ -179,8 +178,7 @@ public class VisualStateCallbackTest {
     @Feature({"AndroidWebView"})
     @SmallTest
     @RetryOnFailure
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testVisualStateCallbackNotCalledAfterRendererGone() throws Throwable {
         VisualStateCallbackImpl vsImpl = new VisualStateCallbackImpl();
         mActivityTestRule.insertVisualStateCallbackOnUIThread(

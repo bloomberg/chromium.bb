@@ -6,6 +6,8 @@ package org.chromium.android_webview.test;
 
 import static org.junit.Assert.assertNotEquals;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -15,7 +17,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwDebug;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,9 +26,8 @@ import java.util.Scanner;
 /**
  * A test suite for AwDebug class.
  */
-// Only works in single-process mode, crbug.com/568825.
 @RunWith(AwJUnit4ClassRunner.class)
-@SkipCommandLineParameterization
+@OnlyRunIn(SINGLE_PROCESS) // Only works in single-process mode, http://crbug.com/568825.
 public class AwDebugTest {
     @Rule
     public AwActivityTestRule mActivityTestRule = new AwActivityTestRule();

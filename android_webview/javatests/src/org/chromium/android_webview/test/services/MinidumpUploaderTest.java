@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test.services;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+
 import android.os.ParcelFileDescriptor;
 import android.support.test.filters.MediumTest;
 
@@ -16,10 +18,10 @@ import org.chromium.android_webview.PlatformServiceBridge;
 import org.chromium.android_webview.services.AwMinidumpUploaderDelegate;
 import org.chromium.android_webview.services.CrashReceiverService;
 import org.chromium.android_webview.test.AwJUnit4ClassRunner;
+import org.chromium.android_webview.test.OnlyRunIn;
 import org.chromium.base.Callback;
 import org.chromium.base.FileUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.CrashTestRule;
 import org.chromium.components.minidump_uploader.CrashTestRule.MockCrashReportingPermissionManager;
@@ -40,7 +42,7 @@ import java.io.IOException;
  * interoperability of WebView's minidump-copying and minidump-uploading logic.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@SkipCommandLineParameterization
+@OnlyRunIn(SINGLE_PROCESS)
 public class MinidumpUploaderTest {
     @Rule
     public CrashTestRule mTestRule = new CrashTestRule() {

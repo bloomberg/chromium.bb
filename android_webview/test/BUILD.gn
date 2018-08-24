@@ -47,7 +47,7 @@ android_apk("webview_instrumentation_apk") {
     "shell/src/org/chromium/android_webview/test/AwJUnit4ClassRunner.java",
     "shell/src/org/chromium/android_webview/test/NullContentsClient.java",
     "shell/src/org/chromium/android_webview/test/SecondBrowserProcess.java",
-    "shell/src/org/chromium/android_webview/test/SkipSingleProcessTests.java",
+    "shell/src/org/chromium/android_webview/test/OnlyRunIn.java",
     "shell/src/org/chromium/android_webview/test/TestContentProvider.java",
   ]
 

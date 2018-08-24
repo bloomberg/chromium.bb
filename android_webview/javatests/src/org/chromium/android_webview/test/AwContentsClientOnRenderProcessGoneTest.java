@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
+
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -14,14 +16,11 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwRenderProcessGoneDetail;
-import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.concurrent.TimeUnit;
@@ -107,8 +106,7 @@ public class AwContentsClientOnRenderProcessGoneTest {
     @DisabledTest // http://crbug.com/689292
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testOnRenderProcessCrash() throws Throwable {
         createAndTerminateRenderProcess(
                 (AwContents awContents) -> { awContents.loadUrl("chrome://crash"); }, true);
@@ -117,8 +115,7 @@ public class AwContentsClientOnRenderProcessGoneTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testOnRenderProcessKill() throws Throwable {
         createAndTerminateRenderProcess(
                 (AwContents awContents) -> { awContents.loadUrl("chrome://kill"); }, false);
@@ -127,8 +124,7 @@ public class AwContentsClientOnRenderProcessGoneTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testRenderProcessTermination() throws Throwable {
         createAndTerminateRenderProcess(
                 (AwContents awContents) -> { awContents.getRenderProcess().terminate(); }, false);
@@ -137,8 +133,7 @@ public class AwContentsClientOnRenderProcessGoneTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testRenderProcessDifferentAfterRestart() throws Throwable {
         AwRenderProcess renderProcess1 = createAndTerminateRenderProcess(
                 (AwContents awContents) -> { awContents.getRenderProcess().terminate(); }, false);
@@ -150,8 +145,7 @@ public class AwContentsClientOnRenderProcessGoneTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testRenderProcessCanNotTerminateBeforeStart() throws Throwable {
         RenderProcessGoneTestAwContentsClient contentsClient =
                 new RenderProcessGoneTestAwContentsClient();
@@ -166,8 +160,7 @@ public class AwContentsClientOnRenderProcessGoneTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testRenderProcessSameBeforeAndAfterStart() throws Throwable {
         RenderProcessGoneTestAwContentsClient contentsClient =
                 new RenderProcessGoneTestAwContentsClient();
