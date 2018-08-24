@@ -228,6 +228,7 @@
 #include "chrome/browser/chromeos/lock_screen_apps/state_controller.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_resources_remover.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/quick_unlock/fingerprint_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/pin_storage_prefs.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -452,15 +453,17 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::ArcKioskAppManager::RegisterPrefs(registry);
   chromeos::AudioDevicesPrefHandlerImpl::RegisterPrefs(registry);
   chromeos::ChromeUserManagerImpl::RegisterPrefs(registry);
-  chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);
-  chromeos::device_settings_cache::RegisterPrefs(registry);
-  chromeos::EnableDebuggingScreenHandler::RegisterPrefs(registry);
-  chromeos::language_prefs::RegisterPrefs(registry);
-  chromeos::KioskAppManager::RegisterPrefs(registry);
-  chromeos::MultiProfileUserController::RegisterPrefs(registry);
-  chromeos::HIDDetectionScreenHandler::RegisterPrefs(registry);
   chromeos::DemoModeDetector::RegisterPrefs(registry);
   chromeos::DemoModeResourcesRemover::RegisterLocalStatePrefs(registry);
+  chromeos::DemoSetupController::RegisterLocalStatePrefs(registry);
+  chromeos::DeviceOAuth2TokenService::RegisterPrefs(registry);
+  chromeos::device_settings_cache::RegisterPrefs(registry);
+  chromeos::echo_offer::RegisterPrefs(registry);
+  chromeos::EnableDebuggingScreenHandler::RegisterPrefs(registry);
+  chromeos::HIDDetectionScreenHandler::RegisterPrefs(registry);
+  chromeos::KioskAppManager::RegisterPrefs(registry);
+  chromeos::language_prefs::RegisterPrefs(registry);
+  chromeos::MultiProfileUserController::RegisterPrefs(registry);
   chromeos::NetworkThrottlingObserver::RegisterPrefs(registry);
   chromeos::PowerMetricsReporter::RegisterLocalStatePrefs(registry);
   chromeos::Preferences::RegisterPrefs(registry);
@@ -473,7 +476,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::TimeZoneResolver::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserSessionManager::RegisterPrefs(registry);
-  chromeos::echo_offer::RegisterPrefs(registry);
   component_updater::MetadataTable::RegisterPrefs(registry);
   cryptauth::CryptAuthDeviceIdProviderImpl::RegisterLocalPrefs(registry);
   extensions::ExtensionAssetsManagerChromeOS::RegisterPrefs(registry);

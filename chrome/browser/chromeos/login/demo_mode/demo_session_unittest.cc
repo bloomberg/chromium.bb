@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_image_loader_client.h"
 #include "components/session_manager/core/session_manager.h"
@@ -115,8 +116,7 @@ class DemoSessionTest : public testing::Test {
   ~DemoSessionTest() override = default;
 
   void SetUp() override {
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(
-        DemoSession::EnrollmentType::kOnline);
+    DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
     auto image_loader_client = std::make_unique<TestImageLoaderClient>();
     image_loader_client_ = image_loader_client.get();
     chromeos::DBusThreadManager::GetSetterForTesting()->SetImageLoaderClient(
@@ -126,8 +126,7 @@ class DemoSessionTest : public testing::Test {
 
   void TearDown() override {
     DemoSession::ShutDownIfInitialized();
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(
-        DemoSession::EnrollmentType::kNone);
+    DemoSession::ResetDemoConfigForTesting();
     image_loader_client_ = nullptr;
     chromeos::DBusThreadManager::Shutdown();
   }
@@ -187,8 +186,7 @@ TEST_F(DemoSessionTest, StartInitiatesOfflineResourcesLoad) {
 }
 
 TEST_F(DemoSessionTest, StartForDemoDeviceNotInDemoMode) {
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kUnenrolled);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kNone);
   EXPECT_FALSE(DemoSession::Get());
   EXPECT_FALSE(DemoSession::StartIfInDemoMode());
   EXPECT_FALSE(DemoSession::Get());
@@ -197,8 +195,7 @@ TEST_F(DemoSessionTest, StartForDemoDeviceNotInDemoMode) {
 }
 
 TEST_F(DemoSessionTest, StartIfInOfflineEnrolledDemoMode) {
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kOffline);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOffline);
 
   EXPECT_FALSE(DemoSession::Get());
   DemoSession* demo_session = DemoSession::StartIfInDemoMode();
@@ -238,16 +235,14 @@ TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInDemoMode) {
 }
 
 TEST_F(DemoSessionTest, PreloadOfflineResourcesIfNotInDemoMode) {
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kUnenrolled);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kNone);
   DemoSession::PreloadOfflineResourcesIfInDemoMode();
   EXPECT_FALSE(DemoSession::Get());
   EXPECT_EQ(std::list<std::string>(), image_loader_client_->pending_loads());
 }
 
 TEST_F(DemoSessionTest, PreloadOfflineResourcesIfInOfflineDemoMode) {
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kOffline);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOffline);
   DemoSession::PreloadOfflineResourcesIfInDemoMode();
 
   DemoSession* demo_session = DemoSession::Get();

@@ -19,8 +19,11 @@
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_util.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace {
@@ -98,6 +101,13 @@ namespace chromeos {
 // static
 constexpr char DemoSetupController::kDemoModeDomain[];
 
+void DemoSetupController::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(
+      prefs::kDemoModeConfig,
+      static_cast<int>(DemoSession::DemoModeConfig::kNone));
+}
+
 // static
 bool DemoSetupController::IsDemoModeAllowed() {
   // Demo mode is only allowed on devices that support ARC++.
@@ -130,43 +140,46 @@ DemoSetupController::~DemoSetupController() {
 }
 
 bool DemoSetupController::IsOfflineEnrollment() const {
-  return enrollment_type_ && *enrollment_type_ == EnrollmentType::kOffline;
+  return demo_config_ == DemoSession::DemoModeConfig::kOffline;
 }
 
 void DemoSetupController::Enroll(OnSetupSuccess on_setup_success,
                                  OnSetupError on_setup_error) {
-  DCHECK(enrollment_type_)
-      << "Enrollment type needs to be explicitly set before calling Enroll()";
-  DCHECK_EQ(mode_, policy::EnrollmentConfig::MODE_NONE);
+  DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone)
+      << "Demo config needs to be explicitly set before calling Enroll()";
   DCHECK(!enrollment_helper_);
 
   on_setup_success_ = std::move(on_setup_success);
   on_setup_error_ = std::move(on_setup_error);
 
-  switch (*enrollment_type_) {
-    case EnrollmentType::kOnline:
+  VLOG(1) << "Starting demo mode enrollment "
+          << DemoSession::DemoConfigToString(demo_config_);
+
+  switch (demo_config_) {
+    case DemoSession::DemoModeConfig::kOnline:
       EnrollOnline();
       return;
-    case EnrollmentType::kOffline: {
+    case DemoSession::DemoModeConfig::kOffline: {
       const base::FilePath offline_data_dir =
           policy_dir_for_tests_.empty() ? base::FilePath(kOfflineDemoModeDir)
                                         : policy_dir_for_tests_;
       EnrollOffline(offline_data_dir);
       return;
     }
-    default:
-      NOTREACHED() << "Unknown demo mode enrollment type";
+    case DemoSession::DemoModeConfig::kNone:
+      NOTREACHED() << "No valid demo mode config specified";
   }
 }
 
 void DemoSetupController::EnrollOnline() {
+  DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOnline);
+
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   connector->GetDeviceCloudPolicyManager()->SetDeviceRequisition(
       kDemoRequisition);
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
-  mode_ = config.mode;
   config.management_domain = DemoSetupController::kDemoModeDomain;
 
   enrollment_helper_ = EnterpriseEnrollmentHelper::Create(
@@ -175,9 +188,9 @@ void DemoSetupController::EnrollOnline() {
 }
 
 void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
+  DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOffline);
   DCHECK(policy_dir_.empty());
   policy_dir_ = policy_dir;
-  mode_ = policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
 
   std::string* message = new std::string();
   base::PostTaskWithTraitsAndReplyWithResult(
@@ -190,7 +203,7 @@ void DemoSetupController::EnrollOffline(const base::FilePath& policy_dir) {
 
 void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
                                                       bool ok) {
-  DCHECK_EQ(mode_, policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
+  DCHECK_EQ(demo_config_, DemoSession::DemoModeConfig::kOffline);
   DCHECK(!policy_dir_.empty());
 
   if (!ok) {
@@ -199,7 +212,7 @@ void DemoSetupController::OnOfflinePolicyFilesExisted(std::string* message,
   }
 
   policy::EnrollmentConfig config;
-  config.mode = mode_;
+  config.mode = policy::EnrollmentConfig::MODE_OFFLINE_DEMO;
   config.management_domain = DemoSetupController::kDemoModeDomain;
   config.offline_policy_path =
       policy_dir_.AppendASCII(kOfflineDevicePolicyFileName);
@@ -232,13 +245,11 @@ void DemoSetupController::OnOtherError(
 
 void DemoSetupController::OnDeviceEnrolled(
     const std::string& additional_token) {
-  DCHECK(mode_ == policy::EnrollmentConfig::MODE_ATTESTATION ||
-         mode_ == policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
-  DCHECK_NE(mode_ == policy::EnrollmentConfig::MODE_OFFLINE_DEMO,
-            policy_dir_.empty());
+  DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
 
   // Try to load the policy for the device local account.
-  if (mode_ == policy::EnrollmentConfig::MODE_OFFLINE_DEMO) {
+  if (demo_config_ == DemoSession::DemoModeConfig::kOffline) {
+    DCHECK(!policy_dir_.empty());
     const base::FilePath file_path =
         policy_dir_.AppendASCII(kOfflineDeviceLocalAccountPolicyFileName);
     base::PostTaskWithTraitsAndReplyWithResult(
@@ -249,6 +260,7 @@ void DemoSetupController::OnDeviceEnrolled(
                        weak_ptr_factory_.GetWeakPtr()));
     return;
   }
+
   StartupUtils::MarkDeviceRegistered(
       base::BindOnce(&DemoSetupController::OnDeviceRegistered,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -321,6 +333,9 @@ void DemoSetupController::OnDeviceLocalAccountPolicyLoaded(
 
 void DemoSetupController::OnDeviceRegistered() {
   VLOG(1) << "Demo mode setup finished successfully.";
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetInteger(prefs::kDemoModeConfig, static_cast<int>(demo_config_));
+  prefs->CommitPendingWrite();
   Reset();
   if (!on_setup_success_.is_null())
     std::move(on_setup_success_).Run();
@@ -335,11 +350,11 @@ void DemoSetupController::SetupFailed(const std::string& message,
 }
 
 void DemoSetupController::Reset() {
-  DCHECK_NE(mode_, policy::EnrollmentConfig::MODE_NONE);
-  DCHECK_NE(mode_ == policy::EnrollmentConfig::MODE_OFFLINE_DEMO,
+  DCHECK_NE(demo_config_, DemoSession::DemoModeConfig::kNone);
+  DCHECK_NE(demo_config_ == DemoSession::DemoModeConfig::kOffline,
             policy_dir_.empty());
+  // |demo_config_| is not reset here, because it is needed for retrying setup.
   enrollment_helper_.reset();
-  mode_ = policy::EnrollmentConfig::MODE_NONE;
   policy_dir_.clear();
   if (device_local_account_policy_store_) {
     device_local_account_policy_store_->RemoveObserver(this);

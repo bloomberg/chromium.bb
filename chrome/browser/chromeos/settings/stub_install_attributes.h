@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
-#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 
 namespace chromeos {
 
@@ -31,6 +30,9 @@ class StubInstallAttributes : public InstallAttributes {
   static std::unique_ptr<StubInstallAttributes> CreateActiveDirectoryManaged(
       const std::string& realm,
       const std::string& device_id);
+  // Creates a StubInstallAttributes and calls SetDemoMode.
+  static std::unique_ptr<StubInstallAttributes> CreateDemoMode(
+      const std::string& device_id);
 
   // Setup as not-yet enrolled.
   void Clear();
@@ -42,6 +44,10 @@ class StubInstallAttributes : public InstallAttributes {
   // configuration.)
   void SetActiveDirectoryManaged(const std::string& realm,
                                  const std::string& device_id);
+
+  // Setup as demo mode device with specified |device_id|. Clears existing
+  // configuration.
+  void SetDemoMode(const std::string& device_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInstallAttributes);

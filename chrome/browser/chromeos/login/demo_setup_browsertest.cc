@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+
 #include <string>
 
 #include "base/command_line.h"
@@ -12,7 +14,7 @@
 #include "base/time/time_to_iso8601.h"
 #include "base/timer/timer.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/mock_network_state_helper.h"
@@ -349,8 +351,8 @@ class DemoSetupTest : public LoginManagerTest {
     wizard_controller->SimulateDemoModeSetupForTesting();
     // Enrollment type is set in the part of the flow that is skipped, That is
     // why we need to set it here.
-    wizard_controller->demo_setup_controller()->set_enrollment_type(
-        DemoSetupController::EnrollmentType::kOnline);
+    wizard_controller->demo_setup_controller()->set_demo_config(
+        DemoSession::DemoModeConfig::kOnline);
     wizard_controller->AdvanceToScreen(OobeScreen::SCREEN_OOBE_DEMO_SETUP);
 
     OobeScreenWaiter(OobeScreen::SCREEN_OOBE_DEMO_SETUP).Wait();

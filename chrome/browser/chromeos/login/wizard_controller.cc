@@ -33,6 +33,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
@@ -836,8 +837,8 @@ void WizardController::OnNetworkBack() {
 
 void WizardController::OnNetworkConnected() {
   if (demo_setup_controller_) {
-    demo_setup_controller_->set_enrollment_type(
-        DemoSetupController::EnrollmentType::kOnline);
+    demo_setup_controller_->set_demo_config(
+        DemoSession::DemoModeConfig::kOnline);
   }
 
   if (is_official_build_) {
@@ -859,8 +860,8 @@ void WizardController::OnNetworkConnected() {
 
 void WizardController::OnOfflineDemoModeSetup() {
   DCHECK(demo_setup_controller_);
-  demo_setup_controller_->set_enrollment_type(
-      DemoSetupController::EnrollmentType::kOffline);
+  demo_setup_controller_->set_demo_config(
+      DemoSession::DemoModeConfig::kOffline);
 
   if (is_official_build_) {
     if (!StartupUtils::IsEulaAccepted()) {

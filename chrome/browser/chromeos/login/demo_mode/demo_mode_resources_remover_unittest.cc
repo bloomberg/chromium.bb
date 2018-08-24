@@ -75,16 +75,14 @@ class DemoModeResourcesRemoverTest : public testing::Test {
     scoped_user_manager_ = std::make_unique<user_manager::ScopedUserManager>(
         std::make_unique<FakeChromeUserManager>());
 
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(
-        DemoSession::EnrollmentType::kUnenrolled);
+    DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kNone);
 
     DemoModeResourcesRemover::RegisterLocalStatePrefs(local_state_.registry());
   }
 
   void TearDown() override {
     DemoSession::ShutDownIfInitialized();
-    DemoSession::SetDemoModeEnrollmentTypeForTesting(
-        DemoSession::EnrollmentType::kNone);
+    DemoSession::ResetDemoConfigForTesting();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -270,8 +268,7 @@ TEST_F(DemoModeResourcesRemoverTest, LowDiskSpace) {
 
 TEST_F(DemoModeResourcesRemoverTest, LowDiskSpaceInDemoSession) {
   ASSERT_TRUE(CreateDemoModeResources());
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kOnline);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
 
   std::unique_ptr<DemoModeResourcesRemover> remover =
       DemoModeResourcesRemover::CreateIfNeeded(&local_state_);
@@ -341,8 +338,7 @@ TEST_F(DemoModeResourcesRemoverTest, AttemptRemovalInDemoSession) {
   ASSERT_TRUE(CreateDemoModeResources());
   std::unique_ptr<DemoModeResourcesRemover> remover =
       DemoModeResourcesRemover::CreateIfNeeded(&local_state_);
-  DemoSession::SetDemoModeEnrollmentTypeForTesting(
-      DemoSession::EnrollmentType::kOnline);
+  DemoSession::SetDemoConfigForTesting(DemoSession::DemoModeConfig::kOnline);
 
   base::Optional<DemoModeResourcesRemover::RemovalResult> result;
   remover->AttemptRemoval(

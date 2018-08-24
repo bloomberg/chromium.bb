@@ -11,10 +11,11 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/optional.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper.h"
-#include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
+
+class PrefRegistrySimple;
 
 namespace chromeos {
 
@@ -23,14 +24,6 @@ class DemoSetupController
     : public EnterpriseEnrollmentHelper::EnrollmentStatusConsumer,
       public policy::CloudPolicyStore::Observer {
  public:
-  // Type of demo mode enrollment.
-  enum class EnrollmentType {
-    // Online enrollment into demo mode that is established with DMServer.
-    kOnline,
-    // Offline enrollment into demo mode that is established locally.
-    kOffline,
-  };
-
   // Type of demo mode setup error.
   enum class DemoSetupError {
     // Recoverable or temporary demo mode setup error. Another attempt to setup
@@ -48,6 +41,8 @@ class DemoSetupController
   // Domain that demo mode devices are enrolled into.
   static constexpr char kDemoModeDomain[] = "cros-demo-mode.com";
 
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+
   // Utility method that returns whether demo mode is allowed on the device.
   static bool IsDemoModeAllowed();
 
@@ -62,10 +57,10 @@ class DemoSetupController
   DemoSetupController();
   ~DemoSetupController() override;
 
-  // Sets enrollment type that will be used to setup the device. It has to be
+  // Sets demo mode config that will be used to setup the device. It has to be
   // set before calling Enroll().
-  void set_enrollment_type(EnrollmentType enrollment_type) {
-    enrollment_type_ = enrollment_type;
+  void set_demo_config(DemoSession::DemoModeConfig demo_config) {
+    demo_config_ = demo_config;
   }
 
   // Whether offline enrollment is used for setup.
@@ -124,18 +119,15 @@ class DemoSetupController
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;
   void OnStoreError(policy::CloudPolicyStore* store) override;
 
-  // Enrollment type that will be performed when Enroll() is called. Should be
-  // set explicitly.
-  base::Optional<EnrollmentType> enrollment_type_;
+  // Demo mode configuration type that will be setup when Enroll() is called.
+  // Should be set explicitly.
+  DemoSession::DemoModeConfig demo_config_ = DemoSession::DemoModeConfig::kNone;
 
   // Callback to call when enrollment finishes with an error.
   OnSetupError on_setup_error_;
 
   // Callback to call when enrollment finishes successfully.
   OnSetupSuccess on_setup_success_;
-
-  // The mode of the current enrollment flow.
-  policy::EnrollmentConfig::Mode mode_ = policy::EnrollmentConfig::MODE_NONE;
 
   // The directory which contains the policy blob files for the offline
   // enrollment (i.e. device_policy and local_account_policy). Should be empty
