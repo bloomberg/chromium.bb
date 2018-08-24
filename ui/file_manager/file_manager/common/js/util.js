@@ -1475,3 +1475,17 @@ util.doIfPrimaryContext = function(callback) {
 util.toFilesAppEntry = function(entry) {
   return /** @type {FilesAppEntry} */ (entry);
 };
+
+/**
+ * Returns true if entry is FileSystemEntry or FileSystemDirectoryEntry, it
+ * returns false if it's FakeEntry or any one of the FilesAppEntry types.
+ * TODO(lucmult): Wrap Entry in a FilesAppEntry derived class and remove
+ * this function. https://crbug.com/835203.
+ * @param {Entry|FilesAppEntry|FakeEntry} entry
+ * @return {boolean}
+ */
+util.isNativeEntry = function(entry) {
+  entry = util.toFilesAppEntry(entry);
+  // Only FilesAppEntry types has |type_name| attribute.
+  return entry.type_name === undefined;
+};

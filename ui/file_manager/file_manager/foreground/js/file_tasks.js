@@ -168,12 +168,8 @@ FileTasks.create = function(
     volumeManager, metadataModel, directoryModel, ui, entries, mimeTypes,
     taskHistory) {
   var tasksPromise = new Promise(function(fulfill) {
-    // Filter entries to only contain native entries, only FilesAppEntry types
-    // have type_name property defined.
-    entries = entries.filter(entry => {
-      entry = util.toFilesAppEntry(entry);
-      return entry.type_name === undefined;
-    });
+    // getFileTasks supports only native entries.
+    entries = entries.filter(util.isNativeEntry);
     if (entries.length === 0) {
       fulfill([]);
       return;
