@@ -114,6 +114,12 @@ typedef NSMutableArray<ListItem*> SectionItems;
   [_collapsedKeys removeObjectForKey:@(sectionIdentifier)];
 }
 
+- (void)deleteAllItemsFromSectionWithIdentifier:(NSInteger)sectionIdentifier {
+  NSInteger section = [self sectionForSectionIdentifier:sectionIdentifier];
+  SectionItems* items = [_sections objectAtIndex:section];
+  [items removeAllObjects];
+}
+
 - (void)setHeader:(ListItem*)header
     forSectionWithIdentifier:(NSInteger)sectionIdentifier {
   NSNumber* key = [NSNumber numberWithInteger:sectionIdentifier];
