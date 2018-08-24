@@ -101,6 +101,16 @@ message TransportState {
   optional string congestion_control_state = 7;
 };
 
+// Documents external network parameters supplied to the sender.  Typically not
+// all of those would be supplied (e.g. if bandwidth and RTT are supplied, you
+// can infer the suggested CWND), but there are no restrictions on which fields
+// may or may not be set.
+message ExternalNetworkParameters {
+  optional uint64 bandwidth_bps = 1;  // in bits per second
+  optional uint64 rtt_us = 2;
+  optional uint64 cwnd_bytes = 3;
+};
+
 enum EncryptionLevel {
   ENCRYPTION_UNKNOWN = 0;
 
@@ -115,6 +125,19 @@ enum EventType {
   PACKET_SENT = 1;
   PACKET_RECEIVED = 2;
   PACKET_LOST = 3;
+
+  // An APPLICATION_LIMITED event occurs when the sender is capable of sending
+  // more data and tries to send it, but discovers that it does not have any
+  // outstanding data to send.  Such events are important to some congestion
+  // control algorithms (for example, BBR) since they are trying to measure the
+  // largest achievable throughput, but it is impossible to measure it when the
+  // application does not send anything.
+  APPLICATION_LIMITED = 4;
+
+  // Record when external information about expected network conditions
+  // (available bandwidth, RTT, congestion window, etc) is supplied to the
+  // sender.
+  EXTERNAL_PARAMETERS = 5;
 };
 
 // An event that has occurred over duration of the connection.
@@ -128,6 +151,8 @@ message Event {
   optional EncryptionLevel encryption_level = 6;
   // State of the transport stack after the event has happened.
   optional TransportState transport_state = 7;
+  // For event_type = EXTERNAL_PARAMETERS, record parameters specified.
+  optional ExternalNetworkParameters external_network_parameters = 8;
 };
 
 message Trace {
