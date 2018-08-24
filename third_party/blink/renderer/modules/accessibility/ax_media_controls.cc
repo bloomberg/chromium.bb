@@ -92,6 +92,7 @@ AXObject* AccessibilityMediaControl::Create(
     case kMediaScrubbingMessage:
     case kMediaEnterPictureInPictureButton:
     case kMediaExitPictureInPictureButton:
+    case kMediaDisplayCutoutFullscreenButton:
       return new AccessibilityMediaControl(layout_object, ax_object_cache);
   }
 
@@ -179,6 +180,9 @@ String AccessibilityMediaControl::TextAlternative(
     case kMediaExitPictureInPictureButton:
       return QueryString(
           WebLocalizedString::kAXMediaExitPictureInPictureButton);
+    case kMediaDisplayCutoutFullscreenButton:
+      return QueryString(
+          WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton);
     case kMediaSlider:
       NOTREACHED();
       return QueryString(WebLocalizedString::kAXMediaDefault);
@@ -229,6 +233,9 @@ String AccessibilityMediaControl::Description(
     case kMediaExitPictureInPictureButton:
       return QueryString(
           WebLocalizedString::kAXMediaExitPictureInPictureButtonHelp);
+    case kMediaDisplayCutoutFullscreenButton:
+      return QueryString(
+          WebLocalizedString::kAXMediaDisplayCutoutFullscreenButtonHelp);
     case kMediaSliderThumb:
     case kMediaTextTrackList:
     case kMediaTimelineContainer:
@@ -278,6 +285,7 @@ AccessibilityRole AccessibilityMediaControl::RoleValue() const {
     case kMediaCastOffButton:
     case kMediaEnterPictureInPictureButton:
     case kMediaExitPictureInPictureButton:
+    case kMediaDisplayCutoutFullscreenButton:
       return kButtonRole;
 
     case kMediaTimelineContainer:

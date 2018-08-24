@@ -49,6 +49,7 @@ class MediaControlDownloadButtonElement;
 class MediaControlFullscreenButtonElement;
 class MediaControlLoadingPanelElement;
 class MediaControlMuteButtonElement;
+class MediaControlDisplayCutoutFullscreenButtonElement;
 class MediaControlOverflowMenuButtonElement;
 class MediaControlOverflowMenuListElement;
 class MediaControlOverlayEnclosureElement;
@@ -207,6 +208,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   friend class MediaControlsRotateToFullscreenDelegateTest;
   friend class MediaControlsImplTest;
   friend class MediaControlsImplInProductHelpTest;
+  friend class MediaControlDisplayCutoutFullscreenButtonElementTest;
   friend class MediaControlTimelineElementTest;
 
   // Need to be members of MediaControls for private member access.
@@ -348,6 +350,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   Member<MediaControlCastButtonElement> cast_button_;
   Member<MediaControlFullscreenButtonElement> fullscreen_button_;
+  Member<MediaControlDisplayCutoutFullscreenButtonElement>
+      display_cutout_fullscreen_button_;
   Member<MediaControlDownloadButtonElement> download_button_;
 
   Member<MediaControlsMediaEventListener> media_event_listener_;
