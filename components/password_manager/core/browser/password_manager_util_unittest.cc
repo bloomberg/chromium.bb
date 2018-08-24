@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
@@ -311,8 +312,7 @@ TEST(PasswordManagerUtil, FindBestMatches) {
         // A non-best match form must not be in |best_matches|.
         EXPECT_NE(best_matches[form->username_value], form);
 
-        matches.erase(std::remove(matches.begin(), matches.end(), form),
-                      matches.end());
+        base::Erase(matches, form);
       }
       // Expect that all non-best matches were found in |matches| and only best
       // matches left.

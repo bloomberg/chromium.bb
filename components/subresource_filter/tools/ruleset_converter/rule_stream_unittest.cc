@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "components/subresource_filter/tools/rule_parser/rule_parser.h"
@@ -277,13 +278,11 @@ TEST(RuleStreamTest, TransferRulesAndDiscardRegexpRules) {
   input.reset();
   output.reset();
 
-  contents.url_rules.erase(
-      std::remove_if(contents.url_rules.begin(), contents.url_rules.end(),
-                     [](const url_pattern_index::proto::UrlRule& rule) {
-                       return rule.url_pattern_type() ==
-                              url_pattern_index::proto::URL_PATTERN_TYPE_REGEXP;
-                     }),
-      contents.url_rules.end());
+  base::EraseIf(contents.url_rules,
+                [](const url_pattern_index::proto::UrlRule& rule) {
+                  return rule.url_pattern_type() ==
+                         url_pattern_index::proto::URL_PATTERN_TYPE_REGEXP;
+                });
   contents.css_rules.clear();
   EXPECT_EQ(target_ruleset.ReadContents(), contents);
 }

@@ -17,6 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/json/json_file_value_serializer.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -190,10 +191,8 @@ bool IsValidInstallerAttribute(const InstallerAttribute& attr) {
 
 void RemoveUnsecureUrls(std::vector<GURL>* urls) {
   DCHECK(urls);
-  urls->erase(std::remove_if(
-                  urls->begin(), urls->end(),
-                  [](const GURL& url) { return !url.SchemeIsCryptographic(); }),
-              urls->end());
+  base::EraseIf(*urls,
+                [](const GURL& url) { return !url.SchemeIsCryptographic(); });
 }
 
 CrxInstaller::Result InstallFunctionWrapper(

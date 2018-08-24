@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_driver.h"
@@ -246,7 +247,7 @@ void InstanceIDImpl::EnsureIDGenerated() {
       &id_);
   std::replace(id_.begin(), id_.end(), '+', '-');
   std::replace(id_.begin(), id_.end(), '/', '_');
-  id_.erase(std::remove(id_.begin(), id_.end(), '='), id_.end());
+  base::Erase(id_, '=');
 
   creation_time_ = base::Time::Now();
 

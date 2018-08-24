@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/stl_util.h"
 #include "components/zucchini/encoded_view.h"
 #include "components/zucchini/patch_reader.h"
 #include "components/zucchini/suffix_array.h"
@@ -304,8 +305,7 @@ void OffsetMapper::ForwardProjectAll(std::vector<offset_t>* offsets) const {
       src = kInvalidOffset;
     }
   }
-  offsets->erase(std::remove(offsets->begin(), offsets->end(), kInvalidOffset),
-                 offsets->end());
+  base::Erase(*offsets, kInvalidOffset);
   offsets->shrink_to_fit();
 }
 
@@ -365,11 +365,9 @@ void OffsetMapper::PruneEquivalencesAndSortBySource(
   }
 
   // Discard all equivalences with length == 0.
-  equivalences->erase(std::remove_if(equivalences->begin(), equivalences->end(),
-                                     [](const Equivalence& equivalence) {
-                                       return equivalence.length == 0;
-                                     }),
-                      equivalences->end());
+  base::EraseIf(*equivalences, [](const Equivalence& equivalence) {
+    return equivalence.length == 0;
+  });
 }
 
 /******** EquivalenceMap ********/
@@ -541,12 +539,10 @@ void EquivalenceMap::Prune(
   }
 
   // Discard all candidates with similarity smaller than |min_similarity|.
-  candidates_.erase(
-      std::remove_if(candidates_.begin(), candidates_.end(),
-                     [min_similarity](const EquivalenceCandidate& candidate) {
-                       return candidate.similarity < min_similarity;
-                     }),
-      candidates_.end());
+  base::EraseIf(candidates_,
+                [min_similarity](const EquivalenceCandidate& candidate) {
+                  return candidate.similarity < min_similarity;
+                });
 }
 
 }  // namespace zucchini

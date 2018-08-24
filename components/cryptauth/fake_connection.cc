@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "components/cryptauth/wire_message.h"
 
 namespace cryptauth {
@@ -49,9 +50,7 @@ void FakeConnection::AddObserver(ConnectionObserver* observer) {
 }
 
 void FakeConnection::RemoveObserver(ConnectionObserver* observer) {
-  observers_.erase(
-      std::remove(observers_.begin(), observers_.end(), observer),
-      observers_.end());
+  base::Erase(observers_, observer);
   Connection::RemoveObserver(observer);
 }
 

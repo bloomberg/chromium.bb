@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/distilled_content_store.h"
 #include "components/dom_distiller/core/proto/distilled_article.pb.h"
@@ -112,7 +113,7 @@ bool TaskTracker::HasUrl(const GURL& url) const {
 }
 
 void TaskTracker::RemoveViewer(ViewRequestDelegate* delegate) {
-  viewers_.erase(std::remove(viewers_.begin(), viewers_.end(), delegate));
+  base::Erase(viewers_, delegate);
   if (viewers_.empty()) {
     MaybeCancel();
   }

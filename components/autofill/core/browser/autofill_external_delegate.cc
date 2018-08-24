@@ -404,14 +404,10 @@ void AutofillExternalDelegate::InsertDataListValues(
   // the list of datalist values.
   std::set<base::string16> data_list_set(data_list_values_.begin(),
                                          data_list_values_.end());
-  suggestions->erase(
-      std::remove_if(
-          suggestions->begin(), suggestions->end(),
-          [&data_list_set](const Suggestion& suggestion) {
-            return suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
-                   base::ContainsKey(data_list_set, suggestion.value);
-          }),
-      suggestions->end());
+  base::EraseIf(*suggestions, [&data_list_set](const Suggestion& suggestion) {
+    return suggestion.frontend_id == POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY &&
+           base::ContainsKey(data_list_set, suggestion.value);
+  });
 
 #if !defined(OS_ANDROID)
   // Insert the separator between the datalist and Autofill/Autocomplete values

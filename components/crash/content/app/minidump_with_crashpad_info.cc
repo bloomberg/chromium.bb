@@ -5,6 +5,7 @@
 #include "components/crash/content/app/minidump_with_crashpad_info.h"
 
 #include "base/files/file_util.h"
+#include "base/stl_util.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
@@ -74,11 +75,9 @@ bool MinidumpUpdater::Initialize(base::File* file) {
 
   // Start by removing any unused directory entries.
   // TODO(siggi): Fix Crashpad to ignore unused streams.
-  directory_.erase(std::remove_if(directory_.begin(), directory_.end(),
-                                  [](const MINIDUMP_DIRECTORY& entry) {
-                                    return entry.StreamType == UnusedStream;
-                                  }),
-                   directory_.end());
+  base::EraseIf(directory_, [](const MINIDUMP_DIRECTORY& entry) {
+    return entry.StreamType == UnusedStream;
+  });
 
   // Update the header.
   // TODO(siggi): Fix Crashpad's version checking.
