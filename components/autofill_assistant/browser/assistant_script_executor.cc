@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill_assistant/browser/assistant_protocol_utils.h"
 #include "components/autofill_assistant/browser/assistant_service.h"
 #include "components/autofill_assistant/browser/assistant_ui_controller.h"
@@ -117,6 +119,20 @@ void AssistantScriptExecutor::ProcessNextAction() {
 
   std::unique_ptr<AssistantAction> action = std::move(actions_.front());
   actions_.pop_front();
+  int delay_ms = action->proto().action_delay_ms();
+  if (delay_ms > 0) {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&AssistantScriptExecutor::ProcessAction,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(action)),
+        base::TimeDelta::FromMilliseconds(delay_ms));
+  } else {
+    ProcessAction(std::move(action));
+  }
+}
+
+void AssistantScriptExecutor::ProcessAction(
+    std::unique_ptr<AssistantAction> action) {
   AssistantAction* action_ptr = action.get();
   action_ptr->ProcessAction(
       this, base::BindOnce(&AssistantScriptExecutor::OnProcessedAction,
