@@ -83,7 +83,8 @@ void getMatchingShorthandsForLonghand(
   {% for longhand_id, shorthands in longhands_dictionary.items() %}
     case {{longhand_id}}: {
       {% for shorthand in shorthands %}
-      result->UncheckedAppend({{shorthand.name.to_lower_camel_case()}}Shorthand());
+      if (CSSProperty::Get({{shorthand.property_id}}).IsEnabled())
+        result->UncheckedAppend({{shorthand.name.to_lower_camel_case()}}Shorthand());
       {% endfor %}
       break;
     }
