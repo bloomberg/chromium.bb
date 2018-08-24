@@ -93,6 +93,21 @@ class ServerWindowTargeter : public aura::WindowTargeter {
   ~ServerWindowTargeter() override = default;
 
   // aura::WindowTargeter:
+  bool SubtreeShouldBeExploredForEvent(aura::Window* window,
+                                       const ui::LocatedEvent& event) override {
+    // If the top-level does not have insets, then forward the call to the
+    // parent's WindowTargeter. This is necessary for targeters such as
+    // EasyResizeWindowTargeter to work correctly.
+    if (mouse_extend().IsEmpty() && touch_extend().IsEmpty() &&
+        server_window_->IsTopLevel() && window->parent()) {
+      aura::WindowTargeter* parent_targeter =
+          static_cast<WindowTargeter*>(window->parent()->targeter());
+      if (parent_targeter)
+        return parent_targeter->SubtreeShouldBeExploredForEvent(window, event);
+    }
+    return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
+  }
+
   ui::EventTarget* FindTargetForEvent(ui::EventTarget* event_target,
                                       ui::Event* event) override {
     aura::Window* window = static_cast<aura::Window*>(event_target);
