@@ -13,7 +13,8 @@ endif
 CRON_DIR = $(DESTDIR)/etc/cron.daily
 DOC_DIR = $(DESTDIR)/usr/share/doc/chrome-remote-desktop
 INSTALL_DIR = $(DESTDIR)/opt/google/chrome-remote-desktop
-NATIVE_MESSAGING_DIR = $(DESTDIR)/etc/opt/chrome/native-messaging-hosts
+CHROME_NATIVE_MESSAGING_DIR = $(DESTDIR)/etc/opt/chrome/native-messaging-hosts
+FIREFOX_NATIVE_MESSAGING_DIR = $(DESTDIR)/usr/lib/mozilla/native-messaging-hosts
 
 ME2ME_PROGNAME = $(BUILD_DIR)/remoting_me2me_host
 ME2ME_DEBUGFILE = $(ME2ME_PROGNAME).debug
@@ -33,7 +34,8 @@ install:
 	install -d "$(DOC_DIR)"
 	install -d "$(INSTALL_DIR)"
 	install -d "$(INSTALL_DIR)/remoting_locales"
-	install -d "$(NATIVE_MESSAGING_DIR)"
+	install -d "$(CHROME_NATIVE_MESSAGING_DIR)"
+	install -d "$(FIREFOX_NATIVE_MESSAGING_DIR)"
 
 	install "$(SRC_DIR)/remoting/host/linux/linux_me2me_host.py" \
 	  "$(INSTALL_DIR)/chrome-remote-desktop"
@@ -41,12 +43,18 @@ install:
 	  "$(INSTALL_DIR)"
 
 	install -m 0644 \
-	    "$(BUILD_DIR)/remoting/com.google.chrome.remote_desktop.json" \
-	   "$(NATIVE_MESSAGING_DIR)/com.google.chrome.remote_desktop.json"
+	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_desktop.json" \
+	  "$(CHROME_NATIVE_MESSAGING_DIR)/com.google.chrome.remote_desktop.json"
+	install -m 0644 \
+	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_desktop-firefox.json" \
+	  "$(FIREFOX_NATIVE_MESSAGING_DIR)/com.google.chrome.remote_desktop.json"
 
 	install -m 0644 \
 	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_assistance.json" \
-	  "$(NATIVE_MESSAGING_DIR)/com.google.chrome.remote_assistance.json"
+	  "$(CHROME_NATIVE_MESSAGING_DIR)/com.google.chrome.remote_assistance.json"
+	install -m 0644 \
+	  "$(BUILD_DIR)/remoting/com.google.chrome.remote_assistance-firefox.json" \
+	  "$(FIREFOX_NATIVE_MESSAGING_DIR)/com.google.chrome.remote_assistance.json"
 
 	install "$(ME2ME_PROGNAME)" \
 	  "$(INSTALL_DIR)/chrome-remote-desktop-host"

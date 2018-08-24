@@ -616,7 +616,9 @@ if (enable_remoting_host) {
     script = "../tools/build/remoting_localize.py"
 
     sources = [
+      "it2me/com.google.chrome.remote_assistance-firefox.json.jinja2",
       "it2me/com.google.chrome.remote_assistance.json.jinja2",
+      "setup/com.google.chrome.remote_desktop-firefox.json.jinja2",
       "setup/com.google.chrome.remote_desktop.json.jinja2",
     ]
 
