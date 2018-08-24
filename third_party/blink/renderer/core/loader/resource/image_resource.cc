@@ -135,6 +135,14 @@ class ImageResource::ImageResourceInfoImpl final
                                             initiator_name);
   }
 
+  void LoadDeferredImage(ResourceFetcher* fetcher) override {
+    if (resource_->GetType() == Resource::kImage &&
+        resource_->StillNeedsLoad() &&
+        !fetcher->ShouldDeferImageLoad(resource_->Url())) {
+      fetcher->StartLoad(resource_);
+    }
+  }
+
   const Member<ImageResource> resource_;
 };
 

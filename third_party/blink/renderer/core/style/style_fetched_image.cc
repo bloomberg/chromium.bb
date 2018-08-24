@@ -34,9 +34,12 @@
 namespace blink {
 
 StyleFetchedImage::StyleFetchedImage(const Document& document,
-                                     FetchParameters& params)
+                                     FetchParameters& params,
+                                     bool is_lazyload_possibly_deferred)
     : document_(&document), url_(params.Url()) {
   is_image_resource_ = true;
+  is_lazyload_possibly_deferred_ = is_lazyload_possibly_deferred;
+
   image_ = ImageResourceContent::Fetch(params, document_->Fetcher());
   image_->AddObserver(this);
   // ResourceFetcher is not determined from StyleFetchedImage and it is
@@ -140,6 +143,13 @@ scoped_refptr<Image> StyleFetchedImage::GetImage(
 bool StyleFetchedImage::KnownToBeOpaque(const Document&,
                                         const ComputedStyle&) const {
   return image_->GetImage()->CurrentFrameKnownToBeOpaque();
+}
+
+void StyleFetchedImage::LoadDeferredImage(const Document& document) {
+  DCHECK(is_lazyload_possibly_deferred_);
+  is_lazyload_possibly_deferred_ = false;
+  document_ = &document;
+  image_->LoadDeferredImage(document_->Fetcher());
 }
 
 void StyleFetchedImage::Trace(blink::Visitor* visitor) {

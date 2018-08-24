@@ -410,9 +410,11 @@ bool ResourceFetcher::ResourceNeedsLoad(Resource* resource,
   // - images are disabled
   // - instructed to defer loading images from network
   if (resource->GetType() == Resource::kImage &&
-      ShouldDeferImageLoad(resource->Url()))
+      (ShouldDeferImageLoad(resource->Url()) ||
+       params.GetImageRequestOptimization() ==
+           FetchParameters::kDeferImageLoad)) {
     return false;
-
+  }
   return policy != kUse || resource->StillNeedsLoad();
 }
 

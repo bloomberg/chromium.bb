@@ -65,6 +65,8 @@ class NullImageResourceInfo final
       const KURL&,
       const AtomicString& initiator_name) override {}
 
+  void LoadDeferredImage(ResourceFetcher* fetcher) override {}
+
   const KURL url_;
   const ResourceResponse response_;
 };
@@ -627,6 +629,10 @@ base::Optional<ResourceError> ImageResourceContent::GetResourceError() const {
 
 bool ImageResourceContent::IsCacheValidator() const {
   return info_->IsCacheValidator();
+}
+
+void ImageResourceContent::LoadDeferredImage(ResourceFetcher* fetcher) {
+  info_->LoadDeferredImage(fetcher);
 }
 
 }  // namespace blink

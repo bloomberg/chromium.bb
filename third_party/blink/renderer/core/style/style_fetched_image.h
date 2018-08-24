@@ -41,8 +41,9 @@ class StyleFetchedImage final : public StyleImage,
 
  public:
   static StyleFetchedImage* Create(const Document& document,
-                                   FetchParameters& params) {
-    return new StyleFetchedImage(document, params);
+                                   FetchParameters& params,
+                                   bool is_lazyload_deferred) {
+    return new StyleFetchedImage(document, params, is_lazyload_deferred);
   }
   ~StyleFetchedImage() override;
 
@@ -70,10 +71,14 @@ class StyleFetchedImage final : public StyleImage,
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;
 
+  void LoadDeferredImage(const Document& document);
+
   void Trace(blink::Visitor*) override;
 
  private:
-  StyleFetchedImage(const Document&, FetchParameters&);
+  StyleFetchedImage(const Document&,
+                    FetchParameters&,
+                    bool is_lazyload_deferred);
 
   void Dispose();
 

@@ -178,6 +178,8 @@ class CORE_EXPORT ImageResourceContent final
   bool IsAcceptableContentType();
   bool IsAcceptableCompressionRatio();
 
+  void LoadDeferredImage(ResourceFetcher* fetcher);
+
  private:
   using CanDeferInvalidation = ImageResourceObserver::CanDeferInvalidation;
 
