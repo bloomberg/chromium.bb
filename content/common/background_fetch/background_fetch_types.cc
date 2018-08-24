@@ -7,7 +7,7 @@
 
 namespace {
 
-blink::mojom::SerializedBlobPtr MakeCloneSerializedBlob(
+blink::mojom::SerializedBlobPtr CloneSerializedBlob(
     const blink::mojom::SerializedBlobPtr& blob) {
   if (!blob)
     return nullptr;
@@ -53,18 +53,19 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
 BackgroundFetchRegistration::~BackgroundFetchRegistration() = default;
 
 // static
-blink::mojom::FetchAPIResponsePtr
-BackgroundFetchSettledFetch::MakeCloneResponse(
+blink::mojom::FetchAPIResponsePtr BackgroundFetchSettledFetch::CloneResponse(
     const blink::mojom::FetchAPIResponsePtr& response) {
+  // TODO(https://crbug.com/876546): Replace this method with response.Clone()
+  // if the associated bug is fixed.
   if (!response)
     return nullptr;
   return blink::mojom::FetchAPIResponse::New(
       response->url_list, response->status_code, response->status_text,
       response->response_type, response->headers,
-      MakeCloneSerializedBlob(response->blob), response->error,
+      CloneSerializedBlob(response->blob), response->error,
       response->response_time, response->cache_storage_cache_name,
       response->cors_exposed_header_names, response->is_in_cache_storage,
-      MakeCloneSerializedBlob(response->side_data_blob));
+      CloneSerializedBlob(response->side_data_blob));
 }
 BackgroundFetchSettledFetch::BackgroundFetchSettledFetch() = default;
 
@@ -76,7 +77,7 @@ BackgroundFetchSettledFetch::BackgroundFetchSettledFetch(
 BackgroundFetchSettledFetch& BackgroundFetchSettledFetch::operator=(
     const BackgroundFetchSettledFetch& other) {
   request = other.request;
-  response = MakeCloneResponse(other.response);
+  response = CloneResponse(other.response);
   return *this;
 }
 

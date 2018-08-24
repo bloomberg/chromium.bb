@@ -54,8 +54,8 @@ bool ContainsHeader(const base::flat_map<std::string, std::string>& headers,
   return headers.cend() !=
          std::find_if(headers.cbegin(), headers.cend(),
                       [target](const auto& pair) -> bool {
-                        return base::CompareCaseInsensitiveASCII(pair.first,
-                                                                 target) == 0;
+                        return base::EqualsCaseInsensitiveASCII(pair.first,
+                                                                target);
                       });
 }
 
