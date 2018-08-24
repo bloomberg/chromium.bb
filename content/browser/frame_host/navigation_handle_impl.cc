@@ -49,10 +49,11 @@ namespace content {
 
 namespace {
 
-// Default timeout for the READY_TO_COMMIT -> COMMIT transition.
-// Chosen based on the Navigation.ReadyToCommitUntilCommit UMA.
+// Default timeout for the READY_TO_COMMIT -> COMMIT transition.  Chosen
+// initially based on the Navigation.ReadyToCommitUntilCommit UMA, and then
+// refined based on feedback based on CrashExitCodes.Renderer/RESULT_CODE_HUNG.
 constexpr base::TimeDelta kDefaultCommitTimeout =
-    base::TimeDelta::FromSeconds(10);
+    base::TimeDelta::FromSeconds(30);
 
 // Timeout for the READY_TO_COMMIT -> COMMIT transition.
 // Overrideable via SetCommitTimeoutForTesting.
