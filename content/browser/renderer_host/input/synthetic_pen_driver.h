@@ -16,6 +16,8 @@ class CONTENT_EXPORT SyntheticPenDriver : public SyntheticMouseDriver {
   SyntheticPenDriver();
   ~SyntheticPenDriver() override;
 
+  void Leave(int index = 0) override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SyntheticPenDriver);
 };

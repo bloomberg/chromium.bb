@@ -74,6 +74,9 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
       case SyntheticPointerActionParams::PointerActionType::RELEASE:
         synthetic_pointer_driver_->Release(param.index(), param.button());
         break;
+      case SyntheticPointerActionParams::PointerActionType::LEAVE:
+        synthetic_pointer_driver_->Leave(param.index());
+        break;
       case SyntheticPointerActionParams::PointerActionType::IDLE:
         break;
       case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:

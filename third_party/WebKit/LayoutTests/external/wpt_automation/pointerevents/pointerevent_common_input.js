@@ -459,7 +459,36 @@ function penMoveIntoTarget(targetSelector, targetFrame) {
       chrome.gpuBenchmarking.pointerActionSequence( [
         {source: 'pen',
          actions: [
-            { name: 'pointerMove', x: xPosition, y: yPosition }
+            { name: 'pointerMove', x: xPosition, y: yPosition}
+        ]}], resolve);
+    } else {
+      reject();
+    }
+  });
+}
+
+function penEnterAndLeaveTarget(targetSelector, targetFrame) {
+  var targetDocument = document;
+  var frameLeft = 0;
+  var frameTop = 0;
+  if (targetFrame !== undefined) {
+    targetDocument = targetFrame.contentDocument;
+    var frameRect = targetFrame.getBoundingClientRect();
+    frameLeft = frameRect.left;
+    frameTop = frameRect.top;
+  }
+
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      var target = targetDocument.querySelector(targetSelector);
+      var targetRect = target.getBoundingClientRect();
+      var xPosition = frameLeft + targetRect.left + boundaryOffset;
+      var yPosition = frameTop + targetRect.top + boundaryOffset;
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {source: 'pen',
+         actions: [
+            { name: 'pointerMove', x: xPosition, y: yPosition},
+            { name: 'pointerLeave' },
         ]}], resolve);
     } else {
       reject();
