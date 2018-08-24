@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
@@ -15,13 +17,12 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 
 /**
  * Test suite for HttpAuthDatabase.
  */
 @RunWith(AwJUnit4ClassRunner.class)
-@SkipCommandLineParameterization
+@OnlyRunIn(SINGLE_PROCESS)
 public class HttpAuthDatabaseTest {
     private static final String TEST_DATABASE = "http_auth_for_HttpAuthDatabaseTest.db";
 

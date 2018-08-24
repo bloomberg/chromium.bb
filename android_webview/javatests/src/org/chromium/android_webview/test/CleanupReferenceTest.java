@@ -4,6 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
+
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
@@ -13,7 +15,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.CleanupReference;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -21,7 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Test suite for {@link CleanupReference}. */
 @RunWith(AwJUnit4ClassRunner.class)
-@SkipCommandLineParameterization
+@OnlyRunIn(SINGLE_PROCESS)
 public class CleanupReferenceTest {
     private static AtomicInteger sObjectCount = new AtomicInteger();
 

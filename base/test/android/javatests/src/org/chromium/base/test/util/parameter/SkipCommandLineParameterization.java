@@ -12,9 +12,6 @@ import java.lang.annotation.Target;
 /**
  * BaseJUnit4ClassRunner and host side test harness skips commandline parameterization for test
  * classes or methods annotated with SkipCommandLineParameterization.
- *
- * This usually used by test that only runs in WebView javatests that only runs in sandboxed mode
- * or single process mode.
  */
 
 @Inherited

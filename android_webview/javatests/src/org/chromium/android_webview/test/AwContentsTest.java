@@ -5,6 +5,8 @@
 package org.chromium.android_webview.test;
 
 import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.MULTI_PROCESS;
+import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -28,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.AwSettings;
-import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
@@ -37,7 +38,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -603,9 +603,8 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @SkipCommandLineParameterization
-    @CommandLineFlags.Add({
-            AwSwitches.WEBVIEW_SANDBOXED_RENDERER, ContentSwitches.RENDER_PROCESS_LIMIT + "=1"})
+    @OnlyRunIn(MULTI_PROCESS)
+    @CommandLineFlags.Add(ContentSwitches.RENDER_PROCESS_LIMIT + "=1")
     public void testForegroundPriorityOneProcess() throws Throwable {
         final AwTestContainerView view1 =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
@@ -654,9 +653,8 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @SkipCommandLineParameterization
-    @CommandLineFlags.Add({
-            AwSwitches.WEBVIEW_SANDBOXED_RENDERER, ContentSwitches.RENDER_PROCESS_LIMIT + "=2"})
+    @OnlyRunIn(MULTI_PROCESS)
+    @CommandLineFlags.Add(ContentSwitches.RENDER_PROCESS_LIMIT + "=2")
     public void testForegroundPriorityTwoProcesses() throws Throwable {
         final AwTestContainerView view1 =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
@@ -683,8 +681,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @SkipCommandLineParameterization
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
+    @OnlyRunIn(MULTI_PROCESS)
     public void testBackgroundPriority() throws Throwable {
         final AwContents awContents =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient)
@@ -705,8 +702,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testPauseDestroyResume() throws Throwable {
         mActivityTestRule.runOnUiThread(() -> {
             AwContents awContents;
@@ -729,8 +725,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @CommandLineFlags.Add(AwSwitches.WEBVIEW_SANDBOXED_RENDERER)
-    @SkipCommandLineParameterization
+    @OnlyRunIn(MULTI_PROCESS)
     public void testRenderProcessInMultiProcessMode() throws Throwable {
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
@@ -749,7 +744,7 @@ public class AwContentsTest {
     @Test
     @Feature({"AndroidWebView"})
     @SmallTest
-    @SkipCommandLineParameterization
+    @OnlyRunIn(SINGLE_PROCESS)
     public void testNoRenderProcessInSingleProcessMode() throws Throwable {
         AwTestContainerView testView =
                 mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);

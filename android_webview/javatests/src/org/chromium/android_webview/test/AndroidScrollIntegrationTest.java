@@ -30,7 +30,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.parameter.SkipCommandLineParameterization;
 import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.common.UseZoomForDSFPolicy;
@@ -455,7 +454,7 @@ public class AndroidScrollIntegrationTest {
      * @RetryOnFailure
      * BUG=813837
      */
-    @SkipCommandLineParameterization // crbug.com/616505
+    // Originally flaked only in multi-process mode (http://crbug.com/616505)
     @DisabledTest
     public void testTouchScrollCanBeAlteredByUi() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
