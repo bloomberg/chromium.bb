@@ -69,14 +69,6 @@
         <attr name="titleText" format="string" />
     </declare-styleable>
 
-    <declare-styleable name="TextMessageWithLinkAndIconPreference">
-        <!-- Used on a TextMessageWithLinkAndIconPreference that is followed
-             by another TextMessageWithLinkAndIconPreference to remove the
-             bottom spacing, so that related paragraphs of text are closer
-             to each other. -->
-        <attr name="noBottomSpacing" format="boolean" />
-    </declare-styleable>
-
     <declare-styleable name="SpinnerPreference">
         <!-- Used to change the SpinnerPreference to display the TextView and the Spinner on the
              same line. Devices with a smallest width of less than 360dp will still use two separate
