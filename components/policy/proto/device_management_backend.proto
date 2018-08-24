@@ -1740,6 +1740,17 @@ message AppInstallReportRequest {
 // push-installs.
 message AppInstallReportResponse {}
 
+// Request from device to stop using a previously issued service account.
+// The identity of a freshly-issued service account will be returned by a
+// subsequent device policy fetch (see the |service_account_identity| field in
+// |PolicyData| and auth codes tied to the new service account can be retrived
+// by subsequent |DeviceServiceApiAccessRequest| requests.
+message RefreshAccountRequest {}
+
+// Response from server after receiving a request to refresh the service
+// account.
+message RefreshAccountResponse {}
+
 // Request from the DMAgent on the device to the DMServer.  This is
 // container for all requests from device to server.  The overall HTTP
 // request MUST be in the following format:
@@ -1774,6 +1785,7 @@ message AppInstallReportResponse {}
 //     * register_browser
 //     * policy_validation_report
 //     * device_initial_enrollment_state
+//     * refresh_account
 //   * devicetype: MUST BE "1" for Android, "2" for Chrome OS or "3" for Chrome
 //     browser.
 //   * apptype: MUST BE Android or Chrome.
@@ -1790,7 +1802,8 @@ message AppInstallReportResponse {}
 //   * For unregister, policy, status, cert_upload, remote_commands,
 //     gcm_id_update, active_directory_enroll_play_user,
 //     active_directory_play_activity, active_directory_user_signin,
-//     policy_validation_report and chrome_desktop_report requests
+//     policy_validation_report, chrome_desktop_report
+//     and refresh_account requests
 //     Authorization: GoogleDMToken token=<dm token from register>
 //
 //   * The Authorization header isn't used for enterprise_check,
@@ -1827,6 +1840,7 @@ message AppInstallReportResponse {}
 //   app_install_report: app_install_report_request
 //   policy_validation_report: policy_validation_report_request
 //   device_initial_enrollment_state: device_initial_enrollment_state_request
+//   refresh_account: refresh_account_request
 //
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
@@ -1916,6 +1930,9 @@ message DeviceManagementRequest {
   // Query for initial enrollment details.
   optional DeviceInitialEnrollmentStateRequest
       device_initial_enrollment_state_request = 28;
+
+  // Request from device to wipe an old account and get a new account.
+  optional RefreshAccountRequest refresh_account_request = 29;
 }
 
 // Response from server to device.
@@ -2052,4 +2069,7 @@ message DeviceManagementResponse {
   // Response to initial enrollment details query.
   optional DeviceInitialEnrollmentStateResponse
       device_initial_enrollment_state_response = 27;
+
+  // Response to refresh account request.
+  optional RefreshAccountResponse refresh_account_response = 28;
 }
