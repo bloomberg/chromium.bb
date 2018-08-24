@@ -4878,6 +4878,24 @@
             ]
         }
     ],
+    "WebRTC-Aec3AgcGainChangeResponseKillSwitch": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Default",
+                    "enable_features": [
+                        "WebRTC-Aec3AgcGainChangeResponseKillSwitch"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebRTC-ApmGainController2Limiter": [
         {
             "platforms": [
