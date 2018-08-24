@@ -15,8 +15,7 @@
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/codec/png_codec.h"
 
 namespace content {
 namespace {
@@ -54,11 +53,13 @@ void OnIconFetched(
     return;
   }
 
-  gfx::Image decoded_image = gfx::Image::CreateFrom1xBitmap(bitmap);
-  scoped_refptr<base::RefCountedMemory> raw_data = decoded_image.As1xPNGBytes();
+  std::vector<unsigned char> bitmap_data;
+  bool success = gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data);
+  DCHECK(success);
   std::string encoded_data;
   base::Base64Encode(
-      base::StringPiece(raw_data->front_as<char>(), raw_data->size()),
+      base::StringPiece(reinterpret_cast<const char*>(&bitmap_data[0]),
+                        bitmap_data.size()),
       &encoded_data);
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(std::move(callback), encoded_data));
