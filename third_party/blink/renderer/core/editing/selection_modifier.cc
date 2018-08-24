@@ -39,7 +39,11 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
 namespace blink {
 
@@ -142,7 +146,20 @@ namespace {
 base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
   if (position.IsNull())
     return base::nullopt;
-  if (const InlineBox* box = ComputeInlineBoxPosition(position).inline_box)
+  const PositionWithAffinity adjusted = ComputeInlineAdjustedPosition(position);
+  if (adjusted.IsNull())
+    return base::nullopt;
+
+  if (NGInlineFormattingContextOf(adjusted.GetPosition())) {
+    if (const NGPaintFragment* fragment =
+            ComputeNGCaretPosition(adjusted).fragment)
+      return fragment->PhysicalFragment().ResolvedDirection();
+    return base::nullopt;
+  }
+
+  if (const InlineBox* box =
+          ComputeInlineBoxPositionForInlineAdjustedPosition(adjusted)
+              .inline_box)
     return box->Direction();
   return base::nullopt;
 }
