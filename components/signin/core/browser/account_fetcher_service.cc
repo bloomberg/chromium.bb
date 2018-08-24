@@ -64,7 +64,8 @@ AccountFetcherService::~AccountFetcherService() {
 // static
 void AccountFetcherService::RegisterPrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
-  user_prefs->RegisterInt64Pref(kLastUpdatePref, 0);
+  user_prefs->RegisterTimePref(AccountFetcherService::kLastUpdatePref,
+                               base::Time());
 }
 
 void AccountFetcherService::Initialize(
@@ -85,9 +86,8 @@ void AccountFetcherService::Initialize(
   DCHECK(image_decoder);
   DCHECK(!image_decoder_);
   image_decoder_ = std::move(image_decoder);
-
-  last_updated_ = base::Time::FromInternalValue(
-      signin_client_->GetPrefs()->GetInt64(kLastUpdatePref));
+  last_updated_ = signin_client_->GetPrefs()->GetTime(
+      AccountFetcherService::kLastUpdatePref);
 }
 
 void AccountFetcherService::Shutdown() {
@@ -176,8 +176,8 @@ void AccountFetcherService::RefreshAllAccountsAndScheduleNext() {
   DCHECK(network_fetches_enabled_);
   RefreshAllAccountInfo(false);
   last_updated_ = base::Time::Now();
-  signin_client_->GetPrefs()->SetInt64(kLastUpdatePref,
-                                       last_updated_.ToInternalValue());
+  signin_client_->GetPrefs()->SetTime(AccountFetcherService::kLastUpdatePref,
+                                      last_updated_);
   ScheduleNextRefresh();
 }
 
