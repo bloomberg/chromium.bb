@@ -34,6 +34,8 @@ blink_modules_sources("peerconnection") {
     "rtc_peer_connection.h",
     "rtc_peer_connection_ice_event.cc",
     "rtc_peer_connection_ice_event.h",
+    "rtc_quic_transport.cc",
+    "rtc_quic_transport.h",
     "rtc_rtp_contributing_source.cc",
     "rtc_rtp_contributing_source.h",
     "rtc_rtp_receiver.cc",
