@@ -73,7 +73,7 @@ class WindowTreeClientObserver;
 class WindowTreeClientTestObserver;
 class WindowTreeHostMus;
 
-using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
+using EventResultCallback = base::OnceCallback<void(ws::mojom::EventResult)>;
 
 // Used to enable Aura to act as the client-library for the Window Service.
 //
@@ -86,8 +86,8 @@ using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
 // When WindowTreeClient is deleted all windows are deleted (and observers
 // notified).
 class AURA_EXPORT WindowTreeClient
-    : public ui::mojom::WindowTreeClient,
-      public ui::mojom::ScreenProviderObserver,
+    : public ws::mojom::WindowTreeClient,
+      public ws::mojom::ScreenProviderObserver,
       public CaptureSynchronizerDelegate,
       public FocusSynchronizerDelegate,
       public DragDropControllerHost,
@@ -98,7 +98,7 @@ class AURA_EXPORT WindowTreeClient
   static std::unique_ptr<WindowTreeClient> CreateForEmbedding(
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
-      ui::mojom::WindowTreeClientRequest request,
+      ws::mojom::WindowTreeClientRequest request,
       bool create_discardable_memory = true);
 
   // Creates a WindowTreeClient useful for creating top-level windows.
@@ -124,7 +124,7 @@ class AURA_EXPORT WindowTreeClient
   void SetCanFocus(Window* window, bool can_focus);
   void SetCanAcceptDrops(WindowMus* window, bool can_accept_drops);
   void SetEventTargetingPolicy(WindowMus* window,
-                               ui::mojom::EventTargetingPolicy policy);
+                               ws::mojom::EventTargetingPolicy policy);
   void SetCursor(WindowMus* window,
                  const ui::CursorData& old_cursor,
                  const ui::CursorData& new_cursor);
@@ -140,18 +140,18 @@ class AURA_EXPORT WindowTreeClient
   // whether the embedding succeeded or failed and may be called immediately if
   // the embedding is known to fail.
   void Embed(Window* window,
-             ui::mojom::WindowTreeClientPtr client,
+             ws::mojom::WindowTreeClientPtr client,
              uint32_t flags,
-             ui::mojom::WindowTree::EmbedCallback callback);
+             ws::mojom::WindowTree::EmbedCallback callback);
   void EmbedUsingToken(Window* window,
                        const base::UnguessableToken& token,
                        uint32_t flags,
-                       ui::mojom::WindowTree::EmbedCallback callback);
+                       ws::mojom::WindowTree::EmbedCallback callback);
 
   // Schedules an embed of a client. See
-  // mojom::WindowTreeClient::ScheduleEmbed() for details.
+  // ws::mojom::WindowTreeClient::ScheduleEmbed() for details.
   void ScheduleEmbed(
-      ui::mojom::WindowTreeClientPtr client,
+      ws::mojom::WindowTreeClientPtr client,
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
 
   // Creates a new EmbedRoot. See EmbedRoot for details.
@@ -171,7 +171,7 @@ class AURA_EXPORT WindowTreeClient
   // tracked by the returned object. |source| specifies the event source which
   // causes this, and |initial_target| specifies the target window of the event.
   std::unique_ptr<TopmostWindowTracker> StartObservingTopmostWindow(
-      ui::mojom::MoveLoopSource source,
+      ws::mojom::MoveLoopSource source,
       aura::Window* initial_target);
 
   // Returns true if the specified window was created by this client.
@@ -221,7 +221,7 @@ class AURA_EXPORT WindowTreeClient
   WindowTreeClient(
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
-      ui::mojom::WindowTreeClientRequest request = nullptr,
+      ws::mojom::WindowTreeClientRequest request = nullptr,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
       bool create_discardable_memory = true);
 
@@ -243,41 +243,41 @@ class AURA_EXPORT WindowTreeClient
   // See InFlightChange for details on how InFlightChanges are used.
   bool ApplyServerChangeToExistingInFlightChange(const InFlightChange& change);
 
-  void BuildWindowTree(const std::vector<ui::mojom::WindowDataPtr>& windows);
+  void BuildWindowTree(const std::vector<ws::mojom::WindowDataPtr>& windows);
 
   // If the window identified by |window_data| doesn't exist a new window is
   // created, otherwise the existing window is updated based on |window_data|.
   void CreateOrUpdateWindowFromWindowData(
-      const ui::mojom::WindowData& window_data);
+      const ws::mojom::WindowData& window_data);
 
   // Creates a WindowPortMus from the server side data.
   std::unique_ptr<WindowPortMus> CreateWindowPortMus(
-      const ui::mojom::WindowData& window_data,
+      const ws::mojom::WindowData& window_data,
       WindowMusType window_mus_type);
 
   // Sets local properties on the associated Window from the server properties.
   void SetLocalPropertiesFromServerProperties(
       WindowMus* window,
-      const ui::mojom::WindowData& window_data);
+      const ws::mojom::WindowData& window_data);
 
   // Creates a new WindowTreeHostMus.
   std::unique_ptr<WindowTreeHostMus> CreateWindowTreeHost(
       WindowMusType window_mus_type,
-      const ui::mojom::WindowData& window_data,
+      const ws::mojom::WindowData& window_data,
       int64_t display_id,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id =
           base::nullopt);
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
-                                     const ui::mojom::WindowData& window_data);
+                                     const ws::mojom::WindowData& window_data);
 
-  // Sets the ui::mojom::WindowTree implementation.
-  void SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr);
+  // Sets the ws::mojom::WindowTree implementation.
+  void SetWindowTree(ws::mojom::WindowTreePtr window_tree_ptr);
 
   // Called when the connection to the server is established.
-  void WindowTreeConnectionEstablished(ui::mojom::WindowTree* window_tree);
+  void WindowTreeConnectionEstablished(ws::mojom::WindowTree* window_tree);
 
-  // Called when the ui::mojom::WindowTree connection is lost, deletes this.
+  // Called when the ws::mojom::WindowTree connection is lost, deletes this.
   void OnConnectionLost();
 
   // Called when a Window property changes. If |key| is handled internally
@@ -287,8 +287,8 @@ class AURA_EXPORT WindowTreeClient
                                      int64_t old_value);
 
   // OnEmbed() calls into this. Exposed as a separate function for testing.
-  void OnEmbedImpl(ui::mojom::WindowTree* window_tree,
-                   ui::mojom::WindowDataPtr root_data,
+  void OnEmbedImpl(ws::mojom::WindowTree* window_tree,
+                   ws::mojom::WindowDataPtr root_data,
                    int64_t display_id,
                    ui::Id focused_window_id,
                    bool drawn,
@@ -348,15 +348,15 @@ class AURA_EXPORT WindowTreeClient
 
   // Overridden from WindowTreeClient:
   void OnEmbed(
-      ui::mojom::WindowDataPtr root,
-      ui::mojom::WindowTreePtr tree,
+      ws::mojom::WindowDataPtr root,
+      ws::mojom::WindowTreePtr tree,
       int64_t display_id,
       ui::Id focused_window_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbedFromToken(
       const base::UnguessableToken& token,
-      ui::mojom::WindowDataPtr root,
+      ws::mojom::WindowDataPtr root,
       int64_t display_id,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(ui::Id window_id) override;
@@ -367,7 +367,7 @@ class AURA_EXPORT WindowTreeClient
                               const viz::FrameSinkId& frame_sink_id) override;
   void OnTopLevelCreated(
       uint32_t change_id,
-      ui::mojom::WindowDataPtr data,
+      ws::mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
@@ -387,10 +387,10 @@ class AURA_EXPORT WindowTreeClient
       ui::Id window_id,
       ui::Id old_parent_id,
       ui::Id new_parent_id,
-      std::vector<ui::mojom::WindowDataPtr> windows) override;
+      std::vector<ws::mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(ui::Id window_id,
                          ui::Id relative_window_id,
-                         ui::mojom::OrderDirection direction) override;
+                         ws::mojom::OrderDirection direction) override;
   void OnWindowDeleted(ui::Id window_id) override;
   void OnWindowVisibilityChanged(ui::Id window_id, bool visible) override;
   void OnWindowOpacityChanged(ui::Id window_id,
@@ -440,10 +440,10 @@ class AURA_EXPORT WindowTreeClient
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(ui::Id window_id) override;
   void GetScreenProviderObserver(
-      ui::mojom::ScreenProviderObserverAssociatedRequest observer) override;
+      ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
 
-  // ui::mojom::ScreenProviderObserver:
-  void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+  // ws::mojom::ScreenProviderObserver:
+  void OnDisplaysChanged(std::vector<ws::mojom::WsDisplayPtr> ws_displays,
                          int64_t primary_display_id,
                          int64_t internal_display_id,
                          int64_t display_id_for_new_windows) override;
@@ -467,7 +467,7 @@ class AURA_EXPORT WindowTreeClient
                                        const std::string& action) override;
   void OnWindowTreeHostPerformWindowMove(
       WindowTreeHostMus* window_tree_host,
-      ui::mojom::MoveLoopSource mus_source,
+      ws::mojom::MoveLoopSource mus_source,
       const gfx::Point& cursor_location,
       const base::Callback<void(bool)>& callback) override;
   void OnWindowTreeHostCancelWindowMove(
@@ -520,11 +520,11 @@ class AURA_EXPORT WindowTreeClient
 
   std::unique_ptr<FocusSynchronizer> focus_synchronizer_;
 
-  mojo::Binding<ui::mojom::WindowTreeClient> binding_;
-  ui::mojom::WindowTreePtr tree_ptr_;
+  mojo::Binding<ws::mojom::WindowTreeClient> binding_;
+  ws::mojom::WindowTreePtr tree_ptr_;
   // Typically this is the value contained in |tree_ptr_|, but tests may
   // directly set this.
-  ui::mojom::WindowTree* tree_;
+  ws::mojom::WindowTree* tree_;
 
   // Set to true if OnEmbed() was received.
   bool is_from_embed_ = false;
@@ -570,7 +570,7 @@ class AURA_EXPORT WindowTreeClient
 
   bool in_shutdown_ = false;
 
-  mojo::AssociatedBinding<ui::mojom::ScreenProviderObserver>
+  mojo::AssociatedBinding<ws::mojom::ScreenProviderObserver>
       screen_provider_observer_binding_{this};
 
   base::WeakPtrFactory<WindowTreeClient> weak_factory_;

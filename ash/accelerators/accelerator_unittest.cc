@@ -38,7 +38,7 @@ TEST_F(AcceleratorTest, PostAcceleratorWorks) {
   EXPECT_EQ(0, test_target.accelerator_count());
 
   EXPECT_TRUE(GetTestWindowTreeClient()->AckFirstEvent(
-      GetWindowTree(), ui::mojom::EventResult::UNHANDLED));
+      GetWindowTree(), ws::mojom::EventResult::UNHANDLED));
 
   // The client didn't handle the event, so |test_target| should get the
   // accelerator.

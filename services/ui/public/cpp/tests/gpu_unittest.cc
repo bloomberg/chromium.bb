@@ -19,7 +19,7 @@ namespace ui {
 
 namespace {
 
-class TestGpuImpl : public mojom::Gpu {
+class TestGpuImpl : public ws::mojom::Gpu {
  public:
   TestGpuImpl() = default;
   ~TestGpuImpl() override = default;
@@ -30,13 +30,13 @@ class TestGpuImpl : public mojom::Gpu {
 
   void CloseBindingOnRequest() { close_binding_on_request_ = true; }
 
-  void BindRequest(mojom::GpuRequest request) {
+  void BindRequest(ws::mojom::GpuRequest request) {
     bindings_.AddBinding(this, std::move(request));
   }
 
-  // ui::mojom::Gpu overrides:
+  // ws::mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
-      ui::mojom::GpuMemoryBufferFactoryRequest request) override {}
+      ws::mojom::GpuMemoryBufferFactoryRequest request) override {}
 
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override {
     if (close_binding_on_request_) {
@@ -66,7 +66,7 @@ class TestGpuImpl : public mojom::Gpu {
  private:
   bool request_will_succeed_ = true;
   bool close_binding_on_request_ = false;
-  mojo::BindingSet<mojom::Gpu> bindings_;
+  mojo::BindingSet<ws::mojom::Gpu> bindings_;
 
   // Closing this handle will result in GpuChannelHost being lost.
   mojo::ScopedMessagePipeHandle gpu_channel_handle_;
@@ -133,8 +133,8 @@ class GpuTest : public testing::Test {
   }
 
  private:
-  mojom::GpuPtr GetPtr() {
-    mojom::GpuPtr ptr;
+  ws::mojom::GpuPtr GetPtr() {
+    ws::mojom::GpuPtr ptr;
     io_thread_.task_runner()->PostTask(
         FROM_HERE,
         base::Bind(&TestGpuImpl::BindRequest, base::Unretained(gpu_impl_.get()),

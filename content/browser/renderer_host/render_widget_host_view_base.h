@@ -560,7 +560,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   void EmbedChildFrameRendererWindowTreeClient(
       RenderWidgetHostViewBase* root_view,
       int routing_id,
-      ui::mojom::WindowTreeClientPtr renderer_window_tree_client);
+      ws::mojom::WindowTreeClientPtr renderer_window_tree_client);
   void OnChildFrameDestroyed(int routing_id);
 #endif
 
@@ -598,10 +598,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
 
 #if defined(USE_AURA)
   virtual void ScheduleEmbed(
-      ui::mojom::WindowTreeClientPtr client,
+      ws::mojom::WindowTreeClientPtr client,
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
 
-  ui::mojom::WindowTreeClientPtr GetWindowTreeClientFromRenderer();
+  ws::mojom::WindowTreeClientPtr GetWindowTreeClientFromRenderer();
 #endif
 
   // If |event| is a touchpad pinch event for which we've sent a synthetic

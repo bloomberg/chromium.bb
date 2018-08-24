@@ -138,9 +138,9 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     window->Init(ui::LAYER_TEXTURED);
     window->Show();
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ui::mojom::kResizeBehaviorCanMaximize |
-                            ui::mojom::kResizeBehaviorCanMinimize |
-                            ui::mojom::kResizeBehaviorCanResize);
+                        ws::mojom::kResizeBehaviorCanMaximize |
+                            ws::mojom::kResizeBehaviorCanMinimize |
+                            ws::mojom::kResizeBehaviorCanResize);
     container->AddChild(window);
     return window;
   }

@@ -69,7 +69,7 @@ TouchHandleDrawableAura::TouchHandleDrawableAura(aura::Window* parent)
   window_->SetTransparent(true);
   window_->Init(LAYER_TEXTURED);
   window_->set_owned_by_parent(false);
-  window_->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::NONE);
+  window_->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
   parent->AddChild(window_.get());
 }
 

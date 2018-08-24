@@ -14,7 +14,7 @@ namespace aura {
 class WindowMus;
 
 // Used by DragDropControllerMus to create a change id when a drag starts that
-// is sent to ui::mojom::WindowTree.
+// is sent to ws::mojom::WindowTree.
 class AURA_EXPORT DragDropControllerHost {
  public:
   virtual uint32_t CreateChangeIdForDrag(WindowMus* window) = 0;

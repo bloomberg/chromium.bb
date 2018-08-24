@@ -31,8 +31,8 @@ Embedding::~Embedding() {
 }
 
 void Embedding::Init(WindowService* window_service,
-                     mojom::WindowTreeClientPtr window_tree_client_ptr,
-                     mojom::WindowTreeClient* window_tree_client,
+                     ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
+                     ws::mojom::WindowTreeClient* window_tree_client,
                      base::OnceClosure connection_lost_callback) {
   binding_ = std::make_unique<WindowTreeBinding>();
   binding_->InitForEmbed(window_service, std::move(window_tree_client_ptr),

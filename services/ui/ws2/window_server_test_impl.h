@@ -15,7 +15,7 @@ class WindowTree;
 
 // Used to detect when a client (as identified by a name) has drawn at least
 // once to screen.
-class WindowServerTestImpl : public mojom::WindowServerTest {
+class WindowServerTestImpl : public ws::mojom::WindowServerTest {
  public:
   explicit WindowServerTestImpl(WindowService* server);
   ~WindowServerTestImpl() override;
@@ -35,7 +35,7 @@ class WindowServerTestImpl : public mojom::WindowServerTest {
   void InstallCallback(const std::string& name,
                        EnsureClientHasDrawnWindowCallback cb);
 
-  // mojom::WindowServerTest:
+  // ws::mojom::WindowServerTest:
   void EnsureClientHasDrawnWindow(
       const std::string& client_name,
       EnsureClientHasDrawnWindowCallback callback) override;

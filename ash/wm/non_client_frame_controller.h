@@ -29,11 +29,11 @@ namespace gfx {
 class Insets;
 }
 
-namespace ui {
+namespace ws {
 namespace mojom {
 enum class WindowType;
 }
-}  // namespace ui
+}  // namespace ws
 
 namespace ash {
 
@@ -55,7 +55,7 @@ class ASH_EXPORT NonClientFrameController
       aura::Window* parent,
       aura::Window* context,
       const gfx::Rect& bounds,
-      ui::mojom::WindowType window_type,
+      ws::mojom::WindowType window_type,
       aura::PropertyConverter* property_converter,
       std::map<std::string, std::vector<uint8_t>>* properties);
 

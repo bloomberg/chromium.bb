@@ -211,7 +211,7 @@ BrowserProcessPlatformPart::GetInputDeviceControllerClient() {
   if (!input_device_controller_client_) {
     const std::string service_name = !features::IsMultiProcessMash()
                                          ? chromeos::kChromeServiceName
-                                         : ui::mojom::kServiceName;
+                                         : ws::mojom::kServiceName;
     input_device_controller_client_ =
         std::make_unique<ui::InputDeviceControllerClient>(
             content::ServiceManagerConnection::GetForProcess()->GetConnector(),

@@ -53,7 +53,7 @@ RendererWindowTreeClient* RendererWindowTreeClient::Get(int routing_id) {
 }
 
 void RendererWindowTreeClient::Bind(
-    ui::mojom::WindowTreeClientRequest request,
+    ws::mojom::WindowTreeClientRequest request,
     mojom::RenderWidgetWindowTreeClientRequest
         render_widget_window_tree_client_request) {
   // Bind() may be called multiple times.
@@ -175,7 +175,7 @@ void RendererWindowTreeClient::Embed(uint32_t frame_routing_id,
 
 void RendererWindowTreeClient::OnEmbedFromToken(
     const base::UnguessableToken& token,
-    ui::mojom::WindowDataPtr root,
+    ws::mojom::WindowDataPtr root,
     int64_t display_id,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   // Renderers don't use ScheduleEmbedForExistingClient(), so this path should
@@ -188,8 +188,8 @@ void RendererWindowTreeClient::DestroyFrame(uint32_t frame_routing_id) {
 }
 
 void RendererWindowTreeClient::OnEmbed(
-    ui::mojom::WindowDataPtr root,
-    ui::mojom::WindowTreePtr tree,
+    ws::mojom::WindowDataPtr root,
+    ws::mojom::WindowTreePtr tree,
     int64_t display_id,
     ui::Id focused_window_id,
     bool drawn,
@@ -251,7 +251,7 @@ void RendererWindowTreeClient::OnFrameSinkIdAllocated(
 
 void RendererWindowTreeClient::OnTopLevelCreated(
     uint32_t change_id,
-    ui::mojom::WindowDataPtr data,
+    ws::mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
@@ -281,12 +281,12 @@ void RendererWindowTreeClient::OnWindowHierarchyChanged(
     ui::Id window_id,
     ui::Id old_parent_id,
     ui::Id new_parent_id,
-    std::vector<ui::mojom::WindowDataPtr> windows) {}
+    std::vector<ws::mojom::WindowDataPtr> windows) {}
 
 void RendererWindowTreeClient::OnWindowReordered(
     ui::Id window_id,
     ui::Id relative_window_id,
-    ui::mojom::OrderDirection direction) {}
+    ws::mojom::OrderDirection direction) {}
 
 void RendererWindowTreeClient::OnWindowDeleted(ui::Id window_id) {
   // See comments on OnUnembed() for why we do nothing here.
@@ -385,6 +385,6 @@ void RendererWindowTreeClient::OnChangeCompleted(uint32_t change_id,
 void RendererWindowTreeClient::RequestClose(ui::Id window_id) {}
 
 void RendererWindowTreeClient::GetScreenProviderObserver(
-    ui::mojom::ScreenProviderObserverAssociatedRequest observer) {}
+    ws::mojom::ScreenProviderObserverAssociatedRequest observer) {}
 
 }  // namespace content

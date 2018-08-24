@@ -734,7 +734,7 @@ RenderWidgetHostViewBase::GetTouchSelectionControllerClientManager() {
 void RenderWidgetHostViewBase::EmbedChildFrameRendererWindowTreeClient(
     RenderWidgetHostViewBase* root_view,
     int routing_id,
-    ui::mojom::WindowTreeClientPtr renderer_window_tree_client) {
+    ws::mojom::WindowTreeClientPtr renderer_window_tree_client) {
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
   if (!render_widget_host)
     return;
@@ -776,19 +776,19 @@ void RenderWidgetHostViewBase::OnDidScheduleEmbed(
 }
 
 void RenderWidgetHostViewBase::ScheduleEmbed(
-    ui::mojom::WindowTreeClientPtr client,
+    ws::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
   NOTREACHED();
 }
 
-ui::mojom::WindowTreeClientPtr
+ws::mojom::WindowTreeClientPtr
 RenderWidgetHostViewBase::GetWindowTreeClientFromRenderer() {
   // NOTE: this function may be called multiple times.
   RenderWidgetHost* render_widget_host = GetRenderWidgetHost();
   mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
   BindInterface(render_widget_host->GetProcess(), &factory);
 
-  ui::mojom::WindowTreeClientPtr window_tree_client;
+  ws::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(
       render_widget_host->GetRoutingID(),
       mojo::MakeRequest(&window_tree_client),

@@ -461,9 +461,9 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kResizeBehaviorKey,
-                      ui::mojom::kResizeBehaviorCanResize |
-                          ui::mojom::kResizeBehaviorCanMaximize |
-                          ui::mojom::kResizeBehaviorCanMinimize);
+                      ws::mojom::kResizeBehaviorCanResize |
+                          ws::mojom::kResizeBehaviorCanMaximize |
+                          ws::mojom::kResizeBehaviorCanMinimize);
 
   gfx::Point end = location;
 
@@ -531,7 +531,7 @@ TEST_F(ToplevelWindowEventHandlerTest,
                                      target.get());
   gfx::Point location(5, 5);
   target->SetProperty(aura::client::kResizeBehaviorKey,
-                      ui::mojom::kResizeBehaviorCanMaximize);
+                      ws::mojom::kResizeBehaviorCanMaximize);
 
   gfx::Point end = location;
   end.Offset(0, 100);
@@ -720,9 +720,9 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTopLevel) {
   // Make |w1| resizable to allow touch events to go to it (and not |w2|) thanks
   // to EasyResizeWindowTargeter.
   w1->SetProperty(aura::client::kResizeBehaviorKey,
-                  ui::mojom::kResizeBehaviorCanMaximize |
-                      ui::mojom::kResizeBehaviorCanMinimize |
-                      ui::mojom::kResizeBehaviorCanResize);
+                  ws::mojom::kResizeBehaviorCanMaximize |
+                      ws::mojom::kResizeBehaviorCanMinimize |
+                      ws::mojom::kResizeBehaviorCanResize);
   // Clicking a point within |w2| but close to |w1| should not activate |w2|.
   const gfx::Point touch_point(105, 105);
   generator.MoveTouch(touch_point);
@@ -732,8 +732,8 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTopLevel) {
   // Make |w1| not resizable to allow touch events to go to |w2| even when close
   // to |w1|.
   w1->SetProperty(aura::client::kResizeBehaviorKey,
-                  ui::mojom::kResizeBehaviorCanMaximize |
-                      ui::mojom::kResizeBehaviorCanMinimize);
+                  ws::mojom::kResizeBehaviorCanMaximize |
+                      ws::mojom::kResizeBehaviorCanMinimize);
   // Clicking a point within |w2| should activate that window.
   generator.PressMoveAndReleaseTouchTo(touch_point);
   EXPECT_TRUE(wm::IsActiveWindow(w2.get()));
@@ -753,8 +753,8 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTransient) {
   // Make |w11| non-resizable to avoid touch events inside its transient parent
   // |w1| from going to |w11| because of EasyResizeWindowTargeter.
   w11->SetProperty(aura::client::kResizeBehaviorKey,
-                   ui::mojom::kResizeBehaviorCanMaximize |
-                       ui::mojom::kResizeBehaviorCanMinimize);
+                   ws::mojom::kResizeBehaviorCanMaximize |
+                       ws::mojom::kResizeBehaviorCanMinimize);
   // Clicking a point within w1 should activate that window.
   generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
   EXPECT_TRUE(wm::IsActiveWindow(w1.get()));
@@ -763,9 +763,9 @@ TEST_F(ToplevelWindowEventHandlerTest, EasyResizerUsedForTransient) {
   // |w1| that are close to |w11| border to go to |w11| thanks to
   // EasyResizeWindowTargeter.
   w11->SetProperty(aura::client::kResizeBehaviorKey,
-                   ui::mojom::kResizeBehaviorCanMaximize |
-                       ui::mojom::kResizeBehaviorCanMinimize |
-                       ui::mojom::kResizeBehaviorCanResize);
+                   ws::mojom::kResizeBehaviorCanMaximize |
+                       ws::mojom::kResizeBehaviorCanMinimize |
+                       ws::mojom::kResizeBehaviorCanResize);
   // Clicking a point within |w1| but close to |w11| should activate |w11|.
   generator.PressMoveAndReleaseTouchTo(gfx::Point(10, 10));
   EXPECT_TRUE(wm::IsActiveWindow(w11.get()));
@@ -782,7 +782,7 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   gfx::Point location(5, 5);
 
   target->SetProperty(aura::client::kResizeBehaviorKey,
-                      ui::mojom::kResizeBehaviorNone);
+                      ws::mojom::kResizeBehaviorNone);
 
   gfx::Point end = location;
 

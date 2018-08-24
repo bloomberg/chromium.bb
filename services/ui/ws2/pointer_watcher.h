@@ -24,7 +24,7 @@ class WindowTree;
 // client.
 //
 // This class provides the server implementation of
-// ui::mojom::WindowTree::StartPointerWatcher(), see it for more information.
+// ws::mojom::WindowTree::StartPointerWatcher(), see it for more information.
 class PointerWatcher : public aura::WindowEventDispatcherObserver {
  public:
   enum class TypesToWatch {

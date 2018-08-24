@@ -46,11 +46,11 @@ TEST(WindowServiceTest, DeleteWithClients) {
       factory->CreateConnector();
 
   // Connect to |window_service| and ask for a new WindowTree.
-  ui::mojom::WindowTreeFactoryPtr window_tree_factory;
-  connector->BindInterface(ui::mojom::kServiceName, &window_tree_factory);
-  ui::mojom::WindowTreePtr window_tree;
-  ui::mojom::WindowTreeClientPtr client;
-  mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
+  ws::mojom::WindowTreeFactoryPtr window_tree_factory;
+  connector->BindInterface(ws::mojom::kServiceName, &window_tree_factory);
+  ws::mojom::WindowTreePtr window_tree;
+  ws::mojom::WindowTreeClientPtr client;
+  ws::mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
   window_tree_factory->CreateWindowTree(MakeRequest(&window_tree),
                                         std::move(client));
 

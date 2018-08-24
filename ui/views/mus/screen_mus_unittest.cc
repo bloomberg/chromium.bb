@@ -14,14 +14,14 @@
 namespace views {
 namespace {
 
-std::vector<ui::mojom::WsDisplayPtr> ConvertDisplayToWsDisplays(
+std::vector<ws::mojom::WsDisplayPtr> ConvertDisplayToWsDisplays(
     const std::vector<display::Display>& displays) {
-  std::vector<ui::mojom::WsDisplayPtr> results;
+  std::vector<ws::mojom::WsDisplayPtr> results;
   for (const auto& display : displays) {
-    ui::mojom::WsDisplayPtr display_ptr = ui::mojom::WsDisplay::New();
+    ws::mojom::WsDisplayPtr display_ptr = ws::mojom::WsDisplay::New();
     display_ptr->display = display;
     display_ptr->frame_decoration_values =
-        ui::mojom::FrameDecorationValues::New();
+        ws::mojom::FrameDecorationValues::New();
     results.push_back(std::move(display_ptr));
   }
   return results;

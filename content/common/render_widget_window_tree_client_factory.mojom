@@ -22,6 +22,6 @@ interface RenderWidgetWindowTreeClient {
 interface RenderWidgetWindowTreeClientFactory {
   CreateWindowTreeClientForRenderWidget(
       uint32 render_widget_host_routing_id,
-      ui.mojom.WindowTreeClient& window_tree_client,
+      ws.mojom.WindowTreeClient& window_tree_client,
       RenderWidgetWindowTreeClient& render_widget_window_tree_client_request);
 };

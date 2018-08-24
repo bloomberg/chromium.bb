@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   // 2) ToggleFullscreen() should have no effect on windows which cannot be
   // maximized.
   window_state->window()->SetProperty(aura::client::kResizeBehaviorKey,
-                                      ui::mojom::kResizeBehaviorNone);
+                                      ws::mojom::kResizeBehaviorNone);
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
 

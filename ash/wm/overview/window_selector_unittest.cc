@@ -3272,7 +3272,7 @@ class SplitViewWindowSelectorTest : public WindowSelectorTest {
       window = base::WrapUnique<aura::Window>(CreateWindow(bounds));
 
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ui::mojom::kResizeBehaviorNone);
+                        ws::mojom::kResizeBehaviorNone);
     return window;
   }
 

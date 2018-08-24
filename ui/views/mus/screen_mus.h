@@ -14,17 +14,17 @@ namespace views {
 class ScreenMusDelegate;
 
 // Screen implementation that gets information from
-// ui::mojom::ScreenProviderObserver.
+// ws::mojom::ScreenProviderObserver.
 //
 // NOTE: this is not necessarily installed as the Screen implementation.
 class VIEWS_MUS_EXPORT ScreenMus : public display::ScreenBase,
-                                   public ui::mojom::ScreenProviderObserver {
+                                   public ws::mojom::ScreenProviderObserver {
  public:
   explicit ScreenMus(ScreenMusDelegate* delegate);
   ~ScreenMus() override;
 
-  // ui::mojom::ScreenProviderObserver:
-  void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+  // ws::mojom::ScreenProviderObserver:
+  void OnDisplaysChanged(std::vector<ws::mojom::WsDisplayPtr> ws_displays,
                          int64_t primary_display_id,
                          int64_t internal_display_id,
                          int64_t display_id_for_new_windows) override;
