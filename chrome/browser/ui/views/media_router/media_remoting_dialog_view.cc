@@ -106,7 +106,8 @@ bool MediaRemotingDialogView::Close() {
 
 gfx::Size MediaRemotingDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
-      DISTANCE_BUBBLE_PREFERRED_WIDTH);
+                        DISTANCE_BUBBLE_PREFERRED_WIDTH) -
+                    margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
