@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/user_metrics.h"
+#include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -30,6 +31,7 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) && !defined(OS_CHROMEOS)
@@ -92,7 +94,26 @@ void ReadDevicesList(const CloudPrintPrinterList::DeviceList& devices,
   }
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>&
+GetURLLoaderFactoryForTesting() {
+  static base::NoDestructor<scoped_refptr<network::SharedURLLoaderFactory>>
+      instance;
+  return *instance;
+}
+
 }  // namespace
+
+LocalDiscoveryUIHandler::SetURLLoaderFactoryForTesting::
+    SetURLLoaderFactoryForTesting(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+  DCHECK(!GetURLLoaderFactoryForTesting());
+  GetURLLoaderFactoryForTesting() = url_loader_factory;
+}
+
+LocalDiscoveryUIHandler::SetURLLoaderFactoryForTesting::
+    ~SetURLLoaderFactoryForTesting() {
+  GetURLLoaderFactoryForTesting() = nullptr;
+}
 
 LocalDiscoveryUIHandler::LocalDiscoveryUIHandler()
     : is_visible_(false),
@@ -168,9 +189,15 @@ void LocalDiscoveryUIHandler::HandleStart(const base::ListValue* args) {
     privet_lister_.reset(
         new cloud_print::PrivetDeviceListerImpl(service_discovery_client_.get(),
                                                 this));
+
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+        GetURLLoaderFactoryForTesting();
+    if (!url_loader_factory)
+      url_loader_factory = profile->GetURLLoaderFactory();
+
     privet_http_factory_ =
         cloud_print::PrivetHTTPAsynchronousFactory::CreateInstance(
-            profile->GetRequestContext());
+            url_loader_factory);
 
     identity::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
@@ -516,7 +543,12 @@ std::unique_ptr<GCDApiFlow> LocalDiscoveryUIHandler::CreateApiFlow() {
   if (!(identity_manager && identity_manager->HasPrimaryAccount()))
     return std::unique_ptr<GCDApiFlow>();
 
-  return GCDApiFlow::Create(profile->GetRequestContext(), identity_manager);
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
+      GetURLLoaderFactoryForTesting();
+  if (!url_loader_factory)
+    url_loader_factory = profile->GetURLLoaderFactory();
+
+  return GCDApiFlow::Create(url_loader_factory, identity_manager);
 }
 
 bool LocalDiscoveryUIHandler::IsUserSupervisedOrOffTheRecord() {

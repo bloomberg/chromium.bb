@@ -4196,8 +4196,8 @@ jumbo_split_static_library("browser") {
       "printing/cloud_print/privet_notifications.h",
       "printing/cloud_print/privet_notifications_factory.cc",
       "printing/cloud_print/privet_notifications_factory.h",
-      "printing/cloud_print/privet_url_fetcher.cc",
-      "printing/cloud_print/privet_url_fetcher.h",
+      "printing/cloud_print/privet_url_loader.cc",
+      "printing/cloud_print/privet_url_loader.h",
     ]
   }
 

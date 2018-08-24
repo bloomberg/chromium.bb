@@ -15,6 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/local_discovery/test_service_discovery_client.h"
@@ -35,9 +36,6 @@
 #include "chrome/test/base/web_ui_browser_test.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_utils.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -49,18 +47,14 @@
 #include "components/prefs/pref_service.h"
 #endif
 
-using testing::InvokeWithoutArgs;
-using testing::Return;
-using testing::AtLeast;
-using testing::DoDefault;
-using testing::DoAll;
-using testing::InSequence;
-using testing::StrictMock;
 using testing::AnyNumber;
-
+using testing::AtLeast;
+using testing::DoAll;
+using testing::DoDefault;
+using testing::InSequence;
 using testing::InvokeWithoutArgs;
 using testing::Return;
-using testing::AtLeast;
+using testing::StrictMock;
 
 namespace local_discovery {
 
@@ -324,43 +318,15 @@ class TestMessageLoopCondition {
   DISALLOW_COPY_AND_ASSIGN(TestMessageLoopCondition);
 };
 
-class MockableFakeURLFetcherCreator {
- public:
-  MockableFakeURLFetcherCreator() {
-  }
-
-  ~MockableFakeURLFetcherCreator() {
-  }
-
-  MOCK_METHOD1(OnCreateFakeURLFetcher, void(const std::string& url));
-
-  std::unique_ptr<net::FakeURLFetcher> CreateFakeURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* delegate,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status) {
-    OnCreateFakeURLFetcher(url.spec());
-    return std::unique_ptr<net::FakeURLFetcher>(new net::FakeURLFetcher(
-        url, delegate, response_data, response_code, status));
-  }
-
-  net::FakeURLFetcherFactory::FakeURLFetcherCreator callback() {
-    return base::Bind(&MockableFakeURLFetcherCreator::CreateFakeURLFetcher,
-                      base::Unretained(this));
-  }
-};
-
 class LocalDiscoveryUITest : public WebUIBrowserTest {
  public:
   LocalDiscoveryUITest()
       : test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        fake_fetcher_factory_(&fetcher_impl_factory_,
-                              fake_url_fetcher_creator_.callback()) {}
-  ~LocalDiscoveryUITest() override {
-  }
+        set_url_loader_factory_(test_shared_loader_factory_) {}
+
+  ~LocalDiscoveryUITest() override { test_shared_loader_factory_->Detach(); }
 
   void SetUp() override {
     // We need to stub out DualMediaSinkService here, because the profile setup
@@ -389,56 +355,16 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
         GaiaUrls::GetInstance()->oauth2_token_url().spec(), kResponseGaiaToken);
     test_url_loader_factory_.AddResponse(
         GaiaUrls::GetInstance()->oauth_user_info_url().spec(), kResponseGaiaId);
+    test_url_loader_factory_.AddResponse(kURLInfo, kResponseInfo);
+    test_url_loader_factory_.AddResponse(kURLRegisterStart,
+                                         kResponseRegisterStart);
+    test_url_loader_factory_.AddResponse(kURLRegisterClaimToken,
+                                         kResponseRegisterClaimTokenNoConfirm);
+    test_url_loader_factory_.AddResponse(kURLCloudPrintConfirm,
+                                         kResponseCloudPrintConfirm);
+    test_url_loader_factory_.AddResponse(kURLRegisterComplete,
+                                         kResponseRegisterComplete);
 
-    fake_fetcher_factory().SetFakeResponse(
-        GURL(kURLInfo),
-        kResponseInfo,
-        net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
-
-    fake_fetcher_factory().SetFakeResponse(
-        GURL(kURLRegisterStart),
-        kResponseRegisterStart,
-        net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
-
-    fake_fetcher_factory().SetFakeResponse(
-        GURL(kURLRegisterClaimToken),
-        kResponseRegisterClaimTokenNoConfirm,
-        net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
-
-    fake_fetcher_factory().SetFakeResponse(
-        GURL(kURLCloudPrintConfirm),
-        kResponseCloudPrintConfirm,
-        net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
-
-    fake_fetcher_factory().SetFakeResponse(
-        GURL(kURLRegisterComplete),
-        kResponseRegisterComplete,
-        net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
-
-    fake_fetcher_factory().SetFakeResponse(
-        GaiaUrls::GetInstance()->oauth2_token_url(),
-        kResponseGaiaToken,
-        net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
-
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        GaiaUrls::GetInstance()->oauth2_token_url().spec()))
-        .Times(AnyNumber());
-
-    fake_fetcher_factory().SetFakeResponse(
-        GaiaUrls::GetInstance()->oauth_user_info_url(),
-        kResponseGaiaId,
-        net::HTTP_OK,
-        net::URLRequestStatus::SUCCESS);
-
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        GaiaUrls::GetInstance()->oauth_user_info_url().spec()))
-        .Times(AnyNumber());
     identity::MakePrimaryAccountAvailable(
         SigninManagerFactory::GetForProfile(browser()->profile()),
         ProfileOAuth2TokenServiceFactory::GetForProfile(browser()->profile()),
@@ -490,25 +416,18 @@ class LocalDiscoveryUITest : public WebUIBrowserTest {
     return condition_devices_listed_;
   }
 
-  net::FakeURLFetcherFactory& fake_fetcher_factory() {
-    return fake_fetcher_factory_;
-  }
-
-  MockableFakeURLFetcherCreator& fake_url_fetcher_creator() {
-    return fake_url_fetcher_creator_;
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
   }
 
  private:
   scoped_refptr<TestServiceDiscoveryClient> test_service_discovery_client_;
   TestMessageLoopCondition condition_devices_listed_;
-
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
       test_shared_loader_factory_;
-
-  net::URLFetcherImplFactory fetcher_impl_factory_;
-  StrictMock<MockableFakeURLFetcherCreator> fake_url_fetcher_creator_;
-  net::FakeURLFetcherFactory fake_fetcher_factory_;
+  local_discovery::LocalDiscoveryUIHandler::SetURLLoaderFactoryForTesting
+      set_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalDiscoveryUITest);
 };
@@ -555,43 +474,42 @@ IN_PROC_BROWSER_TEST_F(LocalDiscoveryUITest, RegisterTest) {
 
   {
     base::RunLoop run_loop;
-    InSequence s;
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(kURLInfo));
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        kURLRegisterStart));
-    EXPECT_CALL(fake_url_fetcher_creator(),
-                OnCreateFakeURLFetcher(kURLRegisterClaimToken))
-        .WillOnce(InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+    std::set<GURL> served_urls;
+    test_url_loader_factory()->SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& resource) {
+          served_urls.insert(resource.url);
+          if (resource.url == GURL(kURLRegisterClaimToken))
+            run_loop.Quit();
+        }));
     EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("registerBegin"));
     run_loop.Run();
+    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLInfo)));
+    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterStart)));
+    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterClaimToken)));
+    test_url_loader_factory()->SetInterceptor(base::NullCallback());
   }
 
   EXPECT_TRUE(WebUIBrowserTest::RunJavascriptTest("expectPageAdding1"));
 
-  fake_fetcher_factory().SetFakeResponse(
-      GURL(kURLRegisterClaimToken),
-      kResponseRegisterClaimTokenConfirm,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
-
-  fake_fetcher_factory().SetFakeResponse(
-      GURL(kURLInfo),
-      kResponseInfoWithID,
-      net::HTTP_OK,
-      net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURLRegisterClaimToken,
+                                         kResponseRegisterClaimTokenConfirm);
+  test_url_loader_factory()->AddResponse(kURLInfo, kResponseInfoWithID);
 
   {
     base::RunLoop run_loop;
-    InSequence s;
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        kURLRegisterClaimToken));
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        kURLCloudPrintConfirm));
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(
-        kURLRegisterComplete));
-    EXPECT_CALL(fake_url_fetcher_creator(), OnCreateFakeURLFetcher(kURLInfo))
-        .WillOnce(InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+    std::set<GURL> served_urls;
+    test_url_loader_factory()->SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& resource) {
+          served_urls.insert(resource.url);
+          if (resource.url == GURL(kURLInfo))
+            run_loop.Quit();
+        }));
     run_loop.Run();
+    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterClaimToken)));
+    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLCloudPrintConfirm)));
+    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLRegisterComplete)));
+    EXPECT_TRUE(base::ContainsKey(served_urls, GURL(kURLInfo)));
+    test_url_loader_factory()->SetInterceptor(base::NullCallback());
   }
 
   test_service_discovery_client()->SimulateReceive(

@@ -5,9 +5,13 @@
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
 
 #include <memory>
+#include <set>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/run_loop.h"
+#include "base/stl_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow_impl.h"
@@ -16,18 +20,23 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::Invoke;
 using testing::Return;
+using testing::WithArgs;
 
 namespace cloud_print {
 
 namespace {
+
+const char kConfirmRequest[] =
+    "https://www.google.com/cloudprint/confirm?token=SomeToken";
 
 const char kSampleConfirmResponse[] = "{}";
 
@@ -47,8 +56,9 @@ class MockDelegate : public CloudPrintApiFlowRequest {
 class GCDApiFlowTest : public testing::Test {
  public:
   GCDApiFlowTest()
-      : request_context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())) {}
+      : test_shared_url_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
 
   ~GCDApiFlowTest() override {}
 
@@ -62,45 +72,49 @@ class GCDApiFlowTest : public testing::Test {
         .WillRepeatedly(Return(
             GURL("https://www.google.com/cloudprint/confirm?token=SomeToken")));
     gcd_flow_ = std::make_unique<GCDApiFlowImpl>(
-        request_context_.get(), identity_test_environment_.identity_manager());
+        test_shared_url_loader_factory_.get(),
+        identity_test_environment_.identity_manager());
     gcd_flow_->Start(std::move(delegate));
   }
 
-  identity::IdentityTestEnvironment identity_test_environment_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  net::TestURLFetcherFactory fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<GCDApiFlowImpl> gcd_flow_;
   MockDelegate* mock_delegate_;
+
+ private:
+  identity::IdentityTestEnvironment identity_test_environment_;
+  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  scoped_refptr<network::WeakWrapperSharedURLLoaderFactory>
+      test_shared_url_loader_factory_;
 };
 
 TEST_F(GCDApiFlowTest, SuccessOAuth2) {
+  std::set<GURL> requested_urls;
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        requested_urls.insert(request.url);
+        std::string oauth_header;
+        EXPECT_TRUE(request.headers.GetHeader("Authorization", &oauth_header));
+        EXPECT_EQ("Bearer SomeToken", oauth_header);
+
+        std::string proxy;
+        EXPECT_TRUE(request.headers.GetHeader("X-Cloudprint-Proxy", &proxy));
+        EXPECT_EQ("Chrome", proxy);
+      }));
+
   gcd_flow_->OnAccessTokenFetchComplete(
       GoogleServiceAuthError::AuthErrorNone(),
       identity::AccessTokenInfo(
           "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1)));
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(GURL("https://www.google.com/cloudprint/confirm?token=SomeToken"),
-            fetcher->GetOriginalURL());
+  EXPECT_TRUE(base::ContainsKey(requested_urls, GURL(kConfirmRequest)));
 
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
-  std::string oauth_header;
-  std::string proxy;
-  EXPECT_TRUE(headers.GetHeader("Authorization", &oauth_header));
-  EXPECT_EQ("Bearer SomeToken", oauth_header);
-  EXPECT_TRUE(headers.GetHeader("X-Cloudprint-Proxy", &proxy));
-  EXPECT_EQ("Chrome", proxy);
+  test_url_loader_factory_.AddResponse(kConfirmRequest, kSampleConfirmResponse);
 
-  fetcher->SetResponseString(kSampleConfirmResponse);
-  fetcher->set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher->set_response_code(200);
-
-  EXPECT_CALL(*mock_delegate_, OnGCDApiFlowComplete(_));
-
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  base::RunLoop run_loop;
+  EXPECT_CALL(*mock_delegate_, OnGCDApiFlowComplete(_))
+      .WillOnce(testing::InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+  run_loop.Run();
 }
 
 TEST_F(GCDApiFlowTest, BadToken) {
@@ -111,24 +125,25 @@ TEST_F(GCDApiFlowTest, BadToken) {
 }
 
 TEST_F(GCDApiFlowTest, BadJson) {
+  std::set<GURL> requested_urls;
+  test_url_loader_factory_.SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        requested_urls.insert(request.url);
+      }));
+
   gcd_flow_->OnAccessTokenFetchComplete(
       GoogleServiceAuthError::AuthErrorNone(),
       identity::AccessTokenInfo(
           "SomeToken", base::Time::Now() + base::TimeDelta::FromHours(1)));
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
 
-  EXPECT_EQ(GURL("https://www.google.com/cloudprint/confirm?token=SomeToken"),
-            fetcher->GetOriginalURL());
-
-  fetcher->SetResponseString(kFailedConfirmResponseBadJson);
-  fetcher->set_status(
-      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
-  fetcher->set_response_code(200);
-
+  EXPECT_TRUE(base::ContainsKey(requested_urls, GURL(kConfirmRequest)));
+  test_url_loader_factory_.AddResponse(kConfirmRequest,
+                                       kFailedConfirmResponseBadJson);
+  base::RunLoop run_loop;
   EXPECT_CALL(*mock_delegate_,
-              OnGCDApiFlowError(GCDApiFlow::ERROR_MALFORMED_RESPONSE));
-
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+              OnGCDApiFlowError(GCDApiFlow::ERROR_MALFORMED_RESPONSE))
+      .WillOnce(testing::InvokeWithoutArgs([&]() { run_loop.Quit(); }));
+  run_loop.Run();
 }
 
 }  // namespace

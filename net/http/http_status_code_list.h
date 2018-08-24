@@ -59,6 +59,8 @@ HTTP_STATUS(UNSUPPORTED_MEDIA_TYPE, 415, "Unsupported Media Type")
 HTTP_STATUS(REQUESTED_RANGE_NOT_SATISFIABLE, 416,
             "Requested Range Not Satisfiable")
 HTTP_STATUS(EXPECTATION_FAILED, 417, "Expectation Failed")
+// 418 returned by Cloud Print.
+HTTP_STATUS(INVALID_XPRIVET_TOKEN, 418, "Invalid XPrivet Token")
 HTTP_STATUS(TOO_EARLY, 425, "Too Early")
 
 // Server error 5xx

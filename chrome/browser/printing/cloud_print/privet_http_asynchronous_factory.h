@@ -9,10 +9,14 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/ref_counted.h"
 
 namespace net {
 class HostPortPair;
-class URLRequestContextGetter;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace cloud_print {
@@ -41,7 +45,7 @@ class PrivetHTTPAsynchronousFactory {
   virtual ~PrivetHTTPAsynchronousFactory() {}
 
   static std::unique_ptr<PrivetHTTPAsynchronousFactory> CreateInstance(
-      net::URLRequestContextGetter* request_context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   virtual std::unique_ptr<PrivetHTTPResolution> CreatePrivetHTTP(
       const std::string& service_name) = 0;

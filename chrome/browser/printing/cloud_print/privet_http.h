@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
-#include "chrome/browser/printing/cloud_print/privet_url_fetcher.h"
+#include "chrome/browser/printing/cloud_print/privet_url_loader.h"
 #include "net/base/host_port_pair.h"
 
 namespace base {
@@ -54,14 +54,14 @@ class PrivetHTTPClient {
   virtual std::unique_ptr<PrivetJSONOperation> CreateInfoOperation(
       const PrivetJSONOperation::ResultCallback& callback) = 0;
 
-  // Creates a URL fetcher for PrivetV1.
-  virtual std::unique_ptr<PrivetURLFetcher> CreateURLFetcher(
+  // Creates a URL loader for PrivetV1.
+  virtual std::unique_ptr<PrivetURLLoader> CreateURLLoader(
       const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      PrivetURLFetcher::Delegate* delegate) = 0;
+      const std::string& http_method,
+      PrivetURLLoader::Delegate* delegate) = 0;
 
   virtual void RefreshPrivetToken(
-      PrivetURLFetcher::TokenCallback token_callback) = 0;
+      PrivetURLLoader::TokenCallback token_callback) = 0;
 };
 
 class PrivetDataReadOperation {

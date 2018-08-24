@@ -6,44 +6,46 @@
 #define CHROME_BROWSER_PRINTING_CLOUD_PRINT_GCD_API_FLOW_IMPL_H_
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/printing/cloud_print/gcd_api_flow.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "services/identity/public/cpp/access_token_info.h"
 
 namespace identity {
 class PrimaryAccountAccessTokenFetcher;
 }
+namespace network {
+class SimpleURLLoader;
+class SharedURLLoaderFactory;
+}  // namespace network
 class GoogleServiceAuthError;
 
 namespace cloud_print {
 
-class GCDApiFlowImpl : public GCDApiFlow, public net::URLFetcherDelegate {
+class GCDApiFlowImpl : public GCDApiFlow {
  public:
   // Create an OAuth2-based confirmation.
-  GCDApiFlowImpl(net::URLRequestContextGetter* request_context,
-                 identity::IdentityManager* identity_manager);
+  GCDApiFlowImpl(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      identity::IdentityManager* identity_manager);
   ~GCDApiFlowImpl() override;
 
   // GCDApiFlow implementation:
   void Start(std::unique_ptr<Request> request) override;
 
-  // net::URLFetcherDelegate implementation:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
   void OnAccessTokenFetchComplete(GoogleServiceAuthError error,
                                   identity::AccessTokenInfo access_token_info);
-
  private:
-  void CreateRequest();
+  void OnDownloadedToString(std::unique_ptr<std::string> response_body);
 
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher> token_fetcher_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   identity::IdentityManager* identity_manager_;
   std::unique_ptr<Request> request_;
+  base::WeakPtrFactory<GCDApiFlowImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GCDApiFlowImpl);
 };

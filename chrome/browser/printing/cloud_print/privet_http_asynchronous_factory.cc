@@ -8,15 +8,16 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory_impl.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace cloud_print {
 
 // static
 std::unique_ptr<PrivetHTTPAsynchronousFactory>
 PrivetHTTPAsynchronousFactory::CreateInstance(
-    net::URLRequestContextGetter* request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   return base::WrapUnique<PrivetHTTPAsynchronousFactory>(
-      new PrivetHTTPAsynchronousFactoryImpl(request_context));
+      new PrivetHTTPAsynchronousFactoryImpl(url_loader_factory));
 }
 
 }  // namespace cloud_print

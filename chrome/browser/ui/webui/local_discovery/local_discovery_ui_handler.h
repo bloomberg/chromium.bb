@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEBUI_LOCAL_DISCOVERY_LOCAL_DISCOVERY_UI_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -45,6 +46,17 @@ class LocalDiscoveryUIHandler
       public cloud_print::CloudPrintPrinterList::Delegate,
       public identity::IdentityManager::Observer {
  public:
+  // Class used to set a URLLoaderFactory that should be used when making
+  // network requests. Create one instance of this object with the
+  // URLLoaderFactory to use. It's automatically unregistered when the object is
+  // destroyed.
+  class SetURLLoaderFactoryForTesting final {
+   public:
+    explicit SetURLLoaderFactoryForTesting(
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+    ~SetURLLoaderFactoryForTesting();
+  };
+
   LocalDiscoveryUIHandler();
   ~LocalDiscoveryUIHandler() override;
 

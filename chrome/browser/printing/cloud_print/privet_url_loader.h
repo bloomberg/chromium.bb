@@ -2,33 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_FETCHER_H_
-#define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_FETCHER_H_
+#ifndef CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_LOADER_H_
+#define CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_LOADER_H_
 
 #include <memory>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
-namespace base {
-class FilePath;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace cloud_print {
 
-// Privet-specific URLFetcher adapter. Currently supports only the subset
-// of HTTP features required by Privet for GCP 1.5
-// (/privet/info and /privet/register).
-class PrivetURLFetcher : public net::URLFetcherDelegate {
+// Privet-specific URLLoader adapter. Currently supports only the subset of
+// HTTP features required by Privet for GCP 1.5 (/privet/info and
+// /privet/register).
+class PrivetURLLoader {
  public:
   enum ErrorType {
     JSON_PARSE_ERROR,
@@ -62,17 +62,14 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
                            const base::FilePath& data_file);
   };
 
-  PrivetURLFetcher(
+  PrivetURLLoader(
       const GURL& url,
-      net::URLFetcher::RequestType request_type,
-      const scoped_refptr<net::URLRequestContextGetter>& context_getter,
+      const std::string& request_type,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       Delegate* delegate);
 
-  ~PrivetURLFetcher() override;
-
-  // net::URLFetcherDelegate methods.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  virtual ~PrivetURLLoader();
 
   static void SetTokenForHost(const std::string& host,
                               const std::string& token);
@@ -98,13 +95,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   void SetUploadData(const std::string& upload_content_type,
                      const std::string& upload_data);
 
-  const GURL& url() const {
-    return url_fetcher_ ? url_fetcher_->GetOriginalURL() : url_;
-  }
-  int response_code() const {
-    return url_fetcher_ ? url_fetcher_->GetResponseCode() : -1;
-  }
-
   // A class that can be used in tests that want to bypass the delay when
   // retrying loading a URL. Create one of this object in your test, it will
   // disable the delay for retry on construction and revert it back on
@@ -117,9 +107,6 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   };
 
  private:
-  void OnURLFetchCompleteParseData(const net::URLFetcher* source);
-  bool OnURLFetchCompleteDoNotParseData(const net::URLFetcher* source);
-
   std::string GetHostString();  // Get string representing the host.
   std::string GetPrivetAccessToken();
   void Try();
@@ -127,13 +114,15 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   bool PrivetErrorTransient(const std::string& error);
   void RequestTokenRefresh();
   void RefreshToken(const std::string& token);
-
-  // Lazily create |file_task_runner_| and return a reference.
-  scoped_refptr<base::SequencedTaskRunner> GetFileTaskRunner();
+  void OnResponseStarted(const GURL& final_url,
+                         const network::ResourceResponseHead& response_head);
+  void OnDownloadedToString(std::unique_ptr<std::string> response_body);
+  void OnDownloadedToFile(base::FilePath path);
+  bool CheckURLLoaderForError();
 
   const GURL url_;
-  const net::URLFetcher::RequestType request_type_;
-  scoped_refptr<net::URLRequestContextGetter> context_getter_;
+  const std::string request_type_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
   Delegate* const delegate_;
 
@@ -150,13 +139,12 @@ class PrivetURLFetcher : public net::URLFetcherDelegate {
   int tries_ = 0;
   std::string upload_data_;
   std::string upload_content_type_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
-  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
 
-  base::WeakPtrFactory<PrivetURLFetcher> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(PrivetURLFetcher);
+  base::WeakPtrFactory<PrivetURLLoader> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(PrivetURLLoader);
 };
 
 }  // namespace cloud_print
 
-#endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_FETCHER_H_
+#endif  // CHROME_BROWSER_PRINTING_CLOUD_PRINT_PRIVET_URL_LOADER_H_

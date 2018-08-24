@@ -7,12 +7,14 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace base {
 class DictionaryValue;
@@ -20,6 +22,10 @@ class DictionaryValue;
 
 namespace identity {
 class IdentityManager;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace cloud_print {
@@ -71,7 +77,7 @@ class GCDApiFlow {
   virtual ~GCDApiFlow();
 
   static std::unique_ptr<GCDApiFlow> Create(
-      net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       identity::IdentityManager* identity_manager);
 
   virtual void Start(std::unique_ptr<Request> request) = 0;
