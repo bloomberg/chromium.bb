@@ -163,6 +163,7 @@ pipeline_integration_fuzzer_variants = [
   "WEBM_VP9",
   "WEBM_OPUS_VP9",
   "MP4_FLAC",
+  "MP4_OPUS",
   "MP3",
 
   # See below for additional variants depending on build configuration.

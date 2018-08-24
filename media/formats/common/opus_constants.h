@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_FILTERS_OPUS_CONSTANTS_H_
-#define MEDIA_FILTERS_OPUS_CONSTANTS_H_
+#ifndef MEDIA_FORMATS_COMMON_OPUS_CONSTANTS_H_
+#define MEDIA_FORMATS_COMMON_OPUS_CONSTANTS_H_
 
 #include <stdint.h>
-
-#include "media/base/media_export.h"
 
 namespace media {
 
@@ -80,38 +78,10 @@ enum {
   OPUS_EXTRADATA_STREAM_MAP_OFFSET = OPUS_EXTRADATA_NUM_STREAMS_OFFSET + 2,
 };
 
-// Vorbis channel ordering for streams with >= 2 channels:
-// 2 Channels
-//   L, R
-// 3 Channels
-//   L, Center, R
-// 4 Channels
-//   Front L, Front R, Back L, Back R
-// 5 Channels
-//   Front L, Center, Front R, Back L, Back R
-// 6 Channels (5.1)
-//   Front L, Center, Front R, Back L, Back R, LFE
-// 7 channels (6.1)
-//   Front L, Front Center, Front R, Side L, Side R, Back Center, LFE
-// 8 Channels (7.1)
-//   Front L, Center, Front R, Side L, Side R, Back L, Back R, LFE
-//
-// Channel ordering information is taken from section 4.3.9 of the Vorbis I
-// Specification:
-// http://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-800004.3.9
-MEDIA_EXPORT extern const uint8_t
-    kDefaultOpusChannelLayout[OPUS_MAX_CHANNELS_WITH_DEFAULT_LAYOUT];
-
-// These are the FFmpeg channel layouts expressed using the position of each
-// channel in the output stream from libopus.
-MEDIA_EXPORT extern const uint8_t
-    kFFmpegChannelDecodingLayouts[OPUS_MAX_VORBIS_CHANNELS]
-                                 [OPUS_MAX_VORBIS_CHANNELS];
-
 // Opus internal to Vorbis channel order mapping written in the header.
-extern const uint8_t
-    kOpusVorbisChannelMap[OPUS_MAX_VORBIS_CHANNELS][OPUS_MAX_VORBIS_CHANNELS];
+extern const uint8_t kOpusVorbisChannelMap[OPUS_MAX_VORBIS_CHANNELS]
+                                          [OPUS_MAX_VORBIS_CHANNELS];
 
 }  // namespace media
 
-#endif  // MEDIA_FILTERS_OPUS_CONSTANTS_H_
+#endif  // MEDIA_FORMATS_COMMON_OPUS_CONSTANTS_H_

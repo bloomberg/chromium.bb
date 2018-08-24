@@ -12,7 +12,6 @@ jumbo_source_set("filters") {
   # should be using //media and not directly DEP this roll-up target.
   visibility = [
     "//media",
-    "//media/muxers",
     "//media/renderers",
   ]
 
@@ -52,8 +51,6 @@ jumbo_source_set("filters") {
     "memory_data_source.h",
     "offloading_video_decoder.cc",
     "offloading_video_decoder.h",
-    "opus_constants.cc",
-    "opus_constants.h",
     "pipeline_controller.cc",
     "pipeline_controller.h",
     "source_buffer_parse_warnings.h",

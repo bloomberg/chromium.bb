@@ -18,7 +18,7 @@ source_set("muxers") {
   deps = [
     "//base",
     "//media/base",
-    "//media/filters",
+    "//media/formats",
     "//skia",
     "//third_party/libwebm",
     "//ui/gfx/geometry",

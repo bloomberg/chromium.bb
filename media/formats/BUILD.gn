@@ -13,6 +13,7 @@ source_set("formats") {
     "//media/base/android/",
     "//media/cdm",
     "//media/filters",
+    "//media/muxers",
   ]
 
   sources = [
@@ -20,6 +21,8 @@ source_set("formats") {
     "ac3/ac3_util.h",
     "common/offset_byte_queue.cc",
     "common/offset_byte_queue.h",
+    "common/opus_constants.cc",
+    "common/opus_constants.h",
     "mp4/bitstream_converter.cc",
     "mp4/bitstream_converter.h",
     "mp4/box_definitions.cc",

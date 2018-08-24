@@ -10,10 +10,13 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/numerics/safe_math.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_types.h"
 #include "media/base/video_util.h"
+#include "media/formats/common/opus_constants.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/media_buildflags.h"
@@ -1072,6 +1075,60 @@ bool FlacSpecificBox::Parse(BoxReader* reader) {
   return true;
 }
 
+OpusSpecificBox::OpusSpecificBox()
+    : seek_preroll(base::TimeDelta::FromMilliseconds(80)),
+      codec_delay_in_frames(0) {}
+
+OpusSpecificBox::OpusSpecificBox(const OpusSpecificBox& other) = default;
+
+OpusSpecificBox::~OpusSpecificBox() = default;
+
+FourCC OpusSpecificBox::BoxType() const {
+  return FOURCC_DOPS;
+}
+
+bool OpusSpecificBox::Parse(BoxReader* reader) {
+  // Extradata must start with "OpusHead" magic.
+  extradata.insert(extradata.end(),
+                   {0x4f, 0x70, 0x75, 0x73, 0x48, 0x65, 0x61, 0x64});
+
+  // The opus specific box must be present and at least OPUS_EXTRADATA_SIZE - 8
+  // bytes in length. The -8 is for the missing "OpusHead" magic signature that
+  // is required at the start of the extradata we give to the codec.
+  const size_t headerless_extradata_size = reader->box_size() - reader->pos();
+  RCHECK(headerless_extradata_size >= OPUS_EXTRADATA_SIZE - extradata.size());
+  extradata.resize(extradata.size() + headerless_extradata_size);
+
+  int16_t gain_db;
+
+  RCHECK(reader->Read1(&extradata[OPUS_EXTRADATA_VERSION_OFFSET]));
+  RCHECK(reader->Read1(&extradata[OPUS_EXTRADATA_CHANNELS_OFFSET]));
+  RCHECK(reader->Read2(&codec_delay_in_frames /* PreSkip */));
+  RCHECK(reader->Read4(&sample_rate));
+  RCHECK(reader->Read2s(&gain_db));
+
+#if !defined(ARCH_CPU_LITTLE_ENDIAN)
+#error The code below assumes little-endianness.
+#endif
+
+  memcpy(&extradata[OPUS_EXTRADATA_SKIP_SAMPLES_OFFSET], &codec_delay_in_frames,
+         sizeof(codec_delay_in_frames));
+  memcpy(&extradata[OPUS_EXTRADATA_SAMPLE_RATE_OFFSET], &sample_rate,
+         sizeof(sample_rate));
+  memcpy(&extradata[OPUS_EXTRADATA_GAIN_OFFSET], &gain_db, sizeof(gain_db));
+
+  channel_count = extradata[OPUS_EXTRADATA_CHANNELS_OFFSET];
+
+  // Any remaining data is 1-byte data, so copy it over as is, there should
+  // only be a handful of these entries, so reading byte by byte is okay.
+  for (size_t i = OPUS_EXTRADATA_CHANNEL_MAPPING_OFFSET; i < extradata.size();
+       ++i) {
+    RCHECK(reader->Read1(&extradata[i]));
+  }
+
+  return true;
+}
+
 AudioSampleEntry::AudioSampleEntry()
     : format(FOURCC_NULL),
       data_reference_index(0),
@@ -1109,6 +1166,18 @@ bool AudioSampleEntry::Parse(BoxReader* reader) {
       if (!reader->ReadChild(&sinf))
         return false;
     }
+  }
+
+  if (format == FOURCC_OPUS ||
+      (format == FOURCC_ENCA && sinf.format.format == FOURCC_OPUS)) {
+    RCHECK_MEDIA_LOGGED(reader->ReadChild(&dops), reader->media_log(),
+                        "Failure parsing OpusSpecificBox (dOps)");
+    RCHECK_MEDIA_LOGGED(channelcount == dops.channel_count, reader->media_log(),
+                        "Opus AudioSampleEntry channel count mismatches "
+                        "OpusSpecificBox STREAMINFO channel count");
+    RCHECK_MEDIA_LOGGED(samplerate == dops.sample_rate, reader->media_log(),
+                        "Opus AudioSampleEntry sample rate mismatches "
+                        "OpusSpecificBox STREAMINFO channel count");
   }
 
   // Read the FLACSpecificBox, even if CENC is signalled.

@@ -47,6 +47,10 @@ class MockMediaSource {
     do_eos_after_next_append_ = flag;
   }
 
+  void SetAppendWindow(base::TimeDelta timestamp_offset,
+                       base::TimeDelta append_window_start,
+                       base::TimeDelta append_window_end);
+
   void Seek(base::TimeDelta seek_time,
             size_t new_position,
             size_t seek_append_size);
@@ -99,6 +103,8 @@ class MockMediaSource {
   PipelineStatusCB demuxer_failure_cb_;
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb_;
   base::TimeDelta last_timestamp_offset_;
+  base::TimeDelta append_window_start_;
+  base::TimeDelta append_window_end_ = kInfiniteDuration;
   bool do_eos_after_next_append_ = false;
   bool expect_append_success_ = true;
 
