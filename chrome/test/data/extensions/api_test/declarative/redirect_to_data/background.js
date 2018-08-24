@@ -28,10 +28,6 @@ function report(details) {
   }
 }
 
-chrome.runtime.onInstalled.addListener(function(details) {
-  chrome.declarativeWebRequest.onRequest.addRules([rule], report);
-});
-
 var activeTabId;
 
 function navigateAndWait(url, callback) {
@@ -60,7 +56,11 @@ chrome.test.runTests([
       }))
   },
   function checkTitle() {
-    navigateAndWait('http://www.example.com',
-                    chrome.test.callbackPass(checkTitleCallback));
+    chrome.declarativeWebRequest.onRequest.addRules([rule],
+      chrome.test.callbackPass(function(details) {
+        report(details);
+        navigateAndWait('http://www.example.com',
+                        chrome.test.callbackPass(checkTitleCallback));
+      }));
   }
 ]);
