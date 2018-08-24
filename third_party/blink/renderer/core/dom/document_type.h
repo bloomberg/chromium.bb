@@ -55,6 +55,7 @@ class DocumentType final : public Node {
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
+  void DetachLayoutTree(const AttachContext&) final {}
 
   String name_;
   String public_id_;

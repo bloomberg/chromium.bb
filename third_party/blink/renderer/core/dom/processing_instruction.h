@@ -32,8 +32,8 @@ namespace blink {
 class StyleSheet;
 class EventListener;
 
-class ProcessingInstruction final : public CharacterData,
-                                    private ResourceClient {
+class CORE_EXPORT ProcessingInstruction final : public CharacterData,
+                                                private ResourceClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ProcessingInstruction);
 
@@ -80,6 +80,7 @@ class ProcessingInstruction final : public CharacterData,
 
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
+  void DetachLayoutTree(const AttachContext&) final {}
 
   bool CheckStyleSheet(String& href, String& charset);
   void Process(const String& href, const String& charset);

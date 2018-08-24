@@ -27,7 +27,7 @@
 
 namespace blink {
 
-class Comment final : public CharacterData {
+class CORE_EXPORT Comment final : public CharacterData {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -39,6 +39,7 @@ class Comment final : public CharacterData {
   String nodeName() const override;
   NodeType getNodeType() const override;
   Node* Clone(Document&, CloneChildrenFlag) const override;
+  void DetachLayoutTree(const AttachContext&) final {}
 };
 
 DEFINE_NODE_TYPE_CASTS(Comment, getNodeType() == Node::kCommentNode);

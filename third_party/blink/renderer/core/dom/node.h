@@ -932,7 +932,7 @@ class CORE_EXPORT Node : public EventTarget {
 
  protected:
   enum ConstructionType {
-    kCreateOther = kDefaultNodeFlags,
+    kCreateOther = kIsFinishedParsingChildrenFlag,
     kCreateText = kDefaultNodeFlags | kIsTextFlag,
     kCreateContainer =
         kDefaultNodeFlags | kChildNeedsStyleRecalcFlag | kIsContainerFlag,

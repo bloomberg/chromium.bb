@@ -908,6 +908,8 @@ void Node::SetNeedsStyleRecalc(StyleChangeType change_type,
   DCHECK(change_type != kNoStyleChange);
   if (!InActiveDocument())
     return;
+  if (!IsContainerNode() && !IsTextNode())
+    return;
 
   TRACE_EVENT_INSTANT1(
       TRACE_DISABLED_BY_DEFAULT("devtools.timeline.invalidationTracking"),
