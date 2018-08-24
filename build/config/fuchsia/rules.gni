@@ -51,9 +51,12 @@ template("fuchsia_package_runner") {
 
     deps = [
       "//build/config/fuchsia:blobstore_extended_qcow2",
-      "//testing/buildbot/filters:fuchsia_filters",
       invoker.package,
     ]
+
+    if (defined(invoker.deps)) {
+      deps += invoker.deps
+    }
 
     script = "//build/fuchsia/create_runner_script.py"
 
