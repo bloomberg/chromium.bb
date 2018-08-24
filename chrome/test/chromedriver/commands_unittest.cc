@@ -265,7 +265,7 @@ void OnNoSuchSession(const Status& status,
                      std::unique_ptr<base::Value> value,
                      const std::string& session_id,
                      bool w3c_compliant) {
-  EXPECT_EQ(kNoSuchSession, status.code());
+  EXPECT_EQ(kInvalidSessionId, status.code());
   EXPECT_FALSE(value.get());
 }
 
@@ -311,7 +311,7 @@ void OnNoSuchSessionAndQuit(base::RunLoop* run_loop,
                             const std::string& session_id,
                             bool w3c_compliant) {
   run_loop->Quit();
-  EXPECT_EQ(kNoSuchSession, status.code());
+  EXPECT_EQ(kInvalidSessionId, status.code());
   EXPECT_FALSE(value.get());
 }
 

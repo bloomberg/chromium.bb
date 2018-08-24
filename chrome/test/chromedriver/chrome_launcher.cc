@@ -225,7 +225,7 @@ Status WaitForDevToolsAndCheckVersion(
   if (browser_info->is_android &&
     browser_info->android_package != capabilities->android_package) {
     return Status(
-      kSessionNotCreatedException,
+      kSessionNotCreated,
       base::StringPrintf("please close '%s' and try again",
                           browser_info->android_package.c_str()));
   }
@@ -237,7 +237,7 @@ Status WaitForDevToolsAndCheckVersion(
                     "cannot be reproduced with this switch removed.";
   } else if (browser_info->build_no < kMinimumSupportedChromeBuildNo) {
     return Status(
-        kSessionNotCreatedException,
+        kSessionNotCreated,
         "Chrome version must be >= " + GetMinimumSupportedChromeVersion());
   }
 

@@ -34,14 +34,14 @@ TEST(StatusTest, ErrorWithCause) {
       kUnknownCommand, "quit",
       Status(
           kUnknownError, "something happened",
-          Status(kSessionNotCreatedException)));
+          Status(kSessionNotCreated)));
   ASSERT_FALSE(error.IsOk());
   ASSERT_TRUE(error.IsError());
   ASSERT_EQ(kUnknownCommand, error.code());
   ASSERT_STREQ(
       "unknown command: quit\n"
       "from unknown error: something happened\n"
-      "from session not created exception",
+      "from session not created",
       error.message().c_str());
 }
 

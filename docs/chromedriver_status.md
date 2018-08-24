@@ -2,9 +2,6 @@
 
 Below is a list of all WebDriver commands and their current support in ChromeDriver based on what is in the [WebDriver Specification](https://w3c.github.io/webdriver/webdriver-spec.html).
 
-Notes:
- - Currently some error strings returned by ChromeDriver are incorrect. This is tracked by bug [2552](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2552).
-
 | Method | URL | Command | Status | Bug
 | --- | --- | --- | --- | --- |
 | POST   | /session                                                       | New Session                | Partially Complete | [1997](https://bugs.chromium.org/p/chromedriver/issues/detail?id=1997) [2537](https://bugs.chromium.org/p/chromedriver/issues/detail?id=2537)

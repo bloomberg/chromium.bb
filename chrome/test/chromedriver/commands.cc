@@ -212,7 +212,7 @@ void ExecuteSessionCommandOnSessionThread(
     cmd_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(callback_on_cmd,
-                       Status(return_ok_without_session ? kOk : kNoSuchSession),
+                       Status(return_ok_without_session ? kOk : kInvalidSessionId),
                        std::unique_ptr<base::Value>(), std::string(), false));
     return;
   }
@@ -317,7 +317,7 @@ void ExecuteSessionCommand(
     const CommandCallback& callback) {
   SessionThreadMap::iterator iter = session_thread_map->find(session_id);
   if (iter == session_thread_map->end()) {
-    Status status(return_ok_without_session ? kOk : kNoSuchSession);
+    Status status(return_ok_without_session ? kOk : kInvalidSessionId);
     callback.Run(status, std::unique_ptr<base::Value>(), session_id, false);
   } else {
     iter->second->task_runner()->PostTask(
