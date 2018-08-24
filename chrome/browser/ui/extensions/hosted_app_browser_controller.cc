@@ -126,6 +126,9 @@ void HostedAppBrowserController::SetAppPrefsForWebContents(
   if (!controller)
     return;
 
+  extensions::TabHelper::FromWebContents(web_contents)
+      ->SetExtensionApp(controller->GetExtension());
+
   web_contents->NotifyPreferencesChanged();
 }
 
@@ -299,6 +302,8 @@ void HostedAppBrowserController::TabDetachedAt(content::WebContents* contents,
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
   rvh->SyncRendererPrefs();
+
+  extensions::TabHelper::FromWebContents(contents)->SetExtensionApp(nullptr);
 
   contents->NotifyPreferencesChanged();
 }

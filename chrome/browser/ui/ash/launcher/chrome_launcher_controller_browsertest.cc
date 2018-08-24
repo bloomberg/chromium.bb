@@ -1165,15 +1165,17 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, items);
   EXPECT_EQ(0u, running_browser);
 
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
-                         WindowOpenDisposition::NEW_WINDOW);
+  const Extension* extension =
+      LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_WINDOW,
+                             WindowOpenDisposition::NEW_WINDOW);
 
   // No new browser should get detected, even though one more is running.
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  LoadAndLaunchExtension("app1", extensions::LAUNCH_CONTAINER_TAB,
-                         WindowOpenDisposition::NEW_WINDOW);
+  OpenApplication(AppLaunchParams(
+      profile(), extension, extensions::LAUNCH_CONTAINER_TAB,
+      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST));
 
   // A new browser should get detected and one more should be running.
   EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
