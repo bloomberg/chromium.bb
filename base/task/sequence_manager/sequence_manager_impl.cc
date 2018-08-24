@@ -744,11 +744,9 @@ SequenceManagerImpl::GetMetricRecordingSettings() const {
   return metric_recording_settings_;
 }
 
-MSVC_DISABLE_OPTIMIZE()
-bool SequenceManagerImpl::Validate() {
+NOINLINE bool SequenceManagerImpl::Validate() {
   return memory_corruption_sentinel_ == kMemoryCorruptionSentinelValue;
 }
-MSVC_ENABLE_OPTIMIZE()
 
 void SequenceManagerImpl::EnableCrashKeys(
     const char* file_name_crash_key_name,
