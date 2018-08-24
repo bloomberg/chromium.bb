@@ -11,6 +11,7 @@
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -45,6 +46,12 @@ LaunchType GetLaunchType(const ExtensionPrefs* prefs,
   int value = GetLaunchTypePrefValue(prefs, extension->id());
   if (value >= LAUNCH_TYPE_FIRST && value < NUM_LAUNCH_TYPES)
     result = static_cast<LaunchType>(value);
+
+  // Force hosted apps that are not locally installed to open in tabs.
+  if (extension->is_hosted_app() &&
+      !BookmarkAppIsLocallyInstalled(prefs, extension)) {
+    result = LAUNCH_TYPE_REGULAR;
+  }
 
 #if defined(OS_MACOSX)
   // Disable opening as window on Mac if:

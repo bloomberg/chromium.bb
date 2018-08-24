@@ -419,6 +419,18 @@ TEST_F(BookmarkAppHelperExtensionServiceTest,
     EXPECT_TRUE(extension);
     EXPECT_EQ(LAUNCH_CONTAINER_WINDOW,
               GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
+
+    // Mark the app as not locally installed and check that it now opens in a
+    // tab.
+    SetBookmarkAppIsLocallyInstalled(profile(), extension, false);
+    EXPECT_EQ(LAUNCH_CONTAINER_TAB,
+              GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
+
+    // Mark the app as locally installed and check that it now opens in a
+    // window.
+    SetBookmarkAppIsLocallyInstalled(profile(), extension, true);
+    EXPECT_EQ(LAUNCH_CONTAINER_WINDOW,
+              GetLaunchContainer(ExtensionPrefs::Get(profile()), extension));
   }
   {
     TestBookmarkAppHelper helper(service_, web_app_info, web_contents());
