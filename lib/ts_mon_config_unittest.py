@@ -36,6 +36,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
     self.PatchObject(ts_mon_config, '_SetupTsMonFromOptions')
     self.PatchObject(ts_mon_config, '_WasSetup', True)
     self.mock_metric = self.PatchObject(metrics, 'Boolean')
+    self.common_metric_fields, _ = metrics.LoadMetricFields({}, [])
 
 
   def testNoneEndsProcess(self):
@@ -65,7 +66,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
         ts_mon_config.FLUSH_INTERVAL - 1)
     ts_mon_config.metrics.Flush.assert_called_once_with(reset_after=[])
     self.mock_metric.return_value.mock_name.assert_called_once_with(
-        'arg1', kwarg1='value')
+        'arg1', fields=self.common_metric_fields, kwarg1='value')
 
   def testConsumeTwoMetrics(self):
     """Tests that sending two metrics only calls flush once."""
@@ -85,9 +86,9 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
         ts_mon_config.FLUSH_INTERVAL - 2)
     ts_mon_config.metrics.Flush.assert_called_once_with(reset_after=[])
     self.mock_metric.return_value.mock_name1.assert_called_once_with(
-        'arg1', kwarg1='value')
+        'arg1', fields=self.common_metric_fields, kwarg1='value')
     self.mock_metric.return_value.mock_name2.assert_called_once_with(
-        'arg2', kwarg2='value')
+        'arg2', fields=self.common_metric_fields, kwarg2='value')
 
   def testFlushingProcessExits(self):
     """Tests that _CreateTsMonFlushingProcess cleans up the process."""
@@ -117,6 +118,9 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
 
     class RaisesException(object):
       """Class to raise an exception"""
+      def __init__(self, *args, **kwargs):
+        pass
+
       def raiseException(self, *_args, **_kwargs):
         raise Exception()
 
@@ -152,7 +156,7 @@ class TestConsumeMessages(cros_test_lib.MockTestCase):
         [self.mock_metric.return_value],
         ts_mon_config.metrics.Flush.call_args[1]['reset_after'])
     self.mock_metric.return_value.mock_name.assert_called_once_with(
-        'arg1', kwarg1='value1')
+        'arg1', fields=self.common_metric_fields, kwarg1='value1')
 
   def testSubprocessQuitsWhenNotSetup(self):
     self.PatchObject(ts_mon_config.logging, 'exception')

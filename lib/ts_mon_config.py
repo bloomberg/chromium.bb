@@ -268,6 +268,12 @@ class MetricConsumer(object):
     """Calls the metric method from |message|, ignoring exceptions."""
     try:
       cls = getattr(metrics, message.metric_name)
+      if 'fields' not in message.method_kwargs:
+        message.method_kwargs['fields'] = {}
+        message.metric_kwargs['field_spec'] = []
+      message.method_kwargs['fields'], message.metric_kwargs['field_spec'] = (
+          metrics.LoadMetricFields(message.method_kwargs['fields'],
+                                   message.metric_kwargs['field_spec']))
       metric = cls(*message.metric_args, **message.metric_kwargs)
       if message.reset_after:
         self.reset_after_flush.append(metric)

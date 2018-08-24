@@ -13,9 +13,12 @@ deployed with your code.
 from __future__ import print_function
 
 import collections
+import constants
 import contextlib
+import copy
 import datetime
 import json
+import os
 import Queue
 import ssl
 from functools import wraps
@@ -107,6 +110,50 @@ def SetupMetricFields(fields=None, append=False):
   with open(constants.TSMON_METRIC_FIELDS, fm) as f:
     json.dump(fields, f)
     f.write("\n")
+
+
+def LoadMetricFields(fields=None, field_spec=None):
+  """Reads in common ts_mon metric fields and updates with provided params.
+
+  Args:
+    fields: Directionary containing any additional metric fields to append to
+            common metric fields being loaded from file.
+    field_spec: List containing any Field object associated with metric.
+
+  Returns:
+    Dictionary containing complete set of metric fields to be applied to
+    metric and a list of corresponding field_spec.
+  """
+  metric_fields = {}
+  metric_field_spec = copy.deepcopy(field_spec)
+  metric_field_spec = metric_field_spec or []
+  if os.path.isfile(constants.TSMON_METRIC_FIELDS):
+    with open(constants.TSMON_METRIC_FIELDS, 'r') as f:
+      for line in f:
+        metric_fields.update(json.loads(line))
+  else:
+    return fields, field_spec
+
+  if metric_fields is not None:
+    for k, v in metric_fields.iteritems():
+      if fields is None or k not in fields:
+        if isinstance(v, bool):
+          field_spec_elmt = ts_mon.BooleanField(k)
+        elif isinstance(v, int):
+          field_spec_elmt = ts_mon.IntegerField(k)
+        elif isinstance(v, basestring):
+          field_spec_elmt = ts_mon.StringField(k)
+        else:
+          logging.error("Couldn't classify the metric field %s:%s",
+                        k, v)
+          continue
+        metric_field_spec.append(field_spec_elmt)
+
+  if fields is not None:
+    for k, v in fields.iteritems():
+      metric_fields[k] = v
+
+  return metric_fields, metric_field_spec
 
 
 def _Indirect(fn):
@@ -254,9 +301,8 @@ def _Metric(fn):
 def CounterMetric(name, reset_after=False, description=None,
                   field_spec=_MISSING, start_time=None):
   """Returns a metric handle for a counter named |name|."""
-  return ts_mon.CounterMetric(name,
-                              description=description, field_spec=field_spec,
-                              start_time=start_time)
+  return ts_mon.CounterMetric(name, description=description,
+                              field_spec=field_spec, start_time=start_time)
 Counter = CounterMetric
 
 
@@ -306,8 +352,9 @@ Float = FloatMetric
 def CumulativeDistributionMetric(name, reset_after=False, description=None,
                                  bucketer=None, field_spec=_MISSING):
   """Returns a metric handle for a cumulative distribution named |name|."""
-  return ts_mon.CumulativeDistributionMetric(
-      name, description=description, bucketer=bucketer, field_spec=field_spec)
+  return ts_mon.CumulativeDistributionMetric(name, description=description,
+                                             bucketer=bucketer,
+                                             field_spec=field_spec)
 CumulativeDistribution = CumulativeDistributionMetric
 
 
@@ -315,8 +362,9 @@ CumulativeDistribution = CumulativeDistributionMetric
 def DistributionMetric(name, reset_after=False, description=None,
                        bucketer=None, field_spec=_MISSING):
   """Returns a metric handle for a distribution named |name|."""
-  return ts_mon.NonCumulativeDistributionMetric(
-      name, description=description, bucketer=bucketer, field_spec=field_spec)
+  return ts_mon.NonCumulativeDistributionMetric(name, description=description,
+                                                bucketer=bucketer,
+                                                field_spec=field_spec)
 Distribution = DistributionMetric
 
 
@@ -332,9 +380,7 @@ def CumulativeSmallIntegerDistribution(name, reset_after=False,
   nonnegative integers in the range of 0 to 100.
   """
   return ts_mon.CumulativeDistributionMetric(
-      name,
-      bucketer=ts_mon.FixedWidthBucketer(1),
-      description=description,
+      name, bucketer=ts_mon.FixedWidthBucketer(1), description=description,
       field_spec=field_spec)
 
 
@@ -726,8 +772,8 @@ class RuntimeBreakdownTimer(object):
 
   def __init__(self, name, fields=None, description=None, field_spec=_MISSING):
     self._name = name
-    self._fields = fields
     self._field_spec = field_spec
+    self._fields = fields
     self._description = description
     self._outer_t0 = None
     self._total_time_s = 0
