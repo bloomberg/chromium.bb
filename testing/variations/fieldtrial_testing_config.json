@@ -3081,18 +3081,6 @@
             ]
         }
     ],
-    "PasswordGeneration": [
-        {
-            "platforms": [
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Disabled"
-                }
-            ]
-        }
-    ],
     "PasswordGenerationRequirements": [
         {
             "platforms": [
