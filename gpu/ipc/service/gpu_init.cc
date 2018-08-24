@@ -349,7 +349,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
   params.single_process = true;
 #if defined(OS_CHROMEOS)
   params.using_mojo =
-      !features::IsAshInBrowserProcess() || features::IsOzoneDrmMojo();
+      features::IsMultiProcessMash() || features::IsOzoneDrmMojo();
 #else
   params.using_mojo = features::IsOzoneDrmMojo();
 #endif

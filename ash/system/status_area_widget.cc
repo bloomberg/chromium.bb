@@ -84,10 +84,7 @@ void StatusAreaWidget::Initialize() {
   logout_button_tray_ = std::make_unique<LogoutButtonTray>(shelf_);
   status_area_widget_delegate_->AddChildView(logout_button_tray_.get());
 
-  if (!::features::IsAshInBrowserProcess()) {
-    // Flag warning tray is not currently used in non-MASH environments, because
-    // mus will roll out via experiment/Finch trial and showing the tray would
-    // reveal the experiment state to users.
+  if (::features::IsMultiProcessMash()) {
     flag_warning_tray_ = std::make_unique<FlagWarningTray>(shelf_);
     status_area_widget_delegate_->AddChildView(flag_warning_tray_.get());
   }

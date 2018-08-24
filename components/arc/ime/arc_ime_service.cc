@@ -179,7 +179,7 @@ void ArcImeService::ReattachInputMethod(aura::Window* old_window,
 void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (features::IsAshInBrowserProcess() &&
+  if (!features::IsUsingWindowService() &&
       keyboard::KeyboardController::HasInstance()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled() &&
@@ -295,7 +295,7 @@ void ArcImeService::OnCursorRectChangedWithSurroundingText(
 void ArcImeService::RequestHideIme() {
   // TODO(mash): Support virtual keyboard under MASH. There is no
   // KeyboardController in the browser process under MASH.
-  if (features::IsAshInBrowserProcess() &&
+  if (!features::IsUsingWindowService() &&
       keyboard::KeyboardController::HasInstance()) {
     auto* keyboard_controller = keyboard::KeyboardController::Get();
     if (keyboard_controller->enabled())

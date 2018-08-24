@@ -81,9 +81,9 @@ bool IsInPasswordInputContext() {
   // Avoid getting IMEBridge instance if ash is not in browser.
   // This is to temporarily mute the crash (http://crbug.com/867084).
   // TODO(shuchen): This will be eventually be solved by the Mojo-based IMF.
-  return features::IsAshInBrowserProcess() &&
+  return !::features::IsMultiProcessMash() &&
          ui::IMEBridge::Get()->GetCurrentInputContext().type ==
-         ui::TEXT_INPUT_TYPE_PASSWORD;
+             ui::TEXT_INPUT_TYPE_PASSWORD;
 }
 
 class ImeMenuLabel : public views::Label {

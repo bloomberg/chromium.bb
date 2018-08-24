@@ -755,7 +755,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
         BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
   }
 
-  if (features::IsAshInBrowserProcess()) {
+  if (!features::IsMultiProcessMash()) {
     discardable_shared_memory_manager_ =
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
     // TODO(boliu): kSingleProcess check is a temporary workaround for
@@ -1274,8 +1274,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
           &GpuProcessHost::InitFontRenderParamsOnIO,
           gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr)));
 
-  // If mus is not hosting viz, then the browser must.
-  bool browser_is_viz_host = features::IsAshInBrowserProcess();
+  // If ash/ws is not hosting viz, then the browser must.
+  bool browser_is_viz_host = !features::IsMultiProcessMash();
 
   bool always_uses_gpu = true;
   bool established_gpu_channel = false;

@@ -38,7 +38,7 @@ AccessibilityHighlightController::AccessibilityHighlightController() {
 
   // In-process ash uses the InputMethod shared between ash and browser. Mash
   // receives caret updates from the browser over mojo.
-  if (::features::IsAshInBrowserProcess())
+  if (!::features::IsMultiProcessMash())
     GetSharedInputMethod()->AddObserver(this);
 }
 
@@ -51,7 +51,7 @@ AccessibilityHighlightController::~AccessibilityHighlightController() {
   controller->HideCaretRing();
   controller->HideCursorRing();
 
-  if (::features::IsAshInBrowserProcess())
+  if (!::features::IsMultiProcessMash())
     GetSharedInputMethod()->RemoveObserver(this);
   Shell::Get()->cursor_manager()->RemoveObserver(this);
   Shell::Get()->RemovePreTargetHandler(this);
