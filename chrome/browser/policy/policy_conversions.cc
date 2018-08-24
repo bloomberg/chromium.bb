@@ -165,8 +165,10 @@ void GetPolicyValues(
     } else {
       // The PolicyMap contains errors about retrieving the policy, while the
       // PolicyErrorMap contains validation errors. Give priority to PolicyMap.
-      error = !policy.error.empty() ? base::UTF8ToUTF16(policy.error)
-                                    : errors->GetErrors(policy_name);
+      error = policy.GetLocalizedErrors(
+          base::BindRepeating(&l10n_util::GetStringUTF16));
+      if (error.empty())
+        error = errors->GetErrors(policy_name);
     }
     if (!error.empty())
       value.SetKey("error", Value(error));

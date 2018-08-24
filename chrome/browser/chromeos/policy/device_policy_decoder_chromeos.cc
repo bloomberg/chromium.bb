@@ -57,7 +57,7 @@ void SetJsonDevicePolicy(const std::string& policy_name,
   policies->Set(policy_name, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                 POLICY_SOURCE_CLOUD, std::move(value_to_set), nullptr);
   if (!error.empty())
-    policies->SetError(policy_name, error);
+    policies->AddError(policy_name, error);
 }
 
 // Decodes a protobuf integer to an IntegerValue. Returns NULL in case the input

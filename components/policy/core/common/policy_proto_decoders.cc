@@ -142,7 +142,7 @@ void DecodeProtoFields(
     map->Set(access->policy_key, level, scope, source,
              DecodeIntegerProto(proto, &error), nullptr);
     if (!error.empty())
-      map->SetError(access->policy_key, error);
+      map->AddError(access->policy_key, error);
   }
 
   for (const StringPolicyAccess* access = &kStringPolicyAccess[0];
@@ -169,7 +169,7 @@ void DecodeProtoFields(
     map->Set(access->policy_key, level, scope, source, std::move(value),
              std::move(external_data_fetcher));
     if (!error.empty())
-      map->SetError(access->policy_key, error);
+      map->AddError(access->policy_key, error);
   }
 
   for (const StringListPolicyAccess* access = &kStringListPolicyAccess[0];
