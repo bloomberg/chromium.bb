@@ -11,7 +11,7 @@
 #include "media/base/audio_parameters.h"
 #include "media/base/limits.h"
 #include "media/base/video_frame.h"
-#include "media/filters/opus_constants.h"
+#include "media/formats/common/opus_constants.h"
 
 namespace media {
 

@@ -156,11 +156,15 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWebm) {
   PlayVideo("bear.webm", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearOpusWebm) {
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusWebm) {
   PlayVideo("bear-opus.webm", GetParam());
 }
 
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearOpusOgg) {
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusMp4) {
+  PlayVideo("bear-opus.mp4", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearOpusOgg) {
   PlayVideo("bear-opus.ogg", GetParam());
 }
 
@@ -179,11 +183,6 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear12DepthVP9) {
 }
 #endif
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4) {
-  PlayVideo("bear.mp4", GetParam());
-}
-
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4Vp9) {
   PlayVideo("bear-320x240-v_frag-vp9.mp4", GetParam());
 }
@@ -196,26 +195,21 @@ IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac192kHzMp4) {
   PlayAudio("bear-flac-192kHz.mp4", GetParam());
 }
 
-// Android devices usually only support baseline, main and high.
-#if !defined(OS_ANDROID)
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
-  PlayVideo("bear-320x180-hi10p.mp4", GetParam());
-}
-#endif  // !defined(OS_ANDROID)
-
-IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentMp4) {
-  PlayVideo("bear_silent.mp4", GetParam());
-}
-
-// While we support the big endian (be) PCM codecs on Chromium, Quicktime seems
-// to be the only creator of this format and only for .mov files.
-// TODO(dalecurtis/ihf): Find or create some .wav test cases for "be" format.
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS16be) {
   PlayVideo("bear_pcm_s16be.mov", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMovPcmS24be) {
   PlayVideo("bear_pcm_s24be.mov", GetParam());
+}
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4) {
+  PlayVideo("bear.mp4", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearSilentMp4) {
+  PlayVideo("bear_silent.mp4", GetParam());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated0) {
@@ -234,18 +228,21 @@ IN_PROC_BROWSER_TEST_F(MediaTest, VideoBearRotated270) {
   RunVideoSizeTest("bear_rotate_270.mp4", 720, 1280);
 }
 
+#if !defined(OS_ANDROID)
+// Android devices usually only support baseline, main and high.
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearHighBitDepthMp4) {
+  PlayVideo("bear-320x180-hi10p.mp4", GetParam());
+}
+
 // Android can't reliably load lots of videos on a page.
 // See http://crbug.com/749265
-#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaTest, LoadManyVideos) {
   base::StringPairs query_params;
   RunMediaTestPage("load_many_videos.html", query_params, media::kEnded, true);
 }
 #endif  // !defined(OS_ANDROID)
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 #if defined(OS_CHROMEOS)
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearAviMp3Mpeg4) {
   PlayVideo("bear_mpeg4_mp3.avi", GetParam());
 }
@@ -269,8 +266,8 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear3gpAmrnbMpeg4) {
 IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearWavGsmms) {
   PlayAudio("bear_gsm_ms.wav", GetParam());
 }
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 IN_PROC_BROWSER_TEST_P(MediaTest, AudioBearFlac) {
   PlayAudio("bear.flac", GetParam());

@@ -362,7 +362,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                                 ? entry.sinf.format.format
                                 : entry.format;
 
-      if (audio_format != FOURCC_FLAC &&
+      if (audio_format != FOURCC_OPUS && audio_format != FOURCC_FLAC &&
 #if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
           audio_format != FOURCC_AC3 && audio_format != FOURCC_EAC3 &&
 #endif
@@ -370,18 +370,26 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
           audio_format != FOURCC_MHM1 &&
 #endif
           audio_format != FOURCC_MP4A) {
-        MEDIA_LOG(ERROR, media_log_) << "Unsupported audio format 0x"
-                                     << std::hex << entry.format
-                                     << " in stsd box.";
+        MEDIA_LOG(ERROR, media_log_)
+            << "Unsupported audio format 0x" << std::hex << entry.format
+            << " in stsd box.";
         return false;
       }
 
       AudioCodec codec = kUnknownAudioCodec;
       ChannelLayout channel_layout = CHANNEL_LAYOUT_NONE;
       int sample_per_second = 0;
+      int codec_delay_in_frames = 0;
+      base::TimeDelta seek_preroll;
       std::vector<uint8_t> extra_data;
-
-      if (audio_format == FOURCC_FLAC) {
+      if (audio_format == FOURCC_OPUS) {
+        codec = kCodecOpus;
+        channel_layout = GuessChannelLayout(entry.dops.channel_count);
+        sample_per_second = entry.dops.sample_rate;
+        codec_delay_in_frames = entry.dops.codec_delay_in_frames;
+        seek_preroll = entry.dops.seek_preroll;
+        extra_data = entry.dops.extradata;
+      } else if (audio_format == FOURCC_FLAC) {
         // FLAC-in-ISOBMFF does not use object type indication. |audio_format|
         // is sufficient for identifying FLAC codec.
         if (!has_flac_) {
@@ -481,7 +489,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
       }
       audio_config.Initialize(codec, sample_format, channel_layout,
                               sample_per_second, extra_data, scheme,
-                              base::TimeDelta(), 0);
+                              seek_preroll, codec_delay_in_frames);
       if (codec == kCodecAAC)
         audio_config.disable_discard_decoder_delay();
 

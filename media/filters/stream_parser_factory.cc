@@ -258,6 +258,7 @@ static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
                                                    nullptr};
 
 static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4FLACCodecInfo,
+                                                   &kOpusCodecInfo,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
                                                    &kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,

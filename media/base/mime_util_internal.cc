@@ -278,9 +278,7 @@ void MimeUtil::AddSupportedMediaFormats() {
 
   const CodecSet mp3_codecs{MP3};
 
-  CodecSet mp4_audio_codecs;
-  mp4_audio_codecs.emplace(MP3);
-  mp4_audio_codecs.emplace(FLAC);
+  CodecSet mp4_audio_codecs{FLAC, MP3, OPUS};
 
   // Only VP9 with valid codec string vp09.xx.xx.xx.xx.xx.xx.xx is supported.
   // See ParseVp9CodecID for details.

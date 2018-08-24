@@ -97,6 +97,14 @@ std::unique_ptr<Demuxer> MockMediaSource::GetDemuxer() {
   return std::move(owned_chunk_demuxer_);
 }
 
+void MockMediaSource::SetAppendWindow(base::TimeDelta timestamp_offset,
+                                      base::TimeDelta append_window_start,
+                                      base::TimeDelta append_window_end) {
+  last_timestamp_offset_ = timestamp_offset;
+  append_window_start_ = append_window_start;
+  append_window_end_ = append_window_end;
+}
+
 void MockMediaSource::Seek(base::TimeDelta seek_time,
                            size_t new_position,
                            size_t seek_append_size) {
@@ -127,7 +135,7 @@ void MockMediaSource::AppendData(size_t size) {
 
   bool success = chunk_demuxer_->AppendData(
       kSourceId, file_data_->data() + current_position_, size,
-      base::TimeDelta(), kInfiniteDuration, &last_timestamp_offset_);
+      append_window_start_, append_window_end_, &last_timestamp_offset_);
   current_position_ += size;
 
   ASSERT_EQ(expect_append_success_, success);
@@ -144,8 +152,8 @@ bool MockMediaSource::AppendAtTime(base::TimeDelta timestamp_offset,
                                    int size) {
   CHECK(!chunk_demuxer_->IsParsingMediaSegment(kSourceId));
   bool success =
-      chunk_demuxer_->AppendData(kSourceId, pData, size, base::TimeDelta(),
-                                 kInfiniteDuration, &timestamp_offset);
+      chunk_demuxer_->AppendData(kSourceId, pData, size, append_window_start_,
+                                 append_window_end_, &timestamp_offset);
   last_timestamp_offset_ = timestamp_offset;
   return success;
 }

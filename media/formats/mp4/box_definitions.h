@@ -315,6 +315,16 @@ struct MEDIA_EXPORT FlacSpecificBox : Box {
   uint8_t bits_per_sample;
 };
 
+struct MEDIA_EXPORT OpusSpecificBox : Box {
+  DECLARE_BOX_METHODS(OpusSpecificBox);
+  std::vector<uint8_t> extradata;
+
+  base::TimeDelta seek_preroll;
+  uint16_t codec_delay_in_frames;
+  uint8_t channel_count;
+  uint32_t sample_rate;
+};
+
 struct MEDIA_EXPORT AudioSampleEntry : Box {
   DECLARE_BOX_METHODS(AudioSampleEntry);
 
@@ -327,6 +337,7 @@ struct MEDIA_EXPORT AudioSampleEntry : Box {
   ProtectionSchemeInfo sinf;
   ElementaryStreamDescriptor esds;
   FlacSpecificBox dfla;
+  OpusSpecificBox dops;
 };
 
 struct MEDIA_EXPORT SampleDescription : Box {
