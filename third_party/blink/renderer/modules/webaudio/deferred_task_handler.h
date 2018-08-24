@@ -145,8 +145,8 @@ class MODULES_EXPORT DeferredTaskHandler final
   // MUST NOT be used in the real-time audio context.
   void OfflineLock();
 
-  // Returns true if this thread owns the context's lock.
-  bool IsGraphOwner();
+  // In DCHECK builds, fails if this thread does not own the context's lock.
+  void AssertGraphOwner() const { context_graph_mutex_.AssertAcquired(); }
 
   class MODULES_EXPORT GraphAutoLocker {
     STACK_ALLOCATED();

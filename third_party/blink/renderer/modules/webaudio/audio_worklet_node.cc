@@ -129,7 +129,7 @@ void AudioWorkletHandler::Process(size_t frames_to_process) {
 
 void AudioWorkletHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   DCHECK(Context()->IsAudioThread());
-  DCHECK(Context()->IsGraphOwner());
+  Context()->AssertGraphOwner();
   DCHECK(input);
 
   // Dynamic channel count only works when the node has 1 input and 1 output.

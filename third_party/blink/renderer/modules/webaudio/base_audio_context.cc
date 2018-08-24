@@ -675,7 +675,7 @@ void BaseAudioContext::ReleaseActiveSourceNodes() {
 
 void BaseAudioContext::HandleStoppableSourceNodes() {
   DCHECK(IsAudioThread());
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   if (finished_source_handlers_.size())
     ScheduleMainThreadCleanup();
@@ -858,7 +858,7 @@ void BaseAudioContext::ResolvePromisesForUnpause() {
   // This runs inside the BaseAudioContext's lock when handling pre-render
   // tasks.
   DCHECK(IsAudioThread());
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   // Resolve any pending promises created by resume(). Only do this if we
   // haven't already started resolving these promises. This gets called very

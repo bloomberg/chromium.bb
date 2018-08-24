@@ -68,16 +68,6 @@ void DeferredTaskHandler::OfflineLock() {
   context_graph_mutex_.lock();
 }
 
-bool DeferredTaskHandler::IsGraphOwner() {
-#if DCHECK_IS_ON()
-  return context_graph_mutex_.Locked();
-#else
-  // The method is only used inside of DCHECK() so it must be no-op in the
-  // release build. Returning false so we can catch when it happens.
-  return false;
-#endif
-}
-
 void DeferredTaskHandler::AddDeferredBreakConnection(AudioHandler& node) {
   DCHECK(IsAudioThread());
   deferred_break_connection_list_.push_back(&node);
@@ -85,7 +75,7 @@ void DeferredTaskHandler::AddDeferredBreakConnection(AudioHandler& node) {
 
 void DeferredTaskHandler::BreakConnections() {
   DCHECK(IsAudioThread());
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   for (unsigned i = 0; i < deferred_break_connection_list_.size(); ++i)
     deferred_break_connection_list_[i]->BreakConnectionWithLock();
@@ -94,39 +84,38 @@ void DeferredTaskHandler::BreakConnections() {
 
 void DeferredTaskHandler::MarkSummingJunctionDirty(
     AudioSummingJunction* summing_junction) {
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
   dirty_summing_junctions_.insert(summing_junction);
 }
 
 void DeferredTaskHandler::RemoveMarkedSummingJunction(
     AudioSummingJunction* summing_junction) {
   DCHECK(IsMainThread());
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
   dirty_summing_junctions_.erase(summing_junction);
 }
 
 void DeferredTaskHandler::MarkAudioNodeOutputDirty(AudioNodeOutput* output) {
-  DCHECK(IsGraphOwner());
   DCHECK(IsMainThread());
+  AssertGraphOwner();
   dirty_audio_node_outputs_.insert(output);
 }
 
 void DeferredTaskHandler::RemoveMarkedAudioNodeOutput(AudioNodeOutput* output) {
-  DCHECK(IsGraphOwner());
   DCHECK(IsMainThread());
+  AssertGraphOwner();
   dirty_audio_node_outputs_.erase(output);
 }
 
 void DeferredTaskHandler::HandleDirtyAudioSummingJunctions() {
-  DCHECK(IsGraphOwner());
-
+  AssertGraphOwner();
   for (AudioSummingJunction* junction : dirty_summing_junctions_)
     junction->UpdateRenderingState();
   dirty_summing_junctions_.clear();
 }
 
 void DeferredTaskHandler::HandleDirtyAudioNodeOutputs() {
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   HashSet<AudioNodeOutput*> dirty_outputs;
   dirty_audio_node_outputs_.swap(dirty_outputs);
@@ -139,7 +128,7 @@ void DeferredTaskHandler::HandleDirtyAudioNodeOutputs() {
 }
 
 void DeferredTaskHandler::AddAutomaticPullNode(AudioHandler* node) {
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   if (!automatic_pull_nodes_.Contains(node)) {
     automatic_pull_nodes_.insert(node);
@@ -148,7 +137,7 @@ void DeferredTaskHandler::AddAutomaticPullNode(AudioHandler* node) {
 }
 
 void DeferredTaskHandler::RemoveAutomaticPullNode(AudioHandler* node) {
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   if (automatic_pull_nodes_.Contains(node)) {
     automatic_pull_nodes_.erase(node);
@@ -157,7 +146,7 @@ void DeferredTaskHandler::RemoveAutomaticPullNode(AudioHandler* node) {
 }
 
 void DeferredTaskHandler::UpdateAutomaticPullNodes() {
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   if (automatic_pull_nodes_need_updating_) {
     CopyToVector(automatic_pull_nodes_, rendering_automatic_pull_nodes_);
@@ -174,7 +163,7 @@ void DeferredTaskHandler::ProcessAutomaticPullNodes(size_t frames_to_process) {
 
 void DeferredTaskHandler::AddTailProcessingHandler(
     scoped_refptr<AudioHandler> handler) {
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   if (!tail_processing_handlers_.Contains(handler)) {
 #if DEBUG_AUDIONODE_REFERENCES > 1
@@ -187,7 +176,7 @@ void DeferredTaskHandler::AddTailProcessingHandler(
 void DeferredTaskHandler::RemoveTailProcessingHandler(
     scoped_refptr<AudioHandler> handler,
     bool disable_outputs) {
-  DCHECK(IsGraphOwner());
+  AssertGraphOwner();
 
   size_t index = tail_processing_handlers_.Find(handler);
   if (index != kNotFound) {
@@ -236,41 +225,37 @@ void DeferredTaskHandler::UpdateTailProcessingHandlers() {
 }
 
 void DeferredTaskHandler::AddChangedChannelCountMode(AudioHandler* node) {
-  DCHECK(IsGraphOwner());
   DCHECK(IsMainThread());
+  AssertGraphOwner();
   deferred_count_mode_change_.insert(node);
 }
 
 void DeferredTaskHandler::RemoveChangedChannelCountMode(AudioHandler* node) {
-  DCHECK(IsGraphOwner());
-
+  AssertGraphOwner();
   deferred_count_mode_change_.erase(node);
 }
 
 void DeferredTaskHandler::AddChangedChannelInterpretation(AudioHandler* node) {
-  DCHECK(IsGraphOwner());
   DCHECK(IsMainThread());
+  AssertGraphOwner();
   deferred_channel_interpretation_change_.insert(node);
 }
 
 void DeferredTaskHandler::RemoveChangedChannelInterpretation(
     AudioHandler* node) {
-  DCHECK(IsGraphOwner());
-
+  AssertGraphOwner();
   deferred_channel_interpretation_change_.erase(node);
 }
 
 void DeferredTaskHandler::UpdateChangedChannelCountMode() {
-  DCHECK(IsGraphOwner());
-
+  AssertGraphOwner();
   for (AudioHandler* node : deferred_count_mode_change_)
     node->UpdateChannelCountMode();
   deferred_count_mode_change_.clear();
 }
 
 void DeferredTaskHandler::UpdateChangedChannelInterpretation() {
-  DCHECK(IsGraphOwner());
-
+  AssertGraphOwner();
   for (AudioHandler* node : deferred_channel_interpretation_change_)
     node->UpdateChannelInterpretation();
   deferred_channel_interpretation_change_.clear();
@@ -327,8 +312,8 @@ void DeferredTaskHandler::AddRenderingOrphanHandler(
 }
 
 void DeferredTaskHandler::RequestToDeleteHandlersOnMainThread() {
-  DCHECK(IsGraphOwner());
   DCHECK(IsAudioThread());
+  AssertGraphOwner();
   if (rendering_orphan_handlers_.IsEmpty())
     return;
   deletable_orphan_handlers_.AppendVector(rendering_orphan_handlers_);

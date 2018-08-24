@@ -46,7 +46,7 @@ std::unique_ptr<AudioNodeInput> AudioNodeInput::Create(AudioHandler& handler) {
 }
 
 void AudioNodeInput::Connect(AudioNodeOutput& output) {
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
 
   // Check if we're already connected to this output.
   if (outputs_.Contains(&output))
@@ -58,7 +58,7 @@ void AudioNodeInput::Connect(AudioNodeOutput& output) {
 }
 
 void AudioNodeInput::Disconnect(AudioNodeOutput& output) {
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
 
   // First try to disconnect from "active" connections.
   if (outputs_.Contains(&output)) {
@@ -83,7 +83,7 @@ void AudioNodeInput::Disconnect(AudioNodeOutput& output) {
 }
 
 void AudioNodeInput::Disable(AudioNodeOutput& output) {
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
   DCHECK(outputs_.Contains(&output));
 
   disabled_outputs_.insert(&output);
@@ -95,7 +95,7 @@ void AudioNodeInput::Disable(AudioNodeOutput& output) {
 }
 
 void AudioNodeInput::Enable(AudioNodeOutput& output) {
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
 
   // Move output from disabled list to active list.
   outputs_.insert(&output);
@@ -115,7 +115,7 @@ void AudioNodeInput::DidUpdate() {
 
 void AudioNodeInput::UpdateInternalBus() {
   DCHECK(GetDeferredTaskHandler().IsAudioThread());
-  DCHECK(GetDeferredTaskHandler().IsGraphOwner());
+  GetDeferredTaskHandler().AssertGraphOwner();
 
   unsigned number_of_input_channels = NumberOfChannels();
 
