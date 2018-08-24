@@ -119,6 +119,7 @@
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_media_player_action.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -948,7 +949,7 @@ void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
   CommitDataNavigation(data, WebString::FromUTF8("text/html"),
                        WebString::FromUTF8("UTF-8"), base_url, unreachable_url,
                        replace, WebFrameLoadType::kStandard, WebHistoryItem(),
-                       false, nullptr, nullptr, WebNavigationTimings());
+                       false, nullptr, nullptr, nullptr);
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -2036,8 +2037,8 @@ void WebLocalFrameImpl::CommitNavigation(
     const WebHistoryItem& item,
     bool is_client_redirect,
     const base::UnguessableToken& devtools_navigation_token,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-    const WebNavigationTimings& navigation_timings) {
+    std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(GetFrame());
   DCHECK(!request.IsNull());
   DCHECK(!request.Url().ProtocolIs("javascript"));
@@ -2052,9 +2053,9 @@ void WebLocalFrameImpl::CommitNavigation(
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
   HistoryItem* history_item = item;
-  GetFrame()->Loader().CommitNavigation(frame_request, web_frame_load_type,
-                                        history_item, std::move(extra_data),
-                                        navigation_timings);
+  GetFrame()->Loader().CommitNavigation(
+      frame_request, web_frame_load_type, history_item,
+      std::move(navigation_params), std::move(extra_data));
 }
 
 blink::mojom::CommitResult WebLocalFrameImpl::CommitSameDocumentNavigation(
@@ -2121,9 +2122,9 @@ void WebLocalFrameImpl::CommitDataNavigation(
     WebFrameLoadType web_frame_load_type,
     const WebHistoryItem& item,
     bool is_client_redirect,
+    std::unique_ptr<WebNavigationParams> navigation_params,
     std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data,
-    const WebURLRequest* original_failed_request,
-    const WebNavigationTimings& navigation_timings) {
+    const WebURLRequest* original_failed_request) {
   DCHECK(GetFrame());
 
   // TODO(dgozman): this whole logic of rewriting the params is odd,
@@ -2178,7 +2179,7 @@ void WebLocalFrameImpl::CommitDataNavigation(
 
   GetFrame()->Loader().CommitNavigation(
       frame_request, web_frame_load_type, history_item,
-      std::move(navigation_data), navigation_timings);
+      std::move(navigation_params), std::move(navigation_data));
 }
 
 WebLocalFrame::FallbackContentResult

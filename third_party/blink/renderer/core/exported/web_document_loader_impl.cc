@@ -150,20 +150,8 @@ WebDocumentLoaderImpl::GetServiceWorkerNetworkProvider() {
   return DocumentLoader::GetServiceWorkerNetworkProvider();
 }
 
-void WebDocumentLoaderImpl::SetSourceLocation(
-    const WebSourceLocation& source_location) {
-  std::unique_ptr<SourceLocation> location =
-      SourceLocation::Create(source_location.url, source_location.line_number,
-                             source_location.column_number, nullptr);
-  DocumentLoader::SetSourceLocation(std::move(location));
-}
-
 void WebDocumentLoaderImpl::ResetSourceLocation() {
-  DocumentLoader::SetSourceLocation(nullptr);
-}
-
-void WebDocumentLoaderImpl::SetUserActivated() {
-  DocumentLoader::SetUserActivated();
+  DocumentLoader::ResetSourceLocation();
 }
 
 void WebDocumentLoaderImpl::BlockParser() {

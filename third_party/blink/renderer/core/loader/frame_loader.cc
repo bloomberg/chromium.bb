@@ -45,6 +45,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -223,8 +224,8 @@ void FrameLoader::Init() {
   provisional_document_loader_ = Client()->CreateDocumentLoader(
       frame_, initial_request, SubstituteData(),
       ClientRedirectPolicy::kNotClientRedirect,
-      base::UnguessableToken::Create(), nullptr /* extra_data */,
-      WebNavigationTimings());
+      base::UnguessableToken::Create(), nullptr /* navigation_params */,
+      nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
 
   frame_->GetDocument()->CancelParsing();
@@ -921,7 +922,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   provisional_document_loader_ = CreateDocumentLoader(
       resource_request, request, frame_load_type, navigation_type,
-      nullptr /* extra_data */, WebNavigationTimings());
+      nullptr /* navigation_params */, nullptr /* extra_data */);
 
   if (request.Form())
     Client()->DispatchWillSubmitForm(request.Form());
@@ -966,8 +967,8 @@ void FrameLoader::CommitNavigation(
     const FrameLoadRequest& passed_request,
     WebFrameLoadType frame_load_type,
     HistoryItem* history_item,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-    const WebNavigationTimings& navigation_timings) {
+    std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   CHECK(!passed_request.OriginDocument());
   CHECK(passed_request.FrameName().IsEmpty());
   CHECK(!passed_request.Form());
@@ -1032,7 +1033,7 @@ void FrameLoader::CommitNavigation(
   // below. We should probably call DocumentLoader::CommitNavigation directly.
   provisional_document_loader_ = CreateDocumentLoader(
       resource_request, request, frame_load_type, navigation_type,
-      std::move(extra_data), navigation_timings);
+      std::move(navigation_params), std::move(extra_data));
   provisional_document_loader_->AppendRedirect(
       provisional_document_loader_->Url());
   if (IsBackForwardLoadType(frame_load_type)) {
@@ -1752,16 +1753,16 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
     const FrameLoadRequest& frame_load_request,
     WebFrameLoadType load_type,
     WebNavigationType navigation_type,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-    const WebNavigationTimings& navigation_timings) {
+    std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
       frame_, request,
       frame_load_request.GetSubstituteData().IsValid()
           ? frame_load_request.GetSubstituteData()
           : DefaultSubstituteDataForURL(request.Url()),
       frame_load_request.ClientRedirect(),
-      frame_load_request.GetDevToolsNavigationToken(), std::move(extra_data),
-      navigation_timings);
+      frame_load_request.GetDevToolsNavigationToken(),
+      std::move(navigation_params), std::move(extra_data));
 
   loader->SetLoadType(load_type);
   loader->SetNavigationType(navigation_type);

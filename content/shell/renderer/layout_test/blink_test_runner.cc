@@ -84,7 +84,7 @@
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_navigation_timings.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_testing_support.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -854,8 +854,8 @@ void BlinkTestRunner::OnReset() {
   main_frame->CommitNavigation(
       WebURLRequest(GURL(url::kAboutBlankURL)),
       blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), false,
-      base::UnguessableToken::Create(), nullptr /* extra_data */,
-      blink::WebNavigationTimings());
+      base::UnguessableToken::Create(), nullptr /* navigation_params */,
+      nullptr /* extra_data */);
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 

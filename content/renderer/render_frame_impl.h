@@ -125,6 +125,7 @@ class WebURL;
 struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
+struct WebNavigationParams;
 struct WebMediaPlayerAction;
 struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
@@ -1132,6 +1133,7 @@ class CONTENT_EXPORT RenderFrameImpl
       bool replace,
       HistoryEntry* entry,
       const base::Optional<std::string>& error_page_content,
+      std::unique_ptr<blink::WebNavigationParams> navigation_params,
       std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
   void LoadNavigationErrorPageForHttpStatusError(
       const blink::WebURLRequest& failed_request,
@@ -1139,6 +1141,7 @@ class CONTENT_EXPORT RenderFrameImpl
       int http_status,
       bool replace,
       HistoryEntry* entry,
+      std::unique_ptr<blink::WebNavigationParams> navigation_params,
       std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
   void LoadNavigationErrorPageInternal(
       const std::string& error_html,
@@ -1147,6 +1150,7 @@ class CONTENT_EXPORT RenderFrameImpl
       bool replace,
       blink::WebFrameLoadType frame_load_type,
       const blink::WebHistoryItem& history_item,
+      std::unique_ptr<blink::WebNavigationParams> navigation_params,
       std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data,
       const blink::WebURLRequest& failed_request);
 
@@ -1170,7 +1174,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Loads a data url.
   void LoadDataURL(
-      const CommonNavigationParams& params,
+      const CommonNavigationParams& common_params,
       const RequestNavigationParams& request_params,
       blink::WebLocalFrame* frame,
       blink::WebFrameLoadType load_type,
@@ -1311,6 +1315,13 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Whether url download should be throttled.
   bool ShouldThrottleDownload();
+
+  // Creates a service worker network provider using browser provided data,
+  // to be supplied to the loader.
+  std::unique_ptr<blink::WebServiceWorkerNetworkProvider>
+  BuildServiceWorkerNetworkProviderForNavigation(
+      const RequestNavigationParams* request_params,
+      mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info);
 
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToFrame() is called, and it is null after
@@ -1598,12 +1609,6 @@ class CONTENT_EXPORT RenderFrameImpl
   mojom::FrameHostAssociatedPtr frame_host_ptr_;
   mojo::BindingSet<service_manager::mojom::InterfaceProvider>
       interface_provider_bindings_;
-
-  // Non-null if this frame is to be controlled by a service worker.
-  // Sent from the browser process on navigation commit. Valid until the
-  // document loader for this frame is actually created (where this is
-  // consumed to initialize a subresource loader).
-  mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info_;
 
   // Set on CommitNavigation when Network Service is enabled, and used
   // by FrameURLLoaderFactory for prefetch requests.

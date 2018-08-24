@@ -39,7 +39,7 @@
 #include "third_party/blink/public/web/commit_result.mojom-shared.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_navigation_timings.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -73,6 +73,7 @@ class ResourceError;
 class SerializedScriptValue;
 class SubstituteData;
 struct FrameLoadRequest;
+struct WebNavigationParams;
 
 CORE_EXPORT bool IsBackForwardLoadType(WebFrameLoadType);
 CORE_EXPORT bool IsReloadLoadType(WebFrameLoadType);
@@ -111,8 +112,8 @@ class CORE_EXPORT FrameLoader final {
       const FrameLoadRequest&,
       WebFrameLoadType = WebFrameLoadType::kStandard,
       HistoryItem* = nullptr,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr,
-      const WebNavigationTimings& navigation_timings = WebNavigationTimings());
+      std::unique_ptr<WebNavigationParams> navigation_params = nullptr,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
 
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
@@ -263,8 +264,8 @@ class CORE_EXPORT FrameLoader final {
       const FrameLoadRequest&,
       WebFrameLoadType,
       WebNavigationType,
-      std::unique_ptr<WebDocumentLoader::ExtraData>,
-      const WebNavigationTimings&);
+      std::unique_ptr<WebNavigationParams>,
+      std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   LocalFrameClient* Client() const;
 

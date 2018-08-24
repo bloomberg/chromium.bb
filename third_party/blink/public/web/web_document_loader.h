@@ -119,14 +119,7 @@ class BLINK_EXPORT WebDocumentLoader {
   virtual WebServiceWorkerNetworkProvider*
   GetServiceWorkerNetworkProvider() = 0;
 
-  // PlzNavigate
-  // Allows to specify the SourceLocation that triggered the navigation.
-  virtual void SetSourceLocation(const WebSourceLocation&) = 0;
   virtual void ResetSourceLocation() = 0;
-
-  // Mark that the load was user activated. This is meant to be used for browser
-  // initiated loads that may have had a user activation from the browser UI.
-  virtual void SetUserActivated() = 0;
 
   // Can be used to temporarily suspend feeding the parser with new data. The
   // parser will be allowed to read new data when ResumeParser() is called the
