@@ -98,7 +98,8 @@ class AssistantInteractionController
   void OnSuggestionChipPressed(const AssistantSuggestion* suggestion);
 
  private:
-  void StartScreenContextInteraction(const gfx::Rect& region);
+  void StartMetalayerInteraction(const gfx::Rect& region);
+  void StartScreenContextInteraction();
   void StartTextInteraction(const std::string text);
   void StartVoiceInteraction();
   void StopActiveInteraction();

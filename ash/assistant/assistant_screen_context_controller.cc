@@ -179,21 +179,6 @@ void AssistantScreenContextController::RequestScreenshot(
                           base::Passed(std::move(layer_owner))));
 }
 
-void AssistantScreenContextController::RequestScreenContext(
-    const gfx::Rect& rect,
-    bool from_user) {
-  // Abort any request in progress and update request state.
-  screen_context_request_factory_.InvalidateWeakPtrs();
-  assistant_screen_context_model_.SetRequestState(
-      ScreenContextRequestState::kInProgress);
-
-  assistant_->RequestScreenContext(
-      rect, from_user,
-      base::BindOnce(
-          &AssistantScreenContextController::OnScreenContextRequestFinished,
-          screen_context_request_factory_.GetWeakPtr()));
-}
-
 void AssistantScreenContextController::OnAssistantControllerConstructed() {
   assistant_controller_->ui_controller()->AddModelObserver(this);
 }
@@ -205,8 +190,8 @@ void AssistantScreenContextController::OnAssistantControllerDestroying() {
 void AssistantScreenContextController::OnUiVisibilityChanged(
     bool visible,
     AssistantSource source) {
-  // We don't initiate a contextual query for caching if the UI is being hidden.
-  // Instead, we abort any requests in progress and reset state.
+  // We don't initiate a cache request if the UI is being hidden. Instead, we
+  // abort any requests in progress and reset state.
   if (!visible) {
     screen_context_request_factory_.InvalidateWeakPtrs();
     assistant_screen_context_model_.SetRequestState(
@@ -218,13 +203,19 @@ void AssistantScreenContextController::OnUiVisibilityChanged(
                                      ->model()
                                      ->input_modality();
 
-  // We don't initiate a contextual query for caching if we are using stylus
-  // input modality because we will do so on metalayer session complete.
+  // We don't initiate a cache request if we are using stylus input modality.
   if (input_modality == InputModality::kStylus)
     return;
 
-  // Request screen context for the entire screen.
-  RequestScreenContext(gfx::Rect(), /*from_user=*/false);
+  // Abort any request in progress and update request state.
+  screen_context_request_factory_.InvalidateWeakPtrs();
+  assistant_screen_context_model_.SetRequestState(
+      ScreenContextRequestState::kInProgress);
+
+  // Cache screen context for the entire screen.
+  assistant_->CacheScreenContext(base::BindOnce(
+      &AssistantScreenContextController::OnScreenContextRequestFinished,
+      screen_context_request_factory_.GetWeakPtr()));
 }
 
 void AssistantScreenContextController::OnScreenContextRequestFinished() {
