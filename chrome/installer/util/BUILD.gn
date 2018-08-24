@@ -115,7 +115,6 @@ static_library("with_no_strings") {
 
     libs = [
       "urlmon.lib",
-      "wbemuuid.lib",
       "wtsapi32.lib",
     ]
 
@@ -196,8 +195,6 @@ static_library("with_no_strings") {
       "updating_app_registration_data.h",
       "util_constants.cc",
       "util_constants.h",
-      "wmi.cc",
-      "wmi.h",
       "work_item.cc",
       "work_item.h",
       "work_item_list.cc",
@@ -323,7 +320,6 @@ if (is_win) {
       "test_app_registration_data.cc",
       "test_app_registration_data.h",
       "uninstall_metrics_unittest.cc",
-      "wmi_unittest.cc",
       "work_item_list_unittest.cc",
       "work_item_mocks.cc",
       "work_item_mocks.h",
