@@ -766,17 +766,24 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& new_selection) {
           new_selection.selected_indices(), selected_tabs_.selected_indices());
 
   // Fire accessibility events that reflect the changes to selection.
-  for (size_t i = 0; i < no_longer_selected.size(); ++i) {
-    tab_at(no_longer_selected[i])
-        ->NotifyAccessibilityEvent(ax::mojom::Event::kSelectionRemove, true);
+  for (auto tab_index : no_longer_selected) {
+    tab_at(tab_index)->NotifyAccessibilityEvent(
+        ax::mojom::Event::kSelectionRemove, true);
   }
-  for (size_t i = 0; i < newly_selected.size(); ++i) {
-    tab_at(newly_selected[i])
-        ->NotifyAccessibilityEvent(ax::mojom::Event::kSelectionAdd, true);
+  for (auto tab_index : newly_selected) {
+    tab_at(tab_index)->NotifyAccessibilityEvent(ax::mojom::Event::kSelectionAdd,
+                                                true);
   }
   tab_at(new_selection.active())
       ->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   selected_tabs_ = new_selection;
+
+  // Notify all tabs whose selected state changed.
+  for (auto tab_index :
+       base::STLSetUnion<ui::ListSelectionModel::SelectedIndices>(
+           no_longer_selected, newly_selected)) {
+    tab_at(tab_index)->SelectedStateChanged();
+  }
 }
 
 void TabStrip::SetTabNeedsAttention(int model_index, bool attention) {

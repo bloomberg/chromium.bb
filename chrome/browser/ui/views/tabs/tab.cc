@@ -1065,6 +1065,10 @@ void Tab::FrameColorsChanged() {
   SchedulePaint();
 }
 
+void Tab::SelectedStateChanged() {
+  OnButtonColorMaybeChanged();
+}
+
 bool Tab::IsSelected() const {
   return controller_->IsTabSelected(this);
 }
@@ -1780,14 +1784,30 @@ void Tab::UpdateButtonIconColors(SkColor title_color) {
   constexpr float kMinimumHoveredContrastRatio = 5.02f;
   constexpr float kMinimumPressedContrastRatio = 4.41f;
 
-  title_->SetEnabledColor(title_color);
-
-  const SkColor tab_bg_color = controller_->GetTabBackgroundColor(
+  SkColor tab_bg_color = controller_->GetTabBackgroundColor(
       IsActive() ? TAB_ACTIVE : TAB_INACTIVE, true);
+  SkColor tab_title_color = title_color;
+
+  if (IsSelected() && !IsActive()) {
+    const SkColor tab_inactive_bg_color = tab_bg_color;
+    const SkColor tab_active_bg_color =
+        controller_->GetTabBackgroundColor(TAB_ACTIVE, true);
+    tab_bg_color = color_utils::AlphaBlend(
+        tab_active_bg_color, tab_bg_color,
+        gfx::ToRoundedInt(kSelectedTabOpacity * SK_AlphaOPAQUE));
+    const SkAlpha blend_alpha = color_utils::GetBlendValueWithMinimumContrast(
+        tab_bg_color, title_color, tab_inactive_bg_color,
+        kMinimumInactiveContrastRatio);
+    tab_title_color =
+        color_utils::AlphaBlend(title_color, tab_bg_color, blend_alpha);
+  }
+
+  title_->SetEnabledColor(tab_title_color);
+
   const SkColor base_icon_color =
       MD::GetMode() == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED
           ? GetCloseTabButtonColor(views::Button::STATE_NORMAL)
-          : title_color;
+          : tab_title_color;
   const SkColor base_hovered_pressed_icon_color =
       MD::IsNewerMaterialUi() ? base_icon_color : SK_ColorWHITE;
   const SkColor base_hovered_color =
