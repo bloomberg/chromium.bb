@@ -34,10 +34,14 @@ component("os_crypt") {
   sources = [
     "ie7_password_win.cc",
     "ie7_password_win.h",
+    "key_creation_util_mac.cc",
+    "key_creation_util_mac.h",
     "keychain_password_mac.h",
     "keychain_password_mac.mm",
     "os_crypt.h",
     "os_crypt_mac.mm",
+    "os_crypt_pref_names_mac.cc",
+    "os_crypt_pref_names_mac.h",
     "os_crypt_switches.cc",
     "os_crypt_switches.h",
     "os_crypt_win.cc",
@@ -45,6 +49,7 @@ component("os_crypt") {
 
   deps = [
     "//base",
+    "//components/prefs",
     "//crypto",
 
     # TODO(tfarina): Remove this dep when http://crbug.com/363749 is fixed.
