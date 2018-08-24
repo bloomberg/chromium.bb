@@ -5039,3 +5039,6 @@ crbug.com/872138 external/wpt/client-hints/accept_ch.tentative.https.html [ Time
 
 # Sheriff 2018-08-23
 crbug.com/877183 [ Linux Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-intrinsic-ratio-003v.html [ Pass Failure ]
+
+# Sheriff 2018-08-24
+crbug.com/877299 external/wpt/editing/run/forwarddelete.html?1-1000 [ Timeout Pass ]
