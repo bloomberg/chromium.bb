@@ -106,8 +106,8 @@ class PLATFORM_EXPORT FrameTaskQueueController {
   void TaskQueueCreated(const scoped_refptr<MainThreadTaskQueue>&);
 
   // Map a set of QueueTraits to a QueueType.
-  // TODO(shaseley): Consider creating a new queue type kFrameNonLoading and use
-  // it instead of this for new queue types.
+  // TODO(crbug.com/877245): Consider creating a new queue type kFrameNonLoading
+  // and use it instead of this for new queue types.
   static MainThreadTaskQueue::QueueType QueueTypeFromQueueTraits(
       MainThreadTaskQueue::QueueTraits);
 
