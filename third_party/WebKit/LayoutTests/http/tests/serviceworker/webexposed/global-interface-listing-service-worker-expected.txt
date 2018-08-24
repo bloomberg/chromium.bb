@@ -51,14 +51,8 @@ interface BackgroundFetchSettledFetch : BackgroundFetchFetch
     attribute @@toStringTag
     getter response
     method constructor
-interface BackgroundFetchSettledFetches
-    attribute @@toStringTag
-    method constructor
-    method match
-    method values
 interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent
     attribute @@toStringTag
-    getter fetches
     method constructor
     method updateUI
 interface BarcodeDetector

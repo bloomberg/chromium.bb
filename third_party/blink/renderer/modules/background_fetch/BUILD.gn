@@ -22,8 +22,6 @@ blink_modules_sources("background_fetch") {
     "background_fetch_registration.h",
     "background_fetch_settled_fetch.cc",
     "background_fetch_settled_fetch.h",
-    "background_fetch_settled_fetches.cc",
-    "background_fetch_settled_fetches.h",
     "background_fetch_type_converters.cc",
     "background_fetch_type_converters.h",
     "background_fetch_update_ui_event.cc",

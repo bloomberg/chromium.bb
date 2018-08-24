@@ -9,8 +9,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchUpdateUIEvent : BackgroundFetchEvent {
-    // TODO(crbug.com/863016): Remove fetches after implementing matchAll().
-    readonly attribute BackgroundFetchSettledFetches fetches;
-
     [CallWith=ScriptState] Promise<void> updateUI(BackgroundFetchUIOptions options);
 };

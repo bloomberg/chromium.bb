@@ -242,7 +242,6 @@ jumbo_source_set("unit_tests") {
     "animationworklet/worklet_animation_test.cc",
     "background_fetch/background_fetch_icon_loader_test.cc",
     "background_fetch/background_fetch_manager_test.cc",
-    "background_fetch/background_fetch_settled_fetches_test.cc",
     "cache_storage/cache_test.cc",
     "canvas/canvas2d/canvas_rendering_context_2d_api_test.cc",
     "canvas/canvas2d/canvas_rendering_context_2d_test.cc",
