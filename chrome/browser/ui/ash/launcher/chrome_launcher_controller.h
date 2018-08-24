@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_observer.h"
 #include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
+#include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -403,6 +404,10 @@ class ChromeLauncherController
 
   // An observer that manages the shelf title and icon for settings windows.
   SettingsWindowObserver settings_window_observer_;
+
+  // An observer that manages the shelf title and icon for Chrome OS Discover
+  // windows.
+  DiscoverWindowObserver dicover_window_observer_;
 
   // Used to load the images for app items.
   std::vector<std::unique_ptr<AppIconLoader>> app_icon_loaders_;
