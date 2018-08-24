@@ -63,11 +63,8 @@ count_open_fds(void);
 void
 exec_fd_leak_check(int nr_expected_fds); /* never returns */
 
-int
-get_current_alloc_num(void);
-
 void
-check_leaks(int supposed_allocs, int supposed_fds);
+check_fd_leaks(int supposed_fds);
 
 /*
  * set/reset the timeout in seconds. The timeout starts
@@ -89,10 +86,10 @@ test_sleep(unsigned int);
 void
 test_disable_coredumps(void);
 
-#define DISABLE_LEAK_CHECKS			\
-	do {					\
-		extern int leak_check_enabled;	\
-		leak_check_enabled = 0;		\
+#define DISABLE_LEAK_CHECKS				\
+	do {						\
+		extern int fd_leak_check_enabled;	\
+		fd_leak_check_enabled = 0;		\
 	} while (0);
 
 #endif

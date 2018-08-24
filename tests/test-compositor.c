@@ -156,7 +156,7 @@ run_client(void (*client_main)(void *data), void *data,
 	   int wayland_sock, int client_pipe)
 {
 	char s[8];
-	int cur_alloc, cur_fds;
+	int cur_fds;
 	int can_continue = 0;
 
 	/* Wait until display signals that client can continue */
@@ -169,7 +169,6 @@ run_client(void (*client_main)(void *data), void *data,
 	snprintf(s, sizeof s, "%d", wayland_sock);
 	setenv("WAYLAND_SOCKET", s, 0);
 
-	cur_alloc = get_current_alloc_num();
 	cur_fds = count_open_fds();
 
 	client_main(data);
@@ -182,7 +181,7 @@ run_client(void (*client_main)(void *data), void *data,
 	if (!getenv("WAYLAND_SOCKET"))
 		cur_fds--;
 
-	check_leaks(cur_alloc, cur_fds);
+	check_fd_leaks(cur_fds);
 }
 
 static struct client_info *

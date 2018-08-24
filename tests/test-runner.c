@@ -44,16 +44,10 @@
 
 #include "test-runner.h"
 
-static int num_alloc;
-static void* (*sys_malloc)(size_t);
-static void (*sys_free)(void*);
-static void* (*sys_realloc)(void*, size_t);
-static void* (*sys_calloc)(size_t, size_t);
-
-/* when set to 1, check if tests are not leaking memory and opened files.
+/* when set to 1, check if tests are not leaking opened files.
  * It is turned on by default. It can be turned off by
  * WAYLAND_TEST_NO_LEAK_CHECK environment variable. */
-int leak_check_enabled;
+int fd_leak_check_enabled;
 
 /* when this var is set to 0, every call to test_set_timeout() is
  * suppressed - handy when debugging the test. Can be set by
@@ -64,40 +58,6 @@ static int timeouts_enabled = 1;
 static int is_atty = 0;
 
 extern const struct test __start_test_section, __stop_test_section;
-
-__attribute__ ((visibility("default"))) void *
-malloc(size_t size)
-{
-	num_alloc++;
-	return sys_malloc(size);
-}
-
-__attribute__ ((visibility("default"))) void
-free(void* mem)
-{
-	if (mem != NULL)
-		num_alloc--;
-	sys_free(mem);
-}
-
-__attribute__ ((visibility("default"))) void *
-realloc(void* mem, size_t size)
-{
-	if (mem == NULL)
-		num_alloc++;
-	return sys_realloc(mem, size);
-}
-
-__attribute__ ((visibility("default"))) void *
-calloc(size_t nmemb, size_t size)
-{
-	if (sys_calloc == NULL)
-		return NULL;
-
-	num_alloc++;
-
-	return sys_calloc(nmemb, size);
-}
 
 static const struct test *
 find_test(const char *name)
@@ -156,25 +116,12 @@ sigalrm_handler(int signum)
 	abort();
 }
 
-int
-get_current_alloc_num(void)
-{
-	return num_alloc;
-}
-
 void
-check_leaks(int supposed_alloc, int supposed_fds)
+check_fd_leaks(int supposed_fds)
 {
 	int num_fds;
 
-	if (leak_check_enabled) {
-		if (supposed_alloc != num_alloc) {
-			fprintf(stderr, "Memory leak detected in test. "
-				"Allocated %d blocks, unfreed %d\n", num_alloc,
-				num_alloc - supposed_alloc);
-			abort();
-		}
-
+	if (fd_leak_check_enabled) {
 		num_fds = count_open_fds();
 		if (supposed_fds != num_fds) {
 			fprintf(stderr, "fd leak detected in test. "
@@ -183,14 +130,14 @@ check_leaks(int supposed_alloc, int supposed_fds)
 			abort();
 		}
 	} else {
-		fprintf(stderr, "Leak checks disabled\n");
+		fprintf(stderr, "FD leak checks disabled\n");
 	}
 }
 
 static void
 run_test(const struct test *t)
 {
-	int cur_alloc, cur_fds;
+	int cur_fds;
 	struct sigaction sa;
 
 	if (timeouts_enabled) {
@@ -200,7 +147,7 @@ run_test(const struct test *t)
 		assert(sigaction(SIGALRM, &sa, NULL) == 0);
 	}
 
-	cur_alloc = get_current_alloc_num();
+	//cur_alloc = get_current_alloc_num();
 	cur_fds = count_open_fds();
 
 	t->run();
@@ -209,7 +156,7 @@ run_test(const struct test *t)
 	if (timeouts_enabled)
 		alarm(0);
 
-	check_leaks(cur_alloc, cur_fds);
+	check_fd_leaks(cur_fds);
 
 	exit(EXIT_SUCCESS);
 }
@@ -348,20 +295,14 @@ int main(int argc, char *argv[])
 	int total, pass;
 	siginfo_t info;
 
-	/* Load system malloc, free, and realloc */
-	sys_calloc = dlsym(RTLD_NEXT, "calloc");
-	sys_realloc = dlsym(RTLD_NEXT, "realloc");
-	sys_malloc = dlsym(RTLD_NEXT, "malloc");
-	sys_free = dlsym(RTLD_NEXT, "free");
-
 	if (isatty(fileno(stderr)))
 		is_atty = 1;
 
 	if (is_debugger_attached()) {
-		leak_check_enabled = 0;
+		fd_leak_check_enabled = 0;
 		timeouts_enabled = 0;
 	} else {
-		leak_check_enabled = !getenv("WAYLAND_TEST_NO_LEAK_CHECK");
+		fd_leak_check_enabled = !getenv("WAYLAND_TEST_NO_LEAK_CHECK");
 		timeouts_enabled = !getenv("WAYLAND_TEST_NO_TIMEOUTS");
 	}
 

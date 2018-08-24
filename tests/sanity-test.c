@@ -35,7 +35,7 @@
 
 #include "test-compositor.h"
 
-extern int leak_check_enabled;
+extern int fd_leak_check_enabled;
 
 TEST(empty)
 {
@@ -83,71 +83,11 @@ FAIL_TEST(sanity_assert)
 	assert(0);
 }
 
-FAIL_TEST(sanity_malloc_direct)
-{
-	void *p;
-
-	assert(leak_check_enabled);
-
-	p = malloc(10);	/* memory leak */
-	assert(p);	/* assert that we got memory, also prevents
-			 * the malloc from getting optimized away. */
-	free(NULL);	/* NULL must not be counted */
-	test_disable_coredumps();
-}
-
-TEST(disable_leak_checks)
-{
-	volatile void *mem;
-	assert(leak_check_enabled);
-	/* normally this should be on the beginning of the test.
-	 * Here we need to be sure, that the leak checks are
-	 * turned on */
-	DISABLE_LEAK_CHECKS;
-
-	mem = malloc(16);
-	assert(mem);
-}
-
-FAIL_TEST(sanity_malloc_indirect)
-{
-	struct wl_array array;
-
-	assert(leak_check_enabled);
-
-	wl_array_init(&array);
-
-	/* call into library that calls malloc */
-	wl_array_add(&array, 14);
-
-	/* not freeing array, must leak */
-
-	test_disable_coredumps();
-}
-
-FAIL_TEST(tc_client_memory_leaks)
-{
-	struct display *d = display_create();
-	client_create_noarg(d, sanity_malloc_direct);
-	display_run(d);
-	test_disable_coredumps();
-	display_destroy(d);
-}
-
-FAIL_TEST(tc_client_memory_leaks2)
-{
-	struct display *d = display_create();
-	client_create_noarg(d, sanity_malloc_indirect);
-	display_run(d);
-	test_disable_coredumps();
-	display_destroy(d);
-}
-
 FAIL_TEST(sanity_fd_leak)
 {
 	int fd[2];
 
-	assert(leak_check_enabled);
+	assert(fd_leak_check_enabled);
 
 	/* leak 2 file descriptors */
 	if (pipe(fd) < 0)
@@ -185,7 +125,7 @@ sanity_fd_no_leak(void)
 {
 	int fd[2];
 
-	assert(leak_check_enabled);
+	assert(fd_leak_check_enabled);
 
 	/* leak 2 file descriptors */
 	if (pipe(fd) < 0)
