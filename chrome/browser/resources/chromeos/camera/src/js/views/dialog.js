@@ -38,12 +38,6 @@ camera.views.Dialog = function(context, router) {
   this.negativeButton_ = document.querySelector('#dialog-negative-button');
 
   /**
-   * @type {HTMLButtonElement}
-   * @private
-   */
-  this.closeButton_ = document.querySelector('#dialog-close-button');
-
-  /**
    * @type {HTMLElement}
    * @private
    */
@@ -57,8 +51,6 @@ camera.views.Dialog = function(context, router) {
       'click', this.onPositiveButtonClicked_.bind(this));
   this.negativeButton_.addEventListener(
       'click', this.onNegativeButtonClicked_.bind(this));
-  this.closeButton_.addEventListener(
-      'click', this.onCloseButtonClicked_.bind(this));
 };
 
 /**
@@ -99,8 +91,8 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
   var messageText = null;
   switch (opt_arguments.type) {
     case camera.views.Dialog.Type.CONFIRMATION:
-      positiveText = { name: 'dialogYesButton' };
-      negativeText = { name: 'dialogNoButton' };
+      positiveText = { name: 'dialogOKButton' };
+      negativeText = { name: 'dialogCancelButton' };
       messageText = { content: opt_arguments.message };
       break;
     case camera.views.Dialog.Type.ALERT:
@@ -108,13 +100,9 @@ camera.views.Dialog.prototype.onEnter = function(opt_arguments) {
       messageText = { content: opt_arguments.message };
       break;
   }
-
   updateElement(this.positiveButton_, positiveText);
   updateElement(this.negativeButton_, negativeText);
   updateElement(this.messageElement_, messageText);
-
-  // TODO(yuli): Hide the close button if showing the spinner or progress bar.
-  this.closeButton_.hidden = false;
 };
 
 /**
@@ -144,15 +132,6 @@ camera.views.Dialog.prototype.onNegativeButtonClicked_ = function(event) {
 };
 
 /**
- * Handles clicking on the close button.
- * @param {Event} event Click event.
- * @private
- */
-camera.views.Dialog.prototype.onCloseButtonClicked_ = function(event) {
-  this.closeDialog_();
-};
-
-/**
  * Dismisses the dialog without returning a positive result.
  * @private
  */
@@ -172,9 +151,6 @@ camera.views.Dialog.prototype.onKeyPressed = function(event) {
       event.preventDefault();
       break;
     case 'Escape':
-      // Don't dismiss the dialog if there is no close-button.
-      if (this.closeButton_.hidden)
-        break;
       this.closeDialog_();
       event.preventDefault();
       break;
