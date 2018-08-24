@@ -42,7 +42,7 @@
  * See `man 7 unix`.
  */
 
-static const struct sockaddr_un example_sockaddr_un;
+static struct sockaddr_un example_sockaddr_un;
 
 #define TOO_LONG (1 + sizeof example_sockaddr_un.sun_path)
 
@@ -69,6 +69,11 @@ TEST(socket_path_overflow_client_connect)
 	d = wl_display_connect(path);
 	assert(d == NULL);
 	assert(errno == ENAMETOOLONG);
+
+	/* This is useless, but prevents a warning about example_sockaddr_un
+	 * being discarded from the compilation unit. */
+	strcpy(example_sockaddr_un.sun_path, "happy now clang?");
+	assert(example_sockaddr_un.sun_path[0] != '\0');
 }
 
 TEST(socket_path_overflow_server_create)
