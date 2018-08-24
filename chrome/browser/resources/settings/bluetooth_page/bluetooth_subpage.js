@@ -271,7 +271,7 @@ Polymer({
    * @private
    */
   updateDeviceList_: function() {
-    if (!this.bluetoothToggleState) {
+    if (!this.adapterState || !this.adapterState.powered) {
       this.deviceList_ = [];
       return;
     }
