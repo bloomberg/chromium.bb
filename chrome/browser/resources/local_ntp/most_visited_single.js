@@ -319,7 +319,7 @@ var swapInNewTiles = function() {
   if (isCustomLinksEnabled && cur.childNodes.length < maxNumTiles) {
     let data = {
       'tid': -1,
-      'title': 'Add shortcut',  // TODO(851293): Use translated strings.
+      'title': queryArgs['addLink'],
       'url': '',
       'isAddButton': true,
     };
