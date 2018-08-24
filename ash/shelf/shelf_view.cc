@@ -1923,6 +1923,11 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
       AnimateToIdealBounds();
     else
       bounds_animator_->AnimateViewTo(new_view, old_ideal_bounds);
+
+    // If an item is being pinned or unpinned, show the new status of the
+    // shelf immediately so that the separator gets drawn as needed.
+    if (old_item.type == TYPE_PINNED_APP || item.type == TYPE_PINNED_APP)
+      AnimateToIdealBounds();
     return;
   }
 
