@@ -100,6 +100,9 @@ class COMPONENT_EXPORT(DRIVEFS) DriveFsHost
   // |IsMounted()| returns true.
   const base::FilePath& GetMountPath() const;
 
+  // Returns the path where DriveFS keeps its data and caches.
+  base::FilePath GetDataPath() const;
+
   mojom::DriveFs* GetDriveFsInterface() const;
 
  private:

@@ -372,6 +372,9 @@ class DriveFsHostTest : public ::testing::Test, public mojom::DriveFsBootstrap {
 TEST_F(DriveFsHostTest, Basic) {
   EXPECT_FALSE(host_->IsMounted());
 
+  EXPECT_EQ(base::FilePath("/path/to/profile/GCache/v2/salt-g-ID"),
+            host_->GetDataPath());
+
   ASSERT_NO_FATAL_FAILURE(DoMount());
 
   EXPECT_EQ(base::FilePath("/media/drivefsroot/salt-g-ID"),

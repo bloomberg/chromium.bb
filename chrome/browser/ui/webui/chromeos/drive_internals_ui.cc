@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fstream>
 #include <memory>
 #include <utility>
 
@@ -17,6 +18,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
@@ -51,6 +54,32 @@ using content::BrowserThread;
 namespace chromeos {
 
 namespace {
+
+constexpr char kKey[] = "key";
+constexpr char kValue[] = "value";
+constexpr char kClass[] = "class";
+
+constexpr const char* const kLogLevelName[] = {"info", "warning", "error"};
+
+size_t SeverityToLogLevelNameIndex(logging::LogSeverity severity) {
+  if (severity <= logging::LOG_INFO)
+    return 0;
+  if (severity == logging::LOG_WARNING)
+    return 1;
+  return 2;
+}
+
+size_t LogMarkToLogLevelNameIndex(char mark) {
+  switch (mark) {
+    case 'I':
+    case 'V':
+      return 0;
+    case 'W':
+      return 1;
+    default:
+      return 2;
+  }
+}
 
 // Gets metadata of all files and directories in |root_path|
 // recursively. Stores the result as a list of dictionaries like:
@@ -189,27 +218,73 @@ std::string FormatEntry(const base::FilePath& path,
   return out;
 }
 
-std::string SeverityToString(logging::LogSeverity severity) {
-  switch (severity) {
-    case logging::LOG_INFO:
-      return "info";
-    case logging::LOG_WARNING:
-      return "warning";
-    case logging::LOG_ERROR:
-      return "error";
-    default:  // Treat all other higher severities as ERROR.
-      return "error";
-  }
+// Appends {'key': key, 'value': value, 'class': clazz} dictionary to the
+// |list|.
+void AppendKeyValue(base::ListValue* list,
+                    std::string key,
+                    std::string value,
+                    std::string clazz = std::string()) {
+  auto dict = std::make_unique<base::DictionaryValue>();
+  dict->SetPath({kKey}, base::Value(std::move(key)));
+  dict->SetPath({kValue}, base::Value(std::move(value)));
+  if (!clazz.empty())
+    dict->SetPath({kClass}, base::Value(std::move(clazz)));
+  list->GetList().push_back(std::move(*dict));
 }
 
-// Appends {'key': key, 'value': value} dictionary to the |list|.
-void AppendKeyValue(base::ListValue* list,
-                    const std::string& key,
-                    const std::string& value) {
-  auto dict = std::make_unique<base::DictionaryValue>();
-  dict->SetString("key", key);
-  dict->SetString("value", value);
-  list->Append(std::move(dict));
+ino_t GetInodeValue(const base::FilePath& path) {
+  struct stat file_stats;
+  if (stat(path.value().c_str(), &file_stats) != 0)
+    return 0;
+  return file_stats.st_ino;
+}
+
+std::pair<ino_t, base::ListValue> GetServiceLogContents(
+    const base::FilePath& log_path,
+    ino_t inode,
+    int from_line_number) {
+  base::ListValue result;
+
+  std::ifstream log(log_path.value());
+  if (log.good()) {
+    ino_t new_inode = GetInodeValue(log_path);
+    if (new_inode != inode) {
+      // Apparently log was recreated. Re-read the log.
+      from_line_number = 0;
+      inode = new_inode;
+    }
+
+    base::Time time;
+    constexpr char kTimestampPattern[] = R"(????-??-??T??:??:??.???Z? )";
+    const size_t pattern_length = strlen(kTimestampPattern);
+
+    std::string line;
+    int line_number = 0;
+    while (log.good()) {
+      std::getline(log, line);
+      if (line.empty() || ++line_number <= from_line_number) {
+        continue;
+      }
+
+      base::StringPiece log_line = line;
+      size_t severity_index = 0;
+      if (base::MatchPattern(log_line.substr(0, pattern_length),
+                             kTimestampPattern) &&
+          google_apis::util::GetTimeFromString(
+              log_line.substr(0, pattern_length - 2), &time)) {
+        severity_index = LogMarkToLogLevelNameIndex(line[pattern_length - 2]);
+        line = line.substr(pattern_length);
+      }
+      const char* const severity = kLogLevelName[severity_index];
+
+      AppendKeyValue(&result,
+                     google_apis::util::FormatTimeAsStringLocaltime(time),
+                     base::StrCat({"[", severity, "] ", line}),
+                     base::StrCat({"log-", severity}));
+    }
+  }
+
+  return {inode, std::move(result)};
 }
 
 // Class to handle messages from chrome://drive-internals.
@@ -255,6 +330,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateCacheContentsSection(
       drive::DebugInfoCollector* debug_info_collector);
   void UpdateEventLogSection();
+  void UpdateServiceLogSection();
   void UpdatePathConfigurationsSection();
 
   // Called when GetGCacheContents() is complete.
@@ -306,8 +382,20 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called after file system reset for ResetDriveFileSystem is done.
   void ResetFinished(bool success);
 
+  // Called when service logs are read.
+  void OnServiceLogRead(std::pair<ino_t, base::ListValue>);
+
   // The last event sent to the JavaScript side.
   int last_sent_event_id_;
+
+  // The last line of service log sent to the JS side.
+  int last_sent_line_number_;
+
+  // The inode of the log file.
+  ino_t service_log_file_inode_;
+
+  // Service log file is being parsed.
+  bool service_log_file_is_processing_ = false;
 
   base::WeakPtrFactory<DriveInternalsWebUIHandler> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveInternalsWebUIHandler);
@@ -461,6 +549,9 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   // and resent whole the logs to the page.
   last_sent_event_id_ = -1;
   UpdateEventLogSection();
+  last_sent_line_number_ = 0;
+  service_log_file_inode_ = 0;
+  UpdateServiceLogSection();
 }
 
 void DriveInternalsWebUIHandler::UpdateDriveRelatedPreferencesSection() {
@@ -763,18 +854,52 @@ void DriveInternalsWebUIHandler::UpdateEventLogSection() {
     if (log[i].id <= last_sent_event_id_)
       continue;
 
-    std::string severity = SeverityToString(log[i].severity);
-
-    auto dict = std::make_unique<base::DictionaryValue>();
-    dict->SetString("key",
-        google_apis::util::FormatTimeAsStringLocaltime(log[i].when));
-    dict->SetString("value", "[" + severity + "] " + log[i].what);
-    dict->SetString("class", "log-" + severity);
-    list.Append(std::move(dict));
+    const char* const severity =
+        kLogLevelName[SeverityToLogLevelNameIndex(log[i].severity)];
+    AppendKeyValue(&list,
+                   google_apis::util::FormatTimeAsStringLocaltime(log[i].when),
+                   base::StrCat({"[", severity, "] ", log[i].what}),
+                   base::StrCat({"log-", severity}));
     last_sent_event_id_ = log[i].id;
   }
   if (!list.empty())
     web_ui()->CallJavascriptFunctionUnsafe("updateEventLog", list);
+}
+
+void DriveInternalsWebUIHandler::UpdateServiceLogSection() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (service_log_file_is_processing_)
+    return;
+  service_log_file_is_processing_ = true;
+
+  drive::DriveIntegrationService* integration_service = GetIntegrationService();
+  if (!integration_service)
+    return;
+  base::FilePath log_path = integration_service->GetDriveFsLogPath();
+  if (log_path.empty())
+    return;
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+      base::BindOnce(&GetServiceLogContents, log_path, service_log_file_inode_,
+                     last_sent_line_number_),
+      base::BindOnce(&DriveInternalsWebUIHandler::OnServiceLogRead,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void DriveInternalsWebUIHandler::OnServiceLogRead(
+    std::pair<ino_t, base::ListValue> response) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (service_log_file_inode_ != response.first) {
+    service_log_file_inode_ = response.first;
+    last_sent_line_number_ = 0;
+  }
+  if (!response.second.empty()) {
+    web_ui()->CallJavascriptFunctionUnsafe("updateServiceLog", response.second);
+    last_sent_line_number_ += response.second.GetList().size();
+  }
+  service_log_file_is_processing_ = false;
 }
 
 void DriveInternalsWebUIHandler::UpdatePathConfigurationsSection() {
@@ -901,6 +1026,7 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
     return;
 
   UpdateEventLogSection();
+  UpdateServiceLogSection();
 
   drive::JobListInterface* job_list = integration_service->job_list();
   if (job_list) {

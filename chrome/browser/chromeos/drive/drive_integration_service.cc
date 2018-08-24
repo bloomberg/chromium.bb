@@ -559,6 +559,13 @@ base::FilePath DriveIntegrationService::GetMountPointPath() const {
                          : drive::util::GetDriveMountPointPath(profile_);
 }
 
+base::FilePath DriveIntegrationService::GetDriveFsLogPath() const {
+  return drivefs_holder_
+             ? drivefs_holder_->drivefs_host()->GetDataPath().Append(
+                   "Logs/drivefs.txt")
+             : base::FilePath();
+}
+
 bool DriveIntegrationService::GetRelativeDrivePath(
     const base::FilePath& local_path,
     base::FilePath* drive_path) const {
