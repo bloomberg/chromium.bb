@@ -6,6 +6,7 @@
 
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -314,8 +315,8 @@ void NetworkService::ConfigureStubHostResolver(
 
     host_resolver_->SetRequestContext(network_context->url_request_context());
     for (const auto& doh_server : *dns_over_https_servers) {
-      host_resolver_->AddDnsOverHttpsServer(doh_server->url.spec(),
-                                            doh_server->use_posts);
+      host_resolver_->AddDnsOverHttpsServer(doh_server->server_template,
+                                            doh_server->use_post);
     }
     return;
   }

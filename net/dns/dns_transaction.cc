@@ -5,7 +5,9 @@
 #include "net/dns/dns_transaction.h"
 
 #include <memory>
+#include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -50,6 +52,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/socket/datagram_client_socket.h"
 #include "net/socket/stream_socket.h"
+#include "net/third_party/uri_template/uri_template.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -88,7 +91,7 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
             "Essential for Chrome's navigation."
         })");
 
-const char kDnsOverHttpResponseContentType[] = "application/dns-udpwireformat";
+const char kDnsOverHttpResponseContentType[] = "application/dns-message";
 
 // Count labels in the fully-qualified name in DNS format.
 int CountLabels(const std::string& name) {
@@ -326,26 +329,30 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
  public:
   DnsHTTPAttempt(unsigned server_index,
                  std::unique_ptr<DnsQuery> query,
-                 const GURL& server,
+                 const string& server_template,
+                 const GURL& gurl_without_parameters,
                  bool use_post,
                  URLRequestContext* url_request_context,
                  RequestPriority request_priority_)
       : DnsAttempt(server_index),
         query_(std::move(query)),
         weak_factory_(this) {
-    GURL url(server);
-    if (!use_post) {
+    GURL url;
+    if (use_post) {
+      // Set url for a POST request
+      url = gurl_without_parameters;
+    } else {
+      // Set url for a GET request
+      std::string url_string;
+      std::unordered_map<string, string> parameters;
       std::string encoded_query;
       base::Base64UrlEncode(base::StringPiece(query_->io_buffer()->data(),
                                               query_->io_buffer()->size()),
                             base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                             &encoded_query);
-      std::string query_str("content-type=application/dns-udpwireformat&body=" +
-                            encoded_query);
-      GURL::Replacements replacements;
-      replacements.SetQuery(query_str.c_str(),
-                            url::Component(0, query_str.length()));
-      url = server.ReplaceComponents(replacements);
+      parameters.emplace("dns", encoded_query);
+      uri_template::Expand(server_template, parameters, &url_string);
+      url = GURL(url_string);
     }
 
     HttpRequestHeaders extra_request_headers;
@@ -955,14 +962,6 @@ class DnsTransactionImpl : public DnsTransaction,
     std::move(callback_).Run(this, result.rv, response);
   }
 
-  bool IsHostInDnsOverHttpsServerList(const std::string& host) const {
-    for (const auto& server : session_->config().dns_over_https_servers) {
-      if (host == server.server.host_piece())
-        return true;
-    }
-    return false;
-  }
-
   AttemptResult MakeAttempt() {
     // Make an HTTP attempt unless we have already made more attempts
     // than we have configured servers. Otherwise make a UDP attempt
@@ -1045,15 +1044,20 @@ class DnsTransactionImpl : public DnsTransaction,
         (doh_attempts_ % session_->config().dns_over_https_servers.size()) +
         session_->config().nameservers.size());
 
+    std::string server_template =
+        servers[server_index - session_->config().nameservers.size()]
+            .server_template;
+    GURL gurl_without_parameters(
+        GetURLFromTemplateWithoutParameters(server_template));
     attempts_.push_back(std::make_unique<DnsHTTPAttempt>(
-        server_index, std::move(query),
-        servers[server_index - session_->config().nameservers.size()].server,
+        server_index, std::move(query), server_template,
+        gurl_without_parameters,
         servers[server_index - session_->config().nameservers.size()].use_post,
         url_request_context_, request_priority_));
     ++doh_attempts_;
     ++attempts_count_;
-    // Check that we're not looking one of the DNS over HTTPS servers.
-    if (IsHostInDnsOverHttpsServerList(DNSDomainToString(qnames_.front()))) {
+    // Check that we're not using the DoH server to resolve itself.
+    if (DNSDomainToString(qnames_.front()) == gurl_without_parameters.host()) {
       static_cast<DnsHTTPAttempt*>(attempts_.back().get())->Cancel();
       return AttemptResult(ERR_CONNECTION_REFUSED, attempts_.back().get());
     }

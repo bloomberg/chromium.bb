@@ -4,8 +4,11 @@
 
 #include "chrome/browser/net/system_network_context_manager.h"
 
+#include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -42,7 +45,9 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "net/dns/dns_util.h"
 #include "net/net_buildflags.h"
+#include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
@@ -100,14 +105,20 @@ void GetStubResolverConfig(
       continue;
     }
 
-    if (!dns_over_https_servers) {
+    if (!net::IsValidDoHTemplate(doh_server_list[i].GetString(),
+                                 doh_server_method_list[i].GetString())) {
+      continue;
+    }
+
+    if (!dns_over_https_servers->has_value()) {
       *dns_over_https_servers = base::make_optional<
           std::vector<network::mojom::DnsOverHttpsServerPtr>>();
     }
+
     network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
         network::mojom::DnsOverHttpsServer::New();
-    dns_over_https_server->url = GURL(doh_server_list[i].GetString());
-    dns_over_https_server->use_posts =
+    dns_over_https_server->server_template = doh_server_list[i].GetString();
+    dns_over_https_server->use_post =
         (doh_server_method_list[i].GetString() == "POST");
     (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
   }
@@ -331,7 +342,29 @@ SystemNetworkContextManager::SystemNetworkContextManager()
     value->GetAsBoolean(&is_quic_allowed_);
   shared_url_loader_factory_ = new URLLoaderFactoryForSystem(this);
 
-  pref_change_registrar_.Init(g_browser_process->local_state());
+  PrefService* local_state = g_browser_process->local_state();
+  pref_change_registrar_.Init(local_state);
+
+  // Update the DnsClient and DoH default preferences based on the corresponding
+  // features before registering change callbacks for these preferences.
+  local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
+                                   base::Value(ShouldEnableAsyncDns()));
+  base::ListValue default_doh_servers;
+  base::ListValue default_doh_server_methods;
+  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
+    std::string server(variations::GetVariationParamValueByFeature(
+        features::kDnsOverHttps, "server"));
+    std::string method(variations::GetVariationParamValueByFeature(
+        features::kDnsOverHttps, "method"));
+    if (!server.empty()) {
+      default_doh_servers.AppendString(server);
+      default_doh_server_methods.AppendString(method);
+    }
+  }
+  local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
+                                   std::move(default_doh_servers));
+  local_state->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
+                                   std::move(default_doh_server_methods));
 
   PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
       base::BindRepeating(&OnStubResolverConfigChanged);
@@ -371,29 +404,15 @@ SystemNetworkContextManager::~SystemNetworkContextManager() {
 }
 
 void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
-  // DnsClient prefs.
-  registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled,
-                                ShouldEnableAsyncDns());
-  // Set default DNS over HTTPS server list and server methods, based on whether
-  // or not the DNS over HTTPS feature is enabled.
-  std::unique_ptr<base::ListValue> default_doh_servers =
-      std::make_unique<base::ListValue>();
-  std::unique_ptr<base::ListValue> default_doh_server_methods =
-      std::make_unique<base::ListValue>();
-  if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
-    base::Value server(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "server"));
-    base::Value method(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "method"));
-    if (!server.GetString().empty()) {
-      default_doh_servers->GetList().push_back(std::move(server));
-      default_doh_server_methods->GetList().push_back(std::move(method));
-    }
-  }
-  registry->RegisterListPref(prefs::kDnsOverHttpsServers,
-                             std::move(default_doh_servers));
-  registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods,
-                             std::move(default_doh_server_methods));
+  // Register the DnsClient and DoH preferences. The feature list has not been
+  // initialized yet, so setting the preference defaults here to reflect the
+  // corresponding features will only cause the preference defaults to reflect
+  // the feature defaults (feature values set via the command line will not be
+  // captured). Thus, the preference defaults are updated in the constructor
+  // for SystemNetworkContextManager, at which point the feature list is ready.
+  registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, false);
+  registry->RegisterListPref(prefs::kDnsOverHttpsServers);
+  registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods);
 
   // Static auth params
   registry->RegisterStringPref(prefs::kAuthSchemes,

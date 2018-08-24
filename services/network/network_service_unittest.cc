@@ -432,11 +432,11 @@ TEST_F(NetworkServiceTest, DnsClientEnableDisable) {
 }
 
 TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
-  const GURL kServer1 = GURL("https://foo/");
+  const std::string kServer1 = "https://foo/";
   const bool kServer1UsePost = false;
-  const GURL kServer2 = GURL("https://bar/");
+  const std::string kServer2 = "https://bar/dns-query{?dns}";
   const bool kServer2UsePost = true;
-  const GURL kServer3 = GURL("https://grapefruit/");
+  const std::string kServer3 = "https://grapefruit/resolver/query{?dns}";
   const bool kServer3UsePost = false;
 
   // HostResolver::GetDnsClientForTesting() returns nullptr if the stub resolver
@@ -456,8 +456,8 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
 
   mojom::DnsOverHttpsServerPtr dns_over_https_server =
       mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->url = kServer1;
-  dns_over_https_server->use_posts = kServer1UsePost;
+  dns_over_https_server->server_template = kServer1;
+  dns_over_https_server->use_post = kServer1UsePost;
   dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
 
   service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
@@ -467,20 +467,20 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
       service()->host_resolver()->GetDnsOverHttpsServersForTesting();
   ASSERT_TRUE(dns_over_https_servers);
   ASSERT_EQ(1u, dns_over_https_servers->size());
-  EXPECT_EQ(kServer1, (*dns_over_https_servers)[0].server);
+  EXPECT_EQ(kServer1, (*dns_over_https_servers)[0].server_template);
   EXPECT_EQ(kServer1UsePost, (*dns_over_https_servers)[0].use_post);
 
   // Enable DNS over HTTPS for two servers.
 
   dns_over_https_servers_ptr.clear();
   dns_over_https_server = mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->url = kServer2;
-  dns_over_https_server->use_posts = kServer2UsePost;
+  dns_over_https_server->server_template = kServer2;
+  dns_over_https_server->use_post = kServer2UsePost;
   dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
 
   dns_over_https_server = mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->url = kServer3;
-  dns_over_https_server->use_posts = kServer3UsePost;
+  dns_over_https_server->server_template = kServer3;
+  dns_over_https_server->use_post = kServer3UsePost;
   dns_over_https_servers_ptr.emplace_back(std::move(dns_over_https_server));
 
   service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
@@ -490,9 +490,9 @@ TEST_F(NetworkServiceTest, DnsOverHttpsEnableDisable) {
       service()->host_resolver()->GetDnsOverHttpsServersForTesting();
   ASSERT_TRUE(dns_over_https_servers);
   ASSERT_EQ(2u, dns_over_https_servers->size());
-  EXPECT_EQ(kServer2, (*dns_over_https_servers)[0].server);
+  EXPECT_EQ(kServer2, (*dns_over_https_servers)[0].server_template);
   EXPECT_EQ(kServer2UsePost, (*dns_over_https_servers)[0].use_post);
-  EXPECT_EQ(kServer3, (*dns_over_https_servers)[1].server);
+  EXPECT_EQ(kServer3, (*dns_over_https_servers)[1].server_template);
   EXPECT_EQ(kServer3UsePost, (*dns_over_https_servers)[1].use_post);
 
   // Destroying the primary NetworkContext should disable DNS over HTTPS.
@@ -516,7 +516,7 @@ TEST_F(NetworkServiceTest,
   std::vector<mojom::DnsOverHttpsServerPtr> dns_over_https_servers;
   mojom::DnsOverHttpsServerPtr dns_over_https_server =
       mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->url = GURL("https://foo/");
+  dns_over_https_server->server_template = "https://foo/{?dns}";
   dns_over_https_servers.emplace_back(std::move(dns_over_https_server));
   service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
                                        std::move(dns_over_https_servers));
@@ -537,7 +537,7 @@ TEST_F(NetworkServiceTest,
   // still no primary NetworkContext.
   dns_over_https_servers.clear();
   dns_over_https_server = mojom::DnsOverHttpsServer::New();
-  dns_over_https_server->url = GURL("https://foo2/");
+  dns_over_https_server->server_template = "https://foo2/{?dns}";
   dns_over_https_servers.emplace_back(std::move(dns_over_https_server));
   service()->ConfigureStubHostResolver(true /* stub_resolver_enabled */,
                                        std::move(dns_over_https_servers));

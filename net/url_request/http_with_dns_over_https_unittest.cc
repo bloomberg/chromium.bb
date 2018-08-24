@@ -62,7 +62,7 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
     std::unique_ptr<DnsClient> dns_client(DnsClient::CreateClient(nullptr));
     DnsConfig config;
     config.nameservers.push_back(IPEndPoint());
-    config.dns_over_https_servers.emplace_back(url, true);
+    config.dns_over_https_servers.emplace_back(url.spec(), true /* use_post */);
     dns_client->SetConfig(config);
     resolver_.SetRequestContext(&request_context_);
     resolver_.set_proc_params_for_test(
@@ -103,7 +103,7 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
       http_response->set_content(
           std::string((char*)header_data, sizeof(header_data)) + question +
           std::string((char*)answer_data, sizeof(answer_data)));
-      http_response->set_content_type("application/dns-udpwireformat");
+      http_response->set_content_type("application/dns-message");
       return std::move(http_response);
     } else {
       test_requests_served_++;

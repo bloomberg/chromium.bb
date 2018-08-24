@@ -8,6 +8,9 @@
 #include <limits.h>
 
 #include <cstring>
+#include <set>
+#include <unordered_map>
+#include <vector>
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,6 +20,8 @@
 #include "net/base/address_list.h"
 #include "net/base/url_util.h"
 #include "net/dns/dns_protocol.h"
+#include "net/third_party/uri_template/uri_template.h"
+#include "url/gurl.h"
 #include "url/url_canon.h"
 
 namespace {
@@ -129,6 +134,42 @@ std::string DNSDomainToString(const base::StringPiece& domain) {
     domain.substr(i + 1, domain[i]).AppendToString(&ret);
   }
   return ret;
+}
+
+std::string GetURLFromTemplateWithoutParameters(const string& server_template) {
+  std::string url_string;
+  std::unordered_map<string, string> parameters;
+  uri_template::Expand(server_template, parameters, &url_string);
+  return url_string;
+}
+
+bool IsValidDoHTemplate(const string& server_template,
+                        const string& server_method) {
+  std::string url_string;
+  std::string test_query = "this_is_a_test_query";
+  std::unordered_map<std::string, std::string> template_params(
+      {{"dns", test_query}});
+  std::set<std::string> vars_found;
+  bool valid_template = uri_template::Expand(server_template, template_params,
+                                             &url_string, &vars_found);
+  if (!valid_template) {
+    // The URI template is malformed.
+    return false;
+  }
+  if (server_method != "POST" && vars_found.find("dns") == vars_found.end()) {
+    // GET requests require the template to have a dns variable.
+    return false;
+  }
+  GURL url(url_string);
+  if (!url.is_valid() || !url.SchemeIs("https")) {
+    // The expanded template must be a valid HTTPS URL.
+    return false;
+  }
+  if (url.host().find(test_query) != std::string::npos) {
+    // The dns variable may not be part of the hostname.
+    return false;
+  }
+  return true;
 }
 
 #if !defined(OS_NACL)

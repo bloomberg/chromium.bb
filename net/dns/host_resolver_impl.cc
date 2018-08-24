@@ -2268,13 +2268,9 @@ void HostResolverImpl::SetRequestContext(URLRequestContext* context) {
   }
 }
 
-void HostResolverImpl::AddDnsOverHttpsServer(std::string spec, bool use_post) {
-  GURL url(spec);
-  if (!url.SchemeIs("https"))
-    return;
-
-  dns_over_https_servers_.emplace_back(url, use_post);
-
+void HostResolverImpl::AddDnsOverHttpsServer(std::string uri_template,
+                                             bool use_post) {
+  dns_over_https_servers_.emplace_back(uri_template, use_post);
   if (dns_client_.get() && dns_client_->GetConfig())
     UpdateDNSConfig(true);
 }

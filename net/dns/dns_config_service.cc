@@ -84,7 +84,7 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
     base::Value val(base::Value::Type::DICTIONARY);
     base::DictionaryValue* dict;
     val.GetAsDictionary(&dict);
-    dict->SetString("server", server.server.spec());
+    dict->SetString("server_template", server.server_template);
     dict->SetBoolean("use_post", server.use_post);
     list->GetList().push_back(std::move(val));
   }
@@ -94,9 +94,9 @@ std::unique_ptr<base::Value> DnsConfig::ToValue() const {
 }
 
 DnsConfig::DnsOverHttpsServerConfig::DnsOverHttpsServerConfig(
-    const GURL& server,
+    const std::string& server_template,
     bool use_post)
-    : server(server), use_post(use_post) {}
+    : server_template(server_template), use_post(use_post) {}
 
 DnsConfigService::DnsConfigService()
     : watch_failed_(false),

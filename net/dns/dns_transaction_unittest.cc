@@ -41,6 +41,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/test/url_request/url_request_failed_job.h"
+#include "net/third_party/uri_template/uri_template.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
@@ -375,7 +376,7 @@ typedef base::RepeatingCallback<void(URLRequest* request,
                                      HttpResponseInfo* info)>
     ResponseModifierCallback;
 
-// Callback that allows the test to substiture its own implementation
+// Callback that allows the test to substitute its own implementation
 // of URLRequestJob to handle the request.
 typedef base::RepeatingCallback<URLRequestJob*(
     URLRequest* request,
@@ -383,7 +384,7 @@ typedef base::RepeatingCallback<URLRequestJob*(
     SocketDataProvider* data_provider)>
     DohJobMakerCallback;
 
-// Subclass of URLRequest which takes a SocketDataProvider with data
+// Subclass of URLRequestJob which takes a SocketDataProvider with data
 // representing both a DNS over HTTPS query and response.
 class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
  public:
@@ -409,8 +410,7 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
     std::string decoded_query;
     if (request->method() == "GET") {
       std::string encoded_query;
-      EXPECT_TRUE(
-          GetValueForKeyInQuery(request->url(), "body", &encoded_query));
+      EXPECT_TRUE(GetValueForKeyInQuery(request->url(), "dns", &encoded_query));
       EXPECT_GT(encoded_query.size(), 0ul);
 
       EXPECT_TRUE(base::Base64UrlDecode(
@@ -437,8 +437,8 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
     }
   }
 
-  static GURL GetMockHttpsUrl(const std::string& path) {
-    return GURL("https://" + (kMockHostname + ("/" + path)));
+  static std::string GetMockHttpsUrl(const std::string& path) {
+    return "https://" + (kMockHostname + ("/" + path));
   }
 
   // URLRequestJob implementation:
@@ -484,7 +484,7 @@ class URLRequestMockDohJob : public URLRequestJob, public AsyncSocket {
     std::string raw_headers;
     raw_headers.append(
         "HTTP/1.1 200 OK\n"
-        "Content-type: application/dns-udpwireformat\n");
+        "Content-type: application/dns-message\n");
     if (content_length_ > 0) {
       raw_headers.append(base::StringPrintf("Content-Length: %1d\n",
                                             static_cast<int>(content_length_)));
@@ -721,10 +721,11 @@ class DnsTransactionTest : public DnsTransactionTestBase,
   void ConfigureDohServers(unsigned num_servers, bool use_post) {
     CHECK_LE(num_servers, 255u);
     for (unsigned i = 0; i < num_servers; ++i) {
-      GURL url(URLRequestMockDohJob::GetMockHttpsUrl(
-          base::StringPrintf("doh_test_%d", i)));
+      std::string server_template(URLRequestMockDohJob::GetMockHttpsUrl(
+                                      base::StringPrintf("doh_test_%d", i)) +
+                                  "{?dns}");
       config_.dns_over_https_servers.push_back(
-          DnsConfig::DnsOverHttpsServerConfig(url, use_post));
+          DnsConfig::DnsOverHttpsServerConfig(server_template, use_post));
     }
   }
 
@@ -755,14 +756,19 @@ class DnsTransactionTest : public DnsTransactionTestBase,
     for (auto server : config_.dns_over_https_servers) {
       if (server_found)
         break;
-      GURL url(request->url());
-      GURL server_url = server.server;
-      if (url.has_query()) {
-        server_url = GURL(server_url.spec() + "?" + url.query());
-      }
-      if (server_url == url) {
-        EXPECT_TRUE((server.use_post ? "POST" : "GET") == request->method());
-        server_found = true;
+      std::string url_base =
+          GetURLFromTemplateWithoutParameters(server.server_template);
+      if (server.use_post && request->method() == "POST") {
+        if (url_base == request->url().spec()) {
+          server_found = true;
+        }
+      } else if (!server.use_post && request->method() == "GET") {
+        std::string prefix = url_base + "?dns=";
+        auto mispair = std::mismatch(prefix.begin(), prefix.end(),
+                                     request->url().spec().begin());
+        if (mispair.first == prefix.end()) {
+          server_found = true;
+        }
       }
     }
     EXPECT_TRUE(server_found);
@@ -776,7 +782,7 @@ class DnsTransactionTest : public DnsTransactionTestBase,
 
     std::string accept;
     EXPECT_TRUE(request->extra_request_headers().GetHeader("Accept", &accept));
-    EXPECT_EQ(accept, "application/dns-udpwireformat");
+    EXPECT_EQ(accept, "application/dns-message");
 
     SocketDataProvider* provider = socket_factory_->mock_data().GetNext();
 
@@ -960,7 +966,7 @@ TEST_F(DnsTransactionTest, MismatchedResponseSync) {
   std::unique_ptr<DnsSocketData> data1(new DnsSocketData(
       0 /* id */, kT0HostName, kT0Qtype, SYNCHRONOUS, Transport::UDP));
   data1->AddResponseData(kT0ResponseDatagram, arraysize(kT0ResponseDatagram),
-                         ASYNC);
+                         SYNCHRONOUS);
   AddSocketData(std::move(data1));
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, kT0RecordCount);
@@ -1332,16 +1338,9 @@ TEST_F(DnsTransactionTest, HttpsGetFailure) {
 
 TEST_F(DnsTransactionTest, HttpsGetMalformed) {
   ConfigDohServers(true /* clear_udp */, false /* use_post */);
-  std::unique_ptr<DnsSocketData> data(new DnsSocketData(
-      0, kT0HostName, kT0Qtype, SYNCHRONOUS, Transport::HTTPS));
-  std::unique_ptr<DnsResponse> response = std::make_unique<DnsResponse>(
-      reinterpret_cast<const char*>(kT0ResponseDatagram),
-      arraysize(kT0ResponseDatagram), 0);
-  // Change the id of the header to make the response malformed.
-  response->io_buffer()->data()[0]++;
-  data->AddResponse(std::move(response), SYNCHRONOUS);
-  AddSocketData(std::move(data));
-
+  AddQueryAndResponse(1 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
+                      arraysize(kT0ResponseDatagram), SYNCHRONOUS,
+                      Transport::HTTPS);
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_MALFORMED_RESPONSE);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
 }
@@ -1368,15 +1367,9 @@ TEST_F(DnsTransactionTest, HttpsPostFailure) {
 
 TEST_F(DnsTransactionTest, HttpsPostMalformed) {
   ConfigDohServers(true /* clear_udp */, true /* use_post */);
-  std::unique_ptr<DnsSocketData> data(new DnsSocketData(
-      0, kT0HostName, kT0Qtype, SYNCHRONOUS, Transport::HTTPS));
-  std::unique_ptr<DnsResponse> response = std::make_unique<DnsResponse>(
-      reinterpret_cast<const char*>(kT0ResponseDatagram),
-      arraysize(kT0ResponseDatagram), 0);
-  // Change the id of the header to make the response malformed.
-  response->io_buffer()->data()[0]++;
-  data->AddResponse(std::move(response), SYNCHRONOUS);
-  AddSocketData(std::move(data));
+  AddQueryAndResponse(1 /* id */, kT0HostName, kT0Qtype, kT0ResponseDatagram,
+                      arraysize(kT0ResponseDatagram), SYNCHRONOUS,
+                      Transport::HTTPS);
 
   TransactionHelper helper0(kT0HostName, kT0Qtype, ERR_DNS_MALFORMED_RESPONSE);
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
@@ -1749,7 +1742,8 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
 
   CookieCallback callback;
   helper0.request_context()->cookie_store()->GetAllCookiesForURLAsync(
-      config_.dns_over_https_servers[0].server,
+      GURL(GetURLFromTemplateWithoutParameters(
+          config_.dns_over_https_servers[0].server_template)),
       base::Bind(&CookieCallback::GetAllCookiesCallback,
                  base::Unretained(&callback)));
   callback.WaitUntilDone();
@@ -1757,8 +1751,9 @@ TEST_F(DnsTransactionTest, HttpsPostTestNoCookies) {
   callback.Reset();
   net::CookieOptions options;
   helper1.request_context()->cookie_store()->SetCookieWithOptionsAsync(
-      config_.dns_over_https_servers[0].server, "test-cookie=you-still-fail",
-      options,
+      GURL(GetURLFromTemplateWithoutParameters(
+          config_.dns_over_https_servers[0].server_template)),
+      "test-cookie=you-still-fail", options,
       base::Bind(&CookieCallback::SetCookieCallback,
                  base::Unretained(&callback)));
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));

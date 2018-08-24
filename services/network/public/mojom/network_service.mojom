@@ -129,14 +129,14 @@ interface NetworkServiceClient {
 };
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
-// spec:  https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-07
+// spec:  https://tools.ietf.org/html/draft-ietf-doh-dns-over-https-12
  struct DnsOverHttpsServer {
-  // DNS over HTTPS server URL. Must be HTTPS.
-  url.mojom.Url url;
+  // DNS over HTTPS server URI template. Must be HTTPS.
+  string server_template;
 
-  // Whether to use POSTs to do DNS lookups. Otherwise, GETs are used. See spec
+  // Whether to use POST to do DNS lookups. Otherwise, GET is used. See spec
   // for more details.
-  bool use_posts = false;
+  bool use_post = false;
 };
 
 // Values for configuring HTTP authentication that can only be set once.
