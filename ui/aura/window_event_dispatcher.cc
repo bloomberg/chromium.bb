@@ -764,7 +764,7 @@ void WindowEventDispatcher::OnWindowBoundsChanged(
   }
 
   if (window->IsVisible() && window->event_targeting_policy() !=
-                                 ws::mojom::EventTargetingPolicy::NONE) {
+                                 ui::mojom::EventTargetingPolicy::NONE) {
     gfx::Rect old_bounds_in_root = old_bounds, new_bounds_in_root = new_bounds;
     Window::ConvertRectToTarget(window->parent(), host_->window(),
                                 &old_bounds_in_root);

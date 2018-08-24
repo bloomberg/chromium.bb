@@ -18,14 +18,13 @@ WindowTreeFactory::WindowTreeFactory(WindowService* window_service)
 
 WindowTreeFactory::~WindowTreeFactory() = default;
 
-void WindowTreeFactory::AddBinding(ws::mojom::WindowTreeFactoryRequest request,
+void WindowTreeFactory::AddBinding(mojom::WindowTreeFactoryRequest request,
                                    const std::string& client_name) {
   bindings_.AddBinding(this, std::move(request), client_name);
 }
 
-void WindowTreeFactory::CreateWindowTree(
-    ws::mojom::WindowTreeRequest tree_request,
-    ws::mojom::WindowTreeClientPtr client) {
+void WindowTreeFactory::CreateWindowTree(mojom::WindowTreeRequest tree_request,
+                                         mojom::WindowTreeClientPtr client) {
   std::unique_ptr<WindowTreeBinding> binding =
       std::make_unique<WindowTreeBinding>();
   binding->InitFromFactory(

@@ -83,7 +83,7 @@ struct WindowTree::InFlightEvent {
 
 WindowTree::WindowTree(WindowService* window_service,
                        ClientSpecificId client_id,
-                       ws::mojom::WindowTreeClient* client,
+                       mojom::WindowTreeClient* client,
                        const std::string& client_name)
     : window_service_(window_service),
       client_id_(client_id),
@@ -115,7 +115,7 @@ WindowTree::~WindowTree() {
 }
 
 void WindowTree::InitForEmbed(aura::Window* root,
-                              ws::mojom::WindowTreePtr window_tree_ptr) {
+                              mojom::WindowTreePtr window_tree_ptr) {
   // Force ServerWindow to be created for |root|.
   ServerWindow* server_window =
       window_service_->GetServerWindowForWindowCreateIfNecessary(root);
@@ -426,19 +426,19 @@ void WindowTree::DoPerformDragDrop(
   if (pending_drag_source_window_id_ != source_window_id) {
     // Pending drag is canceled before DoPerformDragDrop runs.
     window_tree_client_->OnPerformDragDropCompleted(change_id, false,
-                                                    ws::mojom::kDropEffectNone);
+                                                    mojom::kDropEffectNone);
     return;
   }
 
   aura::Window* source_window = GetWindowByTransportId(source_window_id);
   if (!source_window) {
     DVLOG(1) << "PerformDragDrop failed (no window)";
-    OnPerformDragDropDone(change_id, ws::mojom::kDropEffectNone);
+    OnPerformDragDropDone(change_id, mojom::kDropEffectNone);
     return;
   }
   if (!IsClientCreatedWindow(source_window)) {
     DVLOG(1) << "PerformDragDrop failed (access denied)";
-    OnPerformDragDropDone(change_id, ws::mojom::kDropEffectNone);
+    OnPerformDragDropDone(change_id, mojom::kDropEffectNone);
     return;
   }
 
@@ -554,15 +554,15 @@ bool WindowTree::IsLocalSurfaceIdAssignedByClient(aura::Window* window) {
   return !IsTopLevel(window) && IsClientCreatedWindow(window);
 }
 
-std::vector<ws::mojom::WindowDataPtr> WindowTree::WindowsToWindowDatas(
+std::vector<mojom::WindowDataPtr> WindowTree::WindowsToWindowDatas(
     const std::vector<aura::Window*>& windows) {
-  std::vector<ws::mojom::WindowDataPtr> array(windows.size());
+  std::vector<mojom::WindowDataPtr> array(windows.size());
   for (size_t i = 0; i < windows.size(); ++i)
     array[i] = WindowToWindowData(windows[i]);
   return array;
 }
 
-ws::mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
+mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
   aura::Window* parent = window->parent();
   aura::Window* transient_parent =
       aura::client::GetTransientWindowClient()->GetTransientParent(window);
@@ -573,7 +573,7 @@ ws::mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
     parent = nullptr;
   if (!IsWindowKnown(transient_parent))
     transient_parent = nullptr;
-  ws::mojom::WindowDataPtr window_data(ws::mojom::WindowData::New());
+  mojom::WindowDataPtr window_data(mojom::WindowData::New());
   window_data->parent_id =
       parent ? TransportIdForWindow(parent) : kInvalidTransportId;
   window_data->window_id =
@@ -589,7 +589,7 @@ ws::mojom::WindowDataPtr WindowTree::WindowToWindowData(aura::Window* window) {
   return window_data;
 }
 
-ws::mojom::WindowTreeClientPtr
+mojom::WindowTreeClientPtr
 WindowTree::GetAndRemoveScheduledEmbedWindowTreeClient(
     const base::UnguessableToken& token,
     std::set<WindowTree*>* visited_trees) {
@@ -598,7 +598,7 @@ WindowTree::GetAndRemoveScheduledEmbedWindowTreeClient(
 
   auto iter = scheduled_embeds_.find(token);
   if (iter != scheduled_embeds_.end()) {
-    ws::mojom::WindowTreeClientPtr client = std::move(iter->second);
+    mojom::WindowTreeClientPtr client = std::move(iter->second);
     scheduled_embeds_.erase(iter);
     return client;
   }
@@ -978,11 +978,10 @@ bool WindowTree::SetWindowPropertyImpl(
   return true;
 }
 
-bool WindowTree::EmbedImpl(
-    const ClientWindowId& window_id,
-    ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
-    ws::mojom::WindowTreeClient* window_tree_client,
-    uint32_t flags) {
+bool WindowTree::EmbedImpl(const ClientWindowId& window_id,
+                           mojom::WindowTreeClientPtr window_tree_client_ptr,
+                           mojom::WindowTreeClient* window_tree_client,
+                           uint32_t flags) {
   DVLOG(3) << "Embed window_id=" << window_id;
   aura::Window* window = GetWindowByClientId(window_id);
   if (!window) {
@@ -995,14 +994,14 @@ bool WindowTree::EmbedImpl(
   }
 
   const bool owner_intercept_events =
-      (flags & ws::mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+      (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
   std::unique_ptr<Embedding> embedding =
       std::make_unique<Embedding>(this, window, owner_intercept_events);
   embedding->Init(window_service_, std::move(window_tree_client_ptr),
                   window_tree_client,
                   base::BindOnce(&WindowTree::OnEmbeddedClientConnectionLost,
                                  base::Unretained(this), embedding.get()));
-  if (flags & ws::mojom::kEmbedFlagEmbedderControlsVisibility)
+  if (flags & mojom::kEmbedFlagEmbedderControlsVisibility)
     embedding->embedded_tree()->can_change_root_window_visibility_ = false;
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   server_window->SetEmbedding(std::move(embedding));
@@ -1103,7 +1102,7 @@ bool WindowTree::SetWindowBoundsImpl(
 
 bool WindowTree::ReorderWindowImpl(const ClientWindowId& window_id,
                                    const ClientWindowId& relative_window_id,
-                                   ws::mojom::OrderDirection direction) {
+                                   mojom::OrderDirection direction) {
   DVLOG(3) << "ReorderWindow window_id=" << window_id
            << " relative_window_id=" << relative_window_id;
   aura::Window* window = GetWindowByClientId(window_id);
@@ -1117,7 +1116,7 @@ bool WindowTree::ReorderWindowImpl(const ClientWindowId& window_id,
     DVLOG(1) << "ReorderWindow failed (invalid windows)";
     return false;
   }
-  if (direction == ws::mojom::OrderDirection::ABOVE)
+  if (direction == mojom::OrderDirection::ABOVE)
     window->parent()->StackChildAbove(window, relative_window);
   else
     window->parent()->StackChildBelow(window, relative_window);
@@ -1318,8 +1317,8 @@ void WindowTree::NewTopLevelWindow(
   top_level_server_window->set_frame_sink_id(client_window_id);
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(top_level).id();
-  // This passes null for the ws::mojom::WindowTreePtr because the client has
-  // already been given the ws::mojom::WindowTreePtr that is backed by this
+  // This passes null for the mojom::WindowTreePtr because the client has
+  // already been given the mojom::WindowTreePtr that is backed by this
   // WindowTree.
   CreateClientRoot(top_level, is_top_level)->RegisterVizEmbeddingSupport();
   window_tree_client_->OnTopLevelCreated(
@@ -1539,7 +1538,7 @@ void WindowTree::SetChildModalParent(uint32_t change_id,
 void WindowTree::ReorderWindow(uint32_t change_id,
                                Id transport_window_id,
                                Id transport_relative_window_id,
-                               ws::mojom::OrderDirection direction) {
+                               mojom::OrderDirection direction) {
   const bool result = ReorderWindowImpl(
       MakeClientWindowId(transport_window_id),
       MakeClientWindowId(transport_relative_window_id), direction);
@@ -1553,16 +1552,16 @@ void WindowTree::GetWindowTree(Id window_id, GetWindowTreeCallback callback) {
 }
 
 void WindowTree::Embed(Id transport_window_id,
-                       ws::mojom::WindowTreeClientPtr client_ptr,
+                       mojom::WindowTreeClientPtr client_ptr,
                        uint32_t embed_flags,
                        EmbedCallback callback) {
-  ws::mojom::WindowTreeClient* client = client_ptr.get();
+  mojom::WindowTreeClient* client = client_ptr.get();
   std::move(callback).Run(EmbedImpl(MakeClientWindowId(transport_window_id),
                                     std::move(client_ptr), client,
                                     embed_flags));
 }
 
-void WindowTree::ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
+void WindowTree::ScheduleEmbed(mojom::WindowTreeClientPtr client,
                                ScheduleEmbedCallback callback) {
   const base::UnguessableToken token = base::UnguessableToken::Create();
   DCHECK(!scheduled_embeds_.count(token));
@@ -1596,7 +1595,7 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
 
   // Check for a client registered using ScheduleEmbed().
   std::set<WindowTree*> visited_trees;
-  ws::mojom::WindowTreeClientPtr client =
+  mojom::WindowTreeClientPtr client =
       GetAndRemoveScheduledEmbedWindowTreeClient(token, &visited_trees);
   if (client) {
     Embed(transport_window_id, std::move(client), embed_flags,
@@ -1628,7 +1627,7 @@ void WindowTree::EmbedUsingToken(Id transport_window_id,
 
   ServerWindow* server_window = ServerWindow::GetMayBeNull(window);
   const bool owner_intercept_events =
-      (embed_flags & ws::mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
+      (embed_flags & mojom::kEmbedFlagEmbedderInterceptsEvents) != 0;
   tree_and_id.tree->CompleteScheduleEmbedForExistingClient(
       window, tree_and_id.id, token);
   std::unique_ptr<Embedding> embedding =
@@ -1695,14 +1694,14 @@ void WindowTree::SetImeVisibility(Id window_id,
 
 void WindowTree::SetEventTargetingPolicy(
     Id transport_window_id,
-    ::ws::mojom::EventTargetingPolicy policy) {
+    ::ui::mojom::EventTargetingPolicy policy) {
   aura::Window* window = GetWindowByTransportId(transport_window_id);
   if (IsClientCreatedWindow(window) || IsClientRootWindow(window))
     window->SetEventTargetingPolicy(policy);
 }
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
-                                       ws::mojom::EventResult result) {
+                                       mojom::EventResult result) {
   if (in_flight_events_.empty() || in_flight_events_.front()->id != event_id) {
     DVLOG(1) << "client acked unknown event";
     return;
@@ -1714,7 +1713,7 @@ void WindowTree::OnWindowInputEventAck(uint32_t event_id,
   std::unique_ptr<InFlightEvent> in_flight_event =
       std::move(in_flight_events_.front());
   in_flight_events_.pop();
-  if (in_flight_event->event && result == ws::mojom::EventResult::UNHANDLED) {
+  if (in_flight_event->event && result == mojom::EventResult::UNHANDLED) {
     window_service_->delegate()->OnUnhandledKeyEvent(
         *(in_flight_event->event->AsKeyEvent()));
   }
@@ -1775,7 +1774,7 @@ void WindowTree::GetCursorLocationMemory(
 
 void WindowTree::PerformWindowMove(uint32_t change_id,
                                    Id transport_window_id,
-                                   ws::mojom::MoveLoopSource source,
+                                   mojom::MoveLoopSource source,
                                    const gfx::Point& cursor) {
   DVLOG(3) << "PerformWindowMove id="
            << MakeClientWindowId(transport_window_id).ToString();
@@ -1787,7 +1786,7 @@ void WindowTree::PerformWindowMove(uint32_t change_id,
     return;
   }
 
-  if (source == ws::mojom::MoveLoopSource::MOUSE &&
+  if (source == ui::mojom::MoveLoopSource::MOUSE &&
       !window->env()->IsMouseButtonDown()) {
     DVLOG(1) << "PerformWindowMove failed (mouse not down)";
     window_tree_client_->OnChangeCompleted(change_id, false);
@@ -1826,7 +1825,7 @@ void WindowTree::PerformDragDrop(
   if (pending_drag_source_window_id_ != kInvalidTransportId) {
     DVLOG(1) << "PerformDragDrop failed (only one drag allowed)";
     window_tree_client_->OnPerformDragDropCompleted(change_id, false,
-                                                    ws::mojom::kDropEffectNone);
+                                                    mojom::kDropEffectNone);
     return;
   }
 
@@ -1859,7 +1858,7 @@ void WindowTree::CancelDragDrop(Id window_id) {
       GetWindowByTransportId(window_id));
 }
 
-void WindowTree::ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
+void WindowTree::ObserveTopmostWindow(ui::mojom::MoveLoopSource source,
                                       Id window_id) {
   if (connection_type_ == ConnectionType::kEmbedding) {
     DVLOG(1) << "ObserveTopmostWindow failed (access denied)";

@@ -32,7 +32,7 @@ class TestInputMethodDelegate : public ui::internal::InputMethodDelegate {
 
 using ProcessKeyEventCallback = base::OnceCallback<void(bool)>;
 using ProcessKeyEventCallbacks = std::vector<ProcessKeyEventCallback>;
-using EventResultCallback = base::OnceCallback<void(ws::mojom::EventResult)>;
+using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
 
 // InputMethod implementation that queues up the callbacks supplied to
 // ProcessKeyEvent().
@@ -94,7 +94,7 @@ using InputMethodMusTest = test::AuraTestBaseMus;
 namespace {
 
 // Used in closure supplied to processing the event.
-void RunFunctionWithEventResult(bool* was_run, ws::mojom::EventResult result) {
+void RunFunctionWithEventResult(bool* was_run, ui::mojom::EventResult result) {
   *was_run = true;
 }
 

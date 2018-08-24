@@ -572,8 +572,8 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   // http://crbug.com/292238.
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
   window_->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorCanResize |
-                           ws::mojom::kResizeBehaviorCanMaximize);
+                       ui::mojom::kResizeBehaviorCanResize |
+                           ui::mojom::kResizeBehaviorCanMaximize);
   wm::WindowState* window_state = wm::GetWindowState(window_.get());
 
   {
@@ -643,7 +643,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
 TEST_F(WorkspaceWindowResizerTest, NonResizableWindows) {
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
   window_->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorNone);
+                       ui::mojom::kResizeBehaviorNone);
 
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -663,8 +663,8 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
 
   // Make the window snappable by making it resizable and maximizable.
   window_->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorCanResize |
-                           ws::mojom::kResizeBehaviorCanMaximize);
+                       ui::mojom::kResizeBehaviorCanResize |
+                           ui::mojom::kResizeBehaviorCanMaximize);
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   EXPECT_FLOAT_EQ(1.0f, window_->layer()->opacity());
   {
@@ -1443,7 +1443,7 @@ TEST_F(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
 TEST_F(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
   window_->SetBounds(gfx::Rect(0, 50, 400, 200));
   window_->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorCanMaximize);
+                       ui::mojom::kResizeBehaviorCanMaximize);
 
   std::vector<aura::Window*> no_attached_windows;
   // Check that an abort doesn't change anything.
@@ -1500,8 +1500,8 @@ TEST_F(WorkspaceWindowResizerTest, TestPartialMaxSizeEnforced) {
 TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
   // Make the window snappable by making it resizable and maximizable.
   window_->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorCanResize |
-                           ws::mojom::kResizeBehaviorCanMaximize);
+                       ui::mojom::kResizeBehaviorCanResize |
+                           ui::mojom::kResizeBehaviorCanMaximize);
   {
     // With max size not set we get a phantom window controller for dragging off
     // the right hand side.

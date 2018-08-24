@@ -63,8 +63,8 @@ Window* CreateTestWindowWithDelegateAndType(WindowDelegate* delegate,
   window->set_id(id);
   window->Init(ui::LAYER_TEXTURED);
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize);
+                      ui::mojom::kResizeBehaviorCanResize |
+                          ui::mojom::kResizeBehaviorCanMaximize);
   window->SetBounds(bounds);
   if (show_on_creation)
     window->Show();

@@ -81,7 +81,7 @@ std::unique_ptr<aura::Window> WindowServiceDelegateImpl::NewTopLevel(
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::map<std::string, std::vector<uint8_t>> property_map =
       mojo::FlatMapToMap(properties);
-  ws::mojom::WindowType window_type =
+  ui::mojom::WindowType window_type =
       aura::GetWindowTypeFromProperties(property_map);
 
   auto* window = CreateAndParentTopLevelWindow(window_type, property_converter,
@@ -107,7 +107,7 @@ bool WindowServiceDelegateImpl::StoreAndSetCursor(aura::Window* window,
 
 void WindowServiceDelegateImpl::RunWindowMoveLoop(
     aura::Window* window,
-    ws::mojom::MoveLoopSource source,
+    ui::mojom::MoveLoopSource source,
     const gfx::Point& cursor,
     DoneCallback callback) {
   if (!ShouldStartMoveLoop(window)) {
@@ -115,11 +115,11 @@ void WindowServiceDelegateImpl::RunWindowMoveLoop(
     return;
   }
 
-  if (source == ws::mojom::MoveLoopSource::MOUSE)
+  if (source == ui::mojom::MoveLoopSource::MOUSE)
     window->SetCapture();
 
   const ::wm::WindowMoveSource aura_source =
-      source == ws::mojom::MoveLoopSource::MOUSE
+      source == ui::mojom::MoveLoopSource::MOUSE
           ? ::wm::WINDOW_MOVE_SOURCE_MOUSE
           : ::wm::WINDOW_MOVE_SOURCE_TOUCH;
   Shell::Get()

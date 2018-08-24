@@ -971,7 +971,7 @@ ui::GestureRecognizer* DesktopNativeWidgetAura::GetGestureRecognizer() {
 }
 
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
-  int32_t behavior = ws::mojom::kResizeBehaviorNone;
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
   if (GetWidget()->widget_delegate())
     behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
   content_window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);

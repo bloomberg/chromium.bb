@@ -298,7 +298,7 @@ NonClientFrameController::NonClientFrameController(
     aura::Window* parent,
     aura::Window* context,
     const gfx::Rect& bounds,
-    ws::mojom::WindowType window_type,
+    ui::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties)
     : widget_(new views::Widget), window_(nullptr) {
@@ -307,7 +307,7 @@ NonClientFrameController::NonClientFrameController(
   // underlying ui::Window. For example, showing the Widget shouldn't change
   // the bounds of the ui::Window in anyway.
   //
-  // Assertions around InitParams::Type matching ws::mojom::WindowType exist in
+  // Assertions around InitParams::Type matching ui::mojom::WindowType exist in
   // MusClient.
   views::Widget::InitParams params(
       static_cast<views::Widget::InitParams::Type>(window_type));
@@ -392,17 +392,17 @@ base::string16 NonClientFrameController::GetWindowTitle() const {
 
 bool NonClientFrameController::CanResize() const {
   return window_ && (window_->GetProperty(aura::client::kResizeBehaviorKey) &
-                     ws::mojom::kResizeBehaviorCanResize) != 0;
+                     ui::mojom::kResizeBehaviorCanResize) != 0;
 }
 
 bool NonClientFrameController::CanMaximize() const {
   return window_ && (window_->GetProperty(aura::client::kResizeBehaviorKey) &
-                     ws::mojom::kResizeBehaviorCanMaximize) != 0;
+                     ui::mojom::kResizeBehaviorCanMaximize) != 0;
 }
 
 bool NonClientFrameController::CanMinimize() const {
   return window_ && (window_->GetProperty(aura::client::kResizeBehaviorKey) &
-                     ws::mojom::kResizeBehaviorCanMinimize) != 0;
+                     ui::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
 bool NonClientFrameController::CanActivate() const {

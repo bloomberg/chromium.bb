@@ -66,7 +66,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceDelegate {
   // allowed, the delegate should run |callback| immediately.
   using DoneCallback = base::OnceCallback<void(bool)>;
   virtual void RunWindowMoveLoop(aura::Window* window,
-                                 ws::mojom::MoveLoopSource source,
+                                 mojom::MoveLoopSource source,
                                  const gfx::Point& cursor,
                                  DoneCallback callback);
 

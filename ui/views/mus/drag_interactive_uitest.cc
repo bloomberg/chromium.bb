@@ -120,7 +120,7 @@ void DragTest_Part3(int64_t display_id,
   quit_closure.Run();
 }
 
-void DragTest_Part2(ws::mojom::EventInjector* event_injector,
+void DragTest_Part2(ui::mojom::EventInjector* event_injector,
                     int64_t display_id,
                     const base::Closure& quit_closure,
                     bool result) {
@@ -133,7 +133,7 @@ void DragTest_Part2(ws::mojom::EventInjector* event_injector,
       base::BindOnce(&DragTest_Part3, display_id, quit_closure));
 }
 
-void DragTest_Part1(ws::mojom::EventInjector* event_injector,
+void DragTest_Part1(ui::mojom::EventInjector* event_injector,
                     int64_t display_id,
                     const base::Closure& quit_closure,
                     bool result) {
@@ -148,9 +148,9 @@ void DragTest_Part1(ws::mojom::EventInjector* event_injector,
 }
 
 TEST_F(DragTestInteractive, DragTest) {
-  ws::mojom::EventInjectorPtr event_injector;
+  ui::mojom::EventInjectorPtr event_injector;
   MusClient::Get()->window_tree_client()->connector()->BindInterface(
-      ws::mojom::kServiceName, &event_injector);
+      ui::mojom::kServiceName, &event_injector);
   Widget* source_widget = CreateTopLevelFramelessPlatformWidget();
   View* source_view = new DraggableView;
   source_widget->SetContentsView(source_view);

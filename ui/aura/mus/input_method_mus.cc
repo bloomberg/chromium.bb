@@ -16,7 +16,7 @@
 #include "ui/platform_window/mojo/ime_type_converters.h"
 #include "ui/platform_window/mojo/text_input_state.mojom.h"
 
-using ws::mojom::EventResult;
+using ui::mojom::EventResult;
 
 namespace aura {
 
@@ -39,7 +39,7 @@ InputMethodMus::~InputMethodMus() {
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
   if (connector)
-    connector->BindInterface(ws::mojom::kServiceName, &ime_driver_);
+    connector->BindInterface(ui::mojom::kServiceName, &ime_driver_);
 }
 
 ui::EventDispatchDetails InputMethodMus::DispatchKeyEvent(

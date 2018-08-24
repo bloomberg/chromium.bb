@@ -96,7 +96,7 @@ struct Change {
   int32_t event_action;
   bool matches_pointer_watcher;
   std::string embed_url;
-  ws::mojom::OrderDirection direction;
+  mojom::OrderDirection direction;
   bool bool_value;
   float float_value;
   std::string property_key;
@@ -143,7 +143,7 @@ std::string SingleWindowDescription(const std::vector<TestWindow>& windows);
 std::string ChangeWindowDescription(const std::vector<Change>& changes);
 
 // Converts WindowDatas to TestWindows.
-void WindowDatasToTestWindows(const std::vector<ws::mojom::WindowDataPtr>& data,
+void WindowDatasToTestWindows(const std::vector<mojom::WindowDataPtr>& data,
                               std::vector<TestWindow>* test_windows);
 
 // Returns true if |changes| contains a Change matching |change_description|.
@@ -173,9 +173,9 @@ class TestChangeTracker {
 
   // Each of these functions generate a Change. There is one per
   // WindowTreeClient function.
-  void OnEmbed(ws::mojom::WindowDataPtr root, bool drawn);
+  void OnEmbed(mojom::WindowDataPtr root, bool drawn);
   void OnEmbedFromToken(
-      ws::mojom::WindowDataPtr root,
+      mojom::WindowDataPtr root,
       int64_t display_id,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   void OnEmbeddedAppDisconnected(Id window_id);
@@ -194,10 +194,10 @@ class TestChangeTracker {
   void OnWindowHierarchyChanged(Id window_id,
                                 Id old_parent_id,
                                 Id new_parent_id,
-                                std::vector<ws::mojom::WindowDataPtr> windows);
+                                std::vector<mojom::WindowDataPtr> windows);
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,
-                         ws::mojom::OrderDirection direction);
+                         mojom::OrderDirection direction);
   void OnWindowDeleted(Id window_id);
   void OnWindowVisibilityChanged(Id window_id, bool visible);
   void OnWindowOpacityChanged(Id window_id, float opacity);
@@ -216,7 +216,7 @@ class TestChangeTracker {
   void OnWindowCursorChanged(Id window_id, const ui::CursorData& cursor);
   void OnChangeCompleted(uint32_t change_id, bool success);
   void OnTopLevelCreated(uint32_t change_id,
-                         ws::mojom::WindowDataPtr window_data,
+                         mojom::WindowDataPtr window_data,
                          bool drawn);
   void OnWindowSurfaceChanged(Id window_id,
                               const viz::SurfaceInfo& surface_info);

@@ -455,7 +455,7 @@ bool CrossProcessFrameConnector::IsHidden() const {
 
 #if defined(USE_AURA)
 void CrossProcessFrameConnector::EmbedRendererWindowTreeClientInParent(
-    ws::mojom::WindowTreeClientPtr window_tree_client) {
+    ui::mojom::WindowTreeClientPtr window_tree_client) {
   RenderWidgetHostViewBase* root = GetRootRenderWidgetHostView();
   RenderWidgetHostViewBase* parent = GetParentRenderWidgetHostView();
   if (!parent || !root)

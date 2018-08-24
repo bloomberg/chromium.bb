@@ -27,7 +27,7 @@ namespace {
 
 void BindMusConnectionOnMainThread(
     uint32_t routing_id,
-    ws::mojom::WindowTreeClientRequest request,
+    ui::mojom::WindowTreeClientRequest request,
     mojom::RenderWidgetWindowTreeClientRequest
         render_widget_window_tree_client_request) {
   RendererWindowTreeClient::CreateIfNecessary(routing_id);
@@ -64,7 +64,7 @@ class RenderWidgetWindowTreeClientFactoryImpl
   // mojom::RenderWidgetWindowTreeClientFactory implementation.
   void CreateWindowTreeClientForRenderWidget(
       uint32_t routing_id,
-      ws::mojom::WindowTreeClientRequest request,
+      ui::mojom::WindowTreeClientRequest request,
       mojom::RenderWidgetWindowTreeClientRequest
           render_widget_window_tree_client_request) override {
     main_thread_task_runner_->PostTask(

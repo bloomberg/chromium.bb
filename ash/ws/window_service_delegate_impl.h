@@ -24,7 +24,7 @@ class WindowServiceDelegateImpl : public ui::ws2::WindowServiceDelegate {
   void OnUnhandledKeyEvent(const ui::KeyEvent& key_event) override;
   bool StoreAndSetCursor(aura::Window* window, ui::Cursor cursor) override;
   void RunWindowMoveLoop(aura::Window* window,
-                         ws::mojom::MoveLoopSource source,
+                         ui::mojom::MoveLoopSource source,
                          const gfx::Point& cursor,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;

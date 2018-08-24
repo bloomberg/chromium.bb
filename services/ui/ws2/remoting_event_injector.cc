@@ -14,13 +14,13 @@ namespace {
 // Converts an InjectedMouseButtonTypeToEventFlags to EventFlags, which is what
 // SystemInputInjector expects.
 EventFlags InjectedMouseButtonTypeToEventFlags(
-    ws::mojom::InjectedMouseButtonType type) {
+    mojom::InjectedMouseButtonType type) {
   switch (type) {
-    case ws::mojom::InjectedMouseButtonType::kLeft:
+    case mojom::InjectedMouseButtonType::kLeft:
       return EF_LEFT_MOUSE_BUTTON;
-    case ws::mojom::InjectedMouseButtonType::kMiddle:
+    case mojom::InjectedMouseButtonType::kMiddle:
       return EF_MIDDLE_MOUSE_BUTTON;
-    case ws::mojom::InjectedMouseButtonType::kRight:
+    case mojom::InjectedMouseButtonType::kRight:
       return EF_MIDDLE_MOUSE_BUTTON;
   }
   NOTREACHED();
@@ -36,7 +36,7 @@ RemotingEventInjector::RemotingEventInjector(
 RemotingEventInjector::~RemotingEventInjector() = default;
 
 void RemotingEventInjector::AddBinding(
-    ws::mojom::RemotingEventInjectorRequest request) {
+    mojom::RemotingEventInjectorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -46,7 +46,7 @@ void RemotingEventInjector::MoveCursorToLocationInPixels(
 }
 
 void RemotingEventInjector::InjectMousePressOrRelease(
-    ws::mojom::InjectedMouseButtonType button,
+    mojom::InjectedMouseButtonType button,
     bool down) {
   system_injector_->InjectMouseButton(
       InjectedMouseButtonTypeToEventFlags(button), down);

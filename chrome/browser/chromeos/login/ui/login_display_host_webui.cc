@@ -1040,7 +1040,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
     params.parent =
         ash::Shell::GetContainer(ash::Shell::GetPrimaryRootWindow(), container);
   } else {
-    using ws::mojom::WindowManager;
+    using ui::mojom::WindowManager;
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(container));
   }

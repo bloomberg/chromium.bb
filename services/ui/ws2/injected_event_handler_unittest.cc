@@ -65,8 +65,8 @@ TEST(InjectedEventHandlerTest, OverRemoteWindow) {
   EXPECT_FALSE(was_callback_run);
 
   // Ack the event, which should trigger running the callback.
-  test_setup.window_tree_client()->AckFirstEvent(
-      test_setup.window_tree(), ws::mojom::EventResult::HANDLED);
+  test_setup.window_tree_client()->AckFirstEvent(test_setup.window_tree(),
+                                                 mojom::EventResult::HANDLED);
   EXPECT_TRUE(was_callback_run);
 }
 

@@ -268,7 +268,7 @@ void CursorWindowController::SetContainer(aura::Window* container) {
     cursor_window_->SetTransparent(true);
     cursor_window_->Init(ui::LAYER_TEXTURED);
     cursor_window_->SetEventTargetingPolicy(
-        ws::mojom::EventTargetingPolicy::NONE);
+        ui::mojom::EventTargetingPolicy::NONE);
     cursor_window_->set_owned_by_parent(false);
     // Call UpdateCursorImage() to figure out |cursor_window_|'s desired size.
     UpdateCursorImage();

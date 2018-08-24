@@ -154,9 +154,9 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
   ownership_ = params.ownership;
 
   RegisterNativeWidgetForWindow(this, window_);
-  // MusClient has assertions that ws::mojom::WindowType matches
+  // MusClient has assertions that ui::mojom::WindowType matches
   // views::Widget::InitParams::Type.
-  aura::SetWindowType(window_, static_cast<ws::mojom::WindowType>(params.type));
+  aura::SetWindowType(window_, static_cast<ui::mojom::WindowType>(params.type));
   if (params.corner_radius) {
     window_->SetProperty(aura::client::kWindowCornerRadiusKey,
                          *params.corner_radius);
@@ -238,8 +238,8 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
     SetBounds(window_bounds);
   window_->SetEventTargetingPolicy(
       params.accept_events
-          ? ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
-          : ws::mojom::EventTargetingPolicy::NONE);
+          ? ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
+          : ui::mojom::EventTargetingPolicy::NONE);
   DCHECK(GetWidget()->GetRootView());
   if (params.type != Widget::InitParams::TYPE_TOOLTIP)
     tooltip_manager_.reset(new views::TooltipManagerAura(GetWidget()));
@@ -807,7 +807,7 @@ void NativeWidgetAura::OnSizeConstraintsChanged() {
   if (is_parallel_widget_in_window_manager_)
     return;
 
-  int32_t behavior = ws::mojom::kResizeBehaviorNone;
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
   if (GetWidget()->widget_delegate())
     behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
   window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
@@ -832,7 +832,7 @@ gfx::Size NativeWidgetAura::GetMaximumSize() const {
   // A window should not have a maximum size and also be maximizable.
   DCHECK(delegate_->GetMaximumSize().IsEmpty() ||
          !(window_->GetProperty(aura::client::kResizeBehaviorKey) &
-           ws::mojom::kResizeBehaviorCanMaximize));
+           ui::mojom::kResizeBehaviorCanMaximize));
   return delegate_->GetMaximumSize();
 }
 

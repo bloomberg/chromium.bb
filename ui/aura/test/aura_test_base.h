@@ -17,7 +17,7 @@
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/test/aura_test_helper.h"
 
-namespace ws {
+namespace ui {
 namespace mojom {
 class WindowTreeClient;
 }
@@ -87,7 +87,7 @@ class AuraTestBase : public testing::Test, public WindowTreeClientDelegate {
   WindowTreeClient* window_tree_client_impl() {
     return helper_->window_tree_client();
   }
-  ws::mojom::WindowTreeClient* window_tree_client();
+  ui::mojom::WindowTreeClient* window_tree_client();
 
   std::vector<std::unique_ptr<ui::PointerEvent>>& observed_pointer_events() {
     return observed_pointer_events_;

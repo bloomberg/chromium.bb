@@ -19,17 +19,17 @@ namespace ws2 {
 
 // See description in mojom for details on this. This trivially forwards to
 // SystemInputInjector.
-class RemotingEventInjector : public ws::mojom::RemotingEventInjector {
+class RemotingEventInjector : public mojom::RemotingEventInjector {
  public:
   explicit RemotingEventInjector(SystemInputInjector* system_injector);
   ~RemotingEventInjector() override;
 
-  void AddBinding(ws::mojom::RemotingEventInjectorRequest request);
+  void AddBinding(mojom::RemotingEventInjectorRequest request);
 
  private:
-  // ws::mojom::RemotingEventInjector:
+  // mojom::RemotingEventInjector:
   void MoveCursorToLocationInPixels(const gfx::PointF& location) override;
-  void InjectMousePressOrRelease(ws::mojom::InjectedMouseButtonType button,
+  void InjectMousePressOrRelease(mojom::InjectedMouseButtonType button,
                                  bool down) override;
   void InjectMouseWheelInPixels(int32_t delta_x, int32_t delta_y) override;
   void InjectKeyEvent(int32_t native_key_code,
@@ -38,7 +38,7 @@ class RemotingEventInjector : public ws::mojom::RemotingEventInjector {
 
   ui::SystemInputInjector* system_injector_;
 
-  mojo::BindingSet<ws::mojom::RemotingEventInjector> bindings_;
+  mojo::BindingSet<mojom::RemotingEventInjector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(RemotingEventInjector);
 };

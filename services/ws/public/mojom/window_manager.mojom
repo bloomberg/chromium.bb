@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ws.mojom;
+module ui.mojom;
 
 // TODO(sky): consider moving these out of the WindowManager interface. At a
 // minimum they should move to window_manager_constants.mojom.

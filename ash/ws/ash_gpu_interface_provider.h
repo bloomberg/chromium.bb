@@ -37,10 +37,10 @@ class AshGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
       service_manager::BinderRegistry* registry) override;
 
  private:
-  void BindArcRequest(ws::mojom::ArcRequest request);
+  void BindArcRequest(ui::mojom::ArcRequest request);
   void BindDiscardableSharedMemoryManagerRequest(
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request);
-  void BindGpuRequest(ws::mojom::GpuRequest request);
+  void BindGpuRequest(ui::mojom::GpuRequest request);
 
   ui::gpu_host::GpuHost* gpu_host_;
   discardable_memory::DiscardableSharedMemoryManager*

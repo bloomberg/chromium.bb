@@ -118,7 +118,7 @@ class SplitViewControllerTest : public AshTestBase {
   aura::Window* CreateNonSnappableWindow(const gfx::Rect& bounds) {
     aura::Window* window = CreateWindow(bounds);
     window->SetProperty(aura::client::kResizeBehaviorKey,
-                        ws::mojom::kResizeBehaviorNone);
+                        ui::mojom::kResizeBehaviorNone);
     return window;
   }
 
@@ -1482,7 +1482,7 @@ TEST_F(SplitViewControllerTest, ResizabilityChangeTest) {
   EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
 
   window1->SetProperty(aura::client::kResizeBehaviorKey,
-                       ws::mojom::kResizeBehaviorNone);
+                       ui::mojom::kResizeBehaviorNone);
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
 }
 

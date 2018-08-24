@@ -1708,7 +1708,7 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
 }
 
 void RenderWidgetHostViewAura::ScheduleEmbed(
-    ws::mojom::WindowTreeClientPtr client,
+    ui::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
   DCHECK(features::IsUsingWindowService());
   aura::Env::GetInstance()->ScheduleEmbed(std::move(client),
@@ -1940,8 +1940,8 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
   // the visibility of |window_|.
   aura::WindowPortMus::Get(window_)->Embed(
       GetWindowTreeClientFromRenderer(),
-      ws::mojom::kEmbedFlagEmbedderInterceptsEvents |
-          ws::mojom::kEmbedFlagEmbedderControlsVisibility,
+      ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
+          ui::mojom::kEmbedFlagEmbedderControlsVisibility,
       base::BindOnce(&EmbedCallback));
 }
 

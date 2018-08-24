@@ -34,16 +34,16 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeBinding {
   // See WindowTree for details on parameters and when to use.
   // |window_tree_client_ptr| may be null for tests.
   void InitForEmbed(WindowService* window_service,
-                    ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
-                    ws::mojom::WindowTreeClient* window_tree_client,
+                    mojom::WindowTreeClientPtr window_tree_client_ptr,
+                    mojom::WindowTreeClient* window_tree_client,
                     aura::Window* initial_root,
                     base::OnceClosure connection_lost_callback);
 
   // See WindowTree for details on parameters and when to use.
   void InitFromFactory(WindowService* window_service,
                        const std::string& client_name,
-                       ws::mojom::WindowTreeRequest window_tree_request,
-                       ws::mojom::WindowTreeClientPtr window_tree_client,
+                       mojom::WindowTreeRequest window_tree_request,
+                       mojom::WindowTreeClientPtr window_tree_client,
                        base::OnceClosure connection_lost_callback);
 
   WindowTree* window_tree() { return window_tree_.get(); }
@@ -51,17 +51,17 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowTreeBinding {
  private:
   friend class WindowTree;
 
-  void CreateBinding(ws::mojom::WindowTreeRequest window_tree_request,
+  void CreateBinding(mojom::WindowTreeRequest window_tree_request,
                      base::OnceClosure connection_lost_callback);
 
   WindowService* window_service_ = nullptr;
-  ws::mojom::WindowTreeClientPtr window_tree_client_;
+  mojom::WindowTreeClientPtr window_tree_client_;
   std::unique_ptr<WindowTree> window_tree_;
 
   // |binding_| and |screen_provider_observer_| are only created if
   // |window_tree_client_| is valid.
-  std::unique_ptr<mojo::Binding<ws::mojom::WindowTree>> binding_;
-  ws::mojom::ScreenProviderObserverAssociatedPtr screen_provider_observer_;
+  std::unique_ptr<mojo::Binding<mojom::WindowTree>> binding_;
+  mojom::ScreenProviderObserverAssociatedPtr screen_provider_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeBinding);
 };

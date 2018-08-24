@@ -151,7 +151,7 @@ void WindowTreeHostMus::PerformWmAction(const std::string& action) {
 }
 
 void WindowTreeHostMus::PerformWindowMove(
-    ws::mojom::MoveLoopSource mus_source,
+    ui::mojom::MoveLoopSource mus_source,
     const gfx::Point& cursor_location,
     const base::Callback<void(bool)>& callback) {
   delegate_->OnWindowTreeHostPerformWindowMove(

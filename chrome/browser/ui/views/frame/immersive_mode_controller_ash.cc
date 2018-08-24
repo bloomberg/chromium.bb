@@ -213,11 +213,11 @@ void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
   mash_reveal_widget_ = std::make_unique<views::Widget>();
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_POPUP);
   init_params.mus_properties
-      [ws::mojom::WindowManager::kRenderParentTitleArea_Property] =
+      [ui::mojom::WindowManager::kRenderParentTitleArea_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<aura::PropertyConverter::PrimitiveType>(true));
   init_params.mus_properties
-      [ws::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty] =
+      [ui::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(true);
   init_params.name = "ChromeImmersiveRevealWindow";
   init_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

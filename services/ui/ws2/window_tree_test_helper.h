@@ -43,11 +43,11 @@ class WindowTreeTestHelper {
   explicit WindowTreeTestHelper(WindowTree* window_tree);
   ~WindowTreeTestHelper();
 
-  ws::mojom::WindowTree* window_tree();
+  mojom::WindowTree* window_tree();
 
   ClientSpecificId client_id() const { return window_tree_->client_id_; }
 
-  ws::mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
+  mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
 
   aura::Window* NewWindow(
       Id transport_window_id = 0,
@@ -62,7 +62,7 @@ class WindowTreeTestHelper {
   bool ReleaseCapture(aura::Window* window);
   bool ReorderWindow(aura::Window* window,
                      aura::Window* relative_window,
-                     ws::mojom::OrderDirection direction);
+                     mojom::OrderDirection direction);
   bool SetWindowBounds(
       aura::Window* window,
       const gfx::Rect& bounds,
@@ -87,15 +87,15 @@ class WindowTreeTestHelper {
   // Creates a new embedding. On success the new Embedding is returned. The
   // returned Embedding is owned by the ServerWindow for |window|.
   Embedding* Embed(aura::Window* window,
-                   ws::mojom::WindowTreeClientPtr client_ptr,
-                   ws::mojom::WindowTreeClient* client,
+                   mojom::WindowTreeClientPtr client_ptr,
+                   mojom::WindowTreeClient* client,
                    uint32_t embed_flags = 0);
   void SetEventTargetingPolicy(aura::Window* window,
-                               ws::mojom::EventTargetingPolicy policy);
+                               mojom::EventTargetingPolicy policy);
   bool SetFocus(aura::Window* window);
   void SetCanFocus(aura::Window* window, bool can_focus);
   void SetCursor(aura::Window* window, ui::CursorData cursor);
-  void OnWindowInputEventAck(uint32_t event_id, ws::mojom::EventResult result);
+  void OnWindowInputEventAck(uint32_t event_id, mojom::EventResult result);
   bool StackAbove(aura::Window* above_window, aura::Window* below_window);
   bool StackAtTop(aura::Window* window);
 

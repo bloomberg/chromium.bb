@@ -76,8 +76,8 @@ void NavigableContentsView::EmbedUsingToken(
 #if BUILDFLAG(ENABLE_REMOTE_NAVIGABLE_CONTENTS_VIEW)
   if (remote_view_host_) {
     const uint32_t kEmbedFlags =
-        ws::mojom::kEmbedFlagEmbedderInterceptsEvents |
-        ws::mojom::kEmbedFlagEmbedderControlsVisibility;
+        ui::mojom::kEmbedFlagEmbedderInterceptsEvents |
+        ui::mojom::kEmbedFlagEmbedderControlsVisibility;
     remote_view_host_->EmbedUsingToken(token, kEmbedFlags, base::DoNothing());
     return;
   }

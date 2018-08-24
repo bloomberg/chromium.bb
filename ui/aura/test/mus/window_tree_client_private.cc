@@ -38,7 +38,7 @@ WindowTreeClientPrivate::CreateWindowTreeClient(
   return wtc;
 }
 
-void WindowTreeClientPrivate::OnEmbed(ws::mojom::WindowTree* window_tree) {
+void WindowTreeClientPrivate::OnEmbed(ui::mojom::WindowTree* window_tree) {
   const ui::Id focused_window_id = 0;
   tree_client_impl_->OnEmbedImpl(window_tree, CreateWindowDataForEmbed(),
                                  kDisplayId, focused_window_id, true,
@@ -70,7 +70,7 @@ void WindowTreeClientPrivate::CallOnEmbedFromToken(EmbedRoot* embed_root) {
                                       base::Optional<viz::LocalSurfaceId>());
 }
 
-void WindowTreeClientPrivate::SetTree(ws::mojom::WindowTree* window_tree) {
+void WindowTreeClientPrivate::SetTree(ui::mojom::WindowTree* window_tree) {
   tree_client_impl_->WindowTreeConnectionEstablished(window_tree);
 }
 
@@ -85,7 +85,7 @@ Window* WindowTreeClientPrivate::GetWindowByServerId(ui::Id id) {
 
 WindowMus* WindowTreeClientPrivate::NewWindowFromWindowData(
     WindowMus* parent,
-    const ws::mojom::WindowData& window_data) {
+    const ui::mojom::WindowData& window_data) {
   return tree_client_impl_->NewWindowFromWindowData(parent, window_data);
 }
 
@@ -101,8 +101,8 @@ bool WindowTreeClientPrivate::HasChangeInFlightOfType(ChangeType type) {
   return false;
 }
 
-ws::mojom::WindowDataPtr WindowTreeClientPrivate::CreateWindowDataForEmbed() {
-  ws::mojom::WindowDataPtr root_data(ws::mojom::WindowData::New());
+ui::mojom::WindowDataPtr WindowTreeClientPrivate::CreateWindowDataForEmbed() {
+  ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
   root_data->parent_id = 0;
   // OnEmbed() is passed windows the client doesn't own. Use a |client_id| of 1
   // to mirror what the server does for the client-id portion, and use the
