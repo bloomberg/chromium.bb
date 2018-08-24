@@ -2965,7 +2965,7 @@
     {
       "id":273,
       "cr_bugs": [866613],
-      "description": "Frequent crashes on Adreno (TM) 405 on L",
+      "description": "Frequent crashes on Adreno (TM) on L and below",
       "os": {
         "type": "android",
         "version": {
@@ -2973,7 +2973,7 @@
           "value": "6.0"
         }
       },
-      "gl_renderer": "Adreno \\(TM\\) 4.*",
+      "gl_renderer": "Adreno.*",
       "features": [
         "use_es2_for_oopr"
       ]
