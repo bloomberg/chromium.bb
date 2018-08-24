@@ -195,6 +195,19 @@ cr.define('settings_people_page_sync_page', function() {
       Polymer.dom.flush();
       assertFalse(ironCollapse.opened);
       assertFalse(expandIcon.expanded);
+
+      // Random changes to syncStatus should not expand the section.
+      // Regression test for https://crbug.com/869938
+      syncPage.syncStatus = {
+        signedIn: true,
+        disabled: false,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+        statusText: 'UninterestingChange',  // Dummy change to trigger observer.
+      };
+      assertFalse(ironCollapse.opened);
+      assertFalse(expandIcon.expanded);
+
       syncSectionToggle.click();
       Polymer.dom.flush();
       assertTrue(ironCollapse.opened);
@@ -211,6 +224,44 @@ cr.define('settings_people_page_sync_page', function() {
         statusAction: settings.StatusAction.REAUTHENTICATE
       };
       assertTrue(ironCollapse.hidden);
+    });
+
+    test('SyncSectionLayout_UnifiedConsentEnabled_SignoutCollapse', function() {
+      const ironCollapse = syncPage.$$('#sync-section');
+      const syncSectionToggle = syncPage.$$('#sync-section-toggle');
+      const expandIcon = syncSectionToggle.querySelector('cr-expand-button');
+      syncPage.syncStatus = {
+        signedIn: true,
+        disabled: false,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+      };
+      syncPage.unifiedConsentEnabled = true;
+      Polymer.dom.flush();
+
+      // Sync section is initially open when signed in.
+      assertTrue(ironCollapse.opened);
+      assertTrue(expandIcon.expanded);
+
+      // Signout collapses the section.
+      syncPage.syncStatus = {
+        signedIn: false,
+        disabled: false,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+      };
+      assertFalse(ironCollapse.opened);
+      assertFalse(expandIcon.expanded);
+
+      // Signin expands the section.
+      syncPage.syncStatus = {
+        signedIn: true,
+        disabled: false,
+        hasError: false,
+        statusAction: settings.StatusAction.NO_ACTION,
+      };
+      assertTrue(ironCollapse.opened);
+      assertTrue(expandIcon.expanded);
     });
 
     test('SyncSectionLayout_UnifiedConsentEnabled_SignedOut', function() {
