@@ -35,6 +35,12 @@ issues]].
 - Fix a problem in the Makefiles that prevented liblouis from being
   built with automake 1.16. This is fixed now thanks to a patch from
   Samuel Thibault.
+- Removal of the code for the /scripting language/ for multipass
+  opcodes. This code was originaly introduced in 2012 but never
+  documented. Consequently it was never used. Meanwhile the original
+  code for multipass opcodes was much improved. So there is no more
+  need for this (duplicate) code and we are removing it.
+
 ** Deprecation notice
 ** Backwards incompatible changes
 ** New, renamed or removed tables
