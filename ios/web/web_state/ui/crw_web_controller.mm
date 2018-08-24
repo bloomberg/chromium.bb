@@ -2069,6 +2069,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [_webView stopLoading];
   [_pendingNavigationInfo setCancelled:YES];
   _certVerificationErrors->Clear();
+  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
   [self loadCancelled];
 }
 
@@ -4609,6 +4610,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
     }
   }
 
+  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
   // This must be reset at the end, since code above may need information about
   // the pending load.
   _pendingNavigationInfo = nil;
@@ -4699,6 +4701,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
           base::SysNSStringToUTF8(storedMIMEType));
     }
   }
+
+  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
@@ -4939,6 +4943,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [self handleLoadError:WKWebViewErrorWithSource(error, NAVIGATION)
           forNavigation:navigation];
+
+  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
   _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
@@ -4990,6 +4996,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   [self didReceiveWebViewNavigationDelegateCallback];
 
   _certVerificationErrors->Clear();
+  web::WebFramesManagerImpl::FromWebState(self.webState)->RemoveAllWebFrames();
   [self webViewWebProcessDidCrash];
 }
 
