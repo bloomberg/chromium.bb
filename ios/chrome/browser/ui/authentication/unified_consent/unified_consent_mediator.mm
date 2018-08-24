@@ -20,9 +20,13 @@
   std::unique_ptr<ChromeBrowserProviderObserverBridge> _browserProviderObserver;
 }
 
+// Unified consent view controller.
 @property(nonatomic, weak)
     UnifiedConsentViewController* unifiedConsentViewController;
+// Image for the selected identity avatar.
 @property(nonatomic, strong) UIImage* selectedIdentityAvatar;
+// NO until the mediator is started.
+@property(nonatomic, assign) BOOL started;
 
 @end
 
@@ -31,6 +35,7 @@
 @synthesize selectedIdentityAvatar = _selectedIdentityAvatar;
 @synthesize selectedIdentity = _selectedIdentity;
 @synthesize unifiedConsentViewController = _unifiedConsentViewController;
+@synthesize started = _started;
 
 - (instancetype)initWithUnifiedConsentViewController:
     (UnifiedConsentViewController*)viewController {
@@ -41,12 +46,6 @@
         std::make_unique<ChromeIdentityServiceObserverBridge>(self);
     _browserProviderObserver =
         std::make_unique<ChromeBrowserProviderObserverBridge>(self);
-    NSArray* identities = ios::GetChromeBrowserProvider()
-                              ->GetChromeIdentityService()
-                              ->GetAllIdentitiesSortedForDisplay();
-    if (identities.count != 0) {
-      _selectedIdentity = identities[0];
-    }
   }
   return self;
 }
@@ -65,14 +64,25 @@
 }
 
 - (void)start {
+  NSArray* identities = ios::GetChromeBrowserProvider()
+                            ->GetChromeIdentityService()
+                            ->GetAllIdentitiesSortedForDisplay();
+  if (identities.count != 0) {
+    self.selectedIdentity = identities[0];
+  }
   // Make sure the view is loaded so the mediator can set it up.
   [self.unifiedConsentViewController loadViewIfNeeded];
+  self.started = YES;
   [self updateViewController];
 }
 
 #pragma mark - Private
 
+// Updates the view if the mediator has been started.
 - (void)updateViewController {
+  // The UI should not be updated before the view is loaded.
+  if (!self.started)
+    return;
   if (self.selectedIdentity) {
     [self.unifiedConsentViewController
         updateIdentityPickerViewWithUserFullName:self.selectedIdentity
