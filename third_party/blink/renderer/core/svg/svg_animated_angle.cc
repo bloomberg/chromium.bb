@@ -51,7 +51,7 @@ void SVGAnimatedAngle::Trace(blink::Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-bool SVGAnimatedAngle::NeedsSynchronizeAttribute() {
+bool SVGAnimatedAngle::NeedsSynchronizeAttribute() const {
   return orient_type_->NeedsSynchronizeAttribute() ||
          SVGAnimatedProperty<SVGAngle>::NeedsSynchronizeAttribute();
 }

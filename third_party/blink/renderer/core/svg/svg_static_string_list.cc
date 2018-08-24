@@ -77,10 +77,6 @@ void SVGStaticStringList::AnimationEnded() {
   NOTREACHED();
 }
 
-bool SVGStaticStringList::NeedsSynchronizeAttribute() {
-  return tear_off_;
-}
-
 SVGStringListTearOff* SVGStaticStringList::TearOff() {
   if (!tear_off_) {
     tear_off_ =

@@ -62,7 +62,6 @@ class SVGStaticStringList final
   SVGPropertyBase* CreateAnimatedValue() override;
   void SetAnimatedValue(SVGPropertyBase*) override;
   void AnimationEnded() override;
-  bool NeedsSynchronizeAttribute() override;
 
   SVGParsingError AttributeChanged(const String&) override;
 
