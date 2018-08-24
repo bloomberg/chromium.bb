@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "services/metrics/public/cpp/metrics_export.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "url/gurl.h"
@@ -131,6 +132,13 @@ class METRICS_EXPORT UkmRecorder {
   // Associates the SourceId with an app URL for APP_ID sources. This method
   // should only be called by AppSourceUrlRecorder and DelegatingUkmRecorder.
   virtual void UpdateAppURL(SourceId source_id, const GURL& url) = 0;
+
+  // Associates navigation data with the UkmSource keyed by |source_id|. This
+  // should only be called by SourceUrlRecorderWebContentsObserver, for
+  // navigation sources.
+  virtual void RecordNavigation(
+      SourceId source_id,
+      const UkmSource::NavigationData& navigation_data) = 0;
 
   DISALLOW_COPY_AND_ASSIGN(UkmRecorder);
 };

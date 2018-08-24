@@ -23,6 +23,11 @@ namespace ukm {
 
 namespace internal {
 
+int64_t CreateUniqueTabId() {
+  static int64_t unique_id_counter = 0;
+  return ++unique_id_counter;
+}
+
 // SourceUrlRecorderWebContentsObserver is responsible for recording UKM source
 // URLs, for all (any only) main frame navigations in a given WebContents.
 // SourceUrlRecorderWebContentsObserver records both the final URL for a
@@ -38,10 +43,19 @@ class SourceUrlRecorderWebContentsObserver
   // associated with the WebContents, this method is a no-op.
   static void CreateForWebContents(content::WebContents* web_contents);
 
+  // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidOpenRequestedURL(content::WebContents* new_contents,
+                           content::RenderFrameHost* source_render_frame_host,
+                           const GURL& url,
+                           const content::Referrer& referrer,
+                           WindowOpenDisposition disposition,
+                           ui::PageTransition transition,
+                           bool started_from_context_menu,
+                           bool renderer_initiated) override;
 
   ukm::SourceId GetLastCommittedSourceId() const;
 
@@ -83,7 +97,17 @@ class SourceUrlRecorderWebContentsObserver
   };
   std::vector<PendingEvent> pending_document_created_events_;
 
-  int64_t last_committed_source_id_;
+  SourceId last_committed_source_id_;
+
+  // The source id before |last_committed_source_id_|.
+  SourceId previous_committed_source_id_;
+
+  // The source id of the last committed source in the tab that opened this tab.
+  // Will be set to kInvalidSourceId after the first navigation in this tab is
+  // finished.
+  SourceId opener_source_id_;
+
+  const int64_t tab_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SourceUrlRecorderWebContentsObserver);
 };
@@ -92,7 +116,10 @@ SourceUrlRecorderWebContentsObserver::SourceUrlRecorderWebContentsObserver(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       bindings_(web_contents, this),
-      last_committed_source_id_(ukm::kInvalidSourceId) {}
+      last_committed_source_id_(ukm::kInvalidSourceId),
+      previous_committed_source_id_(ukm::kInvalidSourceId),
+      opener_source_id_(ukm::kInvalidSourceId),
+      tab_id_(CreateUniqueTabId()) {}
 
 void SourceUrlRecorderWebContentsObserver::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
@@ -127,6 +154,7 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
   DCHECK(!navigation_handle->IsSameDocument());
 
   if (navigation_handle->HasCommitted()) {
+    previous_committed_source_id_ = last_committed_source_id_;
     last_committed_source_id_ = ukm::ConvertToSourceId(
         navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
   }
@@ -141,6 +169,26 @@ void SourceUrlRecorderWebContentsObserver::DidFinishNavigation(
   MaybeRecordUrl(navigation_handle, initial_url);
 
   MaybeFlushPendingEvents();
+
+  // Reset the opener source id. Only the first source in a tab should have an
+  // opener.
+  opener_source_id_ = kInvalidSourceId;
+}
+
+void SourceUrlRecorderWebContentsObserver::DidOpenRequestedURL(
+    content::WebContents* new_contents,
+    content::RenderFrameHost* source_render_frame_host,
+    const GURL& url,
+    const content::Referrer& referrer,
+    WindowOpenDisposition disposition,
+    ui::PageTransition transition,
+    bool started_from_context_menu,
+    bool renderer_initiated) {
+  auto* new_recorder =
+      SourceUrlRecorderWebContentsObserver::FromWebContents(new_contents);
+  if (!new_recorder)
+    return;
+  new_recorder->opener_source_id_ = GetLastCommittedSourceId();
 }
 
 ukm::SourceId SourceUrlRecorderWebContentsObserver::GetLastCommittedSourceId()
@@ -195,13 +243,23 @@ void SourceUrlRecorderWebContentsObserver::MaybeRecordUrl(
   if (!ukm_recorder)
     return;
 
+  const GURL& final_url = navigation_handle->GetURL();
+
+  UkmSource::NavigationData navigation_data;
+  navigation_data.url = final_url;
+  if (final_url != initial_url)
+    navigation_data.initial_url = initial_url;
+
+  // Careful note: the current navigation may have failed.
+  navigation_data.previous_source_id = navigation_handle->HasCommitted()
+                                           ? previous_committed_source_id_
+                                           : last_committed_source_id_;
+  navigation_data.opener_source_id = opener_source_id_;
+  navigation_data.tab_id = tab_id_;
+
   const ukm::SourceId source_id = ukm::ConvertToSourceId(
       navigation_handle->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
-  ukm_recorder->UpdateNavigationURL(source_id, initial_url);
-
-  const GURL& final_url = navigation_handle->GetURL();
-  if (final_url != initial_url)
-    ukm_recorder->UpdateNavigationURL(source_id, final_url);
+  ukm_recorder->RecordNavigation(source_id, navigation_data);
 }
 
 // static

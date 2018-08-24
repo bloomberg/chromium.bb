@@ -84,6 +84,9 @@ class UkmRecorderImpl : public UkmRecorder {
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
   void UpdateAppURL(SourceId source_id, const GURL& url) override;
+  void RecordNavigation(
+      SourceId source_id,
+      const UkmSource::NavigationData& navigation_data) override;
   using UkmRecorder::RecordOtherURL;
 
   virtual bool ShouldRestrictToWhitelistedSourceIds() const;
@@ -117,6 +120,9 @@ class UkmRecorderImpl : public UkmRecorder {
   };
 
   using MetricAggregateMap = std::map<uint64_t, MetricAggregate>;
+
+  // Returns true if |sanitized_url| should be recorded.
+  bool ShouldRecordUrl(SourceId source_id, const GURL& sanitized_url);
 
   void AddEntry(mojom::UkmEntryPtr entry) override;
 

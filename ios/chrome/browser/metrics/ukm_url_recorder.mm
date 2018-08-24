@@ -134,13 +134,18 @@ void SourceUrlRecorderWebStateObserver::MaybeRecordUrl(
   if (!ukm_recorder)
     return;
 
-  const SourceId source_id = ConvertToSourceId(
-      navigation_context->GetNavigationId(), SourceIdType::NAVIGATION_ID);
-  ukm_recorder->UpdateNavigationURL(source_id, initial_url);
-
   const GURL& final_url = navigation_context->GetUrl();
+
+  UkmSource::NavigationData navigation_data;
+  navigation_data.url = final_url;
   if (final_url != initial_url)
-    ukm_recorder->UpdateNavigationURL(source_id, final_url);
+    navigation_data.initial_url = initial_url;
+
+  // TODO(crbug.com/873316): Fill out the other fields in NavigationData.
+
+  const ukm::SourceId source_id = ukm::ConvertToSourceId(
+      navigation_context->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+  ukm_recorder->RecordNavigation(source_id, navigation_data);
 }
 
 }  // namespace internal
