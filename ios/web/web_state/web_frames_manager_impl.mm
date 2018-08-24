@@ -51,7 +51,10 @@ WebFramesManagerImpl::WebFramesManagerImpl(web::WebState* web_state)
     : web_state_(web_state) {}
 
 void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
+  DCHECK(frame);
+  DCHECK(!frame->GetFrameId().empty());
   if (frame->IsMainFrame()) {
+    DCHECK(!main_web_frame_);
     main_web_frame_ = frame.get();
   }
   DCHECK(web_frames_.count(frame->GetFrameId()) == 0);
@@ -59,6 +62,11 @@ void WebFramesManagerImpl::AddFrame(std::unique_ptr<WebFrame> frame) {
 }
 
 void WebFramesManagerImpl::RemoveFrameWithId(const std::string& frame_id) {
+  DCHECK(!frame_id.empty());
+  // If the removed frame is a main frame, it should be the current one.
+  DCHECK(web_frames_.count(frame_id) == 0 ||
+         !web_frames_[frame_id]->IsMainFrame() ||
+         main_web_frame_ == web_frames_[frame_id].get());
   if (main_web_frame_ && main_web_frame_->GetFrameId() == frame_id) {
     main_web_frame_ = nullptr;
   }
