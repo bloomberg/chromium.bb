@@ -73,13 +73,17 @@ camera.util.TooltipManager.prototype.setTooltipVisibility_ = function(
   }
 
   // Show the tooltip.
-  // TODO(mtomasz): Support showing near the top edge.
   var tooltipMsg = tooltip.querySelector('#tooltip-msg');
   var tooltipArrow = tooltip.querySelector('#tooltip-arrow');
 
   var elementRect = element.getBoundingClientRect();
   var elementCenter = elementRect.left + element.offsetWidth / 2;
-  tooltip.style.top = elementRect.top - tooltip.offsetHeight + 'px';
+  var tooltipTop = elementRect.top - tooltip.offsetHeight;
+  if (tooltipArrow.classList.toggle('reverse',
+      tooltipTop < camera.util.TooltipManager.EDGE_MARGIN)) {
+    tooltipTop = elementRect.bottom;
+  }
+  tooltip.style.top = tooltipTop + 'px';
 
   // Center over the element, but avoid touching edges.
   var left = Math.min(
@@ -129,7 +133,7 @@ camera.util.TooltipManager.prototype.showTooltip_ = function(element) {
   this.effect_.invoke({
     element: element,
     visibility: true
-  }, function() {}, 1000);
+  }, function() {}, 1500);
 };
 
 /**

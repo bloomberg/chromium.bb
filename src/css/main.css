@@ -744,6 +744,12 @@ body.capturing.grid #preview-grid-vertical {
   width: 0;
 }
 
+#tooltip-arrow.reverse {
+  border-bottom: 10px solid #e0e0e0;
+  border-top-width: 0;
+  top: 0;
+}
+
 #tooltip #tooltip-msg {
   background: #e0e0e0;
   padding: 10px;
