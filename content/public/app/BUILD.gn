@@ -22,6 +22,7 @@
 
 import("//build/config/chrome_build.gni")
 import("//build/config/ui.gni")
+import("//chromeos/assistant/assistant.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/v8_context_snapshot/v8_context_snapshot.gni")
 import("//ui/base/ui_features.gni")
@@ -200,6 +201,11 @@ service_manifest("packaged_services_manifest") {
 
   if (is_linux) {
     packaged_services += [ "//components/services/font:manifest" ]
+  }
+
+  if (enable_cros_libassistant) {
+    packaged_services +=
+        [ "//chromeos/services/assistant/audio_decoder:manifest" ]
   }
 }
 

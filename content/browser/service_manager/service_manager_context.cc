@@ -100,6 +100,13 @@
 #include "components/services/font/public/interfaces/constants.mojom.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/assistant/buildflags.h"  // nogncheck
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#include "chromeos/services/assistant/public/mojom/constants.mojom.h"  // nogncheck
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#endif
+
 namespace content {
 
 namespace {
@@ -664,6 +671,15 @@ ServiceManagerContext::ServiceManagerContext(
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   out_of_process_services[media::mojom::kCdmServiceName] = base::BindRepeating(
       &base::ASCIIToUTF16, "Content Decryption Module Service");
+#endif
+
+#if defined(OS_CHROMEOS)
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  out_of_process_services
+      [chromeos::assistant::mojom::kAudioDecoderServiceName] =
+          base::BindRepeating(&base::ASCIIToUTF16,
+                              "Assistant Audio Decoder Service");
+#endif  // BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
 #endif
 
   if (ShouldEnableVizService()) {
