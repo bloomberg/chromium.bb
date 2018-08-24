@@ -427,6 +427,13 @@ NET_ERROR(EARLY_DATA_REJECTED, -178)
 // See https://tools.ietf.org/html/rfc8446#appendix-D.3 for details.
 NET_ERROR(WRONG_VERSION_ON_EARLY_DATA, -179)
 
+// TLS 1.3 was enabled, but a lower version was negotiated and the server
+// returned a value indicating it supported TLS 1.3. This is part of a security
+// check in TLS 1.3, but it may also indicate the user is behind a buggy
+// TLS-terminating proxy which implemented TLS 1.2 incorrectly. (See
+// https://crbug.com/boringssl/226.)
+NET_ERROR(TLS13_DOWNGRADE_DETECTED, -180)
+
 // Certificate error codes
 //
 // The values of certificate error codes must be consecutive.

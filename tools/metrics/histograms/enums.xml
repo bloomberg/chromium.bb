@@ -6835,6 +6835,7 @@ Called by update_net_error_codes.py.-->
   <int value="-603" label="FTP_TRANSFER_ABORTED"/>
   <int value="-602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="-601" label="FTP_FAILED"/>
+  <int value="-504" label="INVALID_SIGNED_EXCHANGE"/>
   <int value="-503" label="ADD_USER_CERT_FAILED"/>
   <int value="-502" label="NO_PRIVATE_KEY_FOR_CERT"/>
   <int value="-501" label="INSECURE_RESPONSE"/>
@@ -6850,6 +6851,9 @@ Called by update_net_error_codes.py.-->
   <int value="-402" label="CACHE_WRITE_FAILURE"/>
   <int value="-401" label="CACHE_READ_FAILURE"/>
   <int value="-400" label="CACHE_MISS"/>
+  <int value="-378" label="SPDY_PUSHED_RESPONSE_DOES_NOT_MATCH"/>
+  <int value="-377" label="SPDY_CLIENT_REFUSED_STREAM"/>
+  <int value="-376" label="SPDY_STREAM_CLOSED"/>
   <int value="-375" label="TOO_MANY_RETRIES"/>
   <int value="-374" label="SPDY_CLAIMED_PUSHED_STREAM_RESET_BY_SERVER"/>
   <int value="-373" label="SPDY_PUSHED_STREAM_NOT_AVAILABLE"/>
@@ -6928,6 +6932,7 @@ Called by update_net_error_codes.py.-->
   <int value="-202" label="CERT_AUTHORITY_INVALID"/>
   <int value="-201" label="CERT_DATE_INVALID"/>
   <int value="-200" label="CERT_COMMON_NAME_INVALID"/>
+  <int value="-180" label="TLS13_DOWNGRADE_DETECTED"/>
   <int value="-179" label="WRONG_VERSION_ON_EARLY_DATA"/>
   <int value="-178" label="EARLY_DATA_REJECTED"/>
   <int value="-177" label="SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS"/>
