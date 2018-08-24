@@ -97,7 +97,7 @@ SignedExchangeHandler::SignedExchangeHandler(
 
   if (!SignedExchangeSignatureHeaderField::GetVersionParamFromContentType(
           content_type, &version_) ||
-      version_ != SignedExchangeVersion::kB1) {
+      version_ != SignedExchangeVersion::kB2) {
     // TODO(https://crbug.com/874323): Extract and redirect to the fallback URL.
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
@@ -107,14 +107,15 @@ SignedExchangeHandler::SignedExchangeHandler(
         devtools_proxy_.get(),
         base::StringPrintf("Unsupported version of the content type. Currentry "
                            "content type must be "
-                           "\"application/signed-exchange;v=b1\". But the "
+                           "\"application/signed-exchange;v=b2\". But the "
                            "response content type was \"%s\"",
                            content_type.c_str()));
     return;
   }
 
   // Triggering the read (asynchronously) for the prologue bytes.
-  SetupBuffers(SignedExchangePrologue::kEncodedPrologueInBytes);
+  SetupBuffers(
+      signed_exchange_prologue::BeforeFallbackUrl::kEncodedSizeInBytes);
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
                                 weak_factory_.GetWeakPtr()));
@@ -132,7 +133,9 @@ void SignedExchangeHandler::SetupBuffers(size_t size) {
 }
 
 void SignedExchangeHandler::DoHeaderLoop() {
-  DCHECK(state_ == State::kReadingPrologue || state_ == State::kReadingHeaders);
+  DCHECK(state_ == State::kReadingPrologueBeforeFallbackUrl ||
+         state_ == State::kReadingPrologueFallbackUrlAndAfter ||
+         state_ == State::kReadingHeaders);
   int rv = source_->Read(
       header_read_buf_.get(), header_read_buf_->BytesRemaining(),
       base::BindRepeating(&SignedExchangeHandler::DidReadHeader,
@@ -142,7 +145,9 @@ void SignedExchangeHandler::DoHeaderLoop() {
 }
 
 void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
-  DCHECK(state_ == State::kReadingPrologue || state_ == State::kReadingHeaders);
+  DCHECK(state_ == State::kReadingPrologueBeforeFallbackUrl ||
+         state_ == State::kReadingPrologueFallbackUrlAndAfter ||
+         state_ == State::kReadingHeaders);
 
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeHandler::DidReadHeader");
@@ -165,8 +170,14 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
   header_read_buf_->DidConsume(result);
   if (header_read_buf_->BytesRemaining() == 0) {
     switch (state_) {
-      case State::kReadingPrologue:
-        if (!ParsePrologue()) {
+      case State::kReadingPrologueBeforeFallbackUrl:
+        if (!ParsePrologueBeforeFallbackUrl()) {
+          RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
+          return;
+        }
+        break;
+      case State::kReadingPrologueFallbackUrlAndAfter:
+        if (!ParsePrologueFallbackUrlAndAfter()) {
           RunErrorCallback(net::ERR_INVALID_SIGNED_EXCHANGE);
           return;
         }
@@ -187,7 +198,9 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
     return;
 
   // Trigger the next read.
-  DCHECK(state_ == State::kReadingPrologue || state_ == State::kReadingHeaders);
+  DCHECK(state_ == State::kReadingPrologueBeforeFallbackUrl ||
+         state_ == State::kReadingPrologueFallbackUrlAndAfter ||
+         state_ == State::kReadingHeaders);
   if (completed_syncly) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::DoHeaderLoop,
@@ -197,18 +210,48 @@ void SignedExchangeHandler::DidReadHeader(bool completed_syncly, int result) {
   }
 }
 
-bool SignedExchangeHandler::ParsePrologue() {
-  DCHECK_EQ(state_, State::kReadingPrologue);
+bool SignedExchangeHandler::ParsePrologueBeforeFallbackUrl() {
+  DCHECK_EQ(state_, State::kReadingPrologueBeforeFallbackUrl);
 
-  prologue_ = SignedExchangePrologue::Parse(
-      base::make_span(reinterpret_cast<uint8_t*>(header_buf_->data()),
-                      SignedExchangePrologue::kEncodedPrologueInBytes),
-      devtools_proxy_.get());
-  if (!prologue_)
+  prologue_before_fallback_url_ =
+      signed_exchange_prologue::BeforeFallbackUrl::Parse(
+          base::make_span(
+              reinterpret_cast<uint8_t*>(header_buf_->data()),
+              signed_exchange_prologue::BeforeFallbackUrl::kEncodedSizeInBytes),
+          devtools_proxy_.get());
+  if (!prologue_before_fallback_url_.is_valid()) {
+    // TODO(crbug.com/874323): We should proceed anyway to extract fallback
+    // url for redirect.
     return false;
+  }
 
-  // Set up a new buffer for Signature + CBOR-encoded header reading.
-  SetupBuffers(prologue_->ComputeFollowingSectionsLength());
+  // Set up a new buffer for reading
+  // |signed_exchange_prologue::FallbackUrlAndAfter|.
+  SetupBuffers(
+      prologue_before_fallback_url_.ComputeFallbackUrlAndAfterLength());
+  state_ = State::kReadingPrologueFallbackUrlAndAfter;
+  return true;
+}
+
+bool SignedExchangeHandler::ParsePrologueFallbackUrlAndAfter() {
+  DCHECK_EQ(state_, State::kReadingPrologueFallbackUrlAndAfter);
+
+  prologue_fallback_url_and_after_ =
+      signed_exchange_prologue::FallbackUrlAndAfter::Parse(
+          base::make_span(
+              reinterpret_cast<uint8_t*>(header_buf_->data()),
+              prologue_before_fallback_url_.ComputeFallbackUrlAndAfterLength()),
+          prologue_before_fallback_url_, devtools_proxy_.get());
+  if (!prologue_fallback_url_and_after_.is_valid()) {
+    // TODO(crbug.com/874323): Trigger fallback redirect if
+    // |prologue_fallback_url_and_after_.fallback_url().is_valid()|.
+    return false;
+  }
+
+  // Set up a new buffer for reading the Signature header field and CBOR-encoded
+  // headers.
+  SetupBuffers(
+      prologue_fallback_url_and_after_.ComputeFollowingSectionsLength());
   state_ = State::kReadingHeaders;
   return true;
 }
@@ -218,14 +261,17 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
                "SignedExchangeHandler::ParseHeadersAndFetchCertificate");
   DCHECK_EQ(state_, State::kReadingHeaders);
 
+  const GURL& fallback_url = prologue_fallback_url_and_after_.fallback_url();
+
   base::StringPiece data(header_buf_->data(), header_read_buf_->size());
-  base::StringPiece signature_header_field =
-      data.substr(0, prologue_->signature_header_field_length());
-  base::span<const uint8_t> cbor_header = base::as_bytes(
-      base::make_span(data.substr(prologue_->signature_header_field_length(),
-                                  prologue_->cbor_header_length())));
-  envelope_ = SignedExchangeEnvelope::Parse(signature_header_field, cbor_header,
-                                            devtools_proxy_.get());
+  base::StringPiece signature_header_field = data.substr(
+      0, prologue_fallback_url_and_after_.signature_header_field_length());
+  base::span<const uint8_t> cbor_header =
+      base::as_bytes(base::make_span(data.substr(
+          prologue_fallback_url_and_after_.signature_header_field_length(),
+          prologue_fallback_url_and_after_.cbor_header_length())));
+  envelope_ = SignedExchangeEnvelope::Parse(
+      fallback_url, signature_header_field, cbor_header, devtools_proxy_.get());
   header_read_buf_ = nullptr;
   header_buf_ = nullptr;
   if (!envelope_) {

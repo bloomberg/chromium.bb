@@ -65,9 +65,25 @@ const uint64_t kSignatureHeaderExpires = 1517895941;
 
 // See content/testdata/sxg/README on how to generate these data.
 // clang-format off
-constexpr char kSignatureHeaderRSA[] = R"(label; sig=*HrNLDfn6oHUmfx3YvP7dTseyZdmnQQB7jR8yea0FezZmy7IwJVtcZ/tGpXJ6fe8druTsGeFArdCeeLBapmPLq8BP6k6Uk2ClKUWNbM3is/HHaWWsfpLBF2fETKEBXvvUI9G8nJqDLJ9RS3AAZMEG+OrCybR1kEFDhc+Cp34isj8aUn7OG1ugq8ADt1DkP8xwSLn4MA2E6tHdG1dNNs+GpWE5pUbqe49DdQaQp/DcvOpixeDi3iID2VHDeASfyCVQvxNfEPRLKQ5fOELlGerTVY5XTXeegUfUuzTRHDsOBTPQ4iihCK2+/8vRwx92sExXnMH163ZL/YIM55FoU2KuRQ==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; date=1517892341; expires=1517895941)";
-constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEYCIQD0rF/pJqqYa9WEE6eZcGzrVKv8yx+78tLAATxfLlyoWgIhAPJoiWcYAC+vDrZ1m5qE++y1TLdYUenwV84vpAaV3wTG*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
-constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGUCMDkTn0MhRiG0OfbAbnyXRgM8XSV8vjm5w0olX5qoL94LEiJ7zS4ZmdxvSNHp5luK5QIxAPlQRvcIBq8vvKgkzQCjsbZ/jEAKh1Gx2JKSyj4HRfLWRar4KbGbMm+GbyU7N/SZYQ==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderRSA[] = R"(label; sig=*DDeXzJshGnPT+ei1rS1KmZx+QLwwLTbNKDVSmTb2HjGfgPngv+C+uMbjZiliOmGe0b514JcAlYAM57t0kZY2FPd9JdqwYPIiAWEwxByfV2iXBbsGZNWGtS/AAq1SaPwIMfrzdLXAFbKbtTRhS7B5LHCo/6hEIXu0TJJFbv5fKaLgTTLF0AK5dV0/En0uz+bnVARuBIH/ez2gPEFc6KbGnTTp8LYcCe/YjlHQy/Oac28ACBtn70rP1TerWEaYBwMMDckJ2gfsVyLqMcFtJqV0uGLT6Atb2wBSUZlZDTEZf228362r+EHLrADAuhz4bdSMKFsFgWyceOriDyHhc0PSwQ==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*tJGJP8ej7KCEW8VnVK3bKwpBza/oLrtWA75z5ZPptuc=*; date=1517892341; expires=1517895941)";
+constexpr char kSignatureHeaderECDSAP256[] = R"(label; sig=*MEUCIQC7tM/B6YxVgrJmgfFawtwBKPev2vFCh7amR+JTDBMgTQIga9LkS51vteYr8NWPTCSZRy10lcLaFNN9m1G3OBS9lBs=*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*KX+BYLSMgDOON8Ju65RoId39Qvajxa12HO+WnD4HpS0=*; date=1517892341; expires=1517895941)";
+constexpr uint8_t kCborHeadersECDSAP256[] = {
+  0x82, 0xa1, 0x47, 0x3a, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x43, 0x47,
+  0x45, 0x54, 0xa4, 0x46, 0x64, 0x69, 0x67, 0x65, 0x73, 0x74, 0x58, 0x39,
+  0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61, 0x32, 0x35, 0x36, 0x2d, 0x30, 0x33,
+  0x3d, 0x77, 0x6d, 0x70, 0x34, 0x64, 0x52, 0x4d, 0x59, 0x67, 0x78, 0x50,
+  0x33, 0x74, 0x53, 0x4d, 0x43, 0x77, 0x56, 0x2f, 0x49, 0x30, 0x43, 0x57,
+  0x4f, 0x43, 0x69, 0x48, 0x5a, 0x70, 0x41, 0x69, 0x68, 0x4b, 0x5a, 0x6b,
+  0x31, 0x39, 0x62, 0x73, 0x4e, 0x39, 0x52, 0x49, 0x3d, 0x47, 0x3a, 0x73,
+  0x74, 0x61, 0x74, 0x75, 0x73, 0x43, 0x32, 0x30, 0x30, 0x4c, 0x63, 0x6f,
+  0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x74, 0x79, 0x70, 0x65, 0x58, 0x18,
+  0x74, 0x65, 0x78, 0x74, 0x2f, 0x68, 0x74, 0x6d, 0x6c, 0x3b, 0x20, 0x63,
+  0x68, 0x61, 0x72, 0x73, 0x65, 0x74, 0x3d, 0x75, 0x74, 0x66, 0x2d, 0x38,
+  0x50, 0x63, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x2d, 0x65, 0x6e, 0x63,
+  0x6f, 0x64, 0x69, 0x6e, 0x67, 0x4c, 0x6d, 0x69, 0x2d, 0x73, 0x68, 0x61,
+  0x32, 0x35, 0x36, 0x2d, 0x30, 0x33
+};
+constexpr char kSignatureHeaderECDSAP384[] = R"(label; sig=*MGUCMQDm3+Mf3ymTQOF2EUFk+NDIpOIqbFCboYsPD9YOV9rpayKTmAXzUD7Hxtp+XP/8mQECMEfTRcJmvL9QMAMKuDIzQqy/ib8MPeJHap9kQVQT1OdROaYj4EISngkJeT5om9/YlA==*; validity-url="https://example.com/resource.validity.msg"; integrity="digest/mi-sha256-03"; cert-url="https://example.com/cert.msg"; cert-sha256=*8X8y8nj8vDJHSSa0cxn+TCu+8zGpIJfbdzAnd5cW+jA=*; date=1517892341; expires=1517895941)";
 // clang-format on
 
 // |expires| (1518497142) is more than 7 days (604800 seconds) after |date|
@@ -286,6 +302,7 @@ TEST_F(SignedExchangeSignatureVerifierTest, VerifyECDSAP256) {
   envelope.AddResponseHeader("content-encoding", "mi-sha256-03");
   envelope.AddResponseHeader(
       "digest", "mi-sha256-03=wmp4dRMYgxP3tSMCwV/I0CWOCiHZpAihKZk19bsN9RI=");
+  envelope.set_cbor_header(base::make_span(kCborHeadersECDSAP256));
 
   envelope.SetSignatureForTesting((*signature)[0]);
 

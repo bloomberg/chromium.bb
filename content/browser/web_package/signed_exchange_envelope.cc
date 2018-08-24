@@ -83,30 +83,6 @@ bool ParseRequestMap(const cbor::CBORValue& value,
 
   const cbor::CBORValue::MapValue& request_map = value.GetMap();
 
-  auto url_iter = request_map.find(
-      cbor::CBORValue(kUrlKey, cbor::CBORValue::Type::BYTE_STRING));
-  if (url_iter == request_map.end() || !url_iter->second.is_bytestring()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, ":url is not found or not a bytestring.");
-    return false;
-  }
-  out->set_request_url(GURL(url_iter->second.GetBytestringAsString()));
-  if (!out->request_url().is_valid()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(devtools_proxy,
-                                                    ":url is not a valid URL.");
-    return false;
-  }
-  if (out->request_url().has_ref()) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, ":url can't have a fragment.");
-    return false;
-  }
-  if (!out->request_url().SchemeIs("https")) {
-    signed_exchange_utils::ReportErrorAndTraceEvent(
-        devtools_proxy, ":url scheme must be 'https'.");
-    return false;
-  }
-
   auto method_iter = request_map.find(
       cbor::CBORValue(kMethodKey, cbor::CBORValue::Type::BYTE_STRING));
   if (method_iter == request_map.end() ||
@@ -137,7 +113,15 @@ bool ParseRequestMap(const cbor::CBORValue& value,
       return false;
     }
     base::StringPiece name_str = it.first.GetBytestringAsString();
-    if (name_str == kUrlKey || name_str == kMethodKey)
+
+    if (name_str == kUrlKey) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy,
+          ":url key in request map is obsolete in this version of the format.");
+      return false;
+    }
+
+    if (name_str == kMethodKey)
       continue;
 
     // TODO(kouhei): Add spec ref here once
@@ -257,11 +241,15 @@ bool ParseResponseMap(const cbor::CBORValue& value,
 
 // static
 base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
+    const GURL& fallback_url,
     base::StringPiece signature_header_field,
     base::span<const uint8_t> cbor_header,
     SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeEnvelope::Parse");
+
+  const GURL& request_url = fallback_url;
+
   cbor::CBORReader::DecoderError error;
   base::Optional<cbor::CBORValue> value =
       cbor::CBORReader::Read(cbor_header, &error);
@@ -293,6 +281,8 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
   }
 
   SignedExchangeEnvelope ret;
+  ret.set_cbor_header(cbor_header);
+  ret.set_request_url(request_url);
 
   if (!ParseRequestMap(top_level_array[0], &ret, devtools_proxy)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
@@ -321,7 +311,6 @@ base::Optional<SignedExchangeEnvelope> SignedExchangeEnvelope::Parse(
   // If the signature’s “validity-url” parameter is not same-origin with
   // exchange’s effective request URI (Section 5.5 of [RFC7230]), return
   // “invalid” [spec text]
-  const GURL request_url = ret.request_url();
   const GURL validity_url = ret.signature().validity_url;
   if (!url::IsSameOriginWith(request_url, validity_url)) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
@@ -369,6 +358,10 @@ SignedExchangeEnvelope::BuildHttpResponseHeaders() const {
   header_str.append("\r\n");
   return base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(header_str.c_str(), header_str.size()));
+}
+
+void SignedExchangeEnvelope::set_cbor_header(base::span<const uint8_t> data) {
+  cbor_header_ = std::vector<uint8_t>(data.begin(), data.end());
 }
 
 }  // namespace content

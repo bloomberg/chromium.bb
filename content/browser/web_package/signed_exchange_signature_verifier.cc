@@ -4,6 +4,7 @@
 
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
 
+#include "base/big_endian.h"
 #include "base/containers/span.h"
 #include "base/format_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -30,20 +31,20 @@ namespace content {
 namespace {
 
 // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#signature-validity
-// Step 7. "Let message be the concatenation of the following byte strings."
+// Step 5. "Let message be the concatenation of the following byte strings."
 constexpr uint8_t kMessageHeader[] =
-    // 7.1. "A string that consists of octet 32 (0x20) repeated 64 times."
+    // 5.1. "A string that consists of octet 32 (0x20) repeated 64 times."
     // [spec text]
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
-    // 7.2. "A context string: the ASCII encoding of "HTTP Exchange 1"." ...
+    // 5.2. "A context string: the ASCII encoding of "HTTP Exchange 1"." ...
     // "but implementations of drafts MUST NOT use it and MUST use another
     // draft-specific string beginning with "HTTP Exchange 1 " instead."
     // [spec text]
-    // 7.3. "A single 0 byte which serves as a separator." [spec text]
-    "HTTP Exchange 1 b1";
+    // 5.3. "A single 0 byte which serves as a separator." [spec text]
+    "HTTP Exchange 1 b2";
 
 base::Optional<cbor::CBORValue> GenerateCanonicalRequestCBOR(
     const SignedExchangeEnvelope& envelope) {
@@ -92,56 +93,6 @@ base::Optional<cbor::CBORValue> GenerateCanonicalExchangeHeadersCBOR(
   array.push_back(std::move(*req_val));
   array.push_back(std::move(*res_val));
   return cbor::CBORValue(array);
-}
-
-// Generate a CBOR map value as specified in
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#signature-validity
-// Step 7.4.
-base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
-    const SignedExchangeEnvelope& envelope) {
-  auto headers_val = GenerateCanonicalExchangeHeadersCBOR(envelope);
-  if (!headers_val)
-    return base::nullopt;
-
-  // 7.4. "The bytes of the canonical CBOR serialization (Section 3.4) of
-  // a CBOR map mapping:" [spec text]
-  cbor::CBORValue::MapValue map;
-  // 7.4.1. "If cert-sha256 is set: The text string "cert-sha256" to the byte
-  // string value of cert-sha256." [spec text]
-  if (envelope.signature().cert_sha256.has_value()) {
-    map.insert_or_assign(
-        cbor::CBORValue(kCertSha256Key),
-        cbor::CBORValue(
-            base::StringPiece(reinterpret_cast<const char*>(
-                                  envelope.signature().cert_sha256->data),
-                              sizeof(envelope.signature().cert_sha256->data)),
-            cbor::CBORValue::Type::BYTE_STRING));
-  }
-  // 7.4.2. "The text string "validity-url" to the byte string value of
-  // validity-url." [spec text]
-  map.insert_or_assign(cbor::CBORValue(kValidityUrlKey),
-                       cbor::CBORValue(envelope.signature().validity_url.spec(),
-                                       cbor::CBORValue::Type::BYTE_STRING));
-  // 7.4.3. "The text string "date" to the integer value of date." [spec text]
-  if (!base::IsValueInRangeForNumericType<int64_t>(envelope.signature().date))
-    return base::nullopt;
-
-  map.insert_or_assign(
-      cbor::CBORValue(kDateKey),
-      cbor::CBORValue(base::checked_cast<int64_t>(envelope.signature().date)));
-  // 7.4.4. "The text string "expires" to the integer value of expires."
-  // [spec text]
-  if (!base::IsValueInRangeForNumericType<int64_t>(
-          envelope.signature().expires))
-    return base::nullopt;
-
-  map.insert_or_assign(cbor::CBORValue(kExpiresKey),
-                       cbor::CBORValue(base::checked_cast<int64_t>(
-                           envelope.signature().expires)));
-  // 7.4.5. "The text string "headers" to the CBOR representation
-  // (Section 3.2) of exchange's headers." [spec text]
-  map.insert_or_assign(cbor::CBORValue(kHeadersKey), std::move(*headers_val));
-  return cbor::CBORValue(map);
 }
 
 base::Optional<crypto::SignatureVerifier::SignatureAlgorithm>
@@ -217,40 +168,62 @@ std::string HexDump(const std::vector<uint8_t>& msg) {
   return output;
 }
 
+void AppendToBuf8BytesBigEndian(std::vector<uint8_t>* buf, uint64_t n) {
+  char encoded[8];
+  base::WriteBigEndian(encoded, n);
+  buf->insert(buf->end(), std::begin(encoded), std::end(encoded));
+}
+
 base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
     const SignedExchangeEnvelope& envelope) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "GenerateSignedMessage");
 
-  // GenerateSignedMessageCBOR corresponds to Step 7.4.
-  base::Optional<cbor::CBORValue> cbor_val =
-      GenerateSignedMessageCBOR(envelope);
-  if (!cbor_val) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "GenerateSignedMessage", "error",
-                     "GenerateSignedMessageCBOR failed.");
-    return base::nullopt;
-  }
-
-  base::Optional<std::vector<uint8_t>> cbor_message =
-      cbor::CBORWriter::Write(*cbor_val);
-  if (!cbor_message) {
-    TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
-                     "GenerateSignedMessage", "error",
-                     "CBORWriter::Write failed.");
-    return base::nullopt;
-  }
+  const auto signature = envelope.signature();
 
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
-  // Step 7. "Let message be the concatenation of the following byte strings."
+  // Step 5. "Let message be the concatenation of the following byte strings."
   std::vector<uint8_t> message;
-  // see kMessageHeader for Steps 7.1 to 7.3.
-  message.reserve(arraysize(kMessageHeader) + cbor_message->size());
+  // see kMessageHeader for Steps 5.1 to 5.3.
   message.insert(message.end(), std::begin(kMessageHeader),
                  std::end(kMessageHeader));
-  // 7.4. "The bytes of the canonical CBOR serialization (Section 3.4) of
-  // a CBOR map mapping:" [spec text]
-  message.insert(message.end(), cbor_message->begin(), cbor_message->end());
+
+  // Step 5.4. "If cert-sha256 is set, a byte holding the value 32 followed by
+  // the 32 bytes of the value of cert-sha256. Otherwise a 0 byte." [spec text]
+  // Note: cert-sha256 must be set for application/signed-exchange envelope
+  // format.
+  message.push_back(32);
+  const auto& cert_sha256 = envelope.signature().cert_sha256.value();
+  message.insert(message.end(), std::begin(cert_sha256.data),
+                 std::end(cert_sha256.data));
+
+  // Step 5.5. "The 8-byte big-endian encoding of the length in bytes of
+  // validity-url, followed by the bytes of validity-url." [spec text]
+  const auto& validity_url_spec = signature.validity_url.spec();
+  AppendToBuf8BytesBigEndian(&message, validity_url_spec.size());
+  message.insert(message.end(), std::begin(validity_url_spec),
+                 std::end(validity_url_spec));
+
+  // Step 5.6. "The 8-byte big-endian encoding of date." [spec text]
+  AppendToBuf8BytesBigEndian(&message, signature.date);
+
+  // Step 5.7. "The 8-byte big-endian encoding of expires." [spec text]
+  AppendToBuf8BytesBigEndian(&message, signature.expires);
+
+  // Step 5.8. "The 8-byte big-endian encoding of the length in bytes of
+  // requestUrl, followed by the bytes of requestUrl." [spec text]
+  const auto& request_url_spec = envelope.request_url().spec();
+
+  AppendToBuf8BytesBigEndian(&message, request_url_spec.size());
+  message.insert(message.end(), std::begin(request_url_spec),
+                 std::end(request_url_spec));
+
+  // Step 5.9. "The 8-byte big-endian encoding of the length in bytes of
+  // headers, followed by the bytes of headers." [spec text]
+  AppendToBuf8BytesBigEndian(&message, envelope.cbor_header().size());
+  message.insert(message.end(), envelope.cbor_header().begin(),
+                 envelope.cbor_header().end());
+
   TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
                    "GenerateSignedMessage", "dump", HexDump(message));
   return message;
@@ -260,7 +233,7 @@ base::Time TimeFromSignedExchangeUnixTime(uint64_t t) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(t);
 }
 
-// Implements steps 5-6 of
+// Implements steps 3-4 of
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
 bool VerifyTimestamps(const SignedExchangeEnvelope& envelope,
                       const base::Time& verification_time) {
@@ -269,12 +242,12 @@ bool VerifyTimestamps(const SignedExchangeEnvelope& envelope,
   base::Time creation_time =
       TimeFromSignedExchangeUnixTime(envelope.signature().date);
 
-  // 5. "If expires is more than 7 days (604800 seconds) after date, return
+  // 3. "If expires is more than 7 days (604800 seconds) after date, return
   // "invalid"." [spec text]
   if ((expires_time - creation_time).InSeconds() > 604800)
     return false;
 
-  // 6. "If the current time is before date or after expires, return
+  // 4. "If the current time is before date or after expires, return
   // "invalid"."
   if (verification_time < creation_time || expires_time < verification_time)
     return false;

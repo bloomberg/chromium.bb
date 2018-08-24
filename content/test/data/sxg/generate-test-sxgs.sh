@@ -14,6 +14,14 @@ for cmd in gen-signedexchange gen-certurl dump-signedexchange; do
     fi
 done
 
+dumpSignature() {
+  # Switch to dump-signedexchange again once it support b2 format.
+  # dump-signedexchange -i $1 | \
+  #     sed -n 's/^signature: //p' | \
+  strings $1 | grep label | \
+  tr -d '\n'
+}
+
 tmpdir=$(mktemp -d)
 sctdir=$tmpdir/scts
 mkdir $sctdir
@@ -32,6 +40,7 @@ gen-certurl -pem prime256v1-sha256-noext.public.pem \
 
 # Generate the signed exchange file.
 gen-signedexchange \
+  -version 1b2 \
   -uri https://test.example.org/test/ \
   -status 200 \
   -content test.html \
@@ -45,6 +54,7 @@ gen-signedexchange \
 
 # Generate the signed exchange file with noext certificate
 gen-signedexchange \
+  -version 1b2 \
   -uri https://test.example.org/test/ \
   -status 200 \
   -content test.html \
@@ -58,6 +68,7 @@ gen-signedexchange \
 
 # Generate the signed exchange file with invalid URL.
 gen-signedexchange \
+  -version 1b2 \
   -uri https://test.example.com/test/ \
   -status 200 \
   -content test.html \
@@ -71,6 +82,7 @@ gen-signedexchange \
 
 # Generate the signed exchange for a plain text file.
 gen-signedexchange \
+  -version 1b2 \
   -uri https://test.example.org/hello.txt \
   -status 200 \
   -content hello.txt \
@@ -93,6 +105,7 @@ sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' \
   ../../../../net/data/ssl/certificates/wildcard.pem \
   > $tmpdir/wildcard_example.org.public.pem
 gen-signedexchange \
+  -version 1b2 \
   -uri https://test.example.org/test/ \
   -content test.html \
   -certificate $tmpdir/wildcard_example.org.public.pem \
@@ -101,26 +114,27 @@ gen-signedexchange \
   -o $tmpdir/out.htxg
 
 echo -n 'constexpr char kSignatureHeaderRSA[] = R"('
-dump-signedexchange -i $tmpdir/out.htxg | \
-    sed -n 's/^signature: //p' | \
-    tr -d '\n'
+dumpSignature $tmpdir/out.htxg
 echo ')";'
 
 gen-signedexchange \
+  -version 1b2 \
   -uri https://test.example.org/test/ \
   -content test.html \
   -certificate ./prime256v1-sha256.public.pem \
   -privateKey ./prime256v1.key \
   -date 2018-02-06T04:45:41Z \
-  -o $tmpdir/out.htxg
+  -o $tmpdir/out.htxg \
+  -dumpHeadersCbor $tmpdir/out.cborheader
 
 echo -n 'constexpr char kSignatureHeaderECDSAP256[] = R"('
-dump-signedexchange -i $tmpdir/out.htxg | \
-    sed -n 's/^signature: //p' | \
-    tr -d '\n'
+dumpSignature $tmpdir/out.htxg
 echo ')";'
+echo 'constexpr uint8_t kCborHeaderECDSAP256[] = {'
+xxd --include $tmpdir/out.cborheader | sed '1d;$d'
 
 gen-signedexchange \
+  -version 1b2 \
   -uri https://test.example.org/test/ \
   -content test.html \
   -certificate ./secp384r1-sha256.public.pem \
@@ -129,9 +143,7 @@ gen-signedexchange \
   -o $tmpdir/out.htxg
 
 echo -n 'constexpr char kSignatureHeaderECDSAP384[] = R"('
-dump-signedexchange -i $tmpdir/out.htxg | \
-    sed -n 's/^signature: //p' | \
-    tr -d '\n'
+dumpSignature $tmpdir/out.htxg
 echo ')";'
 
 echo "===="

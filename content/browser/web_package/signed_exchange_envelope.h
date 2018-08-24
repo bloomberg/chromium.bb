@@ -30,12 +30,13 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
  public:
   using HeaderMap = std::map<std::string, std::string>;
 
-  // Parse headers from the application/signed-exchange;v=b0 format.
+  // Parse headers from the application/signed-exchange;v=b2 format.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#application-signed-exchange
   //
   // This also performs the step 1, 3 and 4 of "Cross-origin trust" validation.
   // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cross-origin-trust
   static base::Optional<SignedExchangeEnvelope> Parse(
+      const GURL& fallback_url,
       base::StringPiece signature_header_field,
       base::span<const uint8_t> cbor_header,
       SignedExchangeDevToolsProxy* devtools_proxy);
@@ -49,6 +50,11 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   // lower-cased.
   bool AddResponseHeader(base::StringPiece name, base::StringPiece value);
   scoped_refptr<net::HttpResponseHeaders> BuildHttpResponseHeaders() const;
+
+  const base::span<const uint8_t> cbor_header() const {
+    return base::make_span(cbor_header_);
+  }
+  void set_cbor_header(base::span<const uint8_t> data);
 
   const GURL& request_url() const { return request_url_; };
   void set_request_url(GURL url) { request_url_ = std::move(url); }
@@ -72,6 +78,8 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   }
 
  private:
+  std::vector<uint8_t> cbor_header_;
+
   GURL request_url_;
   std::string request_method_;
 
