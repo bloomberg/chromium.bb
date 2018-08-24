@@ -1029,7 +1029,7 @@ TEST_F(InputMethodControllerTest,
       "sample");
 
   Controller().SetEditableSelectionOffsets(PlainTextRange(17, 17));
-  EXPECT_STREQ("hello\nworld\n0123456789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n0123456789", div->innerText().Utf8().data());
   EXPECT_EQ(17u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(17u, Controller().GetSelectionOffsets().End());
 
@@ -1039,79 +1039,79 @@ TEST_F(InputMethodControllerTest,
                                        ImeTextSpanThickness::kThin, 0));
 
   // The caret exceeds left boundary.
-  // "*hello\nworld\n01234AB56789", where * stands for caret.
+  // "*hello\nworld\n\n01234AB56789", where * stands for caret.
   Controller().SetComposition("AB", ime_text_spans, -100, -100);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().End());
 
   // The caret is on left boundary.
-  // "*hello\nworld\n01234AB56789".
+  // "*hello\nworld\n\n01234AB56789".
   Controller().SetComposition("AB", ime_text_spans, -17, -17);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(0u, Controller().GetSelectionOffsets().End());
 
   // The caret is in the 1st node.
-  // "he*llo\nworld\n01234AB56789".
+  // "he*llo\nworld\n\n01234AB56789".
   Controller().SetComposition("AB", ime_text_spans, -15, -15);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(2u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 1st node.
-  // "hello*\nworld\n01234AB56789".
+  // "hello*\nworld\n\n01234AB56789".
   Controller().SetComposition("AB", ime_text_spans, -12, -12);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(5u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(5u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 2nd node.
-  // "hello\n*world\n01234AB56789".
+  // "hello\n*world\n\n01234AB56789".
   Controller().SetComposition("AB", ime_text_spans, -11, -11);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(6u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(6u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 3rd node.
   // "hello\nworld*\n01234AB56789".
   Controller().SetComposition("AB", ime_text_spans, -6, -6);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(11u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(11u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary of the 4th node.
   // "hello\nworld\n*01234AB56789".
   Controller().SetComposition("AB", ime_text_spans, -5, -5);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(12u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(12u, Controller().GetSelectionOffsets().End());
 
   // The caret is before the composing text.
-  // "hello\nworld\n01234*AB56789".
+  // "hello\nworld\n\n01234*AB56789".
   Controller().SetComposition("AB", ime_text_spans, 0, 0);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(17u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(17u, Controller().GetSelectionOffsets().End());
 
   // The caret is after the composing text.
-  // "hello\nworld\n01234AB*56789".
+  // "hello\nworld\n\n01234AB*56789".
   Controller().SetComposition("AB", ime_text_spans, 2, 2);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(19u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(19u, Controller().GetSelectionOffsets().End());
 
   // The caret is on right boundary.
-  // "hello\nworld\n01234AB56789*".
+  // "hello\nworld\n\n01234AB56789*".
   Controller().SetComposition("AB", ime_text_spans, 7, 7);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(24u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(24u, Controller().GetSelectionOffsets().End());
 
   // The caret exceeds right boundary.
-  // "hello\nworld\n01234AB56789*".
+  // "hello\nworld\n\n01234AB56789*".
   Controller().SetComposition("AB", ime_text_spans, 100, 100);
-  EXPECT_STREQ("hello\nworld\n01234AB56789", div->innerText().Utf8().data());
+  EXPECT_STREQ("hello\nworld\n\n01234AB56789", div->innerText().Utf8().data());
   EXPECT_EQ(24u, Controller().GetSelectionOffsets().Start());
   EXPECT_EQ(24u, Controller().GetSelectionOffsets().End());
 }

@@ -102,7 +102,6 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
   void RemovedFrom(ContainerNode&) override;
   void AccessKeyAction(bool) override;
   void ChildrenChanged(const ChildrenChange&) override;
-  String innerText() override;
 
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
 

@@ -103,13 +103,13 @@ test(() => assert_equals(document.getElementById('firstCollapsedDivFirst').inner
 test(() => assert_equals(document.getElementById('collapsedSpaceCollapsedDivFirst').innerText, document.getElementById('collapsedSpaceCollapsedDivNormal').innerText),
      'collapsedSpaceCollapsedDivFirst.innerText');
 
-test(() => assert_equals(document.getElementById('collapsedSpaceCollapsedDivFirst').innerText, 'foo\nabc\n'),
+test(() => assert_equals(document.getElementById('collapsedSpaceCollapsedDivFirst').innerText, 'foo\nabc'),
      'collapsedSpaceSollapsedDivFirst.innerText literal');
 
 test(() => assert_equals(document.getElementById('collapsedSpacePunctDivFirst').innerText, document.getElementById('collapsedSpacePunctDivNormal').innerText),
      'collapsedSpacePunctDivFirst.innerText');
 
-test(() => assert_equals(document.getElementById('collapsedSpacePunctDivFirst').innerText, 'foo\n| abc\n'),
+test(() => assert_equals(document.getElementById('collapsedSpacePunctDivFirst').innerText, 'foo\n| abc'),
      'collapsedSpacePunctDivFirst.innerText literal');
 
 test(() => assert_equals(document.getElementById('divSpanFirst').innerText, document.getElementById('divSpanNormal').innerText),
@@ -118,13 +118,13 @@ test(() => assert_equals(document.getElementById('divSpanFirst').innerText, docu
 test(() => assert_equals(document.getElementById('invisiblePre').innerText, ''),
      'invisiblePre.innerText');
 
-test(() => assert_equals(document.getElementById('invisiblePreFirst').innerText, 't\n'),
+test(() => assert_equals(document.getElementById('invisiblePreFirst').innerText, ''),
      'invisiblePreFirst.innerText');
 
-test(() => assert_equals(document.getElementById('invisible').innerText, 'test\n'),
+test(() => assert_equals(document.getElementById('invisible').innerText, 'test'),
      'invisible.innerText');
 
-test(() => assert_equals(document.getElementById('floatDt').innerText, 'AbCdE'),
+test(() => assert_equals(document.getElementById('floatDt').innerText, 'Ab\nCd\nE'),
      'floatDt.innerText');
 </script>
 </body>

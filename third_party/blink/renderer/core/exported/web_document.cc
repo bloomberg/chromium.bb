@@ -47,6 +47,8 @@
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/editing/ephemeral_range.h"
+#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
 #include "third_party/blink/renderer/core/html/html_all_collection.h"
@@ -156,9 +158,17 @@ WebString WebDocument::Title() const {
 }
 
 WebString WebDocument::ContentAsTextForTesting() const {
-  if (Element* document_element = ConstUnwrap<Document>()->documentElement())
-    return WebString(document_element->innerText());
-  return WebString();
+  Element* document_element = ConstUnwrap<Document>()->documentElement();
+  if (!document_element)
+    return WebString();
+  // TODO(editing-dev): We should use |Element::innerText()|.
+  const_cast<Document*>(ConstUnwrap<Document>())
+      ->UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(document_element);
+  if (!document_element->GetLayoutObject())
+    return document_element->textContent(true);
+  return WebString(
+      PlainText(EphemeralRange::RangeOfContents(*document_element),
+                TextIteratorBehavior::Builder().SetForInnerText(true).Build()));
 }
 
 WebElementCollection WebDocument::All() {

@@ -22,7 +22,7 @@
     // Ensure this runs after all Promise.resolve
     setTimeout(() => {
       TestRunner.addResult('--------------------------');
-      const value = panel._detailsWidget.element.innerText.split('\n').map(line => line.trim()).join('\n').trim();
+      const value = panel._detailsWidget.element.innerText.split('\n').map(line => line.trim()).join('\n').replace(/\n\n+/g, '\n').trim();
       TestRunner.addResult(value);
       TestRunner.completeTest();
     }, 0);

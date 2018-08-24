@@ -7,19 +7,19 @@
 <div id="test4">Lorem<div style="position: absolute;"></div>ipsum</div>
 <script>
 test(() => assert_equals(
-  'Lorem-ipsum',
-  document.getElementById('test1').innerText),
+  document.getElementById('test1').innerText,
+  'Lorem\n-\nipsum'),
   '1 float:left minus');
 test(() => assert_equals(
-  'Loremipsum',
-  document.getElementById('test2').innerText),
+  document.getElementById('test2').innerText,
+  'Lorem\nipsum'),
   '2 float:left empty');
 test(() => assert_equals(
-  'Lorem-ipsum',
-  document.getElementById('test3').innerText),
+  document.getElementById('test3').innerText,
+  'Lorem\n-\nipsum'),
   '3 position:absolute minus');
 test(() => assert_equals(
-  'Loremipsum',
-  document.getElementById('test4').innerText),
+  document.getElementById('test4').innerText,
+  'Lorem\nipsum'),
   '4 position:absolute empty');
 </script>

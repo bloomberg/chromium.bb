@@ -82,7 +82,6 @@
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
-#include "third_party/blink/renderer/core/editing/iterators/text_iterator.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/editing/set_selection_options.h"
@@ -3775,19 +3774,6 @@ bool Element::HasProcessedPointerCapture(int pointer_id) const {
   return GetDocument().GetFrame() &&
          GetDocument().GetFrame()->GetEventHandler().HasProcessedPointerCapture(
              pointer_id, this);
-}
-
-String Element::innerText() {
-  // We need to update layout, since plainText uses line boxes in the layout
-  // tree.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(this);
-
-  if (!GetLayoutObject() && !HasDisplayContentsStyle())
-    return textContent(true);
-
-  return PlainText(
-      EphemeralRange::RangeOfContents(*this),
-      TextIteratorBehavior::Builder().SetForInnerText(true).Build());
 }
 
 String Element::outerText() {
