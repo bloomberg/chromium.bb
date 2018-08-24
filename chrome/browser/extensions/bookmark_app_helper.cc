@@ -55,7 +55,6 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/url_pattern.h"
 #include "net/base/load_flags.h"
@@ -563,6 +562,9 @@ void BookmarkAppHelper::FinishInstallation(const Extension* extension) {
   }
   profile_->GetPrefs()->SetInteger(pref_names::kBookmarkAppCreationLaunchType,
                                    launch_type);
+
+  if (forced_launch_type_)
+    launch_type = forced_launch_type_.value();
 
   // Set the launcher type for the app.
   SetLaunchType(profile_, extension->id(), launch_type);

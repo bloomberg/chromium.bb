@@ -19,6 +19,7 @@
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 
@@ -101,6 +102,16 @@ class BookmarkAppHelper : public content::NotificationObserver {
 
   bool create_shortcuts() const { return create_shortcuts_; }
 
+  // If called, the installed app will launch in |launch_type|. User might still
+  // be able to change the launch type depending on the type of app.
+  void set_forced_launch_type(LaunchType launch_type) {
+    forced_launch_type_ = launch_type;
+  }
+
+  const base::Optional<LaunchType>& forced_launch_type() const {
+    return forced_launch_type_;
+  }
+
  protected:
   // Protected methods for testing.
 
@@ -155,6 +166,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   InstallableManager* installable_manager_;
 
   ForInstallableSite for_installable_site_ = ForInstallableSite::kUnknown;
+
+  base::Optional<LaunchType> forced_launch_type_;
 
   bool is_policy_installed_app_ = false;
 
