@@ -137,7 +137,14 @@ struct ArraySerializationHelper<T, false, false> {
 
     // Enum validation.
     for (uint32_t i = 0; i < header->num_elements; ++i) {
-      if (!validate_params->validate_enum_func(elements[i], validation_context))
+      // Enums are defined by mojo to be 32-bit, but this code is also compiled
+      // for arrays of primitives such as uint64_t (but never called), so it's
+      // safe to do a static_cast here.
+      DCHECK(sizeof(elements[i]) <= sizeof(int32_t))
+          << "Enum validation should never take place on a primitive type of "
+             "width greater than 32-bit";
+      if (!validate_params->validate_enum_func(
+              static_cast<int32_t>(elements[i]), validation_context))
         return false;
     }
     return true;
