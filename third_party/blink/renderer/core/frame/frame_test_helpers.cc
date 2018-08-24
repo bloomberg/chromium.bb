@@ -44,7 +44,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
-#include "third_party/blink/public/web/web_navigation_timings.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/public/web/web_view_client.h"
@@ -101,11 +101,13 @@ std::unique_ptr<T> CreateDefaultClientIfNeeded(T*& client) {
   return owned_client;
 }
 
-WebNavigationTimings BuildDummyWebNavigationTimings() {
-  WebNavigationTimings web_navigation_timings;
-  web_navigation_timings.navigation_start = base::TimeTicks::Now();
-  web_navigation_timings.fetch_start = base::TimeTicks::Now();
-  return web_navigation_timings;
+std::unique_ptr<WebNavigationParams> BuildDummyNavigationParams() {
+  std::unique_ptr<WebNavigationParams> navigation_params =
+      std::make_unique<WebNavigationParams>();
+  navigation_params->navigation_timings.navigation_start =
+      base::TimeTicks::Now();
+  navigation_params->navigation_timings.fetch_start = base::TimeTicks::Now();
+  return navigation_params;
 }
 
 }  // namespace
@@ -118,7 +120,7 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
     frame->CommitNavigation(
         WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
         blink::WebHistoryItem(), false, base::UnguessableToken::Create(),
-        nullptr, BuildDummyWebNavigationTimings());
+        BuildDummyNavigationParams(), nullptr /* extra_data */);
   }
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -136,9 +138,9 @@ void LoadHistoryItem(WebLocalFrame* frame,
   HistoryItem* history_item = item;
   frame->CommitNavigation(
       WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
-      WebFrameLoadType::kBackForward, item,
-      /*is_client_redirect=*/false, base::UnguessableToken::Create(), nullptr,
-      BuildDummyWebNavigationTimings());
+      WebFrameLoadType::kBackForward, item, false /* is_client_redirect */,
+      base::UnguessableToken::Create(), BuildDummyNavigationParams(),
+      nullptr /* extra_data */);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 

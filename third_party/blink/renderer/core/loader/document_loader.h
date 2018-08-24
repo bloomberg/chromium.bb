@@ -227,8 +227,10 @@ class CORE_EXPORT DocumentLoader
     return service_worker_network_provider_.get();
   }
 
+  // Allows to specify the SourceLocation that triggered the navigation.
+  void SetSourceLocation(const WebSourceLocation& source_location);
+  void ResetSourceLocation();
   std::unique_ptr<SourceLocation> CopySourceLocation() const;
-  void SetSourceLocation(std::unique_ptr<SourceLocation>);
 
   void LoadFailed(const ResourceError&);
 

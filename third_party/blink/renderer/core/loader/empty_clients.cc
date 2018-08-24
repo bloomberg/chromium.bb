@@ -120,8 +120,8 @@ DocumentLoader* EmptyLocalFrameClient::CreateDocumentLoader(
     const SubstituteData& substitute_data,
     ClientRedirectPolicy client_redirect_policy,
     const base::UnguessableToken& devtools_navigation_token,
-    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data,
-    const WebNavigationTimings& navigation_timings) {
+    std::unique_ptr<WebNavigationParams> navigation_params,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(frame);
 
   return DocumentLoader::Create(frame, request, substitute_data,

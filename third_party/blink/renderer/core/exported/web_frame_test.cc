@@ -7382,7 +7382,8 @@ TEST_F(WebFrameTest, BackDuringChildFrameReload) {
       history_item->GenerateResourceRequest(mojom::FetchCacheMode::kDefault);
   main_frame->CommitNavigation(
       WrappedResourceRequest(request), WebFrameLoadType::kBackForward, item,
-      false, base::UnguessableToken::Create(), nullptr, WebNavigationTimings());
+      false, base::UnguessableToken::Create(), nullptr /* navigation_params */,
+      nullptr /* extra_data */);
 
   FrameTestHelpers::ReloadFrame(child_frame);
   EXPECT_EQ(item.UrlString(), main_frame->GetDocument().Url().GetString());

@@ -63,6 +63,8 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   // renderer by the browser on a navigation commit. It is null if we have not
   // yet heard from the browser (currently only during the time it takes from
   // having the renderer initiate a navigation until the browser commits it).
+  // Note: in particular, provisional load failure do not provide
+  // |request_params|.
   // TODO(ahemery): Update this comment when do not create placeholder document
   // loaders for renderer-initiated navigations. In this case, this should never
   // be null.

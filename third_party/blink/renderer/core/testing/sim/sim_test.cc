@@ -6,7 +6,7 @@
 
 #include "content/test/test_blink_web_unit_test_support.h"
 #include "third_party/blink/public/platform/web_cache.h"
-#include "third_party/blink/public/web/web_navigation_timings.h"
+#include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -61,7 +61,8 @@ void SimTest::LoadURL(const String& url) {
   WebURLRequest request{KURL(url)};
   WebView().MainFrameImpl()->CommitNavigation(
       request, WebFrameLoadType::kStandard, WebHistoryItem(), false,
-      base::UnguessableToken::Create(), nullptr, WebNavigationTimings());
+      base::UnguessableToken::Create(), nullptr /* navigation_params */,
+      nullptr /* extra_data */);
 }
 
 LocalDOMWindow& SimTest::Window() {

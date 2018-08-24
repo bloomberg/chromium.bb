@@ -259,8 +259,15 @@ void DocumentLoader::SetServiceWorkerNetworkProvider(
 }
 
 void DocumentLoader::SetSourceLocation(
-    std::unique_ptr<SourceLocation> source_location) {
-  source_location_ = std::move(source_location);
+    const WebSourceLocation& source_location) {
+  std::unique_ptr<SourceLocation> location =
+      SourceLocation::Create(source_location.url, source_location.line_number,
+                             source_location.column_number, nullptr);
+  source_location_ = std::move(location);
+}
+
+void DocumentLoader::ResetSourceLocation() {
+  source_location_ = nullptr;
 }
 
 std::unique_ptr<SourceLocation> DocumentLoader::CopySourceLocation() const {

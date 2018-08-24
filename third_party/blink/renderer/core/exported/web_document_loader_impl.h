@@ -77,9 +77,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   void SetServiceWorkerNetworkProvider(
       std::unique_ptr<WebServiceWorkerNetworkProvider>) override;
   WebServiceWorkerNetworkProvider* GetServiceWorkerNetworkProvider() override;
-  void SetSourceLocation(const WebSourceLocation&) override;
   void ResetSourceLocation() override;
-  void SetUserActivated() override;
   void BlockParser() override;
   void ResumeParser() override;
   bool IsArchive() const override;
