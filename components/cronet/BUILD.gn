@@ -116,6 +116,8 @@ if (!is_ios && !is_android) {
       "run_all_unittests.cc",
     ]
 
+    defines = [ "CRONET_TESTS_IMPLEMENTATION" ]
+
     if (is_linux && !is_component_build) {
       public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }

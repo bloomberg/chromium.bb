@@ -98,6 +98,9 @@ class ContentBrowserTestSuite : public ContentTestSuiteBase {
         content::CreateContentBrowserTestsCatalog());
 #endif
 
+    // Browser tests are expected not to tear-down various globals.
+    base::TestSuite::DisableCheckForLeakedGlobals();
+
     ContentTestSuiteBase::Initialize();
   }
 
