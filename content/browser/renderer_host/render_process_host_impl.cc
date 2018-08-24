@@ -34,6 +34,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_handle.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_base.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -1141,6 +1142,66 @@ class UnmatchedServiceWorkerProcessTracker
   SiteProcessIDPairSet site_process_set_;
 };
 
+bool ShouldBoostPriorityForPendingViews() {
+#if defined(OS_ANDROID)
+  // On Android, renderer processes with pending views get an extra boost.
+  return true;
+#else
+  // On desktop platforms, new renderer processes have been considered
+  // foreground regardless of visibility since r385608. This is because it was
+  // previously discovered that backgrounding processes that weren't responsible
+  // for visible content resulted in running foreground navigations at
+  // background priority until the main frame was committed (and became a
+  // visible widget)... Thus new processes responsible for hidden content are
+  // now foreground until explicitly made visible and hidden again. Full details
+  // @ https://crbug.com/560446.
+  //
+  // The experiment below will attempt to use the new "pending views" signal to
+  // go back to pre r385608 behavior while still boosting priority of processes
+  // with pending views (until widgets are created and visibility kicks in).
+  // This will however not keep the nice side-effect of r385608 which was to
+  // boost new page loads happening in background tabs (example use case of a
+  // foreground action in a background tab : ctrl+click link of interest and
+  // actively wait for spinner to stop before switching tabs). If we decide that
+  // the latter use case is relevant, we should support it cross-platform.
+  //
+  // Thus, while this is a "boosting" experiment, it's really a "consider the
+  // initial foreground state a boost so we can unboost and background sooner".
+  //
+  // Returning true here triggers the experiment because it will cause the
+  // initial |ChildProcessLauncherPriority::boost_for_pending_views| value to be
+  // |true| which will in turn result in a call to UpdateProcessPriority() when
+  // RemovePendingView() is invoked (without the experiment the initial state
+  // has no pending view and although UpdateProcessPriority() is invoked from
+  // RemovePendingView(), it no-ops per "no change" compared to the initial
+  // ChildProcessLauncherPriority).
+  //
+  // Furthermore, it has been discovered that there is a priority inversion in
+  // foreground navigation without this experiment, the reason being that
+  // ChildProcessLauncherPriority::operator==() notices a difference in
+  // UpdateProcessPriority() when only |boost_for_pending_views| has changed. On
+  // desktop it would start in the |false| state and AddPendingView() would
+  // toggle it. This would result in UpdateProcessPriority() but desktop not
+  // handling the presence of |boost_for_pending_views|, would look at |!visible
+  // && !has_media_stream| and decide that it's time to background (bringing
+  // back the OP of https://crbug.com/560446 but worse because actual background
+  // tabs are running as foreground per r385608 -- so during a big session
+  // restore it's possible to end up with all processes foreground except for
+  // the foreground tab's process...). Full details @
+  // https://crbug.com/560446#c74.
+  //
+  // Hence this experiment is definitely the desired behavior, running it as an
+  // experiment on Canary merely to see what was impacted by existing bugs.
+  // TODO(gab): End the experiment and turn ShouldBoostPriorityForPendingViews()
+  // into a constant when results are in.
+  static bool should_boost_for_pending_views =
+      base::StartsWith(base::FieldTrialList::FindFullName(
+                           "BoostRendererPriorityForPendingViews"),
+                       "Enabled", base::CompareCase::SENSITIVE);
+  return should_boost_for_pending_views;
+#endif
+}
+
 void CopyFeatureSwitch(const base::CommandLine& src,
                        base::CommandLine* dest,
                        const char* switch_name) {
@@ -1395,7 +1456,24 @@ RenderProcessHostImpl::RenderProcessHostImpl(
                 false /* has_media_stream */,
                 frame_depth_,
                 false /* intersects_viewport */,
-                blink::kLaunchingProcessIsBoostedForPendingView
+                ShouldBoostPriorityForPendingViews(),
+#if defined(OS_ANDROID)
+                // Only use |boost_for_pending_views| to infer is_background()
+                // on non-Android platforms for now to avoid changing the
+                // old behavior while the experiment is under way.
+                // Without this, the following tests were failing on Android
+                // (they assume that toggling WidgetHidden() is sufficient to
+                // toggle backgrounding):
+                //   NavigationControllerBrowserTest.
+                //     NoDialogsFromSwappedOutFrames
+                //   SitePerProcessBrowserTest.
+                //     CommitTimeoutForHungRenderer
+                //     HiddenOOPIFWillNotGenerateCompositorFrames
+                // TODO(gab): Clean this up as soon as the experiment is over.
+                false
+#else
+                ShouldBoostPriorityForPendingViews()
+#endif
 #if defined(OS_ANDROID)
                 ,
                 ChildProcessImportance::NORMAL
@@ -3321,14 +3399,16 @@ void RenderProcessHostImpl::Cleanup() {
 }
 
 void RenderProcessHostImpl::AddPendingView() {
-  pending_views_++;
-  UpdateProcessPriority();
+  const bool had_pending_views = pending_views_++;
+  if (!had_pending_views)
+    UpdateProcessPriority();
 }
 
 void RenderProcessHostImpl::RemovePendingView() {
   DCHECK(pending_views_);
-  pending_views_--;
-  UpdateProcessPriority();
+  --pending_views_;
+  if (!pending_views_)
+    UpdateProcessPriority();
 }
 
 void RenderProcessHostImpl::AddWidget(RenderWidgetHost* widget) {
@@ -4090,14 +4170,13 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
   }
 
   bool inputs_changed = new_visible_widgets_count != visible_clients_;
-#if defined(OS_ANDROID)
-  // OS_ANDROID in order to maintain the workaround on desktop to avoid
-  // backgrounding a new process. See the comment in OnProcessLaunched and
-  // https://crbug.com/560446. Only android uses frame_depth for now, so
-  // not a huge change.
-  inputs_changed = inputs_changed || frame_depth_ != new_frame_depth ||
-                   intersects_viewport_ != new_intersects_viewport;
-#endif
+  // Hide this update behind the ShouldBoostPriorityForPendingViews() experiment
+  // at the moment to avoid causing an undesired early UpdateProcessPriority().
+  // See the comment in OnProcessLaunched() and https://crbug.com/560446.
+  if (ShouldBoostPriorityForPendingViews()) {
+    inputs_changed = inputs_changed || frame_depth_ != new_frame_depth ||
+                     intersects_viewport_ != new_intersects_viewport;
+  }
   visible_clients_ = new_visible_widgets_count;
   frame_depth_ = new_frame_depth;
   intersects_viewport_ = new_intersects_viewport;
@@ -4113,21 +4192,26 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
 void RenderProcessHostImpl::UpdateProcessPriority() {
   if (!run_renderer_in_process() && (!child_process_launcher_.get() ||
                                      child_process_launcher_->IsStarting())) {
-    priority_.foreground = !blink::kLaunchingProcessIsBackgrounded;
-    priority_.boost_for_pending_views =
-        blink::kLaunchingProcessIsBoostedForPendingView;
+    // This path can be hit early (no-op) or on ProcessDied(). Reset |priority_|
+    // to defaults in case this RenderProcessHostImpl is re-used.
+    priority_.visible = !blink::kLaunchingProcessIsBackgrounded;
+    priority_.boost_for_pending_views = ShouldBoostPriorityForPendingViews();
     return;
   }
 
   const ChildProcessLauncherPriority priority(
-      // We consider a process in foreground if it hosts no visible widgets --
-      // the callers must call this function whenever we transition in/out of
-      // those states.
       visible_clients_ > 0 || base::CommandLine::ForCurrentProcess()->HasSwitch(
                                   switches::kDisableRendererBackgrounding),
       media_stream_count_ > 0, frame_depth_, intersects_viewport_,
-      // boost_for_pending_views
-      !!pending_views_
+      !!pending_views_ /* boost_for_pending_views */,
+#if defined(OS_ANDROID)
+      // Same hack as in RenderProcessHostImpl::RenderProcessHostImpl.
+      // TODO(gab): Clean this up after ShouldBoostPriorityForPendingViews()
+      // experiment.
+      false
+#else
+      ShouldBoostPriorityForPendingViews()
+#endif
 #if defined(OS_ANDROID)
       ,
       GetEffectiveImportance()
@@ -4166,11 +4250,9 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     child_process_launcher_->SetProcessPriority(priority_);
   }
 
-  // Notify the child process of background state. Note
-  // |priority_.boost_for_pending_views| state is not sent to renderer simply
-  // due to lack of need.
+  // Notify the child process of background state.
   if (should_background_changed) {
-    GetRendererInterface()->SetProcessBackgrounded(priority.is_background());
+    GetRendererInterface()->SetProcessBackgrounded(priority_.is_background());
   }
 }
 
@@ -4184,8 +4266,9 @@ void RenderProcessHostImpl::OnProcessLaunched() {
 
   if (child_process_launcher_) {
     DCHECK(child_process_launcher_->GetProcess().IsValid());
-    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded,
-              priority_.is_background());
+    // TODO(https://crbug.com/875933): This should be based on
+    // |priority_.is_background()|, see similar check below.
+    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded, !priority_.visible);
 
     // Unpause the channel now that the process is launched. We don't flush it
     // yet to ensure that any initialization messages sent here (e.g., things
@@ -4199,32 +4282,28 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     }
 
 // Not all platforms launch processes in the same backgrounded state. Make
-// sure |priority_.foreground| reflects this platform's initial process
+// sure |priority_.visible| reflects this platform's initial process
 // state.
 #if defined(OS_MACOSX)
-    priority_.foreground =
+    priority_.visible =
         !child_process_launcher_->GetProcess().IsProcessBackgrounded(
             MachBroker::GetInstance());
 #elif defined(OS_ANDROID)
     // Android child process priority works differently and cannot be queried
     // directly from base::Process.
-    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded,
-              priority_.is_background());
+    // TODO(https://crbug.com/875933): Fix initial priority on Android to
+    // reflect |priority_.is_background()|.
+    DCHECK_EQ(blink::kLaunchingProcessIsBackgrounded, !priority_.visible);
 #else
-    priority_.foreground =
+    priority_.visible =
         !child_process_launcher_->GetProcess().IsProcessBackgrounded();
 #endif  // defined(OS_MACOSX)
 
-    // Disable updating process priority on startup on desktop platforms for now
-    // as it incorrectly results in backgrounding foreground navigations until
-    // their first commit is made. A better long term solution would be to be
-    // aware of the tab's visibility at this point. https://crbug.com/560446.
-    // This is still needed on Android which uses
-    // |priority_.boost_for_pending_views| and requires RenderProcessHostImpl to
-    // propagate priority changes immediately to ChildProcessLauncher.
-#if defined(OS_ANDROID)
-    UpdateProcessPriority();
-#endif
+    // Only update the priority on startup if boosting is enabled (to avoid
+    // reintroducing https://crbug.com/560446#c13 while pending views only
+    // experimentally result in a boost).
+    if (priority_.boost_for_pending_views)
+      UpdateProcessPriority();
 
     // Share histograms between the renderer and this process.
     CreateSharedRendererHistogramAllocator();
