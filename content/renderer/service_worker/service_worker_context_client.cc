@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/service_worker/service_worker.mojom.h"
-#include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
