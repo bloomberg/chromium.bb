@@ -26,7 +26,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/process/memory.h"
-#include "base/task/task_scheduler/task_scheduler.h"
 #include "base/test/gtest_xml_unittest_result_printer.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/icu_test_util.h"
@@ -71,26 +70,21 @@ namespace base {
 
 namespace {
 
-// Returns true if the test is marked as "MAYBE_".
-// When using different prefixes depending on platform, we use MAYBE_ and
-// preprocessor directives to replace MAYBE_ with the target prefix.
-bool IsMarkedMaybe(const testing::TestInfo& test) {
-  return strncmp(test.name(), "MAYBE_", 6) == 0;
-}
-
-class DisableMaybeTests : public testing::EmptyTestEventListener {
+class MaybeTestDisabler : public testing::EmptyTestEventListener {
  public:
   void OnTestStart(const testing::TestInfo& test_info) override {
-    ASSERT_FALSE(IsMarkedMaybe(test_info))
+    ASSERT_FALSE(TestSuite::IsMarkedMaybe(test_info))
         << "Probably the OS #ifdefs don't include all of the necessary "
            "platforms.\nPlease ensure that no tests have the MAYBE_ prefix "
            "after the code is preprocessed.";
   }
 };
 
-class ResetCommandLineBetweenTests : public testing::EmptyTestEventListener {
+class TestClientInitializer : public testing::EmptyTestEventListener {
  public:
-  ResetCommandLineBetweenTests() : old_command_line_(CommandLine::NO_PROGRAM) {}
+  TestClientInitializer()
+      : old_command_line_(CommandLine::NO_PROGRAM) {
+  }
 
   void OnTestStart(const testing::TestInfo& test_info) override {
     old_command_line_ = *CommandLine::ForCurrentProcess();
@@ -103,36 +97,7 @@ class ResetCommandLineBetweenTests : public testing::EmptyTestEventListener {
  private:
   CommandLine old_command_line_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResetCommandLineBetweenTests);
-};
-
-class CheckForLeakedGlobals : public testing::EmptyTestEventListener {
- public:
-  CheckForLeakedGlobals() = default;
-
-  // Check for leaks in individual tests.
-  void OnTestStart(const testing::TestInfo& test) override {
-    scheduler_set_before_test_ = TaskScheduler::GetInstance();
-  }
-  void OnTestEnd(const testing::TestInfo& test) override {
-    DCHECK_EQ(scheduler_set_before_test_, TaskScheduler::GetInstance())
-        << " in test " << test.test_case_name() << "." << test.name();
-  }
-
-  // Check for leaks in test cases (consisting of one or more tests).
-  void OnTestCaseStart(const testing::TestCase& test_case) override {
-    scheduler_set_before_case_ = TaskScheduler::GetInstance();
-  }
-  void OnTestCaseEnd(const testing::TestCase& test_case) override {
-    DCHECK_EQ(scheduler_set_before_case_, TaskScheduler::GetInstance())
-        << " in case " << test_case.name();
-  }
-
- private:
-  TaskScheduler* scheduler_set_before_test_ = nullptr;
-  TaskScheduler* scheduler_set_before_case_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(CheckForLeakedGlobals);
+  DISALLOW_COPY_AND_ASSIGN(TestClientInitializer);
 };
 
 std::string GetProfileName() {
@@ -175,7 +140,7 @@ int RunUnitTestsUsingBaseTestSuite(int argc, char **argv) {
                          Bind(&TestSuite::Run, Unretained(&test_suite)));
 }
 
-TestSuite::TestSuite(int argc, char** argv) {
+TestSuite::TestSuite(int argc, char** argv) : initialized_command_line_(false) {
   PreInitialize();
   InitializeFromCommandLine(argc, argv);
   // Logging must be initialized before any thread has a chance to call logging
@@ -184,7 +149,8 @@ TestSuite::TestSuite(int argc, char** argv) {
 }
 
 #if defined(OS_WIN)
-TestSuite::TestSuite(int argc, wchar_t** argv) {
+TestSuite::TestSuite(int argc, wchar_t** argv)
+    : initialized_command_line_(false) {
   PreInitialize();
   InitializeFromCommandLine(argc, argv);
   // Logging must be initialized before any thread has a chance to call logging
@@ -218,8 +184,6 @@ void TestSuite::InitializeFromCommandLine(int argc, wchar_t** argv) {
 #endif  // defined(OS_WIN)
 
 void TestSuite::PreInitialize() {
-  DCHECK(!is_initialized_);
-
 #if defined(OS_WIN)
   testing::GTEST_FLAG(catch_exceptions) = false;
 #endif
@@ -239,6 +203,24 @@ void TestSuite::PreInitialize() {
 
   // Don't add additional code to this function.  Instead add it to
   // Initialize().  See bug 6436.
+}
+
+
+// static
+bool TestSuite::IsMarkedMaybe(const testing::TestInfo& test) {
+  return strncmp(test.name(), "MAYBE_", 6) == 0;
+}
+
+void TestSuite::CatchMaybeTests() {
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(new MaybeTestDisabler);
+}
+
+void TestSuite::ResetCommandLine() {
+  testing::TestEventListeners& listeners =
+      testing::UnitTest::GetInstance()->listeners();
+  listeners.Append(new TestClientInitializer);
 }
 
 void TestSuite::AddTestLauncherResultPrinter() {
@@ -304,11 +286,6 @@ int TestSuite::Run() {
   Shutdown();
 
   return result;
-}
-
-void TestSuite::DisableCheckForLeakedGlobals() {
-  DCHECK(!is_initialized_);
-  check_for_leaked_globals_ = false;
 }
 
 void TestSuite::UnitTestAssertHandler(const char* file,
@@ -407,8 +384,6 @@ void TestSuite::SuppressErrorDialogs() {
 }
 
 void TestSuite::Initialize() {
-  DCHECK(!is_initialized_);
-
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
 #if !defined(OS_IOS)
   if (command_line->HasSwitch(switches::kWaitForDebugger)) {
@@ -493,14 +468,8 @@ void TestSuite::Initialize() {
   SetUpFontconfig();
 #endif
 
-  // Add TestEventListeners to enforce certain properties across tests.
-  testing::TestEventListeners& listeners =
-      testing::UnitTest::GetInstance()->listeners();
-  listeners.Append(new DisableMaybeTests);
-  listeners.Append(new ResetCommandLineBetweenTests);
-  if (check_for_leaked_globals_)
-    listeners.Append(new CheckForLeakedGlobals);
-
+  CatchMaybeTests();
+  ResetCommandLine();
   AddTestLauncherResultPrinter();
 
   TestTimeouts::Initialize();
@@ -508,12 +477,9 @@ void TestSuite::Initialize() {
   trace_to_file_.BeginTracingFromCommandLineOptions();
 
   base::debug::StartProfiling(GetProfileName());
-
-  is_initialized_ = true;
 }
 
 void TestSuite::Shutdown() {
-  DCHECK(is_initialized_);
   base::debug::StopProfiling();
 }
 

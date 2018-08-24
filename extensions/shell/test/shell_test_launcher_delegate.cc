@@ -12,10 +12,7 @@
 namespace extensions {
 
 int AppShellTestLauncherDelegate::RunTestSuite(int argc, char** argv) {
-  base::TestSuite test_suite(argc, argv);
-  // Browser tests are expected not to tear-down various globals.
-  test_suite.DisableCheckForLeakedGlobals();
-  return test_suite.Run();
+  return base::TestSuite(argc, argv).Run();
 }
 
 bool AppShellTestLauncherDelegate::AdjustChildProcessCommandLine(
