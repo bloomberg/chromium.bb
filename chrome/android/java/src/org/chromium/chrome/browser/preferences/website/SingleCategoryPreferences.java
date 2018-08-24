@@ -105,9 +105,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
     // Keys for common ContentSetting toggle for categories. These two toggles are mutually
     // exclusive: a category should only show one of them, at most.
-    // TODO(xhwang): Rename READ_WRITE_TOGGLE_KEY to SETTING_TOGGLE_KEY.
-    public static final String READ_WRITE_TOGGLE_KEY = "read_write_toggle";
-    public static final String SETTING_TRI_STATE_KEY = "setting-tri-state";
+    public static final String BINARY_TOGGLE_KEY = "binary_toggle";
+    public static final String TRI_STATE_TOGGLE_KEY = "tri_state_toggle";
 
     // Keys for category-specific preferences (toggle, link, button etc.), dynamically shown.
     public static final String THIRD_PARTY_COOKIES_TOGGLE_KEY = "third_party_cookies";
@@ -389,7 +388,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     @Override
     public boolean onPreferenceTreeClick(PreferenceScreen screen, Preference preference) {
         // Do not show the toast if the System Location setting is disabled.
-        if (getPreferenceScreen().findPreference(READ_WRITE_TOGGLE_KEY) != null
+        if (getPreferenceScreen().findPreference(BINARY_TOGGLE_KEY) != null
                 && mCategory.isManaged()) {
             showManagedToast();
             return false;
@@ -444,7 +443,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
 
-        if (READ_WRITE_TOGGLE_KEY.equals(preference.getKey())) {
+        if (BINARY_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
 
             for (@SiteSettingsCategory.Type int type = 0;
@@ -485,12 +484,13 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 }
             }
 
-            ChromeSwitchPreference globalToggle = (ChromeSwitchPreference)
-                    getPreferenceScreen().findPreference(READ_WRITE_TOGGLE_KEY);
-            updateAllowedHeader(mAllowedSiteCount, !globalToggle.isChecked());
+            ChromeSwitchPreference binaryToggle =
+                    (ChromeSwitchPreference) getPreferenceScreen().findPreference(
+                            BINARY_TOGGLE_KEY);
+            updateAllowedHeader(mAllowedSiteCount, !binaryToggle.isChecked());
 
             getInfoForOrigins();
-        } else if (SETTING_TRI_STATE_KEY.equals(preference.getKey())) {
+        } else if (TRI_STATE_TOGGLE_KEY.equals(preference.getKey())) {
             ContentSetting setting = (ContentSetting) newValue;
             prefServiceBridge.setContentSetting(
                     mCategory.getContentSettingsType(), setting.toInt());
@@ -524,7 +524,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
     // OnPreferenceClickListener:
     @Override
     public boolean onPreferenceClick(Preference preference) {
-        if (ALLOWED_GROUP.equals(preference.getKey()))  {
+        if (ALLOWED_GROUP.equals(preference.getKey())) {
             mAllowListExpanded = !mAllowListExpanded;
         } else {
             mBlockListExpanded = !mBlockListExpanded;
@@ -727,15 +727,15 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
     private boolean isBlocked() {
         if (mRequiresTriStateSetting) {
-            TriStateSiteSettingsPreference settingTriState =
+            TriStateSiteSettingsPreference triStateToggle =
                     (TriStateSiteSettingsPreference) getPreferenceScreen().findPreference(
-                            SETTING_TRI_STATE_KEY);
-            return (settingTriState.getCheckedSetting() == ContentSetting.BLOCK);
+                            TRI_STATE_TOGGLE_KEY);
+            return (triStateToggle.getCheckedSetting() == ContentSetting.BLOCK);
         } else {
-            ChromeSwitchPreference globalToggle =
+            ChromeSwitchPreference binaryToggle =
                     (ChromeSwitchPreference) getPreferenceScreen().findPreference(
-                            READ_WRITE_TOGGLE_KEY);
-            if (globalToggle != null) return !globalToggle.isChecked();
+                            BINARY_TOGGLE_KEY);
+            if (binaryToggle != null) return !binaryToggle.isChecked();
         }
         return false;
     }
@@ -743,113 +743,123 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private void configureGlobalToggles() {
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
         int contentType = mCategory.getContentSettingsType();
+        PreferenceScreen screen = getPreferenceScreen();
 
-        ChromeSwitchPreference globalToggle = (ChromeSwitchPreference)
-                getPreferenceScreen().findPreference(READ_WRITE_TOGGLE_KEY);
-        TriStateSiteSettingsPreference settingTriState =
-                (TriStateSiteSettingsPreference) getPreferenceScreen().findPreference(
-                        SETTING_TRI_STATE_KEY);
+        // Find all preferencs on the current preference screen. Some preferences are
+        // not needed for the current category and will be removed in the steps below.
+        ChromeSwitchPreference binaryToggle =
+                (ChromeSwitchPreference) screen.findPreference(BINARY_TOGGLE_KEY);
+        TriStateSiteSettingsPreference triStateToggle =
+                (TriStateSiteSettingsPreference) screen.findPreference(TRI_STATE_TOGGLE_KEY);
+        Preference thirdPartyCookies = screen.findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
+        Preference notificationsVibrate = screen.findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
+        Preference explainProtectedMediaKey = screen.findPreference(EXPLAIN_PROTECTED_MEDIA_KEY);
+        PreferenceGroup allowedGroup = (PreferenceGroup) screen.findPreference(ALLOWED_GROUP);
+        PreferenceGroup blockedGroup = (PreferenceGroup) screen.findPreference(BLOCKED_GROUP);
 
-        // Hide |settingTriState| if it's not required.
-        if (!mRequiresTriStateSetting) {
-            getPreferenceScreen().removePreference(settingTriState);
+        // For these categories, no binary, tri-state or custom toggles should be shown.
+        // TODO(xhwang): Add a test to make sure no toggles are shown on the ALL_SITES
+        // and USE_STORAGE category.
+        boolean hideAllToggles = mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
+                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)
+                || mCategory.showPermissionBlockedMessage(getActivity());
+
+        if (hideAllToggles) {
+            screen.removePreference(binaryToggle);
+            screen.removePreference(triStateToggle);
+            screen.removePreference(thirdPartyCookies);
+            screen.removePreference(notificationsVibrate);
+            screen.removePreference(explainProtectedMediaKey);
+            screen.removePreference(allowedGroup);
+            screen.removePreference(blockedGroup);
+
+            if (mCategory.showPermissionBlockedMessage(getActivity())) {
+                // Show the link to system settings since permission is disabled.
+                ChromeBasePreference osWarning = new ChromeBasePreference(getActivity(), null);
+                ChromeBasePreference osWarningExtra = new ChromeBasePreference(getActivity(), null);
+                mCategory.configurePermissionIsOffPreferences(
+                        osWarning, osWarningExtra, getActivity(), true);
+                if (osWarning.getTitle() != null) {
+                    screen.addPreference(osWarning);
+                }
+                if (osWarningExtra.getTitle() != null) {
+                    screen.addPreference(osWarningExtra);
+                }
+            }
+
+            // Since all preferences are hidden, there's nothing to do further and we can
+            // simply return.
+            return;
+        }
+
+        // Now show and configure the binary toggle or the tri-state toggle, but not both.
+        // No early return in either case since we also need to configure the category
+        // specific toggles (e.g. third-party cookie) below.
+        if (mRequiresTriStateSetting) {
+            screen.removePreference(binaryToggle);
+            configureTriStateToggle(triStateToggle, contentType);
+        } else {
+            screen.removePreference(triStateToggle);
+            configureBinaryToggle(binaryToggle, contentType);
         }
 
         // Configure/hide the third-party cookie toggle, as needed.
-        Preference thirdPartyCookies = getPreferenceScreen().findPreference(
-                THIRD_PARTY_COOKIES_TOGGLE_KEY);
         if (mCategory.showSites(SiteSettingsCategory.Type.COOKIES)) {
             thirdPartyCookies.setOnPreferenceChangeListener(this);
             updateThirdPartyCookiesCheckBox();
         } else {
-            getPreferenceScreen().removePreference(thirdPartyCookies);
+            screen.removePreference(thirdPartyCookies);
         }
 
         // Configure/hide the notifications vibrate toggle, as needed.
-        Preference notificationsVibrate =
-                getPreferenceScreen().findPreference(NOTIFICATIONS_VIBRATE_TOGGLE_KEY);
         if (mCategory.showSites(SiteSettingsCategory.Type.NOTIFICATIONS)
                 && Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             notificationsVibrate.setOnPreferenceChangeListener(this);
             updateNotificationsVibrateCheckBox();
         } else {
-            getPreferenceScreen().removePreference(notificationsVibrate);
+            screen.removePreference(notificationsVibrate);
         }
 
         // Only show the link that explains protected content settings when needed.
         if (!mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
-            getPreferenceScreen().removePreference(
-                    getPreferenceScreen().findPreference(EXPLAIN_PROTECTED_MEDIA_KEY));
+            screen.removePreference(explainProtectedMediaKey);
         }
 
-        // TODO(xhwang): Add a test to make sure neither the globalToggle nor the
-        // tri-state radio group show up on the ALL_SITES and USE_STORAGE category.
-        if (mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
-                || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
-            getPreferenceScreen().removePreference(globalToggle);
-            getPreferenceScreen().removePreference(
-                    getPreferenceScreen().findPreference(ALLOWED_GROUP));
-            getPreferenceScreen().removePreference(
-                    getPreferenceScreen().findPreference(BLOCKED_GROUP));
-            return;
-        }
         // When this menu opens, make sure the Blocked list is collapsed.
         if (!mGroupByAllowBlock) {
             mBlockListExpanded = false;
             mAllowListExpanded = true;
         }
         mGroupByAllowBlock = true;
-        PreferenceGroup allowedGroup =
-                (PreferenceGroup) getPreferenceScreen().findPreference(ALLOWED_GROUP);
-        PreferenceGroup blockedGroup =
-                (PreferenceGroup) getPreferenceScreen().findPreference(BLOCKED_GROUP);
-
-        if (mCategory.showPermissionBlockedMessage(getActivity())) {
-            getPreferenceScreen().removePreference(globalToggle);
-            getPreferenceScreen().removePreference(allowedGroup);
-            getPreferenceScreen().removePreference(blockedGroup);
-
-            // Show the link to system settings since permission is disabled.
-            ChromeBasePreference osWarning = new ChromeBasePreference(getActivity(), null);
-            ChromeBasePreference osWarningExtra = new ChromeBasePreference(getActivity(), null);
-            mCategory.configurePermissionIsOffPreferences(
-                    osWarning, osWarningExtra, getActivity(), true);
-            if (osWarning.getTitle() != null) {
-                getPreferenceScreen().addPreference(osWarning);
-            }
-            if (osWarningExtra.getTitle() != null) {
-                getPreferenceScreen().addPreference(osWarningExtra);
-            }
-            return;
-        }
 
         allowedGroup.setOnPreferenceClickListener(this);
         blockedGroup.setOnPreferenceClickListener(this);
+    }
 
-        // Hide |globalToggle| if tri-state is required.
-        if (mRequiresTriStateSetting) {
-            getPreferenceScreen().removePreference(globalToggle);
+    private void configureTriStateToggle(
+            TriStateSiteSettingsPreference triStateToggle, int contentType) {
+        triStateToggle.setOnPreferenceChangeListener(this);
+        ContentSetting setting = ContentSetting.fromInt(
+                PrefServiceBridge.getInstance().getContentSetting(contentType));
+        int[] descriptionIds =
+                ContentSettingsResources.getTriStateSettingDescriptionIDs(contentType);
+        triStateToggle.initialize(setting, descriptionIds);
+    }
 
-            settingTriState.setOnPreferenceChangeListener(this);
-            ContentSetting setting = ContentSetting.fromInt(
-                    PrefServiceBridge.getInstance().getContentSetting(contentType));
-            int[] descriptionIds =
-                    ContentSettingsResources.getTriStateSettingDescriptionIDs(contentType);
-            settingTriState.initialize(setting, descriptionIds);
-            return;
-        }
+    private void configureBinaryToggle(ChromeSwitchPreference binaryToggle, int contentType) {
+        binaryToggle.setOnPreferenceChangeListener(this);
+        binaryToggle.setTitle(ContentSettingsResources.getTitle(contentType));
 
-        // Determine what toggle to use and what it should display.
-        globalToggle.setOnPreferenceChangeListener(this);
-        globalToggle.setTitle(ContentSettingsResources.getTitle(contentType));
+        // Set summary on or off.
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)
                 && PrefServiceBridge.getInstance().isLocationAllowedByPolicy()) {
-            globalToggle.setSummaryOn(ContentSettingsResources.getGeolocationAllowedSummary());
+            binaryToggle.setSummaryOn(ContentSettingsResources.getGeolocationAllowedSummary());
         } else {
-            globalToggle.setSummaryOn(ContentSettingsResources.getEnabledSummary(contentType));
+            binaryToggle.setSummaryOn(ContentSettingsResources.getEnabledSummary(contentType));
         }
-        globalToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
-        globalToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
+        binaryToggle.setSummaryOff(ContentSettingsResources.getDisabledSummary(contentType));
+
+        binaryToggle.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
             @Override
             public boolean isPreferenceControlledByPolicy(Preference preference) {
                 // TODO(bauerb): Align the ManagedPreferenceDelegate and
@@ -862,28 +872,20 @@ public class SingleCategoryPreferences extends PreferenceFragment
                 return mCategory.isManagedByCustodian();
             }
         });
-        for (@SiteSettingsCategory.Type int type = 0; type < SiteSettingsCategory.Type.NUM_ENTRIES;
-                type++) {
-            if (type == SiteSettingsCategory.Type.ALL_SITES
-                    || type == SiteSettingsCategory.Type.USE_STORAGE
-                    || !mCategory.showSites(type)) {
-                continue;
-            }
 
-            if (type == SiteSettingsCategory.Type.DEVICE_LOCATION) {
-                globalToggle.setChecked(
-                        LocationSettings.getInstance().isChromeLocationSettingEnabled());
-            } else {
-                globalToggle.setChecked(PrefServiceBridge.getInstance().isCategoryEnabled(
-                        SiteSettingsCategory.contentSettingsType(type)));
-            }
-            break;
+        // Set the checked value.
+        if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)) {
+            binaryToggle.setChecked(
+                    LocationSettings.getInstance().isChromeLocationSettingEnabled());
+        } else {
+            binaryToggle.setChecked(PrefServiceBridge.getInstance().isCategoryEnabled(contentType));
         }
     }
 
     private void updateThirdPartyCookiesCheckBox() {
-        ChromeBaseCheckBoxPreference thirdPartyCookiesPref = (ChromeBaseCheckBoxPreference)
-                getPreferenceScreen().findPreference(THIRD_PARTY_COOKIES_TOGGLE_KEY);
+        ChromeBaseCheckBoxPreference thirdPartyCookiesPref =
+                (ChromeBaseCheckBoxPreference) getPreferenceScreen().findPreference(
+                        THIRD_PARTY_COOKIES_TOGGLE_KEY);
         thirdPartyCookiesPref.setChecked(
                 !PrefServiceBridge.getInstance().isBlockThirdPartyCookiesEnabled());
         thirdPartyCookiesPref.setEnabled(PrefServiceBridge.getInstance().isCategoryEnabled(
