@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/system/accessibility/select_to_speak_tray_utils.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/event_handler_common.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -163,13 +162,8 @@ void SelectToSpeakEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
   DCHECK(IsSelectToSpeakEnabled());
   DCHECK(event);
-  if (state_ == INACTIVE) {
-    if (event->type() == ui::ET_MOUSE_PRESSED) {
-      // Check if the mouse event occurred on the tray button.
-      CancelEventIfOverSelectToSpeakTray(event);
-    }
+  if (state_ == INACTIVE)
     return;
-  }
 
   if (event->type() == ui::ET_MOUSE_PRESSED) {
     if (state_ == SEARCH_DOWN || state_ == MOUSE_RELEASED)
@@ -207,12 +201,6 @@ void SelectToSpeakEventHandler::OnMouseEvent(ui::MouseEvent* event) {
 void SelectToSpeakEventHandler::OnTouchEvent(ui::TouchEvent* event) {
   DCHECK(IsSelectToSpeakEnabled());
   DCHECK(event);
-
-  if (state_ == INACTIVE && event->type() == ui::ET_TOUCH_PRESSED) {
-    // Check if the touch event occurred on the tray button.
-    CancelEventIfOverSelectToSpeakTray(event);
-  }
-
   // Only capture touch events if selection was requested or we are capturing
   // touch events already.
   if (state_ != SELECTION_REQUESTED && state_ != CAPTURING_TOUCH_ONLY)
@@ -299,18 +287,6 @@ void SelectToSpeakEventHandler::CancelEvent(ui::Event* event) {
   if (event->cancelable()) {
     event->SetHandled();
     event->StopPropagation();
-  }
-}
-
-// TODO(katie): Refactor this for mash, http://crbug.com/874295.
-void SelectToSpeakEventHandler::CancelEventIfOverSelectToSpeakTray(
-    ui::LocatedEvent* event) {
-  if (ash::select_to_speak_tray_utils::SelectToSpeakTrayContainsPointInScreen(
-          event->root_location())) {
-    // Cancel the event so it does not cause any UI changes after a button tap.
-    CancelEvent(event);
-    // Enter the selecting mode as if we've clicked or tapped the button.
-    chromeos::AccessibilityManager::Get()->RequestSelectToSpeakStateChange();
   }
 }
 

@@ -77,10 +77,6 @@ void SelectToSpeakTray::OnSessionStateChanged(
   CheckStatusAndUpdateIcon();
 }
 
-bool SelectToSpeakTray::ContainsPointInScreen(const gfx::Point& point) {
-  return GetBoundsInScreen().Contains(point);
-}
-
 void SelectToSpeakTray::UpdateIconsForSession() {
   session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
