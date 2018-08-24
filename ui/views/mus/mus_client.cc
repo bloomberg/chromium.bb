@@ -377,10 +377,10 @@ void MusClient::OnEmbedRootDestroyed(
 }
 
 void MusClient::OnPointerEventObserved(const ui::PointerEvent& event,
-                                       int64_t display_id,
+                                       const gfx::Point& location_in_screen,
                                        aura::Window* target) {
-  pointer_watcher_event_router_->OnPointerEventObserved(event, display_id,
-                                                        target);
+  pointer_watcher_event_router_->OnPointerEventObserved(
+      event, location_in_screen, target);
 }
 
 void MusClient::OnDisplaysChanged(

@@ -54,7 +54,7 @@ class WindowTreeClientDelegate : public aura::WindowTreeClientDelegate {
       aura::WindowTreeHostMus* window_tree_host) override {}
   void OnLostConnection(aura::WindowTreeClient* client) override {}
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id,
+                              const gfx::Point& location_in_screen,
                               aura::Window* target) override {}
   aura::PropertyConverter* GetPropertyConverter() override {
     return &property_converter_;

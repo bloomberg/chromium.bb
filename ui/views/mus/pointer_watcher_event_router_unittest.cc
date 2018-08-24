@@ -7,14 +7,11 @@
 #include <memory>
 
 #include "base/test/scoped_task_environment.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/mus_client_test_api.h"
-#include "ui/views/mus/screen_mus.h"
 #include "ui/views/pointer_watcher.h"
-#include "ui/views/test/scoped_views_test_helper.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace views {
 namespace {
@@ -49,15 +46,14 @@ class TestPointerWatcher : public PointerWatcher {
 
 }  // namespace
 
-class PointerWatcherEventRouterTest : public testing::Test {
+class PointerWatcherEventRouterTest : public views::ViewsTestBase {
  public:
   PointerWatcherEventRouterTest() = default;
   ~PointerWatcherEventRouterTest() override = default;
 
-  void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id = 0) {
+  void OnPointerEventObserved(const ui::PointerEvent& event) {
     MusClient::Get()->pointer_watcher_event_router()->OnPointerEventObserved(
-        event, display_id, nullptr);
+        event, event.root_location(), nullptr);
   }
 
   PointerWatcherEventRouter::EventTypes event_types() const {
@@ -65,10 +61,6 @@ class PointerWatcherEventRouterTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
-  ScopedViewsTestHelper helper_;
-
   DISALLOW_COPY_AND_ASSIGN(PointerWatcherEventRouterTest);
 };
 
@@ -243,38 +235,6 @@ TEST_F(PointerWatcherEventRouterTest, PointerWatcherMove) {
   OnPointerEventObserved(pointer_event_move);
   EXPECT_FALSE(watcher1.last_event_observed());
   EXPECT_FALSE(watcher2.last_event_observed());
-}
-
-TEST_F(PointerWatcherEventRouterTest, SecondaryDisplay) {
-  PointerWatcherEventRouter* pointer_watcher_event_router =
-      MusClient::Get()->pointer_watcher_event_router();
-  TestPointerWatcher watcher;
-  pointer_watcher_event_router->AddPointerWatcher(&watcher, false);
-
-  ScreenMus* screen = MusClientTestApi::screen();
-  const uint64_t kFirstDisplayId = screen->GetPrimaryDisplay().id();
-
-  // The first display is at 0,0.
-  ASSERT_TRUE(screen->GetPrimaryDisplay().bounds().origin().IsOrigin());
-
-  // Add a secondary display to the right of the primary.
-  const uint64_t kSecondDisplayId = 222;
-  screen->display_list().AddDisplay(
-      display::Display(kSecondDisplayId, gfx::Rect(800, 0, 640, 480)),
-      display::DisplayList::Type::NOT_PRIMARY);
-
-  ui::PointerEvent tap_event(
-      ui::ET_POINTER_DOWN, gfx::Point(1, 1), gfx::Point(1, 1), ui::EF_NONE, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
-      base::TimeTicks());
-
-  OnPointerEventObserved(tap_event, kFirstDisplayId);
-  EXPECT_EQ(gfx::Point(1, 1), watcher.last_location_in_screen());
-
-  OnPointerEventObserved(tap_event, kSecondDisplayId);
-  EXPECT_EQ(gfx::Point(801, 1), watcher.last_location_in_screen());
-
-  pointer_watcher_event_router->RemovePointerWatcher(&watcher);
 }
 
 }  // namespace views

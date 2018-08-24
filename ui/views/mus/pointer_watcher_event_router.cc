@@ -5,17 +5,14 @@
 #include "ui/views/mus/pointer_watcher_event_router.h"
 
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
-#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
-
-using display::Display;
-using display::Screen;
 
 namespace views {
 namespace {
@@ -89,7 +86,7 @@ void PointerWatcherEventRouter::RemovePointerWatcher(PointerWatcher* watcher) {
 
 void PointerWatcherEventRouter::OnPointerEventObserved(
     const ui::PointerEvent& event,
-    int64_t display_id,
+    const gfx::Point& location_in_screen,
     aura::Window* target) {
   Widget* target_widget = nullptr;
   ui::PointerEvent updated_event(event);
@@ -117,13 +114,6 @@ void PointerWatcherEventRouter::OnPointerEventObserved(
       updated_event.set_location(widget_relative_location);
     }
   }
-
-  // Compute screen coordinates via |display_id| because there may not be a
-  // |target| that can be used to find a ScreenPositionClient.
-  gfx::Point location_in_screen = event.location();
-  Display display;
-  if (Screen::GetScreen()->GetDisplayWithDisplayId(display_id, &display))
-    location_in_screen.Offset(display.bounds().x(), display.bounds().y());
 
   for (PointerWatcher& observer : move_watchers_) {
     observer.OnPointerEventObserved(
@@ -165,7 +155,8 @@ void PointerWatcherEventRouter::OnCaptureChanged(aura::Window* lost_capture,
   const ui::MouseEvent mouse_event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                                    gfx::Point(), ui::EventTimeForNow(), 0, 0);
   const ui::PointerEvent event(mouse_event);
-  gfx::Point location_in_screen = Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point location_in_screen =
+      display::Screen::GetScreen()->GetCursorScreenPoint();
   for (PointerWatcher& observer : move_watchers_)
     observer.OnPointerEventObserved(event, location_in_screen, nullptr);
   for (PointerWatcher& observer : non_move_watchers_)

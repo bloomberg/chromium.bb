@@ -101,7 +101,7 @@ TEST_F(TapVisualizerAppTest, Basics) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks());
   mus_client_->pointer_watcher_event_router()->OnPointerEventObserved(
-      tap, kFirstDisplayId, nullptr);
+      tap, gfx::Point(1, 1), nullptr);
 
   // A touch point view was created.
   EXPECT_EQ(1, contents->child_count());
@@ -128,7 +128,7 @@ TEST_F(TapVisualizerAppTest, MultiDisplay) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
       base::TimeTicks());
   mus_client_->pointer_watcher_event_router()->OnPointerEventObserved(
-      tap, kSecondDisplayId, nullptr);
+      tap, gfx::Point(802, 1), nullptr);
 
   // A touch point view was created on the second display.
   views::Widget* widget1 = test_api.GetWidgetForDisplay(kFirstDisplayId);
