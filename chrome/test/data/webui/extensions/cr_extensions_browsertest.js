@@ -518,7 +518,9 @@ TEST_F('CrExtensionsPackDialogTest', 'Interaction', function() {
 
 // Disabling on Windows due to flaky timeout on some build bots.
 // http://crbug.com/832885
-GEN('#if defined(OS_WIN)');
+// Temporarily disabling on Mac due to flaky dialog visibility failure.
+// http://crbug.com/877109
+GEN('#if defined(OS_WIN) || defined(OS_MACOSX)');
 GEN('#define MAYBE_PackSuccess DISABLED_PackSuccess');
 GEN('#else');
 GEN('#define MAYBE_PackSuccess PackSuccess');
