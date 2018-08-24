@@ -35,6 +35,7 @@ source_set("gpu") {
     "//gpu/command_buffer/client:gles2_cmd_helper",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:raster",
+    "//gpu/command_buffer/client:webgpu",
     "//gpu/command_buffer/common:raster",
     "//gpu/skia_bindings",
     "//mojo/public/cpp/system",

@@ -816,6 +816,7 @@ void FeatureInfo::InitializeFeatures() {
       case CONTEXT_TYPE_WEBGL1:
       case CONTEXT_TYPE_WEBGL2:
       case CONTEXT_TYPE_WEBGL2_COMPUTE:
+      case CONTEXT_TYPE_WEBGPU:
         break;
     }
   }
@@ -1826,6 +1827,10 @@ void FeatureInfo::EnableES3Validators() {
   }
 }
 
+bool FeatureInfo::IsGLContext() const {
+  return IsGLContextType(context_type_);
+}
+
 bool FeatureInfo::IsWebGLContext() const {
   return IsWebGLContextType(context_type_);
 }
@@ -1844,6 +1849,10 @@ bool FeatureInfo::IsWebGL2OrES3OrHigherContext() const {
 
 bool FeatureInfo::IsWebGL2ComputeContext() const {
   return IsWebGL2ComputeContextType(context_type_);
+}
+
+bool FeatureInfo::IsWebGPUContext() const {
+  return IsWebGPUContextType(context_type_);
 }
 
 void FeatureInfo::AddExtensionString(const base::StringPiece& extension) {

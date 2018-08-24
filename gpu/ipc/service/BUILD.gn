@@ -36,6 +36,8 @@ component("service") {
     "raster_command_buffer_stub.h",
     "shared_image_stub.cc",
     "shared_image_stub.h",
+    "webgpu_command_buffer_stub.cc",
+    "webgpu_command_buffer_stub.h",
   ]
   defines = [ "GPU_IPC_SERVICE_IMPLEMENTATION" ]
   if (is_chromecast) {

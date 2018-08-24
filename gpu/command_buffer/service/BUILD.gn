@@ -230,12 +230,19 @@ target(link_target_type, "gles2_sources") {
     "vertex_array_manager.h",
     "vertex_attrib_manager.cc",
     "vertex_attrib_manager.h",
+    "webgpu_cmd_validation.cc",
+    "webgpu_cmd_validation.h",
+    "webgpu_cmd_validation_autogen.h",
+    "webgpu_cmd_validation_implementation_autogen.h",
+    "webgpu_decoder.cc",
+    "webgpu_decoder.h",
   ]
 
   configs += [
     "//build/config:precompiled_headers",
     "//gpu:gpu_gles2_implementation",
     "//gpu:raster_implementation",
+    "//gpu:webgpu_implementation",
     "//third_party/khronos:khronos_headers",
   ]
 
@@ -246,6 +253,7 @@ target(link_target_type, "gles2_sources") {
     "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_sources",
     "//gpu/command_buffer/common:raster_sources",
+    "//gpu/command_buffer/common:webgpu_sources",
   ]
   deps = [
     ":disk_cache_proto",

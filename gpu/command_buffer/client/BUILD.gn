@@ -41,6 +41,18 @@ group("raster") {
   }
 }
 
+group("webgpu") {
+  if (is_component_build) {
+    public_deps = [
+      "//gpu:webgpu",
+    ]
+  } else {
+    public_deps = [
+      ":webgpu_sources",
+    ]
+  }
+}
+
 source_set("client_sources") {
   # External code should depend on this via //gpu/client above rather than
   # depending on this directly or the component build will break.
@@ -161,12 +173,23 @@ source_set("gles2_interface") {
 source_set("raster_interface") {
   sources = [
     "raster_interface.h",
+    "raster_interface_autogen.h",
   ]
   public_configs = [ "//third_party/khronos:khronos_headers" ]
   deps = [
     "//base",
     "//components/viz/common:resource_format",
     "//ui/gfx:buffer_types",
+  ]
+}
+
+source_set("webgpu_interface") {
+  sources = [
+    "webgpu_interface.h",
+    "webgpu_interface_autogen.h",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -232,6 +255,28 @@ source_set("raster_sources") {
     "raster_implementation_gles.cc",
     "raster_implementation_gles.h",
     "raster_implementation_impl_autogen.h",
+  ]
+}
+
+source_set("webgpu_sources") {
+  visibility = [ "//gpu/*" ]
+
+  configs += [ "//gpu:webgpu_implementation" ]
+  deps = [
+    ":client",
+    ":gles2_implementation",
+    ":webgpu_interface",
+    "//gpu/command_buffer/common:webgpu",
+  ]
+  sources = [
+    "webgpu_cmd_helper.cc",
+    "webgpu_cmd_helper.h",
+    "webgpu_cmd_helper_autogen.h",
+    "webgpu_export.h",
+    "webgpu_implementation.cc",
+    "webgpu_implementation.h",
+    "webgpu_implementation_autogen.h",
+    "webgpu_implementation_impl_autogen.h",
   ]
 }
 
