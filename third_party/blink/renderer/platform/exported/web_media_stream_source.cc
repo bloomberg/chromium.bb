@@ -177,11 +177,6 @@ void WebMediaStreamSource::SetAudioProcessingProperties(
       auto_gain_control, noise_supression);
 }
 
-WebMediaConstraints WebMediaStreamSource::Constraints() {
-  DCHECK(!private_.IsNull());
-  return private_->Constraints();
-}
-
 void WebMediaStreamSource::SetCapabilities(
     const WebMediaStreamSource::Capabilities& capabilities) {
   DCHECK(!private_.IsNull());

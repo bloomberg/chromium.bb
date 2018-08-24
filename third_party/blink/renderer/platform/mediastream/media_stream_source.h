@@ -103,10 +103,6 @@ class PLATFORM_EXPORT MediaStreamSource final
                                     bool auto_gain_control,
                                     bool noise_supression);
 
-  void SetConstraints(WebMediaConstraints constraints) {
-    constraints_ = constraints;
-  }
-  WebMediaConstraints Constraints() { return constraints_; }
   void GetSettings(WebMediaStreamTrack::Settings&);
 
   const WebMediaStreamSource::Capabilities& GetCapabilities() {
