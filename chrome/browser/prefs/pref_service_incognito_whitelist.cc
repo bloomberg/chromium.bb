@@ -13,13 +13,10 @@
 #include "components/consent_auditor/pref_names.h"
 #include "components/flags_ui/flags_ui_pref_names.h"
 #include "components/google/core/browser/google_pref_names.h"
-#include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/onc/onc_pref_names.h"
 #include "components/rappor/rappor_pref_names.h"
 #include "components/reading_list/core/reading_list_pref_names.h"
-#include "components/search_engines/search_engines_pref_names.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/variations/pref_names.h"
 #include "components/web_resource/web_resource_pref_names.h"
@@ -579,23 +576,9 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     // components/flags_ui/flags_ui_pref_names.h
     flags_ui::prefs::kEnabledLabsExperiments,
 
-    // components/invalidation/impl/invalidation_prefs.h
-    invalidation::prefs::kInvalidatorClientId,
-    invalidation::prefs::kInvalidatorInvalidationState,
-    invalidation::prefs::kInvalidatorSavedInvalidations,
-    invalidation::prefs::kInvalidationServiceUseGCMChannel,
-
-    // components/omnibox/browser/omnibox_pref_names.h
-    omnibox::kZeroSuggestCachedResults,
-
     // components/onc/onc_pref_names.h
     onc::prefs::kDeviceOpenNetworkConfiguration,
     onc::prefs::kOpenNetworkConfiguration,
-
-    // components/search_engines/search_engines_pref_names.h
-    prefs::kSyncedDefaultSearchProviderGUID,
-    prefs::kDefaultSearchProviderEnabled, prefs::kSearchProviderOverrides,
-    prefs::kSearchProviderOverridesVersion, prefs::kCountryIDAtInstall,
 
     // components/web_resource/web_resource_pref_names.h
     prefs::kEulaAccepted,
