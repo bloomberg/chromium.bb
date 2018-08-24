@@ -6,10 +6,14 @@
 """Tests for java_deobfuscate."""
 
 import argparse
+import os
 import subprocess
 import sys
 import tempfile
+import unittest
 
+# Set by command-line argument.
+_JAVA_DEOBFUSCATE_PATH = None
 
 LINE_PREFIXES = [
     '',
@@ -59,44 +63,75 @@ this.was.Deobfuscated: Error message
 """.splitlines(True)
 
 
-def _RunTest(bin_path, map_file, prefix):
-  cmd = [bin_path, map_file]
-  payload = TEST_DATA
-  expected_output = EXPECTED_OUTPUT
+class JavaDeobfuscateTest(unittest.TestCase):
 
-  payload = [prefix + x for x in payload]
-  expected_output = [prefix + x for x in expected_output]
+  def __init__(self, *args, **kwargs):
+    super(JavaDeobfuscateTest, self).__init__(*args, **kwargs)
+    self._map_file = None
 
-  proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
-  actual_output = proc.communicate(''.join(payload))[0].splitlines(True)
-  any_unexpected_failures = False
-  for actual, expected in zip(actual_output, expected_output):
-    if actual == expected:
-      sys.stdout.write('Good: ' + actual)
-    elif actual.replace('bar', 'someMethod') == expected:
-      # TODO(agrieve): Fix ReTrace's ability to deobfuscated methods.
-      sys.stdout.write('Fine: ' + actual)
-    else:
-      sys.stdout.write('BAD:  ' + actual)
-      any_unexpected_failures = True
-  return not any_unexpected_failures
+  def setUp(self):
+    self._map_file = tempfile.NamedTemporaryFile()
+    self._map_file.write(TEST_MAP)
+    self._map_file.flush()
 
+  def tearDown(self):
+    if self._map_file:
+      self._map_file.close()
 
-def main():
-  parser = argparse.ArgumentParser()
-  parser.add_argument('path_to_java_deobfuscate')
-  args = parser.parse_args()
+  def _testImpl(self, input_lines=None, expected_output_lines=None,
+                prefix=''):
+    self.assertTrue(bool(input_lines) == bool(expected_output_lines))
 
-  with tempfile.NamedTemporaryFile() as map_file:
-    map_file.write(TEST_MAP)
-    map_file.flush()
-    passed = True
-    for prefix in LINE_PREFIXES:
-      if not _RunTest(args.path_to_java_deobfuscate, map_file.name, prefix):
-        passed = False
-  print 'Result:', 'PASS' if passed else 'FAIL'
-  sys.exit(int(not passed))
+    if not input_lines:
+      input_lines = [prefix + x for x in TEST_DATA]
+    if not expected_output_lines:
+      expected_output_lines = [prefix + x for x in EXPECTED_OUTPUT]
+
+    cmd = [_JAVA_DEOBFUSCATE_PATH, self._map_file.name]
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    proc_output, _ = proc.communicate(''.join(input_lines))
+    actual_output_lines = proc_output.splitlines(True)
+    for actual, expected in zip(actual_output_lines, expected_output_lines):
+      self.assertTrue(
+          actual == expected or actual.replace('bar', 'someMethod') == expected,
+          msg=''.join([
+              'Deobfuscation failed.\n',
+              '  actual:   %s' % actual,
+              '  expected: %s' % expected]))
+
+  def testNoPrefix(self):
+    self._testImpl(prefix='')
+
+  def testThreadtimePrefix(self):
+    self._testImpl(prefix='09-08 14:38:35.535 18029 18084 E qcom_sensors_hal: ')
+
+  def testStandardPrefix(self):
+    self._testImpl(prefix='W/GCM     (15158): ')
+
+  def testStandardPrefixWithPadding(self):
+    self._testImpl(prefix='W/GCM     (  158): ')
+
+  @unittest.skip('causes java_deobfuscate to hang, see crbug.com/876539')
+  def testIndefiniteHang(self):
+    # Test for crbug.com/876539.
+    self._testImpl(
+        input_lines=[
+            'VFY: unable to resolve virtual method 2: LFOO;'
+                + '.onDescendantInvalidated '
+                + '(Landroid/view/View;Landroid/view/View;)V',
+        ],
+        expected_output_lines=[
+            'VFY: unable to resolve virtual method 2: Lthis.was.Deobfuscated;'
+                + '.onDescendantInvalidated '
+                + '(Landroid/view/View;Landroid/view/View;)V',
+        ])
 
 
 if __name__ == '__main__':
-  main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--java-deobfuscate-path', type=os.path.realpath,
+                      required=True)
+  known_args, unittest_args = parser.parse_known_args()
+  _JAVA_DEOBFUSCATE_PATH = known_args.java_deobfuscate_path
+  unittest_args = [sys.argv[0]] + unittest_args
+  unittest.main(argv=unittest_args)
