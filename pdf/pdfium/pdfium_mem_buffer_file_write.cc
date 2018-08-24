@@ -13,17 +13,21 @@ PDFiumMemBufferFileWrite::PDFiumMemBufferFileWrite() {
 
 PDFiumMemBufferFileWrite::~PDFiumMemBufferFileWrite() = default;
 
+std::vector<uint8_t> PDFiumMemBufferFileWrite::TakeBuffer() {
+  return std::move(buffer_);
+}
+
+// static
 int PDFiumMemBufferFileWrite::WriteBlockImpl(FPDF_FILEWRITE* this_file_write,
                                              const void* data,
                                              unsigned long size) {
-  PDFiumMemBufferFileWrite* mem_buffer_file_write =
-      static_cast<PDFiumMemBufferFileWrite*>(this_file_write);
-  return mem_buffer_file_write->DoWriteBlock(data, size);
+  auto* buffer = static_cast<PDFiumMemBufferFileWrite*>(this_file_write);
+  return buffer->DoWriteBlock(static_cast<const uint8_t*>(data), size);
 }
 
-int PDFiumMemBufferFileWrite::DoWriteBlock(const void* data,
+int PDFiumMemBufferFileWrite::DoWriteBlock(const uint8_t* data,
                                            unsigned long size) {
-  buffer_.append(static_cast<const unsigned char*>(data), size);
+  buffer_.insert(buffer_.end(), data, data + size);
   return 1;
 }
 

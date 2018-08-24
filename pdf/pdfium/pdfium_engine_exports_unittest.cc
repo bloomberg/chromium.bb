@@ -102,23 +102,18 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
   ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
 
   std::vector<base::span<const uint8_t>> pdf_buffers;
-
-  EXPECT_FALSE(ConvertPdfPagesToNupPdf(pdf_buffers, 1, gfx::Size(512, 792),
-                                       nullptr, nullptr));
+  std::vector<uint8_t> output_pdf_buffer =
+      ConvertPdfPagesToNupPdf(pdf_buffers, 1, gfx::Size(512, 792));
+  EXPECT_TRUE(output_pdf_buffer.empty());
 
   pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
   pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
+  output_pdf_buffer =
+      ConvertPdfPagesToNupPdf(pdf_buffers, 2, gfx::Size(512, 792));
+  ASSERT_GT(output_pdf_buffer.size(), 0U);
 
-  void* output_pdf_buffer;
-  size_t output_pdf_buffer_size;
-  ASSERT_TRUE(ConvertPdfPagesToNupPdf(pdf_buffers, 2, gfx::Size(512, 792),
-                                      &output_pdf_buffer,
-                                      &output_pdf_buffer_size));
-  ASSERT_GT(output_pdf_buffer_size, 0U);
-  ASSERT_NE(output_pdf_buffer, nullptr);
-
-  base::span<const uint8_t> output_pdf_span = base::make_span(
-      reinterpret_cast<uint8_t*>(output_pdf_buffer), output_pdf_buffer_size);
+  base::span<const uint8_t> output_pdf_span =
+      base::make_span(output_pdf_buffer);
   int page_count;
   ASSERT_TRUE(GetPDFDocInfo(output_pdf_span, &page_count, nullptr));
   ASSERT_EQ(1, page_count);
@@ -128,8 +123,6 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
   ASSERT_TRUE(GetPDFPageSizeByIndex(output_pdf_span, 0, &width, &height));
   EXPECT_DOUBLE_EQ(792.0, width);
   EXPECT_DOUBLE_EQ(512.0, height);
-
-  free(output_pdf_buffer);
 }
 
 TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
@@ -139,22 +132,17 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
   ASSERT_TRUE(base::ReadFileToString(pdf_path, &pdf_data));
 
   base::span<const uint8_t> pdf_buffer;
-
-  EXPECT_FALSE(ConvertPdfDocumentToNupPdf(pdf_buffer, 1, gfx::Size(512, 792),
-                                          nullptr, nullptr));
+  std::vector<uint8_t> output_pdf_buffer =
+      ConvertPdfDocumentToNupPdf(pdf_buffer, 1, gfx::Size(512, 792));
+  EXPECT_TRUE(output_pdf_buffer.empty());
 
   pdf_buffer = base::as_bytes(base::make_span(pdf_data));
+  output_pdf_buffer =
+      ConvertPdfDocumentToNupPdf(pdf_buffer, 4, gfx::Size(512, 792));
+  ASSERT_GT(output_pdf_buffer.size(), 0U);
 
-  void* output_pdf_buffer;
-  size_t output_pdf_buffer_size;
-  ASSERT_TRUE(ConvertPdfDocumentToNupPdf(pdf_buffer, 4, gfx::Size(512, 792),
-                                         &output_pdf_buffer,
-                                         &output_pdf_buffer_size));
-  ASSERT_GT(output_pdf_buffer_size, 0U);
-  ASSERT_NE(output_pdf_buffer, nullptr);
-
-  base::span<const uint8_t> output_pdf_span = base::make_span(
-      reinterpret_cast<uint8_t*>(output_pdf_buffer), output_pdf_buffer_size);
+  base::span<const uint8_t> output_pdf_span =
+      base::make_span(output_pdf_buffer);
   int page_count;
   ASSERT_TRUE(GetPDFDocInfo(output_pdf_span, &page_count, nullptr));
   ASSERT_EQ(2, page_count);
@@ -166,8 +154,6 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
     EXPECT_DOUBLE_EQ(512.0, width);
     EXPECT_DOUBLE_EQ(792.0, height);
   }
-
-  free(output_pdf_buffer);
 }
 
 }  // namespace chrome_pdf

@@ -35,17 +35,14 @@ class PDFiumEngineExports : public PDFEngineExports {
                              int page_number,
                              const RenderingSettings& settings,
                              void* bitmap_buffer) override;
-  bool ConvertPdfPagesToNupPdf(
+  std::vector<uint8_t> ConvertPdfPagesToNupPdf(
       std::vector<base::span<const uint8_t>> input_buffers,
       size_t pages_per_sheet,
-      const gfx::Size& page_size,
-      void** dest_pdf_buffer,
-      size_t* dest_pdf_buffer_size) override;
-  bool ConvertPdfDocumentToNupPdf(base::span<const uint8_t> input_buffer,
-                                  size_t pages_per_sheet,
-                                  const gfx::Size& page_size,
-                                  void** dest_pdf_buffer,
-                                  size_t* dest_pdf_buffer_size) override;
+      const gfx::Size& page_size) override;
+  std::vector<uint8_t> ConvertPdfDocumentToNupPdf(
+      base::span<const uint8_t> input_buffer,
+      size_t pages_per_sheet,
+      const gfx::Size& page_size) override;
   bool GetPDFDocInfo(base::span<const uint8_t> pdf_buffer,
                      int* page_count,
                      double* max_page_width) override;
