@@ -1,8 +1,6 @@
 # These tests currently fail when run with --enable-features=NetworkSerivce
 # See https://crbug.com/729849
 
-Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
-Bug(none) external/wpt/clear-site-data/navigation.https.html [ Timeout ]
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
 
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]

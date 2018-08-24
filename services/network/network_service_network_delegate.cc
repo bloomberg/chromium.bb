@@ -6,20 +6,43 @@
 
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/url_loader.h"
 
 namespace network {
 
+namespace {
+
+const char kClearSiteDataHeader[] = "Clear-Site-Data";
+
+}  // anonymous namespace
+
 NetworkServiceNetworkDelegate::NetworkServiceNetworkDelegate(
     NetworkContext* network_context)
-    : network_context_(network_context) {}
+    : network_context_(network_context), weak_ptr_factory_(this) {}
+
+NetworkServiceNetworkDelegate::~NetworkServiceNetworkDelegate() = default;
+
+int NetworkServiceNetworkDelegate::OnHeadersReceived(
+    net::URLRequest* request,
+    net::CompletionOnceCallback callback,
+    const net::HttpResponseHeaders* original_response_headers,
+    scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
+    GURL* allowed_unsafe_redirect_url) {
+  // Clear-Site-Data header will be handled by |ResourceDispatcherHost|.
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return net::OK;
+
+  return HandleClearSiteDataHeader(request, std::move(callback),
+                                   original_response_headers);
+}
 
 bool NetworkServiceNetworkDelegate::OnCanGetCookies(
     const net::URLRequest& request,
     const net::CookieList& cookie_list,
     bool allowed_from_caller) {
   URLLoader* url_loader = URLLoader::ForRequest(request);
-  if (url_loader) {
+  if (url_loader && network_context_->network_service()->client()) {
     network_context_->network_service()->client()->OnCookiesRead(
         url_loader->GetProcessId(), url_loader->GetRenderFrameId(),
         request.url(), request.site_for_cookies(), cookie_list,
@@ -34,7 +57,7 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     net::CookieOptions* options,
     bool allowed_from_caller) {
   URLLoader* url_loader = URLLoader::ForRequest(request);
-  if (url_loader) {
+  if (url_loader && network_context_->network_service()->client()) {
     network_context_->network_service()->client()->OnCookieChange(
         url_loader->GetProcessId(), url_loader->GetRenderFrameId(),
         request.url(), request.site_for_cookies(), cookie,
@@ -82,6 +105,42 @@ bool NetworkServiceNetworkDelegate::OnCanUseReportingClient(
   // TODO(crbug.com/845559): Disable all Reporting uploads until we can perform
   // a BACKGROUND_SYNC permissions check across service boundaries.
   return false;
+}
+
+int NetworkServiceNetworkDelegate::HandleClearSiteDataHeader(
+    net::URLRequest* request,
+    net::CompletionOnceCallback callback,
+    const net::HttpResponseHeaders* original_response_headers) {
+  DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  DCHECK(request);
+  if (!original_response_headers ||
+      !network_context_->network_service()->client())
+    return net::OK;
+
+  URLLoader* url_loader = URLLoader::ForRequest(*request);
+  if (!url_loader)
+    return net::OK;
+
+  std::string header_value;
+  if (!original_response_headers->GetNormalizedHeader(kClearSiteDataHeader,
+                                                      &header_value))
+    return net::OK;
+
+  network_context_->network_service()->client()->OnClearSiteData(
+      url_loader->GetProcessId(), url_loader->GetRenderFrameId(),
+      request->url(), header_value, request->load_flags(),
+      base::BindOnce(&NetworkServiceNetworkDelegate::FinishedClearSiteData,
+                     weak_ptr_factory_.GetWeakPtr(), request->GetWeakPtr(),
+                     std::move(callback)));
+
+  return net::ERR_IO_PENDING;
+}
+
+void NetworkServiceNetworkDelegate::FinishedClearSiteData(
+    base::WeakPtr<net::URLRequest> request,
+    net::CompletionOnceCallback callback) {
+  if (request)
+    std::move(callback).Run(net::OK);
 }
 
 }  // namespace network

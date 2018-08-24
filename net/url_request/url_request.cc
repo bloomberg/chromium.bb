@@ -593,7 +593,8 @@ URLRequest::URLRequest(const GURL& url,
       raw_header_size_(0),
       is_pac_request_(false),
       traffic_annotation_(traffic_annotation),
-      upgrade_if_insecure_(false) {
+      upgrade_if_insecure_(false),
+      weak_factory_(this) {
   // Sanity check out environment.
   DCHECK(base::ThreadTaskRunnerHandle::IsSet());
 
@@ -1278,6 +1279,10 @@ void URLRequest::set_status(URLRequestStatus status) {
   DCHECK(status_.is_io_pending() || status_.is_success() ||
          (!status.is_success() && !status.is_io_pending()));
   status_ = status;
+}
+
+base::WeakPtr<URLRequest> URLRequest::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace net

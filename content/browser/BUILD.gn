@@ -529,6 +529,8 @@ jumbo_source_set("browser") {
     "browsing_data/browsing_data_filter_builder_impl.h",
     "browsing_data/browsing_data_remover_impl.cc",
     "browsing_data/browsing_data_remover_impl.h",
+    "browsing_data/clear_site_data_handler.cc",
+    "browsing_data/clear_site_data_handler.h",
     "browsing_data/clear_site_data_throttle.cc",
     "browsing_data/clear_site_data_throttle.h",
     "browsing_data/conditional_cache_deletion_helper.cc",

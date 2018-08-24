@@ -13,10 +13,13 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "net/base/escape.h"
 #include "net/base/mock_network_change_notifier.h"
+#include "net/base/url_util.h"
 #include "net/dns/dns_config_service.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -24,14 +27,18 @@
 #include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
@@ -51,6 +58,14 @@ const char kNetworkServiceName[] = "network";
 
 const base::FilePath::CharType kServicesTestData[] =
     FILE_PATH_LITERAL("services/test/data");
+
+// Returns a new URL with key=value pair added to the query.
+GURL AddQuery(const GURL& url,
+              const std::string& key,
+              const std::string& value) {
+  return GURL(url.spec() + (url.has_query() ? "&" : "?") + key + "=" +
+              net::EscapeQueryParamValue(value, false));
+}
 
 mojom::NetworkContextParamsPtr CreateContextParams() {
   mojom::NetworkContextParamsPtr params = mojom::NetworkContextParams::New();
@@ -1169,6 +1184,15 @@ class AllowBadCertsNetworkServiceClient : public mojom::NetworkServiceClient {
     NOTREACHED();
   }
 
+  void OnClearSiteData(int process_id,
+                       int routing_id,
+                       const GURL& url,
+                       const std::string& header_value,
+                       int load_flags,
+                       OnClearSiteDataCallback callback) override {
+    NOTREACHED();
+  }
+
  private:
   mojo::Binding<mojom::NetworkServiceClient> binding_;
 
@@ -1379,6 +1403,236 @@ class NetworkServiceNetworkChangeTest
 TEST_F(NetworkServiceNetworkChangeTest, MAYBE_NetworkChangeManagerRequest) {
   TestNetworkChangeManagerClient manager_client(service());
   manager_client.WaitForNotification(mojom::ConnectionType::CONNECTION_3G);
+}
+
+class NetworkServiceNetworkDelegateTest : public NetworkServiceTest {
+ public:
+  NetworkServiceNetworkDelegateTest() {
+    // |NetworkServiceNetworkDelegate::HandleClearSiteDataHeader| requires
+    // Network Service.
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kNetworkService);
+  }
+  ~NetworkServiceNetworkDelegateTest() override = default;
+
+  void CreateNetworkContext() {
+    mojom::NetworkContextParamsPtr context_params =
+        mojom::NetworkContextParams::New();
+    service()->CreateNetworkContext(mojo::MakeRequest(&network_context_),
+                                    std::move(context_params));
+  }
+
+  void LoadURL(const GURL& url, int options = mojom::kURLLoadOptionNone) {
+    ResourceRequest request;
+    request.url = url;
+    request.method = "GET";
+    request.request_initiator = url::Origin();
+    StartLoadingURL(request, 0 /* process_id */, options);
+    client_->RunUntilComplete();
+  }
+
+  void StartLoadingURL(const ResourceRequest& request,
+                       uint32_t process_id,
+                       int options = mojom::kURLLoadOptionNone) {
+    client_.reset(new TestURLLoaderClient());
+    mojom::URLLoaderFactoryPtr loader_factory;
+    mojom::URLLoaderFactoryParamsPtr params =
+        mojom::URLLoaderFactoryParams::New();
+    params->process_id = process_id;
+    params->is_corb_enabled = false;
+    network_context_->CreateURLLoaderFactory(mojo::MakeRequest(&loader_factory),
+                                             std::move(params));
+
+    loader_factory->CreateLoaderAndStart(
+        mojo::MakeRequest(&loader_), 1, 1, options, request,
+        client_->CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+  }
+
+  net::EmbeddedTestServer* https_server() { return https_server_.get(); }
+  TestURLLoaderClient* client() { return client_.get(); }
+
+ protected:
+  void SetUp() override {
+    // Set up HTTPS server.
+    https_server_.reset(new net::EmbeddedTestServer(
+        net::test_server::EmbeddedTestServer::TYPE_HTTPS));
+    https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+    https_server_->RegisterRequestHandler(base::BindRepeating(
+        &NetworkServiceNetworkDelegateTest::HandleHTTPSRequest,
+        base::Unretained(this)));
+    ASSERT_TRUE(https_server_->Start());
+  }
+
+  // Responds with the header "<header>" if we have "header"=<header> query
+  // parameters in the url.
+  std::unique_ptr<net::test_server::HttpResponse> HandleHTTPSRequest(
+      const net::test_server::HttpRequest& request) {
+    std::string header;
+    if (net::GetValueForKeyInQuery(request.GetURL(), "header", &header)) {
+      std::unique_ptr<net::test_server::RawHttpResponse> response(
+          new net::test_server::RawHttpResponse("HTTP/1.1 200 OK\r\n", ""));
+
+      // Newlines are encoded as '%0A' in URLs.
+      const std::string newline_escape = "%0A";
+      std::size_t pos = header.find(newline_escape);
+      while (pos != std::string::npos) {
+        header.replace(pos, newline_escape.length(), "\r\n");
+        pos = header.find(newline_escape);
+      }
+
+      response->AddHeader(header);
+      return response;
+    }
+
+    return nullptr;
+  }
+
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<TestURLLoaderClient> client_;
+  mojom::NetworkContextPtr network_context_;
+  mojom::URLLoaderPtr loader_;
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkServiceNetworkDelegateTest);
+};
+
+class ClearSiteDataNetworkServiceClient : public TestNetworkServiceClient {
+ public:
+  explicit ClearSiteDataNetworkServiceClient(
+      mojom::NetworkServiceClientRequest request)
+      : TestNetworkServiceClient(std::move(request)) {}
+  ~ClearSiteDataNetworkServiceClient() override = default;
+
+  // Needed these two cookie overrides to avoid NOTREACHED().
+  void OnCookiesRead(int process_id,
+                     int routing_id,
+                     const GURL& url,
+                     const GURL& first_party_url,
+                     const net::CookieList& cookie_list,
+                     bool blocked_by_policy) override {}
+
+  void OnCookieChange(int process_id,
+                      int routing_id,
+                      const GURL& url,
+                      const GURL& first_party_url,
+                      const net::CanonicalCookie& cookie,
+                      bool blocked_by_policy) override {}
+
+  void OnClearSiteData(int process_id,
+                       int routing_id,
+                       const GURL& url,
+                       const std::string& header_value,
+                       int load_flags,
+                       OnClearSiteDataCallback callback) override {
+    ++on_clear_site_data_counter_;
+    last_on_clear_site_data_header_value_ = header_value;
+    std::move(callback).Run();
+  }
+
+  int on_clear_site_data_counter() const { return on_clear_site_data_counter_; }
+  const std::string& last_on_clear_site_data_header_value() const {
+    return last_on_clear_site_data_header_value_;
+  }
+
+  void ClearOnClearSiteDataCounter() {
+    on_clear_site_data_counter_ = 0;
+    last_on_clear_site_data_header_value_.clear();
+  }
+
+ private:
+  int on_clear_site_data_counter_ = 0;
+  std::string last_on_clear_site_data_header_value_;
+};
+
+// Check that |NetworkServiceNetworkDelegate| handles Clear-Site-Data header
+// w/ and w/o |NetworkServiceCient|.
+TEST_F(NetworkServiceNetworkDelegateTest, ClearSiteDataNetworkServiceCient) {
+  const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
+  CreateNetworkContext();
+
+  // Null |NetworkServiceCient|. The request should complete without being
+  // deferred.
+  EXPECT_EQ(nullptr, service()->client());
+  GURL url = https_server()->GetURL("/foo");
+  url = AddQuery(url, "header", kClearCookiesHeader);
+  LoadURL(url);
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+
+  // With |NetworkServiceCient|. The request should go through
+  // |ClearSiteDataNetworkServiceClient| and complete.
+  mojom::NetworkServiceClientPtr client_ptr;
+  auto client_impl = std::make_unique<ClearSiteDataNetworkServiceClient>(
+      mojo::MakeRequest(&client_ptr));
+  service()->SetClient(std::move(client_ptr));
+  url = https_server()->GetURL("/bar");
+  url = AddQuery(url, "header", kClearCookiesHeader);
+  EXPECT_EQ(0, client_impl->on_clear_site_data_counter());
+  LoadURL(url);
+  EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  EXPECT_EQ(1, client_impl->on_clear_site_data_counter());
+}
+
+// Check that headers are handled and passed to the client correctly.
+TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
+  const char kClearCookiesHeaderValue[] = "\"cookies\"";
+  const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
+  CreateNetworkContext();
+
+  mojom::NetworkServiceClientPtr client_ptr;
+  auto client_impl = std::make_unique<ClearSiteDataNetworkServiceClient>(
+      mojo::MakeRequest(&client_ptr));
+  service()->SetClient(std::move(client_ptr));
+
+  // |passed_header_value| are only checked if |should_call_client| is true.
+  const struct TestCase {
+    std::string response_headers;
+    bool should_call_client;
+    std::string passed_header_value;
+  } kTestCases[] = {
+      // The throttle does not defer requests if there are no interesting
+      // response headers.
+      {"", false, ""},
+      {"Set-Cookie: abc=123;", false, ""},
+      {"Content-Type: image/png;", false, ""},
+
+      // Both malformed and valid Clear-Site-Data headers will defer requests
+      // and be passed to the client. It's client's duty to detect malformed
+      // headers.
+      {"Clear-Site-Data: cookies", true, "cookies"},
+      {"Clear-Site-Data: \"unknown type\"", true, "\"unknown type\""},
+      {"Clear-Site-Data: \"cookies\", \"unknown type\"", true,
+       "\"cookies\", \"unknown type\""},
+      {kClearCookiesHeader, true, kClearCookiesHeaderValue},
+      {base::StringPrintf("Content-Type: image/png;\n%s", kClearCookiesHeader),
+       true, kClearCookiesHeaderValue},
+      {base::StringPrintf("%s\nContent-Type: image/png;", kClearCookiesHeader),
+       true, kClearCookiesHeaderValue},
+
+      // Multiple instances of the header will be parsed correctly.
+      {base::StringPrintf("%s\n%s", kClearCookiesHeader, kClearCookiesHeader),
+       true, "\"cookies\", \"cookies\""},
+  };
+
+  for (const TestCase& test_case : kTestCases) {
+    SCOPED_TRACE(
+        base::StringPrintf("Headers:\n%s", test_case.response_headers.c_str()));
+
+    GURL url = https_server()->GetURL("/foo");
+    url = AddQuery(url, "header", test_case.response_headers);
+    EXPECT_EQ(0, client_impl->on_clear_site_data_counter());
+    LoadURL(url);
+
+    EXPECT_EQ(net::OK, client()->completion_status().error_code);
+    if (test_case.should_call_client) {
+      EXPECT_EQ(1, client_impl->on_clear_site_data_counter());
+      EXPECT_EQ(test_case.passed_header_value,
+                client_impl->last_on_clear_site_data_header_value());
+    } else {
+      EXPECT_EQ(0, client_impl->on_clear_site_data_counter());
+    }
+    client_impl->ClearOnClearSiteDataCounter();
+  }
 }
 
 }  // namespace

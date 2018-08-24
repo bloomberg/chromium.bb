@@ -1,47 +1,31 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_BROWSING_DATA_CLEAR_SITE_DATA_THROTTLE_H_
-#define CONTENT_BROWSER_BROWSING_DATA_CLEAR_SITE_DATA_THROTTLE_H_
+#ifndef CONTENT_BROWSER_BROWSING_DATA_CLEAR_SITE_DATA_HANDLER_H_
+#define CONTENT_BROWSER_BROWSING_DATA_CLEAR_SITE_DATA_HANDLER_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/callback.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/resource_throttle.h"
+#include "content/common/content_export.h"
 #include "content/public/common/console_message_level.h"
-#include "net/http/http_response_headers.h"
 #include "url/gurl.h"
-
-namespace net {
-class HttpResponseHeaders;
-struct RedirectInfo;
-class URLRequest;
-}
-
-namespace url {
-class Origin;
-}
+#include "url/origin.h"
 
 namespace content {
 
 class WebContents;
 
-// TODO(crbug.com/876931): To be removed after Network Service was enabled by
-// default. The header will be handled by |NetworkServiceNetworkDelegate| and
-// |ClearSiteDataHandler| instead.
-// This throttle parses the Clear-Site-Data header and executes the clearing
+// This handler parses the Clear-Site-Data header and executes the clearing
 // of browsing data. The resource load is delayed until the header is parsed
 // and, if valid, until the browsing data are deleted. See the W3C working draft
 // at https://w3c.github.io/webappsec-clear-site-data/.
-class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
+class CONTENT_EXPORT ClearSiteDataHandler {
  public:
   // Stores and outputs console messages.
   class CONTENT_EXPORT ConsoleMessagesDelegate {
@@ -52,9 +36,8 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
       ConsoleMessageLevel level;
     };
 
-    typedef base::Callback<
-        void(WebContents*, ConsoleMessageLevel, const std::string&)>
-        OutputFormattedMessageFunction;
+    using OutputFormattedMessageFunction = base::RepeatingCallback<
+        void(WebContents*, ConsoleMessageLevel, const std::string&)>;
 
     ConsoleMessagesDelegate();
     virtual ~ConsoleMessagesDelegate();
@@ -67,7 +50,7 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
     // Outputs stored messages to the console of WebContents identified by
     // |web_contents_getter|.
     virtual void OutputMessages(
-        const ResourceRequestInfo::WebContentsGetter& web_contents_getter);
+        const base::RepeatingCallback<WebContents*()>& web_contents_getter);
 
     const std::vector<Message>& messages() const { return messages_; }
 
@@ -80,18 +63,15 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
     OutputFormattedMessageFunction output_formatted_message_function_;
   };
 
-  // Instantiates a throttle for the given if it's supported for the given
-  // |request|. The caller must guarantee that |request| outlives the throttle.
-  static std::unique_ptr<ResourceThrottle> MaybeCreateThrottleForRequest(
-      net::URLRequest* request);
-
-  ~ClearSiteDataThrottle() override;
-
-  // ResourceThrottle implementation:
-  const char* GetNameForLogging() const override;
-  void WillRedirectRequest(const net::RedirectInfo& redirect_info,
-                           bool* defer) override;
-  void WillProcessResponse(bool* defer) override;
+  // |header_value| is the string value of the 'Clear-Site-Data' header. This
+  // method calls ParseHeader() to parse it, and then ExecuteClearingTask() if
+  // applicable.
+  static void HandleHeader(
+      base::RepeatingCallback<WebContents*()> web_contents_getter,
+      const GURL& url,
+      const std::string& header_value,
+      int load_flags,
+      base::OnceClosure callback);
 
   // Exposes ParseHeader() publicly for testing.
   static bool ParseHeaderForTesting(const std::string& header,
@@ -102,22 +82,22 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
                                     const GURL& current_url);
 
  protected:
-  ClearSiteDataThrottle(net::URLRequest* request,
-                        std::unique_ptr<ConsoleMessagesDelegate> delegate);
+  ClearSiteDataHandler(
+      base::RepeatingCallback<WebContents*()> web_contents_getter,
+      const GURL& url,
+      const std::string& header_value,
+      int load_flags,
+      base::OnceClosure callback,
+      std::unique_ptr<ConsoleMessagesDelegate> delegate);
+  virtual ~ClearSiteDataHandler();
 
-  virtual const GURL& GetCurrentURL() const;
+  // Calls |HandleHeaderImpl| to handle headers, and output console message if
+  // not deferred. Returns |true| if the request was deferred.
+  bool HandleHeaderAndOutputConsoleMessages();
 
- private:
-  // Returns HTTP response headers of the underlying URLRequest.
-  // Can be overriden for testing.
-  virtual const net::HttpResponseHeaders* GetResponseHeaders() const;
-
-  // Scans for the first occurrence of the 'Clear-Site-Data' header, calls
-  // ParseHeader() to parse it, and then ExecuteClearingTask() if applicable.
-  // This is the common logic of WillRedirectRequest()
-  // and WillProcessResponse(). Returns true if a valid header was found and
-  // the clearing was executed.
-  bool HandleHeader();
+  // Handles headers and maybe execute clearing task. Returns |true| if the
+  // request was deferred.
+  bool Run();
 
   // Parses the value of the 'Clear-Site-Data' header and outputs whether
   // the header requests to |clear_cookies|, |clear_storage|, and |clear_cache|.
@@ -130,7 +110,7 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
                           ConsoleMessagesDelegate* delegate,
                           const GURL& current_url);
 
-  // Executes the clearing task. Can be overriden for testing.
+  // Executes the clearing task. Can be overridden for testing.
   virtual void ExecuteClearingTask(const url::Origin& origin,
                                    bool clear_cookies,
                                    bool clear_storage,
@@ -138,27 +118,45 @@ class CONTENT_EXPORT ClearSiteDataThrottle : public ResourceThrottle {
                                    base::OnceClosure callback);
 
   // Signals that a parsing and deletion task was finished.
-  void TaskFinished();
+  // |clearing_started| is the time when the last clearing operation started.
+  // Used when clearing finishes to compute the duration.
+  static void TaskFinished(
+      base::TimeTicks clearing_started,
+      std::unique_ptr<ConsoleMessagesDelegate> delegate,
+      base::RepeatingCallback<WebContents*()> web_contents_getter,
+      base::OnceClosure callback);
 
   // Outputs the console messages in the |delegate_|.
   void OutputConsoleMessages();
 
-  // The request this throttle is observing.
-  net::URLRequest* request_;
+  // Run the callback to resume loading. No clearing actions were conducted.
+  void RunCallbackNotDeferred();
+
+  const GURL& GetURLForTesting();
+
+ private:
+  // Required to clear the data.
+  base::RepeatingCallback<WebContents*()> web_contents_getter_;
+
+  // Target URL whose data will be cleared.
+  GURL url_;
+
+  // Raw string value of the 'Clear-Site-Data' header.
+  std::string header_value_;
+
+  // Load flags of the current request, used to check cookie policies.
+  int load_flags_;
+
+  // Used to notify that the clearing has completed. Callers could resuming
+  // loading after this point.
+  base::OnceClosure callback_;
 
   // The delegate that stores and outputs console messages.
   std::unique_ptr<ConsoleMessagesDelegate> delegate_;
 
-  // The time when the last clearing operation started. Used when clearing
-  // finishes to compute the duration.
-  base::TimeTicks clearing_started_;
-
-  // Needed for asynchronous parsing and deletion tasks.
-  base::WeakPtrFactory<ClearSiteDataThrottle> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(ClearSiteDataThrottle);
+  DISALLOW_COPY_AND_ASSIGN(ClearSiteDataHandler);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_BROWSING_DATA_CLEAR_SITE_DATA_THROTTLE_H_
+#endif  // CONTENT_BROWSER_BROWSING_DATA_CLEAR_SITE_DATA_HANDLER_H_

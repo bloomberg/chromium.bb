@@ -2858,7 +2858,8 @@ bool IsNetworkServiceRunningInProcess() {
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
                      int process_id,
-                     int render_frame_id) {
+                     int render_frame_id,
+                     int load_flags) {
   network::mojom::URLLoaderFactoryPtr url_loader_factory;
   network::mojom::URLLoaderFactoryParamsPtr url_loader_factory_params =
       network::mojom::URLLoaderFactoryParams::New();
@@ -2874,6 +2875,7 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
   request->render_frame_id = render_frame_id;
+  request->load_flags = load_flags;
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =

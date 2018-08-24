@@ -126,6 +126,17 @@ interface NetworkServiceClient {
   // loads. To avoid flooding the client, it has to ack the update before it can
   // receive the next update.
   OnLoadingStateUpdate(array<LoadInfo> infos) => ();
+
+  // Called when the Clear-Site-Data header has been received. The callback
+  // should be run after the data is deleted.
+  // https://www.w3.org/TR/clear-site-data/
+  // TODO(crbug.com/876931): We might want to move header parsing work to
+  // Network Service for security concerns (e.g. |header_value| => booleans).
+  OnClearSiteData(int32 process_id,
+                  int32 routing_id,
+                  url.mojom.Url url,
+                  string header_value,
+                  int32 load_flags) => ();
 };
 
 // An HTTPS server to send DNS queries to, per the DNS Queries over HTTPS spec.
@@ -199,6 +210,9 @@ struct CryptConfig {
 
 // Browser interface to the network service.
 interface NetworkService {
+  // Sets client used by all |NetworkContext|s creating by |NetworkService|.
+  // Pending requests may hang if the |client| pipe is closed before they
+  // complete.
   SetClient(NetworkServiceClient client);
 
   // Starts observing the NetLog event stream and writing entries to |file|.

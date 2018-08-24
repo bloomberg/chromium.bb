@@ -67,6 +67,12 @@ class TestNetworkServiceClient : public network::mojom::NetworkServiceClient {
                              OnFileUploadRequestedCallback callback) override;
   void OnLoadingStateUpdate(std::vector<mojom::LoadInfoPtr> infos,
                             OnLoadingStateUpdateCallback callback) override;
+  void OnClearSiteData(int process_id,
+                       int routing_id,
+                       const GURL& url,
+                       const std::string& header_value,
+                       int load_flags,
+                       OnClearSiteDataCallback callback) override;
 
  private:
   bool enable_uploads_;

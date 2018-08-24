@@ -36,6 +36,7 @@
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
+#include "net/base/load_flags.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1503,7 +1504,8 @@ bool IsNetworkServiceRunningInProcess();
 int LoadBasicRequest(network::mojom::NetworkContext* network_context,
                      const GURL& url,
                      int process_id = 0,
-                     int render_frame_id = 0);
+                     int render_frame_id = 0,
+                     int load_flags = net::LOAD_NORMAL);
 
 // Ensures that all StoragePartitions for the given BrowserContext have their
 // cookies flushed to disk.

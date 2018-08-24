@@ -2076,6 +2076,15 @@ class TestAuthNetworkServiceClient : public mojom::NetworkServiceClient {
     NOTREACHED();
   }
 
+  void OnClearSiteData(int process_id,
+                       int routing_id,
+                       const GURL& url,
+                       const std::string& header_value,
+                       int load_flags,
+                       OnClearSiteDataCallback callback) override {
+    NOTREACHED();
+  }
+
   void set_credentials_response(CredentialsResponse credentials_response) {
     credentials_response_ = credentials_response;
   }
