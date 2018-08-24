@@ -107,6 +107,8 @@ void BookmarkAppInstallationTask::OnGetWebApplicationInfo(
                                 WebappInstallSource::MENU_BROWSER_TAB);
 
   switch (app_info_.launch_container) {
+    case web_app::PendingAppManager::LaunchContainer::kDefault:
+      break;
     case web_app::PendingAppManager::LaunchContainer::kTab:
       helper_->set_forced_launch_type(LAUNCH_TYPE_REGULAR);
       break;

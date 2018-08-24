@@ -111,4 +111,33 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 }
 
+TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
+  auto prefs = std::make_unique<TestingPrefServiceSyncable>();
+  RegisterUserProfilePrefs(prefs->registry());
+
+  base::Value list(base::Value::Type::LIST);
+  {
+    base::Value item1(base::Value::Type::DICTIONARY);
+    item1.SetKey(kUrlKey, base::Value(kUrl1));
+
+    list.GetList().push_back(std::move(item1));
+
+    prefs->Set(prefs::kWebAppInstallForceList, std::move(list));
+  }
+
+  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
+  WebAppPolicyManager web_app_policy_manager(prefs.get(),
+                                             pending_app_manager.get());
+  base::RunLoop().RunUntilIdle();
+
+  const auto& apps_to_install = pending_app_manager->installed_apps();
+
+  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
+  expected_apps_to_install.emplace_back(
+      GURL(kUrl1), PendingAppManager::LaunchContainer::kDefault,
+      false /* create_shortcuts */);
+
+  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+}
+
 }  // namespace web_app

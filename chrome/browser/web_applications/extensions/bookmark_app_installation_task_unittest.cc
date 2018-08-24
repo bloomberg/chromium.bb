@@ -415,4 +415,26 @@ TEST_F(BookmarkAppInstallationTaskTest,
   EXPECT_EQ(LAUNCH_TYPE_REGULAR, test_helper().forced_launch_type().value());
 }
 
+TEST_F(BookmarkAppInstallationTaskTest,
+       WebAppOrShortcutFromContents_NoForcedContainer) {
+  const GURL app_url(kWebAppUrl);
+
+  web_app::PendingAppManager::AppInfo app_info(
+      app_url, web_app::PendingAppManager::LaunchContainer::kDefault);
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), std::move(app_info));
+  SetTestingFactories(task.get(), app_url);
+
+  task->InstallWebAppOrShortcutFromWebContents(
+      web_contents(),
+      base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
+                     base::Unretained(this), base::DoNothing().Once()));
+  content::RunAllTasksUntilIdle();
+
+  test_helper().CompleteInstallation();
+
+  EXPECT_TRUE(app_installed());
+  EXPECT_FALSE(test_helper().forced_launch_type().has_value());
+}
+
 }  // namespace extensions

@@ -31,6 +31,10 @@ class PendingAppManager {
 
   // How the app will be launched after installation.
   enum class LaunchContainer {
+    // When `kDefault` is used, the app will launch in a window if the site is
+    // "installable" (also referred to as Progressive Web App) and in a tab if
+    // the site is not "installable".
+    kDefault,
     kTab,
     kWindow,
   };
