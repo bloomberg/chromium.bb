@@ -28,9 +28,6 @@ cr.define('preview_generation_test', function() {
     /** @type {?print_preview.NativeLayer} */
     let nativeLayer = null;
 
-    /** @type {?print_preview.DocumentInfo} */
-    let documentInfo = null;
-
     /** @type {!print_preview.NativeInitialSettings} */
     const initialSettings =
         print_preview_test_utils.getDefaultInitialSettings();
@@ -43,9 +40,8 @@ cr.define('preview_generation_test', function() {
     });
 
     /**
-     * Initializes the UI with a default local destination. |documentInfo| is
-     * initialized to a 3 page HTML document with no selection if it has not
-     * been set yet.
+     * Initializes the UI with a default local destination and a 3 page document
+     * length.
      * @return {!Promise} Promise that resolves when initialization is done,
      *     destination is set, and initial preview request is complete.
      */
@@ -68,25 +64,11 @@ cr.define('preview_generation_test', function() {
             nativeLayer.whenCalled('getPrinterCapabilities'),
           ])
           .then(function() {
-            if (!documentInfo)
-              initDocumentInfo(false, false);
-            page.set('documentInfo_', documentInfo);
-            page.notifyPath('documentInfo_.isModifiable');
+            if (!page.documentInfo_.isModifiable)
+              page.documentInfo_.updateFitToPageScaling(98);
+            page.documentInfo_.updatePageCount(3);
             return nativeLayer.whenCalled('getPreview');
           });
-    }
-
-    /**
-     * Initializes |documentInfo| with a 3 page document.
-     * @param {boolean} isPdf Whether the document should be a PDF.
-     * @param {boolean} hasSelection Whether the document has a selection.
-     */
-    function initDocumentInfo(isPdf, hasSelection) {
-      documentInfo = new print_preview.DocumentInfo();
-      documentInfo.init(!isPdf, 'title', hasSelection);
-      if (isPdf)
-        documentInfo.updateFitToPageScaling(98);
-      documentInfo.updatePageCount(3);
     }
 
     /**
@@ -143,7 +125,7 @@ cr.define('preview_generation_test', function() {
     /** Validate changing the fit to page setting updates the preview. */
     test(assert(TestNames.FitToPage), function() {
       // Set PDF document so setting is available.
-      initDocumentInfo(true, false);
+      initialSettings.previewModifiable = false;
       return testSimpleSetting(
           'fitToPage', false, true, 'fitToPageEnabled', false, true);
     });
@@ -239,7 +221,7 @@ cr.define('preview_generation_test', function() {
     /** Validate changing the selection only setting updates the preview. */
     test(assert(TestNames.SelectionOnly), function() {
       // Set has selection to true so that the setting is available.
-      initDocumentInfo(false, true);
+      initialSettings.hasSelection = true;
       return testSimpleSetting(
           'selectionOnly', false, true, 'shouldPrintSelectionOnly', false,
           true);
@@ -261,7 +243,7 @@ cr.define('preview_generation_test', function() {
      */
     test(assert(TestNames.Rasterize), function() {
       // Set PDF document so setting is available.
-      initDocumentInfo(true, false);
+      initialSettings.previewModifiable = false;
       return testSimpleSetting(
           'rasterize', false, true, 'rasterizePDF', false, true);
     });
