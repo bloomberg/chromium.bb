@@ -33,8 +33,7 @@ void WriteKeyPressMonitorCount(
   // No ordering constraints between Load/Store operations, a temporary
   // inconsistent value is fine.
   base::subtle::NoBarrier_Store(
-      reinterpret_cast<base::subtle::Atomic32*>(writable_mapping.memory()),
-      count);
+      static_cast<base::subtle::Atomic32*>(writable_mapping.memory()), count);
 }
 
 #ifdef DISABLE_USER_INPUT_MONITOR

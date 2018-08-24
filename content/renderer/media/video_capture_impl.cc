@@ -360,7 +360,7 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
       frame = media::VideoFrame::WrapExternalSharedMemory(
           static_cast<media::VideoPixelFormat>(info->pixel_format),
           info->coded_size, info->visible_rect, info->visible_rect.size(),
-          reinterpret_cast<uint8_t*>(buffer_context->shared_memory()->memory()),
+          static_cast<uint8_t*>(buffer_context->shared_memory()->memory()),
           buffer_context->shared_memory_size(),
           buffer_context->shared_memory()->handle(),
           0 /* shared_memory_offset */, info->timestamp);
@@ -523,7 +523,7 @@ media::mojom::VideoCaptureHost* VideoCaptureImpl::GetVideoCaptureHost() {
   if (!video_capture_host_.get())
     video_capture_host_.Bind(std::move(video_capture_host_info_));
   return video_capture_host_.get();
-};
+}
 
 // static
 void VideoCaptureImpl::DidFinishConsumingFrame(

@@ -51,9 +51,9 @@ std::unique_ptr<SkCanvas> TransportDIB::GetPlatformCanvas(int w,
                                                           bool opaque) {
   if ((!memory() && !Map()) || !VerifyCanvasSize(w, h))
     return NULL;
-  return skia::CreatePlatformCanvasWithPixels(
-      w, h, opaque, reinterpret_cast<uint8_t*>(memory()),
-      skia::RETURN_NULL_ON_FAILURE);
+  return skia::CreatePlatformCanvasWithPixels(w, h, opaque,
+                                              static_cast<uint8_t*>(memory()),
+                                              skia::RETURN_NULL_ON_FAILURE);
 }
 
 bool TransportDIB::Map() {

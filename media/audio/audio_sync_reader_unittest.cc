@@ -63,8 +63,7 @@ TEST_P(AudioSyncReaderBitstreamTest, BitstreamBufferOverflow_DoesNotWriteOOB) {
       base::BindRepeating(&NoLog), params, socket.get());
   const base::WritableSharedMemoryMapping shmem =
       reader->TakeSharedMemoryRegion().Map();
-  AudioOutputBuffer* buffer =
-      reinterpret_cast<AudioOutputBuffer*>(shmem.memory());
+  AudioOutputBuffer* buffer = static_cast<AudioOutputBuffer*>(shmem.memory());
   reader->RequestMoreData(base::TimeDelta(), base::TimeTicks(), 0);
 
   uint32_t signal;

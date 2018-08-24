@@ -206,7 +206,7 @@ bool GpuMemoryBufferImplSharedMemory::Map() {
 void* GpuMemoryBufferImplSharedMemory::memory(size_t plane) {
   DCHECK(mapped_);
   DCHECK_LT(plane, gfx::NumberOfPlanesForBufferFormat(format_));
-  return reinterpret_cast<uint8_t*>(shared_memory_->memory()) + offset_ +
+  return static_cast<uint8_t*>(shared_memory_->memory()) + offset_ +
          gfx::BufferOffsetForBufferFormat(size_, format_, plane);
 }
 

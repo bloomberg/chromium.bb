@@ -1687,7 +1687,7 @@ void VEAClient::BitstreamBufferReady(
 
     if (quality_validator_) {
       scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
-          reinterpret_cast<const uint8_t*>(shm->memory()),
+          static_cast<const uint8_t*>(shm->memory()),
           static_cast<int>(metadata.payload_size_bytes)));
       quality_validator_->AddDecodeBuffer(buffer);
     }

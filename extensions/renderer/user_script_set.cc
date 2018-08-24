@@ -108,7 +108,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
   if (!shared_memory_->Map(sizeof(base::Pickle::Header)))
     return false;
   base::Pickle::Header* pickle_header =
-      reinterpret_cast<base::Pickle::Header*>(shared_memory_->memory());
+      static_cast<base::Pickle::Header*>(shared_memory_->memory());
 
   // Now map in the rest of the block.
   int pickle_size = sizeof(base::Pickle::Header) + pickle_header->payload_size;
@@ -118,7 +118,7 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
 
   // Unpickle scripts.
   uint32_t num_scripts = 0;
-  base::Pickle pickle(reinterpret_cast<char*>(shared_memory_->memory()),
+  base::Pickle pickle(static_cast<char*>(shared_memory_->memory()),
                       pickle_size);
   base::PickleIterator iter(pickle);
   base::debug::Alias(&pickle_size);

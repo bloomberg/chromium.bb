@@ -395,8 +395,8 @@ void VaapiJpegDecodeAccelerator::DecodeTask(
   TRACE_EVENT0("jpeg", "DecodeTask");
 
   JpegParseResult parse_result;
-  if (!ParseJpegPicture(reinterpret_cast<const uint8_t*>(shm->memory()),
-                        shm->size(), &parse_result)) {
+  if (!ParseJpegPicture(static_cast<const uint8_t*>(shm->memory()), shm->size(),
+                        &parse_result)) {
     VLOGF(1) << "ParseJpegPicture failed";
     NotifyError(bitstream_buffer_id, PARSE_JPEG_FAILED);
     return;

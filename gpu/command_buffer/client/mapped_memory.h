@@ -101,8 +101,7 @@ class GPU_EXPORT MemoryChunk {
   // Returns true if pointer is in the range of this block.
   bool IsInChunk(void* pointer) const {
     return pointer >= shm_->memory() &&
-           pointer <
-               reinterpret_cast<const int8_t*>(shm_->memory()) + shm_->size();
+           pointer < static_cast<const int8_t*>(shm_->memory()) + shm_->size();
   }
 
   // Returns true of any memory in this chunk is in use or free pending token.

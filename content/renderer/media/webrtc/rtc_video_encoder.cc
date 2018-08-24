@@ -556,9 +556,9 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(
     capture_timestamp_ms = current_time_ms;
   }
 
-  webrtc::EncodedImage image(
-      reinterpret_cast<uint8_t*>(output_buffer->memory()),
-      metadata.payload_size_bytes, output_buffer->mapped_size());
+  webrtc::EncodedImage image(static_cast<uint8_t*>(output_buffer->memory()),
+                             metadata.payload_size_bytes,
+                             output_buffer->mapped_size());
   image._encodedWidth = input_visible_size_.width();
   image._encodedHeight = input_visible_size_.height();
   image._timeStamp = rtp_timestamp.value();
@@ -654,7 +654,7 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
     frame = media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, input_frame_coded_size_,
         gfx::Rect(input_visible_size_), input_visible_size_,
-        reinterpret_cast<uint8_t*>(input_buffer->memory()),
+        static_cast<uint8_t*>(input_buffer->memory()),
         input_buffer->mapped_size(), input_buffer->handle(), 0, timestamp);
     if (!frame.get()) {
       LogAndNotifyError(FROM_HERE, "failed to create frame",
