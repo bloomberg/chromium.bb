@@ -95,21 +95,6 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     if tarball is not None:
       self._upload_queue.put([tarball])
 
-  def BuildAndArchiveDeltaSysroot(self):
-    """Generate and upload delta sysroot for initial build_packages."""
-    extra_env = {}
-    if self._run.config.useflags:
-      extra_env['USE'] = ' '.join(self._run.config.useflags)
-    in_chroot_path = path_util.ToChrootPath(self.archive_path)
-    cmd = ['generate_delta_sysroot', '--out-dir', in_chroot_path,
-           '--board', self._current_board]
-    # TODO(mtennant): Make this condition into one run param.
-    if not self._run.options.tests:
-      cmd.append('--skip-tests')
-    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True,
-                              extra_env=extra_env)
-    self._upload_queue.put([constants.DELTA_SYSROOT_TAR])
-
   def LoadArtifactsList(self, board, image_dir):
     """Load the list of artifacts to upload for this board.
 
@@ -190,7 +175,6 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
     #    \- ArchiveManifest
     #    \- ArchiveStrippedPackages
     #    \- ArchiveImageScripts
-    #    \- BuildAndArchiveDeltaSysroot
     #    \- ArchiveEbuildLogs
 
     def ArchiveManifest():
@@ -369,8 +353,6 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
                self.ArchiveStrippedPackages, ArchiveEbuildLogs]
       if config['images']:
         steps.append(ArchiveImageScripts)
-      if config['create_delta_sysroot']:
-        steps.append(self.BuildAndArchiveDeltaSysroot)
 
       with self.ArtifactUploader(self._upload_queue, archive=False):
         parallel.RunParallelSteps(steps)

@@ -91,24 +91,6 @@ class ArchiveStageTest(generic_stages_unittest.AbstractStageTestCase,
                      autospec=True)
     return stage
 
-  def testBuildAndArchiveDeltaSysroot(self):
-    """Test tarball is added to upload queue."""
-    stage = self.ConstructStageForArchiveStep()
-    with cros_test_lib.RunCommandMock() as rc:
-      rc.SetDefaultCmdResult()
-      stage.BuildAndArchiveDeltaSysroot()
-    stage._upload_queue.put.assert_called_with([constants.DELTA_SYSROOT_TAR])
-
-  def testBuildAndArchiveDeltaSysrootFailure(self):
-    """Test tarball not added to upload queue on command exception."""
-    stage = self.ConstructStageForArchiveStep()
-    with cros_test_lib.RunCommandMock() as rc:
-      rc.AddCmdResult(partial_mock.In('generate_delta_sysroot'), returncode=1,
-                      error='generate_delta_sysroot: error')
-      self.assertRaises2(cros_build_lib.RunCommandError,
-                         stage.BuildAndArchiveDeltaSysroot)
-    self.assertFalse(stage._upload_queue.put.called)
-
 
 class UploadPrebuiltsStageTest(
     generic_stages_unittest.RunCommandAbstractStageTestCase,

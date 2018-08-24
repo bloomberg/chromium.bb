@@ -974,9 +974,6 @@ def DefaultSettings():
       # Reexec into the buildroot after syncing.  Enabled by default.
       postsync_reexec=True,
 
-      # Create delta sysroot during ArchiveStage. Disabled by default.
-      create_delta_sysroot=False,
-
       # Run the binhost_test stage. Only makes sense for builders that have no
       # boards.
       binhost_test=False,
