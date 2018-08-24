@@ -77,6 +77,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     @VisibleForTesting
     public static final String FRAGMENT_PASSPHRASE_TYPE = "password_type";
 
+    private static final String PREF_SIGNIN = "sign_in";
     private static final String PREF_USE_SYNC_AND_ALL_SERVICES = "use_sync_and_all_services";
 
     private static final String PREF_SYNC_AND_PERSONALIZATION = "sync_and_personalization";
@@ -124,6 +125,7 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     private final ManagedPreferenceDelegate mManagedPreferenceDelegate =
             createManagedPreferenceDelegate();
 
+    private SignInPreference mSigninPreference;
     private ChromeSwitchPreference mUseSyncAndAllServices;
 
     private SigninExpandablePreferenceGroup mSyncGroup;
@@ -169,6 +171,9 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         setHasOptionsMenu(true);
 
         PreferenceUtils.addPreferencesFromResource(this, R.xml.sync_and_services_preferences);
+
+        mSigninPreference = (SignInPreference) findPreference(PREF_SIGNIN);
+        mSigninPreference.setPersonalizedPromoEnabled(false);
 
         mUseSyncAndAllServices =
                 (ChromeSwitchPreference) findPreference(PREF_USE_SYNC_AND_ALL_SERVICES);
@@ -294,6 +299,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         mProfileSyncService.setSetupInProgress(true);
         mProfileSyncService.addSyncStateChangedListener(this);
         updateSyncStateFromAndroidSyncSettings();
+
+        mSigninPreference.registerForUpdates();
     }
 
     @Override
@@ -318,6 +325,8 @@ public class SyncAndServicesPreferences extends PreferenceFragment
         // setting up. This means: 1) If the user leaves the Sync Settings screen (via back)
         // or, 2) If the user leaves the screen by tapping on "Manage Synced Data"
         mProfileSyncService.setSetupInProgress(false);
+
+        mSigninPreference.unregisterForUpdates();
     }
 
     @Override
@@ -777,7 +786,20 @@ public class SyncAndServicesPreferences extends PreferenceFragment
     }
 
     private void updatePreferences() {
-        mUseSyncAndAllServices.setChecked(UnifiedConsentServiceBridge.isUnifiedConsentGiven());
+        boolean useSyncAndAllServices = UnifiedConsentServiceBridge.isUnifiedConsentGiven();
+        String signedInAccountName = ChromeSigninController.get().getSignedInAccountName();
+        if (signedInAccountName != null) {
+            getPreferenceScreen().removePreference(mSigninPreference);
+            getPreferenceScreen().addPreference(mUseSyncAndAllServices);
+
+            mUseSyncAndAllServices.setChecked(useSyncAndAllServices);
+            mSyncGroup.setEnabled(true);
+        } else {
+            getPreferenceScreen().addPreference(mSigninPreference);
+            getPreferenceScreen().removePreference(mUseSyncAndAllServices);
+            mSyncGroup.setExpanded(false);
+            mSyncGroup.setEnabled(false);
+        }
 
         mSearchSuggestions.setChecked(mPrefServiceBridge.isSearchSuggestEnabled());
         mNetworkPredictions.setChecked(mPrefServiceBridge.getNetworkPredictionEnabled());
