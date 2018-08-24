@@ -18,7 +18,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -126,11 +129,20 @@ public class TestListInstrumentationRunListener extends InstrumentationRunListen
                     Object value = method.invoke(a);
                     if (value == null) {
                         elementJsonObject.put(method.getName(), null);
+                    } else if (value.getClass().isArray()) {
+                        Class<?> componentClass = value.getClass().getComponentType();
+                        // Arrays of primitives can't be cast to Object arrays, so we have to
+                        // special case them and manually make a copy.
+                        // This could be done more cleanly with something like
+                        // Arrays.stream(value).boxed().toArray(Integer[]::new), but that requires
+                        // a minimum SDK level of 24 to use.
+                        Object[] arrayValue = componentClass.isPrimitive()
+                                ? copyPrimitiveArrayToObjectArray(value)
+                                : ((Object[]) value);
+                        elementJsonObject.put(
+                                method.getName(), new JSONArray(Arrays.asList(arrayValue)));
                     } else {
-                        elementJsonObject.put(method.getName(),
-                                value.getClass().isArray()
-                                        ? new JSONArray(Arrays.asList((Object[]) value))
-                                        : value.toString());
+                        elementJsonObject.put(method.getName(), value.toString());
                     }
                 } catch (IllegalArgumentException e) {
                 }
@@ -138,5 +150,42 @@ public class TestListInstrumentationRunListener extends InstrumentationRunListen
             annotationsJsons.put(a.annotationType().getSimpleName(), elementJsonObject);
         }
         return annotationsJsons;
+    }
+
+    private static Object[] copyPrimitiveArrayToObjectArray(Object primitiveArray)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException,
+                   ClassCastException {
+        Class<?> primitiveClass = primitiveArray.getClass();
+        Class<?> componentClass = primitiveClass.getComponentType();
+        Class<?> wrapperClass = null;
+        if (componentClass == Boolean.TYPE) {
+            wrapperClass = Boolean.class;
+        } else if (componentClass == Byte.TYPE) {
+            wrapperClass = Byte.class;
+        } else if (componentClass == Character.TYPE) {
+            wrapperClass = Character.class;
+        } else if (componentClass == Double.TYPE) {
+            wrapperClass = Double.class;
+        } else if (componentClass == Float.TYPE) {
+            wrapperClass = Float.class;
+        } else if (componentClass == Integer.TYPE) {
+            wrapperClass = Integer.class;
+        } else if (componentClass == Long.TYPE) {
+            wrapperClass = Long.class;
+        } else if (componentClass == Short.TYPE) {
+            wrapperClass = Short.class;
+        } else {
+            // This should only be void since there are 8 primitives + void, but we can't support
+            // void.
+            throw new ClassCastException(
+                    "Cannot cast a primitive void array to Object void array.");
+        }
+        Method converterMethod = wrapperClass.getMethod("valueOf", componentClass);
+        ArrayList<Object> arrayValue = new ArrayList<Object>();
+        for (int i = 0; i < Array.getLength(primitiveClass.cast(primitiveArray)); i++) {
+            arrayValue.add(
+                    converterMethod.invoke(Array.get(primitiveClass.cast(primitiveArray), i)));
+        }
+        return arrayValue.toArray();
     }
 }
