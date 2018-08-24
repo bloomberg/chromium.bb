@@ -161,6 +161,7 @@ fuzzer_test("v8_script_parser_fuzzer") {
   dict = "dicts/generated/javascript.dict"
   seed_corpus = "//v8/test/mjsunit/regress/"
   libfuzzer_options = [ "only_ascii=1" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_json_parser_fuzzer") {
@@ -169,6 +170,7 @@ fuzzer_test("v8_json_parser_fuzzer") {
     "//v8:json_fuzzer",
   ]
   dict = "dicts/json.dict"
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_regexp_parser_fuzzer") {
@@ -179,6 +181,7 @@ fuzzer_test("v8_regexp_parser_fuzzer") {
   dict = "dicts/regexp.dict"
   seed_corpus = "//v8/test/fuzzer/regexp/"
   libfuzzer_options = [ "max_len=64" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_regexp_builtins_fuzzer") {
@@ -186,6 +189,7 @@ fuzzer_test("v8_regexp_builtins_fuzzer") {
   deps = [
     "//v8:regexp_builtins_fuzzer",
   ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_multi_return_fuzzer") {
@@ -193,6 +197,7 @@ fuzzer_test("v8_multi_return_fuzzer") {
   deps = [
     "//v8:multi_return_fuzzer",
   ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_code_fuzzer") {
@@ -201,6 +206,7 @@ fuzzer_test("v8_wasm_code_fuzzer") {
     "//v8:wasm_code_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_compile_fuzzer") {
@@ -209,6 +215,7 @@ fuzzer_test("v8_wasm_compile_fuzzer") {
     "//v8:wasm_compile_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_fuzzer") {
@@ -219,6 +226,7 @@ fuzzer_test("v8_wasm_fuzzer") {
   dict = "dicts/v8_wasm.dict"
   seed_corpus = "//v8/test/fuzzer/wasm_corpus/"
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_async_fuzzer") {
@@ -229,6 +237,7 @@ fuzzer_test("v8_wasm_async_fuzzer") {
   dict = "dicts/v8_wasm.dict"
   seed_corpus = "//v8/test/fuzzer/wasm_corpus/"
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_data_section_fuzzer") {
@@ -237,6 +246,7 @@ fuzzer_test("v8_wasm_data_section_fuzzer") {
     "//v8:wasm_data_section_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_function_sigs_section_fuzzer") {
@@ -245,6 +255,7 @@ fuzzer_test("v8_wasm_function_sigs_section_fuzzer") {
     "//v8:wasm_function_sigs_section_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_globals_section_fuzzer") {
@@ -253,6 +264,7 @@ fuzzer_test("v8_wasm_globals_section_fuzzer") {
     "//v8:wasm_globals_section_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_imports_section_fuzzer") {
@@ -261,6 +273,7 @@ fuzzer_test("v8_wasm_imports_section_fuzzer") {
     "//v8:wasm_imports_section_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_memory_section_fuzzer") {
@@ -269,6 +282,7 @@ fuzzer_test("v8_wasm_memory_section_fuzzer") {
     "//v8:wasm_memory_section_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_names_section_fuzzer") {
@@ -277,6 +291,7 @@ fuzzer_test("v8_wasm_names_section_fuzzer") {
     "//v8:wasm_names_section_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("v8_wasm_types_section_fuzzer") {
@@ -285,6 +300,7 @@ fuzzer_test("v8_wasm_types_section_fuzzer") {
     "//v8:wasm_types_section_fuzzer",
   ]
   libfuzzer_options = [ "max_len=500" ]
+  environment_variables = [ "AFL_DRIVER_DONT_DEFER=1" ]
 }
 
 fuzzer_test("convert_woff2ttf_fuzzer") {
