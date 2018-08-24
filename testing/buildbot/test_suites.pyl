@@ -1957,23 +1957,6 @@
     'sync_integration_tests': {},
     'traffic_annotation_auditor_unittests': {},
     'views_unittests': {},
-    # TODO(thakis): When they work on Android, move viz_ tests to
-    # chromium_gtests_for_devices_with_graphical_output.
-    'viz_browser_tests': {
-      'args': [
-        '--enable-features=VizDisplayCompositor',
-      ],
-      'swarming': {
-        'shards': 10,
-      },
-      'test': 'browser_tests',
-    },
-    'viz_content_unittests': {
-      'args': [
-        '--enable-features=VizDisplayCompositor',
-      ],
-      'test': 'content_unittests',
-    },
     'webui_polymer2_browser_tests': {
       'args': [
         '--enable-features=WebUIPolymer2',
@@ -2162,6 +2145,25 @@
         'shards': 2,
       },
       'test': 'content_browsertests',
+    },
+  },
+
+  'viz_non_linux_non_windows_gtests': {
+    # TODO(jonross): remove once Viz field trials for Mac are enabled.
+    'viz_browser_tests': {
+      'args': [
+        '--enable-features=VizDisplayCompositor',
+      ],
+      'swarming': {
+        'shards': 10,
+      },
+      'test': 'browser_tests',
+    },
+    'viz_content_unittests': {
+      'args': [
+        '--enable-features=VizDisplayCompositor',
+      ],
+      'test': 'content_unittests',
     },
   },
 
@@ -2376,6 +2378,7 @@
     'linux_flavor_specific_chromium_gtests',
     'mash_chromium_gtests',
     'non_android_chromium_gtests',
+    'viz_non_linux_non_windows_gtests',
   ],
 
   'chromium_linux_dbg_isolated_scripts': [
@@ -2398,6 +2401,7 @@
     'non_android_chromium_gtests',
     'non_android_and_cast_and_chromeos_chromium_gtests',
     'non_linux_chromium_gtests',
+    'viz_non_linux_non_windows_gtests',
   ],
 
   'chromium_win_gtests': [
