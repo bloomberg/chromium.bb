@@ -22,21 +22,6 @@ blink_platform_avx_files = [
   "audio/cpu/x86/vector_math_avx.h",
 ]
 
-blink_platform_neon_files = [
-  "audio/cpu/arm/vector_math_neon.h",
-  "graphics/cpu/arm/webgl_image_conversion_neon.h",
-]
-
-blink_platform_msa_files = [
-  "audio/cpu/mips/vector_math_msa.h",
-  "graphics/cpu/mips/webgl_image_conversion_msa.h",
-]
-
-blink_platform_sse_files = [
-  "audio/cpu/x86/vector_math_sse.h",
-  "graphics/cpu/x86/webgl_image_conversion_sse.h",
-]
-
 make_names("font_family_names") {
   in_files = [ "fonts/font_family_names.json5" ]
   output_dir = blink_platform_output_dir
@@ -1406,9 +1391,6 @@ jumbo_component("platform") {
   ]
 
   sources -= blink_platform_avx_files
-  sources -= blink_platform_neon_files
-  sources -= blink_platform_msa_files
-  sources -= blink_platform_sse_files
 
   # Add in the generated files.
   sources += get_target_outputs(":character_data") +
@@ -1538,19 +1520,8 @@ jumbo_component("platform") {
     ]
   }
 
-  if (current_cpu == "arm") {
-    deps += [ ":blink_arm_neon" ]
-  }
-
-  if (current_cpu == "mipsel" || current_cpu == "mips64el") {
-    deps += [ ":blink_mips_msa" ]
-  }
-
   if (current_cpu == "x86" || current_cpu == "x64") {
-    deps += [
-      ":blink_x86_avx",
-      ":blink_x86_sse",
-    ]
+    deps += [ ":blink_x86_avx" ]
   }
 
   if (use_webaudio_ffmpeg) {
@@ -1954,28 +1925,6 @@ group("blink_platform_unittests_data") {
   ]
 }
 
-if (current_cpu == "arm") {
-  source_set("blink_arm_neon") {
-    sources = blink_platform_neon_files
-    # The *NEON.cpp files fail to compile when -mthumb is passed. Force
-    # them to build in ARM mode.
-    # See https://bugs.webkit.org/show_bug.cgi?id=62916.
-    # TODO(GYP)
-    #'cflags': ['-marm'],
-    #    'conditions': [
-    #      ['OS=="android"', {
-    #        'cflags!': ['-mthumb'],
-    #      }],
-    #    ],
-  }
-}
-
-if (current_cpu == "mipsel" || current_cpu == "mips64el") {
-  source_set("blink_mips_msa") {
-    sources = blink_platform_msa_files
-  }
-}
-
 if (current_cpu == "x86" || current_cpu == "x64") {
   source_set("blink_x86_avx") {
     sources = blink_platform_avx_files
@@ -1984,14 +1933,11 @@ if (current_cpu == "x86" || current_cpu == "x64") {
       ":blink_platform_implementation",
       "//third_party/blink/renderer:non_test_config",
     ]
-    if (!is_clang && is_win) {
+    if (is_win) {
       cflags = [ "/arch:AVX" ]
     } else {
       cflags = [ "-mavx" ]
     }
-  }
-  source_set("blink_x86_sse") {
-    sources = blink_platform_sse_files
   }
 }
 
