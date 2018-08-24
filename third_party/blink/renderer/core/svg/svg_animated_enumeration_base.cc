@@ -30,7 +30,6 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animated_enumeration_base.h"
 
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
