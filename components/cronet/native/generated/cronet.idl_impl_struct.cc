@@ -303,6 +303,13 @@ void Cronet_EngineParams_enable_public_key_pinning_bypass_for_local_trust_anchor
       enable_public_key_pinning_bypass_for_local_trust_anchors;
 }
 
+void Cronet_EngineParams_network_thread_priority_set(
+    Cronet_EngineParamsPtr self,
+    double network_thread_priority) {
+  DCHECK(self);
+  self->network_thread_priority = network_thread_priority;
+}
+
 void Cronet_EngineParams_experimental_options_set(
     Cronet_EngineParamsPtr self,
     Cronet_String experimental_options) {
@@ -396,6 +403,12 @@ bool Cronet_EngineParams_enable_public_key_pinning_bypass_for_local_trust_anchor
     Cronet_EngineParamsPtr self) {
   DCHECK(self);
   return self->enable_public_key_pinning_bypass_for_local_trust_anchors;
+}
+
+double Cronet_EngineParams_network_thread_priority_get(
+    Cronet_EngineParamsPtr self) {
+  DCHECK(self);
+  return self->network_thread_priority;
 }
 
 Cronet_String Cronet_EngineParams_experimental_options_get(

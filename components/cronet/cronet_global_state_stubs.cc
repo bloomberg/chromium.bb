@@ -81,4 +81,8 @@ std::string CreateDefaultUserAgent(const std::string& partial_user_agent) {
   return partial_user_agent;
 }
 
+void SetNetworkThreadPriorityOnNetworkThread(double priority) {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace cronet

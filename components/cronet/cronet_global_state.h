@@ -52,6 +52,11 @@ std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
 // itself, if necessary.
 std::string CreateDefaultUserAgent(const std::string& partial_user_agent);
 
+// Set network thread priority to |priority|. Must be called on the network
+// thread. On Android, corresponds to android.os.Process.setThreadPriority()
+// values. On iOS, corresponds to NSThread::setThreadPriority values.
+void SetNetworkThreadPriorityOnNetworkThread(double priority);
+
 }  // namespace cronet
 
 #endif  // COMPONENTS_CRONET_CRONET_GLOBAL_STATE_H_

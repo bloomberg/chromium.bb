@@ -620,7 +620,9 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;

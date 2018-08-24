@@ -31,6 +31,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/cronet/cronet_global_state.h"
 #include "components/cronet/cronet_prefs_manager.h"
 #include "components/cronet/histogram_manager.h"
@@ -281,6 +282,9 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
 
   std::unique_ptr<URLRequestContextConfig> config(std::move(context_config_));
   network_task_runner_ = network_task_runner;
+  if (config->network_thread_priority)
+    SetNetworkThreadPriorityOnNetworkThread(
+        config->network_thread_priority.value());
   base::DisallowBlocking();
   net::URLRequestContextBuilder context_builder;
   context_builder.set_network_delegate(
