@@ -48,6 +48,15 @@ unsigned EstimateInlineItemsCount(const LayoutBlockFlow& block) {
   return count * 4;
 }
 
+// Estimate the number of units and ranges in NGOffsetMapping to minimize vector
+// and hash map expansions.
+unsigned EstimateOffsetMappingItemsCount(const LayoutBlockFlow& block) {
+  // Cancels out the factor 4 in EstimateInlineItemsCount() to get the number of
+  // LayoutObjects.
+  // TODO(layout-dev): Unify the two functions and make them less hacky.
+  return EstimateInlineItemsCount(block) / 4;
+}
+
 // Ensure this LayoutObject IsInLayoutNGInlineFormattingContext and does not
 // have associated NGPaintFragment.
 void ClearInlineFragment(LayoutObject* object) {
@@ -305,6 +314,8 @@ const NGOffsetMapping* NGInlineNode::ComputeOffsetMappingIfNeeded() {
     Vector<NGInlineItem> items;
     items.ReserveCapacity(EstimateInlineItemsCount(*GetLayoutBlockFlow()));
     NGInlineItemsBuilderForOffsetMapping builder(&items);
+    builder.GetOffsetMappingBuilder().ReserveCapacity(
+        EstimateOffsetMappingItemsCount(*GetLayoutBlockFlow()));
     const bool update_layout = false;
     CollectInlinesInternal(GetLayoutBlockFlow(), &builder, nullptr,
                            update_layout);

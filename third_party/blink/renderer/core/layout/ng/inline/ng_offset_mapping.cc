@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
 #include "third_party/blink/renderer/core/editing/position.h"
+#include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/platform/text/character.h"
@@ -85,6 +86,28 @@ NGOffsetMappingUnit::NGOffsetMappingUnit(NGOffsetMappingUnitType type,
       text_content_end_(text_content_end) {}
 
 NGOffsetMappingUnit::~NGOffsetMappingUnit() = default;
+
+bool NGOffsetMappingUnit::Concatenate(const NGOffsetMappingUnit& other) {
+  if (owner_ != other.owner_)
+    return false;
+  if (type_ != other.type_ || type_ == NGOffsetMappingUnitType::kExpanded)
+    return false;
+  if (dom_end_ != other.dom_start_)
+    return false;
+  if (text_content_end_ != other.text_content_start_)
+    return false;
+  // Don't merge first letter and remaining text
+  if (const LayoutTextFragment* text_fragment =
+          ToLayoutTextFragmentOrNull(owner_->GetLayoutObject())) {
+    // TODO(layout-dev): Fix offset calculation for text-transform
+    if (text_fragment->IsRemainingTextLayoutObject() &&
+        other.dom_start_ == text_fragment->TextStartOffset())
+      return false;
+  }
+  dom_end_ = other.dom_end_;
+  text_content_end_ = other.text_content_end_;
+  return true;
+}
 
 unsigned NGOffsetMappingUnit::ConvertDOMOffsetToTextContent(
     unsigned offset) const {
@@ -181,7 +204,7 @@ NGOffsetMapping::NGOffsetMapping(NGOffsetMapping&& other)
 NGOffsetMapping::NGOffsetMapping(UnitVector&& units,
                                  RangeMap&& ranges,
                                  String text)
-    : units_(units), ranges_(ranges), text_(text) {}
+    : units_(std::move(units)), ranges_(std::move(ranges)), text_(text) {}
 
 NGOffsetMapping::~NGOffsetMapping() = default;
 

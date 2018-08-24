@@ -682,7 +682,7 @@ void NGInlineItemsBuilderTemplate<
   unsigned space_offset = item->EndOffset() - 1;
   DCHECK_EQ(text_[space_offset], kSpaceCharacter);
   text_.erase(space_offset);
-  mapping_builder_.CollapseTrailingSpace(text_.length() - space_offset);
+  mapping_builder_.CollapseTrailingSpace(space_offset);
 
   // Remove the item if the item has only one space that we're removing.
   if (item->Length() == 1) {
