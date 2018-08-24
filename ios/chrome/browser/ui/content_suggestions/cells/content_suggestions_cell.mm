@@ -133,6 +133,12 @@ const CGFloat kAnimationDuration = 0.3;
   return self;
 }
 
+- (void)setHighlighted:(BOOL)highlighted {
+  [super setHighlighted:highlighted];
+  self.contentView.backgroundColor =
+      highlighted ? [UIColor colorWithWhite:0 alpha:0.05] : nil;
+}
+
 - (void)setContentImage:(UIImage*)image animated:(BOOL)animated {
   if (!image) {
     self.contentImageView.hidden = YES;
