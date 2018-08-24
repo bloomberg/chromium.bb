@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_mouse_input_monitor.h"
+#include "remoting/host/input_monitor/local_mouse_input_monitor.h"
 
 #import <AppKit/AppKit.h>
 
@@ -74,8 +74,10 @@ class LocalMouseInputMonitorMac : public LocalMouseInputMonitor {
 
 @end
 
-static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
-                                  CGEventRef event, void* context) {
+static CGEventRef LocalMouseMoved(CGEventTapProxy proxy,
+                                  CGEventType type,
+                                  CGEventRef event,
+                                  void* context) {
   int64_t pid = CGEventGetIntegerValueField(event, kCGEventSourceUnixProcessID);
   if (pid == 0) {
     CGPoint cgMousePos = CGEventGetLocation(event);
@@ -96,10 +98,10 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
         kCGSessionEventTap, kCGHeadInsertEventTap, kCGEventTapOptionListenOnly,
         1 << kCGEventMouseMoved, LocalMouseMoved, self));
     if (mouseMachPort_) {
-      mouseRunLoopSource_ = CFMachPortCreateRunLoopSource(
-          nullptr, mouseMachPort_, 0);
-      CFRunLoopAddSource(
-          CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
+      mouseRunLoopSource_ =
+          CFMachPortCreateRunLoopSource(nullptr, mouseMachPort_, 0);
+      CFRunLoopAddSource(CFRunLoopGetMain(), mouseRunLoopSource_,
+                         kCFRunLoopCommonModes);
     } else {
       LOG(ERROR) << "CGEventTapCreate failed.";
       [self release];
@@ -116,8 +118,8 @@ static CGEventRef LocalMouseMoved(CGEventTapProxy proxy, CGEventType type,
 - (void)invalidate {
   if (mouseRunLoopSource_) {
     CFMachPortInvalidate(mouseMachPort_);
-    CFRunLoopRemoveSource(
-        CFRunLoopGetMain(), mouseRunLoopSource_, kCFRunLoopCommonModes);
+    CFRunLoopRemoveSource(CFRunLoopGetMain(), mouseRunLoopSource_,
+                          kCFRunLoopCommonModes);
     CFRelease(mouseRunLoopSource_);
     mouseMachPort_.reset(0);
     mouseRunLoopSource_ = nullptr;

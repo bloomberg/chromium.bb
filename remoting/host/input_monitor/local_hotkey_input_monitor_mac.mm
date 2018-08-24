@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_hotkey_input_monitor.h"
+#include "remoting/host/input_monitor/local_hotkey_input_monitor.h"
 
 #import <AppKit/AppKit.h>
 
@@ -88,11 +88,11 @@ class LocalHotkeyInputMonitorMac : public LocalHotkeyInputMonitor {
     GTMCarbonEventDispatcherHandler* handler =
         [GTMCarbonEventDispatcherHandler sharedEventDispatcherHandler];
     hotKey_ = [handler registerHotKey:kEscKeyCode
-                             modifiers:(NSAlternateKeyMask | NSControlKeyMask)
-                                target:self
-                                action:@selector(hotKeyHit:)
-                              userInfo:nil
-                           whenPressed:YES];
+                            modifiers:(NSAlternateKeyMask | NSControlKeyMask)
+                               target:self
+                               action:@selector(hotKeyHit:)
+                             userInfo:nil
+                          whenPressed:YES];
     if (!hotKey_) {
       LOG(ERROR) << "registerHotKey failed.";
       [self release];
