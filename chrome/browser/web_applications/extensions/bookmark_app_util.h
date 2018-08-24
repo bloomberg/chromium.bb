@@ -9,10 +9,12 @@ namespace content {
 class BrowserContext;
 }
 
-class Extension;
 class GURL;
 
 namespace extensions {
+
+class Extension;
+class ExtensionPrefs;
 
 // Sets an extension pref to indicate whether the hosted app is locally
 // installed or not. When apps are not locally installed they will appear in the
@@ -28,6 +30,8 @@ void SetBookmarkAppIsLocallyInstalled(content::BrowserContext* context,
 // extension pref that stores this isn't set.
 // Note this can be called for hosted apps which should use the default.
 bool BookmarkAppIsLocallyInstalled(content::BrowserContext* context,
+                                   const Extension* extension);
+bool BookmarkAppIsLocallyInstalled(const ExtensionPrefs* prefs,
                                    const Extension* extension);
 
 // Returns true if a bookmark or hosted app from a given URL is already

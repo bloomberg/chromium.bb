@@ -34,9 +34,14 @@ void SetBookmarkAppIsLocallyInstalled(content::BrowserContext* context,
 
 bool BookmarkAppIsLocallyInstalled(content::BrowserContext* context,
                                    const Extension* extension) {
+  return BookmarkAppIsLocallyInstalled(ExtensionPrefs::Get(context), extension);
+}
+
+bool BookmarkAppIsLocallyInstalled(const ExtensionPrefs* prefs,
+                                   const Extension* extension) {
   bool locally_installed;
-  if (ExtensionPrefs::Get(context)->ReadPrefAsBoolean(
-          extension->id(), kPrefLocallyInstalled, &locally_installed)) {
+  if (prefs->ReadPrefAsBoolean(extension->id(), kPrefLocallyInstalled,
+                               &locally_installed)) {
     return locally_installed;
   }
 
