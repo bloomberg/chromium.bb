@@ -25,7 +25,11 @@ class RunLoopUntilNonEmptyPaint : public content::WebContentsObserver {
 
   // Runs a RunLoop on the main thread until the first non-empty frame is
   // painted for the WebContents provided to the constructor.
-  void RunUntilIdle() { run_loop_.Run(); }
+  void RunUntilNonEmptyPaint() {
+    if (web_contents()->CompletedFirstVisuallyNonEmptyPaint())
+      return;
+    run_loop_.Run();
+  }
 
  private:
   // content::WebContentsObserver:
@@ -70,5 +74,5 @@ IN_PROC_BROWSER_TEST_F(NoBackgroundTasksTest,
                        MAYBE_FirstNonEmptyPaintWithoutBackgroundTasks) {
   RunLoopUntilNonEmptyPaint run_loop_until_non_empty_paint(
       browser()->tab_strip_model()->GetActiveWebContents());
-  run_loop_until_non_empty_paint.RunUntilIdle();
+  run_loop_until_non_empty_paint.RunUntilNonEmptyPaint();
 }

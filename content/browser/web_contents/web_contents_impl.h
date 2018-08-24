@@ -455,6 +455,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void SetShowingContextMenu(bool showing) override;
   void PausePageScheduledTasks(bool paused) override;
   BrowserPluginGuest* GetBrowserPluginGuest() const override;
+  bool CompletedFirstVisuallyNonEmptyPaint() const override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -465,7 +466,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 #elif defined(OS_MACOSX)
   void SetAllowOtherViews(bool allow) override;
   bool GetAllowOtherViews() override;
-  bool CompletedFirstVisuallyNonEmptyPaint() const override;
 #endif
 
   bool HasRecentInteractiveInputEvent() const override;

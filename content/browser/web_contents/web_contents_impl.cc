@@ -6143,11 +6143,11 @@ bool WebContentsImpl::GetAllowOtherViews() {
   return view_->GetAllowOtherViews();
 }
 
+#endif
+
 bool WebContentsImpl::CompletedFirstVisuallyNonEmptyPaint() const {
   return did_first_visually_non_empty_paint_;
 }
-
-#endif
 
 void WebContentsImpl::OnDidDownloadImage(
     ImageDownloadCallback callback,
