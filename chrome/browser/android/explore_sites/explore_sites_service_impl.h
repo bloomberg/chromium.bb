@@ -9,18 +9,21 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/explore_sites/explore_sites_service.h"
+#include "chrome/browser/android/explore_sites/explore_sites_store.h"
 
 namespace explore_sites {
 
 class ExploreSitesServiceImpl : public ExploreSitesService {
  public:
-  ExploreSitesServiceImpl();
+  explicit ExploreSitesServiceImpl(std::unique_ptr<ExploreSitesStore> store);
   ~ExploreSitesServiceImpl() override;
 
   // KeyedService implementation:
   void Shutdown() override;
 
  private:
+  std::unique_ptr<ExploreSitesStore> explore_sites_store_;
+
   DISALLOW_COPY_AND_ASSIGN(ExploreSitesServiceImpl);
 };
 
