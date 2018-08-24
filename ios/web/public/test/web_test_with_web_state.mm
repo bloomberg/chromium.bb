@@ -36,11 +36,13 @@ CRWWebController* GetWebController(web::WebState* web_state) {
 
 namespace web {
 
-WebTestWithWebState::WebTestWithWebState() {}
+WebTestWithWebState::WebTestWithWebState(TestWebThreadBundle::Options options)
+    : WebTest(options) {}
 
 WebTestWithWebState::WebTestWithWebState(
-    std::unique_ptr<web::WebClient> web_client)
-    : WebTest(std::move(web_client)) {}
+    std::unique_ptr<web::WebClient> web_client,
+    TestWebThreadBundle::Options options)
+    : WebTest(std::move(web_client), options) {}
 
 WebTestWithWebState::~WebTestWithWebState() {}
 

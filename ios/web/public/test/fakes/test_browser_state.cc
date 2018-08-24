@@ -67,4 +67,16 @@ void TestBrowserState::SetOffTheRecord(bool flag) {
   is_off_the_record_ = flag;
 }
 
+scoped_refptr<network::SharedURLLoaderFactory>
+TestBrowserState::GetSharedURLLoaderFactory() {
+  return test_shared_url_loader_factory_
+             ? test_shared_url_loader_factory_
+             : BrowserState::GetSharedURLLoaderFactory();
+}
+
+void TestBrowserState::SetSharedURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
+  test_shared_url_loader_factory_ = std::move(shared_url_loader_factory);
+}
+
 }  // namespace web

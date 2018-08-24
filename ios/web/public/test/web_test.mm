@@ -51,4 +51,10 @@ void WebTest::SetIgnoreRenderProcessCrashesDuringTesting(bool allow) {
   }
 }
 
+void WebTest::SetSharedURLLoaderFactory(
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
+  browser_state_.SetSharedURLLoaderFactory(
+      std::move(shared_url_loader_factory));
+}
+
 }  // namespace web

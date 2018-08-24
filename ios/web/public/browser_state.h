@@ -73,7 +73,8 @@ class BrowserState : public base::SupportsUserData {
       network::mojom::ProxyResolvingSocketFactoryRequest request);
 
   // Like URLLoaderFactory, but wrapped inside SharedURLLoaderFactory
-  scoped_refptr<network::SharedURLLoaderFactory> GetSharedURLLoaderFactory();
+  virtual scoped_refptr<network::SharedURLLoaderFactory>
+  GetSharedURLLoaderFactory();
 
   // Safely cast a base::SupportsUserData to a BrowserState. Returns nullptr
   // if |supports_user_data| is not a BrowserState.
