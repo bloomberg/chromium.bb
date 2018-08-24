@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "services/catalog/public/mojom/catalog.mojom.h"
+#include "services/catalog/service_options.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
 
 namespace base {
@@ -61,6 +62,9 @@ class COMPONENT_EXPORT(CATALOG) Entry {
     children_ = std::move(children);
   }
 
+  void AddOptions(ServiceOptions options);
+  const ServiceOptions& options() const { return options_; }
+
   void AddInterfaceProviderSpec(const std::string& name,
                                 service_manager::InterfaceProviderSpec spec);
   const service_manager::InterfaceProviderSpecMap&
@@ -78,6 +82,8 @@ class COMPONENT_EXPORT(CATALOG) Entry {
   base::FilePath path_;
   std::string display_name_;
   std::string sandbox_type_;
+  ServiceOptions options_;
+
   service_manager::InterfaceProviderSpecMap interface_provider_specs_;
   std::map<std::string, base::FilePath> required_file_paths_;
   const Entry* parent_ = nullptr;

@@ -33,6 +33,7 @@ component("lib") {
     "instance.cc",
     "instance.h",
     "manifest_provider.h",
+    "service_options.h",
   ]
 
   deps = [
