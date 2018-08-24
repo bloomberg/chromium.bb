@@ -2727,6 +2727,11 @@ crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/service-workers/service-worker/update-top-level.https.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-top-level.https.html [ Timeout ]
+crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-top-level.https.html [ Timeout ]
+crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/reload.window.html [ Timeout ]
+crbug.com/626703 virtual/service-worker-servicification/external/wpt/service-workers/service-worker/update-top-level.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-element-0/fieldset-containing-block.html [ Failure ]
 crbug.com/626703 external/wpt/quirks/text-decoration-doesnt-propagate-into-tables/quirks.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-element-0/fieldset-transform-translatez.html [ Failure ]
