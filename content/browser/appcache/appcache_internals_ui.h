@@ -9,6 +9,7 @@
 
 #include <list>
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -108,7 +109,7 @@ class AppCacheInternalsUI : public WebUIController {
   void OnAppCacheDetailsReady(
       const base::FilePath& partition_path,
       const std::string& manifest_url,
-      std::unique_ptr<AppCacheResourceInfoVector> resource_info_vector);
+      std::unique_ptr<std::vector<AppCacheResourceInfo>> resource_info_vector);
   void OnFileDetailsReady(const Proxy::ResponseEnquiry& response_enquiry,
                           scoped_refptr<AppCacheResponseInfo> response_info,
                           scoped_refptr<net::IOBuffer> response_data,

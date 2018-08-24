@@ -872,7 +872,7 @@ class NetworkNamespaceHelper {
 
   bool IsInNetworkNamespace(const GURL& url, int64_t cache_id) {
     std::pair<WhiteListMap::iterator, bool> result = namespaces_map_.insert(
-        WhiteListMap::value_type(cache_id, AppCacheNamespaceVector()));
+        WhiteListMap::value_type(cache_id, std::vector<AppCacheNamespace>()));
     if (result.second)
       GetOnlineWhiteListForCache(cache_id, &result.first->second);
     return AppCache::FindNamespace(result.first->second, url) != nullptr;
@@ -880,7 +880,7 @@ class NetworkNamespaceHelper {
 
  private:
   void GetOnlineWhiteListForCache(int64_t cache_id,
-                                  AppCacheNamespaceVector* namespaces) {
+                                  std::vector<AppCacheNamespace>* namespaces) {
     DCHECK(namespaces && namespaces->empty());
     using WhiteListVector =
         std::vector<AppCacheDatabase::OnlineWhiteListRecord>;
@@ -896,7 +896,7 @@ class NetworkNamespaceHelper {
   }
 
   // Key is cache id
-  using WhiteListMap = std::map<int64_t, AppCacheNamespaceVector>;
+  using WhiteListMap = std::map<int64_t, std::vector<AppCacheNamespace>>;
   WhiteListMap namespaces_map_;
   AppCacheDatabase* database_;
 };

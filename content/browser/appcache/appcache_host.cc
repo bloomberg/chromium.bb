@@ -4,6 +4,8 @@
 
 #include "content/browser/appcache/appcache_host.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
@@ -319,7 +321,7 @@ std::unique_ptr<AppCacheRequestHandler> AppCacheHost::CreateRequestHandler(
 }
 
 void AppCacheHost::GetResourceList(
-    AppCacheResourceInfoVector* resource_infos) {
+    std::vector<AppCacheResourceInfo>* resource_infos) {
   if (associated_cache_.get() && associated_cache_->is_complete())
     associated_cache_->ToResourceInfoVector(resource_infos);
 }

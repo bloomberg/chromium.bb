@@ -48,9 +48,9 @@ struct CONTENT_EXPORT AppCacheManifest {
   ~AppCacheManifest();
 
   base::hash_set<std::string> explicit_urls;
-  AppCacheNamespaceVector intercept_namespaces;
-  AppCacheNamespaceVector fallback_namespaces;
-  AppCacheNamespaceVector online_whitelist_namespaces;
+  std::vector<AppCacheNamespace> intercept_namespaces;
+  std::vector<AppCacheNamespace> fallback_namespaces;
+  std::vector<AppCacheNamespace> online_whitelist_namespaces;
   bool online_whitelist_all = false;
   bool did_ignore_intercept_namespaces = false;
   bool did_ignore_fallback_namespaces = false;

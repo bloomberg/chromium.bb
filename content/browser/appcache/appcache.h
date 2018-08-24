@@ -130,10 +130,10 @@ class CONTENT_EXPORT AppCache
       bool* found_network_namespace);
 
   // Populates the 'infos' vector with an element per entry in the appcache.
-  void ToResourceInfoVector(AppCacheResourceInfoVector* infos) const;
+  void ToResourceInfoVector(std::vector<AppCacheResourceInfo>* infos) const;
 
   static const AppCacheNamespace* FindNamespace(
-      const AppCacheNamespaceVector& namespaces,
+      const std::vector<AppCacheNamespace>& namespaces,
       const GURL& url);
 
  private:
@@ -160,7 +160,7 @@ class CONTENT_EXPORT AppCache
     return FindNamespace(online_whitelist_namespaces_, url) != nullptr;
   }
 
-  GURL GetNamespaceEntryUrl(const AppCacheNamespaceVector& namespaces,
+  GURL GetNamespaceEntryUrl(const std::vector<AppCacheNamespace>& namespaces,
                             const GURL& namespace_url) const;
 
   // Use AppCacheHost::Associate*Cache() to manipulate host association.
@@ -175,9 +175,9 @@ class CONTENT_EXPORT AppCache
 
   EntryMap entries_;    // contains entries of all types
 
-  AppCacheNamespaceVector intercept_namespaces_;
-  AppCacheNamespaceVector fallback_namespaces_;
-  AppCacheNamespaceVector online_whitelist_namespaces_;
+  std::vector<AppCacheNamespace> intercept_namespaces_;
+  std::vector<AppCacheNamespace> fallback_namespaces_;
+  std::vector<AppCacheNamespace> online_whitelist_namespaces_;
   bool online_whitelist_all_;
 
   bool is_complete_;
