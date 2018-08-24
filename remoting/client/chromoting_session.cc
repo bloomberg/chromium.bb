@@ -55,6 +55,13 @@ const int kMinDimension = 640;
 // Interval at which to log performance statistics, if enabled.
 constexpr base::TimeDelta kPerfStatsInterval = base::TimeDelta::FromMinutes(1);
 
+bool IsClientResolutionValid(int dips_width, int dips_height) {
+  // This prevents sending resolution on a portrait mode small phone screen
+  // because resizing the remote desktop to portrait will mess with icons and
+  // such on the desktop and it probably isn't what the user wants.
+  return (dips_width >= dips_height) || (dips_width >= kMinDimension);
+}
+
 // Normalizes the resolution so that both dimensions are not smaller than
 // kMinDimension.
 void NormalizeClientResolution(protocol::ClientResolution* resolution) {
@@ -277,6 +284,10 @@ void ChromotingSession::Core::SendClientResolution(int dips_width,
                                                    int dips_height,
                                                    float scale) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
+  if (!IsClientResolutionValid(dips_width, dips_height)) {
+    return;
+  }
+
   protocol::ClientResolution client_resolution;
   client_resolution.set_dips_width(dips_width);
   client_resolution.set_dips_height(dips_height);

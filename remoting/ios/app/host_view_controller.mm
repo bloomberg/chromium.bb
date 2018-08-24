@@ -407,14 +407,7 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
 }
 
 - (void)resizeHostToFitIfNeeded {
-  // Don't adjust if it's the phone and in portrait orientation because UI looks
-  // too tight.
-  BOOL isPhonePortrait =
-      self.traitCollection.horizontalSizeClass ==
-          UIUserInterfaceSizeClassCompact &&
-      self.traitCollection.verticalSizeClass == UIUserInterfaceSizeClassRegular;
-
-  if (_settings.shouldResizeHostToFit && !isPhonePortrait) {
+  if (_settings.shouldResizeHostToFit) {
     UIEdgeInsets safeInsets = remoting::SafeAreaInsetsForView(_hostView);
     CGRect safeRect = UIEdgeInsetsInsetRect(_hostView.frame, safeInsets);
     [_client setHostResolution:safeRect.size
