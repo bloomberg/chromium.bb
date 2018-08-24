@@ -107,7 +107,7 @@ void WMTestHelper::OnEmbedRootDestroyed(
 void WMTestHelper::OnLostConnection(aura::WindowTreeClient* client) {}
 
 void WMTestHelper::OnPointerEventObserved(const ui::PointerEvent& event,
-                                          int64_t display_id,
+                                          const gfx::Point& location_in_screen,
                                           aura::Window* target) {}
 
 aura::PropertyConverter* WMTestHelper::GetPropertyConverter() {

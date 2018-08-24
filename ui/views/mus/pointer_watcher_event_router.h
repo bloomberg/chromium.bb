@@ -21,6 +21,10 @@ class CaptureClient;
 }
 }
 
+namespace gfx {
+class Point;
+}
+
 namespace ui {
 class PointerEvent;
 }
@@ -59,7 +63,7 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
 
   // Called by WindowTreeClientDelegate to notify PointerWatchers appropriately.
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id,
+                              const gfx::Point& location_in_screen,
                               aura::Window* target);
 
   // Called when the |capture_client| has been set or will be unset.

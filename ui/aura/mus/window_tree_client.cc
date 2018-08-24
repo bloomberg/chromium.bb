@@ -29,6 +29,7 @@
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/drag_drop_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_input_state_controller.h"
@@ -59,6 +60,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/events/event.h"
@@ -702,6 +704,30 @@ void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
     window_tree_host->Hide();
 }
 
+void WindowTreeClient::NotifyPointerEventObserved(ui::PointerEvent* event,
+                                                  uint64_t display_id,
+                                                  WindowMus* window_mus) {
+  aura::Window* window = window_mus ? window_mus->GetWindow() : nullptr;
+  gfx::Point location_in_screen;
+  if (window) {
+    location_in_screen = event->location();
+    client::GetScreenPositionClient(window->GetRootWindow())
+        ->ConvertPointToScreen(window, &location_in_screen);
+  } else {
+    // When there is no window force the root and location to be the same.
+    // They may differ if |window| was valid at the time of the event, but
+    // was since deleted.
+    event->set_location_f(event->root_location_f());
+    location_in_screen = event->root_location();
+    display::Display display;
+    if (display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id,
+                                                              &display)) {
+      location_in_screen += display.bounds().OffsetFromOrigin();
+    }
+  }
+  delegate_->OnPointerEventObserved(*event, location_in_screen, window);
+}
+
 void WindowTreeClient::ScheduleInFlightBoundsChange(
     WindowMus* window,
     const gfx::Rect& old_bounds,
@@ -1289,16 +1315,8 @@ void WindowTreeClient::OnWindowInputEvent(
   if (matches_pointer_watcher && has_pointer_watcher_) {
     DCHECK(event->IsPointerEvent());
     std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
-    if (!window) {
-      // When there is no window force the root and location to be the same.
-      // They may differ if |window| was valid at the time of the event, but
-      // was since deleted.
-      event_in_dip->AsLocatedEvent()->set_location_f(
-          event_in_dip->AsLocatedEvent()->root_location_f());
-    }
-    delegate_->OnPointerEventObserved(*event_in_dip->AsPointerEvent(),
-                                      display_id,
-                                      window ? window->GetWindow() : nullptr);
+    NotifyPointerEventObserved(event_in_dip->AsPointerEvent(), display_id,
+                               window);
   }
 
   // If the window has already been deleted, use |event| to update event states
@@ -1353,17 +1371,8 @@ void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
   if (!has_pointer_watcher_)
     return;
 
-  WindowMus* target_window = GetWindowByServerId(window_id);
-  if (!target_window) {
-    // When there is no window force the root and location to be the same.
-    // They may differ if |window| was valid at the time of the event, but
-    // was since deleted.
-    event->AsLocatedEvent()->set_location_f(
-        event->AsLocatedEvent()->root_location_f());
-  }
-  delegate_->OnPointerEventObserved(
-      *event->AsPointerEvent(), display_id,
-      target_window ? target_window->GetWindow() : nullptr);
+  NotifyPointerEventObserved(event->AsPointerEvent(), display_id,
+                             GetWindowByServerId(window_id));
 }
 
 void WindowTreeClient::OnWindowFocused(ui::Id focused_window_id) {

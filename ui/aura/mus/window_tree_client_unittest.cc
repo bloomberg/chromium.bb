@@ -23,6 +23,7 @@
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/client_surface_embedder.h"
@@ -39,6 +40,7 @@
 #include "ui/aura/test/aura_mus_test_base.h"
 #include "ui/aura/test/mus/test_window_tree.h"
 #include "ui/aura/test/mus/window_tree_client_private.h"
+#include "ui/aura/test/test_screen.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_window_targeter.h"
 #include "ui/aura/window.h"
@@ -118,6 +120,36 @@ void RegisterTestProperties(PropertyConverter* converter) {
 std::vector<uint8_t> ConvertToPropertyTransportValue(int64_t value) {
   return mojo::ConvertTo<std::vector<uint8_t>>(value);
 }
+
+class TestScreenPositionClient : public client::ScreenPositionClient {
+ public:
+  TestScreenPositionClient() = default;
+  ~TestScreenPositionClient() override = default;
+
+ private:
+  // ScreenPositionClient:
+  void ConvertPointToScreen(const Window* window, gfx::PointF* point) override {
+    const Window* root_window = window->GetRootWindow();
+    Window::ConvertPointToTarget(window, root_window, point);
+    gfx::Rect bounds = root_window->GetHost()->GetBoundsInPixels();
+    point->Offset(bounds.x(), bounds.y());
+  }
+  void ConvertPointFromScreen(const Window* window,
+                              gfx::PointF* point) override {
+    // unused.
+  }
+  void ConvertHostPointToScreen(Window* root_window,
+                                gfx::Point* point) override {
+    // unused.
+  }
+  void SetBounds(Window* window,
+                 const gfx::Rect& bounds,
+                 const display::Display& display) override {
+    // unused.
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(TestScreenPositionClient);
+};
 
 }  // namespace
 
@@ -203,7 +235,7 @@ class WindowTreeClientTestHighDPI : public WindowTreeClientTest {
     WindowTreeClientTest::SetUp();
   }
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id,
+                              const gfx::Point& location_in_screen,
                               Window* target) override {
     last_event_observed_.reset(new ui::PointerEvent(event));
   }
@@ -1415,19 +1447,27 @@ class WindowTreeClientPointerObserverTest : public WindowTreeClientTest {
   const ui::PointerEvent* last_event_observed() const {
     return last_event_observed_.get();
   }
-  int64_t last_display_id() const { return last_display_id_; }
+  const gfx::Point& last_location_in_screen() const {
+    return last_location_in_screen_;
+  }
 
   // WindowTreeClientTest:
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id,
+                              const gfx::Point& location_in_screen,
                               Window* target) override {
     last_event_observed_.reset(new ui::PointerEvent(event));
-    last_display_id_ = display_id;
+    last_location_in_screen_ = location_in_screen;
+  }
+
+ protected:
+  client::ScreenPositionClient* screen_position_client() {
+    return &screen_position_client_;
   }
 
  private:
   std::unique_ptr<ui::PointerEvent> last_event_observed_;
-  int64_t last_display_id_ = 0;
+  gfx::Point last_location_in_screen_;
+  TestScreenPositionClient screen_position_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientPointerObserverTest);
 };
@@ -1444,8 +1484,12 @@ TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
   // Start a pointer watcher for all events excluding move events.
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
 
-  // Simulate the server sending an observed event.
   const int64_t kDisplayId = 111;
+  test_screen()->display_list().AddDisplay(
+      display::Display(kDisplayId, gfx::Rect(800, 0, 400, 400)),
+      display::DisplayList::Type::NOT_PRIMARY);
+
+  // Simulate the server sending an observed event.
   std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
@@ -1458,7 +1502,7 @@ TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
   ASSERT_TRUE(last_event);
   EXPECT_EQ(ui::ET_POINTER_DOWN, last_event->type());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, last_event->flags());
-  EXPECT_EQ(kDisplayId, last_display_id());
+  EXPECT_EQ(gfx::Point(800, 0), last_location_in_screen());
   DeleteLastEventObserved();
 
   // Stop the pointer watcher.
@@ -1482,11 +1526,13 @@ TEST_F(WindowTreeClientPointerObserverTest,
   WindowTreeHostMus window_tree_host(
       CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host.window();
-  const gfx::Rect bounds(0, 0, 100, 100);
+  const gfx::Rect bounds(50, 50, 100, 100);
   window_tree_host.SetBoundsInPixels(bounds);
   window_tree_host.InitHost();
   window_tree_host.Show();
-  EXPECT_EQ(bounds, top_level->bounds());
+  EXPECT_EQ(bounds.size(), top_level->bounds().size());
+  client::SetScreenPositionClient(window_tree_host.window(),
+                                  screen_position_client());
 
   // Start a pointer watcher for all events excluding move events.
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
@@ -1504,6 +1550,7 @@ TEST_F(WindowTreeClientPointerObserverTest,
   ASSERT_TRUE(last_event);
   EXPECT_EQ(ui::ET_POINTER_DOWN, last_event->type());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, last_event->flags());
+  EXPECT_EQ(gfx::Point(50, 50), last_location_in_screen());
 }
 
 // Verifies focus is reverted if the server replied that the change failed.

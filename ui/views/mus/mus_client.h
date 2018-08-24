@@ -170,7 +170,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id,
+                              const gfx::Point& location_in_screen,
                               aura::Window* target) override;
   aura::PropertyConverter* GetPropertyConverter() override;
   void OnDisplaysChanged(std::vector<ui::mojom::WsDisplayPtr> ws_displays,

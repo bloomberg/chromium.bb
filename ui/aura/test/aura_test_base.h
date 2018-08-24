@@ -99,7 +99,7 @@ class AuraTestBase : public testing::Test, public WindowTreeClientDelegate {
   void OnEmbedRootDestroyed(WindowTreeHostMus* window_tree_host) override;
   void OnLostConnection(WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              int64_t display_id,
+                              const gfx::Point& location_in_screen,
                               Window* target) override;
   PropertyConverter* GetPropertyConverter() override;
 

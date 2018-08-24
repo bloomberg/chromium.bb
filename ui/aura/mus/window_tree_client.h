@@ -318,6 +318,10 @@ class AURA_EXPORT WindowTreeClient
   // TopmostWindowTracker.
   void StopObservingTopmostWindow();
 
+  void NotifyPointerEventObserved(ui::PointerEvent* event,
+                                  uint64_t display_id,
+                                  WindowMus* window_mus);
+
   // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
   void ScheduleInFlightBoundsChange(WindowMus* window,
                                     const gfx::Rect& old_bounds,
