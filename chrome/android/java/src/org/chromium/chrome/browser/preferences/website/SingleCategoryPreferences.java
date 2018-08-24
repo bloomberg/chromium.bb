@@ -100,13 +100,21 @@ public class SingleCategoryPreferences extends PreferenceFragment
     private int mAllowedSiteCount;
     // The websites that are currently displayed to the user.
     private List<WebsitePreference> mWebsites;
+    // Whether tri-state ContentSetting is required.
+    private boolean mRequiresTriStateSetting = false;
 
-    // Keys for individual preferences.
+    // Keys for common ContentSetting toggle for categories. These two toggles are mutually
+    // exclusive: a category should only show one of them, at most.
+    // TODO(xhwang): Rename READ_WRITE_TOGGLE_KEY to SETTING_TOGGLE_KEY.
     public static final String READ_WRITE_TOGGLE_KEY = "read_write_toggle";
+    public static final String SETTING_TRI_STATE_KEY = "setting-tri-state";
+
+    // Keys for category-specific preferences (toggle, link, button etc.), dynamically shown.
     public static final String THIRD_PARTY_COOKIES_TOGGLE_KEY = "third_party_cookies";
     public static final String NOTIFICATIONS_VIBRATE_TOGGLE_KEY = "notifications_vibrate";
     public static final String EXPLAIN_PROTECTED_MEDIA_KEY = "protected_content_learn_more";
     private static final String ADD_EXCEPTION_KEY = "add_exception";
+
     // Keys for Allowed/Blocked preference groups/headers.
     private static final String ALLOWED_GROUP = "allowed_group";
     private static final String BLOCKED_GROUP = "blocked_group";
@@ -261,6 +269,11 @@ public class SingleCategoryPreferences extends PreferenceFragment
         if (mCategory == null) {
             mCategory = SiteSettingsCategory.createFromType(SiteSettingsCategory.Type.ALL_SITES);
         }
+
+        int contentType = mCategory.getContentSettingsType();
+        mRequiresTriStateSetting =
+                PrefServiceBridge.getInstance().requiresTriStateContentSetting(contentType);
+
         if (!mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
             return super.onCreateView(inflater, container, savedInstanceState);
         } else {
@@ -429,6 +442,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
     // OnPreferenceChangeListener:
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+
         if (READ_WRITE_TOGGLE_KEY.equals(preference.getKey())) {
             assert !mCategory.isManaged();
 
@@ -440,7 +455,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
                     continue;
                 }
 
-                PrefServiceBridge.getInstance().setCategoryEnabled(
+                prefServiceBridge.setCategoryEnabled(
                         SiteSettingsCategory.contentSettingsType(type), (boolean) newValue);
 
                 if (type == SiteSettingsCategory.Type.COOKIES) {
@@ -475,10 +490,15 @@ public class SingleCategoryPreferences extends PreferenceFragment
             updateAllowedHeader(mAllowedSiteCount, !globalToggle.isChecked());
 
             getInfoForOrigins();
+        } else if (SETTING_TRI_STATE_KEY.equals(preference.getKey())) {
+            ContentSetting setting = (ContentSetting) newValue;
+            prefServiceBridge.setContentSetting(
+                    mCategory.getContentSettingsType(), setting.toInt());
+            getInfoForOrigins();
         } else if (THIRD_PARTY_COOKIES_TOGGLE_KEY.equals(preference.getKey())) {
-            PrefServiceBridge.getInstance().setBlockThirdPartyCookiesEnabled(!((boolean) newValue));
+            prefServiceBridge.setBlockThirdPartyCookiesEnabled(!((boolean) newValue));
         } else if (NOTIFICATIONS_VIBRATE_TOGGLE_KEY.equals(preference.getKey())) {
-            PrefServiceBridge.getInstance().setNotificationsVibrateEnabled((boolean) newValue);
+            prefServiceBridge.setNotificationsVibrateEnabled((boolean) newValue);
         }
         return true;
     }
@@ -657,11 +677,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         mWebsites = websites;
         updateBlockedHeader(blocked);
-        ChromeSwitchPreference globalToggle =
-                (ChromeSwitchPreference) getPreferenceScreen().findPreference(
-                        READ_WRITE_TOGGLE_KEY);
-        updateAllowedHeader(
-                mAllowedSiteCount, (globalToggle != null ? globalToggle.isChecked() : true));
+        updateAllowedHeader(mAllowedSiteCount, !isBlocked());
 
         return websites.size() != 0;
     }
@@ -709,10 +725,35 @@ public class SingleCategoryPreferences extends PreferenceFragment
         return objects.size() != 0;
     }
 
+    private boolean isBlocked() {
+        if (mRequiresTriStateSetting) {
+            TriStateSiteSettingsPreference settingTriState =
+                    (TriStateSiteSettingsPreference) getPreferenceScreen().findPreference(
+                            SETTING_TRI_STATE_KEY);
+            return (settingTriState.getCheckedSetting() == ContentSetting.BLOCK);
+        } else {
+            ChromeSwitchPreference globalToggle =
+                    (ChromeSwitchPreference) getPreferenceScreen().findPreference(
+                            READ_WRITE_TOGGLE_KEY);
+            if (globalToggle != null) return !globalToggle.isChecked();
+        }
+        return false;
+    }
+
     private void configureGlobalToggles() {
-        // Only some have a global toggle at the top.
+        PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        int contentType = mCategory.getContentSettingsType();
+
         ChromeSwitchPreference globalToggle = (ChromeSwitchPreference)
                 getPreferenceScreen().findPreference(READ_WRITE_TOGGLE_KEY);
+        TriStateSiteSettingsPreference settingTriState =
+                (TriStateSiteSettingsPreference) getPreferenceScreen().findPreference(
+                        SETTING_TRI_STATE_KEY);
+
+        // Hide |settingTriState| if it's not required.
+        if (!mRequiresTriStateSetting) {
+            getPreferenceScreen().removePreference(settingTriState);
+        }
 
         // Configure/hide the third-party cookie toggle, as needed.
         Preference thirdPartyCookies = getPreferenceScreen().findPreference(
@@ -735,12 +776,14 @@ public class SingleCategoryPreferences extends PreferenceFragment
             getPreferenceScreen().removePreference(notificationsVibrate);
         }
 
-        // Show/hide the link that explains protected media settings, as needed.
+        // Only show the link that explains protected content settings when needed.
         if (!mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
             getPreferenceScreen().removePreference(
                     getPreferenceScreen().findPreference(EXPLAIN_PROTECTED_MEDIA_KEY));
         }
 
+        // TODO(xhwang): Add a test to make sure neither the globalToggle nor the
+        // tri-state radio group show up on the ALL_SITES and USE_STORAGE category.
         if (mCategory.showSites(SiteSettingsCategory.Type.ALL_SITES)
                 || mCategory.showSites(SiteSettingsCategory.Type.USE_STORAGE)) {
             getPreferenceScreen().removePreference(globalToggle);
@@ -783,8 +826,20 @@ public class SingleCategoryPreferences extends PreferenceFragment
         allowedGroup.setOnPreferenceClickListener(this);
         blockedGroup.setOnPreferenceClickListener(this);
 
+        // Hide |globalToggle| if tri-state is required.
+        if (mRequiresTriStateSetting) {
+            getPreferenceScreen().removePreference(globalToggle);
+
+            settingTriState.setOnPreferenceChangeListener(this);
+            ContentSetting setting = ContentSetting.fromInt(
+                    PrefServiceBridge.getInstance().getContentSetting(contentType));
+            int[] descriptionIds =
+                    ContentSettingsResources.getTriStateSettingDescriptionIDs(contentType);
+            settingTriState.initialize(setting, descriptionIds);
+            return;
+        }
+
         // Determine what toggle to use and what it should display.
-        int contentType = mCategory.getContentSettingsType();
         globalToggle.setOnPreferenceChangeListener(this);
         globalToggle.setTitle(ContentSettingsResources.getTitle(contentType));
         if (mCategory.showSites(SiteSettingsCategory.Type.DEVICE_LOCATION)

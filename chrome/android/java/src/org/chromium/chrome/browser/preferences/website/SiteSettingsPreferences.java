@@ -174,12 +174,18 @@ public class SiteSettingsPreferences extends PreferenceFragment
         for (@SiteSettingsCategory.Type int prefCategory : websitePrefs) {
             Preference p = findPreference(prefCategory);
             int contentType = SiteSettingsCategory.contentSettingsType(prefCategory);
+            boolean requiresTriStateSetting =
+                    prefServiceBridge.requiresTriStateContentSetting(contentType);
 
-            boolean checked;
+            boolean checked = false;
+            ContentSetting setting = ContentSetting.DEFAULT;
+
             if (prefCategory == SiteSettingsCategory.Type.DEVICE_LOCATION) {
                 checked = LocationSettings.getInstance().areAllLocationSettingsEnabled();
+            } else if (requiresTriStateSetting) {
+                setting = ContentSetting.fromInt(prefServiceBridge.getContentSetting(contentType));
             } else {
-                checked = PrefServiceBridge.getInstance().isCategoryEnabled(contentType);
+                checked = prefServiceBridge.isCategoryEnabled(contentType);
             }
 
             p.setTitle(ContentSettingsResources.getTitle(contentType));
@@ -202,6 +208,8 @@ public class SiteSettingsPreferences extends PreferenceFragment
                 p.setSummary(ContentSettingsResources.getAdsBlockedListSummary());
             } else if (SiteSettingsCategory.Type.SOUND == prefCategory && !checked) {
                 p.setSummary(ContentSettingsResources.getSoundBlockedListSummary());
+            } else if (requiresTriStateSetting) {
+                p.setSummary(ContentSettingsResources.getCategorySummary(setting));
             } else {
                 p.setSummary(ContentSettingsResources.getCategorySummary(contentType, checked));
             }

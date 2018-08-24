@@ -234,6 +234,28 @@ static void JNI_PrefServiceBridge_GetContentSettingsExceptions(
   }
 }
 
+static jint JNI_PrefServiceBridge_GetContentSetting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    int content_settings_type) {
+  HostContentSettingsMap* content_settings =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  return content_settings->GetDefaultContentSetting(
+      static_cast<ContentSettingsType>(content_settings_type), nullptr);
+}
+
+static void JNI_PrefServiceBridge_SetContentSetting(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    int content_settings_type,
+    int setting) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
+  host_content_settings_map->SetDefaultContentSetting(
+      static_cast<ContentSettingsType>(content_settings_type),
+      static_cast<ContentSetting>(setting));
+}
+
 static jboolean JNI_PrefServiceBridge_GetAcceptCookiesEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
@@ -424,13 +446,6 @@ static jboolean JNI_PrefServiceBridge_GetSafeBrowsingManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return GetPrefService()->IsManagedPreference(prefs::kSafeBrowsingEnabled);
-}
-
-static jboolean JNI_PrefServiceBridge_GetProtectedMediaIdentifierEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  return GetBooleanForContentSetting(
-      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
 }
 
 static jboolean JNI_PrefServiceBridge_GetNotificationsEnabled(
@@ -755,17 +770,6 @@ static void JNI_PrefServiceBridge_SetPasswordManagerAutoSigninEnabled(
     jboolean enabled) {
   GetPrefService()->SetBoolean(
       password_manager::prefs::kCredentialsEnableAutosignin, enabled);
-}
-
-static void JNI_PrefServiceBridge_SetProtectedMediaIdentifierEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean is_enabled) {
-  HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(GetOriginalProfile());
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER,
-      is_enabled ? CONTENT_SETTING_ASK : CONTENT_SETTING_BLOCK);
 }
 
 static void JNI_PrefServiceBridge_SetAllowLocationEnabled(

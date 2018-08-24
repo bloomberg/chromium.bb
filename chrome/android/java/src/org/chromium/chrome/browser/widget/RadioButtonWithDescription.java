@@ -26,9 +26,15 @@ import java.util.List;
  * A RadioButton with a title and descriptive text to the right.
  */
 public class RadioButtonWithDescription extends RelativeLayout implements OnClickListener {
+    /**
+     * Interface to listen to radio button changes.
+     */
+    public interface OnCheckedChangeListener { abstract void onCheckedChanged(); }
+
     private RadioButton mRadioButton;
     private TextView mTitle;
     private TextView mDescription;
+    private OnCheckedChangeListener mOnCheckedChangeListener;
 
     private List<RadioButtonWithDescription> mGroup;
 
@@ -72,6 +78,10 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
         }
 
         setChecked(true);
+
+        if (mOnCheckedChangeListener != null) {
+            mOnCheckedChangeListener.onCheckedChanged();
+        }
     }
 
     /**
@@ -101,6 +111,10 @@ public class RadioButtonWithDescription extends RelativeLayout implements OnClic
      */
     public void setChecked(boolean checked) {
         mRadioButton.setChecked(checked);
+    }
+
+    public void setOnCheckedChangeListener(OnCheckedChangeListener listener) {
+        mOnCheckedChangeListener = listener;
     }
 
     /**
