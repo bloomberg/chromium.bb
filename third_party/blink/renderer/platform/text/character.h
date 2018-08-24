@@ -186,6 +186,10 @@ class PLATFORM_EXPORT Character {
   static bool IsPrivateUse(UChar32);
   static bool IsNonCharacter(UChar32);
 
+  // Returns whether a script code could be determined for the given character
+  // and that script code is not USCRIPT_COMMON or USCRIPT_INHERITED.
+  static bool HasDefiniteScript(UChar32);
+
  private:
   static bool IsCJKIdeographOrSymbolSlow(UChar32);
   static bool IsHangulSlow(UChar32);

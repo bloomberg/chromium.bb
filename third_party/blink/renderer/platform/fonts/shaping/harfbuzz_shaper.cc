@@ -481,6 +481,7 @@ void HarfBuzzShaper::ExtractShapeResults(
 
 bool HarfBuzzShaper::CollectFallbackHintChars(
     const Deque<ReshapeQueueItem>& reshape_queue,
+    bool needs_hint_list,
     Vector<UChar32>& hint) const {
   if (!reshape_queue.size())
     return false;
@@ -498,16 +499,32 @@ bool HarfBuzzShaper::CollectFallbackHintChars(
       for (unsigned i = 0; i < it->num_characters_; i++) {
         hint.push_back(text_[it->start_index_ + i]);
         num_chars_added++;
+        // Determine if we can take a shortcut and not fill the hint list
+        // further: We can do that if we do not need a hint list, and we have
+        // managed to find a character with a definite script since
+        // FontFallbackIterator needs a character with a determined script to
+        // perform meaningful system fallback.
+        if (!needs_hint_list &&
+            Character::HasDefiniteScript(text_[it->start_index_ + i]))
+          return true;
       }
       continue;
     }
 
+    // !text_.Is8Bit()...
     UChar32 hint_char;
     UTF16TextIterator iterator(text_.Characters16() + it->start_index_,
                                it->num_characters_);
     while (iterator.Consume(hint_char)) {
       hint.push_back(hint_char);
       num_chars_added++;
+      // Determine if we can take a shortcut and not fill the hint list
+      // further: We can do that if we do not need a hint list, and we have
+      // managed to find a character with a definite script since
+      // FontFallbackIterator needs a character with a determined script to
+      // perform meaningful system fallback.
+      if (!needs_hint_list && Character::HasDefiniteScript(hint_char))
+        return true;
       iterator.Advance();
     }
   }
@@ -834,23 +851,19 @@ void HarfBuzzShaper::ShapeSegment(
 
   bool font_cycle_queued = false;
   Vector<UChar32> fallback_chars_hint;
-  // Reserve enough capacity to avoid multiple reallocations.
-  // TODO(kojii): Should review if we really need to collect all characters.
-  // crbug.com/848295
-  fallback_chars_hint.ReserveInitialCapacity(range_data->end -
-                                             range_data->start);
+  // Reserve sufficient capacity to avoid multiple reallocations, only when a
+  // full hint list is needed.
+  if (fallback_iterator->NeedsHintList()) {
+    fallback_chars_hint.ReserveInitialCapacity(range_data->end -
+                                               range_data->start);
+  }
   scoped_refptr<FontDataForRangeSet> current_font_data_for_range_set;
   while (range_data->reshape_queue.size()) {
     ReshapeQueueItem current_queue_item = range_data->reshape_queue.TakeFirst();
 
     if (current_queue_item.action_ == kReshapeQueueNextFont) {
-      // For now, we're building a character list with which we probe
-      // for needed fonts depending on the declared unicode-range of a
-      // segmented CSS font. Alternatively, we can build a fake font
-      // for the shaper and check whether any glyphs were found, or
-      // define a new API on the shaper which will give us coverage
-      // information?
       if (!CollectFallbackHintChars(range_data->reshape_queue,
+                                    fallback_iterator->NeedsHintList(),
                                     fallback_chars_hint)) {
         // Give up shaping since we cannot retrieve a font fallback
         // font without a hintlist.
