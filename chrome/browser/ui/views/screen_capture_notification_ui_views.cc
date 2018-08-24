@@ -195,7 +195,7 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
   } else {
     const display::Display primary_display =
         display::Screen::GetScreen()->GetPrimaryDisplay();
-    params.mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
+    params.mus_properties[ws::mojom::WindowManager::kDisplayId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(primary_display.id());
   }
 #endif

@@ -50,7 +50,7 @@ void TestGpuInterfaceProvider::BindDiscardableSharedMemoryManagerRequest(
                                            service_manager::BindSourceInfo());
 }
 
-void TestGpuInterfaceProvider::BindGpuRequest(ui::mojom::GpuRequest request) {
+void TestGpuInterfaceProvider::BindGpuRequest(ws::mojom::GpuRequest request) {
   // |gpu_host_| could be null. See test_ws.cc for details.
   if (!gpu_host_) {
     NOTIMPLEMENTED_LOG_ONCE();

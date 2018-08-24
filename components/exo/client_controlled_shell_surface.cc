@@ -255,7 +255,7 @@ class EventTargetingBlocker : aura::WindowObserver {
   void Register(aura::Window* window) {
     window->AddObserver(this);
     auto policy = window->event_targeting_policy();
-    window->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::NONE);
+    window->SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy::NONE);
     policy_map_.emplace(window, policy);
     for (auto* child : window->children())
       Register(child);
@@ -276,7 +276,7 @@ class EventTargetingBlocker : aura::WindowObserver {
     window->RemoveObserver(this);
   }
 
-  std::map<aura::Window*, ui::mojom::EventTargetingPolicy> policy_map_;
+  std::map<aura::Window*, ws::mojom::EventTargetingPolicy> policy_map_;
   aura::Window* window_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(EventTargetingBlocker);

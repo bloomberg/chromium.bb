@@ -134,7 +134,7 @@ class TestWindowService : public service_manager::Service,
       service_manager::mojom::ServiceRequest request,
       const std::string& name,
       service_manager::mojom::PIDReceiverPtr pid_receiver) override {
-    DCHECK_EQ(name, ui::mojom::kServiceName);
+    DCHECK_EQ(name, ws::mojom::kServiceName);
 
     // Defer CreateService if |aura_test_helper_| is not created.
     if (!aura_test_helper_) {

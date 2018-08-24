@@ -230,9 +230,9 @@ bool WindowTargeter::SubtreeCanAcceptEvent(
   if (!window->IsVisible())
     return false;
   if (window->event_targeting_policy() ==
-          ui::mojom::EventTargetingPolicy::NONE ||
+          ws::mojom::EventTargetingPolicy::NONE ||
       window->event_targeting_policy() ==
-          ui::mojom::EventTargetingPolicy::TARGET_ONLY) {
+          ws::mojom::EventTargetingPolicy::TARGET_ONLY) {
     return false;
   }
   client::EventClient* client = client::GetEventClient(window->GetRootWindow());

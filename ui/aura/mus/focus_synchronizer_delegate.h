@@ -14,7 +14,7 @@ namespace aura {
 class WindowMus;
 
 // Used by FocusSynchronizer to create a change id when focus changes. The
-// change id is then sent to ui::mojom::WindowTree.
+// change id is then sent to ws::mojom::WindowTree.
 class AURA_EXPORT FocusSynchronizerDelegate {
  public:
   virtual uint32_t CreateChangeIdForFocus(WindowMus* window) = 0;

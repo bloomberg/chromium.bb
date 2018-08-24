@@ -98,7 +98,7 @@ class GpuHostTest : public testing::Test {
 };
 
 base::WeakPtr<GpuClient> GpuHostTest::AddGpuClient() {
-  GpuClient* client = gpu_host_->AddInternal(mojom::GpuRequest());
+  GpuClient* client = gpu_host_->AddInternal(ws::mojom::GpuRequest());
   return client->weak_factory_.GetWeakPtr();
 }
 
@@ -132,7 +132,7 @@ TEST_F(GpuHostTest, GpuClientDestructionOrder) {
 
 TEST_F(GpuHostTest, GpuClientDestroyedWhileChannelRequestInFlight) {
   base::WeakPtr<GpuClient> client_ref = AddGpuClient();
-  mojom::Gpu* gpu = client_ref.get();
+  ws::mojom::Gpu* gpu = client_ref.get();
   bool callback_called = false;
   gpu->EstablishGpuChannel(
       base::Bind([](bool* callback_called, int, mojo::ScopedMessagePipeHandle,

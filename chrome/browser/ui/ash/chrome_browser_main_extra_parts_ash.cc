@@ -152,7 +152,7 @@ void ChromeBrowserMainExtraPartsAsh::ServiceManagerConnectionStarted(
     // Start up the window service and the ash system UI service.
     // NOTE: ash::Shell is still created below for SingleProcessMash.
     connection->GetConnector()->StartService(
-        service_manager::Identity(ui::mojom::kServiceName));
+        service_manager::Identity(ws::mojom::kServiceName));
     connection->GetConnector()->StartService(
         service_manager::Identity(ash::mojom::kServiceName));
 
@@ -195,10 +195,10 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     // TODO(jamescook): Figure out if we need this for SingleProcessMash.
     // https://crbug.com/626899
     user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
-    ui::mojom::UserActivityMonitorPtr user_activity_monitor;
+    ws::mojom::UserActivityMonitorPtr user_activity_monitor;
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()
-        ->BindInterface(ui::mojom::kServiceName, &user_activity_monitor);
+        ->BindInterface(ws::mojom::kServiceName, &user_activity_monitor);
     user_activity_forwarder_ = std::make_unique<aura::UserActivityForwarder>(
         std::move(user_activity_monitor), user_activity_detector_.get());
   }

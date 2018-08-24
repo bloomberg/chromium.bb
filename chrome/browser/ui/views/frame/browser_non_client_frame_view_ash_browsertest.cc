@@ -1140,8 +1140,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
 
   widget->GetNativeWindow()->SetProperty(
       aura::client::kResizeBehaviorKey,
-      ui::mojom::kResizeBehaviorCanMaximize |
-          ui::mojom::kResizeBehaviorCanResize);
+      ws::mojom::kResizeBehaviorCanMaximize |
+          ws::mojom::kResizeBehaviorCanResize);
 
   // Test that the header is invisible for the browser window in overview mode
   // and visible when not in overview mode.
@@ -1165,8 +1165,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
           widget2->non_client_view()->frame_view());
   widget2->GetNativeWindow()->SetProperty(
       aura::client::kResizeBehaviorKey,
-      ui::mojom::kResizeBehaviorCanMaximize |
-          ui::mojom::kResizeBehaviorCanResize);
+      ws::mojom::kResizeBehaviorCanMaximize |
+          ws::mojom::kResizeBehaviorCanResize);
 
   // Test that when one browser window is snapped, the header is visible for the
   // snapped browser window, but invisible for the browser window still in
@@ -1390,8 +1390,8 @@ IN_PROC_BROWSER_TEST_P(NonHomeLauncherBrowserNonClientFrameViewAshTest,
 
   widget->GetNativeWindow()->SetProperty(
       aura::client::kResizeBehaviorKey,
-      ui::mojom::kResizeBehaviorCanMaximize |
-          ui::mojom::kResizeBehaviorCanResize);
+      ws::mojom::kResizeBehaviorCanMaximize |
+          ws::mojom::kResizeBehaviorCanResize);
 
   // Maximize the widget and store its frame header height.
   widget->Maximize();

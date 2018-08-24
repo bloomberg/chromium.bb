@@ -93,10 +93,10 @@ void TapVisualizerApp::CreateWidgetForDisplay(int64_t display_id) {
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = false;
   params.delegate = new views::WidgetDelegateView;
-  params.mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
+  params.mus_properties[ws::mojom::WindowManager::kContainerId_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ash::kShellWindowId_OverlayContainer));
-  params.mus_properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
+  params.mus_properties[ws::mojom::WindowManager::kDisplayId_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(display_id);
   params.show_state = ui::SHOW_STATE_FULLSCREEN;
   params.name = "TapVisualizer";

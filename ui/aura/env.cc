@@ -189,7 +189,7 @@ void Env::SetWindowTreeClient(WindowTreeClient* window_tree_client) {
 }
 
 void Env::ScheduleEmbed(
-    ui::mojom::WindowTreeClientPtr client,
+    ws::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
   DCHECK_EQ(Mode::MUS, mode_);
   DCHECK(window_tree_client_);

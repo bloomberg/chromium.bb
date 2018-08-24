@@ -746,7 +746,7 @@ void RenderThreadImpl::Init() {
 
   gpu_ = ui::Gpu::Create(GetConnector(),
                          features::IsUsingWindowService()
-                             ? ui::mojom::kServiceName
+                             ? ws::mojom::kServiceName
                              : mojom::kBrowserServiceName,
                          GetIOTaskRunner());
 
@@ -958,7 +958,7 @@ void RenderThreadImpl::Init() {
   if (features::IsUsingWindowService()) {
 #if defined(USE_AURA)
     GetServiceManagerConnection()->GetConnector()->BindInterface(
-        ui::mojom::kServiceName, &manager_ptr);
+        ws::mojom::kServiceName, &manager_ptr);
 #else
     NOTREACHED();
 #endif

@@ -14,24 +14,24 @@
 namespace aura {
 namespace {
 
-client::WindowType UiWindowTypeToWindowType(ui::mojom::WindowType type) {
+client::WindowType UiWindowTypeToWindowType(ws::mojom::WindowType type) {
   switch (type) {
-    case ui::mojom::WindowType::WINDOW:
+    case ws::mojom::WindowType::WINDOW:
       return client::WINDOW_TYPE_NORMAL;
-    case ui::mojom::WindowType::PANEL:
+    case ws::mojom::WindowType::PANEL:
       return client::WINDOW_TYPE_PANEL;
-    case ui::mojom::WindowType::CONTROL:
+    case ws::mojom::WindowType::CONTROL:
       return client::WINDOW_TYPE_CONTROL;
-    case ui::mojom::WindowType::WINDOW_FRAMELESS:
-    case ui::mojom::WindowType::POPUP:
-    case ui::mojom::WindowType::BUBBLE:
-    case ui::mojom::WindowType::DRAG:
+    case ws::mojom::WindowType::WINDOW_FRAMELESS:
+    case ws::mojom::WindowType::POPUP:
+    case ws::mojom::WindowType::BUBBLE:
+    case ws::mojom::WindowType::DRAG:
       return client::WINDOW_TYPE_POPUP;
-    case ui::mojom::WindowType::MENU:
+    case ws::mojom::WindowType::MENU:
       return client::WINDOW_TYPE_MENU;
-    case ui::mojom::WindowType::TOOLTIP:
+    case ws::mojom::WindowType::TOOLTIP:
       return client::WINDOW_TYPE_TOOLTIP;
-    case ui::mojom::WindowType::UNKNOWN:
+    case ws::mojom::WindowType::UNKNOWN:
       return client::WINDOW_TYPE_UNKNOWN;
   }
   NOTREACHED();
@@ -40,20 +40,20 @@ client::WindowType UiWindowTypeToWindowType(ui::mojom::WindowType type) {
 
 }  // namespace
 
-void SetWindowType(Window* window, ui::mojom::WindowType window_type) {
-  if (window_type == ui::mojom::WindowType::UNKNOWN)
+void SetWindowType(Window* window, ws::mojom::WindowType window_type) {
+  if (window_type == ws::mojom::WindowType::UNKNOWN)
     return;
   window->SetProperty(client::kWindowTypeKey, window_type);
   window->SetType(UiWindowTypeToWindowType(window_type));
 }
 
-ui::mojom::WindowType GetWindowTypeFromProperties(
+ws::mojom::WindowType GetWindowTypeFromProperties(
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   auto iter =
-      properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
+      properties.find(ws::mojom::WindowManager::kWindowType_InitProperty);
   if (iter == properties.end())
-    return ui::mojom::WindowType::UNKNOWN;
-  return static_cast<ui::mojom::WindowType>(
+    return ws::mojom::WindowType::UNKNOWN;
+  return static_cast<ws::mojom::WindowType>(
       mojo::ConvertTo<int32_t>(iter->second));
 }
 

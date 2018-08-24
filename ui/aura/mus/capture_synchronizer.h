@@ -12,7 +12,7 @@
 #include "ui/aura/client/capture_client_observer.h"
 #include "ui/aura/window_observer.h"
 
-namespace ui {
+namespace ws {
 namespace mojom {
 class WindowTree;
 }
@@ -32,7 +32,7 @@ class AURA_EXPORT CaptureSynchronizer : public WindowObserver,
                                         public client::CaptureClientObserver {
  public:
   CaptureSynchronizer(CaptureSynchronizerDelegate* delegate,
-                      ui::mojom::WindowTree* window_tree);
+                      ws::mojom::WindowTree* window_tree);
   ~CaptureSynchronizer() override;
 
   WindowMus* capture_window() { return capture_window_; }
@@ -56,7 +56,7 @@ class AURA_EXPORT CaptureSynchronizer : public WindowObserver,
   void OnCaptureChanged(Window* lost_capture, Window* gained_capture) override;
 
   CaptureSynchronizerDelegate* delegate_;
-  ui::mojom::WindowTree* window_tree_;
+  ws::mojom::WindowTree* window_tree_;
 
   // Window that currently has capture.
   WindowMus* capture_window_ = nullptr;

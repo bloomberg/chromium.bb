@@ -68,7 +68,7 @@ void PdfCompositorService::PrepareToStart() {
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
   if (!features::IsAshInBrowserProcess()) {
 #if defined(USE_AURA)
-    context()->connector()->BindInterface(ui::mojom::kServiceName,
+    context()->connector()->BindInterface(ws::mojom::kServiceName,
                                           &manager_ptr);
 #else
     NOTREACHED();

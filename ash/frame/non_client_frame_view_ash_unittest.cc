@@ -445,7 +445,7 @@ TEST_F(NonClientFrameViewAshTest, MinimizedWindowsInTabletMode) {
   std::unique_ptr<views::Widget> widget =
       CreateTestWidget(new NonClientFrameViewAshTestWidgetDelegate);
   widget->GetNativeWindow()->SetProperty(aura::client::kResizeBehaviorKey,
-                                         ui::mojom::kResizeBehaviorCanMaximize);
+                                         ws::mojom::kResizeBehaviorCanMaximize);
   widget->Maximize();
   widget->Minimize();
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
@@ -476,8 +476,8 @@ TEST_F(NonClientFrameViewAshTest, HeaderVisibilityInSplitview) {
     // Windows need to be resizable and maximizable to be used in splitview.
     widget->GetNativeWindow()->SetProperty(
         aura::client::kResizeBehaviorKey,
-        ui::mojom::kResizeBehaviorCanMaximize |
-            ui::mojom::kResizeBehaviorCanResize);
+        ws::mojom::kResizeBehaviorCanMaximize |
+            ws::mojom::kResizeBehaviorCanResize);
     return widget;
   };
 

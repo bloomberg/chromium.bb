@@ -986,8 +986,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   //     changed for mus/mash.
   window->SetEventTargetingPolicy(
       ash::Shell::GetAshConfig() == ash::Config::CLASSIC
-          ? ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
-          : ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
+          ? ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS
+          : ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
   window->SetEventTargeter(base::WrapUnique(
       new CustomWindowTargeter(widget_, client_controlled_move_resize_)));
   SetApplicationId(window, application_id_);

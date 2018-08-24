@@ -62,7 +62,7 @@ class VIEWS_EXPORT WidgetDelegate {
   // Returns true if the window can be minimized.
   virtual bool CanMinimize() const;
 
-  // Returns a bitmask of ui::mojom::kResizeBehavior values.
+  // Returns a bitmask of ws::mojom::kResizeBehavior values.
   virtual int32_t GetResizeBehavior() const;
 
   // Returns true if the window can be activated.

@@ -43,12 +43,12 @@ struct TransientData {
 // WindowTree implementation for tests. TestWindowTree maintains a list of all
 // calls that take a change_id and are expected to be acked back to the client.
 // Various functions are provided to respond to the changes.
-class TestWindowTree : public ui::mojom::WindowTree {
+class TestWindowTree : public ws::mojom::WindowTree {
  public:
   TestWindowTree();
   ~TestWindowTree() override;
 
-  void set_client(ui::mojom::WindowTreeClient* client) { client_ = client; }
+  void set_client(ws::mojom::WindowTreeClient* client) { client_ = client; }
 
   uint32_t window_id() const { return window_id_; }
 
@@ -56,7 +56,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
 
   // Returns the result of the specified event. UNHANDLED if |event_id| was
   // not acked (use WasEventAcked() to determine if the event was acked).
-  ui::mojom::EventResult GetEventResult(uint32_t event_id) const;
+  ws::mojom::EventResult GetEventResult(uint32_t event_id) const;
 
   base::Optional<std::vector<uint8_t>> GetLastPropertyValue();
 
@@ -125,7 +125,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
       uint32_t change_id,
       WindowTreeChangeType type = WindowTreeChangeType::OTHER);
 
-  // ui::mojom::WindowTree:
+  // ws::mojom::WindowTree:
   void NewWindow(
       uint32_t change_id,
       ui::Id window_id,
@@ -183,17 +183,17 @@ class TestWindowTree : public ui::mojom::WindowTree {
   void ReorderWindow(uint32_t change_id,
                      ui::Id window_id,
                      ui::Id relative_window_id,
-                     ui::mojom::OrderDirection direction) override;
+                     ws::mojom::OrderDirection direction) override;
   void GetWindowTree(ui::Id window_id, GetWindowTreeCallback callback) override;
   void SetCapture(uint32_t change_id, ui::Id window_id) override;
   void ReleaseCapture(uint32_t change_id, ui::Id window_id) override;
   void StartPointerWatcher(bool want_moves) override;
   void StopPointerWatcher() override;
   void Embed(ui::Id window_id,
-             ui::mojom::WindowTreeClientPtr client,
+             ws::mojom::WindowTreeClientPtr client,
              uint32_t flags,
              EmbedCallback callback) override;
-  void ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
+  void ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
                      ScheduleEmbedCallback callback) override;
   void EmbedUsingToken(ui::Id window_id,
                        const base::UnguessableToken& token,
@@ -205,7 +205,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
   void SetFocus(uint32_t change_id, ui::Id window_id) override;
   void SetCanFocus(ui::Id window_id, bool can_focus) override;
   void SetEventTargetingPolicy(ui::Id window_id,
-                               ui::mojom::EventTargetingPolicy policy) override;
+                               ws::mojom::EventTargetingPolicy policy) override;
   void SetCursor(uint32_t change_id,
                  ui::Id transport_window_id,
                  ui::CursorData cursor_data) override;
@@ -215,7 +215,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
                         bool visible,
                         ui::mojom::TextInputStatePtr state) override;
   void OnWindowInputEventAck(uint32_t event_id,
-                             ui::mojom::EventResult result) override;
+                             ws::mojom::EventResult result) override;
   void DeactivateWindow(ui::Id window_id) override;
   void StackAbove(uint32_t change_id,
                   ui::Id above_id,
@@ -236,16 +236,16 @@ class TestWindowTree : public ui::mojom::WindowTree {
   void CancelDragDrop(ui::Id window_id) override;
   void PerformWindowMove(uint32_t change_id,
                          ui::Id window_id,
-                         ui::mojom::MoveLoopSource source,
+                         ws::mojom::MoveLoopSource source,
                          const gfx::Point& cursor_location) override;
   void CancelWindowMove(ui::Id window_id) override;
-  void ObserveTopmostWindow(ui::mojom::MoveLoopSource source,
+  void ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
                             ui::Id window_id) override;
   void StopObservingTopmostWindow() override;
 
   struct AckedEvent {
     uint32_t event_id;
-    ui::mojom::EventResult result;
+    ws::mojom::EventResult result;
   };
   std::vector<AckedEvent> acked_events_;
   ui::Id window_id_ = 0u;
@@ -254,7 +254,7 @@ class TestWindowTree : public ui::mojom::WindowTree {
 
   std::vector<Change> changes_;
 
-  ui::mojom::WindowTreeClient* client_;
+  ws::mojom::WindowTreeClient* client_;
 
   base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>
       last_new_window_properties_;

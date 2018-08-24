@@ -19,12 +19,12 @@ class WindowService;
 
 // See description in mojom for details on this.
 class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
-    : public mojom::EventInjector {
+    : public ws::mojom::EventInjector {
  public:
   explicit EventInjector(WindowService* window_service);
   ~EventInjector() override;
 
-  void AddBinding(mojom::EventInjectorRequest request);
+  void AddBinding(ws::mojom::EventInjectorRequest request);
 
  private:
   struct EventAndHost;
@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
   EventAndHost DetermineEventAndHost(int64_t display_id,
                                      std::unique_ptr<Event> event);
 
-  // mojom::EventInjector:
+  // ws::mojom::EventInjector:
   void InjectEvent(int64_t display_id,
                    std::unique_ptr<ui::Event> event,
                    InjectEventCallback cb) override;
@@ -53,7 +53,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) EventInjector
   // the client. The handlers are removed once the event is processed.
   std::vector<std::unique_ptr<HandlerAndCallback>> handlers_;
 
-  mojo::BindingSet<mojom::EventInjector> bindings_;
+  mojo::BindingSet<ws::mojom::EventInjector> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(EventInjector);
 };

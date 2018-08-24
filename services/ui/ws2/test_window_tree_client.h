@@ -22,7 +22,7 @@ namespace ws2 {
 class WindowTree;
 
 // WindowTreeClient implementation that logs all changes to a tracker.
-class TestWindowTreeClient : public mojom::WindowTreeClient,
+class TestWindowTreeClient : public ws::mojom::WindowTreeClient,
                              public TestChangeTracker::Delegate {
  public:
   // Created every time OnWindowInputEvent() is called.
@@ -72,11 +72,11 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   // in the returned object is null.
   ObservedPointerEvent PopObservedPointerEvent();
 
-  // Sets the mojom::WindowTree for this client. Used when creating a client
-  // using mojom::WindowTreeFactory.
-  void SetWindowTree(mojom::WindowTreePtr tree);
+  // Sets the ws::mojom::WindowTree for this client. Used when creating a client
+  // using ws::mojom::WindowTreeFactory.
+  void SetWindowTree(ws::mojom::WindowTreePtr tree);
 
-  mojom::WindowTree* tree() { return tree_.get(); }
+  ws::mojom::WindowTree* tree() { return tree_.get(); }
   TestChangeTracker* tracker() { return &tracker_; }
   Id root_window_id() const { return root_window_id_; }
 
@@ -89,7 +89,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
   // Acks the first InputEvent that was received, and removes it. Returns true
   // if there was an event.
-  bool AckFirstEvent(WindowTree* tree, mojom::EventResult result);
+  bool AckFirstEvent(WindowTree* tree, ws::mojom::EventResult result);
 
   TestScreenProviderObserver* screen_provider_observer() {
     return &screen_provider_observer_;
@@ -98,17 +98,17 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   // TestChangeTracker::Delegate:
   void OnChangeAdded() override;
 
-  // mojom::WindowTreeClient:
+  // ws::mojom::WindowTreeClient:
   void OnEmbed(
-      mojom::WindowDataPtr root,
-      mojom::WindowTreePtr tree,
+      ws::mojom::WindowDataPtr root,
+      ws::mojom::WindowTreePtr tree,
       int64_t display_id,
       Id focused_window_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbedFromToken(
       const base::UnguessableToken& token,
-      mojom::WindowDataPtr root,
+      ws::mojom::WindowDataPtr root,
       int64_t display_id,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
@@ -119,7 +119,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                               const viz::FrameSinkId& frame_sink_id) override;
   void OnTopLevelCreated(
       uint32_t change_id,
-      mojom::WindowDataPtr data,
+      ws::mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
@@ -137,10 +137,10 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
       Id window,
       Id old_parent,
       Id new_parent,
-      std::vector<mojom::WindowDataPtr> windows) override;
+      std::vector<ws::mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(Id window_id,
                          Id relative_window_id,
-                         mojom::OrderDirection direction) override;
+                         ws::mojom::OrderDirection direction) override;
   void OnWindowDeleted(Id window) override;
   void OnWindowVisibilityChanged(Id window, bool visible) override;
   void OnWindowOpacityChanged(Id window,
@@ -190,17 +190,17 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(Id window_id) override;
   void GetScreenProviderObserver(
-      mojom::ScreenProviderObserverAssociatedRequest observer) override;
+      ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
 
  protected:
   TestChangeTracker tracker_;
-  mojom::WindowTreePtr tree_;
+  ws::mojom::WindowTreePtr tree_;
   Id root_window_id_ = 0;
   bool track_root_bounds_changes_ = false;
   std::queue<InputEvent> input_events_;
   std::queue<ObservedPointerEvent> observed_pointer_events_;
   TestScreenProviderObserver screen_provider_observer_;
-  mojo::AssociatedBinding<ui::mojom::ScreenProviderObserver>
+  mojo::AssociatedBinding<ws::mojom::ScreenProviderObserver>
       screen_provider_observer_binding_{&screen_provider_observer_};
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);

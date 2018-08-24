@@ -15,11 +15,11 @@ WindowTreeTestHelper::WindowTreeTestHelper(WindowTree* window_tree)
 
 WindowTreeTestHelper::~WindowTreeTestHelper() = default;
 
-mojom::WindowTree* WindowTreeTestHelper::window_tree() {
-  return static_cast<mojom::WindowTree*>(window_tree_);
+ws::mojom::WindowTree* WindowTreeTestHelper::window_tree() {
+  return static_cast<ws::mojom::WindowTree*>(window_tree_);
 }
 
-mojom::WindowDataPtr WindowTreeTestHelper::WindowToWindowData(
+ws::mojom::WindowDataPtr WindowTreeTestHelper::WindowToWindowData(
     aura::Window* window) {
   return window_tree_->WindowToWindowData(window);
 }
@@ -66,7 +66,7 @@ bool WindowTreeTestHelper::ReleaseCapture(aura::Window* window) {
 
 bool WindowTreeTestHelper::ReorderWindow(aura::Window* window,
                                          aura::Window* relative_window,
-                                         mojom::OrderDirection direction) {
+                                         ws::mojom::OrderDirection direction) {
   return window_tree_->ReorderWindowImpl(
       ClientWindowIdForWindow(window), ClientWindowIdForWindow(relative_window),
       direction);
@@ -109,10 +109,11 @@ void WindowTreeTestHelper::SetWindowProperty(aura::Window* window,
                                   value);
 }
 
-Embedding* WindowTreeTestHelper::Embed(aura::Window* window,
-                                       mojom::WindowTreeClientPtr client_ptr,
-                                       mojom::WindowTreeClient* client,
-                                       uint32_t embed_flags) {
+Embedding* WindowTreeTestHelper::Embed(
+    aura::Window* window,
+    ws::mojom::WindowTreeClientPtr client_ptr,
+    ws::mojom::WindowTreeClient* client,
+    uint32_t embed_flags) {
   if (!window_tree_->EmbedImpl(ClientWindowIdForWindow(window),
                                std::move(client_ptr), client, embed_flags)) {
     return nullptr;
@@ -122,12 +123,13 @@ Embedding* WindowTreeTestHelper::Embed(aura::Window* window,
 
 void WindowTreeTestHelper::SetEventTargetingPolicy(
     aura::Window* window,
-    mojom::EventTargetingPolicy policy) {
+    ws::mojom::EventTargetingPolicy policy) {
   window_tree_->SetEventTargetingPolicy(TransportIdForWindow(window), policy);
 }
 
-void WindowTreeTestHelper::OnWindowInputEventAck(uint32_t event_id,
-                                                 mojom::EventResult result) {
+void WindowTreeTestHelper::OnWindowInputEventAck(
+    uint32_t event_id,
+    ws::mojom::EventResult result) {
   window_tree_->OnWindowInputEventAck(event_id, result);
 }
 

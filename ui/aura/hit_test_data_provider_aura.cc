@@ -43,16 +43,16 @@ HitTestDataProviderAura::~HitTestDataProviderAura() {}
 
 base::Optional<viz::HitTestRegionList> HitTestDataProviderAura::GetHitTestData(
     const viz::CompositorFrame& compositor_frame) const {
-  const ui::mojom::EventTargetingPolicy event_targeting_policy =
+  const ws::mojom::EventTargetingPolicy event_targeting_policy =
       window_->event_targeting_policy();
   if (!window_->IsVisible() ||
-      event_targeting_policy == ui::mojom::EventTargetingPolicy::NONE)
+      event_targeting_policy == ws::mojom::EventTargetingPolicy::NONE)
     return base::nullopt;
 
   base::Optional<viz::HitTestRegionList> hit_test_region_list(base::in_place);
   hit_test_region_list->flags =
       event_targeting_policy ==
-              ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
+              ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY
           ? viz::HitTestRegionFlags::kHitTestIgnore
           : viz::HitTestRegionFlags::kHitTestMine;
   // TODO(crbug.com/805416): Use pixels instead of DIP units for bounds.
@@ -77,13 +77,13 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
   // data from the child's descendants because the child could clip its
   // descendants for the purpose of event handling.
   for (aura::Window* child : base::Reversed(window->children())) {
-    const ui::mojom::EventTargetingPolicy event_targeting_policy =
+    const ws::mojom::EventTargetingPolicy event_targeting_policy =
         child->event_targeting_policy();
     if (!child->IsVisible() ||
-        event_targeting_policy == ui::mojom::EventTargetingPolicy::NONE)
+        event_targeting_policy == ws::mojom::EventTargetingPolicy::NONE)
       continue;
     if (event_targeting_policy !=
-        ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY) {
+        ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY) {
       gfx::Rect rect_mouse(child->bounds());
       gfx::Rect rect_touch;
       bool touch_and_mouse_are_same = true;
@@ -135,7 +135,7 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
         }
       }
     }
-    if (event_targeting_policy != ui::mojom::EventTargetingPolicy::TARGET_ONLY)
+    if (event_targeting_policy != ws::mojom::EventTargetingPolicy::TARGET_ONLY)
       GetHitTestDataRecursively(child, hit_test_region_list);
   }
 }

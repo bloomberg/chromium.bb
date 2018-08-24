@@ -73,7 +73,7 @@ void WMTestHelper::InitMusHost(service_manager::Connector* connector,
 
   input_device_client_ = std::make_unique<ui::InputDeviceClient>();
   ui::mojom::InputDeviceServerPtr input_device_server;
-  connector->BindInterface(ui::mojom::kServiceName, &input_device_server);
+  connector->BindInterface(ws::mojom::kServiceName, &input_device_server);
   input_device_client_->Connect(std::move(input_device_server));
 
   property_converter_ = std::make_unique<aura::PropertyConverter>();
@@ -85,7 +85,7 @@ void WMTestHelper::InitMusHost(service_manager::Connector* connector,
   window_tree_client_->WaitForDisplays();
 
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ui::mojom::WindowManager::kBounds_InitProperty] =
+  properties[ws::mojom::WindowManager::kBounds_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(gfx::Rect(default_window_size));
 
   auto host_mus = std::make_unique<aura::WindowTreeHostMus>(

@@ -20,7 +20,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) GpuInterfaceProvider {
 
   // Registers the gpu-related interfaces, specifically
   // discardable_memory::mojom::DiscardableSharedMemoryManagerRequest and
-  // ui::mojom::GpuRequest.
+  // ws::mojom::GpuRequest.
   virtual void RegisterGpuInterfaces(
       service_manager::BinderRegistry* registry) = 0;
 

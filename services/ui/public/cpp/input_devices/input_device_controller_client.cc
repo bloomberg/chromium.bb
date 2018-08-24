@@ -17,7 +17,7 @@ InputDeviceControllerClient::InputDeviceControllerClient(
     const std::string& service_name)
     : binding_(this) {
   connector->BindInterface(
-      service_name.empty() ? mojom::kServiceName : service_name,
+      service_name.empty() ? ws::mojom::kServiceName : service_name,
       &input_device_controller_);
   mojom::KeyboardDeviceObserverPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
