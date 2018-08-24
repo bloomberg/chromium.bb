@@ -322,14 +322,18 @@ def AddCMakeToPath(args):
   """Download CMake and add it to PATH."""
   if args.use_system_cmake:
     return
+
   if sys.platform == 'win32':
-    zip_name = 'cmake-3.4.3-win32-x86.zip'
-    cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR,
-                             'cmake-3.4.3-win32-x86', 'bin')
+    zip_name = 'cmake-3.12.1-win32-x86.zip'
+    dir_name = ['cmake-3.12.1-win32-x86', 'bin']
+  elif sys.platform == 'darwin':
+    zip_name = 'cmake-3.12.1-Darwin-x86_64.tar.gz'
+    dir_name = ['cmake-3.12.1-Darwin-x86_64', 'CMake.app', 'Contents', 'bin']
   else:
-    suffix = 'Darwin' if sys.platform == 'darwin' else 'Linux'
-    zip_name = 'cmake343_%s.tgz' % suffix
-    cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'cmake343', 'bin')
+    zip_name = 'cmake-3.12.1-Linux-x86_64.tar.gz'
+    dir_name = ['cmake-3.12.1-Linux-x86_64', 'bin', 'cmake']
+
+  cmake_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, *dir_name)
   if not os.path.exists(cmake_dir):
     DownloadAndUnpack(CDS_URL + '/tools/' + zip_name, LLVM_BUILD_TOOLS_DIR)
   os.environ['PATH'] = cmake_dir + os.pathsep + os.environ.get('PATH', '')
