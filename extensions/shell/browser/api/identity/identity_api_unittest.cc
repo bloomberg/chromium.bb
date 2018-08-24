@@ -31,7 +31,9 @@ class MockShellOAuth2TokenService : public ShellOAuth2TokenService {
                                         const ScopeSet& scopes,
                                         Consumer* consumer) override {
     // Immediately return success.
-    consumer->OnGetTokenSuccess(nullptr, "logged-in-user-token", base::Time());
+    consumer->OnGetTokenSuccess(
+        nullptr, OAuth2AccessTokenConsumer::TokenResponse(
+                     "logged-in-user-token", base::Time(), std::string()));
     return nullptr;
   }
 };

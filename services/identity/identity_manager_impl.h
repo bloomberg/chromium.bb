@@ -49,8 +49,8 @@ class IdentityManagerImpl : public mojom::IdentityManager,
    private:
     // OAuth2TokenService::Consumer:
     void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                           const std::string& access_token,
-                           const base::Time& expiration_time) override;
+                           const OAuth2AccessTokenConsumer::TokenResponse&
+                               token_response) override;
     void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                            const GoogleServiceAuthError& error) override;
 

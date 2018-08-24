@@ -18,10 +18,6 @@
 
 class OAuth2AccessTokenFetcherImplTest;
 
-namespace base {
-class Time;
-}
-
 namespace network {
 class SimpleURLLoader;
 class SharedURLLoaderFactory;
@@ -74,8 +70,8 @@ class OAuth2AccessTokenFetcherImpl : public OAuth2AccessTokenFetcher {
   void EndGetAccessToken(std::unique_ptr<std::string> response_body);
 
   // Helper mehtods for reporting back results.
-  void OnGetTokenSuccess(const std::string& access_token,
-                         const base::Time& expiration_time);
+  void OnGetTokenSuccess(
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
   void OnGetTokenFailure(const GoogleServiceAuthError& error);
 
   // Other helpers.
@@ -89,7 +85,8 @@ class OAuth2AccessTokenFetcherImpl : public OAuth2AccessTokenFetcher {
   static bool ParseGetAccessTokenSuccessResponse(
       std::unique_ptr<std::string> response_body,
       std::string* access_token,
-      int* expires_in);
+      int* expires_in,
+      std::string* id_token);
 
   static bool ParseGetAccessTokenFailureResponse(
       std::unique_ptr<std::string> response_body,

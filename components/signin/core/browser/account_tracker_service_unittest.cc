@@ -321,7 +321,9 @@ class AccountTrackerServiceTest : public testing::Test {
   // Helpers to fake access token and user info fetching
   void IssueAccessToken(const std::string& account_id) {
     fake_oauth2_token_service_->IssueAllTokensForAccount(
-        account_id, "access_token-" + account_id, base::Time::Max());
+        account_id,
+        OAuth2AccessTokenConsumer::TokenResponse(
+            "access_token-" + account_id, base::Time::Max(), std::string()));
   }
 
   std::string GenerateValidTokenInfoResponse(const std::string& account_id) {

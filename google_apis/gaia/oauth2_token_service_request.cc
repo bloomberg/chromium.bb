@@ -160,9 +160,9 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
               const OAuth2TokenService::ScopeSet& scopes);
 
   // OAuth2TokenService::Consumer.  Must be called on the token service thread.
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
+  void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
@@ -176,8 +176,8 @@ class RequestCore : public OAuth2TokenServiceRequest::Core,
   void StartOnTokenServiceThread() override;
   void StopOnTokenServiceThread() override;
 
-  void InformOwnerOnGetTokenSuccess(std::string access_token,
-                                    base::Time expiration_time);
+  void InformOwnerOnGetTokenSuccess(
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
   void InformOwnerOnGetTokenFailure(GoogleServiceAuthError error);
 
   OAuth2TokenService::Consumer* const consumer_;
@@ -221,14 +221,14 @@ void RequestCore::StopOnTokenServiceThread() {
   request_.reset();
 }
 
-void RequestCore::OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                                    const std::string& access_token,
-                                    const base::Time& expiration_time) {
+void RequestCore::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(token_service_task_runner()->RunsTasksInCurrentSequence());
   DCHECK_EQ(request_.get(), request);
   owning_task_runner()->PostTask(
       FROM_HERE, base::Bind(&RequestCore::InformOwnerOnGetTokenSuccess, this,
-                            access_token, expiration_time));
+                            token_response));
   request_.reset();
 }
 
@@ -242,11 +242,11 @@ void RequestCore::OnGetTokenFailure(const OAuth2TokenService::Request* request,
   request_.reset();
 }
 
-void RequestCore::InformOwnerOnGetTokenSuccess(std::string access_token,
-                                               base::Time expiration_time) {
+void RequestCore::InformOwnerOnGetTokenSuccess(
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!IsStopped()) {
-    consumer_->OnGetTokenSuccess(owner(), access_token, expiration_time);
+    consumer_->OnGetTokenSuccess(owner(), token_response);
   }
 }
 

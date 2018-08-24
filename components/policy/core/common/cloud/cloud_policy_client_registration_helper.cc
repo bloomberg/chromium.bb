@@ -45,9 +45,9 @@ class CloudPolicyClientRegistrationHelper::TokenServiceHelper
 
  private:
   // OAuth2TokenService::Consumer implementation:
-  void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
-                         const std::string& access_token,
-                         const base::Time& expiration_time) override;
+  void OnGetTokenSuccess(
+      const OAuth2TokenService::Request* request,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
@@ -78,10 +78,9 @@ void CloudPolicyClientRegistrationHelper::TokenServiceHelper::FetchAccessToken(
 
 void CloudPolicyClientRegistrationHelper::TokenServiceHelper::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_EQ(token_request_.get(), request);
-  callback_.Run(access_token);
+  callback_.Run(token_response.access_token);
 }
 
 void CloudPolicyClientRegistrationHelper::TokenServiceHelper::OnGetTokenFailure(
@@ -109,8 +108,8 @@ class CloudPolicyClientRegistrationHelper::LoginTokenHelper
 
  private:
   // OAuth2AccessTokenConsumer implementation:
-  void OnGetTokenSuccess(const std::string& access_token,
-                         const base::Time& expiration_time) override;
+  void OnGetTokenSuccess(
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const GoogleServiceAuthError& error) override;
 
   StringCallback callback_;
@@ -138,9 +137,8 @@ void CloudPolicyClientRegistrationHelper::LoginTokenHelper::FetchAccessToken(
 }
 
 void CloudPolicyClientRegistrationHelper::LoginTokenHelper::OnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  callback_.Run(access_token);
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  callback_.Run(token_response.access_token);
 }
 
 void CloudPolicyClientRegistrationHelper::LoginTokenHelper::OnGetTokenFailure(

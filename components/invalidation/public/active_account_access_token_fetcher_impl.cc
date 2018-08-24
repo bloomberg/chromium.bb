@@ -22,10 +22,9 @@ ActiveAccountAccessTokenFetcherImpl::~ActiveAccountAccessTokenFetcherImpl() {}
 
 void ActiveAccountAccessTokenFetcherImpl::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   HandleTokenRequestCompletion(request, GoogleServiceAuthError::AuthErrorNone(),
-                               access_token);
+                               token_response.access_token);
 }
 
 void ActiveAccountAccessTokenFetcherImpl::OnGetTokenFailure(

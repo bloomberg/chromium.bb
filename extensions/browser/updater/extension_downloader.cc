@@ -1159,9 +1159,8 @@ bool ExtensionDownloader::IterateFetchCredentialsAfterFailure(
 
 void ExtensionDownloader::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  access_token_ = access_token;
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  access_token_ = token_response.access_token;
   extension_loader_resource_request_->headers.SetHeader(
       net::HttpRequestHeaders::kAuthorization,
       base::StringPrintf("Bearer %s", access_token_.c_str()));

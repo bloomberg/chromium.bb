@@ -78,11 +78,10 @@ std::string OAuth2TokenService::RequestImpl::GetConsumerId() const {
 
 void OAuth2TokenService::RequestImpl::InformConsumer(
     const GoogleServiceAuthError& error,
-    const std::string& access_token,
-    const base::Time& expiration_date) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (error.state() == GoogleServiceAuthError::NONE)
-    consumer_->OnGetTokenSuccess(this, access_token, expiration_date);
+    consumer_->OnGetTokenSuccess(this, token_response);
   else
     consumer_->OnGetTokenFailure(this, error);
 }
@@ -151,8 +150,8 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
 
  protected:
   // OAuth2AccessTokenConsumer
-  void OnGetTokenSuccess(const std::string& access_token,
-                         const base::Time& expiration_date) override;
+  void OnGetTokenSuccess(
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response) override;
   void OnGetTokenFailure(const GoogleServiceAuthError& error) override;
 
  private:
@@ -187,8 +186,7 @@ class OAuth2TokenService::Fetcher : public OAuth2AccessTokenConsumer {
   // Initialized to be GoogleServiceAuthError::SERVICE_UNAVAILABLE to handle
   // destruction.
   GoogleServiceAuthError error_;
-  std::string access_token_;
-  base::Time expiration_date_;
+  OAuth2AccessTokenConsumer::TokenResponse token_response_;
 
   // OAuth2 client id and secret.
   std::string client_id_;
@@ -255,24 +253,19 @@ void OAuth2TokenService::Fetcher::Start() {
 }
 
 void OAuth2TokenService::Fetcher::OnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_date) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   fetcher_.reset();
 
   // Fetch completes.
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  access_token_ = access_token;
-  expiration_date_ = expiration_date;
+  token_response_ = token_response;
 
   // Subclasses may override this method to skip caching in some cases, but
   // we still inform all waiting Consumers of a successful token fetch below.
   // This is intentional -- some consumers may need the token for cleanup
   // tasks. https://chromiumcodereview.appspot.com/11312124/
-  oauth2_token_service_->RegisterCacheEntry(client_id_,
-                                            account_id_,
-                                            scopes_,
-                                            access_token_,
-                                            expiration_date_);
+  oauth2_token_service_->RegisterTokenResponse(client_id_, account_id_, scopes_,
+                                               token_response_);
   InformWaitingRequestsAndDelete();
 }
 
@@ -322,7 +315,7 @@ bool OAuth2TokenService::Fetcher::ShouldRetry(
 void OAuth2TokenService::Fetcher::InformWaitingRequests() {
   for (const base::WeakPtr<RequestImpl>& request : waiting_requests_) {
     if (request)
-      request->InformConsumer(error_, access_token_, expiration_date_);
+      request->InformConsumer(error_, token_response_);
   }
   waiting_requests_.clear();
 }
@@ -479,17 +472,18 @@ OAuth2TokenService::StartRequestForClientWithContext(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(), error,
-                   std::string(), base::Time()));
+                   OAuth2AccessTokenConsumer::TokenResponse()));
     return std::move(request);
   }
 
   RequestParameters request_parameters(client_id,
                                        account_id,
                                        scopes);
-  const CacheEntry* cache_entry = GetCacheEntry(request_parameters);
-  if (cache_entry && cache_entry->access_token.length()) {
-    InformConsumerWithCacheEntry(cache_entry, request.get(),
-                                 request_parameters);
+  const OAuth2AccessTokenConsumer::TokenResponse* token_response =
+      GetCachedTokenResponse(request_parameters);
+  if (token_response && token_response->access_token.length()) {
+    InformConsumerWithCachedTokenResponse(token_response, request.get(),
+                                          request_parameters);
   } else {
     FetchOAuth2Token(request.get(), account_id, url_loader_factory, client_id,
                      client_secret, scopes);
@@ -529,22 +523,22 @@ OAuth2AccessTokenFetcher* OAuth2TokenService::CreateAccessTokenFetcher(
                                              consumer);
 }
 
-void OAuth2TokenService::InformConsumerWithCacheEntry(
-    const CacheEntry* cache_entry,
+void OAuth2TokenService::InformConsumerWithCachedTokenResponse(
+    const OAuth2AccessTokenConsumer::TokenResponse* cache_token_response,
     RequestImpl* request,
     const RequestParameters& request_parameters) {
-  DCHECK(cache_entry && cache_entry->access_token.length());
+  DCHECK(cache_token_response && cache_token_response->access_token.length());
   for (auto& observer : diagnostics_observer_list_) {
     observer.OnFetchAccessTokenComplete(
         request_parameters.account_id, request->GetConsumerId(),
         request_parameters.scopes, GoogleServiceAuthError::AuthErrorNone(),
-        cache_entry->expiration_date);
+        cache_token_response->expiration_time);
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(),
                  GoogleServiceAuthError(GoogleServiceAuthError::NONE),
-                 cache_entry->access_token, cache_entry->expiration_date));
+                 *cache_token_response));
 }
 
 std::vector<std::string> OAuth2TokenService::GetAccounts() const {
@@ -597,11 +591,8 @@ void OAuth2TokenService::InvalidateAccessTokenImpl(
     const ScopeSet& scopes,
     const std::string& access_token) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  RemoveCacheEntry(
-      RequestParameters(client_id,
-                        account_id,
-                        scopes),
-      access_token);
+  RemoveCachedTokenResponse(RequestParameters(client_id, account_id, scopes),
+                            access_token);
   delegate_->InvalidateAccessToken(account_id, client_id, scopes, access_token);
 }
 
@@ -642,13 +633,14 @@ void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
                                   fetcher->GetAccountId(),
                                   fetcher->GetScopeSet());
 
-  const OAuth2TokenService::CacheEntry* entry = GetCacheEntry(request_param);
+  const OAuth2AccessTokenConsumer::TokenResponse* entry =
+      GetCachedTokenResponse(request_param);
   for (const base::WeakPtr<RequestImpl>& req : fetcher->waiting_requests()) {
     if (req) {
       for (auto& observer : diagnostics_observer_list_) {
         observer.OnFetchAccessTokenComplete(
             req->GetAccountId(), req->GetConsumerId(), fetcher->GetScopeSet(),
-            fetcher->error(), entry ? entry->expiration_date : base::Time());
+            fetcher->error(), entry ? entry->expiration_time : base::Time());
       }
     }
   }
@@ -662,20 +654,21 @@ void OAuth2TokenService::OnFetchComplete(Fetcher* fetcher) {
   pending_fetchers_.erase(iter);
 }
 
-const OAuth2TokenService::CacheEntry* OAuth2TokenService::GetCacheEntry(
+const OAuth2AccessTokenConsumer::TokenResponse*
+OAuth2TokenService::GetCachedTokenResponse(
     const RequestParameters& request_parameters) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TokenCache::iterator token_iterator = token_cache_.find(request_parameters);
   if (token_iterator == token_cache_.end())
     return NULL;
-  if (token_iterator->second.expiration_date <= base::Time::Now()) {
+  if (token_iterator->second.expiration_time <= base::Time::Now()) {
     token_cache_.erase(token_iterator);
     return NULL;
   }
   return &token_iterator->second;
 }
 
-bool OAuth2TokenService::RemoveCacheEntry(
+bool OAuth2TokenService::RemoveCachedTokenResponse(
     const RequestParameters& request_parameters,
     const std::string& token_to_remove) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -696,19 +689,15 @@ void OAuth2TokenService::UpdateAuthError(const std::string& account_id,
   delegate_->UpdateAuthError(account_id, error);
 }
 
-void OAuth2TokenService::RegisterCacheEntry(
+void OAuth2TokenService::RegisterTokenResponse(
     const std::string& client_id,
     const std::string& account_id,
-    const OAuth2TokenService::ScopeSet& scopes,
-    const std::string& access_token,
-    const base::Time& expiration_date) {
+    const ScopeSet& scopes,
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  CacheEntry& token = token_cache_[RequestParameters(client_id,
-                                                     account_id,
-                                                     scopes)];
-  token.access_token = access_token;
-  token.expiration_date = expiration_date;
+  token_cache_[RequestParameters(client_id, account_id, scopes)] =
+      token_response;
 }
 
 void OAuth2TokenService::ClearCache() {

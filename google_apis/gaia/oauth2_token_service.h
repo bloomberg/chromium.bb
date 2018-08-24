@@ -83,9 +83,9 @@ class OAuth2TokenService {
 
     // |request| is a Request that is started by this consumer and has
     // completed.
-    virtual void OnGetTokenSuccess(const Request* request,
-                                   const std::string& access_token,
-                                   const base::Time& expiration_time) = 0;
+    virtual void OnGetTokenSuccess(
+        const Request* request,
+        const OAuth2AccessTokenConsumer::TokenResponse& token_response) = 0;
     virtual void OnGetTokenFailure(const Request* request,
                                    const GoogleServiceAuthError& error) = 0;
    private:
@@ -251,9 +251,9 @@ class OAuth2TokenService {
     std::string GetConsumerId() const;
 
     // Informs |consumer_| that this request is completed.
-    void InformConsumer(const GoogleServiceAuthError& error,
-                        const std::string& access_token,
-                        const base::Time& expiration_date);
+    void InformConsumer(
+        const GoogleServiceAuthError& error,
+        const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
    private:
     // |consumer_| to call back when this request completes.
@@ -270,11 +270,11 @@ class OAuth2TokenService {
   // Add a new entry to the cache.
   // Subclasses can override if there are implementation-specific reasons
   // that an access token should ever not be cached.
-  virtual void RegisterCacheEntry(const std::string& client_id,
-                                  const std::string& account_id,
-                                  const ScopeSet& scopes,
-                                  const std::string& access_token,
-                                  const base::Time& expiration_date);
+  virtual void RegisterTokenResponse(
+      const std::string& client_id,
+      const std::string& account_id,
+      const ScopeSet& scopes,
+      const OAuth2AccessTokenConsumer::TokenResponse& token_response);
 
   // Clears the internal token cache.
   void ClearCache();
@@ -342,12 +342,6 @@ class OAuth2TokenService {
   // |StartRequest| method.
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() const;
 
-  // Struct that contains the information of an OAuth2 access token.
-  struct CacheEntry {
-    std::string access_token;
-    base::Time expiration_date;
-  };
-
   // This method does the same as |StartRequestWithContext| except it
   // uses |client_id| and |client_secret| to identify OAuth
   // client app instead of using Chrome's default values.
@@ -359,21 +353,23 @@ class OAuth2TokenService {
       const ScopeSet& scopes,
       Consumer* consumer);
 
-  // Posts a task to fire the Consumer callback with the cached token.
-  void InformConsumerWithCacheEntry(const CacheEntry* cache_entry,
-                                    RequestImpl* request,
-                                    const RequestParameters& client_scopes);
+  // Posts a task to fire the Consumer callback with the cached token response.
+  void InformConsumerWithCachedTokenResponse(
+      const OAuth2AccessTokenConsumer::TokenResponse* token_response,
+      RequestImpl* request,
+      const RequestParameters& client_scopes);
 
   // Returns a currently valid OAuth2 access token for the given set of scopes,
   // or NULL if none have been cached. Note the user of this method should
   // ensure no entry with the same |client_scopes| is added before the usage of
   // the returned entry is done.
-  const CacheEntry* GetCacheEntry(const RequestParameters& client_scopes);
+  const OAuth2AccessTokenConsumer::TokenResponse* GetCachedTokenResponse(
+      const RequestParameters& client_scopes);
 
   // Removes an access token for the given set of scopes from the cache.
   // Returns true if the entry was removed, otherwise false.
-  bool RemoveCacheEntry(const RequestParameters& client_scopes,
-                        const std::string& token_to_remove);
+  bool RemoveCachedTokenResponse(const RequestParameters& client_scopes,
+                                 const std::string& token_to_remove);
 
   // Called when |fetcher| finishes fetching.
   void OnFetchComplete(Fetcher* fetcher);
@@ -382,7 +378,8 @@ class OAuth2TokenService {
   void CancelFetchers(std::vector<Fetcher*> fetchers_to_cancel);
 
   // The cache of currently valid tokens.
-  typedef std::map<RequestParameters, CacheEntry> TokenCache;
+  typedef std::map<RequestParameters, OAuth2AccessTokenConsumer::TokenResponse>
+      TokenCache;
   TokenCache token_cache_;
 
   std::unique_ptr<OAuth2TokenServiceDelegate> delegate_;

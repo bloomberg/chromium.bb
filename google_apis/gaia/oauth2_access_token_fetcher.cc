@@ -11,9 +11,8 @@ OAuth2AccessTokenFetcher::OAuth2AccessTokenFetcher(
 OAuth2AccessTokenFetcher::~OAuth2AccessTokenFetcher() {}
 
 void OAuth2AccessTokenFetcher::FireOnGetTokenSuccess(
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  consumer_->OnGetTokenSuccess(access_token, expiration_time);
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  consumer_->OnGetTokenSuccess(token_response);
 }
 
 void OAuth2AccessTokenFetcher::FireOnGetTokenFailure(

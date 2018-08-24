@@ -56,8 +56,7 @@ ForceSigninVerifier::~ForceSigninVerifier() {
 
 void ForceSigninVerifier::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   UMA_HISTOGRAM_MEDIUM_TIMES(kForceSigninVerificationSuccessTimeMetricsName,
                              base::TimeTicks::Now() - creation_time_);
   has_token_verified_ = true;

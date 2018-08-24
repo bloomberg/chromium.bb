@@ -32,9 +32,9 @@ IdentityManagerImpl::AccessTokenRequest::~AccessTokenRequest() = default;
 
 void IdentityManagerImpl::AccessTokenRequest::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  OnRequestCompleted(request, access_token, expiration_time,
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  OnRequestCompleted(request, token_response.access_token,
+                     token_response.expiration_time,
                      GoogleServiceAuthError::AuthErrorNone());
 }
 

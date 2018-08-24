@@ -138,7 +138,8 @@ void SSOAccessTokenFetcher::OnAccessTokenResponse(NSString* token,
   if (auth_error.state() == GoogleServiceAuthError::NONE) {
     base::Time expiration_date =
         base::Time::FromDoubleT([expiration timeIntervalSince1970]);
-    FireOnGetTokenSuccess(base::SysNSStringToUTF8(token), expiration_date);
+    FireOnGetTokenSuccess(OAuth2AccessTokenConsumer::TokenResponse(
+        base::SysNSStringToUTF8(token), expiration_date, std::string()));
   } else {
     FireOnGetTokenFailure(auth_error);
   }

@@ -699,11 +699,11 @@ void GaiaCookieManagerService::OnUbertokenFailure(
 
 void GaiaCookieManagerService::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
   DCHECK(requests_.front().request_type() ==
          GaiaCookieRequestType::SET_ACCOUNTS);
-  access_tokens_.insert(std::make_pair(request->GetAccountId(), access_token));
+  access_tokens_.insert(
+      std::make_pair(request->GetAccountId(), token_response.access_token));
   if (access_tokens_.size() == requests_.front().account_ids().size()) {
     token_requests_.clear();
     signin_client_->DelayNetworkCall(

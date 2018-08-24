@@ -31,9 +31,8 @@ TestingOAuth2TokenServiceConsumer::~TestingOAuth2TokenServiceConsumer() {
 
 void TestingOAuth2TokenServiceConsumer::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& token,
-    const base::Time& expiration_date) {
-  last_token_ = token;
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  last_token_ = token_response.access_token;
   ++number_of_successful_tokens_;
 }
 

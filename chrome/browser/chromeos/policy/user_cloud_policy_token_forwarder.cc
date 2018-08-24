@@ -46,9 +46,8 @@ void UserCloudPolicyTokenForwarder::OnRefreshTokenAvailable(
 
 void UserCloudPolicyTokenForwarder::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
-    const std::string& access_token,
-    const base::Time& expiration_time) {
-  manager_->OnAccessTokenAvailable(access_token);
+    const OAuth2AccessTokenConsumer::TokenResponse& token_response) {
+  manager_->OnAccessTokenAvailable(token_response.access_token);
   // All done here.
   Shutdown();
 }
