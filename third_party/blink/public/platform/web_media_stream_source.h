@@ -44,7 +44,6 @@ namespace blink {
 
 class MediaStreamSource;
 class WebAudioDestinationConsumer;
-class WebMediaConstraints;
 class WebString;
 
 class WebMediaStreamSource {
@@ -137,8 +136,6 @@ class WebMediaStreamSource {
       EchoCancellationMode echo_cancellation_mode,
       bool auto_gain_control,
       bool noise_supression);
-
-  BLINK_PLATFORM_EXPORT WebMediaConstraints Constraints();
 
   BLINK_PLATFORM_EXPORT void SetCapabilities(const Capabilities&);
 
