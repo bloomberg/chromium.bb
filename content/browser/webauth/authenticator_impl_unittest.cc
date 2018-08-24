@@ -820,7 +820,7 @@ TEST_F(AuthenticatorImplTest, OversizedCredentialId) {
   }
 }
 
-TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledByDefault) {
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryByDefault) {
   TestServiceManagerContext service_manager_context;
   SimulateNavigation(GURL(kTestOrigin1));
   PublicKeyCredentialRequestOptionsPtr options =
@@ -838,8 +838,15 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledByDefault) {
   callback_receiver.WaitForCallback();
 
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+
+// On Windows caBLE should be disabled by default.
+#if defined(OS_WIN)
+  EXPECT_FALSE(SupportsTransportProtocol(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+#else
   EXPECT_TRUE(SupportsTransportProtocol(
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+#endif
 }
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutFlag) {
@@ -865,6 +872,66 @@ TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutFlag) {
   EXPECT_FALSE(SupportsTransportProtocol(
       device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
 }
+
+#if defined(OS_WIN)
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryEnabledWithWinFlag) {
+  EnableFeature(features::kWebAuthCableWin);
+  TestServiceManagerContext service_manager_context;
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  TestGetAssertionCallback callback_receiver;
+
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+  EXPECT_TRUE(SupportsTransportProtocol(
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+}
+
+// Tests that caBLE is not supported when features::kWebAuthCable is disabled,
+// regardless of the state of features::kWebAuthCableWin.
+TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledWithoutFlagWin) {
+  for (bool enable_win_flag : {false, true}) {
+    std::vector<base::Feature> enabled_features;
+    std::vector<base::Feature> disabled_features = {features::kWebAuthCable};
+    enable_win_flag ? enabled_features.push_back(features::kWebAuthCableWin)
+                    : disabled_features.push_back(features::kWebAuthCableWin);
+
+    scoped_feature_list_.emplace();
+    scoped_feature_list_->InitWithFeatures(enabled_features, disabled_features);
+    TestServiceManagerContext service_manager_context;
+    SimulateNavigation(GURL(kTestOrigin1));
+    PublicKeyCredentialRequestOptionsPtr options =
+        GetTestPublicKeyCredentialRequestOptions();
+    TestGetAssertionCallback callback_receiver;
+
+    auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+        base::Time::Now(), base::TimeTicks::Now());
+    auto authenticator = ConstructAuthenticatorWithTimer(task_runner);
+    authenticator->GetAssertion(std::move(options),
+                                callback_receiver.callback());
+
+    // Trigger timer.
+    base::RunLoop().RunUntilIdle();
+    task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+    callback_receiver.WaitForCallback();
+
+    EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
+              callback_receiver.status());
+    EXPECT_FALSE(SupportsTransportProtocol(
+        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy));
+  }
+}
+#endif
 
 TEST_F(AuthenticatorImplTest, TestCableDiscoveryDisabledForMakeCredential) {
   SimulateNavigation(GURL(kTestOrigin1));
