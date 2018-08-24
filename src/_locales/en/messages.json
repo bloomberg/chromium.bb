@@ -69,10 +69,6 @@
     "message": "Go back",
     "description": "Label for the back button."
   },
-  "closeButton": {
-    "message": "Close",
-    "description": "Text to speech label for the close button."
-  },
   "galleryImages": {
     "message": "Gallery images",
     "description": "Text to speech label for the gallery list."
@@ -121,17 +117,13 @@
     "message": "Toggle microphone",
     "description": "Label for the button to toggle the microphone for recording video."
   },
-  "dialogYesButton": {
-    "message": "Yes",
-    "description": "Label for the accepting button in the confirmation dialog."
-  },
-  "dialogNoButton": {
-    "message": "No",
-    "description": "Label for the dismissing button in the confirmation dialog."
-  },
   "dialogOKButton": {
     "message": "OK",
-    "description": "Label for the OK button in the alert dialog."
+    "description": "Label for the accepting button in the dialog."
+  },
+  "dialogCancelButton": {
+    "message": "Cancel",
+    "description": "Label for the dismissing button in the dialog."
   },
   "deleteConfirmationMsg": {
     "message": "Do you really want to remove $file$?",
