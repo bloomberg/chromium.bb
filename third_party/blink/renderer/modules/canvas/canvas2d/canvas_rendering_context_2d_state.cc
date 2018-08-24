@@ -327,8 +327,10 @@ sk_sp<PaintFilter> CanvasRenderingContext2DState::GetFilter(
 
   if (!resolved_filter_) {
     // Update the filter value to the proper base URL if needed.
-    if (filter_value_->MayContainUrl())
+    if (filter_value_->MayContainUrl()) {
+      style_resolution_host->GetDocument().UpdateStyleAndLayout();
       filter_value_->ReResolveUrl(style_resolution_host->GetDocument());
+    }
 
     scoped_refptr<ComputedStyle> filter_style = ComputedStyle::Create();
     // Must set font in case the filter uses any font-relative units (em, ex)
