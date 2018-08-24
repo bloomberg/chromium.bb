@@ -12,7 +12,6 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/accessibility/accessibility_panel_layout_manager.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/components/autoclick/public/mojom/autoclick.mojom.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/policy/policy_recommendation_restorer.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -33,8 +32,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "mash/public/mojom/launchable.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor_type.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -236,10 +233,8 @@ AccessibilityPanelLayoutManager* GetLayoutManager() {
 
 }  // namespace
 
-AccessibilityController::AccessibilityController(
-    service_manager::Connector* connector)
-    : connector_(connector),
-      autoclick_delay_(AutoclickController::GetDefaultAutoclickDelay()) {
+AccessibilityController::AccessibilityController()
+    : autoclick_delay_(AutoclickController::GetDefaultAutoclickDelay()) {
   Shell::Get()->session_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
 }
@@ -858,15 +853,6 @@ void AccessibilityController::UpdateAutoclickFromPref() {
 
   NotifyAccessibilityStatusChanged();
 
-  if (!features::IsAshInBrowserProcess()) {
-    if (!connector_)  // Null in tests.
-      return;
-    mash::mojom::LaunchablePtr launchable;
-    connector_->BindInterface("autoclick_app", &launchable);
-    launchable->Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
-    return;
-  }
-
   Shell::Get()->autoclick_controller()->SetEnabled(enabled);
 }
 
@@ -878,15 +864,6 @@ void AccessibilityController::UpdateAutoclickDelayFromPref() {
   if (autoclick_delay_ == autoclick_delay)
     return;
   autoclick_delay_ = autoclick_delay;
-
-  if (!features::IsAshInBrowserProcess()) {
-    if (!connector_)  // Null in tests.
-      return;
-    autoclick::mojom::AutoclickControllerPtr autoclick_controller;
-    connector_->BindInterface("autoclick_app", &autoclick_controller);
-    autoclick_controller->SetAutoclickDelay(autoclick_delay_.InMilliseconds());
-    return;
-  }
 
   Shell::Get()->autoclick_controller()->SetAutoclickDelay(autoclick_delay_);
 }

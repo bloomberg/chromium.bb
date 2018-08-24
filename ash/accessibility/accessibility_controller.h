@@ -22,10 +22,6 @@ class PrefChangeRegistrar;
 class PrefRegistrySimple;
 class PrefService;
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ash {
 
 class AccessibilityHighlightController;
@@ -45,7 +41,7 @@ class ASH_EXPORT AccessibilityController
       public SessionObserver,
       public TabletModeObserver {
  public:
-  explicit AccessibilityController(service_manager::Connector* connector);
+  AccessibilityController();
   ~AccessibilityController() override;
 
   // See Shell::RegisterProfilePrefs().
@@ -199,8 +195,6 @@ class ASH_EXPORT AccessibilityController
   void UpdateStickyKeysFromPref();
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
-
-  service_manager::Connector* connector_ = nullptr;
 
   // The pref service of the currently active user or the signin profile before
   // user logs in. Can be null in ash_unittests.

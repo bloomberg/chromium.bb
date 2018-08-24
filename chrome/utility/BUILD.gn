@@ -149,7 +149,6 @@ static_library("utility") {
     ]
     deps += [
       "//ash",
-      "//ash/components/autoclick:lib",
       "//ash/components/quick_launch:lib",
       "//ash/components/quick_launch/public/mojom",
       "//ash/components/shortcut_viewer:lib",

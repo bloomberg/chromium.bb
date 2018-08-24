@@ -24,10 +24,7 @@ group("all") {
 
   # Build on platforms that support ash.
   if (is_chromeos) {
-    deps += [
-      "//ash/components/autoclick:autoclick_app",
-      "//ash/components/quick_launch:quick_launch_app",
-    ]
+    deps += [ "//ash/components/quick_launch:quick_launch_app" ]
   }
 }
 

@@ -1038,8 +1038,7 @@ void Shell::Init(
   accessibility_focus_ring_controller_ =
       std::make_unique<AccessibilityFocusRingController>();
   accessibility_delegate_.reset(shell_delegate_->CreateAccessibilityDelegate());
-  accessibility_controller_ =
-      std::make_unique<AccessibilityController>(connector_);
+  accessibility_controller_ = std::make_unique<AccessibilityController>();
   toast_manager_ = std::make_unique<ToastManager>();
 
   // Install the custom factory early on so that views::FocusManagers for Tray,

@@ -1672,9 +1672,6 @@ This file contains the strings for ash.
       <message name="IDS_ASH_ASH_SERVICE_NAME" desc="Name of the internal software service that manages windows. Appears in the task manager.">
         Window manager
       </message>
-      <message name="IDS_ASH_AUTOCLICK_APP_NAME" desc="Name of the accessibility app that automatically clicks the mouse when it stops moving. Appears in the task manager.">
-        Autoclick
-      </message>
       <!-- TODO(jamescook): Move next to font service code. -->
       <message name="IDS_ASH_FONT_SERVICE_NAME" desc="Name of the internal software service that provides fonts. Appears in the task manager.">
         Font service
