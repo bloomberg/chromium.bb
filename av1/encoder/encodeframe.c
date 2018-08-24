@@ -1731,31 +1731,20 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
       pc_tree->partitioning = partition;
     }
   }
-
-  pc_tree->horizontal[0].skip_ref_frame_mask = 0;
-  pc_tree->horizontal[1].skip_ref_frame_mask = 0;
-  pc_tree->vertical[0].skip_ref_frame_mask = 0;
-  pc_tree->vertical[1].skip_ref_frame_mask = 0;
-  pc_tree->horizontala[0].skip_ref_frame_mask = 0;
-  pc_tree->horizontala[1].skip_ref_frame_mask = 0;
-  pc_tree->horizontala[2].skip_ref_frame_mask = 0;
-  pc_tree->horizontalb[0].skip_ref_frame_mask = 0;
-  pc_tree->horizontalb[1].skip_ref_frame_mask = 0;
-  pc_tree->horizontalb[2].skip_ref_frame_mask = 0;
-  pc_tree->verticala[0].skip_ref_frame_mask = 0;
-  pc_tree->verticala[1].skip_ref_frame_mask = 0;
-  pc_tree->verticala[2].skip_ref_frame_mask = 0;
-  pc_tree->verticalb[0].skip_ref_frame_mask = 0;
-  pc_tree->verticalb[1].skip_ref_frame_mask = 0;
-  pc_tree->verticalb[2].skip_ref_frame_mask = 0;
-  pc_tree->horizontal4[0].skip_ref_frame_mask = 0;
-  pc_tree->horizontal4[1].skip_ref_frame_mask = 0;
-  pc_tree->horizontal4[2].skip_ref_frame_mask = 0;
-  pc_tree->horizontal4[3].skip_ref_frame_mask = 0;
-  pc_tree->vertical4[0].skip_ref_frame_mask = 0;
-  pc_tree->vertical4[1].skip_ref_frame_mask = 0;
-  pc_tree->vertical4[2].skip_ref_frame_mask = 0;
-  pc_tree->vertical4[3].skip_ref_frame_mask = 0;
+  for (int b = 0; b < 2; ++b) {
+    pc_tree->horizontal[b].skip_ref_frame_mask = 0;
+    pc_tree->vertical[b].skip_ref_frame_mask = 0;
+  }
+  for (int b = 0; b < 3; ++b) {
+    pc_tree->horizontala[b].skip_ref_frame_mask = 0;
+    pc_tree->horizontalb[b].skip_ref_frame_mask = 0;
+    pc_tree->verticala[b].skip_ref_frame_mask = 0;
+    pc_tree->verticalb[b].skip_ref_frame_mask = 0;
+  }
+  for (int b = 0; b < 4; ++b) {
+    pc_tree->horizontal4[b].skip_ref_frame_mask = 0;
+    pc_tree->vertical4[b].skip_ref_frame_mask = 0;
+  }
   switch (partition) {
     case PARTITION_NONE:
       rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &last_part_rdc,
@@ -3321,7 +3310,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 
   // Ref frames picked in the [i_th] quarter subblock during square partition
   // RD search. It may be used to prune ref frame selection of rect partitions.
-  uint8_t ref_frames_used[4] = {
+  int ref_frames_used[4] = {
     0,
   };
 
@@ -3352,11 +3341,9 @@ BEGIN_PARTITION_SEARCH:
     if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
       if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-        const int ref1 = ctx_none->mic.ref_frame[0];
-        const int ref2 = ctx_none->mic.ref_frame[1];
+        const int ref_type = av1_ref_frame_type(ctx_none->mic.ref_frame);
         for (int i = 0; i < 4; ++i) {
-          ref_frames_used[i] |= (1 << ref1);
-          if (ref2 > 0) ref_frames_used[i] |= (1 << ref2);
+          ref_frames_used[i] |= (1 << ref_type);
         }
       }
       if (bsize_at_least_8x8) {
@@ -3491,10 +3478,9 @@ BEGIN_PARTITION_SEARCH:
         sum_rdc.rdcost += this_rdc.rdcost;
         if (cpi->sf.prune_ref_frame_for_rect_partitions &&
             pc_tree->split[idx]->none.rate != INT_MAX) {
-          const int ref1 = pc_tree->split[idx]->none.mic.ref_frame[0];
-          const int ref2 = pc_tree->split[idx]->none.mic.ref_frame[1];
-          ref_frames_used[idx] |= (1 << ref1);
-          if (ref2 > 0) ref_frames_used[idx] |= (1 << ref2);
+          const int ref_type =
+              av1_ref_frame_type(pc_tree->split[idx]->none.mic.ref_frame);
+          ref_frames_used[idx] |= (1 << ref_type);
         }
         if (idx <= 1 && (bsize <= BLOCK_8X8 ||
                          pc_tree->split[idx]->partitioning == PARTITION_NONE)) {
@@ -3532,7 +3518,7 @@ BEGIN_PARTITION_SEARCH:
   pc_tree->vertical[0].skip_ref_frame_mask = 0;
   pc_tree->vertical[1].skip_ref_frame_mask = 0;
   if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-    uint8_t used_frames;
+    int used_frames;
     used_frames = ref_frames_used[0] | ref_frames_used[1];
     if (used_frames) pc_tree->horizontal[0].skip_ref_frame_mask = ~used_frames;
     used_frames = ref_frames_used[2] | ref_frames_used[3];
@@ -3789,7 +3775,7 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->horizontala[1].skip_ref_frame_mask = 0;
     pc_tree->horizontala[2].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-      uint8_t used_frames;
+      int used_frames;
       used_frames = ref_frames_used[0];
       if (used_frames)
         pc_tree->horizontala[0].skip_ref_frame_mask = ~used_frames;
@@ -3822,7 +3808,7 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->horizontalb[1].skip_ref_frame_mask = 0;
     pc_tree->horizontalb[2].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-      uint8_t used_frames;
+      int used_frames;
       used_frames = ref_frames_used[0] | ref_frames_used[1];
       if (used_frames)
         pc_tree->horizontalb[0].skip_ref_frame_mask = ~used_frames;
@@ -3856,7 +3842,7 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->verticala[1].skip_ref_frame_mask = 0;
     pc_tree->verticala[2].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-      uint8_t used_frames;
+      int used_frames;
       used_frames = ref_frames_used[0];
       if (used_frames) pc_tree->verticala[0].skip_ref_frame_mask = ~used_frames;
       used_frames = ref_frames_used[2];
@@ -3886,7 +3872,7 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->verticalb[1].skip_ref_frame_mask = 0;
     pc_tree->verticalb[2].skip_ref_frame_mask = 0;
     if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-      uint8_t used_frames;
+      int used_frames;
       used_frames = ref_frames_used[0] | ref_frames_used[2];
       if (used_frames) pc_tree->verticalb[0].skip_ref_frame_mask = ~used_frames;
       used_frames = ref_frames_used[1];
@@ -3956,9 +3942,9 @@ BEGIN_PARTITION_SEARCH:
       ctx_this->rd_mode_is_ready = 0;
       ctx_this->skip_ref_frame_mask = 0;
       if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-        const uint8_t used_frames =
-            i <= 1 ? (ref_frames_used[0] | ref_frames_used[1])
-                   : (ref_frames_used[2] | ref_frames_used[3]);
+        const int used_frames = i <= 1
+                                    ? (ref_frames_used[0] | ref_frames_used[1])
+                                    : (ref_frames_used[2] | ref_frames_used[3]);
         if (used_frames) ctx_this->skip_ref_frame_mask = ~used_frames;
       }
       if (!rd_try_subblock(cpi, td, tile_data, tp, (i == 0), (i == 3),
@@ -3999,9 +3985,9 @@ BEGIN_PARTITION_SEARCH:
       ctx_this->rd_mode_is_ready = 0;
       ctx_this->skip_ref_frame_mask = 0;
       if (cpi->sf.prune_ref_frame_for_rect_partitions) {
-        const uint8_t used_frames =
-            i <= 1 ? (ref_frames_used[0] | ref_frames_used[2])
-                   : (ref_frames_used[1] | ref_frames_used[3]);
+        const int used_frames = i <= 1
+                                    ? (ref_frames_used[0] | ref_frames_used[2])
+                                    : (ref_frames_used[1] | ref_frames_used[3]);
         if (used_frames) ctx_this->skip_ref_frame_mask = ~used_frames;
       }
       if (!rd_try_subblock(cpi, td, tile_data, tp, (i == 0), (i == 3), mi_row,
