@@ -547,7 +547,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
               ash::kCaptionButtonBoundsKey);
       if (inverted_caption_button_bounds) {
         hosted_app_button_container_->LayoutInContainer(
-            0, inverted_caption_button_bounds->x() + width(),
+            0, inverted_caption_button_bounds->x() + width(), 0,
             inverted_caption_button_bounds->height());
       }
     }
@@ -576,7 +576,7 @@ void BrowserNonClientFrameViewAsh::Layout() {
     LayoutIncognitoButton();
   if (hosted_app_button_container_) {
     hosted_app_button_container_->LayoutInContainer(
-        0, caption_button_container_->x(), painted_height);
+        0, caption_button_container_->x(), 0, painted_height);
   }
 
   BrowserNonClientFrameView::Layout();

@@ -600,7 +600,18 @@ int GlassBrowserFrameView::TopAreaHeight(bool restored) const {
 }
 
 int GlassBrowserFrameView::TitlebarMaximizedVisualHeight() const {
-  return display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYCAPTION);
+  int maximized_height =
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYCAPTION);
+  if (hosted_app_button_container_) {
+    // Adding 2px of vertical padding puts at least 1 px of space on the top and
+    // bottom of the element.
+    constexpr int kVerticalPadding = 2;
+    maximized_height =
+        std::max(maximized_height,
+                 hosted_app_button_container_->GetPreferredSize().height() +
+                     kVerticalPadding);
+  }
+  return maximized_height;
 }
 
 int GlassBrowserFrameView::TitlebarHeight(bool restored) const {
@@ -708,11 +719,6 @@ bool GlassBrowserFrameView::ShowSystemIcon() const {
 
 SkColor GlassBrowserFrameView::GetTitlebarColor() const {
   return GetFrameColor();
-}
-
-HostedAppButtonContainer*
-GlassBrowserFrameView::GetHostedAppButtonContainerForTesting() const {
-  return hosted_app_button_container_;
 }
 
 Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(
@@ -916,16 +922,16 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   gfx::Rect window_icon_bounds;
   const int icon_size =
       display::win::ScreenWin::GetSystemMetricsInDIP(SM_CYSMICON);
-  constexpr int kIconMaximizedLeftMargin = 2;
   const int titlebar_visual_height =
       IsMaximized() ? TitlebarMaximizedVisualHeight() : TitlebarHeight(false);
   // Don't include the area above the screen when maximized. However it only
   // looks centered if we start from y=0 when restored.
   const int window_top = IsMaximized() ? WindowTopY() : 0;
   int next_leading_x =
-      IsMaximized()
-          ? kIconMaximizedLeftMargin
-          : display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+      display::win::ScreenWin::GetSystemMetricsInDIP(SM_CXSIZEFRAME);
+  constexpr int kMaximizedLeftMargin = 2;
+  if (IsMaximized())
+    next_leading_x += kMaximizedLeftMargin;
   int next_trailing_x = MinimizeButtonX();
 
   const int y = window_top + (titlebar_visual_height - icon_size) / 2;
@@ -943,7 +949,7 @@ void GlassBrowserFrameView::LayoutTitleBar() {
   if (hosted_app_button_container_) {
     DCHECK(!GetProfileSwitcherButton());
     next_trailing_x = hosted_app_button_container_->LayoutInContainer(
-        next_leading_x, next_trailing_x, titlebar_visual_height);
+        next_leading_x, next_trailing_x, window_top, titlebar_visual_height);
   }
 
   if (ShowCustomTitle()) {

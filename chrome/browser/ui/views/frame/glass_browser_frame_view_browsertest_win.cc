@@ -61,7 +61,7 @@ class HostedAppGlassBrowserFrameViewTest : public InProcessBrowserTest {
     glass_frame_view_ = static_cast<GlassBrowserFrameView*>(frame_view);
 
     hosted_app_button_container_ =
-        glass_frame_view_->GetHostedAppButtonContainerForTesting();
+        glass_frame_view_->hosted_app_button_container_for_testing();
     DCHECK(hosted_app_button_container_);
     DCHECK(hosted_app_button_container_->visible());
     return true;
@@ -135,4 +135,16 @@ IN_PROC_BROWSER_TEST_F(HostedAppGlassBrowserFrameViewTest, SpaceConstrained) {
   // button retains its full width.
   EXPECT_EQ(page_action_icon_container->width(), 0);
   EXPECT_EQ(menu_button->width(), original_menu_button_width);
+}
+
+IN_PROC_BROWSER_TEST_F(HostedAppGlassBrowserFrameViewTest, MaximizedLayout) {
+  if (!InstallAndLaunchHostedApp())
+    return;
+
+  glass_frame_view_->frame()->Maximize();
+  static_cast<views::View*>(glass_frame_view_)->Layout();
+
+  DCHECK_GT(glass_frame_view_->window_title_for_testing()->x(), 0);
+  DCHECK_GT(glass_frame_view_->hosted_app_button_container_for_testing()->y(),
+            0);
 }

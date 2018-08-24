@@ -59,7 +59,10 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   // Sets the container to paints its buttons the active/inactive color.
   void SetPaintAsActive(bool active);
 
-  int LayoutInContainer(int leading_x, int trailing_x, int available_height);
+  int LayoutInContainer(int leading_x,
+                        int trailing_x,
+                        int y,
+                        int available_height);
 
  private:
   friend class HostedAppNonClientFrameViewAshTest;
