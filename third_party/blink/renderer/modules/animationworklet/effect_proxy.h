@@ -17,27 +17,14 @@ class MODULES_EXPORT EffectProxy : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  EffectProxy() = default;
+  EffectProxy();
 
-  void setLocalTime(double time_ms) {
-    // Convert double to TimeDelta because cc/animation expects TimeDelta.
-    //
-    // Note on precision loss: TimeDelta has microseconds precision which is
-    // also the precision recommended by the web animation specification as well
-    // [1]. If the input time value has a bigger precision then the conversion
-    // causes precision loss. Doing the conversion here ensures that reading the
-    // value back provides the actual value we use in further computation which
-    // is the least surprising path.
-    // [1] https://drafts.csswg.org/web-animations/#precision-of-time-values
-    local_time_ = WTF::TimeDelta::FromMillisecondsD(time_ms);
-  }
-
-  double localTime() const { return local_time_.InMillisecondsF(); }
-
-  WTF::TimeDelta GetLocalTime() const { return local_time_; }
+  void setLocalTime(double time_ms, bool is_null);
+  double localTime(bool& is_null) const;
+  base::Optional<WTF::TimeDelta> local_time() const;
 
  private:
-  WTF::TimeDelta local_time_;
+  base::Optional<WTF::TimeDelta> local_time_;
 };
 
 }  // namespace blink

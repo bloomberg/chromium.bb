@@ -8,5 +8,5 @@
     Exposed=AnimationWorklet,
     OriginTrialEnabled=AnimationWorklet
 ] interface EffectProxy {
-  attribute unrestricted double localTime;
+  attribute unrestricted double? localTime;
 };

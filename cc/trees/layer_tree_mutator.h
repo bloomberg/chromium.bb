@@ -6,6 +6,7 @@
 #define CC_TREES_LAYER_TREE_MUTATOR_H_
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 #include "cc/trees/animation_options.h"
@@ -101,12 +102,16 @@ class CC_EXPORT MutatorInputState {
 
 struct CC_EXPORT AnimationWorkletOutput {
   struct CC_EXPORT AnimationState {
+    AnimationState(WorkletAnimationId,
+                   base::Optional<base::TimeDelta> local_time);
+    AnimationState(const AnimationState&);
+
     WorkletAnimationId worklet_animation_id;
     // The animator effect's local time.
     // TODO(majidvp): This assumes each animator has a single output effect
     // which does not hold once we state support group effects.
     // http://crbug.com/767043
-    base::TimeDelta local_time;
+    base::Optional<base::TimeDelta> local_time;
   };
 
   AnimationWorkletOutput();

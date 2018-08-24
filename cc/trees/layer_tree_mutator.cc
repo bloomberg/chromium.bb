@@ -88,4 +88,11 @@ std::unique_ptr<AnimationWorkletInput> MutatorInputState::TakeWorkletState(
 AnimationWorkletOutput::AnimationWorkletOutput() = default;
 AnimationWorkletOutput::~AnimationWorkletOutput() = default;
 
+AnimationWorkletOutput::AnimationState::AnimationState(
+    WorkletAnimationId id,
+    base::Optional<base::TimeDelta> time)
+    : worklet_animation_id(id), local_time(time) {}
+AnimationWorkletOutput::AnimationState::AnimationState(const AnimationState&) =
+    default;
+
 }  // namespace cc

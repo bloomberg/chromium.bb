@@ -50,8 +50,8 @@ class AnimationHostTest : public AnimationTimelinesTest {
   }
 
   void SetOutputState(base::TimeDelta local_time) {
-    worklet_animation_impl_->SetOutputState(
-        {worklet_animation_id_, local_time});
+    MutatorOutputState::AnimationState state(worklet_animation_id_, local_time);
+    worklet_animation_impl_->SetOutputState(state);
   }
 
   scoped_refptr<WorkletAnimation> worklet_animation_;
