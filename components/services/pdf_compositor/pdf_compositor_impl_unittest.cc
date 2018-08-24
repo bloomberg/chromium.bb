@@ -58,6 +58,10 @@ class PdfCompositorImplTest : public testing::Test {
     // A stub for testing, no implementation.
   }
 
+  static mojo::ScopedSharedBufferHandle CreateTestData(size_t size) {
+    return mojo::SharedBufferHandle::Create(size);
+  }
+
  private:
   base::test::ScopedTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -83,10 +87,8 @@ class PdfCompositorImplCrashKeyTest : public PdfCompositorImplTest {
 TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
   PdfCompositorImpl impl("unittest", nullptr);
   // Frame 2 and 3 are painted.
-  impl.AddSubframeContent(2u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
-  impl.AddSubframeContent(3u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
+  impl.AddSubframeContent(2u, CreateTestData(10), ContentToFrameMap());
+  impl.AddSubframeContent(3u, CreateTestData(10), ContentToFrameMap());
 
   // Frame 1 contains content 3 which corresponds to frame 2.
   // Frame 1 should be ready as frame 2 is ready.
@@ -112,8 +114,7 @@ TEST_F(PdfCompositorImplTest, IsReadyToComposite) {
   EXPECT_EQ(*pending_subframes.begin(), 4u);
 
   // Add content of frame 4. Now it is ready for composition.
-  impl.AddSubframeContent(4u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
+  impl.AddSubframeContent(4u, CreateTestData(10), ContentToFrameMap());
   EXPECT_TRUE(
       impl.IsReadyToComposite(1u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
@@ -123,8 +124,7 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
   PdfCompositorImpl impl("unittest", nullptr);
   // Frame 3 has content 1 which refers to subframe 1.
   ContentToFrameMap subframe_content_map = {{1u, 1u}};
-  impl.AddSubframeContent(3u, mojo::SharedBufferHandle::Create(10),
-                          subframe_content_map);
+  impl.AddSubframeContent(3u, CreateTestData(10), subframe_content_map);
 
   // Frame 5 has content 3 which refers to subframe 3.
   // Although frame 3's content is added, its subframe 1's content is not added.
@@ -144,16 +144,14 @@ TEST_F(PdfCompositorImplTest, MultiLayerDependency) {
   EXPECT_EQ(*pending_subframes.begin(), 5u);
 
   // When frame 1's content is added, frame 5 is ready.
-  impl.AddSubframeContent(1u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
+  impl.AddSubframeContent(1u, CreateTestData(10), ContentToFrameMap());
   subframe_content_map = {{3u, 3u}};
   EXPECT_TRUE(
       impl.IsReadyToComposite(5u, subframe_content_map, &pending_subframes));
   EXPECT_TRUE(pending_subframes.empty());
 
   // Add frame 5's content.
-  impl.AddSubframeContent(5u, mojo::SharedBufferHandle::Create(10),
-                          subframe_content_map);
+  impl.AddSubframeContent(5u, CreateTestData(10), subframe_content_map);
 
   // Frame 6 is ready too.
   subframe_content_map = {{1u, 5u}};
@@ -167,12 +165,10 @@ TEST_F(PdfCompositorImplTest, DependencyLoop) {
   // Frame 3 has content 1, which refers to frame 1.
   // Frame 1 has content 3, which refers to frame 3.
   ContentToFrameMap subframe_content_map = {{3u, 3u}};
-  impl.AddSubframeContent(1u, mojo::SharedBufferHandle::Create(10),
-                          subframe_content_map);
+  impl.AddSubframeContent(1u, CreateTestData(10), subframe_content_map);
 
   subframe_content_map = {{1u, 1u}};
-  impl.AddSubframeContent(3u, mojo::SharedBufferHandle::Create(10),
-                          subframe_content_map);
+  impl.AddSubframeContent(3u, CreateTestData(10), subframe_content_map);
 
   // Both frame 1 and 3 are painted, frame 5 should be ready.
   base::flat_set<uint64_t> pending_subframes;
@@ -183,8 +179,7 @@ TEST_F(PdfCompositorImplTest, DependencyLoop) {
 
   // Frame 6 has content 7, which refers to frame 7.
   subframe_content_map = {{7u, 7u}};
-  impl.AddSubframeContent(6, mojo::SharedBufferHandle::Create(10),
-                          subframe_content_map);
+  impl.AddSubframeContent(6, CreateTestData(10), subframe_content_map);
   // Frame 7 should be ready since frame 6's own content is added and it only
   // depends on frame 7.
   subframe_content_map = {{6u, 6u}};
@@ -200,14 +195,13 @@ TEST_F(PdfCompositorImplTest, MultiRequestsBasic) {
   const ContentToFrameMap subframe_content_map = {{1u, 8u}};
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
   impl.CompositePageToPdf(
-      3u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      3u, 0, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // When frame 8's content is ready, the previous request should be fulfilled.
   EXPECT_CALL(impl, OnFulfillRequest(3u, 0)).Times(1);
-  impl.AddSubframeContent(8u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
+  impl.AddSubframeContent(8u, CreateTestData(10), ContentToFrameMap());
   testing::Mock::VerifyAndClearExpectations(&impl);
 
   // The following requests which only depends on frame 8 should be
@@ -215,11 +209,11 @@ TEST_F(PdfCompositorImplTest, MultiRequestsBasic) {
   EXPECT_CALL(impl, OnFulfillRequest(3u, 1)).Times(1);
   EXPECT_CALL(impl, OnFulfillRequest(3u, -1)).Times(1);
   impl.CompositePageToPdf(
-      3u, 1, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      3u, 1, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
   impl.CompositeDocumentToPdf(
-      3u, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      3u, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 }
 
@@ -230,17 +224,17 @@ TEST_F(PdfCompositorImplTest, MultiRequestsOrder) {
   const ContentToFrameMap subframe_content_map = {{1u, 8u}};
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
   impl.CompositePageToPdf(
-      3u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      3u, 0, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
   // The following requests which only depends on frame 8 should be
   // immediately fulfilled.
   impl.CompositePageToPdf(
-      3u, 1, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      3u, 1, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
   impl.CompositeDocumentToPdf(
-      3u, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      3u, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
@@ -249,8 +243,7 @@ TEST_F(PdfCompositorImplTest, MultiRequestsOrder) {
   EXPECT_CALL(impl, OnFulfillRequest(3u, 0)).Times(1);
   EXPECT_CALL(impl, OnFulfillRequest(3u, 1)).Times(1);
   EXPECT_CALL(impl, OnFulfillRequest(3u, -1)).Times(1);
-  impl.AddSubframeContent(8u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
+  impl.AddSubframeContent(8u, CreateTestData(10), ContentToFrameMap());
 }
 
 TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
@@ -261,7 +254,7 @@ TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
   ContentToFrameMap subframe_content_map = {{1u, 2u}};
   impl.CompositePageToPdf(
-      1u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      1u, 0, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
 
   // Page 1 with frame 1 has content 1, which refers to frame
@@ -269,7 +262,7 @@ TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
   // fulfilled either.
   subframe_content_map = {{1u, 3u}};
   impl.CompositePageToPdf(
-      1u, 1, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      1u, 1, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
@@ -278,10 +271,8 @@ TEST_F(PdfCompositorImplTest, MultiRequestsDepOrder) {
   testing::Sequence order;
   EXPECT_CALL(impl, OnFulfillRequest(1, 1)).Times(1).InSequence(order);
   EXPECT_CALL(impl, OnFulfillRequest(1, 0)).Times(1).InSequence(order);
-  impl.AddSubframeContent(3u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
-  impl.AddSubframeContent(2u, mojo::SharedBufferHandle::Create(10),
-                          ContentToFrameMap());
+  impl.AddSubframeContent(3u, CreateTestData(10), ContentToFrameMap());
+  impl.AddSubframeContent(2u, CreateTestData(10), ContentToFrameMap());
 }
 
 TEST_F(PdfCompositorImplTest, NotifyUnavailableSubframe) {
@@ -291,7 +282,7 @@ TEST_F(PdfCompositorImplTest, NotifyUnavailableSubframe) {
   const ContentToFrameMap subframe_content_map = {{1u, 8u}};
   EXPECT_CALL(impl, OnFulfillRequest(testing::_, testing::_)).Times(0);
   impl.CompositePageToPdf(
-      3u, 0, mojo::SharedBufferHandle::Create(10), subframe_content_map,
+      3u, 0, CreateTestData(10), subframe_content_map,
       base::BindOnce(&PdfCompositorImplTest::OnCompositeToPdfCallback));
   testing::Mock::VerifyAndClearExpectations(&impl);
 
