@@ -112,7 +112,7 @@
   self.textField = [[UITextField alloc] init];
   self.textField.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   self.textField.adjustsFontForContentSizeCategory = YES;
-  self.textField.textColor = [UIColor lightGrayColor];
+  self.textField.textColor = [BookmarkTextFieldCell textColorForEditing:NO];
   self.textField.clearButtonMode = UITextFieldViewModeWhileEditing;
   self.textField.textAlignment = NSTextAlignmentRight;
   [self.textField setContentHuggingPriority:UILayoutPriorityDefaultLow
@@ -151,6 +151,10 @@
   ]];
 
   return self;
+}
+
++ (UIColor*)textColorForEditing:(BOOL)editing {
+  return editing ? [UIColor blackColor] : [UIColor lightGrayColor];
 }
 
 - (void)prepareForReuse {
