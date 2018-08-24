@@ -7,13 +7,13 @@
 /**
  * Constants for selectors.
  */
-
-var TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"] ';
 var TREEITEM_A = TREEITEM_DRIVE + ' [entry-label="A"] ';
 var TREEITEM_B = TREEITEM_A + '[entry-label="B"] ';
 var TREEITEM_C = TREEITEM_B + '[entry-label="C"] ';
-var TREEITEM_D = TREEITEM_DRIVE + '[entry-label="D"] ';
+
+var TREEITEM_D = TREEITEM_DRIVE + ' [entry-label="D"] ';
 var TREEITEM_E = TREEITEM_D + '[entry-label="E"] ';
+
 var EXPAND_ICON = '> .tree-row > .expand-icon';
 var ITEM_ICON = '> .tree-row > .item-icon';
 var EXPANDED_SUBTREE = '> .tree-children[expanded]';
