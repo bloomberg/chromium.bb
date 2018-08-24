@@ -133,6 +133,7 @@ is_dtd_valid(FILE *input, const char *filename)
 	rc = xmlValidateDtd(dtdctx, doc, dtd);
 	xmlFreeDoc(doc);
 	xmlFreeParserCtxt(ctx);
+	xmlFreeDtd(dtd);
 	xmlFreeValidCtxt(dtdctx);
 	/* xmlIOParseDTD consumes buffer */
 
@@ -432,6 +433,7 @@ free_arg(struct arg *arg)
 	free(arg->name);
 	free(arg->interface_name);
 	free(arg->summary);
+	free(arg->enumeration_name);
 	free(arg);
 }
 
