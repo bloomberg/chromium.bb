@@ -12,27 +12,7 @@
 // Accessibility identifier for |-UnifiedConsentViewController.view|.
 extern NSString* const kUnifiedConsentScrollViewIdentifier;
 
-@class UnifiedConsentViewController;
-
-// Delegate protocol for UnifiedConsentViewController.
-@protocol UnifiedConsentViewControllerDelegate<NSObject>
-
-// Called when the user taps on the settings link.
-- (void)unifiedConsentViewControllerDidTapSettingsLink:
-    (UnifiedConsentViewController*)controller;
-
-// Called when the user taps at |point| on the IdentityPickerView. |point| is in
-// the window coordinates.
-- (void)unifiedConsentViewControllerDidTapIdentityPickerView:
-            (UnifiedConsentViewController*)controller
-                                                     atPoint:(CGPoint)point;
-
-// Called when the user scrolls down to the bottom (or when the view controller
-// is loaded with no scroll needed).
-- (void)unifiedConsentViewControllerDidReachBottom:
-    (UnifiedConsentViewController*)controller;
-
-@end
+@protocol UnifiedConsentViewControllerDelegate;
 
 // UnifiedConsentViewController is a sub view controller to ask for the user
 // consent before the user can sign-in.
