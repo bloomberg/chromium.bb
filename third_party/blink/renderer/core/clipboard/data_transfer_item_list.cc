@@ -38,13 +38,13 @@ DataTransferItemList* DataTransferItemList::Create(DataTransfer* data_transfer,
   return new DataTransferItemList(data_transfer, list);
 }
 
-size_t DataTransferItemList::length() const {
+uint32_t DataTransferItemList::length() const {
   if (!data_transfer_->CanReadTypes())
     return 0;
   return data_object_->length();
 }
 
-DataTransferItem* DataTransferItemList::item(unsigned long index) {
+DataTransferItem* DataTransferItemList::item(uint32_t index) {
   if (!data_transfer_->CanReadTypes())
     return nullptr;
   DataObjectItem* item = data_object_->Item(index);
@@ -54,7 +54,7 @@ DataTransferItem* DataTransferItemList::item(unsigned long index) {
   return DataTransferItem::Create(data_transfer_, item);
 }
 
-void DataTransferItemList::deleteItem(unsigned long index,
+void DataTransferItemList::deleteItem(uint32_t index,
                                       ExceptionState& exception_state) {
   if (!data_transfer_->CanWriteData()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,

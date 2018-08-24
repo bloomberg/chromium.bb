@@ -73,17 +73,17 @@ DataObject* DataObject::Create() {
 
 DataObject::~DataObject() = default;
 
-size_t DataObject::length() const {
+uint32_t DataObject::length() const {
   return item_list_.size();
 }
 
-DataObjectItem* DataObject::Item(unsigned long index) {
+DataObjectItem* DataObject::Item(uint32_t index) {
   if (index >= length())
     return nullptr;
   return item_list_[index];
 }
 
-void DataObject::DeleteItem(unsigned long index) {
+void DataObject::DeleteItem(uint32_t index) {
   if (index >= length())
     return;
   item_list_.EraseAt(index);

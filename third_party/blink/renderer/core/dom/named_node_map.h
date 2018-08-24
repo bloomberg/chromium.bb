@@ -58,8 +58,8 @@ class NamedNodeMap final : public ScriptWrappable {
   Attr* setNamedItem(Attr*, ExceptionState&);
   Attr* setNamedItemNS(Attr*, ExceptionState&);
 
-  Attr* item(unsigned index) const;
-  size_t length() const;
+  Attr* item(uint32_t index) const;
+  uint32_t length() const;
 
   void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&) const;
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;

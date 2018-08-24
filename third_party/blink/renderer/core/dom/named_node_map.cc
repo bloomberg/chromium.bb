@@ -82,14 +82,14 @@ Attr* NamedNodeMap::setNamedItemNS(Attr* attr,
   return element_->setAttributeNodeNS(attr, exception_state);
 }
 
-Attr* NamedNodeMap::item(unsigned index) const {
+Attr* NamedNodeMap::item(uint32_t index) const {
   AttributeCollection attributes = element_->Attributes();
   if (index >= attributes.size())
     return nullptr;
   return element_->EnsureAttr(attributes[index].GetName());
 }
 
-size_t NamedNodeMap::length() const {
+uint32_t NamedNodeMap::length() const {
   return element_->Attributes().size();
 }
 
