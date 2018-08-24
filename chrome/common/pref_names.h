@@ -164,6 +164,8 @@ extern const char kIncognitoModeAvailability[];
 extern const char kSearchSuggestEnabled[];
 #if defined(OS_ANDROID)
 extern const char kContextualSearchEnabled[];
+extern const char kContextualSearchDisabledValue[];
+extern const char kContextualSearchEnabledValue[];
 #endif  // defined(OS_ANDROID)
 #if defined(OS_MACOSX) || defined(OS_WIN) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))

@@ -32,7 +32,8 @@ void ContextualSearchPolicyHandlerAndroid::ApplyPolicySettings(
   if (value &&
       value->GetAsBoolean(&contextual_search_enabled) &&
       !contextual_search_enabled) {
-    prefs->SetString(prefs::kContextualSearchEnabled, "false");
+    prefs->SetString(prefs::kContextualSearchEnabled,
+                     prefs::kContextualSearchDisabledValue);
   }
 }
 

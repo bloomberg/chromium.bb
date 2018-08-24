@@ -44,6 +44,7 @@ class ContextualSearchPolicy {
     private final ContextualSearchSelectionController mSelectionController;
     private ContextualSearchNetworkCommunicator mNetworkCommunicator;
     private ContextualSearchPanel mSearchPanel;
+    private ContextualSearchPreferenceHelper mContextualSearchPreferenceHelper;
 
     // Members used only for testing purposes.
     private boolean mDidOverrideDecidedStateForTesting;
@@ -59,6 +60,11 @@ class ContextualSearchPolicy {
 
         mSelectionController = selectionController;
         mNetworkCommunicator = networkCommunicator;
+    }
+
+    void initialize() {
+        // TODO(donnd): remove when integration with Unified Consent is complete.
+        mContextualSearchPreferenceHelper = ContextualSearchPreferenceHelper.getInstance();
     }
 
     /**
@@ -139,7 +145,9 @@ class ContextualSearchPolicy {
             return false;
         }
 
-        return isPromoAvailable() ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl()) : true;
+        return isPromoAvailable() || mContextualSearchPreferenceHelper.canThrottle()
+                ? isBasePageHTTP(mNetworkCommunicator.getBasePageUrl())
+                : true;
     }
 
     /**
