@@ -564,6 +564,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("installLinuxPackageDialog")));
 
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    LauncherSearch, /* launcher_search.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("launcherOpenSearchResult")));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const gaia_id;
