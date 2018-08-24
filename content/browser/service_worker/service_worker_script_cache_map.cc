@@ -92,12 +92,18 @@ void ServiceWorkerScriptCacheMap::WriteMetadata(
     const GURL& url,
     const std::vector<uint8_t>& data,
     const net::CompletionCallback& callback) {
+  if (!context_) {
+    callback.Run(net::ERR_ABORTED);
+    return;
+  }
+
   ResourceMap::iterator found = resource_map_.find(url);
   if (found == resource_map_.end() ||
       found->second.resource_id == kInvalidServiceWorkerResourceId) {
     callback.Run(net::ERR_FILE_NOT_FOUND);
     return;
   }
+
   scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(data.size()));
   if (data.size())
     memmove(buffer->data(), &data[0], data.size());
