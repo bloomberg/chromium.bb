@@ -45,7 +45,7 @@
 #import "ios/chrome/app/application_delegate/url_opener.h"
 #include "ios/chrome/app/application_mode.h"
 #import "ios/chrome/app/deferred_initialization_runner.h"
-#import "ios/chrome/app/firebase_buildflags.h"
+#import "ios/chrome/app/firebase_utils.h"
 #import "ios/chrome/app/main_controller_private.h"
 #import "ios/chrome/app/memory_monitor.h"
 #import "ios/chrome/app/spotlight/spotlight_manager.h"
@@ -148,9 +148,6 @@
 #include "ios/public/provider/chrome/browser/mailto/mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
-#if BUILDFLAG(FIREBASE_ENABLED)
-#import "ios/third_party/firebase/Analytics/FirebaseCore.framework/Headers/FIRApp.h"
-#endif  // BUILDFLAG(FIREBASE_ENABLED)
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MDCTypographyAdditions/MDFRobotoFontLoader+MDCTypographyAdditions.h"
 #import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
@@ -1080,18 +1077,7 @@ enum class ShowTabSwitcherSnapshotResult {
                         ->GetAppDistributionProvider()
                         ->ScheduleDistributionNotifications(context,
                                                             is_first_run);
-#if BUILDFLAG(FIREBASE_ENABLED)
-                    // TODO(crbug.com/848115): Continue to initialize Firebase
-                    // until either
-                    //   - first_open event has been uploaded, or
-                    //   - ad click conversion attribution period is over.
-                    // Also need to add UMA metric to measure how often Firebase
-                    // is initialized on the client-side as a verification of
-                    // Firebase server-side metrics.
-                    if (is_first_run) {
-                      [FIRApp configure];
-                    }
-#endif  // BUILDFLAG(FIREBASE_ENABLED)
+                    InitializeFirebase(is_first_run);
                   }];
 }
 
