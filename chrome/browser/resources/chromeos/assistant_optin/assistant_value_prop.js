@@ -38,7 +38,7 @@ Polymer({
     defaultUrl: {
       type: String,
       value:
-          'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v1_omni_en_us.html',
+          'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v2_omni_en_us.html',
     },
   },
 
@@ -153,7 +153,7 @@ Polymer({
     this.loadingError_ = false;
     this.headerReceived_ = false;
     this.valuePropView_.src =
-        'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v1_omni_' +
+        'https://www.gstatic.com/opa-android/oobe/a02187e41eed9e42/v2_omni_' +
         this.locale + '.html';
 
     this.buttonsDisabled = true;
