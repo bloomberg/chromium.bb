@@ -68,6 +68,11 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   It2MeHost();
 
+  // Enable, disable, or query whether or not the confirm, continue, and
+  // disconnect dialogs are shown.
+  void set_enable_dialogs(bool enable);
+  bool enable_dialogs() const { return enable_dialogs_; }
+
   // Methods called by the script object, from the plugin thread.
 
   // Creates It2Me host structures and starts the host.
@@ -181,6 +186,8 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   // Tracks the JID of the remote user when in a connecting state.
   std::string connecting_jid_;
+
+  bool enable_dialogs_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };

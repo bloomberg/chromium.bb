@@ -84,6 +84,30 @@ void VerifyCommonProperties(std::unique_ptr<base::DictionaryValue> response,
   EXPECT_EQ(id, int_value);
 }
 
+base::DictionaryValue CreateConnectMessage(int id) {
+  base::DictionaryValue connect_message;
+  connect_message.SetInteger("id", id);
+  connect_message.SetString("type", "connect");
+  connect_message.SetString("xmppServerAddress", "talk.google.com:5222");
+  connect_message.SetBoolean("xmppServerUseTls", true);
+  connect_message.SetString("directoryBotJid", kTestBotJid);
+  connect_message.SetString("userName", kTestClientUsername);
+  connect_message.SetString("authServiceWithToken", "oauth2:sometoken");
+  connect_message.Set(
+      "iceConfig",
+      base::JSONReader::Read("{ \"iceServers\": [ { \"urls\": [ \"stun:" +
+                             std::string(kTestStunServer) + "\" ] } ] }"));
+
+  return connect_message;
+}
+
+base::DictionaryValue CreateDisconnectMessage(int id) {
+  base::DictionaryValue disconnect_message;
+  disconnect_message.SetInteger("id", id);
+  disconnect_message.SetString("type", "disconnect");
+  return disconnect_message;
+}
+
 }  // namespace
 
 class MockIt2MeHost : public It2MeHost {
@@ -171,12 +195,14 @@ void MockIt2MeHost::RunSetState(It2MeHostState state) {
 
 class MockIt2MeHostFactory : public It2MeHostFactory {
  public:
-  MockIt2MeHostFactory() = default;
+  MockIt2MeHostFactory() : host(new MockIt2MeHost()) {}
   ~MockIt2MeHostFactory() override = default;
 
   scoped_refptr<It2MeHost> CreateIt2MeHost() override {
-    return new MockIt2MeHost();
+    return host;
   }
+
+  scoped_refptr<MockIt2MeHost> host;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockIt2MeHostFactory);
@@ -208,8 +234,8 @@ class It2MeNativeMessagingHostTest : public testing::Test {
   void TestBadRequest(const base::Value& message, bool expect_error_response);
   void TestConnect();
 
-  void SendConnectMessage(int id);
-  void SendDisconnectMessage(int id);
+  // Raw pointer to host factory (owned by It2MeNativeMessagingHost).
+  MockIt2MeHostFactory* factory_raw_ptr_ = nullptr;
 
  private:
   void StartHost();
@@ -521,10 +547,12 @@ void It2MeNativeMessagingHostTest::StartHost() {
   policy_loader_ = policy_loader.get();
   std::unique_ptr<PolicyWatcher> policy_watcher =
       PolicyWatcher::CreateFromPolicyLoaderForTesting(std::move(policy_loader));
+  auto factory = std::make_unique<MockIt2MeHostFactory>();
+  factory_raw_ptr_ = factory.get();
   std::unique_ptr<It2MeNativeMessagingHost> it2me_host(
       new It2MeNativeMessagingHost(
           /*needs_elevation=*/false, std::move(policy_watcher),
-          std::move(context), base::WrapUnique(new MockIt2MeHostFactory())));
+          std::move(context), std::move(factory)));
   it2me_host->SetPolicyErrorClosureForTesting(
       base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
                  test_message_loop_->task_runner(), FROM_HERE,
@@ -557,36 +585,12 @@ void It2MeNativeMessagingHostTest::ExitPolicyRunLoop() {
   }
 }
 
-void It2MeNativeMessagingHostTest::SendConnectMessage(int id) {
-  base::DictionaryValue connect_message;
-  connect_message.SetInteger("id", id);
-  connect_message.SetString("type", "connect");
-  connect_message.SetString("xmppServerAddress", "talk.google.com:5222");
-  connect_message.SetBoolean("xmppServerUseTls", true);
-  connect_message.SetString("directoryBotJid", kTestBotJid);
-  connect_message.SetString("userName", kTestClientUsername);
-  connect_message.SetString("authServiceWithToken", "oauth2:sometoken");
-  connect_message.Set(
-      "iceConfig",
-      base::JSONReader::Read("{ \"iceServers\": [ { \"urls\": [ \"stun:" +
-                             std::string(kTestStunServer) + "\" ] } ] }"));
-
-  WriteMessageToInputPipe(connect_message);
-}
-
-void It2MeNativeMessagingHostTest::SendDisconnectMessage(int id) {
-  base::DictionaryValue disconnect_message;
-  disconnect_message.SetInteger("id", id);
-  disconnect_message.SetString("type", "disconnect");
-  WriteMessageToInputPipe(disconnect_message);
-}
-
 void It2MeNativeMessagingHostTest::TestConnect() {
   int next_id = 1;
-  SendConnectMessage(next_id);
+  WriteMessageToInputPipe(CreateConnectMessage(next_id));
   VerifyConnectResponses(next_id);
   ++next_id;
-  SendDisconnectMessage(next_id);
+  WriteMessageToInputPipe(CreateDisconnectMessage(next_id));
   VerifyDisconnectResponses(next_id);
 }
 
@@ -629,6 +633,24 @@ TEST_F(It2MeNativeMessagingHostTest, ConnectMultiple) {
   }
 }
 
+TEST_F(It2MeNativeMessagingHostTest,
+       ConnectRespectsNoDialogsParameterOnChromeOsOnly) {
+  int next_id = 1;
+  base::DictionaryValue connect_message = CreateConnectMessage(next_id);
+  connect_message.SetBoolean("noDialogs", true);
+  WriteMessageToInputPipe(connect_message);
+  VerifyConnectResponses(next_id);
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(factory_raw_ptr_->host->enable_dialogs());
+#else
+  EXPECT_TRUE(factory_raw_ptr_->host->enable_dialogs());
+#endif
+  ++next_id;
+  WriteMessageToInputPipe(CreateDisconnectMessage(next_id));
+  VerifyDisconnectResponses(next_id);
+}
+
+
 // Verify non-Dictionary requests are rejected.
 TEST_F(It2MeNativeMessagingHostTest, WrongFormat) {
   base::ListValue message;
@@ -654,7 +676,7 @@ TEST_F(It2MeNativeMessagingHostTest, BadPoliciesBeforeConnect) {
   base::DictionaryValue bad_policy;
   bad_policy.SetInteger(policy::key::kRemoteAccessHostFirewallTraversal, 1);
   SetPolicies(bad_policy);
-  SendConnectMessage(1);
+  WriteMessageToInputPipe(CreateConnectMessage(1));
   VerifyPolicyErrorResponse();
 }
 
@@ -662,7 +684,7 @@ TEST_F(It2MeNativeMessagingHostTest, BadPoliciesBeforeConnect) {
 TEST_F(It2MeNativeMessagingHostTest, BadPoliciesAfterConnect) {
   base::DictionaryValue bad_policy;
   bad_policy.SetInteger(policy::key::kRemoteAccessHostFirewallTraversal, 1);
-  SendConnectMessage(1);
+  WriteMessageToInputPipe(CreateConnectMessage(1));
   VerifyConnectResponses(1);
   SetPolicies(bad_policy);
   VerifyPolicyErrorResponse();

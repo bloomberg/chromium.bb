@@ -235,6 +235,9 @@ void It2MeNativeMessagingHost::ProcessConnect(
   std::string username;
   message->GetString("userName", &username);
 
+  bool no_dialogs = false;
+  message->GetBoolean("noDialogs", &no_dialogs);
+
   std::unique_ptr<SignalStrategy> signal_strategy;
   if (use_signaling_proxy) {
     if (username.empty()) {
@@ -278,8 +281,12 @@ void It2MeNativeMessagingHost::ProcessConnect(
     return;
   }
 
-  // Create the It2Me host and start connecting.
+  // Create the It2Me host and start connecting. Note that disabling dialogs is
+  // only supported on ChromeOS.
   it2me_host_ = factory_->CreateIt2MeHost();
+#if defined(OS_CHROMEOS)
+  it2me_host_->set_enable_dialogs(!no_dialogs);
+#endif
   it2me_host_->Connect(host_context_->Copy(), std::move(policies),
                        std::make_unique<It2MeConfirmationDialogFactory>(),
                        weak_ptr_, std::move(signal_strategy), username,

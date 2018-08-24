@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/policy_constants.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
@@ -62,6 +63,14 @@ It2MeHost::It2MeHost() = default;
 It2MeHost::~It2MeHost() {
   // Check that resources that need to be torn down on the UI thread are gone.
   DCHECK(!desktop_environment_factory_.get());
+}
+
+void It2MeHost::set_enable_dialogs(bool enable) {
+#if defined(OS_CHROMEOS)
+  enable_dialogs_ = enable;
+#else
+  NOTREACHED() << "It2MeHost::set_enable_dialogs is only supported on ChromeOS";
+#endif
 }
 
 void It2MeHost::Connect(
@@ -177,11 +186,12 @@ void It2MeHost::ConnectOnNetworkThread(const std::string& username,
   session_manager->set_protocol_config(std::move(protocol_config));
 
   // Create the host.
-  host_.reset(new ChromotingHost(desktop_environment_factory_.get(),
-                                 std::move(session_manager), transport_context,
-                                 host_context_->audio_task_runner(),
-                                 host_context_->video_encode_task_runner(),
-                                 DesktopEnvironmentOptions::CreateDefault()));
+  DesktopEnvironmentOptions options(DesktopEnvironmentOptions::CreateDefault());
+  options.set_enable_user_interface(enable_dialogs_);
+  host_.reset(new ChromotingHost(
+      desktop_environment_factory_.get(), std::move(session_manager),
+      transport_context, host_context_->audio_task_runner(),
+      host_context_->video_encode_task_runner(), options));
   host_->status_monitor()->AddStatusObserver(this);
   host_status_logger_.reset(
       new HostStatusLogger(host_->status_monitor(), ServerLogEntry::IT2ME,
@@ -532,12 +542,19 @@ void It2MeHost::ValidateConnectionDetails(
   SetState(kConnecting, ErrorCode::OK);
 
   // Show a confirmation dialog to the user to allow them to confirm/reject it.
-  confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
-      host_context_->ui_task_runner(), confirmation_dialog_factory_->Create()));
-
-  confirmation_dialog_proxy_->Show(
-      client_username, base::Bind(&It2MeHost::OnConfirmationResult,
-                                  base::Unretained(this), result_callback));
+  // If dialogs are suppressed, just call the callback directly.
+  if (enable_dialogs_) {
+    confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
+        host_context_->ui_task_runner(),
+        confirmation_dialog_factory_->Create()));
+    confirmation_dialog_proxy_->Show(
+        client_username, base::Bind(&It2MeHost::OnConfirmationResult,
+                                    base::Unretained(this), result_callback));
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(result_callback, ValidationResult::SUCCESS));
+  }
 }
 
 void It2MeHost::OnConfirmationResult(
