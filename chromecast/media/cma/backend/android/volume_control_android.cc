@@ -189,12 +189,14 @@ void VolumeControlAndroid::InitializeOnThread() {
               << " mute=" << muted_[type];
   }
 
+#if !BUILDFLAG(IS_SINGLE_VOLUME)
   // The kOther content type should not have any type-wide volume control or
   // mute (volume control for kOther is per-stream only). Therefore, ensure
   // that the global volume and mute state fo kOther is initialized correctly
   // (100% volume, and not muted).
   SetVolumeOnThread(AudioContentType::kOther, 1.0f, false /* from_android */);
   SetMutedOnThread(AudioContentType::kOther, false, false /* from_android */);
+#endif
 
   initialize_complete_event_.Signal();
 }
@@ -266,6 +268,7 @@ void VolumeControlAndroid::SetMutedOnThread(AudioContentType type,
 void VolumeControlAndroid::ReportVolumeChangeOnThread(AudioContentType type,
                                                       float level) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+#if !BUILDFLAG(IS_SINGLE_VOLUME)
   if (type == AudioContentType::kOther) {
     // Volume for AudioContentType::kOther should stay at 1.0.
     Java_VolumeControl_setVolume(base::android::AttachCurrentThread(),
@@ -273,6 +276,7 @@ void VolumeControlAndroid::ReportVolumeChangeOnThread(AudioContentType type,
                                  1.0f);
     return;
   }
+#endif
 
   SetVolumeOnThread(type, level, true /* from android */);
 }
@@ -280,6 +284,7 @@ void VolumeControlAndroid::ReportVolumeChangeOnThread(AudioContentType type,
 void VolumeControlAndroid::ReportMuteChangeOnThread(AudioContentType type,
                                                     bool muted) {
   DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+#if !BUILDFLAG(IS_SINGLE_VOLUME)
   if (type == AudioContentType::kOther) {
     // Mute state for AudioContentType::kOther should always be false.
     Java_VolumeControl_setMuted(base::android::AttachCurrentThread(),
@@ -287,6 +292,7 @@ void VolumeControlAndroid::ReportMuteChangeOnThread(AudioContentType type,
                                 false);
     return;
   }
+#endif
 
   SetMutedOnThread(type, muted, true /* from_android */);
 }
