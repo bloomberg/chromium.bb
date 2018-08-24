@@ -116,27 +116,19 @@ body {
 }
 
 #browser-print {
-  background-image: -webkit-image-set(
-      url(../images/browser_button_print.png) 1x,
-      url(../images/2x/browser_button_print.png) 2x);
+  background-image: url(../images/browser_button_print.svg);
 }
 
 #browser-export {
-  background-image: -webkit-image-set(
-      url(../images/browser_button_export.png) 1x,
-      url(../images/2x/browser_button_export.png) 2x);
+  background-image: url(../images/browser_button_export.svg);
 }
 
 #browser-back {
-  background-image: -webkit-image-set(
-      url(../images/gallery_button_back.png) 1x,
-      url(../images/2x/gallery_button_back.png) 2x);
+  background-image: url(../images/browser_button_back.svg);
 }
 
 #browser-delete {
-  background-image: -webkit-image-set(
-      url(../images/gallery_button_delete.png) 1x,
-      url(../images/2x/gallery_button_delete.png) 2x);
+  background-image: url(../images/browser_button_delete.svg);
 }
 
 #error {

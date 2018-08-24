@@ -61,12 +61,10 @@ SRC_RESOURCES= \
 	src/_locales/zh_CN/messages.json \
 	src/_locales/zh_TW/messages.json \
 	src/css/main.css \
-	src/images/2x/browser_button_export.png \
-	src/images/2x/browser_button_print.png \
-	src/images/2x/gallery_button_back.png \
-	src/images/2x/gallery_button_delete.png \
-	src/images/browser_button_export.png \
-	src/images/browser_button_print.png \
+        src/images/browser_button_back.svg \
+        src/images/browser_button_delete.svg \
+        src/images/browser_button_export.svg \
+        src/images/browser_button_print.svg \
 	src/images/camera_app_icons_128.png \
 	src/images/camera_app_icons_48.png \
         src/images/camera_button_grid_off.svg \
@@ -91,8 +89,6 @@ SRC_RESOURCES= \
         src/images/camera_shutter_recording_start_hover.svg \
         src/images/camera_shutter_recording_stop.svg \
         src/images/camera_shutter_recording_stop_hover.svg \
-	src/images/gallery_button_back.png \
-	src/images/gallery_button_delete.png \
 	src/images/no_camera.svg \
 	src/images/spinner.svg \
 	src/js/background.js \
