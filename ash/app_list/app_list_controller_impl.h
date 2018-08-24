@@ -42,6 +42,8 @@ class AnswerCardContentsRegistry;
 
 namespace ash {
 
+class HomeLauncherGestureHandler;
+
 // Ash's AppListController owns the AppListModel and implements interface
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
 // state.
@@ -140,6 +142,9 @@ class ASH_EXPORT AppListControllerImpl
                      app_list::AppListShowSource show_source,
                      base::TimeTicks event_time_stamp);
   app_list::AppListViewState GetAppListViewState();
+  HomeLauncherGestureHandler* home_launcher_gesture_handler() {
+    return home_launcher_gesture_handler_.get();
+  }
 
   // app_list::AppListViewDelegate:
   app_list::AppListModel* GetModel() override;
@@ -246,6 +251,10 @@ class ASH_EXPORT AppListControllerImpl
   // Token to view map for classic/mus ash (i.e. non-mash).
   std::unique_ptr<app_list::AnswerCardContentsRegistry>
       answer_card_contents_registry_;
+
+  // Owned pointer to the object which handles gestures related to the home
+  // launcher.
+  std::unique_ptr<HomeLauncherGestureHandler> home_launcher_gesture_handler_;
 
   // Whether the on-screen keyboard is shown.
   bool onscreen_keyboard_shown_ = false;
