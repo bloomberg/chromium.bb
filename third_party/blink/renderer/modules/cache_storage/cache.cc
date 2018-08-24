@@ -205,8 +205,8 @@ class Cache::BarrierCallbackForPut final
                 message.append(error->message);
               }
               if (error->value == mojom::blink::CacheStorageError::kSuccess) {
-                UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Batch",
-                                    TimeTicks::Now() - start_time);
+                UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Put",
+                                         TimeTicks::Now() - start_time);
                 resolver->Resolve();
                 if (message) {
                   context->AddConsoleMessage(ConsoleMessage::Create(
@@ -602,8 +602,8 @@ ScriptPromise Cache::MatchImpl(ScriptState* script_state,
                   break;
               }
             } else {
-              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Match",
-                                  TimeTicks::Now() - start_time);
+              UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Match2",
+                                       TimeTicks::Now() - start_time);
               ScriptState::Scope scope(resolver->GetScriptState());
               resolver->Resolve(Response::Create(resolver->GetScriptState(),
                                                  *result->get_response()));
@@ -642,8 +642,8 @@ ScriptPromise Cache::MatchAllImpl(ScriptState* script_state,
               resolver->Reject(
                   CacheStorageError::CreateException(result->get_status()));
             } else {
-              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.MatchAll",
-                                  TimeTicks::Now() - start_time);
+              UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.MatchAll2",
+                                       TimeTicks::Now() - start_time);
               ScriptState::Scope scope(resolver->GetScriptState());
               HeapVector<Member<Response>> responses;
               responses.ReserveInitialCapacity(result->get_responses().size());
@@ -739,8 +739,8 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
                   break;
               }
             } else {
-              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Batch",
-                                  TimeTicks::Now() - start_time);
+              UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Delete",
+                                       TimeTicks::Now() - start_time);
               report_to_console = true;
               resolver->Resolve(true);
             }
@@ -870,8 +870,8 @@ ScriptPromise Cache::KeysImpl(ScriptState* script_state,
               resolver->Reject(
                   CacheStorageError::CreateException(result->get_status()));
             } else {
-              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.Cache.Keys",
-                                  TimeTicks::Now() - start_time);
+              UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.Cache.Keys2",
+                                       TimeTicks::Now() - start_time);
               ScriptState::Scope scope(resolver->GetScriptState());
               HeapVector<Member<Request>> requests;
               requests.ReserveInitialCapacity(result->get_keys().size());
