@@ -612,7 +612,7 @@ void ChromeClientImpl::OpenFileChooser(
 
 void ChromeClientImpl::DidCompleteFileChooser(FileChooser& chooser) {
   if (!file_chooser_queue_.IsEmpty() &&
-      file_chooser_queue_.front() != &chooser) {
+      file_chooser_queue_.front().get() != &chooser) {
     // This function is called even if |chooser| wasn't stored in
     // file_chooser_queue_.
     return;
@@ -620,7 +620,7 @@ void ChromeClientImpl::DidCompleteFileChooser(FileChooser& chooser) {
   file_chooser_queue_.EraseAt(0);
   if (file_chooser_queue_.IsEmpty())
     return;
-  FileChooser* next_chooser = file_chooser_queue_.front();
+  FileChooser* next_chooser = file_chooser_queue_.front().get();
   if (next_chooser->OpenFileChooser(*this))
     return;
   // Choosing failed, so try the next chooser.

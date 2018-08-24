@@ -248,10 +248,12 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   WebViewImpl* web_view_;  // Weak pointer.
   HeapHashSet<WeakMember<PopupOpeningObserver>> popup_opening_observers_;
-  Vector<FileChooser*> file_chooser_queue_;
+  Vector<scoped_refptr<FileChooser>> file_chooser_queue_;
   Cursor last_set_mouse_cursor_for_testing_;
   bool cursor_overridden_;
   bool did_request_non_empty_tool_tip_;
+
+  FRIEND_TEST_ALL_PREFIXES(FileChooserQueueTest, DerefQueuedChooser);
 };
 
 DEFINE_TYPE_CASTS(ChromeClientImpl,

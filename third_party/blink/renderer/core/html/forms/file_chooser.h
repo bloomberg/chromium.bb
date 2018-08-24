@@ -64,7 +64,7 @@ struct FileChooserFileInfo {
   const FileMetadata metadata;
 };
 
-class FileChooserClient : public PopupOpeningObserver {
+class CORE_EXPORT FileChooserClient : public PopupOpeningObserver {
  public:
   virtual void FilesChosen(const Vector<FileChooserFileInfo>&) = 0;
   virtual LocalFrame* FrameOrNull() const = 0;
@@ -84,8 +84,9 @@ class FileChooserClient : public PopupOpeningObserver {
 class FileChooser : public RefCounted<FileChooser>,
                     public WebFileChooserCompletion {
  public:
-  static scoped_refptr<FileChooser> Create(FileChooserClient*,
-                                           const WebFileChooserParams&);
+  CORE_EXPORT static scoped_refptr<FileChooser> Create(
+      FileChooserClient*,
+      const WebFileChooserParams&);
   ~FileChooser() override;
 
   LocalFrame* FrameOrNull() const {
