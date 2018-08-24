@@ -107,9 +107,10 @@ void AppCacheUpdateJob::URLFetcher::OnResponseStarted(int net_error) {
   // completion before reading any response data.
   if (fetch_type_ == URL_FETCH || fetch_type_ == MASTER_ENTRY_FETCH) {
     response_writer_.reset(job_->CreateResponseWriter());
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-        new HttpResponseInfoIOBuffer(
-            new net::HttpResponseInfo(request_->GetResponseInfo())));
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::make_unique<net::HttpResponseInfo>(
+                request_->GetResponseInfo()));
     response_writer_->WriteInfo(
         io_buffer.get(),
         base::BindOnce(&URLFetcher::OnWriteComplete, base::Unretained(this)));

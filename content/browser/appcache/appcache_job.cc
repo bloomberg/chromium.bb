@@ -84,8 +84,8 @@ void AppCacheJob::SetupRangeResponse() {
 
   // Make a copy of the full response headers and fix them up
   // for the range we'll be returning.
-  range_response_info_.reset(
-      new net::HttpResponseInfo(*info_->http_response_info()));
+  range_response_info_ =
+      std::make_unique<net::HttpResponseInfo>(info_->http_response_info());
   net::HttpResponseHeaders* headers = range_response_info_->headers.get();
   headers->UpdateWithNewRange(range_requested_, resource_size,
                               true /* replace status line */);

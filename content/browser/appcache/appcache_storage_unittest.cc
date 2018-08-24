@@ -67,8 +67,8 @@ TEST_F(AppCacheStorageTest, AddRemoveResponseInfo) {
   const GURL kManifestUrl("http://origin/");
   scoped_refptr<AppCacheResponseInfo> info =
       base::MakeRefCounted<AppCacheResponseInfo>(
-          service.storage(), kManifestUrl, 111, new net::HttpResponseInfo,
-          kUnkownResponseDataSize);
+          service.storage(), kManifestUrl, 111,
+          std::make_unique<net::HttpResponseInfo>(), kUnkownResponseDataSize);
 
   EXPECT_EQ(info.get(),
             service.storage()->working_set()->GetResponseInfo(111));

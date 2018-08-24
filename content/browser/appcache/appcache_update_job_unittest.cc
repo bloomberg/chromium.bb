@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -1388,14 +1389,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "HTTP/1.1 200 OK\0"
         "Cache-Control: max-age=8675309\0"
         "\0";
-    net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
-    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
     response_info->request_time = base::Time::Now();
     response_info->response_time = base::Time::Now();
-    response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
     response_writer_->WriteInfo(
         io_buffer.get(),
         base::BindOnce(
@@ -1451,14 +1455,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "HTTP/1.1 200 OK\0"
         "Expires: Thu, 01 Dec 1994 16:00:00 GMT\0"
         "\0";
-    net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
-    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
     response_info->request_time = base::Time::Now();
     response_info->response_time = base::Time::Now();
-    response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
     response_writer_->WriteInfo(
         io_buffer.get(),
         base::BindOnce(
@@ -1514,14 +1521,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "Cache-Control: max-age=8675309\0"
         "Vary: blah\0"
         "\0";
-    net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
-    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
     response_info->request_time = base::Time::Now();
     response_info->response_time = base::Time::Now();
-    response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
     response_writer_->WriteInfo(
         io_buffer.get(),
         base::BindOnce(
@@ -1581,14 +1591,17 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "Cache-Control: max-age=8675309\0"
         "Vary: origin, accept-encoding\0"
         "\0";
-    net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
-    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
     response_info->request_time = base::Time::Now();
     response_info->response_time = base::Time::Now();
-    response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
     response_writer_->WriteInfo(
         io_buffer.get(),
         base::BindOnce(
@@ -3204,12 +3217,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "HTTP/1.1 200 OK\0"
         "Last-Modified: Sat, 29 Oct 1994 19:43:31 GMT\0"
         "\0";
-    net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
-    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
-    response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
     response_writer_->WriteInfo(
         io_buffer.get(),
         base::BindOnce(
@@ -3274,12 +3290,15 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
         "HTTP/1.1 200 OK\0"
         "ETag: \"LadeDade\"\0"
         "\0";
-    net::HttpResponseHeaders* headers =
-        new net::HttpResponseHeaders(std::string(data, arraysize(data)));
-    net::HttpResponseInfo* response_info = new net::HttpResponseInfo();
-    response_info->headers = headers;  // adds ref to headers
-    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer(
-        new HttpResponseInfoIOBuffer(response_info));  // adds ref to info
+    scoped_refptr<net::HttpResponseHeaders> headers =
+        base::MakeRefCounted<net::HttpResponseHeaders>(
+            std::string(data, base::size(data)));
+    std::unique_ptr<net::HttpResponseInfo> response_info =
+        std::make_unique<net::HttpResponseInfo>();
+    response_info->headers = std::move(headers);
+    scoped_refptr<HttpResponseInfoIOBuffer> io_buffer =
+        base::MakeRefCounted<HttpResponseInfoIOBuffer>(
+            std::move(response_info));
     response_writer_->WriteInfo(
         io_buffer.get(),
         base::BindOnce(
@@ -3532,11 +3551,12 @@ class AppCacheUpdateJobTest : public testing::TestWithParam<RequestHandlerType>,
       const GURL& manifest_url,
       int64_t response_id,
       const std::string& raw_headers) {
-    net::HttpResponseInfo* http_info = new net::HttpResponseInfo();
+    std::unique_ptr<net::HttpResponseInfo> http_info =
+        std::make_unique<net::HttpResponseInfo>();
     http_info->headers = new net::HttpResponseHeaders(raw_headers);
     scoped_refptr<AppCacheResponseInfo> info(
-        new AppCacheResponseInfo(service_->storage(), manifest_url,
-                                 response_id, http_info, 0));
+        new AppCacheResponseInfo(service_->storage(), manifest_url, response_id,
+                                 std::move(http_info), 0));
     response_infos_.push_back(info);
     return info.get();
   }

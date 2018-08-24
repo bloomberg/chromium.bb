@@ -216,7 +216,7 @@ const net::HttpResponseInfo* AppCacheURLRequestJob::http_info() const {
     return nullptr;
   if (range_response_info_)
     return range_response_info_.get();
-  return info_->http_response_info();
+  return &info_->http_response_info();
 }
 
 void AppCacheURLRequestJob::OnReadComplete(int result) {
