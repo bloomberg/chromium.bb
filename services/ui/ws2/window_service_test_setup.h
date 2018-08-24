@@ -35,7 +35,8 @@ class WindowServiceTestSetup {
   WindowServiceTestSetup();
   ~WindowServiceTestSetup();
 
-  // |flags| mirrors that from mojom::WindowTree::Embed(), see it for details.
+  // |flags| mirrors that from ws::mojom::WindowTree::Embed(), see it for
+  // details.
   std::unique_ptr<EmbeddingHelper> CreateEmbedding(aura::Window* embed_root,
                                                    uint32_t flags = 0);
 

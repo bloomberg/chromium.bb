@@ -24,7 +24,7 @@ void TestIMEApplication::OnStart() {
                           MakeRequest(&ime_driver_ptr));
 
   ui::mojom::IMERegistrarPtr ime_registrar;
-  context()->connector()->BindInterface(ui::mojom::kServiceName,
+  context()->connector()->BindInterface(ws::mojom::kServiceName,
                                         &ime_registrar);
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
 }

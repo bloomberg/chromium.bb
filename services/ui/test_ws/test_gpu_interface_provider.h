@@ -40,7 +40,7 @@ class TestGpuInterfaceProvider : public ui::ws2::GpuInterfaceProvider {
  private:
   void BindDiscardableSharedMemoryManagerRequest(
       discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request);
-  void BindGpuRequest(ui::mojom::GpuRequest request);
+  void BindGpuRequest(ws::mojom::GpuRequest request);
 
   ui::gpu_host::GpuHost* const gpu_host_;
   discardable_memory::DiscardableSharedMemoryManager* const

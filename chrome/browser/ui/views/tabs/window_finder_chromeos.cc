@@ -31,10 +31,10 @@ class WindowFinderMus : public WindowFinder {
  public:
   WindowFinderMus(TabDragController::EventSource event_source,
                   gfx::NativeWindow window) {
-    ui::mojom::MoveLoopSource source =
+    ws::mojom::MoveLoopSource source =
         (event_source == TabDragController::EVENT_SOURCE_MOUSE)
-            ? ui::mojom::MoveLoopSource::MOUSE
-            : ui::mojom::MoveLoopSource::TOUCH;
+            ? ws::mojom::MoveLoopSource::MOUSE
+            : ws::mojom::MoveLoopSource::TOUCH;
     tracker_ = views::MusClient::Get()
                    ->window_tree_client()
                    ->StartObservingTopmostWindow(source, window);

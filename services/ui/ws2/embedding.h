@@ -39,8 +39,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) Embedding {
   ~Embedding();
 
   void Init(WindowService* window_service,
-            mojom::WindowTreeClientPtr window_tree_client_ptr,
-            mojom::WindowTreeClient* window_tree_client,
+            ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
+            ws::mojom::WindowTreeClient* window_tree_client,
             base::OnceClosure connection_lost_callback);
 
   // Initializes the Embedding as the result of

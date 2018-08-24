@@ -17,9 +17,9 @@ namespace mojo {
 
 template <>
 struct TypeConverter<views::WindowManagerFrameValues,
-                     ui::mojom::FrameDecorationValuesPtr> {
+                     ws::mojom::FrameDecorationValuesPtr> {
   static views::WindowManagerFrameValues Convert(
-      const ui::mojom::FrameDecorationValuesPtr& input) {
+      const ws::mojom::FrameDecorationValuesPtr& input) {
     views::WindowManagerFrameValues result;
     result.normal_insets = input->normal_client_area_insets;
     result.maximized_insets = input->maximized_client_area_insets;
@@ -41,7 +41,7 @@ ScreenMus::ScreenMus(ScreenMusDelegate* delegate) : delegate_(delegate) {
 ScreenMus::~ScreenMus() = default;
 
 void ScreenMus::OnDisplaysChanged(
-    std::vector<ui::mojom::WsDisplayPtr> ws_displays,
+    std::vector<ws::mojom::WsDisplayPtr> ws_displays,
     int64_t primary_display_id,
     int64_t internal_display_id,
     int64_t display_id_for_new_windows) {

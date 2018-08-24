@@ -13,8 +13,8 @@ namespace mojo {
 
 template <>
 struct VIEWS_MUS_EXPORT
-    TypeConverter<ui::mojom::WindowType, views::Widget::InitParams::Type> {
-  static ui::mojom::WindowType Convert(views::Widget::InitParams::Type type);
+    TypeConverter<ws::mojom::WindowType, views::Widget::InitParams::Type> {
+  static ws::mojom::WindowType Convert(views::Widget::InitParams::Type type);
 };
 
 }  // namespace mojo

@@ -241,7 +241,7 @@ class CONTENT_EXPORT FrameConnectorDelegate {
   // Embeds a WindowTreeClient in the parent. This results in the parent
   // creating a window in the ui server so that this can render to the screen.
   virtual void EmbedRendererWindowTreeClientInParent(
-      ui::mojom::WindowTreeClientPtr window_tree_client) {}
+      ws::mojom::WindowTreeClientPtr window_tree_client) {}
 #endif
 
   // Called by RenderWidgetHostViewChildFrame when the child frame has updated

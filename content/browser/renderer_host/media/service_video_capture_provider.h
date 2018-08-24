@@ -33,11 +33,11 @@ class CONTENT_EXPORT ServiceVideoCaptureProvider : public VideoCaptureProvider {
   // This constructor creates a default ServiceConnector which
   // uses the ServiceManager associated with the current process to connect
   // to the video capture service. It uses a default factory for instances of
-  // ui::mojom::Gpu which produces instances of class content::GpuClient.
+  // ws::mojom::Gpu which produces instances of class content::GpuClient.
   explicit ServiceVideoCaptureProvider(
       base::RepeatingCallback<void(const std::string&)> emit_log_message_cb);
   // Lets clients provide a custom ServiceConnector and factory method for
-  // creating instances of ui::mojom::Gpu.
+  // creating instances of ws::mojom::Gpu.
   ServiceVideoCaptureProvider(
       std::unique_ptr<ServiceConnector> service_connector,
       CreateAcceleratorFactoryCallback create_accelerator_factory_cb,

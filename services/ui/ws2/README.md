@@ -3,8 +3,8 @@ implementation on top of an existing Aura hierarchy.
 
 Each client is managed by an instance of WindowTree. In this directory, a client
 generally means a unique connection to the WindowService. More specifically a
-client is an implementation of mojom::WindowTreeClient.
-WindowTree implements the mojom::WindowTree implementation that is
+client is an implementation of ws::mojom::WindowTreeClient.
+WindowTree implements the ws::mojom::WindowTree implementation that is
 passed to the client. WindowTree creates a ClientRoot for the window the client
 is embedded in, as well as a ClientRoot for all top-level window requests.
 

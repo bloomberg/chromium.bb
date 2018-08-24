@@ -81,7 +81,7 @@ void MusEmbeddedFrame::CreateChildWindowAndEmbed(
     const base::UnguessableToken& token) {
   // Set a name for debugging.
   base::flat_map<std::string, std::vector<uint8_t>> properties;
-  properties[ui::mojom::WindowManager::kName_Property] =
+  properties[ws::mojom::WindowManager::kName_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(std::string("RendererFrame"));
   window_tree()->NewWindow(GetAndAdvanceNextChangeId(), window_id_, properties);
   window_tree()->AddWindow(GetAndAdvanceNextChangeId(),
@@ -108,7 +108,7 @@ uint32_t MusEmbeddedFrame::GetAndAdvanceNextChangeId() {
   return renderer_window_tree_client_->GetAndAdvanceNextChangeId();
 }
 
-ui::mojom::WindowTree* MusEmbeddedFrame::window_tree() {
+ws::mojom::WindowTree* MusEmbeddedFrame::window_tree() {
   // Once |tree_changed_| is true the WindowTree this instance used has changed
   // and it no longer makes sense to use it (the original window was deleted).
   return tree_changed_ ? nullptr : renderer_window_tree_client_->tree_.get();

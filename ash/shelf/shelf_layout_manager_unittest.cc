@@ -1530,8 +1530,8 @@ TEST_F(ShelfLayoutManagerNonHomeLauncherTest,
   std::unique_ptr<aura::Window> window(
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400)));
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ui::mojom::kResizeBehaviorCanResize |
-                          ui::mojom::kResizeBehaviorCanMaximize);
+                      ws::mojom::kResizeBehaviorCanResize |
+                          ws::mojom::kResizeBehaviorCanMaximize);
   wm::ActivateWindow(window.get());
 
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -2024,8 +2024,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
 
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   window1->SetProperty(aura::client::kResizeBehaviorKey,
-                       ui::mojom::kResizeBehaviorCanResize |
-                           ui::mojom::kResizeBehaviorCanMaximize);
+                       ws::mojom::kResizeBehaviorCanResize |
+                           ws::mojom::kResizeBehaviorCanMaximize);
   window1->Show();
 
   SplitViewController* split_view_controller =
@@ -2035,8 +2035,8 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorInSplitView) {
 
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   window2->SetProperty(aura::client::kResizeBehaviorKey,
-                       ui::mojom::kResizeBehaviorCanResize |
-                           ui::mojom::kResizeBehaviorCanMaximize);
+                       ws::mojom::kResizeBehaviorCanResize |
+                           ws::mojom::kResizeBehaviorCanMaximize);
   window2->Show();
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   EXPECT_EQ(SHELF_BACKGROUND_SPLIT_VIEW, GetShelfWidget()->GetBackgroundType());

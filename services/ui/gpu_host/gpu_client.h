@@ -28,8 +28,8 @@ class GpuHostTest;
 
 // The implementation that relays requests from clients to the real
 // service implementation in the GPU process over mojom.GpuService.
-class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
-                  public ui::mojom::Gpu {
+class GpuClient : public ws::mojom::GpuMemoryBufferFactory,
+                  public ws::mojom::Gpu {
  public:
   GpuClient(int client_id,
             gpu::GPUInfo* gpu_info,
@@ -44,20 +44,20 @@ class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
   // EstablishGpuChannelCallback:
   void OnGpuChannelEstablished(mojo::ScopedMessagePipeHandle channel_handle);
 
-  // ui::mojom::GpuMemoryBufferFactory overrides:
+  // ws::mojom::GpuMemoryBufferFactory overrides:
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      ui::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback)
+      ws::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback)
       override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token) override;
 
-  // ui::mojom::Gpu overrides:
+  // ws::mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
-      ui::mojom::GpuMemoryBufferFactoryRequest request) override;
+      ws::mojom::GpuMemoryBufferFactoryRequest request) override;
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
   void CreateJpegDecodeAccelerator(
       media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
@@ -66,7 +66,7 @@ class GpuClient : public ui::mojom::GpuMemoryBufferFactory,
       override;
 
   const int client_id_;
-  mojo::BindingSet<ui::mojom::GpuMemoryBufferFactory>
+  mojo::BindingSet<ws::mojom::GpuMemoryBufferFactory>
       gpu_memory_buffer_factory_bindings_;
 
   // The objects these pointers refer to are owned by the GpuHost object.

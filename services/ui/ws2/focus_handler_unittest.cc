@@ -195,7 +195,7 @@ TEST(FocusHandlerTest, EmbedderGetsInterceptedKeyEvents) {
   embed_window->Show();
 
   std::unique_ptr<EmbeddingHelper> embedding_helper = setup.CreateEmbedding(
-      embed_window, mojom::kEmbedFlagEmbedderInterceptsEvents);
+      embed_window, ws::mojom::kEmbedFlagEmbedderInterceptsEvents);
   ASSERT_TRUE(embedding_helper);
   aura::Window* embed_child_window =
       embedding_helper->window_tree_test_helper->NewWindow();

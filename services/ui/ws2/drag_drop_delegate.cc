@@ -56,9 +56,10 @@ gfx::Point ToScreenLocation(aura::Window* window, const gfx::Point& location) {
 
 }  // namespace
 
-DragDropDelegate::DragDropDelegate(mojom::WindowTreeClient* window_tree_client,
-                                   aura::Window* window,
-                                   Id transport_window_id)
+DragDropDelegate::DragDropDelegate(
+    ws::mojom::WindowTreeClient* window_tree_client,
+    aura::Window* window,
+    Id transport_window_id)
     : tree_client_(window_tree_client),
       window_(window),
       transport_window_id_(transport_window_id) {}

@@ -14,7 +14,7 @@ namespace aura {
 class WindowMus;
 
 // Used by CaptureSynchronizer to create a change id when capture changes. The
-// change id is then sent to ui::mojom::WindowTree.
+// change id is then sent to ws::mojom::WindowTree.
 class AURA_EXPORT CaptureSynchronizerDelegate {
  public:
   virtual uint32_t CreateChangeIdForCapture(WindowMus* window) = 0;

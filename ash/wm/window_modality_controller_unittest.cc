@@ -416,8 +416,8 @@ TEST_F(WindowModalityControllerTest, TouchEvent) {
   // Make |w11| non-resizable to avoid touch events inside its transient parent
   // |w1| from going to |w11| because of EasyResizeWindowTargeter.
   w11->SetProperty(aura::client::kResizeBehaviorKey,
-                   ui::mojom::kResizeBehaviorCanMaximize |
-                       ui::mojom::kResizeBehaviorCanMinimize);
+                   ws::mojom::kResizeBehaviorCanMaximize |
+                       ws::mojom::kResizeBehaviorCanMinimize);
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      gfx::Point(10, 10));
 

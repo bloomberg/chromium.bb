@@ -12,7 +12,7 @@
 
 #include "ui/aura/aura_export.h"
 
-namespace ui {
+namespace ws {
 namespace mojom {
 enum class WindowType;
 }
@@ -26,10 +26,10 @@ class Window;
 // sets the property client::kWindowTypeKey as well as calling SetType().
 // This *must* be called before Init(). No-op for WindowType::UNKNOWN.
 AURA_EXPORT void SetWindowType(Window* window,
-                               ui::mojom::WindowType window_type);
+                               ws::mojom::WindowType window_type);
 
 // Returns the window type specified in |properties|, or WindowType::UNKNOWN.
-AURA_EXPORT ui::mojom::WindowType GetWindowTypeFromProperties(
+AURA_EXPORT ws::mojom::WindowType GetWindowTypeFromProperties(
     const std::map<std::string, std::vector<uint8_t>>& properties);
 
 }  // namespace aura

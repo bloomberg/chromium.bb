@@ -36,7 +36,7 @@ namespace {
 // Returns true if a fullscreen window was requested.
 bool IsFullscreen(aura::PropertyConverter* property_converter,
                   const std::vector<uint8_t>& transport_data) {
-  using ui::mojom::WindowManager;
+  using ws::mojom::WindowManager;
   aura::PropertyConverter::PrimitiveType show_state = 0;
   return property_converter->GetPropertyValueFromTransportValue(
              WindowManager::kShowState_Property, transport_data, &show_state) &&
@@ -48,13 +48,13 @@ bool ShouldRenderTitleArea(
     aura::PropertyConverter* property_converter,
     const std::map<std::string, std::vector<uint8_t>>& properties) {
   auto iter = properties.find(
-      ui::mojom::WindowManager::kRenderParentTitleArea_Property);
+      ws::mojom::WindowManager::kRenderParentTitleArea_Property);
   if (iter == properties.end())
     return false;
 
   aura::PropertyConverter::PrimitiveType value = 0;
   return property_converter->GetPropertyValueFromTransportValue(
-             ui::mojom::WindowManager::kRenderParentTitleArea_Property,
+             ws::mojom::WindowManager::kRenderParentTitleArea_Property,
              iter->second, &value) &&
          value == 1;
 }
@@ -90,7 +90,7 @@ gfx::Rect CalculateDefaultBounds(
 
   const gfx::Size root_size = root_window->bounds().size();
   auto show_state_iter =
-      properties->find(ui::mojom::WindowManager::kShowState_Property);
+      properties->find(ws::mojom::WindowManager::kShowState_Property);
   if (show_state_iter != properties->end()) {
     if (IsFullscreen(property_converter, show_state_iter->second)) {
       gfx::Rect bounds(root_size);
@@ -126,7 +126,7 @@ gfx::Rect CalculateDefaultBounds(
 // RootWindowController was found.
 aura::Window* CreateAndParentTopLevelWindowInRoot(
     RootWindowController* root_window_controller,
-    ui::mojom::WindowType window_type,
+    ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
   // TODO(sky): constrain and validate properties.
@@ -145,8 +145,8 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
                                             property_converter, properties);
 
   const bool provide_non_client_frame =
-      window_type == ui::mojom::WindowType::WINDOW ||
-      window_type == ui::mojom::WindowType::PANEL;
+      window_type == ws::mojom::WindowType::WINDOW ||
+      window_type == ws::mojom::WindowType::PANEL;
   if (provide_non_client_frame) {
     // See NonClientFrameController for details on lifetime.
     NonClientFrameController* non_client_frame_controller =
@@ -156,7 +156,7 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
     return non_client_frame_controller->window();
   }
 
-  if (window_type == ui::mojom::WindowType::POPUP &&
+  if (window_type == ws::mojom::WindowType::POPUP &&
       ShouldRenderTitleArea(property_converter, *properties)) {
     // Pick a parent so display information is obtained. Will pick the real one
     // once transient parent found.
@@ -198,10 +198,10 @@ aura::Window* CreateAndParentTopLevelWindowInRoot(
 }  // namespace
 
 aura::Window* CreateAndParentTopLevelWindow(
-    ui::mojom::WindowType window_type,
+    ws::mojom::WindowType window_type,
     aura::PropertyConverter* property_converter,
     std::map<std::string, std::vector<uint8_t>>* properties) {
-  if (window_type == ui::mojom::WindowType::UNKNOWN)
+  if (window_type == ws::mojom::WindowType::UNKNOWN)
     return nullptr;  // Clients must supply a valid type.
 
   RootWindowController* root_window_controller =
@@ -211,7 +211,7 @@ aura::Window* CreateAndParentTopLevelWindow(
   DisconnectedAppHandler::Create(window);
 
   auto ignored_by_shelf_iter = properties->find(
-      ui::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty);
+      ws::mojom::WindowManager::kWindowIgnoredByShelf_InitProperty);
   if (ignored_by_shelf_iter != properties->end()) {
     wm::WindowState* window_state = wm::GetWindowState(window);
     window_state->set_ignored_by_shelf(
@@ -222,7 +222,7 @@ aura::Window* CreateAndParentTopLevelWindow(
 
   // TODO: kFocusable_InitProperty should be removed. http://crbug.com/837713.
   auto focusable_iter =
-      properties->find(ui::mojom::WindowManager::kFocusable_InitProperty);
+      properties->find(ws::mojom::WindowManager::kFocusable_InitProperty);
   if (focusable_iter != properties->end()) {
     bool can_focus = mojo::ConvertTo<bool>(focusable_iter->second);
     NonClientFrameController* non_client_frame_controller =
@@ -235,7 +235,7 @@ aura::Window* CreateAndParentTopLevelWindow(
   }
 
   auto translucent_iter =
-      properties->find(ui::mojom::WindowManager::kTranslucent_InitProperty);
+      properties->find(ws::mojom::WindowManager::kTranslucent_InitProperty);
   if (translucent_iter != properties->end()) {
     bool translucent = mojo::ConvertTo<bool>(translucent_iter->second);
     window->SetTransparent(translucent);
