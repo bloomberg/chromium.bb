@@ -74,9 +74,9 @@ public class SiteSettingsPreferencesTest {
             public void run() {
                 SingleCategoryPreferences websitePreferences = (SingleCategoryPreferences)
                         preferenceActivity.getFragmentForTest();
-                ChromeSwitchPreference location = (ChromeSwitchPreference)
-                        websitePreferences.findPreference(
-                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
+                ChromeSwitchPreference location =
+                        (ChromeSwitchPreference) websitePreferences.findPreference(
+                                SingleCategoryPreferences.BINARY_TOGGLE_KEY);
 
                 websitePreferences.onPreferenceChange(location, enabled);
                 Assert.assertEquals("Location should be " + (enabled ? "allowed" : "blocked"),
@@ -181,7 +181,7 @@ public class SiteSettingsPreferencesTest {
                         (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
                 final ChromeSwitchPreference cookies =
                         (ChromeSwitchPreference) websitePreferences.findPreference(
-                                SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
+                                SingleCategoryPreferences.BINARY_TOGGLE_KEY);
                 final ChromeBaseCheckBoxPreference thirdPartyCookies =
                         (ChromeBaseCheckBoxPreference) websitePreferences.findPreference(
                                 SingleCategoryPreferences.THIRD_PARTY_COOKIES_TOGGLE_KEY);
@@ -231,7 +231,7 @@ public class SiteSettingsPreferencesTest {
                 SingleCategoryPreferences preferences =
                         (SingleCategoryPreferences) preferenceActivity.getFragmentForTest();
                 ChromeSwitchPreference toggle = (ChromeSwitchPreference) preferences.findPreference(
-                        SingleCategoryPreferences.READ_WRITE_TOGGLE_KEY);
+                        SingleCategoryPreferences.BINARY_TOGGLE_KEY);
                 preferences.onPreferenceChange(toggle, enabled);
             }
         });
