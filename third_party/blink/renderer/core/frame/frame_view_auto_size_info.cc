@@ -90,7 +90,10 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
                              kHorizontalScrollbar));
       // Don't bother checking for a vertical scrollbar because the width is at
       // already greater the maximum.
-    } else if (new_size.Height() > max_auto_size_.Height()) {
+    } else if (new_size.Height() > max_auto_size_.Height() &&
+               // If we have a real vertical scrollbar, it's already included in
+               // MinPreferredLogicalWidth, so don't add a hypothetical one.
+               !layout_viewport->HasVerticalScrollbar()) {
       new_size.Expand(
           layout_viewport->HypotheticalScrollbarThickness(kVerticalScrollbar),
           0);
