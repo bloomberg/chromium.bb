@@ -94,6 +94,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_FreshWorker);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_NonActiveWorker);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_RunningWorker);
 FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StaleUpdate_StartWorker);
+FORWARD_DECLARE_TEST(ServiceWorkerVersionTest, StartRequestWithNullContext);
 }  // namespace service_worker_version_unittest
 
 namespace service_worker_registration_unittest {
@@ -551,6 +552,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerVersionTest,
       StaleUpdate_DoNotDeferTimer);
+  FRIEND_TEST_ALL_PREFIXES(
+      service_worker_version_unittest::ServiceWorkerVersionTest,
+      StartRequestWithNullContext);
   FRIEND_TEST_ALL_PREFIXES(
       service_worker_version_unittest::ServiceWorkerRequestTimeoutTest,
       RequestTimeout);
