@@ -519,7 +519,8 @@ struct WebContentsObserverForStop : public content::WebContentsObserver {
   MOCK_METHOD0(NavigationStopped, void());
 };
 
-IN_PROC_BROWSER_TEST_F(ContextImplTest, Stop) {
+// TODO(crbug.com/876894): Disabled due to flakiness.
+IN_PROC_BROWSER_TEST_F(ContextImplTest, DISABLED_Stop) {
   chromium::web::FramePtr frame = CreateFrame();
 
   chromium::web::NavigationControllerPtr controller;
