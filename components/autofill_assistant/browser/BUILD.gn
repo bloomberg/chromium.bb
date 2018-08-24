@@ -43,6 +43,7 @@ jumbo_static_library("browser") {
     "assistant_ui_delegate.h",
     "assistant_web_controller.cc",
     "assistant_web_controller.h",
+    "client_memory.h",
   ]
 
   deps = [
