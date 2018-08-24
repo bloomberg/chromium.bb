@@ -72,7 +72,7 @@ input {
   width: calc(100% - 16px);
 }
 
-#url-field:not(.text-modified) {
+input::placeholder {
   color: rgba(32, 33, 36, 0.38);
 }
 

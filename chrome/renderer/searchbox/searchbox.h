@@ -136,6 +136,11 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends ResetCustomLinks to the browser.
   void ResetCustomLinks();
 
+  // Attempts to fix obviously invalid URLs. Uses the "https" scheme unless
+  // otherwise specified. Returns the fixed URL if valid, otherwise returns an
+  // empty string.
+  std::string FixupAndValidateUrl(const std::string& url) const;
+
   // Updates the NTP custom background preferences, sometimes this includes
   // image attributions.
   void SetCustomBackgroundURL(const GURL& background_url);
