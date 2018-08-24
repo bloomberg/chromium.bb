@@ -10312,7 +10312,8 @@ static void set_params_rd_pick_inter_mode(
           (cpi->ref_frame_flags & ref_frame_flag_list[rf[1]]))) {
       continue;
     }
-    if (block_size_wide[bsize] != block_size_high[bsize]) {
+    if (mbmi->partition != PARTITION_NONE &&
+        mbmi->partition != PARTITION_SPLIT) {
       if ((skip_ref_frame_mask & (1 << rf[0])) ||
           (skip_ref_frame_mask & (1 << rf[1]))) {
         continue;
@@ -10640,8 +10641,7 @@ static int inter_mode_search_order_independent_skip(
   const unsigned char segment_id = mbmi->segment_id;
   const MV_REFERENCE_FRAME *ref_frame = av1_mode_order[mode_index].ref_frame;
   const PREDICTION_MODE this_mode = av1_mode_order[mode_index].mode;
-
-  if (block_size_wide[bsize] != block_size_high[bsize]) {
+  if (mbmi->partition != PARTITION_NONE && mbmi->partition != PARTITION_SPLIT) {
     if (ctx->skip_ref_frame_mask & (1 << ref_frame[0])) return 1;
     if (ref_frame[1] > 0 && (ctx->skip_ref_frame_mask & (1 << ref_frame[1])))
       return 1;
