@@ -4224,6 +4224,25 @@
             ]
         }
     ],
+    "SurfaceSynchronization": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows",
+                "chromeos",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SurfaceSynchronization"
+                    ]
+                }
+            ]
+        }
+    ],
     "TLS13Variant": [
         {
             "platforms": [
