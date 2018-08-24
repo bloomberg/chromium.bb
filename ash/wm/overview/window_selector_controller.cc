@@ -196,7 +196,7 @@ class WindowSelectorController::OverviewBlurController
     DCHECK(window_selector);
 
     for (aura::Window* root : Shell::Get()->GetAllRootWindows()) {
-      if (!should_blur || window_selector->ShouldAnimateWallpaper(root)) {
+      if (window_selector->ShouldAnimateWallpaper(root)) {
         root->AddObserver(this);
         roots_to_animate_.push_back(root);
       } else {
