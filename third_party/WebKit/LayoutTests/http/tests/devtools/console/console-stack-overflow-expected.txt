@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that when stack overflow exception happens when inspector is open the stack trace is correctly shown in console.
 
 console-stack-overflow.js:15 Uncaught RangeError: Maximum call stack size exceeded

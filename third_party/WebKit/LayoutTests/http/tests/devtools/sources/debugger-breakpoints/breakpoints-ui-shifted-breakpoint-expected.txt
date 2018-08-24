@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests shifted breakpoint.
 Set enabled breakpoint close to shifted location
 breakpoint at 29

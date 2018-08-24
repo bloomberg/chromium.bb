@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Check that we can set breakpoint in collected function
 evaluate script and collect function foo..
 set breakpoint inside function foo and dump it..

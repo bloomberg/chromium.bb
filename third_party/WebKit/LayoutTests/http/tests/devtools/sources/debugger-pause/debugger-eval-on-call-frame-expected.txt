@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Test that evaluation in the context of top frame will see values of its local variables, even if there are global variables with same names. On success the test will print a = 2(value of the local variable a). Bug 47358.
 
 Set timer for test function.

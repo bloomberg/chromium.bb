@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Verifies that the sourceMap is in fact re-requested from network as SASS watchdog updates the CSS file.
 
 SourceMap successfully re-requested.

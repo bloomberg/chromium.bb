@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that all inlined scripts from the same document are shown in the same source frame with html script tags.
 Script source was shown.
 Script execution paused.

@@ -1,5 +1,6 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests layer compositing reasons in Layers Panel
-Compositing reasons for #document: overflowScrollingTouch,root,rootScroller
+Compositing reasons for #document: layerForScrollingContents
 Compositing reasons for div#transform3d: assumedOverlap,inlineTransform,transform3D
 Compositing reasons for div#transform3d-individual: assumedOverlap,inlineTransform,transform3D
 Compositing reasons for iframe#iframe: iFrame

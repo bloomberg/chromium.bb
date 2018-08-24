@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that console logging dumps properly when there are multiple custom formatters on the page
 
 console-custom-formatters.js:120 Header formatted by 1 aBody formatted by 1 a

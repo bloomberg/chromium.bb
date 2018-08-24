@@ -53,6 +53,8 @@ enum Milestone {
   kM69,
   kM70,
   kM71,
+  kM72,
+  kM73,
 };
 
 // Returns estimated milestone dates as human-readable strings.
@@ -87,6 +89,10 @@ const char* MilestoneString(Milestone milestone) {
       return "M70, around October 2018";
     case kM71:
       return "M71, around December 2018";
+    case kM72:
+      return "M72, around January 2019";
+    case kM73:
+      return "M73, around March 2019";
   }
 
   NOTREACHED();
@@ -97,7 +103,8 @@ const char* MilestoneString(Milestone milestone) {
 double MilestoneDate(Milestone milestone) {
   // These are the Estimated Stable Dates:
   // https://www.chromium.org/developers/calendar
-
+  // All are at 04:00:00 GMT.
+  // TODO(yoichio): We should have something like "Time(March, 6, 2018)".
   switch (milestone) {
     case kUnknown:
       return 0;
@@ -125,6 +132,10 @@ double MilestoneDate(Milestone milestone) {
       return 1539662400000;  // October 16, 2018.
     case kM71:
       return 1543899600000;  // December 4, 2018.
+    case kM72:
+      return 1548734400000;  // January 29, 2019.
+    case kM73:
+      return 1552363200000;  // March 12, 2019.
   }
 
   NOTREACHED();
@@ -444,6 +455,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           "DeprecatedTimingFunctionStepMiddle", kM62,
           WillBeRemoved("The step timing function with step position 'middle'",
                         kM62, "5189363944128512")};
+
+    case WebFeature::kElementCreateShadowRoot:
+      return {"ElementCreateShadowRoot", kM73,
+              ReplacedWillBeRemoved("Element.createShadowRoot",
+                                    "Element.attachShadow", kM73,
+                                    "4507242028072960")};
 
     case WebFeature::kHTMLImportsHasStyleSheets:
       return {"HTMLImportsHasStyleSheets", kUnknown,

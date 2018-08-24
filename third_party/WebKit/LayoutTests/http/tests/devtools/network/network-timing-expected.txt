@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests network panel timing.
 
 http://127.0.0.1:8000/devtools/network/resources/resource.php?type=js&wait=100&send=200&jsdelay=300&jscontent=resourceLoaded()

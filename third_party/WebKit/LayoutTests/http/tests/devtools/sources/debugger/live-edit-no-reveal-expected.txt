@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests live edit feature.
 
 
@@ -29,7 +30,7 @@ Did step into
 Script execution resumed.
 Script execution paused.
 Script execution resumed.
-Cursor position is: (2, 4).
+Cursor position is: (8, 20).
 
 Running: testLiveEditWithStepInWhenPausedThenStepIntoCausesCursorMove
 Script execution paused.

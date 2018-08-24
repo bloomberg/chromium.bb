@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that when console.trace is called in eval'ed script ending with //# sourceURL=url it will dump a stack trace that will have the url as the script source. Bug 47252.
 
 evalURL.js:5 console.trace

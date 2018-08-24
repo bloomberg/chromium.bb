@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that console preserves log on oopif navigation
 oopif-console-preser…me-navigation.js:12 Before navigation
 oopif-console-preser…me-navigation.js:14 After navigation

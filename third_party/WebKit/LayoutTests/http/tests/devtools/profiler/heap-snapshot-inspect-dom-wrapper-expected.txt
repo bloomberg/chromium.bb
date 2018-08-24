@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Test that resolving heap snapshot object to a JS object will not crash on DOM wrapper boilerplate. Test passes if it doesn't crash.
 
 PASS: snapshot was taken

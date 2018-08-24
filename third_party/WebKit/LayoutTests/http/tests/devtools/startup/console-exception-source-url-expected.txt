@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that when exception happens before inspector is open source url is correctly shown in console.
 
 foo2.js:1 Uncaught ReferenceError: FAIL is not defined

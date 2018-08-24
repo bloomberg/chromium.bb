@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that elements panel updates dom tree structure upon distribution in shadow dom.
 
 
@@ -100,10 +101,10 @@ Running: modifyChild1
 - <div id="host1">
     - #shadow-root (open)
         - <slot id="slot1" name="slot1">
-              ↪ <span>
               ↪ <h2>
           </slot>
         - <slot id="slot2" name="slot2">
+              ↪ <span>
               ↪ <h1>
           </slot>
         - <slot id="slot3">
@@ -120,14 +121,14 @@ Running: modifyChild4
 - <div id="host1">
     - #shadow-root (open)
         - <slot id="slot1" name="slot1">
-              ↪ <span>
+              ↪ <h2>
           </slot>
         - <slot id="slot2" name="slot2">
+              ↪ <span>
               ↪ <h1>
           </slot>
         - <slot id="slot3">
               ↪ <div>
-              ↪ <h2>
           </slot>
       <span id="child1" slot="slot1"></span>
       <div id="child2"></div>
@@ -140,14 +141,14 @@ Running: modifySlot1
 - <div id="host1">
     - #shadow-root (open)
         - <slot id="slot1" name="slot3">
-              ↪ <h3>
+              ↪ <h2>
           </slot>
         - <slot id="slot2" name="slot2">
+              ↪ <span>
               ↪ <h1>
           </slot>
         - <slot id="slot3">
               ↪ <div>
-              ↪ <h2>
           </slot>
       <span id="child1" slot="slot1"></span>
       <div id="child2"></div>
@@ -160,14 +161,14 @@ Running: modifySlot2
 - <div id="host1">
     - #shadow-root (open)
         - <slot id="slot1" name="slot3">
-              ↪ <h3>
+              ↪ <h2>
           </slot>
         - <slot id="slot2" name="slot1">
               ↪ <span>
+              ↪ <h1>
           </slot>
         - <slot id="slot3">
               ↪ <div>
-              ↪ <h2>
           </slot>
       <span id="child1" slot="slot1"></span>
       <div id="child2"></div>
@@ -246,10 +247,10 @@ Running: modifyChild4
 - <div id="host1">
     - #shadow-root (open)
         - <slot id="slot2" name="slot1">
-              ↪ <h2>
           </slot>
         - <slot id="slot3">
               ↪ <div>
+              ↪ <h2>
           </slot>
       <div id="child2"></div>
       <h2 id="child4" slot="slot1"></h2>

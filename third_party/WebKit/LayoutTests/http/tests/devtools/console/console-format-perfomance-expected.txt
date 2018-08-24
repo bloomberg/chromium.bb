@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that console nicely formats perfomance getters.
 
 console-format-perfomance.js:14 PerformanceTiming {navigationStart: <number>, unloadEventStart: <number>, unloadEventEnd: <number>, redirectStart: <number>, redirectEnd: <number>, …}

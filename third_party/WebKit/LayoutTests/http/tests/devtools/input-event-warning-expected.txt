@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that console warnings are issued for a blocked event listener and that there is no crash when an offending listener is removed by the handler.
 
 There should be no warnings above this line
