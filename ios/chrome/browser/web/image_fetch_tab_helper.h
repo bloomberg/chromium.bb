@@ -12,31 +12,28 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
 
-// Gets the image data in binary string by calling injected JavaScript.
-// Never keep a reference to this class, instead get it by
-// ImageFetchTabHelper::FromWebState everytime.
+// Gets the image data by JavaScript or
+// image_fetcher::IOSImageDataFetcherWrapper. Always use this class by
+// ImageFetchTabHelper::FromWebState on UI thread. All callbacks will also be
+// invoked on UI thread.
 class ImageFetchTabHelper : public web::WebStateObserver,
                             public web::WebStateUserData<ImageFetchTabHelper> {
  public:
   ~ImageFetchTabHelper() override;
 
-  // Callback for GetImageData. |data| will be in binary format, or nullptr if
+  // Callback for GetImageData. |data| will be in binary format, or nil if
   // GetImageData failed.
-  typedef base::OnceCallback<void(const std::string* data)> ImageDataCallback;
+  typedef void (^ImageDataCallback)(NSData* data);
 
-  // Gets image data as binary string by trying 2 methods in following order:
-  //   1. Draw <img> to <canvas> and export its data;
-  //   2. Download the image by XMLHttpRequest and hopefully get responsed from
-  //   cache.
-  // This method should only be called from UI thread, and |url| should be equal
-  // to the resolved "src" attribute of <img>, otherwise the method 1 would
-  // fail. |callback| will be called on UI thread. If the JavaScript does not
-  // response after |timeout|, the |callback| will be invoked with nullptr.
+  // Gets image data in binary format by following steps:
+  //   1. Call injected JavaScript to get the image data from web page;
+  //   2. If JavaScript fails or does not send a message back in 300ms, try
+  //   downloading the image by image_fetcher::IOSImageDataFetcherWrapper.
   void GetImageData(const GURL& url,
-                    base::TimeDelta timeout,
-                    ImageDataCallback&& callback);
+                    const web::Referrer& referrer,
+                    ImageDataCallback callback);
 
- private:
+ protected:
   friend class web::WebStateUserData<ImageFetchTabHelper>;
 
   explicit ImageFetchTabHelper(web::WebState* web_state);
@@ -46,17 +43,38 @@ class ImageFetchTabHelper : public web::WebStateObserver,
                           web::NavigationContext* navigation_context) override;
   void WebStateDestroyed(web::WebState* web_state) override;
 
-  // Handler for messages sent back from injected JavaScript.
-  bool OnImageDataReceived(const base::DictionaryValue& message);
+  // Callback for GetImageDataByJs. |data| will be in binary format, or nullptr
+  // if GetImageDataByJs failed.
+  typedef base::OnceCallback<void(const std::string* data)> JsCallback;
 
-  // Handler for timeout on GetImageData.
-  void OnImageDataTimeout(int call_id);
+  // Gets image data in binary format by trying 2 JavaScript methods in order:
+  //   1. Draw <img> to <canvas> and export its data;
+  //   2. Download the image by XMLHttpRequest and hopefully get responded from
+  //   cache.
+  // |url| should be equal to the resolved "src" attribute of <img>, otherwise
+  // the method 1 would fail. If the JavaScript does not respond after
+  // |timeout|, the |callback| will be invoked with nullptr.
+  void GetImageDataByJs(const GURL& url,
+                        base::TimeDelta timeout,
+                        JsCallback&& callback);
+
+  // Handler for messages sent back from injected JavaScript.
+  bool OnJsMessage(const base::DictionaryValue& message);
+
+  // Handler for timeout on GetImageDataByJs.
+  void OnJsTimeout(int call_id);
+
+  // Handler for calling GetImageDataByJs inside GetImageData.
+  void JsCallbackOfGetImageData(const GURL& url,
+                                const web::Referrer& referrer,
+                                ImageDataCallback callback,
+                                const std::string* data);
 
   // WebState this tab helper is attached to.
   web::WebState* web_state_ = nullptr;
 
   // Store callbacks for GetImageData, with url as key.
-  std::unordered_map<int, ImageDataCallback> callbacks_;
+  std::unordered_map<int, JsCallback> js_callbacks_;
 
   // |GetImageData| uses this counter as ID to match calls with callbacks. Each
   // call on |GetImageData| will increment |call_id_| by 1 and pass it as ID

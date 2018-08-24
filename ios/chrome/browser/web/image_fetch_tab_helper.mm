@@ -8,8 +8,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/image_fetcher/ios/ios_image_data_fetcher_wrapper.h"
+#include "ios/web/public/browser_state.h"
+#include "ios/web/public/referrer_util.h"
 #import "ios/web/public/web_state/navigation_context.h"
 #include "ios/web/public/web_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -20,6 +24,35 @@ DEFINE_WEB_STATE_USER_DATA_KEY(ImageFetchTabHelper);
 namespace {
 // Command prefix for injected JavaScript.
 const char kCommandPrefix[] = "imageFetch";
+// Key for image_fetcher
+const char kImageFetcherKeyName[] = "0";
+
+// Wrapper class for image_fetcher::IOSImageDataFetcherWrapper. ImageFetcher is
+// attached to web::BrowserState instead of web::WebState, because if a user
+// closes the tab immediately after Copy/Save image, the web::WebState will be
+// destroyed thus fail the download.
+class ImageFetcher : public image_fetcher::IOSImageDataFetcherWrapper,
+                     public base::SupportsUserData::Data {
+ public:
+  ~ImageFetcher() override = default;
+
+  ImageFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : image_fetcher::IOSImageDataFetcherWrapper(url_loader_factory) {}
+
+  static ImageFetcher* FromBrowserState(web::BrowserState* browser_state) {
+    if (!browser_state->GetUserData(&kImageFetcherKeyName)) {
+      browser_state->SetUserData(
+          &kImageFetcherKeyName,
+          std::make_unique<ImageFetcher>(
+              browser_state->GetSharedURLLoaderFactory()));
+    }
+    return static_cast<ImageFetcher*>(
+        browser_state->GetUserData(&kImageFetcherKeyName));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ImageFetcher);
+};
 }
 
 ImageFetchTabHelper::ImageFetchTabHelper(web::WebState* web_state)
@@ -32,7 +65,7 @@ ImageFetchTabHelper::ImageFetchTabHelper(web::WebState* web_state)
           [](base::WeakPtr<ImageFetchTabHelper> ptr,
              const base::DictionaryValue& message, const GURL& page_url,
              bool has_user_gesture, bool form_in_main_frame) {
-            return ptr ? ptr->OnImageDataReceived(message) : true;
+            return ptr ? ptr->OnJsMessage(message) : true;
           },
           weak_ptr_factory_.GetWeakPtr()),
       kCommandPrefix);
@@ -46,29 +79,59 @@ void ImageFetchTabHelper::DidStartNavigation(
   if (navigation_context->IsSameDocument()) {
     return;
   }
-  for (auto&& pair : callbacks_)
+  for (auto&& pair : js_callbacks_)
     std::move(pair.second).Run(nullptr);
-  callbacks_.clear();
+  js_callbacks_.clear();
 }
 
 void ImageFetchTabHelper::WebStateDestroyed(web::WebState* web_state) {
   web_state->RemoveScriptCommandCallback(kCommandPrefix);
-  for (auto&& pair : callbacks_)
+  for (auto&& pair : js_callbacks_)
     std::move(pair.second).Run(nullptr);
   web_state->RemoveObserver(this);
   web_state_ = nullptr;
 }
 
 void ImageFetchTabHelper::GetImageData(const GURL& url,
-                                       base::TimeDelta timeout,
-                                       ImageDataCallback&& callback) {
+                                       const web::Referrer& referrer,
+                                       ImageDataCallback callback) {
+  // |this| is captured into the callback of GetImageDataByJs, which will always
+  // be invoked before the |this| is destroyed, so it's safe.
+  GetImageDataByJs(
+      url, base::TimeDelta::FromMilliseconds(300),
+      base::BindOnce(&ImageFetchTabHelper::JsCallbackOfGetImageData,
+                     base::Unretained(this), url, referrer, callback));
+}
+
+void ImageFetchTabHelper::JsCallbackOfGetImageData(
+    const GURL& url,
+    const web::Referrer& referrer,
+    ImageDataCallback callback,
+    const std::string* data) {
+  if (data) {
+    callback([NSData dataWithBytes:data->c_str() length:data->size()]);
+    return;
+  }
+  ImageFetcher::FromBrowserState(web_state_->GetBrowserState())
+      ->FetchImageDataWebpDecoded(
+          url,
+          ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
+            callback(data);
+          },
+          web::ReferrerHeaderValueForNavigation(url, referrer),
+          web::PolicyForNavigation(url, referrer), /*send_cookies=*/true);
+}
+
+void ImageFetchTabHelper::GetImageDataByJs(const GURL& url,
+                                           base::TimeDelta timeout,
+                                           JsCallback&& callback) {
   ++call_id_;
-  DCHECK_EQ(callbacks_.count(call_id_), 0UL);
-  callbacks_.insert({call_id_, std::move(callback)});
+  DCHECK_EQ(js_callbacks_.count(call_id_), 0UL);
+  js_callbacks_.insert({call_id_, std::move(callback)});
 
   web::WebThread::PostDelayedTask(
       web::WebThread::UI, FROM_HERE,
-      base::BindRepeating(&ImageFetchTabHelper::OnImageDataTimeout,
+      base::BindRepeating(&ImageFetchTabHelper::OnJsTimeout,
                           weak_ptr_factory_.GetWeakPtr(), call_id_),
       timeout);
 
@@ -89,18 +152,17 @@ void ImageFetchTabHelper::GetImageData(const GURL& url,
 // For failure:
 //   {'command': 'image.getImageData',
 //    'id': id_sent_to_gCrWeb_image_getImageData}
-bool ImageFetchTabHelper::OnImageDataReceived(
-    const base::DictionaryValue& message) {
+bool ImageFetchTabHelper::OnJsMessage(const base::DictionaryValue& message) {
   const base::Value* id_key = message.FindKey("id");
   if (!id_key || !id_key->is_double()) {
     return false;
   }
   int id_value = static_cast<int>(id_key->GetDouble());
-  if (!callbacks_.count(id_value)) {
+  if (!js_callbacks_.count(id_value)) {
     return true;
   }
-  ImageDataCallback callback = std::move(callbacks_[id_value]);
-  callbacks_.erase(id_value);
+  JsCallback callback = std::move(js_callbacks_[id_value]);
+  js_callbacks_.erase(id_value);
 
   const base::Value* data = message.FindKey("data");
   std::string decoded_data;
@@ -113,10 +175,10 @@ bool ImageFetchTabHelper::OnImageDataReceived(
   return true;
 }
 
-void ImageFetchTabHelper::OnImageDataTimeout(int call_id) {
-  if (callbacks_.count(call_id)) {
-    ImageDataCallback callback = std::move(callbacks_[call_id]);
-    callbacks_.erase(call_id);
+void ImageFetchTabHelper::OnJsTimeout(int call_id) {
+  if (js_callbacks_.count(call_id)) {
+    JsCallback callback = std::move(js_callbacks_[call_id]);
+    js_callbacks_.erase(call_id);
     std::move(callback).Run(nullptr);
   }
 }

@@ -40,6 +40,10 @@ class WebTest : public PlatformTest {
   // fixture will fail if a render process crashes.
   void SetIgnoreRenderProcessCrashesDuringTesting(bool allow);
 
+  // Sets a SharedURLLoaderFactory for |browser_state_|.
+  void SetSharedURLLoaderFactory(
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
+
  private:
   // The WebClient used in tests.
   ScopedTestingWebClient web_client_;

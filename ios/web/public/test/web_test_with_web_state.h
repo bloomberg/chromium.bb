@@ -23,8 +23,11 @@ class WebState;
 class WebTestWithWebState : public WebTest,
                             public base::MessageLoop::TaskObserver {
  protected:
-  WebTestWithWebState();
-  explicit WebTestWithWebState(std::unique_ptr<web::WebClient> web_client);
+  explicit WebTestWithWebState(
+      TestWebThreadBundle::Options = TestWebThreadBundle::Options::DEFAULT);
+  WebTestWithWebState(
+      std::unique_ptr<web::WebClient> web_client,
+      TestWebThreadBundle::Options = TestWebThreadBundle::Options::DEFAULT);
   ~WebTestWithWebState() override;
 
   // WebTest overrides.
