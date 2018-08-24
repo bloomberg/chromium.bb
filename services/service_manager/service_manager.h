@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/catalog/catalog.h"
+#include "services/catalog/service_options.h"
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
@@ -131,7 +132,8 @@ class ServiceManager {
   Instance* CreateInstance(const Identity& source,
                            const Identity& target,
                            InstanceType instance_type,
-                           const InterfaceProviderSpecMap& specs);
+                           const InterfaceProviderSpecMap& specs,
+                           const catalog::ServiceOptions& options);
 
   // Called from the instance implementing mojom::ServiceManager.
   void AddListener(mojom::ServiceManagerListenerPtr listener);

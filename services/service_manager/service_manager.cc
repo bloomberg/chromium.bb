@@ -210,7 +210,9 @@ class ServiceManager::Instance
  public:
   Instance(service_manager::ServiceManager* service_manager,
            const Identity& identity,
-           const InterfaceProviderSpecMap& interface_provider_specs)
+           const InterfaceProviderSpecMap& interface_provider_specs,
+           // TODO(crbug.com/866967) this parameter will be used in the future
+           const catalog::ServiceOptions& options)
       : service_manager_(service_manager),
         id_(GenerateUniqueID()),
         identity_(identity),
@@ -881,9 +883,9 @@ ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
 
-  service_manager_instance_ =
-      CreateInstance(Identity(), CreateServiceManagerIdentity(),
-                     InstanceType::kSingleton, std::move(specs));
+  service_manager_instance_ = CreateInstance(
+      Identity(), CreateServiceManagerIdentity(), InstanceType::kSingleton,
+      std::move(specs), catalog::ServiceOptions());
 
   mojom::ServicePtr service;
   service_context_.reset(new ServiceContext(std::make_unique<ServiceImpl>(this),
@@ -949,6 +951,8 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   const InterfaceProviderSpecMap& interface_provider_specs =
       entry->interface_provider_specs();
 
+  const catalog::ServiceOptions& options = entry->options();
+
   auto it = interface_provider_specs.find(mojom::kServiceManager_ConnectorSpec);
   const InterfaceProviderSpec& connection_spec =
       it != interface_provider_specs.end()
@@ -993,8 +997,9 @@ void ServiceManager::Connect(std::unique_ptr<ConnectParams> params) {
   params->set_target(target);
 
   bool result_interface_provider_specs_empty = interface_provider_specs.empty();
-  Instance* instance = CreateInstance(source_identity_for_creation, target,
-                                      instance_type, interface_provider_specs);
+  Instance* instance =
+      CreateInstance(source_identity_for_creation, target, instance_type,
+                     interface_provider_specs, options);
 
   // Below are various paths through which a new Instance can be bound to a
   // Service proxy.
@@ -1113,9 +1118,9 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
 
-  Instance* instance =
-      CreateInstance(CreateServiceManagerIdentity(), CreateCatalogIdentity(),
-                     InstanceType::kSingleton, std::move(specs));
+  Instance* instance = CreateInstance(
+      CreateServiceManagerIdentity(), CreateCatalogIdentity(),
+      InstanceType::kSingleton, std::move(specs), catalog::ServiceOptions());
   instance->StartWithService(std::move(catalog));
 }
 
@@ -1199,10 +1204,11 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
     const Identity& source,
     const Identity& target,
     InstanceType instance_type,
-    const InterfaceProviderSpecMap& specs) {
+    const InterfaceProviderSpecMap& specs,
+    const catalog::ServiceOptions& options) {
   CHECK(target.user_id() != mojom::kInheritUserID);
 
-  auto instance = std::make_unique<Instance>(this, target, std::move(specs));
+  auto instance = std::make_unique<Instance>(this, target, specs, options);
   Instance* raw_instance = instance.get();
 
   instances_.insert(std::make_pair(raw_instance, std::move(instance)));

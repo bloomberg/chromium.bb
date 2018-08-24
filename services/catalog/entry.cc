@@ -163,6 +163,45 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
   if (value.GetString(Store::kSandboxTypeKey, &sandbox_type))
     entry->set_sandbox_type(std::move(sandbox_type));
 
+  // Options, optional.
+  if (const base::Value* options = value.FindKey(Store::kOptionsKey)) {
+    ServiceOptions options_struct;
+
+    if (const base::Value* instance_sharing_value =
+            options->FindKey("instance_sharing")) {
+      const std::string& instance_sharing = instance_sharing_value->GetString();
+      if (instance_sharing == "none")
+        options_struct.instance_sharing =
+            ServiceOptions::InstanceSharingType::NONE;
+      else if (instance_sharing == "singleton")
+        options_struct.instance_sharing =
+            ServiceOptions::InstanceSharingType::SINGLETON;
+      else if (instance_sharing == "shared_instance_across_users")
+        options_struct.instance_sharing =
+            ServiceOptions::InstanceSharingType::SHARED_INSTANCE_ACROSS_USERS;
+      else
+        LOG(ERROR) << "Entry::Deserialize invalid instance sharing type: "
+                   << instance_sharing;
+    }
+
+    if (const base::Value* allow_other_user_ids_value =
+            options->FindKey("allow_other_user_ids"))
+      options_struct.allow_other_user_ids =
+          allow_other_user_ids_value->GetBool();
+
+    if (const base::Value* allow_other_instance_names_value =
+            options->FindKey("allow_other_instance_names"))
+      options_struct.allow_other_instance_names =
+          allow_other_instance_names_value->GetBool();
+
+    if (const base::Value* instance_for_client_process_value =
+            options->FindKey("instance_for_client_process"))
+      options_struct.instance_for_client_process =
+          instance_for_client_process_value->GetBool();
+
+    entry->AddOptions(std::move(options_struct));
+  }
+
   // InterfaceProvider specs.
   const base::DictionaryValue* interface_provider_specs = nullptr;
   if (!value.GetDictionary(Store::kInterfaceProviderSpecsKey,
@@ -229,6 +268,10 @@ bool Entry::operator==(const Entry& other) const {
   return other.name_ == name_ && other.display_name_ == display_name_ &&
          other.sandbox_type_ == sandbox_type_ &&
          other.interface_provider_specs_ == interface_provider_specs_;
+}
+
+void Entry::AddOptions(ServiceOptions options) {
+  options_ = std::move(options);
 }
 
 void Entry::AddInterfaceProviderSpec(
