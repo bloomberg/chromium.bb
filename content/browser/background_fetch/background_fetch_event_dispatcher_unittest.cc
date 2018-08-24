@@ -87,15 +87,13 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_developer_id().value());
-  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(kExampleUniqueId,
-            embedded_worker_test_helper()->last_unique_id().value());
-  ASSERT_TRUE(embedded_worker_test_helper()->last_failure_reason().has_value());
+            embedded_worker_test_helper()->last_registration()->unique_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchFailureReason::CANCELLED_FROM_UI,
-            embedded_worker_test_helper()->last_failure_reason());
+            embedded_worker_test_helper()->last_registration()->failure_reason);
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -120,12 +118,11 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchAbortEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_developer_id().value());
-  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(kExampleUniqueId2,
-            embedded_worker_test_helper()->last_unique_id().value());
+            embedded_worker_test_helper()->last_registration()->unique_id);
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.AbortEvent",
@@ -159,12 +156,11 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_developer_id().value());
-  ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchState::PENDING,
-            embedded_worker_test_helper()->last_state());
+            embedded_worker_test_helper()->last_registration()->state);
 
   histogram_tester_.ExpectUniqueSample(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -189,12 +185,11 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchClickEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_developer_id().value());
-  ASSERT_TRUE(embedded_worker_test_helper()->last_state().has_value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(blink::mojom::BackgroundFetchState::FAILURE,
-            embedded_worker_test_helper()->last_state());
+            embedded_worker_test_helper()->last_registration()->state);
 
   histogram_tester_.ExpectBucketCount(
       "BackgroundFetch.EventDispatchResult.ClickEvent",
@@ -232,9 +227,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_developer_id().value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -265,9 +260,9 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFailEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_developer_id().value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -309,13 +304,12 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId,
-            embedded_worker_test_helper()->last_developer_id().value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
   EXPECT_EQ(kExampleUniqueId,
-            embedded_worker_test_helper()->last_unique_id().value());
+            embedded_worker_test_helper()->last_registration()->unique_id);
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),
@@ -346,13 +340,11 @@ TEST_F(BackgroundFetchEventDispatcherTest, DispatchFetchSuccessEvent) {
     run_loop.Run();
   }
 
-  ASSERT_TRUE(embedded_worker_test_helper()->last_developer_id().has_value());
+  ASSERT_TRUE(embedded_worker_test_helper()->last_registration().has_value());
   EXPECT_EQ(kExampleDeveloperId2,
-            embedded_worker_test_helper()->last_developer_id().value());
-
-  ASSERT_TRUE(embedded_worker_test_helper()->last_unique_id().has_value());
+            embedded_worker_test_helper()->last_registration()->developer_id);
   EXPECT_EQ(kExampleUniqueId2,
-            embedded_worker_test_helper()->last_unique_id().value());
+            embedded_worker_test_helper()->last_registration()->unique_id);
 
   ASSERT_TRUE(embedded_worker_test_helper()->last_fetches().has_value());
   EXPECT_EQ(fetches.size(),

@@ -22,10 +22,7 @@ BackgroundFetchEmbeddedWorkerTestHelper::
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
     const BackgroundFetchRegistration& registration,
     mojom::ServiceWorker::DispatchBackgroundFetchAbortEventCallback callback) {
-  last_developer_id_ = registration.developer_id;
-  last_unique_id_ = registration.unique_id;
-  last_state_ = registration.state;
-  last_failure_reason_ = registration.failure_reason;
+  last_registration_ = registration;
 
   if (fail_abort_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
@@ -42,10 +39,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
 void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
     const BackgroundFetchRegistration& registration,
     mojom::ServiceWorker::DispatchBackgroundFetchClickEventCallback callback) {
-  last_developer_id_ = registration.developer_id;
-  last_unique_id_ = registration.unique_id;
-  last_state_ = registration.state;
-  last_failure_reason_ = registration.failure_reason;
+  last_registration_ = registration;
 
   if (fail_click_event_) {
     std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::REJECTED,
@@ -63,10 +57,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchFailEvent(
     const BackgroundFetchRegistration& registration,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchFailEventCallback callback) {
-  last_developer_id_ = registration.developer_id;
-  last_unique_id_ = registration.unique_id;
-  last_state_ = registration.state;
-  last_failure_reason_ = registration.failure_reason;
+  last_registration_ = registration;
   last_fetches_ = fetches;
 
   if (fail_fetch_fail_event_) {
@@ -86,10 +77,7 @@ void BackgroundFetchEmbeddedWorkerTestHelper::OnBackgroundFetchSuccessEvent(
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     mojom::ServiceWorker::DispatchBackgroundFetchSuccessEventCallback
         callback) {
-  last_developer_id_ = registration.developer_id;
-  last_unique_id_ = registration.unique_id;
-  last_state_ = registration.state;
-  last_failure_reason_ = registration.failure_reason;
+  last_registration_ = registration;
   last_fetches_ = fetches;
 
   if (fail_fetched_event_) {
