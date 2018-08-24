@@ -1,0 +1,11 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# To create CIPD package run the following command.
+# cipd create --pkg-def cipd.yaml -tag version:2.13-cr0
+package: chromium/third_party/android_deps/libs/com_google_dagger_dagger_android_support
+description: Dagger Android Support
+data:
+- file: dagger-android-support-2.17.aar
+- file: com_google_dagger_dagger_android_support.info

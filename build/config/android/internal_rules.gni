@@ -2984,6 +2984,7 @@ if (enable_java_templates) {
     # TODO(agrieve): Enable lint for _has_sources rather than just _java_files.
     _lint_enabled = _java_files != [] && _supports_android && _chromium_code &&
                     !disable_android_lint
+
     if (_has_sources) {
       _compile_java_target = "${_main_target_name}__compile_java"
       compile_java(_compile_java_target) {
@@ -3175,11 +3176,15 @@ if (enable_java_templates) {
         deps = _accumulated_public_deps
       }
       _accumulated_public_deps += [ ":${target_name}__java_binary_script" ]
+    }
 
+    if (_is_java_binary ||
+        (_is_annotation_processor && !defined(_final_jar_path))) {
       group(target_name) {
         forward_variables_from(invoker,
                                [
                                  "data",
+                                 "deps",
                                  "data_deps",
                                  "visibility",
                                ])

@@ -273,6 +273,9 @@ android_library("chrome_java") {
     "//services/shape_detection/public/mojom:mojom_java",
     "//skia/public/interfaces:interfaces_java",
     "//third_party/android_data_chart:android_data_chart_java",
+    "//third_party/android_deps:com_google_dagger_dagger_android_java",
+    "//third_party/android_deps:com_google_dagger_dagger_java",
+    "//third_party/android_deps:javax_inject_javax_inject_java",
     "//third_party/android_media:android_media_java",
     "//third_party/android_protobuf:protobuf_nano_javalib",
     "//third_party/android_swipe_refresh:android_swipe_refresh_java",
@@ -365,6 +368,11 @@ android_library("chrome_java") {
   # Add the actual implementation where necessary so that downstream targets
   # can provide their own implementations.
   jar_excluded_patterns = [ "*/AppHooksImpl.class" ]
+
+  annotation_processor_deps = [
+    "//third_party/android_deps:dagger_processor",
+    "//third_party/android_deps:dagger_android_processor",
+  ]
 }
 
 action("chrome_android_java_google_api_keys_srcjar") {
