@@ -151,6 +151,27 @@ class TweenTester : public ui::LayerAnimationObserver {
   DISALLOW_COPY_AND_ASSIGN(TweenTester);
 };
 
+// WindowState that lets us specify an initial state.
+class InitialStateTestState : public wm::WindowState::State {
+ public:
+  explicit InitialStateTestState(mojom::WindowStateType initial_state_type)
+      : state_type_(initial_state_type) {}
+  ~InitialStateTestState() override = default;
+
+  // WindowState::State overrides:
+  void OnWMEvent(wm::WindowState* window_state,
+                 const wm::WMEvent* event) override {}
+  mojom::WindowStateType GetType() const override { return state_type_; }
+  void AttachState(wm::WindowState* window_state,
+                   wm::WindowState::State* previous_state) override {}
+  void DetachState(wm::WindowState* window_state) override {}
+
+ private:
+  mojom::WindowStateType state_type_;
+
+  DISALLOW_COPY_AND_ASSIGN(InitialStateTestState);
+};
+
 }  // namespace
 
 // TODO(bruthig): Move all non-simple method definitions out of class
@@ -2991,6 +3012,23 @@ TEST_F(WindowSelectorTest, ShadowDisappearsInOverview) {
   // Verify that the shadow is visible again after exiting overview mode.
   ToggleOverview();
   EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window.get()));
+}
+
+// Verify that PIP windows will be excluded from the overview, but not hidden.
+TEST_F(WindowSelectorTest, PipWindowShownButExcludedFromOverview) {
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> pip_window(CreateWindow(bounds));
+
+  wm::GetWindowState(pip_window.get())
+      ->SetStateObject(std::unique_ptr<wm::WindowState::State>(
+          new InitialStateTestState(mojom::WindowStateType::PIP)));
+
+  // Enter overview.
+  ToggleOverview();
+
+  // PIP window should be visible but not in the overview.
+  EXPECT_TRUE(pip_window->IsVisible());
+  EXPECT_FALSE(SelectWindow(pip_window.get()));
 }
 
 // Tests the PositionWindows function works as expected.

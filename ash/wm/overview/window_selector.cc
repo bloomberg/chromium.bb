@@ -269,7 +269,8 @@ aura::Window* GetDraggedWindow(
 
 // static
 bool WindowSelector::IsSelectable(const aura::Window* window) {
-  return wm::GetWindowState(window)->IsUserPositionable();
+  auto* window_state = wm::GetWindowState(window);
+  return window_state->IsUserPositionable() && !window_state->IsPip();
 }
 
 WindowSelector::WindowSelector(WindowSelectorDelegate* delegate)
