@@ -302,6 +302,16 @@ cr.googleTranslate = (function() {
     },
 
     /**
+     * Called when an error is caught while executing script fetched in
+     * translate_script.cc.
+     */
+    onTranslateElementError: function(error) {
+      errorCode = ERROR['UNEXPECTED_SCRIPT_ERROR'];
+      // Delayed so |readyCallback| has time to be defined.
+      setTimeout(invokeReadyCallback, 100);
+    },
+
+    /**
      * Entry point called by the Translate Element once it has been injected in
      * the page.
      */
