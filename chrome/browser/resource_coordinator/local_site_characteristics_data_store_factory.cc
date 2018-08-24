@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_non_recording_data_store.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -72,6 +73,8 @@ LocalSiteCharacteristicsDataStoreFactory::GetExistingDataStoreForContext(
 KeyedService* LocalSiteCharacteristicsDataStoreFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   SiteCharacteristicsDataStore* data_store = nullptr;
+  Profile* profile = Profile::FromBrowserContext(context);
+  DCHECK(profile);
   if (context->IsOffTheRecord()) {
     content::BrowserContext* parent_context =
         chrome::GetBrowserContextRedirectedInIncognito(context);
@@ -79,14 +82,15 @@ KeyedService* LocalSiteCharacteristicsDataStoreFactory::BuildServiceInstanceFor(
     // Off the record profiles correspond to incognito profile and are derived
     // from a parent profile that is on record.
     DCHECK(!parent_context->IsOffTheRecord());
+    LocalSiteCharacteristicsDataStoreInspector* parent_debug =
+        LocalSiteCharacteristicsDataStoreInspector::GetForProfile(
+            Profile::FromBrowserContext(context));
     SiteCharacteristicsDataStore* data_store_for_readers =
         GetExistingDataStoreForContext(parent_context);
     DCHECK(data_store_for_readers);
     data_store = new LocalSiteCharacteristicsNonRecordingDataStore(
-        data_store_for_readers);
+        profile, parent_debug, data_store_for_readers);
   } else {
-    Profile* profile = Profile::FromBrowserContext(context);
-    DCHECK(profile);
     data_store = new LocalSiteCharacteristicsDataStore(profile);
   }
   DCHECK(data_store);

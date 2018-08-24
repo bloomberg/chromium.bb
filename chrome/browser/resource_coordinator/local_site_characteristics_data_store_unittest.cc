@@ -8,6 +8,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_impl.h"
+#include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -195,6 +196,38 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, HistoryServiceObserver) {
 
   writer->NotifySiteUnloaded();
   writer2->NotifySiteUnloaded();
+}
+
+TEST_F(LocalSiteCharacteristicsDataStoreTest, InspectorWorks) {
+  // Make sure the inspector interface was registered at construction.
+  LocalSiteCharacteristicsDataStoreInspector* inspector =
+      LocalSiteCharacteristicsDataStoreInspector::GetForProfile(&profile_);
+  EXPECT_NE(nullptr, inspector);
+  EXPECT_EQ(data_store_.get(), inspector);
+
+  EXPECT_STREQ("LocalSiteCharacteristicsDataStore",
+               inspector->GetDataStoreName());
+
+  // We expect an empty data store at the outset.
+  EXPECT_EQ(0U, inspector->GetAllInMemoryOrigins().size());
+  std::unique_ptr<SiteCharacteristicsProto> data;
+  EXPECT_FALSE(inspector->GetaDataForOrigin(kTestOrigin, &data));
+  EXPECT_EQ(nullptr, data.get());
+
+  {
+    // Add an entry, see that it's reflected in the inspector interface.
+    auto writer = data_store_->GetWriterForOrigin(kTestOrigin,
+                                                  TabVisibility::kBackground);
+
+    EXPECT_EQ(1U, inspector->GetAllInMemoryOrigins().size());
+    EXPECT_TRUE(inspector->GetaDataForOrigin(kTestOrigin, &data));
+    ASSERT_NE(nullptr, data.get());
+  }
+
+  // Make sure the interface is unregistered from the profile on destruction.
+  data_store_.reset();
+  EXPECT_EQ(nullptr, LocalSiteCharacteristicsDataStoreInspector::GetForProfile(
+                         &profile_));
 }
 
 }  // namespace resource_coordinator
