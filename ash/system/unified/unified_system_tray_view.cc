@@ -9,56 +9,30 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/interacted_by_tap_recorder.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/feature_pod_button.h"
 #include "ash/system/unified/feature_pods_container_view.h"
+#include "ash/system/unified/notification_hidden_view.h"
 #include "ash/system/unified/top_shortcuts_view.h"
 #include "ash/system/unified/unified_message_center_view.h"
 #include "ash/system/unified/unified_system_info_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
 
 namespace {
-
-// Create a view to show the message that notifications are hidden. Shown when
-// screen is locked.
-views::View* CreateNotificationHiddenView() {
-  auto* label = new views::Label;
-  label->SetEnabledColor(kUnifiedMenuTextColor);
-  label->SetAutoColorReadabilityEnabled(false);
-  label->SetText(
-      l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_UNIFIED));
-  label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  label->SetLineHeight(kUnifiedNotificationHiddenLineHeight);
-  label->SetBorder(views::CreateEmptyBorder(kUnifiedNotificationHiddenPadding));
-  label->SetBackground(views::CreateBackgroundFromPainter(
-      views::Painter::CreateSolidRoundRectPainter(kUnifiedMenuButtonColor,
-                                                  kUnifiedTrayCornerRadius)));
-
-  auto* view = new views::View;
-  view->SetBorder(
-      views::CreateEmptyBorder(gfx::Insets(kUnifiedNotificationCenterSpacing)));
-  view->SetLayoutManager(std::make_unique<views::FillLayout>());
-  view->AddChildView(label);
-  return view;
-}
 
 // Border applied to SystemTrayContainer and DetailedViewContainer to iminate
 // notification list scrolling under SystemTray part of UnifiedSystemTray.
@@ -239,7 +213,7 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
     bool initially_expanded)
     : expanded_amount_(initially_expanded ? 1.0 : 0.0),
       controller_(controller),
-      notification_hidden_view_(CreateNotificationHiddenView()),
+      notification_hidden_view_(new NotificationHiddenView()),
       top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView(initially_expanded)),
       sliders_container_(new UnifiedSlidersContainerView(initially_expanded)),

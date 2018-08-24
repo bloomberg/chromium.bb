@@ -1609,6 +1609,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_UNIFIED" desc="The label in the message center area on lock screen.">
         Notifications are hidden.
       </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE" desc="The label in the button in the message center area on lock screen. This button is to open the setting of the lock scren notification.">
+        Change
+      </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_LOCKSCREEN_CHANGE_TOOLTIP" desc="The tooltip text for Change button to open the setting of lock screen notification.">
+        Change the lock-screen notification settings
+      </message>
       <message name="IDS_ASH_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         All done
       </message>
