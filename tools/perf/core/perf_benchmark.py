@@ -104,6 +104,12 @@ class PerfBenchmark(benchmark.Benchmark):
     # with the test results.
     options.AppendExtraBrowserArgs(
         '--disable-gpu-process-for-dx12-vulkan-info-collection')
+
+    # Switch Chrome to use Perfetto instead of TraceLog as the tracing backend,
+    # needed until the feature gets turned on by default everywhere.
+    if options.browser_type != 'reference':
+      options.AppendExtraBrowserArgs(
+          '--enable-features=TracingPerfettoBackend')
     self.SetExtraBrowserOptions(options)
 
   @staticmethod
