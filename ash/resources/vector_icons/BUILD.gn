@@ -9,6 +9,7 @@ aggregate_vector_icons("ash_vector_icons") {
   icon_directory = "."
 
   icons = [
+    "always_show_shelf.icon",
     "auto_hide.icon",
     "captive_portal.icon",
     "check_circle.icon",
