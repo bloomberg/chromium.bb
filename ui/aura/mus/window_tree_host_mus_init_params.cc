@@ -17,7 +17,7 @@ namespace {
 bool GetInitialDisplayId(
     const std::map<std::string, std::vector<uint8_t>>& properties,
     int64_t* display_id) {
-  auto it = properties.find(ws::mojom::WindowManager::kDisplayId_InitProperty);
+  auto it = properties.find(ui::mojom::WindowManager::kDisplayId_InitProperty);
   if (it == properties.end())
     return false;
 
@@ -28,7 +28,7 @@ bool GetInitialDisplayId(
 bool GetInitialBounds(
     const std::map<std::string, std::vector<uint8_t>>& properties,
     gfx::Rect* bounds) {
-  auto it = properties.find(ws::mojom::WindowManager::kBounds_InitProperty);
+  auto it = properties.find(ui::mojom::WindowManager::kBounds_InitProperty);
   if (it == properties.end())
     return false;
 

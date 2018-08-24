@@ -81,7 +81,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetCursor(const ui::CursorData& cursor);
 
   // Sets the EventTargetingPolicy, default is TARGET_AND_DESCENDANTS.
-  void SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy);
+  void SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy policy);
 
   // Sets whether this window can accept drops, defaults to false.
   void SetCanAcceptDrops(bool can_accept_drops);
@@ -91,12 +91,12 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   // Embeds a new client in this Window. See WindowTreeClient::Embed() for
   // details on arguments.
-  void Embed(ws::mojom::WindowTreeClientPtr client,
+  void Embed(ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,
-             ws::mojom::WindowTree::EmbedCallback callback);
+             ui::mojom::WindowTree::EmbedCallback callback);
   void EmbedUsingToken(const base::UnguessableToken& token,
                        uint32_t flags,
-                       ws::mojom::WindowTree::EmbedCallback callback);
+                       ui::mojom::WindowTree::EmbedCallback callback);
 
   std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
   RequestLayerTreeFrameSink(
@@ -229,7 +229,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void RemoveChildFromServer(WindowMus* child) override;
   void ReorderFromServer(WindowMus* child,
                          WindowMus* relative,
-                         ws::mojom::OrderDirection) override;
+                         ui::mojom::OrderDirection) override;
   void SetBoundsFromServer(
       const gfx::Rect& bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;

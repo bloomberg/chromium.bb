@@ -181,7 +181,7 @@ Widget* SystemTrayClient::CreateUnownedDialogWidget(
   // or below the lock screen, based on the login state.
   int container_id = GetDialogParentContainerId();
   if (features::IsUsingWindowService()) {
-    using ws::mojom::WindowManager;
+    using ui::mojom::WindowManager;
     params.mus_properties[WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(container_id);
   } else {

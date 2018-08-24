@@ -13,7 +13,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 
-namespace ws {
+namespace ui {
 namespace mojom {
 enum class WindowType;
 }
@@ -121,7 +121,7 @@ AURA_EXPORT extern const WindowProperty<ui::WindowShowState>* const
     kPreFullscreenShowStateKey;
 
 // A property key to store the resize behavior, which is a bitmask of the
-// ws::mojom::kResizeBehavior values.
+// ui::mojom::kResizeBehavior values.
 AURA_EXPORT extern const WindowProperty<int32_t>* const kResizeBehaviorKey;
 
 // A property key to store the restore bounds in screen coordinates for a
@@ -156,7 +156,7 @@ AURA_EXPORT extern const WindowProperty<WindowEmbedType>* const kEmbedType;
 // Default is -1, meaning "unspecified". 0 Ensures corners are square.
 AURA_EXPORT extern const WindowProperty<int>* const kWindowCornerRadiusKey;
 
-AURA_EXPORT extern const WindowProperty<ws::mojom::WindowType>* const
+AURA_EXPORT extern const WindowProperty<ui::mojom::WindowType>* const
     kWindowTypeKey;
 
 // Alphabetical sort.

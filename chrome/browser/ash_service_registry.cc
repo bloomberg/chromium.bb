@@ -45,7 +45,7 @@ constexpr Service kCommonServices[] = {
 // it's just registered differently (see RegisterInProcessServices()).
 constexpr Service kMashServices[] = {
     {ash::mojom::kServiceName, IDS_ASH_ASH_SERVICE_NAME},
-    {ws::mojom::kServiceName, IDS_ASH_UI_SERVICE_NAME},
+    {ui::mojom::kServiceName, IDS_ASH_UI_SERVICE_NAME},
 };
 
 void RegisterOutOfProcessServicesImpl(
@@ -119,7 +119,7 @@ bool ShouldTerminateOnServiceQuit(const std::string& name) {
   // Some services going down are treated as catastrophic failures, usually
   // because both the browser and the service cache data about each other's
   // state that is not rebuilt when the service restarts.
-  return name == ws::mojom::kServiceName || name == ash::mojom::kServiceName;
+  return name == ui::mojom::kServiceName || name == ash::mojom::kServiceName;
 }
 
 }  // namespace ash_service_registry

@@ -60,7 +60,7 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
   class GpuPtrIO;
   class EstablishRequest;
 
-  using GpuPtrFactory = base::RepeatingCallback<ws::mojom::GpuPtr(void)>;
+  using GpuPtrFactory = base::RepeatingCallback<mojom::GpuPtr(void)>;
 
   Gpu(GpuPtrFactory factory,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);

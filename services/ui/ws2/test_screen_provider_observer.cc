@@ -11,7 +11,7 @@ namespace ws2 {
 namespace {
 
 std::string DisplayIdsToString(
-    const std::vector<ws::mojom::WsDisplayPtr>& wm_displays) {
+    const std::vector<mojom::WsDisplayPtr>& wm_displays) {
   std::string display_ids;
   for (const auto& wm_display : wm_displays) {
     if (!display_ids.empty())
@@ -28,7 +28,7 @@ TestScreenProviderObserver::TestScreenProviderObserver() = default;
 TestScreenProviderObserver::~TestScreenProviderObserver() = default;
 
 void TestScreenProviderObserver::OnDisplaysChanged(
-    std::vector<ws::mojom::WsDisplayPtr> displays,
+    std::vector<mojom::WsDisplayPtr> displays,
     int64_t primary_display_id,
     int64_t internal_display_id,
     int64_t display_id_for_new_windows) {

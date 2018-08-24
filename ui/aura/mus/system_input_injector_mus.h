@@ -38,7 +38,7 @@ class AURA_EXPORT SystemInputInjectorMus : public ui::SystemInputInjector {
   // Updates |modifiers_| based on an incoming event.
   void UpdateModifier(unsigned int modifier, bool down);
 
-  ws::mojom::RemotingEventInjectorPtr remoting_event_injector_;
+  ui::mojom::RemotingEventInjectorPtr remoting_event_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemInputInjectorMus);
 };

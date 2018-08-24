@@ -42,17 +42,17 @@ class TopLevelWindowFactoryTest : public AshTestBase {
 
   aura::Window* CreateFullscreenTestWindow(int64_t display_id) {
     std::map<std::string, std::vector<uint8_t>> properties;
-    properties[ws::mojom::WindowManager::kShowState_Property] =
+    properties[ui::mojom::WindowManager::kShowState_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             static_cast<aura::PropertyConverter::PrimitiveType>(
-                ws::mojom::ShowState::FULLSCREEN));
+                ui::mojom::ShowState::FULLSCREEN));
     if (display_id != display::kInvalidDisplayId) {
-      properties[ws::mojom::WindowManager::kDisplayId_InitProperty] =
+      properties[ui::mojom::WindowManager::kDisplayId_InitProperty] =
           mojo::ConvertTo<std::vector<uint8_t>>(display_id);
     }
-    properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
+    properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<int32_t>(ws::mojom::WindowType::WINDOW));
+            static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
     aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
         mojo::MapToFlatMap(std::move(properties)));
     window->Show();
@@ -92,17 +92,17 @@ TEST_F(TopLevelWindowFactoryTest, UnknownWindowTypeReturnsNull) {
 TEST_F(TopLevelWindowFactoryTest, CreateTopLevelWindow) {
   const gfx::Rect bounds(1, 2, 124, 345);
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ws::mojom::WindowManager::kBounds_InitProperty] =
+  properties[ui::mojom::WindowManager::kBounds_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(bounds);
-  properties[ws::mojom::WindowManager::kResizeBehavior_Property] =
+  properties[ui::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<aura::PropertyConverter::PrimitiveType>(
-              ws::mojom::kResizeBehaviorCanResize |
-              ws::mojom::kResizeBehaviorCanMaximize |
-              ws::mojom::kResizeBehaviorCanMinimize));
-  properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
+              ui::mojom::kResizeBehaviorCanResize |
+              ui::mojom::kResizeBehaviorCanMaximize |
+              ui::mojom::kResizeBehaviorCanMinimize));
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ws::mojom::WindowType::WINDOW));
+          static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
   aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
       mojo::MapToFlatMap(std::move(properties)));
   ASSERT_TRUE(window->parent());
@@ -115,11 +115,11 @@ TEST_F(TopLevelWindowFactoryTest, CreateTopLevelWindow) {
 
 TEST_F(TopLevelWindowFactoryTest, CreateUnfocusableTopLevelWindow) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ws::mojom::WindowManager::kFocusable_InitProperty] =
+  properties[ui::mojom::WindowManager::kFocusable_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(false);
-  properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ws::mojom::WindowType::WINDOW));
+          static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
   aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
       mojo::MapToFlatMap(std::move(properties)));
   ASSERT_TRUE(window);
@@ -131,11 +131,11 @@ TEST_F(TopLevelWindowFactoryTest, CreateUnfocusableTopLevelWindow) {
 
 TEST_F(TopLevelWindowFactoryTest, CreateUnfocusablePopupWindow) {
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ws::mojom::WindowManager::kFocusable_InitProperty] =
+  properties[ui::mojom::WindowManager::kFocusable_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(false);
-  properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ws::mojom::WindowType::POPUP));
+          static_cast<int32_t>(ui::mojom::WindowType::POPUP));
   aura::Window* window = GetWindowTreeTestHelper()->NewTopLevelWindow(
       mojo::MapToFlatMap(std::move(properties)));
   ASSERT_TRUE(window);

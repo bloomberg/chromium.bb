@@ -40,9 +40,9 @@ class MusEmbeddedFrame;
 class MusEmbeddedFrameDelegate;
 class RenderFrameProxy;
 
-// ws::mojom::WindowTreeClient implementation for RenderWidget. This lives and
+// ui.mojom.WindowTreeClient implementation for RenderWidget. This lives and
 // operates on the renderer's main thread.
-class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
+class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
                                  public mojom::RenderWidgetWindowTreeClient {
  public:
   // Creates a RendererWindowTreeClient instance for the RenderWidget instance
@@ -59,7 +59,7 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   // TODO(sky): make RenderWidget own RendererWindowTreeClient.
   static RendererWindowTreeClient* Get(int routing_id);
 
-  void Bind(ws::mojom::WindowTreeClientRequest request,
+  void Bind(ui::mojom::WindowTreeClientRequest request,
             mojom::RenderWidgetWindowTreeClientRequest
                 render_widget_window_tree_client_request);
 
@@ -79,7 +79,7 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
       LayerTreeFrameSinkCallback callback);
 
   // Creates a new MusEmbeddedFrame. |token| is an UnguessableToken that was
-  // registered for an embedding with mus (specifically ws::mojom::WindowTree).
+  // registered for an embedding with mus (specifically ui::mojom::WindowTree).
   std::unique_ptr<MusEmbeddedFrame> CreateMusEmbeddedFrame(
       MusEmbeddedFrameDelegate* mus_embedded_frame_delegate,
       const base::UnguessableToken& token);
@@ -105,21 +105,21 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
              const base::UnguessableToken& token) override;
   void DestroyFrame(uint32_t frame_routing_id) override;
 
-  // ws::mojom::WindowTreeClient:
+  // ui::mojom::WindowTreeClient:
   // Note: A number of the following are currently not-implemented. Some of
   // these will remain unimplemented in the long-term. Some of the
   // implementations would require some amount of refactoring out of
   // RenderWidget and related classes (e.g. resize, input, ime etc.).
   void OnEmbed(
-      ws::mojom::WindowDataPtr root,
-      ws::mojom::WindowTreePtr tree,
+      ui::mojom::WindowDataPtr root,
+      ui::mojom::WindowTreePtr tree,
       int64_t display_id,
       ui::Id focused_window_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbedFromToken(
       const base::UnguessableToken& token,
-      ws::mojom::WindowDataPtr root,
+      ui::mojom::WindowDataPtr root,
       int64_t display_id,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
   void OnEmbeddedAppDisconnected(ui::Id window_id) override;
@@ -130,7 +130,7 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
                               const viz::FrameSinkId& frame_sink_id) override;
   void OnTopLevelCreated(
       uint32_t change_id,
-      ws::mojom::WindowDataPtr data,
+      ui::mojom::WindowDataPtr data,
       int64_t display_id,
       bool drawn,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id) override;
@@ -150,10 +150,10 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
       ui::Id window_id,
       ui::Id old_parent_id,
       ui::Id new_parent_id,
-      std::vector<ws::mojom::WindowDataPtr> windows) override;
+      std::vector<ui::mojom::WindowDataPtr> windows) override;
   void OnWindowReordered(ui::Id window_id,
                          ui::Id relative_window_id,
-                         ws::mojom::OrderDirection direction) override;
+                         ui::mojom::OrderDirection direction) override;
   void OnWindowDeleted(ui::Id window_id) override;
   void OnWindowVisibilityChanged(ui::Id window_id, bool visible) override;
   void OnWindowOpacityChanged(ui::Id window_id,
@@ -203,7 +203,7 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   void OnChangeCompleted(uint32_t change_id, bool success) override;
   void RequestClose(ui::Id window_id) override;
   void GetScreenProviderObserver(
-      ws::mojom::ScreenProviderObserverAssociatedRequest observer) override;
+      ui::mojom::ScreenProviderObserverAssociatedRequest observer) override;
 
   const int routing_id_;
   ui::Id root_window_id_ = 0u;
@@ -211,8 +211,8 @@ class RendererWindowTreeClient : public ws::mojom::WindowTreeClient,
   scoped_refptr<viz::ContextProvider> pending_context_provider_;
   gpu::GpuMemoryBufferManager* pending_gpu_memory_buffer_manager_ = nullptr;
   LayerTreeFrameSinkCallback pending_layer_tree_frame_sink_callback_;
-  ws::mojom::WindowTreePtr tree_;
-  mojo::Binding<ws::mojom::WindowTreeClient> binding_;
+  ui::mojom::WindowTreePtr tree_;
+  mojo::Binding<ui::mojom::WindowTreeClient> binding_;
   mojo::Binding<mojom::RenderWidgetWindowTreeClient>
       render_widget_window_tree_client_binding_;
   ui::ClientSpecificId next_window_id_ = 0;

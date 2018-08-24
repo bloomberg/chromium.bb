@@ -15,7 +15,7 @@
 namespace aura {
 
 FocusSynchronizer::FocusSynchronizer(FocusSynchronizerDelegate* delegate,
-                                     ws::mojom::WindowTree* window_tree)
+                                     ui::mojom::WindowTree* window_tree)
     : delegate_(delegate), window_tree_(window_tree) {}
 
 FocusSynchronizer::~FocusSynchronizer() {

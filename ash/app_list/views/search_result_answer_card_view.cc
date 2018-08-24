@@ -63,7 +63,7 @@ CardData GetCardDataByToken(
     ui::ws2::ServerRemoteViewHost* view =
         new ui::ws2::ServerRemoteViewHost(window_service);
     view->EmbedUsingToken(token.value(),
-                          ws::mojom::kEmbedFlagEmbedderControlsVisibility,
+                          ui::mojom::kEmbedFlagEmbedderControlsVisibility,
                           base::DoNothing());
     return {view, view->embedding_root()};
   }

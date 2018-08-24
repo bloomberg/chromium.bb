@@ -78,7 +78,7 @@ Window::Window(WindowDelegate* delegate,
       id_(kInitialId),
       transparent_(false),
       event_targeting_policy_(
-          ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS),
+          ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS),
       // Don't notify newly added observers during notification. This causes
       // problems for code that adds an observer as part of an observer
       // notification (such as the workspace code).
@@ -545,7 +545,7 @@ bool Window::HasObserver(const WindowObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
-void Window::SetEventTargetingPolicy(ws::mojom::EventTargetingPolicy policy) {
+void Window::SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy policy) {
   if (event_targeting_policy_ == policy)
     return;
 
@@ -845,7 +845,7 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
 
     if (for_event_handling) {
       if (child->event_targeting_policy_ ==
-          ws::mojom::EventTargetingPolicy::NONE) {
+          ui::mojom::EventTargetingPolicy::NONE) {
         continue;
       }
 
@@ -869,17 +869,17 @@ Window* Window::GetWindowForPoint(const gfx::Point& local_point,
       continue;
 
     switch (child->event_targeting_policy_) {
-      case ws::mojom::EventTargetingPolicy::TARGET_ONLY:
+      case ui::mojom::EventTargetingPolicy::TARGET_ONLY:
         if (child->delegate_)
           return child;
         break;
-      case ws::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS:
+      case ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS:
         return match;
-      case ws::mojom::EventTargetingPolicy::DESCENDANTS_ONLY:
+      case ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY:
         if (match != child)
           return match;
         break;
-      case ws::mojom::EventTargetingPolicy::NONE:
+      case ui::mojom::EventTargetingPolicy::NONE:
         NOTREACHED();  // This case is handled early on.
     }
   }

@@ -147,7 +147,7 @@ TEST_F(WindowStateTest, SnapWindowMinimumSize) {
   EXPECT_FALSE(window_state->CanSnap());
   delegate.set_maximum_size(gfx::Size());
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize);
+                      ui::mojom::kResizeBehaviorCanResize);
   // It should be possible to snap a window with a maximum size, if it
   // can be maximized.
   EXPECT_TRUE(window_state->CanSnap());
@@ -188,8 +188,8 @@ TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
   EXPECT_TRUE(window_state->CanSnap());
 
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize |
-                          ws::mojom::kResizeBehaviorCanMaximize);
+                      ui::mojom::kResizeBehaviorCanResize |
+                          ui::mojom::kResizeBehaviorCanMaximize);
   delegate.set_maximum_size(gfx::Size());
   EXPECT_TRUE(window_state->CanSnap());
 
@@ -200,7 +200,7 @@ TEST_F(WindowStateTest, SnapModalWindowWithoutMaximumSizeLimit) {
   EXPECT_TRUE(window_state->CanSnap());
 
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanResize);
+                      ui::mojom::kResizeBehaviorCanResize);
   EXPECT_TRUE(window_state->CanSnap());
 
   // It should be possible to snap a modal window without maximum size.

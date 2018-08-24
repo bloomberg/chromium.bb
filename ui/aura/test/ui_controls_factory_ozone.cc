@@ -294,22 +294,22 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     SendEventToSink(&mouse_event2, std::move(closure));
   }
 
-  // Returns the ws::mojom::EventInjector, which is used to send events
+  // Returns the ui::mojom::EventInjector, which is used to send events
   // to the Window Service for dispatch.
-  ws::mojom::EventInjector* GetEventInjector() {
+  ui::mojom::EventInjector* GetEventInjector() {
     DCHECK_EQ(aura::Env::Mode::MUS, host_->window()->env()->mode());
     if (!event_injector_) {
       DCHECK(aura::test::EnvTestHelper().GetWindowTreeClient());
       aura::test::EnvTestHelper()
           .GetWindowTreeClient()
           ->connector()
-          ->BindInterface(ws::mojom::kServiceName, &event_injector_);
+          ->BindInterface(ui::mojom::kServiceName, &event_injector_);
     }
     return event_injector_.get();
   }
 
   WindowTreeHost* host_;
-  ws::mojom::EventInjectorPtr event_injector_;
+  ui::mojom::EventInjectorPtr event_injector_;
 
   // Mask of the mouse buttons currently down. This is static as it needs to
   // track the state globally for all displays. A UIControlsOzone instance is

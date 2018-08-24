@@ -65,10 +65,10 @@ class AURA_EXPORT WindowTreeClientDelegate {
 
   virtual PropertyConverter* GetPropertyConverter() = 0;
 
-  // See ws::mojom::ScreenProviderObserver for details on this.
+  // See ui::mojom::ScreenProviderObserver for details on this.
   // TODO(sky): consider moving ScreenMus from views to aura.
   virtual void OnDisplaysChanged(
-      std::vector<ws::mojom::WsDisplayPtr> ws_displays,
+      std::vector<ui::mojom::WsDisplayPtr> ws_displays,
       int64_t primary_display_id,
       int64_t internal_display_id,
       int64_t display_id_for_new_windows) {}

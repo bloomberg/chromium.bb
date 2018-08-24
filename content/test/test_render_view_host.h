@@ -134,7 +134,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
     did_change_compositor_frame_sink_ = false;
   }
 #if defined(USE_AURA)
-  void ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
+  void ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
                      base::OnceCallback<void(const base::UnguessableToken&)>
                          callback) override {}
 #endif

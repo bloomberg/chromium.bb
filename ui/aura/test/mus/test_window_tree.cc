@@ -23,12 +23,12 @@ bool TestWindowTree::WasEventAcked(uint32_t event_id) const {
   return false;
 }
 
-ws::mojom::EventResult TestWindowTree::GetEventResult(uint32_t event_id) const {
+ui::mojom::EventResult TestWindowTree::GetEventResult(uint32_t event_id) const {
   for (const AckedEvent& acked_event : acked_events_) {
     if (acked_event.event_id == event_id)
       return acked_event.result;
   }
-  return ws::mojom::EventResult::UNHANDLED;
+  return ui::mojom::EventResult::UNHANDLED;
 }
 
 base::Optional<std::vector<uint8_t>> TestWindowTree::GetLastPropertyValue() {
@@ -50,7 +50,7 @@ void TestWindowTree::AddEmbedRootForToken(const base::UnguessableToken& token) {
   DCHECK_EQ(token, scheduled_embed_);
   scheduled_embed_ = base::UnguessableToken();
 
-  ws::mojom::WindowDataPtr embedder_window_data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr embedder_window_data = ui::mojom::WindowData::New();
   const uint64_t kFakeEmbedderClientId = 1u;
   const uint64_t kFakeEmbedderWindowId = 1u;
   embedder_window_data->window_id =
@@ -258,7 +258,7 @@ void TestWindowTree::SetChildModalParent(uint32_t change_id,
 void TestWindowTree::ReorderWindow(uint32_t change_id,
                                    ui::Id window_id,
                                    ui::Id relative_window_id,
-                                   ws::mojom::OrderDirection direction) {
+                                   ui::mojom::OrderDirection direction) {
   OnChangeReceived(change_id, WindowTreeChangeType::REORDER);
 }
 
@@ -278,11 +278,11 @@ void TestWindowTree::StartPointerWatcher(bool want_moves) {}
 void TestWindowTree::StopPointerWatcher() {}
 
 void TestWindowTree::Embed(ui::Id window_id,
-                           ws::mojom::WindowTreeClientPtr client,
+                           ui::mojom::WindowTreeClientPtr client,
                            uint32_t flags,
                            EmbedCallback callback) {}
 
-void TestWindowTree::ScheduleEmbed(ws::mojom::WindowTreeClientPtr client,
+void TestWindowTree::ScheduleEmbed(ui::mojom::WindowTreeClientPtr client,
                                    ScheduleEmbedCallback callback) {}
 
 void TestWindowTree::EmbedUsingToken(ui::Id window_id,
@@ -327,7 +327,7 @@ void TestWindowTree::SetCanFocus(ui::Id window_id, bool can_focus) {}
 
 void TestWindowTree::SetEventTargetingPolicy(
     ui::Id window_id,
-    ws::mojom::EventTargetingPolicy policy) {}
+    ui::mojom::EventTargetingPolicy policy) {}
 
 void TestWindowTree::SetCursor(uint32_t change_id,
                                ui::Id transport_window_id,
@@ -344,7 +344,7 @@ void TestWindowTree::SetImeVisibility(ui::Id window_id,
                                       ui::mojom::TextInputStatePtr state) {}
 
 void TestWindowTree::OnWindowInputEventAck(uint32_t event_id,
-                                           ws::mojom::EventResult result) {
+                                           ui::mojom::EventResult result) {
   EXPECT_FALSE(WasEventAcked(event_id));
   acked_events_.push_back({event_id, result});
 }
@@ -383,14 +383,14 @@ void TestWindowTree::CancelDragDrop(ui::Id window_id) {}
 
 void TestWindowTree::PerformWindowMove(uint32_t change_id,
                                        ui::Id window_id,
-                                       ws::mojom::MoveLoopSource source,
+                                       ui::mojom::MoveLoopSource source,
                                        const gfx::Point& cursor_location) {
   OnChangeReceived(change_id);
 }
 
 void TestWindowTree::CancelWindowMove(ui::Id window_id) {}
 
-void TestWindowTree::ObserveTopmostWindow(ws::mojom::MoveLoopSource source,
+void TestWindowTree::ObserveTopmostWindow(ui::mojom::MoveLoopSource source,
                                           ui::Id window_id) {}
 void TestWindowTree::StopObservingTopmostWindow() {}
 

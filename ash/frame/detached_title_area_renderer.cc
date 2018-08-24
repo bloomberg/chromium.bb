@@ -105,7 +105,7 @@ DetachedTitleAreaRendererForClient::DetachedTitleAreaRendererForClient(
   views::NativeWidgetAura* native_widget =
       new views::NativeWidgetAura(widget_, true, Shell::Get()->aura_env());
   aura::SetWindowType(native_widget->GetNativeWindow(),
-                      ws::mojom::WindowType::POPUP);
+                      ui::mojom::WindowType::POPUP);
   ApplyProperties(native_widget->GetNativeWindow(), property_converter,
                   *properties);
   native_widget->GetNativeView()->SetProperty(kDetachedTitleAreaRendererKey,

@@ -24,18 +24,18 @@ namespace aura {
 // downstream of ui::UserActivityDetector) instead observe UserActivityMonitor
 // directly: http://crbug.com/626899
 class AURA_EXPORT UserActivityForwarder
-    : public ws::mojom::UserActivityObserver {
+    : public ui::mojom::UserActivityObserver {
  public:
-  UserActivityForwarder(ws::mojom::UserActivityMonitorPtr monitor,
+  UserActivityForwarder(ui::mojom::UserActivityMonitorPtr monitor,
                         ui::UserActivityDetector* detector);
   ~UserActivityForwarder() override;
 
  private:
-  // ws::mojom::UserActivityObserver:
+  // ui::mojom::UserActivityObserver:
   void OnUserActivity() override;
 
-  ws::mojom::UserActivityMonitorPtr monitor_;
-  mojo::Binding<ws::mojom::UserActivityObserver> binding_;
+  ui::mojom::UserActivityMonitorPtr monitor_;
+  mojo::Binding<ui::mojom::UserActivityObserver> binding_;
 
   ui::UserActivityDetector* detector_;  // Not owned.
 

@@ -27,17 +27,16 @@ class GpuMemoryBufferSupport;
 namespace ui {
 
 // Implements gpu::GpuMemoryBufferManager based on a given
-// ws::mojom::GpuMemoryBufferFactory
+// ui.mojom.GpuMemoryBufferFactory
 class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
-  explicit ClientGpuMemoryBufferManager(
-      ws::mojom::GpuMemoryBufferFactoryPtr gpu);
+  explicit ClientGpuMemoryBufferManager(mojom::GpuMemoryBufferFactoryPtr gpu);
   ~ClientGpuMemoryBufferManager() override;
 
   void SetOptionalDestructionCallback(base::OnceClosure callback);
 
  private:
-  void InitThread(ws::mojom::GpuMemoryBufferFactoryPtrInfo gpu_info);
+  void InitThread(mojom::GpuMemoryBufferFactoryPtrInfo gpu_info);
   void TearDownThread();
   void DisconnectGpuOnThread();
   void AllocateGpuMemoryBufferOnThread(const gfx::Size& size,
@@ -64,7 +63,7 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   int counter_ = 0;
   // TODO(sad): Explore the option of doing this from an existing thread.
   base::Thread thread_;
-  ws::mojom::GpuMemoryBufferFactoryPtr gpu_;
+  mojom::GpuMemoryBufferFactoryPtr gpu_;
   base::OnceClosure optional_destruction_callback_;
   base::WeakPtr<ClientGpuMemoryBufferManager> weak_ptr_;
   std::set<base::WaitableEvent*> pending_allocation_waiters_;

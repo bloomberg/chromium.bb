@@ -95,7 +95,7 @@ class VideoAcceleratorFactoryServiceViz
     DETACH_FROM_THREAD(thread_checker_);
     auto* connector =
         content::ServiceManagerConnection::GetForProcess()->GetConnector();
-    connector->BindInterface(ws::mojom::kServiceName, &arc_);
+    connector->BindInterface(ui::mojom::kServiceName, &arc_);
   }
 
   ~VideoAcceleratorFactoryServiceViz() override {
@@ -123,7 +123,7 @@ class VideoAcceleratorFactoryServiceViz
  private:
   THREAD_CHECKER(thread_checker_);
 
-  ws::mojom::ArcPtr arc_;
+  ui::mojom::ArcPtr arc_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryServiceViz);
 };

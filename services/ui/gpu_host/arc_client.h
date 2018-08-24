@@ -18,7 +18,7 @@ namespace gpu_host {
 
 // The implementation that relays requests from clients to the real
 // service implementation in the GPU process over mojom.GpuService.
-class ArcClient : public ws::mojom::Arc {
+class ArcClient : public mojom::Arc {
  public:
   explicit ArcClient(viz::mojom::GpuService* gpu_service);
   ~ArcClient() override;

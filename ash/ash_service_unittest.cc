@@ -117,9 +117,9 @@ TEST_F(AshServiceTest, OpenWindow) {
   aura::test::EnvWindowTreeClientSetter env_window_tree_client_setter(
       client.get());
   std::map<std::string, std::vector<uint8_t>> properties;
-  properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ws::mojom::WindowType::WINDOW));
+          static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
   aura::WindowTreeHostMus window_tree_host_mus(
       aura::CreateInitParamsForTopLevel(client.get(), std::move(properties)));
   window_tree_host_mus.InitHost();
@@ -131,7 +131,7 @@ TEST_F(AshServiceTest, OpenWindow) {
 
   // Create another WindowTreeClient by way of embedding in
   // |child_window|. This blocks until it succeeds.
-  ws::mojom::WindowTreeClientPtr tree_client;
+  ui::mojom::WindowTreeClientPtr tree_client;
   auto tree_client_request = MakeRequest(&tree_client);
   client->Embed(child_window, std::move(tree_client), 0u,
                 base::BindOnce(&OnEmbed));

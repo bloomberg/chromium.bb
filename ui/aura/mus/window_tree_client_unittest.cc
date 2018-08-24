@@ -79,7 +79,7 @@ std::unique_ptr<Window> CreateWindowUsingId(
     WindowTreeClient* window_tree_client,
     ui::Id server_id,
     Window* parent = nullptr) {
-  ws::mojom::WindowData window_data;
+  ui::mojom::WindowData window_data;
   window_data.window_id = server_id;
   WindowMus* window_mus =
       WindowTreeClientPrivate(window_tree_client)
@@ -149,7 +149,7 @@ class WindowTreeClientTest : public test::AuraMusClientTestBase {
         WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
     EXPECT_EQ(window_tree()->window_id(), server_id(top_level_window));
 
-    ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+    ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
     data->window_id = server_id(top_level_window);
     data->visible = true;
     window_tree_client()->OnTopLevelCreated(
@@ -415,12 +415,12 @@ TEST_P(WindowTreeClientTestSurfaceSync, SetBoundsLocalSurfaceIdChanges) {
 // the window back to the server.
 TEST_F(WindowTreeClientTest, AddFromServerDoesntAddAgain) {
   const ui::Id child_window_id = server_id(root_window()) + 11;
-  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->parent_id = server_id(root_window());
   data->window_id = child_window_id;
   data->bounds = gfx::Rect(1, 2, 3, 4);
   data->visible = false;
-  std::vector<ws::mojom::WindowDataPtr> data_array(1);
+  std::vector<ui::mojom::WindowDataPtr> data_array(1);
   data_array[0] = std::move(data);
   ASSERT_TRUE(root_window()->children().empty());
   window_tree_client()->OnWindowHierarchyChanged(
@@ -444,7 +444,7 @@ TEST_F(WindowTreeClientTest, ReparentFromServerDoesntAddAgain) {
   // Simulate moving |window1| to be a child of |window2| from the server.
   window_tree_client()->OnWindowHierarchyChanged(
       server_id(&window1), server_id(root_window()), server_id(&window2),
-      std::vector<ws::mojom::WindowDataPtr>());
+      std::vector<ui::mojom::WindowDataPtr>());
   ASSERT_FALSE(window_tree()->has_change());
   EXPECT_EQ(&window2, window1.parent());
   EXPECT_EQ(root_window(), window2.parent());
@@ -457,21 +457,21 @@ TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithProperties) {
   RegisterTestProperties(GetPropertyConverter());
   window_tree()->AckAllChanges();
   const ui::Id child_window_id = server_id(root_window()) + 11;
-  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   const uint8_t server_test_property1_value = 91;
   data->properties[kTestPropertyServerKey1] =
       ConvertToPropertyTransportValue(server_test_property1_value);
-  data->properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
+  data->properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ws::mojom::WindowType::BUBBLE));
+          static_cast<int32_t>(ui::mojom::WindowType::BUBBLE));
   constexpr int kWindowCornerRadiusValue = 6;
-  data->properties[ws::mojom::WindowManager::kWindowCornerRadius_Property] =
+  data->properties[ui::mojom::WindowManager::kWindowCornerRadius_Property] =
       ConvertToPropertyTransportValue(kWindowCornerRadiusValue);
   data->parent_id = server_id(root_window());
   data->window_id = child_window_id;
   data->bounds = gfx::Rect(1, 2, 3, 4);
   data->visible = false;
-  std::vector<ws::mojom::WindowDataPtr> data_array(1);
+  std::vector<ui::mojom::WindowDataPtr> data_array(1);
   data_array[0] = std::move(data);
   ASSERT_TRUE(root_window()->children().empty());
   window_tree_client()->OnWindowHierarchyChanged(
@@ -484,7 +484,7 @@ TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithProperties) {
   EXPECT_EQ(kWindowCornerRadiusValue,
             child->GetProperty(client::kWindowCornerRadiusKey));
   EXPECT_EQ(child->type(), client::WINDOW_TYPE_POPUP);
-  EXPECT_EQ(ws::mojom::WindowType::BUBBLE,
+  EXPECT_EQ(ui::mojom::WindowType::BUBBLE,
             child->GetProperty(client::kWindowTypeKey));
 }
 
@@ -501,7 +501,7 @@ TEST_F(WindowTreeClientTest, MoveFromServerDoesntAddAgain) {
   // Simulate moving |window1| to be a child of |window2| from the server.
   window_tree_client()->OnWindowReordered(server_id(&window2),
                                           server_id(&window1),
-                                          ws::mojom::OrderDirection::BELOW);
+                                          ui::mojom::OrderDirection::BELOW);
   ASSERT_FALSE(window_tree()->has_change());
   ASSERT_EQ(2u, root_window()->children().size());
   EXPECT_EQ(&window2, root_window()->children()[0]);
@@ -946,7 +946,7 @@ TEST_F(WindowTreeClientTest, InputEventBasic) {
       event_id, server_id(&child), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate.move_count());
   EXPECT_FALSE(window_delegate.was_acked());
@@ -981,7 +981,7 @@ TEST_F(WindowTreeClientTest, InputEventPointerEvent) {
                                            window_tree_host.display_id(),
                                            ui::Event::Clone(pointer_event), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate.move_count());
   EXPECT_EQ(event_location, window_delegate.last_event_location());
@@ -1019,7 +1019,7 @@ TEST_F(WindowTreeClientTest, InputEventPen) {
 
   // Pen event was handled.
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(ui::EventPointerType::POINTER_TYPE_PEN,
             window_delegate.last_pointer_type());
@@ -1065,7 +1065,7 @@ TEST_F(WindowTreeClientTest, InputEventFindTargetAndConversion) {
       event_id, server_id(&child1), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(0, window_delegate1.move_count());
   EXPECT_EQ(1, window_delegate2.move_count());
@@ -1086,7 +1086,7 @@ TEST_F(WindowTreeClientTest, InputEventFindTargetAndConversion) {
       event_id, server_id(&child1), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event1.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1.move_count());
   EXPECT_EQ(0, window_delegate2.move_count());
@@ -1134,7 +1134,7 @@ TEST_F(WindowTreeClientTest, InputEventCustomWindowTargeter) {
       event_id, server_id(&child1), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1.move_count());
   EXPECT_EQ(0, window_delegate2.move_count());
@@ -1151,7 +1151,7 @@ TEST_F(WindowTreeClientTest, InputEventCustomWindowTargeter) {
       event_id, server_id(&child2), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1.move_count());
   EXPECT_EQ(0, window_delegate2.move_count());
@@ -1204,7 +1204,7 @@ TEST_F(WindowTreeClientTest, InputEventCaptureWindow) {
       event_id, server_id(child1.get()), window_tree_host->display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1->move_count());
   EXPECT_EQ(0, window_delegate2->move_count());
@@ -1227,7 +1227,7 @@ TEST_F(WindowTreeClientTest, InputEventCaptureWindow) {
       event_id, server_id(child1.get()), window_tree_host->display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(0, window_delegate1->move_count());
   EXPECT_EQ(1, window_delegate2->move_count());
@@ -1275,7 +1275,7 @@ TEST_F(WindowTreeClientTest, InputEventRootWindow) {
       ui::Event::Clone(*ui_event.get()), 0);
 
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, root_handler.move_count());
   EXPECT_EQ(gfx::Point(20, 30), root_handler.last_event_location());
@@ -1318,7 +1318,7 @@ TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {
       event_id, server_id(&child), window_tree_host.display_id(),
       ui::Event::Clone(pointer_event_down), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate.press_count());
   EXPECT_TRUE(env->IsMouseButtonDown());
@@ -1341,7 +1341,7 @@ TEST_F(WindowTreeClientTest, InputMouseEventNoWindow) {
   // WindowTreeClient::OnWindowInputEvent cannot find a target window with
   // kInvalidServerId but should use the event to update event states kept in
   // aura::Env, location shouldn't be updated.
-  EXPECT_EQ(ws::mojom::EventResult::UNHANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::UNHANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(0, window_delegate.release_count());
   EXPECT_FALSE(env->IsMouseButtonDown());
@@ -1381,7 +1381,7 @@ TEST_F(WindowTreeClientTest, InputTouchEventNoWindow) {
       event_id, server_id(&child), window_tree_host.display_id(),
       ui::Event::Clone(pointer_event_down), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate.press_count());
   EXPECT_TRUE(env->is_touch_down());
@@ -1400,7 +1400,7 @@ TEST_F(WindowTreeClientTest, InputTouchEventNoWindow) {
   // WindowTreeClient::OnWindowInputEvent cannot find a target window with
   // kInvalidServerId but should use the event to update event states kept in
   // aura::Env.
-  EXPECT_EQ(ws::mojom::EventResult::UNHANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::UNHANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(0, window_delegate.release_count());
   EXPECT_FALSE(env->is_touch_down());
@@ -1647,7 +1647,7 @@ TEST_F(WindowTreeClientTest, NewTopLevelWindow) {
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
   EXPECT_EQ(window_tree()->window_id(), server_id(top_level));
 
-  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->window_id = server_id(top_level);
   const int64_t display_id = 1;
   window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
@@ -1683,7 +1683,7 @@ TEST_F(WindowTreeClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   // Ack the request to the windowtree to create the new window.
   EXPECT_EQ(window_tree()->window_id(), server_id(top_level));
 
-  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->window_id = server_id(top_level);
   data->bounds.SetRect(1, 2, 3, 4);
   data->visible = true;
@@ -1727,7 +1727,7 @@ TEST_F(WindowTreeClientTest, NewWindowGetsAllChangesInFlight) {
                          explicitly_set_test_property1_value);
 
   // Ack the new window top level top_level Vis and bounds shouldn't change.
-  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->window_id = server_id(top_level);
   const gfx::Rect bounds_from_server(1, 2, 3, 4);
   data->bounds = bounds_from_server;
@@ -2008,7 +2008,7 @@ TEST_F(WindowTreeClientTest, TopLevelWindowDestroyedBeforeCreateComplete) {
   EXPECT_EQ(initial_root_count + 1,
             window_tree_client_impl()->GetRoots().size());
 
-  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->window_id = server_id(window_tree_host->window());
 
   // Destroy the window before the server has a chance to ack the window
@@ -2421,9 +2421,9 @@ TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithExistingWindow) {
   window2->Init(ui::LAYER_NOT_DRAWN);
   window_tree()->AckAllChanges();
   const ui::Id server_window_id = server_id(root_window()) + 11;
-  ws::mojom::WindowDataPtr data1 = ws::mojom::WindowData::New();
-  ws::mojom::WindowDataPtr data2 = ws::mojom::WindowData::New();
-  ws::mojom::WindowDataPtr data3 = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data1 = ui::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data2 = ui::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data3 = ui::mojom::WindowData::New();
   data1->parent_id = server_id(root_window());
   data1->window_id = server_window_id;
   data1->bounds = gfx::Rect(1, 2, 3, 4);
@@ -2433,7 +2433,7 @@ TEST_F(WindowTreeClientTest, OnWindowHierarchyChangedWithExistingWindow) {
   data3->parent_id = server_window_id;
   data3->window_id = WindowMus::Get(window2)->server_id();
   data3->bounds = gfx::Rect(1, 2, 3, 4);
-  std::vector<ws::mojom::WindowDataPtr> data_array(3);
+  std::vector<ui::mojom::WindowDataPtr> data_array(3);
   data_array[0] = std::move(data1);
   data_array[1] = std::move(data2);
   data_array[2] = std::move(data3);
@@ -2485,7 +2485,7 @@ TEST_F(WindowTreeClientTestHighDPI, NewTopLevelWindowBounds) {
   window_tree_host.InitHost();
 
   gfx::Rect bounds(2, 4, 6, 8);
-  ws::mojom::WindowDataPtr data = ws::mojom::WindowData::New();
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->window_id = server_id(top_level);
   data->bounds = bounds;
   const int64_t display_id = 10;
@@ -2584,7 +2584,7 @@ TEST_F(WindowTreeClientTestHighDPI, InputEventsInDip) {
       event_id, server_id(&child1), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1.move_count());
   EXPECT_EQ(0, window_delegate2.move_count());
@@ -2600,7 +2600,7 @@ TEST_F(WindowTreeClientTestHighDPI, InputEventsInDip) {
       event_id, server_id(&child2), window_tree_host.display_id(),
       ui::Event::Clone(*ui_event.get()), 0);
   EXPECT_TRUE(window_tree()->WasEventAcked(event_id));
-  EXPECT_EQ(ws::mojom::EventResult::HANDLED,
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
             window_tree()->GetEventResult(event_id));
   EXPECT_EQ(1, window_delegate1.move_count());
   EXPECT_EQ(0, window_delegate2.move_count());

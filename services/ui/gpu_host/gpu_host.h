@@ -53,7 +53,7 @@ class GpuHost {
   GpuHost() = default;
   virtual ~GpuHost() = default;
 
-  virtual void Add(ws::mojom::GpuRequest request) = 0;
+  virtual void Add(mojom::GpuRequest request) = 0;
   virtual void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) = 0;
   virtual void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) = 0;
 
@@ -62,7 +62,7 @@ class GpuHost {
       viz::mojom::FrameSinkManagerParamsPtr params) = 0;
 
 #if defined(OS_CHROMEOS)
-  virtual void AddArc(ws::mojom::ArcRequest request) = 0;
+  virtual void AddArc(mojom::ArcRequest request) = 0;
 #endif  // defined(OS_CHROMEOS)
 };
 
@@ -77,19 +77,19 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   void Shutdown();
 
   // GpuHost:
-  void Add(ws::mojom::GpuRequest request) override;
+  void Add(mojom::GpuRequest request) override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
   void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) override;
   void CreateFrameSinkManager(
       viz::mojom::FrameSinkManagerParamsPtr params) override;
 #if defined(OS_CHROMEOS)
-  void AddArc(ws::mojom::ArcRequest request) override;
+  void AddArc(mojom::ArcRequest request) override;
 #endif  // defined(OS_CHROMEOS)
 
  private:
   friend class test::GpuHostTest;
 
-  GpuClient* AddInternal(ws::mojom::GpuRequest request);
+  GpuClient* AddInternal(mojom::GpuRequest request);
   void OnBadMessageFromGpu();
 
   // TODO(crbug.com/611505): this goes away after the gpu proces split in mus.
@@ -135,9 +135,9 @@ class DefaultGpuHost : public GpuHost, public viz::mojom::GpuHost {
   base::Thread gpu_thread_;
   std::unique_ptr<viz::VizMainImpl> viz_main_impl_;
 
-  mojo::StrongBindingSet<ws::mojom::Gpu> gpu_bindings_;
+  mojo::StrongBindingSet<mojom::Gpu> gpu_bindings_;
 #if defined(OS_CHROMEOS)
-  mojo::StrongBindingSet<ws::mojom::Arc> arc_bindings_;
+  mojo::StrongBindingSet<mojom::Arc> arc_bindings_;
 #endif  // defined(OS_CHROMEOS)
 
   DISALLOW_COPY_AND_ASSIGN(DefaultGpuHost);

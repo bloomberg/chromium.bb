@@ -57,13 +57,13 @@ bool WidgetDelegate::CanMinimize() const {
 }
 
 int32_t WidgetDelegate::GetResizeBehavior() const {
-  int32_t behavior = ws::mojom::kResizeBehaviorNone;
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
   if (CanResize())
-    behavior |= ws::mojom::kResizeBehaviorCanResize;
+    behavior |= ui::mojom::kResizeBehaviorCanResize;
   if (CanMaximize())
-    behavior |= ws::mojom::kResizeBehaviorCanMaximize;
+    behavior |= ui::mojom::kResizeBehaviorCanMaximize;
   if (CanMinimize())
-    behavior |= ws::mojom::kResizeBehaviorCanMinimize;
+    behavior |= ui::mojom::kResizeBehaviorCanMinimize;
   return behavior;
 }
 

@@ -35,18 +35,19 @@ bool AlwaysTrue(int64_t value) {
 
 bool ValidateResizeBehaviour(int64_t value) {
   // Resize behaviour is a 3 bitfield.
-  return value >= 0 && value <= (ws::mojom::kResizeBehaviorCanMaximize |
-                                 ws::mojom::kResizeBehaviorCanMinimize |
-                                 ws::mojom::kResizeBehaviorCanResize);
+  return value >= 0 &&
+         value <= (ui::mojom::kResizeBehaviorCanMaximize |
+                   ui::mojom::kResizeBehaviorCanMinimize |
+                   ui::mojom::kResizeBehaviorCanResize);
 }
 
 bool ValidateShowState(int64_t value) {
-  return value == int64_t(ws::mojom::ShowState::DEFAULT) ||
-         value == int64_t(ws::mojom::ShowState::NORMAL) ||
-         value == int64_t(ws::mojom::ShowState::MINIMIZED) ||
-         value == int64_t(ws::mojom::ShowState::MAXIMIZED) ||
-         value == int64_t(ws::mojom::ShowState::INACTIVE) ||
-         value == int64_t(ws::mojom::ShowState::FULLSCREEN);
+  return value == int64_t(ui::mojom::ShowState::DEFAULT) ||
+         value == int64_t(ui::mojom::ShowState::NORMAL) ||
+         value == int64_t(ui::mojom::ShowState::MINIMIZED) ||
+         value == int64_t(ui::mojom::ShowState::MAXIMIZED) ||
+         value == int64_t(ui::mojom::ShowState::INACTIVE) ||
+         value == int64_t(ui::mojom::ShowState::FULLSCREEN);
 }
 
 bool ValidateWindowCornerRadius(int64_t value) {
@@ -71,42 +72,42 @@ PropertyConverter::CreateAcceptAnyValueCallback() {
 PropertyConverter::PropertyConverter() {
   // Add known aura properties with associated mus properties.
   RegisterImageSkiaProperty(client::kAppIconKey,
-                            ws::mojom::WindowManager::kAppIcon_Property);
+                            ui::mojom::WindowManager::kAppIcon_Property);
   RegisterImageSkiaProperty(client::kWindowIconKey,
-                            ws::mojom::WindowManager::kWindowIcon_Property);
+                            ui::mojom::WindowManager::kWindowIcon_Property);
   RegisterPrimitiveProperty(client::kAlwaysOnTopKey,
-                            ws::mojom::WindowManager::kAlwaysOnTop_Property,
+                            ui::mojom::WindowManager::kAlwaysOnTop_Property,
                             CreateAcceptAnyValueCallback());
   RegisterPrimitiveProperty(client::kDrawAttentionKey,
-                            ws::mojom::WindowManager::kDrawAttention_Property,
+                            ui::mojom::WindowManager::kDrawAttention_Property,
                             CreateAcceptAnyValueCallback());
   RegisterPrimitiveProperty(
       client::kImmersiveFullscreenKey,
-      ws::mojom::WindowManager::kImmersiveFullscreen_Property,
+      ui::mojom::WindowManager::kImmersiveFullscreen_Property,
       CreateAcceptAnyValueCallback());
   RegisterPrimitiveProperty(client::kResizeBehaviorKey,
-                            ws::mojom::WindowManager::kResizeBehavior_Property,
+                            ui::mojom::WindowManager::kResizeBehavior_Property,
                             base::Bind(&ValidateResizeBehaviour));
   RegisterPrimitiveProperty(client::kShowStateKey,
-                            ws::mojom::WindowManager::kShowState_Property,
+                            ui::mojom::WindowManager::kShowState_Property,
                             base::Bind(&ValidateShowState));
   RegisterRectProperty(client::kRestoreBoundsKey,
-                       ws::mojom::WindowManager::kRestoreBounds_Property);
+                       ui::mojom::WindowManager::kRestoreBounds_Property);
   RegisterSizeProperty(client::kPreferredSize,
-                       ws::mojom::WindowManager::kPreferredSize_Property);
+                       ui::mojom::WindowManager::kPreferredSize_Property);
   RegisterSizeProperty(client::kMinimumSize,
-                       ws::mojom::WindowManager::kMinimumSize_Property);
+                       ui::mojom::WindowManager::kMinimumSize_Property);
   RegisterStringProperty(client::kNameKey,
-                         ws::mojom::WindowManager::kName_Property);
+                         ui::mojom::WindowManager::kName_Property);
   RegisterString16Property(client::kTitleKey,
-                           ws::mojom::WindowManager::kWindowTitle_Property);
+                           ui::mojom::WindowManager::kWindowTitle_Property);
   RegisterPrimitiveProperty(
       client::kWindowCornerRadiusKey,
-      ws::mojom::WindowManager::kWindowCornerRadius_Property,
+      ui::mojom::WindowManager::kWindowCornerRadius_Property,
       base::BindRepeating(&ValidateWindowCornerRadius));
   RegisterPrimitiveProperty(
       client::kAnimationsDisabledKey,
-      ws::mojom::WindowManager::kAnimationsDisabled_Property,
+      ui::mojom::WindowManager::kAnimationsDisabled_Property,
       CreateAcceptAnyValueCallback());
 }
 

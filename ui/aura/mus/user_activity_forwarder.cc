@@ -12,7 +12,7 @@
 namespace aura {
 
 UserActivityForwarder::UserActivityForwarder(
-    ws::mojom::UserActivityMonitorPtr monitor,
+    ui::mojom::UserActivityMonitorPtr monitor,
     ui::UserActivityDetector* detector)
     : monitor_(std::move(monitor)), binding_(this), detector_(detector) {
   DCHECK(detector_);
@@ -21,7 +21,7 @@ UserActivityForwarder::UserActivityForwarder(
   // second (the granularity exposed by UserActivityMonitor).
   const uint32_t kNotifyIntervalSec = static_cast<uint32_t>(
       ceil(ui::UserActivityDetector::kNotifyIntervalMs / 1000.0));
-  ws::mojom::UserActivityObserverPtr observer;
+  ui::mojom::UserActivityObserverPtr observer;
   binding_.Bind(mojo::MakeRequest(&observer));
   monitor_->AddUserActivityObserver(kNotifyIntervalSec, std::move(observer));
 }

@@ -56,13 +56,13 @@ TestWindowTreeClient::PopObservedPointerEvent() {
   return event;
 }
 
-void TestWindowTreeClient::SetWindowTree(ws::mojom::WindowTreePtr tree) {
+void TestWindowTreeClient::SetWindowTree(mojom::WindowTreePtr tree) {
   DCHECK(!tree_);
   tree_ = std::move(tree);
 }
 
 bool TestWindowTreeClient::AckFirstEvent(WindowTree* tree,
-                                         ws::mojom::EventResult result) {
+                                         mojom::EventResult result) {
   if (input_events_.empty())
     return false;
   InputEvent input_event = PopInputEvent();
@@ -74,8 +74,8 @@ bool TestWindowTreeClient::AckFirstEvent(WindowTree* tree,
 void TestWindowTreeClient::OnChangeAdded() {}
 
 void TestWindowTreeClient::OnEmbed(
-    ws::mojom::WindowDataPtr root,
-    ws::mojom::WindowTreePtr tree,
+    mojom::WindowDataPtr root,
+    mojom::WindowTreePtr tree,
     int64_t display_id,
     Id focused_window_id,
     bool drawn,
@@ -87,7 +87,7 @@ void TestWindowTreeClient::OnEmbed(
 
 void TestWindowTreeClient::OnEmbedFromToken(
     const base::UnguessableToken& token,
-    ws::mojom::WindowDataPtr root,
+    mojom::WindowDataPtr root,
     int64_t display_id,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   tracker_.OnEmbedFromToken(std::move(root), display_id, local_surface_id);
@@ -114,7 +114,7 @@ void TestWindowTreeClient::OnFrameSinkIdAllocated(
 
 void TestWindowTreeClient::OnTopLevelCreated(
     uint32_t change_id,
-    ws::mojom::WindowDataPtr data,
+    mojom::WindowDataPtr data,
     int64_t display_id,
     bool drawn,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
@@ -156,15 +156,14 @@ void TestWindowTreeClient::OnWindowHierarchyChanged(
     Id window,
     Id old_parent,
     Id new_parent,
-    std::vector<ws::mojom::WindowDataPtr> windows) {
+    std::vector<mojom::WindowDataPtr> windows) {
   tracker_.OnWindowHierarchyChanged(window, old_parent, new_parent,
                                     std::move(windows));
 }
 
-void TestWindowTreeClient::OnWindowReordered(
-    Id window_id,
-    Id relative_window_id,
-    ws::mojom::OrderDirection direction) {
+void TestWindowTreeClient::OnWindowReordered(Id window_id,
+                                             Id relative_window_id,
+                                             mojom::OrderDirection direction) {
   tracker_.OnWindowReordered(window_id, relative_window_id, direction);
 }
 
@@ -205,7 +204,7 @@ void TestWindowTreeClient::OnWindowInputEvent(
   input_events_.push(std::move(input_event));
 
   if (tree_)
-    tree_->OnWindowInputEventAck(event_id, ws::mojom::EventResult::HANDLED);
+    tree_->OnWindowInputEventAck(event_id, mojom::EventResult::HANDLED);
 }
 
 void TestWindowTreeClient::OnPointerEventObserved(
@@ -298,7 +297,7 @@ void TestWindowTreeClient::RequestClose(Id window_id) {
 }
 
 void TestWindowTreeClient::GetScreenProviderObserver(
-    ws::mojom::ScreenProviderObserverAssociatedRequest observer) {
+    mojom::ScreenProviderObserverAssociatedRequest observer) {
   screen_provider_observer_binding_.Bind(std::move(observer));
 }
 

@@ -13,19 +13,19 @@ namespace aura {
 
 namespace {
 
-ws::mojom::InjectedMouseButtonType EventFlagsToInjectedMouseButtonType(
+ui::mojom::InjectedMouseButtonType EventFlagsToInjectedMouseButtonType(
     ui::EventFlags flags) {
   switch (flags) {
     case ui::EF_LEFT_MOUSE_BUTTON:
-      return ws::mojom::InjectedMouseButtonType::kLeft;
+      return ui::mojom::InjectedMouseButtonType::kLeft;
     case ui::EF_MIDDLE_MOUSE_BUTTON:
-      return ws::mojom::InjectedMouseButtonType::kMiddle;
+      return ui::mojom::InjectedMouseButtonType::kMiddle;
     case ui::EF_RIGHT_MOUSE_BUTTON:
-      return ws::mojom::InjectedMouseButtonType::kRight;
+      return ui::mojom::InjectedMouseButtonType::kRight;
     default:
       LOG(WARNING) << "Invalid flag: " << flags << " for the button parameter";
   }
-  return ws::mojom::InjectedMouseButtonType::kLeft;
+  return ui::mojom::InjectedMouseButtonType::kLeft;
 }
 
 }  // namespace
@@ -34,7 +34,7 @@ SystemInputInjectorMus::SystemInputInjectorMus(
     service_manager::Connector* connector) {
   // Tests may use a null connector.
   if (connector)
-    connector->BindInterface(ws::mojom::kServiceName,
+    connector->BindInterface(ui::mojom::kServiceName,
                              &remoting_event_injector_);
 }
 

@@ -38,14 +38,10 @@ class ContextFactory;
 class ContextFactoryPrivate;
 class GestureRecognizer;
 class PlatformEventSource;
-}  // namespace ui
-
-namespace ws {
 namespace mojom {
 class WindowTreeClient;
 }
 }
-
 namespace aura {
 namespace test {
 class EnvTestHelper;
@@ -186,9 +182,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
   bool HasWindowTreeClient() const { return window_tree_client_ != nullptr; }
 
   // Schedules an embed of a client. See
-  // ws::mojom::WindowTreeClient::ScheduleEmbed() for details.
+  // mojom::WindowTreeClient::ScheduleEmbed() for details.
   void ScheduleEmbed(
-      mojo::InterfacePtr<ws::mojom::WindowTreeClient> client,
+      mojo::InterfacePtr<ui::mojom::WindowTreeClient> client,
       base::OnceCallback<void(const base::UnguessableToken&)> callback);
 
  private:

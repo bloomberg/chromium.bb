@@ -104,7 +104,7 @@ TEST(WindowServiceObserverTest, EventRelatedFunctions) {
 
   // Ack the event, which should call the OnClientAckedEvent().
   EXPECT_TRUE(setup.window_tree_client()->AckFirstEvent(
-      setup.window_tree(), ws::mojom::EventResult::UNHANDLED));
+      setup.window_tree(), mojom::EventResult::UNHANDLED));
   EXPECT_EQ(1, window_service_observer.send_count());
   EXPECT_EQ(1, window_service_observer.ack_count());
   EXPECT_EQ(window_service_observer.last_send_event_id(),

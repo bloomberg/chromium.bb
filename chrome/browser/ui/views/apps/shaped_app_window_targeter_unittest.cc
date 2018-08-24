@@ -62,9 +62,9 @@ class ShapedAppWindowTargeterTest : public aura::test::AuraTestBase {
   void SetWindowResizable(bool resizable) {
     widget_->GetNativeWindow()->SetProperty(
         aura::client::kResizeBehaviorKey,
-        ws::mojom::kResizeBehaviorCanMaximize |
-            ws::mojom::kResizeBehaviorCanMinimize |
-            (resizable ? ws::mojom::kResizeBehaviorCanResize : 0));
+        ui::mojom::kResizeBehaviorCanMaximize |
+            ui::mojom::kResizeBehaviorCanMinimize |
+            (resizable ? ui::mojom::kResizeBehaviorCanResize : 0));
   }
 
  private:

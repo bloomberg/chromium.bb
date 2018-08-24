@@ -18,13 +18,13 @@ class TestGpuHost : public gpu_host::GpuHost {
   ~TestGpuHost() override;
 
  private:
-  void Add(ws::mojom::GpuRequest request) override {}
+  void Add(mojom::GpuRequest request) override {}
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override {}
   void OnAcceleratedWidgetDestroyed(gfx::AcceleratedWidget widget) override {}
   void CreateFrameSinkManager(
       viz::mojom::FrameSinkManagerParamsPtr params) override;
 #if defined(OS_CHROMEOS)
-  void AddArc(ws::mojom::ArcRequest request) override {}
+  void AddArc(mojom::ArcRequest request) override {}
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<viz::TestFrameSinkManagerImpl> frame_sink_manager_;

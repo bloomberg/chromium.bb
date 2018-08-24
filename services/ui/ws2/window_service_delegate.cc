@@ -13,7 +13,7 @@ bool WindowServiceDelegate::StoreAndSetCursor(aura::Window* window,
 }
 
 void WindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
-                                              ws::mojom::MoveLoopSource source,
+                                              mojom::MoveLoopSource source,
                                               const gfx::Point& cursor,
                                               DoneCallback callback) {
   std::move(callback).Run(false);

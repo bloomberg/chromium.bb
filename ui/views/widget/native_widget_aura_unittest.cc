@@ -310,9 +310,9 @@ class PropertyTestLayoutManager : public TestLayoutManagerBase {
  private:
   // aura::LayoutManager:
   void OnWindowAddedToLayout(aura::Window* child) override {
-    EXPECT_EQ(ws::mojom::kResizeBehaviorCanResize |
-                  ws::mojom::kResizeBehaviorCanMaximize |
-                  ws::mojom::kResizeBehaviorCanMinimize,
+    EXPECT_EQ(ui::mojom::kResizeBehaviorCanResize |
+                  ui::mojom::kResizeBehaviorCanMaximize |
+                  ui::mojom::kResizeBehaviorCanMinimize,
               child->GetProperty(aura::client::kResizeBehaviorKey));
     added_ = true;
   }

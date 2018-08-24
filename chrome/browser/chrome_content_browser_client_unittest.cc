@@ -395,7 +395,7 @@ TEST(ChromeContentBrowserClientTest, ShouldTerminateOnServiceQuit) {
       {content::mojom::kGpuServiceName, false},
       {content::mojom::kRendererServiceName, false},
       // Do terminate for some mash-specific cases.
-      {ws::mojom::kServiceName, true},
+      {ui::mojom::kServiceName, true},
       {ash::mojom::kServiceName, true},
   };
   ChromeContentBrowserClient client;

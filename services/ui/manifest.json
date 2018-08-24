@@ -12,13 +12,13 @@
         "app": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "ui.mojom.ClipboardHost",
+          "ui.mojom.Gpu",
           "ui.mojom.IMEDriver",
           "ui.mojom.InputDeviceServer",
-          "ws.mojom.Gpu",
-          "ws.mojom.WindowTreeFactory"
+          "ui.mojom.WindowTreeFactory"
         ],
         "arc_manager" : [
-          "ws.mojom.Arc"
+          "ui.mojom.Arc"
         ],
         // Interfaces provided by mus-gpu for mus-ws.
         "ozone": [
@@ -26,14 +26,14 @@
           "ui.ozone.mojom.DrmDevice"
         ],
         "test": [
-          "ws.mojom.EventInjector",
-          "ws.mojom.WindowServerTest"
+          "ui.mojom.EventInjector",
+          "ui.mojom.WindowServerTest"
         ],
         "discardable_memory": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager"
         ],
         "gpu_client": [
-          "ws.mojom.Gpu"
+          "ui.mojom.Gpu"
         ],
         "ime_registrar": [
           "ui.mojom.IMERegistrar"
@@ -43,17 +43,17 @@
         ],
         "privileged": [
           // Injecting events is security-sensitive.
-          "ws.mojom.EventInjector",
-          "ws.mojom.RemotingEventInjector"
+          "ui.mojom.EventInjector",
+          "ui.mojom.RemotingEventInjector"
         ],
         "window_manager": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
+          "ui.mojom.EventInjector",
+          "ui.mojom.Gpu",
           "ui.mojom.IMEDriver",
           "ui.mojom.InputDeviceController",
           "ui.mojom.InputDeviceServer",
-          "ws.mojom.EventInjector",
-          "ws.mojom.Gpu",
-          "ws.mojom.UserActivityMonitor"
+          "ui.mojom.UserActivityMonitor"
         ]
       },
       "requires": {

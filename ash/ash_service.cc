@@ -128,7 +128,7 @@ void AshService::InitForMash() {
   base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
   thread_options.priority = base::ThreadPriority::NORMAL;
   CHECK(io_thread_->StartWithOptions(thread_options));
-  gpu_ = ui::Gpu::Create(context()->connector(), ws::mojom::kServiceName,
+  gpu_ = ui::Gpu::Create(context()->connector(), ui::mojom::kServiceName,
                          io_thread_->task_runner());
 
   context_factory_ = std::make_unique<ui::ws2::HostContextFactory>(
@@ -204,7 +204,7 @@ void AshService::CreateService(
     service_manager::mojom::ServiceRequest service,
     const std::string& name,
     service_manager::mojom::PIDReceiverPtr pid_receiver) {
-  DCHECK_EQ(name, ws::mojom::kServiceName);
+  DCHECK_EQ(name, ui::mojom::kServiceName);
   Shell::Get()->window_service_owner()->BindWindowService(std::move(service));
   if (base::FeatureList::IsEnabled(features::kMash)) {
     ui::ws2::WindowService* window_service =

@@ -98,7 +98,7 @@ class WindowServiceDelegateImplTest : public AshTestBase {
 
 TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
-      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      21, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   GetEventGenerator()->MoveMouseTo(gfx::Point(5, 6));
@@ -114,7 +114,7 @@ TEST_F(WindowServiceDelegateImplTest, RunWindowMoveLoop) {
 
 TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
-      29, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      29, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   top_level_.reset();
@@ -126,7 +126,7 @@ TEST_F(WindowServiceDelegateImplTest, DeleteWindowWithInProgressRunLoop) {
 
 TEST_F(WindowServiceDelegateImplTest, CancelWindowMoveLoop) {
   GetWindowTreeTestHelper()->window_tree()->PerformWindowMove(
-      21, GetTopLevelWindowId(), ws::mojom::MoveLoopSource::MOUSE,
+      21, GetTopLevelWindowId(), ui::mojom::MoveLoopSource::MOUSE,
       gfx::Point());
   EXPECT_TRUE(event_handler()->is_drag_in_progress());
   GetEventGenerator()->MoveMouseTo(gfx::Point(5, 6));
@@ -261,7 +261,7 @@ TEST_F(WindowServiceDelegateImplTest, ObserveTopmostWindow) {
   GetWindowTreeClientChanges()->clear();
 
   GetWindowTreeTestHelper()->window_tree()->ObserveTopmostWindow(
-      ws::mojom::MoveLoopSource::MOUSE, GetTopLevelWindowId());
+      ui::mojom::MoveLoopSource::MOUSE, GetTopLevelWindowId());
   EXPECT_TRUE(
       ContainsChange(*GetWindowTreeClientChanges(),
                      "TopmostWindowChanged window_id=0,1 window_id2=null"));

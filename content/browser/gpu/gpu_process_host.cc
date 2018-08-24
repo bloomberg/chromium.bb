@@ -475,7 +475,7 @@ void BindDiscardableMemoryRequestOnUI(
 #if defined(USE_AURA)
   if (!features::IsAshInBrowserProcess()) {
     ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-        ws::mojom::kServiceName, std::move(request));
+        ui::mojom::kServiceName, std::move(request));
     return;
   }
 #endif

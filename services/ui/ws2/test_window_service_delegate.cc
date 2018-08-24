@@ -46,11 +46,10 @@ void TestWindowServiceDelegate::OnUnhandledKeyEvent(const KeyEvent& key_event) {
   unhandled_key_events_.push_back(key_event);
 }
 
-void TestWindowServiceDelegate::RunWindowMoveLoop(
-    aura::Window* window,
-    ws::mojom::MoveLoopSource source,
-    const gfx::Point& cursor,
-    DoneCallback callback) {
+void TestWindowServiceDelegate::RunWindowMoveLoop(aura::Window* window,
+                                                  mojom::MoveLoopSource source,
+                                                  const gfx::Point& cursor,
+                                                  DoneCallback callback) {
   move_loop_callback_ = std::move(callback);
 }
 

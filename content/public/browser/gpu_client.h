@@ -15,7 +15,7 @@ namespace content {
 
 CONTENT_EXPORT
 std::unique_ptr<viz::GpuClient, base::OnTaskRunnerDeleter> CreateGpuClient(
-    ws::mojom::GpuRequest request,
+    ui::mojom::GpuRequest request,
     viz::GpuClient::ConnectionErrorHandlerClosure connection_error_handler,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

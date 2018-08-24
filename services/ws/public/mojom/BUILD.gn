@@ -13,6 +13,7 @@ mojom("mojom") {
     "screen_provider_observer.mojom",
     "user_activity_monitor.mojom",
     "window_manager.mojom",
+    "window_manager_constants.mojom",
     "window_server_test.mojom",
     "window_tree.mojom",
     "window_tree_constants.mojom",

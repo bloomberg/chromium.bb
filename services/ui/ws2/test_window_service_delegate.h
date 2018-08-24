@@ -54,7 +54,7 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
       override;
   void OnUnhandledKeyEvent(const KeyEvent& key_event) override;
   void RunWindowMoveLoop(aura::Window* window,
-                         ws::mojom::MoveLoopSource source,
+                         mojom::MoveLoopSource source,
                          const gfx::Point& cursor,
                          DoneCallback callback) override;
   void CancelWindowMoveLoop() override;

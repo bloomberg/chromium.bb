@@ -22,9 +22,11 @@
 #include "ui/gfx/transform.h"
 
 namespace ui {
+
 namespace mojom {
 enum class CursorType : int32_t;
 }
+
 }  // namespace ui
 
 namespace aura {

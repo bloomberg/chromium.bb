@@ -39,7 +39,7 @@ EventInjector::~EventInjector() {
     std::move(handler_and_callback->callback).Run(false);
 }
 
-void EventInjector::AddBinding(ws::mojom::EventInjectorRequest request) {
+void EventInjector::AddBinding(mojom::EventInjectorRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

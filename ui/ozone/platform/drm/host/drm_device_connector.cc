@@ -114,7 +114,7 @@ void DrmDeviceConnector::OnMessageReceived(const IPC::Message& message) {
 void DrmDeviceConnector::BindInterfaceDrmDevice(
     ui::ozone::mojom::DrmDevicePtr* drm_device_ptr) const {
   if (connector_) {
-    connector_->BindInterface(ws::mojom::kServiceName, drm_device_ptr);
+    connector_->BindInterface(ui::mojom::kServiceName, drm_device_ptr);
   } else {
     auto request = mojo::MakeRequest(drm_device_ptr);
     BindInterfaceInGpuProcess(std::move(request), binder_callback_);
@@ -124,7 +124,7 @@ void DrmDeviceConnector::BindInterfaceDrmDevice(
 void DrmDeviceConnector::BindInterfaceDeviceCursor(
     ui::ozone::mojom::DeviceCursorPtr* cursor_ptr) const {
   if (connector_) {
-    connector_->BindInterface(ws::mojom::kServiceName, cursor_ptr);
+    connector_->BindInterface(ui::mojom::kServiceName, cursor_ptr);
   } else {
     auto request = mojo::MakeRequest(cursor_ptr);
     BindInterfaceInGpuProcess(std::move(request), binder_callback_);

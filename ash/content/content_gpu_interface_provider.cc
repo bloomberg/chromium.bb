@@ -21,7 +21,7 @@ class ContentGpuInterfaceProvider::InterfaceBinderImpl
  public:
   InterfaceBinderImpl() = default;
 
-  void BindGpuRequestOnGpuTaskRunner(ws::mojom::GpuRequest request) {
+  void BindGpuRequestOnGpuTaskRunner(ui::mojom::GpuRequest request) {
     // The GPU task runner is bound to the IO thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     auto gpu_client = content::CreateGpuClient(

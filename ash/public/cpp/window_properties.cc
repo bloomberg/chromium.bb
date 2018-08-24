@@ -43,11 +43,11 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kCaptionButtonBoundsKey, mojom::kCaptionButtonBounds_Property);
   property_converter->RegisterPrimitiveProperty(
       kFrameBackButtonStateKey,
-      ws::mojom::WindowManager::kFrameBackButtonState_Property,
+      ui::mojom::WindowManager::kFrameBackButtonState_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kFrameActiveColorKey,
-      ws::mojom::WindowManager::kFrameActiveColor_Property,
+      ui::mojom::WindowManager::kFrameActiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterUnguessableTokenProperty(
       kFrameImageActiveKey, mojom::kFrameImageActive_Property);
@@ -66,7 +66,7 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kFrameInactiveColorKey,
-      ws::mojom::WindowManager::kFrameInactiveColor_Property,
+      ui::mojom::WindowManager::kFrameInactiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kFrameIsThemedByHostedAppKey, mojom::kFrameIsThemedByHostedApp_Property,
@@ -88,14 +88,14 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kIsShowingInOverviewKey, mojom::kIsShowingInOverview_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
-      kPanelAttachedKey, ws::mojom::WindowManager::kPanelAttached_Property,
+      kPanelAttachedKey, ui::mojom::WindowManager::kPanelAttached_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
       kRenderTitleAreaProperty,
-      ws::mojom::WindowManager::kRenderParentTitleArea_Property,
+      ui::mojom::WindowManager::kRenderParentTitleArea_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
-      kShelfItemTypeKey, ws::mojom::WindowManager::kShelfItemType_Property,
+      kShelfItemTypeKey, ui::mojom::WindowManager::kShelfItemType_Property,
       base::BindRepeating(&IsValidShelfItemType));
   property_converter->RegisterPrimitiveProperty(
       kWindowStateTypeKey, mojom::kWindowStateType_Property,
@@ -107,7 +107,7 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       kWindowPositionManagedTypeKey, mojom::kWindowPositionManaged_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterStringProperty(
-      kShelfIDKey, ws::mojom::WindowManager::kShelfID_Property);
+      kShelfIDKey, ui::mojom::WindowManager::kShelfID_Property);
   property_converter->RegisterRectProperty(
       kRestoreBoundsOverrideKey, mojom::kRestoreBoundsOverride_Property);
   property_converter->RegisterPrimitiveProperty(
@@ -116,7 +116,7 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       base::BindRepeating(&IsValidWindowStateType));
   property_converter->RegisterPrimitiveProperty(
       aura::client::kTitleShownKey,
-      ws::mojom::WindowManager::kWindowTitleShown_Property,
+      ui::mojom::WindowManager::kWindowTitleShown_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
 

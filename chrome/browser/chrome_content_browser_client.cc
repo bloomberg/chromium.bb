@@ -2139,7 +2139,7 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     base::CommandLine* command_line) {
 #if BUILDFLAG(ENABLE_MUS)
   bool copy_switches = false;
-  if (identity.name() == ws::mojom::kServiceName) {
+  if (identity.name() == ui::mojom::kServiceName) {
     command_line->AppendSwitch(switches::kMessageLoopTypeUi);
     copy_switches = true;
   }

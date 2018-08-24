@@ -81,16 +81,16 @@ class ConnectionFilterImpl : public ConnectionFilter {
                        const std::string& interface_name,
                        mojo::ScopedMessagePipeHandle* interface_pipe,
                        service_manager::Connector* connector) override {
-    // Ignore ws::mojom::Gpu interface request from Renderer process.
+    // Ignore ui::mojom::Gpu interface request from Renderer process.
     // The request will be handled in RenderProcessHostImpl.
     if (source_info.identity.name() == mojom::kRendererServiceName &&
-        interface_name == ws::mojom::Gpu::Name_)
+        interface_name == ui::mojom::Gpu::Name_)
       return;
 
     registry_.TryBindInterface(interface_name, interface_pipe, source_info);
   }
 
-  void BindGpuRequest(ws::mojom::GpuRequest request,
+  void BindGpuRequest(ui::mojom::GpuRequest request,
                       const service_manager::BindSourceInfo& source_info) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 

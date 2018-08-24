@@ -13,7 +13,7 @@
 #include "services/ui/common/types.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace ws {
+namespace ui {
 namespace mojom {
 class WindowTree;
 }
@@ -68,7 +68,7 @@ class MusEmbeddedFrame {
 
   uint32_t GetAndAdvanceNextChangeId();
 
-  ws::mojom::WindowTree* window_tree();
+  ui::mojom::WindowTree* window_tree();
 
   RendererWindowTreeClient* renderer_window_tree_client_;
   MusEmbeddedFrameDelegate* delegate_;

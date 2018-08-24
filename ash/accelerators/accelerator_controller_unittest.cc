@@ -592,7 +592,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   widget->Show();
   widget->Activate();
   widget->GetNativeView()->SetProperty(aura::client::kResizeBehaviorKey,
-                                       ws::mojom::kResizeBehaviorCanMaximize);
+                                       ui::mojom::kResizeBehaviorCanMaximize);
 
   ui::test::EventGenerator* generator = GetEventGenerator();
   wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());

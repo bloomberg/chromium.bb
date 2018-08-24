@@ -100,33 +100,33 @@ class AshEventGeneratorDelegate
   DISALLOW_COPY_AND_ASSIGN(AshEventGeneratorDelegate);
 };
 
-ws::mojom::WindowType MusWindowTypeFromWindowType(
+ui::mojom::WindowType MusWindowTypeFromWindowType(
     aura::client::WindowType window_type) {
   switch (window_type) {
     case aura::client::WINDOW_TYPE_UNKNOWN:
       break;
 
     case aura::client::WINDOW_TYPE_NORMAL:
-      return ws::mojom::WindowType::WINDOW;
+      return ui::mojom::WindowType::WINDOW;
 
     case aura::client::WINDOW_TYPE_POPUP:
-      return ws::mojom::WindowType::POPUP;
+      return ui::mojom::WindowType::POPUP;
 
     case aura::client::WINDOW_TYPE_CONTROL:
-      return ws::mojom::WindowType::CONTROL;
+      return ui::mojom::WindowType::CONTROL;
 
     case aura::client::WINDOW_TYPE_PANEL:
-      return ws::mojom::WindowType::PANEL;
+      return ui::mojom::WindowType::PANEL;
 
     case aura::client::WINDOW_TYPE_MENU:
-      return ws::mojom::WindowType::MENU;
+      return ui::mojom::WindowType::MENU;
 
     case aura::client::WINDOW_TYPE_TOOLTIP:
-      return ws::mojom::WindowType::TOOLTIP;
+      return ui::mojom::WindowType::TOOLTIP;
   }
 
   NOTREACHED();
-  return ws::mojom::WindowType::CONTROL;
+  return ui::mojom::WindowType::CONTROL;
 }
 
 }  // namespace
@@ -272,20 +272,20 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
   // The following simulates what happens when a client creates a window.
   std::map<std::string, std::vector<uint8_t>> properties;
   if (!bounds_in_screen.IsEmpty()) {
-    properties[ws::mojom::WindowManager::kBounds_InitProperty] =
+    properties[ui::mojom::WindowManager::kBounds_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(bounds_in_screen);
   }
 
-  properties[ws::mojom::WindowManager::kResizeBehavior_Property] =
+  properties[ui::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<aura::PropertyConverter::PrimitiveType>(
-              ws::mojom::kResizeBehaviorCanResize |
-              ws::mojom::kResizeBehaviorCanMaximize |
-              ws::mojom::kResizeBehaviorCanMinimize));
+              ui::mojom::kResizeBehaviorCanResize |
+              ui::mojom::kResizeBehaviorCanMaximize |
+              ui::mojom::kResizeBehaviorCanMinimize));
 
-  const ws::mojom::WindowType mus_window_type =
+  const ui::mojom::WindowType mus_window_type =
       MusWindowTypeFromWindowType(type);
-  properties[ws::mojom::WindowManager::kWindowType_InitProperty] =
+  properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(mus_window_type));
 
@@ -370,9 +370,9 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     aura::client::ParentWindowWithContext(window, root, bounds);
   }
   window->SetProperty(aura::client::kResizeBehaviorKey,
-                      ws::mojom::kResizeBehaviorCanMaximize |
-                          ws::mojom::kResizeBehaviorCanMinimize |
-                          ws::mojom::kResizeBehaviorCanResize);
+                      ui::mojom::kResizeBehaviorCanMaximize |
+                          ui::mojom::kResizeBehaviorCanMinimize |
+                          ui::mojom::kResizeBehaviorCanResize);
   return window;
 }
 

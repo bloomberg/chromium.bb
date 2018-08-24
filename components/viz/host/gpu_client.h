@@ -14,8 +14,8 @@
 
 namespace viz {
 
-class VIZ_HOST_EXPORT GpuClient : public ws::mojom::GpuMemoryBufferFactory,
-                                  public ws::mojom::Gpu {
+class VIZ_HOST_EXPORT GpuClient : public ui::mojom::GpuMemoryBufferFactory,
+                                  public ui::mojom::Gpu {
  public:
   using ConnectionErrorHandlerClosure =
       base::OnceCallback<void(GpuClient* client)>;
@@ -29,27 +29,27 @@ class VIZ_HOST_EXPORT GpuClient : public ws::mojom::GpuMemoryBufferFactory,
   ~GpuClient() override;
 
   // This needs to be run on the thread associated with |task_runner_|.
-  void Add(ws::mojom::GpuRequest request);
+  void Add(ui::mojom::GpuRequest request);
 
   void PreEstablishGpuChannel();
 
   void SetConnectionErrorHandler(
       ConnectionErrorHandlerClosure connection_error_handler);
 
-  // ws::mojom::GpuMemoryBufferFactory overrides:
+  // ui::mojom::GpuMemoryBufferFactory overrides:
   void CreateGpuMemoryBuffer(
       gfx::GpuMemoryBufferId id,
       const gfx::Size& size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      ws::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback)
+      ui::mojom::GpuMemoryBufferFactory::CreateGpuMemoryBufferCallback callback)
       override;
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               const gpu::SyncToken& sync_token) override;
 
-  // ws::mojom::Gpu overrides:
+  // ui::mojom::Gpu overrides:
   void CreateGpuMemoryBufferFactory(
-      ws::mojom::GpuMemoryBufferFactoryRequest request) override;
+      ui::mojom::GpuMemoryBufferFactoryRequest request) override;
   void EstablishGpuChannel(EstablishGpuChannelCallback callback) override;
   void CreateJpegDecodeAccelerator(
       media::mojom::JpegDecodeAcceleratorRequest jda_request) override;
@@ -77,9 +77,9 @@ class VIZ_HOST_EXPORT GpuClient : public ws::mojom::GpuMemoryBufferFactory,
   std::unique_ptr<GpuClientDelegate> delegate_;
   const int client_id_;
   const uint64_t client_tracing_id_;
-  mojo::BindingSet<ws::mojom::GpuMemoryBufferFactory>
+  mojo::BindingSet<ui::mojom::GpuMemoryBufferFactory>
       gpu_memory_buffer_factory_bindings_;
-  mojo::BindingSet<ws::mojom::Gpu> gpu_bindings_;
+  mojo::BindingSet<ui::mojom::Gpu> gpu_bindings_;
   bool gpu_channel_requested_ = false;
   EstablishGpuChannelCallback callback_;
   mojo::ScopedMessagePipeHandle channel_handle_;

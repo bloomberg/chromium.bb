@@ -47,7 +47,7 @@ void WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     OnClickedMaximizeButton(event);
   } else {
     if (target->GetProperty(aura::client::kResizeBehaviorKey) &
-        ws::mojom::kResizeBehaviorCanResize) {
+        ui::mojom::kResizeBehaviorCanResize) {
       MaybeDispatchHostWindowDragMovement(component, event);
     }
   }
@@ -97,7 +97,7 @@ void WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
       break;
     case LinuxUI::WINDOW_FRAME_ACTION_TOGGLE_MAXIMIZE:
       if (target->GetProperty(aura::client::kResizeBehaviorKey) &
-          ws::mojom::kResizeBehaviorCanMaximize)
+          ui::mojom::kResizeBehaviorCanMaximize)
         ToggleMaximizedState();
       event->SetHandled();
       break;

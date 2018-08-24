@@ -26,14 +26,14 @@ WindowTreeBinding::~WindowTreeBinding() {
 
 void WindowTreeBinding::InitForEmbed(
     WindowService* window_service,
-    ws::mojom::WindowTreeClientPtr window_tree_client_ptr,
-    ws::mojom::WindowTreeClient* window_tree_client,
+    mojom::WindowTreeClientPtr window_tree_client_ptr,
+    mojom::WindowTreeClient* window_tree_client,
     aura::Window* initial_root,
     base::OnceClosure connection_lost_callback) {
   window_service_ = window_service;
   window_tree_client_ = std::move(window_tree_client_ptr);
   window_tree_ = window_service->CreateWindowTree(window_tree_client);
-  ws::mojom::WindowTreePtr window_tree_ptr;
+  mojom::WindowTreePtr window_tree_ptr;
   if (window_tree_client_) {
     auto window_tree_request = mojo::MakeRequest(&window_tree_ptr);
     CreateBinding(std::move(window_tree_request),
@@ -45,8 +45,8 @@ void WindowTreeBinding::InitForEmbed(
 void WindowTreeBinding::InitFromFactory(
     WindowService* window_service,
     const std::string& client_name,
-    ws::mojom::WindowTreeRequest window_tree_request,
-    ws::mojom::WindowTreeClientPtr window_tree_client,
+    mojom::WindowTreeRequest window_tree_request,
+    mojom::WindowTreeClientPtr window_tree_client,
     base::OnceClosure connection_lost_callback) {
   window_service_ = window_service;
   window_tree_client_ = std::move(window_tree_client);
@@ -58,9 +58,9 @@ void WindowTreeBinding::InitFromFactory(
 }
 
 void WindowTreeBinding::CreateBinding(
-    ws::mojom::WindowTreeRequest window_tree_request,
+    mojom::WindowTreeRequest window_tree_request,
     base::OnceClosure connection_lost_callback) {
-  binding_ = std::make_unique<mojo::Binding<ws::mojom::WindowTree>>(
+  binding_ = std::make_unique<mojo::Binding<mojom::WindowTree>>(
       window_tree_.get(), std::move(window_tree_request));
   binding_->set_connection_error_handler(std::move(connection_lost_callback));
   window_tree_client_->GetScreenProviderObserver(

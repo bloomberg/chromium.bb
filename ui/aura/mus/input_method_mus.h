@@ -13,7 +13,7 @@
 #include "ui/aura/aura_export.h"
 #include "ui/base/ime/input_method_base.h"
 
-namespace ws {
+namespace ui {
 namespace mojom {
 enum class EventResult;
 }
@@ -27,7 +27,7 @@ class TextInputClientImpl;
 
 class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
  public:
-  using EventResultCallback = base::OnceCallback<void(ws::mojom::EventResult)>;
+  using EventResultCallback = base::OnceCallback<void(ui::mojom::EventResult)>;
 
   InputMethodMus(ui::internal::InputMethodDelegate* delegate,
                  InputMethodMusDelegate* input_method_mus_delegate);
