@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_PENDING_APP_MANAGER_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_PENDING_APP_MANAGER_H_
 
+#include <memory>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -38,6 +40,8 @@ class PendingAppManager {
     AppInfo(AppInfo&& other);
     ~AppInfo();
 
+    std::unique_ptr<AppInfo> Clone() const;
+
     bool operator==(const AppInfo& other) const;
 
     GURL url;
@@ -70,6 +74,9 @@ class PendingAppManager {
 
   DISALLOW_COPY_AND_ASSIGN(PendingAppManager);
 };
+
+std::ostream& operator<<(std::ostream& out,
+                         const PendingAppManager::AppInfo& app_info);
 
 }  // namespace web_app
 
