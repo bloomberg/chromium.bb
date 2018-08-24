@@ -187,6 +187,12 @@ static NSString* const kFeedbackContext = @"InSessionFeedbackContext";
   return YES;
 }
 
+- (BOOL)prefersHomeIndicatorAutoHidden {
+  // Allow home indicator to timeout so that user can see desktop on the bottom
+  // of the screen.
+  return YES;
+}
+
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
   [_client.displayHandler createRendererContext:_hostView];
