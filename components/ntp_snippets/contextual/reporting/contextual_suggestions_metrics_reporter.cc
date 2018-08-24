@@ -27,7 +27,6 @@ ContextualSuggestionsMetricsReporter::~ContextualSuggestionsMetricsReporter() {
 
 void ContextualSuggestionsMetricsReporter::SetupForPage(
     const std::string& url,
-    ArticleSource article_source,
     ukm::SourceId source_id) {
   DCHECK(!ukm_entry_) << "Flush should be called before SetupForPage!";
   DCHECK(source_id != ukm::kInvalidSourceId);

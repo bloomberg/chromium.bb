@@ -13,11 +13,6 @@
 
 namespace contextual_suggestions {
 
-// This represents the source of the navigation to the current page. It's set
-// via referrer links. We only need EOC/other since we only want to compare
-// metrics across this dimension.
-enum class ArticleSource { CONTEXTUAL_SUGGESTIONS, OTHER };
-
 class ContextualSuggestionsDebuggingReporter;
 class ContextualSuggestionsReporter;
 
@@ -135,7 +130,6 @@ class ContextualSuggestionsReporter {
   // Sets up the page with the given |source_id| for event reporting.
   // All subsequent RecordEvent calls will apply to this page
   virtual void SetupForPage(const std::string& url,
-                            ArticleSource article_source,
                             ukm::SourceId source_id) = 0;
 
   // Reports that an event occurred for the current page.

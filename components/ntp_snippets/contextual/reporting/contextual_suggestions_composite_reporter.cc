@@ -16,10 +16,9 @@ ContextualSuggestionsCompositeReporter::
 
 void ContextualSuggestionsCompositeReporter::SetupForPage(
     const std::string& url,
-    ArticleSource article_source,
     ukm::SourceId source_id) {
   for (ContextualSuggestionsReporter* reporter : raw_reporters_)
-    reporter->SetupForPage(url, article_source, source_id);
+    reporter->SetupForPage(url, source_id);
 }
 
 void ContextualSuggestionsCompositeReporter::RecordEvent(

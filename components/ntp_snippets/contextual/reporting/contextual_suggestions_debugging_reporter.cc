@@ -29,7 +29,6 @@ void ContextualSuggestionsDebuggingReporter::ClearEvents() {
 
 void ContextualSuggestionsDebuggingReporter::SetupForPage(
     const std::string& url,
-    ArticleSource article_source,
     ukm::SourceId source_id) {
   current_event_ = ContextualSuggestionsDebuggingEvent();
   current_event_.url = url;

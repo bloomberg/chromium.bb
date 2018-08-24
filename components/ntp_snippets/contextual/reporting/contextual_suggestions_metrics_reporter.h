@@ -28,7 +28,6 @@ class ContextualSuggestionsMetricsReporter
 
   // ContextualSuggestionsReporter
   void SetupForPage(const std::string& url,
-                    ArticleSource article_source,
                     ukm::SourceId source_id) override;
   void RecordEvent(ContextualSuggestionsEvent event) override;
   void Flush() override;
