@@ -19,6 +19,7 @@
 namespace device {
 
 class BluetoothTestWinrt;
+class FakeBluetoothLEDeviceWinrt;
 class FakeGattCharacteristicWinrt;
 
 class FakeGattDeviceServiceWinrt
@@ -30,9 +31,11 @@ class FakeGattDeviceServiceWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDeviceService3> {
  public:
-  FakeGattDeviceServiceWinrt(BluetoothTestWinrt* bluetooth_test_winrt,
-                             base::StringPiece uuid,
-                             uint16_t attribute_handle);
+  FakeGattDeviceServiceWinrt(
+      BluetoothTestWinrt* bluetooth_test_winrt,
+      Microsoft::WRL::ComPtr<FakeBluetoothLEDeviceWinrt> fake_device,
+      base::StringPiece uuid,
+      uint16_t attribute_handle);
   ~FakeGattDeviceServiceWinrt() override;
 
   // IGattDeviceService:
@@ -115,6 +118,7 @@ class FakeGattDeviceServiceWinrt
 
  private:
   BluetoothTestWinrt* bluetooth_test_winrt_;
+  Microsoft::WRL::ComPtr<FakeBluetoothLEDeviceWinrt> fake_device_;
   GUID uuid_;
   uint16_t attribute_handle_;
 

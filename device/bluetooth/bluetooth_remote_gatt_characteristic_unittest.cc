@@ -585,7 +585,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif
 
   ASSERT_EQ(1u, adapter_->GetDevices().size());
-  SimulateGattDisconnection(adapter_->GetDevices()[0]);
+  SimulateDeviceBreaksConnection(adapter_->GetDevices()[0]);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
@@ -677,7 +677,7 @@ TEST_F(BluetoothRemoteGattCharacteristicTest,
 #endif  // defined(OS_ANDROID)
 
   ASSERT_EQ(1u, adapter_->GetDevices().size());
-  SimulateGattDisconnection(adapter_->GetDevices()[0]);
+  SimulateDeviceBreaksConnection(adapter_->GetDevices()[0]);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,
@@ -3321,7 +3321,7 @@ TEST_F(
   characteristic1_->WriteRemoteCharacteristic(
       std::vector<uint8_t>(), GetCallback(Call::NOT_EXPECTED),
       GetGattErrorCallback(Call::EXPECTED));
-  SimulateGattDisconnection(device_);
+  SimulateDeviceBreaksConnection(adapter_->GetDevices()[0]);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(BluetoothRemoteGattService::GATT_ERROR_FAILED,

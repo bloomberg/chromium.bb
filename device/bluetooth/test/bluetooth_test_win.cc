@@ -718,6 +718,14 @@ void BluetoothTestWinrt::SimulateGattDisconnection(BluetoothDevice* device) {
   ble_device->SimulateGattDisconnection();
 }
 
+void BluetoothTestWinrt::SimulateDeviceBreaksConnection(
+    BluetoothDevice* device) {
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateDeviceBreaksConnection();
+}
+
 void BluetoothTestWinrt::SimulateGattServicesDiscovered(
     BluetoothDevice* device,
     const std::vector<std::string>& uuids) {

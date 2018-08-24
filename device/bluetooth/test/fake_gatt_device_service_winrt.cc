@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/async_operation.h"
 #include "device/bluetooth/bluetooth_uuid.h"
+#include "device/bluetooth/test/fake_bluetooth_le_device_winrt.h"
 #include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 #include "device/bluetooth/test/fake_gatt_characteristics_result_winrt.h"
 
@@ -38,20 +39,27 @@ using ABI::Windows::Devices::Enumeration::DeviceAccessStatus;
 using ABI::Windows::Devices::Enumeration::IDeviceAccessInformation;
 using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
+using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::Make;
 
 }  // namespace
 
 FakeGattDeviceServiceWinrt::FakeGattDeviceServiceWinrt(
     BluetoothTestWinrt* bluetooth_test_winrt,
+    ComPtr<FakeBluetoothLEDeviceWinrt> fake_device,
     base::StringPiece uuid,
     uint16_t attribute_handle)
     : bluetooth_test_winrt_(bluetooth_test_winrt),
+      fake_device_(std::move(fake_device)),
       uuid_(BluetoothUUID::GetCanonicalValueAsGUID(uuid)),
       attribute_handle_(attribute_handle),
-      characteristic_attribute_handle_(attribute_handle_) {}
+      characteristic_attribute_handle_(attribute_handle_) {
+  fake_device_->AddReference();
+}
 
-FakeGattDeviceServiceWinrt::~FakeGattDeviceServiceWinrt() = default;
+FakeGattDeviceServiceWinrt::~FakeGattDeviceServiceWinrt() {
+  fake_device_->RemoveReference();
+}
 
 HRESULT FakeGattDeviceServiceWinrt::GetCharacteristics(
     GUID characteristic_uuid,

@@ -272,6 +272,10 @@ class BluetoothTestBase : public testing::Test {
   // Simulates GattConnection disconnecting.
   virtual void SimulateGattDisconnection(BluetoothDevice* device) {}
 
+  // Simulates an event where the OS breaks the Gatt connection. Defaults to
+  // SimulateGattDisconnection(device).
+  virtual void SimulateDeviceBreaksConnection(BluetoothDevice* device);
+
   // Simulates success of discovering services. |uuids| is used to create a
   // service for each UUID string. Multiple UUIDs with the same value produce
   // multiple service instances.

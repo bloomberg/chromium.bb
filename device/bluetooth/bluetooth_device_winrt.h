@@ -119,11 +119,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
 
   void OnGattDiscoveryComplete(bool success);
 
-  void OnPairingRequested(
-      ABI::Windows::Devices::Enumeration::IDeviceInformationCustomPairing*
-          custom_pairing,
-      ABI::Windows::Devices::Enumeration::IDevicePairingRequestedEventArgs*
-          event_args);
+  void ClearGattServices();
 
   uint64_t raw_address_;
   std::string address_;

@@ -450,7 +450,20 @@ void BluetoothDeviceWinrt::CreateGattConnectionImpl() {
 }
 
 void BluetoothDeviceWinrt::DisconnectGatt() {
+  // Closing the device and disposing of all references will trigger a Gatt
+  // Disconnection after a short timeout. Since the Gatt Services store a
+  // reference to |ble_device_| as well, we need to clear them to drop all
+  // remaining references, so that the OS disconnects.
+  // Reference:
+  // - https://docs.microsoft.com/en-us/windows/uwp/devices-sensors/gatt-client
   CloseDevice(ble_device_);
+  ClearGattServices();
+
+  // Stop any pending Gatt Discovery sessions and report an error. This will
+  // destroy |gatt_discoverer_| and release remaining references the discoverer
+  // might have hold.
+  if (gatt_discoverer_)
+    OnGattDiscoveryComplete(false);
 }
 
 HRESULT BluetoothDeviceWinrt::GetBluetoothLEDeviceStaticsActivationFactory(
@@ -517,9 +530,7 @@ void BluetoothDeviceWinrt::OnConnectionStatusChanged(
     DidConnectGatt();
   } else {
     gatt_discoverer_.reset();
-    gatt_services_.clear();
-    device_uuids_.ClearServiceUUIDs();
-    SetGattServicesDiscoveryComplete(false);
+    ClearGattServices();
     DidDisconnectGatt();
   }
 }
@@ -527,6 +538,8 @@ void BluetoothDeviceWinrt::OnConnectionStatusChanged(
 void BluetoothDeviceWinrt::OnGattServicesChanged(IBluetoothLEDevice* ble_device,
                                                  IInspectable* object) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // Note: We don't clear out |gatt_services_| here, as we don't want to break
+  // existing references to Gatt Services that did not change.
   device_uuids_.ClearServiceUUIDs();
   SetGattServicesDiscoveryComplete(false);
   adapter_->NotifyDeviceChanged(this);
@@ -579,6 +592,12 @@ void BluetoothDeviceWinrt::OnGattDiscoveryComplete(bool success) {
   adapter_->NotifyGattServicesDiscovered(this);
   adapter_->NotifyDeviceChanged(this);
   gatt_discoverer_.reset();
+}
+
+void BluetoothDeviceWinrt::ClearGattServices() {
+  gatt_services_.clear();
+  device_uuids_.ClearServiceUUIDs();
+  SetGattServicesDiscoveryComplete(false);
 }
 
 }  // namespace device
