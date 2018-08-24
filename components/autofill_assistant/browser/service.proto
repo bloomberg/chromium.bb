@@ -95,6 +95,9 @@ message ActionsResponseProto {
 
 // An action could be performed.
 message ActionProto {
+  // Wait these many milliseconds before executing the action, if set.
+  optional int32 action_delay_ms = 3;
+
   // Opaque data that should not be interpreted by the client. The client must
   // pass this back unchanged in the next request
   optional bytes server_payload = 4;

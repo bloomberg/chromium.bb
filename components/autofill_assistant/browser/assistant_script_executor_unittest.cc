@@ -5,6 +5,7 @@
 #include "components/autofill_assistant/browser/assistant_script_executor.h"
 
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/autofill_assistant/browser/assistant_service.h"
 #include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/mock_assistant_service.h"
@@ -40,7 +41,9 @@ class AssistantScriptExecutorTest : public testing::Test,
   }
 
  protected:
-  AssistantScriptExecutorTest() {}
+  AssistantScriptExecutorTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME) {}
 
   AssistantService* GetAssistantService() override {
     return &mock_assistant_service_;
@@ -62,6 +65,9 @@ class AssistantScriptExecutorTest : public testing::Test,
     return output;
   }
 
+  // scoped_task_environment_ must be first to guarantee other field
+  // creation run in that environment.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   AssistantScript script_;
   ClientMemory memory_;
   StrictMock<MockAssistantService> mock_assistant_service_;
@@ -167,6 +173,33 @@ TEST_F(AssistantScriptExecutorTest, InterruptActionListOnError) {
   // make sure "never run" wasn't the one that was run.
   EXPECT_EQ("will run after error",
             processed_actions2_capture[0].action().tell().message());
+}
+
+TEST_F(AssistantScriptExecutorTest, RunDelayedAction) {
+  ActionsResponseProto actions_response;
+  actions_response.set_server_payload("payload");
+  ActionProto* action = actions_response.add_actions();
+  action->mutable_tell()->set_message("delayed");
+  action->set_action_delay_ms(1000);
+
+  EXPECT_CALL(mock_assistant_service_, OnGetAssistantActions(_, _))
+      .WillOnce(RunOnceCallback<1>(true, Serialize(actions_response)));
+
+  std::vector<ProcessedActionProto> processed_actions_capture;
+  EXPECT_CALL(mock_assistant_service_, OnGetNextAssistantActions(_, _, _))
+      .WillOnce(DoAll(SaveArg<1>(&processed_actions_capture),
+                      RunOnceCallback<2>(true, "")));
+
+  // executor_callback_.Run() not expected to be run just yet, as the action is
+  // delayed.
+  executor_->Run(executor_callback_.Get());
+  EXPECT_TRUE(scoped_task_environment_.MainThreadHasPendingTask());
+
+  // Moving forward in time triggers action execution.
+  EXPECT_CALL(executor_callback_, Run(true));
+  scoped_task_environment_.FastForwardBy(
+      base::TimeDelta::FromMilliseconds(1000));
+  EXPECT_FALSE(scoped_task_environment_.MainThreadHasPendingTask());
 }
 
 }  // namespace

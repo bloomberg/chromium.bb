@@ -52,6 +52,7 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
  private:
   void OnGetAssistantActions(bool result, const std::string& response);
   void ProcessNextAction();
+  void ProcessAction(std::unique_ptr<AssistantAction> action);
   void GetNextAssistantActions();
   void OnProcessedAction(std::unique_ptr<AssistantAction> action, bool status);
 
