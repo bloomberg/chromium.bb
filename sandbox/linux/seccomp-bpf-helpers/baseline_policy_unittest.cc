@@ -361,7 +361,7 @@ BPF_DEATH_TEST_C(BaselinePolicy,
                  DEATH_SEGV_MESSAGE(sandbox::GetErrorMessageContentForTests()),
                  BaselinePolicy) {
   struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+  syscall(SYS_clock_gettime, CLOCK_MONOTONIC_RAW, &ts);
 }
 
 #if !defined(GRND_RANDOM)
