@@ -773,6 +773,15 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
   EXPECT_EQ(run_time, version_->update_timer_.desired_run_time());
 }
 
+TEST_F(ServiceWorkerVersionTest, StartRequestWithNullContext) {
+  StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+  version_->context_ = nullptr;
+  version_->StartRequest(ServiceWorkerMetrics::EventType::PUSH,
+                         base::DoNothing());
+  // Test passes if it doesn't crash.
+}
+
 // Tests the delay mechanism for self-updating service workers, to prevent
 // them from running forever (see https://crbug.com/805496).
 TEST_F(ServiceWorkerVersionTest, ResetUpdateDelay) {

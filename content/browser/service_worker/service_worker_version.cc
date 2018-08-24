@@ -520,25 +520,29 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << "Event of type " << static_cast<int>(event_type)
       << " can only be dispatched to an active worker: " << status();
 
-  if (context_ &&
-      event_type == ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE) {
-    context_->embedded_worker_registry()->AbortLifetimeTracking(
-        embedded_worker_->embedded_worker_id());
-  }
+  // |context_| is needed for some bookkeeping. If there's no context, the
+  // request will be aborted soon, so don't bother aborting the request directly
+  // here, and just skip this bookkeeping.
+  if (context_) {
+    if (event_type == ServiceWorkerMetrics::EventType::LONG_RUNNING_MESSAGE) {
+      context_->embedded_worker_registry()->AbortLifetimeTracking(
+          embedded_worker_->embedded_worker_id());
+    }
 
-  if (event_type != ServiceWorkerMetrics::EventType::INSTALL &&
-      event_type != ServiceWorkerMetrics::EventType::ACTIVATE &&
-      event_type != ServiceWorkerMetrics::EventType::MESSAGE) {
-    // Reset the self-update delay iff this is not an event that can triggered
-    // by a service worker itself. Otherwise, service workers can use update()
-    // to keep running forever via install and activate events, or postMessage()
-    // between themselves to reset the delay via message event.
-    // postMessage() resets the delay in ServiceWorkerObjectHost, iff it didn't
-    // come from a service worker.
-    ServiceWorkerRegistration* registration =
-        context_->GetLiveRegistration(registration_id_);
-    DCHECK(registration) << "running workers should have a live registration";
-    registration->set_self_update_delay(base::TimeDelta());
+    if (event_type != ServiceWorkerMetrics::EventType::INSTALL &&
+        event_type != ServiceWorkerMetrics::EventType::ACTIVATE &&
+        event_type != ServiceWorkerMetrics::EventType::MESSAGE) {
+      // Reset the self-update delay iff this is not an event that can triggered
+      // by a service worker itself. Otherwise, service workers can use update()
+      // to keep running forever via install and activate events, or
+      // postMessage() between themselves to reset the delay via message event.
+      // postMessage() resets the delay in ServiceWorkerObjectHost, iff it
+      // didn't come from a service worker.
+      ServiceWorkerRegistration* registration =
+          context_->GetLiveRegistration(registration_id_);
+      DCHECK(registration) << "running workers should have a live registration";
+      registration->set_self_update_delay(base::TimeDelta());
+    }
   }
 
   auto request = std::make_unique<InflightRequest>(
