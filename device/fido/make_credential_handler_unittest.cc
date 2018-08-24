@@ -562,8 +562,7 @@ TEST_F(FidoMakeCredentialHandlerTest,
 }
 
 // Like |TestRequestWithOperationDeniedErrorPlatform|, but with a
-// cross-platform device. The request should not complete after the
-// CTAP2_ERR_OPERATION_DENIED error (see https://crbug/875982).
+// cross-platform device.
 TEST_F(FidoMakeCredentialHandlerTest,
        TestRequestWithOperationDeniedErrorCrossPlatform) {
   auto device = MockFidoDevice::MakeCtapWithGetInfoExpectation();
@@ -582,7 +581,8 @@ TEST_F(FidoMakeCredentialHandlerTest,
   discovery()->AddDevice(std::move(device));
 
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
-  EXPECT_FALSE(callback().was_called());
+  EXPECT_TRUE(callback().was_called());
+  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }
 
 }  // namespace device
