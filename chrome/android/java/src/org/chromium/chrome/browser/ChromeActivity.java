@@ -1438,8 +1438,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item != null && onMenuOrKeyboardAction(item.getItemId(), true)) {
-            return true;
+        if (item != null) {
+            if (mManualFillingController != null) mManualFillingController.dismiss();
+            if (onMenuOrKeyboardAction(item.getItemId(), true)) return true;
         }
         return super.onOptionsItemSelected(item);
     }
