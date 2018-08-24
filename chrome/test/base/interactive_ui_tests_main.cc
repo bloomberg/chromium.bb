@@ -37,9 +37,6 @@ class InteractiveUITestSuite : public ChromeTestSuite {
  protected:
   // ChromeTestSuite overrides:
   void Initialize() override {
-    // Browser tests are expected not to tear-down various globals.
-    base::TestSuite::DisableCheckForLeakedGlobals();
-
     ChromeTestSuite::Initialize();
 
     // Only allow ui_controls to be used in interactive_ui_tests, since they

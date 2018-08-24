@@ -62,10 +62,7 @@ ChromeTestSuiteRunner::ChromeTestSuiteRunner() {}
 ChromeTestSuiteRunner::~ChromeTestSuiteRunner() {}
 
 int ChromeTestSuiteRunner::RunTestSuite(int argc, char** argv) {
-  ChromeTestSuite test_suite(argc, argv);
-  // Browser tests are expected not to tear-down various globals.
-  test_suite.DisableCheckForLeakedGlobals();
-  return test_suite.Run();
+  return ChromeTestSuite(argc, argv).Run();
 }
 
 ChromeTestLauncherDelegate::ChromeTestLauncherDelegate(
