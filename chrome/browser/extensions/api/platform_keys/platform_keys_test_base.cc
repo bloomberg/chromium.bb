@@ -34,9 +34,6 @@
 const char kAffiliationID[] = "some-affiliation-id";
 const char kTestUserinfoToken[] = "fake-userinfo-token";
 
-using policy::affiliation_test_helper::kEnterpriseUserEmail;
-using policy::affiliation_test_helper::kEnterpriseUserGaiaId;
-
 PlatformKeysTestBase::PlatformKeysTestBase(
     SystemTokenStatus system_token_status,
     EnrollmentStatus enrollment_status,
@@ -44,8 +41,9 @@ PlatformKeysTestBase::PlatformKeysTestBase(
     : system_token_status_(system_token_status),
       enrollment_status_(enrollment_status),
       user_status_(user_status),
-      account_id_(AccountId::FromUserEmailGaiaId(kEnterpriseUserEmail,
-                                                 kEnterpriseUserGaiaId)) {
+      account_id_(AccountId::FromUserEmailGaiaId(
+          policy::AffiliationTestHelper::kEnterpriseUserEmail,
+          policy::AffiliationTestHelper::kEnterpriseUserGaiaId)) {
   // Command line should not be tweaked as if user is already logged in.
   set_chromeos_user_ = false;
   // We log in without running browser.
@@ -78,7 +76,7 @@ void PlatformKeysTestBase::SetUp() {
 void PlatformKeysTestBase::SetUpCommandLine(base::CommandLine* command_line) {
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 
-  policy::affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
+  policy::AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
       command_line);
 
   const GURL gaia_url = gaia_https_forwarder_.GetURLForSSLHost(std::string());
@@ -99,22 +97,23 @@ void PlatformKeysTestBase::SetUpInProcessBrowserTestFixture() {
       std::unique_ptr<chromeos::SessionManagerClient>(
           fake_session_manager_client));
 
+  policy::AffiliationTestHelper affiliation_helper =
+      policy::AffiliationTestHelper::CreateForCloud(
+          fake_session_manager_client);
+
   if (enrollment_status() == EnrollmentStatus::ENROLLED) {
     std::set<std::string> device_affiliation_ids;
     device_affiliation_ids.insert(kAffiliationID);
-    policy::affiliation_test_helper::SetDeviceAffiliationIDs(
-        &device_policy_test_helper_, fake_session_manager_client,
-        nullptr /* fake_auth_policy_client */, device_affiliation_ids);
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
+        &device_policy_test_helper_, device_affiliation_ids));
   }
 
   if (user_status() == UserStatus::MANAGED_AFFILIATED_DOMAIN) {
     std::set<std::string> user_affiliation_ids;
     user_affiliation_ids.insert(kAffiliationID);
     policy::UserPolicyBuilder user_policy;
-    policy::affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, fake_session_manager_client,
-        nullptr /* fake_auth_policy_client */, account_id_,
-        user_affiliation_ids);
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetUserAffiliationIDs(
+        &user_policy, account_id_, user_affiliation_ids));
   }
 
   EXPECT_CALL(mock_policy_provider_, IsInitializationComplete(testing::_))
@@ -136,7 +135,7 @@ void PlatformKeysTestBase::SetUpOnMainThread() {
   token_info.audience = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   token_info.token = kTestUserinfoToken;
   token_info.email = account_id_.GetUserEmail();
-  fake_gaia_.IssueOAuthToken(policy::affiliation_test_helper::kFakeRefreshToken,
+  fake_gaia_.IssueOAuthToken(policy::AffiliationTestHelper::kFakeRefreshToken,
                              token_info);
 
   // On PRE_ test stage list of users is empty at this point. Then in the body
@@ -144,7 +143,7 @@ void PlatformKeysTestBase::SetUpOnMainThread() {
   // after PRE_ test the list of user contains one kEnterpriseUser user.
   // This user logs in.
   if (!IsPreTest()) {
-    policy::affiliation_test_helper::LoginUser(account_id_);
+    policy::AffiliationTestHelper::LoginUser(account_id_);
 
     if (user_status() != UserStatus::UNMANAGED) {
       policy::ProfilePolicyConnector* const connector =
@@ -184,7 +183,7 @@ void PlatformKeysTestBase::PrepareTestSystemSlotOnIO(
     crypto::ScopedTestSystemNSSKeySlot* system_slot) {}
 
 void PlatformKeysTestBase::RunPreTest() {
-  policy::affiliation_test_helper::PreLoginUser(account_id_);
+  policy::AffiliationTestHelper::PreLoginUser(account_id_);
 }
 
 bool PlatformKeysTestBase::TestExtension(const std::string& page_url) {

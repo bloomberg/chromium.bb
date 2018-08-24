@@ -136,7 +136,7 @@ class UserAffiliationBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     if (content::IsPreTest()) {
-      affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
+      AffiliationTestHelper::AppendCommandLineSwitchesForLoginManager(
           command_line);
     } else {
       const cryptohome::AccountIdentifier cryptohome_id =
@@ -182,13 +182,18 @@ class UserAffiliationBrowserTest
     const std::set<std::string> user_affiliation_ids = {
         GetParam().affiliated ? kAffiliationID : kAnotherAffiliationID};
 
-    affiliation_test_helper::SetDeviceAffiliationIDs(
-        &test_helper, fake_session_manager_client, fake_auth_policy_client,
-        device_affiliation_ids);
+    AffiliationTestHelper affiliation_helper =
+        GetParam().active_directory
+            ? AffiliationTestHelper::CreateForActiveDirectory(
+                  fake_session_manager_client, fake_auth_policy_client)
+            : AffiliationTestHelper::CreateForCloud(
+                  fake_session_manager_client);
 
-    affiliation_test_helper::SetUserAffiliationIDs(
-        &user_policy, fake_session_manager_client, fake_auth_policy_client,
-        account_id_, user_affiliation_ids);
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetDeviceAffiliationIDs(
+        &test_helper, device_affiliation_ids));
+
+    ASSERT_NO_FATAL_FAILURE(affiliation_helper.SetUserAffiliationIDs(
+        &user_policy, account_id_, user_affiliation_ids));
 
     // Set retry delay to prevent timeouts.
     policy::DeviceManagementService::SetRetryDelayForTesting(0);
@@ -274,12 +279,12 @@ class UserAffiliationBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_PRE_TestAffiliation) {
-  affiliation_test_helper::PreLoginUser(account_id_);
+  AffiliationTestHelper::PreLoginUser(account_id_);
 }
 
 // This part of the test performs a regular sign-in through the login manager.
 IN_PROC_BROWSER_TEST_P(UserAffiliationBrowserTest, PRE_TestAffiliation) {
-  affiliation_test_helper::LoginUser(account_id_);
+  AffiliationTestHelper::LoginUser(account_id_);
   ASSERT_NO_FATAL_FAILURE(VerifyAffiliationExpectations());
 }
 
