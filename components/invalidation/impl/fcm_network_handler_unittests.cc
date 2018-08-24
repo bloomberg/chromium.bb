@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/mock_callback.h"
+#include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
@@ -18,6 +19,7 @@
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+using base::TestMockTimeTaskRunner;
 using gcm::InstanceIDHandler;
 using instance_id::InstanceID;
 using instance_id::InstanceIDDriver;
@@ -30,6 +32,12 @@ namespace {
 
 const char kInvalidationsAppId[] = "com.google.chrome.fcm.invalidations";
 using DataCallback = base::RepeatingCallback<void(const std::string& message)>;
+
+base::Time GetDummyNow() {
+  base::Time out_time;
+  EXPECT_TRUE(base::Time::FromUTCString("2017-01-02T00:00:01Z", &out_time));
+  return out_time;
+}
 
 class MockInstanceID : public InstanceID {
  public:
@@ -185,6 +193,19 @@ class FCMNetworkHandlerTest : public testing::Test {
     return mock_instance_id_.get();
   }
 
+  scoped_refptr<TestMockTimeTaskRunner> CreateFakeTaskRunnerAndInjectToHandler(
+      std::unique_ptr<FCMNetworkHandler>& handler) {
+    scoped_refptr<TestMockTimeTaskRunner> task_runner(
+        new TestMockTimeTaskRunner(GetDummyNow(), base::TimeTicks::Now()));
+
+    auto token_validation_timer =
+        std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+    token_validation_timer->SetTaskRunner(task_runner);
+    handler->SetTokenValidationTimerForTesting(
+        std::move(token_validation_timer));
+    return task_runner;
+  }
+
  private:
   base::MessageLoop message_loop_;
   std::unique_ptr<StrictMock<MockGCMDriver>> mock_gcm_driver_;
@@ -249,6 +270,99 @@ TEST_F(FCMNetworkHandlerTest, ShouldInvokeMessageCallbackOnValidMessage) {
   EXPECT_CALL(mock_on_message_callback, Run("test")).Times(0);
   handler->SetMessageReceiver(mock_on_message_callback.Get());
   handler->OnMessage(kInvalidationsAppId, gcm::IncomingMessage());
+}
+
+TEST_F(FCMNetworkHandlerTest, ShouldRequestTokenImmediatellyEvenIfSaved) {
+  // Setting up network handler.
+  MockOnDataCallback mock_on_token_callback;
+  auto handler = MakeHandler();
+  auto task_runner = CreateFakeTaskRunnerAndInjectToHandler(handler);
+  handler->SetTokenReceiver(mock_on_token_callback.Get());
+
+  // Check that after StartListening we receive the token and store it.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
+  handler->StartListening();
+  handler->StopListening();
+  task_runner->RunUntilIdle();
+
+  // Setting up another network handler.
+  auto handler2 = MakeHandler();
+  auto task_runner2 = CreateFakeTaskRunnerAndInjectToHandler(handler2);
+  handler2->SetTokenReceiver(mock_on_token_callback.Get());
+
+  // Check that after StartListening the token will be requested, depite we have
+  // saved token.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token_new", InstanceID::Result::SUCCESS));
+  EXPECT_CALL(mock_on_token_callback, Run("token_new")).Times(1);
+  handler->StartListening();
+  task_runner->RunUntilIdle();
+}
+
+TEST_F(FCMNetworkHandlerTest, ShouldScheduleTokenValidationAndActOnNewToken) {
+  // Setting up network handler.
+  MockOnDataCallback mock_on_token_callback;
+  auto handler = MakeHandler();
+  auto task_runner = CreateFakeTaskRunnerAndInjectToHandler(handler);
+  handler->SetTokenReceiver(mock_on_token_callback.Get());
+
+  // Checking that after start listening the token will be requested
+  // and passed to the appropriate token receiver.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
+  handler->StartListening();
+  testing::Mock::VerifyAndClearExpectations(mock_instance_id());
+
+  // Adjust timers and check that validation will happen in time.
+  // The old token was invalid, so token listener shold be informed.
+  const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(24);
+  task_runner->FastForwardBy(time_to_validation -
+                             base::TimeDelta::FromSeconds(1));
+  // But when it is time, validation happens.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token_new", InstanceID::Result::SUCCESS));
+  EXPECT_CALL(mock_on_token_callback, Run("token_new")).Times(1);
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
+}
+
+TEST_F(FCMNetworkHandlerTest,
+       ShouldScheduleTokenValidationAndDoNotActOnSameToken) {
+  // Setting up network handler.
+  MockOnDataCallback mock_on_token_callback;
+  std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
+  auto task_runner = CreateFakeTaskRunnerAndInjectToHandler(handler);
+  handler->SetTokenReceiver(mock_on_token_callback.Get());
+
+  // Checking that after start listening the token will be requested
+  // and passed to the appropriate token receiver
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  EXPECT_CALL(*mock_instance_id(), ValidateToken(_, _, _, _)).Times(0);
+  EXPECT_CALL(mock_on_token_callback, Run("token")).Times(1);
+  handler->StartListening();
+  testing::Mock::VerifyAndClearExpectations(mock_instance_id());
+
+  // Adjust timers and check that validation will happen in time.
+  // The old token is valid, so no token listener shold be informed.
+  const base::TimeDelta time_to_validation = base::TimeDelta::FromHours(24);
+  task_runner->FastForwardBy(time_to_validation -
+                             base::TimeDelta::FromSeconds(1));
+
+  // But when it is time, validation happens.
+  EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _))
+      .WillOnce(
+          InvokeCallbackArgument<3>("token", InstanceID::Result::SUCCESS));
+  EXPECT_CALL(mock_on_token_callback, Run(_)).Times(0);
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(1));
 }
 
 }  // namespace syncer

@@ -29,6 +29,9 @@ const char kContentKey[] = "data";
 // Must match Java GoogleCloudMessaging.INSTANCE_ID_SCOPE.
 const char kGCMScope[] = "GCM";
 
+// Lower bound time between two token validations when listening.
+const int kTokenValidationPeriodMinutesDefault = 60 * 24;
+
 }  // namespace
 
 FCMNetworkHandler::FCMNetworkHandler(
@@ -36,6 +39,7 @@ FCMNetworkHandler::FCMNetworkHandler(
     instance_id::InstanceIDDriver* instance_id_driver)
     : gcm_driver_(gcm_driver),
       instance_id_driver_(instance_id_driver),
+      token_validation_timer_(std::make_unique<base::OneShotTimer>()),
       weak_ptr_factory_(this) {}
 
 FCMNetworkHandler::~FCMNetworkHandler() {
@@ -43,26 +47,35 @@ FCMNetworkHandler::~FCMNetworkHandler() {
 }
 
 void FCMNetworkHandler::StartListening() {
+  // Adding ourselves as Handler means start listening.
+  // Being the listener is pre-requirement for token operations.
+  gcm_driver_->AddAppHandler(kInvalidationsAppId, this);
+
   instance_id_driver_->GetInstanceID(kInvalidationsAppId)
       ->GetToken(kInvalidationGCMSenderId, kGCMScope,
                  /*options=*/std::map<std::string, std::string>(),
                  base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
                                      weak_ptr_factory_.GetWeakPtr()));
-
-  gcm_driver_->AddAppHandler(kInvalidationsAppId, this);
 }
 
 void FCMNetworkHandler::StopListening() {
-  if (gcm_driver_->GetAppHandler(kInvalidationsAppId))
+  if (IsListening())
     gcm_driver_->RemoveAppHandler(kInvalidationsAppId);
+}
+
+bool FCMNetworkHandler::IsListening() const {
+  return gcm_driver_->GetAppHandler(kInvalidationsAppId);
 }
 
 void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
                                          InstanceID::Result result) {
   switch (result) {
     case InstanceID::SUCCESS:
+      // The received token is assumed to be valid, therefore, we reschedule
+      // validation.
       DeliverToken(subscription_token);
-      return;
+      token_ = subscription_token;
+      break;
     case InstanceID::INVALID_PARAMETER:
     case InstanceID::DISABLED:
     case InstanceID::ASYNC_OPERATION_PENDING:
@@ -74,6 +87,46 @@ void FCMNetworkHandler::DidRetrieveToken(const std::string& subscription_token,
       UpdateGcmChannelState(false);
       break;
   }
+  ScheduleNextTokenValidation();
+}
+
+void FCMNetworkHandler::ScheduleNextTokenValidation() {
+  DCHECK(IsListening());
+
+  token_validation_timer_->Start(
+      FROM_HERE,
+      base::TimeDelta::FromMinutes(kTokenValidationPeriodMinutesDefault),
+      base::BindOnce(&FCMNetworkHandler::StartTokenValidation,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FCMNetworkHandler::StartTokenValidation() {
+  DCHECK(IsListening());
+
+  instance_id_driver_->GetInstanceID(kInvalidationsAppId)
+      ->GetToken(kInvalidationGCMSenderId, kGCMScope,
+                 std::map<std::string, std::string>(),
+                 base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
+                            weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FCMNetworkHandler::DidReceiveTokenForValidation(
+    const std::string& new_token,
+    InstanceID::Result result) {
+  if (!IsListening()) {
+    // After we requested the token, |StopListening| has been called. Thus,
+    // ignore the token.
+    return;
+  }
+
+  if (result == InstanceID::SUCCESS) {
+    if (token_ != new_token) {
+      token_ = new_token;
+      DeliverToken(new_token);
+    }
+  }
+
+  ScheduleNextTokenValidation();
 }
 
 void FCMNetworkHandler::UpdateGcmChannelState(bool online) {
@@ -127,6 +180,11 @@ void FCMNetworkHandler::OnSendAcknowledged(const std::string& app_id,
   // Should never be called because we don't send GCM messages to
   // the server.
   NOTREACHED() << "FCMNetworkHandler doesn't send GCM messages.";
+}
+
+void FCMNetworkHandler::SetTokenValidationTimerForTesting(
+    std::unique_ptr<base::OneShotTimer> token_validation_timer) {
+  token_validation_timer_ = std::move(token_validation_timer);
 }
 
 }  // namespace syncer
