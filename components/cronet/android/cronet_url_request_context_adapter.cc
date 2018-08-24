@@ -250,7 +250,8 @@ static jlong JNI_CronetUrlRequestContext_CreateRequestContextConfig(
     const JavaParamRef<jstring>& jexperimental_quic_connection_options,
     jlong jmock_cert_verifier,
     jboolean jenable_network_quality_estimator,
-    jboolean jbypass_public_key_pinning_for_local_trust_anchors) {
+    jboolean jbypass_public_key_pinning_for_local_trust_anchors,
+    jint jnetwork_thread_priority) {
   return reinterpret_cast<jlong>(new URLRequestContextConfig(
       jquic_enabled,
       ConvertNullableJavaStringToUTF8(env, jquic_default_user_agent_id),
@@ -265,7 +266,10 @@ static jlong JNI_CronetUrlRequestContext_CreateRequestContextConfig(
       base::WrapUnique(
           reinterpret_cast<net::CertVerifier*>(jmock_cert_verifier)),
       jenable_network_quality_estimator,
-      jbypass_public_key_pinning_for_local_trust_anchors));
+      jbypass_public_key_pinning_for_local_trust_anchors,
+      jnetwork_thread_priority >= -20 && jnetwork_thread_priority <= 19
+          ? base::Optional<double>(jnetwork_thread_priority)
+          : base::Optional<double>()));
 }
 
 // Add a QUIC hint to a URLRequestContextConfig.

@@ -87,4 +87,11 @@ std::string CreateDefaultUserAgent(const std::string& partial_user_agent) {
   return web::BuildUserAgentFromProduct(partial_user_agent);
 }
 
+void SetNetworkThreadPriorityOnNetworkThread(double priority) {
+  DCHECK_LE(priority, 1.0);
+  DCHECK_GE(priority, 0.0);
+  if (priority >= 0.0 && priority <= 1.0)
+    [NSThread setThreadPriority:priority];
+}
+
 }  // namespace cronet

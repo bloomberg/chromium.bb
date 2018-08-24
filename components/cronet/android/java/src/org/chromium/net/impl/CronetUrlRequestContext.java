@@ -72,7 +72,6 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     private Thread mNetworkThread;
 
     private final boolean mNetworkQualityEstimatorEnabled;
-    private final int mNetworkThreadPriority;
 
     /**
      * Locks operations on network quality listeners, because listener
@@ -150,7 +149,6 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngineBuilderImpl builder) {
         mNetworkQualityEstimatorEnabled = builder.networkQualityEstimatorEnabled();
-        mNetworkThreadPriority = builder.threadPriority(Process.THREAD_PRIORITY_BACKGROUND);
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
         if (!IntegratedModeState.INTEGRATED_MODE_ENABLED) {
             nativeSetMinLogLevel(getLoggingLevel());
@@ -196,7 +194,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                 builder.brotliEnabled(), builder.cacheDisabled(), builder.httpCacheMode(),
                 builder.httpCacheMaxSize(), builder.experimentalOptions(),
                 builder.mockCertVerifier(), builder.networkQualityEstimatorEnabled(),
-                builder.publicKeyPinningBypassForLocalTrustAnchorsEnabled());
+                builder.publicKeyPinningBypassForLocalTrustAnchorsEnabled(),
+                builder.threadPriority(Process.THREAD_PRIORITY_BACKGROUND));
         for (CronetEngineBuilderImpl.QuicHint quicHint : builder.quicHints()) {
             nativeAddQuicHint(urlRequestContextConfig, quicHint.mHost, quicHint.mPort,
                     quicHint.mAlternatePort);
@@ -586,7 +585,6 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             // In integrated mode, network thread is shared from the host.
             // Cronet shouldn't change the property of the thread.
             Thread.currentThread().setName("ChromiumNet");
-            Process.setThreadPriority(mNetworkThreadPriority);
         }
     }
 
@@ -679,7 +677,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             boolean brotliEnabled, boolean disableCache, int httpCacheMode, long httpCacheMaxSize,
             String experimentalOptions, long mockCertVerifier,
             boolean enableNetworkQualityEstimator,
-            boolean bypassPublicKeyPinningForLocalTrustAnchors);
+            boolean bypassPublicKeyPinningForLocalTrustAnchors, int networkThreadPriority);
 
     private static native void nativeAddQuicHint(
             long urlRequestContextConfig, String host, int port, int alternatePort);

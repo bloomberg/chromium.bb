@@ -544,6 +544,14 @@ struct EngineParams {
   bool enable_public_key_pinning_bypass_for_local_trust_anchors = true;
 
   /**
+   * Optional network thread priority. NAN indicates unset, use default.
+   * On Android, corresponds to android.os.Process.setThreadPriority() values.
+   * On iOS, corresponds to NSThread::setThreadPriority values.
+   * Do not specify for other platforms.
+   */
+  double network_thread_priority = double.NAN;
+
+  /**
    * JSON formatted experimental options to be used in Cronet Engine.
    */
   string experimental_options;

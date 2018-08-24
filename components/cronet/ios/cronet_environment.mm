@@ -20,6 +20,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/cronet/cronet_global_state.h"
 #include "components/cronet/cronet_prefs_manager.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/prefs/pref_filter.h"
@@ -304,10 +305,6 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(GetNetworkThreadTaskRunner()->BelongsToCurrentThread());
   base::DisallowBlocking();
 
-  if (network_thread_priority_ != kKeepDefaultThreadPriority) {
-    SetNetworkThreadPriorityOnNetworkThread(network_thread_priority_);
-  }
-
   static bool ssl_key_log_file_set = false;
   if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
     ssl_key_log_file_set = true;
@@ -341,6 +338,8 @@ void CronetEnvironment::InitializeOnNetworkThread() {
       experimental_options_;  // Set experimental Cronet options.
   context_config_builder.mock_cert_verifier = std::move(
       mock_cert_verifier_);  // MockCertVerifier to use for testing purposes.
+  if (network_thread_priority_ != kKeepDefaultThreadPriority)
+    context_config_builder.network_thread_priority = network_thread_priority_;
   std::unique_ptr<URLRequestContextConfig> config =
       context_config_builder.Build();
 
@@ -467,11 +466,7 @@ void CronetEnvironment::SetHostResolverRulesOnNetworkThread(
 void CronetEnvironment::SetNetworkThreadPriorityOnNetworkThread(
     double priority) {
   DCHECK(GetNetworkThreadTaskRunner()->BelongsToCurrentThread());
-  DCHECK_LE(priority, 1.0);
-  DCHECK_GE(priority, 0.0);
-  if (priority >= 0.0 && priority <= 1.0) {
-    [NSThread setThreadPriority:priority];
-  }
+  cronet::SetNetworkThreadPriorityOnNetworkThread(priority);
 }
 
 std::string CronetEnvironment::getDefaultQuicUserAgentId() const {

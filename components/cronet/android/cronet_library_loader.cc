@@ -210,4 +210,15 @@ std::string CreateDefaultUserAgent(const std::string& partial_user_agent) {
   return user_agent;
 }
 
+void SetNetworkThreadPriorityOnNetworkThread(double priority) {
+  int priority_int = priority;
+  DCHECK_LE(priority_int, 19);
+  DCHECK_GE(priority_int, -20);
+  if (priority_int >= -20 && priority_int <= 19) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    cronet::Java_CronetLibraryLoader_setNetworkThreadPriorityOnNetworkThread(
+        env, priority_int);
+  }
+}
+
 }  // namespace cronet

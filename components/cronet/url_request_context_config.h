@@ -123,7 +123,12 @@ struct URLRequestContextConfig {
       // Enable network quality estimator.
       bool enable_network_quality_estimator,
       // Enable bypassing of public key pinning for local trust anchors
-      bool bypass_public_key_pinning_for_local_trust_anchors);
+      bool bypass_public_key_pinning_for_local_trust_anchors,
+      // Optional network thread priority.
+      // On Android, corresponds to android.os.Process.setThreadPriority()
+      // values. On iOS, corresponds to NSThread::setThreadPriority values. Do
+      // not specify for other targets.
+      base::Optional<double> network_thread_priority);
   ~URLRequestContextConfig();
 
   // Configures |context_builder| based on |this|.
@@ -189,6 +194,11 @@ struct URLRequestContextConfig {
 
   // Preloaded NEL headers, to preconfigure Network Error Logging.
   std::vector<PreloadedNelAndReportingHeader> preloaded_nel_headers;
+
+  // Optional network thread priority.
+  // On Android, corresponds to android.os.Process.setThreadPriority() values.
+  // On iOS, corresponds to NSThread::setThreadPriority values.
+  const base::Optional<double> network_thread_priority;
 
  private:
   // Parses experimental options and makes appropriate changes to settings in
@@ -260,6 +270,12 @@ struct URLRequestContextConfigBuilder {
 
   // Enable public key pinning bypass for local trust anchors.
   bool bypass_public_key_pinning_for_local_trust_anchors = true;
+
+  // Optional network thread priority.
+  // On Android, corresponds to android.os.Process.setThreadPriority() values.
+  // On iOS, corresponds to NSThread::setThreadPriority values.
+  // Do not specify for other targets.
+  base::Optional<double> network_thread_priority;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfigBuilder);

@@ -6,6 +6,8 @@
 
 #include "components/cronet/native/generated/cronet.idl_c.h"
 
+#include <math.h>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -145,6 +147,13 @@ TEST_F(CronetStructTest, TestCronet_EngineParams) {
           first),
       Cronet_EngineParams_enable_public_key_pinning_bypass_for_local_trust_anchors_get(
           second));
+  Cronet_EngineParams_network_thread_priority_set(
+      second, Cronet_EngineParams_network_thread_priority_get(first));
+  EXPECT_TRUE(
+      Cronet_EngineParams_network_thread_priority_get(first) ==
+          Cronet_EngineParams_network_thread_priority_get(second) ||
+      isnan(Cronet_EngineParams_network_thread_priority_get(first)) &&
+          isnan(Cronet_EngineParams_network_thread_priority_get(second)));
   Cronet_EngineParams_experimental_options_set(
       second, Cronet_EngineParams_experimental_options_get(first));
   EXPECT_STREQ(Cronet_EngineParams_experimental_options_get(first),

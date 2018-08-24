@@ -9,6 +9,7 @@ import android.os.ConditionVariable;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
+import android.os.Process;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -172,6 +173,11 @@ public class CronetLibraryLoader {
         Context applicationContext = ContextUtils.getApplicationContext();
         assert applicationContext != null;
         ensureInitialized(applicationContext, null);
+    }
+
+    @CalledByNative
+    private static void setNetworkThreadPriorityOnNetworkThread(int priority) {
+        Process.setThreadPriority(priority);
     }
 
     // Native methods are implemented in cronet_library_loader.cc.

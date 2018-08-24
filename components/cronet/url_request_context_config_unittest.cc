@@ -167,7 +167,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>(42.0));
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -272,6 +274,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   net::AddressList addresses;
   EXPECT_EQ(net::OK, context->host_resolver()->ResolveFromCache(
                          info, &addresses, net::NetLogWithSource()));
+
+  EXPECT_TRUE(config.network_thread_priority);
+  EXPECT_EQ(42.0, config.network_thread_priority.value());
 }
 
 TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
@@ -307,7 +312,9 @@ TEST(URLRequestContextConfigTest, SetQuicServerMigrationOptions) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -366,7 +373,9 @@ TEST(URLRequestContextConfigTest,
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -426,7 +435,9 @@ TEST(URLRequestContextConfigTest,
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -486,7 +497,9 @@ TEST(URLRequestContextConfigTest,
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -540,7 +553,9 @@ TEST(URLRequestContextConfigTest, SetQuicConnectionMigrationV2Options) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -596,7 +611,9 @@ TEST(URLRequestContextConfigTest, SetQuicHostWhitelist) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -649,7 +666,9 @@ TEST(URLRequestContextConfigTest, SetQuicMaxTimeBeforeCryptoHandshake) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -700,7 +719,9 @@ TEST(URLURLRequestContextConfigTest, SetQuicConnectionOptions) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
@@ -758,7 +779,9 @@ TEST(URLURLRequestContextConfigTest, SetAcceptLanguageAndUserAgent) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true);
+      true,
+      // Optional network thread priority.
+      base::Optional<double>());
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
