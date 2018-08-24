@@ -25,6 +25,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
@@ -193,7 +194,9 @@ ChromeCleanerControllerDelegate::~ChromeCleanerControllerDelegate() = default;
 void ChromeCleanerControllerDelegate::FetchAndVerifyChromeCleaner(
     FetchedCallback fetched_callback) {
   FetchChromeCleaner(
-      base::BindOnce(&OnChromeCleanerFetched, base::Passed(&fetched_callback)));
+      base::BindOnce(&OnChromeCleanerFetched, base::Passed(&fetched_callback)),
+      g_browser_process->system_network_context_manager()
+          ->GetURLLoaderFactory());
 }
 
 bool ChromeCleanerControllerDelegate::IsMetricsAndCrashReportingEnabled() {

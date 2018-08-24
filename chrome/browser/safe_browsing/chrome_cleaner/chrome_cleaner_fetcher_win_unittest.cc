@@ -12,14 +12,13 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -27,29 +26,25 @@
 namespace safe_browsing {
 namespace {
 
-class ChromeCleanerFetcherTest : public ::testing::Test,
-                                 public net::TestURLFetcher::DelegateForTests {
+class ChromeCleanerFetcherTest : public ::testing::Test {
  public:
-  void SetUp() override {
-    FetchChromeCleaner(base::Bind(&ChromeCleanerFetcherTest::FetchedCallback,
-                                  base::Unretained(this)));
-
-    // Get the TestURLFetcher instance used by FetchChromeCleaner.
-    fetcher_ = factory_.GetFetcherByID(0);
-    fetcher_->SetDelegateForTests(this);
-
-    ASSERT_TRUE(fetcher_);
-
-    // Continue only when URLFetcher's Start() method has been called.
-    run_loop_.Run();
-  }
+  ChromeCleanerFetcherTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
 
   void TearDown() override {
-    if (!response_path_.empty()) {
-      base::DeleteFile(response_path_, /*recursive=*/false);
-      if (base::IsDirectoryEmpty(response_path_.DirName()))
-        base::DeleteFile(response_path_.DirName(), /*recursive=*/false);
+    if (!downloaded_path_.empty()) {
+      base::DeleteFile(downloaded_path_, /*recursive=*/false);
+      if (base::IsDirectoryEmpty(downloaded_path_.DirName()))
+        base::DeleteFile(downloaded_path_.DirName(), /*recursive=*/false);
     }
+  }
+
+  void StartFetch() {
+    FetchChromeCleaner(
+        base::BindOnce(&ChromeCleanerFetcherTest::FetchedCallback,
+                       base::Unretained(this)),
+        &test_url_loader_factory_);
   }
 
   void FetchedCallback(base::FilePath downloaded_path,
@@ -57,69 +52,45 @@ class ChromeCleanerFetcherTest : public ::testing::Test,
     callback_called_ = true;
     downloaded_path_ = downloaded_path;
     fetch_status_ = fetch_status;
-  }
-
-  // net::TestURLFetcher::DelegateForTests overrides.
-
-  void OnRequestStart(int fetcher_id) override {
-    // Save the file path where the response will be saved for later tests.
-    EXPECT_TRUE(fetcher_->GetResponseAsFilePath(/*take_ownership=*/false,
-                                                &response_path_));
-
-    run_loop_.QuitWhenIdle();
-  }
-
-  void OnChunkUpload(int fetcher_id) override {}
-  void OnRequestEnd(int fetcher_id) override {}
-
-  void SetNetworkSuccess(int response_code) {
-    fetcher_->set_status(net::URLRequestStatus{});
-    fetcher_->set_response_code(response_code);
-    fetcher_->delegate()->OnURLFetchComplete(fetcher_);
+    run_loop_.Quit();
   }
 
  protected:
-  // TestURLFetcher requires a MessageLoop and an IO thread to release
-  // URLRequestContextGetter in URLFetcher::Core.
-  content::TestBrowserThreadBundle thread_bundle_;
-
-  // TestURLFetcherFactory automatically sets itself as URLFetcher's factory
-  net::TestURLFetcherFactory factory_;
-
-  // The TestURLFetcher instance used by the FetchChromeCleaner.
-  net::TestURLFetcher* fetcher_ = nullptr;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   base::RunLoop run_loop_;
-
-  // File path where TestULRFetcher will save a response as intercepted by
-  // OnRequestStart(). Used to clean up during teardown.
-  base::FilePath response_path_;
 
   // Variables set by FetchedCallback().
   bool callback_called_ = false;
   base::FilePath downloaded_path_;
   ChromeCleanerFetchStatus fetch_status_ =
       ChromeCleanerFetchStatus::kOtherFailure;
-
-  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_ =
-      base::WrapUnique(net::NetworkChangeNotifier::CreateMock());
 };
 
 TEST_F(ChromeCleanerFetcherTest, FetchSuccess) {
-  EXPECT_EQ(GURL(fetcher_->GetOriginalURL()), GetSRTDownloadURL());
+  const std::string kFileContents("FileContents");
+  test_url_loader_factory_.AddResponse(GetSRTDownloadURL().spec(),
+                                       kFileContents);
 
-  SetNetworkSuccess(net::HTTP_OK);
+  StartFetch();
+  run_loop_.Run();
 
   EXPECT_TRUE(callback_called_);
-  EXPECT_EQ(downloaded_path_, response_path_);
+  EXPECT_EQ(downloaded_path_, downloaded_path_);
   EXPECT_EQ(fetch_status_, ChromeCleanerFetchStatus::kSuccess);
+
+  std::string file_contents;
+  EXPECT_TRUE(ReadFileToString(downloaded_path_, &file_contents));
+  EXPECT_EQ(kFileContents, file_contents);
 }
 
 TEST_F(ChromeCleanerFetcherTest, NotFoundOnServer) {
-  // Set up the fetcher to return a HTTP_NOT_FOUND failure. Notice that the
-  // net error in this case is OK, since there was no error preventing any
-  // response (even 404) from being received.
-  SetNetworkSuccess(net::HTTP_NOT_FOUND);
+  test_url_loader_factory_.AddResponse(GetSRTDownloadURL().spec(), "",
+                                       net::HTTP_NOT_FOUND);
+
+  StartFetch();
+  run_loop_.Run();
 
   EXPECT_TRUE(callback_called_);
   EXPECT_TRUE(downloaded_path_.empty());
@@ -127,12 +98,14 @@ TEST_F(ChromeCleanerFetcherTest, NotFoundOnServer) {
 }
 
 TEST_F(ChromeCleanerFetcherTest, NetworkError) {
-  // Set up the fetcher to return failure other than HTTP_NOT_FOUND.
-  fetcher_->set_status(net::URLRequestStatus::FromError(net::ERR_FAILED));
   // For this test, just use any http response code other than net::HTTP_OK
   // and net::HTTP_NOT_FOUND.
-  fetcher_->set_response_code(net::HTTP_INTERNAL_SERVER_ERROR);
-  fetcher_->delegate()->OnURLFetchComplete(fetcher_);
+  test_url_loader_factory_.AddResponse(
+      GetSRTDownloadURL(), network::ResourceResponseHead(), "contents",
+      network::URLLoaderCompletionStatus(net::ERR_ADDRESS_INVALID));
+
+  StartFetch();
+  run_loop_.Run();
 
   EXPECT_TRUE(callback_called_);
   EXPECT_TRUE(downloaded_path_.empty());
