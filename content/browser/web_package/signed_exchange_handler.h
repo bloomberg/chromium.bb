@@ -43,12 +43,16 @@ class SignedExchangeCertFetcherFactory;
 class SignedExchangeCertificateChain;
 class SignedExchangeDevToolsProxy;
 
-// IMPORTANT: Currenly SignedExchangeHandler partially implements the verifying
-// logic.
-// TODO(https://crbug.com/803774): Implement verifying logic.
+// SignedExchangeHandler reads "application/signed-exchange" format from a
+// net::SourceStream, parse and verify the signed exchange, and report
+// the result asynchronously via SignedExchangeHandler::ExchangeHeadersCallback.
+//
+// Note that verifying a signed exchange requires an associated certificate
+// chain. SignedExchangeHandler creates a SignedExchangeCertFetcher to
+// fetch the certificate chain over network, and verify it with the
+// net::CertVerifier.
 class CONTENT_EXPORT SignedExchangeHandler {
  public:
-  // TODO(https://crbug.com/803774): Add verification status here.
   using ExchangeHeadersCallback = base::OnceCallback<void(
       net::Error error,
       const GURL& request_url,
