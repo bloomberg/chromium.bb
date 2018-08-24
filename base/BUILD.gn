@@ -1149,6 +1149,8 @@ jumbo_component("base") {
     "win/windows_version.h",
     "win/winrt_storage_util.cc",
     "win/winrt_storage_util.h",
+    "win/wmi.cc",
+    "win/wmi.h",
     "win/wrapped_window_proc.cc",
     "win/wrapped_window_proc.h",
   ]
@@ -1648,6 +1650,7 @@ jumbo_component("base") {
       "propsys.lib",
       "setupapi.lib",
       "userenv.lib",
+      "wbemuuid.lib",
       "winmm.lib",
     ]
     all_dependent_configs += [
@@ -2555,6 +2558,7 @@ test("base_unittests") {
     "win/win_util_unittest.cc",
     "win/windows_version_unittest.cc",
     "win/winrt_storage_util_unittest.cc",
+    "win/wmi_unittest.cc",
     "win/wrapped_window_proc_unittest.cc",
   ]
 

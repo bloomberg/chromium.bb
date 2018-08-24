@@ -38,13 +38,13 @@
 #include "base/win/registry.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/scoped_handle.h"
+#include "base/win/wmi.h"
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
 #include "chrome/installer/gcapi/google_update_util.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/util_constants.h"
-#include "chrome/installer/util/wmi.h"
 #include "google_update/google_update_idl.h"
 
 using Microsoft::WRL::ComPtr;
@@ -522,8 +522,8 @@ BOOL __stdcall LaunchGoogleChromeWithDimensions(int x,
     base::CommandLine chrome_command(chrome_exe_path);
 
     ScopedCOMInitializer com_initializer;
-    if (!installer::WMIProcess::Launch(chrome_command.GetCommandLineString(),
-                                       NULL)) {
+    if (!base::win::WmiLaunchProcess(chrome_command.GetCommandLineString(),
+                                     NULL)) {
       // For some reason WMI failed. Try and launch the old fashioned way,
       // knowing that visual glitches will occur when the window pops up.
       if (!LaunchGoogleChrome())

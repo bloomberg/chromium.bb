@@ -48,6 +48,7 @@ if (is_win) {
       "netapi32.lib",
       "ndfapi.lib",  # Used by browser/net/net_error_diagnostics_dialog_win.h
       "pdh.lib",  # Used by browser/private_working_set_snapshot.h
+      "wbemuuid.lib",  # Used by browser/metrics/antivirus_metrics_provider_win.cc
     ]
     ldflags = [
       "/DELAYLOAD:ndfapi.dll",

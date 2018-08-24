@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
+#include "base/win/wmi.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/app_registration_data.h"
@@ -31,7 +32,6 @@
 #include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/uninstall_metrics.h"
 #include "chrome/installer/util/updating_app_registration_data.h"
-#include "chrome/installer/util/wmi.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
 
@@ -81,7 +81,7 @@ void NavigateToUrlWithIExplore(const base::string16& url) {
   // process runs inside a Job object controlled by the shell. As long as there
   // are processes running, the shell will not close the uninstall applet. WMI
   // allows us to escape from the Job object so the applet will close.
-  installer::WMIProcess::Launch(command, &pid);
+  base::win::WmiLaunchProcess(command, &pid);
 }
 
 }  // namespace

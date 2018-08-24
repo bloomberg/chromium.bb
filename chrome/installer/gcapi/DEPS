@@ -6,7 +6,6 @@ include_rules = [
   # Take care not to allow any dependence on BrowserDistribution.
   "+chrome/installer/util/google_update_constants.h",
   "+chrome/installer/util/util_constants.h",
-  "+chrome/installer/util/wmi.h",
 ]
 specific_include_rules = {
   ".*_test\.cc": [
