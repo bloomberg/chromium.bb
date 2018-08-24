@@ -73,7 +73,7 @@ void SVGAnimatedIntegerOptionalInteger::AnimationEnded() {
   second_integer_->AnimationEnded();
 }
 
-bool SVGAnimatedIntegerOptionalInteger::NeedsSynchronizeAttribute() {
+bool SVGAnimatedIntegerOptionalInteger::NeedsSynchronizeAttribute() const {
   return first_integer_->NeedsSynchronizeAttribute() ||
          second_integer_->NeedsSynchronizeAttribute();
 }

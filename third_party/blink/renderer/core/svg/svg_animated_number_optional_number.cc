@@ -60,7 +60,7 @@ void SVGAnimatedNumberOptionalNumber::AnimationEnded() {
   second_number_->AnimationEnded();
 }
 
-bool SVGAnimatedNumberOptionalNumber::NeedsSynchronizeAttribute() {
+bool SVGAnimatedNumberOptionalNumber::NeedsSynchronizeAttribute() const {
   return first_number_->NeedsSynchronizeAttribute() ||
          second_number_->NeedsSynchronizeAttribute();
 }

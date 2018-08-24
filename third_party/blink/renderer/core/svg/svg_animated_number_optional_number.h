@@ -60,7 +60,7 @@ class SVGAnimatedNumberOptionalNumber
   }
 
   void SetAnimatedValue(SVGPropertyBase*) override;
-  bool NeedsSynchronizeAttribute() override;
+  bool NeedsSynchronizeAttribute() const override;
   void AnimationEnded() override;
 
   SVGAnimatedNumber* FirstNumber() { return first_number_.Get(); }
