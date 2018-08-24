@@ -111,9 +111,12 @@ class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {
     remote_user_email_ = remote_user_email;
   }
 
+  bool dialog_created() const { return dialog_created_; }
+
  private:
   std::string remote_user_email_;
   DialogResult dialog_result_ = DialogResult::OK;
+  bool dialog_created_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIt2MeDialogFactory);
 };
@@ -125,6 +128,7 @@ FakeIt2MeDialogFactory::~FakeIt2MeDialogFactory() = default;
 
 std::unique_ptr<It2MeConfirmationDialog> FakeIt2MeDialogFactory::Create() {
   EXPECT_FALSE(remote_user_email_.empty());
+  dialog_created_ = true;
   return std::make_unique<FakeIt2MeConfirmationDialog>(remote_user_email_,
                                                        dialog_result_);
 }
@@ -157,7 +161,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 
   void RunValidationCallback(const std::string& remote_jid);
 
-  void StartHost();
+  void StartHost(bool enable_dialogs = true);
   void ShutdownHost();
 
   static base::ListValue MakeList(
@@ -258,7 +262,7 @@ void It2MeHostTest::StartupHostStateHelper(const base::Closure& quit_closure) {
                                       base::Unretained(this), quit_closure);
 }
 
-void It2MeHostTest::StartHost() {
+void It2MeHostTest::StartHost(bool enable_dialogs) {
   if (!policies_) {
     policies_ = PolicyWatcher::GetDefaultPolicies();
   }
@@ -277,6 +281,11 @@ void It2MeHostTest::StartHost() {
   fake_bot_signal_strategy_->ConnectTo(fake_signal_strategy.get());
 
   it2me_host_ = new It2MeHost();
+  if (!enable_dialogs) {
+    // Only ChromeOS supports this method, so tests setting enable_dialogs to
+    // false should only be run on ChromeOS.
+    it2me_host_->set_enable_dialogs(enable_dialogs);
+  }
   it2me_host_->Connect(host_context_->Copy(), policies_->CreateDeepCopy(),
                        std::move(dialog_factory), weak_factory_.GetWeakPtr(),
                        std::move(fake_signal_strategy), kTestUserName,
@@ -601,5 +610,14 @@ TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {
   RunUntilStateChanged(It2MeHostState::kDisconnected);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(It2MeHostTest, ConnectRespectsNoDialogsParameter) {
+  StartHost(false);
+  EXPECT_FALSE(dialog_factory_->dialog_created());
+  EXPECT_FALSE(
+      GetHost()->desktop_environment_options().enable_user_interface());
+}
+#endif
 
 }  // namespace remoting

@@ -85,6 +85,9 @@ class ChromotingHost : public ClientSession::EventHandler {
   void Start(const std::string& host_owner);
 
   scoped_refptr<HostStatusMonitor> status_monitor() { return status_monitor_; }
+  const DesktopEnvironmentOptions& desktop_environment_options() const {
+    return desktop_environment_options_;
+  }
 
   // Registers a host extension.
   void AddExtension(std::unique_ptr<HostExtension> extension);
