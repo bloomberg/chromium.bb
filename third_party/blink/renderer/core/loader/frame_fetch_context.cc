@@ -818,7 +818,7 @@ void FrameFetchContext::AddResourceTiming(const ResourceTimingInfo& info) {
     // Main resource timing information is reported through the owner to be
     // passed to the parent frame, if appropriate.
     frame->Owner()->AddResourceTiming(info);
-    frame->DidSendResourceTimingInfoToParent();
+    frame->SetShouldSendResourceTimingInfoToParent(false);
     return;
   }
 
@@ -896,9 +896,12 @@ bool FrameFetchContext::UpdateTimingInfoForIFrameNavigation(
   if (!GetFrame()->should_send_resource_timing_info_to_parent())
     return false;
   // Do not report iframe navigation that restored from history, since its
-  // location may have been changed after initial navigation.
-  if (MasterDocumentLoader()->LoadType() == WebFrameLoadType::kBackForward)
+  // location may have been changed after initial navigation,
+  if (MasterDocumentLoader()->LoadType() == WebFrameLoadType::kBackForward) {
+    // ...and do not report subsequent navigations in the iframe too.
+    GetFrame()->SetShouldSendResourceTimingInfoToParent(false);
     return false;
+  }
   return true;
 }
 
