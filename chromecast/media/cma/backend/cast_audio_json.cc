@@ -24,6 +24,11 @@ base::FilePath CastAudioJson::GetFilePath() {
     return tuning_path;
   }
 
+  return CastAudioJson::GetReadOnlyFilePath();
+}
+
+// static
+base::FilePath CastAudioJson::GetReadOnlyFilePath() {
   return base::FilePath(kCastAudioJsonFilePath);
 }
 

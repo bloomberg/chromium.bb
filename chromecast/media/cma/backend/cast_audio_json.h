@@ -12,7 +12,10 @@ namespace media {
 
 class CastAudioJson {
  public:
+  // Returns GetFilePathForTuning() if a file exists at that path, otherwise
+  // returns GetReadOnlyFilePath().
   static base::FilePath GetFilePath();
+  static base::FilePath GetReadOnlyFilePath();
   static base::FilePath GetFilePathForTuning();
 };
 
