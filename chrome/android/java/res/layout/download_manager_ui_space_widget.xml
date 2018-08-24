@@ -48,7 +48,7 @@
     </LinearLayout>
 
     <View
-        style="@style/Divider"
+        style="@style/HorizontalDivider"
         android:layout_marginTop="@dimen/list_item_default_margin" />
 
 </LinearLayout>

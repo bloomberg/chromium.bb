@@ -12,7 +12,7 @@
 
     <View
         android:id="@+id/data_reduction_menu_divider"
-        style="@style/Divider" />
+        style="@style/HorizontalDivider" />
 
     <FrameLayout
         android:layout_width="match_parent"
