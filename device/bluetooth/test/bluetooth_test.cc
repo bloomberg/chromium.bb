@@ -110,6 +110,11 @@ BluetoothDevice* BluetoothTestBase::SimulateClassicDevice() {
   return nullptr;
 }
 
+void BluetoothTestBase::SimulateDeviceBreaksConnection(
+    BluetoothDevice* device) {
+  SimulateGattDisconnection(device);
+}
+
 bool BluetoothTestBase::SimulateLocalGattCharacteristicNotificationsRequest(
     BluetoothLocalGattCharacteristic* characteristic,
     bool start) {

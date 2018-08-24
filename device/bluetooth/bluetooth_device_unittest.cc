@@ -1159,7 +1159,7 @@ TEST_F(BluetoothTest, MAYBE_DisconnectionNotifiesDeviceChanged) {
   EXPECT_TRUE(device->IsConnected());
   EXPECT_TRUE(device->IsGattConnected());
 
-  SimulateGattDisconnection(device);
+  SimulateDeviceBreaksConnection(device);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, observer.device_changed_count());
   EXPECT_FALSE(device->IsConnected());
@@ -1859,7 +1859,7 @@ TEST_F(BluetoothTest, MAYBE_GattServicesDiscovered_AfterDisconnection) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_discovery_attempts_);
 
-  SimulateGattDisconnection(device);
+  SimulateDeviceBreaksConnection(device);
   base::RunLoop().RunUntilIdle();
 
   SimulateGattServicesDiscovered(

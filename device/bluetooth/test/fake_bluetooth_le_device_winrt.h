@@ -114,12 +114,19 @@ class FakeBluetoothLEDeviceWinrt
   // IClosable:
   IFACEMETHODIMP Close() override;
 
+  // We perform explicit reference counting, to be able to query the ref count
+  // ourselves. This is required to simulate Gatt disconnection behavior
+  // exhibited by the production UWP APIs.
+  void AddReference();
+  void RemoveReference();
+
   void SimulateDevicePaired(bool is_paired);
   void SimulatePairingPinCode(std::string pin_code);
   void SimulateGattConnection();
   void SimulateGattConnectionError(
       BluetoothDevice::ConnectErrorCode error_code);
   void SimulateGattDisconnection();
+  void SimulateDeviceBreaksConnection();
   void SimulateGattServicesDiscovered(const std::vector<std::string>& uuids);
   void SimulateGattServicesChanged();
   void SimulateGattServiceRemoved(BluetoothRemoteGattService* service);
@@ -132,6 +139,7 @@ class FakeBluetoothLEDeviceWinrt
 
  private:
   BluetoothTestWinrt* bluetooth_test_winrt_ = nullptr;
+  uint32_t reference_count_ = 1u;
 
   ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus status_ =
       ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Disconnected;

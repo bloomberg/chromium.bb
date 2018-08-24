@@ -183,8 +183,18 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesForUuidWithCacheModeAsync(
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::Close() {
+  --reference_count_;
+  fake_services_.clear();
   bluetooth_test_winrt_->OnFakeBluetoothGattDisconnect();
   return S_OK;
+}
+
+void FakeBluetoothLEDeviceWinrt::AddReference() {
+  ++reference_count_;
+}
+
+void FakeBluetoothLEDeviceWinrt::RemoveReference() {
+  --reference_count_;
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateDevicePaired(bool is_paired) {
@@ -221,6 +231,24 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
     return;
   }
 
+  // Simulate production UWP behavior that only really disconnects once all
+  // references to a device are dropped.
+  if (reference_count_ == 0u) {
+    status_ = BluetoothConnectionStatus_Disconnected;
+    connection_status_changed_handler_->Invoke(this, nullptr);
+  }
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateDeviceBreaksConnection() {
+  if (status_ == BluetoothConnectionStatus_Disconnected) {
+    DCHECK(gatt_services_callback_);
+    std::move(gatt_services_callback_)
+        .Run(Make<FakeGattDeviceServicesResultWinrt>(
+            GattCommunicationStatus_Unreachable));
+    return;
+  }
+
+  // Simulate a Gatt Disconnecion regardless of the reference count.
   status_ = BluetoothConnectionStatus_Disconnected;
   connection_status_changed_handler_->Invoke(this, nullptr);
 }
@@ -231,8 +259,9 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscovered(
     // Attribute handles need to be unique for a given BLE device. Increasing by
     // a large number ensures enough address space for the contained
     // characteristics and descriptors.
-    fake_services_.push_back(Make<FakeGattDeviceServiceWinrt>(
-        bluetooth_test_winrt_, uuid, service_attribute_handle_ += 0x0400));
+    fake_services_.push_back(
+        Make<FakeGattDeviceServiceWinrt>(bluetooth_test_winrt_, this, uuid,
+                                         service_attribute_handle_ += 0x0400));
   }
 
   DCHECK(gatt_services_callback_);
