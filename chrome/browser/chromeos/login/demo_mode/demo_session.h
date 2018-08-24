@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_DEMO_MODE_DEMO_SESSION_H_
 
 #include <list>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -82,6 +84,10 @@ class DemoSession : public session_manager::SessionManagerObserver {
   // |load_callback| will be run once the offline resource load finishes.
   void EnsureOfflineResourcesLoaded(base::OnceClosure load_callback);
 
+  // Fakes offline demo session resources having been requested and mounted at
+  // the given path (or not mounted if |path| is empty).
+  void SetOfflineResourcesLoadedForTesting(const base::FilePath& path);
+
   // Gets the path of the image containing demo session Android apps. The path
   // will be set when the offline resources get loaded.
   base::FilePath GetDemoAppsPath() const;
@@ -97,6 +103,15 @@ class DemoSession : public session_manager::SessionManagerObserver {
   // not loaded.
   base::FilePath GetOfflineResourceAbsolutePath(
       const base::FilePath& relative_path) const;
+
+  // Returns true if the Chrome app or ARC++ package, which is normally pinned
+  // by policy, should actually not be force-pinned because the device is
+  // in Demo Mode and offline.
+  bool ShouldIgnorePinPolicy(const std::string& app_id_or_package);
+
+  // Sets app IDs and package names that shouldn't be pinned by policy when the
+  // device is offline in Demo Mode.
+  void OverrideIgnorePinPolicyAppsForTesting(std::vector<std::string> apps);
 
   bool offline_enrolled() const { return offline_enrolled_; }
 
@@ -139,6 +154,9 @@ class DemoSession : public session_manager::SessionManagerObserver {
 
   // Path at which offline demo mode resources were loaded.
   base::FilePath offline_resources_path_;
+
+  // Apps that ShouldIgnorePinPolicy() will check for if the device is offline.
+  std::vector<std::string> ignore_pin_policy_offline_apps_;
 
   // List of pending callbacks passed to EnsureOfflineResourcesLoaded().
   std::list<base::OnceClosure> offline_resources_load_callbacks_;

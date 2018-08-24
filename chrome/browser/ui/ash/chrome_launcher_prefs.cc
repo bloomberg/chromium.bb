@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
@@ -199,6 +200,12 @@ void GetAppsPinnedByPolicy(const PrefService* prefs,
       LOG(ERROR) << "Cannot extract policy app info from prefs.";
       continue;
     }
+
+    if (chromeos::DemoSession::Get() &&
+        chromeos::DemoSession::Get()->ShouldIgnorePinPolicy(app_id)) {
+      continue;
+    }
+
     if (IsAppIdArcPackage(app_id)) {
       if (!arc_app_list_pref)
         continue;
