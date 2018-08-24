@@ -55,6 +55,13 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
       : BookmarkAppHelper(profile, web_app_info, contents, install_source) {}
   ~TestBookmarkAppHelper() override {}
 
+  void CompleteInstallation() {
+    CompleteInstallableCheck();
+    content::RunAllTasksUntilIdle();
+    CompleteIconDownload();
+    content::RunAllTasksUntilIdle();
+  }
+
   void CompleteInstallableCheck() {
     blink::Manifest manifest;
     InstallableData data = {
@@ -76,6 +83,37 @@ class TestBookmarkAppHelper : public BookmarkAppHelper {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestBookmarkAppHelper);
+};
+
+// All BookmarkAppDataRetriever operations are async, so this class posts tasks
+// when running callbacks to simulate async behavior in tests as well.
+class TestDataRetriever : public BookmarkAppDataRetriever {
+ public:
+  explicit TestDataRetriever(std::unique_ptr<WebApplicationInfo> web_app_info)
+      : web_app_info_(std::move(web_app_info)) {}
+
+  ~TestDataRetriever() override = default;
+
+  void GetWebApplicationInfo(content::WebContents* web_contents,
+                             GetWebApplicationInfoCallback callback) override {
+    DCHECK(web_contents);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), std::move(web_app_info_)));
+  }
+
+  void GetIcons(const GURL& app_url,
+                const std::vector<GURL>& icon_urls,
+                GetIconsCallback callback) override {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  std::vector<WebApplicationInfo::IconInfo>()));
+  }
+
+ private:
+  std::unique_ptr<WebApplicationInfo> web_app_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);
 };
 
 class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
@@ -100,6 +138,16 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  void SetTestingFactories(BookmarkAppInstallationTask* task,
+                           const GURL& app_url) {
+    WebApplicationInfo info;
+    info.app_url = app_url;
+    info.title = base::UTF8ToUTF16(kWebAppTitle);
+    task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
+        std::make_unique<WebApplicationInfo>(std::move(info))));
+    task->SetBookmarkAppHelperFactoryForTesting(helper_factory());
+  }
+
   BookmarkAppInstallationTask::BookmarkAppHelperFactory helper_factory() {
     return base::BindRepeating(
         &BookmarkAppInstallationTaskTest::CreateTestBookmarkAppHelper,
@@ -133,37 +181,6 @@ class BookmarkAppInstallationTaskTest : public ChromeRenderViewHostTestHarness {
   std::unique_ptr<Result> app_installation_result_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkAppInstallationTaskTest);
-};
-
-// All BookmarkAppDataRetriever operations are async, so this class posts tasks
-// when running callbacks to simulate async behavior in tests as well.
-class TestDataRetriever : public BookmarkAppDataRetriever {
- public:
-  explicit TestDataRetriever(std::unique_ptr<WebApplicationInfo> web_app_info)
-      : web_app_info_(std::move(web_app_info)) {}
-
-  ~TestDataRetriever() override = default;
-
-  void GetWebApplicationInfo(content::WebContents* web_contents,
-                             GetWebApplicationInfoCallback callback) override {
-    DCHECK(web_contents);
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), std::move(web_app_info_)));
-  }
-
-  void GetIcons(const GURL& app_url,
-                const std::vector<GURL>& icon_urls,
-                GetIconsCallback callback) override {
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  std::vector<WebApplicationInfo::IconInfo>()));
-  }
-
- private:
-  std::unique_ptr<WebApplicationInfo> web_app_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDataRetriever);
 };
 
 class TestInstaller : public BookmarkAppInstaller {
@@ -285,12 +302,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       web_app::PendingAppManager::AppInfo(
           app_url, web_app::PendingAppManager::LaunchContainer::kWindow));
 
-  WebApplicationInfo info;
-  info.app_url = app_url;
-  info.title = base::UTF8ToUTF16(kWebAppTitle);
-  task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
-      std::make_unique<WebApplicationInfo>(std::move(info))));
-  task->SetBookmarkAppHelperFactoryForTesting(helper_factory());
+  SetTestingFactories(task.get(), app_url);
 
   task->InstallWebAppOrShortcutFromWebContents(
       web_contents(),
@@ -316,12 +328,7 @@ TEST_F(BookmarkAppInstallationTaskTest,
       web_app::PendingAppManager::AppInfo(
           app_url, web_app::PendingAppManager::LaunchContainer::kWindow));
 
-  WebApplicationInfo info;
-  info.app_url = app_url;
-  info.title = base::UTF8ToUTF16(kWebAppTitle);
-  task->SetDataRetrieverForTesting(std::make_unique<TestDataRetriever>(
-      std::make_unique<WebApplicationInfo>(std::move(info))));
-  task->SetBookmarkAppHelperFactoryForTesting(helper_factory());
+  SetTestingFactories(task.get(), app_url);
 
   task->InstallWebAppOrShortcutFromWebContents(
       web_contents(),
@@ -336,6 +343,31 @@ TEST_F(BookmarkAppInstallationTaskTest,
   content::RunAllTasksUntilIdle();
 
   EXPECT_FALSE(app_installed());
+}
+
+TEST_F(BookmarkAppInstallationTaskTest,
+       WebAppOrShortcutFromContents_NoShortcuts) {
+  const GURL app_url(kWebAppUrl);
+
+  web_app::PendingAppManager::AppInfo app_info(
+      app_url, web_app::PendingAppManager::LaunchContainer::kWindow,
+      false /* create_shortcuts */);
+  auto task = std::make_unique<BookmarkAppInstallationTask>(
+      profile(), std::move(app_info));
+
+  SetTestingFactories(task.get(), app_url);
+
+  task->InstallWebAppOrShortcutFromWebContents(
+      web_contents(),
+      base::BindOnce(&BookmarkAppInstallationTaskTest::OnInstallationTaskResult,
+                     base::Unretained(this), base::DoNothing().Once()));
+  content::RunAllTasksUntilIdle();
+
+  test_helper().CompleteInstallation();
+
+  EXPECT_TRUE(app_installed());
+
+  EXPECT_FALSE(test_helper().create_shortcuts());
 }
 
 }  // namespace extensions

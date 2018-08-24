@@ -96,6 +96,11 @@ class BookmarkAppHelper : public content::NotificationObserver {
   // If called, the installed extension will be considered default installed.
   void set_is_default_app() { is_default_app_ = true; }
 
+  // If called, desktop shortcuts will not be created.
+  void set_skip_shortcut_creation() { create_shortcuts_ = false; }
+
+  bool create_shortcuts() const { return create_shortcuts_; }
+
  protected:
   // Protected methods for testing.
 
@@ -154,6 +159,8 @@ class BookmarkAppHelper : public content::NotificationObserver {
   bool is_policy_installed_app_ = false;
 
   bool is_default_app_ = false;
+
+  bool create_shortcuts_ = true;
 
   // The mechanism via which the app creation was triggered.
   WebappInstallSource install_source_;

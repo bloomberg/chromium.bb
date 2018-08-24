@@ -102,9 +102,11 @@ TEST_F(WebAppPolicyManagerTest, TwoForceInstalledApps) {
 
   std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
   expected_apps_to_install.emplace_back(
-      GURL(kUrl1), PendingAppManager::LaunchContainer::kWindow);
+      GURL(kUrl1), PendingAppManager::LaunchContainer::kWindow,
+      false /* create_shortcuts */);
   expected_apps_to_install.emplace_back(
-      GURL(kUrl2), PendingAppManager::LaunchContainer::kTab);
+      GURL(kUrl2), PendingAppManager::LaunchContainer::kTab,
+      false /* create_shortcuts */);
 
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 }
