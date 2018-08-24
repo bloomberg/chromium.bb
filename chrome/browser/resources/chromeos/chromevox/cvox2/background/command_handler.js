@@ -105,6 +105,15 @@ CommandHandler.onCommand = function(command) {
       };
       chrome.windows.create(explorerPage);
       break;
+    case 'showLogPage':
+      chrome.commandLinePrivate.hasSwitch(
+          'enable-chromevox-developer-option', function(enable) {
+            if (enable) {
+              var logPage = {url: 'cvox2/background/log.html', type: 'panel'};
+              chrome.windows.create(logPage);
+            }
+          });
+      break;
     case 'decreaseTtsRate':
       CommandHandler.increaseOrDecreaseSpeechProperty_(
           cvox.AbstractTts.RATE, false);

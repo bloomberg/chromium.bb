@@ -139,6 +139,7 @@ chromevox_modules = [
   "cvox2/background/i_search.js",
   "cvox2/background/keyboard_handler.js",
   "cvox2/background/live_regions.js",
+  "cvox2/background/log.js",
   "cvox2/background/math_handler.js",
   "cvox2/background/media_automation_handler.js",
   "cvox2/background/next_earcons.js",
@@ -229,6 +230,7 @@ group("chromevox") {
       ":chromevox_background_script",
       ":chromevox_content_script",
       ":chromevox_kbexplorer_script",
+      ":chromevox_log_script",
       ":chromevox_min_content_script",
       ":chromevox_options_script",
       ":chromevox_panel_script",
@@ -241,6 +243,7 @@ group("chromevox") {
 chromevox_background_script_loader_file = "cvox2/background/loader.js"
 chromevox_content_script_loader_file = "chromevox/injected/loader.js"
 chromevox_kbexplorer_loader_file = "chromevox/background/kbexplorer_loader.js"
+chromevox_log_loader_file = "cvox2/background/log_loader.js"
 chromevox_min_content_script_loader_file = "cvox2/injected/loader.js"
 chromevox_options_script_loader_file = "chromevox/background/options_loader.js"
 chromevox_panel_script_loader_file = "cvox2/background/panel_loader.js"
@@ -294,6 +297,8 @@ run_jsbundler("chromevox_copied_files") {
     "cvox2/background/earcons/skim.wav",
     "cvox2/background/earcons/small_room_2.wav",
     "cvox2/background/earcons/static.wav",
+    "cvox2/background/log.css",
+    "cvox2/background/log.html",
     "cvox2/background/panel.css",
     "cvox2/background/panel.html",
     "images/chromevox-128.png",
@@ -314,6 +319,7 @@ run_jsbundler("chromevox_copied_files") {
       chromevox_background_script_loader_file,
       chromevox_content_script_loader_file,
       chromevox_kbexplorer_loader_file,
+      chromevox_log_loader_file,
       chromevox_min_content_script_loader_file,
       chromevox_options_script_loader_file,
       chromevox_panel_script_loader_file,
@@ -428,6 +434,13 @@ if (chromevox_compress_js) {
       chromevox_kbexplorer_loader_file,
     ]
     output_file = "$chromevox_out_dir/chromeVoxKbExplorerScript.js"
+  }
+
+  compress_js("chromevox_log_script") {
+    sources = [
+      chromevox_log_loader_file,
+    ]
+    output_file = "$chromevox_out_dir/chromeVoxLogScript.js"
   }
 
   compress_js("chromevox_options_script") {
