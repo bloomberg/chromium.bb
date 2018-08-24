@@ -271,11 +271,12 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   if (net::GetValueForKeyInQuery(web_contents->GetURL(),
                                  "type",
                                  &type_param)) {
-    // TODO(mattm): add param for SB_THREAT_TYPE_URL_UNWANTED.
     if (type_param == "malware") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
     } else if (type_param == "phishing") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+    } else if (type_param == "unwanted") {
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_UNWANTED;
     } else if (type_param == "clientside_malware") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
     } else if (type_param == "clientside_phishing") {
@@ -327,6 +328,8 @@ TestSafeBrowsingBlockingPageQuiet* CreateSafeBrowsingQuietBlockingPage(
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
     } else if (type_param == "phishing") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
+    } else if (type_param == "unwanted") {
+      threat_type = safe_browsing::SB_THREAT_TYPE_URL_UNWANTED;
     } else if (type_param == "giant") {
       threat_type = safe_browsing::SB_THREAT_TYPE_URL_MALWARE;
       is_giant_webview = true;
