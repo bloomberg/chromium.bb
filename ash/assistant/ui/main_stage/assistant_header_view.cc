@@ -95,18 +95,6 @@ void AssistantHeaderView::InitLayout() {
   AddChildView(molecule_icon_);
 }
 
-void AssistantHeaderView::OnCommittedQueryChanged(
-    const AssistantQuery& committed_query) {
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    layout_manager_->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_START);
-
-    // Force a layout/paint pass.
-    Layout();
-    SchedulePaint();
-  }
-}
-
 void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
   // We only handle the first response when animating the molecule icon. For
   // all subsequent responses the molecule icon remains unchanged.
@@ -115,10 +103,9 @@ void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
 
   is_first_response_ = false;
 
-  if (!assistant::ui::kIsMotionSpecEnabled)
-    return;
-
-  using namespace assistant::util;
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  using assistant::util::CreateTransformElement;
 
   // The molecule icon will be animated from the center of its parent, to the
   // left hand side.
@@ -150,47 +137,39 @@ void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
 void AssistantHeaderView::OnUiVisibilityChanged(bool visible,
                                                 AssistantSource source) {
   if (visible) {
-    // When Assistant UI is shown and the motion spec is enabled, we animate in
-    // the appearance of the molecule icon.
-    if (assistant::ui::kIsMotionSpecEnabled) {
-      using namespace assistant::util;
+    // When Assistant UI is shown, we animate in the appearance of the molecule
+    // icon.
+    using assistant::util::CreateLayerAnimationSequence;
+    using assistant::util::CreateOpacityElement;
+    using assistant::util::CreateTransformElement;
 
-      // We're going to animate the molecule icon up into position so we'll need
-      // to apply an initial transformation.
-      gfx::Transform transform;
-      transform.Translate(0, kAppearAnimationTranslationUpDip);
+    // We're going to animate the molecule icon up into position so we'll need
+    // to apply an initial transformation.
+    gfx::Transform transform;
+    transform.Translate(0, kAppearAnimationTranslationUpDip);
 
-      // Set up our pre-animation values.
-      molecule_icon_->layer()->SetOpacity(0.f);
-      molecule_icon_->layer()->SetTransform(transform);
+    // Set up our pre-animation values.
+    molecule_icon_->layer()->SetOpacity(0.f);
+    molecule_icon_->layer()->SetTransform(transform);
 
-      // Start animating molecule icon.
-      molecule_icon_->layer()->GetAnimator()->StartTogether(
-          {// Animate the transformation.
-           CreateLayerAnimationSequence(CreateTransformElement(
-               gfx::Transform(), kAppearAnimationTranslateUpDuration,
-               gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
-           // Animate the opacity to 100% with delay.
-           CreateLayerAnimationSequence(
-               ui::LayerAnimationElement::CreatePauseElement(
-                   ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-                   kAppearAnimationFadeInDelay),
-               CreateOpacityElement(1.f, kAppearAnimationFadeInDuration))});
-    }
+    // Start animating molecule icon.
+    molecule_icon_->layer()->GetAnimator()->StartTogether(
+        {// Animate the transformation.
+         CreateLayerAnimationSequence(CreateTransformElement(
+             gfx::Transform(), kAppearAnimationTranslateUpDuration,
+             gfx::Tween::Type::FAST_OUT_SLOW_IN_2)),
+         // Animate the opacity to 100% with delay.
+         CreateLayerAnimationSequence(
+             ui::LayerAnimationElement::CreatePauseElement(
+                 ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                 kAppearAnimationFadeInDelay),
+             CreateOpacityElement(1.f, kAppearAnimationFadeInDuration))});
+
     return;
   }
 
   // When Assistant UI is hidden, we restore initial state for the next session.
   is_first_response_ = true;
-
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    layout_manager_->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
-
-    // Force a layout/paint pass.
-    Layout();
-    SchedulePaint();
-  }
 
   molecule_icon_->layer()->SetTransform(gfx::Transform());
 }

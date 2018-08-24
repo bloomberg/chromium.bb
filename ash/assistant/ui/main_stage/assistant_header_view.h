@@ -33,7 +33,6 @@ class AssistantHeaderView : public views::View,
   void ChildVisibilityChanged(views::View* child) override;
 
   // AssistantInteractionModelObserver:
-  void OnCommittedQueryChanged(const AssistantQuery& committed_query) override;
   void OnResponseChanged(const AssistantResponse& response) override;
 
   // AssistantUiModelObserver:

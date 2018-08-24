@@ -243,18 +243,17 @@ void UiElementContainerView::InitLayout() {
 
 void UiElementContainerView::OnCommittedQueryChanged(
     const AssistantQuery& query) {
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+
   // We don't allow processing of events while waiting for the next query
   // response. The contents will be faded out, so it should not be interactive.
   // We also scroll to the top to play nice with the transition animation.
   set_can_process_events_within_subtree(false);
   ScrollToPosition(vertical_scroll_bar(), 0);
 
-  if (!assistant::ui::kIsMotionSpecEnabled)
-    return;
-
   // When a query is committed, we fade out the views for the previous response
   // until the next Assistant response has been received.
-  using namespace assistant::util;
   for (const std::pair<ui::Layer*, float>& pair : ui_element_layers_) {
     pair.first->GetAnimator()->StartAnimation(
         CreateLayerAnimationSequence(CreateOpacityElement(
@@ -264,22 +263,16 @@ void UiElementContainerView::OnCommittedQueryChanged(
 
 void UiElementContainerView::OnResponseChanged(
     const AssistantResponse& response) {
-  // If the motion spec is disabled, we clear any previous response and then
-  // add the new response in a single step.
-  if (!assistant::ui::kIsMotionSpecEnabled) {
-    OnResponseCleared();
-    OnResponseAdded(response);
-    return;
-  }
-
-  // If the motion spec is enabled but we haven't cached any layers, there is
-  // nothing to animate off stage so we can proceed to add the new response.
+  // If we haven't cached any layers, there is nothing to animate off stage so
+  // we can proceed to add the new response.
   if (ui_element_layers_.empty()) {
     OnResponseAdded(response);
     return;
   }
 
-  using namespace assistant::util;
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+  using assistant::util::StartLayerAnimationSequence;
 
   // There is a previous response on stage, so we'll animate it off before
   // adding the new response. The new response will be added upon invocation of
@@ -334,16 +327,12 @@ void UiElementContainerView::OnResponseAdded(
 void UiElementContainerView::OnAllUiElementsAdded() {
   DCHECK(!is_processing_ui_element_);
 
+  using assistant::util::CreateLayerAnimationSequence;
+  using assistant::util::CreateOpacityElement;
+
   // Now that the response for the current query has been added to the view
   // hierarchy, we can re-enable processing of events.
   set_can_process_events_within_subtree(true);
-
-  // If the motion spec is disabled, there's nothing to do because the views
-  // do not need to be animated in.
-  if (!assistant::ui::kIsMotionSpecEnabled)
-    return;
-
-  using namespace assistant::util;
 
   // Now that we've received and added all UI elements for the current query
   // response, we can animate them in.
@@ -446,20 +435,19 @@ void UiElementContainerView::OnCardReady(
     content_view()->AddChildView(view_holder);
     view_holder->Attach();
 
-    if (assistant::ui::kIsMotionSpecEnabled) {
-      // The view will be animated on its own layer, so we need to do some
-      // initial layer setup. We're going to fade the view in, so hide it.
-      view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
-      view_holder->native_view()->layer()->SetOpacity(0.f);
+    // The view will be animated on its own layer, so we need to do some initial
+    // layer setup. We're going to fade the view in, so hide it.
+    view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
+    view_holder->native_view()->layer()->SetOpacity(0.f);
 
-      // We cache the layer for the view for use during animations and cache
-      // its desired opacity that we'll animate to while processing the next
-      // query response.
-      ui_element_layers_.push_back(
-          std::pair<ui::Layer*, float>(view_holder->native_view()->layer(),
-                                       kCardElementAnimationFadeOutOpacity));
-    }
+    // We cache the layer for the view for use during animations and cache its
+    // desired opacity that we'll animate to while processing the next query
+    // response.
+    ui_element_layers_.push_back(
+        std::pair<ui::Layer*, float>(view_holder->native_view()->layer(),
+                                     kCardElementAnimationFadeOutOpacity));
   }
+
   // TODO(dmblack): Handle Mash case.
 
   // Once the card has been rendered and embedded, we can resume processing
@@ -473,19 +461,17 @@ void UiElementContainerView::OnTextElementAdded(
 
   views::View* text_element_view = new AssistantTextElementView(text_element);
 
-  if (assistant::ui::kIsMotionSpecEnabled) {
-    // The view will be animated on its own layer, so we need to do some initial
-    // layer setup. We're going to fade the view in, so hide it.
-    text_element_view->SetPaintToLayer();
-    text_element_view->layer()->SetFillsBoundsOpaquely(false);
-    text_element_view->layer()->SetOpacity(0.f);
+  // The view will be animated on its own layer, so we need to do some initial
+  // layer setup. We're going to fade the view in, so hide it.
+  text_element_view->SetPaintToLayer();
+  text_element_view->layer()->SetFillsBoundsOpaquely(false);
+  text_element_view->layer()->SetOpacity(0.f);
 
-    // We cache the layer for the view for use during animations and cache its
-    // desired opacity that we'll animate to while processing the next query
-    // response.
-    ui_element_layers_.push_back(std::pair<ui::Layer*, float>(
-        text_element_view->layer(), kTextElementAnimationFadeOutOpacity));
-  }
+  // We cache the layer for the view for use during animations and cache its
+  // desired opacity that we'll animate to while processing the next query
+  // response.
+  ui_element_layers_.push_back(std::pair<ui::Layer*, float>(
+      text_element_view->layer(), kTextElementAnimationFadeOutOpacity));
 
   content_view()->AddChildView(text_element_view);
 }

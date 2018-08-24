@@ -188,8 +188,8 @@ void AssistantContainerView::PreferredSizeChanged() {
   const bool visible =
       assistant_controller_->ui_controller()->model()->visible();
 
-  // When visible with the motion spec enabled, size changes are animated.
-  if (visible && assistant::ui::kIsMotionSpecEnabled) {
+  // When visible, size changes are animated.
+  if (visible) {
     resize_animation_ = std::make_unique<gfx::SlideAnimation>(this);
     resize_animation_->SetSlideDuration(kResizeAnimationDurationMs);
 
