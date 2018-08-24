@@ -11,7 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/indexed_db/indexed_db_key_path.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/leveldatabase/src/include/leveldb/status.h"
 
 // Contains common operations for LevelDBTransactions and/or LevelDBDatabases.
@@ -69,7 +69,7 @@ void PutString(LevelDBTransaction* transaction,
 
 void PutIDBKeyPath(LevelDBTransaction* transaction,
                    const base::StringPiece& key,
-                   const IndexedDBKeyPath& value);
+                   const blink::IndexedDBKeyPath& value);
 
 template <typename DBOrTransaction>
 WARN_UNUSED_RESULT leveldb::Status GetMaxObjectStoreId(

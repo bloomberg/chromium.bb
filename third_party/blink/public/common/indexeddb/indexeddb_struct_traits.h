@@ -37,6 +37,15 @@ struct BLINK_COMMON_EXPORT
 
 template <>
 struct BLINK_COMMON_EXPORT
+    StructTraits<blink::mojom::IDBKeyPathDataView, blink::IndexedDBKeyPath> {
+  static blink::mojom::IDBKeyPathDataPtr data(
+      const blink::IndexedDBKeyPath& key_path);
+  static bool Read(blink::mojom::IDBKeyPathDataView data,
+                   blink::IndexedDBKeyPath* out);
+};
+
+template <>
+struct BLINK_COMMON_EXPORT
     EnumTraits<blink::mojom::IDBOperationType, blink::WebIDBOperationType> {
   static blink::mojom::IDBOperationType ToMojom(
       blink::WebIDBOperationType input);

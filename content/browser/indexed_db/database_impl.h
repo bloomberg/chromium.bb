@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace base {
@@ -33,7 +34,7 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
   void CreateObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const base::string16& name,
-                         const IndexedDBKeyPath& key_path,
+                         const blink::IndexedDBKeyPath& key_path,
                          bool auto_increment) override;
   void DeleteObjectStore(int64_t transaction_id,
                          int64_t object_store_id) override;
@@ -109,7 +110,7 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
                    int64_t object_store_id,
                    int64_t index_id,
                    const base::string16& name,
-                   const IndexedDBKeyPath& key_path,
+                   const blink::IndexedDBKeyPath& key_path,
                    bool unique,
                    bool multi_entry) override;
   void DeleteIndex(int64_t transaction_id,

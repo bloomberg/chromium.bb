@@ -11,7 +11,8 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "content/common/indexed_db/indexed_db_key_path.h"
+#include "content/common/content_export.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 
 namespace content {
 
@@ -21,7 +22,7 @@ struct CONTENT_EXPORT IndexedDBIndexMetadata {
   IndexedDBIndexMetadata();
   IndexedDBIndexMetadata(const base::string16& name,
                          int64_t id,
-                         const IndexedDBKeyPath& key_path,
+                         const blink::IndexedDBKeyPath& key_path,
                          bool unique,
                          bool multi_entry);
   IndexedDBIndexMetadata(const IndexedDBIndexMetadata& other);
@@ -33,7 +34,7 @@ struct CONTENT_EXPORT IndexedDBIndexMetadata {
 
   base::string16 name;
   int64_t id;
-  IndexedDBKeyPath key_path;
+  blink::IndexedDBKeyPath key_path;
   bool unique;
   bool multi_entry;
 };
@@ -45,7 +46,7 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
   IndexedDBObjectStoreMetadata();
   IndexedDBObjectStoreMetadata(const base::string16& name,
                                int64_t id,
-                               const IndexedDBKeyPath& key_path,
+                               const blink::IndexedDBKeyPath& key_path,
                                bool auto_increment,
                                int64_t max_index_id);
   IndexedDBObjectStoreMetadata(const IndexedDBObjectStoreMetadata& other);
@@ -58,7 +59,7 @@ struct CONTENT_EXPORT IndexedDBObjectStoreMetadata {
 
   base::string16 name;
   int64_t id;
-  IndexedDBKeyPath key_path;
+  blink::IndexedDBKeyPath key_path;
   bool auto_increment;
   int64_t max_index_id;
 

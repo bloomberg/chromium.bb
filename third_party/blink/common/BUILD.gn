@@ -31,6 +31,7 @@ jumbo_source_set("common") {
     "frame/frame_policy.cc",
     "frame/user_activation_state.cc",
     "indexeddb/indexeddb_key.cc",
+    "indexeddb/indexeddb_key_path.cc",
     "indexeddb/indexeddb_struct_traits.cc",
     "manifest/manifest.cc",
     "manifest/manifest_icon_selector.cc",

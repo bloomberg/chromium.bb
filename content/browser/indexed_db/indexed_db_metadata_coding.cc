@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/indexed_db_metadata_coding.h"
+
 #include "base/strings/string_piece.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
@@ -14,6 +15,7 @@
 #include "content/common/indexed_db/indexed_db_metadata.h"
 
 using base::StringPiece;
+using blink::IndexedDBKeyPath;
 using leveldb::Status;
 
 namespace content {

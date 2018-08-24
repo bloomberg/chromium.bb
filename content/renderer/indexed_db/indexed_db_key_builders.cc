@@ -19,6 +19,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 
 using blink::IndexedDBKey;
+using blink::IndexedDBKeyPath;
 using blink::WebIDBKey;
 using blink::WebIDBKeyRange;
 using blink::WebIDBKeyView;

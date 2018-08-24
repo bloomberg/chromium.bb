@@ -10,8 +10,9 @@
 #include "content/browser/indexed_db/leveldb/leveldb_iterator.h"
 #include "content/browser/indexed_db/leveldb/leveldb_transaction.h"
 
-using leveldb::Status;
 using base::StringPiece;
+using blink::IndexedDBKeyPath;
+using leveldb::Status;
 
 namespace content {
 namespace indexed_db {

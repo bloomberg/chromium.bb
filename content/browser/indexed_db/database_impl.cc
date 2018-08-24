@@ -23,6 +23,7 @@
 
 using blink::IndexedDBIndexKeys;
 using blink::IndexedDBKey;
+using blink::IndexedDBKeyPath;
 using std::swap;
 
 namespace content {

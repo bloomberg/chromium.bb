@@ -49,7 +49,6 @@ using indexed_db::mojom::DatabaseCallbacks;
 using indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
 using indexed_db::mojom::Factory;
 using indexed_db::mojom::FactoryPtr;
-using indexed_db::mojom::KeyPath;
 using mojo::StrongAssociatedBindingPtr;
 using testing::_;
 using testing::StrictMock;
@@ -282,7 +281,7 @@ TEST_F(IndexedDBDispatcherHostTest, CloseAfterUpgrade) {
     ASSERT_TRUE(connection.database.is_bound());
     connection.database->CreateObjectStore(kTransactionId, kObjectStoreId,
                                            base::UTF8ToUTF16(kObjectStoreName),
-                                           content::IndexedDBKeyPath(), false);
+                                           blink::IndexedDBKeyPath(), false);
     connection.database->Commit(kTransactionId);
     loop.Run();
   }
@@ -350,7 +349,7 @@ TEST_F(IndexedDBDispatcherHostTest, OpenNewConnectionWhileUpgrading) {
     ASSERT_TRUE(connection1.database.is_bound());
     connection1.database->CreateObjectStore(kTransactionId, kObjectStoreId,
                                             base::UTF8ToUTF16(kObjectStoreName),
-                                            content::IndexedDBKeyPath(), false);
+                                            blink::IndexedDBKeyPath(), false);
     connection1.database->Commit(kTransactionId);
     loop.Run();
   }
@@ -422,7 +421,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
     ASSERT_TRUE(connection.database.is_bound());
     connection.database->CreateObjectStore(kTransactionId, kObjectStoreId,
                                            base::UTF8ToUTF16(kObjectStoreName),
-                                           content::IndexedDBKeyPath(), false);
+                                           blink::IndexedDBKeyPath(), false);
     // Call Put with an invalid blob.
     std::vector<::blink::mojom::IDBBlobInfoPtr> blobs;
     blink::mojom::BlobPtrInfo blob;
@@ -558,7 +557,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
     ASSERT_TRUE(connection.database.is_bound());
     connection.database->CreateObjectStore(kTransactionId, kObjectStoreId,
                                            base::UTF8ToUTF16(kObjectStoreName),
-                                           content::IndexedDBKeyPath(), false);
+                                           blink::IndexedDBKeyPath(), false);
     idb_mojo_factory_->AbortTransactionsAndCompactDatabase(
         origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
                                &callback_result));
@@ -752,7 +751,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
     ASSERT_TRUE(connection.database.is_bound());
     connection.database->CreateObjectStore(kTransactionId, kObjectStoreId,
                                            base::UTF8ToUTF16(kObjectStoreName),
-                                           content::IndexedDBKeyPath(), false);
+                                           blink::IndexedDBKeyPath(), false);
     idb_mojo_factory_->AbortTransactionsForDatabase(
         origin, base::BindOnce(&StatusCallback, std::move(quit_closure),
                                &callback_result));
@@ -886,11 +885,10 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
     ASSERT_TRUE(connection1.database.is_bound());
     connection1.database->CreateObjectStore(kTransactionId1, kObjectStoreId,
                                             base::UTF8ToUTF16(kObjectStoreName),
-                                            content::IndexedDBKeyPath(), false);
+                                            blink::IndexedDBKeyPath(), false);
     connection1.database->CreateIndex(kTransactionId1, kObjectStoreId, kIndexId,
                                       base::UTF8ToUTF16(kIndexName),
-                                      content::IndexedDBKeyPath(), false,
-                                      false);
+                                      blink::IndexedDBKeyPath(), false, false);
     connection1.database->Commit(kTransactionId1);
     loop.Run();
   }
@@ -1061,7 +1059,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
     ASSERT_TRUE(connection1.database.is_bound());
     connection1.database->CreateObjectStore(kTransactionId1, kObjectStoreId,
                                             base::UTF8ToUTF16(kObjectStoreName),
-                                            content::IndexedDBKeyPath(), false);
+                                            blink::IndexedDBKeyPath(), false);
     connection1.database->Put(
         kTransactionId1, kObjectStoreId,
         ::blink::mojom::IDBValue::New(

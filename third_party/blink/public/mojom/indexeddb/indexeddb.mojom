@@ -46,6 +46,17 @@ struct IDBKey {
   IDBKeyData data;
 };
 
+// Represents WebIDBKeyPathTypeString and WebIDBKeyPathTypeArray in a key path.
+union IDBKeyPathData {
+  mojo_base.mojom.String16 string;
+  array<mojo_base.mojom.String16> string_array;
+};
+
+struct IDBKeyPath {
+  // A null value here corresponds to WebIDBKeyPathTypeNull.
+  IDBKeyPathData? data;
+};
+
 enum IDBOperationType {
   Add,
   Put,

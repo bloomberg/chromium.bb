@@ -7,18 +7,10 @@
 
 #include "content/common/indexed_db/indexed_db.mojom.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
 namespace mojo {
-
-template <>
-struct StructTraits<indexed_db::mojom::KeyPathDataView,
-                    content::IndexedDBKeyPath> {
-  static indexed_db::mojom::KeyPathDataPtr data(
-      const content::IndexedDBKeyPath& key_path);
-  static bool Read(indexed_db::mojom::KeyPathDataView data,
-                   content::IndexedDBKeyPath* out);
-};
 
 template <>
 struct StructTraits<indexed_db::mojom::KeyRangeDataView,
@@ -64,7 +56,7 @@ struct StructTraits<indexed_db::mojom::IndexMetadataDataView,
   static base::string16 name(const content::IndexedDBIndexMetadata& metadata) {
     return metadata.name;
   }
-  static const content::IndexedDBKeyPath& key_path(
+  static const blink::IndexedDBKeyPath& key_path(
       const content::IndexedDBIndexMetadata& metadata) {
     return metadata.key_path;
   }
@@ -88,7 +80,7 @@ struct StructTraits<indexed_db::mojom::ObjectStoreMetadataDataView,
       const content::IndexedDBObjectStoreMetadata& metadata) {
     return metadata.name;
   }
-  static const content::IndexedDBKeyPath& key_path(
+  static const blink::IndexedDBKeyPath& key_path(
       const content::IndexedDBObjectStoreMetadata& metadata) {
     return metadata.key_path;
   }

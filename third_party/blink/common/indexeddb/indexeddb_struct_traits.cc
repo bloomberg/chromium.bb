@@ -168,6 +168,61 @@ bool StructTraits<blink::mojom::IDBKeyDataView, blink::IndexedDBKey>::Read(
 }
 
 // static
+blink::mojom::IDBKeyPathDataPtr
+StructTraits<blink::mojom::IDBKeyPathDataView, blink::IndexedDBKeyPath>::data(
+    const blink::IndexedDBKeyPath& key_path) {
+  if (key_path.IsNull())
+    return nullptr;
+
+  auto data = blink::mojom::IDBKeyPathData::New();
+  switch (key_path.type()) {
+    case blink::kWebIDBKeyPathTypeString:
+      data->set_string(key_path.string());
+      return data;
+    case blink::kWebIDBKeyPathTypeArray:
+      data->set_string_array(key_path.array());
+      return data;
+
+    // The following key path types are not used.
+    case blink::kWebIDBKeyPathTypeNull:;  // No-op, fall out of switch block to
+                                          // NOTREACHED().
+  }
+  NOTREACHED();
+  return data;
+}
+
+// static
+bool StructTraits<blink::mojom::IDBKeyPathDataView, blink::IndexedDBKeyPath>::
+    Read(blink::mojom::IDBKeyPathDataView data, blink::IndexedDBKeyPath* out) {
+  blink::mojom::IDBKeyPathDataDataView data_view;
+  data.GetDataDataView(&data_view);
+
+  if (data_view.is_null()) {
+    *out = blink::IndexedDBKeyPath();
+    return true;
+  }
+
+  switch (data_view.tag()) {
+    case blink::mojom::IDBKeyPathDataDataView::Tag::STRING: {
+      base::string16 string;
+      if (!data_view.ReadString(&string))
+        return false;
+      *out = blink::IndexedDBKeyPath(string);
+      return true;
+    }
+    case blink::mojom::IDBKeyPathDataDataView::Tag::STRING_ARRAY: {
+      std::vector<base::string16> array;
+      if (!data_view.ReadStringArray(&array))
+        return false;
+      *out = blink::IndexedDBKeyPath(array);
+      return true;
+    }
+  }
+
+  return false;
+}
+
+// static
 IDBOperationType
 EnumTraits<IDBOperationType, blink::WebIDBOperationType>::ToMojom(
     blink::WebIDBOperationType input) {

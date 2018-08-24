@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/indexed_db/indexed_db_key_path.h"
+#include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 
 using blink::kWebIDBKeyPathTypeArray;
 using blink::kWebIDBKeyPathTypeNull;
@@ -54,4 +54,4 @@ bool IndexedDBKeyPath::operator==(const IndexedDBKeyPath& other) const {
   return false;
 }
 
-}  // namespace content
+}  // namespace blink
