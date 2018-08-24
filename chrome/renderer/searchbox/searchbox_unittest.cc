@@ -77,6 +77,9 @@ bool TranslateIconRestrictedUrl(const GURL& transient_url,
                                 const SearchBox::IconURLHelper& helper,
                                 GURL* url);
 
+// Defined in searchbox.cc
+std::string FixupAndValidateUrl(const std::string& url);
+
 TEST(SearchBoxUtilTest, ParseViewIdAndRestrictedIdSuccess) {
   int view_id = -1;
   InstantRestrictedID rid = -1;
@@ -261,6 +264,57 @@ TEST(SearchBoxUtilTest, TranslateIconRestrictedUrlFailure) {
                      helper, &url))
         << " for test_cases[" << i << "]";
     EXPECT_TRUE(url.is_empty()) << " for test_cases[" << i << "]";
+  }
+}
+
+TEST(SearchBoxUtilTest, FixupAndValidateUrlReturnsEmptyIfInvalid) {
+  struct TestCase {
+    const char* url;
+    bool is_valid;
+  } test_cases[] = {
+      {"   ", false},
+      {"^&*@)^)", false},
+      {"foo", true},
+      {"http://foo", true},
+      {"\thttp://foo", true},
+      {"    http://foo", true},
+      {"https://foo", true},
+      {"foo.com", true},
+      {"http://foo.com", true},
+      {"https://foo.com", true},
+      {"blob://foo", true},
+
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    const std::string& url = FixupAndValidateUrl(test_case.url);
+    EXPECT_EQ(!url.empty(), test_case.is_valid)
+        << " for test_case '" << test_case.url << "'";
+  }
+}
+
+TEST(SearchBoxUtilTest, FixupAndValidateUrlDefaultsToHttps) {
+  struct TestCase {
+    const char* url;
+    const char* expected_scheme;
+  } test_cases[] = {
+      // No scheme.
+      {"foo.com", url::kHttpsScheme},
+      // With "http".
+      {"http://foo.com", url::kHttpScheme},
+      // With "http" and whitespace.
+      {"\thttp://foo", url::kHttpScheme},
+      {"    http://foo", url::kHttpScheme},
+      // With "https".
+      {"https://foo.com", url::kHttpsScheme},
+      // Non "http"/"https".
+      {"blob://foo", url::kBlobScheme},
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    const GURL url(FixupAndValidateUrl(test_case.url));
+    EXPECT_TRUE(url.SchemeIs(test_case.expected_scheme))
+        << " for test case '" << test_case.url << "'";
   }
 }
 

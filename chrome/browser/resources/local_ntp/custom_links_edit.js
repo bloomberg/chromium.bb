@@ -36,17 +36,6 @@ const IDS = {
 
 
 /**
- * Enum for classes.
- * @enum {string}
- * @const
- */
-const CLASSES = {
-  // Applied if the input field has been modified.
-  TEXT_MODIFIED: 'text-modified',
-};
-
-
-/**
  * Enum for key codes.
  * @enum {int}
  * @const
@@ -106,19 +95,6 @@ let deleteLinkTitle = '';
 
 
 /**
- * True if the provided url is valid.
- * @type {string}
- */
-function isValidURL(url) {
-  let a = document.createElement('a');
-  a.href = url;
-  // Invalid URLs will not match the current host.
-  let isValid = a.host && a.host != window.location.host;
-  return isValid;
-}
-
-
-/**
  * Handler for the 'linkData' message from the host page. Pre-populates the url
  * and title fields with link's data obtained using the rid. Called if we are
  * editing an existing link.
@@ -135,7 +111,6 @@ function prepopulateFields(rid) {
   prepopulatedLink.rid = rid;
   $(IDS.TITLE_FIELD).value = prepopulatedLink.title = data.title;
   $(IDS.URL_FIELD).value = prepopulatedLink.url = data.url;
-  $(IDS.URL_FIELD).classList.add(CLASSES.TEXT_MODIFIED);
 
   // Set accessibility names.
   $(IDS.DELETE).setAttribute('aria-label', deleteLinkTitle + ' ' + data.title);
@@ -175,20 +150,25 @@ function showInvalidUrlUntilTextInput() {
  * completed. If the fields were unchanged, does not update the link data.
  */
 function finishEditLink() {
-  // Show error message for invalid urls.
-  if (!isValidURL($(IDS.URL_FIELD).value)) {
-    showInvalidUrlUntilTextInput();
-    disableSubmitUntilTextInput();
-    return;
-  }
-
   let newUrl = '';
   let newTitle = '';
-  if ($(IDS.URL_FIELD).value != prepopulatedLink.url &&
-      $(IDS.URL_FIELD).value != 'https://')
-    newUrl = $(IDS.URL_FIELD).value;
-  if ($(IDS.TITLE_FIELD).value != prepopulatedLink.title)
-    newTitle = $(IDS.TITLE_FIELD).value;
+
+  const urlValue = $(IDS.URL_FIELD).value;
+  if (urlValue != prepopulatedLink.url) {
+    newUrl = chrome.embeddedSearch.newTabPage.fixupAndValidateUrl(urlValue);
+    // Show error message for invalid urls.
+    if (!newUrl) {
+      showInvalidUrlUntilTextInput();
+      disableSubmitUntilTextInput();
+      return;
+    }
+  }
+
+  const titleValue = $(IDS.TITLE_FIELD).value;
+  if (!titleValue)  // Set the URL input as the title if no title is provided.
+    newTitle = urlValue;
+  else if (titleValue != prepopulatedLink.title)
+    newTitle = titleValue;
 
   // Update the link only if a field was changed.
   if (!!newUrl || !!newTitle) {
@@ -219,7 +199,6 @@ function closeDialog() {
   window.setTimeout(() => {
     $(IDS.FORM).reset();
     $(IDS.URL_FIELD_CONTAINER).classList.remove('invalid');
-    $(IDS.URL_FIELD).classList.remove(CLASSES.TEXT_MODIFIED);
     $(IDS.DELETE).disabled = false;
     $(IDS.DONE).disabled = false;
     prepopulatedLink.rid = -1;
@@ -321,10 +300,6 @@ function init() {
       closeDialog();
     }
   };
-  $(IDS.URL_FIELD).addEventListener('input', (event) => {
-    if (!$(IDS.URL_FIELD).classList.contains(CLASSES.TEXT_MODIFIED))
-      $(IDS.URL_FIELD).classList.add(CLASSES.TEXT_MODIFIED);
-  });
   $(IDS.DELETE).addEventListener('click', deleteLink);
   $(IDS.CANCEL).addEventListener('click', closeDialog);
   $(IDS.FORM).addEventListener('submit', (event) => {

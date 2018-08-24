@@ -624,6 +624,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
                                const std::string& title);
   static void UndoCustomLinkAction();
   static void ResetCustomLinks();
+  static std::string FixupAndValidateUrl(const std::string& url);
   static void LogEvent(int event);
   static void LogMostVisitedImpression(
       int position,
@@ -679,6 +680,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
       .SetMethod("undoCustomLinkAction",
                  &NewTabPageBindings::UndoCustomLinkAction)
       .SetMethod("resetCustomLinks", &NewTabPageBindings::ResetCustomLinks)
+      .SetMethod("fixupAndValidateUrl",
+                 &NewTabPageBindings::FixupAndValidateUrl)
       .SetMethod("logEvent", &NewTabPageBindings::LogEvent)
       .SetMethod("logMostVisitedImpression",
                  &NewTabPageBindings::LogMostVisitedImpression)
@@ -884,6 +887,14 @@ void NewTabPageBindings::ResetCustomLinks() {
     return;
   search_box->ResetCustomLinks();
   search_box->LogEvent(NTPLoggingEventType::NTP_CUSTOMIZE_SHORTCUT_RESTORE_ALL);
+}
+
+// static
+std::string NewTabPageBindings::FixupAndValidateUrl(const std::string& url) {
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return std::string();
+  return search_box->FixupAndValidateUrl(url);
 }
 
 // static
