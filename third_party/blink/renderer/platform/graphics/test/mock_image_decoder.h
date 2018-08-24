@@ -111,6 +111,8 @@ class MockImageDecoder : public ImageDecoder {
     client_->MemoryAllocatorSet();
   }
 
+  bool IsForTesting() const override { return true; }
+
  private:
   void DecodeSize() override {}
 

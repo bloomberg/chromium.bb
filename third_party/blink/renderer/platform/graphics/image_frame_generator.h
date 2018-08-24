@@ -128,46 +128,25 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
   void SetHasAlpha(size_t index, bool has_alpha);
 
-  SkBitmap TryToResumeDecode(SegmentReader*,
-                             bool all_data_received,
-                             size_t index,
-                             const SkISize& scaled_size,
-                             SkBitmap::Allocator&,
-                             ImageDecoder::AlphaOption,
-                             ImageDecoder::HighBitDepthDecodingOption);
-  // This method should only be called while decode_mutex_ is locked.
-  // Returns a pointer to frame |index|'s ImageFrame, if available.
-  // Sets |used_external_allocator| to true if the the image was decoded into
-  // |external_allocator|'s memory.
-  ImageFrame* Decode(SegmentReader*,
-                     bool all_data_received,
-                     size_t index,
-                     ImageDecoder**,
-                     SkBitmap::Allocator& external_allocator,
-                     ImageDecoder::AlphaOption,
-                     ImageDecoder::HighBitDepthDecodingOption,
-                     const SkISize& scaled_size,
-                     bool& used_external_allocator);
-
   const SkISize full_size_;
-
   // Parameters used to create internal ImageDecoder objects.
   const ColorBehavior decoder_color_behavior_;
-
   const bool is_multi_frame_;
-  bool decode_failed_;
-  bool yuv_decoding_failed_;
-  size_t frame_count_;
-  Vector<bool> has_alpha_;
-  std::vector<SkISize> supported_sizes_;
+  const std::vector<SkISize> supported_sizes_;
 
-  std::unique_ptr<ImageDecoderFactory> image_decoder_factory_;
-
-  // Prevents multiple decode operations on the same data.
+  // Prevents multiple decode operations on the same data. Used in non-yuv
+  // decoding which supports concurrent decoding from the same generator.
   Mutex decode_mutex_;
 
-  // Protect concurrent access to has_alpha_.
-  Mutex alpha_mutex_;
+  // Prevents concurrent access to all variables below.
+  Mutex generator_mutex_;
+
+  bool decode_failed_ = false;
+  bool yuv_decoding_failed_ = false;
+  size_t frame_count_ = 0u;
+  Vector<bool> has_alpha_;
+
+  std::unique_ptr<ImageDecoderFactory> image_decoder_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageFrameGenerator);
 };
