@@ -290,8 +290,8 @@ class AccountTrackerServiceTest : public testing::Test {
     pref_service_.registry()->RegisterIntegerPref(
         prefs::kAccountIdMigrationState,
         AccountTrackerService::MIGRATION_NOT_STARTED);
-    pref_service_.registry()->RegisterInt64Pref(
-        AccountFetcherService::kLastUpdatePref, 0);
+    pref_service_.registry()->RegisterTimePref(
+        AccountFetcherService::kLastUpdatePref, base::Time());
     signin_client_.reset(new TestSigninClient(&pref_service_));
 
     account_tracker_.reset(new AccountTrackerService());
@@ -893,9 +893,8 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
   // Rewind the time by half a day, which shouldn't be enough to trigger a
   // network refresh.
   base::Time fake_update = base::Time::Now() - base::TimeDelta::FromHours(12);
-  signin_client()->GetPrefs()->SetInt64(
-      AccountFetcherService::kLastUpdatePref,
-      fake_update.ToInternalValue());
+  signin_client()->GetPrefs()->SetTime(AccountFetcherService::kLastUpdatePref,
+                                       fake_update);
 
   // Instantiate a new ATS, making sure the persisted accounts are still there
   // and that no network fetches happen.
@@ -920,9 +919,8 @@ TEST_F(AccountTrackerServiceTest, TimerRefresh) {
 
   // Rewind the last updated time enough to trigger a network refresh.
   fake_update = base::Time::Now() - base::TimeDelta::FromHours(25);
-  signin_client()->GetPrefs()->SetInt64(
-      AccountFetcherService::kLastUpdatePref,
-      fake_update.ToInternalValue());
+  signin_client()->GetPrefs()->SetTime(AccountFetcherService::kLastUpdatePref,
+                                       fake_update);
 
   // Instantiate a new tracker and validate that even though the AccountInfos
   // are still valid, the network fetches are started.
