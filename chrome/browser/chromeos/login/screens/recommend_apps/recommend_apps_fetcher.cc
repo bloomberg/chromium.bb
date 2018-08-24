@@ -38,7 +38,7 @@ namespace chromeos {
 namespace {
 
 constexpr const char kGetAppListUrl[] =
-    "http://android.clients.google.com/fdfe/chrome/getfastreinstallappslist";
+    "https://android.clients.google.com/fdfe/chrome/getfastreinstallappslist";
 
 constexpr base::TimeDelta kDownloadTimeOut = base::TimeDelta::FromMinutes(1);
 
