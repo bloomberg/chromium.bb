@@ -1451,6 +1451,20 @@
       },
       {
         "args": [
+          "--enable-features=Mash",
+          "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.fyi.browser_tests.filter"
+        ],
+        "name": "mash_fyi_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 1800,
+          "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--enable-features=VizDisplayCompositor"
         ],
         "name": "viz_browser_tests",
@@ -1479,9 +1493,9 @@
       },
       {
         "args": [
-          "--enable-features=SingleProcessMash"
+          "--enable-features=Mash"
         ],
-        "name": "single_process_mash_content_unittests",
+        "name": "mash_fyi_content_unittests",
         "swarming": {
           "can_use_on_swarming_builders": true
         },
