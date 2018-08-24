@@ -68,7 +68,6 @@ class ChromeCryptAuthService
 
   void OnAuthenticationStateChanged();
   void PerformEnrollmentAndDeviceSyncIfPossible();
-  bool IsEnrollmentAllowedByPolicy();
   void OnPrefsChanged();
 
   std::unique_ptr<cryptauth::CryptAuthClientFactory> client_factory_;

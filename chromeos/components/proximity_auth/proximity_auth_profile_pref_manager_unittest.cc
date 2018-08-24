@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_auth_pref_names.h"
+#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -38,6 +39,7 @@ class ProximityAuthProfilePrefManagerTest : public testing::Test {
 
   void SetUp() override {
     ProximityAuthProfilePrefManager::RegisterPrefs(pref_service_.registry());
+    chromeos::multidevice_setup::RegisterFeaturePrefs(pref_service_.registry());
   }
 
   sync_preferences::TestingPrefServiceSyncable pref_service_;
@@ -51,13 +53,14 @@ TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockAllowed) {
   EXPECT_TRUE(pref_manager.IsEasyUnlockAllowed());
 
   // Simulating setting kEasyUnlockAllowed pref through enterprise policy.
-  pref_service_.SetBoolean(prefs::kEasyUnlockAllowed, false);
+  pref_service_.SetBoolean(
+      chromeos::multidevice_setup::kSmartLockAllowedPrefName, false);
   EXPECT_FALSE(pref_manager.IsEasyUnlockAllowed());
 }
 
 TEST_F(ProximityAuthProfilePrefManagerTest, IsEasyUnlockEnabled) {
   ProximityAuthProfilePrefManager pref_manager(&pref_service_);
-  EXPECT_FALSE(pref_manager.IsEasyUnlockEnabled());
+  EXPECT_TRUE(pref_manager.IsEasyUnlockEnabled());
 
   pref_manager.SetIsEasyUnlockEnabled(true);
   EXPECT_TRUE(pref_manager.IsEasyUnlockEnabled());
@@ -135,7 +138,8 @@ TEST_F(ProximityAuthProfilePrefManagerTest, SyncsToLocalPrefOnChange) {
   // Test changing the kEasyUnlockAllowed pref value directly (e.g. through
   // enterprise policy).
   EXPECT_TRUE(local_pref_manager.IsEasyUnlockAllowed());
-  pref_service_.SetBoolean(prefs::kEasyUnlockAllowed, false);
+  pref_service_.SetBoolean(
+      chromeos::multidevice_setup::kSmartLockAllowedPrefName, false);
   EXPECT_FALSE(profile_pref_manager.IsEasyUnlockAllowed());
   EXPECT_FALSE(local_pref_manager.IsEasyUnlockAllowed());
 }

@@ -175,10 +175,9 @@ TetherService::TetherService(
   }
 
   registrar_.Init(profile_->GetPrefs());
-  registrar_.Add(
-      chromeos::multidevice_setup::kInstantTetheringFeatureAllowedPrefName,
-      base::BindRepeating(&TetherService::OnPrefsChanged,
-                          weak_ptr_factory_.GetWeakPtr()));
+  registrar_.Add(chromeos::multidevice_setup::kInstantTetheringAllowedPrefName,
+                 base::BindRepeating(&TetherService::OnPrefsChanged,
+                                     weak_ptr_factory_.GetWeakPtr()));
 
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnStartup",
                         IsEnabledByPreference());
@@ -394,7 +393,7 @@ void TetherService::UpdateEnabledState() {
 
   if (is_enabled != was_pref_enabled) {
     profile_->GetPrefs()->SetBoolean(
-        chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName,
+        chromeos::multidevice_setup::kInstantTetheringEnabledPrefName,
         is_enabled);
     UMA_HISTOGRAM_BOOLEAN("InstantTethering.UserPreference.OnToggle",
                           is_enabled);
@@ -611,12 +610,12 @@ bool TetherService::IsCellularAvailableButNotEnabled() const {
 
 bool TetherService::IsAllowedByPolicy() const {
   return profile_->GetPrefs()->GetBoolean(
-      chromeos::multidevice_setup::kInstantTetheringFeatureAllowedPrefName);
+      chromeos::multidevice_setup::kInstantTetheringAllowedPrefName);
 }
 
 bool TetherService::IsEnabledByPreference() const {
   return profile_->GetPrefs()->GetBoolean(
-      chromeos::multidevice_setup::kInstantTetheringFeatureEnabledPrefName);
+      chromeos::multidevice_setup::kInstantTetheringEnabledPrefName);
 }
 
 TetherService::TetherFeatureState TetherService::GetTetherFeatureState() {

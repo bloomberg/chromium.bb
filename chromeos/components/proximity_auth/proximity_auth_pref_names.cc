@@ -7,14 +7,6 @@
 namespace proximity_auth {
 namespace prefs {
 
-// Whether a user is allowed to use Easy Unlock. This pref is expected to be set
-// through an enterprise policy.
-const char kEasyUnlockAllowed[] = "easy_unlock.allowed";
-
-// Whether or not EasyUnlock has been enabled by the user (i.e. they went
-// through the setup flow and there is at least one unlock key).
-const char kEasyUnlockEnabled[] = "easy_unlock.enabled";
-
 // Whether or not the state of EasyUnlock has actively been changed, e.g.,
 // explicitly enabled by the user (through setup) or disabled via Settings.
 const char kEasyUnlockEnabledStateSet[] = "easy_unlock.enabled_state_set";

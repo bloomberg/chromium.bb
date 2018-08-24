@@ -24,13 +24,12 @@ namespace device_sync {
 
 namespace {
 
+// CryptAuth enrollment is allowed only if at least one multi-device feature is
+// enabled. This ensures that we do not unnecessarily register devices on the
+// CryptAuth back-end when the registration would never actually be used.
 bool IsEnrollmentAllowedByPolicy(content::BrowserContext* context) {
-  // We allow CryptAuth enrollments if at least one of the features which
-  // depends on CryptAuth is enabled by enterprise policy.
-  PrefService* pref_service = Profile::FromBrowserContext(context)->GetPrefs();
-  return pref_service->GetBoolean(prefs::kEasyUnlockAllowed) ||
-         pref_service->GetBoolean(
-             multidevice_setup::kInstantTetheringFeatureAllowedPrefName);
+  return multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
+      Profile::FromBrowserContext(context)->GetPrefs());
 }
 
 }  // namespace
