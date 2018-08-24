@@ -58,9 +58,9 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       return;
     }
 
-    const auto return_code = ConvertDeviceResponseCodeToFidoReturnCode(
-        device_response_code, response_data.has_value(),
-        authenticator->AuthenticatorTransport());
+    base::Optional<FidoReturnCode> return_code =
+        ConvertDeviceResponseCodeToFidoReturnCode(device_response_code,
+                                                  response_data.has_value());
 
     // Any authenticator response codes that do not result from user consent
     // imply that the authenticator should be dropped and that other on-going
@@ -82,8 +82,7 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
   static base::Optional<FidoReturnCode>
   ConvertDeviceResponseCodeToFidoReturnCode(
       CtapDeviceResponseCode device_response_code,
-      bool response_has_value,
-      FidoTransportProtocol transport) {
+      bool response_has_value) {
     switch (device_response_code) {
       case CtapDeviceResponseCode::kSuccess:
         return response_has_value
@@ -97,21 +96,11 @@ class FidoRequestHandler : public FidoRequestHandlerBase {
       case CtapDeviceResponseCode::kCtap2ErrNoCredentials:
         return FidoReturnCode::kUserConsentButCredentialNotRecognized;
 
-      // The user explicitly denied the operation.
+      // The user explicitly denied the operation. Touch ID returns this error
+      // when the user cancels the macOS prompt. External authenticators may
+      // return it e.g. after the user fails fingerprint verification.
       case CtapDeviceResponseCode::kCtap2ErrOperationDenied:
-        // TODO(crbug/875982): Clarify if |CTAP2_ERR_OPERATION_DENIED| is "a
-        // status indicating that the user cancelled the operation" in the
-        // spirit of https://www.w3.org/TR/webauthn/, sections 5.1.3 and
-        // 5.1.4.. The CTAP2 spec also uses it for authenticator-chosen
-        // timeouts, so it is a little unclear.
-        //
-        // For Touch ID, we know it means that the operation failed during (or
-        // after) user verification, so we do the translation the internal
-        // transport only.
-        return transport == FidoTransportProtocol::kInternal
-                   ? base::make_optional<FidoReturnCode>(
-                         FidoReturnCode::kUserConsentDenied)
-                   : base::nullopt;
+        return FidoReturnCode::kUserConsentDenied;
 
       // This error is returned by some authenticators (e.g. the "Yubico FIDO
       // 2" CTAP2 USB keys) during GetAssertion **before the user interacted

@@ -431,10 +431,8 @@ TEST_F(FidoRequestHandlerTest,
   EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }
 
-// Like |TestRequestWithOperationDeniedErrorInternalTransport|, but the
-// CTAP2_ERR_OPERATION_DENIED error is returned by a device with
-// cross-platform transport. The operation should not be cancelled (see
-// https://crbug/875982).
+// Like |TestRequestWithOperationDeniedErrorInternalTransport|, but with a
+// cross-platform authenticator.
 TEST_F(FidoRequestHandlerTest,
        TestRequestWithOperationDeniedErrorCrossPlatform) {
   auto request_handler = CreateFakeHandler();
@@ -446,21 +444,17 @@ TEST_F(FidoRequestHandlerTest,
   device0->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
                                        CreateFakeOperationDeniedError());
 
-  // Pending device will *NOT* be cancelled and can send a success reply
-  // eventually.
   auto device1 = MockFidoDevice::MakeCtapWithGetInfoExpectation();
-  device1->ExpectRequestAndRespondWith(std::vector<uint8_t>(),
-                                       CreateFakeSuccessDeviceResponse(),
-                                       base::TimeDelta::FromMicroseconds(10));
+  device1->ExpectRequestAndDoNotRespond(std::vector<uint8_t>());
+  EXPECT_CALL(*device1, Cancel());
 
   discovery()->AddDevice(std::move(device0));
   discovery()->AddDevice(std::move(device1));
 
-  // The request will stay pending, the reply has not triggered the callback.
   scoped_task_environment_.FastForwardUntilNoTasksRemain();
   callback().WaitForCallback();
   EXPECT_TRUE(request_handler->is_complete());
-  EXPECT_EQ(FidoReturnCode::kSuccess, callback().status());
+  EXPECT_EQ(FidoReturnCode::kUserConsentDenied, callback().status());
 }
 
 // Requests should be dispatched to the authenticator passed to
