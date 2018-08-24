@@ -79,6 +79,10 @@ void AssistantScriptExecutor::FillCardForm(
                                                        std::move(callback));
 }
 
+ClientMemory* AssistantScriptExecutor::GetClientMemory() {
+  return delegate_->GetClientMemory();
+}
+
 void AssistantScriptExecutor::OnGetAssistantActions(
     bool result,
     const std::string& response) {

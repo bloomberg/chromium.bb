@@ -10,6 +10,7 @@ namespace autofill_assistant {
 class AssistantService;
 class AssistantUiController;
 class AssistantWebController;
+struct ClientMemory;
 
 class AssistantScriptExecutorDelegate {
  public:
@@ -18,6 +19,8 @@ class AssistantScriptExecutorDelegate {
   virtual AssistantUiController* GetAssistantUiController() = 0;
 
   virtual AssistantWebController* GetAssistantWebController() = 0;
+
+  virtual ClientMemory* GetClientMemory() = 0;
 
  protected:
   virtual ~AssistantScriptExecutorDelegate() {}

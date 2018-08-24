@@ -6,6 +6,7 @@
 
 #include "base/test/mock_callback.h"
 #include "components/autofill_assistant/browser/assistant_service.h"
+#include "components/autofill_assistant/browser/client_memory.h"
 #include "components/autofill_assistant/browser/mock_assistant_service.h"
 #include "components/autofill_assistant/browser/mock_assistant_ui_controller.h"
 #include "components/autofill_assistant/browser/mock_assistant_web_controller.h"
@@ -53,6 +54,8 @@ class AssistantScriptExecutorTest : public testing::Test,
     return &mock_assistant_web_controller_;
   }
 
+  ClientMemory* GetClientMemory() override { return &memory_; }
+
   std::string Serialize(const google::protobuf::MessageLite& message) {
     std::string output;
     message.SerializeToString(&output);
@@ -60,6 +63,7 @@ class AssistantScriptExecutorTest : public testing::Test,
   }
 
   AssistantScript script_;
+  ClientMemory memory_;
   StrictMock<MockAssistantService> mock_assistant_service_;
   NiceMock<MockAssistantWebController> mock_assistant_web_controller_;
   NiceMock<MockAssistantUiController> mock_assistant_ui_controller_;

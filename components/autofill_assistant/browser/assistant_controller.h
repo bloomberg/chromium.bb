@@ -11,6 +11,7 @@
 #include "components/autofill_assistant/browser/assistant_ui_controller.h"
 #include "components/autofill_assistant/browser/assistant_ui_delegate.h"
 #include "components/autofill_assistant/browser/assistant_web_controller.h"
+#include "components/autofill_assistant/browser/client_memory.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -34,6 +35,7 @@ class AssistantController : public AssistantScriptExecutorDelegate,
   AssistantService* GetAssistantService() override;
   AssistantUiController* GetAssistantUiController() override;
   AssistantWebController* GetAssistantWebController() override;
+  ClientMemory* GetClientMemory() override;
 
  private:
   AssistantController(content::WebContents* web_contents,
@@ -57,6 +59,7 @@ class AssistantController : public AssistantScriptExecutorDelegate,
   std::unique_ptr<AssistantService> assistant_service_;
   std::map<AssistantScript*, std::unique_ptr<AssistantScript>>
       assistant_scripts_;
+  ClientMemory memory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantController);
 };

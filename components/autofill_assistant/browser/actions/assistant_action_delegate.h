@@ -11,6 +11,8 @@
 #include "base/callback_forward.h"
 
 namespace autofill_assistant {
+struct ClientMemory;
+
 // Assistant action delegate called when processing assistant actions.
 class AssistantActionDelegate {
  public:
@@ -50,6 +52,9 @@ class AssistantActionDelegate {
   virtual void FillCardForm(const std::string& guid,
                             const std::vector<std::string>& selectors,
                             base::OnceCallback<void(bool)> callback) = 0;
+
+  // Return the current ClientMemory.
+  virtual ClientMemory* GetClientMemory() = 0;
 
  protected:
   AssistantActionDelegate() = default;

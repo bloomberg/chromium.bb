@@ -28,6 +28,10 @@ AssistantWebController* AssistantController::GetAssistantWebController() {
   return assistant_web_controller_.get();
 }
 
+ClientMemory* AssistantController::GetClientMemory() {
+  return &memory_;
+}
+
 AssistantController::AssistantController(
     content::WebContents* web_contents,
     std::unique_ptr<AssistantUiController> ui_controller)

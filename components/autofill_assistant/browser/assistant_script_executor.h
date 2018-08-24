@@ -47,6 +47,7 @@ class AssistantScriptExecutor : public AssistantActionDelegate {
   void FillCardForm(const std::string& guid,
                     const std::vector<std::string>& selectors,
                     base::OnceCallback<void(bool)> callback) override;
+  ClientMemory* GetClientMemory() override;
 
  private:
   void OnGetAssistantActions(bool result, const std::string& response);
