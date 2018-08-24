@@ -3,6 +3,6 @@
 -dontwarn org.junit.**
 -dontwarn org.hamcrest.**
 
--keepname,allowoptimization public class junit.framework.** {
+-keepnames,allowoptimization public class junit.framework.** {
     *;
 }
