@@ -169,6 +169,13 @@ customBackgrounds.selectedTile = null;
  */
 customBackgrounds.dialogCollectionsSource = customBackgrounds.SOURCES.NONE;
 
+/*
+ * Called when the error notification should be shown.
+ * @type {?Function}
+ * @private
+ */
+customBackgrounds.showErrorNotification;
+
 /**
  * Alias for document.getElementById.
  * @param {string} id The ID of the element to find.
@@ -785,8 +792,10 @@ customBackgrounds.networkStateChanged = function(online) {
 /**
  * Initialize the settings menu, custom backgrounds dialogs, and custom links
  * menu items. Set the text and event handlers for the various elements.
+ * @param {?Function} showErrorNotification Called when the error notification
+ *                    should be displayed
  */
-customBackgrounds.init = function() {
+customBackgrounds.init = function(showErrorNotification) {
   ntpApiHandle = window.chrome.embeddedSearch.newTabPage;
   let editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
   let menu = $(customBackgrounds.IDS.MENU);
@@ -873,7 +882,7 @@ customBackgrounds.init = function() {
   if (configData.isCustomLinksEnabled)
     customBackgrounds.initCustomLinksItems();
   if (configData.isCustomBackgroundsEnabled)
-    customBackgrounds.initCustomBackgrounds();
+    customBackgrounds.initCustomBackgrounds(showErrorNotification);
 };
 
 /**
@@ -921,8 +930,12 @@ customBackgrounds.initCustomLinksItems = function() {
 /**
  * Initialize the settings menu and custom backgrounds dialogs. Set the
  * text and event handlers for the various elements.
+ * @param {?Function} showErrorNotification Called when the error notification
+ *                    should be displayed
  */
-customBackgrounds.initCustomBackgrounds = function() {
+customBackgrounds.initCustomBackgrounds = function(showErrorNotification) {
+  customBackgrounds.showErrorNotification = showErrorNotification;
+
   var editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
   var menu = $(customBackgrounds.IDS.MENU);
 
@@ -1158,73 +1171,33 @@ customBackgrounds.initCustomBackgrounds = function() {
   };
 };
 
-customBackgrounds.hideMessageBox = function() {
-  let message = $(customBackgrounds.IDS.MSG_BOX_CONTAINER);
-  if (!message.classList.contains(customBackgrounds.CLASSES.FLOAT_UP)) {
-    return;
-  }
-  window.clearTimeout(customBackgrounds.delayedHideNotification);
-  message.classList.remove(customBackgrounds.CLASSES.FLOAT_UP);
-
-  let afterHide = (event) => {
-    if (event.propertyName == 'bottom') {
-      $(IDS.MSG_BOX).classList.add(customBackgrounds.CLASSES.HIDE_MSG_BOX);
-      $(IDS.MSG_BOX).classList.remove(customBackgrounds.CLASSES.HAS_LINK);
-      notification.removeEventListener('transitionend', afterHide);
-    }
-  };
-};
-
-customBackgrounds.showMessageBox = function() {
-  $(customBackgrounds.IDS.MSG_BOX_CONTAINER)
-      .classList.remove(customBackgrounds.CLASSES.HIDE_MSG_BOX);
-  // Timeout is required for the "float up" transition to work. Modifying the
-  // "display" property prevents transitions from activating.
-  window.setTimeout(() => {
-    $(customBackgrounds.IDS.MSG_BOX_CONTAINER)
-        .classList.add(customBackgrounds.CLASSES.FLOAT_UP);
-  }, 20);
-
-  // Automatically hide the notification after a period of time.
-  customBackgrounds.delayedHideNotification = window.setTimeout(() => {
-    customBackgrounds.hideMessageBox();
-  }, customBackgrounds.NOTIFICATION_TIMEOUT);
-};
-
 customBackgrounds.handleError = function(errors) {
-  var msgBox = $(customBackgrounds.IDS.MSG_BOX_MSG);
-  var msgBoxLink = $(customBackgrounds.IDS.MSG_BOX_LINK);
   var unavailableString = configData.translatedStrings.backgroundsUnavailable;
 
   if (errors != 'undefined') {
     // Network errors.
     if (errors.net_error) {
       if (errors.net_error_no != 0) {
-        msgBox.textContent = configData.translatedStrings.connectionError;
-        msgBoxLink.textContent = configData.translatedStrings.moreInfo;
-        msgBoxLink.classList.add(customBackgrounds.CLASSES.HAS_LINK);
-        msgBoxLink.onclick = function() {
+        let onClick = () => {
           window.open(
               'https://chrome://network-error/' + errors.net_error_no,
               '_blank');
         };
+        customBackgrounds.showErrorNotification(
+            configData.translatedStrings.connectionError,
+            configData.translatedStrings.moreInfo, onClick);
       } else {
-        msgBox.textContent =
-            configData.translatedStrings.connectionErrorNoPeriod;
+        customBackgrounds.showErrorNotification(
+            configData.translatedStrings.connectionErrorNoPeriod);
       }
-      customBackgrounds.showMessageBox();
-      // Auth errors (Google Photos only).
-    } else if (errors.auth_error) {
+    } else if (errors.auth_error) {  // Auth errors (Google Photos only).
       window.open('https://photos.google.com/login', '_blank');
-      // Service errors.
-    } else if (errors.service_error) {
-      msgBox.textContent = unavailableString;
-      customBackgrounds.showMessageBox();
+    } else if (errors.service_error) {  // Service errors.
+      customBackgrounds.showErrorNotification(unavailableString);
     }
     return;
   }
 
   // Generic error when we can't tell what went wrong.
-  msgBox.textContent = unavailableString;
-  customBackgrounds.showMessageBox();
+  customBackgrounds.showErrorNotification(unavailableString);
 };

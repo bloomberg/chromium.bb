@@ -105,8 +105,10 @@ var CLASSES = {
   RIPPLE_EFFECT: 'ripple-effect',
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
+  // Applies a different style to the error notification if a link is present.
+  HAS_LINK: 'has-link',
   HIDE_FAKEBOX: 'hide-fakebox',
-  HIDE_NOTIFICATION: 'mv-notice-hide',
+  HIDE_NOTIFICATION: 'notice-hide',
   INITED: 'inited',  // Reveals the <body> once init() is done.
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
   MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
@@ -130,6 +132,10 @@ var IDS = {
   ATTRIBUTION_TEXT: 'attribution-text',
   CUSTOM_LINKS_EDIT_IFRAME: 'custom-links-edit',
   CUSTOM_LINKS_EDIT_IFRAME_DIALOG: 'custom-links-edit-dialog',
+  ERROR_NOTIFICATION: 'error-notice',
+  ERROR_NOTIFICATION_CONTAINER: 'error-notice-container',
+  ERROR_NOTIFICATION_LINK: 'error-notice-link',
+  ERROR_NOTIFICATION_MSG: 'error-notice-msg',
   FAKEBOX: 'fakebox',
   FAKEBOX_INPUT: 'fakebox-input',
   FAKEBOX_TEXT: 'fakebox-text',
@@ -264,11 +270,11 @@ var lastBlacklistedTile = null;
 
 
 /**
- * The timeout id for automatically hiding the Most Visited notification.
- * Invalid ids will silently do nothing.
- * @type {number}
+ * The timeout function for automatically hiding the pop-up notification. Only
+ * set if a notification is visible.
+ * @type {?Object}
  */
-let delayedHideNotification = -1;
+let delayedHideNotification;
 
 
 /**
@@ -276,6 +282,26 @@ let delayedHideNotification = -1;
  * @type {Object}
  */
 var ntpApiHandle;
+
+
+/**
+ * Returns a timeout that can be executed early.
+ * @param {!Function} timeout The timeout function.
+ * @param {number} delay The timeout delay.
+ * @return {Object}
+ */
+function createExecutableTimeout(timeout, delay) {
+  let timeoutId = window.setTimeout(timeout, delay);
+  return {
+    clear: () => {
+      window.clearTimeout(timeoutId);
+    },
+    trigger: () => {
+      window.clearTimeout(timeoutId);
+      return timeout();
+    }
+  };
+}
 
 
 /**
@@ -598,25 +624,15 @@ function onDeleteCustomLinkDone(success) {
 
 
 /**
- * Shows the pop-up notification and triggers a delay to hide it. The message
- * will be set to |msg|.
+ * Shows the Most Visited pop-up notification and triggers a delay to hide it.
+ * The message will be set to |msg|.
  * @param {string} msg The notification message.
  */
 function showNotification(msg) {
   $(IDS.NOTIFICATION_MESSAGE).textContent = msg;
 
   if (configData.isMDIconsEnabled) {
-    $(IDS.NOTIFICATION).classList.remove(CLASSES.HIDE_NOTIFICATION);
-    // Timeout is required for the "float up" transition to work. Modifying the
-    // "display" property prevents transitions from activating.
-    window.setTimeout(() => {
-      $(IDS.NOTIFICATION_CONTAINER).classList.add(CLASSES.FLOAT_UP);
-    }, 20);
-
-    // Automatically hide the notification after a period of time.
-    delayedHideNotification = window.setTimeout(() => {
-      hideNotification();
-    }, NOTIFICATION_TIMEOUT);
+    floatUpNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   } else {
     var notification = $(IDS.NOTIFICATION);
     notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
@@ -628,29 +644,97 @@ function showNotification(msg) {
 
 
 /**
- * Hides the pop-up notification.
+ * Hides the Most Visited pop-up notification.
  */
 function hideNotification() {
   if (configData.isMDIconsEnabled) {
-    let notification = $(IDS.NOTIFICATION_CONTAINER);
-    if (!notification.classList.contains(CLASSES.FLOAT_UP)) {
-      return;
-    }
-    window.clearTimeout(delayedHideNotification);
-    notification.classList.remove(CLASSES.FLOAT_UP);
-
-    let afterHide = (event) => {
-      if (event.propertyName == 'bottom') {
-        $(IDS.NOTIFICATION).classList.add(CLASSES.HIDE_NOTIFICATION);
-        notification.removeEventListener('transitionend', afterHide);
-      }
-    };
-    notification.addEventListener('transitionend', afterHide);
+    floatDownNotification($(IDS.NOTIFICATION), $(IDS.NOTIFICATION_CONTAINER));
   } else {
     var notification = $(IDS.NOTIFICATION);
     notification.classList.add(CLASSES.HIDE_NOTIFICATION);
     notification.classList.remove(CLASSES.DELAYED_HIDE_NOTIFICATION);
   }
+}
+
+
+/**
+ * Shows the error pop-up notification and triggers a delay to hide it. The
+ * message will be set to |msg|. If |linkName| and |linkOnClick| are present,
+ * shows an error link with text set to |linkName| and onclick handled by
+ * |linkOnClick|.
+ * @param {string} msg The notification message.
+ * @param {?string} linkName The error link text.
+ * @param {?Function} linkOnClick The error link onclick handler.
+ */
+function showErrorNotification(msg, linkName, linkOnClick) {
+  let notification = $(IDS.ERROR_NOTIFICATION);
+  $(IDS.ERROR_NOTIFICATION_MSG).textContent = msg;
+  if (linkName && linkOnClick) {
+    let notificationLink = $(IDS.ERROR_NOTIFICATION_LINK);
+    notificationLink.textContent = linkName;
+    notificationLink.onclick = linkOnClick;
+    notification.classList.add(CLASSES.HAS_LINK);
+  } else {
+    notification.classList.remove(CLASSES.HAS_LINK);
+  }
+  floatUpNotification(notification, $(IDS.ERROR_NOTIFICATION_CONTAINER));
+}
+
+
+/**
+ * Animates the specified notification to float up. Automatically hides any
+ * pre-existing notification and sets a delayed timer to hide the new
+ * notification.
+ * @param {!Element} notification The notification element.
+ * @param {!Element} notificationContainer The notification container element.
+ */
+function floatUpNotification(notification, notificationContainer) {
+  // Hide any pre-existing notification.
+  if (delayedHideNotification) {
+    delayedHideNotification.trigger();
+    delayedHideNotification = null;
+  }
+
+  notification.classList.remove(CLASSES.HIDE_NOTIFICATION);
+  // Timeout is required for the "float up" transition to work. Modifying the
+  // "display" property prevents transitions from activating.
+  window.setTimeout(() => {
+    notificationContainer.classList.add(CLASSES.FLOAT_UP);
+  }, 20);
+
+  // Automatically hide the notification after a period of time.
+  delayedHideNotification = createExecutableTimeout(() => {
+    floatDownNotification(notification, notificationContainer);
+  }, NOTIFICATION_TIMEOUT);
+}
+
+
+/**
+ * Animates the pop-up notification to float down, and clears the timeout to
+ * hide the notification.
+ * @param {!Element} notification The notification element.
+ * @param {!Element} notificationContainer The notification container element.
+ */
+function floatDownNotification(notification, notificationContainer) {
+  if (!notificationContainer.classList.contains(CLASSES.FLOAT_UP))
+    return;
+
+  // Clear the timeout to hide the notification.
+  if (delayedHideNotification) {
+    delayedHideNotification.clear();
+    delayedHideNotification = null;
+  }
+
+  // Reset notification visibility once the animation is complete.
+  notificationContainer.classList.remove(CLASSES.FLOAT_UP);
+  let afterHide = (event) => {
+    if (event.propertyName == 'bottom') {
+      notification.classList.add(CLASSES.HIDE_NOTIFICATION);
+      notification.classList.remove(CLASSES.HAS_LINK);
+      notificationContainer.removeEventListener('transitionend', afterHide);
+    }
+  };
+  notification.addEventListener('transitionend', afterHide);
 }
 
 
@@ -990,7 +1074,7 @@ function init() {
 
     if (configData.isCustomBackgroundsEnabled ||
         configData.isCustomLinksEnabled) {
-      customBackgrounds.init();
+      customBackgrounds.init(showErrorNotification);
     }
 
 
