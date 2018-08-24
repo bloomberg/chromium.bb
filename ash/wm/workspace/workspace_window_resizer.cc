@@ -65,7 +65,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
 
   if (Shell::Get()
           ->tablet_mode_controller()
-          ->IsTabletModeWindowManagerEnabled()) {
+          ->IsTabletModeWindowManagerEnabled() &&
+      !window_state->IsPip()) {
     // We still don't allow any dragging or resizing happening on the area other
     // then caption area.
     if (window_component != HTCAPTION)

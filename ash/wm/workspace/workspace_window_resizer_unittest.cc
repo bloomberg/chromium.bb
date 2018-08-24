@@ -11,6 +11,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/window_factory.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -1882,6 +1883,30 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
 }
 
 TEST_F(WorkspaceWindowResizerTest, PipCanBeResized) {
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
+  aura::Window* container =
+      Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
+  std::unique_ptr<aura::Window> window(
+      aura::test::CreateTestWindowWithId(0, container));
+  window->SetBounds(gfx::Rect(20, 30, 50, 60));
+  window->Show();
+
+  auto* fake_state = new FakeWindowState(mojom::WindowStateType::PIP);
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->SetStateObject(
+      std::unique_ptr<wm::WindowState::State>(fake_state));
+
+  std::unique_ptr<WindowResizer> resizer(
+      CreateResizerForTest(window.get(), gfx::Point(), HTRIGHT));
+  ASSERT_TRUE(resizer.get());
+  resizer->Drag(CalculateDragPoint(*resizer, 50, 0), 0);
+  resizer->CompleteDrag();
+  EXPECT_EQ("20,30 100x60", fake_state->last_bounds().ToString());
+}
+
+TEST_F(WorkspaceWindowResizerTest, PipCanBeResizedInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   aura::Window* container =
       Shell::GetContainer(root_window, kShellWindowId_AlwaysOnTopContainer);
