@@ -6,12 +6,25 @@
 
 #include "content/browser/media/session/audio_focus_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 namespace content {
 
 using AudioFocusType = media_session::mojom::AudioFocusType;
+
+namespace {
+
+media_session::mojom::MediaSessionPtr GetSessionMojoPtr(
+    MediaSessionImpl* session) {
+  media_session::mojom::MediaSessionPtr media_session_ptr;
+  session->BindToMojoRequest(mojo::MakeRequest(&media_session_ptr));
+  return media_session_ptr;
+}
+
+}  // namespace
 
 // static
 AudioFocusManager* AudioFocusManager::GetInstance() {
@@ -55,8 +68,11 @@ void AudioFocusManager::RequestAudioFocus(MediaSessionImpl* media_session,
   audio_focus_stack_.back()->StopDucking();
 
   // Notify observers that we were gained audio focus.
-  for (AudioFocusObserver* observer : audio_focus_observers_)
-    observer->OnFocusGained(media_session, type);
+  observers_.ForAllPtrs(
+      [media_session,
+       type](media_session::mojom::AudioFocusObserver* observer) {
+        observer->OnFocusGained(GetSessionMojoPtr(media_session), type);
+      });
 }
 
 void AudioFocusManager::AbandonAudioFocus(MediaSessionImpl* media_session) {
@@ -71,8 +87,10 @@ void AudioFocusManager::AbandonAudioFocus(MediaSessionImpl* media_session) {
   audio_focus_stack_.pop_back();
   if (audio_focus_stack_.empty()) {
     // Notify observers that we lost audio focus.
-    for (AudioFocusObserver* observer : audio_focus_observers_)
-      observer->OnFocusLost(media_session);
+    observers_.ForAllPtrs(
+        [media_session](media_session::mojom::AudioFocusObserver* observer) {
+          observer->OnFocusLost(GetSessionMojoPtr(media_session));
+        });
     return;
   }
 
@@ -96,19 +114,35 @@ void AudioFocusManager::AbandonAudioFocus(MediaSessionImpl* media_session) {
   audio_focus_stack_.back()->StopDucking();
 
   // Notify observers that we lost audio focus.
-  for (AudioFocusObserver* observer : audio_focus_observers_)
-    observer->OnFocusLost(media_session);
+  observers_.ForAllPtrs(
+      [media_session](media_session::mojom::AudioFocusObserver* observer) {
+        observer->OnFocusLost(GetSessionMojoPtr(media_session));
+      });
 }
 
-void AudioFocusManager::AddObserver(AudioFocusObserver* observer) {
-  audio_focus_observers_.push_back(observer);
+mojo::InterfacePtrSetElementId AudioFocusManager::AddObserver(
+    media_session::mojom::AudioFocusObserverPtr observer) {
+  return observers_.AddPtr(std::move(observer));
 }
 
-void AudioFocusManager::RemoveObserver(AudioFocusObserver* observer) {
-  audio_focus_observers_.remove(observer);
+void AudioFocusManager::RemoveObserver(mojo::InterfacePtrSetElementId id) {
+  observers_.RemovePtr(id);
 }
 
-AudioFocusManager::AudioFocusManager() = default;
+void AudioFocusManager::ResetForTesting() {
+  audio_focus_stack_.clear();
+  observers_.CloseAll();
+}
+
+void AudioFocusManager::FlushForTesting() {
+  observers_.FlushForTesting();
+}
+
+AudioFocusManager::AudioFocusManager() {
+  // Make sure we start AudioFocusManager on the browser UI thread. This is to
+  // ensure thread consistency for mojo::InterfaceSetPtr.
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 AudioFocusManager::~AudioFocusManager() = default;
 

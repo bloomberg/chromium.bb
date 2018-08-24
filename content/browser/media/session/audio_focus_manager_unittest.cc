@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/command_line.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "content/browser/media/session/audio_focus_observer.h"
 #include "content/browser/media/session/media_session_impl.h"
@@ -18,19 +19,32 @@
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace content {
 
-using AudioFocusType = media_session::mojom::AudioFocusType;
+using media_session::mojom::AudioFocusType;
+using media_session::mojom::MediaSessionPtr;
 
 namespace {
 
 class MockAudioFocusObserver : public AudioFocusObserver {
  public:
-  MOCK_METHOD2(OnFocusGained,
-               void(MediaSession* media_session, AudioFocusType type));
-  MOCK_METHOD1(OnFocusLost, void(MediaSession* media_session));
+  MockAudioFocusObserver() { RegisterAudioFocusObserver(); }
+
+  void OnFocusGained(MediaSessionPtr session, AudioFocusType type) override {
+    EXPECT_TRUE(session.is_bound());
+    focus_gained_call_ = type;
+    focus_lost_call_ = false;
+  }
+
+  void OnFocusLost(MediaSessionPtr session) override {
+    EXPECT_TRUE(session.is_bound());
+    focus_lost_call_ = true;
+    focus_gained_call_.reset();
+  }
+
+  base::Optional<AudioFocusType> focus_gained_call_;
+  bool focus_lost_call_ = false;
 };
 
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
@@ -60,6 +74,10 @@ class AudioFocusManagerTest : public testing::Test {
         rph_factory_.get());
     browser_context_.reset(new TestBrowserContext());
     pepper_observer_.reset(new MockMediaSessionPlayerObserver());
+
+    // AudioFocusManager is a singleton so we should make sure we reset any
+    // state in between tests.
+    AudioFocusManager::GetInstance()->ResetForTesting();
   }
 
   void TearDown() override {
@@ -108,6 +126,10 @@ class AudioFocusManagerTest : public testing::Test {
 
   void AbandonAudioFocus(MediaSessionImpl* session) {
     session->AbandonSystemAudioFocusIfNeeded();
+  }
+
+  void FlushForTesting() {
+    AudioFocusManager::GetInstance()->FlushForTesting();
   }
 
   std::unique_ptr<WebContents> CreateWebContents() {
@@ -243,11 +265,14 @@ TEST_F(AudioFocusManagerTest, AbandonAudioFocus_RemovesTransientEntry) {
   RequestAudioFocus(media_session, AudioFocusType::kGainTransientMayDuck);
   ASSERT_EQ(1, GetTransientMaybeDuckCount());
 
-  MockAudioFocusObserver observer;
-  EXPECT_CALL(observer, OnFocusLost(media_session));
+  {
+    MockAudioFocusObserver observer;
+    AbandonAudioFocus(media_session);
+    FlushForTesting();
 
-  AbandonAudioFocus(media_session);
-  ASSERT_EQ(0, GetTransientMaybeDuckCount());
+    EXPECT_EQ(0, GetTransientMaybeDuckCount());
+    EXPECT_TRUE(observer.focus_lost_call_);
+  }
 }
 
 TEST_F(AudioFocusManagerTest, AbandonAudioFocus_WhileDuckingThenResume) {
@@ -465,10 +490,11 @@ TEST_F(AudioFocusManagerTest, AudioFocusObserver_AbandonNoop) {
 
   {
     MockAudioFocusObserver observer;
-    EXPECT_CALL(observer, OnFocusLost(media_session)).Times(0);
-
     AbandonAudioFocus(media_session);
+    FlushForTesting();
+
     EXPECT_EQ(nullptr, GetAudioFocusedSession());
+    EXPECT_FALSE(observer.focus_lost_call_);
   }
 }
 
@@ -476,16 +502,22 @@ TEST_F(AudioFocusManagerTest, AudioFocusObserver_RequestNoop) {
   std::unique_ptr<WebContents> web_contents(CreateWebContents());
   MediaSessionImpl* media_session = MediaSessionImpl::Get(web_contents.get());
 
-  RequestAudioFocus(media_session, AudioFocusType::kGain);
-  EXPECT_EQ(media_session, GetAudioFocusedSession());
+  {
+    MockAudioFocusObserver observer;
+    RequestAudioFocus(media_session, AudioFocusType::kGain);
+    FlushForTesting();
+
+    EXPECT_EQ(media_session, GetAudioFocusedSession());
+    EXPECT_EQ(AudioFocusType::kGain, observer.focus_gained_call_.value());
+  }
 
   {
     MockAudioFocusObserver observer;
-    EXPECT_CALL(observer, OnFocusGained(media_session, AudioFocusType::kGain))
-        .Times(0);
-
     RequestAudioFocus(media_session, AudioFocusType::kGain);
+    FlushForTesting();
+
     EXPECT_EQ(media_session, GetAudioFocusedSession());
+    EXPECT_FALSE(observer.focus_gained_call_.has_value());
   }
 }
 
@@ -495,19 +527,21 @@ TEST_F(AudioFocusManagerTest, AudioFocusObserver_TransientMayDuck) {
 
   {
     MockAudioFocusObserver observer;
-    EXPECT_CALL(observer, OnFocusGained(media_session,
-                                        AudioFocusType::kGainTransientMayDuck));
-
     RequestAudioFocus(media_session, AudioFocusType::kGainTransientMayDuck);
+    FlushForTesting();
+
     EXPECT_EQ(1, GetTransientMaybeDuckCount());
+    EXPECT_EQ(AudioFocusType::kGainTransientMayDuck,
+              observer.focus_gained_call_.value());
   }
 
   {
     MockAudioFocusObserver observer;
-    EXPECT_CALL(observer, OnFocusLost(media_session));
-
     AbandonAudioFocus(media_session);
+    FlushForTesting();
+
     EXPECT_EQ(0, GetTransientMaybeDuckCount());
+    EXPECT_TRUE(observer.focus_lost_call_);
   }
 }
 

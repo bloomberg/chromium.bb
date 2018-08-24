@@ -23,6 +23,9 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/media_metadata.h"
+#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/media_session/public/mojom/audio_focus.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -223,6 +226,10 @@ class MediaSessionImpl : public MediaSession,
   };
   const DebugInfo GetDebugInfo();
 
+  // Creates a binding between |this| and |request|.
+  void BindToMojoRequest(
+      mojo::InterfaceRequest<media_session::mojom::MediaSession> request);
+
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;
@@ -344,6 +351,9 @@ class MediaSessionImpl : public MediaSession,
   ServicesMap services_;
   // The currently routed service (non-owned pointer).
   MediaSessionServiceImpl* routed_service_;
+
+  // Bindings for Mojo pointers to |this| held by media route providers.
+  mojo::BindingSet<media_session::mojom::MediaSession> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImpl);
 };

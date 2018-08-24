@@ -342,6 +342,11 @@ class MediaInternalsAudioFocusTest : public testing::Test,
     session->RemoveAllPlayersForTest();
   }
 
+  void WaitForCallback() {
+    AudioFocusManager::GetInstance()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
+  }
+
   MediaInternals::UpdateCallback update_cb_;
 
  private:
@@ -355,7 +360,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   web_contents1->SetTitle(base::UTF8ToUTF16(kTestTitle1));
   MediaSessionImpl* media_session1 = MediaSessionImpl::Get(web_contents1.get());
   media_session1->RequestSystemAudioFocus(AudioFocusType::kGain);
-  base::RunLoop().RunUntilIdle();
+  WaitForCallback();
 
   // Check JSON is what we expect.
   {
@@ -375,7 +380,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
   MediaSessionImpl* media_session2 = MediaSessionImpl::Get(web_contents2.get());
   media_session2->RequestSystemAudioFocus(
       AudioFocusType::kGainTransientMayDuck);
-  base::RunLoop().RunUntilIdle();
+  WaitForCallback();
 
   // Check JSON is what we expect.
   {
@@ -397,7 +402,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Abandon audio focus.
   RemoveAllPlayersForTest(media_session2);
-  base::RunLoop().RunUntilIdle();
+  WaitForCallback();
 
   // Check JSON is what we expect.
   {
@@ -413,7 +418,7 @@ TEST_F(MediaInternalsAudioFocusTest, AudioFocusStateIsUpdated) {
 
   // Abandon audio focus.
   RemoveAllPlayersForTest(media_session1);
-  base::RunLoop().RunUntilIdle();
+  WaitForCallback();
 
   // Check JSON is what we expect.
   {

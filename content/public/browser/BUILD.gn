@@ -337,6 +337,7 @@ jumbo_source_set("browser_sources") {
     "//ipc",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//services/media_session/public/mojom",
     "//services/network/public/mojom",
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",

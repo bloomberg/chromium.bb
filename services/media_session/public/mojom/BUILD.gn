@@ -10,6 +10,7 @@ mojom_component("mojom") {
 
   sources = [
     "audio_focus.mojom",
+    "media_session.mojom",
   ]
 
   public_deps = [
