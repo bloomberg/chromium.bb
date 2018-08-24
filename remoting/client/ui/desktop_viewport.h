@@ -30,7 +30,8 @@ namespace remoting {
 // reference frame.
 class DesktopViewport {
  public:
-  using TransformationCallback = base::Callback<void(const ViewMatrix&)>;
+  using TransformationCallback =
+      base::RepeatingCallback<void(const ViewMatrix&)>;
 
   DesktopViewport();
   ~DesktopViewport();
@@ -38,9 +39,16 @@ class DesktopViewport {
   // Sets the |desktop_size_| and (re)initializes the viewport.
   void SetDesktopSize(int desktop_width, int desktop_height);
 
-  // Sets the |surface_size_| and (re)initializes the viewport if both
-  // dimensions are changed.
+  // Sets the |surface_size_| and (re)initializes the viewport.
   void SetSurfaceSize(int surface_width, int surface_height);
+
+  // Sets insets on the surface area to allow viewport to be panned out of them.
+  // Should be used to adjust for system UI like soft keyboard and screen
+  // notches/cutouts.
+  // This method effectively shrinks the size of the viewport on the surface.
+  // You may want to call this before SetSurfaceSize() so that safe insets are
+  // taken into account when initializing viewport.
+  void SetSafeInsets(int left, int top, int right, int bottom);
 
   // Translates the desktop on the surface's reference frame by <dx, dy>.
   void MoveDesktop(float dx, float dy);
@@ -82,8 +90,8 @@ class DesktopViewport {
  private:
   struct Bounds {
     float left;
-    float right;
     float top;
+    float right;
     float bottom;
   };
 
@@ -100,6 +108,9 @@ class DesktopViewport {
   // locate.
   Bounds GetViewportCenterBounds() const;
 
+  // Gets the size of |surface_size_| inset by |safe_insets_|.
+  ViewMatrix::Vector2D GetSurfaceSafeAreaSize() const;
+
   // Translates the viewport on the desktop's reference frame by <dx, dy>,
   // without calling UpdateViewport().
   void MoveViewportWithoutUpdate(float dx, float dy);
@@ -112,6 +123,7 @@ class DesktopViewport {
 
   ViewMatrix::Vector2D desktop_size_{0.f, 0.f};
   ViewMatrix::Vector2D surface_size_{0.f, 0.f};
+  Bounds safe_insets_{0, 0, 0, 0};
 
   ViewMatrix desktop_to_surface_transform_;
 

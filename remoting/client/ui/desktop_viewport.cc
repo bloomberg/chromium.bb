@@ -35,25 +35,16 @@ void DesktopViewport::SetSurfaceSize(int surface_width, int surface_height) {
     return;
   }
 
-  // Only reset the viewport if both dimensions have changed, otherwise keep
-  // the offset and scale and just change the constraint. This is to cover these
-  // use cases:
-  // * Rotation => Reset
-  // * Keyboard => No reset
-  // * Settings menu => No reset
-  //
-  // TODO(yuweih): This is probably too much inferring. Let the caller to decide
-  // when to call ResizeToFit() if things don't work right.
-  bool need_to_reset =
-      surface_width != surface_size_.x && surface_height != surface_size_.y;
-
   surface_size_.x = surface_width;
   surface_size_.y = surface_height;
+  ResizeToFit();
+}
 
-  if (need_to_reset) {
-    ResizeToFit();
-    return;
-  }
+void DesktopViewport::SetSafeInsets(int left, int top, int right, int bottom) {
+  safe_insets_.left = left;
+  safe_insets_.top = top;
+  safe_insets_.right = right;
+  safe_insets_.bottom = bottom;
 
   UpdateViewport();
 }
@@ -83,8 +74,12 @@ ViewMatrix::Point DesktopViewport::GetViewportCenter() const {
     LOG(WARNING) << "Viewport is not ready before getting the viewport center";
     return {0.f, 0.f};
   }
+  float safe_area_center_x =
+      (surface_size_.x + safe_insets_.left - safe_insets_.right) / 2.f;
+  float safe_area_center_y =
+      (surface_size_.y + safe_insets_.top - safe_insets_.bottom) / 2.f;
   return desktop_to_surface_transform_.Invert().MapPoint(
-      {surface_size_.x / 2.f, surface_size_.y / 2.f});
+      {safe_area_center_x, safe_area_center_y});
 }
 
 bool DesktopViewport::IsPointWithinDesktopBounds(
@@ -109,7 +104,7 @@ ViewMatrix::Point DesktopViewport::ConstrainPointToDesktop(
     return point;
   }
 
-  return ConstrainPointToBounds({0.f, desktop_size_.x, 0.f, desktop_size_.y},
+  return ConstrainPointToBounds({0.f, 0.f, desktop_size_.x, desktop_size_.y},
                                 point);
 }
 
@@ -149,10 +144,12 @@ void DesktopViewport::ResizeToFit() {
   // +----------+ v
   // resize the desktop such that it fits the viewport in one dimension.
 
-  float scale = std::max(surface_size_.x / desktop_size_.x,
-                         surface_size_.y / desktop_size_.y);
+  ViewMatrix::Vector2D safe_area_size = GetSurfaceSafeAreaSize();
+  float scale = std::max(safe_area_size.x / desktop_size_.x,
+                         safe_area_size.y / desktop_size_.y);
   desktop_to_surface_transform_.SetScale(scale);
-  desktop_to_surface_transform_.SetOffset({0.f, 0.f});
+  desktop_to_surface_transform_.SetOffset(
+      {safe_insets_.left, safe_insets_.top});
   UpdateViewport();
 }
 
@@ -173,10 +170,12 @@ void DesktopViewport::UpdateViewport() {
     desktop_to_surface_transform_.SetScale(MAX_ZOOM_LEVEL);
   }
 
+  ViewMatrix::Vector2D safe_area_size = GetSurfaceSafeAreaSize();
+
   ViewMatrix::Vector2D desktop_size_on_surface_ =
       desktop_to_surface_transform_.MapVector(desktop_size_);
-  if (desktop_size_on_surface_.x < surface_size_.x &&
-      desktop_size_on_surface_.y < surface_size_.y) {
+  if (desktop_size_on_surface_.x < safe_area_size.x &&
+      desktop_size_on_surface_.y < safe_area_size.y) {
     //    +==============+
     //    |      VP      |      +==========+
     //    |              |      |    VP    |
@@ -188,8 +187,8 @@ void DesktopViewport::UpdateViewport() {
     //    +==============+
     // Displayed desktop is too small in both directions, so apply the minimum
     // zoom level needed to fit either the width or height.
-    float scale = std::min(surface_size_.x / desktop_size_.x,
-                           surface_size_.y / desktop_size_.y);
+    float scale = std::min(safe_area_size.x / desktop_size_.x,
+                           safe_area_size.y / desktop_size_.y);
     desktop_to_surface_transform_.SetScale(scale);
   }
 
@@ -239,13 +238,14 @@ DesktopViewport::Bounds DesktopViewport::GetViewportCenterBounds() const {
 
   // Viewport size on the desktop space.
   ViewMatrix::Vector2D viewport_size =
-      desktop_to_surface_transform_.Invert().MapVector(surface_size_);
+      desktop_to_surface_transform_.Invert().MapVector(
+          GetSurfaceSafeAreaSize());
 
   // Scenario 1: If VP can fully fit inside the desktop, then VP's center can be
   // anywhere inside the desktop as long as VP doesn't overlap with the border.
   bounds.left = viewport_size.x / 2.f;
-  bounds.right = desktop_size_.x - viewport_size.x / 2.f;
   bounds.top = viewport_size.y / 2.f;
+  bounds.right = desktop_size_.x - viewport_size.x / 2.f;
   bounds.bottom = desktop_size_.y - viewport_size.y / 2.f;
 
   // Scenario 2: If VP can't fully fit inside the desktop in dimension D, then
@@ -264,6 +264,11 @@ DesktopViewport::Bounds DesktopViewport::GetViewportCenterBounds() const {
   }
 
   return bounds;
+}
+
+ViewMatrix::Vector2D DesktopViewport::GetSurfaceSafeAreaSize() const {
+  return {surface_size_.x - safe_insets_.left - safe_insets_.right,
+          surface_size_.y - safe_insets_.top - safe_insets_.bottom};
 }
 
 void DesktopViewport::MoveViewportWithoutUpdate(float dx, float dy) {

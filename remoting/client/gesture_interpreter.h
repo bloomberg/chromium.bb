@@ -82,6 +82,7 @@ class GestureInterpreter {
 
   void OnSurfaceSizeChanged(int width, int height);
   void OnDesktopSizeChanged(int width, int height);
+  void OnSafeInsetsChanged(int left, int top, int right, int bottom);
 
   base::WeakPtr<GestureInterpreter> GetWeakPtr();
 

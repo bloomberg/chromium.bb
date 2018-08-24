@@ -12,9 +12,13 @@ namespace remoting {
 // Returns the current topmost presenting view controller of the app.
 UIViewController* TopPresentingVC();
 
-// Returns the proper safe area layout guide for iOS 11; returns a dumb layout
+// Returns the proper safe area layout guide for iOS 11+; returns a dumb layout
 // guide for older OS versions that exactly matches the anchors of the view.
 UILayoutGuide* SafeAreaLayoutGuideForView(UIView* view);
+
+// Returns the proper safe area insets for iOS 11+; returns empty insets for
+// older OS versions.
+UIEdgeInsets SafeAreaInsetsForView(UIView* view);
 
 // Posts a delayed accessibility announcement so that it doesn't interrupt with
 // the current announcing speech.

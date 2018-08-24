@@ -120,7 +120,7 @@ TEST_F(DesktopViewportTest, TestViewportInitialization3) {
   // +========+----+
   viewport_.SetDesktopSize(9, 3);
   viewport_.SetSurfaceSize(2, 1);
-  AssertTransformationReceived(FROM_HERE, 0.333f, 0.f, 0.f);
+  AssertTransformationReceived(FROM_HERE, 1 / 3.f, 0.f, 0.f);
 }
 
 TEST_F(DesktopViewportTest, TestViewportInitialization4) {
@@ -290,6 +290,117 @@ TEST_F(DesktopViewportTest, TestScaleDesktop) {
   // Verify the scale is correct.
   ASSERT_FLOAT_EQ(old_transformation.GetScale() * 1.1f,
                   new_transformation.GetScale());
+}
+
+TEST_F(DesktopViewportTest, AsymmetricalSafeInsetsPanAndZoom) {
+  // Initialize with 6x5 desktop and 6x5 screen with this safe inset:
+  // left: 2, top: 2, right: 1, bottom: 1
+  viewport_.SetDesktopSize(6, 5);
+  viewport_.SetSafeInsets(2, 2, 1, 1);
+  viewport_.SetSurfaceSize(6, 5);
+
+  // Viewport is initialized to fit the inset area instead of the whole surface
+  // area.
+  AssertTransformationReceived(FROM_HERE, 0.5, 2, 2);
+
+  // Move the viewport all the way to the bottom right.
+  viewport_.MoveViewport(100, 100);
+
+  // The bottom right of the desktop is stuck with the bottom right of the
+  // safe area.
+  AssertTransformationReceived(FROM_HERE, 0.5, 2, 1.5);
+
+  // Zoom the viewport on the bottom right of the safe area to match the
+  // resolution of the surface.
+  viewport_.ScaleDesktop(5, 4, 2);
+  AssertTransformationReceived(FROM_HERE, 1, -1, -1);
+
+  // Move the desktop by <1, 1>. Now it perfectly fits the surface.
+  viewport_.MoveDesktop(1, 1);
+  AssertTransformationReceived(FROM_HERE, 1, 0, 0);
+
+  // Move the desktop all the way to the top left. Now it stucks with the top
+  // left corner of the safe area.
+  viewport_.MoveDesktop(100, 100);
+  AssertTransformationReceived(FROM_HERE, 1, 2, 2);
+}
+
+TEST_F(DesktopViewportTest, SingleNotchSafeInsetPanAndZoom) {
+  // Initialize with 6x5 desktop and 6x5 screen with this safe inset:
+  // left: 1, right: 1, top: 0, bottom: 0
+  viewport_.SetDesktopSize(6, 5);
+  viewport_.SetSafeInsets(1, 1, 0, 0);
+  viewport_.SetSurfaceSize(6, 5);
+  AssertTransformationReceived(FROM_HERE, 5 / 6.f, 1, 1);
+
+  viewport_.MoveViewport(100, 100);
+  AssertTransformationReceived(FROM_HERE, 5 / 6.f, 1, 5 / 6.f);
+
+  viewport_.ScaleDesktop(6, 5, 1.2);
+  AssertTransformationReceived(FROM_HERE, 1, 0, 0);
+}
+
+TEST_F(DesktopViewportTest, SymmetricSafeInsetPanAndZoom) {
+  // Initialize with 6x5 desktop and 6x5 screen with this safe inset:
+  // left: 1, right: 1, top: 1, bottom: 1
+  viewport_.SetDesktopSize(6, 5);
+  viewport_.SetSafeInsets(1, 1, 1, 1);
+  viewport_.SetSurfaceSize(6, 5);
+  AssertTransformationReceived(FROM_HERE, 2 / 3.f, 1, 1);
+
+  viewport_.MoveViewport(100, 100);
+  AssertTransformationReceived(FROM_HERE, 2 / 3.f, 1, 2 / 3.f);
+
+  viewport_.ScaleDesktop(5, 4, 1.5);
+  AssertTransformationReceived(FROM_HERE, 1, -1, -1);
+
+  viewport_.MoveDesktop(1, 1);
+  AssertTransformationReceived(FROM_HERE, 1, 0, 0);
+}
+
+TEST_F(DesktopViewportTest, RemoveSafeInsets) {
+  // Initialize with 6x5 desktop and 6x5 screen with this safe inset:
+  // left: 2, top: 2, right: 1, bottom: 1
+  viewport_.SetDesktopSize(6, 5);
+  viewport_.SetSafeInsets(2, 2, 1, 1);
+  viewport_.SetSurfaceSize(6, 5);
+
+  AssertTransformationReceived(FROM_HERE, 0.5, 2, 2);
+
+  // Move the viewport all the way to the bottom right.
+  viewport_.MoveViewport(100, 100);
+  AssertTransformationReceived(FROM_HERE, 0.5, 2, 1.5);
+
+  // Now remove the safe insets.
+  viewport_.SetSafeInsets(0, 0, 0, 0);
+
+  // Desktop is now stretched to fit the whole surface.
+  AssertTransformationReceived(FROM_HERE, 1, 0, 0);
+}
+
+TEST_F(DesktopViewportTest, AddAndRemoveSafeInsets) {
+  // This test case tests showing and hiding soft keyboard.
+
+  // Initialize with 12x9 desktop and screen with this safe inset:
+  // left: 2, top: 2, right: 1, bottom: 1
+  viewport_.SetDesktopSize(12, 9);
+  viewport_.SetSafeInsets(2, 2, 1, 1);
+  viewport_.SetSurfaceSize(12, 9);
+  AssertTransformationReceived(FROM_HERE, 0.75, 2, 2);
+
+  // Increase the bottom insets to simulate keyboard popup.
+  viewport_.SetSafeInsets(2, 2, 1, 4);
+  AssertTransformationReceived(FROM_HERE, 0.75, 2, 2);
+
+  // Move the viewport all the way down. (=moving the desktop all the way up.)
+  viewport_.MoveViewport(100, 100);
+  AssertTransformationReceived(FROM_HERE, 0.75, 2, -1.75);
+
+  // Now remove the extra insets.
+  viewport_.SetSafeInsets(2, 2, 1, 1);
+
+  // Viewport should bounce back.
+  AssertTransformationReceived(FROM_HERE, 0.75, 2, 1.25);
 }
 
 }  // namespace remoting
