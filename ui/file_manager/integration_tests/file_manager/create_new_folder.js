@@ -9,8 +9,8 @@
  * When we are not in guest mode, we fill Google Drive with the basic entry set
  * which causes an extra tree-item to be added.
  */
-var TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"] ';
-var TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"] ';
+const TREEITEM_DRIVE = '#directory-tree [entry-label="My Drive"]';
+const TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"]';
 
 /**
  * Selects the first item in the file list.
