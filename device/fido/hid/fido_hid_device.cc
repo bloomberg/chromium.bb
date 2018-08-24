@@ -217,6 +217,7 @@ void FidoHidDevice::PacketWritten(base::Optional<FidoHidMessage> message,
 
 void FidoHidDevice::ReadMessage(HidMessageCallback callback) {
   if (!connection_) {
+    state_ = State::kDeviceError;
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -230,6 +231,7 @@ void FidoHidDevice::OnRead(HidMessageCallback callback,
                            uint8_t report_id,
                            const base::Optional<std::vector<uint8_t>>& buf) {
   if (!success) {
+    state_ = State::kDeviceError;
     std::move(callback).Run(base::nullopt);
     return;
   }
@@ -267,6 +269,7 @@ void FidoHidDevice::OnReadContinuation(
     uint8_t report_id,
     const base::Optional<std::vector<uint8_t>>& buf) {
   if (!success) {
+    state_ = State::kDeviceError;
     std::move(callback).Run(base::nullopt);
     return;
   }

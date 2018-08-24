@@ -10,9 +10,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 
@@ -39,8 +41,9 @@ class DeviceOperation {
   // TODO(hongjunchoi): Refactor so that |command| is never base::nullopt.
   void DispatchDeviceRequest(base::Optional<std::vector<uint8_t>> command,
                              FidoDevice::DeviceCallback callback) {
-    if (!command) {
-      std::move(callback).Run(base::nullopt);
+    if (!command || device_->state() == FidoDevice::State::kDeviceError) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), base::nullopt));
       return;
     }
 
