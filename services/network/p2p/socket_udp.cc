@@ -399,9 +399,9 @@ void P2PSocketUdp::Send(
     const P2PPacketInfo& packet_info,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (data.size() > kMaximumPacketSize) {
-    LOG(ERROR) << "Received P2PHostMsg_Send with a packet that is too big: "
-               << data.size();
-    delete this;
+    NOTREACHED();
+    OnError();
+    return;
   }
 
   if (!socket_) {
