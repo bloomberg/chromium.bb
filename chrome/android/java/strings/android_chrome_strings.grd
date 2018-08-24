@@ -326,7 +326,7 @@ CHAR-LIMIT guidelines:
         Your browsing data and activity, synced to your Google Account
       </message>
       <message name="IDS_PREFS_NONPERSONALIZED_SERVICES_SECTION_TITLE" desc="Title for the expandable group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account.">
-        Non-personalized services
+        Other Google services
       </message>
       <message name="IDS_PREFS_NONPERSONALIZED_SERVICES_SECTION_SUMMARY" desc="Summary for the expandable group of preferences that control non-personalized Google services. This group contains preferences for data that is not tied to user's Google Account.">
         Communicates with Google to improve browsing and Chrome
