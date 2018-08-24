@@ -4,26 +4,27 @@
 
 'use strict';
 
+(function(){
+
 /**
- * Constants for selectors.
+ * Directory tree selector constants.
  */
-var TREEITEM_A = TREEITEM_DRIVE + ' [entry-label="A"] ';
-var TREEITEM_B = TREEITEM_A + '[entry-label="B"] ';
-var TREEITEM_C = TREEITEM_B + '[entry-label="C"] ';
+const TREEITEM_A = TREEITEM_DRIVE + ' [entry-label="A"] ';
+const TREEITEM_B = TREEITEM_A + '[entry-label="B"] ';
+const TREEITEM_C = TREEITEM_B + '[entry-label="C"] ';
 
-var TREEITEM_D = TREEITEM_DRIVE + ' [entry-label="D"] ';
-var TREEITEM_E = TREEITEM_D + '[entry-label="E"] ';
+const TREEITEM_D = TREEITEM_DRIVE + ' [entry-label="D"] ';
+const TREEITEM_E = TREEITEM_D + '[entry-label="E"] ';
 
-var EXPAND_ICON = '> .tree-row > .expand-icon';
-var ITEM_ICON = '> .tree-row > .item-icon';
-var EXPANDED_SUBTREE = '> .tree-children[expanded]';
+const EXPAND_ICON = '> .tree-row > .expand-icon';
+const ITEM_ICON = '> .tree-row > .item-icon';
+const EXPANDED_SUBTREE = '> .tree-children[expanded]';
 
 /**
- * Entry set which is used for this test.
+ * Entry set used for the folder shortcut tests.
  * @type {Array<TestEntryInfo>}
- * @const
  */
-var ENTRY_SET = [
+const FOLDER_ENTRY_SET = [
   ENTRIES.directoryA,
   ENTRIES.directoryB,
   ENTRIES.directoryC,
@@ -33,11 +34,10 @@ var ENTRY_SET = [
 ];
 
 /**
- * Constants for each folders.
+ * Constants for each folder.
  * @type {Array<Object>}
- * @const
  */
-var DIRECTORY = {
+const DIRECTORY = {
   Drive: {
     contents: [
       ENTRIES.directoryA.getExpectedRow(), ENTRIES.directoryD.getExpectedRow()
@@ -253,7 +253,7 @@ testcase.traverseFolderShortcuts = function() {
   StepsRunner.run([
     // Set up each window.
     function() {
-      addEntries(['drive'], ENTRY_SET, this.next);
+      addEntries(['drive'], FOLDER_ENTRY_SET, this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -347,7 +347,7 @@ testcase.addRemoveFolderShortcuts = function() {
   StepsRunner.run([
     // Set up each window.
     function() {
-      addEntries(['drive'], ENTRY_SET, this.next);
+      addEntries(['drive'], FOLDER_ENTRY_SET, this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);
@@ -414,3 +414,4 @@ testcase.addRemoveFolderShortcuts = function() {
   ]);
 };
 
+})();
