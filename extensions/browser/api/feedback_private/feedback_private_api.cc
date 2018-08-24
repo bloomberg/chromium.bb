@@ -55,6 +55,11 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<FeedbackPrivateAPI>>::
 
 namespace {
 
+constexpr base::FilePath::CharType kBluetoothLogsFilePath[] =
+    FILE_PATH_LITERAL("/var/log/bluetooth/log.gz");
+
+constexpr char kBluetoothLogsAttachmentName[] = "bluetooth_logs.gz";
+
 // Getting the filename of a blob prepends a "C:\fakepath" to the filename.
 // This is undesirable, strip it if it exists.
 std::string StripFakepath(const std::string& path) {
@@ -345,8 +350,13 @@ void FeedbackPrivateSendFeedbackFunction::OnAllLogsFetched(
   }
 
   if (send_bluetooth_logs) {
-    // TODO(rkc): Implement this once the platforms changes land.
-    LOG(WARNING) << "Not sending Bluetooth logs. Not implemented yet.";
+    std::unique_ptr<std::string> bluetooth_logs =
+        std::make_unique<std::string>();
+    if (base::ReadFileToString(base::FilePath(kBluetoothLogsFilePath),
+                               bluetooth_logs.get())) {
+      feedback_data->AddFile(kBluetoothLogsAttachmentName,
+                             std::move(bluetooth_logs));
+    }
   }
 
   service->SendFeedback(

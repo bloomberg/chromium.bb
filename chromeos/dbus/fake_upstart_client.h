@@ -27,6 +27,7 @@ class CHROMEOS_EXPORT FakeUpstartClient : public UpstartClient {
   void RestartMediaAnalytics(VoidDBusMethodCallback callback) override;
   void StopMediaAnalytics() override;
   void StopMediaAnalytics(VoidDBusMethodCallback callback) override;
+  void StartBluetoothLogging() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeUpstartClient);

@@ -73,4 +73,8 @@ void FakeUpstartClient::StopMediaAnalytics(VoidDBusMethodCallback callback) {
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeUpstartClient::StartBluetoothLogging() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace chromeos
