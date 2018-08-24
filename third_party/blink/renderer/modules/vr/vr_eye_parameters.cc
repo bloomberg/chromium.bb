@@ -9,14 +9,12 @@ namespace blink {
 VREyeParameters::VREyeParameters(
     const device::mojom::blink::VREyeParametersPtr& eye_parameters,
     double render_scale) {
-  // TODO(offenwanger): Convert this into initializers.
   offset_ = DOMFloat32Array::Create(3);
-  field_of_view_ = new VRFieldOfView();
-
   offset_->Data()[0] = eye_parameters->offset[0];
   offset_->Data()[1] = eye_parameters->offset[1];
   offset_->Data()[2] = eye_parameters->offset[2];
 
+  field_of_view_ = new VRFieldOfView();
   field_of_view_->SetUpDegrees(eye_parameters->fieldOfView->upDegrees);
   field_of_view_->SetDownDegrees(eye_parameters->fieldOfView->downDegrees);
   field_of_view_->SetLeftDegrees(eye_parameters->fieldOfView->leftDegrees);
