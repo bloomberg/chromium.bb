@@ -42,6 +42,10 @@ bool FidoDevice::SupportedProtocolIsInitialized() {
 void FidoDevice::OnDeviceInfoReceived(
     base::OnceClosure done,
     base::Optional<std::vector<uint8_t>> response) {
+  // TODO(hongjunchoi): Add tests that verify this behavior.
+  if (state_ == FidoDevice::State::kDeviceError)
+    return;
+
   state_ = FidoDevice::State::kReady;
 
   base::Optional<AuthenticatorGetInfoResponse> get_info_response =
