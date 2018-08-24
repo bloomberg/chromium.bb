@@ -88,7 +88,6 @@ Polymer({
     /** @type {settings.SyncStatus} */
     syncStatus: {
       type: Object,
-      observer: 'onSyncStatusChanged_',
     },
 
     /**
@@ -127,6 +126,14 @@ Polymer({
     existingPassphrase_: {
       type: String,
       value: '',
+    },
+
+    /** @private */
+    signedIn_: {
+      type: Boolean,
+      value: true,
+      computed: 'computeSignedIn_(syncStatus.signedIn)',
+      observer: 'onSignedInChanged_',
     },
 
     /** @private */
@@ -229,7 +236,15 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  computeSyncSectionDisabled_() {
+  computeSignedIn_: function() {
+    return !!this.syncStatus.signedIn;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeSyncSectionDisabled_: function() {
     return !!this.unifiedConsentEnabled &&
         (!this.syncStatus.signedIn || !!this.syncStatus.disabled ||
          (!!this.syncStatus.hasError &&
@@ -592,9 +607,12 @@ Polymer({
     settings.navigateTo(settings.routes.BASIC);
   },
 
-  /** @private */
-  onSyncStatusChanged_: function() {
-    this.syncSectionOpened_ = !!this.syncStatus.signedIn;
+  /**
+   * Collapses/Expands the sync section if the signedIn state has changed.
+   * @private
+   */
+  onSignedInChanged_: function() {
+    this.syncSectionOpened_ = !!this.signedIn_;
   },
 
   /**
