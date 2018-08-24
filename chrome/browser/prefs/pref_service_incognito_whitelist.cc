@@ -181,16 +181,7 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif  // !defined(OS_ANDROID)
 
     // chrome/common/pref_names.h
-    prefs::kAbusiveExperienceInterventionEnforce,
-    prefs::kChildAccountStatusKnown, prefs::kDefaultApps,
-    prefs::kSafeBrowsingForTrustedSourcesEnabled, prefs::kDisableScreenshots,
-    prefs::kDownloadRestrictions, prefs::kForceEphemeralProfiles,
-    prefs::kHomePageIsNewTabPage, prefs::kHomePage,
-    prefs::kImportantSitesDialogHistory,
-#if defined(OS_WIN)
-    prefs::kLastProfileResetTimestamp, prefs::kChromeCleanerResetPending,
-#endif
-    prefs::kNewTabPageLocationOverride, prefs::kRestoreOnStartup,
+    prefs::kImportantSitesDialogHistory, prefs::kNewTabPageLocationOverride,
     prefs::kSessionExitedCleanly, prefs::kSessionExitType,
     prefs::kObservedSessionTime, prefs::kRecurrentSSLInterstitial,
     prefs::kSiteEngagementLastUpdateTime, prefs::kURLsToRestoreOnStartup,
@@ -205,7 +196,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #endif
 
     prefs::kDataSaverEnabled, prefs::kSSLErrorOverrideAllowed,
-    prefs::kIncognitoModeAvailability, prefs::kSearchSuggestEnabled,
 #if defined(OS_ANDROID)
     prefs::kContextualSearchEnabled,
 #endif  // defined(OS_ANDROID)
@@ -216,11 +206,9 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 #if defined(OS_MACOSX)
     prefs::kShowFullscreenToolbar, prefs::kAllowJavascriptAppleEvents,
 #endif
-    prefs::kPromptForDownload, prefs::kAlternateErrorPagesEnabled,
-    prefs::kDnsPrefetchingStartupList, prefs::kDnsPrefetchingHostReferralList,
-    prefs::kQuicAllowed, prefs::kNetworkQualities,
-    prefs::kNetworkPredictionOptions, prefs::kDefaultAppsInstallState,
-    prefs::kHideWebStoreIcon,
+    prefs::kAlternateErrorPagesEnabled, prefs::kDnsPrefetchingStartupList,
+    prefs::kDnsPrefetchingHostReferralList, prefs::kNetworkQualities,
+    prefs::kNetworkPredictionOptions,
 #if defined(OS_CHROMEOS)
     prefs::kEnableTouchpadThreeFingerClick, prefs::kNaturalScroll,
     prefs::kPrimaryMouseButtonRight, prefs::kMouseReverseScroll,
@@ -257,13 +245,10 @@ const char* const kTemporaryIncognitoWhitelist[] = {
     prefs::kUsageTimeLimit, prefs::kScreenTimeLastState,
     prefs::kEnableSyncConsent,
 #endif  // defined(OS_CHROMEOS)
-    prefs::kShowHomeButton, prefs::kSpeechRecognitionFilterProfanities,
-    prefs::kSavingBrowserHistoryDisabled, prefs::kAllowDeletingBrowserHistory,
+    prefs::kSpeechRecognitionFilterProfanities,
 #if !defined(OS_ANDROID)
     prefs::kMdHistoryMenuPromoShown,
 #endif
-    prefs::kForceGoogleSafeSearch, prefs::kForceYouTubeRestrict,
-    prefs::kForceSessionSync, prefs::kAllowedDomainsForApps,
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     prefs::kUsesSystemTheme,
 #endif
@@ -309,8 +294,6 @@ const char* const kTemporaryIncognitoWhitelist[] = {
 
     prefs::kMessageCenterDisabledExtensionIds,
     prefs::kMessageCenterDisabledSystemComponentIds,
-
-    prefs::kFullscreenAllowed,
 
     prefs::kLocalDiscoveryNotificationsEnabled,
 
