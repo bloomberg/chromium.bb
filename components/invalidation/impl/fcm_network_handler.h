@@ -6,9 +6,13 @@
 #define COMPONENTS_INVALIDATION_IMPL_FCM_NETWORK_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/time/clock.h"
+#include "base/timer/timer.h"
 #include "components/gcm_driver/gcm_app_handler.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/invalidation/impl/fcm_sync_network_channel.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 
 namespace gcm {
 class GCMDriver;
@@ -38,6 +42,7 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
 
   void StartListening();
   void StopListening();
+  bool IsListening() const;
   void UpdateGcmChannelState(bool);
 
   // GCMAppHandler overrides.
@@ -51,16 +56,25 @@ class FCMNetworkHandler : public gcm::GCMAppHandler,
   void OnSendAcknowledged(const std::string& app_id,
                           const std::string& message_id) override;
 
+  void SetTokenValidationTimerForTesting(
+      std::unique_ptr<base::OneShotTimer> token_validation_timer);
+
  private:
   // Called when a subscription token is obtained from the GCM server.
   void DidRetrieveToken(const std::string& subscription_token,
                         instance_id::InstanceID::Result result);
+  void ScheduleNextTokenValidation();
+  void StartTokenValidation();
+  void DidReceiveTokenForValidation(const std::string& new_token,
+                                    instance_id::InstanceID::Result result);
 
   gcm::GCMDriver* const gcm_driver_;
   instance_id::InstanceIDDriver* const instance_id_driver_;
 
   bool gcm_channel_online_ = false;
+  std::string token_;
 
+  std::unique_ptr<base::OneShotTimer> token_validation_timer_;
   base::WeakPtrFactory<FCMNetworkHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FCMNetworkHandler);
