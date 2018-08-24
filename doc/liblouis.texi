@@ -2876,11 +2876,11 @@ following definition is included in @file{liblouis.h}. It is correct
 for computers with at least 32-bit processors.
 
 @example
-#define widechar unsigned short int
+typedef unsigned short int widechar
 @end example
 
 To make liblouis handle 32-bit Unicode simply remove the word
-@code{short} in the above @code{define}. This will cause the translate and
+@code{short} in the above @code{typedef}. This will cause the translate and
 back-translate functions to expect input in 32-bit form and to deliver
 their output in this form. The input to the compiler (tables) is
 unaffected except that two new escape sequences for 20-bit and 32-bit
