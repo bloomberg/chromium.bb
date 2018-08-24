@@ -951,11 +951,34 @@ void ContainerNode::NotifyNodeRemoved(Node& root) {
   }
 }
 
+#if DCHECK_IS_ON()
+namespace {
+
+bool AttachedAllowedWhenAttaching(Node* node) {
+  return node->getNodeType() == Node::kCommentNode ||
+         node->getNodeType() == Node::kProcessingInstructionNode;
+}
+
+bool ChildAttachedAllowedWhenAttachingChildren(ContainerNode* node) {
+  if (node->IsShadowRoot())
+    return true;
+  if (node->IsV0InsertionPoint())
+    return true;
+  if (IsHTMLSlotElement(node))
+    return true;
+  if (IsShadowHost(node))
+    return true;
+  return false;
+}
+
+}  // namespace
+#endif
+
 DISABLE_CFI_PERF
 void ContainerNode::AttachLayoutTree(AttachContext& context) {
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
 #if DCHECK_IS_ON()
-    DCHECK(child->NeedsAttach() ||
+    DCHECK(child->NeedsAttach() || AttachedAllowedWhenAttaching(child) ||
            ChildAttachedAllowedWhenAttachingChildren(this));
 #endif
     if (child->NeedsAttach())
@@ -982,11 +1005,10 @@ void ContainerNode::ChildrenChanged(const ChildrenChange& change) {
   GetDocument().IncDOMTreeVersion();
   GetDocument().NotifyChangeChildren(*this);
   InvalidateNodeListCachesInAncestors(nullptr, nullptr, &change);
-  if (change.IsChildInsertion()) {
-    if (!ChildNeedsStyleRecalc()) {
-      SetChildNeedsStyleRecalc();
-      MarkAncestorsWithChildNeedsStyleRecalc();
-    }
+  if (!ChildNeedsStyleRecalc() && change.IsChildInsertion() &&
+      change.sibling_changed->NeedsStyleRecalc()) {
+    SetChildNeedsStyleRecalc();
+    MarkAncestorsWithChildNeedsStyleRecalc();
   }
 }
 
@@ -1620,23 +1642,5 @@ Element* ContainerNode::getElementById(const AtomicString& id) const {
 NodeListsNodeData& ContainerNode::EnsureNodeLists() {
   return EnsureRareData().EnsureNodeLists();
 }
-
-#if DCHECK_IS_ON()
-bool ChildAttachedAllowedWhenAttachingChildren(ContainerNode* node) {
-  if (node->IsShadowRoot())
-    return true;
-
-  if (node->IsV0InsertionPoint())
-    return true;
-
-  if (IsHTMLSlotElement(node))
-    return true;
-
-  if (IsShadowHost(node))
-    return true;
-
-  return false;
-}
-#endif
 
 }  // namespace blink

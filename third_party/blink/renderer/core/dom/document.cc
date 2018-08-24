@@ -2124,13 +2124,6 @@ void Document::PropagateStyleToViewport() {
 #if DCHECK_IS_ON()
 static void AssertLayoutTreeUpdated(Node& root) {
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(root)) {
-    // We leave some nodes with dirty bits in the tree because they don't
-    // matter like Comment and ProcessingInstruction nodes.
-    // TODO(esprehn): Don't even mark those nodes as needing recalcs in the
-    // first place.
-    if (!node.IsElementNode() && !node.IsTextNode() && !node.IsShadowRoot() &&
-        !node.IsDocumentNode())
-      continue;
     DCHECK(!node.NeedsStyleRecalc());
     DCHECK(!node.ChildNeedsStyleRecalc());
     DCHECK(!node.NeedsReattachLayoutTree());

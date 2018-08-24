@@ -6,9 +6,11 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/dom/comment.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder.h"
+#include "third_party/blink/renderer/core/dom/processing_instruction.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/shadow_root_init.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
@@ -313,6 +315,23 @@ TEST_F(NodeTest, HasMediaControlAncestor_MediaControls) {
   FakeMediaControls* node = new FakeMediaControls(GetDocument());
   EXPECT_TRUE(node->HasMediaControlAncestor());
   EXPECT_TRUE(InitializeUserAgentShadowTree(node)->HasMediaControlAncestor());
+}
+
+TEST_F(NodeTest, appendChildProcessingInstructionNoStyleRecalc) {
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+  ProcessingInstruction* pi =
+      ProcessingInstruction::Create(GetDocument(), "A", "B");
+  GetDocument().body()->appendChild(pi, ASSERT_NO_EXCEPTION);
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+}
+
+TEST_F(NodeTest, appendChildCommentNoStyleRecalc) {
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+  Comment* comment = Comment::Create(GetDocument(), "comment");
+  GetDocument().body()->appendChild(comment, ASSERT_NO_EXCEPTION);
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
 }
 
 }  // namespace blink
