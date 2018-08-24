@@ -63,13 +63,10 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   base::string16 GetWindowTitle() const override;
 
   // ui::DialogModel:
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
   int GetDialogButtons() const override;
-  bool IsDialogButtonEnabled(ui::DialogButton button) const override;
 
   // views::DialogDelegate:
   views::View* CreateExtraView() override;
-  bool Accept() override;
   bool Close() override;
 
   // CastDialogController::Observer:
@@ -89,7 +86,6 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   void ExecuteCommand(int command_id, int event_flags) override;
 
   // Called by tests.
-  size_t selected_sink_index_for_test() const { return selected_sink_index_; }
   const std::vector<CastDialogSinkButton*>& sink_buttons_for_test() const {
     return sink_buttons_;
   }
@@ -129,7 +125,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   void ShowNoSinksView();
   void ShowScrollView();
 
-  // Applies the stored sink selection and scroll state.
+  // Applies the stored scroll state.
   void RestoreSinkListState();
 
   // Populates the scroll view containing sinks using the data in |model|.
@@ -138,9 +134,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Shows the sources menu that allows the user to choose a source to cast.
   void ShowSourcesMenu();
 
-  void SelectSinkAtIndex(size_t index);
-
-  const UIMediaSink& GetSelectedSink() const;
+  void SinkPressed(size_t index);
 
   void MaybeSizeToContents();
 
@@ -166,13 +160,9 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // Title shown at the top of the dialog.
   base::string16 dialog_title_;
 
-  // The index of the selected item on the sink list.
-  size_t selected_sink_index_ = 0;
-
   // The source selected in the sources menu. This defaults to "tab"
-  // (presentation or tab mirroring) under the assumption that all sinks support
-  // at least one of them. "Tab" is represented by a single item in the sources
-  // menu.
+  // (presentation or tab mirroring). "Tab" is represented by a single item in
+  // the sources menu.
   int selected_source_;
 
   // Contains references to sink buttons in the order they appear.

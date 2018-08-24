@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/media_router/ui_media_sink.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/grit/generated_resources.h"
@@ -12,10 +13,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/styled_label.h"
 
 namespace media_router {
-
-namespace {
 
 class CastDialogSinkButtonTest : public ChromeViewsTestBase {
  public:
@@ -26,29 +26,35 @@ class CastDialogSinkButtonTest : public ChromeViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(CastDialogSinkButtonTest);
 };
 
-void CheckActionTextForState(UIMediaSinkState state,
-                             base::string16 expected_text) {
+TEST_F(CastDialogSinkButtonTest, SetTitleLabel) {
   UIMediaSink sink;
-  sink.state = state;
+  sink.friendly_name = base::UTF8ToUTF16("sink name");
   CastDialogSinkButton button(nullptr, sink);
-  EXPECT_EQ(expected_text, button.GetActionText());
+  EXPECT_EQ(sink.friendly_name, button.title()->text());
 }
 
-}  // namespace
+TEST_F(CastDialogSinkButtonTest, SetStatusLabel) {
+  UIMediaSink sink;
 
-TEST_F(CastDialogSinkButtonTest, GetActionText) {
-  CheckActionTextForState(
-      UIMediaSinkState::AVAILABLE,
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_START_CASTING_BUTTON));
-  CheckActionTextForState(
-      UIMediaSinkState::CONNECTING,
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_START_CASTING_BUTTON));
-  CheckActionTextForState(
-      UIMediaSinkState::CONNECTED,
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON));
-  CheckActionTextForState(
-      UIMediaSinkState::DISCONNECTING,
-      l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_STOP_CASTING_BUTTON));
+  sink.state = UIMediaSinkState::AVAILABLE;
+  CastDialogSinkButton button1(nullptr, sink);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_AVAILABLE),
+            button1.subtitle()->text());
+
+  sink.state = UIMediaSinkState::CONNECTING;
+  CastDialogSinkButton button2(nullptr, sink);
+  EXPECT_EQ(l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_SINK_CONNECTING),
+            button2.subtitle()->text());
+
+  sink.status_text = base::UTF8ToUTF16("status text");
+  CastDialogSinkButton button3(nullptr, sink);
+  EXPECT_EQ(sink.status_text, button3.subtitle()->text());
+
+  sink.issue = Issue(IssueInfo("issue", IssueInfo::Action::DISMISS,
+                               IssueInfo::Severity::WARNING));
+  CastDialogSinkButton button4(nullptr, sink);
+  EXPECT_EQ(base::UTF8ToUTF16(sink.issue->info().title),
+            button4.subtitle()->text());
 }
 
 }  // namespace media_router

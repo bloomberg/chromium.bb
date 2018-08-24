@@ -100,21 +100,8 @@ base::string16 CastDialogView::GetWindowTitle() const {
   return dialog_title_;
 }
 
-base::string16 CastDialogView::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  return sink_buttons_.empty()
-             ? l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_START_CASTING_BUTTON)
-             : sink_buttons_.at(selected_sink_index_)->GetActionText();
-}
-
 int CastDialogView::GetDialogButtons() const {
-  return ui::DIALOG_BUTTON_OK;
-}
-
-bool CastDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
-  return !sink_buttons_.empty() &&
-         GetSelectedSink().state != UIMediaSinkState::CONNECTING &&
-         GetSelectedSink().state != UIMediaSinkState::DISCONNECTING;
+  return ui::DIALOG_BUTTON_NONE;
 }
 
 views::View* CastDialogView::CreateExtraView() {
@@ -124,23 +111,6 @@ views::View* CastDialogView::CreateExtraView() {
   sources_button_->set_id(kAlternativeSourceButtonId);
   sources_button_->SetEnabled(false);
   return sources_button_;
-}
-
-bool CastDialogView::Accept() {
-  const UIMediaSink& sink = GetSelectedSink();
-  if (!sink.route_id.empty()) {
-    controller_->StopCasting(sink.route_id);
-    metrics_.OnStopCasting();
-  } else {
-    base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
-    // TODO(takumif): Once we allow casting by clicking on a sink button,
-    // |cast_mode| should always be set, so no check would be necessary.
-    if (cast_mode) {
-      controller_->StartCasting(sink.id, cast_mode.value());
-      metrics_.OnStartCasting(base::Time::Now(), selected_sink_index_);
-    }
-  }
-  return false;
 }
 
 bool CastDialogView::Close() {
@@ -154,11 +124,6 @@ void CastDialogView::OnModelUpdated(const CastDialogModel& model) {
     if (sources_button_)
       sources_button_->SetEnabled(false);
   } else {
-    // If |sink_buttons_| is empty, the sink list was empty before this update.
-    // In that case, select the first active sink, so that its session can be
-    // stopped with one click.
-    if (sink_buttons_.empty())
-      selected_sink_index_ = model.GetFirstActiveSinkIndex().value_or(0);
     if (scroll_view_)
       scroll_position_ = scroll_view_->GetVisibleRect().y();
     else
@@ -183,10 +148,17 @@ void CastDialogView::OnControllerInvalidated() {
 
 void CastDialogView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
-  if (sender->tag() == kAlternativeSourceButtonId)
+  if (sender->tag() == kAlternativeSourceButtonId) {
     ShowSourcesMenu();
-  else
-    SelectSinkAtIndex(sender->tag());
+  } else {
+    // SinkPressed() invokes a refresh of the sink list, which deletes the
+    // sink button. So we must call this after the button is done handling the
+    // press event.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&CastDialogView::SinkPressed, weak_factory_.GetWeakPtr(),
+                       sender->tag()));
+  }
 }
 
 gfx::Size CastDialogView::CalculatePreferredSize() const {
@@ -276,7 +248,6 @@ void CastDialogView::ShowNoSinksView() {
     delete scroll_view_;
     scroll_view_ = nullptr;
     sink_buttons_.clear();
-    selected_sink_index_ = 0;
   }
   no_sinks_view_ = new CastDialogNoSinksView(browser_);
   AddChildView(no_sinks_view_);
@@ -297,14 +268,6 @@ void CastDialogView::ShowScrollView() {
 }
 
 void CastDialogView::RestoreSinkListState() {
-  if (selected_sink_index_ < sink_buttons_.size()) {
-    sink_buttons_.at(selected_sink_index_)->SnapInkDropToActivated();
-    SelectSinkAtIndex(selected_sink_index_);
-  } else if (sink_buttons_.size() > 0u) {
-    sink_buttons_.at(0)->SnapInkDropToActivated();
-    SelectSinkAtIndex(0);
-  }
-
   views::ScrollBar* scroll_bar =
       const_cast<views::ScrollBar*>(scroll_view_->vertical_scroll_bar());
   if (scroll_bar) {
@@ -349,22 +312,18 @@ void CastDialogView::ShowSourcesMenu() {
                                   ui::MENU_SOURCE_MOUSE);
 }
 
-void CastDialogView::SelectSinkAtIndex(size_t index) {
-  if (selected_sink_index_ != index &&
-      selected_sink_index_ < sink_buttons_.size()) {
-    sink_buttons_.at(selected_sink_index_)->SetSelected(false);
+void CastDialogView::SinkPressed(size_t index) {
+  const UIMediaSink& sink = sink_buttons_.at(index)->sink();
+  if (sink.route_id.empty()) {
+    base::Optional<MediaCastMode> cast_mode = GetCastModeToUse(sink);
+    if (cast_mode) {
+      controller_->StartCasting(sink.id, cast_mode.value());
+      metrics_.OnStartCasting(base::Time::Now(), index);
+    }
+  } else {
+    controller_->StopCasting(sink.route_id);
+    metrics_.OnStopCasting();
   }
-  CastDialogSinkButton* selected_button = sink_buttons_.at(index);
-  selected_button->SetSelected(true);
-  selected_sink_index_ = index;
-
-  // Update the text on the main action button.
-  DialogModelChanged();
-}
-
-const UIMediaSink& CastDialogView::GetSelectedSink() const {
-  DCHECK_GT(sink_buttons_.size(), selected_sink_index_);
-  return sink_buttons_.at(selected_sink_index_)->sink();
 }
 
 void CastDialogView::MaybeSizeToContents() {
@@ -388,7 +347,10 @@ base::Optional<MediaCastMode> CastDialogView::GetCastModeToUse(
 
 void CastDialogView::DisableUnsupportedSinks() {
   for (CastDialogSinkButton* sink_button : sink_buttons_) {
-    sink_button->SetEnabled(GetCastModeToUse(sink_button->sink()).has_value());
+    const bool enable =
+        sink_button->sink().state == UIMediaSinkState::CONNECTED ||
+        GetCastModeToUse(sink_button->sink()).has_value();
+    sink_button->SetEnabled(enable);
   }
 }
 
