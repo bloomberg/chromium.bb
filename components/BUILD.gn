@@ -563,6 +563,7 @@ if (!is_ios) {
   test("components_perftests") {
     sources = [
       "discardable_memory/common/discardable_shared_memory_heap_perftest.cc",
+      "leveldb_proto/proto_database_perftest.cc",
       "omnibox/browser/history_quick_provider_performance_unittest.cc",
       "subresource_filter/core/common/perftests/indexed_ruleset_perftest.cc",
       "test/run_all_perftests.cc",
@@ -573,6 +574,8 @@ if (!is_ios) {
       "//base",
       "//components/discardable_memory/common",
       "//components/history/core/test",
+      "//components/leveldb_proto",
+      "//components/leveldb_proto/testing/proto",
       "//components/omnibox/browser",
       "//components/omnibox/browser:test_support",
       "//components/subresource_filter/core/common",
