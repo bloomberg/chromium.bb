@@ -7,6 +7,7 @@
 
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -14,7 +15,6 @@
 namespace blink {
 
 class LayoutObject;
-class NGOffsetMapping;
 
 // This is the helper class for constructing the DOM-to-TextContent offset
 // mapping. It holds an offset mapping, and provides APIs to modify the mapping
@@ -64,16 +64,16 @@ class CORE_EXPORT NGOffsetMappingBuilder {
     ~SourceNodeScope();
 
    private:
-    base::AutoReset<const LayoutObject*> auto_reset_;
-
-#if DCHECK_IS_ON()
-    NGOffsetMappingBuilder* builder_ = nullptr;
-#endif
+    NGOffsetMappingBuilder* const builder_ = nullptr;
+    base::AutoReset<Persistent<const Node>> layout_object_auto_reset_;
+    base::AutoReset<unsigned> appended_length_auto_reset_;
 
     DISALLOW_COPY_AND_ASSIGN(SourceNodeScope);
   };
 
   NGOffsetMappingBuilder();
+
+  void ReserveCapacity(unsigned capacity);
 
   // Append an identity offset mapping of the specified length with null
   // annotation to the builder.
@@ -92,18 +92,19 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   // This function should only be called by NGInlineItemsBuilder during
   // whitespace collapsing, and in the case that the target string of the
   // currently held mapping:
-  //   (i) has at least |skip_length + 1| characters,
-  //  (ii) has the last |skip_length| characters being non-text extra
-  //       characters, and
-  // (iii) has the |skip_length + 1|-st last character being a space.
+  // (i)  has at least |space_offset + 1| characters,
+  // (ii) character at |space_offset| in destination string is a collapsible
+  //      whitespace,
   // This function changes the space into collapsed.
-  void CollapseTrailingSpace(unsigned index);
+  void CollapseTrailingSpace(unsigned space_offset);
 
   // Concatenate the offset mapping held by another builder to this builder.
-  void Concatenate(const NGOffsetMappingBuilder&);
+  // TODO(xiaochengh): Implement when adding support for 'text-transform'
+  // void Concatenate(const NGOffsetMappingBuilder&);
 
   // Composite the offset mapping held by another builder to this builder.
-  void Composite(const NGOffsetMappingBuilder&);
+  // TODO(xiaochengh): Implement when adding support for 'text-transform'
+  // void Composite(const NGOffsetMappingBuilder&);
 
   // Set the destination string of the offset mapping.
   void SetDestinationString(String);
@@ -120,34 +121,31 @@ class CORE_EXPORT NGOffsetMappingBuilder {
   // This method can only be called once, as it can invalidate the stored data.
   NGOffsetMapping Build();
 
-  // Exposed for testing only.
-  Vector<unsigned> DumpOffsetMappingForTesting() const;
-  Vector<const LayoutObject*> DumpAnnotationForTesting() const;
-
  private:
-  // A mock implementation of the offset mapping builder that stores the mapping
-  // value of every offset in the plain way. This is simple but inefficient, and
-  // will be replaced by a real efficient implementation.
-  Vector<unsigned> mapping_;
+  // Helper function for CollapseTrailingSpace() to maintain unit ranges.
+  void ShiftRanges(unsigned position, int delta);
 
-  const LayoutObject* current_source_node_ = nullptr;
+  Persistent<const Node> current_node_ = nullptr;
+  unsigned current_offset_ = 0;
+  bool has_open_unit_ = false;
 #if DCHECK_IS_ON()
   bool has_nonnull_node_scope_ = false;
 #endif
 
-  // A mock implementation that stores the annotation value of all offsets in
-  // the plain way. It will be replaced by a real implementation for efficiency.
-  Vector<const LayoutObject*> annotation_;
+  // Length of the current destination string.
+  unsigned destination_length_ = 0;
+
+  // Mapping units of the current mapping function.
+  Vector<NGOffsetMappingUnit> mapping_units_;
+
+  // Unit ranges of the current mapping function.
+  NGOffsetMapping::RangeMap unit_ranges_;
+
+  // Unit range starts of currently entered inline elements.
+  Vector<unsigned> open_inlines_;
 
   // The destination string of the offset mapping.
   String destination_string_;
-
-  struct InlineBoundary {
-    const LayoutObject* node;
-    size_t offset;
-    bool is_enter;
-  };
-  Vector<InlineBoundary> boundaries_;
 
   friend class SourceNodeScope;
 

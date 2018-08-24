@@ -55,19 +55,25 @@ class CORE_EXPORT NGOffsetMappingUnit {
   unsigned TextContentStart() const { return text_content_start_; }
   unsigned TextContentEnd() const { return text_content_end_; }
 
+  // If the passed unit can be concatenated to |this| to create a bigger unit,
+  // replaces |this| by the result and returns true; Returns false otherwise.
+  bool Concatenate(const NGOffsetMappingUnit&);
+
   unsigned ConvertDOMOffsetToTextContent(unsigned) const;
 
   unsigned ConvertTextContentToFirstDOMOffset(unsigned) const;
   unsigned ConvertTextContentToLastDOMOffset(unsigned) const;
 
  private:
-  const NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
+  NGOffsetMappingUnitType type_ = NGOffsetMappingUnitType::kIdentity;
 
-  const Persistent<const Node> owner_;
-  const unsigned dom_start_;
-  const unsigned dom_end_;
-  const unsigned text_content_start_;
-  const unsigned text_content_end_;
+  Persistent<const Node> owner_;
+  unsigned dom_start_;
+  unsigned dom_end_;
+  unsigned text_content_start_;
+  unsigned text_content_end_;
+
+  friend class NGOffsetMappingBuilder;
 };
 
 class NGMappingUnitRange {

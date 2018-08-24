@@ -39,6 +39,74 @@ class NGOffsetMappingTest : public NGLayoutTest {
     return *map;
   }
 
+  String GetCollapsedIndexes() const {
+    const NGOffsetMapping& mapping = GetOffsetMapping();
+    const EphemeralRange block_range =
+        EphemeralRange::RangeOfContents(*layout_block_flow_->GetNode());
+
+    StringBuilder result;
+    for (const Node& node : block_range.Nodes()) {
+      if (!node.IsTextNode())
+        continue;
+
+      Vector<unsigned> collapsed_indexes;
+      for (const auto& unit : mapping.GetMappingUnitsForDOMRange(
+               EphemeralRange::RangeOfContents(node))) {
+        if (unit.GetType() != NGOffsetMappingUnitType::kCollapsed)
+          continue;
+        for (unsigned i = unit.DOMStart(); i < unit.DOMEnd(); ++i)
+          collapsed_indexes.push_back(i);
+      }
+
+      result.Append('{');
+      bool first = true;
+      for (unsigned index : collapsed_indexes) {
+        if (!first)
+          result.Append(", ");
+        result.AppendNumber(index);
+        first = false;
+      }
+      result.Append('}');
+    }
+    return result.ToString();
+  }
+
+  String TestCollapsingWithCSSWhiteSpace(String text, String whitespace) {
+    StringBuilder html;
+    html.Append("<div id=t style=\"white-space:");
+    html.Append(whitespace);
+    html.Append("\">");
+    html.Append(text);
+    html.Append("</div>");
+    SetupHtml("t", html.ToString());
+    return GetCollapsedIndexes();
+  }
+
+  String TestCollapsing(Vector<String> text) {
+    StringBuilder html;
+    html.Append("<div id=t>");
+    for (unsigned i = 0; i < text.size(); ++i) {
+      if (i)
+        html.Append("<!---->");
+      html.Append(text[i]);
+    }
+    html.Append("</div>");
+    SetupHtml("t", html.ToString());
+    return GetCollapsedIndexes();
+  }
+
+  String TestCollapsing(String text) {
+    return TestCollapsing(Vector<String>({text}));
+  }
+
+  String TestCollapsing(String text, String text2) {
+    return TestCollapsing(Vector<String>({text, text2}));
+  }
+
+  String TestCollapsing(String text, String text2, String text3) {
+    return TestCollapsing(Vector<String>({text, text2, text3}));
+  }
+
   bool IsOffsetMappingStored() const {
     return layout_block_flow_->GetNGInlineNodeData()->offset_mapping.get();
   }
@@ -87,6 +155,166 @@ class NGOffsetMappingTest : public NGLayoutTest {
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;
 };
+
+TEST_F(NGOffsetMappingTest, CollapseSpaces) {
+  String input("text text  text   text");
+  EXPECT_EQ("{10, 16, 17}", TestCollapsingWithCSSWhiteSpace(input, "normal"));
+  EXPECT_EQ("{10, 16, 17}", TestCollapsingWithCSSWhiteSpace(input, "nowrap"));
+  EXPECT_EQ("{10, 16, 17}",
+            TestCollapsingWithCSSWhiteSpace(input, "-webkit-nowrap"));
+  EXPECT_EQ("{10, 16, 17}", TestCollapsingWithCSSWhiteSpace(input, "pre-line"));
+  EXPECT_EQ("{}", TestCollapsingWithCSSWhiteSpace(input, "pre"));
+  EXPECT_EQ("{}", TestCollapsingWithCSSWhiteSpace(input, "pre-wrap"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseTabs) {
+  String input("text text \ttext \t\ttext");
+  EXPECT_EQ("{10, 16, 17}", TestCollapsingWithCSSWhiteSpace(input, "normal"));
+  EXPECT_EQ("{10, 16, 17}", TestCollapsingWithCSSWhiteSpace(input, "nowrap"));
+  EXPECT_EQ("{10, 16, 17}",
+            TestCollapsingWithCSSWhiteSpace(input, "-webkit-nowrap"));
+  EXPECT_EQ("{10, 16, 17}", TestCollapsingWithCSSWhiteSpace(input, "pre-line"));
+  EXPECT_EQ("{}", TestCollapsingWithCSSWhiteSpace(input, "pre"));
+  EXPECT_EQ("{}", TestCollapsingWithCSSWhiteSpace(input, "pre-wrap"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseNewLines) {
+  String input("text\ntext \n text\n\ntext");
+  EXPECT_EQ("{10, 11, 17}", TestCollapsingWithCSSWhiteSpace(input, "normal"));
+  EXPECT_EQ("{10, 11, 17}", TestCollapsingWithCSSWhiteSpace(input, "nowrap"));
+  EXPECT_EQ("{10, 11, 17}",
+            TestCollapsingWithCSSWhiteSpace(input, "-webkit-nowrap"));
+  EXPECT_EQ("{9, 11}", TestCollapsingWithCSSWhiteSpace(input, "pre-line"));
+  EXPECT_EQ("{}", TestCollapsingWithCSSWhiteSpace(input, "pre"));
+  EXPECT_EQ("{}", TestCollapsingWithCSSWhiteSpace(input, "pre-wrap"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseNewlinesAsSpaces) {
+  EXPECT_EQ("{}", TestCollapsing("text\ntext"));
+  EXPECT_EQ("{5}", TestCollapsing("text\n\ntext"));
+  EXPECT_EQ("{5, 6, 7}", TestCollapsing("text \n\n text"));
+  EXPECT_EQ("{5, 6, 7, 8}", TestCollapsing("text \n \n text"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseAcrossElements) {
+  EXPECT_EQ("{}{0}", TestCollapsing("text ", " text"))
+      << "Spaces are collapsed even when across elements.";
+}
+
+TEST_F(NGOffsetMappingTest, CollapseLeadingSpaces) {
+  EXPECT_EQ("{0, 1}", TestCollapsing("  text"));
+  // TODO(xiaochengh): Currently, LayoutText of trailing whitespace nodes are
+  // omitted, so we can't verify the following cases. Get around it and make the
+  // following tests work. EXPECT_EQ("{0}{}", TestCollapsing(" ", "text"));
+  // EXPECT_EQ("{0}{0}", TestCollapsing(" ", " text"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseTrailingSpaces) {
+  EXPECT_EQ("{4, 5}", TestCollapsing("text  "));
+  EXPECT_EQ("{}{0}", TestCollapsing("text", " "));
+  // TODO(xiaochengh): Get around whitespace LayoutText omission, and make the
+  // following test cases work.
+  // EXPECT_EQ("{4}{0}", TestCollapsing("text ", " "));
+}
+
+// TODO(xiaochengh): Get around whitespace LayoutText omission, and make the
+// following test cases work.
+TEST_F(NGOffsetMappingTest, DISABLED_CollapseAllSpaces) {
+  EXPECT_EQ("{0, 1}", TestCollapsing("  "));
+  EXPECT_EQ("{0, 1}{0, 1}", TestCollapsing("  ", "  "));
+  EXPECT_EQ("{0, 1}{0}", TestCollapsing("  ", "\n"));
+  EXPECT_EQ("{0}{0, 1}", TestCollapsing("\n", "  "));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseLeadingNewlines) {
+  EXPECT_EQ("{0}", TestCollapsing("\ntext"));
+  EXPECT_EQ("{0, 1}", TestCollapsing("\n\ntext"));
+  // TODO(xiaochengh): Get around whitespace LayoutText omission, and make the
+  // following test cases work.
+  // EXPECT_EQ("{0}{}", TestCollapsing("\n", "text"));
+  // EXPECT_EQ("{0, 1}{}", TestCollapsing("\n\n", "text"));
+  // EXPECT_EQ("{0, 1}{}", TestCollapsing(" \n", "text"));
+  // EXPECT_EQ("{0}{0}", TestCollapsing("\n", " text"));
+  // EXPECT_EQ("{0, 1}{0}", TestCollapsing("\n\n", " text"));
+  // EXPECT_EQ("{0, 1}{0}", TestCollapsing(" \n", " text"));
+  // EXPECT_EQ("{0}{0}", TestCollapsing("\n", "\ntext"));
+  // EXPECT_EQ("{0, 1}{0}", TestCollapsing("\n\n", "\ntext"));
+  // EXPECT_EQ("{0, 1}{0}", TestCollapsing(" \n", "\ntext"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseTrailingNewlines) {
+  EXPECT_EQ("{4}", TestCollapsing("text\n"));
+  EXPECT_EQ("{}{0}", TestCollapsing("text", "\n"));
+  // TODO(xiaochengh): Get around whitespace LayoutText omission, and make the
+  // following test cases work.
+  // EXPECT_EQ("{4}{0}", TestCollapsing("text\n", "\n"));
+  // EXPECT_EQ("{4}{0}", TestCollapsing("text\n", " "));
+  // EXPECT_EQ("{4}{0}", TestCollapsing("text ", "\n"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseNewlineAcrossElements) {
+  EXPECT_EQ("{}{0}", TestCollapsing("text ", "\ntext"));
+  EXPECT_EQ("{}{0, 1}", TestCollapsing("text ", "\n text"));
+  EXPECT_EQ("{}{}{0}", TestCollapsing("text", " ", "\ntext"));
+}
+
+TEST_F(NGOffsetMappingTest, CollapseBeforeAndAfterNewline) {
+  EXPECT_EQ("{4, 5, 7, 8}",
+            TestCollapsingWithCSSWhiteSpace("text  \n  text", "pre-line"))
+      << "Spaces before and after newline are removed.";
+}
+
+TEST_F(NGOffsetMappingTest,
+       CollapsibleSpaceAfterNonCollapsibleSpaceAcrossElements) {
+  SetupHtml("t",
+            "<div id=t>"
+            "<span style=\"white-space:pre-wrap\">text </span>"
+            " text"
+            "</div>");
+  EXPECT_EQ("{}{}", GetCollapsedIndexes())
+      << "The whitespace in constructions like '<span style=\"white-space: "
+         "pre-wrap\">text <span><span> text</span>' does not collapse.";
+}
+
+TEST_F(NGOffsetMappingTest, CollapseZeroWidthSpaces) {
+  EXPECT_EQ("{5}", TestCollapsing(u"text\u200B\ntext"))
+      << "Newline is removed if the character before is ZWS.";
+  EXPECT_EQ("{4}", TestCollapsing(u"text\n\u200Btext"))
+      << "Newline is removed if the character after is ZWS.";
+  EXPECT_EQ("{5}", TestCollapsing(u"text\u200B\n\u200Btext"))
+      << "Newline is removed if the character before/after is ZWS.";
+
+  EXPECT_EQ("{4}{}", TestCollapsing(u"text\n", u"\u200Btext"))
+      << "Newline is removed if the character after across elements is ZWS.";
+  EXPECT_EQ("{}{0}", TestCollapsing(u"text\u200B", u"\ntext"))
+      << "Newline is removed if the character before is ZWS even across "
+         "elements.";
+
+  EXPECT_EQ("{4, 5}{}", TestCollapsing(u"text \n", u"\u200Btext"))
+      << "Collapsible space before newline does not affect the result.";
+  EXPECT_EQ("{5}{0}", TestCollapsing(u"text\u200B\n", u" text"))
+      << "Collapsible space after newline is removed even when the "
+         "newline was removed.";
+  EXPECT_EQ("{5}{0}", TestCollapsing(u"text\u200B ", u"\ntext"))
+      << "A white space sequence containing a segment break before or after "
+         "a zero width space is collapsed to a zero width space.";
+}
+
+TEST_F(NGOffsetMappingTest, CollapseEastAsianWidth) {
+  EXPECT_EQ("{1}", TestCollapsing(u"\u4E00\n\u4E00"))
+      << "Newline is removed when both sides are Wide.";
+
+  EXPECT_EQ("{}", TestCollapsing(u"\u4E00\nA"))
+      << "Newline is not removed when after is Narrow.";
+  EXPECT_EQ("{}", TestCollapsing(u"A\n\u4E00"))
+      << "Newline is not removed when before is Narrow.";
+
+  EXPECT_EQ("{1}{}", TestCollapsing(u"\u4E00\n", u"\u4E00"))
+      << "Newline at the end of elements is removed when both sides are Wide.";
+  EXPECT_EQ("{}{0}", TestCollapsing(u"\u4E00", u"\n\u4E00"))
+      << "Newline at the beginning of elements is removed "
+         "when both sides are Wide.";
+}
 
 #define TEST_UNIT(unit, type, owner, dom_start, dom_end, text_content_start, \
                   text_content_end)                                          \
