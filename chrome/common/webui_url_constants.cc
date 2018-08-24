@@ -194,7 +194,6 @@ const char kChromeUICertificateManagerDialogURL[] =
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
 const char kChromeUICryptohomeHost[] = "cryptohome";
 const char kChromeUIDeviceEmulatorHost[] = "device-emulator";
-const char kChromeUIDiscoverURL[] = "chrome://oobe/discover";
 const char kChromeUIFirstRunHost[] = "first-run";
 const char kChromeUIFirstRunURL[] = "chrome://first-run/";
 const char kChromeUIIntenetConfigDialogURL[] =

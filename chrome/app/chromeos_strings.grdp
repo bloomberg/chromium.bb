@@ -5053,9 +5053,6 @@
   <message name="IDS_INTERNAL_APP_CAMERA" desc="The name of the Camera app in the app list.">
     Camera
   </message>
-  <message name="IDS_INTERNAL_APP_DISCOVER" desc="Name for the Discover app in the app list.">
-    Discover
-  </message>
 
   <!-- Launcher Settings shortcuts -->
   <message name="IDS_LAUNCHER_SHORTCUTS_BLUETOOTH" desc="The name of bluetooth shortcut.">
