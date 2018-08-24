@@ -137,22 +137,29 @@ TextDirection SelectionModifier::DirectionOfEnclosingBlock() const {
              : TextDirection::kLtr;
 }
 
-static TextDirection DirectionOf(const VisibleSelection& visible_selection) {
-  const InlineBox* start_box = nullptr;
-  const InlineBox* end_box = nullptr;
-  // Cache the VisiblePositions because visibleStart() and visibleEnd()
-  // can cause layout, which has the potential to invalidate lineboxes.
-  const VisiblePosition& start_position = visible_selection.VisibleStart();
-  const VisiblePosition& end_position = visible_selection.VisibleEnd();
-  if (start_position.IsNotNull())
-    start_box = ComputeInlineBoxPosition(start_position).inline_box;
-  if (end_position.IsNotNull())
-    end_box = ComputeInlineBoxPosition(end_position).inline_box;
-  if (start_box && end_box && start_box->Direction() == end_box->Direction())
-    return start_box->Direction();
+namespace {
+
+base::Optional<TextDirection> DirectionAt(const VisiblePosition& position) {
+  if (position.IsNull())
+    return base::nullopt;
+  if (const InlineBox* box = ComputeInlineBoxPosition(position).inline_box)
+    return box->Direction();
+  return base::nullopt;
+}
+
+TextDirection DirectionOf(const VisibleSelection& visible_selection) {
+  base::Optional<TextDirection> maybe_start_direction =
+      DirectionAt(visible_selection.VisibleStart());
+  base::Optional<TextDirection> maybe_end_direction =
+      DirectionAt(visible_selection.VisibleEnd());
+  if (maybe_start_direction.has_value() && maybe_end_direction.has_value() &&
+      maybe_start_direction.value() == maybe_end_direction.value())
+    return maybe_start_direction.value();
 
   return DirectionOfEnclosingBlockOf(visible_selection.Extent());
 }
+
+}  // namespace
 
 TextDirection SelectionModifier::DirectionOfSelection() const {
   return DirectionOf(selection_);
