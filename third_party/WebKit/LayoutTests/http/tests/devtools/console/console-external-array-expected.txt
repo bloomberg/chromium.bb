@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that console logging detects external arrays as arrays.
 
 console-external-array.js:14 Int8Array(10) [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

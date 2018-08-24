@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that Web Inspector won't crash if there are messages written to console from a frame which has already navigated to a page from a different domain.
 
 Received console messages:

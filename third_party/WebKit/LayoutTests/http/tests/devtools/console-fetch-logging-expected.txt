@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that fetch logging works when XMLHttpRequest Logging is Enabled and doesn't show logs when it is Disabled.
 
 Making requests with monitoring ENABLED
@@ -32,6 +33,7 @@ requestHelper @ console-fetch-logging.js:20
 step1 @ console-fetch-logging.js:33
 makeRequests @ console-fetch-logging.js:27
 (anonymous) @ VM:1
+console-fetch-logging.js:13 sending a GET request to http://localhost:8000/devtools/resources/xhr-exists.html
 VM:58 Fetch finished loading: POST "http://127.0.0.1:8000/devtools/resources/post-target.cgi".
 makeFetch @ VM:58
 requestHelper @ console-fetch-logging.js:20
@@ -48,8 +50,28 @@ requestHelper @ console-fetch-logging.js:20
 step1 @ console-fetch-logging.js:33
 makeRequests @ console-fetch-logging.js:27
 (anonymous) @ VM:1
-console-fetch-logging.js:13 sending a GET request to http://localhost:8000/devtools/resources/xhr-exists.html
-inspected-page.html:1 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+inspected-page.html:1 Access to fetch at 'http://localhost:8000/devtools/resources/xhr-exists.html' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+VM:58 Cross-Origin Read Blocking (CORB) blocked cross-origin response http://localhost:8000/devtools/resources/xhr-exists.html with MIME type text/html. See https://www.chromestatus.com/feature/5629709824032768 for more details.
+makeFetch @ VM:58
+requestHelper @ console-fetch-logging.js:20
+step4 @ console-fetch-logging.js:51
+setTimeout (async)
+delayCallback @ console-fetch-logging.js:18
+Promise.then (async)
+requestHelper @ console-fetch-logging.js:20
+step3 @ console-fetch-logging.js:45
+setTimeout (async)
+delayCallback @ console-fetch-logging.js:18
+Promise.then (async)
+requestHelper @ console-fetch-logging.js:20
+step2 @ console-fetch-logging.js:39
+setTimeout (async)
+delayCallback @ console-fetch-logging.js:18
+Promise.then (async)
+requestHelper @ console-fetch-logging.js:20
+step1 @ console-fetch-logging.js:33
+makeRequests @ console-fetch-logging.js:27
+(anonymous) @ VM:1
 VM:58 Fetch finished loading: GET "http://localhost:8000/devtools/resources/xhr-exists.html".
 makeFetch @ VM:58
 requestHelper @ console-fetch-logging.js:20
@@ -87,5 +109,26 @@ makeRequests @ console-fetch-logging.js:27
 (anonymous) @ VM:1
 console-fetch-logging.js:13 sending a POST request to resources/post-target.cgi
 console-fetch-logging.js:13 sending a GET request to http://localhost:8000/devtools/resources/xhr-exists.html
-inspected-page.html:1 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+inspected-page.html:1 Access to fetch at 'http://localhost:8000/devtools/resources/xhr-exists.html' from origin 'http://127.0.0.1:8000' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. If an opaque response serves your needs, set the request's mode to 'no-cors' to fetch the resource with CORS disabled.
+VM:58 Cross-Origin Read Blocking (CORB) blocked cross-origin response http://localhost:8000/devtools/resources/xhr-exists.html with MIME type text/html. See https://www.chromestatus.com/feature/5629709824032768 for more details.
+makeFetch @ VM:58
+requestHelper @ console-fetch-logging.js:20
+step4 @ console-fetch-logging.js:51
+setTimeout (async)
+delayCallback @ console-fetch-logging.js:18
+Promise.then (async)
+requestHelper @ console-fetch-logging.js:20
+step3 @ console-fetch-logging.js:45
+setTimeout (async)
+delayCallback @ console-fetch-logging.js:18
+Promise.then (async)
+requestHelper @ console-fetch-logging.js:20
+step2 @ console-fetch-logging.js:39
+setTimeout (async)
+delayCallback @ console-fetch-logging.js:18
+Promise.then (async)
+requestHelper @ console-fetch-logging.js:20
+step1 @ console-fetch-logging.js:33
+makeRequests @ console-fetch-logging.js:27
+(anonymous) @ VM:1
 

@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests to ensure datsaver logs warning in console if enabled and only shown once on reloads.
 
 Console messages:
@@ -6,7 +7,6 @@ Enabling data saver
 Reloading Page
 Page reloaded.
 Console messages:
-Consider disabling Chrome Data Saver while debugging. For more info see: https://support.google.com/chrome/?p=datasaver
 
 Reloading Page
 Page reloaded.

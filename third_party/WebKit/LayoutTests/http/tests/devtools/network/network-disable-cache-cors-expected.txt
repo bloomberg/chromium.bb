@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that preflight OPTIONS is always sent if 'Disable cache' is checked, and that network instrumentation does not produce errors for redirected preflights.
 
 OPTIONS: http://localhost:8080/devtools/network/resources/cors-redirect.cgi

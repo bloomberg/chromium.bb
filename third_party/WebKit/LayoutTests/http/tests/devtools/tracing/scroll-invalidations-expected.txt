@@ -1,16 +1,9 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests invalidations produced by scrolling a page with position: fixed elements.
 
-Scroll invalidations[
-    {
-        cause : {reason: Scroll with viewport-constrained element, stackTrace: undefined}
-        changedAttribute : undefined
-        changedClass : undefined
-        changedId : undefined
-        changedPseudo : undefined
-        extraData : undefined
-        nodeName : "DIV"
-        selectorPart : undefined
-        type : "ScrollInvalidationTracking"
-    }
-]
+TEST ENDED EARLY DUE TO UNCAUGHT ERROR:
+TypeError: Cannot read property 'Symbol(invalidationTrackingEvents)' of undefined
+    at Function.invalidationEventsFor (file:///usr/local/google/src/chromium/src/out_linux_chromium_rel_ng/Release/resources/inspector/timeline_model/timeline_model_module.js:279:49)
+    at eval (http://127.0.0.1:8000/devtools/tracing/scroll-invalidations.js:25:41)
+=== DO NOT COMMIT THIS INTO -expected.txt ===
 

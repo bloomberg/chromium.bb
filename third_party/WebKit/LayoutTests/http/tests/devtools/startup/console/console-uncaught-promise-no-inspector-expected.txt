@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that uncaught promise rejection messages have line numbers when the inspector is closed and stack traces are not collected.
 
 console-uncaught-pro…no-inspector.html:4 Uncaught (in promise) Error: err1

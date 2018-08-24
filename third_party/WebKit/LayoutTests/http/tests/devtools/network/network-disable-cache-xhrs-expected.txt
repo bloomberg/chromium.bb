@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests disabling cache from inspector.
 
 http://127.0.0.1:8000/devtools/network/resources/resource.php?random=1&cached=1

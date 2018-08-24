@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests the matching performed in AnimationModel of groups composed of transitions, which are applied through a variety of selectors.
 
 >> resetElement('node1'); startTransition('node1')

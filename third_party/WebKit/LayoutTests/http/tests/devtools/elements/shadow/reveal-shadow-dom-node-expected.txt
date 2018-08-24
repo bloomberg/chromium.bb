@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 This test verifies that the correct node is revealed in the DOM tree when asked to reveal a user-agent shadow DOM node.
 
 User-agent shadow DOM hidden:

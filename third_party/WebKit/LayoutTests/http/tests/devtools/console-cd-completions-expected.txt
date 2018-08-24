@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Test that completions in the context of an iframe with a different origin will result in
       names of its global variables. Test passes if all global variables are found among completions
       AND there are NO console messages. Bug 65457.

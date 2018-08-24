@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that syntax errors are logged into console and doesn't cause browser crash.
 
 syntax-error.js:3 Uncaught SyntaxError: Unexpected token )

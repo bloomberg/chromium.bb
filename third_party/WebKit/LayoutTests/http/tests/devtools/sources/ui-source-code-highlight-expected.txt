@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that network-loaded UISourceCodes are highlighted according to their HTTP header
 mime type instead of their extension. crbug.com/411863
 

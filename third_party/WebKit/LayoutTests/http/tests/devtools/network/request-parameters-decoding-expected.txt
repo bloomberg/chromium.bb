@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests how request headers are decoded in network item view.
 
 Original value: Test+%21%40%23%24%25%5E%26*%28%29_%2B+parameters.

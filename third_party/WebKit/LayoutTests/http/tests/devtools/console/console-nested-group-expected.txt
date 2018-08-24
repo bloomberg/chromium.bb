@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that console.group/groupEnd messages won't be coalesced. Bug 56114. Bug 63521.
 
 console-nested-group.js:12 outer group console-message-wrapper console-group-title console-from-api console-info-level > console-message

@@ -1,3 +1,4 @@
+CONSOLE WARNING: line 3078: Element.createShadowRoot is deprecated and will be removed in M73, around March 2019. Please use Element.attachShadow instead. See https://www.chromestatus.com/features/4507242028072960 for more details.
 Tests that adding a new rule works after switching nodes.
 
 After adding new rule (inspected):
@@ -7,7 +8,6 @@ element.style { ()
 
 [expanded] 
 foo, [$div#inspected, $]bar { (inspector-stylesheet:1 -> inspector-stylesheet:1:26)
-    color: maroon;
 
 [expanded] 
 [$div$] { (user agent stylesheet)
