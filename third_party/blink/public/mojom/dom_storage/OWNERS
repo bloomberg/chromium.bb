@@ -1,5 +1,4 @@
-mek@chromium.org
-dmurph@chromium.org
+file://content/browser/dom_storage/OWNERS
 
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
