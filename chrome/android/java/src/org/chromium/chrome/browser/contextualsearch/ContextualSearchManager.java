@@ -265,6 +265,8 @@ public class ContextualSearchManager
 
         mTabRedirectHandler = new TabRedirectHandler(mActivity);
 
+        mPolicy.initialize();
+
         mIsShowingPromo = false;
         mDidLogPromoOutcome = false;
         mDidStartLoadingResolvedSearchRequest = false;

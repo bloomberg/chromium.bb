@@ -27,6 +27,7 @@ enum Pref {
   PROMPT_FOR_DOWNLOAD_ANDROID,
   SHOW_MISSING_SD_CARD_ERROR_ANDROID,
   CAN_MAKE_PAYMENT_ENABLED,
+  CONTEXTUAL_SEARCH_ENABLED,
   // PREF_NUM_PREFS must be the last entry.
   PREF_NUM_PREFS
 };
@@ -42,6 +43,7 @@ const char* const kPrefsExposedToJava[] = {
     dom_distiller::prefs::kReaderForAccessibility,
     prefs::kPromptForDownloadAndroid,
     prefs::kShowMissingSdCardErrorAndroid,
-    payments::kCanMakePaymentEnabled};
+    payments::kCanMakePaymentEnabled,
+    prefs::kContextualSearchEnabled};
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREFS_H_

@@ -404,6 +404,8 @@ const char kSearchSuggestEnabled[] = "search.suggest_enabled";
 // "" (empty string) - undecided
 // "true" - opt-in (enabled)
 const char kContextualSearchEnabled[] = "search.contextual_search_enabled";
+const char kContextualSearchDisabledValue[] = "false";
+const char kContextualSearchEnabledValue[] = "true";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_MACOSX) || defined(OS_WIN) || \
