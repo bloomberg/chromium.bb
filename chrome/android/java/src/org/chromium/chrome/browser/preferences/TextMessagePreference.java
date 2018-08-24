@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.view.View;
@@ -26,9 +27,18 @@ public class TextMessagePreference extends ChromeBasePreference {
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        TextView textView = (TextView) view.findViewById(android.R.id.title);
-        textView.setSingleLine(false);
-        textView.setMaxLines(Integer.MAX_VALUE);
-        textView.setMovementMethod(LinkMovementMethod.getInstance());
+        TextView titleView = (TextView) view.findViewById(android.R.id.title);
+        if (!TextUtils.isEmpty(getTitle())) {
+            titleView.setVisibility(View.VISIBLE);
+            titleView.setSingleLine(false);
+            titleView.setMaxLines(Integer.MAX_VALUE);
+            titleView.setMovementMethod(LinkMovementMethod.getInstance());
+        } else {
+            titleView.setVisibility(View.GONE);
+        }
+
+        TextView summaryView = (TextView) view.findViewById(android.R.id.summary);
+        // No need to manually toggle visibility for summary - it is done in super.onBindView.
+        summaryView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 }

@@ -27,8 +27,9 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SyncAndServicesPreferences;
-import org.chromium.chrome.browser.preferences.TextMessageWithLinkAndIconPreference;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
 
 /**
  * Fragment to keep track of the all the privacy related preferences.
@@ -81,13 +82,14 @@ public class PrivacyPreferences extends PreferenceFragment
             preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
             preferenceScreen.removePreference(findPreference(PREF_USAGE_AND_CRASH_REPORTING));
 
-            TextMessageWithLinkAndIconPreference syncAndServicesLink =
-                    (TextMessageWithLinkAndIconPreference) findPreference(
-                            PREF_SYNC_AND_SERVICES_LINK);
-            syncAndServicesLink.setLinkClickDelegate(() -> {
+            Preference syncAndServicesLink = findPreference(PREF_SYNC_AND_SERVICES_LINK);
+            NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(view -> {
                 PreferencesLauncher.launchSettingsPage(
                         getActivity(), SyncAndServicesPreferences.class.getName());
             });
+            syncAndServicesLink.setSummary(
+                    SpanApplier.applySpans(getString(R.string.privacy_sync_and_services_link),
+                            new SpanApplier.SpanInfo("<link>", "</link>", linkSpan)));
 
             updateSummaries();
             return;
