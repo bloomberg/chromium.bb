@@ -267,7 +267,7 @@ bool VideoCaptureDeviceFactoryLinux::HasUsableFormats(int fd,
     }
   }
 
-  DLOG(ERROR) << "No usable formats found";
+  DVLOG(1) << "No usable formats found";
   return false;
 }
 
