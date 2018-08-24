@@ -69,7 +69,7 @@ struct CONTENT_EXPORT BackgroundFetchRegistration {
 // Analogous to the following structure in the spec:
 // http://wicg.github.io/background-fetch/#backgroundfetchsettledfetch
 struct CONTENT_EXPORT BackgroundFetchSettledFetch {
-  static blink::mojom::FetchAPIResponsePtr MakeCloneResponse(
+  static blink::mojom::FetchAPIResponsePtr CloneResponse(
       const blink::mojom::FetchAPIResponsePtr& response);
   BackgroundFetchSettledFetch();
   BackgroundFetchSettledFetch(const BackgroundFetchSettledFetch& other);

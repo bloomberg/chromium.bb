@@ -83,8 +83,7 @@ struct CONTENT_EXPORT
   }
   static blink::mojom::FetchAPIResponsePtr response(
       const content::BackgroundFetchSettledFetch& fetch) {
-    return content::BackgroundFetchSettledFetch::MakeCloneResponse(
-        fetch.response);
+    return content::BackgroundFetchSettledFetch::CloneResponse(fetch.response);
   }
 
   static bool Read(blink::mojom::BackgroundFetchSettledFetchDataView data,

@@ -304,7 +304,8 @@ void ToWebServiceWorkerRequest(const ServiceWorkerFetchRequest& request,
   web_request->SetIsHistoryNavigation(request.is_history_navigation);
 }
 
-// Converts |response| to its equivalent type in the Blink API.
+// Converts |response| to its equivalent type in the Blink API. This conversion
+// is destructive.
 // TODO(leonhsl): Remove this when we propagate
 // blink::mojom::FetchAPIResponsePtr into Blink instead of
 // WebServiceWorkerResponse.
