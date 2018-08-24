@@ -109,8 +109,8 @@ struct LayoutBoxRareData {
 
   // Used by BoxPaintInvalidator. Stores the previous content box size and
   // layout overflow rect after the last paint invalidation. They are valid if
-  // m_hasPreviousContentBoxRectAndLayoutOverflowRect is true.
-  LayoutRect previous_content_box_rect_;
+  // has_previous_content_box_rect_and_layout_overflow_rect_ is true.
+  LayoutRect previous_physical_content_box_rect_;
   LayoutRect previous_physical_layout_overflow_rect_;
 
   // Used by LocalFrameView::ScrollIntoView. When the scroll is sequenced
@@ -390,9 +390,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   // Note that those functions have their origin at this box's CSS border box.
-  // As such their location doesn't account for 'top'/'left'.
+  // As such their location doesn't account for 'top'/'left'. About its
+  // coordinate space, it can be treated as in either physical coordinates
+  // or "physical coordinates in flipped block-flow direction", and
+  // FlipForWritingMode() will do nothing on it.
   LayoutRect BorderBoxRect() const { return LayoutRect(LayoutPoint(), Size()); }
-  DISABLE_CFI_PERF LayoutRect PaddingBoxRect() const {
+
+  // TODO(crbug.com/877518): Some callers of this method may actually want
+  // "physical coordinates in flipped block-flow direction".
+  DISABLE_CFI_PERF LayoutRect PhysicalPaddingBoxRect() const {
     return LayoutRect(ClientLeft(), ClientTop(), ClientWidth(), ClientHeight());
   }
 
@@ -408,11 +414,17 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   // The content area of the box (excludes padding - and intrinsic padding for
   // table cells, etc... - and border).
-  DISABLE_CFI_PERF LayoutRect ContentBoxRect() const {
+  // TODO(crbug.com/877518): Some callers of this method may actually want
+  // "physical coordinates in flipped block-flow direction".
+  // TODO(wangxianzhu): Also exclude scrollbars which are between the inner
+  // border box and the padding box.
+  DISABLE_CFI_PERF LayoutRect PhysicalContentBoxRect() const {
     return LayoutRect(BorderLeft() + PaddingLeft(), BorderTop() + PaddingTop(),
                       ContentWidth(), ContentHeight());
   }
-  LayoutSize ContentBoxOffset() const {
+  // TODO(crbug.com/877518): Some callers of this method may actually want
+  // "physical coordinates in flipped block-flow direction".
+  LayoutSize PhysicalContentBoxOffset() const {
     return LayoutSize(BorderLeft() + PaddingLeft(), BorderTop() + PaddingTop());
   }
   // The content box in absolute coords. Ignores transforms.
@@ -422,8 +434,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // The content box converted to absolute coords (taking transforms into
   // account).
   FloatQuad AbsoluteContentQuad(MapCoordinatesFlags = 0) const;
+
   // The enclosing rectangle of the background with given opacity requirement.
-  LayoutRect BackgroundRect(BackgroundRectType) const;
+  // TODO(crbug.com/877518): Some callers of this method may actually want
+  // "physical coordinates in flipped block-flow direction".
+  LayoutRect PhysicalBackgroundRect(BackgroundRectType) const;
 
   // This returns the content area of the box (excluding padding and border).
   // The only difference with contentBoxRect is that computedCSSContentBoxRect
@@ -457,12 +472,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   bool CanResize() const;
 
-  // Visual and layout overflow are in the coordinate space of the box. This
-  // means that they aren't purely physical directions. For horizontal-tb and
-  // vertical-lr they will match physical directions, but for vertical-rl, the
-  // left/right are flipped when compared to their physical counterparts.
-  // For example minX is on the left in vertical-lr, but it is on the right in
-  // vertical-rl.
+  // Like most of the other box geometries, visual and layout overflow are also
+  // in the "physical coordinates in flipped block-flow direction" of the box.
   LayoutRect NoOverflowRect() const;
   LayoutRect LayoutOverflowRect() const {
     return overflow_ ? overflow_->LayoutOverflowRect() : NoOverflowRect();
@@ -1410,11 +1421,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   }
 
   LayoutSize PreviousSize() const { return previous_size_; }
-  LayoutRect PreviousContentBoxRect() const {
+  LayoutRect PreviousPhysicalContentBoxRect() const {
     return rare_data_ &&
                    rare_data_
                        ->has_previous_content_box_rect_and_layout_overflow_rect_
-               ? rare_data_->previous_content_box_rect_
+               ? rare_data_->previous_physical_content_box_rect_
                : LayoutRect(LayoutPoint(), PreviousSize());
   }
   LayoutRect PreviousPhysicalLayoutOverflowRect() const {

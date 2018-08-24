@@ -65,14 +65,14 @@ TEST_F(LayoutTableTest, OverflowWithCollapsedBorders) {
 
   // The table's border box rect covers all collapsed borders of the first
   // row, and bottom collapsed borders of the last row.
-  LayoutRect expected_border_box_rect = table->ContentBoxRect();
+  LayoutRect expected_border_box_rect = table->PhysicalContentBoxRect();
   expected_border_box_rect.ExpandEdges(LayoutUnit(2), LayoutUnit(5),
                                        LayoutUnit(0), LayoutUnit(1));
   EXPECT_EQ(expected_border_box_rect, table->BorderBoxRect());
 
   // The table's self visual overflow rect covers all collapsed borders, but
   // not visual overflows (outlines) from descendants.
-  LayoutRect expected_self_visual_overflow = table->ContentBoxRect();
+  LayoutRect expected_self_visual_overflow = table->PhysicalContentBoxRect();
   expected_self_visual_overflow.ExpandEdges(LayoutUnit(2), LayoutUnit(10),
                                             LayoutUnit(0), LayoutUnit(10));
   EXPECT_EQ(expected_self_visual_overflow, table->SelfVisualOverflowRect());
@@ -81,7 +81,7 @@ TEST_F(LayoutTableTest, OverflowWithCollapsedBorders) {
 
   // The table's visual overflow covers self visual overflow and content visual
   // overflows.
-  LayoutRect expected_visual_overflow = table->ContentBoxRect();
+  LayoutRect expected_visual_overflow = table->PhysicalContentBoxRect();
   expected_visual_overflow.ExpandEdges(LayoutUnit(6), LayoutUnit(10),
                                        LayoutUnit(8), LayoutUnit(10));
   EXPECT_EQ(expected_visual_overflow, table->VisualOverflowRect());

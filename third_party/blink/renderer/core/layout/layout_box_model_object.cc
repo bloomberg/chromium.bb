@@ -852,7 +852,7 @@ void LayoutBoxModelObject::UpdateStickyPositionConstraints() const {
   FloatSize scroll_container_border_offset =
       FloatSize(scroll_ancestor.BorderLeft(), scroll_ancestor.BorderTop());
   if (containing_block != &scroll_ancestor) {
-    FloatQuad local_quad(FloatRect(containing_block->PaddingBoxRect()));
+    FloatQuad local_quad(FloatRect(containing_block->PhysicalPaddingBoxRect()));
     scroll_container_relative_padding_box_rect =
         containing_block
             ->LocalToAncestorQuadWithoutTransforms(local_quad, &scroll_ancestor,

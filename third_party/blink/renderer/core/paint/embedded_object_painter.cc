@@ -52,7 +52,7 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
           context, layout_embedded_object_, paint_info.phase))
     return;
 
-  LayoutRect content_rect(layout_embedded_object_.ContentBoxRect());
+  LayoutRect content_rect(layout_embedded_object_.PhysicalContentBoxRect());
   content_rect.MoveBy(paint_offset);
   DrawingRecorder recorder(context, layout_embedded_object_, paint_info.phase);
   GraphicsContextStateSaver state_saver(context);

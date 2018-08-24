@@ -43,7 +43,7 @@ bool FillsViewport(const Element& element) {
     return false;
 
   FloatQuad quad = layout_object->LocalToAbsoluteQuad(
-      FloatRect(ToLayoutBox(layout_object)->PaddingBoxRect()));
+      FloatRect(ToLayoutBox(layout_object)->PhysicalPaddingBoxRect()));
 
   if (!quad.IsRectilinear())
     return false;

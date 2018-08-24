@@ -27,7 +27,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
        style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
-      box_.PreviousContentBoxRect() != box_.ContentBoxRect()) {
+      box_.PreviousPhysicalContentBoxRect() != box_.PhysicalContentBoxRect()) {
     return PaintInvalidationReason::kGeometry;
   }
 

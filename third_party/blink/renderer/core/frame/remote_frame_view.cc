@@ -88,7 +88,7 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
     // mapToVisualRectInAncestorSpace causes it to be clipped to the viewport,
     // even if there are RemoteFrame ancestors in the frame tree.
     LayoutRect rect(0, 0, frame_rect_.Width(), frame_rect_.Height());
-    rect.Move(owner->ContentBoxOffset());
+    rect.Move(owner->PhysicalContentBoxOffset());
     if (owner->MapToVisualRectInAncestorSpace(nullptr, rect,
                                               kUseGeometryMapper)) {
       IntRect root_visible_rect(IntPoint(), local_root_view->Size());
@@ -104,7 +104,7 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree() {
                   kTraverseDocumentBoundaries | kUseTransforms)
               .BoundingBox();
       viewport_intersection_float.Move(
-          -remote_frame_->OwnerLayoutObject()->ContentBoxOffset());
+          -remote_frame_->OwnerLayoutObject()->PhysicalContentBoxOffset());
       viewport_intersection = EnclosingIntRect(viewport_intersection_float);
     }
   }

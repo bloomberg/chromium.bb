@@ -45,11 +45,11 @@ HTMLMediaElement* LayoutMedia::MediaElement() const {
 }
 
 void LayoutMedia::UpdateLayout() {
-  LayoutSize old_size = ContentBoxRect().Size();
+  LayoutSize old_size(ContentWidth(), ContentHeight());
 
   LayoutImage::UpdateLayout();
 
-  LayoutRect new_rect = ContentBoxRect();
+  LayoutRect new_rect(PhysicalContentBoxRect());
 
   LayoutState state(*this);
 

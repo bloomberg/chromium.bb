@@ -576,7 +576,7 @@ void LayoutReplaced::ComputePositionedLogicalHeight(
 
 LayoutRect LayoutReplaced::ComputeObjectFit(
     const LayoutSize* overridden_intrinsic_size) const {
-  LayoutRect content_rect = ContentBoxRect();
+  LayoutRect content_rect = PhysicalContentBoxRect();
   EObjectFit object_fit = StyleRef().GetObjectFit();
 
   if (object_fit == EObjectFit::kFill &&

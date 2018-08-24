@@ -159,7 +159,7 @@ bool LayoutEmbeddedContent::NodeAtPointOverEmbeddedContentView(
   if ((inside || location_in_container.IsRectBasedTest()) && !had_result &&
       result.InnerNode() == GetNode()) {
     result.SetIsOverEmbeddedContentView(
-        ContentBoxRect().Contains(result.LocalPoint()));
+        PhysicalContentBoxRect().Contains(result.LocalPoint()));
   }
   return inside;
 }
@@ -296,7 +296,7 @@ CursorDirective LayoutEmbeddedContent::GetCursor(const LayoutPoint& point,
 }
 
 LayoutRect LayoutEmbeddedContent::ReplacedContentRect() const {
-  LayoutRect content_rect = ContentBoxRect();
+  LayoutRect content_rect = PhysicalContentBoxRect();
   // IFrames set as the root scroller should get their size from their parent.
   if (ChildFrameView() && View() && IsEffectiveRootScroller())
     content_rect = LayoutRect(LayoutPoint(), View()->ViewRect().Size());

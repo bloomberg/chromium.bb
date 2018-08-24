@@ -83,7 +83,7 @@ WebPoint WebHitTestResult::LocalPointWithoutContentBoxOffset() const {
   LayoutObject* object = private_->Result().GetLayoutObject();
   if (object->IsBox()) {
     LayoutBox* box = ToLayoutBox(object);
-    local_point.Move(-RoundedIntSize(box->ContentBoxOffset()));
+    local_point.Move(-RoundedIntSize(box->PhysicalContentBoxOffset()));
   }
   return local_point;
 }

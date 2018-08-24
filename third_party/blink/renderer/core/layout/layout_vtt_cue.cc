@@ -119,7 +119,7 @@ LayoutUnit SnapToLinesLayouter::ComputeInitialPositionAdjustment(
 // incorrect results.
 IntRect ContentBoxRelativeToAncestor(const LayoutBox& box,
                                      const LayoutBoxModelObject& ancestor) {
-  FloatRect cue_content_box(box.ContentBoxRect());
+  FloatRect cue_content_box(box.PhysicalContentBoxRect());
   // We pass UseTransforms here primarily because we use a transform for
   // non-snap-to-lines positioning (see VTTCue.cpp.)
   FloatQuad mapped_content_quad =
@@ -132,7 +132,7 @@ IntRect ContentBoxRelativeToAncestor(const LayoutBox& box,
 // timeline is mostly padding.
 IntRect PaddingBoxRelativeToAncestor(const LayoutBox& box,
                                      const LayoutBoxModelObject& ancestor) {
-  FloatRect cue_content_box(box.PaddingBoxRect());
+  FloatRect cue_content_box(box.PhysicalPaddingBoxRect());
   // We pass UseTransforms here primarily because we use a transform for
   // non-snap-to-lines positioning (see VTTCue.cpp.)
   FloatQuad mapped_content_quad =
@@ -236,7 +236,7 @@ void SnapToLinesLayouter::UpdateLayout() {
   // rendering area except for a width of margin at the left of the rendering
   // area and a width of margin at the right of the rendering area.
   IntRect title_area =
-      EnclosingIntRect(cue_box_.ContainingBlock()->ContentBoxRect());
+      EnclosingIntRect(cue_box_.ContainingBlock()->PhysicalContentBoxRect());
   if (blink::IsHorizontalWritingMode(writing_mode)) {
     title_area.Move(0, margin.ToInt());
     title_area.Contract(0, (2 * margin).ToInt());

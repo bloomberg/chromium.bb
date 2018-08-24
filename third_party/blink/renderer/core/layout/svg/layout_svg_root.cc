@@ -519,7 +519,7 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
   // supported by nodeAtFloatPoint.
   bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
   if (!skip_children &&
-      (ContentBoxRect().Contains(point_in_border_box) ||
+      (PhysicalContentBoxRect().Contains(point_in_border_box) ||
        (!ShouldApplyViewportClip() &&
         VisualOverflowRect().Contains(point_in_border_box)))) {
     const AffineTransform& local_to_parent_transform =
