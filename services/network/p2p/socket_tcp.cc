@@ -389,12 +389,6 @@ void P2PSocketTcpBase::Send(
     const std::vector<int8_t>& data,
     const P2PPacketInfo& packet_info,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
-  if (data.size() > kMaximumPacketSize) {
-    LOG(ERROR) << "Received P2PHostMsg_Send with a packet that is too big: "
-               << data.size();
-    delete this;
-  }
-
   // Note: dscp is not actually used on TCP sockets as this point,
   // but may be honored in the future.
   if (!socket_) {
@@ -403,8 +397,9 @@ void P2PSocketTcpBase::Send(
     return;
   }
 
-  if (!(packet_info.destination == remote_address_.ip_address)) {
-    // Renderer should use this socket only to send data to |remote_address_|.
+  // Renderer should use this socket only to send data to |remote_address_|.
+  if (data.size() > kMaximumPacketSize ||
+      !(packet_info.destination == remote_address_.ip_address)) {
     NOTREACHED();
     OnError();
     return;
