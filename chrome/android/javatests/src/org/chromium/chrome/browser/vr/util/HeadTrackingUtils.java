@@ -12,6 +12,7 @@ import android.support.test.InstrumentationRegistry;
 import org.junit.Assert;
 import org.junit.runner.Description;
 
+import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.rules.HeadTrackingMode;
 import org.chromium.chrome.browser.vr.rules.HeadTrackingMode.SupportedMode;
 import org.chromium.chrome.browser.vr.rules.VrTestRule;
@@ -135,6 +136,9 @@ public class HeadTrackingUtils {
      */
     public static void checkForAndApplyHeadTrackingModeAnnotation(
             VrTestRule rule, Description desc) {
+        // This is even more broken on standalone devices, and can't be disabled at the shared
+        // preference level, so no-op here.
+        if (TestVrShellDelegate.isOnStandalone()) return;
         // Check if the test has a HeadTrackingMode annotation
         HeadTrackingMode annotation = desc.getAnnotation(HeadTrackingMode.class);
         if (annotation == null) return;

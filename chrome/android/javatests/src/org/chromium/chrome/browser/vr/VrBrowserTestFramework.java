@@ -15,6 +15,8 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 public class VrBrowserTestFramework extends XrTestFramework {
     public VrBrowserTestFramework(ChromeActivityTestRule rule) {
         super(rule);
-        Assert.assertFalse("Test started in VR", VrShellDelegate.isInVr());
+        if (!TestVrShellDelegate.isOnStandalone()) {
+            Assert.assertFalse("Test started in VR", VrShellDelegate.isInVr());
+        }
     }
 }

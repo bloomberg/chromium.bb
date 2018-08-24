@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.vr;
 import static org.chromium.chrome.browser.vr.XrTestFramework.NATIVE_URLS_OF_INTEREST;
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
-@Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+@Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserNativeUiTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.

@@ -162,8 +162,8 @@ parameterized class. The general things you will need to are:
 * Define a constructor for your test class that takes a
   `Callable<ChromeActivityTestRule>`. This constructor must set `mVrTestRule` to
   the `Callable`'s `call()` return value and set `mRuleChain` to the return
-  value of `XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule)`
-  for AR tests or `VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule
+  value of `XrTestRuleUtils.wrapRuleInActivityRestrictionRule(mTestRule)`
+  for AR tests or `VrTestRuleUtils.wrapRuleInActivityRestrictionRule
   (mTestRule)` for VR tests.
 
 ### Add The New File

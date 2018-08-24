@@ -49,7 +49,7 @@ public class WebXrVrTabTest {
 
     public WebXrVrTabTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mTestRule);
     }
 
     @Before

@@ -13,7 +13,7 @@ import org.chromium.chrome.browser.vr.rules.XrActivityRestriction.SupportedActiv
 import org.chromium.chrome.browser.vr.util.XrTestRuleUtils;
 
 /**
- * Rule that conditionally skips a test if the current VrTestRule's Activity is not
+ * Rule that conditionally skips a test if the current XrTestRule's Activity is not
  * one of the supported Activity types for the test.
  */
 public class XrActivityRestrictionRule implements TestRule {

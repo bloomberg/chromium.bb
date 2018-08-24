@@ -96,13 +96,9 @@ public class EmulatedVrController {
      */
     public void recenterView() {
         getApi().buttonEvent.sendHomeButtonToggleEvent();
-        // A valid position must be sent a short time after the home button
-        // is pressed in order for recentering to actually complete, and no
-        // way to be signalled that we should send the event, so sleep
+        // Need to "hold" the button long enough to trigger a view recenter instead of just a button
+        // press - half a second is sufficient and non-flaky.
         SystemClock.sleep(500);
-        // We don't care where the controller is pointing when recentering occurs as long
-        // as it results in a successful recenter, so send an arbitrary, valid orientation
-        getApi().moveEvent.sendMoveEvent(0.0f, 0.0f, 0.0f, 1.0f);
         getApi().buttonEvent.sendHomeButtonToggleEvent();
     }
 

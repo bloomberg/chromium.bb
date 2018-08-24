@@ -101,7 +101,7 @@ failure, which the test runner treats as a signal that the test was skipped.
 #### RuleChain
 
 Every place where `XrActivityRestrictionRule` is used makes use of a `RuleChain`
-and `XrTestRuleUtils.wrapRuleInXrActivityRestrictionRule()`. The reason for this
+and `XrTestRuleUtils.wrapRuleInActivityRestrictionRule()`. The reason for this
 is simply optimization. By using a `RuleChain` to wrap a given
 `ChromeActivityTestRule` in an `XrActivityRestrictionRule`, we can ensure that
 the decision to skip a test due to being unsupported in an activity is made

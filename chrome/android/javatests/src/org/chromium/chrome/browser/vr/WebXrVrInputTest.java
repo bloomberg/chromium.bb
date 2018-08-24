@@ -9,6 +9,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_CHECK_INTERVAL
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 
 import android.os.Build;
@@ -73,7 +74,7 @@ public class WebXrVrInputTest {
 
     public WebXrVrInputTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mTestRule = callable.call();
-        mRuleChain = VrTestRuleUtils.wrapRuleInXrActivityRestrictionRule(mTestRule);
+        mRuleChain = VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mTestRule);
     }
 
     @Before
@@ -152,7 +153,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @LargeTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testControllerClicksRegisteredOnDaydream() throws InterruptedException {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
@@ -193,7 +194,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -359,7 +360,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     public void testAppButtonExitsPresentation() throws InterruptedException {
         appButtonExitsPresentationImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("generic_webvr_page"),
@@ -372,7 +373,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -487,7 +488,7 @@ public class WebXrVrInputTest {
     @DisabledTest(message = "crbug.com/859666")
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testFocusUpdatesSynchronously() throws InterruptedException {
         mWebVrTestFramework.loadUrlAndAwaitInitialization(
@@ -517,7 +518,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     public void testAppButtonAfterPageStopsSubmitting() throws InterruptedException {
         appButtonAfterPageStopsSubmittingImpl(
                 WebVrTestFramework.getFileUrlForHtmlTestFile("webvr_page_submits_once"),
@@ -530,7 +531,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -559,7 +560,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR"})
@@ -594,7 +595,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags
             .Remove({"enable-webvr"})
             @CommandLineFlags.Add({"enable-features=WebXR,WebXRGamepadSupport"})
@@ -628,7 +629,7 @@ public class WebXrVrInputTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags.Remove({"enable-webvr"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testWebXrGamepadNotReturnedWithoutAnyFeatures() throws InterruptedException {

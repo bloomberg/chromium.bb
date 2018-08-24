@@ -4,17 +4,24 @@
 
 package org.chromium.chrome.browser.vr.util;
 
+import android.content.Intent;
 import android.os.SystemClock;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.uiautomator.UiDevice;
 
+import org.junit.Assert;
+import org.junit.rules.RuleChain;
+import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.test.params.ParameterSet;
+import org.chromium.chrome.browser.vr.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr.VrFeedbackStatus;
+import org.chromium.chrome.browser.vr.VrIntentUtils;
 import org.chromium.chrome.browser.vr.rules.ChromeTabbedActivityVrTestRule;
 import org.chromium.chrome.browser.vr.rules.CustomTabActivityVrTestRule;
+import org.chromium.chrome.browser.vr.rules.VrActivityRestrictionRule;
 import org.chromium.chrome.browser.vr.rules.VrTestRule;
 import org.chromium.chrome.browser.vr.rules.WebappActivityVrTestRule;
 
@@ -115,6 +122,22 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
     }
 
     /**
+     * Creates a RuleChain that applies the XrActivityRestrictionRule and VrActivityRestrictionRule
+     * before the given VrTestRule.
+     *
+     * @param rule The TestRule to wrap in an XrActivityRestrictionRule and
+     *        VrActivityRestrictionRule.
+     * @return A RuleChain that ensures an XrActivityRestrictionRule and VrActivityRestrictionRule
+     *         is applied before the provided TestRule.
+     */
+    public static RuleChain wrapRuleInActivityRestrictionRule(TestRule rule) {
+        Assert.assertTrue("Given rule is not an VrTestRule", rule instanceof VrTestRule);
+        return RuleChain
+                .outerRule(new VrActivityRestrictionRule(((VrTestRule) rule).getRestriction()))
+                .around(XrTestRuleUtils.wrapRuleInActivityRestrictionRule(rule));
+    }
+
+    /**
      * Ensures that no VR-related activity is currently being displayed. This is meant to be used
      * by TestRules before starting any activities. Having a VR activity in the foreground (e.g.
      * Daydream Home) has the potential to affect test results, as it often means that we are in VR
@@ -123,6 +146,8 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
      * for other reasons as well.
      */
     public static void ensureNoVrActivitiesDisplayed() {
+        // This will always be hit on standalones, but we're expected to be in VR in that case.
+        if (TestVrShellDelegate.isOnStandalone()) return;
         UiDevice uiDevice = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
         String currentPackageName = uiDevice.getCurrentPackageName();
         if (currentPackageName != null && currentPackageName.contains("vr")) {
@@ -131,5 +156,19 @@ public class VrTestRuleUtils extends XrTestRuleUtils {
             // to be sure since this will be hit relatively infrequently.
             SystemClock.sleep(VRCORE_UNREGISTER_DELAY_MS);
         }
+    }
+
+    /**
+     * Helper method to add additional data to a Chrome startup intent that makes it usable on a
+     * standalone VR device.
+     */
+    public static Intent maybeAddStandaloneIntentData(Intent intent) {
+        if (TestVrShellDelegate.isOnStandalone()) {
+            // Tell VrShellDelegate that it should create a TestVrShellDelegate on startup
+            TestVrShellDelegate.enableTestVrShellDelegateOnStartupForTesting();
+            intent.addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
+            intent.putExtra("android.intent.extra.VR_LAUNCH", true);
+        }
+        return intent;
     }
 }

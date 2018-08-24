@@ -8,6 +8,7 @@ import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE;
 
 import android.graphics.PointF;
 import android.support.test.InstrumentationRegistry;
@@ -42,7 +43,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=VrBrowsingNativeAndroidUi"})
-@Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+@Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserDialogTest {
     // A long enough sleep after entering VR to ensure that the VR entry animations are complete.
     private static final int VR_ENTRY_SLEEP_MS = 1000;
@@ -105,7 +106,7 @@ public class VrBrowserDialogTest {
 
         // Display the given permission prompt.
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        mVrBrowserTestFramework.runJavaScriptOrFail(promptCommand, POLL_TIMEOUT_SHORT_MS);
+        mVrBrowserTestFramework.runJavaScriptOrFail(promptCommand, POLL_TIMEOUT_LONG_MS);
         VrBrowserTransitionUtils.waitForNativeUiPrompt(POLL_TIMEOUT_LONG_MS);
 
         // There is currently no way to know whether a dialog has been drawn yet,
@@ -159,11 +160,13 @@ public class VrBrowserDialogTest {
     }
 
     /**
-     * Test navigate to 2D page and launch the Camera dialog.
+     * Test navigate to 2D page and launch the Camera dialog. Not valid on standalones because
+     * there is no camera permission.
      */
     @Test
     @LargeTest
     @HeadTrackingMode(HeadTrackingMode.SupportedMode.FROZEN)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testCameraPermissionPrompt() throws InterruptedException, TimeoutException {
         // Display Camera permissions prompt.
         navigateAndDisplayPermissionPrompt(
