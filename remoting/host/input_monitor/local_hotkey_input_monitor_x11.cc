@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/host/client_session_control.h"
 #include "ui/gfx/x/x11.h"
 
 namespace remoting {
@@ -30,7 +29,7 @@ class LocalHotkeyInputMonitorX11 : public LocalHotkeyInputMonitor {
   LocalHotkeyInputMonitorX11(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      base::OnceClosure disconnect_callback);
   ~LocalHotkeyInputMonitorX11() override;
 
  private:
@@ -39,7 +38,7 @@ class LocalHotkeyInputMonitorX11 : public LocalHotkeyInputMonitor {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-         base::WeakPtr<ClientSessionControl> client_session_control);
+         base::OnceClosure disconnect_callback);
 
     void Start();
     void Stop();
@@ -66,7 +65,7 @@ class LocalHotkeyInputMonitorX11 : public LocalHotkeyInputMonitor {
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner_;
 
     // Used to send session disconnect requests.
-    base::WeakPtr<ClientSessionControl> client_session_control_;
+    base::OnceClosure disconnect_callback_;
 
     // Controls watching X events.
     std::unique_ptr<base::FileDescriptorWatcher::Controller> controller_;
@@ -95,10 +94,10 @@ class LocalHotkeyInputMonitorX11 : public LocalHotkeyInputMonitor {
 LocalHotkeyInputMonitorX11::LocalHotkeyInputMonitorX11(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::OnceClosure disconnect_callback)
     : core_(new Core(caller_task_runner,
                      input_task_runner,
-                     client_session_control)) {
+                     std::move(disconnect_callback))) {
   core_->Start();
 }
 
@@ -110,12 +109,12 @@ LocalHotkeyInputMonitorX11::~LocalHotkeyInputMonitorX11() {
 LocalHotkeyInputMonitorX11::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::OnceClosure disconnect_callback)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
-      client_session_control_(client_session_control) {
+      disconnect_callback_(std::move(disconnect_callback)) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(client_session_control_.get());
+  DCHECK(disconnect_callback_);
 }
 
 void LocalHotkeyInputMonitorX11::Core::Start() {
@@ -243,6 +242,11 @@ void LocalHotkeyInputMonitorX11::Core::OnPendingXEvents() {
 void LocalHotkeyInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
   DCHECK(input_task_runner_->BelongsToCurrentThread());
 
+  // Ignore input if we've already initiated a disconnect.
+  if (!disconnect_callback_) {
+    return;
+  }
+
   int key_code = event->u.u.detail;
   bool down = event->u.u.type == KeyPress;
   KeySym key_sym = XkbKeycodeToKeysym(display_, key_code, 0, 0);
@@ -251,9 +255,7 @@ void LocalHotkeyInputMonitorX11::Core::ProcessXEvent(xEvent* event) {
   } else if (key_sym == XK_Alt_L || key_sym == XK_Alt_R) {
     alt_pressed_ = down;
   } else if (key_sym == XK_Escape && down && alt_pressed_ && ctrl_pressed_) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&ClientSessionControl::DisconnectSession,
-                                  client_session_control_, protocol::OK));
+    caller_task_runner_->PostTask(FROM_HERE, std::move(disconnect_callback_));
   }
 }
 
@@ -274,9 +276,9 @@ std::unique_ptr<LocalHotkeyInputMonitor> LocalHotkeyInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalHotkeyInputMonitorX11>(
-      caller_task_runner, input_task_runner, client_session_control);
+      caller_task_runner, input_task_runner, std::move(disconnect_callback));
 }
 
 }  // namespace remoting

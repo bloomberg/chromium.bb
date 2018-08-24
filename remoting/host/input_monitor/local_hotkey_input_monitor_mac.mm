@@ -7,9 +7,10 @@
 #import <AppKit/AppKit.h>
 
 #include <cstdint>
-#include <set>
+#include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -20,7 +21,6 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "remoting/host/client_session_control.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMCarbonEvent.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
@@ -44,7 +44,7 @@ class LocalHotkeyInputMonitorMac : public LocalHotkeyInputMonitor {
   LocalHotkeyInputMonitorMac(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      base::OnceClosure disconnect_callback);
   ~LocalHotkeyInputMonitorMac() override;
 
  private:
@@ -126,7 +126,7 @@ class LocalHotkeyInputMonitorMac::Core
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-       base::WeakPtr<ClientSessionControl> client_session_control);
+       base::OnceClosure disconnect_callback);
 
   void Start();
   void Stop();
@@ -151,7 +151,7 @@ class LocalHotkeyInputMonitorMac::Core
 
   // Invoked in the |caller_task_runner_| thread to report session disconnect
   // requests.
-  base::WeakPtr<ClientSessionControl> client_session_control_;
+  base::OnceClosure disconnect_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };
@@ -159,10 +159,10 @@ class LocalHotkeyInputMonitorMac::Core
 LocalHotkeyInputMonitorMac::LocalHotkeyInputMonitorMac(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::OnceClosure disconnect_callback)
     : core_(new Core(caller_task_runner,
                      ui_task_runner,
-                     client_session_control)) {
+                     std::move(disconnect_callback))) {
   core_->Start();
 }
 
@@ -174,12 +174,12 @@ LocalHotkeyInputMonitorMac::~LocalHotkeyInputMonitorMac() {
 LocalHotkeyInputMonitorMac::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::OnceClosure disconnect_callback)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
       manager_(nil),
-      client_session_control_(client_session_control) {
-  DCHECK(client_session_control_);
+      disconnect_callback_(std::move(disconnect_callback)) {
+  DCHECK(disconnect_callback_);
 }
 
 void LocalHotkeyInputMonitorMac::Core::Start() {
@@ -215,9 +215,9 @@ void LocalHotkeyInputMonitorMac::Core::StopOnUiThread() {
 }
 
 void LocalHotkeyInputMonitorMac::Core::OnDisconnectShortcut() {
-  caller_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ClientSessionControl::DisconnectSession,
-                                client_session_control_, protocol::OK));
+  if (disconnect_callback_) {
+    caller_task_runner_->PostTask(FROM_HERE, std::move(disconnect_callback_));
+  }
 }
 
 }  // namespace
@@ -226,9 +226,9 @@ std::unique_ptr<LocalHotkeyInputMonitor> LocalHotkeyInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalHotkeyInputMonitorMac>(
-      caller_task_runner, ui_task_runner, client_session_control);
+      caller_task_runner, ui_task_runner, std::move(disconnect_callback));
 }
 
 }  // namespace remoting

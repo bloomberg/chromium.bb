@@ -6,8 +6,7 @@
 
 #import <AppKit/AppKit.h>
 
-#include <cstdint>
-#include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
@@ -19,7 +18,6 @@
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
-#include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
 namespace remoting {
@@ -33,13 +31,12 @@ class LocalMouseInputMonitorMac : public LocalMouseInputMonitor {
     virtual ~EventHandler() {}
 
     virtual void OnLocalMouseMoved(const webrtc::DesktopVector& position) = 0;
-    virtual void OnDisconnectShortcut() = 0;
   };
 
   LocalMouseInputMonitorMac(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      MouseMoveCallback on_mouse_move);
   ~LocalMouseInputMonitorMac() override;
 
  private:
@@ -136,7 +133,7 @@ class LocalMouseInputMonitorMac::Core : public base::RefCountedThreadSafe<Core>,
  public:
   Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
        scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-       base::WeakPtr<ClientSessionControl> client_session_control);
+       MouseMoveCallback on_mouse_move);
 
   void Start();
   void Stop();
@@ -150,7 +147,6 @@ class LocalMouseInputMonitorMac::Core : public base::RefCountedThreadSafe<Core>,
 
   // EventHandler interface.
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
-  void OnDisconnectShortcut() override;
 
   // Task runner on which public methods of this class must be called.
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -160,9 +156,8 @@ class LocalMouseInputMonitorMac::Core : public base::RefCountedThreadSafe<Core>,
 
   LocalInputMonitorManager* manager_;
 
-  // Invoked in the |caller_task_runner_| thread to report local mouse events
-  // and session disconnect requests.
-  base::WeakPtr<ClientSessionControl> client_session_control_;
+  // Invoked in the |caller_task_runner_| thread to report local mouse events.
+  MouseMoveCallback on_mouse_move_;
 
   webrtc::DesktopVector mouse_position_;
 
@@ -172,10 +167,10 @@ class LocalMouseInputMonitorMac::Core : public base::RefCountedThreadSafe<Core>,
 LocalMouseInputMonitorMac::LocalMouseInputMonitorMac(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move)
     : core_(new Core(caller_task_runner,
                      ui_task_runner,
-                     client_session_control)) {
+                     std::move(on_mouse_move))) {
   core_->Start();
 }
 
@@ -187,13 +182,11 @@ LocalMouseInputMonitorMac::~LocalMouseInputMonitorMac() {
 LocalMouseInputMonitorMac::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move)
     : caller_task_runner_(caller_task_runner),
       ui_task_runner_(ui_task_runner),
       manager_(nil),
-      client_session_control_(client_session_control) {
-  DCHECK(client_session_control_);
-}
+      on_mouse_move_(std::move(on_mouse_move)) {}
 
 void LocalMouseInputMonitorMac::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
@@ -238,15 +231,8 @@ void LocalMouseInputMonitorMac::Core::OnLocalMouseMoved(
 
   mouse_position_ = position;
 
-  caller_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ClientSessionControl::OnLocalMouseMoved,
-                                client_session_control_, position));
-}
-
-void LocalMouseInputMonitorMac::Core::OnDisconnectShortcut() {
-  caller_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&ClientSessionControl::DisconnectSession,
-                                client_session_control_, protocol::OK));
+  caller_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(on_mouse_move_, position));
 }
 
 }  // namespace
@@ -255,9 +241,10 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    MouseMoveCallback on_mouse_move,
+    base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorMac>(
-      caller_task_runner, ui_task_runner, client_session_control);
+      caller_task_runner, ui_task_runner, std::move(on_mouse_move));
 }
 
 }  // namespace remoting

@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "remoting/host/chromeos/point_transformer.h"
-#include "remoting/host/client_session_control.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -28,14 +27,14 @@ class LocalMouseInputMonitorChromeos : public LocalMouseInputMonitor {
   LocalMouseInputMonitorChromeos(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      MouseMoveCallback on_mouse_move);
   ~LocalMouseInputMonitorChromeos() override;
 
  private:
   class Core : ui::PlatformEventObserver {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-         base::WeakPtr<ClientSessionControl> client_session_control);
+         MouseMoveCallback on_mouse_move);
     ~Core() override;
 
     void Start();
@@ -49,9 +48,9 @@ class LocalMouseInputMonitorChromeos : public LocalMouseInputMonitor {
 
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
-    // Points to the object receiving mouse event notifications and session
-    // disconnect requests.  Must be called on the |caller_task_runner_|.
-    base::WeakPtr<ClientSessionControl> client_session_control_;
+    // Used to send mouse event notifications.
+    // Must be called on the |caller_task_runner_|.
+    MouseMoveCallback on_mouse_move_;
 
     // Used to rotate the local mouse positions appropriately based on the
     // current display rotation settings.
@@ -70,9 +69,9 @@ class LocalMouseInputMonitorChromeos : public LocalMouseInputMonitor {
 LocalMouseInputMonitorChromeos::LocalMouseInputMonitorChromeos(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move)
     : input_task_runner_(input_task_runner),
-      core_(new Core(caller_task_runner, client_session_control)) {
+      core_(new Core(caller_task_runner, std::move(on_mouse_move))) {
   input_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Core::Start, base::Unretained(core_.get())));
 }
@@ -83,11 +82,9 @@ LocalMouseInputMonitorChromeos::~LocalMouseInputMonitorChromeos() {
 
 LocalMouseInputMonitorChromeos::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    MouseMoveCallback on_mouse_move)
     : caller_task_runner_(caller_task_runner),
-      client_session_control_(client_session_control) {
-  DCHECK(client_session_control_.get());
-}
+      on_mouse_move_(std::move(on_mouse_move)) {}
 
 void LocalMouseInputMonitorChromeos::Core::Start() {
   // TODO(erg): Need to handle the mus case where PlatformEventSource is null
@@ -122,10 +119,9 @@ void LocalMouseInputMonitorChromeos::Core::HandleMouseMove(
   mouse_position = point_transformer_->FromScreenCoordinates(mouse_position);
 
   caller_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &ClientSessionControl::OnLocalMouseMoved, client_session_control_,
-          webrtc::DesktopVector(mouse_position.x(), mouse_position.y())));
+      FROM_HERE, base::BindOnce(on_mouse_move_,
+                                webrtc::DesktopVector(mouse_position.x(),
+                                                      mouse_position.y())));
 }
 
 }  // namespace
@@ -134,9 +130,10 @@ std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    MouseMoveCallback on_mouse_move,
+    base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalMouseInputMonitorChromeos>(
-      caller_task_runner, input_task_runner, client_session_control);
+      caller_task_runner, input_task_runner, std::move(on_mouse_move));
 }
 
 }  // namespace remoting

@@ -18,7 +18,8 @@ namespace remoting {
 
 class ClientSessionControl;
 
-// Monitors the local input to notify about mouse movements and keyboard events.
+// Monitors local input and sends notifications for mouse movements and
+// keyboard shortcuts when they are detected.
 class LocalInputMonitor {
  public:
   virtual ~LocalInputMonitor() = default;

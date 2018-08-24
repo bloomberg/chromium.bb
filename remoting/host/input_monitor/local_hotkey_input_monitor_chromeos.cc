@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "remoting/host/client_session_control.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -27,14 +26,14 @@ class LocalHotkeyInputMonitorChromeos : public LocalHotkeyInputMonitor {
   LocalHotkeyInputMonitorChromeos(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control);
+      base::OnceClosure disconnect_callback);
   ~LocalHotkeyInputMonitorChromeos() override;
 
  private:
   class Core : ui::PlatformEventObserver {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-         base::WeakPtr<ClientSessionControl> client_session_control);
+         base::OnceClosure disconnect_callback);
     ~Core() override;
 
     void Start();
@@ -48,9 +47,8 @@ class LocalHotkeyInputMonitorChromeos : public LocalHotkeyInputMonitor {
 
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
 
-    // Points to the object receiving mouse event notifications and session
-    // disconnect requests.  Must be called on the |caller_task_runner_|.
-    base::WeakPtr<ClientSessionControl> client_session_control_;
+    // Must be called on |caller_task_runner_|.
+    base::OnceClosure disconnect_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -65,9 +63,9 @@ class LocalHotkeyInputMonitorChromeos : public LocalHotkeyInputMonitor {
 LocalHotkeyInputMonitorChromeos::LocalHotkeyInputMonitorChromeos(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::OnceClosure disconnect_callback)
     : input_task_runner_(input_task_runner),
-      core_(new Core(caller_task_runner, client_session_control)) {
+      core_(new Core(caller_task_runner, std::move(disconnect_callback))) {
   input_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Core::Start, base::Unretained(core_.get())));
 }
@@ -78,10 +76,10 @@ LocalHotkeyInputMonitorChromeos::~LocalHotkeyInputMonitorChromeos() {
 
 LocalHotkeyInputMonitorChromeos::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control)
+    base::OnceClosure disconnect_callback)
     : caller_task_runner_(caller_task_runner),
-      client_session_control_(client_session_control) {
-  DCHECK(client_session_control_.get());
+      disconnect_callback_(std::move(disconnect_callback)) {
+  DCHECK(disconnect_callback_);
 }
 
 void LocalHotkeyInputMonitorChromeos::Core::Start() {
@@ -112,13 +110,16 @@ void LocalHotkeyInputMonitorChromeos::Core::DidProcessEvent(
 
 void LocalHotkeyInputMonitorChromeos::Core::HandleKeyPressed(
     const ui::PlatformEvent& event) {
+  // Ignore input if we've already initiated a disconnect.
+  if (!disconnect_callback_) {
+    return;
+  }
+
   ui::KeyEvent key_event(event);
   DCHECK(key_event.is_char());
   if (key_event.IsControlDown() && key_event.IsAltDown() &&
       key_event.key_code() == ui::VKEY_ESCAPE) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::BindRepeating(&ClientSessionControl::DisconnectSession,
-                                       client_session_control_, protocol::OK));
+    caller_task_runner_->PostTask(FROM_HERE, std::move(disconnect_callback_));
   }
 }
 
@@ -128,9 +129,9 @@ std::unique_ptr<LocalHotkeyInputMonitor> LocalHotkeyInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control) {
+    base::OnceClosure disconnect_callback) {
   return std::make_unique<LocalHotkeyInputMonitorChromeos>(
-      caller_task_runner, input_task_runner, client_session_control);
+      caller_task_runner, input_task_runner, std::move(disconnect_callback));
 }
 
 }  // namespace remoting
