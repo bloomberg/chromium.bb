@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/core/events/progress_event.h"
 
+#include "third_party/blink/renderer/core/event_names.h"
+
 namespace blink {
 
 ProgressEvent::ProgressEvent()

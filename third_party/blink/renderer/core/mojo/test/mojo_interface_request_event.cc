@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/mojo/test/mojo_interface_request_event.h"
 
+#include "third_party/blink/renderer/core/event_type_names.h"
 #include "third_party/blink/renderer/core/mojo/mojo_handle.h"
 #include "third_party/blink/renderer/core/mojo/test/mojo_interface_request_event_init.h"
 

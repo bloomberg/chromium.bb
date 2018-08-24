@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_tone_change_event.h"
 
+#include "third_party/blink/renderer/core/event_type_names.h"
+
 namespace blink {
 
 RTCDTMFToneChangeEvent* RTCDTMFToneChangeEvent::Create(const String& tone) {

@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/core/events/animation_event.h"
 
+#include "third_party/blink/renderer/core/event_names.h"
+
 namespace blink {
 
 AnimationEvent::AnimationEvent() : elapsed_time_(0.0) {}

@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/modules/webaudio/offline_audio_completion_event.h"
 
+#include "third_party/blink/renderer/core/event_type_names.h"
+
 namespace blink {
 
 OfflineAudioCompletionEvent* OfflineAudioCompletionEvent::Create() {

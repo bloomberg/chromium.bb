@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/events/application_cache_error_event.h"
 
+#include "third_party/blink/renderer/core/event_type_names.h"
+
 namespace blink {
 
 static const String& ErrorReasonToString(

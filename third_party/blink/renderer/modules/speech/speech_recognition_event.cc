@@ -25,6 +25,8 @@
 
 #include "third_party/blink/renderer/modules/speech/speech_recognition_event.h"
 
+#include "third_party/blink/renderer/core/event_type_names.h"
+
 namespace blink {
 
 SpeechRecognitionEvent* SpeechRecognitionEvent::Create(

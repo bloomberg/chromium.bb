@@ -26,6 +26,8 @@
 
 #include "third_party/blink/renderer/core/events/transition_event.h"
 
+#include "third_party/blink/renderer/core/event_names.h"
+
 namespace blink {
 
 TransitionEvent::TransitionEvent() : elapsed_time_(0) {}
