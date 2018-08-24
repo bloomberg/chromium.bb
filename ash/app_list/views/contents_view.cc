@@ -305,7 +305,7 @@ void ContentsView::UpdateSearchBox(double progress,
   search_box->UpdateBackground(progress, current_state, target_state);
   search_box->GetWidget()->SetBounds(
       search_box->GetViewBoundsForSearchBoxContentsBounds(
-          ConvertRectToWidget(search_box_rect)));
+          ConvertRectToWidgetWithoutTransform(search_box_rect)));
 }
 
 void ContentsView::UpdateExpandArrowOpacity(double progress,
@@ -572,6 +572,15 @@ bool ContentsView::ShouldLayoutPage(AppListPage* page,
   }
 
   return false;
+}
+
+gfx::Rect ContentsView::ConvertRectToWidgetWithoutTransform(
+    const gfx::Rect& rect) {
+  gfx::Rect widget_rect = rect;
+  for (const views::View* v = this; v; v = v->parent()) {
+    widget_rect.Offset(v->GetMirroredPosition().OffsetFromOrigin());
+  }
+  return widget_rect;
 }
 
 }  // namespace app_list
