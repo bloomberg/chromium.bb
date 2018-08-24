@@ -163,11 +163,6 @@ BASE_EXPORT bool IsDeviceRegisteredWithManagement();
 // or registered with an MDM.
 BASE_EXPORT bool IsEnterpriseManaged();
 
-// Used by tests to mock any wanted state. Call with |state| set to true to
-// simulate being in a domain and false otherwise.
-// This function is deprecated, prefer class ScopedDomainStateForTesting below.
-BASE_EXPORT void SetDomainStateForTesting(bool state);
-
 // Returns true if the current process can make USER32 or GDI32 calls such as
 // CreateWindow and CreateDC. Windows 8 and above allow the kernel component
 // of these calls to be disabled which can cause undefined behaviour such as
