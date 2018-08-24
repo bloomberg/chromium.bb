@@ -40,15 +40,27 @@ enum class MigrationState : int {
 // Used in histograms. Do not change existing values, append new values at the
 // end.
 enum class ConsentBumpSuppressReason {
+  // There is no suppress reason. The consent bump was shown.
   kNone,
+  // The user wasn't signed in during the migration.
   kNotSignedIn,
+  // The user wasn't syncing everything during the migration.
   kSyncEverythingOff,
+  // The user didn't have all on-by-default privacy settings enabled during
+  // migration.
   kPrivacySettingOff,
   kSettingsOptIn,
+  // The user was eligible for seeing the consent bump, but then signed out.
   kUserSignedOut,
   kSyncPaused,
+  // The user was eligible for seeing the consent bump, but turned an individual
+  // sync data type off.
+  kUserTurnedSyncDatatypeOff,
+  // The user was eligible for seeing the consent bump, but turned an
+  // on-by-default privacy setting off.
+  kUserTurnedPrivacySettingOff,
 
-  kMaxValue = kSyncPaused
+  kMaxValue = kUserTurnedPrivacySettingOff
 };
 
 // Google services that can be toggled in user settings.
@@ -152,6 +164,12 @@ class UnifiedConsentService : public KeyedService,
   // Records a sample for each bucket enabled by the user (except kNone).
   // kNone is recorded when none of the other buckets are recorded.
   void RecordSettingsHistogram();
+
+  // This method is called on startup to check the eligibility criteria for
+  // showing the consent bump. The check is only done when the profile was
+  // eligible before. If the user is not eligible anymore, the
+  // kShouldShowUnifiedConsentBump pref is set to false.
+  void CheckConsentBumpEligibility();
 
   std::unique_ptr<UnifiedConsentServiceClient> service_client_;
   PrefService* pref_service_;

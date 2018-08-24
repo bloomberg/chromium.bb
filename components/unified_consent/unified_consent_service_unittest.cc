@@ -362,7 +362,7 @@ TEST_F(UnifiedConsentServiceTest, Migration_SyncingEverythingAndAllServicesOn) {
       syncer::SyncService::TransportState::PENDING_DESIRED_CONFIGURATION);
   EXPECT_FALSE(sync_service_.IsSyncActive());
 
-  CreateConsentService(true /* client services on by default */);
+  CreateConsentService(true /* client_services_on_by_default */);
   EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
   // After the creation of the consent service, the profile started to migrate
   // (but waiting for sync init) and |ShouldShowConsentBump| should return true.
@@ -522,7 +522,7 @@ TEST_F(UnifiedConsentServiceTest, Rollback_WasSyncingEverything) {
   EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
 
   // Migrate
-  CreateConsentService(true /* client services on by default */);
+  CreateConsentService(true /* client_services_on_by_default */);
   // Check expectations after migration.
   EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
   EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
@@ -634,6 +634,101 @@ TEST_F(UnifiedConsentServiceTest, SettingsHistogram_NoUnifiedConsentGiven) {
   histogram_tester.ExpectUniqueSample(
       "UnifiedConsent.SyncAndGoogleServicesSettings",
       SettingsHistogramValue::kSpellCheck, 1);
+}
+
+TEST_F(UnifiedConsentServiceTest, ConsentBump_EligibleOnSecondStartup) {
+  base::HistogramTester histogram_tester;
+
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+
+  // First time creation of the service migrates the profile and initializes the
+  // consent bump pref.
+  CreateConsentService(true /* client_services_on_by_default */);
+  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
+  histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
+                                    0);
+
+  // Simulate shutdown.
+  consent_service_->Shutdown();
+  consent_service_.reset();
+
+  // After the second startup, the user should still be eligible.
+  CreateConsentService(true /* client_services_on_by_default */);
+  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
+  histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
+                                    0);
+}
+
+TEST_F(UnifiedConsentServiceTest,
+       ConsentBump_NotEligibleOnSecondStartup_DisabledSyncDatatype) {
+  base::HistogramTester histogram_tester;
+
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+
+  // First time creation of the service migrates the profile and initializes the
+  // consent bump pref.
+  CreateConsentService(true /* client_services_on_by_default */);
+  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
+  histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
+                                    0);
+
+  // Simulate shutdown.
+  consent_service_->Shutdown();
+  consent_service_.reset();
+
+  // User disables BOOKMARKS.
+  auto data_types = sync_service_.GetPreferredDataTypes();
+  data_types.RetainAll(syncer::UserSelectableTypes());
+  data_types.Remove(syncer::BOOKMARKS);
+  sync_service_.OnUserChoseDatatypes(false, data_types);
+
+  // After the second startup, the user should not be eligible anymore.
+  CreateConsentService(true /* client_services_on_by_default */);
+  EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.ConsentBump.SuppressReason",
+      unified_consent::ConsentBumpSuppressReason::kUserTurnedSyncDatatypeOff,
+      1);
+}
+
+TEST_F(UnifiedConsentServiceTest,
+       ConsentBump_NotEligibleOnSecondStartup_DisabledPrivacySetting) {
+  base::HistogramTester histogram_tester;
+
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  sync_service_.OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
+  syncer::SyncPrefs sync_prefs(&pref_service_);
+  EXPECT_TRUE(sync_prefs.HasKeepEverythingSynced());
+
+  // First time creation of the service migrates the profile and initializes the
+  // consent bump pref.
+  CreateConsentService(true /* client_services_on_by_default */);
+  EXPECT_TRUE(AreAllNonPersonalizedServicesEnabled());
+  EXPECT_TRUE(consent_service_->ShouldShowConsentBump());
+  histogram_tester.ExpectTotalCount("UnifiedConsent.ConsentBump.SuppressReason",
+                                    0);
+
+  // Simulate shutdown.
+  consent_service_->Shutdown();
+  consent_service_.reset();
+
+  // Privacy settings are disabled. After the second startup, the user should
+  // not be eligible anymore.
+  CreateConsentService(false /* client_services_on_by_default */);
+  EXPECT_FALSE(consent_service_->ShouldShowConsentBump());
+  histogram_tester.ExpectBucketCount(
+      "UnifiedConsent.ConsentBump.SuppressReason",
+      unified_consent::ConsentBumpSuppressReason::kUserTurnedPrivacySettingOff,
+      1);
 }
 
 }  // namespace unified_consent
