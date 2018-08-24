@@ -1730,13 +1730,53 @@
      },
    },
 
-  'mash_chromium_gtests': {
+  'mash_fyi_chromium_gtests': {
+    'mash_fyi_browser_tests': {
+      'test': 'browser_tests',
+      'args': [
+        '--enable-features=Mash',
+        '--override-use-software-gl-for-tests',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.fyi.browser_tests.filter',
+      ],
+      'swarming': {
+        'hard_timeout': 1800,
+        'shards': 10,
+      },
+    },
+    'mash_fyi_content_unittests': {
+      'test': 'content_unittests',
+      'args': [
+        '--enable-features=Mash',
+      ],
+    },
+  },
+
+  # These can be folded into linux_chromeos_specific_gtests once we stop moving
+  # tests around on the main waterfall.
+  'mash_chromium_gtests' : {
     'mash_browser_tests': {
       'test': 'browser_tests',
       'args': [
         '--enable-features=Mash',
         '--override-use-software-gl-for-tests',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.mash.browser_tests.filter',
+      ],
+      'swarming': {
+        'hard_timeout': 1800,
+        'shards': 1,
+      },
+    },
+  },
+
+  # These can be folded into linux_chromeos_specific_gtests once we stop moving
+  # tests around on the main waterfall.
+  'single_process_mash_chromium_gtests': {
+    'single_process_mash_browser_tests': {
+      'test': 'browser_tests',
+      'args': [
+        '--enable-features=SingleProcessMash',
+        '--override-use-software-gl-for-tests',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.browser_tests.filter',
       ],
       'swarming': {
         'hard_timeout': 1800,
@@ -2007,6 +2047,7 @@
       ],
       'test': 'content_browsertests',
     },
+
     'not_site_per_process_content_unittests': {
       'args': [
         '--disable-site-isolation-trials'
@@ -2369,13 +2410,13 @@
     #   linux_chromium_gtests
     #   - non_android_and_cast_and_chromeos_chromium_gtests
     #   + linux_chromeos_specific_gtests
-    #   + mash_chromium_gtests
     'aura_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
     'linux_chromeos_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
+    'single_process_mash_chromium_gtests',
     'mash_chromium_gtests',
     'non_android_chromium_gtests',
     'viz_non_linux_non_windows_gtests',
@@ -2712,7 +2753,7 @@
 
   'mojo_chromiumos_fyi_gtests': [
     'aura_gtests',
-    'mash_chromium_gtests',
+    'mash_fyi_chromium_gtests',
     'mojo_chromiumos_specific_gtests',
     'viz_gtests',
     'viz_non_android_fyi_gtests',
