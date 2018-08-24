@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.webkit.URLUtil;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -15,11 +17,40 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.concurrent.TimeUnit;
 
 /** Class allowing to measure and report a page view time in UMA. */
 public class PageViewTimer {
+    @VisibleForTesting
+    public static final long SHORT_BUCKET_THRESHOLD_MS = 4 * 1000;
+    @VisibleForTesting
+    public static final long MEDIUM_BUCKET_THRESHOLD_MS = 180 * 1000;
+
+    /**
+     * Note: Because this is used for UMA reporting, these values shouldn't be
+     * changed, reused or reordered. Additions should go on the end, and any
+     * updates should also be reflected under enums.xml.
+     */
+    @VisibleForTesting
+    @IntDef({DurationBucket.SHORT_CLICK, DurationBucket.MEDIUM_CLICK, DurationBucket.LONG_CLICK})
+    public @interface DurationBucket {
+        int SHORT_CLICK = 0; /** Click <= 4 secconds */
+        int MEDIUM_CLICK = 1; /** 4 seconds < Click <= 180 seconds */
+        int LONG_CLICK = 2; /** 180 seconds < Click */
+    }
+    private static final int DURATION_BUCKET_COUNT = 3;
+
+    /** Track the navigation source to report the page view time under. */
+    @IntDef({NavigationSource.OTHER, NavigationSource.CONTEXTUAL_SUGGESTIONS})
+    public @interface NavigationSource {
+        int OTHER = 0;
+        int CONTEXTUAL_SUGGESTIONS = 1;
+    }
+
     private final TabModelSelectorTabModelObserver mTabModelObserver;
     private final TabObserver mTabObserver;
 
@@ -31,10 +62,28 @@ public class PageViewTimer {
     private long mStartTimeMs;
     /** Whether the page is showing anything. */
     private boolean mPageDidPaint;
+    /** The source of the navigation. */
+    @NavigationSource
+    private int mNavigationSource;
+    /** Track when the timer is paused, which happens if the tab is hidden. */
+    private boolean mIsPaused;
+    /** When the timer is paused, track when the pause began. */
+    private long mPauseStartTimeMs;
+    /** Keep a cumlative duration of page not being visible. */
+    private long mPauseDuration;
 
     public PageViewTimer(TabModelSelector tabModelSelector) {
-        // TODO(fgorski): May need to change to TabObserver.
         mTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onShown(Tab tab) {
+                resumeMeasuring(tab.getUrl());
+            }
+
+            @Override
+            public void onHidden(Tab tab) {
+                pauseMeasuring(tab.getUrl());
+            }
+
             @Override
             public void onUpdateUrl(Tab tab, String url) {
                 assert tab == mCurrentTab;
@@ -44,7 +93,7 @@ public class PageViewTimer {
                 if (UrlUtilities.urlsMatchIgnoringFragments(url, mLastUrl)) return;
 
                 maybeReportViewTime();
-                maybeStartMeasuring(url, !tab.isLoading());
+                maybeStartMeasuring(url, !tab.isLoading(), tab.getWebContents());
             }
 
             @Override
@@ -74,7 +123,7 @@ public class PageViewTimer {
 
                 maybeReportViewTime();
                 switchObserverToTab(tab);
-                maybeStartMeasuring(tab.getUrl(), !tab.isLoading());
+                maybeStartMeasuring(tab.getUrl(), !tab.isLoading(), tab.getWebContents());
             }
 
             @Override
@@ -106,9 +155,11 @@ public class PageViewTimer {
 
     private void maybeReportViewTime() {
         if (mLastUrl != null && mStartTimeMs != 0 && mPageDidPaint) {
-            long durationMs = SystemClock.uptimeMillis() - mStartTimeMs;
+            long durationMs = SystemClock.uptimeMillis() - mStartTimeMs - mPauseDuration;
             RecordHistogram.recordLongTimesHistogram100(
                     "ContextualSuggestions.PageViewTime", durationMs, TimeUnit.MILLISECONDS);
+
+            reportDurationBucket(calculateDurationBucket(durationMs));
         }
 
         // Reporting triggers every time the user would see something new, therefore we clean up
@@ -116,6 +167,22 @@ public class PageViewTimer {
         mLastUrl = null;
         mStartTimeMs = 0;
         mPageDidPaint = false;
+        mIsPaused = false;
+        mNavigationSource = NavigationSource.OTHER;
+        mPauseDuration = 0;
+        mPauseStartTimeMs = 0;
+    }
+
+    private void reportDurationBucket(@DurationBucket int durationBucket) {
+        if (mNavigationSource == NavigationSource.CONTEXTUAL_SUGGESTIONS) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    "ContextualSuggestions.PageViewClickLength.ContextualSuggestions",
+                    durationBucket, DURATION_BUCKET_COUNT);
+            return;
+        }
+
+        RecordHistogram.recordEnumeratedHistogram("ContextualSuggestions.PageViewClickLength.Other",
+                durationBucket, DURATION_BUCKET_COUNT);
     }
 
     private void switchObserverToTab(Tab tab) {
@@ -129,11 +196,51 @@ public class PageViewTimer {
         }
     }
 
-    private void maybeStartMeasuring(String url, boolean isLoaded) {
+    private void maybeStartMeasuring(String url, boolean isLoaded, WebContents webContents) {
         if (!URLUtil.isHttpUrl(url) && !URLUtil.isHttpsUrl(url)) return;
 
         mLastUrl = url;
         mStartTimeMs = SystemClock.uptimeMillis();
         mPageDidPaint = isLoaded;
+        mNavigationSource = getNavigationSource(webContents);
+    }
+
+    private void pauseMeasuring(String url) {
+        if (mIsPaused) return;
+
+        mPauseStartTimeMs = SystemClock.uptimeMillis();
+    }
+
+    private void resumeMeasuring(String url) {
+        if (!mIsPaused) return;
+
+        mIsPaused = false;
+        mPauseDuration += SystemClock.uptimeMillis() - mPauseStartTimeMs;
+    }
+
+    @VisibleForTesting
+    public @NavigationSource int getNavigationSource(WebContents webContents) {
+        NavigationController navigationController = webContents.getNavigationController();
+        NavigationEntry navigationEntry = navigationController.getEntryAtIndex(
+                navigationController.getLastCommittedEntryIndex());
+        if (navigationEntry == null) {
+            return NavigationSource.OTHER;
+        }
+
+        String referrer = navigationEntry.getReferrerUrl();
+        // TODO(fgorski): Share this with other declarations of the referrer.
+        if ("https://goto.google.com/explore-on-content-viewer".equals(referrer)) {
+            return NavigationSource.CONTEXTUAL_SUGGESTIONS;
+        }
+
+        return NavigationSource.OTHER;
+    }
+
+    @VisibleForTesting
+    public @DurationBucket int calculateDurationBucket(long durationMs) {
+        if (durationMs <= SHORT_BUCKET_THRESHOLD_MS) return DurationBucket.SHORT_CLICK;
+        if (durationMs <= MEDIUM_BUCKET_THRESHOLD_MS) return DurationBucket.MEDIUM_CLICK;
+
+        return DurationBucket.LONG_CLICK;
     }
 }
