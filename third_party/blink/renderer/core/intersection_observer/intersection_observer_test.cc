@@ -66,7 +66,13 @@ class IntersectionObserverV2Test : public IntersectionObserverTest,
                                    public ScopedIntersectionObserverV2ForTest {
  public:
   IntersectionObserverV2Test()
-      : IntersectionObserverTest(), ScopedIntersectionObserverV2ForTest(true) {}
+      : IntersectionObserverTest(), ScopedIntersectionObserverV2ForTest(true) {
+    IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(false);
+  }
+
+  ~IntersectionObserverV2Test() override {
+    IntersectionObserver::SetV2ThrottleDelayEnabledForTesting(true);
+  }
 };
 
 TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
