@@ -192,39 +192,6 @@ void AssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
       });
 }
 
-void AssistantManagerServiceImpl::RequestScreenContext(
-    const gfx::Rect& region,
-    bool from_user,
-    RequestScreenContextCallback callback) {
-  if (!assistant_enabled_ || !context_enabled_) {
-    // If context is not enabled, we notify assistant immediately to activate
-    // the UI.
-    std::move(callback).Run();
-    return;
-  }
-
-  // We wait for the closure to execute twice: once for the screenshot and once
-  // for the view hierarchy. If the screen context request was user initiated,
-  // we then proceed to send a screen context query to the server. Otherwise,
-  // we cache our screen context to send alongside subsequent voice/text
-  // queries. In all cases, |callback| will be run to inform our caller that
-  // context grabbing has been completed.
-  auto on_done = base::BarrierClosure(
-      2, base::BindOnce(
-             from_user ? &AssistantManagerServiceImpl::SendScreenContextQuery
-                       : &AssistantManagerServiceImpl::CacheScreenContext,
-             weak_factory_.GetWeakPtr(), std::move(callback)));
-
-  service_->client()->RequestAssistantStructure(
-      base::BindOnce(&AssistantManagerServiceImpl::OnAssistantStructureReceived,
-                     weak_factory_.GetWeakPtr(), on_done));
-
-  service_->assistant_controller()->RequestScreenshot(
-      region, base::BindOnce(
-                  &AssistantManagerServiceImpl::OnAssistantScreenshotReceived,
-                  weak_factory_.GetWeakPtr(), on_done));
-}
-
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
   platform_api_.SetMicState(true);
   assistant_manager_->StartAssistantInteraction();
@@ -233,6 +200,32 @@ void AssistantManagerServiceImpl::StartVoiceInteraction() {
 void AssistantManagerServiceImpl::StopActiveInteraction() {
   platform_api_.SetMicState(false);
   assistant_manager_->StopAssistantInteraction();
+}
+
+void AssistantManagerServiceImpl::StartCachedScreenContextInteraction() {
+  if (!assistant_enabled_ || !context_enabled_)
+    return;
+
+  // It is illegal to call this method without having first cached screen
+  // context (see CacheScreenContext()).
+  DCHECK(assistant_extra_);
+  DCHECK(assistant_tree_);
+  DCHECK(!assistant_screenshot_.empty());
+
+  SendScreenContextRequest(std::move(assistant_extra_),
+                           std::move(assistant_tree_), assistant_screenshot_);
+}
+
+void AssistantManagerServiceImpl::StartMetalayerInteraction(
+    const gfx::Rect& region) {
+  if (!assistant_enabled_ || !context_enabled_)
+    return;
+
+  service_->assistant_controller()->RequestScreenshot(
+      region,
+      base::BindOnce(&AssistantManagerServiceImpl::SendScreenContextRequest,
+                     weak_factory_.GetWeakPtr(), /*assistant_extra=*/nullptr,
+                     /*assistant_tree=*/nullptr));
 }
 
 void AssistantManagerServiceImpl::SendTextQuery(const std::string& query) {
@@ -820,7 +813,33 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
       [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
 }
 
-void AssistantManagerServiceImpl::OnAssistantStructureReceived(
+void AssistantManagerServiceImpl::CacheScreenContext(
+    CacheScreenContextCallback callback) {
+  if (!assistant_enabled_ || !context_enabled_) {
+    std::move(callback).Run();
+    return;
+  }
+
+  // Our callback should be run only after both view hierarchy and screenshot
+  // data have been cached from their respective providers.
+  auto on_done =
+      base::BarrierClosure(2, base::BindOnce(
+                                  [](CacheScreenContextCallback callback) {
+                                    std::move(callback).Run();
+                                  },
+                                  base::Passed(std::move(callback))));
+
+  service_->client()->RequestAssistantStructure(
+      base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantStructure,
+                     weak_factory_.GetWeakPtr(), on_done));
+
+  service_->assistant_controller()->RequestScreenshot(
+      gfx::Rect(),
+      base::BindOnce(&AssistantManagerServiceImpl::CacheAssistantScreenshot,
+                     weak_factory_.GetWeakPtr(), on_done));
+}
+
+void AssistantManagerServiceImpl::CacheAssistantStructure(
     base::OnceClosure on_done,
     ax::mojom::AssistantExtraPtr assistant_extra,
     std::unique_ptr<ui::AssistantTree> assistant_tree) {
@@ -829,41 +848,22 @@ void AssistantManagerServiceImpl::OnAssistantStructureReceived(
   std::move(on_done).Run();
 }
 
-void AssistantManagerServiceImpl::OnAssistantScreenshotReceived(
+void AssistantManagerServiceImpl::CacheAssistantScreenshot(
     base::OnceClosure on_done,
-    const std::vector<uint8_t>& jpg_image) {
-  assistant_screenshot_ = jpg_image;
+    const std::vector<uint8_t>& assistant_screenshot) {
+  assistant_screenshot_ = assistant_screenshot;
   std::move(on_done).Run();
 }
 
-void AssistantManagerServiceImpl::CacheScreenContext(
-    RequestScreenContextCallback callback) {
-  // TODO(dmblack): Cache view hierarchy and screenshot data so that we can
-  // send it alongside subsequent voice/text queries for additional context.
-  assistant_extra_.reset();
-  assistant_tree_.reset();
-  assistant_screenshot_.clear();
-
-  // Run callback now that screen context has been successfully grabbed.
-  std::move(callback).Run();
-}
-
-void AssistantManagerServiceImpl::SendScreenContextQuery(
-    RequestScreenContextCallback callback) {
-  // Note: This call initiates a user facing interaction which will interrupt
-  // any other user interaction in progress. As such, it should only be called
-  // as a direct result of a query for screen related content initiated by the
-  // user, e.g. via suggestion chip press or Assistant stylus tool selection.
+void AssistantManagerServiceImpl::SendScreenContextRequest(
+    ax::mojom::AssistantExtraPtr assistant_extra,
+    std::unique_ptr<ui::AssistantTree> assistant_tree,
+    const std::vector<uint8_t>& assistant_screenshot) {
   assistant_manager_internal_->SendScreenContextRequest(
-      {CreateContextProto(AssistantBundle{
-           std::move(assistant_extra_), std::move(assistant_tree_),
-       }),
-       CreateContextProto(assistant_screenshot_)});
-
+      {CreateContextProto(AssistantBundle{std::move(assistant_extra),
+                                          std::move(assistant_tree)}),
+       CreateContextProto(assistant_screenshot)});
   assistant_screenshot_.clear();
-
-  // Run callback now that screen context has been successfully grabbed.
-  std::move(callback).Run();
 }
 
 }  // namespace assistant

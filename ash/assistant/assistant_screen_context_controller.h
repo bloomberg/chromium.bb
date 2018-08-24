@@ -44,11 +44,6 @@ class ASH_EXPORT AssistantScreenContextController
   void AddModelObserver(AssistantScreenContextModelObserver* observer);
   void RemoveModelObserver(AssistantScreenContextModelObserver* observer);
 
-  // Requests screen context for the region defined by |rect| (given in DP). If
-  // an empty rect is supplied, the entire screen is captured. If |from_user| is
-  // true, contextual cards will be returned as part of an interaction flow.
-  void RequestScreenContext(const gfx::Rect& rect, bool from_user);
-
   // Requests a screenshot for the region defined by |rect| (given in DP). If
   // an empty rect is supplied, the entire screen is captured. Upon screenshot
   // completion, the specified |callback| is run.

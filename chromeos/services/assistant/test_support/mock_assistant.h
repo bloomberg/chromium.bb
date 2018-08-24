@@ -21,6 +21,10 @@ class MockAssistant : public mojom::Assistant {
   MockAssistant();
   ~MockAssistant() override;
 
+  MOCK_METHOD0(StartCachedScreenContextInteraction, void());
+
+  MOCK_METHOD1(StartMetalayerInteraction, void(const gfx::Rect&));
+
   MOCK_METHOD0(StartVoiceInteraction, void());
 
   MOCK_METHOD0(StopActiveInteraction, void());
@@ -41,17 +45,14 @@ class MockAssistant : public mojom::Assistant {
   MOCK_METHOD1(DismissNotification,
                void(chromeos::assistant::mojom::AssistantNotificationPtr));
 
-  // Mock DoRequestScreenContext in lieu of RequestScreenContext.
-  MOCK_METHOD3(DoRequestScreenContext,
-               void(const gfx::Rect&, bool from_user, base::OnceClosure*));
+  // Mock DoCacheScreenContext in lieu of CacheScreenContext.
+  MOCK_METHOD1(DoCacheScreenContext, void(base::OnceClosure*));
 
-  // Note: We can't mock RequestScreenContext directly because of the move
+  // Note: We can't mock CacheScreenContext directly because of the move
   // semantics required around base::OnceClosure. Instead, we route calls to a
-  // mockable delegate method, DoRequestScreenContext.
-  void RequestScreenContext(const gfx::Rect& region,
-                            bool from_user,
-                            base::OnceClosure callback) override {
-    DoRequestScreenContext(region, from_user, &callback);
+  // mockable delegate method, DoCacheScreenContext.
+  void CacheScreenContext(base::OnceClosure callback) override {
+    DoCacheScreenContext(&callback);
   }
 
  private:

@@ -80,6 +80,8 @@ class AssistantManagerServiceImpl
       UpdateSettingsUiResponseCallback callback) override;
 
   // mojom::Assistant overrides:
+  void StartCachedScreenContextInteraction() override;
+  void StartMetalayerInteraction(const gfx::Rect& region) override;
   void StartVoiceInteraction() override;
   void StopActiveInteraction() override;
   void SendTextQuery(const std::string& query) override;
@@ -91,9 +93,7 @@ class AssistantManagerServiceImpl
                             int action_index) override;
   void DismissNotification(
       mojom::AssistantNotificationPtr notification) override;
-  void RequestScreenContext(const gfx::Rect& region,
-                            bool from_user,
-                            RequestScreenContextCallback callback) override;
+  void CacheScreenContext(CacheScreenContextCallback callback) override;
 
   // AssistantActionObserver overrides:
   void OnShowHtml(const std::string& html) override;
@@ -135,7 +135,7 @@ class AssistantManagerServiceImpl
       ash::mojom::AssistantAllowedState state) override {}
   void OnLocaleChanged(const std::string& locale) override {}
 
-  // AddDeviceStateListener overrides
+  // assistant_client::DeviceStateListener overrides:
   void OnStartFinished() override;
 
  private:
@@ -176,15 +176,19 @@ class AssistantManagerServiceImpl
 
   void RegisterFallbackMediaHandler();
 
-  void CacheScreenContext(RequestScreenContextCallback callback);
-  void SendScreenContextQuery(RequestScreenContextCallback callback);
-
-  void OnAssistantStructureReceived(
+  void CacheAssistantStructure(
       base::OnceClosure on_done,
       ax::mojom::AssistantExtraPtr assistant_extra,
       std::unique_ptr<ui::AssistantTree> assistant_tree);
-  void OnAssistantScreenshotReceived(base::OnceClosure on_done,
-                                     const std::vector<uint8_t>& jpg_image);
+
+  void CacheAssistantScreenshot(
+      base::OnceClosure on_done,
+      const std::vector<uint8_t>& assistant_screenshot);
+
+  void SendScreenContextRequest(
+      ax::mojom::AssistantExtraPtr assistant_extra,
+      std::unique_ptr<ui::AssistantTree> assistant_tree,
+      const std::vector<uint8_t>& assistant_screenshot);
 
   State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;

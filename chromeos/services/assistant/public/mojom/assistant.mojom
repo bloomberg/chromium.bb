@@ -12,6 +12,17 @@ import "mojo/public/mojom/base/time.mojom";
 
 // Interface to communicate with assistant backend.
 interface Assistant {
+  // Starts a cached screen context interaction. Results related to the screen
+  // context will be returned through the |AssistantInteractionSubscriber|
+  // interface to registered subscribers. It is illegal to call this method
+  // without having first cached screen context (see CacheScreenContext()).
+  StartCachedScreenContextInteraction();
+
+  // Starts a metalayer interaction for the selected screen |region|. Results
+  // related to the selected region will be returned through the
+  // |AssistantInteractionSubscriber| interface to registered subscribers.
+  StartMetalayerInteraction(gfx.mojom.Rect region);
+
   // Starts a new Assistant voice interaction.
   StartVoiceInteraction();
 
@@ -41,15 +52,11 @@ interface Assistant {
   // Dismisses a notification.
   DismissNotification(AssistantNotification notification);
 
-  // Asks assistant to grab screen context. |region| controls the part of the
-  // screen to snapshot. If |region| is empty, it takes fullscreen screenshot.
-  // The |from_user| parameter is true if the request originated from the user,
-  // false otherwise. A user request for screen context may come as a result of
-  // a suggestion chip press or Assistant stylus selection. A request that did
-  // not originate from the user occurs on launch of Assistant to provide
-  // additional context for subsequent voice/text queries. After grab
-  // completion, the callback will be invoked.
-  RequestScreenContext(gfx.mojom.Rect region, bool from_user) => ();
+  // Caches screen context, made up of view hierarchy and screenshot data.
+  // Screen context is used to provide additional context alongside text and
+  // voice queries, and may also be used in standalone screen context
+  // interactions (see StartCachedScreenContextInteraction()).
+  CacheScreenContext() => ();
 };
 
 // Subscribes to assistant's interaction event. These events are server driven
