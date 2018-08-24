@@ -473,7 +473,7 @@ void BindDiscardableMemoryRequestOnUI(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(USE_AURA)
-  if (!features::IsAshInBrowserProcess()) {
+  if (features::IsMultiProcessMash()) {
     ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
         ws::mojom::kServiceName, std::move(request));
     return;

@@ -136,10 +136,6 @@ bool IsUsingWindowService() {
   return IsSingleProcessMash() || IsMultiProcessMash();
 }
 
-bool IsAshInBrowserProcess() {
-  return !base::FeatureList::IsEnabled(features::kMash);
-}
-
 bool IsMultiProcessMash() {
   return base::FeatureList::IsEnabled(features::kMash);
 }
@@ -178,7 +174,7 @@ const base::Feature kEnableOzoneDrmMojo = {"OzoneDrmMojo",
 
 bool IsOzoneDrmMojo() {
   return base::FeatureList::IsEnabled(kEnableOzoneDrmMojo) ||
-         !IsAshInBrowserProcess();
+         IsMultiProcessMash();
 }
 
 }  // namespace features

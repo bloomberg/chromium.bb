@@ -150,7 +150,7 @@ bool MediaFactory::VideoSurfaceLayerEnabled() {
   }
 
   return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo) &&
-         features::IsAshInBrowserProcess();
+         !features::IsMultiProcessMash();
 }
 
 bool MediaFactory::VideoSurfaceLayerEnabledForMS() {
@@ -164,7 +164,7 @@ bool MediaFactory::VideoSurfaceLayerEnabledForMS() {
   }
 
   return base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideoMS) &&
-         features::IsAshInBrowserProcess();
+         !features::IsMultiProcessMash();
 }
 
 MediaFactory::MediaFactory(

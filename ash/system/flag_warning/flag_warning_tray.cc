@@ -37,7 +37,7 @@ FlagWarningTray::FlagWarningTray(Shelf* shelf) : shelf_(shelf) {
   DCHECK(shelf_);
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  DCHECK(!::features::IsAshInBrowserProcess());
+  DCHECK(::features::IsMultiProcessMash());
   container_ = new TrayContainer(shelf);
   AddChildView(container_);
 

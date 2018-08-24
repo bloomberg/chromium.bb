@@ -816,7 +816,7 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
   // Out-of-process ash uses the IME mojo service. In-process ash uses a single
   // input method shared between ash and browser code.
-  if (::features::IsAshInBrowserProcess()) {
+  if (!::features::IsMultiProcessMash()) {
     DCHECK(!host->has_input_method());
     if (!input_method_) {  // Singleton input method instance for Ash.
       input_method_ = ui::CreateInputMethod(this, host->GetAcceleratedWidget());

@@ -26,7 +26,7 @@ WindowServiceOwner::WindowServiceOwner(
           window_service_delegate_.get(),
           std::move(gpu_interface_provider),
           Shell::Get()->focus_controller(),
-          features::IsAshInBrowserProcess(),
+          !::features::IsMultiProcessMash(),
           Shell::Get()->aura_env())),
       window_service_(owned_window_service_.get()) {
   window_service_->SetFrameDecorationValues(

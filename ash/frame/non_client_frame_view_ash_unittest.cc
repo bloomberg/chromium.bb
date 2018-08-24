@@ -325,7 +325,7 @@ TEST_F(NonClientFrameViewAshTest, ToggleTabletModeOnMinimizedWindow) {
 TEST_F(NonClientFrameViewAshTest, ToggleTabletModeRelayout) {
   // In classic Ash, this is covered by
   // BrowserNonClientFrameViewAshTest.ToggleTabletModeRelayout.
-  if (::features::IsAshInBrowserProcess())
+  if (!::features::IsMultiProcessMash())
     return;
 
   NonClientFrameViewAshTestWidgetDelegate* delegate =

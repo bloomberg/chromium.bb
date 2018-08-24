@@ -1294,7 +1294,7 @@ void Shell::Init(
     connector_->StartService(tap_visualizer::mojom::kServiceName);
   }
 
-  if (::features::IsAshInBrowserProcess()) {
+  if (!::features::IsMultiProcessMash()) {
     ime_focus_handler_ = std::make_unique<ImeFocusHandler>(
         focus_controller(), window_tree_host_manager_->input_method());
   }
