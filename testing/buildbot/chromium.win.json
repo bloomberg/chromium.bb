@@ -1766,6 +1766,7 @@
           "--enable-features=WebUIPolymer2",
           "--test-launcher-filter-file=../../testing/buildbot/filters/webui_polymer2_interactive_ui_tests.filter"
         ],
+        "experiment_percentage": 100,
         "name": "webui_polymer2_interactive_ui_tests",
         "swarming": {
           "can_use_on_swarming_builders": true

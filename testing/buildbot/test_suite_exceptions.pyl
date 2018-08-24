@@ -1765,6 +1765,15 @@
       },
     },
   },
+  'webui_polymer2_interactive_ui_tests': {
+    'modifications': {
+      # Match interactive_ui_tests, see https://crbug.com/840369
+      # chromium.win
+      'Win10 Tests x64 (dbg)': {
+        'experiment_percentage': 100,
+      },
+    },
+  },
   'webview_instrumentation_test_apk': {
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
