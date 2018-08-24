@@ -599,9 +599,7 @@ body.capturing.grid #preview-grid-vertical {
 }
 
 #browser .buttons button {
-  width: 32px;
-  height: 32px;
-  margin: 6px 8px;
+  margin: 0 8px;
 }
 
 #browser .buttons button[disabled] {
