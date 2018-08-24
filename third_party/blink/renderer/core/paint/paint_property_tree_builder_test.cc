@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
+#include "third_party/blink/renderer/core/layout/layout_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
@@ -5956,6 +5957,41 @@ TEST_P(PaintPropertyTreeBuilderTest,
   ASSERT_TRUE(fragment.HasLocalBorderBoxProperties());
   EXPECT_EQ(fragment.ContentsProperties().Clip(),
             fragment.PaintProperties()->OverflowClip());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, SkipEmptyClipFragments) {
+  SetBodyInnerHTML(R"HTML(
+    <!doctype HTML>
+    <style>h4 { column-span: all; }</style>
+    <div id="container" style="columns:1;">
+      lorem
+      <h4>hi</h4>
+      <div><h4>hello</h4></div>
+      ipsum
+    </div>
+  )HTML");
+
+  const auto* flow_thread = GetDocument()
+                                .getElementById("container")
+                                ->GetLayoutObject()
+                                ->SlowFirstChild();
+  EXPECT_TRUE(flow_thread->IsLayoutFlowThread());
+  EXPECT_TRUE(ToLayoutFlowThread(flow_thread)->IsLayoutMultiColumnFlowThread());
+
+  // FragmentainerIterator would return 3 things:
+  // 1. A fragment that contains "lorem" and is interrupted by the first h4,
+  //    since it's column-span: all.
+  // 2. A fragment that starts at the inner div of height 0 and is immediately
+  //    interrupted by a nested h4.
+  // 3. A fragment that contains "ipsum".
+  //
+  // The second fragment would have an empty clip and the same logical top as
+  // the third fragment. This test ensures that this fragment is not present in
+  // the LayoutMultiColumnFlowThread's fragments.
+  EXPECT_EQ(2u, NumFragments(flow_thread));
+  EXPECT_NE(
+      flow_thread->FirstFragment().LogicalTopInFlowThread(),
+      flow_thread->FirstFragment().NextFragment()->LogicalTopInFlowThread());
 }
 
 }  // namespace blink
