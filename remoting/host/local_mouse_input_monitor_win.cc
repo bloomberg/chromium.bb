@@ -1,17 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/local_input_monitor.h"
+#include "remoting/host/local_mouse_input_monitor.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -27,16 +26,16 @@ namespace {
 const USHORT kGenericDesktopPage = 1;
 const USHORT kMouseUsage = 2;
 
-class LocalInputMonitorWin : public LocalInputMonitor {
+class LocalMouseInputMonitorWin : public LocalMouseInputMonitor {
  public:
-  LocalInputMonitorWin(
+  LocalMouseInputMonitorWin(
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control);
-  ~LocalInputMonitorWin() override;
+  ~LocalMouseInputMonitorWin() override;
 
  private:
-  // The actual implementation resides in LocalInputMonitorWin::Core class.
+  // The actual implementation resides in LocalMouseInputMonitorWin::Core class.
   class Core : public base::RefCountedThreadSafe<Core> {
    public:
     Core(scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
@@ -81,10 +80,10 @@ class LocalInputMonitorWin : public LocalInputMonitor {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  DISALLOW_COPY_AND_ASSIGN(LocalInputMonitorWin);
+  DISALLOW_COPY_AND_ASSIGN(LocalMouseInputMonitorWin);
 };
 
-LocalInputMonitorWin::LocalInputMonitorWin(
+LocalMouseInputMonitorWin::LocalMouseInputMonitorWin(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
@@ -94,12 +93,12 @@ LocalInputMonitorWin::LocalInputMonitorWin(
   core_->Start();
 }
 
-LocalInputMonitorWin::~LocalInputMonitorWin() {
+LocalMouseInputMonitorWin::~LocalMouseInputMonitorWin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   core_->Stop();
 }
 
-LocalInputMonitorWin::Core::Core(
+LocalMouseInputMonitorWin::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control)
@@ -109,41 +108,42 @@ LocalInputMonitorWin::Core::Core(
   DCHECK(client_session_control_);
 }
 
-void LocalInputMonitorWin::Core::Start() {
+void LocalMouseInputMonitorWin::Core::Start() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   ui_task_runner_->PostTask(FROM_HERE,
-                            base::Bind(&Core::StartOnUiThread, this));
+                            base::BindOnce(&Core::StartOnUiThread, this));
 }
 
-void LocalInputMonitorWin::Core::Stop() {
+void LocalMouseInputMonitorWin::Core::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  ui_task_runner_->PostTask(FROM_HERE, base::Bind(&Core::StopOnUiThread, this));
+  ui_task_runner_->PostTask(FROM_HERE,
+                            base::BindOnce(&Core::StopOnUiThread, this));
 }
 
-LocalInputMonitorWin::Core::~Core() {
+LocalMouseInputMonitorWin::Core::~Core() {
   DCHECK(!window_);
 }
 
-void LocalInputMonitorWin::Core::StartOnUiThread() {
+void LocalMouseInputMonitorWin::Core::StartOnUiThread() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   window_.reset(new base::win::MessageWindow());
-  if (!window_->Create(base::Bind(&Core::HandleMessage,
-                                  base::Unretained(this)))) {
+  if (!window_->Create(
+          base::BindRepeating(&Core::HandleMessage, base::Unretained(this)))) {
     PLOG(ERROR) << "Failed to create the raw input window";
     window_.reset();
 
     // If the local input cannot be monitored, the remote user can take over
     // the session. Disconnect the session now to prevent this.
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ClientSessionControl::DisconnectSession,
-                              client_session_control_, protocol::OK));
+        FROM_HERE, base::BindOnce(&ClientSessionControl::DisconnectSession,
+                                  client_session_control_, protocol::OK));
   }
 }
 
-void LocalInputMonitorWin::Core::StopOnUiThread() {
+void LocalMouseInputMonitorWin::Core::StopOnUiThread() {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   // Stop receiving  raw mouse input.
@@ -161,7 +161,7 @@ void LocalInputMonitorWin::Core::StopOnUiThread() {
   window_.reset();
 }
 
-LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
+LRESULT LocalMouseInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
   DCHECK(ui_task_runner_->BelongsToCurrentThread());
 
   // Get the size of the input record.
@@ -200,16 +200,19 @@ LRESULT LocalInputMonitorWin::Core::OnInput(HRAWINPUT input_handle) {
     }
 
     caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ClientSessionControl::OnLocalMouseMoved,
-                              client_session_control_,
-                              webrtc::DesktopVector(position.x, position.y)));
+        FROM_HERE,
+        base::BindOnce(&ClientSessionControl::OnLocalMouseMoved,
+                       client_session_control_,
+                       webrtc::DesktopVector(position.x, position.y)));
   }
 
   return DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
 }
 
-bool LocalInputMonitorWin::Core::HandleMessage(
-    UINT message, WPARAM wparam, LPARAM lparam, LRESULT* result) {
+bool LocalMouseInputMonitorWin::Core::HandleMessage(UINT message,
+                                                    WPARAM wparam,
+                                                    LPARAM lparam,
+                                                    LRESULT* result) {
   switch (message) {
     case WM_CREATE: {
       // Register to receive raw mouse input.
@@ -238,13 +241,13 @@ bool LocalInputMonitorWin::Core::HandleMessage(
 
 }  // namespace
 
-std::unique_ptr<LocalInputMonitor> LocalInputMonitor::Create(
+std::unique_ptr<LocalMouseInputMonitor> LocalMouseInputMonitor::Create(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control) {
-  return base::WrapUnique(new LocalInputMonitorWin(
-      caller_task_runner, ui_task_runner, client_session_control));
+  return std::make_unique<LocalMouseInputMonitorWin>(
+      caller_task_runner, ui_task_runner, client_session_control);
 }
 
 }  // namespace remoting
