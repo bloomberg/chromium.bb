@@ -275,7 +275,8 @@ class GpuImageDecodeCacheTest
   std::unique_ptr<GpuImageDecodeCache> CreateCache() {
     return std::make_unique<GpuImageDecodeCache>(
         context_provider_.get(), use_transfer_cache_, color_type_,
-        kGpuMemoryLimitBytes, max_texture_size_);
+        kGpuMemoryLimitBytes, max_texture_size_,
+        PaintImage::kDefaultGeneratorClientId);
   }
 
   GPUImageDecodeTestMockContextProvider* context_provider() {

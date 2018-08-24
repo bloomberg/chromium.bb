@@ -28,6 +28,7 @@ bool FakePaintImageGenerator::GetPixels(const SkImageInfo& info,
                                         void* pixels,
                                         size_t row_bytes,
                                         size_t frame_index,
+                                        PaintImage::GeneratorClientId client_id,
                                         uint32_t lazy_pixel_ref) {
   if (image_backing_memory_.empty())
     return false;

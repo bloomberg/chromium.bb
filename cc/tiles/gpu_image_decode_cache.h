@@ -107,7 +107,8 @@ class CC_EXPORT GpuImageDecodeCache
                                bool use_transfer_cache,
                                SkColorType color_type,
                                size_t max_working_set_bytes,
-                               int max_texture_size);
+                               int max_texture_size,
+                               PaintImage::GeneratorClientId client_id);
   ~GpuImageDecodeCache() override;
 
   // Returns the GL texture ID backing the given SkImage.
@@ -479,6 +480,7 @@ class CC_EXPORT GpuImageDecodeCache
   const bool use_transfer_cache_ = false;
   viz::RasterContextProvider* context_;
   int max_texture_size_ = 0;
+  const PaintImage::GeneratorClientId generator_client_id_;
 
   // All members below this point must only be accessed while holding |lock_|.
   // The exception are const members like |normal_max_cache_bytes_| that can

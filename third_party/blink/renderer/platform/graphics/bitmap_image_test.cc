@@ -54,12 +54,15 @@ namespace {
 
 class FrameSettingImageProvider : public cc::ImageProvider {
  public:
-  FrameSettingImageProvider(size_t frame_index) : frame_index_(frame_index) {}
+  FrameSettingImageProvider(size_t frame_index,
+                            cc::PaintImage::GeneratorClientId client_id)
+      : frame_index_(frame_index), client_id_(client_id) {}
   ~FrameSettingImageProvider() override = default;
 
   ScopedDecodedDrawImage GetDecodedDrawImage(
       const cc::DrawImage& draw_image) override {
-    auto sk_image = draw_image.paint_image().GetSkImageForFrame(frame_index_);
+    auto sk_image =
+        draw_image.paint_image().GetSkImageForFrame(frame_index_, client_id_);
     return ScopedDecodedDrawImage(
         cc::DecodedDrawImage(sk_image, SkSize::MakeEmpty(), SkSize::Make(1, 1),
                              draw_image.filter_quality(), true));
@@ -67,7 +70,24 @@ class FrameSettingImageProvider : public cc::ImageProvider {
 
  private:
   size_t frame_index_;
+  cc::PaintImage::GeneratorClientId client_id_;
 };
+
+void GenerateBitmapForPaintImage(cc::PaintImage paint_image,
+                                 size_t frame_index,
+                                 cc::PaintImage::GeneratorClientId client_id,
+                                 SkBitmap* bitmap) {
+  CHECK(paint_image);
+  CHECK_GE(paint_image.FrameCount(), frame_index);
+
+  SkImageInfo info =
+      SkImageInfo::MakeN32Premul(paint_image.width(), paint_image.height());
+  bitmap->allocPixels(info, paint_image.width() * 4);
+  bitmap->eraseColor(SK_AlphaTRANSPARENT);
+  FrameSettingImageProvider image_provider(frame_index, client_id);
+  cc::SkiaPaintCanvas canvas(*bitmap, &image_provider);
+  canvas.drawImage(paint_image, 0u, 0u, nullptr);
+}
 
 }  // namespace
 
@@ -117,18 +137,10 @@ class BitmapImageTest : public testing::Test {
   }
 
   SkBitmap GenerateBitmap(size_t frame_index) {
-    CHECK_GE(image_->FrameCount(), frame_index);
-    auto paint_image = image_->PaintImageForTesting();
-    CHECK(paint_image);
-
     SkBitmap bitmap;
-    SkImageInfo info = SkImageInfo::MakeN32Premul(image_->Size().Width(),
-                                                  image_->Size().Height());
-    bitmap.allocPixels(info, image_->Size().Width() * 4);
-    bitmap.eraseColor(SK_AlphaTRANSPARENT);
-    FrameSettingImageProvider image_provider(frame_index);
-    cc::SkiaPaintCanvas canvas(bitmap, &image_provider);
-    canvas.drawImage(paint_image, 0u, 0u, nullptr);
+    GenerateBitmapForPaintImage(image_->PaintImageForTesting(), frame_index,
+                                cc::PaintImage::kDefaultGeneratorClientId,
+                                &bitmap);
     return bitmap;
   }
 
@@ -414,6 +426,37 @@ TEST_F(BitmapImageTest, GifDecoderFrame3) {
   LoadImage("/images/resources/green-red-blue-yellow-animated.gif");
   auto bitmap = GenerateBitmap(3u);
   VerifyBitmap(bitmap, SK_ColorYELLOW);
+}
+
+TEST_F(BitmapImageTest, GifDecoderMultiThreaded) {
+  LoadImage("/images/resources/green-red-blue-yellow-animated.gif");
+  auto paint_image = image_->PaintImageForTesting();
+  ASSERT_EQ(paint_image.FrameCount(), 4u);
+
+  struct Decode {
+    SkBitmap bitmap;
+    std::unique_ptr<base::Thread> thread;
+    cc::PaintImage::GeneratorClientId client_id;
+  };
+
+  Decode decodes[4];
+  SkColor expected_color[4] = {SkColorSetARGB(255, 0, 128, 0), SK_ColorRED,
+                               SK_ColorBLUE, SK_ColorYELLOW};
+  for (int i = 0; i < 4; ++i) {
+    decodes[i].thread =
+        std::make_unique<base::Thread>("Decode" + std::to_string(i));
+    decodes[i].client_id = cc::PaintImage::GetNextGeneratorClientId();
+
+    decodes[i].thread->StartAndWaitForTesting();
+    decodes[i].thread->task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(&GenerateBitmapForPaintImage, paint_image, i,
+                                  decodes[i].client_id, &decodes[i].bitmap));
+  }
+
+  for (int i = 0; i < 4; ++i) {
+    decodes[i].thread->FlushForTesting();
+    VerifyBitmap(decodes[i].bitmap, expected_color[i]);
+  }
 }
 
 TEST_F(BitmapImageTest, APNGDecoder00) {

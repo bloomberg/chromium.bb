@@ -39,6 +39,7 @@ class CC_PAINT_EXPORT PaintImageGenerator : public SkRefCnt {
                          void* pixels,
                          size_t row_bytes,
                          size_t frame_index,
+                         PaintImage::GeneratorClientId client_id,
                          uint32_t lazy_pixel_ref) = 0;
 
   // Returns true if the generator supports YUV decoding, providing the output

@@ -72,7 +72,8 @@ class OopPixelTest : public testing::Test,
         raster_context_provider_->ContextCapabilities().max_texture_size;
     gpu_image_cache_.reset(new GpuImageDecodeCache(
         gles2_context_provider_.get(), false, kRGBA_8888_SkColorType,
-        kWorkingSetSize, gles2_max_texture_size));
+        kWorkingSetSize, gles2_max_texture_size,
+        PaintImage::kDefaultGeneratorClientId));
 
     ASSERT_EQ(raster_max_texture_size, gles2_max_texture_size);
   }
@@ -93,7 +94,8 @@ class OopPixelTest : public testing::Test,
         raster_context_provider_->ContextCapabilities().max_texture_size;
     oop_image_cache_.reset(new GpuImageDecodeCache(
         raster_context_provider_.get(), true, kRGBA_8888_SkColorType,
-        kWorkingSetSize, raster_max_texture_size));
+        kWorkingSetSize, raster_max_texture_size,
+        PaintImage::kDefaultGeneratorClientId));
   }
 
   class RasterOptions {

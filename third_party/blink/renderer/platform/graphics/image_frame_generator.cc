@@ -83,16 +83,16 @@ bool ImageFrameGenerator::DecodeAndScale(
     const SkImageInfo& info,
     void* pixels,
     size_t row_bytes,
-    ImageDecoder::AlphaOption alpha_option) {
+    ImageDecoder::AlphaOption alpha_option,
+    cc::PaintImage::GeneratorClientId client_id) {
   {
     MutexLocker lock(generator_mutex_);
-
     if (decode_failed_)
       return false;
   }
 
-  TRACE_EVENT1("blink", "ImageFrameGenerator::decodeAndScale", "frame index",
-               static_cast<int>(index));
+  TRACE_EVENT1("blink", "ImageFrameGenerator::decodeAndScale", "generator",
+               this);
 
   // This implementation does not support arbitrary scaling so check the
   // requested size.
@@ -116,11 +116,11 @@ bool ImageFrameGenerator::DecodeAndScale(
   bool current_decode_succeeded = false;
   {
     // Lock the mutex, so only one thread can use the decoder at once.
-    MutexLocker lock(decode_mutex_);
+    ClientMutexLocker lock(this, client_id);
     ImageDecoderWrapper decoder_wrapper(
         this, data, scaled_size, alpha_option, decoder_color_behavior_,
         high_bit_depth_decoding_option, index, info, pixels, row_bytes,
-        all_data_received);
+        all_data_received, client_id);
     current_decode_succeeded = decoder_wrapper.Decode(
         image_decoder_factory_.get(), &frame_count, &has_alpha);
     decode_failed = decoder_wrapper.decode_failed();
@@ -244,6 +244,37 @@ SkISize ImageFrameGenerator::GetSupportedDecodeSize(
     }
   }
   return full_size_;
+}
+
+ImageFrameGenerator::ClientMutexLocker::ClientMutexLocker(
+    ImageFrameGenerator* generator,
+    cc::PaintImage::GeneratorClientId client_id)
+    : generator_(generator), client_id_(client_id) {
+  {
+    MutexLocker lock(generator_->generator_mutex_);
+    ClientMutex* client_mutex = nullptr;
+    auto it = generator_->mutex_map_.find(client_id_);
+    if (it == generator_->mutex_map_.end())
+      client_mutex = &generator_->mutex_map_[client_id];
+    else
+      client_mutex = &it->second;
+    client_mutex->ref_count++;
+    mutex_ = &client_mutex->mutex;
+  }
+
+  mutex_->lock();
+}
+
+ImageFrameGenerator::ClientMutexLocker::~ClientMutexLocker() {
+  mutex_->unlock();
+
+  MutexLocker lock(generator_->generator_mutex_);
+  auto it = generator_->mutex_map_.find(client_id_);
+  DCHECK(it != generator_->mutex_map_.end());
+  it->second.ref_count--;
+
+  if (it->second.ref_count == 0)
+    generator_->mutex_map_.erase(it);
 }
 
 }  // namespace blink

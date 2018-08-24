@@ -54,8 +54,9 @@ class AnimatedImagesProvider : public cc::ImageProvider {
                              ? cc::PaintImage::kDefaultFrameIndex
                              : it->second;
     return ScopedDecodedDrawImage(cc::DecodedDrawImage(
-        paint_image.GetSkImageForFrame(frame_index), SkSize::Make(0, 0),
-        SkSize::Make(1.f, 1.f), draw_image.filter_quality(),
+        paint_image.GetSkImageForFrame(
+            frame_index, cc::PaintImage::kDefaultGeneratorClientId),
+        SkSize::Make(0, 0), SkSize::Make(1.f, 1.f), draw_image.filter_quality(),
         true /* is_budgeted */));
   }
 

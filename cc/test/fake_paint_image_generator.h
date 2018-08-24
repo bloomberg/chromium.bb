@@ -24,6 +24,7 @@ class FakePaintImageGenerator : public PaintImageGenerator {
                  void* pixels,
                  size_t row_bytes,
                  size_t frame_index,
+                 PaintImage::GeneratorClientId client_id,
                  uint32_t lazy_pixel_ref) override;
   bool QueryYUV8(SkYUVSizeInfo* info,
                  SkYUVColorSpace* color_space) const override;

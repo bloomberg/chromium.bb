@@ -10,10 +10,12 @@ namespace cc {
 
 SkiaPaintImageGenerator::SkiaPaintImageGenerator(
     sk_sp<PaintImageGenerator> paint_image_generator,
-    size_t frame_index)
+    size_t frame_index,
+    PaintImage::GeneratorClientId client_id)
     : SkImageGenerator(paint_image_generator->GetSkImageInfo()),
       paint_image_generator_(std::move(paint_image_generator)),
-      frame_index_(frame_index) {}
+      frame_index_(frame_index),
+      client_id_(client_id) {}
 
 SkiaPaintImageGenerator::~SkiaPaintImageGenerator() = default;
 
@@ -25,8 +27,8 @@ bool SkiaPaintImageGenerator::onGetPixels(const SkImageInfo& info,
                                           void* pixels,
                                           size_t row_bytes,
                                           const Options& options) {
-  return paint_image_generator_->GetPixels(info, pixels, row_bytes,
-                                           frame_index_, uniqueID());
+  return paint_image_generator_->GetPixels(
+      info, pixels, row_bytes, frame_index_, client_id_, uniqueID());
 }
 
 bool SkiaPaintImageGenerator::onQueryYUV8(SkYUVSizeInfo* size_info,

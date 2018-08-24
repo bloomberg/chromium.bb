@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/paint_image.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 
 namespace cc {
@@ -15,7 +16,8 @@ class PaintImageGenerator;
 class CC_PAINT_EXPORT SkiaPaintImageGenerator final : public SkImageGenerator {
  public:
   SkiaPaintImageGenerator(sk_sp<PaintImageGenerator> paint_image_generator,
-                          size_t frame_index);
+                          size_t frame_index,
+                          PaintImage::GeneratorClientId client_id);
   ~SkiaPaintImageGenerator() override;
 
   sk_sp<SkData> onRefEncodedData() override;
@@ -31,6 +33,7 @@ class CC_PAINT_EXPORT SkiaPaintImageGenerator final : public SkImageGenerator {
  private:
   sk_sp<PaintImageGenerator> paint_image_generator_;
   const size_t frame_index_;
+  const PaintImage::GeneratorClientId client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SkiaPaintImageGenerator);
 };

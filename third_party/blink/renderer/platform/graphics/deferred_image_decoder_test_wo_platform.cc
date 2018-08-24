@@ -18,7 +18,8 @@ namespace {
 
 sk_sp<SkImage> CreateFrameAtIndex(DeferredImageDecoder* decoder, size_t index) {
   return SkImage::MakeFromGenerator(std::make_unique<SkiaPaintImageGenerator>(
-      decoder->CreateGenerator(index), index));
+      decoder->CreateGenerator(index), index,
+      cc::PaintImage::kDefaultGeneratorClientId));
 }
 
 }  // namespace

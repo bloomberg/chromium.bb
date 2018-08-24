@@ -57,7 +57,8 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
   // The recorded index is 0u but ask for 1u frame.
   SkImageInfo info = SkImageInfo::MakeN32Premul(10, 10);
   std::vector<size_t> memory(info.computeMinByteSize());
-  image.Decode(memory.data(), &info, nullptr, 1u);
+  image.Decode(memory.data(), &info, nullptr, 1u,
+               PaintImage::kDefaultGeneratorClientId);
   ASSERT_EQ(generator->frames_decoded().size(), 1u);
   EXPECT_EQ(generator->frames_decoded().count(1u), 1u);
   generator->reset_frames_decoded();
@@ -67,7 +68,8 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
                                 .make_subset(gfx::Rect(0, 0, 5, 5))
                                 .TakePaintImage();
   SkImageInfo subset_info = info.makeWH(5, 5);
-  subset_image.Decode(memory.data(), &subset_info, nullptr, 1u);
+  subset_image.Decode(memory.data(), &subset_info, nullptr, 1u,
+                      PaintImage::kDefaultGeneratorClientId);
   ASSERT_EQ(generator->frames_decoded().size(), 1u);
   EXPECT_EQ(generator->frames_decoded().count(1u), 1u);
   generator->reset_frames_decoded();
@@ -75,7 +77,8 @@ TEST(PaintImageTest, DecodesCorrectFrames) {
   // Not N32 color type.
   info.makeColorType(kRGB_565_SkColorType);
   memory = std::vector<size_t>(info.computeMinByteSize());
-  image.Decode(memory.data(), &info, nullptr, 1u);
+  image.Decode(memory.data(), &info, nullptr, 1u,
+               PaintImage::kDefaultGeneratorClientId);
   ASSERT_EQ(generator->frames_decoded().size(), 1u);
   EXPECT_EQ(generator->frames_decoded().count(1u), 1u);
   generator->reset_frames_decoded();
@@ -101,6 +104,13 @@ TEST(PaintImageTest, SupportedDecodeSize) {
                           .TakePaintImage();
   EXPECT_EQ(subset.GetSupportedDecodeSize(supported_sizes[0]),
             SkISize::Make(8, 8));
+}
+
+TEST(PaintImageTest, GetSkImageForFrameNotGeneratorBacked) {
+  PaintImage image = CreateBitmapImage(gfx::Size(10, 10));
+  EXPECT_EQ(image.GetSkImage(),
+            image.GetSkImageForFrame(PaintImage::kDefaultFrameIndex,
+                                     PaintImage::GetNextGeneratorClientId()));
 }
 
 }  // namespace cc

@@ -30,6 +30,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "cc/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -85,7 +86,8 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                       const SkImageInfo&,
                       void* pixels,
                       size_t row_bytes,
-                      ImageDecoder::AlphaOption);
+                      ImageDecoder::AlphaOption,
+                      cc::PaintImage::GeneratorClientId);
 
   // Decodes YUV components directly into the provided memory planes. Must not
   // be called unless getYUVComponentSizes has been called and returned true.
@@ -113,6 +115,18 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   bool GetYUVComponentSizes(SegmentReader*, SkYUVSizeInfo*);
 
  private:
+  class ClientMutexLocker {
+   public:
+    ClientMutexLocker(ImageFrameGenerator* generator,
+                      cc::PaintImage::GeneratorClientId client_id);
+    ~ClientMutexLocker();
+
+   private:
+    ImageFrameGenerator* generator_;
+    cc::PaintImage::GeneratorClientId client_id_;
+    Mutex* mutex_;
+  };
+
   ImageFrameGenerator(const SkISize& full_size,
                       bool is_multi_frame,
                       const ColorBehavior&,
@@ -134,10 +148,6 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   const bool is_multi_frame_;
   const std::vector<SkISize> supported_sizes_;
 
-  // Prevents multiple decode operations on the same data. Used in non-yuv
-  // decoding which supports concurrent decoding from the same generator.
-  Mutex decode_mutex_;
-
   // Prevents concurrent access to all variables below.
   Mutex generator_mutex_;
 
@@ -145,6 +155,15 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   bool yuv_decoding_failed_ = false;
   size_t frame_count_ = 0u;
   Vector<bool> has_alpha_;
+
+  struct ClientMutex {
+    int ref_count = 0;
+    Mutex mutex;
+  };
+  // Note that it is necessary to use unordered_map here to ensure that
+  // references to entries in the map, stored in ClientMutexLocker, remain valid
+  // across insertions into the map.
+  std::unordered_map<cc::PaintImage::GeneratorClientId, ClientMutex> mutex_map_;
 
   std::unique_ptr<ImageDecoderFactory> image_decoder_factory_;
 

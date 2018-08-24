@@ -1109,6 +1109,8 @@ class CC_EXPORT LayerTreeHostImpl
   // metrics.
   int scroll_events_after_reporting_ = 0;
 
+  const PaintImage::GeneratorClientId paint_image_generator_client_id_;
+
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHostImpl);
 };
 
