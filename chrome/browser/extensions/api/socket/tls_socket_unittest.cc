@@ -357,9 +357,15 @@ TEST_P(TLSSocketTest, ReadError) {
                        run_loop.Quit();
                      }));
     run_loop.Run();
-    if (net_error < 0)
+    if (net_error <= 0)
       break;
   }
+  // Note that TLSSocket only detects that receive pipe is broken and propagates
+  // it as 0 byte read. It doesn't know the specific net error code. To know the
+  // specific net error code, it needs to register itself as a
+  // network::mojom::SocketObserver. However, that gets tricky because of two
+  // separate mojo pipes.
+  EXPECT_EQ(0, net_error);
   EXPECT_TRUE(data_provider.AllReadDataConsumed());
   EXPECT_TRUE(data_provider.AllWriteDataConsumed());
   EXPECT_TRUE(ssl_socket.ConnectDataConsumed());

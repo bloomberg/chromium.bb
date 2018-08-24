@@ -84,7 +84,8 @@ void MojoDataPump::ReceiveMore(MojoResult result,
   }
   read_size_ = 0;
   if (result != MOJO_RESULT_OK) {
-    std::move(read_callback_).Run(net::ERR_FAILED, nullptr);
+    // Read 0 bytes. This signals an EOF (connection closed by the peer).
+    std::move(read_callback_).Run(0, nullptr);
     return;
   }
   std::move(read_callback_).Run(num_bytes, io_buffer);
