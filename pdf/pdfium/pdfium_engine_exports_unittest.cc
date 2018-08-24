@@ -10,6 +10,7 @@
 #include "pdf/pdf.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace chrome_pdf {
 
@@ -102,16 +103,17 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfPagesToNupPdf) {
 
   std::vector<base::span<const uint8_t>> pdf_buffers;
 
-  EXPECT_FALSE(
-      ConvertPdfPagesToNupPdf(pdf_buffers, 1, 512, 792, nullptr, nullptr));
+  EXPECT_FALSE(ConvertPdfPagesToNupPdf(pdf_buffers, 1, gfx::Size(512, 792),
+                                       nullptr, nullptr));
 
   pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
   pdf_buffers.push_back(base::as_bytes(base::make_span(pdf_data)));
 
   void* output_pdf_buffer;
   size_t output_pdf_buffer_size;
-  ASSERT_TRUE(ConvertPdfPagesToNupPdf(
-      pdf_buffers, 2, 512, 792, &output_pdf_buffer, &output_pdf_buffer_size));
+  ASSERT_TRUE(ConvertPdfPagesToNupPdf(pdf_buffers, 2, gfx::Size(512, 792),
+                                      &output_pdf_buffer,
+                                      &output_pdf_buffer_size));
   ASSERT_GT(output_pdf_buffer_size, 0U);
   ASSERT_NE(output_pdf_buffer, nullptr);
 
@@ -138,15 +140,16 @@ TEST_F(PDFiumEngineExportsTest, ConvertPdfDocumentToNupPdf) {
 
   base::span<const uint8_t> pdf_buffer;
 
-  EXPECT_FALSE(
-      ConvertPdfDocumentToNupPdf(pdf_buffer, 1, 512, 792, nullptr, nullptr));
+  EXPECT_FALSE(ConvertPdfDocumentToNupPdf(pdf_buffer, 1, gfx::Size(512, 792),
+                                          nullptr, nullptr));
 
   pdf_buffer = base::as_bytes(base::make_span(pdf_data));
 
   void* output_pdf_buffer;
   size_t output_pdf_buffer_size;
-  ASSERT_TRUE(ConvertPdfDocumentToNupPdf(
-      pdf_buffer, 4, 512, 792, &output_pdf_buffer, &output_pdf_buffer_size));
+  ASSERT_TRUE(ConvertPdfDocumentToNupPdf(pdf_buffer, 4, gfx::Size(512, 792),
+                                         &output_pdf_buffer,
+                                         &output_pdf_buffer_size));
   ASSERT_GT(output_pdf_buffer_size, 0U);
   ASSERT_NE(output_pdf_buffer, nullptr);
 
