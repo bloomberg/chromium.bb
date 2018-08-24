@@ -38,8 +38,6 @@ namespace {
 
 const char kProductName[] = "Eureka";
 
-const char kCrashServerStaging[] =
-    "https://clients2.google.com/cr/staging_report";
 const char kCrashServerProduction[] = "https://clients2.google.com/cr/report";
 
 const char kVirtualChannel[] = "virtual-channel";
@@ -80,11 +78,8 @@ MinidumpUploader::MinidumpUploader(CastSysInfo* sys_info,
       board_revision_(sys_info->GetBoardRevision()),
       manufacturer_(sys_info->GetManufacturer()),
       system_version_(sys_info->GetSystemBuildNumber()),
-      upload_location_(!server_url.empty()
-                           ? server_url
-                           : (sys_info->GetBuildType() == CastSysInfo::BUILD_ENG
-                                  ? kCrashServerStaging
-                                  : kCrashServerProduction)),
+      upload_location_(!server_url.empty() ? server_url
+                                           : kCrashServerProduction),
       last_upload_ratelimited_(true),
       reboot_scheduled_(false),
       filestate_initialized_(false),
