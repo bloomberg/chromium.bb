@@ -35,6 +35,29 @@ enum BackgroundFetchState {
   SUCCESS
 };
 
+// https://wicg.github.io/background-fetch/#enumdef-backgroundfetchfailurereason
+enum BackgroundFetchFailureReason {
+  // "":
+  NONE = 0,
+
+  // "aborted":
+  CANCELLED_FROM_UI = 1,
+  CANCELLED_BY_DEVELOPER = 2,
+
+  // "bad-status":
+  BAD_STATUS = 3,
+
+  // "fetch-error":
+  FETCH_ERROR = 4,
+  SERVICE_WORKER_UNAVAILABLE = 5,
+
+  // "quota-exceeded":
+  QUOTA_EXCEEDED = 6,
+
+  // "total-download-exceeded":
+  TOTAL_DOWNLOAD_SIZE_EXCEEDED = 7,
+};
+
 // Represents the optional options a developer can provide when starting a new
 // Background Fetch fetch. Analogous to the following structure in the spec:
 // https://wicg.github.io/background-fetch/#background-fetch-manager
@@ -61,6 +84,7 @@ struct BackgroundFetchRegistration {
   uint64 download_total;
   uint64 downloaded;
   BackgroundFetchState state;
+  BackgroundFetchFailureReason failure_reason;
 };
 
 interface BackgroundFetchRegistrationObserver {

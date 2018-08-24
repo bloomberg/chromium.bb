@@ -49,7 +49,14 @@ void GetRegistrationTask::FinishWithError(
   if (error == blink::mojom::BackgroundFetchError::NONE) {
     DCHECK(metadata_proto_);
 
-    registration = ToBackgroundFetchRegistration(*metadata_proto_);
+    bool converted =
+        ToBackgroundFetchRegistration(*metadata_proto_, &registration);
+    if (!converted) {
+      // Database corrupted.
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
+      return;
+    }
   }
 
   ReportStorageError();

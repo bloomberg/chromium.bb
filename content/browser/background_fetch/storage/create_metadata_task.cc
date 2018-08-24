@@ -103,6 +103,8 @@ void CreateMetadataTask::InitializeMetadataProto() {
   registration_proto->set_download_total(options_.download_total);
   registration_proto->set_state(
       proto::BackgroundFetchRegistration_BackgroundFetchState_PENDING);
+  registration_proto->set_failure_reason(
+      proto::BackgroundFetchRegistration_BackgroundFetchFailureReason_NONE);
 
   // Set Options fields.
   auto* options_proto = metadata_proto_->mutable_options();
@@ -223,7 +225,14 @@ void CreateMetadataTask::FinishWithError(
   if (error == blink::mojom::BackgroundFetchError::NONE) {
     DCHECK(metadata_proto_);
 
-    registration = ToBackgroundFetchRegistration(*metadata_proto_);
+    bool converted =
+        ToBackgroundFetchRegistration(*metadata_proto_, &registration);
+    if (!converted) {
+      // Database corrupted.
+      SetStorageErrorAndFinish(
+          BackgroundFetchStorageError::kServiceWorkerStorageError);
+      return;
+    }
 
     for (auto& observer : data_manager()->observers()) {
       observer.OnRegistrationCreated(registration_id_, registration, options_,

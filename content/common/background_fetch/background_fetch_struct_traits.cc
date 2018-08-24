@@ -39,6 +39,7 @@ bool StructTraits<blink::mojom::BackgroundFetchRegistrationDataView,
   registration->download_total = data.download_total();
   registration->downloaded = data.downloaded();
   registration->state = data.state();
+  registration->failure_reason = data.failure_reason();
   return true;
 }
 

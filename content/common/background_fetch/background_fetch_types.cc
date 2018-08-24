@@ -29,7 +29,8 @@ BackgroundFetchOptions::BackgroundFetchOptions(
 BackgroundFetchOptions::~BackgroundFetchOptions() = default;
 
 BackgroundFetchRegistration::BackgroundFetchRegistration()
-    : state(blink::mojom::BackgroundFetchState::PENDING) {}
+    : state(blink::mojom::BackgroundFetchState::PENDING),
+      failure_reason(blink::mojom::BackgroundFetchFailureReason::NONE) {}
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     const std::string& developer_id,
@@ -38,14 +39,16 @@ BackgroundFetchRegistration::BackgroundFetchRegistration(
     uint64_t uploaded,
     uint64_t download_total,
     uint64_t downloaded,
-    blink::mojom::BackgroundFetchState state)
+    blink::mojom::BackgroundFetchState state,
+    blink::mojom::BackgroundFetchFailureReason failure_reason)
     : developer_id(developer_id),
       unique_id(unique_id),
       upload_total(upload_total),
       uploaded(uploaded),
       download_total(download_total),
       downloaded(downloaded),
-      state(state) {}
+      state(state),
+      failure_reason(failure_reason) {}
 
 BackgroundFetchRegistration::BackgroundFetchRegistration(
     const BackgroundFetchRegistration& other) = default;

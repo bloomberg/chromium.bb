@@ -11,13 +11,26 @@ package content.proto;
 // Stores per-registration (as opposed to per-request) data.
 // https://wicg.github.io/background-fetch/#background-fetch-registration
 //
-// Next Tag: 8
+// Next Tag: 9
 message BackgroundFetchRegistration {
   enum BackgroundFetchState {
     PENDING = 0;  // Default value.
     FAILURE = 1;
     SUCCESS = 2;
   }
+
+  // This should be kept in sync with blink.mojom.BackgroundFetchFailureReason.
+  enum BackgroundFetchFailureReason {
+    NONE = 0;  // Default value.
+    CANCELLED_FROM_UI = 1;
+    CANCELLED_BY_DEVELOPER = 2;
+    BAD_STATUS = 3;
+    FETCH_ERROR = 4;
+    SERVICE_WORKER_UNAVAILABLE = 5;
+    QUOTA_EXCEEDED = 6;
+    TOTAL_DOWNLOAD_SIZE_EXCEEDED = 7;
+  }
+
   // See definition of |unique_id| in BackgroundFetchRegistrationId.
   optional string unique_id = 1;
 
@@ -29,6 +42,7 @@ message BackgroundFetchRegistration {
   optional uint64 download_total = 5;
   optional uint64 downloaded = 6;
   optional BackgroundFetchState state = 7;
+  optional BackgroundFetchFailureReason failure_reason = 8;
 }
 
 // Developer provided options.
