@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "components/drive/chromeos/change_list_loader_observer.h"
 #include "components/drive/chromeos/drive_change_list_loader.h"
@@ -44,6 +45,7 @@ class TeamDriveChangeListLoader : public DriveChangeListLoader,
   ~TeamDriveChangeListLoader() override;
 
   const base::FilePath& root_entry_path() const { return root_entry_path_; }
+  base::WeakPtr<TeamDriveChangeListLoader> GetWeakPtr();
 
   // DriveChangeListLoader overrides
   void AddChangeListLoaderObserver(ChangeListLoaderObserver* observer) override;
@@ -76,6 +78,8 @@ class TeamDriveChangeListLoader : public DriveChangeListLoader,
       change_list_loader_observers_;
 
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<TeamDriveChangeListLoader> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TeamDriveChangeListLoader);
 };
