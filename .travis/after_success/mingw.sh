@@ -23,28 +23,38 @@ fi
 RELEASE_ID=8031256
 GITHUB_USER="bertfrees"
 
-echo "[mingw] Uploading builds to Github release..."
 echo "[mingw] First deleting previous build"
 
-ASSET_URL=$(
-    curl "https://api.github.com/repos/liblouis/liblouis/releases/$RELEASE_ID/assets" 2>/dev/null \
-    | jq -r '.[] | select(.name | match("^liblouis-win32-.+\\.zip$")) | .url'
-)
-
-if ! curl -u "$GITHUB_USER:$GITHUB_TOKEN" -X DELETE "$ASSET_URL" \
-     >/dev/null 2>/dev/null \
-    | jq -e '.url'
-then
-    echo "[mingw] Failed to delete asset"
+# Using "curl -u" because authenticated requests get a higher rate limit
+assets=$(curl -u "$GITHUB_USER:$GITHUB_TOKEN" \
+              "https://api.github.com/repos/liblouis/liblouis/releases/$RELEASE_ID/assets" \
+              2>/dev/null)
+if echo "$assets" | jq -e '.message' >/dev/null 2>/dev/null; then
+    echo "$assets" | jq -r '.message' >&2
     exit 1
+else
+    assets=$(echo "$assets" | jq -r '.[] | select(.name | match("^liblouis-win32-.+\\.zip$")) | .url') || exit 1
+    echo "$assets" \
+    | while read u; do
+        if ! message=$(curl -u "$GITHUB_USER:$GITHUB_TOKEN" -X DELETE "$u" 2>/dev/null); then
+            echo "[mingw] Failed to delete asset $u"
+            exit 1
+        elif [ -n "$message" ]; then
+            echo "$message" | jq -r '.message' >&2
+            echo "[mingw] Failed to delete asset $u"
+            exit 1
+        fi
+    done
 fi
+
+echo "[mingw] Uploading builds to Github release..."
 
 if ! curl -u "$GITHUB_USER:$GITHUB_TOKEN" \
      -H "Content-type: application/zip" \
      -X POST \
      "https://uploads.github.com/repos/liblouis/liblouis/releases/$RELEASE_ID/assets?name=$ZIP" \
      --data-binary @$ZIP \
-     >/dev/null 2>/dev/null \
+     2>/dev/null \
     | jq -e '.url'
 then
     echo "[mingw] Failed to upload asset"
@@ -61,7 +71,7 @@ if ! curl -u "$GITHUB_USER:$GITHUB_TOKEN" \
      "https://api.github.com/repos/liblouis/liblouis/releases/$RELEASE_ID" \
      -d "{\"tag_name\": \"snapshot\", \
           \"body\":     \"$DESCRIPTION\"}" \
-      >/dev/null 2>/dev/null \
+     2>/dev/null \
     | jq -e '.url'
 then
     echo "[mingw] Failed to edit release description"
