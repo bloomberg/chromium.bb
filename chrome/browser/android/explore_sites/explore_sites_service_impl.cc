@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/android/explore_sites/explore_sites_service_impl.h"
+#include "chrome/browser/android/explore_sites/explore_sites_store.h"
 
 namespace explore_sites {
 
-ExploreSitesServiceImpl::ExploreSitesServiceImpl() {}
+ExploreSitesServiceImpl::ExploreSitesServiceImpl(
+    std::unique_ptr<ExploreSitesStore> store)
+    : explore_sites_store_(std::move(store)) {}
 
 ExploreSitesServiceImpl::~ExploreSitesServiceImpl() {}
 
