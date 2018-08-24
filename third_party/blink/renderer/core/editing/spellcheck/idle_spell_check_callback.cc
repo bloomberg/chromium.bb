@@ -39,13 +39,35 @@ constexpr TimeDelta kForcedInvocationDeadline = TimeDelta::FromSeconds(10);
 
 }  // namespace
 
+class IdleSpellCheckCallback::IdleCallback final
+    : public ScriptedIdleTaskController::IdleTask {
+ public:
+  static IdleCallback* Create(IdleSpellCheckCallback* controller) {
+    return new IdleCallback(controller);
+  }
+
+  void Trace(blink::Visitor* visitor) final {
+    visitor->Trace(controller_);
+    ScriptedIdleTaskController::IdleTask::Trace(visitor);
+  }
+
+ private:
+  explicit IdleCallback(IdleSpellCheckCallback* controller)
+      : controller_(controller) {}
+
+  void invoke(IdleDeadline* deadline) final { controller_->Invoke(deadline); }
+
+  const Member<IdleSpellCheckCallback> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(IdleCallback);
+};
+
 IdleSpellCheckCallback::~IdleSpellCheckCallback() = default;
 
 void IdleSpellCheckCallback::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(cold_mode_requester_);
   DocumentShutdownObserver::Trace(visitor);
-  ScriptedIdleTaskController::IdleTask::Trace(visitor);
 }
 
 IdleSpellCheckCallback* IdleSpellCheckCallback::Create(LocalFrame& frame) {
@@ -70,14 +92,18 @@ bool IdleSpellCheckCallback::IsSpellCheckingEnabled() const {
   return GetFrame().GetSpellChecker().IsSpellCheckingEnabled();
 }
 
+void IdleSpellCheckCallback::DisposeIdleCallback() {
+  if (idle_callback_handle_ != kInvalidHandle && IsAvailable())
+    GetDocument().CancelIdleCallback(idle_callback_handle_);
+  idle_callback_handle_ = kInvalidHandle;
+}
+
 void IdleSpellCheckCallback::Deactivate() {
   state_ = State::kInactive;
   if (cold_mode_timer_.IsActive())
     cold_mode_timer_.Stop();
   cold_mode_requester_->ClearProgress();
-  if (idle_callback_handle_ != kInvalidHandle && IsAvailable())
-    GetDocument().CancelIdleCallback(idle_callback_handle_);
-  idle_callback_handle_ = kInvalidHandle;
+  DisposeIdleCallback();
 }
 
 void IdleSpellCheckCallback::SetNeedsInvocation() {
@@ -96,14 +122,13 @@ void IdleSpellCheckCallback::SetNeedsInvocation() {
     cold_mode_timer_.Stop();
   }
 
-  if (state_ == State::kColdModeRequested) {
-    GetDocument().CancelIdleCallback(idle_callback_handle_);
-    idle_callback_handle_ = kInvalidHandle;
-  }
+  if (state_ == State::kColdModeRequested)
+    DisposeIdleCallback();
 
   IdleRequestOptions options;
   options.setTimeout(kHotModeRequestTimeoutMS);
-  idle_callback_handle_ = GetDocument().RequestIdleCallback(this, options);
+  idle_callback_handle_ =
+      GetDocument().RequestIdleCallback(IdleCallback::Create(this), options);
   state_ = State::kHotModeRequested;
 }
 
@@ -135,8 +160,8 @@ void IdleSpellCheckCallback::ColdModeTimerFired(TimerBase*) {
     return;
   }
 
-  idle_callback_handle_ =
-      GetDocument().RequestIdleCallback(this, IdleRequestOptions());
+  idle_callback_handle_ = GetDocument().RequestIdleCallback(
+      IdleCallback::Create(this), IdleRequestOptions());
   state_ = State::kColdModeRequested;
 }
 
@@ -169,7 +194,7 @@ void IdleSpellCheckCallback::HotModeInvocation(IdleDeadline* deadline) {
   }
 }
 
-void IdleSpellCheckCallback::invoke(IdleDeadline* deadline) {
+void IdleSpellCheckCallback::Invoke(IdleDeadline* deadline) {
   DCHECK_NE(idle_callback_handle_, kInvalidHandle);
   idle_callback_handle_ = kInvalidHandle;
 
@@ -216,12 +241,12 @@ void IdleSpellCheckCallback::ForceInvocationForTesting() {
       cold_mode_timer_.Stop();
       state_ = State::kColdModeRequested;
       idle_callback_handle_ = kDummyHandleForForcedInvocation;
-      invoke(deadline);
+      Invoke(deadline);
       break;
     case State::kHotModeRequested:
     case State::kColdModeRequested:
       GetDocument().CancelIdleCallback(idle_callback_handle_);
-      invoke(deadline);
+      Invoke(deadline);
       break;
     case State::kInactive:
     case State::kInHotModeInvocation:

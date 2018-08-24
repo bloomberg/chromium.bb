@@ -26,15 +26,17 @@ class SpellCheckRequester;
   V(InColdModeInvocation)
 
 // Main class for the implementation of idle time spell checker.
+// TODO(xiaochengh): Remane the class to IdleSpellCheckController, as it's no
+// longer a callback object anymore.
 class CORE_EXPORT IdleSpellCheckCallback final
-    : public ScriptedIdleTaskController::IdleTask,
+    : public GarbageCollectedFinalized<IdleSpellCheckCallback>,
       public DocumentShutdownObserver {
   DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckCallback);
   USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckCallback);
 
  public:
   static IdleSpellCheckCallback* Create(LocalFrame&);
-  ~IdleSpellCheckCallback() override;
+  ~IdleSpellCheckCallback();
 
   enum class State {
 #define V(state) k##state,
@@ -64,8 +66,9 @@ class CORE_EXPORT IdleSpellCheckCallback final
   void Trace(blink::Visitor*) override;
 
  private:
+  class IdleCallback;
+
   explicit IdleSpellCheckCallback(LocalFrame&);
-  void invoke(IdleDeadline*) override;
 
   LocalFrame& GetFrame() const { return *frame_; }
 
@@ -81,6 +84,9 @@ class CORE_EXPORT IdleSpellCheckCallback final
   // Returns whether spell checking is globally enabled.
   bool IsSpellCheckingEnabled() const;
 
+  // Called at idle time as entrance function.
+  void Invoke(IdleDeadline*);
+
   // Functions for hot mode.
   void HotModeInvocation(IdleDeadline*);
 
@@ -94,6 +100,8 @@ class CORE_EXPORT IdleSpellCheckCallback final
 
   // Implements |DocumentShutdownObserver|.
   void ContextDestroyed(Document*) final;
+
+  void DisposeIdleCallback();
 
   State state_;
   int idle_callback_handle_;
