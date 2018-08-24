@@ -112,7 +112,7 @@ ContentInfo NavigateAndGetInfo(
 
 // Returns a new WebUI object for the WebContents from |arg0|.
 ACTION(ReturnNewWebUI) {
-  return new content::WebUIController(arg0);
+  return std::make_unique<content::WebUIController>(arg0);
 }
 
 GURL GetSigninPromoURL() {
@@ -126,8 +126,9 @@ GURL GetSigninPromoURL() {
 class FooWebUIProvider
     : public TestChromeWebUIControllerFactory::WebUIProvider {
  public:
-  MOCK_METHOD2(NewWebUI, content::WebUIController*(content::WebUI* web_ui,
-                                                   const GURL& url));
+  MOCK_METHOD2(NewWebUI,
+               std::unique_ptr<content::WebUIController>(content::WebUI* web_ui,
+                                                         const GURL& url));
 };
 
 const char kFooWebUIURL[] = "chrome://foo/";
@@ -140,8 +141,7 @@ bool AddToSet(std::set<content::WebContents*>* set,
 
 std::unique_ptr<net::test_server::HttpResponse> EmptyHtmlResponseHandler(
     const net::test_server::HttpRequest& request) {
-  std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
-      new net::test_server::BasicHttpResponse());
+  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_code(net::HTTP_OK);
   http_response->set_content_type("text/html");
   http_response->set_content(
@@ -882,7 +882,7 @@ class InlineLoginUISafeIframeBrowserTest : public InProcessBrowserTest {
 
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         ChromeWebUIControllerFactory::GetInstance());
-    test_factory_.reset(new TestChromeWebUIControllerFactory);
+    test_factory_ = std::make_unique<TestChromeWebUIControllerFactory>();
     content::WebUIControllerFactory::RegisterFactory(test_factory_.get());
     test_factory_->AddFactoryOverride(
         GURL(kFooWebUIURL).host(), &foo_provider_);
