@@ -54,6 +54,11 @@ if (enable_java_templates) {
       "android_ndk_root=" + rebase_path(android_ndk_root, root_build_dir) + CR
   _data += "android_tool_prefix=" +
            rebase_path(android_tool_prefix, root_build_dir) + CR
+  if (defined(android_secondary_abi_cpu)) {
+    _secondary_label_info = get_label_info(":foo($android_secondary_abi_toolchain)", "root_out_dir")
+    _data += "android_secondary_abi_toolchain=" +
+             rebase_path(_secondary_label_info, root_build_dir) + CR
+  }
   write_file(android_build_vars, _data)
 }
 
