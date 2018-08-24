@@ -48,13 +48,14 @@
 
 namespace blink {
 
+class EffectPaintPropertyNode;
 class GraphicsContext;
 class GraphicsLayer;
 class IntRect;
 class IntSize;
 class LocalFrame;
 class Page;
-class EffectPaintPropertyNode;
+class RootFrameViewport;
 class ScrollPaintPropertyNode;
 class TransformPaintPropertyNode;
 struct PaintPropertyTreeBuilderFragmentContext;
