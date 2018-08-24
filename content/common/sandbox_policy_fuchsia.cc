@@ -80,6 +80,11 @@ void SandboxPolicyFuchsia::Initialize(service_manager::SandboxType type) {
             base::fuchsia::ComponentContext::GetDefault());
     for (const char* service_name : services_list)
       service_directory_->AddService(service_name);
+
+    // Bind the service directory and store the client channel for
+    // UpdateLaunchOptionsForSandbox()'s use.
+    service_directory_client_channel_ = service_directory_->ConnectClient();
+    CHECK(service_directory_client_channel_);
   }
 }
 
@@ -110,7 +115,7 @@ void SandboxPolicyFuchsia::UpdateLaunchOptionsForSandbox(
   if (service_directory_) {
     // Provide the child process with a restricted set of services.
     options->paths_to_transfer.push_back(base::PathToTransfer{
-        base::FilePath("/svc"), service_directory_->ConnectClient().release()});
+        base::FilePath("/svc"), service_directory_client_channel_.release()});
   }
 }
 
