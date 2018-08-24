@@ -36,13 +36,23 @@ WindowOcclusionTracker* g_tracker = nullptr;
 
 int g_num_pause_occlusion_tracking = 0;
 
+bool WindowOrParentHasShape(Window* window) {
+  if (window->layer()->alpha_shape())
+    return true;
+  if (window->parent())
+    return WindowOrParentHasShape(window->parent());
+  return false;
+}
+
 // Returns true if |window| opaquely fills its bounds. |window| must be visible.
 bool VisibleWindowIsOpaque(Window* window) {
   DCHECK(window->IsVisible());
   DCHECK(window->layer());
   return !window->transparent() &&
          window->layer()->type() != ui::LAYER_NOT_DRAWN &&
-         window->layer()->GetCombinedOpacity() == 1.0f;
+         window->layer()->GetCombinedOpacity() == 1.0f &&
+         // For simplicity, a shaped window is not considered opaque.
+         !WindowOrParentHasShape(window);
 }
 
 // Returns the transform of |window| relative to its root.
@@ -407,6 +417,15 @@ bool WindowOcclusionTracker::WindowOrDescendantIsOpaque(
   return false;
 }
 
+bool WindowOcclusionTracker::WindowOpacityChangeMayAffectOcclusionStates(
+    Window* window) const {
+  // Changing the opacity of a window has no effect on the occlusion state of
+  // the window or its children. It can however affect the occlusion state of
+  // other windows in the tree if it is visible and not animated (animated
+  // windows aren't considered in occlusion computations).
+  return window->IsVisible() && !WindowOrParentIsAnimated(window);
+}
+
 bool WindowOcclusionTracker::WindowMoveMayAffectOcclusionStates(
     Window* window) const {
   return !WindowOrParentIsAnimated(window) &&
@@ -531,7 +550,14 @@ void WindowOcclusionTracker::OnWindowOpacitySet(
       (reason == ui::PropertyChangeReason::FROM_ANIMATION) &&
       MaybeObserveAnimatedWindow(window);
   MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
-    return animation_started || !WindowOrParentIsAnimated(window);
+    return animation_started ||
+           WindowOpacityChangeMayAffectOcclusionStates(window);
+  });
+}
+
+void WindowOcclusionTracker::OnWindowAlphaShapeSet(Window* window) {
+  MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
+    return WindowOpacityChangeMayAffectOcclusionStates(window);
   });
 }
 
