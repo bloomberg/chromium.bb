@@ -173,7 +173,7 @@ TEST_F(ContentSettingsRegistryTest, IsDefaultSettingValid) {
   EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
 #endif
 
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
   info = registry()->Get(CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER);
   EXPECT_FALSE(info->IsDefaultSettingValid(CONTENT_SETTING_ALLOW));
 #endif

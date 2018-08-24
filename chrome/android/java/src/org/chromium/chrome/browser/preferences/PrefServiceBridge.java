@@ -658,9 +658,23 @@ public class PrefServiceBridge {
     }
 
     /**
+     * Whether the setting type requires tri-state (Allowed/Ask/Blocked) setting.
+     */
+    public boolean requiresTriStateContentSetting(int contentSettingsType) {
+        switch (contentSettingsType) {
+            case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Sets the preferences on whether to enable/disable given setting.
      */
     public void setCategoryEnabled(int contentSettingsType, boolean allow) {
+        assert !requiresTriStateContentSetting(contentSettingsType);
+
         switch (contentSettingsType) {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_JAVASCRIPT:
@@ -692,9 +706,6 @@ public class PrefServiceBridge {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
                 nativeSetNotificationsEnabled(allow);
                 break;
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-                nativeSetProtectedMediaIdentifierEnabled(allow);
-                break;
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
                 nativeSetSensorsEnabled(allow);
                 break;
@@ -707,6 +718,8 @@ public class PrefServiceBridge {
     }
 
     public boolean isCategoryEnabled(int contentSettingsType) {
+        assert !requiresTriStateContentSetting(contentSettingsType);
+
         switch (contentSettingsType) {
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_CLIPBOARD_READ:
@@ -729,8 +742,6 @@ public class PrefServiceBridge {
                 return nativeGetMicEnabled();
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
                 return nativeGetNotificationsEnabled();
-            case ContentSettingsType.CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:
-                return nativeGetProtectedMediaIdentifierEnabled();
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_SENSORS:
                 return nativeGetSensorsEnabled();
             case ContentSettingsType.CONTENT_SETTINGS_TYPE_SOUND:
@@ -739,6 +750,24 @@ public class PrefServiceBridge {
                 assert false;
                 return false;
         }
+    }
+
+    /**
+     * Gets the ContentSetting for a settings type. Should only be used for more
+     * complex settings where a binary on/off value is not sufficient.
+     * Otherwise, use isCategoryEnabled() above.
+     * @param contentSettingsType The settings type to get setting for.
+     * @return The ContentSetting for |contentSettingsType|.
+     */
+    public int getContentSetting(int contentSettingsType) {
+        return nativeGetContentSetting(contentSettingsType);
+    }
+
+    /**
+     * @param setting New ContentSetting to set for |contentSettingsType|.
+     */
+    public void setContentSetting(int contentSettingsType, int setting) {
+        nativeSetContentSetting(contentSettingsType, setting);
     }
 
     /**
@@ -927,6 +956,8 @@ public class PrefServiceBridge {
             int contentSettingsType, List<ContentSettingException> list);
     public native void nativeSetContentSettingForPattern(
             int contentSettingType, String pattern, int setting);
+    public native int nativeGetContentSetting(int contentSettingType);
+    public native void nativeSetContentSetting(int contentSettingType, int setting);
 
     /**
       * @return Whether usage and crash reporting pref is enabled.
@@ -1049,7 +1080,6 @@ public class PrefServiceBridge {
     private native boolean nativeGetTranslateManaged();
     private native boolean nativeGetResolveNavigationErrorEnabled();
     private native boolean nativeGetResolveNavigationErrorManaged();
-    private native boolean nativeGetProtectedMediaIdentifierEnabled();
     private native boolean nativeGetIncognitoModeEnabled();
     private native boolean nativeGetIncognitoModeManaged();
     private native boolean nativeGetPrintingEnabled();
@@ -1077,7 +1107,6 @@ public class PrefServiceBridge {
     private native void nativeSetDoNotTrackEnabled(boolean enabled);
     private native void nativeSetRememberPasswordsEnabled(boolean allow);
     private native void nativeSetPasswordManagerAutoSigninEnabled(boolean enabled);
-    private native void nativeSetProtectedMediaIdentifierEnabled(boolean enabled);
     private native boolean nativeGetAllowLocationEnabled();
     private native boolean nativeGetNotificationsEnabled();
     private native boolean nativeGetNotificationsVibrateEnabled();

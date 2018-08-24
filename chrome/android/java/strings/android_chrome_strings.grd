@@ -999,6 +999,15 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_CLIPBOARD_BLOCKED_LIST" desc="Summary text explaining that the clipboard permission is set to block read access on some sites. To be shown in the list of permission categories.">
         Blocked from reading clipboard
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_ALLOWED" desc="Summary text explaining that sites are allowed to play protected content and that it is the recommended setting.">
+        Allow sites to play protected content (recommended)
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_ASK" desc="Summary text explaining that sites need to ask for permission before playing protected content.">
+        Ask before allowing sites to play protected content
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_CATEGORY_PROTECTED_CONTENT_BLOCKED" desc="Summary text explaining that sites are blocked from playing protected content.">
+        Block sites from playing protected content
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_SENSORS_ALLOWED" desc="Summary text explaining that sites are allowed to use device's sensors and that it is the recommended setting.">
         Allow sites to access your sensors (recommended)
       </message>
