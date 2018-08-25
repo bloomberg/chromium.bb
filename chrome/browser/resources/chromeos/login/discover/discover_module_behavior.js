@@ -18,7 +18,7 @@ var DiscoverModuleBehaviorImpl = {
     /**
      * Discover module name. Must be set explicitly.
      */
-    moduleName: {
+    module: {
       type: String,
       readOnly: true,
       value: '',
@@ -26,8 +26,8 @@ var DiscoverModuleBehaviorImpl = {
   },
 
   sendMessage: function(message, parameters) {
-    assert(this.moduleName.length > 0);
-    chrome.send('discover.' + this.moduleName + '.' + message, parameters);
+    assert(this.module.length > 0);
+    chrome.send('discover.' + this.module + '.' + message, parameters);
   },
 
   show: function() {},
