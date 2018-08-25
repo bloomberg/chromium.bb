@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 659 tests; 657 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 661 tests; 659 PASS, 2 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Selectors-API Level 2 Test Suite: HTML with Selectors Level 3
 PASS Document should not support webkitMatchesSelector
 PASS Detached Element supports webkitMatchesSelector
@@ -618,7 +618,13 @@ PASS In-document Element.webkitMatchesSelector: Attribute contains selector with
 PASS In-document Element.webkitMatchesSelector: :nth-child selector, matching the third child element (with refNode Element): :nth-child(3)
 PASS In-document Element.webkitMatchesSelector: :nth-child selector, matching every third child element (with refNode Element): li:nth-child(3n)
 PASS In-document Element.webkitMatchesSelector: :nth-child selector, matching every second child element, starting from the fourth (with refNode Element): li:nth-child(2n+4)
+PASS In-document Element.webkitMatchesSelector: :nth-child selector, matching every second child element, starting from the fourth, with whitespace (with refNode Element): li:nth-child(2n 	\r
++ 	\r
+4)
 PASS In-document Element.webkitMatchesSelector: :nth-child selector, matching every fourth child element, starting from the third (with refNode Element): :nth-child(4n-1)
+PASS In-document Element.webkitMatchesSelector: :nth-child selector, matching every fourth child element, starting from the third, with whitespace (with refNode Element): :nth-child(4n 	\r
+- 	\r
+1)
 PASS In-document Element.webkitMatchesSelector: :nth-child selector used twice, matching  (with refNode Element): :nth-child(1) :nth-child(1)
 PASS In-document Element.webkitMatchesSelector: :nth-last-child selector, matching the third last child element (with refNode Element): :nth-last-child(3)
 PASS In-document Element.webkitMatchesSelector: :nth-last-child selector, matching every third child element from the end (with refNode Element): li:nth-last-child(3n)
