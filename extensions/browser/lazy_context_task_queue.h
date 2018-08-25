@@ -30,14 +30,17 @@ class LazyContextTaskQueue {
   struct ContextInfo {
     const ExtensionId extension_id;
     content::RenderProcessHost* const render_process_host;
+    const int64_t service_worker_version_id;
     const int worker_thread_id;
     const GURL url;
     ContextInfo(const ExtensionId& extension_id,
                 content::RenderProcessHost* render_process_host,
+                int64_t service_worker_version_id,
                 int worker_thread_id,
                 const GURL& url)
         : extension_id(extension_id),
           render_process_host(render_process_host),
+          service_worker_version_id(service_worker_version_id),
           worker_thread_id(worker_thread_id),
           url(url) {}
   };

@@ -142,6 +142,8 @@ void WorkerThreadDispatcher::OnDispatchEvent(
   DCHECK(data);
   data->bindings_system()->DispatchEventInContext(
       params.event_name, &event_args, &params.filtering_info, data->context());
+  Send(new ExtensionHostMsg_EventAckWorker(data->service_worker_version_id(),
+                                           params.event_id));
 }
 
 void WorkerThreadDispatcher::AddWorkerData(

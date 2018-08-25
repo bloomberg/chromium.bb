@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/bind_helpers.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/web_navigation.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/gcm_driver/fake_gcm_profile_service.h"
@@ -46,6 +48,7 @@
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/process_manager.h"
+#include "extensions/common/api/test.h"
 #include "extensions/common/extension_features.h"
 #include "extensions/common/value_builder.h"
 #include "extensions/test/background_page_watcher.h"
@@ -306,19 +309,21 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, MAYBE_Basic) {
   EXPECT_TRUE(newtab_listener.WaitUntilSatisfied());
 }
 
-// Class that dispatches "test.onMessage" event to |extension_id| right after a
-// listener to the event is added from the extension's Service Worker.
+// Class that dispatches an event to |extension_id| right after a
+// non-lazy listener to the event is added from the extension's Service Worker.
 class EarlyWorkerMessageSender : public EventRouter::Observer {
  public:
   EarlyWorkerMessageSender(content::BrowserContext* browser_context,
-                           const ExtensionId& extension_id)
+                           const ExtensionId& extension_id,
+                           std::unique_ptr<Event> event)
       : browser_context_(browser_context),
         event_router_(EventRouter::EventRouter::Get(browser_context_)),
         extension_id_(extension_id),
+        event_(std::move(event)),
         listener_("PASS", false) {
     DCHECK(browser_context_);
     listener_.set_failure_message("FAIL");
-    event_router_->RegisterObserver(this, kTestOnMessageEventName);
+    event_router_->RegisterObserver(this, event_->event_name);
   }
 
   ~EarlyWorkerMessageSender() override {
@@ -327,8 +332,11 @@ class EarlyWorkerMessageSender : public EventRouter::Observer {
 
   // EventRouter::Observer:
   void OnListenerAdded(const EventListenerInfo& details) override {
-    if (did_dispatch_event_ || extension_id_ != details.extension_id)
+    if (!event_ || extension_id_ != details.extension_id ||
+        event_->event_name != details.event_name) {
       return;
+    }
+
     const bool is_lazy_listener = details.browser_context == nullptr;
     if (is_lazy_listener) {
       // Wait for the non-lazy listener as we want to exercise the code to
@@ -336,8 +344,7 @@ class EarlyWorkerMessageSender : public EventRouter::Observer {
       // completing.
       return;
     }
-    DispatchEvent();
-    did_dispatch_event_ = true;
+    DispatchEvent(std::move(event_));
   }
 
   bool SendAndWait() { return listener_.WaitUntilSatisfied(); }
@@ -345,17 +352,7 @@ class EarlyWorkerMessageSender : public EventRouter::Observer {
  private:
   static constexpr const char* const kTestOnMessageEventName = "test.onMessage";
 
-  void DispatchEvent() {
-    std::unique_ptr<base::ListValue> event_args =
-        ListBuilder()
-            .Append(DictionaryBuilder()
-                        .Set("data", "hello")
-                        .Set("lastMessage", true)
-                        .Build())
-            .Build();
-    auto event = std::make_unique<Event>(
-        events::TEST_ON_MESSAGE, std::string(kTestOnMessageEventName),
-        std::move(event_args), browser_context_);
+  void DispatchEvent(std::unique_ptr<Event> event) {
     EventRouter::Get(browser_context_)
         ->DispatchEventToExtension(extension_id_, std::move(event));
   }
@@ -363,8 +360,8 @@ class EarlyWorkerMessageSender : public EventRouter::Observer {
   content::BrowserContext* const browser_context_ = nullptr;
   EventRouter* const event_router_ = nullptr;
   const ExtensionId extension_id_;
+  std::unique_ptr<Event> event_;
   ExtensionTestMessageListener listener_;
-  bool did_dispatch_event_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(EarlyWorkerMessageSender);
 };
@@ -374,11 +371,51 @@ class EarlyWorkerMessageSender : public EventRouter::Observer {
 // Regression test for: https://crbug.com/850792.
 IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest, EarlyEventDispatch) {
   const ExtensionId kId("pkplfbidichfdicaijlchgnapepdginl");
-  EarlyWorkerMessageSender sender(profile(), kId);
+
+  // Build "test.onMessage" event for dispatch.
+  auto event = std::make_unique<Event>(
+      events::FOR_TEST, extensions::api::test::OnMessage::kEventName,
+      base::ListValue::From(base::JSONReader::Read(
+          R"([{"data": "hello", "lastMessage": true}])")),
+      profile());
+
+  EarlyWorkerMessageSender sender(profile(), kId, std::move(event));
   // pkplfbidichfdicaijlchgnapepdginl
   const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
       "service_worker/worker_based_background/early_event_dispatch"));
   CHECK(extension);
+  EXPECT_EQ(kId, extension->id());
+  EXPECT_TRUE(sender.SendAndWait());
+}
+
+// Tests that filtered events dispatches correctly right after a non-lazy
+// listener is registered for that event (and before the corresponding lazy
+// listener is registered).
+IN_PROC_BROWSER_TEST_P(ServiceWorkerBasedBackgroundTest,
+                       EarlyFilteredEventDispatch) {
+  const ExtensionId kId("pkplfbidichfdicaijlchgnapepdginl");
+
+  // Add minimal details required to dispatch webNavigation.onCommitted event:
+  extensions::api::web_navigation::OnCommitted::Details details;
+  details.transition_type =
+      extensions::api::web_navigation::TRANSITION_TYPE_TYPED;
+
+  // Build a dummy onCommited event to dispatch.
+  auto on_committed_event = std::make_unique<Event>(
+      events::WEB_NAVIGATION_ON_COMMITTED, "webNavigation.onCommitted",
+      api::web_navigation::OnCommitted::Create(details), profile());
+  // The filter will match the listener filter registered from the extension.
+  EventFilteringInfo info;
+  info.url = GURL("http://foo.com/a.html");
+  on_committed_event->filter_info = info;
+
+  EarlyWorkerMessageSender sender(profile(), kId,
+                                  std::move(on_committed_event));
+
+  // pkplfbidichfdicaijlchgnapepdginl
+  const Extension* extension = LoadExtension(test_data_dir_.AppendASCII(
+      "service_worker/worker_based_background/early_filtered_event_dispatch"));
+  ASSERT_TRUE(extension);
   EXPECT_EQ(kId, extension->id());
   EXPECT_TRUE(sender.SendAndWait());
 }

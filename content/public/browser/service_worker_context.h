@@ -63,8 +63,8 @@ class ServiceWorkerContext {
   using StartServiceWorkerForNavigationHintCallback = base::OnceCallback<void(
       StartServiceWorkerForNavigationHintResult result)>;
 
-  using StartWorkerCallback =
-      base::OnceCallback<void(int process_id, int thread_id)>;
+  using StartWorkerCallback = base::OnceCallback<
+      void(int64_t version_id, int process_id, int thread_id)>;
 
   // Returns true if |url| is within the service worker |scope|.
   CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
@@ -165,7 +165,7 @@ class ServiceWorkerContext {
 
   // Starts the active worker of the registration whose scope is |pattern|. If
   // there is no active worker, starts the installing worker.
-  // |info_callback| is passed the worker's render process id and thread id.
+  // |info_callback| is passed information about the started worker.
   //
   // Must be called on IO thread.
   virtual void StartWorkerForPattern(const GURL& pattern,

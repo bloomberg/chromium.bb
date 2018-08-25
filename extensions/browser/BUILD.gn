@@ -109,6 +109,8 @@ jumbo_source_set("browser_sources") {
     "event_router.h",
     "event_router_factory.cc",
     "event_router_factory.h",
+    "events/event_ack_data.cc",
+    "events/event_ack_data.h",
     "events/lazy_event_dispatch_util.cc",
     "events/lazy_event_dispatch_util.h",
     "events/lazy_event_dispatcher.cc",

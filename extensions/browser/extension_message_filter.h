@@ -61,10 +61,12 @@ class ExtensionMessageFilter : public content::BrowserMessageFilter {
   void OnExtensionAddListener(const std::string& extension_id,
                               const GURL& listener_url,
                               const std::string& event_name,
+                              int64_t service_worker_version_id,
                               int worker_thread_id);
   void OnExtensionRemoveListener(const std::string& extension_id,
                                  const GURL& listener_url,
                                  const std::string& event_name,
+                                 int64_t service_worker_version_id,
                                  int worker_thread_id);
   void OnExtensionAddLazyListener(const std::string& extension_id,
                                   const std::string& event_name);

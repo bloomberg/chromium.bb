@@ -291,6 +291,7 @@ IPC_STRUCT_TRAITS_END()
 // IPCs.
 IPC_STRUCT_BEGIN(ServiceWorkerIdentifier)
   IPC_STRUCT_MEMBER(GURL, scope)
+  IPC_STRUCT_MEMBER(int64_t, version_id)
   IPC_STRUCT_MEMBER(int, thread_id)
 IPC_STRUCT_END()
 
@@ -705,18 +706,20 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_RequestForIOThread,
                      ExtensionHostMsg_Request_Params)
 
 // Notify the browser that the given extension added a listener to an event.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_AddListener,
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_AddListener,
                      std::string /* extension_id */,
                      GURL /* listener_or_worker_scope_url */,
                      std::string /* name */,
+                     int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)
 
 // Notify the browser that the given extension removed a listener from an
 // event.
-IPC_MESSAGE_CONTROL4(ExtensionHostMsg_RemoveListener,
+IPC_MESSAGE_CONTROL5(ExtensionHostMsg_RemoveListener,
                      std::string /* extension_id */,
                      GURL /* listener_or_worker_scope_url */,
                      std::string /* name */,
+                     int64_t /* service_worker_version_id */,
                      int /* worker_thread_id */)
 
 // Notify the browser that the given extension added a listener to an event from
@@ -992,5 +995,11 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_IncrementServiceWorkerActivity,
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DecrementServiceWorkerActivity,
                      int64_t /* service_worker_version_id */,
                      std::string /* request_uuid */)
+
+// Tells the browser that an event with |event_id| was successfully dispatched
+// to the worker with version |service_worker_version_id|.
+IPC_MESSAGE_CONTROL2(ExtensionHostMsg_EventAckWorker,
+                     int64_t /* service_worker_version_id */,
+                     int /* event_id */)
 
 #endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
