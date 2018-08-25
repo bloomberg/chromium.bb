@@ -66,7 +66,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
     : public RenderWidgetHostViewBase,
       public StylusTextSelectorClient,
       public content::TextInputManager::Observer,
-      public ui::DelegatedFrameHostAndroid::Client,
       public ui::EventHandlerAndroid,
       public ui::GestureProviderClient,
       public ui::TouchSelectionControllerClient,
@@ -234,16 +233,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
   void DidScroll() override;
 
-  // DelegatedFrameHostAndroid::Client implementation.
-  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source) override;
-  void DidPresentCompositorFrame(
-      uint32_t presentation_token,
-      const gfx::PresentationFeedback& feedback) override;
+  // Used by DelegatedFrameHostClientAndroid.
+  void SetBeginFrameSource(viz::BeginFrameSource* begin_frame_source);
+  void DidPresentCompositorFrame(uint32_t presentation_token,
+                                 const gfx::PresentationFeedback& feedback);
   void DidReceiveCompositorFrameAck(
-      const std::vector<viz::ReturnedResource>& resources) override;
-  void ReclaimResources(
-      const std::vector<viz::ReturnedResource>& resources) override;
-  void OnFrameTokenChanged(uint32_t frame_token) override;
+      const std::vector<viz::ReturnedResource>& resources);
+  void ReclaimResources(const std::vector<viz::ReturnedResource>& resources);
 
   // viz::BeginFrameObserver implementation.
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;
@@ -447,6 +443,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   GestureListenerManager* gesture_listener_manager_;
 
   mutable ui::ViewAndroid view_;
+
+  std::unique_ptr<ui::DelegatedFrameHostAndroid::Client>
+      delegated_frame_host_client_;
 
   // Manages the Compositor Frames received from the renderer.
   std::unique_ptr<ui::DelegatedFrameHostAndroid> delegated_frame_host_;

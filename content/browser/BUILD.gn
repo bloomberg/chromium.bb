@@ -2191,6 +2191,8 @@ jumbo_source_set("browser") {
       "media/capture/screen_capture_device_android.h",
       "renderer_host/compositor_impl_android.cc",
       "renderer_host/compositor_impl_android.h",
+      "renderer_host/delegated_frame_host_client_android.cc",
+      "renderer_host/delegated_frame_host_client_android.h",
       "renderer_host/input/fling_scheduler_android.cc",
       "renderer_host/input/fling_scheduler_android.h",
       "renderer_host/input/synthetic_gesture_target_android.cc",

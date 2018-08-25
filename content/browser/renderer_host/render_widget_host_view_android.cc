@@ -47,6 +47,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
+#include "content/browser/renderer_host/delegated_frame_host_client_android.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router.h"
@@ -196,9 +197,12 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   view_.set_event_handler(this);
 
   if (using_browser_compositor_) {
+    delegated_frame_host_client_ =
+        std::make_unique<DelegatedFrameHostClientAndroid>(this);
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
-        &view_, CompositorImpl::GetHostFrameSinkManager(), this,
-        host()->GetFrameSinkId(), features::IsSurfaceSynchronizationEnabled());
+        &view_, CompositorImpl::GetHostFrameSinkManager(),
+        delegated_frame_host_client_.get(), host()->GetFrameSinkId(),
+        features::IsSurfaceSynchronizationEnabled());
     if (is_showing_) {
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
@@ -965,10 +969,6 @@ void RenderWidgetHostViewAndroid::DidPresentCompositorFrame(
 void RenderWidgetHostViewAndroid::ReclaimResources(
     const std::vector<viz::ReturnedResource>& resources) {
   renderer_compositor_frame_sink_->ReclaimResources(resources);
-}
-
-void RenderWidgetHostViewAndroid::OnFrameTokenChanged(uint32_t frame_token) {
-  OnFrameTokenChangedForView(frame_token);
 }
 
 void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
