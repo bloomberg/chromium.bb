@@ -41,5 +41,5 @@ FullscreenControllerFactory::BuildServiceInstanceFor(
 
 web::BrowserState* FullscreenControllerFactory::GetBrowserStateToUse(
     web::BrowserState* context) const {
-  return GetBrowserStateOwnInstanceInIncognito(context);
+  return GetBrowserStateRedirectedInIncognito(context);
 }

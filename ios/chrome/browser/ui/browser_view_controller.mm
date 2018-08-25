@@ -1239,6 +1239,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
           _browserState);
   ChromeBroadcaster* broadcaster = fullscreenController->broadcaster();
   if (_broadcasting) {
+    fullscreenController->SetWebStateList(_model.webStateList);
+
     _toolbarUIUpdater = [[LegacyToolbarUIUpdater alloc]
         initWithToolbarUI:[[ToolbarUIState alloc] init]
              toolbarOwner:self
@@ -1253,6 +1255,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
            webStateList:[_model webStateList]];
     StartBroadcastingMainContentUI(self, broadcaster);
 
+    _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
     fullscreenController->AddObserver(_fullscreenUIUpdater.get());
     [self updateForFullscreenProgress:fullscreenController->GetProgress()];
   } else {
@@ -1265,6 +1268,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     _webMainContentUIForwarder = nil;
 
     fullscreenController->RemoveObserver(_fullscreenUIUpdater.get());
+    _fullscreenUIUpdater = nullptr;
+
+    fullscreenController->SetWebStateList(nullptr);
   }
 }
 
@@ -1413,13 +1419,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_paymentRequestManager close];
   _paymentRequestManager = nil;
   [_model browserStateDestroyed];
-
-  FullscreenController* fullscreenController =
-      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-          _browserState);
-  fullscreenController->RemoveObserver(_fullscreenUIUpdater.get());
-  _fullscreenUIUpdater = nullptr;
-  fullscreenController->SetWebStateList(nullptr);
 
   TextToSpeechPlaybackControllerFactory::GetInstance()
       ->GetForBrowserState(_browserState)
@@ -2108,14 +2107,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   // Register for bookmark changed notification (BookmarkModel may be null
   // during testing, so explicitly support this).
   _bookmarkModel = ios::BookmarkModelFactory::GetForBrowserState(_browserState);
-
-  // Add a FullscreenUIUpdater for self.
-  FullscreenController* controller =
-      FullscreenControllerFactory::GetInstance()->GetForBrowserState(
-          _browserState);
-  _fullscreenUIUpdater = std::make_unique<FullscreenUIUpdater>(self);
-  // Set the FullscreenController's WebStateList.
-  controller->SetWebStateList(_model.webStateList);
 
   // Set the TTS playback controller's WebStateList.
   TextToSpeechPlaybackControllerFactory::GetInstance()
