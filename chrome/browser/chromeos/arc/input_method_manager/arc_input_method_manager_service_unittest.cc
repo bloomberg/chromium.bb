@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_features.h"
@@ -79,28 +78,6 @@ class TestInputMethodManager : public im::MockInputMethodManager {
       active_ime_id_ = ime_id;
     }
 
-    void GetInputMethodExtensions(
-        im::InputMethodDescriptors* descriptors) override {
-      for (const auto& id : active_input_method_ids_) {
-        descriptors->push_back(im::InputMethodDescriptor(
-            id, "", "", {}, {}, false, GURL(), GURL()));
-      }
-    }
-
-    bool SetAllowedInputMethods(
-        const std::vector<std::string>& new_allowed_input_method_ids,
-        bool enable_allowed_input_methods) override {
-      allowed_input_methods_ = new_allowed_input_method_ids;
-      return true;
-    }
-
-    bool IsInputMethodAllowed(const std::string& ime_id) {
-      return allowed_input_methods_.empty() ||
-             (std::find(allowed_input_methods_.begin(),
-                        allowed_input_methods_.end(),
-                        ime_id) != allowed_input_methods_.end());
-    }
-
     std::vector<std::tuple<std::string, im::InputMethodDescriptors>>
         added_input_method_extensions_;
     std::vector<std::string> removed_input_method_extensions_;
@@ -112,7 +89,6 @@ class TestInputMethodManager : public im::MockInputMethodManager {
    private:
     std::vector<std::string> active_input_method_ids_;
     std::string active_ime_id_ = "";
-    std::vector<std::string> allowed_input_methods_;
   };
 
   TestInputMethodManager() {
@@ -170,15 +146,10 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
 
   TestingProfile* profile() { return profile_.get(); }
 
-  void ToggleTabletMode(bool enabled) {
-    tablet_mode_client_->OnTabletModeToggled(enabled);
-  }
-
   void SetUp() override {
     input_method_manager_ = new TestInputMethodManager();
     chromeos::input_method::InputMethodManager::Initialize(
         input_method_manager_);
-    tablet_mode_client_ = std::make_unique<TabletModeClient>();
     profile_ = std::make_unique<TestingProfile>();
     service_ = ArcInputMethodManagerService::GetForBrowserContextForTesting(
         profile_.get());
@@ -191,7 +162,6 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
     test_bridge_ = nullptr;
     service_->Shutdown();
     profile_.reset(nullptr);
-    tablet_mode_client_.reset(nullptr);
     chromeos::input_method::InputMethodManager::Shutdown();
   }
 
@@ -199,7 +169,6 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<ArcServiceManager> arc_service_manager_;
   std::unique_ptr<TestingProfile> profile_;
-  std::unique_ptr<TabletModeClient> tablet_mode_client_;
   TestInputMethodManager* input_method_manager_ = nullptr;
   TestInputMethodManagerBridge* test_bridge_ = nullptr;  // Owned by |service_|
 
@@ -224,7 +193,6 @@ TEST_F(ArcInputMethodManagerServiceTest, EnableIme) {
 
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(kEnableInputMethodFeature);
-  ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->enable_ime_calls_.size());
 
@@ -276,7 +244,6 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
 
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(kEnableInputMethodFeature);
-  ToggleTabletMode(true);
 
   ASSERT_EQ(0u, bridge()->switch_ime_to_calls_.size());
 
@@ -314,7 +281,6 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
 
   base::test::ScopedFeatureList feature;
   feature.InitAndEnableFeature(kEnableInputMethodFeature);
-  ToggleTabletMode(true);
 
   // Preparing 2 ImeInfo.
   const std::string android_ime_id1 = "test.arc.ime";
@@ -398,51 +364,6 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
 
     added_extensions.clear();
   }
-}
-
-TEST_F(ArcInputMethodManagerServiceTest, AllowArcIMEsOnlyInTabletMode) {
-  namespace ceiu = chromeos::extension_ime_util;
-  using crx_file::id_util::GenerateId;
-
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(kEnableInputMethodFeature);
-
-  const std::string extension_ime_id =
-      ceiu::GetInputMethodID(GenerateId("test.extension.ime"), "us");
-  const std::string component_extension_ime_id =
-      ceiu::GetComponentInputMethodID(
-          GenerateId("test.component.extension.ime"), "us");
-  const std::string arc_ime_id =
-      ceiu::GetArcInputMethodID(GenerateId("test.arc.ime"), "us");
-
-  // Start from tablet mode
-  ToggleTabletMode(true);
-
-  // Activate 3 IMEs.
-  imm()->state()->AddActiveInputMethodId(extension_ime_id);
-  imm()->state()->AddActiveInputMethodId(component_extension_ime_id);
-  imm()->state()->AddActiveInputMethodId(arc_ime_id);
-
-  // All IMEs are allowed to use.
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
-
-  // Change to laptop mode
-  ToggleTabletMode(false);
-
-  // ARC IME is not allowed in laptop mode.
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
-  EXPECT_FALSE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
-
-  // Back to tablet mode.
-  ToggleTabletMode(true);
-
-  // All IMEs are allowed to use.
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(extension_ime_id));
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(component_extension_ime_id));
-  EXPECT_TRUE(imm()->state()->IsInputMethodAllowed(arc_ime_id));
 }
 
 }  // namespace arc
