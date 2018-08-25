@@ -128,7 +128,7 @@ def PostUploadHook(cl, change, output_api):
   if _ChangeAffectsCronetForAndroid(change):
     try_bots.append('master.tryserver.chromium.android:android_cronet_tester')
   if _ChangeAffectsCronetForIos(change):
-    try_bots.append('master.tryserver.chromium.mac:ios-simulator-cronet')
+    try_bots.append('luci.chromium.try:ios-simulator-cronet')
 
   return output_api.EnsureCQIncludeTrybotsAreAdded(
     cl, try_bots, 'Automatically added Cronet trybots to run tests on CQ.')
