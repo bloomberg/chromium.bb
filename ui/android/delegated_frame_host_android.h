@@ -41,6 +41,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
  public:
   class Client {
    public:
+    virtual ~Client() {}
     virtual void SetBeginFrameSource(
         viz::BeginFrameSource* begin_frame_source) = 0;
     virtual void DidPresentCompositorFrame(
