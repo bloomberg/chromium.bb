@@ -333,8 +333,6 @@ class PLATFORM_EXPORT ImageDecoder {
   virtual bool DecodeToYUV() { return false; }
   virtual void SetImagePlanes(std::unique_ptr<ImagePlanes>) {}
 
-  virtual bool IsForTesting() const { return false; }
-
  protected:
   ImageDecoder(AlphaOption alpha_option,
                HighBitDepthDecodingOption high_bit_depth_decoding_option,
