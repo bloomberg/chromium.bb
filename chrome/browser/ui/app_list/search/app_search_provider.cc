@@ -119,12 +119,14 @@ class AppSearchProvider::App {
       const std::string& id,
       const std::string& name,
       const base::Time& last_launch_time,
-      const base::Time& install_time)
+      const base::Time& install_time,
+      bool installed_internally)
       : data_source_(data_source),
         id_(id),
         name_(base::UTF8ToUTF16(name)),
         last_launch_time_(last_launch_time),
-        install_time_(install_time) {}
+        install_time_(install_time),
+        installed_internally_(installed_internally) {}
   ~App() = default;
 
   struct CompareByLastActivityTime {
@@ -143,8 +145,12 @@ class AppSearchProvider::App {
     return tokenized_indexed_name_.get();
   }
 
-  const base::Time& GetLastActivityTime() const {
-    return last_launch_time_.is_null() ? install_time_ : last_launch_time_;
+  base::Time GetLastActivityTime() const {
+    if (!last_launch_time_.is_null())
+      return last_launch_time_;
+    if (!installed_internally_)
+      return install_time_;
+    return base::Time();
   }
 
   bool MatchSearchableText(const TokenizedString& query) {
@@ -180,6 +186,8 @@ class AppSearchProvider::App {
     require_exact_match_ = require_exact_match;
   }
 
+  bool installed_internally() const { return installed_internally_; }
+
  private:
   AppSearchProvider::DataSource* data_source_;
   std::unique_ptr<TokenizedString> tokenized_indexed_name_;
@@ -192,6 +200,9 @@ class AppSearchProvider::App {
   bool searchable_ = true;
   base::string16 searchable_text_;
   bool require_exact_match_ = false;
+  // Set to true in case app was installed internally, by sync, policy or as a
+  // default app.
+  const bool installed_internally_;
 
   DISALLOW_COPY_AND_ASSIGN(App);
 };
@@ -282,7 +293,12 @@ class ExtensionDataSource : public AppSearchProvider::DataSource,
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, extension->id(), extension->short_name(),
           prefs->GetLastLaunchTime(extension->id()),
-          prefs->GetInstallTime(extension->id())));
+          prefs->GetInstallTime(extension->id()),
+          extension->was_installed_by_default() ||
+              extension->was_installed_by_oem() ||
+              extensions::Manifest::IsComponentLocation(
+                  extension->location()) ||
+              extensions::Manifest::IsPolicyLocation(extension->location())));
     }
   }
 
@@ -324,7 +340,9 @@ class ArcDataSource : public AppSearchProvider::DataSource,
 
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, app_id, app_info->name, app_info->last_launch_time,
-          app_info->install_time));
+          app_info->install_time,
+          arc_prefs->IsDefault(app_id) ||
+              arc_prefs->IsControlledByPolicy(app_info->package_name)));
     }
   }
 
@@ -380,7 +398,6 @@ class InternalDataSource : public AppSearchProvider::DataSource,
 
   // AppSearchProvider::DataSource overrides:
   void AddApps(AppSearchProvider::Apps* apps) override {
-    const base::Time time;
     for (const auto& internal_app :
          GetInternalAppList(profile()->IsGuestSession())) {
       if (!std::strcmp(internal_app.app_id, kInternalAppIdContinueReading) &&
@@ -392,8 +409,9 @@ class InternalDataSource : public AppSearchProvider::DataSource,
 
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, internal_app.app_id,
-          l10n_util::GetStringUTF8(internal_app.name_string_resource_id), time,
-          time));
+          l10n_util::GetStringUTF8(internal_app.name_string_resource_id),
+          base::Time() /* last_launch_time */, base::Time() /* install_time */,
+          true /* installed_internally */));
       apps->back()->set_recommendable(internal_app.recommendable);
       apps->back()->set_searchable(internal_app.searchable);
       if (internal_app.searchable_string_resource_id != 0) {
@@ -447,7 +465,7 @@ class CrostiniDataSource : public AppSearchProvider::DataSource,
       // the 'Keywords' desktop entry field and the executable file name.
       apps->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, app_id, registration.Name(), registration.LastLaunchTime(),
-          registration.InstallTime()));
+          registration.InstallTime(), false /* installed_internally */));
 
       // Until it's been installed, the Terminal is hidden unless you search
       // for 'Terminal' exactly (case insensitive).

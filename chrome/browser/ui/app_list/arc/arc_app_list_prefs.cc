@@ -740,6 +740,11 @@ bool ArcAppListPrefs::IsShortcut(const std::string& app_id) const {
   return app_info && app_info->shortcut;
 }
 
+bool ArcAppListPrefs::IsControlledByPolicy(
+    const std::string& package_name) const {
+  return packages_by_policy_.count(package_name);
+}
+
 void ArcAppListPrefs::SetLastLaunchTime(const std::string& app_id) {
   if (!IsRegistered(app_id)) {
     NOTREACHED();
@@ -1045,7 +1050,7 @@ void ArcAppListPrefs::AddAppAndShortcut(const std::string& name,
 
   // Note the install time is the first time the Chrome OS sees the app, not the
   // actual install time in Android side.
-  if (GetInstallTime(app_id).is_null() && NeedSetInstallTime(package_name)) {
+  if (GetInstallTime(app_id).is_null()) {
     std::string install_time_str =
         base::Int64ToString(base::Time::Now().ToInternalValue());
     app_dict->SetString(kInstallTime, install_time_str);
@@ -1283,24 +1288,6 @@ void ArcAppListPrefs::InvalidateAppIcons(const std::string& app_id) {
 void ArcAppListPrefs::InvalidatePackageIcons(const std::string& package_name) {
   for (const std::string& app_id : GetAppsForPackage(package_name))
     InvalidateAppIcons(app_id);
-}
-
-bool ArcAppListPrefs::NeedSetInstallTime(
-    const std::string& package_name) const {
-  // If checked package is in active default list that means it is installed by
-  // PAI and install time should not be recorded. Once package is not in active
-  // default list then this package was removed from default and user installs
-  // it manually. In last case we have to record install time.
-  if (default_apps_.GetActivePackages().count(package_name))
-    return false;
-
-  // Check if package is installed by policy. In this case don't set install
-  // time.
-  if (packages_by_policy_.count(package_name))
-    return false;
-
-  // TODO(b/34248841) - Handle apps, installed by sync.
-  return true;
 }
 
 void ArcAppListPrefs::ScheduleAppFolderDeletion(const std::string& app_id) {
