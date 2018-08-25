@@ -152,6 +152,10 @@ class ScriptContext : public RequestSender::Source {
 
   const GURL& service_worker_scope() const;
 
+  int64_t service_worker_version_id() const {
+    return service_worker_version_id_;
+  }
+
   // Sets the URL of this ScriptContext. Usually this will automatically be set
   // on construction, unless this isn't constructed with enough information to
   // determine the URL (e.g. frame was null).
@@ -159,6 +163,9 @@ class ScriptContext : public RequestSender::Source {
   void set_url(const GURL& url) { url_ = url; }
   void set_service_worker_scope(const GURL& scope) {
     service_worker_scope_ = scope;
+  }
+  void set_service_worker_version_id(int64_t service_worker_version_id) {
+    service_worker_version_id_ = service_worker_version_id;
   }
 
   // Returns whether the API |api| or any part of the API could be available in
@@ -279,6 +286,8 @@ class ScriptContext : public RequestSender::Source {
   GURL url_;
 
   GURL service_worker_scope_;
+
+  int64_t service_worker_version_id_;
 
   base::ThreadChecker thread_checker_;
 

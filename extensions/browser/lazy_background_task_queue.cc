@@ -37,7 +37,8 @@ void PendingTaskAdapter(LazyContextTaskQueue::PendingTask original_task,
   } else {
     std::move(original_task)
         .Run(std::make_unique<LazyContextTaskQueue::ContextInfo>(
-            host->extension()->id(), host->render_process_host(), kMainThreadId,
+            host->extension()->id(), host->render_process_host(),
+            blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId,
             host->GetURL()));
   }
 }

@@ -16,6 +16,7 @@
 #include "extensions/renderer/message_target.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/worker_thread_dispatcher.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace extensions {
 
@@ -54,7 +55,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
     render_thread_->Send(new ExtensionHostMsg_AddListener(
-        context->GetExtensionID(), context->url(), event_name, kMainThreadId));
+        context->GetExtensionID(), context->url(), event_name,
+        blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId));
   }
 
   void SendRemoveUnfilteredEventListenerIPC(
@@ -64,7 +66,8 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
     DCHECK_EQ(kMainThreadId, content::WorkerThread::GetCurrentId());
 
     render_thread_->Send(new ExtensionHostMsg_RemoveListener(
-        context->GetExtensionID(), context->url(), event_name, kMainThreadId));
+        context->GetExtensionID(), context->url(), event_name,
+        blink::mojom::kInvalidServiceWorkerVersionId, kMainThreadId));
   }
 
   void SendAddUnfilteredLazyEventListenerIPC(
@@ -218,9 +221,12 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
       const std::string& event_name) override {
     DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+    DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
+              context->service_worker_version_id());
 
     dispatcher_->Send(new ExtensionHostMsg_AddListener(
         context->GetExtensionID(), context->service_worker_scope(), event_name,
+        context->service_worker_version_id(),
         content::WorkerThread::GetCurrentId()));
   }
 
@@ -229,9 +235,12 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
       const std::string& event_name) override {
     DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+    DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
+              context->service_worker_version_id());
 
     dispatcher_->Send(new ExtensionHostMsg_RemoveListener(
         context->GetExtensionID(), context->service_worker_scope(), event_name,
+        context->service_worker_version_id(),
         content::WorkerThread::GetCurrentId()));
   }
 
@@ -263,9 +272,12 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
                                        bool is_lazy) override {
     DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+    DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
+              context->service_worker_version_id());
     ServiceWorkerIdentifier sw_identifier;
     sw_identifier.scope = context->service_worker_scope();
     sw_identifier.thread_id = content::WorkerThread::GetCurrentId();
+    sw_identifier.version_id = context->service_worker_version_id();
     dispatcher_->Send(new ExtensionHostMsg_AddFilteredListener(
         context->GetExtensionID(), event_name, sw_identifier, filter, is_lazy));
   }
@@ -276,9 +288,12 @@ class WorkerThreadIPCMessageSender : public IPCMessageSender {
                                           bool remove_lazy_listener) override {
     DCHECK_EQ(Feature::SERVICE_WORKER_CONTEXT, context->context_type());
     DCHECK_NE(kMainThreadId, content::WorkerThread::GetCurrentId());
+    DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
+              context->service_worker_version_id());
     ServiceWorkerIdentifier sw_identifier;
     sw_identifier.scope = context->service_worker_scope();
     sw_identifier.thread_id = content::WorkerThread::GetCurrentId();
+    sw_identifier.version_id = context->service_worker_version_id();
     dispatcher_->Send(new ExtensionHostMsg_RemoveFilteredListener(
         context->GetExtensionID(), event_name, sw_identifier, filter,
         remove_lazy_listener));

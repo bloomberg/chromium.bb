@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension_id.h"
+#include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -62,12 +63,14 @@ class EventListener {
   // Constructs EventListener for an Extension service worker.
   // Similar to ForExtension above with the only difference that
   // |worker_thread_id_| contains a valid worker thread, as opposed to
-  // kMainThreadId.
+  // kMainThreadId and |service_worker_version_id| contains a valid service
+  // worker version id instead of kInvalidServiceWorkerVersionId.
   static std::unique_ptr<EventListener> ForExtensionServiceWorker(
       const std::string& event_name,
       const std::string& extension_id,
       content::RenderProcessHost* process,
       const GURL& service_worker_scope,
+      int64_t service_worker_version_id,
       int worker_thread_id,
       std::unique_ptr<base::DictionaryValue> filter);
 
@@ -99,6 +102,9 @@ class EventListener {
   base::DictionaryValue* filter() const { return filter_.get(); }
   EventFilter::MatcherID matcher_id() const { return matcher_id_; }
   void set_matcher_id(EventFilter::MatcherID id) { matcher_id_ = id; }
+  int64_t service_worker_version_id() const {
+    return service_worker_version_id_;
+  }
   int worker_thread_id() const { return worker_thread_id_; }
 
  private:
@@ -107,15 +113,19 @@ class EventListener {
                 const GURL& listener_url,
                 content::RenderProcessHost* process,
                 bool is_for_service_worker,
+                int64_t service_worker_version_id,
                 int worker_thread_id,
                 std::unique_ptr<base::DictionaryValue> filter);
 
   const std::string event_name_;
   const std::string extension_id_;
   const GURL listener_url_;
-  content::RenderProcessHost* process_;
+  content::RenderProcessHost* process_ = nullptr;
 
   const bool is_for_service_worker_ = false;
+
+  const int64_t service_worker_version_id_ =
+      blink::mojom::kInvalidServiceWorkerVersionId;
 
   // If this listener is for a service worker (i.e.
   // is_for_service_worker_ = true) and the worker is in running state, then

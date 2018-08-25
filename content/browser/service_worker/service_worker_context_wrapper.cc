@@ -92,7 +92,9 @@ void DidStartWorker(scoped_refptr<ServiceWorkerVersion> version,
     return;
   }
   EmbeddedWorkerInstance* instance = version->embedded_worker();
-  std::move(info_callback).Run(instance->process_id(), instance->thread_id());
+  std::move(info_callback)
+      .Run(version->version_id(), instance->process_id(),
+           instance->thread_id());
 }
 
 void FoundRegistrationForStartWorker(

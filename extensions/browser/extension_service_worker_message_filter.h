@@ -43,6 +43,11 @@ class ExtensionServiceWorkerMessageFilter
                                         const std::string& request_uuid);
   void OnDecrementServiceWorkerActivity(int64_t service_worker_version_id,
                                         const std::string& request_uuid);
+  void OnEventAckWorker(int64_t service_worker_version_id, int event_id);
+
+  void DidFailDecrementInflightEvent();
+
+  content::BrowserContext* const browser_context_;
 
   const int render_process_id_;
 

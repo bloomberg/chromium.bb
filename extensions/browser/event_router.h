@@ -21,6 +21,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/render_process_host_observer.h"
 #include "extensions/browser/event_listener_map.h"
+#include "extensions/browser/events/event_ack_data.h"
 #include "extensions/browser/events/lazy_event_dispatch_util.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 #include "extensions/browser/extension_registry_observer.h"
@@ -136,6 +137,7 @@ class EventRouter : public KeyedService,
                                      content::RenderProcessHost* process,
                                      const ExtensionId& extension_id,
                                      const GURL& service_worker_scope,
+                                     int64_t service_worker_version_id,
                                      int worker_thread_id);
   void RemoveEventListener(const std::string& event_name,
                            content::RenderProcessHost* process,
@@ -144,6 +146,7 @@ class EventRouter : public KeyedService,
                                         content::RenderProcessHost* process,
                                         const ExtensionId& extension_id,
                                         const GURL& service_worker_scope,
+                                        int64_t service_worker_version_id,
                                         int worker_thread_id);
 
   // Add or remove a URL as an event listener for |event_name|.
@@ -249,6 +252,8 @@ class EventRouter : public KeyedService,
     return &lazy_event_dispatch_util_;
   }
 
+  EventAckData* event_ack_data() { return &event_ack_data_; }
+
   // Returns true if there is a registered lazy/non-lazy listener for the given
   // |event_name|.
   bool HasLazyEventListenerForTesting(const std::string& event_name);
@@ -306,6 +311,7 @@ class EventRouter : public KeyedService,
   void DispatchEventToProcess(const std::string& extension_id,
                               const GURL& listener_url,
                               content::RenderProcessHost* process,
+                              int64_t service_worker_version_id,
                               int worker_thread_id,
                               const linked_ptr<Event>& event,
                               const base::DictionaryValue* listener_filter,
@@ -378,6 +384,8 @@ class EventRouter : public KeyedService,
   std::set<content::RenderProcessHost*> observed_process_set_;
 
   LazyEventDispatchUtil lazy_event_dispatch_util_;
+
+  EventAckData event_ack_data_;
 
   base::WeakPtrFactory<EventRouter> weak_factory_;
 
