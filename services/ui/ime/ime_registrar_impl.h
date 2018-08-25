@@ -11,18 +11,18 @@
 
 namespace ui {
 
-class IMERegistrarImpl : public mojom::IMERegistrar {
+class IMERegistrarImpl : public ws::mojom::IMERegistrar {
  public:
   explicit IMERegistrarImpl(IMEDriverBridge* ime_driver_bridge);
   ~IMERegistrarImpl() override;
 
-  void AddBinding(mojom::IMERegistrarRequest request);
+  void AddBinding(ws::mojom::IMERegistrarRequest request);
 
  private:
-  // mojom::IMERegistrar:
-  void RegisterDriver(mojom::IMEDriverPtr driver) override;
+  // ws::mojom::IMERegistrar:
+  void RegisterDriver(ws::mojom::IMEDriverPtr driver) override;
 
-  mojo::BindingSet<mojom::IMERegistrar> bindings_;
+  mojo::BindingSet<ws::mojom::IMERegistrar> bindings_;
   IMEDriverBridge* ime_driver_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(IMERegistrarImpl);

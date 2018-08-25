@@ -21,13 +21,13 @@ namespace ui {
 namespace {
 
 class IMEStructTraitsTest : public testing::Test,
-                            public mojom::IMEStructTraitsTest {
+                            public ws::mojom::IMEStructTraitsTest {
  public:
   IMEStructTraitsTest() {}
 
  protected:
-  mojom::IMEStructTraitsTestPtr GetTraitsTestProxy() {
-    mojom::IMEStructTraitsTestPtr proxy;
+  ws::mojom::IMEStructTraitsTestPtr GetTraitsTestProxy() {
+    ws::mojom::IMEStructTraitsTestPtr proxy;
     traits_test_bindings_.AddBinding(this, mojo::MakeRequest(&proxy));
     return proxy;
   }
@@ -44,7 +44,7 @@ class IMEStructTraitsTest : public testing::Test,
   }
 
   base::MessageLoop loop_;  // A MessageLoop is needed for Mojo IPC to work.
-  mojo::BindingSet<mojom::IMEStructTraitsTest> traits_test_bindings_;
+  mojo::BindingSet<ws::mojom::IMEStructTraitsTest> traits_test_bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(IMEStructTraitsTest);
 };
@@ -62,8 +62,8 @@ TEST_F(IMEStructTraitsTest, CandidateWindowProperties) {
   input.is_auxiliary_text_visible = false;
 
   CandidateWindow::CandidateWindowProperty output;
-  EXPECT_TRUE(mojom::CandidateWindowProperties::Deserialize(
-      mojom::CandidateWindowProperties::Serialize(&input), &output));
+  EXPECT_TRUE(ws::mojom::CandidateWindowProperties::Deserialize(
+      ws::mojom::CandidateWindowProperties::Serialize(&input), &output));
 
   EXPECT_EQ(input.page_size, output.page_size);
   EXPECT_EQ(input.cursor_position, output.cursor_position);
@@ -79,8 +79,8 @@ TEST_F(IMEStructTraitsTest, CandidateWindowProperties) {
   input.is_vertical = !input.is_vertical;
   input.show_window_at_composition = !input.show_window_at_composition;
   input.is_auxiliary_text_visible = !input.is_auxiliary_text_visible;
-  EXPECT_TRUE(mojom::CandidateWindowProperties::Deserialize(
-      mojom::CandidateWindowProperties::Serialize(&input), &output));
+  EXPECT_TRUE(ws::mojom::CandidateWindowProperties::Deserialize(
+      ws::mojom::CandidateWindowProperties::Serialize(&input), &output));
 
   EXPECT_EQ(input.is_cursor_visible, output.is_cursor_visible);
   EXPECT_EQ(input.is_vertical, output.is_vertical);
@@ -98,8 +98,8 @@ TEST_F(IMEStructTraitsTest, CandidateWindowEntry) {
   input.description_body = base::UTF8ToUTF16("entry_description_body");
 
   CandidateWindow::Entry output;
-  EXPECT_TRUE(mojom::CandidateWindowEntry::Deserialize(
-      mojom::CandidateWindowEntry::Serialize(&input), &output));
+  EXPECT_TRUE(ws::mojom::CandidateWindowEntry::Deserialize(
+      ws::mojom::CandidateWindowEntry::Serialize(&input), &output));
 
   EXPECT_EQ(input.value, output.value);
   EXPECT_EQ(input.label, output.label);
@@ -121,8 +121,8 @@ TEST_F(IMEStructTraitsTest, CompositionText) {
   input.selection = gfx::Range(1, 7);
 
   CompositionText output;
-  EXPECT_TRUE(mojom::CompositionText::Deserialize(
-      mojom::CompositionText::Serialize(&input), &output));
+  EXPECT_TRUE(ws::mojom::CompositionText::Deserialize(
+      ws::mojom::CompositionText::Serialize(&input), &output));
 
   EXPECT_EQ(input, output);
 }
@@ -134,7 +134,7 @@ TEST_F(IMEStructTraitsTest, TextInputMode) {
       TEXT_INPUT_MODE_NUMERIC, TEXT_INPUT_MODE_DECIMAL, TEXT_INPUT_MODE_SEARCH,
   };
 
-  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  ws::mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
   for (size_t i = 0; i < arraysize(kTextInputModes); i++) {
     ui::TextInputMode mode_out;
     ASSERT_TRUE(proxy->EchoTextInputMode(kTextInputModes[i], &mode_out));
@@ -163,7 +163,7 @@ TEST_F(IMEStructTraitsTest, TextInputType) {
       TEXT_INPUT_TYPE_DATE_TIME_FIELD,
   };
 
-  mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
+  ws::mojom::IMEStructTraitsTestPtr proxy = GetTraitsTestProxy();
   for (size_t i = 0; i < arraysize(kTextInputTypes); i++) {
     ui::TextInputType type_out;
     ASSERT_TRUE(proxy->EchoTextInputType(kTextInputTypes[i], &type_out));

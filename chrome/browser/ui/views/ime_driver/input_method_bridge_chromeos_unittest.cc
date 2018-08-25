@@ -37,9 +37,9 @@ struct CompositionEvent {
   base::char16 char_data;
 };
 
-class TestTextInputClient : public ui::mojom::TextInputClient {
+class TestTextInputClient : public ws::mojom::TextInputClient {
  public:
-  explicit TestTextInputClient(ui::mojom::TextInputClientRequest request)
+  explicit TestTextInputClient(ws::mojom::TextInputClientRequest request)
       : binding_(this, std::move(request)) {}
 
   CompositionEvent WaitUntilCompositionEvent() {
@@ -92,7 +92,7 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
     std::move(callback).Run(false);
   }
 
-  mojo::Binding<ui::mojom::TextInputClient> binding_;
+  mojo::Binding<ws::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;
   base::Optional<CompositionEvent> receieved_event_;
 
@@ -108,7 +108,7 @@ class InputMethodBridgeChromeOSTest : public testing::Test {
   void SetUp() override {
     ui::IMEBridge::Initialize();
 
-    ui::mojom::TextInputClientPtr client_ptr;
+    ws::mojom::TextInputClientPtr client_ptr;
     client_ = std::make_unique<TestTextInputClient>(MakeRequest(&client_ptr));
     input_method_ = std::make_unique<InputMethodBridge>(
         std::make_unique<RemoteTextInputClient>(

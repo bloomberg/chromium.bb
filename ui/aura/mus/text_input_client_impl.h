@@ -18,16 +18,16 @@ namespace aura {
 
 // TextInputClientImpl receieves updates from IME drivers over Mojo IPC, and
 // notifies the underlying ui::TextInputClient accordingly.
-class TextInputClientImpl : public ui::mojom::TextInputClient {
+class TextInputClientImpl : public ws::mojom::TextInputClient {
  public:
   TextInputClientImpl(ui::TextInputClient* text_input_client,
                       ui::internal::InputMethodDelegate* delegate);
   ~TextInputClientImpl() override;
 
-  ui::mojom::TextInputClientPtr CreateInterfacePtrAndBind();
+  ws::mojom::TextInputClientPtr CreateInterfacePtrAndBind();
 
  private:
-  // ui::mojom::TextInputClient:
+  // ws::mojom::TextInputClient:
   void SetCompositionText(const ui::CompositionText& composition) override;
   void ConfirmCompositionText() override;
   void ClearCompositionText() override;
@@ -38,7 +38,7 @@ class TextInputClientImpl : public ui::mojom::TextInputClient {
       DispatchKeyEventPostIMECallback callback) override;
 
   ui::TextInputClient* text_input_client_;
-  mojo::Binding<ui::mojom::TextInputClient> binding_;
+  mojo::Binding<ws::mojom::TextInputClient> binding_;
   ui::internal::InputMethodDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(TextInputClientImpl);

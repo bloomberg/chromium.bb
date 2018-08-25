@@ -15,9 +15,9 @@ namespace ui {
 
 class InputController;
 
-// Implementation of mojom::InputDeviceController that forwards to
+// Implementation of ws::mojom::InputDeviceController that forwards to
 // ui::InputController.
-class InputDeviceController : public mojom::InputDeviceController {
+class InputDeviceController : public ws::mojom::InputDeviceController {
  public:
   InputDeviceController();
   ~InputDeviceController() override;
@@ -27,9 +27,9 @@ class InputDeviceController : public mojom::InputDeviceController {
       service_manager::BinderRegistry* registry,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner = nullptr);
 
-  // mojom::InputDeviceController::
+  // ws::mojom::InputDeviceController::
   void AddKeyboardDeviceObserver(
-      mojom::KeyboardDeviceObserverPtr observer) override;
+      ws::mojom::KeyboardDeviceObserverPtr observer) override;
   void GetHasTouchpad(GetHasTouchpadCallback callback) override;
   void GetHasMouse(GetHasMouseCallback callback) override;
   void SetCapsLockEnabled(bool enabled) override;
@@ -65,13 +65,13 @@ class InputDeviceController : public mojom::InputDeviceController {
   void NotifyObservers();
 
   // Notifies a single KeyboardDeviceObserver.
-  void NotifyObserver(mojom::KeyboardDeviceObserver* observer);
+  void NotifyObserver(ws::mojom::KeyboardDeviceObserver* observer);
 
   void BindInputDeviceControllerRequest(
-      mojom::InputDeviceControllerRequest request);
+      ws::mojom::InputDeviceControllerRequest request);
 
-  mojo::BindingSet<mojom::InputDeviceController> bindings_;
-  mojo::InterfacePtrSet<mojom::KeyboardDeviceObserver> observers_;
+  mojo::BindingSet<ws::mojom::InputDeviceController> bindings_;
+  mojo::InterfacePtrSet<ws::mojom::KeyboardDeviceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceController);
 };

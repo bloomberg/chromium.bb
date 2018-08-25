@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ui.mojom;
+module ws.mojom;
 
 import "ui/events/devices/mojo/input_devices.mojom";
 
@@ -35,7 +35,7 @@ interface InputDeviceObserverMojo {
       bool are_touchscreen_target_displays_valid);
 
   // Is called when a stylus is removed or inserted into the device.
-  OnStylusStateChanged(StylusState state);
+  OnStylusStateChanged(ui.mojom.StylusState state);
 };
 
 // Sends updates about input-devices to observers.

@@ -36,7 +36,7 @@ using EventResultCallback = base::OnceCallback<void(ws::mojom::EventResult)>;
 
 // InputMethod implementation that queues up the callbacks supplied to
 // ProcessKeyEvent().
-class TestInputMethod : public ui::mojom::InputMethod {
+class TestInputMethod : public ws::mojom::InputMethod {
  public:
   TestInputMethod() {}
   ~TestInputMethod() override {}

@@ -267,16 +267,16 @@ void WindowService::BindClipboardHostRequest(
 }
 
 void WindowService::BindImeRegistrarRequest(
-    mojom::IMERegistrarRequest request) {
+    ws::mojom::IMERegistrarRequest request) {
   ime_registrar_.AddBinding(std::move(request));
 }
 
-void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {
+void WindowService::BindImeDriverRequest(ws::mojom::IMEDriverRequest request) {
   ime_driver_.AddBinding(std::move(request));
 }
 
 void WindowService::BindInputDeviceServerRequest(
-    mojom::InputDeviceServerRequest request) {
+    ws::mojom::InputDeviceServerRequest request) {
   input_device_server_.AddBinding(std::move(request));
 }
 

@@ -19,7 +19,7 @@ InputDeviceControllerClient::InputDeviceControllerClient(
   connector->BindInterface(
       service_name.empty() ? ws::mojom::kServiceName : service_name,
       &input_device_controller_);
-  mojom::KeyboardDeviceObserverPtr ptr;
+  ws::mojom::KeyboardDeviceObserverPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   input_device_controller_->AddKeyboardDeviceObserver(std::move(ptr));
 }
@@ -136,7 +136,7 @@ void InputDeviceControllerClient::SetInternalTouchpadEnabled(
 }
 
 void InputDeviceControllerClient::OnKeyboardStateChanged(
-    mojom::KeyboardDeviceStatePtr state) {
+    ws::mojom::KeyboardDeviceStatePtr state) {
   keyboard_device_state_ = *state;
 }
 

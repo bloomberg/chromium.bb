@@ -12,14 +12,14 @@
 namespace ui {
 namespace test {
 
-class TestInputMethod : public mojom::InputMethod {
+class TestInputMethod : public ws::mojom::InputMethod {
  public:
-  explicit TestInputMethod(mojom::TextInputClientPtr client)
+  explicit TestInputMethod(ws::mojom::TextInputClientPtr client)
       : client_(std::move(client)) {}
   ~TestInputMethod() override = default;
 
  private:
-  // mojom::InputMethod:
+  // ws::mojom::InputMethod:
   void OnTextInputTypeChanged(TextInputType text_input_type) override {
     NOTIMPLEMENTED();
   }
@@ -60,7 +60,7 @@ class TestInputMethod : public mojom::InputMethod {
     }
   }
 
-  mojom::TextInputClientPtr client_;
+  ws::mojom::TextInputClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInputMethod);
 };
@@ -69,10 +69,10 @@ TestIMEDriver::TestIMEDriver() {}
 
 TestIMEDriver::~TestIMEDriver() {}
 
-void TestIMEDriver::StartSession(mojom::StartSessionDetailsPtr details) {
+void TestIMEDriver::StartSession(ws::mojom::StartSessionDetailsPtr details) {
   mojo::MakeStrongBinding(
       std::make_unique<TestInputMethod>(
-          mojom::TextInputClientPtr(std::move(details->client))),
+          ws::mojom::TextInputClientPtr(std::move(details->client))),
       std::move(details->input_method_request));
 }
 

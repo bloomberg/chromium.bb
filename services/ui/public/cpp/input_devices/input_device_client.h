@@ -23,7 +23,7 @@ namespace ui {
 // InputDeviceObserverMojo and registers to get updates from InputDeviceServer.
 // Essentially, InputDeviceClient forwards input-device events and caches
 // input-device state.
-class InputDeviceClient : public mojom::InputDeviceObserverMojo,
+class InputDeviceClient : public ws::mojom::InputDeviceObserverMojo,
                           public ui::InputDeviceManager {
  public:
   InputDeviceClient();
@@ -31,7 +31,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
 
   // Connects to mojo:ui as an observer on InputDeviceServer to receive input
   // device updates.
-  void Connect(mojom::InputDeviceServerPtr server);
+  void Connect(ws::mojom::InputDeviceServerPtr server);
 
   // ui::InputDeviceManager:
   const std::vector<ui::InputDevice>& GetKeyboardDevices() const override;
@@ -49,9 +49,9 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   // Default constructor registers as InputDeviceManager. Can be subclassed in
   // tests to avoid this.
   explicit InputDeviceClient(bool is_input_device_manager);
-  mojom::InputDeviceObserverMojoPtr GetIntefacePtr();
+  ws::mojom::InputDeviceObserverMojoPtr GetIntefacePtr();
 
-  // mojom::InputDeviceObserverMojo:
+  // ws::mojom::InputDeviceObserverMojo:
   void OnKeyboardDeviceConfigurationChanged(
       const std::vector<ui::InputDevice>& devices) override;
   void OnTouchscreenDeviceConfigurationChanged(
@@ -76,7 +76,7 @@ class InputDeviceClient : public mojom::InputDeviceObserverMojo,
   void NotifyObserversKeyboardDeviceConfigurationChanged();
   void NotifyObserversTouchscreenDeviceConfigurationChanged();
 
-  mojo::Binding<mojom::InputDeviceObserverMojo> binding_;
+  mojo::Binding<ws::mojom::InputDeviceObserverMojo> binding_;
 
   bool is_input_device_manager_;
 

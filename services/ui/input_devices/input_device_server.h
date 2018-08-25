@@ -18,7 +18,7 @@ class DeviceDataManager;
 // Listens to DeviceDataManager for updates on input-devices and forwards those
 // updates to any registered InputDeviceObserverMojo in other processes via
 // Mojo IPC. This runs in the mus-ws process.
-class InputDeviceServer : public mojom::InputDeviceServer,
+class InputDeviceServer : public ws::mojom::InputDeviceServer,
                           public ui::InputDeviceEventObserver {
  public:
   InputDeviceServer();
@@ -30,10 +30,10 @@ class InputDeviceServer : public mojom::InputDeviceServer,
 
   // Binds an interface request to this instance. RegisterAsObserver() must be
   // successfully called before this, to get local input-device event updates.
-  void AddBinding(mojom::InputDeviceServerRequest request);
+  void AddBinding(ws::mojom::InputDeviceServerRequest request);
 
-  // mojom::InputDeviceServer:
-  void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;
+  // ws::mojom::InputDeviceServer:
+  void AddObserver(ws::mojom::InputDeviceObserverMojoPtr observer) override;
 
   // ui::InputDeviceEventObserver:
   void OnKeyboardDeviceConfigurationChanged() override;
@@ -46,12 +46,12 @@ class InputDeviceServer : public mojom::InputDeviceServer,
 
  private:
   // Sends the current state of all input-devices to an observer.
-  void SendDeviceListsComplete(mojom::InputDeviceObserverMojo* observer);
+  void SendDeviceListsComplete(ws::mojom::InputDeviceObserverMojo* observer);
 
   void CallOnTouchscreenDeviceConfigurationChanged();
 
-  mojo::BindingSet<mojom::InputDeviceServer> bindings_;
-  mojo::InterfacePtrSet<mojom::InputDeviceObserverMojo> observers_;
+  mojo::BindingSet<ws::mojom::InputDeviceServer> bindings_;
+  mojo::InterfacePtrSet<ws::mojom::InputDeviceObserverMojo> observers_;
 
   // DeviceDataManager instance we are registered as an observer with.
   ui::DeviceDataManager* manager_ = nullptr;

@@ -20,7 +20,7 @@ deps = [
 ]
 
 type_mappings = [
-  "ui.mojom.CursorType=ui::CursorType",
-  "ui.mojom.CursorSize=ui::CursorSize",
-  "ui.mojom.CursorData=ui::CursorData[copyable_pass_by_value]",
+  "ws.mojom.CursorType=ui::CursorType",
+  "ws.mojom.CursorSize=ui::CursorSize",
+  "ws.mojom.CursorData=ui::CursorData[copyable_pass_by_value]",
 ]

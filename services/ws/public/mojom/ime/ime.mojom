@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module ui.mojom;
+module ws.mojom;
 
 import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -117,7 +117,7 @@ struct StartSessionDetails {
   InputMethod& input_method_request;
 
   // Initial details about |client| required by IMEDriver.
-  TextInputType text_input_type;
+  ui.mojom.TextInputType text_input_type;
   TextInputMode text_input_mode;
   mojo_base.mojom.TextDirection text_direction;
   int32 text_input_flags;
@@ -142,7 +142,7 @@ interface IMERegistrar {
 // This interface is provided by IME drivers, and also by Mus as a lightweight
 // proxy between IME drivers and clients.
 interface InputMethod {
-  OnTextInputTypeChanged(TextInputType text_input_type);
+  OnTextInputTypeChanged(ui.mojom.TextInputType text_input_type);
 
   // Client sends |caret_bounds| in focused window coordinates,
   // Mus translates it to global coordinates and sends it to IME app.

@@ -19,11 +19,11 @@ TestIMEApplication::TestIMEApplication() {}
 TestIMEApplication::~TestIMEApplication() {}
 
 void TestIMEApplication::OnStart() {
-  mojom::IMEDriverPtr ime_driver_ptr;
+  ws::mojom::IMEDriverPtr ime_driver_ptr;
   mojo::MakeStrongBinding(std::make_unique<TestIMEDriver>(),
                           MakeRequest(&ime_driver_ptr));
 
-  ui::mojom::IMERegistrarPtr ime_registrar;
+  ws::mojom::IMERegistrarPtr ime_registrar;
   context()->connector()->BindInterface(ws::mojom::kServiceName,
                                         &ime_registrar);
   ime_registrar->RegisterDriver(std::move(ime_driver_ptr));

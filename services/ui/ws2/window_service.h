@@ -181,9 +181,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
       base::OnceCallback<void(const std::string&)> callback);
 
   void BindClipboardHostRequest(mojom::ClipboardHostRequest request);
-  void BindImeRegistrarRequest(mojom::IMERegistrarRequest request);
-  void BindImeDriverRequest(mojom::IMEDriverRequest request);
-  void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
+  void BindImeRegistrarRequest(ws::mojom::IMERegistrarRequest request);
+  void BindImeDriverRequest(ws::mojom::IMEDriverRequest request);
+  void BindInputDeviceServerRequest(
+      ws::mojom::InputDeviceServerRequest request);
   void BindRemotingEventInjectorRequest(
       ws::mojom::RemotingEventInjectorRequest request);
   void BindUserActivityMonitorRequest(

@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ui::mojom::ImeTextSpanThickness;
+using ws::mojom::ImeTextSpanThickness;
 
 namespace blink {
 

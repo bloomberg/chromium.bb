@@ -13,100 +13,100 @@
 namespace mojo {
 
 // static
-ui::mojom::CursorType
-EnumTraits<ui::mojom::CursorType, ui::CursorType>::ToMojom(
+ws::mojom::CursorType
+EnumTraits<ws::mojom::CursorType, ui::CursorType>::ToMojom(
     ui::CursorType input) {
   switch (input) {
     case ui::CursorType::kNull:
-      return ui::mojom::CursorType::kNull;
+      return ws::mojom::CursorType::kNull;
     case ui::CursorType::kPointer:
-      return ui::mojom::CursorType::kPointer;
+      return ws::mojom::CursorType::kPointer;
     case ui::CursorType::kCross:
-      return ui::mojom::CursorType::kCross;
+      return ws::mojom::CursorType::kCross;
     case ui::CursorType::kHand:
-      return ui::mojom::CursorType::kHand;
+      return ws::mojom::CursorType::kHand;
     case ui::CursorType::kIBeam:
-      return ui::mojom::CursorType::kIBeam;
+      return ws::mojom::CursorType::kIBeam;
     case ui::CursorType::kWait:
-      return ui::mojom::CursorType::kWait;
+      return ws::mojom::CursorType::kWait;
     case ui::CursorType::kHelp:
-      return ui::mojom::CursorType::kHelp;
+      return ws::mojom::CursorType::kHelp;
     case ui::CursorType::kEastResize:
-      return ui::mojom::CursorType::kEastResize;
+      return ws::mojom::CursorType::kEastResize;
     case ui::CursorType::kNorthResize:
-      return ui::mojom::CursorType::kNorthResize;
+      return ws::mojom::CursorType::kNorthResize;
     case ui::CursorType::kNorthEastResize:
-      return ui::mojom::CursorType::kNorthEastResize;
+      return ws::mojom::CursorType::kNorthEastResize;
     case ui::CursorType::kNorthWestResize:
-      return ui::mojom::CursorType::kNorthWestResize;
+      return ws::mojom::CursorType::kNorthWestResize;
     case ui::CursorType::kSouthResize:
-      return ui::mojom::CursorType::kSouthResize;
+      return ws::mojom::CursorType::kSouthResize;
     case ui::CursorType::kSouthEastResize:
-      return ui::mojom::CursorType::kSouthEastResize;
+      return ws::mojom::CursorType::kSouthEastResize;
     case ui::CursorType::kSouthWestResize:
-      return ui::mojom::CursorType::kSouthWestResize;
+      return ws::mojom::CursorType::kSouthWestResize;
     case ui::CursorType::kWestResize:
-      return ui::mojom::CursorType::kWestResize;
+      return ws::mojom::CursorType::kWestResize;
     case ui::CursorType::kNorthSouthResize:
-      return ui::mojom::CursorType::kNorthSouthResize;
+      return ws::mojom::CursorType::kNorthSouthResize;
     case ui::CursorType::kEastWestResize:
-      return ui::mojom::CursorType::kEastWestResize;
+      return ws::mojom::CursorType::kEastWestResize;
     case ui::CursorType::kNorthEastSouthWestResize:
-      return ui::mojom::CursorType::kNorthEastSouthWestResize;
+      return ws::mojom::CursorType::kNorthEastSouthWestResize;
     case ui::CursorType::kNorthWestSouthEastResize:
-      return ui::mojom::CursorType::kNorthWestSouthEastResize;
+      return ws::mojom::CursorType::kNorthWestSouthEastResize;
     case ui::CursorType::kColumnResize:
-      return ui::mojom::CursorType::kColumnResize;
+      return ws::mojom::CursorType::kColumnResize;
     case ui::CursorType::kRowResize:
-      return ui::mojom::CursorType::kRowResize;
+      return ws::mojom::CursorType::kRowResize;
     case ui::CursorType::kMiddlePanning:
-      return ui::mojom::CursorType::kMiddlePanning;
+      return ws::mojom::CursorType::kMiddlePanning;
     case ui::CursorType::kEastPanning:
-      return ui::mojom::CursorType::kEastPanning;
+      return ws::mojom::CursorType::kEastPanning;
     case ui::CursorType::kNorthPanning:
-      return ui::mojom::CursorType::kNorthPanning;
+      return ws::mojom::CursorType::kNorthPanning;
     case ui::CursorType::kNorthEastPanning:
-      return ui::mojom::CursorType::kNorthEastPanning;
+      return ws::mojom::CursorType::kNorthEastPanning;
     case ui::CursorType::kNorthWestPanning:
-      return ui::mojom::CursorType::kNorthWestPanning;
+      return ws::mojom::CursorType::kNorthWestPanning;
     case ui::CursorType::kSouthPanning:
-      return ui::mojom::CursorType::kSouthPanning;
+      return ws::mojom::CursorType::kSouthPanning;
     case ui::CursorType::kSouthEastPanning:
-      return ui::mojom::CursorType::kSouthEastPanning;
+      return ws::mojom::CursorType::kSouthEastPanning;
     case ui::CursorType::kSouthWestPanning:
-      return ui::mojom::CursorType::kSouthWestPanning;
+      return ws::mojom::CursorType::kSouthWestPanning;
     case ui::CursorType::kWestPanning:
-      return ui::mojom::CursorType::kWestPanning;
+      return ws::mojom::CursorType::kWestPanning;
     case ui::CursorType::kMove:
-      return ui::mojom::CursorType::kMove;
+      return ws::mojom::CursorType::kMove;
     case ui::CursorType::kVerticalText:
-      return ui::mojom::CursorType::kVerticalText;
+      return ws::mojom::CursorType::kVerticalText;
     case ui::CursorType::kCell:
-      return ui::mojom::CursorType::kCell;
+      return ws::mojom::CursorType::kCell;
     case ui::CursorType::kContextMenu:
-      return ui::mojom::CursorType::kContextMenu;
+      return ws::mojom::CursorType::kContextMenu;
     case ui::CursorType::kAlias:
-      return ui::mojom::CursorType::kAlias;
+      return ws::mojom::CursorType::kAlias;
     case ui::CursorType::kProgress:
-      return ui::mojom::CursorType::kProgress;
+      return ws::mojom::CursorType::kProgress;
     case ui::CursorType::kNoDrop:
-      return ui::mojom::CursorType::kNoDrop;
+      return ws::mojom::CursorType::kNoDrop;
     case ui::CursorType::kCopy:
-      return ui::mojom::CursorType::kCopy;
+      return ws::mojom::CursorType::kCopy;
     case ui::CursorType::kNone:
-      return ui::mojom::CursorType::kNone;
+      return ws::mojom::CursorType::kNone;
     case ui::CursorType::kNotAllowed:
-      return ui::mojom::CursorType::kNotAllowed;
+      return ws::mojom::CursorType::kNotAllowed;
     case ui::CursorType::kZoomIn:
-      return ui::mojom::CursorType::kZoomIn;
+      return ws::mojom::CursorType::kZoomIn;
     case ui::CursorType::kZoomOut:
-      return ui::mojom::CursorType::kZoomOut;
+      return ws::mojom::CursorType::kZoomOut;
     case ui::CursorType::kGrab:
-      return ui::mojom::CursorType::kGrab;
+      return ws::mojom::CursorType::kGrab;
     case ui::CursorType::kGrabbing:
-      return ui::mojom::CursorType::kGrabbing;
+      return ws::mojom::CursorType::kGrabbing;
     case ui::CursorType::kCustom:
-      return ui::mojom::CursorType::kCustom;
+      return ws::mojom::CursorType::kCustom;
     case ui::CursorType::kDndNone:
     case ui::CursorType::kDndMove:
     case ui::CursorType::kDndCopy:
@@ -114,150 +114,150 @@ EnumTraits<ui::mojom::CursorType, ui::CursorType>::ToMojom(
       // The mojom version is the same as the restricted Webcursor constants;
       // don't allow system cursors to be transmitted.
       NOTREACHED();
-      return ui::mojom::CursorType::kNull;
+      return ws::mojom::CursorType::kNull;
   }
   NOTREACHED();
-  return ui::mojom::CursorType::kNull;
+  return ws::mojom::CursorType::kNull;
 }
 
 // static
-bool EnumTraits<ui::mojom::CursorType, ui::CursorType>::FromMojom(
-    ui::mojom::CursorType input,
+bool EnumTraits<ws::mojom::CursorType, ui::CursorType>::FromMojom(
+    ws::mojom::CursorType input,
     ui::CursorType* out) {
   switch (input) {
-    case ui::mojom::CursorType::kNull:
+    case ws::mojom::CursorType::kNull:
       *out = ui::CursorType::kNull;
       return true;
-    case ui::mojom::CursorType::kPointer:
+    case ws::mojom::CursorType::kPointer:
       *out = ui::CursorType::kPointer;
       return true;
-    case ui::mojom::CursorType::kCross:
+    case ws::mojom::CursorType::kCross:
       *out = ui::CursorType::kCross;
       return true;
-    case ui::mojom::CursorType::kHand:
+    case ws::mojom::CursorType::kHand:
       *out = ui::CursorType::kHand;
       return true;
-    case ui::mojom::CursorType::kIBeam:
+    case ws::mojom::CursorType::kIBeam:
       *out = ui::CursorType::kIBeam;
       return true;
-    case ui::mojom::CursorType::kWait:
+    case ws::mojom::CursorType::kWait:
       *out = ui::CursorType::kWait;
       return true;
-    case ui::mojom::CursorType::kHelp:
+    case ws::mojom::CursorType::kHelp:
       *out = ui::CursorType::kHelp;
       return true;
-    case ui::mojom::CursorType::kEastResize:
+    case ws::mojom::CursorType::kEastResize:
       *out = ui::CursorType::kEastResize;
       return true;
-    case ui::mojom::CursorType::kNorthResize:
+    case ws::mojom::CursorType::kNorthResize:
       *out = ui::CursorType::kNorthResize;
       return true;
-    case ui::mojom::CursorType::kNorthEastResize:
+    case ws::mojom::CursorType::kNorthEastResize:
       *out = ui::CursorType::kNorthEastResize;
       return true;
-    case ui::mojom::CursorType::kNorthWestResize:
+    case ws::mojom::CursorType::kNorthWestResize:
       *out = ui::CursorType::kNorthWestResize;
       return true;
-    case ui::mojom::CursorType::kSouthResize:
+    case ws::mojom::CursorType::kSouthResize:
       *out = ui::CursorType::kSouthResize;
       return true;
-    case ui::mojom::CursorType::kSouthEastResize:
+    case ws::mojom::CursorType::kSouthEastResize:
       *out = ui::CursorType::kSouthEastResize;
       return true;
-    case ui::mojom::CursorType::kSouthWestResize:
+    case ws::mojom::CursorType::kSouthWestResize:
       *out = ui::CursorType::kSouthWestResize;
       return true;
-    case ui::mojom::CursorType::kWestResize:
+    case ws::mojom::CursorType::kWestResize:
       *out = ui::CursorType::kWestResize;
       return true;
-    case ui::mojom::CursorType::kNorthSouthResize:
+    case ws::mojom::CursorType::kNorthSouthResize:
       *out = ui::CursorType::kNorthSouthResize;
       return true;
-    case ui::mojom::CursorType::kEastWestResize:
+    case ws::mojom::CursorType::kEastWestResize:
       *out = ui::CursorType::kEastWestResize;
       return true;
-    case ui::mojom::CursorType::kNorthEastSouthWestResize:
+    case ws::mojom::CursorType::kNorthEastSouthWestResize:
       *out = ui::CursorType::kNorthEastSouthWestResize;
       return true;
-    case ui::mojom::CursorType::kNorthWestSouthEastResize:
+    case ws::mojom::CursorType::kNorthWestSouthEastResize:
       *out = ui::CursorType::kNorthWestSouthEastResize;
       return true;
-    case ui::mojom::CursorType::kColumnResize:
+    case ws::mojom::CursorType::kColumnResize:
       *out = ui::CursorType::kColumnResize;
       return true;
-    case ui::mojom::CursorType::kRowResize:
+    case ws::mojom::CursorType::kRowResize:
       *out = ui::CursorType::kRowResize;
       return true;
-    case ui::mojom::CursorType::kMiddlePanning:
+    case ws::mojom::CursorType::kMiddlePanning:
       *out = ui::CursorType::kMiddlePanning;
       return true;
-    case ui::mojom::CursorType::kEastPanning:
+    case ws::mojom::CursorType::kEastPanning:
       *out = ui::CursorType::kEastPanning;
       return true;
-    case ui::mojom::CursorType::kNorthPanning:
+    case ws::mojom::CursorType::kNorthPanning:
       *out = ui::CursorType::kNorthPanning;
       return true;
-    case ui::mojom::CursorType::kNorthEastPanning:
+    case ws::mojom::CursorType::kNorthEastPanning:
       *out = ui::CursorType::kNorthEastPanning;
       return true;
-    case ui::mojom::CursorType::kNorthWestPanning:
+    case ws::mojom::CursorType::kNorthWestPanning:
       *out = ui::CursorType::kNorthWestPanning;
       return true;
-    case ui::mojom::CursorType::kSouthPanning:
+    case ws::mojom::CursorType::kSouthPanning:
       *out = ui::CursorType::kSouthPanning;
       return true;
-    case ui::mojom::CursorType::kSouthEastPanning:
+    case ws::mojom::CursorType::kSouthEastPanning:
       *out = ui::CursorType::kSouthEastPanning;
       return true;
-    case ui::mojom::CursorType::kSouthWestPanning:
+    case ws::mojom::CursorType::kSouthWestPanning:
       *out = ui::CursorType::kSouthWestPanning;
       return true;
-    case ui::mojom::CursorType::kWestPanning:
+    case ws::mojom::CursorType::kWestPanning:
       *out = ui::CursorType::kWestPanning;
       return true;
-    case ui::mojom::CursorType::kMove:
+    case ws::mojom::CursorType::kMove:
       *out = ui::CursorType::kMove;
       return true;
-    case ui::mojom::CursorType::kVerticalText:
+    case ws::mojom::CursorType::kVerticalText:
       *out = ui::CursorType::kVerticalText;
       return true;
-    case ui::mojom::CursorType::kCell:
+    case ws::mojom::CursorType::kCell:
       *out = ui::CursorType::kCell;
       return true;
-    case ui::mojom::CursorType::kContextMenu:
+    case ws::mojom::CursorType::kContextMenu:
       *out = ui::CursorType::kContextMenu;
       return true;
-    case ui::mojom::CursorType::kAlias:
+    case ws::mojom::CursorType::kAlias:
       *out = ui::CursorType::kAlias;
       return true;
-    case ui::mojom::CursorType::kProgress:
+    case ws::mojom::CursorType::kProgress:
       *out = ui::CursorType::kProgress;
       return true;
-    case ui::mojom::CursorType::kNoDrop:
+    case ws::mojom::CursorType::kNoDrop:
       *out = ui::CursorType::kNoDrop;
       return true;
-    case ui::mojom::CursorType::kCopy:
+    case ws::mojom::CursorType::kCopy:
       *out = ui::CursorType::kCopy;
       return true;
-    case ui::mojom::CursorType::kNone:
+    case ws::mojom::CursorType::kNone:
       *out = ui::CursorType::kNone;
       return true;
-    case ui::mojom::CursorType::kNotAllowed:
+    case ws::mojom::CursorType::kNotAllowed:
       *out = ui::CursorType::kNotAllowed;
       return true;
-    case ui::mojom::CursorType::kZoomIn:
+    case ws::mojom::CursorType::kZoomIn:
       *out = ui::CursorType::kZoomIn;
       return true;
-    case ui::mojom::CursorType::kZoomOut:
+    case ws::mojom::CursorType::kZoomOut:
       *out = ui::CursorType::kZoomOut;
       return true;
-    case ui::mojom::CursorType::kGrab:
+    case ws::mojom::CursorType::kGrab:
       *out = ui::CursorType::kGrab;
       return true;
-    case ui::mojom::CursorType::kGrabbing:
+    case ws::mojom::CursorType::kGrabbing:
       *out = ui::CursorType::kGrabbing;
       return true;
-    case ui::mojom::CursorType::kCustom:
+    case ws::mojom::CursorType::kCustom:
       *out = ui::CursorType::kCustom;
       return true;
   }
@@ -267,29 +267,29 @@ bool EnumTraits<ui::mojom::CursorType, ui::CursorType>::FromMojom(
 }
 
 // static
-ui::mojom::CursorSize
-EnumTraits<ui::mojom::CursorSize, ui::CursorSize>::ToMojom(
+ws::mojom::CursorSize
+EnumTraits<ws::mojom::CursorSize, ui::CursorSize>::ToMojom(
     ui::CursorSize input) {
   switch (input) {
     case ui::CursorSize::kNormal:
-      return ui::mojom::CursorSize::kNormal;
+      return ws::mojom::CursorSize::kNormal;
     case ui::CursorSize::kLarge:
-      return ui::mojom::CursorSize::kLarge;
+      return ws::mojom::CursorSize::kLarge;
   }
 
   NOTREACHED();
-  return ui::mojom::CursorSize::kNormal;
+  return ws::mojom::CursorSize::kNormal;
 }
 
 // static
-bool EnumTraits<ui::mojom::CursorSize, ui::CursorSize>::FromMojom(
-    ui::mojom::CursorSize input,
+bool EnumTraits<ws::mojom::CursorSize, ui::CursorSize>::FromMojom(
+    ws::mojom::CursorSize input,
     ui::CursorSize* out) {
   switch (input) {
-    case ui::mojom::CursorSize::kNormal:
+    case ws::mojom::CursorSize::kNormal:
       *out = ui::CursorSize::kNormal;
       return true;
-    case ui::mojom::CursorSize::kLarge:
+    case ws::mojom::CursorSize::kLarge:
       *out = ui::CursorSize::kLarge;
       return true;
   }
@@ -300,28 +300,28 @@ bool EnumTraits<ui::mojom::CursorSize, ui::CursorSize>::FromMojom(
 
 // static
 const base::TimeDelta&
-StructTraits<ui::mojom::CursorDataDataView, ui::CursorData>::frame_delay(
+StructTraits<ws::mojom::CursorDataDataView, ui::CursorData>::frame_delay(
     const ui::CursorData& c) {
   return c.frame_delay();
 }
 
 // static
 const gfx::Point&
-StructTraits<ui::mojom::CursorDataDataView, ui::CursorData>::hotspot_in_pixels(
+StructTraits<ws::mojom::CursorDataDataView, ui::CursorData>::hotspot_in_pixels(
     const ui::CursorData& c) {
   return c.hotspot_in_pixels();
 }
 
 // static
 const std::vector<SkBitmap>&
-StructTraits<ui::mojom::CursorDataDataView, ui::CursorData>::cursor_frames(
+StructTraits<ws::mojom::CursorDataDataView, ui::CursorData>::cursor_frames(
     const ui::CursorData& c) {
   return c.cursor_frames();
 }
 
 // static
-bool StructTraits<ui::mojom::CursorDataDataView, ui::CursorData>::Read(
-    ui::mojom::CursorDataDataView data,
+bool StructTraits<ws::mojom::CursorDataDataView, ui::CursorData>::Read(
+    ws::mojom::CursorDataDataView data,
     ui::CursorData* out) {
   ui::CursorType type;
   if (!data.ReadCursorType(&type))

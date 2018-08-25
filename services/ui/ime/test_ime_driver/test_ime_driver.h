@@ -15,14 +15,14 @@
 namespace ui {
 namespace test {
 
-class TestIMEDriver : public ui::mojom::IMEDriver {
+class TestIMEDriver : public ws::mojom::IMEDriver {
  public:
   TestIMEDriver();
   ~TestIMEDriver() override;
 
  private:
-  // ui::mojom::IMEDriver:
-  void StartSession(ui::mojom::StartSessionDetailsPtr details) override;
+  // ws::mojom::IMEDriver:
+  void StartSession(ws::mojom::StartSessionDetailsPtr details) override;
 
   DISALLOW_COPY_AND_ASSIGN(TestIMEDriver);
 };

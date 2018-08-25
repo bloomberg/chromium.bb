@@ -15,7 +15,7 @@ InputDeviceClient::~InputDeviceClient() {
     InputDeviceManager::ClearInstance();
 }
 
-void InputDeviceClient::Connect(mojom::InputDeviceServerPtr server) {
+void InputDeviceClient::Connect(ws::mojom::InputDeviceServerPtr server) {
   DCHECK(server.is_bound());
   server->AddObserver(GetIntefacePtr());
 }
@@ -67,8 +67,8 @@ InputDeviceClient::InputDeviceClient(bool is_input_device_manager)
     InputDeviceManager::SetInstance(this);
 }
 
-mojom::InputDeviceObserverMojoPtr InputDeviceClient::GetIntefacePtr() {
-  mojom::InputDeviceObserverMojoPtr ptr;
+ws::mojom::InputDeviceObserverMojoPtr InputDeviceClient::GetIntefacePtr() {
+  ws::mojom::InputDeviceObserverMojoPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   return ptr;
 }

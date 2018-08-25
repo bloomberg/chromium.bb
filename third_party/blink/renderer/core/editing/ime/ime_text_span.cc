@@ -13,7 +13,7 @@ ImeTextSpan::ImeTextSpan(Type type,
                          unsigned start_offset,
                          unsigned end_offset,
                          const Color& underline_color,
-                         ui::mojom::ImeTextSpanThickness thickness,
+                         ws::mojom::ImeTextSpanThickness thickness,
                          const Color& background_color,
                          const Color& suggestion_highlight_color,
                          const Vector<String>& suggestions)

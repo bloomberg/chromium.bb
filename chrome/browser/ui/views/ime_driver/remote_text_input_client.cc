@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/ime_driver/remote_text_input_client.h"
 
 RemoteTextInputClient::RemoteTextInputClient(
-    ui::mojom::TextInputClientPtr remote_client,
+    ws::mojom::TextInputClientPtr remote_client,
     ui::TextInputType text_input_type,
     ui::TextInputMode text_input_mode,
     base::i18n::TextDirection text_direction,

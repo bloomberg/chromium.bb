@@ -11,11 +11,11 @@ IMERegistrarImpl::IMERegistrarImpl(IMEDriverBridge* ime_driver_bridge)
 
 IMERegistrarImpl::~IMERegistrarImpl() {}
 
-void IMERegistrarImpl::AddBinding(mojom::IMERegistrarRequest request) {
+void IMERegistrarImpl::AddBinding(ws::mojom::IMERegistrarRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void IMERegistrarImpl::RegisterDriver(mojom::IMEDriverPtr driver) {
+void IMERegistrarImpl::RegisterDriver(ws::mojom::IMEDriverPtr driver) {
   // TODO(moshayedi): crbug.com/634441. IMERegistrarImpl currently identifies
   // the last registered driver as the current driver. Rethink this once we
   // have more usecases.

@@ -296,7 +296,7 @@ interface WindowTree {
   SetCanFocus(uint64 window_id, bool can_focus);
 
   // Sets the cursor when the pointer is inside |window_id|.
-  SetCursor(uint32 change_id, uint64 window_id, ui.mojom.CursorData cursor);
+  SetCursor(uint32 change_id, uint64 window_id, CursorData cursor);
 
   // Set text input state for the given window.
   SetWindowTextInputState(uint64 window_id, ui.mojom.TextInputState state);
@@ -528,7 +528,7 @@ interface WindowTreeClient {
   // initiate the change.
   OnWindowFocused(uint64 focused_window_id);
 
-  OnWindowCursorChanged(uint64 window_id, ui.mojom.CursorData cursor);
+  OnWindowCursorChanged(uint64 window_id, CursorData cursor);
 
   // Invoked when a client window submits a new surface ID. The surface ID and
   // associated information is propagated to the parent connection. The parent

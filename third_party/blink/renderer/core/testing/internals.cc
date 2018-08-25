@@ -175,7 +175,7 @@
 
 namespace blink {
 
-using ui::mojom::ImeTextSpanThickness;
+using ws::mojom::ImeTextSpanThickness;
 
 namespace {
 

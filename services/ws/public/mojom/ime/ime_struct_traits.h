@@ -15,7 +15,7 @@
 namespace mojo {
 
 template <>
-struct StructTraits<ui::mojom::CandidateWindowPropertiesDataView,
+struct StructTraits<ws::mojom::CandidateWindowPropertiesDataView,
                     ui::CandidateWindow::CandidateWindowProperty> {
   static int32_t page_size(
       const ui::CandidateWindow::CandidateWindowProperty& p) {
@@ -40,18 +40,18 @@ struct StructTraits<ui::mojom::CandidateWindowPropertiesDataView,
       const ui::CandidateWindow::CandidateWindowProperty& p) {
     return p.is_cursor_visible;
   }
-  static ui::mojom::CandidateWindowPosition window_position(
+  static ws::mojom::CandidateWindowPosition window_position(
       const ui::CandidateWindow::CandidateWindowProperty& p) {
     return p.show_window_at_composition
-               ? ui::mojom::CandidateWindowPosition::kComposition
-               : ui::mojom::CandidateWindowPosition::kCursor;
+               ? ws::mojom::CandidateWindowPosition::kComposition
+               : ws::mojom::CandidateWindowPosition::kCursor;
   }
-  static bool Read(ui::mojom::CandidateWindowPropertiesDataView data,
+  static bool Read(ws::mojom::CandidateWindowPropertiesDataView data,
                    ui::CandidateWindow::CandidateWindowProperty* out);
 };
 
 template <>
-struct StructTraits<ui::mojom::CandidateWindowEntryDataView,
+struct StructTraits<ws::mojom::CandidateWindowEntryDataView,
                     ui::CandidateWindow::Entry> {
   static base::string16 value(const ui::CandidateWindow::Entry& e) {
     return e.value;
@@ -68,12 +68,12 @@ struct StructTraits<ui::mojom::CandidateWindowEntryDataView,
   static base::string16 description_body(const ui::CandidateWindow::Entry& e) {
     return e.description_body;
   }
-  static bool Read(ui::mojom::CandidateWindowEntryDataView data,
+  static bool Read(ws::mojom::CandidateWindowEntryDataView data,
                    ui::CandidateWindow::Entry* out);
 };
 
 template <>
-struct StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText> {
+struct StructTraits<ws::mojom::CompositionTextDataView, ui::CompositionText> {
   static base::string16 text(const ui::CompositionText& c) { return c.text; }
   static ui::ImeTextSpans ime_text_spans(const ui::CompositionText& c) {
     return c.ime_text_spans;
@@ -81,12 +81,12 @@ struct StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText> {
   static gfx::Range selection(const ui::CompositionText& c) {
     return c.selection;
   }
-  static bool Read(ui::mojom::CompositionTextDataView data,
+  static bool Read(ws::mojom::CompositionTextDataView data,
                    ui::CompositionText* out);
 };
 
 template <>
-struct StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
+struct StructTraits<ws::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
   static ui::ImeTextSpan::Type type(const ui::ImeTextSpan& c) { return c.type; }
   static uint32_t start_offset(const ui::ImeTextSpan& c) {
     return c.start_offset;
@@ -107,21 +107,21 @@ struct StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan> {
   static std::vector<std::string> suggestions(const ui::ImeTextSpan& c) {
     return c.suggestions;
   }
-  static bool Read(ui::mojom::ImeTextSpanDataView data, ui::ImeTextSpan* out);
+  static bool Read(ws::mojom::ImeTextSpanDataView data, ui::ImeTextSpan* out);
 };
 
 template <>
-struct EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type> {
-  static ui::mojom::ImeTextSpanType ToMojom(
+struct EnumTraits<ws::mojom::ImeTextSpanType, ui::ImeTextSpan::Type> {
+  static ws::mojom::ImeTextSpanType ToMojom(
       ui::ImeTextSpan::Type ime_text_span_type);
-  static bool FromMojom(ui::mojom::ImeTextSpanType input,
+  static bool FromMojom(ws::mojom::ImeTextSpanType input,
                         ui::ImeTextSpan::Type* out);
 };
 
 template <>
-struct EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode> {
-  static ui::mojom::TextInputMode ToMojom(ui::TextInputMode text_input_mode);
-  static bool FromMojom(ui::mojom::TextInputMode input, ui::TextInputMode* out);
+struct EnumTraits<ws::mojom::TextInputMode, ui::TextInputMode> {
+  static ws::mojom::TextInputMode ToMojom(ui::TextInputMode text_input_mode);
+  static bool FromMojom(ws::mojom::TextInputMode input, ui::TextInputMode* out);
 };
 
 template <>
@@ -131,10 +131,10 @@ struct EnumTraits<ui::mojom::TextInputType, ui::TextInputType> {
 };
 
 template <>
-struct EnumTraits<ui::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness> {
-  static ui::mojom::ImeTextSpanThickness ToMojom(
+struct EnumTraits<ws::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness> {
+  static ws::mojom::ImeTextSpanThickness ToMojom(
       ui::ImeTextSpan::Thickness thickness);
-  static bool FromMojom(ui::mojom::ImeTextSpanThickness input,
+  static bool FromMojom(ws::mojom::ImeTextSpanThickness input,
                         ui::ImeTextSpan::Thickness* out);
 };
 

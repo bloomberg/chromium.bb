@@ -177,7 +177,7 @@ void DocumentMarkerController::AddTextMatchMarker(
 void DocumentMarkerController::AddCompositionMarker(
     const EphemeralRange& range,
     Color underline_color,
-    ui::mojom::ImeTextSpanThickness thickness,
+    ws::mojom::ImeTextSpanThickness thickness,
     Color background_color) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [underline_color, thickness, background_color](
@@ -190,7 +190,7 @@ void DocumentMarkerController::AddCompositionMarker(
 void DocumentMarkerController::AddActiveSuggestionMarker(
     const EphemeralRange& range,
     Color underline_color,
-    ui::mojom::ImeTextSpanThickness thickness,
+    ws::mojom::ImeTextSpanThickness thickness,
     Color background_color) {
   DCHECK(!document_->NeedsLayoutTreeUpdate());
   AddMarkerInternal(range, [underline_color, thickness, background_color](

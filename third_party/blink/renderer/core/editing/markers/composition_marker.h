@@ -19,7 +19,7 @@ class CORE_EXPORT CompositionMarker final : public StyleableMarker {
   CompositionMarker(unsigned start_offset,
                     unsigned end_offset,
                     Color underline_color,
-                    ui::mojom::ImeTextSpanThickness,
+                    ws::mojom::ImeTextSpanThickness,
                     Color background_color);
 
   // DocumentMarker implementations

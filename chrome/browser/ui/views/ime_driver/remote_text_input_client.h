@@ -15,7 +15,7 @@
 class RemoteTextInputClient : public ui::TextInputClient,
                               public ui::internal::InputMethodDelegate {
  public:
-  RemoteTextInputClient(ui::mojom::TextInputClientPtr remote_client,
+  RemoteTextInputClient(ws::mojom::TextInputClientPtr remote_client,
                         ui::TextInputType text_input_type,
                         ui::TextInputMode text_input_mode,
                         base::i18n::TextDirection text_direction,
@@ -64,7 +64,7 @@ class RemoteTextInputClient : public ui::TextInputClient,
   ui::EventDispatchDetails DispatchKeyEventPostIME(
       ui::KeyEvent* event) override;
 
-  ui::mojom::TextInputClientPtr remote_client_;
+  ws::mojom::TextInputClientPtr remote_client_;
   ui::TextInputType text_input_type_;
   ui::TextInputMode text_input_mode_;
   base::i18n::TextDirection text_direction_;

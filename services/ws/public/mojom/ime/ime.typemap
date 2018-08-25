@@ -23,11 +23,11 @@ deps = [
 ]
 
 type_mappings = [
-  "ui.mojom.CandidateWindowEntry=ui::CandidateWindow::Entry",
-  "ui.mojom.CandidateWindowProperties=ui::CandidateWindow::CandidateWindowProperty",
-  "ui.mojom.CompositionText=ui::CompositionText",
-  "ui.mojom.ImeTextSpan=ui::ImeTextSpan",
-  "ui.mojom.ImeTextSpanThickness=ui::ImeTextSpan::Thickness",
-  "ui.mojom.TextInputMode=ui::TextInputMode",
+  "ws.mojom.CandidateWindowEntry=ui::CandidateWindow::Entry",
+  "ws.mojom.CandidateWindowProperties=ui::CandidateWindow::CandidateWindowProperty",
+  "ws.mojom.CompositionText=ui::CompositionText",
+  "ws.mojom.ImeTextSpan=ui::ImeTextSpan",
+  "ws.mojom.ImeTextSpanThickness=ui::ImeTextSpan::Thickness",
+  "ws.mojom.TextInputMode=ui::TextInputMode",
   "ui.mojom.TextInputType=ui::TextInputType",
 ]

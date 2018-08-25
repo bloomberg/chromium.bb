@@ -21,12 +21,12 @@ class InputMethodChromeOS;
 // NOTE: There may be multiple instances of InputMethodChromeOS. In classic ash
 // there is one instance shared by ash and browser, plus one per remote app
 // (e.g. shortcut viewer).
-class InputMethodBridge : public ui::mojom::InputMethod {
+class InputMethodBridge : public ws::mojom::InputMethod {
  public:
   explicit InputMethodBridge(std::unique_ptr<RemoteTextInputClient> client);
   ~InputMethodBridge() override;
 
-  // ui::mojom::InputMethod:
+  // ws::mojom::InputMethod:
   void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,
