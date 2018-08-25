@@ -2405,10 +2405,12 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
         self._gerrit_server = 'https://%s' % self._gerrit_host
     return self._gerrit_server
 
-  def _GetGerritProject(self, remote_url=None):
+  def _GetGerritProject(self):
     """Returns Gerrit project name based on remote git URL."""
+    remote_url = self.GetRemoteUrl()
     if remote_url is None:
-      remote_url = self.GetRemoteUrl()
+      logging.warn('can\'t detect Gerrit project.')
+      return None
     project = urlparse.urlparse(remote_url).path.strip('/')
     if project.endswith('.git'):
       project = project[:-len('.git')]
@@ -2426,9 +2428,13 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     """Handy method for gerrit_util.ChangeIdentifier for a given CL.
 
     Not to be confused by value of "Change-Id:" footer.
+    If Gerrit project can be determined, this will speed up Gerrit HTTP API RPC.
     """
-    return gerrit_util.ChangeIdentifier(
-        self._GetGerritProject(), self.GetIssue())
+    project = self._GetGerritProject()
+    if project:
+      return gerrit_util.ChangeIdentifier(project, self.GetIssue())
+    # Fall back on still unique, but less efficient change number.
+    return str(self.GetIssue())
 
   @classmethod
   def IssueConfigKey(cls):

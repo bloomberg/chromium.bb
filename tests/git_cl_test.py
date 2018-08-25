@@ -3450,7 +3450,7 @@ class TestGitCl(TestCase):
     self.assertEqual(cl.GetRemoteUrl(), url)
     self.assertEqual(cl.GetRemoteUrl(), url)  # Must be cached.
 
-  def test_gerrit_project_detection(self):
+  def test_gerrit_change_identifier_with_project(self):
     self.calls = [
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.merge'],), 'master'),
@@ -3458,8 +3458,18 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'remote.origin.url'],),
        'https://chromium.googlesource.com/a/my/repo.git/'),
     ]
-    cl = git_cl.Changelist(codereview='gerrit', issue=1)
-    self.assertEqual(cl._GetGerritProject(), 'my/repo')
+    cl = git_cl.Changelist(codereview='gerrit', issue=123456)
+    self.assertEqual(cl._GerritChangeIdentifier(), 'my%2Frepo~123456')
+
+  def test_gerrit_change_identifier_without_project(self):
+    self.calls = [
+      ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
+      ((['git', 'config', 'branch.master.merge'],), 'master'),
+      ((['git', 'config', 'branch.master.remote'],), 'origin'),
+      ((['git', 'config', 'remote.origin.url'],), CERR1),
+    ]
+    cl = git_cl.Changelist(codereview='gerrit', issue=123456)
+    self.assertEqual(cl._GerritChangeIdentifier(), '123456')
 
 
 if __name__ == '__main__':
