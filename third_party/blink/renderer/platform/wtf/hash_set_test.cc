@@ -197,6 +197,8 @@ TEST(HashSetTest, HashSetOwnPtr) {
 
 TEST(HashSetTest, HashSetRefPtr) {
   bool is_deleted = false;
+  DummyRefCounted::ref_invokes_count_ = 0;
+
   scoped_refptr<DummyRefCounted> ptr =
       base::AdoptRef(new DummyRefCounted(is_deleted));
   EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
