@@ -74,18 +74,34 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   border: none;
+  border-radius: 4px;
   width: 40px;
   height: 40px;
   margin: 0;
   padding: 0;
+  outline: none;
+  position: relative;
 }
 
-.buttons button:focus,
-.buttons input:focus {
-  /* Make buttons have the same focus-outline style. */
-  outline: none;
-  /* TODO(yuli): Find a better fix instead of using up box-shadow. */
-  box-shadow: 0 0 2px 3px rgba(37, 129, 223, 0.8);
+.buttons button:focus:after,
+.buttons input:focus:after {
+  position: absolute;
+  border: 2px solid rgba(26, 115, 232, 0.5);
+  border-radius: 4px;
+  top: -3px;
+  left: -3px;
+  bottom: -3px;
+  right: -3px;
+  content: '';
+}
+
+.buttons.circle button:focus:after {
+  border-radius: 50%;
+}
+
+*:focus {
+  /* Make all elements have the same focus-outline style. */
+  outline: 2px solid rgba(26, 115, 232, 0.5);
 }
 
 .buttons input {
@@ -362,19 +378,15 @@ body.capturing #camera-mode {
   position: relative;
   width: 48px;
   height: 48px;
-  overflow: hidden;
+  background-size: cover;
+  background-color: rgba(24, 24, 24, 1);
 }
 
-#gallery-enter img,
 .centered-overlay {
   position: absolute;
   left: 50%;
   top: 50%;
   -webkit-transform: translate(-50%, -50%);
-}
-
-#gallery-enter.no-content {
-  background-color: rgba(24, 24, 24, 1);
 }
 
 .options-group {
