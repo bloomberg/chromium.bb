@@ -15,10 +15,8 @@ namespace blink {
 #if defined(OS_ANDROID)
 // This matches Android's ChildProcessConnection state before OnProcessLaunched.
 constexpr bool kLaunchingProcessIsBackgrounded = true;
-constexpr bool kLaunchingProcessIsBoostedForPendingView = true;
 #else
 constexpr bool kLaunchingProcessIsBackgrounded = false;
-constexpr bool kLaunchingProcessIsBoostedForPendingView = false;
 #endif
 
 }  // namespace blink
