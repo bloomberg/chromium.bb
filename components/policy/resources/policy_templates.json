@@ -10882,6 +10882,26 @@
       If this policy is set to a list of input method identifiers, the given input methods will be available on the sign-in screen. The first given input method will be preselected. While a user pod is focused on the sign-in screen, the user's last used input method will be available in addition to the input methods given by this policy. If this policy is not set, the input methods on the sign-in screen will be derived from the locale in which the sign-in screen is displayed. Values which are not valid input method identifiers will be ignored.''',
     },
     {
+      'name': 'SmsMessagesAllowed',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:70-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'default_for_enterprise_users': False,
+      'id': 469,
+      'caption': '''Allow SMS Messages to be synced from phone to Chromebook.''',
+      'tags': ['local-data-access', 'google-sharing'],
+      'desc': '''If this setting is enabled, users will be allowed to set up their devices to sync SMS messages between their phones and Chromebooks. Note that if this policy is allowed, users must explicitly opt into this feature by completing a setup flow. Once the setup flow is complete, users will be able to send and receive SMS messages on their Chromebooks.
+
+      If this setting is disabled, users will not be allowed to set up SMS syncing.
+
+      If this policy is left not set, the default is not allowed for managed users and allowed for non-managed users.''',
+    },
+    {
       'name': 'InstantTetheringAllowed',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -13000,5 +13020,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 468
+  'highest_id_currently_used': 469
 }

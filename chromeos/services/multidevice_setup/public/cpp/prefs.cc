@@ -16,6 +16,7 @@ namespace multidevice_setup {
 
 // "Allowed by user policy" preferences:
 const char kInstantTetheringAllowedPrefName[] = "tether.allowed";
+const char kMessagesAllowedPrefName[] = "multidevice.sms_connect_allowed";
 const char kSmartLockAllowedPrefName[] = "easy_unlock.allowed";
 
 // "Enabled by user" preferences:
@@ -27,7 +28,7 @@ const char kSmartLockEnabledPrefName[] = "easy_unlock.enabled";
 
 void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kInstantTetheringAllowedPrefName, true);
-  // TODO(khorimoto): Register "messages allowed" preference.
+  registry->RegisterBooleanPref(kMessagesAllowedPrefName, true);
   registry->RegisterBooleanPref(kSmartLockAllowedPrefName, true);
 
   registry->RegisterBooleanPref(kBetterTogetherSuiteEnabledPrefName, true);
@@ -37,8 +38,8 @@ void RegisterFeaturePrefs(PrefRegistrySimple* registry) {
 }
 
 bool AreAnyMultiDeviceFeaturesAllowed(PrefService* pref_service) {
-  // TODO(khorimoto): Read from "messages allowed" preference when available.
   return pref_service->GetBoolean(kInstantTetheringAllowedPrefName) ||
+         pref_service->GetBoolean(kMessagesAllowedPrefName) ||
          pref_service->GetBoolean(kSmartLockAllowedPrefName);
 }
 

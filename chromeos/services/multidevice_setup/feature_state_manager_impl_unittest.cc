@@ -278,6 +278,12 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, Messages) {
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
   VerifyFeatureStateChange(3u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kDisabledByUser);
+
+  test_pref_service()->SetBoolean(kMessagesAllowedPrefName, false);
+  EXPECT_EQ(mojom::FeatureState::kDisabledByPolicy,
+            manager()->GetFeatureStates()[mojom::Feature::kMessages]);
+  VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kMessages,
+                           mojom::FeatureState::kDisabledByPolicy);
 }
 
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, SmartLock) {

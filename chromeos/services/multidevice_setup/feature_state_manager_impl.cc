@@ -35,6 +35,7 @@ base::flat_map<mojom::Feature, std::string>
 GenerateFeatureToAllowedPrefNameMap() {
   return base::flat_map<mojom::Feature, std::string>{
       {mojom::Feature::kInstantTethering, kInstantTetheringAllowedPrefName},
+      {mojom::Feature::kMessages, kMessagesAllowedPrefName},
       {mojom::Feature::kSmartLock, kSmartLockAllowedPrefName}};
 }
 
