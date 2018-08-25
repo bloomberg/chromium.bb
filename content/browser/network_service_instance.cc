@@ -46,16 +46,24 @@ void BindNetworkChangeManagerRequest(
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  service_manager::Connector* connector =
+      base::FeatureList::IsEnabled(network::features::kNetworkService)
+          ? ServiceManagerConnection::GetForProcess()->GetConnector()
+          : nullptr;
+  return GetNetworkServiceFromConnector(connector);
+}
 
+CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
+    service_manager::Connector* connector) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
   if (!g_network_service_ptr->is_bound() ||
       g_network_service_ptr->encountered_error()) {
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      ServiceManagerConnection::GetForProcess()->GetConnector()->BindInterface(
-          mojom::kNetworkServiceName, g_network_service_ptr);
+      connector->BindInterface(mojom::kNetworkServiceName,
+                               g_network_service_ptr);
     } else {
       DCHECK(!g_network_service_ptr->is_bound());
       BrowserThread::PostTask(
