@@ -1575,17 +1575,21 @@ gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers(
 
   child_window_.ClearInvalidContents();
 
+  bool succeeded = true;
+
   if (root_surface_->SwapBuffers(PresentationCallback()) ==
       gfx::SwapResult::SWAP_FAILED)
-    scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
+    succeeded = false;
 
   if (!layer_tree_->CommitAndClearPendingOverlays())
-    scoped_swap_buffers.set_result(gfx::SwapResult::SWAP_FAILED);
+    succeeded = false;
 
-  if (scoped_swap_buffers.result() == gfx::SwapResult::SWAP_FAILED)
-    UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapBuffersFailed", true);
+  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.SwapBuffersResult", succeeded);
 
-  return scoped_swap_buffers.result();
+  auto swap_result =
+      succeeded ? gfx::SwapResult::SWAP_ACK : gfx::SwapResult::SWAP_FAILED;
+  scoped_swap_buffers.set_result(swap_result);
+  return swap_result;
 }
 
 gfx::SwapResult DirectCompositionSurfaceWin::PostSubBuffer(
