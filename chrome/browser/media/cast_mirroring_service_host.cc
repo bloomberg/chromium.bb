@@ -124,6 +124,9 @@ CastMirroringServiceHost::CastMirroringServiceHost(
     content::DesktopMediaID source_media_id)
     : source_media_id_(source_media_id) {
   DCHECK(source_media_id_.type != content::DesktopMediaID::TYPE_NONE);
+  // Observe the target WebContents for Tab/OffscreenTab mirroring.
+  if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS)
+    Observe(GetContents(source_media_id_.web_contents_id));
 }
 
 CastMirroringServiceHost::~CastMirroringServiceHost() {
@@ -165,10 +168,7 @@ void CastMirroringServiceHost::CreateAudioStream(
     uint32_t total_segments) {
   content::WebContents* source_web_contents = nullptr;
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
-    source_web_contents = content::WebContents::FromRenderFrameHost(
-        content::RenderFrameHost::FromID(
-            source_media_id_.web_contents_id.render_process_id,
-            source_media_id_.web_contents_id.main_render_frame_id));
+    source_web_contents = web_contents();
     if (!source_web_contents) {
       VLOG(1) << "Failed to create audio stream: Invalid source.";
       return;
@@ -199,13 +199,17 @@ void CastMirroringServiceHost::ConnectToRemotingSource(
     media::mojom::RemoterPtr remoter,
     media::mojom::RemotingSourceRequest request) {
   if (source_media_id_.type == content::DesktopMediaID::TYPE_WEB_CONTENTS) {
-    content::WebContents* source_contents =
-        GetContents(source_media_id_.web_contents_id);
+    content::WebContents* const source_contents = web_contents();
     if (source_contents) {
       CastRemotingConnector::Get(source_contents)
           ->ConnectWithMediaRemoter(std::move(remoter), std::move(request));
     }
   }
+}
+
+void CastMirroringServiceHost::WebContentsDestroyed() {
+  // TODO(xjz): Stop the mirroring if connected to the MirroringService.
+  // Implementation will be added in a later CL.
 }
 
 }  // namespace mirroring
