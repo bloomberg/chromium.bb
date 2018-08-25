@@ -15,7 +15,6 @@
 #include "base/values.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
-#include "third_party/blink/public/common/manifest/manifest_share_target_util.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -341,20 +340,6 @@ std::vector<blink::Manifest::ImageResource> ManifestParser::ParseIcons(
   return icons;
 }
 
-GURL ManifestParser::ParseShareTargetURLTemplate(
-    const base::DictionaryValue& share_target) {
-  GURL url_template = ParseURL(share_target, "url_template", manifest_url_,
-                               ParseURLOriginRestrictions::kSameOriginOnly);
-  if (!blink::ValidateWebShareUrlTemplate(url_template)) {
-    AddErrorInfo(
-        "property 'url_template' ignored. Placeholders have incorrect "
-        "syntax.");
-    return GURL();
-  }
-
-  return url_template;
-}
-
 blink::Manifest::ShareTargetParams ManifestParser::ParseShareTargetParams(
     const base::DictionaryValue& share_target_params) {
   blink::Manifest::ShareTargetParams params;
@@ -374,8 +359,6 @@ base::Optional<blink::Manifest::ShareTarget> ManifestParser::ParseShareTarget(
   blink::Manifest::ShareTarget share_target;
   const base::DictionaryValue* share_target_dict = nullptr;
   dictionary.GetDictionary("share_target", &share_target_dict);
-  share_target.url_template = ParseShareTargetURLTemplate(*share_target_dict);
-
   share_target.action = ParseURL(*share_target_dict, "action", manifest_url_,
                                  ParseURLOriginRestrictions::kSameOriginOnly);
   if (!share_target.action.is_valid()) {

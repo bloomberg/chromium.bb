@@ -189,10 +189,6 @@ template <>
 struct BLINK_COMMON_EXPORT
     StructTraits<blink::mojom::ManifestShareTargetDataView,
                  ::blink::Manifest::ShareTarget> {
-  static const GURL& url_template(
-      const ::blink::Manifest::ShareTarget& share_target) {
-    return share_target.url_template;
-  }
   static const GURL& action(
       const ::blink::Manifest::ShareTarget& share_target) {
     return share_target.action;

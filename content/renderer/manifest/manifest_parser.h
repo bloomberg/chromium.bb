@@ -156,11 +156,6 @@ class CONTENT_EXPORT ManifestParser {
   std::vector<blink::Manifest::ImageResource> ParseIcons(
       const base::DictionaryValue& dictionary);
 
-  // Parses the 'url_template' field of a Share Target, as defined in:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
-  // Returns the parsed GURL if any, or an empty GURL if the parsing failed.
-  GURL ParseShareTargetURLTemplate(const base::DictionaryValue& share_target);
-
   // Parses the 'params' field of a Share Target, as defined in:
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // Returns a parsed Manifest::ShareTargetParams, not all fields need to be

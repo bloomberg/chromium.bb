@@ -1038,9 +1038,8 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
 
   // Contains share_target field but no params key.
   {
-    blink::Manifest manifest = ParseManifest(
-        "{ \"share_target\": { \"url_template\": \"\", "
-        "\"action\": \"\" } }");
+    blink::Manifest manifest =
+        ParseManifest("{ \"share_target\": { \"action\": \"\" } }");
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
@@ -1052,9 +1051,8 @@ TEST_F(ManifestParserTest, ShareTargetParseRules) {
 
   // Contains share_target field but no action key.
   {
-    blink::Manifest manifest = ParseManifest(
-        "{ \"share_target\": { \"url_template\": \"\", "
-        "\"params\": {} } }");
+    blink::Manifest manifest =
+        ParseManifest("{ \"share_target\": { \"params\": {} } }");
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
     EXPECT_EQ(1u, GetErrorCount());
@@ -1078,15 +1076,13 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   GURL manifest_url = GURL("https://foo.com/manifest.json");
   GURL document_url = GURL("https://foo.com/index.html");
 
-  // Contains share_target, but url_template and action are empty.
+  // Contains share_target, but action is empty.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"\", "
-        "\"action\": \"\", \"params\": {} } }",
+        "{ \"share_target\": { \"action\": \"\", \"params\": {} } }",
         manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
     EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), manifest_url.spec());
     EXPECT_TRUE(manifest.share_target->params.text.is_null());
     EXPECT_TRUE(manifest.share_target->params.title.is_null());
     EXPECT_TRUE(manifest.share_target->params.url.is_null());
@@ -1094,31 +1090,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ(0u, GetErrorCount());
   }
 
-  // TODO(ckitagawa): Remove url_template once it is replaced by action
-  // everywhere.
   // Parse but throw an error if url_template property isn't a string.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": {}, "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    EXPECT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), "");
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'url_template' ignored, type string expected.",
-              errors()[0]);
-  }
-
-  // Parse but throw an error if url_template property isn't a string.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": 42, "
-        "\"action\": \"\", \"params\": {} } }",
+        "{ \"share_target\": { \"action\": \"\", \"params\": {} } }",
         manifest_url, document_url);
     EXPECT_TRUE(manifest.share_target.has_value());
     EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
@@ -1126,16 +1101,13 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_TRUE(manifest.share_target->params.title.is_null());
     EXPECT_TRUE(manifest.share_target->params.url.is_null());
     EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'url_template' ignored, type string expected.",
-              errors()[0]);
+    EXPECT_EQ(0u, GetErrorCount());
   }
 
   // Don't parse if action property isn't a string.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"\", "
-        "\"action\": {}, \"params\": {} } }",
+        "{ \"share_target\": { \"action\": {}, \"params\": {} } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
@@ -1148,8 +1120,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if action property isn't a string.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"\", "
-        "\"action\": 42, \"params\": {} } }",
+        "{ \"share_target\": { \"action\": 42, \"params\": {} } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
@@ -1162,8 +1133,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if params property isn't a dict.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"\", "
-        "\"action\": \"\", \"params\": \"\" } }",
+        "{ \"share_target\": { \"action\": \"\", \"params\": \"\" } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
@@ -1177,8 +1147,7 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Don't parse if params property isn't a dict.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"\", "
-        "\"action\": \"\", \"params\": 42 } }",
+        "{ \"share_target\": { \"action\": \"\", \"params\": 42 } }",
         manifest_url, document_url);
     EXPECT_FALSE(manifest.share_target.has_value());
     EXPECT_TRUE(manifest.IsEmpty());
@@ -1196,7 +1165,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         " } }",
         manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), "");
     EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
     EXPECT_TRUE(manifest.share_target->params.text.is_null());
     EXPECT_TRUE(manifest.share_target->params.title.is_null());
@@ -1208,11 +1176,10 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
   // Ignore params keys with invalid types.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"\", \"action\": \"\", "
+        "{ \"share_target\": { \"action\": \"\", "
         "\"params\": { \"title\": 42 } } }",
         manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), manifest_url.spec());
     EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
     EXPECT_TRUE(manifest.share_target->params.text.is_null());
     EXPECT_TRUE(manifest.share_target->params.title.is_null());
@@ -1228,7 +1195,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "\"text\": \"hi\" } } }",
         manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), "");
     EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
     EXPECT_TRUE(
         base::EqualsASCII(manifest.share_target->params.text.string(), "hi"));
@@ -1236,21 +1202,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_TRUE(manifest.share_target->params.url.is_null());
     EXPECT_FALSE(manifest.IsEmpty());
     EXPECT_EQ("property 'url' ignored, type string expected.", errors()[0]);
-  }
-
-  // Don't parse url_template property if it isn't a valid URL.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"https://foo.com:a\", "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), "");
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ("property 'url_template' ignored, URL is invalid.", errors()[0]);
   }
 
   // Don't parse if action property isn't a valid URL.
@@ -1265,26 +1216,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
     EXPECT_EQ("property 'action' ignored, URL is invalid.", errors()[0]);
     EXPECT_EQ("property 'share_target' ignored. Property 'action' is invalid.",
               errors()[1]);
-  }
-
-  // Fail parsing if url_template is at a different origin than the Web
-  // Manifest.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"https://foo2.com/\", "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    EXPECT_TRUE(manifest.share_target.has_value());
-    EXPECT_FALSE(manifest.share_target->url_template.is_valid());
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "property 'url_template' ignored, should be same origin as document.",
-        errors()[0]);
   }
 
   // Fail parsing if action is at a different origin than the Web
@@ -1305,108 +1236,12 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         errors()[1]);
   }
 
-  // Smoke test: Contains share_target and url_template, and url_template is
-  // valid template.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"share/?title={title}\", "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
-              "https://foo.com/share/?title={title}");
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Smoke test: Contains share_target and url_template, and url_template is
-  // invalid template.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": {\"url_template\": \"share/?title={title\", "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target.value().url_template.spec(), "");
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(1u, GetErrorCount());
-    EXPECT_EQ(
-        "property 'url_template' ignored. Placeholders have incorrect "
-        "syntax.",
-        errors()[0]);
-  }
-
-  // Smoke test: Contains share_target and url_template, and url_template
-  // contains unknown placeholder.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": {\"url_template\": \"share/?title={abcxyz}\", "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
-              "https://foo.com/share/?title={abcxyz}");
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Smoke test: Contains share_target and url_template, and url_template has
-  // '{' and '}' in path, query and fragment. Only '{' and '}' in path should be
-  // escaped.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": {\"url_template\": "
-        "\"share/a{text}/?title={title}#{frag}\", "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
-              "https://foo.com/share/a%7Btext%7D/?title={title}#{frag}");
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
-  // Smoke test: Contains share_target and url_template. url_template is
-  // valid template and is absolute.
-  {
-    blink::Manifest manifest = ParseManifestWithURLs(
-        "{ \"share_target\": { \"url_template\": \"https://foo.com/#{text}\", "
-        "\"action\": \"\", \"params\": {} } }",
-        manifest_url, document_url);
-    ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target.value().url_template.spec(),
-              "https://foo.com/#{text}");
-    EXPECT_EQ(manifest.share_target->action.spec(), manifest_url.spec());
-    EXPECT_TRUE(manifest.share_target->params.text.is_null());
-    EXPECT_TRUE(manifest.share_target->params.title.is_null());
-    EXPECT_TRUE(manifest.share_target->params.url.is_null());
-    EXPECT_FALSE(manifest.IsEmpty());
-    EXPECT_EQ(0u, GetErrorCount());
-  }
-
   // Smoke test: Contains share_target and action, and action is valid.
   {
     blink::Manifest manifest = ParseManifestWithURLs(
         "{ \"share_target\": {\"action\": \"share/\", \"params\": {} } }",
         manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), "");
     EXPECT_EQ(manifest.share_target->action.spec(), "https://foo.com/share/");
     EXPECT_TRUE(manifest.share_target->params.text.is_null());
     EXPECT_TRUE(manifest.share_target->params.title.is_null());
@@ -1423,7 +1258,27 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "\"foo\", \"title\": \"bar\", \"url\": \"baz\" } } }",
         manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), "");
+    EXPECT_EQ(manifest.share_target->action.spec(), "https://foo.com/share/");
+    EXPECT_TRUE(
+        base::EqualsASCII(manifest.share_target->params.text.string(), "foo"));
+    EXPECT_TRUE(
+        base::EqualsASCII(manifest.share_target->params.title.string(), "bar"));
+    EXPECT_TRUE(
+        base::EqualsASCII(manifest.share_target->params.url.string(), "baz"));
+    EXPECT_FALSE(manifest.IsEmpty());
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Backwards compatibility test: Contains share_target, url_template and
+  // action, and action is valid, params is populated.
+  {
+    blink::Manifest manifest = ParseManifestWithURLs(
+        "{ \"share_target\": { \"url_template\": "
+        "\"foo.com/share?title={title}\", "
+        "\"action\": \"share/\", \"params\": { \"text\": "
+        "\"foo\", \"title\": \"bar\", \"url\": \"baz\" } } }",
+        manifest_url, document_url);
+    ASSERT_TRUE(manifest.share_target.has_value());
     EXPECT_EQ(manifest.share_target->action.spec(), "https://foo.com/share/");
     EXPECT_TRUE(
         base::EqualsASCII(manifest.share_target->params.text.string(), "foo"));
@@ -1444,7 +1299,6 @@ TEST_F(ManifestParserTest, ShareTargetUrlTemplateParseRules) {
         "}",
         manifest_url, document_url);
     ASSERT_TRUE(manifest.share_target.has_value());
-    EXPECT_EQ(manifest.share_target->url_template.spec(), "");
     EXPECT_EQ(manifest.share_target.value().action.spec(), "https://foo.com/#");
     EXPECT_TRUE(manifest.share_target->params.text.is_null());
     EXPECT_TRUE(base::EqualsASCII(manifest.share_target->params.title.string(),
