@@ -88,26 +88,7 @@ camera.views.camera.GalleryButton.prototype.updateButton_ = function() {
     }
     this.button_.hidden = !this.lastPicture_;
     var url = this.lastPicture_ && this.lastPicture_.thumbnailURL;
-    if (url) {
-      var img = document.createElement('img');
-      if (this.button_.firstElementChild) {
-        this.button_.replaceChild(img, this.button_.firstElementChild);
-      } else {
-        this.button_.appendChild(img);
-      }
-      img.tabIndex = -1;
-      img.onload = () => {
-        camera.util.updateElementSize(this.button_, this.button_.clientWidth,
-            this.button_.clientHeight, true);
-      };
-      img.src = url;
-      this.button_.classList.remove('no-content');
-    } else {
-      if (this.button_.firstElementChild) {
-        this.button_.removeChild(this.button_.firstElementChild);
-      }
-      this.button_.classList.add('no-content');
-    }
+    this.button_.style.backgroundImage = url ? ('url(' + url + ')') : 'none';
   });
 };
 
