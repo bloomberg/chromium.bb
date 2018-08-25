@@ -107,11 +107,17 @@ class MockImageDecoder : public ImageDecoder {
     return ImageDecoder::FrameBytesAtIndex(index);
   }
 
-  void SetMemoryAllocator(SkBitmap::Allocator*) override {
+  void SetMemoryAllocator(SkBitmap::Allocator* allocator) override {
+    if (frame_buffer_cache_.IsEmpty()) {
+      // Ensure that InitializeNewFrame is called, after parsing if
+      // necessary.
+      if (!FrameCount())
+        return;
+    }
+
+    frame_buffer_cache_[0].SetMemoryAllocator(allocator);
     client_->MemoryAllocatorSet();
   }
-
-  bool IsForTesting() const override { return true; }
 
  private:
   void DecodeSize() override {}
@@ -120,6 +126,8 @@ class MockImageDecoder : public ImageDecoder {
 
   void Decode(size_t index) override {
     client_->DecodeRequested();
+    frame_buffer_cache_[index].ClearPixelData();
+    InitializeNewFrame(index);
     frame_buffer_cache_[index].SetStatus(client_->GetStatus(index));
   }
 

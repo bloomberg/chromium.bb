@@ -165,11 +165,8 @@ bool ImageDecoderWrapper::Decode(ImageDecoderFactory* factory,
 
 // If we decoded into external memory, the bitmap should be backed by the
 // pixels passed to the allocator.
-#if DCHECK_IS_ON()
-  if (!decoder->IsForTesting() && decode_to_external_memory) {
-    DCHECK_EQ(scaled_size_bitmap.getPixels(), pixels_);
-  }
-#endif
+  DCHECK(!decode_to_external_memory ||
+         scaled_size_bitmap.getPixels() == pixels_);
 
   *has_alpha = !scaled_size_bitmap.isOpaque();
   if (!decode_to_external_memory) {
