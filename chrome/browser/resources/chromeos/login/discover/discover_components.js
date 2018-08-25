@@ -6,8 +6,7 @@
 // <include src="discover_module_behavior.js">
 // <include src="discover_card.js">
 
-// --- Modules.
-// <include src="discover_module_behavior.js">
+// --- Modules
 // TODO: add modules here.
 
 // --- These depend on modules.

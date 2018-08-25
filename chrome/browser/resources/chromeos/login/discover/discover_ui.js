@@ -48,7 +48,7 @@
      */
     onBeforeShow: function() {
       OobeDialogHostBehavior.onBeforeShow.call(this);
-      this.$.discoverWelcome.onBeforeShow();
+      this.propagateFullScreenMode('#discoverWelcome');
       this.propagateFullScreenMode('.module');
 
       this.$.discoverWelcome.show();
@@ -92,7 +92,7 @@
      * @private
      */
     onCardClick_: function(event) {
-      let module = event.target.module;
+      let module = event.target.getAttribute('module');
       this.showModule_(module);
     },
 
