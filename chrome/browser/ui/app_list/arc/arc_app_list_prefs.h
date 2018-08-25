@@ -260,6 +260,8 @@ class ArcAppListPrefs : public KeyedService,
   bool IsOem(const std::string& app_id) const;
   // Returns true if app is a shortcut
   bool IsShortcut(const std::string& app_id) const;
+  // Returns true if package is controlled by policy.
+  bool IsControlledByPolicy(const std::string& package_name) const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -466,12 +468,6 @@ class ArcAppListPrefs : public KeyedService,
 
   // Marks package icons as invalidated and request icons updated.
   void InvalidatePackageIcons(const std::string& package_name);
-
-  // Returns true if install time has to be set to current time for the newly
-  // installed app from the |package_name|. App launcher uses install time to
-  // rank apps. Do not set install time for apps, installed by default or by
-  // policy.
-  bool NeedSetInstallTime(const std::string& package_name) const;
 
   // Extracts app info from the prefs without any ARC availability check.
   // Returns null if app is not registered.
