@@ -155,16 +155,16 @@ static void FillIQMatrix(const JpegQuantizationTable* q_table,
                          VAIQMatrixBufferJPEGBaseline* iq_matrix) {
   memset(iq_matrix, 0, sizeof(*iq_matrix));
   static_assert(kJpegMaxQuantizationTableNum ==
-                    arraysize(iq_matrix->load_quantiser_table),
+                    base::size(decltype(iq_matrix->load_quantiser_table){}),
                 "max number of quantization table mismatched");
+  static_assert(
+      sizeof(iq_matrix->quantiser_table[0]) == sizeof(q_table[0].value),
+      "number of quantization entries mismatched");
   for (size_t i = 0; i < kJpegMaxQuantizationTableNum; i++) {
     if (!q_table[i].valid)
       continue;
     iq_matrix->load_quantiser_table[i] = 1;
-    static_assert(
-        arraysize(iq_matrix->quantiser_table[i]) == arraysize(q_table[i].value),
-        "number of quantization entries mismatched");
-    for (size_t j = 0; j < arraysize(q_table[i].value); j++)
+    for (size_t j = 0; j < base::size(q_table[i].value); j++)
       iq_matrix->quantiser_table[i][j] = q_table[i].value[j];
   }
 }
@@ -187,7 +187,7 @@ static void FillHuffmanTable(const JpegHuffmanTable* dc_table,
   }
 
   static_assert(kJpegMaxHuffmanTableNumBaseline ==
-                    arraysize(huffman_table->load_huffman_table),
+                    base::size(decltype(huffman_table->load_huffman_table){}),
                 "max number of huffman table mismatched");
   static_assert(sizeof(huffman_table->huffman_table[0].num_dc_codes) ==
                     sizeof(dc_table[0].code_length),

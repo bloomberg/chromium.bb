@@ -39,7 +39,7 @@ class VaapiJpegDecodeAcceleratorTest : public ::testing::Test {
   VaapiJpegDecodeAcceleratorTest() {}
 
   void SetUp() override {
-    base::Closure report_error_cb = base::Bind(&LogOnError);
+    base::RepeatingClosure report_error_cb = base::BindRepeating(&LogOnError);
     wrapper_ = VaapiWrapper::Create(VaapiWrapper::kDecode,
                                     VAProfileJPEGBaseline, report_error_cb);
     ASSERT_TRUE(wrapper_);
