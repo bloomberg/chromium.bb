@@ -55,6 +55,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   ~NGBlockLayoutAlgorithm() override;
 
+  void SetBoxType(NGPhysicalFragment::NGBoxType type);
+
   base::Optional<MinMaxSize> ComputeMinMaxSize(
       const MinMaxSizeInput&) const override;
   scoped_refptr<NGLayoutResult> Layout() override;

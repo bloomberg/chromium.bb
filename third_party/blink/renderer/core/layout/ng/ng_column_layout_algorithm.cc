@@ -113,6 +113,7 @@ scoped_refptr<NGLayoutResult> NGColumnLayoutAlgorithm::Layout() {
 
       NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.get(),
                                              break_token.get());
+      child_algorithm.SetBoxType(NGPhysicalFragment::kColumnBox);
       scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
       scoped_refptr<NGPhysicalBoxFragment> column(
           ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));

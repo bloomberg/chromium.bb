@@ -234,10 +234,8 @@ void NGFragmentBuilder::AddOutOfFlowLegacyCandidate(
 }
 
 NGPhysicalFragment::NGBoxType NGFragmentBuilder::BoxType() const {
-  if (box_type_ != NGPhysicalFragment::NGBoxType::kNormalBox) {
-    DCHECK_EQ(box_type_, BoxTypeFromLayoutObject(layout_object_));
+  if (box_type_ != NGPhysicalFragment::NGBoxType::kNormalBox)
     return box_type_;
-  }
 
   // When implicit, compute from LayoutObject.
   return BoxTypeFromLayoutObject(layout_object_);

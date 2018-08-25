@@ -165,6 +165,10 @@ NGBlockLayoutAlgorithm::NGBlockLayoutAlgorithm(NGBlockNode node,
 // header.
 NGBlockLayoutAlgorithm::~NGBlockLayoutAlgorithm() = default;
 
+void NGBlockLayoutAlgorithm::SetBoxType(NGPhysicalFragment::NGBoxType type) {
+  container_builder_.SetBoxType(type);
+}
+
 base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
     const MinMaxSizeInput& input) const {
   MinMaxSize sizes;
