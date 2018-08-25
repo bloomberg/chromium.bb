@@ -129,6 +129,18 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /**
+     * True if Chrome OS Account Manager is enabled.
+     * @private
+     */
+    isAccountManagerEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isAccountManagerEnabled');
+      },
+      readOnly: true,
+    },
     // </if>
 
     /** @private {!Map<string, string>} */
@@ -174,6 +186,11 @@ Polymer({
           map.set(
               settings.routes.ACCOUNTS.path,
               '#manage-other-people-subpage-trigger .subpage-arrow button');
+        }
+        if (settings.routes.ACCOUNT_MANAGER) {
+          map.set(
+              settings.routes.ACCOUNT_MANAGER.path,
+              '#account-manager-subpage-trigger .subpage-arrow button');
         }
         // </if>
         return map;
@@ -462,6 +479,14 @@ Polymer({
     // it, which takes focus from the dialog.
     e.preventDefault();
     settings.navigateTo(settings.routes.LOCK_SCREEN);
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onAccountManagerTap_: function(e) {
+    settings.navigateTo(settings.routes.ACCOUNT_MANAGER);
   },
   // </if>
 

@@ -324,6 +324,16 @@
                 aria-describedby="lockScreenSecondary"></button>
           </paper-icon-button-light>
         </div>
+
+        <template is="dom-if" if="[[isAccountManagerEnabled_]]">
+          <div id="account-manager-subpage-trigger" class="settings-box"
+              actionable on-click="onAccountManagerTap_">
+            <div class="start">$i18n{accountManagerSubMenuLabel}</div>
+            <paper-icon-button-light class="subpage-arrow">
+              <button aria-label="$i18n{accountManagerSubMenuLabel}"></button>
+            </paper-icon-button-light>
+          </div>
+        </template>
 </if>
 
         <div id="manage-other-people-subpage-trigger"
