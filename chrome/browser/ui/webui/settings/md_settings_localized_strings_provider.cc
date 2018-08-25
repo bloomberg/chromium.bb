@@ -1491,8 +1491,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"peoplePageTitle", IDS_SETTINGS_PEOPLE},
     {"manageOtherPeople", IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE},
 #if defined(OS_CHROMEOS)
-    {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
     {"accountManagerDescription", IDS_SETTINGS_ACCOUNT_MANAGER_DESCRIPTION},
+    {"accountManagerPageTitle", IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE},
+    {"accountManagerSubMenuLabel", IDS_SETTINGS_ACCOUNT_MANAGER_SUBMENU_LABEL},
     {"accountListHeader", IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER},
     {"addAccountLabel", IDS_SETTINGS_ACCOUNT_MANAGER_ADD_ACCOUNT_LABEL},
     {"configureFingerprintTitle", IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_TITLE},
@@ -1813,6 +1814,13 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
   html_source->AddBoolean(
       "driveSuggestAvailable",
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
+
+#if defined(OS_CHROMEOS)
+  // Used to control the display of Chrome OS Account Manager submenu in the
+  // People section.
+  html_source->AddBoolean("isAccountManagerEnabled",
+                          chromeos::switches::IsAccountManagerEnabled());
+#endif
 }
 
 void AddPrintingStrings(content::WebUIDataSource* html_source) {
