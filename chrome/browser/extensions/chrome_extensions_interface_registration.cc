@@ -15,7 +15,28 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/services/ime/public/mojom/constants.mojom.h"
+#include "chromeos/services/ime/public/mojom/input_engine.mojom.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
+#endif
+
 namespace extensions {
+namespace {
+#if defined(OS_CHROMEOS)
+// Forwards service requests to Service Manager since the renderer cannot launch
+// out-of-process services on its own.
+template <typename Interface>
+void ForwardRequest(const char* service_name,
+                    mojo::InterfaceRequest<Interface> request,
+                    content::RenderFrameHost* source) {
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindInterface(service_name, std::move(request));
+}
+#endif
+}  // namespace
 
 void RegisterChromeInterfacesForExtension(
     service_manager::BinderRegistryWithArgs<content::RenderFrameHost*>*
@@ -32,6 +53,16 @@ void RegisterChromeInterfacesForExtension(
         base::Bind(&media_router::MediaRouterDesktop::BindToRequest,
                    base::RetainedRef(extension), context));
   }
+
+#if defined(OS_CHROMEOS)
+  // TODO(https://crbug.com/837156): Add an IME service experiment.
+  if (extension->permissions_data()->HasAPIPermission(
+          APIPermission::kInputMethodPrivate)) {
+    registry->AddInterface(base::BindRepeating(
+        &ForwardRequest<chromeos::ime::mojom::InputEngineManager>,
+        chromeos::ime::mojom::kServiceName));
+  }
+#endif
 }
 
 }  // namespace extensions

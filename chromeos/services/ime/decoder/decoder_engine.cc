@@ -34,6 +34,7 @@ DecoderEngine::DecoderEngine(
   library_.Reset(base::LoadNativeLibrary(lib_path, &load_error));
 
   if (!library_.is_valid()) {
+    LOG(ERROR) << "Failed to load a decoder shared library.";
     return;
   }
 

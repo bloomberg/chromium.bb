@@ -28,6 +28,9 @@ void ImeService::OnStart() {
   binder_registry_.AddInterface<mojom::InputEngineManager>(base::BindRepeating(
       &ImeService::BindInputEngineManagerRequest, base::Unretained(this)));
 
+  engine_manager_bindings_.set_connection_error_handler(base::BindRepeating(
+      &ImeService::OnConnectionLost, base::Unretained(this)));
+
 #if BUILDFLAG(ENABLE_CROS_IME_DECODER)
   input_engine_ = std::make_unique<DecoderEngine>(
       context()->connector(), base::SequencedTaskRunnerHandle::Get());
@@ -58,7 +61,13 @@ void ImeService::ConnectToImeEngine(
 void ImeService::BindInputEngineManagerRequest(
     mojom::InputEngineManagerRequest request) {
   engine_manager_bindings_.AddBinding(this, std::move(request));
-  // TODO(https://crbug.com/837156): Registry connection error handler.
+  // TODO(https://crbug.com/837156): Reset the cleanup timer.
+}
+
+void ImeService::OnConnectionLost() {
+  if (engine_manager_bindings_.empty()) {
+    // TODO(https://crbug.com/837156): Set a timer to start a cleanup.
+  }
 }
 
 }  // namespace ime

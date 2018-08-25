@@ -69,6 +69,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/utility/mash_service_factory.h"
+#include "chromeos/services/ime/ime_service.h"
+#include "chromeos/services/ime/public/mojom/constants.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -312,6 +314,13 @@ void ChromeContentUtilityClient::RegisterServices(
 #if defined(OS_CHROMEOS)
   // TODO(jamescook): Figure out why we have to do this when not using mash.
   mash_service_factory_->RegisterOutOfProcessServices(services);
+
+  {
+    service_manager::EmbeddedServiceInfo service_info;
+    service_info.factory =
+        base::BindRepeating(&chromeos::ime::CreateImeService);
+    services->emplace(chromeos::ime::mojom::kServiceName, service_info);
+  }
 #endif
 
 #if BUILDFLAG(ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS)

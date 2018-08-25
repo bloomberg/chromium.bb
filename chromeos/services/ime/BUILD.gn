@@ -7,8 +7,7 @@ import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
-assert(is_chromeos)
-assert(enable_cros_ime_service)
+assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 source_set("lib") {
   sources = [
@@ -44,6 +43,7 @@ source_set("unit_tests") {
   deps = [
     ":lib",
     "//base",
+    "//chromeos/services/ime/public/mojom",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",

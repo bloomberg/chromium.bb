@@ -39,6 +39,8 @@ class ImeService : public service_manager::Service,
   // Binds the mojom::InputEngineManager interface to this object.
   void BindInputEngineManagerRequest(mojom::InputEngineManagerRequest request);
 
+  void OnConnectionLost();
+
   // For the duration of this service lifetime, there should be only one
   // input engine instance.
   std::unique_ptr<InputEngine> input_engine_;

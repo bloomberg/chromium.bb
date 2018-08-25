@@ -3194,6 +3194,9 @@ are declared in tools/grit/grit_rule.gni.
         <message name="IDS_UTILITY_PROCESS_CUPS_IPP_VALIDATOR_SERVICE_NAME" desc="The name of the utility process used for validating IPP requests out-of-process.">
           CUPS IPP Validator
         </message>
+        <message name="IDS_UTILITY_PROCESS_IME_SERVICE_NAME" desc="The name of the utility process providing the input methods.">
+          Chrome OS Input Method
+        </message>
       </if>
       <message name="IDS_UTILITY_PROCESS_FILE_UTILITY_NAME" desc="The name of the utility process used for various Chrome specific file operations.">
           Chrome File Utilities

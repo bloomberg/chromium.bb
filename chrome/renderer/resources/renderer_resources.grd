@@ -76,6 +76,10 @@
           <include name="IDR_PLATFORM_KEYS_SUBTLE_CRYPTO_JS" file="extensions\platform_keys\subtle_crypto.js" type="BINDATA" />
           <include name="IDR_PLATFORM_KEYS_UTILS_JS" file="extensions\platform_keys\utils.js" type="BINDATA" />
           <include name="IDR_TERMINAL_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\terminal_private_custom_bindings.js" type="BINDATA" />
+
+          <!-- ChromeOS IME Mojo service and bindings. -->
+          <include name="IDR_IME_SERVICE_BINDINGS_JS" file="extensions\chromeos_ime_service_bindings.js" type="BINDATA" />
+          <include name="IDR_IME_SERVICE_MOJOM_JS" file="${mojom_root}\chromeos/services/ime/public/mojom/input_engine.mojom.js" use_base_dir="false" type="BINDATA" />
         </if>
         <!-- Media Router Mojo service and bindings. -->
         <include name="IDR_MEDIA_CONTROLLER_MOJOM_JS" file="${mojom_root}\chrome\common\media_router\mojo\media_controller.mojom.js" use_base_dir="false" type="BINDATA" />
