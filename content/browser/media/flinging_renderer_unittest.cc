@@ -4,6 +4,7 @@
 
 #include "content/browser/media/flinging_renderer.h"
 
+#include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/version.h"
@@ -13,6 +14,7 @@
 
 using ::testing::_;
 using ::testing::StrictMock;
+using ::testing::NiceMock;
 
 namespace content {
 
@@ -23,6 +25,20 @@ class MockMediaController : public media::MediaController {
   MOCK_METHOD1(SetMute, void(bool));
   MOCK_METHOD1(SetVolume, void(float));
   MOCK_METHOD1(Seek, void(base::TimeDelta));
+};
+
+class MockRendererClient : public media::RendererClient {
+ public:
+  MOCK_METHOD1(OnError, void(media::PipelineStatus));
+  MOCK_METHOD0(OnEnded, void());
+  MOCK_METHOD1(OnStatisticsUpdate, void(const media::PipelineStatistics&));
+  MOCK_METHOD1(OnBufferingStateChange, void(media::BufferingState));
+  MOCK_METHOD0(OnWaitingForDecryptionKey, void());
+  MOCK_METHOD1(OnAudioConfigChange, void(const media::AudioDecoderConfig&));
+  MOCK_METHOD1(OnVideoConfigChange, void(const media::VideoDecoderConfig&));
+  MOCK_METHOD1(OnVideoNaturalSizeChange, void(const gfx::Size&));
+  MOCK_METHOD1(OnVideoOpacityChange, void(bool));
+  MOCK_METHOD1(OnDurationChange, void(base::TimeDelta));
 };
 
 class MockFlingingController : public media::FlingingController {
@@ -51,9 +67,12 @@ class FlingingRendererTest : public testing::Test {
 
     renderer_ = base::WrapUnique(new FlingingRenderer(
         std::unique_ptr<media::FlingingController>(flinging_controller_)));
+
+    renderer_->Initialize(nullptr, &renderer_client_, base::DoNothing());
   }
 
  protected:
+  NiceMock<MockRendererClient> renderer_client_;
   std::unique_ptr<MockMediaController> media_controller_;
   StrictMock<MockFlingingController>* flinging_controller_;
   std::unique_ptr<FlingingRenderer> renderer_;

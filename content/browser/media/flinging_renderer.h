@@ -58,6 +58,8 @@ class CONTENT_EXPORT FlingingRenderer : public media::Renderer,
   explicit FlingingRenderer(
       std::unique_ptr<media::FlingingController> controller);
 
+  media::RendererClient* client_;
+
   std::unique_ptr<media::FlingingController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(FlingingRenderer);

@@ -63,6 +63,7 @@ void FlingingRenderer::Initialize(media::MediaResource* media_resource,
                                   media::RendererClient* client,
                                   const media::PipelineStatusCB& init_cb) {
   DVLOG(2) << __func__;
+  client_ = client;
   init_cb.Run(media::PIPELINE_OK);
 }
 
@@ -81,6 +82,18 @@ void FlingingRenderer::Flush(const base::Closure& flush_cb) {
 void FlingingRenderer::StartPlayingFrom(base::TimeDelta time) {
   DVLOG(2) << __func__;
   controller_->GetMediaController()->Seek(time);
+
+  // After a seek when using the FlingingRenderer, WMPI will never get back to
+  // BUFFERING_HAVE_ENOUGH. This prevents Blink from getting the appropriate
+  // seek completion signals, and time updates are never re-scheduled.
+  //
+  // The FlingingRenderer doesn't need to buffer, since playback happens on a
+  // different device. This means it's ok to always send BUFFERING_HAVE_ENOUGH
+  // when sending buffering state changes. That being said, sending state
+  // changes here might be surprising, but the same signals are sent from
+  // MediaPlayerRenderer::StartPlayingFrom(), and it has been working mostly
+  // smoothly for all HLS playback.
+  client_->OnBufferingStateChange(media::BUFFERING_HAVE_ENOUGH);
 }
 
 void FlingingRenderer::SetPlaybackRate(double playback_rate) {
