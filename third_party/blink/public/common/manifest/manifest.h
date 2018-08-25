@@ -76,11 +76,6 @@ struct BLINK_COMMON_EXPORT Manifest {
     ShareTarget();
     ~ShareTarget();
 
-    // The URL template that contains placeholders to be replaced with shared
-    // data. Empty if the parsing failed.
-    // TODO(ckitagawa): Remove this once |action| has replaced it everywhere.
-    GURL url_template;
-
     // The URL used for sharing. Query parameters are added to this comprised of
     // keys from |params| and values from the shared data.
     GURL action;

@@ -161,8 +161,6 @@ bool StructTraits<blink::mojom::ManifestShareTargetDataView,
                   ::blink::Manifest::ShareTarget>::
     Read(blink::mojom::ManifestShareTargetDataView data,
          ::blink::Manifest::ShareTarget* out) {
-  if (!data.ReadUrlTemplate(&out->url_template))
-    return false;
   if (!data.ReadAction(&out->action))
     return false;
   return data.ReadParams(&out->params);
