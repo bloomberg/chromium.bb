@@ -493,6 +493,8 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetoothPairDevicePageTitle",
        IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE_TITLE},
       {"bluetoothRemove", IDS_SETTINGS_BLUETOOTH_REMOVE},
+      {"bluetoothPrimaryUserControlled",
+       IDS_SETTINGS_BLUETOOTH_PRIMARY_USER_CONTROLLED},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));

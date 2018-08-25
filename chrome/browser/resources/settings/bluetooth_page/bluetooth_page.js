@@ -25,7 +25,7 @@ const bluetoothApis = window['bluetoothApis'] || {
 Polymer({
   is: 'settings-bluetooth-page',
 
-  behaviors: [PrefsBehavior],
+  behaviors: [I18nBehavior, PrefsBehavior],
 
   properties: {
     /** Preferences state. */
@@ -98,6 +98,30 @@ Polymer({
     bluetoothPrivate: {
       type: Object,
       value: chrome.bluetoothPrivate,
+    },
+
+    /**
+     * Whether the user is a secondary user.
+     * @private
+     */
+    isSecondaryUser_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isSecondaryUser');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * Email address for the primary user.
+     * @private
+     */
+    primaryUserEmail_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getString('primaryUserEmail');
+      },
+      readOnly: true,
     },
   },
 
