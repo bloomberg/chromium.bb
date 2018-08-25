@@ -846,7 +846,7 @@ gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
   return gfx::Point();
 }
 
-void ClientControlledShellSurface::OnPreWidgetCommit() {
+bool ClientControlledShellSurface::OnPreWidgetCommit() {
   if (!widget_) {
     // Modify the |origin_| to the |pending_geometry_| to place the window on
     // the intended display. See b/77472684 for details.
@@ -857,11 +857,11 @@ void ClientControlledShellSurface::OnPreWidgetCommit() {
 
   ash::wm::WindowState* window_state = GetWindowState();
   if (window_state->GetStateType() == pending_window_state_)
-    return;
+    return true;
 
   if (IsPinned(window_state)) {
     VLOG(1) << "State change was requested while pinned";
-    return;
+    return true;
   }
 
   auto animation_type = ash::wm::ClientControlledState::kAnimationNone;
@@ -897,6 +897,7 @@ void ClientControlledShellSurface::OnPreWidgetCommit() {
 
   client_controlled_state_->EnterNextState(window_state, pending_window_state_,
                                            animation_type);
+  return true;
 }
 
 void ClientControlledShellSurface::OnPostWidgetCommit() {

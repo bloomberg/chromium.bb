@@ -473,10 +473,17 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
       base::Bind(&Configure, base::Unretained(&suggested_size),
                  base::Unretained(&has_state_type),
                  base::Unretained(&is_resizing), base::Unretained(&is_active)));
+
+  gfx::Rect geometry(16, 16, 32, 32);
+  shell_surface->SetGeometry(geometry);
+
   // Commit without contents should result in a configure callback with empty
   // suggested size as a mechanims to ask the client size itself.
   surface->Commit();
   EXPECT_EQ(gfx::Size(), suggested_size);
+
+  // Geometry should not be committed until surface has contents.
+  EXPECT_EQ(gfx::Size(), shell_surface->CalculatePreferredSize());
 
   shell_surface->Maximize();
   shell_surface->AcknowledgeConfigure(0);
@@ -498,6 +505,9 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
       new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   surface->Attach(buffer.get());
   surface->Commit();
+
+  EXPECT_EQ(geometry.size(), shell_surface->CalculatePreferredSize());
+
   shell_surface->GetWidget()->Activate();
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_TRUE(is_active);

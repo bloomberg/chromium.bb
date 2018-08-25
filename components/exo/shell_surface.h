@@ -136,7 +136,7 @@ class ShellSurface : public ShellSurfaceBase,
 
   // Overridden from ShellSurfaceBase:
   void SetWidgetBounds(const gfx::Rect& bounds) override;
-  void OnPreWidgetCommit() override;
+  bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
 
   // Asks the client to configure its surface.

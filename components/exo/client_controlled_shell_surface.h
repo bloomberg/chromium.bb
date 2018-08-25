@@ -232,7 +232,7 @@ class ClientControlledShellSurface
   float GetScale() const override;
   base::Optional<gfx::Rect> GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
-  void OnPreWidgetCommit() override;
+  bool OnPreWidgetCommit() override;
   void OnPostWidgetCommit() override;
 
   // Update frame status. This may create (or destroy) a wide frame

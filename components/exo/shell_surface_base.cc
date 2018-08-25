@@ -658,7 +658,9 @@ void ShellSurfaceBase::OnSurfaceCommit() {
 
   SurfaceTreeHost::OnSurfaceCommit();
 
-  OnPreWidgetCommit();
+  if (!OnPreWidgetCommit())
+    return;
+
   CommitWidget();
   OnPostWidgetCommit();
 
