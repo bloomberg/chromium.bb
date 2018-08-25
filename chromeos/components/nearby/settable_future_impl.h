@@ -23,7 +23,24 @@ class SettableFutureImpl : public location::nearby::SettableFuture<T> {
   SettableFutureImpl() = default;
   ~SettableFutureImpl() override = default;
 
+  // This method will unblock any outstanding calls to get(), causing them to
+  // return |value|. Any future calls to get() will also return |value|. This
+  // operation can only successfully run one time, and subsequent calls will
+  // return false and will not update the ExceptionOr returned to get()ers.
+  bool SetExceptionOr(const location::nearby::ExceptionOr<T>& value) {
+    base::AutoLock al(set_value_lock_);
+    if (!value_has_been_set_.IsSignaled()) {
+      value_ = value;
+      value_has_been_set_.Signal();
+      return true;
+    }
+
+    return false;
+  }
+
  private:
+  friend class SettableFutureImplTest;
+
   // location::nearby::Future:
   location::nearby::ExceptionOr<T> get() override {
     if (!value_has_been_set_.IsSignaled())
@@ -34,14 +51,7 @@ class SettableFutureImpl : public location::nearby::SettableFuture<T> {
 
   // location::nearby::SettableFuture:
   bool set(T value) override {
-    base::AutoLock al(set_value_lock_);
-    if (!value_has_been_set_.IsSignaled()) {
-      value_ = location::nearby::ExceptionOr<T>(value);
-      value_has_been_set_.Signal();
-      return true;
-    }
-
-    return false;
+    return SetExceptionOr(location::nearby::ExceptionOr<T>(value));
   }
 
   base::Optional<location::nearby::ExceptionOr<T>> value_;

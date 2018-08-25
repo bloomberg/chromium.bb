@@ -4,6 +4,8 @@
 
 #include "chromeos/components/nearby/settable_future_impl.h"
 
+#include <memory>
+
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
@@ -15,7 +17,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/unguessable_token.h"
 #include "chromeos/components/nearby/library/exception.h"
-#include "chromeos/components/nearby/library/settable_future.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -24,20 +25,25 @@ namespace nearby {
 
 class SettableFutureImplTest : public testing::Test {
  protected:
-  SettableFutureImplTest() = default;
+  SettableFutureImplTest()
+      : settable_future_(std::make_unique<SettableFutureImpl<bool>>()) {}
 
-  void SetUp() override {
-    settable_future_ = std::make_unique<SettableFutureImpl<bool>>();
-  }
+  SettableFutureImpl<bool>* settable_future() { return settable_future_.get(); }
 
-  location::nearby::SettableFuture<bool>* settable_future() {
-    return settable_future_.get();
+  bool AttemptToSetFutureWithBool(bool value) {
+    return settable_future()->set(value);
   }
 
   void VerifyFutureBool(bool value) {
     location::nearby::ExceptionOr<bool> result = settable_future()->get();
     EXPECT_TRUE(result.ok());
     EXPECT_EQ(value, result.result());
+  }
+
+  void VerifyFutureException(
+      const location::nearby::Exception::Value& exception) {
+    location::nearby::ExceptionOr<bool> result = settable_future()->get();
+    EXPECT_EQ(exception, result.exception());
   }
 
   base::UnguessableToken PostGetAsyncResult() {
@@ -83,7 +89,7 @@ class SettableFutureImplTest : public testing::Test {
     id_to_async_result_map_[id] = result;
   }
 
-  std::unique_ptr<location::nearby::SettableFuture<bool>> settable_future_;
+  std::unique_ptr<SettableFutureImpl<bool>> settable_future_;
   base::Lock map_lock_;
   base::flat_map<base::UnguessableToken,
                  base::Optional<location::nearby::ExceptionOr<bool>>>
@@ -93,13 +99,29 @@ class SettableFutureImplTest : public testing::Test {
 };
 
 TEST_F(SettableFutureImplTest, GetValueAfterSetting) {
-  EXPECT_TRUE(settable_future()->set(true));
+  EXPECT_TRUE(AttemptToSetFutureWithBool(true));
   VerifyFutureBool(true);
 }
 
-TEST_F(SettableFutureImplTest, CannotSetAgainIfValueAlreadyBeenSet) {
-  EXPECT_TRUE(settable_future()->set(true));
-  EXPECT_FALSE(settable_future()->set(true));
+TEST_F(SettableFutureImplTest, CannotSetAgainIfValueIsAlreadySet) {
+  EXPECT_TRUE(AttemptToSetFutureWithBool(true));
+  EXPECT_FALSE(AttemptToSetFutureWithBool(true));
+}
+
+TEST_F(SettableFutureImplTest, GetExceptionAfterSetting) {
+  EXPECT_TRUE(
+      settable_future()->SetExceptionOr(location::nearby::ExceptionOr<bool>(
+          location::nearby::Exception::EXECUTION)));
+  VerifyFutureException(location::nearby::Exception::EXECUTION);
+}
+
+TEST_F(SettableFutureImplTest, CannotSetAgainIfExceptionIsAlreadySet) {
+  EXPECT_TRUE(
+      settable_future()->SetExceptionOr(location::nearby::ExceptionOr<bool>(
+          location::nearby::Exception::EXECUTION)));
+  EXPECT_FALSE(
+      settable_future()->SetExceptionOr(location::nearby::ExceptionOr<bool>(
+          location::nearby::Exception::EXECUTION)));
 }
 
 TEST_F(SettableFutureImplTest, BlocksUntilValueIsSet) {
@@ -107,7 +129,7 @@ TEST_F(SettableFutureImplTest, BlocksUntilValueIsSet) {
   TinyTimeout();
   EXPECT_EQ(0u, GetMapSize());
 
-  EXPECT_TRUE(settable_future()->set(true));
+  EXPECT_TRUE(AttemptToSetFutureWithBool(true));
   TinyTimeout();
   EXPECT_EQ(1u, GetMapSize());
   VerifyAsyncResultForId(id, true);
@@ -121,7 +143,7 @@ TEST_F(SettableFutureImplTest, BlocksMultipleUntilValueIsSet) {
   TinyTimeout();
   EXPECT_EQ(0u, GetMapSize());
 
-  EXPECT_TRUE(settable_future()->set(true));
+  EXPECT_TRUE(AttemptToSetFutureWithBool(true));
   TinyTimeout();
   EXPECT_EQ(3u, GetMapSize());
   VerifyAsyncResultForId(id0, true);
