@@ -131,18 +131,18 @@ id<GREYMatcher> PopupBlocker() {
 // Tests a link with target="_blank" multiple times.
 - (void)testLinkWithBlankTargetMultipleTimes {
   const char ID[] = "webScenarioWindowOpenRegularLinkMultipleTimes";
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(
-                        GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+  web::WebState* test_page_web_state = GetCurrentWebState();
+  id<GREYMatcher> test_page_matcher = WebViewInWebState(test_page_web_state);
+  id<GREYAction> link_tap = web::WebViewTapElement(
+      test_page_web_state, ElementSelector::ElementSelectorId(ID));
+  [[EarlGrey selectElementWithMatcher:test_page_matcher]
+      performAction:link_tap];
   [ChromeEarlGrey waitForMainTabCount:2];
   chrome_test_util::OpenNewTab();
   [ChromeEarlGrey waitForMainTabCount:3];
   chrome_test_util::SelectTabAtIndexInCurrentMode(0);
-  [[EarlGrey selectElementWithMatcher:WebViewInWebState(GetCurrentWebState())]
-      performAction:web::WebViewTapElement(
-                        GetCurrentWebState(),
-                        ElementSelector::ElementSelectorId(ID))];
+  [[EarlGrey selectElementWithMatcher:test_page_matcher]
+      performAction:link_tap];
   [ChromeEarlGrey waitForMainTabCount:4];
 }
 

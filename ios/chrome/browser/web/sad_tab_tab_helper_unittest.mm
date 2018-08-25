@@ -59,6 +59,7 @@ class SadTabTabHelperTest : public PlatformTest {
     navigation_manager->SetBrowserState(browser_state_.get());
     navigation_manager_ = navigation_manager.get();
     web_state_.SetNavigationManager(std::move(navigation_manager));
+    web_state_.SetBrowserState(browser_state_.get());
   }
 
   ~SadTabTabHelperTest() override { [application_ stopMocking]; }
@@ -188,7 +189,10 @@ TEST_F(SadTabTabHelperTest, FailureInterval) {
 
   // N.B. The test fixture web_state_ is not used for this test as a custom
   // |repeat_failure_interval| is required.
+  std::unique_ptr<ios::ChromeBrowserState> browser_state =
+      TestChromeBrowserState::Builder().Build();
   web::TestWebState web_state;
+  web_state.SetBrowserState(browser_state.get());
   SadTabTabHelper::CreateForWebState(&web_state, 0.0f, sad_tab_delegate_);
   PagePlaceholderTabHelper::CreateForWebState(&web_state);
   web_state.WasShown();

@@ -55,6 +55,8 @@ ChromeBroadcaster* FullscreenControllerImpl::broadcaster() {
 }
 
 void FullscreenControllerImpl::SetWebStateList(WebStateList* web_state_list) {
+  if (web_state_list_ == web_state_list)
+    return;
   if (web_state_list_observer_)
     web_state_list_observer_->Disconnect();
   web_state_list_ = web_state_list;
