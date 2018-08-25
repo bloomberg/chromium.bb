@@ -16,7 +16,7 @@ namespace multidevice_setup {
 // "false" value means that the administrator has prohibited the feature and
 // that users do not have the option of attempting to enable the feature.
 extern const char kInstantTetheringAllowedPrefName[];
-// TODO(khorimoto): Add messages "allowed" preference.
+extern const char kMessagesAllowedPrefName[];
 extern const char kSmartLockAllowedPrefName[];
 
 // Preferences which represent whether features are enabled by the user via

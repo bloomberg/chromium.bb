@@ -3136,6 +3136,14 @@
     ]
   },
 
+  "SmsMessagesAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "SmsMessagesAllowed": false },
+    "pref_mappings": [
+      { "pref": "multidevice.sms_connect_allowed" }
+    ]
+  },
+
   "InstantTetheringAllowed": {
     "os": ["chromeos"],
     "test_policy": { "InstantTetheringAllowed": false },
