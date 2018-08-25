@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/logging.h"
@@ -12,16 +11,12 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
-#include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/common/pref_names.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
 #include "components/arc/arc_features.h"
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
-#include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
-#include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace arc {
 
@@ -119,23 +114,6 @@ class ArcInputMethodManagerService::ArcProxyInputMethodObserver
                            const std::string& menu_id) override {}
 };
 
-class ArcInputMethodManagerService::TabletModeObserver
-    : public TabletModeClientObserver {
- public:
-  explicit TabletModeObserver(ArcInputMethodManagerService* owner)
-      : owner_(owner) {}
-  ~TabletModeObserver() override = default;
-
-  void OnTabletModeToggled(bool enabled) override {
-    owner_->SetArcIMEAllowed(enabled);
-  }
-
- private:
-  ArcInputMethodManagerService* owner_;
-
-  DISALLOW_COPY_AND_ASSIGN(TabletModeObserver);
-};
-
 // static
 ArcInputMethodManagerService*
 ArcInputMethodManagerService::GetForBrowserContext(
@@ -160,19 +138,13 @@ ArcInputMethodManagerService::ArcInputMethodManagerService(
                                                             bridge_service)),
       proxy_ime_extension_id_(
           crx_file::id_util::GenerateId(kArcIMEProxyExtensionName)),
-      proxy_ime_engine_(std::make_unique<chromeos::InputMethodEngine>()),
-      tablet_mode_observer_(std::make_unique<TabletModeObserver>(this)) {
+      proxy_ime_engine_(std::make_unique<chromeos::InputMethodEngine>()) {
   auto* imm = chromeos::input_method::InputMethodManager::Get();
   imm->AddObserver(this);
   imm->AddImeMenuObserver(this);
 
   proxy_ime_engine_->Initialize(std::make_unique<ArcProxyInputMethodObserver>(),
                                 proxy_ime_extension_id_.c_str(), profile_);
-
-  // TabletModeClient should be already created here because it's created in
-  // PreProfileInit() and this service is created in PostProfileInit().
-  DCHECK(TabletModeClient::Get());
-  TabletModeClient::Get()->AddObserver(tablet_mode_observer_.get());
 }
 
 ArcInputMethodManagerService::~ArcInputMethodManagerService() {
@@ -181,9 +153,6 @@ ArcInputMethodManagerService::~ArcInputMethodManagerService() {
   // that will be restored after Arc container starts next time.
   RemoveArcIMEFromPrefs();
   profile_->GetPrefs()->CommitPendingWrite();
-
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(tablet_mode_observer_.get());
 
   auto* imm = chromeos::input_method::InputMethodManager::Get();
   imm->RemoveImeMenuObserver(this);
@@ -249,9 +218,6 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   }
   profile_->GetPrefs()->SetString(prefs::kLanguageEnabledImes,
                                   base::JoinString(active_ime_list, ","));
-
-  // Refresh allowed IME list.
-  SetArcIMEAllowed(TabletModeClient::Get()->tablet_mode_enabled());
 }
 
 void ArcInputMethodManagerService::ImeMenuListChanged() {
@@ -373,67 +339,6 @@ void ArcInputMethodManagerService::RemoveArcIMEFromPref(const char* pref_name) {
 
   profile_->GetPrefs()->SetString(pref_name,
                                   base::JoinString(ime_id_list, ","));
-}
-
-void ArcInputMethodManagerService::SetArcIMEAllowed(bool allowed) {
-  auto* manager = chromeos::input_method::InputMethodManager::Get();
-  std::set<std::string> allowed_method_ids_set;
-  {
-    std::vector<std::string> allowed_method_ids =
-        manager->GetActiveIMEState()->GetAllowedInputMethods();
-    allowed_method_ids_set = std::set<std::string>(allowed_method_ids.begin(),
-                                                   allowed_method_ids.end());
-  }
-  chromeos::input_method::InputMethodDescriptors installed_imes;
-  if (manager->GetComponentExtensionIMEManager()) {
-    installed_imes = manager->GetComponentExtensionIMEManager()
-                         ->GetAllIMEAsInputMethodDescriptor();
-  }
-  {
-    chromeos::input_method::InputMethodDescriptors installed_extensions;
-    manager->GetActiveIMEState()->GetInputMethodExtensions(
-        &installed_extensions);
-    installed_imes.insert(installed_imes.end(), installed_extensions.begin(),
-                          installed_extensions.end());
-  }
-
-  if (allowed) {
-    if (!allowed_method_ids_set.empty()) {
-      // Some IMEs are not allowed now. Add ARC IMEs to
-      // |allowed_method_ids_set|.
-      for (const auto& desc : installed_imes) {
-        if (chromeos::extension_ime_util::IsArcIME(desc.id()))
-          allowed_method_ids_set.insert(desc.id());
-      }
-    }
-
-    // TODO(yhanada): Re-enable ARC IMEs that was enabled before disallowed.
-  } else {
-    // Disallow Arc IMEs.
-    if (allowed_method_ids_set.empty()) {
-      // Currently there is no restriction. Add all IMEs except ARC IMEs to
-      // |allowed_method_ids_set|.
-      for (const auto& desc : installed_imes) {
-        if (!chromeos::extension_ime_util::IsArcIME(desc.id()))
-          allowed_method_ids_set.insert(desc.id());
-      }
-    } else {
-      // Remove ARC IMEs from |allowed_method_ids_set|.
-      for (auto it = allowed_method_ids_set.begin();
-           it != allowed_method_ids_set.end();) {
-        if (chromeos::extension_ime_util::IsArcIME(*it))
-          it = allowed_method_ids_set.erase(it);
-        else
-          it++;
-      }
-    }
-    DCHECK(!allowed_method_ids_set.empty());
-  }
-
-  manager->GetActiveIMEState()->SetAllowedInputMethods(
-      std::vector<std::string>(allowed_method_ids_set.begin(),
-                               allowed_method_ids_set.end()),
-      false /* enable_allowed_input_methods */);
 }
 
 }  // namespace arc

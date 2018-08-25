@@ -562,9 +562,7 @@ void PopulateInputMethodListFromDescriptors(
       input_method.enabled.reset(new bool(true));
     if (descriptor.options_page_url().is_valid())
       input_method.has_options_page.reset(new bool(true));
-    if (!allowed_ids.empty() &&
-        (util->IsKeyboardLayout(input_method.id) ||
-         chromeos::extension_ime_util::IsArcIME(input_method.id)) &&
+    if (!allowed_ids.empty() && util->IsKeyboardLayout(input_method.id) &&
         allowed_ids.count(input_method.id) == 0) {
       input_method.is_prohibited_by_policy.reset(new bool(true));
     }

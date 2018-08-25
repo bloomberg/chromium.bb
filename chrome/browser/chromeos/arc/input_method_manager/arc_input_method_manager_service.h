@@ -66,7 +66,6 @@ class ArcInputMethodManagerService
 
  private:
   class ArcProxyInputMethodObserver;
-  class TabletModeObserver;
 
   void EnableIme(const std::string& ime_id, bool enable);
   void SwitchImeTo(const std::string& ime_id);
@@ -79,9 +78,6 @@ class ArcInputMethodManagerService
   void RemoveArcIMEFromPrefs();
   void RemoveArcIMEFromPref(const char* pref_name);
 
-  // Calls InputMethodManager.SetAllowedInputMethods according to the argument.
-  void SetArcIMEAllowed(bool allowed);
-
   Profile* const profile_;
 
   std::unique_ptr<ArcInputMethodManagerBridge> imm_bridge_;
@@ -92,8 +88,6 @@ class ArcInputMethodManagerService
   // proxy IME.
   const std::string proxy_ime_extension_id_;
   std::unique_ptr<chromeos::InputMethodEngine> proxy_ime_engine_;
-
-  std::unique_ptr<TabletModeObserver> tablet_mode_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcInputMethodManagerService);
 };
