@@ -281,7 +281,8 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   virtual base::Optional<gfx::Rect> GetWidgetBounds() const = 0;
   virtual gfx::Point GetSurfaceOrigin() const = 0;
 
-  virtual void OnPreWidgetCommit() = 0;
+  // Commit is deferred if this returns false.
+  virtual bool OnPreWidgetCommit() = 0;
   virtual void OnPostWidgetCommit() = 0;
 
   void CommitWidget();

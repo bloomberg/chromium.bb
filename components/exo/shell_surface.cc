@@ -463,12 +463,12 @@ void ShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   ignore_window_bounds_changes_ = false;
 }
 
-void ShellSurface::OnPreWidgetCommit() {
+bool ShellSurface::OnPreWidgetCommit() {
   if (!widget_ && enabled()) {
-    // Defer widget creation until surface contains some contents.
+    // Defer widget creation and commit until surface has contents.
     if (host_window()->bounds().IsEmpty()) {
       Configure();
-      return;
+      return false;
     }
 
     CreateShellSurfaceWidget(ui::SHOW_STATE_NORMAL);
@@ -481,6 +481,8 @@ void ShellSurface::OnPreWidgetCommit() {
 
   // Update resize direction to reflect acknowledged configure requests.
   resize_component_ = pending_resize_component_;
+
+  return true;
 }
 
 void ShellSurface::OnPostWidgetCommit() {}
