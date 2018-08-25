@@ -65,11 +65,13 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
   DCHECK(view_);
   DCHECK(client_);
 
-  constexpr bool is_transparent = false;
-  content_layer_ = CreateSurfaceLayer(
-      viz::SurfaceId(), viz::SurfaceId(), gfx::Size(),
-      cc::DeadlinePolicy::UseDefaultDeadline(), is_transparent);
-  view_->GetLayer()->AddChild(content_layer_);
+  if (enable_surface_synchronization_) {
+    constexpr bool is_transparent = false;
+    content_layer_ = CreateSurfaceLayer(
+        viz::SurfaceId(), viz::SurfaceId(), gfx::Size(),
+        cc::DeadlinePolicy::UseDefaultDeadline(), is_transparent);
+    view_->GetLayer()->AddChild(content_layer_);
+  }
 
   host_frame_sink_manager_->RegisterFrameSinkId(frame_sink_id_, this);
   host_frame_sink_manager_->SetFrameSinkDebugLabel(frame_sink_id_,
@@ -91,21 +93,47 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
   DCHECK(!enable_viz_);
 
   viz::RenderPass* root_pass = frame.render_pass_list.back().get();
-  has_transparent_background_ = root_pass->has_transparent_background;
+  const bool has_transparent_background = root_pass->has_transparent_background;
+  const bool active_device_scale_factor = frame.device_scale_factor();
+  const gfx::Size pending_surface_size_in_pixels = frame.size_in_pixels();
+  // Reset |content_layer_| only if surface-sync is not used. When surface-sync
+  // is turned on, |content_layer_| is updated with the appropriate states (see
+  // in EmbedSurface()) instead of being recreated.
+  if (!enable_surface_synchronization_ && content_layer_ &&
+      active_local_surface_id_ != local_surface_id) {
+    EvictDelegatedFrame();
+  }
   support_->SubmitCompositorFrame(local_surface_id, std::move(frame),
                                   std::move(hit_test_region_list));
-
-  if (!enable_surface_synchronization_) {
-    compositor_attach_until_frame_lock_.reset();
-
-    // If surface synchronization is disabled, SubmitCompositorFrame immediately
-    // activates the CompositorFrame and issues OnFirstSurfaceActivation if the
-    // |local_surface_id| has changed since the last submission.
-    if (content_layer_->bounds() == expected_pixel_size_)
-      compositor_pending_resize_lock_.reset();
-
-    frame_evictor_->SwappedFrame(frame_evictor_->visible());
+  if (enable_surface_synchronization_) {
+    DCHECK(content_layer_);
+    return;
   }
+
+  if (!content_layer_) {
+    active_local_surface_id_ = local_surface_id;
+    pending_local_surface_id_ = active_local_surface_id_;
+    active_device_scale_factor_ = active_device_scale_factor;
+    pending_surface_size_in_pixels_ = pending_surface_size_in_pixels;
+    has_transparent_background_ = has_transparent_background;
+    content_layer_ = CreateSurfaceLayer(
+        viz::SurfaceId(frame_sink_id_, active_local_surface_id_),
+        viz::SurfaceId(frame_sink_id_, active_local_surface_id_),
+        pending_surface_size_in_pixels_,
+        cc::DeadlinePolicy::UseDefaultDeadline(), !has_transparent_background_);
+    view_->GetLayer()->AddChild(content_layer_);
+  }
+  content_layer_->SetContentsOpaque(!has_transparent_background_);
+
+  compositor_attach_until_frame_lock_.reset();
+
+  // If surface synchronization is disabled, SubmitCompositorFrame immediately
+  // activates the CompositorFrame and issues OnFirstSurfaceActivation if the
+  // |local_surface_id| has changed since the last submission.
+  if (content_layer_->bounds() == expected_pixel_size_)
+    compositor_pending_resize_lock_.reset();
+
+  frame_evictor_->SwappedFrame(frame_evictor_->visible());
 }
 
 void DelegatedFrameHostAndroid::DidNotProduceFrame(
@@ -149,13 +177,15 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
-  return content_layer_->fallback_surface_id() &&
+  return content_layer_ && content_layer_->fallback_surface_id() &&
          content_layer_->fallback_surface_id()->is_valid() &&
          view_->GetWindowAndroid() &&
          view_->GetWindowAndroid()->GetCompositor();
 }
 
 void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
+  if (!content_layer_)
+    return;
   viz::SurfaceId surface_id;
   if (content_layer_->fallback_surface_id()) {
     surface_id = *content_layer_->fallback_surface_id();
@@ -163,6 +193,10 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
   }
   content_layer_->SetPrimarySurfaceId(viz::SurfaceId(),
                                       cc::DeadlinePolicy::UseDefaultDeadline());
+  if (!enable_surface_synchronization_) {
+    content_layer_->RemoveFromParent();
+    content_layer_ = nullptr;
+  }
   if (!surface_id.is_valid())
     return;
   std::vector<viz::SurfaceId> surface_ids = {surface_id};
@@ -171,12 +205,14 @@ void DelegatedFrameHostAndroid::EvictDelegatedFrame() {
 }
 
 void DelegatedFrameHostAndroid::ResetFallbackToFirstNavigationSurface() {
+  if (!content_layer_)
+    return;
   content_layer_->SetFallbackSurfaceId(
       viz::SurfaceId(frame_sink_id_, first_local_surface_id_after_navigation_));
 }
 
 bool DelegatedFrameHostAndroid::HasDelegatedContent() const {
-  return content_layer_->primary_surface_id().is_valid();
+  return content_layer_ && content_layer_->primary_surface_id().is_valid();
 }
 
 void DelegatedFrameHostAndroid::CompositorFrameSinkChanged() {
@@ -224,7 +260,7 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
 }
 
 bool DelegatedFrameHostAndroid::IsPrimarySurfaceEvicted() const {
-  return !content_layer_->primary_surface_id().is_valid();
+  return !content_layer_ || !content_layer_->primary_surface_id().is_valid();
 }
 
 bool DelegatedFrameHostAndroid::HasSavedFrame() const {
@@ -314,7 +350,7 @@ void DelegatedFrameHostAndroid::PixelSizeWillChange(
   }
 
   expected_pixel_size_ = pixel_size;
-  if (registered_parent_compositor_) {
+  if (content_layer_ && registered_parent_compositor_) {
     if (content_layer_->bounds() != expected_pixel_size_) {
       compositor_pending_resize_lock_ =
           registered_parent_compositor_->GetCompositorLock(this,
@@ -358,19 +394,8 @@ void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
 
 void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  if (!enable_surface_synchronization_) {
-    EvictDelegatedFrame();
-    content_layer_->SetPrimarySurfaceId(
-        surface_info.id(), cc::DeadlinePolicy::UseExistingDeadline());
-    content_layer_->SetFallbackSurfaceId(surface_info.id());
-    content_layer_->SetContentsOpaque(!has_transparent_background_);
-    content_layer_->SetBounds(surface_info.size_in_pixels());
-    active_local_surface_id_ = surface_info.id().local_surface_id();
-    pending_local_surface_id_ = active_local_surface_id_;
-    active_device_scale_factor_ = surface_info.device_scale_factor();
-    pending_surface_size_in_pixels_ = surface_info.size_in_pixels();
+  if (!enable_surface_synchronization_)
     return;
-  }
 
   // If there's no primary surface, then we don't wish to display content at
   // this time (e.g. the view is hidden) and so we don't need a fallback
@@ -444,29 +469,39 @@ void DelegatedFrameHostAndroid::ProcessCopyOutputRequest(
 }
 
 viz::SurfaceId DelegatedFrameHostAndroid::SurfaceId() const {
-  return content_layer_->fallback_surface_id()
+  return content_layer_ && content_layer_->fallback_surface_id()
              ? *content_layer_->fallback_surface_id()
              : viz::SurfaceId();
 }
 
 bool DelegatedFrameHostAndroid::HasFallbackSurface() const {
-  return content_layer_->fallback_surface_id() &&
+  return content_layer_ && content_layer_->fallback_surface_id() &&
          content_layer_->fallback_surface_id()->is_valid();
 }
 
 void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
     DelegatedFrameHostAndroid* other) {
-  if ((content_layer_->fallback_surface_id() &&
-       content_layer_->fallback_surface_id()->is_valid()) ||
-      !other->content_layer_->fallback_surface_id() ||
-      !other->content_layer_->fallback_surface_id()->is_valid()) {
+  if (HasFallbackSurface() || !other->HasFallbackSurface())
     return;
-  }
 
   if (!enable_surface_synchronization_) {
-    content_layer_->SetPrimarySurfaceId(
-        *other->content_layer_->fallback_surface_id(),
-        cc::DeadlinePolicy::UseDefaultDeadline());
+    if (content_layer_) {
+      content_layer_->SetPrimarySurfaceId(
+          *other->content_layer_->fallback_surface_id(),
+          cc::DeadlinePolicy::UseDefaultDeadline());
+    } else {
+      const auto& surface_id = other->SurfaceId();
+      active_local_surface_id_ = surface_id.local_surface_id();
+      pending_local_surface_id_ = active_local_surface_id_;
+      active_device_scale_factor_ = other->active_device_scale_factor_;
+      pending_surface_size_in_pixels_ = other->pending_surface_size_in_pixels_;
+      has_transparent_background_ = other->has_transparent_background_;
+      content_layer_ = CreateSurfaceLayer(
+          surface_id, surface_id, other->content_layer_->bounds(),
+          cc::DeadlinePolicy::UseDefaultDeadline(),
+          other->content_layer_->contents_opaque());
+      view_->GetLayer()->AddChild(content_layer_);
+    }
   }
   content_layer_->SetFallbackSurfaceId(
       *other->content_layer_->fallback_surface_id());
