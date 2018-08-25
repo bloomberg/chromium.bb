@@ -54,6 +54,8 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/media_stream_track_or_string.h",
   "$bindings_modules_v8_output_dir/offscreen_rendering_context.cc",
   "$bindings_modules_v8_output_dir/offscreen_rendering_context.h",
+  "$bindings_modules_v8_output_dir/path_2d_or_string.cc",
+  "$bindings_modules_v8_output_dir/path_2d_or_string.h",
   "$bindings_modules_v8_output_dir/password_credential_data_or_html_form_element.cc",
   "$bindings_modules_v8_output_dir/password_credential_data_or_html_form_element.h",
   "$bindings_modules_v8_output_dir/point_2d_sequence_or_constrain_point_2d_parameters.cc",

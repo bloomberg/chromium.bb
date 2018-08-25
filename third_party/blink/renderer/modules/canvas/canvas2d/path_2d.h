@@ -28,6 +28,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 
+#include "third_party/blink/renderer/bindings/modules/v8/path_2d_or_string.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
 #include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
@@ -44,11 +45,16 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
   WTF_MAKE_NONCOPYABLE(Path2D);
 
  public:
-  static Path2D* Create() { return new Path2D; }
-  static Path2D* Create(const String& path_data) {
-    return new Path2D(path_data);
+  static Path2D* Create(Path2DOrString pathorstring) {
+    DCHECK(!pathorstring.IsNull());
+    if (pathorstring.IsPath2D())
+      return new Path2D(pathorstring.GetAsPath2D());
+    if (pathorstring.IsString())
+      return new Path2D(pathorstring.GetAsString());
+    NOTREACHED();
+    return nullptr;
   }
-  static Path2D* Create(Path2D* path) { return new Path2D(path); }
+  static Path2D* Create() { return new Path2D; }
   static Path2D* Create(const Path& path) { return new Path2D(path); }
 
   const Path& GetPath() const { return path_; }
