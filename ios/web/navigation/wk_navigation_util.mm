@@ -22,9 +22,55 @@
 namespace web {
 namespace wk_navigation_util {
 
+// Session restoration algorithms uses pushState calls to restore back forward
+// navigation list. WKWebView does not allow pushing more than 100 items per
+// 30 seconds. Limiting max session size to 75 will allow web pages to use push
+// state calls.
+const int kMaxSessionSize = 75;
+
 const char kRestoreSessionSessionHashPrefix[] = "session=";
 const char kRestoreSessionTargetUrlHashPrefix[] = "targetUrl=";
 const char kOriginalUrlKey[] = "for";
+
+namespace {
+// Returns begin and end iterators for the given navigation items. The length of
+// these iterators range will not exceed kMaxSessionSize. If |items.size()| is
+// greater than kMaxSessionSize, then this function will trim navigation items,
+// which are the furthest to |last_committed_item_index|.
+void GetSafeItemIterators(
+    int last_committed_item_index,
+    const std::vector<std::unique_ptr<NavigationItem>>& items,
+    std::vector<std::unique_ptr<NavigationItem>>::const_iterator* begin,
+    std::vector<std::unique_ptr<NavigationItem>>::const_iterator* end) {
+  if (items.size() <= kMaxSessionSize) {
+    // No need to trim anything.
+    *begin = items.begin();
+    *end = items.end();
+    return;
+  }
+
+  if (last_committed_item_index < kMaxSessionSize / 2) {
+    // Items which are the furthest to |last_committed_item_index| are located
+    // on the right side of the vector. Trim those.
+    *begin = items.begin();
+    *end = items.begin() + kMaxSessionSize;
+    return;
+  }
+
+  if (items.size() - last_committed_item_index < kMaxSessionSize / 2) {
+    // Items which are the furthest to |last_committed_item_index| are located
+    // on the left side of the vector. Trim those.
+    *begin = items.end() - kMaxSessionSize;
+    *end = items.end();
+    return;
+  }
+
+  // Trim items from both sides of the vector. Keep the same number of items
+  // on the left and right side of |last_committed_item_index|.
+  *begin = items.begin() + last_committed_item_index - kMaxSessionSize / 2;
+  *end = items.begin() + last_committed_item_index + kMaxSessionSize / 2 + 1;
+}
+}
 
 bool IsWKInternalUrl(const GURL& url) {
   return IsPlaceholderUrl(url) || IsRestoreSessionUrl(url);
@@ -46,24 +92,30 @@ GURL CreateRestoreSessionUrl(
   DCHECK(last_committed_item_index >= 0 &&
          last_committed_item_index < static_cast<int>(items.size()));
 
+  std::vector<std::unique_ptr<NavigationItem>>::const_iterator begin;
+  std::vector<std::unique_ptr<NavigationItem>>::const_iterator end;
+  GetSafeItemIterators(last_committed_item_index, items, &begin, &end);
+  size_t new_size = end - begin;
+
   // The URLs and titles of the restored entries are stored in two separate
   // lists instead of a single list of objects to reduce the size of the JSON
   // string to be included in the query parameter.
   base::Value restored_urls(base::Value::Type::LIST);
   base::Value restored_titles(base::Value::Type::LIST);
-  restored_urls.GetList().reserve(items.size());
-  restored_titles.GetList().reserve(items.size());
-  for (size_t index = 0; index < items.size(); index++) {
-    GURL original_url = items[index]->GetURL();
+  restored_urls.GetList().reserve(new_size);
+  restored_titles.GetList().reserve(new_size);
+  for (auto it = begin; it != end; ++it) {
+    NavigationItem* item = (*it).get();
+    GURL original_url = item->GetURL();
     GURL restored_url = original_url;
     if (web::GetWebClient()->IsAppSpecificURL(original_url)) {
       restored_url = CreatePlaceholderUrlForUrl(original_url);
     }
     restored_urls.GetList().push_back(base::Value(restored_url.spec()));
-    restored_titles.GetList().push_back(base::Value(items[index]->GetTitle()));
+    restored_titles.GetList().push_back(base::Value(item->GetTitle()));
   }
   base::Value session(base::Value::Type::DICTIONARY);
-  int offset = last_committed_item_index + 1 - items.size();
+  int offset = last_committed_item_index + 1 - new_size;
   session.SetKey("offset", base::Value(offset));
   session.SetKey("urls", std::move(restored_urls));
   session.SetKey("titles", std::move(restored_titles));
