@@ -61,10 +61,6 @@ jumbo_static_library("common") {
     "//url",
   ]
 
-  if (is_android) {
-    # deps += [ 'autofill_jni_headers' ]  TODO(GYP)
-  }
-
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
 
