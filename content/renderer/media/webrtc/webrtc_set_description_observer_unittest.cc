@@ -21,8 +21,8 @@
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_heap.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
+#include "third_party/webrtc/api/test/mock_peerconnectioninterface.h"
 #include "third_party/webrtc/media/base/fakemediaengine.h"
-#include "third_party/webrtc/pc/test/mock_peerconnection.h"
 
 using ::testing::Return;
 
@@ -66,9 +66,7 @@ class WebRtcSetDescriptionObserverForTest
 class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
  public:
   void SetUp() override {
-    pc_ = new webrtc::MockPeerConnection(new webrtc::FakePeerConnectionFactory(
-        std::unique_ptr<cricket::MediaEngineInterface>(
-            new cricket::FakeMediaEngine())));
+    pc_ = new webrtc::MockPeerConnectionInterface;
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_thread_ = blink::scheduler::GetSingleThreadTaskRunnerForTesting();
     scoped_refptr<WebRtcMediaStreamTrackAdapterMap> map =
@@ -107,7 +105,7 @@ class WebRtcSetRemoteDescriptionObserverHandlerTest : public ::testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 
-  scoped_refptr<webrtc::MockPeerConnection> pc_;
+  scoped_refptr<webrtc::MockPeerConnectionInterface> pc_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   scoped_refptr<WebRtcSetDescriptionObserverForTest> observer_;
