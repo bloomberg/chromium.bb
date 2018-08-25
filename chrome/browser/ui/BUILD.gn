@@ -1992,6 +1992,8 @@ jumbo_split_static_library("ui") {
       "webui/chromeos/login/discover/discover_window_manager.cc",
       "webui/chromeos/login/discover/discover_window_manager.h",
       "webui/chromeos/login/discover/discover_window_manager_observer.h",
+      "webui/chromeos/login/discover/modules/discover_module_redeem_offers.cc",
+      "webui/chromeos/login/discover/modules/discover_module_redeem_offers.h",
       "webui/chromeos/login/discover/modules/discover_module_welcome.cc",
       "webui/chromeos/login/discover/modules/discover_module_welcome.h",
       "webui/chromeos/login/discover_screen_handler.cc",

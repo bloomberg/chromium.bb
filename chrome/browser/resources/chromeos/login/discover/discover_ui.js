@@ -15,6 +15,9 @@
 
     updateLocalizedContent: function() {
       this.i18nUpdateLocale();
+      this.propagateUpdateLocalizedContent('.card');
+      this.propagateUpdateLocalizedContent('#discoverWelcome');
+      this.propagateUpdateLocalizedContent('.module');
     },
 
     /*
