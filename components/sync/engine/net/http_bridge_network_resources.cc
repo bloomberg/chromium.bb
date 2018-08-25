@@ -4,11 +4,13 @@
 
 #include "components/sync/engine/net/http_bridge_network_resources.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/net/http_bridge.h"
 #include "components/sync/engine/net/http_post_provider_factory.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {
 
@@ -16,11 +18,12 @@ HttpBridgeNetworkResources::~HttpBridgeNetworkResources() {}
 
 std::unique_ptr<HttpPostProviderFactory>
 HttpBridgeNetworkResources::GetHttpPostProviderFactory(
-    const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
     const NetworkTimeUpdateCallback& network_time_update_callback,
     CancelationSignal* cancelation_signal) {
   return base::WrapUnique<HttpPostProviderFactory>(
-      new HttpBridgeFactory(baseline_context_getter,
+      new HttpBridgeFactory(std::move(url_loader_factory_info),
                             network_time_update_callback, cancelation_signal));
 }
 

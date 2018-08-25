@@ -1009,6 +1009,7 @@ static_library("test_support_fake_server") {
     ":sync",
     "//base",
     "//net",
+    "//services/network/public/cpp:cpp",
     "//testing/gtest",
     "//url",
   ]

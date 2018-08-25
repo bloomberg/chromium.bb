@@ -9,6 +9,7 @@
 #include "components/sync/engine/net/http_post_provider_factory.h"
 #include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync/test/fake_server/fake_server_http_post_provider.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using syncer::CancelationSignal;
 using syncer::HttpPostProviderFactory;
@@ -25,7 +26,8 @@ FakeServerNetworkResources::~FakeServerNetworkResources() {}
 
 std::unique_ptr<syncer::HttpPostProviderFactory>
 FakeServerNetworkResources::GetHttpPostProviderFactory(
-    const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
     const NetworkTimeUpdateCallback& network_time_update_callback,
     CancelationSignal* cancelation_signal) {
   return std::make_unique<FakeServerHttpPostProviderFactory>(
