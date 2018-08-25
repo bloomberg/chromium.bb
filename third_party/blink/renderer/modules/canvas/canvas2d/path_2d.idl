@@ -29,9 +29,7 @@
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html#path2d
 
 [
-    Constructor,
-    Constructor(Path2D path),
-    Constructor(DOMString text),
+    Constructor(optional (Path2D or DOMString) path),
     Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures, PaintWorklet StableBlinkFeatures)
 ] interface Path2D {
 
