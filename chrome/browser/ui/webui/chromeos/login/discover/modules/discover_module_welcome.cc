@@ -33,8 +33,6 @@ DiscoverModuleWelcomeHandler::DiscoverModuleWelcomeHandler()
 
 void DiscoverModuleWelcomeHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
-  builder->Add("discoverWelcomeGetStarted", IDS_DISCOVER_WELCOME_GET_STARTED);
-  builder->Add("discoverWelcomeLater", IDS_DISCOVER_WELCOME_LATER);
   builder->AddF("discoverWelcomeTitle", IDS_DISCOVER_WELCOME_TITLE,
                 ui::GetChromeOSDeviceName());
   builder->AddF("discoverWelcomeSubTitle", IDS_DISCOVER_WELCOME_SUBTITLE,
