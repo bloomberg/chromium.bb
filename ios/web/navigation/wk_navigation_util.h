@@ -29,6 +29,9 @@ class NavigationItem;
 
 namespace wk_navigation_util {
 
+// Session restoration algorithm has this limitation on maximum session size.
+extern const int kMaxSessionSize;
+
 // URL fragment prefix used to encode the session history to inject in a
 // restore_session.html URL.
 extern const char kRestoreSessionSessionHashPrefix[];
