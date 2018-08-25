@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_paths.h"
 #include "content/public/test/test_content_client_initializer.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_preferences.h"
@@ -80,6 +81,7 @@ void ContentTestSuite::Initialize() {
     ContentClient client;
     ContentTestSuiteBase::RegisterContentSchemes(&client);
   }
+  RegisterPathProvider();
   media::InitializeMediaLibrary();
   // When running in a child process for Mac sandbox tests, the sandbox exists
   // to initialize GL, so don't do it here.
