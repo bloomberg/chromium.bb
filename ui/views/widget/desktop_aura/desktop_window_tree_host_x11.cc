@@ -2362,7 +2362,7 @@ gfx::Rect DesktopWindowTreeHostX11::ToPixelRect(
   return gfx::ToEnclosingRect(rect_in_pixels);
 }
 
-std::unique_ptr<base::Closure>
+std::unique_ptr<base::OnceClosure>
 DesktopWindowTreeHostX11::DisableEventListening() {
   // Allows to open multiple file-pickers. See https://crbug.com/678982
   modal_dialog_counter_++;
@@ -2374,9 +2374,9 @@ DesktopWindowTreeHostX11::DisableEventListening() {
         std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter)));
   }
 
-  return std::make_unique<base::Closure>(
-      base::Bind(&DesktopWindowTreeHostX11::EnableEventListening,
-                 weak_factory_.GetWeakPtr()));
+  return std::make_unique<base::OnceClosure>(
+      base::BindOnce(&DesktopWindowTreeHostX11::EnableEventListening,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void DesktopWindowTreeHostX11::EnableEventListening() {

@@ -55,7 +55,7 @@ class FilePicker : public ui::SelectFileDialog::Listener {
         static_cast<SelectFileDialogImplGTK*>(select_file_dialog_.get());
 
     while (!file_dialog->dialogs_.empty())
-      gtk_widget_destroy(*(file_dialog->dialogs_.begin()));
+      gtk_widget_destroy(file_dialog->dialogs_.begin()->first);
 
     select_file_dialog_->ListenerDestroyed();
   }
@@ -85,7 +85,7 @@ class FilePicker : public ui::SelectFileDialog::Listener {
   GtkFileChooser* getChooser() {
     auto* dialog =
         static_cast<SelectFileDialogImplGTK*>(select_file_dialog_.get());
-    return GTK_FILE_CHOOSER(*(dialog->dialogs_.begin()));
+    return GTK_FILE_CHOOSER(dialog->dialogs_.begin()->first);
   }
 
   DISALLOW_COPY_AND_ASSIGN(FilePicker);

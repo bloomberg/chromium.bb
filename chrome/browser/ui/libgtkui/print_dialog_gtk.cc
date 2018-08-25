@@ -182,17 +182,15 @@ PrintDialogGtk::PrintDialogGtk(PrintingContextLinux* context)
       dialog_(nullptr),
       gtk_settings_(nullptr),
       page_setup_(nullptr),
-      printer_(nullptr) {}
+      printer_(nullptr),
+      parent_(nullptr) {}
 
 PrintDialogGtk::~PrintDialogGtk() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (dialog_) {
-    aura::Window* parent = libgtkui::GetAuraTransientParent(dialog_);
-    if (parent) {
-      parent->RemoveObserver(this);
-      libgtkui::ClearAuraTransientParent(dialog_);
-    }
+    if (parent_)
+      parent_->RemoveObserver(this);
     gtk_widget_destroy(dialog_);
     dialog_ = nullptr;
   }
@@ -325,6 +323,7 @@ void PrintDialogGtk::ShowDialog(
 
   dialog_ = gtk_print_unix_dialog_new(nullptr, nullptr);
   libgtkui::SetGtkTransientForAura(dialog_, parent_view);
+  parent_ = parent_view;
   if (parent_view)
     parent_view->AddObserver(this);
   g_signal_connect(dialog_, "delete-event",
@@ -537,9 +536,8 @@ void PrintDialogGtk::InitPrintSettings(PrintSettings* settings) {
 }
 
 void PrintDialogGtk::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(libgtkui::GetAuraTransientParent(dialog_), window);
-
-  libgtkui::ClearAuraTransientParent(dialog_);
+  DCHECK_EQ(parent_, window);
+  parent_ = nullptr;
   window->RemoveObserver(this);
   if (!callback_.is_null())
     std::move(callback_).Run(PrintingContextLinux::CANCEL);

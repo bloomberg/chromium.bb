@@ -84,6 +84,8 @@ class PrintDialogGtk : public printing::PrintDialogGtkInterface,
   GtkPageSetup* page_setup_;
   GtkPrinter* printer_;
 
+  aura::Window* parent_;
+
   base::FilePath path_to_pdf_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintDialogGtk);
