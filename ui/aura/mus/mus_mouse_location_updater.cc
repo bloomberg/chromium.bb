@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/mus_mouse_location_updater.h"
 
+#include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/events/event.h"
 
@@ -43,8 +44,20 @@ void MusMouseLocationUpdater::OnEventProcessingStarted(const ui::Event& event) {
   }
 
   is_processing_trigger_event_ = true;
-  Env::GetInstance()->SetLastMouseLocation(
-      event.AsMouseEvent()->root_location());
+  gfx::Point location_in_screen = event.AsMouseEvent()->root_location();
+  // event.target() may not exist in some tests.
+  if (event.target()) {
+    aura::Window* root_window =
+        static_cast<aura::Window*>(event.target())->GetRootWindow();
+    auto* screen_position_client =
+        aura::client::GetScreenPositionClient(root_window);
+    // screen_position_client may not exist in tests.
+    if (screen_position_client) {
+      screen_position_client->ConvertPointToScreen(root_window,
+                                                   &location_in_screen);
+    }
+  }
+  Env::GetInstance()->SetLastMouseLocation(location_in_screen);
   Env::GetInstance()->get_last_mouse_location_from_mus_ = false;
 }
 

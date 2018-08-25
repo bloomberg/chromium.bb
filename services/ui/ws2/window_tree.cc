@@ -177,9 +177,28 @@ void WindowTree::SendEventToClient(aura::Window* window, const Event& event) {
   for (WindowServiceObserver& observer : window_service_->observers())
     observer.OnWillSendEventToClient(client_id_, event_id);
 
+  // Translate the root location for located events. Event's root location
+  // should be in the coordinate of the root window, however the root for the
+  // target window in the client can be different from the one in the server,
+  // thus the root location needs to be converted from the original coordinate
+  // to the one used in the client. See also 'WindowTreeTest.EventLocation' test
+  // case.
+  std::unique_ptr<ui::Event> event_to_send =
+      PointerWatcher::CreateEventForClient(event);
+  if (event.IsLocatedEvent()) {
+    aura::Window* client_root_window = GetClientRootWindowFor(window);
+    // The client_root_ may have been removed on shutdown.
+    if (client_root_window) {
+      gfx::PointF root_location =
+          event_to_send->AsLocatedEvent()->root_location_f();
+      aura::Window::ConvertPointToTarget(window->GetRootWindow(),
+                                         client_root_window, &root_location);
+      event_to_send->AsLocatedEvent()->set_root_location_f(root_location);
+    }
+  }
   window_tree_client_->OnWindowInputEvent(
       event_id, TransportIdForWindow(window), display_id,
-      PointerWatcher::CreateEventForClient(event), matches_pointer_watcher);
+      std::move(event_to_send), matches_pointer_watcher);
 }
 
 void WindowTree::SendPointerWatcherEventToClient(
@@ -380,6 +399,15 @@ bool WindowTree::IsClientCreatedWindow(aura::Window* window) {
 
 bool WindowTree::IsClientRootWindow(aura::Window* window) {
   return window && FindClientRootWithRoot(window) != client_roots_.end();
+}
+
+aura::Window* WindowTree::GetClientRootWindowFor(aura::Window* window) {
+  if (!window)
+    return nullptr;
+  auto iter = FindClientRootWithRoot(window);
+  if (iter != client_roots_.end())
+    return iter->get()->window();
+  return GetClientRootWindowFor(window->parent());
 }
 
 WindowTree::ClientRoots::iterator WindowTree::FindClientRootWithRoot(
