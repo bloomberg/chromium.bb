@@ -356,8 +356,8 @@ TEST(WindowTreeTest, WindowToWindowData) {
 TEST(WindowTreeTest, EventLocation) {
   WindowServiceTestSetup setup;
   TestWindowTreeClient* window_tree_client = setup.window_tree_client();
-  aura::Window* top_level =
-      setup.window_tree_test_helper()->NewTopLevelWindow();
+  WindowTreeTestHelper* helper = setup.window_tree_test_helper();
+  aura::Window* top_level = helper->NewTopLevelWindow();
   ASSERT_TRUE(top_level);
 
   top_level->Show();
@@ -374,22 +374,70 @@ TEST(WindowTreeTest, EventLocation) {
   event_generator.MoveMouseTo(33, 44);
   ASSERT_EQ(1u, window_tree_client->input_events().size());
   TestWindowTreeClient::InputEvent event1 = window_tree_client->PopInputEvent();
+  EXPECT_EQ(helper->TransportIdForWindow(top_level), event1.window_id);
   ASSERT_TRUE(event1.event->IsLocatedEvent());
   ui::LocatedEvent* located_event1 = event1.event->AsLocatedEvent();
-  // The location is in the top-level's (client-root) coordinate system.
+  // The location is in the target window's coordinate system.
   EXPECT_EQ(gfx::Point(23, 24), located_event1->location());
-  // The root location is in the display's (display-root) coordinate system.
-  EXPECT_EQ(gfx::Point(33, 44), located_event1->root_location());
+  // The root location is in the client-root coordinate system.
+  EXPECT_EQ(gfx::Point(23, 24), located_event1->root_location());
 
-  event_generator.MoveMouseTo(55, 66);
-  ASSERT_EQ(1u, window_tree_client->input_events().size());
+  event_generator.MoveMouseTo(55, 86);
+  // 2 input events should happen -- exit on |top_level| and enter on |window|.
+  ASSERT_EQ(2u, window_tree_client->input_events().size());
+
+  // Check the exit event on |top_level|.
   TestWindowTreeClient::InputEvent event2 = window_tree_client->PopInputEvent();
+  EXPECT_EQ(helper->TransportIdForWindow(top_level), event2.window_id);
   ASSERT_TRUE(event2.event->IsLocatedEvent());
   ui::LocatedEvent* located_event2 = event2.event->AsLocatedEvent();
-  // The location is in the top-level's (client-root) coordinate system.
-  EXPECT_EQ(gfx::Point(45, 46), located_event2->location());
-  // The root location is in the display's (display-root) coordinate system.
-  EXPECT_EQ(gfx::Point(55, 66), located_event2->root_location());
+  // The location is in the target window's coordinate system.
+  EXPECT_EQ(gfx::Point(45, 66), located_event2->location());
+  // The root location is in the client-root coordinate system.
+  EXPECT_EQ(gfx::Point(45, 66), located_event2->root_location());
+
+  // Check the enter event on |window|.
+  TestWindowTreeClient::InputEvent event3 = window_tree_client->PopInputEvent();
+  EXPECT_EQ(helper->TransportIdForWindow(window), event3.window_id);
+  ASSERT_TRUE(event3.event->IsLocatedEvent());
+  ui::LocatedEvent* located_event3 = event3.event->AsLocatedEvent();
+  // The location is in the target window's coordinate system.
+  EXPECT_EQ(gfx::Point(45, 16), located_event3->location());
+  // The root location is in the client-root coordinate system.
+  EXPECT_EQ(gfx::Point(45, 66), located_event3->root_location());
+}
+
+TEST(WindowTreeTest, EventLocationForTransientChildWindow) {
+  WindowServiceTestSetup setup;
+  TestWindowTreeClient* window_tree_client = setup.window_tree_client();
+  WindowTreeTestHelper* helper = setup.window_tree_test_helper();
+
+  aura::Window* top_level = helper->NewTopLevelWindow();
+  ASSERT_TRUE(top_level);
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 20, 100, 100));
+
+  aura::Window* transient = helper->NewTopLevelWindow();
+  ASSERT_TRUE(transient);
+  transient->Show();
+  transient->SetBounds(gfx::Rect(50, 30, 60, 90));
+
+  helper->window_tree()->AddTransientWindow(
+      10, helper->TransportIdForWindow(top_level),
+      helper->TransportIdForWindow(transient));
+
+  test::EventGenerator event_generator(setup.root());
+  event_generator.MoveMouseTo(61, 44);
+  ASSERT_EQ(1u, window_tree_client->input_events().size());
+  TestWindowTreeClient::InputEvent event = window_tree_client->PopInputEvent();
+  EXPECT_EQ(helper->TransportIdForWindow(transient), event.window_id);
+  ASSERT_TRUE(event.event->IsLocatedEvent());
+  ui::LocatedEvent* located_event = event.event->AsLocatedEvent();
+  // The location is in the target window's coordinate system.
+  EXPECT_EQ(gfx::Point(11, 14), located_event->location());
+  // The root location is in the client-root coordinate system. Transient
+  // parents won't affect the coordinate system.
+  EXPECT_EQ(gfx::Point(11, 14), located_event->root_location());
 }
 
 TEST(WindowTreeTest, MovePressDragRelease) {

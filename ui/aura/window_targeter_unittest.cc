@@ -62,6 +62,8 @@ TEST_P(WindowTargeterTest, Basic) {
   one->SetBounds(gfx::Rect(0, 0, 500, 100));
   two->SetBounds(gfx::Rect(501, 0, 500, 1000));
 
+  root_window()->Show();
+
   ui::test::TestEventHandler handler;
   one->AddPreTargetHandler(&handler);
 
@@ -106,17 +108,6 @@ TEST_P(WindowTargeterTest, FindTargetInRootWindow) {
   EXPECT_EQ(nullptr, targeter.FindTargetInRootWindow(root_window(), mouse2));
   EXPECT_EQ(root_window(),
             targeter.FindTargetInRootWindow(root_window(), touch2));
-
-  // Simulate a mus client root (top level app window) with bottom-right bounds.
-  // Touches in the root and display should yield null targets crbug.com/873763.
-  // (mus clients root locations are display coords, not client-root coords)
-  root_window()->SetBounds(gfx::Rect(600, 500, 200, 100));
-  gfx::Point root_touch_coords(199, 99);
-  gfx::Point display_touch_coords(799, 699);
-  ui::TouchEvent touch3(ui::ET_TOUCH_PRESSED, root_touch_coords,
-                        ui::EventTimeForNow(), ui::PointerDetails());
-  touch3.set_root_location(display_touch_coords);
-  EXPECT_EQ(nullptr, targeter.FindTargetInRootWindow(root_window(), touch3));
 }
 
 TEST_P(WindowTargeterTest, ScopedWindowTargeter) {
