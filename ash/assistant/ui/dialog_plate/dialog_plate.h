@@ -21,6 +21,10 @@ namespace ui {
 class CallbackLayerAnimationObserver;
 }  // namespace ui
 
+namespace views {
+class ImageButton;
+}  // namespace views
+
 namespace ash {
 
 class AssistantController;
@@ -93,19 +97,23 @@ class DialogPlate : public views::View,
 
  private:
   void InitLayout();
-  void InitKeyboardLayoutContainer(
-      views::View* input_modality_layout_container);
-  void InitVoiceLayoutContainer(views::View* input_modality_layout_container);
+  void InitKeyboardLayoutContainer();
+  void InitVoiceLayoutContainer();
 
   void OnButtonPressed(DialogPlateButtonId id);
 
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
+  void SetFocusMode(InputModality modality);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
 
+  views::View* input_modality_layout_container_;     // Owned by view hierarchy.
   views::View* keyboard_layout_container_;           // Owned by view hierarchy.
   views::View* voice_layout_container_;              // Owned by view hierarchy.
+  views::ImageButton* keyboard_input_toggle_;        // Owned by view hierarchy.
+  views::ImageButton* voice_input_toggle_;           // Owned by view hierarchy.
+  views::ImageButton* settings_button_;              // Owned by view hierarchy.
   views::Textfield* textfield_;                      // Owned by view hierarchy.
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver> animation_observer_;
