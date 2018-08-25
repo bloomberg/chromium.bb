@@ -79,17 +79,20 @@ bool ValidateFilter(v8::Local<v8::Context> context,
 UnfilteredEventListeners::UnfilteredEventListeners(
     const ListenersUpdated& listeners_updated,
     const std::string& event_name,
-    const std::string& context_owner_id,
+    const ContextOwnerIdGetter& context_owner_id_getter,
     int max_listeners,
     bool supports_lazy_listeners,
     ListenerTracker* listener_tracker)
     : listeners_updated_(listeners_updated),
       event_name_(event_name),
-      context_owner_id_(context_owner_id),
+      context_owner_id_getter_(context_owner_id_getter),
       max_listeners_(max_listeners),
       supports_lazy_listeners_(supports_lazy_listeners),
       listener_tracker_(listener_tracker) {
   DCHECK(max_listeners_ == binding::kNoListenerMax || max_listeners_ > 0);
+  DCHECK_EQ(listener_tracker_ == nullptr, context_owner_id_getter_.is_null())
+      << "Managed events must have both a listener tracker and context owner; "
+      << "unmanaged must have neither.";
 }
 UnfilteredEventListeners::~UnfilteredEventListeners() = default;
 
@@ -116,6 +119,7 @@ bool UnfilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
     // NOTE: |listener_tracker_| is null for unmanaged events, in which case we
     // send no notifications.
     if (listener_tracker_) {
+      LazilySetContextOwner(context);
       bool was_first_listener_for_context_owner =
           listener_tracker_->AddUnfilteredListener(context_owner_id_,
                                                    event_name_);
@@ -175,6 +179,15 @@ void UnfilteredEventListeners::Invalidate(v8::Local<v8::Context> context) {
   }
 }
 
+void UnfilteredEventListeners::LazilySetContextOwner(
+    v8::Local<v8::Context> context) {
+  if (context_owner_id_.empty()) {
+    DCHECK(context_owner_id_getter_);
+    context_owner_id_ = context_owner_id_getter_.Run(context);
+    DCHECK(!context_owner_id_.empty());
+  }
+}
+
 void UnfilteredEventListeners::NotifyListenersEmpty(
     v8::Local<v8::Context> context,
     bool update_lazy_listeners) {
@@ -183,6 +196,9 @@ void UnfilteredEventListeners::NotifyListenersEmpty(
   // send no notifications.
   if (!listener_tracker_)
     return;
+
+  DCHECK(!context_owner_id_.empty())
+      << "The context owner must be instantiated if listeners were removed.";
 
   bool was_last_listener_for_context_owner =
       listener_tracker_->RemoveUnfilteredListener(context_owner_id_,
@@ -213,16 +229,20 @@ struct FilteredEventListeners::ListenerData {
 FilteredEventListeners::FilteredEventListeners(
     const ListenersUpdated& listeners_updated,
     const std::string& event_name,
-    const std::string& context_owner_id,
+    const ContextOwnerIdGetter& context_owner_id_getter,
     int max_listeners,
     bool supports_lazy_listeners,
     ListenerTracker* listener_tracker)
     : listeners_updated_(listeners_updated),
       event_name_(event_name),
-      context_owner_id_(context_owner_id),
+      context_owner_id_getter_(context_owner_id_getter),
       max_listeners_(max_listeners),
       supports_lazy_listeners_(supports_lazy_listeners),
-      listener_tracker_(listener_tracker) {}
+      listener_tracker_(listener_tracker) {
+  DCHECK(listener_tracker_);
+  DCHECK(context_owner_id_getter_);
+}
+
 FilteredEventListeners::~FilteredEventListeners() = default;
 
 bool FilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
@@ -245,6 +265,7 @@ bool FilteredEventListeners::AddListener(v8::Local<v8::Function> listener,
   base::DictionaryValue* filter_weak = filter_dict.get();
   int filter_id = -1;
   bool was_first_of_kind = false;
+  LazilySetContextOwner(context);
   std::tie(was_first_of_kind, filter_id) =
       listener_tracker_->AddFilteredListener(context_owner_id_, event_name_,
                                              std::move(filter_dict),
@@ -309,10 +330,22 @@ void FilteredEventListeners::Invalidate(v8::Local<v8::Context> context) {
   listeners_.clear();
 }
 
+void FilteredEventListeners::LazilySetContextOwner(
+    v8::Local<v8::Context> context) {
+  if (context_owner_id_.empty()) {
+    DCHECK(context_owner_id_getter_);
+    context_owner_id_ = context_owner_id_getter_.Run(context);
+    DCHECK(!context_owner_id_.empty());
+  }
+}
+
 void FilteredEventListeners::InvalidateListener(
     const ListenerData& listener,
     bool was_manual,
     v8::Local<v8::Context> context) {
+  DCHECK(!context_owner_id_.empty())
+      << "The context owner must be instantiated if listeners were removed.";
+
   bool was_last_of_kind = false;
   std::unique_ptr<base::DictionaryValue> filter;
   std::tie(was_last_of_kind, filter) =

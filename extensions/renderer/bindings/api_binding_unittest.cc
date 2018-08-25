@@ -199,7 +199,7 @@ class APIBindingUnittest : public APIBindingTest {
     if (!availability_callback_)
       availability_callback_ = base::Bind(&AllowAllFeatures);
     auto get_context_owner = [](v8::Local<v8::Context>) {
-      return std::string();
+      return std::string("context");
     };
     event_handler_ = std::make_unique<APIEventHandler>(
         base::Bind(&OnEventListenersChanged),

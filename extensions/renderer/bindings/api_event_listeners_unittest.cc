@@ -26,6 +26,11 @@ const char kFunction[] = "(function() {})";
 const char kEvent[] = "event";
 const char kContextOwner[] = "context";
 
+APIEventListeners::ContextOwnerIdGetter CreateContextOwnerIdGetter() {
+  return base::BindRepeating(
+      [](v8::Local<v8::Context>) { return std::string(kContextOwner); });
+}
+
 }  // namespace
 
 // Test unfiltered listeners.
@@ -35,7 +40,8 @@ TEST_F(APIEventListenersTest, UnfilteredListeners) {
 
   MockEventChangeHandler handler;
   ListenerTracker tracker;
-  UnfilteredEventListeners listeners(handler.Get(), kEvent, kContextOwner,
+  UnfilteredEventListeners listeners(handler.Get(), kEvent,
+                                     CreateContextOwnerIdGetter(),
                                      binding::kNoListenerMax, true, &tracker);
 
   // Starting out, there should be no listeners.
@@ -112,7 +118,8 @@ TEST_F(APIEventListenersTest, UnfilteredListenersInvalidation) {
 
   MockEventChangeHandler handler;
   ListenerTracker tracker;
-  UnfilteredEventListeners listeners(handler.Get(), kEvent, kContextOwner,
+  UnfilteredEventListeners listeners(handler.Get(), kEvent,
+                                     CreateContextOwnerIdGetter(),
                                      binding::kNoListenerMax, true, &tracker);
 
   listeners.Invalidate(context);
@@ -145,7 +152,8 @@ TEST_F(APIEventListenersTest, UnfilteredListenersIgnoreFilteringInfo) {
   v8::Local<v8::Context> context = MainContext();
 
   ListenerTracker tracker;
-  UnfilteredEventListeners listeners(base::DoNothing(), kEvent, kContextOwner,
+  UnfilteredEventListeners listeners(base::DoNothing(), kEvent,
+                                     CreateContextOwnerIdGetter(),
                                      binding::kNoListenerMax, true, &tracker);
   v8::Local<v8::Function> function = FunctionFromString(context, kFunction);
   std::string error;
@@ -162,8 +170,9 @@ TEST_F(APIEventListenersTest, UnfilteredListenersMaxListenersTest) {
   v8::Local<v8::Context> context = MainContext();
 
   ListenerTracker tracker;
-  UnfilteredEventListeners listeners(base::DoNothing(), kEvent, kContextOwner,
-                                     1, true, &tracker);
+  UnfilteredEventListeners listeners(base::DoNothing(), kEvent,
+                                     CreateContextOwnerIdGetter(), 1, true,
+                                     &tracker);
 
   v8::Local<v8::Function> function_a = FunctionFromString(context, kFunction);
   EXPECT_EQ(0u, listeners.GetNumListeners());
@@ -188,7 +197,8 @@ TEST_F(APIEventListenersTest, UnfilteredListenersLazyListeners) {
 
   ListenerTracker tracker;
   MockEventChangeHandler handler;
-  UnfilteredEventListeners listeners(handler.Get(), kEvent, kContextOwner,
+  UnfilteredEventListeners listeners(handler.Get(), kEvent,
+                                     CreateContextOwnerIdGetter(),
                                      binding::kNoListenerMax, false, &tracker);
 
   v8::Local<v8::Function> listener = FunctionFromString(context, kFunction);
@@ -215,7 +225,8 @@ TEST_F(APIEventListenersTest, FilteredListeners) {
 
   MockEventChangeHandler handler;
   ListenerTracker tracker;
-  FilteredEventListeners listeners(handler.Get(), kEvent, kContextOwner,
+  FilteredEventListeners listeners(handler.Get(), kEvent,
+                                   CreateContextOwnerIdGetter(),
                                    binding::kNoListenerMax, true, &tracker);
 
   // Starting out, there should be no listeners registered.
@@ -361,7 +372,8 @@ TEST_F(APIEventListenersTest,
 
   MockEventChangeHandler handler;
   ListenerTracker tracker;
-  FilteredEventListeners listeners(handler.Get(), kEvent, kContextOwner,
+  FilteredEventListeners listeners(handler.Get(), kEvent,
+                                   CreateContextOwnerIdGetter(),
                                    binding::kNoListenerMax, true, &tracker);
 
   auto get_filter = [context]() {
@@ -417,7 +429,8 @@ TEST_F(APIEventListenersTest, UnfilteredListenersError) {
   v8::Local<v8::Context> context = MainContext();
 
   ListenerTracker tracker;
-  FilteredEventListeners listeners(base::DoNothing(), kEvent, kContextOwner,
+  FilteredEventListeners listeners(base::DoNothing(), kEvent,
+                                   CreateContextOwnerIdGetter(),
                                    binding::kNoListenerMax, true, &tracker);
 
   v8::Local<v8::Object> invalid_filter =
@@ -440,9 +453,11 @@ TEST_F(APIEventListenersTest, MultipleUnfilteredListenerEvents) {
   const char kBeta[] = "beta";
 
   ListenerTracker tracker;
-  FilteredEventListeners listeners_a(base::DoNothing(), kAlpha, kContextOwner,
+  FilteredEventListeners listeners_a(base::DoNothing(), kAlpha,
+                                     CreateContextOwnerIdGetter(),
                                      binding::kNoListenerMax, true, &tracker);
-  FilteredEventListeners listeners_b(base::DoNothing(), kBeta, kContextOwner,
+  FilteredEventListeners listeners_b(base::DoNothing(), kBeta,
+                                     CreateContextOwnerIdGetter(),
                                      binding::kNoListenerMax, true, &tracker);
 
   EXPECT_EQ(
@@ -497,7 +512,8 @@ TEST_F(APIEventListenersTest, FilteredListenersInvalidation) {
 
   MockEventChangeHandler handler;
   ListenerTracker tracker;
-  FilteredEventListeners listeners(handler.Get(), kEvent, kContextOwner,
+  FilteredEventListeners listeners(handler.Get(), kEvent,
+                                   CreateContextOwnerIdGetter(),
                                    binding::kNoListenerMax, true, &tracker);
   listeners.Invalidate(context);
 
@@ -546,8 +562,9 @@ TEST_F(APIEventListenersTest, FilteredListenersMaxListenersTest) {
   v8::Local<v8::Context> context = MainContext();
 
   ListenerTracker tracker;
-  FilteredEventListeners listeners(base::DoNothing(), kEvent, kContextOwner, 1,
-                                   true, &tracker);
+  FilteredEventListeners listeners(base::DoNothing(), kEvent,
+                                   CreateContextOwnerIdGetter(), 1, true,
+                                   &tracker);
 
   v8::Local<v8::Function> function_a = FunctionFromString(context, kFunction);
   EXPECT_EQ(0u, listeners.GetNumListeners());
@@ -572,7 +589,8 @@ TEST_F(APIEventListenersTest, FilteredListenersLazyListeners) {
 
   MockEventChangeHandler handler;
   ListenerTracker tracker;
-  FilteredEventListeners listeners(handler.Get(), kEvent, kContextOwner,
+  FilteredEventListeners listeners(handler.Get(), kEvent,
+                                   CreateContextOwnerIdGetter(),
                                    binding::kNoListenerMax, false, &tracker);
 
   v8::Local<v8::Function> listener = FunctionFromString(context, kFunction);
