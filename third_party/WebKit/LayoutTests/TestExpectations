@@ -4978,13 +4978,6 @@ crbug.com/874733 [ Android ] accessibility/aria-labelledby-on-input.html [ Crash
 crbug.com/874733 [ Android ] accessibility/aria-link-supports-press.html [ Crash ]
 crbug.com/874733 [ Android ] accessibility/insert-adjacent-html-causes-crash.xhtml [ Crash ]
 
-crbug.com/874737 [ Android ] animations/animation-shorthand-overriding.html [ Crash ]
-crbug.com/874737 [ Android ] animations/interpolation/border-image-slice-interpolation-stability.html [ Crash ]
-crbug.com/874737 [ Android ] animations/responsive/interpolation/offset-rotate-responsive.html [ Crash ]
-crbug.com/874737 [ Android ] animations/stability/empty-keyframes.html [ Crash ]
-crbug.com/874737 [ Android ] animations/svg-attribute-composition/svg-bias-composition.html [ Crash ]
-crbug.com/874737 [ Android ] animations/svg-attribute-interpolation/svg-numOctaves-interpolation.html [ Crash ]
-
 # Sheriff 2018-08-17
 crbug.com/869726 [ Mac ] virtual/scroll_customization/fast/events/touch/touch-latched-scroll-node-removed.html [ Pass Failure ]
 crbug.com/875170 animations/interpolation/svg-stroke-dasharray-interpolation.html [ Timeout Pass ]
