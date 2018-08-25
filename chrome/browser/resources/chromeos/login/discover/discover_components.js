@@ -8,6 +8,7 @@
 
 // --- Modules.
 // <include src="modules/discover_module_redeem_offers.js">
+// <include src="modules/discover_module_sync_files.js">
 
 // --- These depend on modules.
 // <include src="discover_welcome.js">

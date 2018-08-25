@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_redeem_offers.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_sync_files.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_welcome.h"
 
 namespace chromeos {
@@ -30,6 +31,8 @@ bool DiscoverManager::IsCompleted() const {
 void DiscoverManager::CreateModules() {
   modules_[DiscoverModuleRedeemOffers::kModuleName] =
       std::make_unique<DiscoverModuleRedeemOffers>();
+  modules_[DiscoverModuleSyncFiles::kModuleName] =
+      std::make_unique<DiscoverModuleSyncFiles>();
   modules_[DiscoverModuleWelcome::kModuleName] =
       std::make_unique<DiscoverModuleWelcome>();
 }
