@@ -110,6 +110,7 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_util_ios.h"
 #include "net/ssl/ssl_info.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -1272,13 +1273,20 @@ GURL URLEscapedForHistory(const GURL& url) {
     _documentURL = newURL;
     _interactionRegisteredSinceLastURLChange = NO;
   }
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
-      (!context || !context->IsLoadingHtmlString()) &&
-      !IsWKInternalUrl(newURL) && _webView) {
+  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() && context &&
+      !context->IsLoadingHtmlString() && !IsWKInternalUrl(newURL) && _webView) {
     GURL documentOrigin = newURL.GetOrigin();
     GURL committedOrigin = _webStateImpl->GetLastCommittedURL().GetOrigin();
     DCHECK_EQ(documentOrigin, committedOrigin)
         << "Old and new URL detection system have a mismatch";
+
+    ukm::SourceId sourceID = ukm::ConvertToSourceId(
+        context->GetNavigationId(), ukm::SourceIdType::NAVIGATION_ID);
+    if (sourceID != ukm::kInvalidSourceId) {
+      ukm::builders::IOS_URLMismatchInLegacyAndSlimNavigationManager(sourceID)
+          .SetHasMismatch(documentOrigin != committedOrigin)
+          .Record(ukm::UkmRecorder::Get());
+    }
   }
 }
 

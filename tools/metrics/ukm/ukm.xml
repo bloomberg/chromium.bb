@@ -4676,4 +4676,19 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="IOS.URLMismatchInLegacyAndSlimNavigationManager">
+  <owner>eugenebut@chromium.org</owner>
+  <owner>danyao@chromium.org</owner>
+  <summary>
+    Logged when LegacyNavigationManager and KWKBasedNavigationManager have
+    different last committed URLs. This means that either old or new navigation
+    system has a URL spoofing bug.
+  </summary>
+  <metric name="HasMismatch">
+    <summary>
+      True if there was a mismatch.
+    </summary>
+  </metric>
+</event>
+
 </ukm-configuration>
