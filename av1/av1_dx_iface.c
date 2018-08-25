@@ -26,6 +26,7 @@
 #include "av1/common/alloccommon.h"
 #include "av1/common/frame_buffers.h"
 #include "av1/common/enums.h"
+#include "av1/common/obu_util.h"
 
 #include "av1/decoder/decoder.h"
 #include "av1/decoder/decodeframe.h"
