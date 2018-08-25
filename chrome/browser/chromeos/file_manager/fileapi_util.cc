@@ -406,6 +406,25 @@ class ConvertSelectedFileInfoListToFileChooserFileInfoListImpl {
       ConvertSelectedFileInfoListToFileChooserFileInfoListImpl);
 };
 
+void CheckIfDirectoryExistsOnIoThread(
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const storage::FileSystemURL& internal_url,
+    storage::FileSystemOperationRunner::StatusCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  file_system_context->operation_runner()->DirectoryExists(internal_url,
+                                                           std::move(callback));
+}
+
+void GetMetadataForPathOnIoThread(
+    scoped_refptr<storage::FileSystemContext> file_system_context,
+    const storage::FileSystemURL& internal_url,
+    int fields,
+    storage::FileSystemOperationRunner::GetMetadataCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  file_system_context->operation_runner()->GetMetadata(internal_url, fields,
+                                                       callback);
+}
+
 }  // namespace
 
 EntryDefinition::EntryDefinition() = default;
@@ -548,9 +567,7 @@ void CheckIfDirectoryExists(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(base::IgnoreResult(
-                         &storage::FileSystemOperationRunner::DirectoryExists),
-                     file_system_context->operation_runner()->AsWeakPtr(),
+      base::BindOnce(&CheckIfDirectoryExistsOnIoThread, file_system_context,
                      internal_url, google_apis::CreateRelayCallback(callback)));
 }
 
@@ -569,10 +586,9 @@ void GetMetadataForPath(
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          base::IgnoreResult(&storage::FileSystemOperationRunner::GetMetadata),
-          file_system_context->operation_runner()->AsWeakPtr(), internal_url,
-          fields, google_apis::CreateRelayCallback(callback)));
+      base::BindOnce(&GetMetadataForPathOnIoThread, file_system_context,
+                     internal_url, fields,
+                     google_apis::CreateRelayCallback(callback)));
 }
 
 storage::FileSystemURL CreateIsolatedURLFromVirtualPath(
