@@ -10,9 +10,9 @@
 #include "components/sync/engine/net/network_resources.h"
 #include "components/sync/engine/net/network_time_update_callback.h"
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}  // namespace network
 
 namespace syncer {
 
@@ -25,8 +25,8 @@ class HttpBridgeNetworkResources : public NetworkResources {
 
   // NetworkResources
   std::unique_ptr<HttpPostProviderFactory> GetHttpPostProviderFactory(
-      const scoped_refptr<net::URLRequestContextGetter>&
-          baseline_context_getter,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info,
       const NetworkTimeUpdateCallback& network_time_update_callback,
       CancelationSignal* cancelation_signal) override;
 };

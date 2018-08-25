@@ -411,7 +411,8 @@ syncer::SyncEngine::HttpPostProviderFactoryGetter
 ProfileSyncService::MakeHttpPostProviderFactoryGetter() {
   return base::BindRepeating(
       &syncer::NetworkResources::GetHttpPostProviderFactory,
-      base::Unretained(network_resources_.get()), url_request_context_,
+      base::Unretained(network_resources_.get()),
+      base::Passed(url_loader_factory_->Clone()),
       network_time_update_callback_);
 }
 

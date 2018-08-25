@@ -52,5 +52,6 @@ test("sync_client") {
     "//components/sync:test_support_engine",
     "//jingle:notifier",
     "//net:test_support",
+    "//services/network:test_support",
   ]
 }

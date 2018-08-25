@@ -13,13 +13,14 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "net/http/http_response_headers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/test/test_shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -43,9 +44,7 @@ const char kUserAgent[] = "user-agent";
 class MAYBE_SyncHttpBridgeTest : public testing::Test {
  public:
   MAYBE_SyncHttpBridgeTest()
-      : fake_default_request_context_getter_(nullptr),
-        bridge_for_race_test_(nullptr),
-        io_thread_("IO thread") {
+      : bridge_for_race_test_(nullptr), io_thread_("IO thread") {
     test_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
   }
 
@@ -53,28 +52,15 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);
+
+    HttpBridge::SetIOCapableTaskRunnerForTest(io_thread_.task_runner());
   }
 
   void TearDown() override {
-    if (fake_default_request_context_getter_) {
-      GetIOThreadLoop()->task_runner()->ReleaseSoon(
-          FROM_HERE, fake_default_request_context_getter_);
-      fake_default_request_context_getter_ = nullptr;
-    }
     io_thread_.Stop();
   }
 
-  HttpBridge* BuildBridge() {
-    if (!fake_default_request_context_getter_) {
-      fake_default_request_context_getter_ =
-          new net::TestURLRequestContextGetter(io_thread_.task_runner());
-      fake_default_request_context_getter_->AddRef();
-    }
-    HttpBridge* bridge =
-        new HttpBridge(kUserAgent, fake_default_request_context_getter_,
-                       NetworkTimeUpdateCallback(), BindToTrackerCallback());
-    return bridge;
-  }
+  HttpBridge* BuildBridge() { return new CustomHttpBridge(); }
 
   static void Abort(HttpBridge* bridge) { bridge->Abort(); }
 
@@ -83,27 +69,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
   void RunSyncThreadBridgeUseTest(base::WaitableEvent* signal_when_created,
                                   base::WaitableEvent* signal_when_released);
 
-  static void TestSameHttpNetworkSession(base::OnceClosure on_done,
-                                         MAYBE_SyncHttpBridgeTest* test) {
-    scoped_refptr<HttpBridge> http_bridge(test->BuildBridge());
-    EXPECT_TRUE(test->GetTestRequestContextGetter());
-    net::HttpNetworkSession* test_session = test->GetTestRequestContextGetter()
-                                                ->GetURLRequestContext()
-                                                ->http_transaction_factory()
-                                                ->GetSession();
-    EXPECT_EQ(test_session, http_bridge->GetRequestContextGetterForTest()
-                                ->GetURLRequestContext()
-                                ->http_transaction_factory()
-                                ->GetSession());
-    std::move(on_done).Run();
-  }
-
   base::MessageLoop* GetIOThreadLoop() { return io_thread_.message_loop(); }
-
-  // Note this is lazy created, so don't call this before your bridge.
-  net::TestURLRequestContextGetter* GetTestRequestContextGetter() {
-    return fake_default_request_context_getter_;
-  }
 
   net::EmbeddedTestServer test_server_;
 
@@ -112,15 +78,35 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
   HttpBridge* bridge_for_race_test() { return bridge_for_race_test_; }
 
  private:
-  // A make-believe "default" request context, as would be returned by
-  // Profile::GetDefaultRequestContext().  Created lazily by BuildBridge.
-  net::TestURLRequestContextGetter* fake_default_request_context_getter_;
+  // A custom HTTPBridge implementation that sets a SharedURLLoaderFactory
+  // instance from the IO-capable thread.
+  class CustomHttpBridge : public HttpBridge {
+   public:
+    CustomHttpBridge()
+        : HttpBridge(kUserAgent,
+                     nullptr /*SharedURLLoaderFactoryInfo*/,
+                     NetworkTimeUpdateCallback(),
+                     BindToTrackerCallback()) {}
+
+   protected:
+    ~CustomHttpBridge() override {}
+
+    void MakeAsynchronousPost() override {
+      set_url_loader_factory_for_testing(
+          base::MakeRefCounted<network::TestSharedURLLoaderFactory>());
+
+      HttpBridge::MakeAsynchronousPost();
+
+      // Attempt to spin a loop so that mojom::URLLoaderFactory get executed.
+      base::RunLoop().RunUntilIdle();
+    }
+  };
 
   HttpBridge* bridge_for_race_test_;
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   // Separate thread for IO used by the HttpBridge.
   base::Thread io_thread_;
-  base::MessageLoop loop_;
 };
 
 // An HttpBridge that doesn't actually make network requests and just calls
@@ -131,13 +117,12 @@ class ShuntedHttpBridge : public HttpBridge {
  public:
   // If |never_finishes| is true, the simulated request never actually
   // returns.
-  ShuntedHttpBridge(net::URLRequestContextGetter* baseline_context_getter,
-                    MAYBE_SyncHttpBridgeTest* test,
-                    bool never_finishes)
-      : HttpBridge(kUserAgent,
-                   baseline_context_getter,
-                   NetworkTimeUpdateCallback(),
-                   BindToTrackerCallback()),
+  ShuntedHttpBridge(MAYBE_SyncHttpBridgeTest* test, bool never_finishes)
+      : HttpBridge(
+            kUserAgent,
+            nullptr /*SharedURLLoaderFactoryInfo, unneeded as we mock stuff*/,
+            NetworkTimeUpdateCallback(),
+            BindToTrackerCallback()),
         test_(test),
         never_finishes_(never_finishes) {}
 
@@ -161,15 +146,11 @@ class ShuntedHttpBridge : public HttpBridge {
   void CallOnURLFetchComplete() {
     ASSERT_TRUE(
         test_->GetIOThreadLoop()->task_runner()->BelongsToCurrentThread());
-    // We return a dummy content response.
-    std::string response_content = "success!";
-    net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), nullptr);
-    scoped_refptr<net::HttpResponseHeaders> response_headers(
-        new net::HttpResponseHeaders(""));
-    fetcher.set_response_code(200);
-    fetcher.SetResponseString(response_content);
-    fetcher.set_response_headers(response_headers);
-    OnURLFetchComplete(&fetcher);
+
+    // Set up a dummy content response.
+    OnURLLoadCompleteInternal(200, net::OK, 0 /* content length, irrelevant */,
+                              GURL("http://www.google.com"),
+                              std::make_unique<std::string>("success!"));
   }
   MAYBE_SyncHttpBridgeTest* test_;
   bool never_finishes_;
@@ -178,11 +159,8 @@ class ShuntedHttpBridge : public HttpBridge {
 void MAYBE_SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
     base::WaitableEvent* signal_when_created,
     base::WaitableEvent* signal_when_released) {
-  scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread_.task_runner()));
   {
-    scoped_refptr<ShuntedHttpBridge> bridge(
-        new ShuntedHttpBridge(ctx_getter.get(), this, true));
+    scoped_refptr<ShuntedHttpBridge> bridge(new ShuntedHttpBridge(this, true));
     bridge->SetURL("http://www.google.com", 9999);
     bridge->SetPostPayload("text/plain", 2, " ");
     bridge_for_race_test_ = bridge.get();
@@ -196,24 +174,9 @@ void MAYBE_SyncHttpBridgeTest::RunSyncThreadBridgeUseTest(
   signal_when_released->Signal();
 }
 
-TEST_F(MAYBE_SyncHttpBridgeTest, TestUsesSameHttpNetworkSession) {
-  base::RunLoop run_loop;
-
-  // Run this test on the IO thread because we can only call
-  // URLRequestContextGetter::GetURLRequestContext on the IO thread.
-  io_thread()->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&MAYBE_SyncHttpBridgeTest::TestSameHttpNetworkSession,
-                     run_loop.QuitWhenIdleClosure(), this));
-  run_loop.Run();
-}
-
 // Test the HttpBridge without actually making any network requests.
 TEST_F(MAYBE_SyncHttpBridgeTest, TestMakeSynchronousPostShunted) {
-  scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
-  scoped_refptr<HttpBridge> http_bridge(
-      new ShuntedHttpBridge(ctx_getter.get(), this, false));
+  scoped_refptr<HttpBridge> http_bridge(new ShuntedHttpBridge(this, false));
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
 
@@ -344,10 +307,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, TestResponseHeader) {
 }
 
 TEST_F(MAYBE_SyncHttpBridgeTest, Abort) {
-  scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
   scoped_refptr<ShuntedHttpBridge> http_bridge(
-      new ShuntedHttpBridge(ctx_getter.get(), this, true));
+      new ShuntedHttpBridge(this, true));
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
 
@@ -363,10 +324,8 @@ TEST_F(MAYBE_SyncHttpBridgeTest, Abort) {
 }
 
 TEST_F(MAYBE_SyncHttpBridgeTest, AbortLate) {
-  scoped_refptr<net::URLRequestContextGetter> ctx_getter(
-      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
   scoped_refptr<ShuntedHttpBridge> http_bridge(
-      new ShuntedHttpBridge(ctx_getter.get(), this, false));
+      new ShuntedHttpBridge(this, false));
   http_bridge->SetURL("http://www.google.com", 9999);
   http_bridge->SetPostPayload("text/plain", 2, " ");
 
@@ -413,15 +372,11 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
 
   // Schedule the fetch completion callback (but don't run it yet). Don't take
   // a reference to the bridge to mimic URLFetcher's handling of the delegate.
-  net::URLFetcherDelegate* delegate =
-      static_cast<net::URLFetcherDelegate*>(bridge_for_race_test());
-  std::string response_content = "success!";
-  net::TestURLFetcher fetcher(0, GURL("http://www.google.com"), nullptr);
-  fetcher.set_response_code(200);
-  fetcher.SetResponseString(response_content);
   ASSERT_TRUE(io_thread()->task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&net::URLFetcherDelegate::OnURLFetchComplete,
-                                base::Unretained(delegate), &fetcher)));
+      FROM_HERE, base::BindOnce(&syncer::HttpBridge::OnURLLoadCompleteInternal,
+                                base::Unretained(bridge_for_race_test()), 200,
+                                net::OK, 0, GURL("http://www.google.com"),
+                                std::make_unique<std::string>("success!"))));
 
   // Abort the fetch. This should be smart enough to handle the case where
   // the bridge is destroyed before the callback scheduled above completes.
@@ -441,122 +396,10 @@ TEST_F(MAYBE_SyncHttpBridgeTest, AbortAndReleaseBeforeFetchComplete) {
   io_thread()->Stop();
 }
 
-void HttpBridgeRunOnSyncThread(
-    net::URLRequestContextGetter* baseline_context_getter,
-    CancelationSignal* factory_cancelation_signal,
-    HttpPostProviderFactory** bridge_factory_out,
-    HttpPostProviderInterface** bridge_out,
-    base::WaitableEvent* signal_when_created,
-    base::WaitableEvent* wait_for_shutdown) {
-  std::unique_ptr<HttpBridgeFactory> bridge_factory(new HttpBridgeFactory(
-      baseline_context_getter, NetworkTimeUpdateCallback(),
-      factory_cancelation_signal));
-  bridge_factory->Init("test", BindToTrackerCallback());
-  *bridge_factory_out = bridge_factory.get();
-
-  HttpPostProviderInterface* bridge = bridge_factory->Create();
-  *bridge_out = bridge;
-
-  signal_when_created->Signal();
-  wait_for_shutdown->Wait();
-
-  bridge_factory->Destroy(bridge);
-}
-
 void WaitOnIOThread(base::WaitableEvent* signal_wait_start,
                     base::WaitableEvent* wait_done) {
   signal_wait_start->Signal();
   wait_done->Wait();
-}
-
-// Tests RequestContextGetter is properly released on IO thread even when
-// IO thread stops before sync thread.
-TEST_F(MAYBE_SyncHttpBridgeTest, RequestContextGetterReleaseOrder) {
-  base::Thread sync_thread("SyncThread");
-  sync_thread.Start();
-
-  HttpPostProviderFactory* factory = nullptr;
-  HttpPostProviderInterface* bridge = nullptr;
-
-  scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
-      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
-
-  base::WaitableEvent signal_when_created(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::WaitableEvent wait_for_shutdown(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-
-  CancelationSignal release_request_context_signal;
-
-  // Create bridge factory and factory on sync thread and wait for the creation
-  // to finish.
-  sync_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HttpBridgeRunOnSyncThread,
-                     base::Unretained(baseline_context_getter.get()),
-                     &release_request_context_signal, &factory, &bridge,
-                     &signal_when_created, &wait_for_shutdown));
-  signal_when_created.Wait();
-
-  // Simulate sync shutdown by aborting bridge and shutting down factory on
-  // frontend.
-  bridge->Abort();
-  release_request_context_signal.Signal();
-
-  // Wait for sync's RequestContextGetter to be cleared on IO thread and
-  // check for reference count.
-  base::WaitableEvent signal_wait_start(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::WaitableEvent wait_done(
-      base::WaitableEvent::ResetPolicy::AUTOMATIC,
-      base::WaitableEvent::InitialState::NOT_SIGNALED);
-  io_thread()->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WaitOnIOThread, &signal_wait_start, &wait_done));
-  signal_wait_start.Wait();
-  // |baseline_context_getter| should have only one reference from local
-  // variable.
-  EXPECT_TRUE(baseline_context_getter->HasOneRef());
-  baseline_context_getter = nullptr;
-
-  // Unblock and stop IO thread before sync thread.
-  wait_done.Signal();
-  io_thread()->Stop();
-
-  // Unblock and stop sync thread.
-  wait_for_shutdown.Signal();
-  sync_thread.Stop();
-}
-
-// Attempt to release the URLRequestContextGetter before the HttpBridgeFactory
-// is initialized.
-TEST_F(MAYBE_SyncHttpBridgeTest, EarlyAbortFactory) {
-  // In a real scenario, the following would happen on many threads.  For
-  // simplicity, this test uses only one thread.
-
-  scoped_refptr<net::URLRequestContextGetter> baseline_context_getter(
-      new net::TestURLRequestContextGetter(io_thread()->task_runner()));
-  CancelationSignal release_request_context_signal;
-
-  // UI Thread: Initialize the HttpBridgeFactory.  The next step would be to
-  // post a task to SBH::Core to have it initialized.
-  std::unique_ptr<HttpBridgeFactory> factory(new HttpBridgeFactory(
-      baseline_context_getter.get(), NetworkTimeUpdateCallback(),
-      &release_request_context_signal));
-
-  // UI Thread: A very early shutdown request arrives and executes on the UI
-  // thread before the posted sync thread task is run.
-  release_request_context_signal.Signal();
-
-  // Sync thread: Finally run the posted task, only to find that our
-  // HttpBridgeFactory has been neutered.  Should not crash.
-  factory->Init("TestUserAgent", BindToTrackerCallback());
-
-  // At this point, attempting to use the factory would trigger a crash.  Both
-  // this test and the real world code should make sure this never happens.
 }
 
 }  // namespace syncer
