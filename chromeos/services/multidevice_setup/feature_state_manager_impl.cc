@@ -54,6 +54,42 @@ GenerateInitialDefaultCachedStateMap() {
        mojom::FeatureState::kUnavailableNoVerifiedHost}};
 }
 
+void ProcessSuiteEdgeCases(
+    FeatureStateManager::FeatureStatesMap* feature_states_map) {
+  // First edge case: The Better Together suite does not have its own explicit
+  // device policy; instead, if all supported sub-features are prohibited by
+  // policy, the entire suite should be considered prohibited.
+  bool are_all_sub_features_prohibited = true;
+  for (const auto& map_entry : *feature_states_map) {
+    // Only check for sub-features.
+    if (map_entry.first == mojom::Feature::kBetterTogetherSuite)
+      continue;
+
+    if (map_entry.second != mojom::FeatureState::kProhibitedByPolicy) {
+      are_all_sub_features_prohibited = false;
+      break;
+    }
+  }
+
+  if (are_all_sub_features_prohibited) {
+    (*feature_states_map)[mojom::Feature::kBetterTogetherSuite] =
+        mojom::FeatureState::kProhibitedByPolicy;
+    return;
+  }
+
+  // Second edge case: If the Better Together suite is disabled by the user, any
+  // sub-features which have been enabled by the user should be unavailable. In
+  // this context, the suite serves as a gatekeeper to all sub-features.
+  if ((*feature_states_map)[mojom::Feature::kBetterTogetherSuite] !=
+      mojom::FeatureState::kDisabledByUser)
+    return;
+
+  for (auto& map_entry : *feature_states_map) {
+    if (map_entry.second == mojom::FeatureState::kEnabledByUser)
+      map_entry.second = mojom::FeatureState::kUnavailableSuiteDisabled;
+  }
+}
+
 }  // namespace
 
 // static
@@ -162,12 +198,15 @@ void FeatureStateManagerImpl::UpdateFeatureStateCache(
   FeatureStatesMap previous_cached_feature_state_map =
       cached_feature_state_map_;
 
-  // Update |cached_feature_state_map_|.
+  // Update |cached_feature_state_map_| with computed values.
   auto it = cached_feature_state_map_.begin();
   while (it != cached_feature_state_map_.end()) {
     it->second = ComputeFeatureState(it->first);
     ++it;
   }
+
+  // Some computed values must be updated to support various edge cases.
+  ProcessSuiteEdgeCases(&cached_feature_state_map_);
 
   if (previous_cached_feature_state_map == cached_feature_state_map_)
     return;
@@ -177,6 +216,9 @@ void FeatureStateManagerImpl::UpdateFeatureStateCache(
 
 mojom::FeatureState FeatureStateManagerImpl::ComputeFeatureState(
     mojom::Feature feature) {
+  if (!IsAllowedByPolicy(feature))
+    return mojom::FeatureState::kProhibitedByPolicy;
+
   HostStatusProvider::HostStatusWithDevice status_with_device =
       host_status_provider_->GetHostWithStatus();
 
@@ -193,6 +235,15 @@ mojom::FeatureState FeatureStateManagerImpl::ComputeFeatureState(
     return mojom::FeatureState::kNotSupportedByPhone;
 
   return GetEnabledOrDisabledState(feature);
+}
+
+bool FeatureStateManagerImpl::IsAllowedByPolicy(mojom::Feature feature) {
+  // If no policy preference exists for this feature, the feature is implicitly
+  // allowed.
+  if (!base::ContainsKey(feature_to_allowed_pref_name_map_, feature))
+    return true;
+
+  return pref_service_->GetBoolean(feature_to_allowed_pref_name_map_[feature]);
 }
 
 bool FeatureStateManagerImpl::IsSupportedByChromebook(mojom::Feature feature) {
@@ -262,13 +313,6 @@ bool FeatureStateManagerImpl::HasBeenActivatedByPhone(
 
 mojom::FeatureState FeatureStateManagerImpl::GetEnabledOrDisabledState(
     mojom::Feature feature) {
-  // If an "allowed pref" exists for this feature and that preference is set to
-  // false, the feature is disabled by policy.
-  if (base::ContainsKey(feature_to_allowed_pref_name_map_, feature) &&
-      !pref_service_->GetBoolean(feature_to_allowed_pref_name_map_[feature])) {
-    return mojom::FeatureState::kDisabledByPolicy;
-  }
-
   if (!base::ContainsKey(feature_to_enabled_pref_name_map_, feature)) {
     PA_LOG(ERROR) << "FeatureStateManagerImpl::GetEnabledOrDisabledState(): "
                   << "Feature not present in \"enabled pref\" map: " << feature;

@@ -51,8 +51,8 @@ enum Feature {
 };
 
 enum FeatureState {
-  // Feature was disabled by a device policy (e.g., EDU or Enterprise).
-  kDisabledByPolicy,
+  // Feature was prohibited by a device policy (e.g., EDU or Enterprise).
+  kProhibitedByPolicy,
 
   // Feature was disabled by the user (i.e., via settings).
   kDisabledByUser,
@@ -74,7 +74,11 @@ enum FeatureState {
   // The feature is unavailable because there are insufficient security
   // mechanisms in place (e.g., Smart Lock returns this value when the host
   // phone device does not have a lock screen set).
-  kUnavailableInsufficientSecurity
+  kUnavailableInsufficientSecurity,
+
+  // The feature has been enabled by the user, but it is still unavailable
+  // because the entire Better Together suite has been disabled by the user.
+  kUnavailableSuiteDisabled
 };
 
 interface AccountStatusChangeDelegate {

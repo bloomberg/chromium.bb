@@ -50,10 +50,11 @@ const MultiDeviceFeatureBehaviorImpl = {
     }
 
     if ([
-          settings.MultiDeviceFeatureState.DISABLED_BY_POLICY,
+          settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY,
           settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_CHROMEBOOK,
           settings.MultiDeviceFeatureState.NOT_SUPPORTED_BY_PHONE,
           settings.MultiDeviceFeatureState.UNAVAILABLE_INSUFFICIENT_SECURITY,
+          settings.MultiDeviceFeatureState.UNAVAILABLE_SUITE_DISABLED,
         ].includes(this.getFeatureState(feature))) {
       return false;
     }
