@@ -165,7 +165,7 @@ interface RenderWidgetHostNSViewClient {
   // it is the result of GetActiveWidget.
   ImeSetComposition(
       mojo_base.mojom.String16 text,
-      array<ui.mojom.ImeTextSpan> ime_text_spans,
+      array<ws.mojom.ImeTextSpan> ime_text_spans,
       gfx.mojom.Range replacement_range,
       int32 selection_start,
       int32 selection_end);

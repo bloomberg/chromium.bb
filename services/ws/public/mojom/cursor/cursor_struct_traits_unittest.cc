@@ -23,8 +23,8 @@ class CursorStructTraitsTest : public testing::Test {
 
  protected:
   bool EchoCursorData(const ui::CursorData& in, ui::CursorData* out) {
-    return mojom::CursorData::Deserialize(mojom::CursorData::Serialize(&in),
-                                          out);
+    return ws::mojom::CursorData::Deserialize(
+        ws::mojom::CursorData::Serialize(&in), out);
   }
 
   DISALLOW_COPY_AND_ASSIGN(CursorStructTraitsTest);

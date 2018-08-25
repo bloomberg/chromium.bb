@@ -10,9 +10,9 @@
 namespace mojo {
 
 // static
-bool StructTraits<ui::mojom::CandidateWindowPropertiesDataView,
+bool StructTraits<ws::mojom::CandidateWindowPropertiesDataView,
                   ui::CandidateWindow::CandidateWindowProperty>::
-    Read(ui::mojom::CandidateWindowPropertiesDataView data,
+    Read(ws::mojom::CandidateWindowPropertiesDataView data,
          ui::CandidateWindow::CandidateWindowProperty* out) {
   if (data.is_null())
     return false;
@@ -25,14 +25,14 @@ bool StructTraits<ui::mojom::CandidateWindowPropertiesDataView,
   out->is_cursor_visible = data.cursor_visible();
   out->show_window_at_composition =
       data.window_position() ==
-      ui::mojom::CandidateWindowPosition::kComposition;
+      ws::mojom::CandidateWindowPosition::kComposition;
   return true;
 }
 
 // static
-bool StructTraits<ui::mojom::CandidateWindowEntryDataView,
+bool StructTraits<ws::mojom::CandidateWindowEntryDataView,
                   ui::CandidateWindow::Entry>::
-    Read(ui::mojom::CandidateWindowEntryDataView data,
+    Read(ws::mojom::CandidateWindowEntryDataView data,
          ui::CandidateWindow::Entry* out) {
   return !data.is_null() && data.ReadValue(&out->value) &&
          data.ReadLabel(&out->label) && data.ReadAnnotation(&out->annotation) &&
@@ -41,8 +41,8 @@ bool StructTraits<ui::mojom::CandidateWindowEntryDataView,
 }
 
 // static
-bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
-    ui::mojom::ImeTextSpanDataView data,
+bool StructTraits<ws::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
+    ws::mojom::ImeTextSpanDataView data,
     ui::ImeTextSpan* out) {
   if (data.is_null())
     return false;
@@ -61,42 +61,42 @@ bool StructTraits<ui::mojom::ImeTextSpanDataView, ui::ImeTextSpan>::Read(
 }
 
 // static
-bool StructTraits<ui::mojom::CompositionTextDataView, ui::CompositionText>::
-    Read(ui::mojom::CompositionTextDataView data, ui::CompositionText* out) {
+bool StructTraits<ws::mojom::CompositionTextDataView, ui::CompositionText>::
+    Read(ws::mojom::CompositionTextDataView data, ui::CompositionText* out) {
   return !data.is_null() && data.ReadText(&out->text) &&
          data.ReadImeTextSpans(&out->ime_text_spans) &&
          data.ReadSelection(&out->selection);
 }
 
 // static
-ui::mojom::ImeTextSpanType
-EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::ToMojom(
+ws::mojom::ImeTextSpanType
+EnumTraits<ws::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::ToMojom(
     ui::ImeTextSpan::Type ime_text_span_type) {
   switch (ime_text_span_type) {
     case ui::ImeTextSpan::Type::kComposition:
-      return ui::mojom::ImeTextSpanType::kComposition;
+      return ws::mojom::ImeTextSpanType::kComposition;
     case ui::ImeTextSpan::Type::kSuggestion:
-      return ui::mojom::ImeTextSpanType::kSuggestion;
+      return ws::mojom::ImeTextSpanType::kSuggestion;
     case ui::ImeTextSpan::Type::kMisspellingSuggestion:
-      return ui::mojom::ImeTextSpanType::kMisspellingSuggestion;
+      return ws::mojom::ImeTextSpanType::kMisspellingSuggestion;
   }
 
   NOTREACHED();
-  return ui::mojom::ImeTextSpanType::kComposition;
+  return ws::mojom::ImeTextSpanType::kComposition;
 }
 
 // static
-bool EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::FromMojom(
-    ui::mojom::ImeTextSpanType type,
+bool EnumTraits<ws::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::FromMojom(
+    ws::mojom::ImeTextSpanType type,
     ui::ImeTextSpan::Type* out) {
   switch (type) {
-    case ui::mojom::ImeTextSpanType::kComposition:
+    case ws::mojom::ImeTextSpanType::kComposition:
       *out = ui::ImeTextSpan::Type::kComposition;
       return true;
-    case ui::mojom::ImeTextSpanType::kSuggestion:
+    case ws::mojom::ImeTextSpanType::kSuggestion:
       *out = ui::ImeTextSpan::Type::kSuggestion;
       return true;
-    case ui::mojom::ImeTextSpanType::kMisspellingSuggestion:
+    case ws::mojom::ImeTextSpanType::kMisspellingSuggestion:
       *out = ui::ImeTextSpan::Type::kMisspellingSuggestion;
       return true;
   }
@@ -106,34 +106,34 @@ bool EnumTraits<ui::mojom::ImeTextSpanType, ui::ImeTextSpan::Type>::FromMojom(
 }
 
 // static
-ui::mojom::ImeTextSpanThickness EnumTraits<
-    ui::mojom::ImeTextSpanThickness,
+ws::mojom::ImeTextSpanThickness EnumTraits<
+    ws::mojom::ImeTextSpanThickness,
     ui::ImeTextSpan::Thickness>::ToMojom(ui::ImeTextSpan::Thickness thickness) {
   switch (thickness) {
     case ui::ImeTextSpan::Thickness::kNone:
-      return ui::mojom::ImeTextSpanThickness::kNone;
+      return ws::mojom::ImeTextSpanThickness::kNone;
     case ui::ImeTextSpan::Thickness::kThin:
-      return ui::mojom::ImeTextSpanThickness::kThin;
+      return ws::mojom::ImeTextSpanThickness::kThin;
     case ui::ImeTextSpan::Thickness::kThick:
-      return ui::mojom::ImeTextSpanThickness::kThick;
+      return ws::mojom::ImeTextSpanThickness::kThick;
   }
 
   NOTREACHED();
-  return ui::mojom::ImeTextSpanThickness::kThin;
+  return ws::mojom::ImeTextSpanThickness::kThin;
 }
 
 // static
-bool EnumTraits<ui::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness>::
-    FromMojom(ui::mojom::ImeTextSpanThickness input,
+bool EnumTraits<ws::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness>::
+    FromMojom(ws::mojom::ImeTextSpanThickness input,
               ui::ImeTextSpan::Thickness* out) {
   switch (input) {
-    case ui::mojom::ImeTextSpanThickness::kNone:
+    case ws::mojom::ImeTextSpanThickness::kNone:
       *out = ui::ImeTextSpan::Thickness::kNone;
       return true;
-    case ui::mojom::ImeTextSpanThickness::kThin:
+    case ws::mojom::ImeTextSpanThickness::kThin:
       *out = ui::ImeTextSpan::Thickness::kThin;
       return true;
-    case ui::mojom::ImeTextSpanThickness::kThick:
+    case ws::mojom::ImeTextSpanThickness::kThick:
       *out = ui::ImeTextSpan::Thickness::kThick;
       return true;
   }
@@ -143,63 +143,63 @@ bool EnumTraits<ui::mojom::ImeTextSpanThickness, ui::ImeTextSpan::Thickness>::
 }
 
 // static
-ui::mojom::TextInputMode
-EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::ToMojom(
+ws::mojom::TextInputMode
+EnumTraits<ws::mojom::TextInputMode, ui::TextInputMode>::ToMojom(
     ui::TextInputMode text_input_mode) {
   switch (text_input_mode) {
     case ui::TEXT_INPUT_MODE_DEFAULT:
-      return ui::mojom::TextInputMode::kDefault;
+      return ws::mojom::TextInputMode::kDefault;
     case ui::TEXT_INPUT_MODE_NONE:
-      return ui::mojom::TextInputMode::kNone;
+      return ws::mojom::TextInputMode::kNone;
     case ui::TEXT_INPUT_MODE_TEXT:
-      return ui::mojom::TextInputMode::kText;
+      return ws::mojom::TextInputMode::kText;
     case ui::TEXT_INPUT_MODE_TEL:
-      return ui::mojom::TextInputMode::kTel;
+      return ws::mojom::TextInputMode::kTel;
     case ui::TEXT_INPUT_MODE_URL:
-      return ui::mojom::TextInputMode::kUrl;
+      return ws::mojom::TextInputMode::kUrl;
     case ui::TEXT_INPUT_MODE_EMAIL:
-      return ui::mojom::TextInputMode::kEmail;
+      return ws::mojom::TextInputMode::kEmail;
     case ui::TEXT_INPUT_MODE_NUMERIC:
-      return ui::mojom::TextInputMode::kNumeric;
+      return ws::mojom::TextInputMode::kNumeric;
     case ui::TEXT_INPUT_MODE_DECIMAL:
-      return ui::mojom::TextInputMode::kDecimal;
+      return ws::mojom::TextInputMode::kDecimal;
     case ui::TEXT_INPUT_MODE_SEARCH:
-      return ui::mojom::TextInputMode::kSearch;
+      return ws::mojom::TextInputMode::kSearch;
   }
   NOTREACHED();
-  return ui::mojom::TextInputMode::kDefault;
+  return ws::mojom::TextInputMode::kDefault;
 }
 
 // static
-bool EnumTraits<ui::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
-    ui::mojom::TextInputMode input,
+bool EnumTraits<ws::mojom::TextInputMode, ui::TextInputMode>::FromMojom(
+    ws::mojom::TextInputMode input,
     ui::TextInputMode* out) {
   switch (input) {
-    case ui::mojom::TextInputMode::kDefault:
+    case ws::mojom::TextInputMode::kDefault:
       *out = ui::TEXT_INPUT_MODE_DEFAULT;
       return true;
-    case ui::mojom::TextInputMode::kNone:
+    case ws::mojom::TextInputMode::kNone:
       *out = ui::TEXT_INPUT_MODE_NONE;
       return true;
-    case ui::mojom::TextInputMode::kText:
+    case ws::mojom::TextInputMode::kText:
       *out = ui::TEXT_INPUT_MODE_TEXT;
       return true;
-    case ui::mojom::TextInputMode::kTel:
+    case ws::mojom::TextInputMode::kTel:
       *out = ui::TEXT_INPUT_MODE_TEL;
       return true;
-    case ui::mojom::TextInputMode::kUrl:
+    case ws::mojom::TextInputMode::kUrl:
       *out = ui::TEXT_INPUT_MODE_URL;
       return true;
-    case ui::mojom::TextInputMode::kEmail:
+    case ws::mojom::TextInputMode::kEmail:
       *out = ui::TEXT_INPUT_MODE_EMAIL;
       return true;
-    case ui::mojom::TextInputMode::kNumeric:
+    case ws::mojom::TextInputMode::kNumeric:
       *out = ui::TEXT_INPUT_MODE_NUMERIC;
       return true;
-    case ui::mojom::TextInputMode::kDecimal:
+    case ws::mojom::TextInputMode::kDecimal:
       *out = ui::TEXT_INPUT_MODE_DECIMAL;
       return true;
-    case ui::mojom::TextInputMode::kSearch:
+    case ws::mojom::TextInputMode::kSearch:
       *out = ui::TEXT_INPUT_MODE_SEARCH;
       return true;
   }

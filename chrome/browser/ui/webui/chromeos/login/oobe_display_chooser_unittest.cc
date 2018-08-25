@@ -137,7 +137,7 @@ TEST_F(OobeDisplayChooserTest, PreferTouchAsPrimary) {
   // For mus we have to explicitly tell the InputDeviceClient the
   // TouchscreenDevices. Normally InputDeviceClient is told of the
   // TouchscreenDevices by way of implementing
-  // ui::mojom::InputDeviceObserverMojo. In unit tests InputDeviceClient is not
+  // ws::mojom::InputDeviceObserverMojo. In unit tests InputDeviceClient is not
   // wired to the window server (the window server isn't running).
   touchscreen.target_display_id = display_info[1].id();
   ui::InputDeviceClientTestApi().SetTouchscreenDevices({touchscreen}, true);

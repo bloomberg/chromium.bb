@@ -20,8 +20,8 @@ TextInputClientImpl::TextInputClientImpl(
 
 TextInputClientImpl::~TextInputClientImpl() {}
 
-ui::mojom::TextInputClientPtr TextInputClientImpl::CreateInterfacePtrAndBind() {
-  ui::mojom::TextInputClientPtr ptr;
+ws::mojom::TextInputClientPtr TextInputClientImpl::CreateInterfacePtrAndBind() {
+  ws::mojom::TextInputClientPtr ptr;
   binding_.Bind(mojo::MakeRequest(&ptr));
   return ptr;
 }

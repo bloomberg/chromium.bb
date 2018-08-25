@@ -25,14 +25,14 @@ void InputDeviceController::AddInterface(
     const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
   // base::Unretained() is safe here as this class is tied to the life of
   // Service, so that no requests should come in after this class is deleted.
-  registry->AddInterface<mojom::InputDeviceController>(
+  registry->AddInterface<ws::mojom::InputDeviceController>(
       base::Bind(&InputDeviceController::BindInputDeviceControllerRequest,
                  base::Unretained(this)),
       task_runner);
 }
 
 void InputDeviceController::AddKeyboardDeviceObserver(
-    mojom::KeyboardDeviceObserverPtr observer) {
+    ws::mojom::KeyboardDeviceObserverPtr observer) {
   NotifyObserver(observer.get());
   observers_.AddPtr(std::move(observer));
 }
@@ -152,14 +152,15 @@ ui::InputController* InputDeviceController::GetInputController() {
 }
 
 void InputDeviceController::NotifyObservers() {
-  observers_.ForAllPtrs([this](mojom::KeyboardDeviceObserver* observer) {
+  observers_.ForAllPtrs([this](ws::mojom::KeyboardDeviceObserver* observer) {
     NotifyObserver(observer);
   });
 }
 
 void InputDeviceController::NotifyObserver(
-    mojom::KeyboardDeviceObserver* observer) {
-  mojom::KeyboardDeviceStatePtr state = mojom::KeyboardDeviceState::New();
+    ws::mojom::KeyboardDeviceObserver* observer) {
+  ws::mojom::KeyboardDeviceStatePtr state =
+      ws::mojom::KeyboardDeviceState::New();
   ui::InputController* input_controller = GetInputController();
   state->is_caps_lock_enabled = input_controller->IsCapsLockEnabled();
   state->is_auto_repeat_enabled = input_controller->IsAutoRepeatEnabled();
@@ -167,7 +168,7 @@ void InputDeviceController::NotifyObserver(
 }
 
 void InputDeviceController::BindInputDeviceControllerRequest(
-    mojom::InputDeviceControllerRequest request) {
+    ws::mojom::InputDeviceControllerRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 

@@ -8,15 +8,15 @@
 #include "services/ws/public/mojom/ime/ime.mojom.h"
 
 // This is to be used on platforms where a proper implementation of
-// ui::mojom::InputMethod is missing. It doesn't handle any events and calls
+// ws::mojom::InputMethod is missing. It doesn't handle any events and calls
 // the callback with false, which will result in client code handling events
 // locally.
-class SimpleInputMethod : public ui::mojom::InputMethod {
+class SimpleInputMethod : public ws::mojom::InputMethod {
  public:
   SimpleInputMethod();
   ~SimpleInputMethod() override;
 
-  // ui::mojom::InputMethod:
+  // ws::mojom::InputMethod:
   void OnTextInputTypeChanged(ui::TextInputType text_input_type) override;
   void OnCaretBoundsChanged(const gfx::Rect& caret_bounds) override;
   void ProcessKeyEvent(std::unique_ptr<ui::Event> key_event,

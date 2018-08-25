@@ -16,9 +16,9 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
-class TestTextInputClient : public ui::mojom::TextInputClient {
+class TestTextInputClient : public ws::mojom::TextInputClient {
  public:
-  explicit TestTextInputClient(ui::mojom::TextInputClientRequest request)
+  explicit TestTextInputClient(ws::mojom::TextInputClientRequest request)
       : binding_(this, std::move(request)) {}
 
   std::unique_ptr<ui::Event> WaitUntilInsertChar() {
@@ -47,7 +47,7 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
     std::move(callback).Run(false);
   }
 
-  mojo::Binding<ui::mojom::TextInputClient> binding_;
+  mojo::Binding<ws::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<ui::Event> receieved_event_;
 
@@ -67,7 +67,7 @@ class IMEAppTest : public service_manager::test::ServiceTest {
     connector()->BindInterface(ws::mojom::kServiceName, &ime_driver_);
   }
 
-  bool ProcessKeyEvent(ui::mojom::InputMethodPtr* input_method,
+  bool ProcessKeyEvent(ws::mojom::InputMethodPtr* input_method,
                        std::unique_ptr<ui::Event> event) {
     (*input_method)
         ->ProcessKeyEvent(std::move(event),
@@ -87,7 +87,7 @@ class IMEAppTest : public service_manager::test::ServiceTest {
     run_loop_->Quit();
   }
 
-  ui::mojom::IMEDriverPtr ime_driver_;
+  ws::mojom::IMEDriverPtr ime_driver_;
   std::unique_ptr<base::RunLoop> run_loop_;
   bool handled_;
 
@@ -96,9 +96,9 @@ class IMEAppTest : public service_manager::test::ServiceTest {
 
 // Tests sending a KeyEvent to the IMEDriver through the Mus IMEDriver.
 TEST_F(IMEAppTest, ProcessKeyEvent) {
-  ui::mojom::InputMethodPtr input_method;
-  ui::mojom::StartSessionDetailsPtr details =
-      ui::mojom::StartSessionDetails::New();
+  ws::mojom::InputMethodPtr input_method;
+  ws::mojom::StartSessionDetailsPtr details =
+      ws::mojom::StartSessionDetails::New();
   TestTextInputClient client(MakeRequest(&details->client));
   details->input_method_request = MakeRequest(&input_method);
   ime_driver_->StartSession(std::move(details));

@@ -47,7 +47,7 @@ class CORE_EXPORT ImeTextSpan {
               unsigned start_offset,
               unsigned end_offset,
               const Color& underline_color,
-              ui::mojom::ImeTextSpanThickness,
+              ws::mojom::ImeTextSpanThickness,
               const Color& background_color,
               const Color& suggestion_highlight_color = Color::kTransparent,
               const Vector<String>& suggestions = Vector<String>());
@@ -58,7 +58,7 @@ class CORE_EXPORT ImeTextSpan {
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   const Color& UnderlineColor() const { return underline_color_; }
-  ui::mojom::ImeTextSpanThickness Thickness() const { return thickness_; }
+  ws::mojom::ImeTextSpanThickness Thickness() const { return thickness_; }
   const Color& BackgroundColor() const { return background_color_; }
   const Color& SuggestionHighlightColor() const {
     return suggestion_highlight_color_;
@@ -70,7 +70,7 @@ class CORE_EXPORT ImeTextSpan {
   unsigned start_offset_;
   unsigned end_offset_;
   Color underline_color_;
-  ui::mojom::ImeTextSpanThickness thickness_;
+  ws::mojom::ImeTextSpanThickness thickness_;
   Color background_color_;
   Color suggestion_highlight_color_;
   Vector<String> suggestions_;

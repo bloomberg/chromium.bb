@@ -17,7 +17,7 @@ class CORE_EXPORT StyleableMarker : public DocumentMarker {
   StyleableMarker(unsigned start_offset,
                   unsigned end_offset,
                   Color underline_color,
-                  ui::mojom::ImeTextSpanThickness,
+                  ws::mojom::ImeTextSpanThickness,
                   Color background_color);
 
   // StyleableMarker-specific
@@ -31,7 +31,7 @@ class CORE_EXPORT StyleableMarker : public DocumentMarker {
  private:
   const Color underline_color_;
   const Color background_color_;
-  const ui::mojom::ImeTextSpanThickness thickness_;
+  const ws::mojom::ImeTextSpanThickness thickness_;
 
   DISALLOW_COPY_AND_ASSIGN(StyleableMarker);
 };

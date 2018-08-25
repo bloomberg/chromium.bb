@@ -12,9 +12,9 @@
         "app": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
           "ui.mojom.ClipboardHost",
-          "ui.mojom.IMEDriver",
-          "ui.mojom.InputDeviceServer",
           "ws.mojom.Gpu",
+          "ws.mojom.IMEDriver",
+          "ws.mojom.InputDeviceServer",
           "ws.mojom.WindowTreeFactory"
         ],
         "arc_manager" : [
@@ -36,10 +36,10 @@
           "ws.mojom.Gpu"
         ],
         "ime_registrar": [
-          "ui.mojom.IMERegistrar"
+          "ws.mojom.IMERegistrar"
         ],
         "input_device_controller": [
-          "ui.mojom.InputDeviceController"
+          "ws.mojom.InputDeviceController"
         ],
         "privileged": [
           // Injecting events is security-sensitive.
@@ -48,11 +48,11 @@
         ],
         "window_manager": [
           "discardable_memory.mojom.DiscardableSharedMemoryManager",
-          "ui.mojom.IMEDriver",
-          "ui.mojom.InputDeviceController",
-          "ui.mojom.InputDeviceServer",
           "ws.mojom.EventInjector",
           "ws.mojom.Gpu",
+          "ws.mojom.IMEDriver",
+          "ws.mojom.InputDeviceController",
+          "ws.mojom.InputDeviceServer",
           "ws.mojom.UserActivityMonitor"
         ]
       },

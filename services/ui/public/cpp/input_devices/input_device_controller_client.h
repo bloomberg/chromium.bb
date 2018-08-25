@@ -25,9 +25,9 @@ namespace ui {
 enum class DomCode;
 
 // InputDeviceControllerClient is mostly a call through to
-// mojom::InputDeviceController. It does a minimal amount of caching and is
+// ws::mojom::InputDeviceController. It does a minimal amount of caching and is
 // itself a KeyboardDeviceObserver to maintain local keyboard state.
-class InputDeviceControllerClient : public mojom::KeyboardDeviceObserver {
+class InputDeviceControllerClient : public ws::mojom::KeyboardDeviceObserver {
  public:
   // |service_Name| is the name of the service providing mojom::KeyboardDevice,
   // generally use the default, unless a specific service is needed.
@@ -79,12 +79,12 @@ class InputDeviceControllerClient : public mojom::KeyboardDeviceObserver {
                                   SetInternalTouchpadEnabledCallback callback);
 
  private:
-  // mojom::KeyboardDeviceObserver:
-  void OnKeyboardStateChanged(mojom::KeyboardDeviceStatePtr state) override;
+  // ws::mojom::KeyboardDeviceObserver:
+  void OnKeyboardStateChanged(ws::mojom::KeyboardDeviceStatePtr state) override;
 
-  mojom::InputDeviceControllerPtr input_device_controller_;
-  mojom::KeyboardDeviceState keyboard_device_state_;
-  mojo::Binding<mojom::KeyboardDeviceObserver> binding_;
+  ws::mojom::InputDeviceControllerPtr input_device_controller_;
+  ws::mojom::KeyboardDeviceState keyboard_device_state_;
+  mojo::Binding<ws::mojom::KeyboardDeviceObserver> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceControllerClient);
 };

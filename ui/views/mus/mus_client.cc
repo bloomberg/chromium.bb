@@ -114,7 +114,7 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
 
   if (connector && !params.running_in_ws_process) {
     input_device_client_ = std::make_unique<ui::InputDeviceClient>();
-    ui::mojom::InputDeviceServerPtr input_device_server;
+    ws::mojom::InputDeviceServerPtr input_device_server;
     connector->BindInterface(ws::mojom::kServiceName, &input_device_server);
     input_device_client_->Connect(std::move(input_device_server));
 

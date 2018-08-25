@@ -20,11 +20,11 @@ void IMEDriverBridge::Init(service_manager::Connector* connector,
   // For non test configs we assume a client registers with us.
 }
 
-void IMEDriverBridge::AddBinding(mojom::IMEDriverRequest request) {
+void IMEDriverBridge::AddBinding(ws::mojom::IMEDriverRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void IMEDriverBridge::SetDriver(mojom::IMEDriverPtr driver) {
+void IMEDriverBridge::SetDriver(ws::mojom::IMEDriverPtr driver) {
   // TODO(moshayedi): crbug.com/669681. Handle switching drivers properly. For
   // now we only register the first driver to avoid clients of the previous
   // driver from hanging.
@@ -39,7 +39,7 @@ void IMEDriverBridge::SetDriver(mojom::IMEDriverPtr driver) {
   }
 }
 
-void IMEDriverBridge::StartSession(mojom::StartSessionDetailsPtr details) {
+void IMEDriverBridge::StartSession(ws::mojom::StartSessionDetailsPtr details) {
   if (driver_.get()) {
     // TODO(moshayedi): crbug.com/634431. This will forward all calls from
     // clients to the driver as they are. We may need to check |caret_bounds|

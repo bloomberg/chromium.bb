@@ -13,7 +13,7 @@ namespace aura {
 class InputMethodMusTestApi {
  public:
   static void SetInputMethod(InputMethodMus* input_method_mus,
-                             ui::mojom::InputMethod* input_method) {
+                             ws::mojom::InputMethod* input_method) {
     input_method_mus->input_method_ = input_method;
   }
 

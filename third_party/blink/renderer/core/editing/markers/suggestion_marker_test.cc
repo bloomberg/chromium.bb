@@ -32,7 +32,7 @@ TEST_F(SuggestionMarkerTest, ConstructorAndGetters) {
           .SetSuggestions(suggestions)
           .SetHighlightColor(Color::kTransparent)
           .SetUnderlineColor(Color::kDarkGray)
-          .SetThickness(ui::mojom::ImeTextSpanThickness::kThin)
+          .SetThickness(ws::mojom::ImeTextSpanThickness::kThin)
           .SetBackgroundColor(Color::kGray)
           .Build());
   EXPECT_EQ(suggestions, marker->Suggestions());
@@ -47,7 +47,7 @@ TEST_F(SuggestionMarkerTest, ConstructorAndGetters) {
       SuggestionMarkerProperties::Builder()
           .SetType(SuggestionMarker::SuggestionType::kMisspelling)
           .SetHighlightColor(Color::kBlack)
-          .SetThickness(ui::mojom::ImeTextSpanThickness::kThick)
+          .SetThickness(ws::mojom::ImeTextSpanThickness::kThick)
           .Build());
   EXPECT_TRUE(marker2->HasThicknessThick());
   EXPECT_TRUE(marker2->IsMisspelling());

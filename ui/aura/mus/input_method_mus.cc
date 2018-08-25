@@ -173,8 +173,8 @@ void InputMethodMus::OnDidChangeFocusedClient(
       std::make_unique<TextInputClientImpl>(focused, delegate());
 
   if (ime_driver_) {
-    ui::mojom::StartSessionDetailsPtr details =
-        ui::mojom::StartSessionDetails::New();
+    ws::mojom::StartSessionDetailsPtr details =
+        ws::mojom::StartSessionDetails::New();
     details->client =
         text_input_client_->CreateInterfacePtrAndBind().PassInterface();
     details->input_method_request = MakeRequest(&input_method_ptr_);

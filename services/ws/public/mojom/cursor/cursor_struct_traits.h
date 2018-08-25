@@ -12,19 +12,19 @@
 namespace mojo {
 
 template <>
-struct EnumTraits<ui::mojom::CursorType, ui::CursorType> {
-  static ui::mojom::CursorType ToMojom(ui::CursorType input);
-  static bool FromMojom(ui::mojom::CursorType input, ui::CursorType* out);
+struct EnumTraits<ws::mojom::CursorType, ui::CursorType> {
+  static ws::mojom::CursorType ToMojom(ui::CursorType input);
+  static bool FromMojom(ws::mojom::CursorType input, ui::CursorType* out);
 };
 
 template <>
-struct EnumTraits<ui::mojom::CursorSize, ui::CursorSize> {
-  static ui::mojom::CursorSize ToMojom(ui::CursorSize input);
-  static bool FromMojom(ui::mojom::CursorSize input, ui::CursorSize* out);
+struct EnumTraits<ws::mojom::CursorSize, ui::CursorSize> {
+  static ws::mojom::CursorSize ToMojom(ui::CursorSize input);
+  static bool FromMojom(ws::mojom::CursorSize input, ui::CursorSize* out);
 };
 
 template <>
-struct StructTraits<ui::mojom::CursorDataDataView, ui::CursorData> {
+struct StructTraits<ws::mojom::CursorDataDataView, ui::CursorData> {
   static ui::CursorType cursor_type(const ui::CursorData& c) {
     return c.cursor_type();
   }
@@ -34,7 +34,7 @@ struct StructTraits<ui::mojom::CursorDataDataView, ui::CursorData> {
   static float scale_factor(const ui::CursorData& c) {
     return c.scale_factor();
   }
-  static bool Read(ui::mojom::CursorDataDataView data, ui::CursorData* out);
+  static bool Read(ws::mojom::CursorDataDataView data, ui::CursorData* out);
 };
 
 }  // namespace mojo
