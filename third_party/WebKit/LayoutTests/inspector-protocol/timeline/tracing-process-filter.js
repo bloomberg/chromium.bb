@@ -16,7 +16,7 @@
   const pids = new Set();
   for (const event of events)
     pids.add(event.pid);
-  testRunner.log(`There should be just 2 processes (browser and renderer): ${pids.size}`);
+  testRunner.log(`There should be just 3 processes (browser, GPU, and renderer): ${pids.size}`);
 
   testRunner.completeTest();
 })

@@ -677,6 +677,11 @@ GpuProcessHost* GpuProcessHost::FromID(int host_id) {
   return nullptr;
 }
 
+base::ProcessId GpuProcessHost::GetProcessId() const {
+  return !in_process_ && initialized_ ? process_->GetProcess().Pid()
+                                      : base::kNullProcessId;
+}
+
 // static
 int GpuProcessHost::GetGpuCrashCount() {
   return static_cast<int>(base::subtle::NoBarrier_Load(&gpu_crash_count_));
