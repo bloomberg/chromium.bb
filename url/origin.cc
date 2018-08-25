@@ -17,7 +17,7 @@
 
 namespace url {
 
-Origin::Origin() : unique_(true) {}
+Origin::Origin() {}
 
 Origin Origin::Create(const GURL& url) {
   if (!url.is_valid() || (!url.IsStandard() && !url.SchemeIsBlob()))
@@ -43,15 +43,36 @@ Origin Origin::Create(const GURL& url) {
   return Origin(std::move(tuple));
 }
 
-Origin::Origin(SchemeHostPort tuple)
-    : tuple_(std::move(tuple)), unique_(false) {
-  DCHECK(!tuple_.IsInvalid());
+// Note: this is very similar to Create(const GURL&), but opaque origins are
+// created with CreateUniqueOpaque() rather than the default constructor.
+Origin Origin::CreateCanonical(const GURL& url) {
+  if (!url.is_valid() || (!url.IsStandard() && !url.SchemeIsBlob()))
+    return CreateUniqueOpaque();
+
+  SchemeHostPort tuple;
+
+  if (url.SchemeIsFileSystem()) {
+    tuple = SchemeHostPort(*url.inner_url());
+  } else if (url.SchemeIsBlob()) {
+    // If we're dealing with a 'blob:' URL, https://url.spec.whatwg.org/#origin
+    // defines the origin as the origin of the URL which results from parsing
+    // the "path", which boils down to everything after the scheme. GURL's
+    // 'GetContent()' gives us exactly that.
+    tuple = SchemeHostPort(GURL(url.GetContent()));
+  } else {
+    tuple = SchemeHostPort(url);
+  }
+
+  if (tuple.IsInvalid())
+    return CreateUniqueOpaque();
+
+  return Origin(std::move(tuple));
 }
 
-Origin::Origin(const Origin&) = default;
-Origin& Origin::operator=(const Origin&) = default;
-Origin::Origin(Origin&&) = default;
-Origin& Origin::operator=(Origin&&) = default;
+Origin::Origin(const Origin& other) = default;
+Origin& Origin::operator=(const Origin& other) = default;
+Origin::Origin(Origin&& other) = default;
+Origin& Origin::operator=(Origin&& other) = default;
 
 Origin::~Origin() = default;
 
@@ -94,24 +115,30 @@ GURL Origin::GetURL() const {
   if (scheme() == kFileScheme)
     return GURL("file:///");
 
-  GURL tuple_url(tuple_.GetURL());
-
-  return tuple_url;
+  return tuple_.GetURL();
 }
 
 bool Origin::IsSameOriginWith(const Origin& other) const {
-  if (unique_ || other.unique_)
-    return false;
-
-  return tuple_.Equals(other.tuple_);
+  return tuple_.Equals(other.tuple_) &&
+         (!unique() || (nonce_ && nonce_ == other.nonce_));
 }
 
 bool Origin::DomainIs(base::StringPiece canonical_domain) const {
-  return !unique_ && url::DomainIs(tuple_.host(), canonical_domain);
+  return !unique() && url::DomainIs(tuple_.host(), canonical_domain);
 }
 
 bool Origin::operator<(const Origin& other) const {
-  return tuple_ < other.tuple_;
+  return std::tie(tuple_, nonce_) < std::tie(other.tuple_, other.nonce_);
+}
+
+Origin Origin::CreateUniqueOpaque() {
+  return Origin(ConstructAsOpaque::kTag);
+}
+
+Origin::Origin(ConstructAsOpaque) : nonce_(base::UnguessableToken::Create()) {}
+
+Origin::Origin(SchemeHostPort tuple) : tuple_(std::move(tuple)) {
+  DCHECK(!tuple_.IsInvalid());
 }
 
 std::ostream& operator<<(std::ostream& out, const url::Origin& origin) {
