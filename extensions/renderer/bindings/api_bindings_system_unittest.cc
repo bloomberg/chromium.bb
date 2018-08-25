@@ -112,7 +112,9 @@ void APIBindingsSystemTest::SetUp() {
 
   binding::AddConsoleError add_console_error(base::Bind(
       &APIBindingsSystemTest::AddConsoleError, base::Unretained(this)));
-  auto get_context_owner = [](v8::Local<v8::Context>) { return std::string(); };
+  auto get_context_owner = [](v8::Local<v8::Context>) {
+    return std::string("context");
+  };
   bindings_system_ = std::make_unique<APIBindingsSystem>(
       base::Bind(&APIBindingsSystemTest::GetAPISchema, base::Unretained(this)),
       base::Bind(&AllowAllAPIs),

@@ -35,7 +35,7 @@ using MockEventChangeHandler = ::testing::StrictMock<
     base::MockCallback<APIEventListeners::ListenersUpdated>>;
 
 std::string GetContextOwner(v8::Local<v8::Context> context) {
-  return std::string();
+  return "context";
 }
 
 // TODO(devlin): Use these handy functions more places.

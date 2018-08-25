@@ -18,6 +18,15 @@
 
 namespace extensions {
 
+namespace {
+
+APIEventListeners::ContextOwnerIdGetter CreateContextOwnerIdGetter() {
+  return base::BindRepeating(
+      [](v8::Local<v8::Context>) { return std::string("context"); });
+}
+
+}  // namespace
+
 class EventEmitterUnittest : public APIBindingTest {
  public:
   EventEmitterUnittest() = default;
@@ -41,8 +50,8 @@ TEST_F(EventEmitterUnittest, TestDispatchMethod) {
 
   ListenerTracker tracker;
   auto listeners = std::make_unique<UnfilteredEventListeners>(
-      base::DoNothing(), "event", "context", binding::kNoListenerMax, true,
-      &tracker);
+      base::DoNothing(), "event", CreateContextOwnerIdGetter(),
+      binding::kNoListenerMax, true, &tracker);
 
   auto log_error = [](std::vector<std::string>* errors,
                       v8::Local<v8::Context> context,
@@ -144,8 +153,8 @@ TEST_F(EventEmitterUnittest, ListenersDestroyingContext) {
 
   ListenerTracker tracker;
   auto listeners = std::make_unique<UnfilteredEventListeners>(
-      base::DoNothing(), "event", "context", binding::kNoListenerMax, true,
-      &tracker);
+      base::DoNothing(), "event", CreateContextOwnerIdGetter(),
+      binding::kNoListenerMax, true, &tracker);
   ExceptionHandler exception_handler(base::BindRepeating(
       [](v8::Local<v8::Context> context, const std::string& error) {}));
   gin::Handle<EventEmitter> event = gin::CreateHandle(

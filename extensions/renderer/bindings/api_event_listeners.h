@@ -38,6 +38,17 @@ class APIEventListeners {
                           bool update_lazy_listeners,
                           v8::Local<v8::Context> context)>;
 
+  // A callback to retrieve the identity of the context's owner. This allows us
+  // to associate multiple listeners from different v8::Contexts with the same
+  // owner (e.g., extension). This is used lazily, when listeners are first
+  // added.
+  // TODO(https://crbug.com/877658): Ideally, we'd just pass in the context
+  // owner to the event directly. However, this led to https://crbug.com/877401,
+  // presumably because of https://crbug.com/877658. If we can fix that, we can
+  // simplify this again.
+  using ContextOwnerIdGetter =
+      base::RepeatingCallback<std::string(v8::Local<v8::Context>)>;
+
   virtual ~APIEventListeners() = default;
 
   // Adds the given |listener| to the list, possibly associating it with the
@@ -81,7 +92,7 @@ class UnfilteredEventListeners final : public APIEventListeners {
  public:
   UnfilteredEventListeners(const ListenersUpdated& listeners_updated,
                            const std::string& event_name,
-                           const std::string& context_owner_id,
+                           const ContextOwnerIdGetter& context_owner_id_getter,
                            int max_listeners,
                            bool supports_lazy_listeners,
                            ListenerTracker* listener_tracker);
@@ -101,6 +112,9 @@ class UnfilteredEventListeners final : public APIEventListeners {
   void Invalidate(v8::Local<v8::Context> context) override;
 
  private:
+  // Lazily sets |context_id_owner_| from |context_id_owner_getter_|.
+  void LazilySetContextOwner(v8::Local<v8::Context> context);
+
   // Notifies that all the listeners for this context are now removed.
   void NotifyListenersEmpty(v8::Local<v8::Context> context,
                             bool update_lazy_listeners);
@@ -120,7 +134,13 @@ class UnfilteredEventListeners final : public APIEventListeners {
   // This event's name.
   std::string event_name_;
 
-  // The owner of the context these listeners belong to.
+  // The getter for the owner of the context; called lazily when the first
+  // listener is added. Only used when the event is managed (i.e.,
+  // |listener_tracker_ is non-null|).
+  ContextOwnerIdGetter context_owner_id_getter_;
+
+  // The owner of the context these listeners belong to. Only used when the
+  // event is managed (i.e., |listener_tracker_ is non-null|).
   std::string context_owner_id_;
 
   // The maximum number of supported listeners.
@@ -145,7 +165,7 @@ class FilteredEventListeners final : public APIEventListeners {
  public:
   FilteredEventListeners(const ListenersUpdated& listeners_updated,
                          const std::string& event_name,
-                         const std::string& context_owner_id,
+                         const ContextOwnerIdGetter& context_owner_id_getter,
                          int max_listeners,
                          bool supports_lazy_listeners,
                          ListenerTracker* listener_tracker);
@@ -167,6 +187,9 @@ class FilteredEventListeners final : public APIEventListeners {
  private:
   struct ListenerData;
 
+  // Lazily sets |context_owner_id_| from |context_owner_id_getter_|.
+  void LazilySetContextOwner(v8::Local<v8::Context> context);
+
   void InvalidateListener(const ListenerData& listener,
                           bool was_manual,
                           v8::Local<v8::Context> context);
@@ -179,7 +202,12 @@ class FilteredEventListeners final : public APIEventListeners {
   // This event's name.
   std::string event_name_;
 
-  // The owner of the context these listeners belong to.
+  // The getter for the owner of the context; called lazily when the first
+  // listener is added. This is always non-null.
+  ContextOwnerIdGetter context_owner_id_getter_;
+
+  // The owner of the context these listeners belong to. This should always be
+  // non-empty after initialization.
   std::string context_owner_id_;
 
   // The maximum number of supported listeners.
@@ -189,7 +217,7 @@ class FilteredEventListeners final : public APIEventListeners {
   bool supports_lazy_listeners_;
 
   // The listener tracker to notify of added or removed listeners. Required to
-  // outlive this object.
+  // outlive this object. Must be non-null.
   ListenerTracker* listener_tracker_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(FilteredEventListeners);
