@@ -96,7 +96,7 @@ def PostUploadHook(cl, change, output_api):
   # deployed on CQ.
   # TODO(crbug.com/782735): Remove ios-simulator-full-configs once EarlGrey
   # bots are deployed on CQ.
-  try_bots = ['master.tryserver.chromium.mac:ios-simulator-cronet',
+  try_bots = ['luci.chromium.try:ios-simulator-cronet',
               'luci.chromium.try:ios-simulator-full-configs']
 
   return output_api.EnsureCQIncludeTrybotsAreAdded(

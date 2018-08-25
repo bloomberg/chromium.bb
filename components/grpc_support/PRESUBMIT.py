@@ -17,7 +17,7 @@ def PostUploadHook(cl, change, output_api):
 
   # TODO(https://crbug.com/712733): Remove this once Cronet bots are deployed on CQ.
   try_bots = ['master.tryserver.chromium.android:android_cronet_tester',
-              'master.tryserver.chromium.mac:ios-simulator-cronet']
+              'luci.chromium.try:ios-simulator-cronet']
 
   return output_api.EnsureCQIncludeTrybotsAreAdded(
     cl, try_bots, 'Automatically added Cronet trybots to run tests on CQ.')
