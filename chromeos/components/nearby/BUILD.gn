@@ -1,4 +1,4 @@
-# Copyright 2016 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -9,10 +9,15 @@ static_library("nearby") {
     "atomic_boolean_impl.cc",
     "atomic_boolean_impl.h",
     "atomic_reference_impl.h",
+    "condition_variable_impl.cc",
+    "condition_variable_impl.h",
     "count_down_latch_impl.cc",
     "count_down_latch_impl.h",
     "hash_utils_impl.cc",
     "hash_utils_impl.h",
+    "lock_base.h",
+    "lock_impl.cc",
+    "lock_impl.h",
     "settable_future_impl.h",
     "system_clock_impl.cc",
     "system_clock_impl.h",
@@ -33,8 +38,10 @@ source_set("unit_tests") {
   sources = [
     "atomic_boolean_impl_unittest.cc",
     "atomic_reference_impl_unittest.cc",
+    "condition_variable_impl_unittest.cc",
     "count_down_latch_impl_unittest.cc",
     "hash_utils_impl_unittest.cc",
+    "lock_impl_unittest.cc",
     "settable_future_impl_unittest.cc",
   ]
 
