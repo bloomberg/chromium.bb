@@ -39,7 +39,7 @@ constexpr char kXPrivetEmptyToken[] = "\"\"";
 constexpr int kPrivetMaxRetries = 20;
 constexpr int kPrivetTimeoutOnError = 5;
 constexpr int kHTTPErrorCodeInvalidXPrivetToken = 418;
-constexpr size_t kMaxContentSize = 1 * 1024 * 1024;
+constexpr size_t kPrivetMaxContentSize = 1 * 1024 * 1024;
 
 base::LazyInstance<std::map<std::string, std::string>>::Leaky g_tokens =
     LAZY_INSTANCE_INITIALIZER;
@@ -191,7 +191,7 @@ void PrivetURLLoader::Try() {
         url_loader_factory_.get(),
         base::BindOnce(&PrivetURLLoader::OnDownloadedToString,
                        weak_factory_.GetWeakPtr()),
-        kMaxContentSize);
+        kPrivetMaxContentSize);
   }
 }
 
