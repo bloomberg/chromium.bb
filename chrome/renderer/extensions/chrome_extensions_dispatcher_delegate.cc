@@ -227,6 +227,12 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("platformKeys.utils", IDR_PLATFORM_KEYS_UTILS_JS);
   source_map->RegisterSource("terminalPrivate",
                              IDR_TERMINAL_PRIVATE_CUSTOM_BINDINGS_JS);
+
+  // IME service on Chrome OS.
+  source_map->RegisterSource("chromeos.ime.mojom.input_engine.mojom",
+                             IDR_IME_SERVICE_MOJOM_JS);
+  source_map->RegisterSource("chromeos.ime.service",
+                             IDR_IME_SERVICE_BINDINGS_JS);
 #endif  // defined(OS_CHROMEOS)
 
   source_map->RegisterSource("cast.streaming.rtpStream",

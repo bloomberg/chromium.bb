@@ -36,14 +36,12 @@ source_set("unit_tests") {
 # corresponding catalog entries in the "chromeos_services_unittests_catalog"
 # target below.
 service_test("chromeos_services_unittests") {
-  deps = []
+  deps = [
+    "//chromeos/services/ime:unit_tests",
+  ]
 
   if (enable_cros_assistant) {
     deps += [ "//chromeos/services/assistant:tests" ]
-  }
-
-  if (enable_cros_ime_service) {
-    deps += [ "//chromeos/services/ime:unit_tests" ]
   }
 
   catalog = ":chromeos_services_unittests_catalog"
@@ -52,13 +50,9 @@ service_test("chromeos_services_unittests") {
 catalog("chromeos_services_unittests_catalog") {
   testonly = true
 
-  catalog_deps = []
+  catalog_deps = [ "//chromeos/services/ime:tests_catalog" ]
 
   if (enable_cros_assistant) {
     catalog_deps += [ "//chromeos/services/assistant:tests_catalog" ]
-  }
-
-  if (enable_cros_ime_service) {
-    catalog_deps += [ "//chromeos/services/ime:tests_catalog" ]
   }
 }

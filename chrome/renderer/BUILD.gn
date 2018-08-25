@@ -34,6 +34,9 @@ grit("resources") {
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
   ]
+  if (is_chromeos) {
+    deps += [ "//chromeos/services/ime/public/mojom:mojom_js" ]
+  }
 }
 
 jumbo_static_library("renderer") {

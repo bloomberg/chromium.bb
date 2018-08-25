@@ -9,7 +9,6 @@ buildflag_header("buildflags") {
   header = "buildflags.h"
 
   flags = [
-    "ENABLE_CROS_IME_SERVICE=$enable_cros_ime_service",
     "ENABLE_CROS_IME_DECODER=$enable_cros_ime_decoder",
     "ENABLE_CROS_IME_EXAMPLE_SO=$enable_cros_ime_example_so",
   ]

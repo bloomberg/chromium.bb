@@ -48,6 +48,7 @@
         "device_sync": [ "device_sync" ],
         "file_util": [ "analyze_archive", "zip_file" ],
         "identity": [ "identity_manager" ],
+        "ime": [ "input_engine" ],
         // Only used in classic ash case.
         "local_state": [ "pref_client" ],
         "media_gallery_util": [ "parse_media" ],
@@ -86,6 +87,7 @@
           "blink.mojom.TextSuggestionHost",
           "chrome.mojom.OpenSearchDocumentDescriptionHandler",
           "chrome.mojom.PrerenderCanceler",
+          "chromeos.ime.mojom.InputEngineManager",
           "contextual_search.mojom.ContextualSearchJsApiService",
           "dom_distiller.mojom.DistillabilityService",
           "dom_distiller.mojom.DistillerJavaScriptService",

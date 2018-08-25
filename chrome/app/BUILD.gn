@@ -459,6 +459,7 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//ash:manifest",
       "//chrome/browser/chromeos:ash_pref_connector_manifest",
       "//chrome/services/cups_ipp_validator:manifest",
+      "//chromeos/services/ime:manifest",
       "//chromeos/services/secure_channel:manifest",
       "//ui/accessibility:manifest",
     ]
