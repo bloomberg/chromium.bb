@@ -138,6 +138,16 @@ class MultiDeviceSetupFeatureStateManagerImplTest : public testing::Test {
               fake_observer_->feature_state_updates().size());
   }
 
+  void MakeBetterTogetherSuiteDisabledByUser() {
+    SetSoftwareFeatureState(true /* use_local_device */,
+                            cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT,
+                            cryptauth::SoftwareFeatureState::kSupported);
+    test_pref_service_->SetBoolean(kBetterTogetherSuiteEnabledPrefName, false);
+    EXPECT_EQ(
+        mojom::FeatureState::kDisabledByUser,
+        manager_->GetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  }
+
   void VerifyFeatureStateChange(size_t expected_index,
                                 mojom::Feature expected_feature,
                                 mojom::FeatureState expected_feature_state) {
@@ -207,6 +217,18 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, BetterTogetherSuite) {
   VerifyFeatureStateChange(2u /* expected_index */,
                            mojom::Feature::kBetterTogetherSuite,
                            mojom::FeatureState::kDisabledByUser);
+
+  // Set all features to prohibited. This should cause the Better Together suite
+  // to become prohibited as well.
+  test_pref_service()->SetBoolean(kInstantTetheringAllowedPrefName, false);
+  test_pref_service()->SetBoolean(kMessagesAllowedPrefName, false);
+  test_pref_service()->SetBoolean(kSmartLockAllowedPrefName, false);
+  EXPECT_EQ(
+      mojom::FeatureState::kProhibitedByPolicy,
+      manager()->GetFeatureStates()[mojom::Feature::kBetterTogetherSuite]);
+  VerifyFeatureStateChange(5u /* expected_index */,
+                           mojom::Feature::kBetterTogetherSuite,
+                           mojom::FeatureState::kProhibitedByPolicy);
 }
 
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, InstantTethering) {
@@ -235,19 +257,26 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, InstantTethering) {
                            mojom::Feature::kInstantTethering,
                            mojom::FeatureState::kEnabledByUser);
 
+  MakeBetterTogetherSuiteDisabledByUser();
+  EXPECT_EQ(mojom::FeatureState::kUnavailableSuiteDisabled,
+            manager()->GetFeatureStates()[mojom::Feature::kInstantTethering]);
+  VerifyFeatureStateChange(4u /* expected_index */,
+                           mojom::Feature::kInstantTethering,
+                           mojom::FeatureState::kUnavailableSuiteDisabled);
+
   test_pref_service()->SetBoolean(kInstantTetheringEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kInstantTethering]);
-  VerifyFeatureStateChange(3u /* expected_index */,
+  VerifyFeatureStateChange(5u /* expected_index */,
                            mojom::Feature::kInstantTethering,
                            mojom::FeatureState::kDisabledByUser);
 
   test_pref_service()->SetBoolean(kInstantTetheringAllowedPrefName, false);
-  EXPECT_EQ(mojom::FeatureState::kDisabledByPolicy,
+  EXPECT_EQ(mojom::FeatureState::kProhibitedByPolicy,
             manager()->GetFeatureStates()[mojom::Feature::kInstantTethering]);
-  VerifyFeatureStateChange(4u /* expected_index */,
+  VerifyFeatureStateChange(6u /* expected_index */,
                            mojom::Feature::kInstantTethering,
-                           mojom::FeatureState::kDisabledByPolicy);
+                           mojom::FeatureState::kProhibitedByPolicy);
 }
 
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, Messages) {
@@ -273,17 +302,23 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, Messages) {
   VerifyFeatureStateChange(2u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kEnabledByUser);
 
+  MakeBetterTogetherSuiteDisabledByUser();
+  EXPECT_EQ(mojom::FeatureState::kUnavailableSuiteDisabled,
+            manager()->GetFeatureStates()[mojom::Feature::kMessages]);
+  VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kMessages,
+                           mojom::FeatureState::kUnavailableSuiteDisabled);
+
   test_pref_service()->SetBoolean(kMessagesEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(3u /* expected_index */, mojom::Feature::kMessages,
+  VerifyFeatureStateChange(5u /* expected_index */, mojom::Feature::kMessages,
                            mojom::FeatureState::kDisabledByUser);
 
   test_pref_service()->SetBoolean(kMessagesAllowedPrefName, false);
-  EXPECT_EQ(mojom::FeatureState::kDisabledByPolicy,
+  EXPECT_EQ(mojom::FeatureState::kProhibitedByPolicy,
             manager()->GetFeatureStates()[mojom::Feature::kMessages]);
-  VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kMessages,
-                           mojom::FeatureState::kDisabledByPolicy);
+  VerifyFeatureStateChange(6u /* expected_index */, mojom::Feature::kMessages,
+                           mojom::FeatureState::kProhibitedByPolicy);
 }
 
 TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, SmartLock) {
@@ -310,17 +345,23 @@ TEST_F(MultiDeviceSetupFeatureStateManagerImplTest, SmartLock) {
   VerifyFeatureStateChange(2u /* expected_index */, mojom::Feature::kSmartLock,
                            mojom::FeatureState::kEnabledByUser);
 
+  MakeBetterTogetherSuiteDisabledByUser();
+  EXPECT_EQ(mojom::FeatureState::kUnavailableSuiteDisabled,
+            manager()->GetFeatureStates()[mojom::Feature::kSmartLock]);
+  VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kSmartLock,
+                           mojom::FeatureState::kUnavailableSuiteDisabled);
+
   test_pref_service()->SetBoolean(kSmartLockEnabledPrefName, false);
   EXPECT_EQ(mojom::FeatureState::kDisabledByUser,
             manager()->GetFeatureStates()[mojom::Feature::kSmartLock]);
-  VerifyFeatureStateChange(3u /* expected_index */, mojom::Feature::kSmartLock,
+  VerifyFeatureStateChange(5u /* expected_index */, mojom::Feature::kSmartLock,
                            mojom::FeatureState::kDisabledByUser);
 
   test_pref_service()->SetBoolean(kSmartLockAllowedPrefName, false);
-  EXPECT_EQ(mojom::FeatureState::kDisabledByPolicy,
+  EXPECT_EQ(mojom::FeatureState::kProhibitedByPolicy,
             manager()->GetFeatureStates()[mojom::Feature::kSmartLock]);
-  VerifyFeatureStateChange(4u /* expected_index */, mojom::Feature::kSmartLock,
-                           mojom::FeatureState::kDisabledByPolicy);
+  VerifyFeatureStateChange(6u /* expected_index */, mojom::Feature::kSmartLock,
+                           mojom::FeatureState::kProhibitedByPolicy);
 }
 
 }  // namespace multidevice_setup

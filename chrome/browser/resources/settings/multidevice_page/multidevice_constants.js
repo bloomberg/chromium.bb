@@ -38,13 +38,14 @@ cr.define('settings', function() {
    * @enum {number}
    */
   MultiDeviceFeatureState = {
-    DISABLED_BY_POLICY: 0,
+    PROHIBITED_BY_POLICY: 0,
     DISABLED_BY_USER: 1,
     ENABLED_BY_USER: 2,
     NOT_SUPPORTED_BY_CHROMEBOOK: 3,
     NOT_SUPPORTED_BY_PHONE: 4,
     UNAVAILABLE_NO_VERIFIED_HOST: 5,
     UNAVAILABLE_INSUFFICIENT_SECURITY: 6,
+    UNAVAILABLE_SUITE_DISABLED: 7,
   };
 
   return {

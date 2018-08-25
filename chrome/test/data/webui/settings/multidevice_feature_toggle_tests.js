@@ -76,7 +76,7 @@ suite('Multidevice', () => {
   });
 
   test('disabled property can be set by feature state', () => {
-    setMessagesState(settings.MultiDeviceFeatureState.DISABLED_BY_POLICY);
+    setMessagesState(settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY);
     assertTrue(crToggle.disabled);
 
     setMessagesState(settings.MultiDeviceFeatureState.DISABLED_BY_USER);
@@ -89,7 +89,7 @@ suite('Multidevice', () => {
     assertTrue(crToggle.checked);
     assertFalse(crToggle.disabled);
 
-    setMessagesState(settings.MultiDeviceFeatureState.DISABLED_BY_POLICY);
+    setMessagesState(settings.MultiDeviceFeatureState.PROHIBITED_BY_POLICY);
     assertFalse(featureToggle.checked_);
     assertFalse(crToggle.checked);
     assertTrue(crToggle.disabled);

@@ -64,6 +64,7 @@ class FeatureStateManagerImpl : public FeatureStateManager,
   void OnPrefValueChanged();
   void UpdateFeatureStateCache(bool notify_observers_of_changes);
   mojom::FeatureState ComputeFeatureState(mojom::Feature feature);
+  bool IsAllowedByPolicy(mojom::Feature feature);
   bool IsSupportedByChromebook(mojom::Feature feature);
   bool HasSufficientSecurity(mojom::Feature feature,
                              const cryptauth::RemoteDeviceRef& host_device);
