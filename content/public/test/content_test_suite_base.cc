@@ -15,7 +15,6 @@
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_paths.h"
 #include "content/renderer/in_process_renderer_thread.h"
 #include "content/utility/in_process_utility_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,8 +49,6 @@ ContentTestSuiteBase::ContentTestSuiteBase(int argc, char** argv)
 
 void ContentTestSuiteBase::Initialize() {
   base::TestSuite::Initialize();
-
-  RegisterPathProvider();
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   gin::V8Initializer::LoadV8Snapshot(kSnapshotType);
