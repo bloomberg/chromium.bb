@@ -23,6 +23,15 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace {
+
+std::unique_ptr<service_manager::Connector> CreateConnector() {
+  service_manager::mojom::ConnectorRequest request;
+  return service_manager::Connector::Create(&request);
+}
+
+}  // namespace
+
 namespace chromecast {
 namespace media {
 namespace {
@@ -33,11 +42,6 @@ using testing::Invoke;
 using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
-
-std::unique_ptr<service_manager::Connector> CreateConnector() {
-  service_manager::mojom::ConnectorRequest request;
-  return service_manager::Connector::Create(&request);
-}
 
 // Utility functions
 ::media::AudioParameters GetAudioParams() {
@@ -97,14 +101,16 @@ class MockMediaAudioOutputStream : public ::media::AudioOutputStream {
 
 class MockCastAudioManager : public CastAudioManager {
  public:
-  explicit MockCastAudioManager(service_manager::Connector* connector)
+  explicit MockCastAudioManager(
+      service_manager::Connector* connector,
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner)
       : CastAudioManager(
             std::make_unique<::media::TestAudioThread>(),
             nullptr,
             base::BindRepeating(&MockCastAudioManager::GetCmaBackendFactory,
                                 base::Unretained(this)),
-            nullptr,
-            nullptr,
+            media_task_runner,
+            media_task_runner,
             connector,
             true /* use_mixer */) {
     ON_CALL(*this, ReleaseOutputStream(_))
@@ -136,7 +142,8 @@ class CastAudioMixerTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    mock_manager_.reset(new StrictMock<MockCastAudioManager>(connector_.get()));
+    mock_manager_.reset(new StrictMock<MockCastAudioManager>(
+        connector_.get(), scoped_task_environment_.GetMainThreadTaskRunner()));
     mock_mixer_stream_.reset(new StrictMock<MockMediaAudioOutputStream>());
 
     ON_CALL(*mock_manager_, MakeMixerOutputStream(_))

@@ -8,6 +8,8 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
+#include "base/location.h"
 #include "chromecast/media/audio/cast_audio_mixer.h"
 #include "chromecast/media/audio/cast_audio_output_stream.h"
 #include "chromecast/media/cma/backend/cma_backend_factory.h"
@@ -37,21 +39,26 @@ CastAudioManager::CastAudioManager(
     ::media::AudioLogFactory* audio_log_factory,
     base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
     scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
     service_manager::Connector* connector,
     bool use_mixer)
     : AudioManagerBase(std::move(audio_thread), audio_log_factory),
       backend_factory_getter_(std::move(backend_factory_getter)),
       browser_task_runner_(std::move(browser_task_runner)),
-      backend_task_runner_(std::move(backend_task_runner)),
-      browser_connector_(connector) {
+      media_task_runner_(std::move(media_task_runner)),
+      browser_connector_(connector),
+      weak_factory_(this) {
+  DCHECK(browser_task_runner_->BelongsToCurrentThread());
   DCHECK(backend_factory_getter_);
   DCHECK(browser_connector_);
+  weak_this_ = weak_factory_.GetWeakPtr();
   if (use_mixer)
     mixer_ = std::make_unique<CastAudioMixer>(this);
 }
 
-CastAudioManager::~CastAudioManager() = default;
+CastAudioManager::~CastAudioManager() {
+  DCHECK(browser_task_runner_->BelongsToCurrentThread());
+}
 
 bool CastAudioManager::HasAudioOutputDevices() {
   return true;
@@ -96,10 +103,10 @@ void CastAudioManager::ReleaseOutputStream(::media::AudioOutputStream* stream) {
   }
 }
 
-CmaBackendFactory* CastAudioManager::backend_factory() {
-  if (!backend_factory_)
-    backend_factory_ = backend_factory_getter_.Run();
-  return backend_factory_;
+CmaBackendFactory* CastAudioManager::cma_backend_factory() {
+  if (!cma_backend_factory_)
+    cma_backend_factory_ = backend_factory_getter_.Run();
+  return cma_backend_factory_;
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLinearOutputStream(
@@ -111,8 +118,7 @@ CmaBackendFactory* CastAudioManager::backend_factory() {
   if (mixer_)
     return mixer_->MakeStream(params);
   else
-    return new CastAudioOutputStream(params, browser_task_runner_,
-                                     browser_connector_, this);
+    return new CastAudioOutputStream(this, GetConnector(), params);
 }
 
 ::media::AudioOutputStream* CastAudioManager::MakeLowLatencyOutputStream(
@@ -125,8 +131,7 @@ CmaBackendFactory* CastAudioManager::backend_factory() {
   if (mixer_)
     return mixer_->MakeStream(params);
   else
-    return new CastAudioOutputStream(params, browser_task_runner_,
-                                     browser_connector_, this);
+    return new CastAudioOutputStream(this, GetConnector(), params);
 }
 
 ::media::AudioInputStream* CastAudioManager::MakeLinearInputStream(
@@ -175,9 +180,30 @@ CmaBackendFactory* CastAudioManager::backend_factory() {
 
   // Keep a reference to this stream for proper behavior on
   // CastAudioManager::ReleaseOutputStream.
-  mixer_output_stream_.reset(new CastAudioOutputStream(
-      params, browser_task_runner_, browser_connector_, this));
+  mixer_output_stream_.reset(
+      new CastAudioOutputStream(this, GetConnector(), params));
   return mixer_output_stream_.get();
+}
+
+void CastAudioManager::SetConnectorForTesting(
+    std::unique_ptr<service_manager::Connector> connector) {
+  connector_ = std::move(connector);
+}
+
+service_manager::Connector* CastAudioManager::GetConnector() {
+  if (!connector_) {
+    service_manager::mojom::ConnectorRequest request;
+    connector_ = service_manager::Connector::Create(&request);
+    browser_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&CastAudioManager::BindConnectorRequest,
+                                  weak_this_, std::move(request)));
+  }
+  return connector_.get();
+}
+
+void CastAudioManager::BindConnectorRequest(
+    service_manager::mojom::ConnectorRequest request) {
+  browser_connector_->BindConnectorRequest(std::move(request));
 }
 
 }  // namespace media

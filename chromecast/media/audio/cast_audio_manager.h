@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "media/audio/audio_manager_base.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -27,7 +28,7 @@ class CastAudioManager : public ::media::AudioManagerBase {
       ::media::AudioLogFactory* audio_log_factory,
       base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter,
       scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,
       service_manager::Connector* connector,
       bool use_mixer);
   ~CastAudioManager() override;
@@ -42,10 +43,13 @@ class CastAudioManager : public ::media::AudioManagerBase {
   const char* GetName() override;
   void ReleaseOutputStream(::media::AudioOutputStream* stream) override;
 
-  CmaBackendFactory* backend_factory();
-  base::SingleThreadTaskRunner* backend_task_runner() {
-    return backend_task_runner_.get();
+  CmaBackendFactory* cma_backend_factory();
+  base::SingleThreadTaskRunner* media_task_runner() {
+    return media_task_runner_.get();
   }
+
+  void SetConnectorForTesting(
+      std::unique_ptr<service_manager::Connector> connector);
 
  protected:
   // AudioManagerBase implementation.
@@ -74,15 +78,21 @@ class CastAudioManager : public ::media::AudioManagerBase {
 
  private:
   friend class CastAudioMixer;
+  service_manager::Connector* GetConnector();
+  void BindConnectorRequest(service_manager::mojom::ConnectorRequest request);
 
   base::RepeatingCallback<CmaBackendFactory*()> backend_factory_getter_;
-  CmaBackendFactory* backend_factory_ = nullptr;
+  CmaBackendFactory* cma_backend_factory_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> browser_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
   service_manager::Connector* const browser_connector_;
   std::unique_ptr<::media::AudioOutputStream> mixer_output_stream_;
   std::unique_ptr<CastAudioMixer> mixer_;
+  std::unique_ptr<service_manager::Connector> connector_;
 
+  // Weak pointers must be dereferenced on the |browser_task_runner|.
+  base::WeakPtr<CastAudioManager> weak_this_;
+  base::WeakPtrFactory<CastAudioManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioManager);
 };
