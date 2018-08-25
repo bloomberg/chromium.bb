@@ -18,7 +18,15 @@ static_library("nearby") {
     "lock_base.h",
     "lock_impl.cc",
     "lock_impl.h",
+    "multi_thread_executor_impl.cc",
+    "multi_thread_executor_impl.h",
+    "scheduled_executor_impl.cc",
+    "scheduled_executor_impl.h",
     "settable_future_impl.h",
+    "single_thread_executor_impl.cc",
+    "single_thread_executor_impl.h",
+    "submittable_executor_base.cc",
+    "submittable_executor_base.h",
     "system_clock_impl.cc",
     "system_clock_impl.h",
     "thread_utils_impl.cc",
@@ -42,7 +50,9 @@ source_set("unit_tests") {
     "count_down_latch_impl_unittest.cc",
     "hash_utils_impl_unittest.cc",
     "lock_impl_unittest.cc",
+    "scheduled_executor_impl_unittest.cc",
     "settable_future_impl_unittest.cc",
+    "submittable_executor_base_unittest.cc",
   ]
 
   deps = [
