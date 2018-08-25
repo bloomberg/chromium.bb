@@ -2,16 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/api/tab_capture/offscreen_tab.h"
+#include "chrome/browser/media/offscreen_tab.h"
 
 #include <algorithm>
 #include <utility>
-#include <vector>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/media/router/presentation/presentation_navigation_policy.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"  // nogncheck
 #include "chrome/browser/profiles/profile.h"
@@ -20,17 +17,11 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_host.h"
-#include "extensions/browser/process_manager.h"
 #include "third_party/blink/public/web/web_presentation_receiver_flags.h"
 
 using content::WebContents;
 
 namespace {
-
-// Upper limit on the number of simultaneous off-screen tabs per extension
-// instance.
-const int kMaxOffscreenTabsPerExtension = 4;
 
 // Time intervals used by the logic that detects when the capture of an
 // offscreen tab has stopped, to automatically tear it down and free resources.
@@ -39,62 +30,18 @@ constexpr base::TimeDelta kPollInterval = base::TimeDelta::FromSeconds(1);
 
 }  // namespace
 
-namespace extensions {
-
-OffscreenTabsOwner::OffscreenTabsOwner(WebContents* extension_web_contents)
-    : extension_web_contents_(extension_web_contents) {
-  DCHECK(extension_web_contents_);
-}
-
-OffscreenTabsOwner::~OffscreenTabsOwner() {}
-
-// static
-OffscreenTabsOwner* OffscreenTabsOwner::Get(
-    content::WebContents* extension_web_contents) {
-  // CreateForWebContents() really means "create if not exists."
-  CreateForWebContents(extension_web_contents);
-  return FromWebContents(extension_web_contents);
-}
-
-OffscreenTab* OffscreenTabsOwner::OpenNewTab(
-    const GURL& start_url,
-    const gfx::Size& initial_size,
-    const std::string& optional_presentation_id) {
-  if (tabs_.size() >= kMaxOffscreenTabsPerExtension)
-    return nullptr;  // Maximum number of offscreen tabs reached.
-
-  // OffscreenTab cannot be created with MakeUnique<OffscreenTab> since the
-  // constructor is protected. So create it separately, and then move it to
-  // |tabs_| below.
-  std::unique_ptr<OffscreenTab> offscreen_tab(new OffscreenTab(this));
-  tabs_.push_back(std::move(offscreen_tab));
-  tabs_.back()->Start(start_url, initial_size, optional_presentation_id);
-  return tabs_.back().get();
-}
-
-void OffscreenTabsOwner::DestroyTab(OffscreenTab* tab) {
-  for (std::vector<std::unique_ptr<OffscreenTab>>::iterator iter =
-           tabs_.begin();
-       iter != tabs_.end(); ++iter) {
-    if (iter->get() == tab) {
-      tabs_.erase(iter);
-      break;
-    }
-  }
-}
-
-OffscreenTab::OffscreenTab(OffscreenTabsOwner* owner)
+OffscreenTab::OffscreenTab(Owner* owner, content::BrowserContext* context)
     : owner_(owner),
       otr_profile_registration_(
           IndependentOTRProfileManager::GetInstance()
               ->CreateFromOriginalProfile(
-                  Profile::FromBrowserContext(
-                      owner->extension_web_contents()->GetBrowserContext()),
+                  Profile::FromBrowserContext(context),
                   base::BindOnce(&OffscreenTab::DieIfOriginalProfileDestroyed,
                                  base::Unretained(this)))),
       content_capture_was_detected_(false),
       navigation_policy_(
           std::make_unique<media_router::DefaultNavigationPolicy>()) {
+  DCHECK(owner_);
   DCHECK(otr_profile_registration_->profile());
 }
 
@@ -193,9 +140,10 @@ bool OffscreenTab::ShouldFocusPageAfterCrash() {
   return false;
 }
 
-void OffscreenTab::CanDownload(const GURL& url,
-                               const std::string& request_method,
-                               const base::Callback<void(bool)>& callback) {
+void OffscreenTab::CanDownload(
+    const GURL& url,
+    const std::string& request_method,
+    const base::RepeatingCallback<void(bool)>& callback) {
   // Offscreen tab pages are not allowed to download files.
   callback.Run(false);
 }
@@ -302,47 +250,7 @@ void OffscreenTab::RequestMediaAccessPermission(
     const content::MediaStreamRequest& request,
     content::MediaResponseCallback callback) {
   DCHECK_EQ(offscreen_tab_web_contents_.get(), contents);
-
-  // This method is being called to check whether an extension is permitted to
-  // capture the page.  Verify that the request is being made by the extension
-  // that spawned this OffscreenTab.
-
-  // Find the extension ID associated with the extension background page's
-  // WebContents.
-  content::BrowserContext* const extension_browser_context =
-      owner_->extension_web_contents()->GetBrowserContext();
-  const extensions::Extension* const extension =
-      ProcessManager::Get(extension_browser_context)->
-          GetExtensionForWebContents(owner_->extension_web_contents());
-  const std::string extension_id = extension ? extension->id() : "";
-  LOG_IF(DFATAL, extension_id.empty())
-      << "Extension that started this OffscreenTab was not found.";
-
-  // If verified, allow any tab capture audio/video devices that were requested.
-  extensions::TabCaptureRegistry* const tab_capture_registry =
-      extensions::TabCaptureRegistry::Get(extension_browser_context);
-  content::MediaStreamDevices devices;
-  if (tab_capture_registry && tab_capture_registry->VerifyRequest(
-          request.render_process_id,
-          request.render_frame_id,
-          extension_id)) {
-    if (request.audio_type == content::MEDIA_GUM_TAB_AUDIO_CAPTURE) {
-      devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_GUM_TAB_AUDIO_CAPTURE, std::string(), std::string()));
-    }
-    if (request.video_type == content::MEDIA_GUM_TAB_VIDEO_CAPTURE) {
-      devices.push_back(content::MediaStreamDevice(
-          content::MEDIA_GUM_TAB_VIDEO_CAPTURE, std::string(), std::string()));
-    }
-  }
-
-  DVLOG(2) << "Allowing " << devices.size()
-           << " capture devices for OffscreenTab content.";
-
-  std::move(callback).Run(devices,
-                          devices.empty() ? content::MEDIA_DEVICE_INVALID_STATE
-                                          : content::MEDIA_DEVICE_OK,
-                          std::unique_ptr<content::MediaStreamUI>(nullptr));
+  owner_->RequestMediaAccessPermission(request, std::move(callback));
 }
 
 bool OffscreenTab::CheckMediaAccessPermission(
@@ -398,20 +306,19 @@ void OffscreenTab::DieIfContentCaptureEnded() {
     // that content capture is never going to start and die to free up
     // resources.
     LOG(WARNING) << "Capture of OffscreenTab content did not start "
-                    "within timeout for start_url=" << start_url_.spec();
+                 << "within timeout for start_url=" << start_url_.spec();
     owner_->DestroyTab(this);
     return;  // |this| is no longer valid.
   }
 
   // Schedule the timer to check again in a second.
-  capture_poll_timer_.Start(FROM_HERE, kPollInterval,
-                            base::Bind(&OffscreenTab::DieIfContentCaptureEnded,
-                                       base::Unretained(this)));
+  capture_poll_timer_.Start(
+      FROM_HERE, kPollInterval,
+      base::BindRepeating(&OffscreenTab::DieIfContentCaptureEnded,
+                          base::Unretained(this)));
 }
 
 void OffscreenTab::DieIfOriginalProfileDestroyed(Profile* profile) {
   DCHECK(profile == otr_profile_registration_->profile());
   owner_->DestroyTab(this);
 }
-
-}  // namespace extensions
