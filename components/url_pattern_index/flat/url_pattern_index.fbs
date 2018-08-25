@@ -4,6 +4,9 @@
 
 namespace url_pattern_index.flat;
 
+// NOTE: Increment url_pattern_index::kUrlPatternIndexFormatVersion whenever
+// making a breaking change to this schema.
+
 // Corresponds to url_pattern_index::proto::UrlPatternType.
 enum UrlPatternType : ubyte {
   SUBSTRING,

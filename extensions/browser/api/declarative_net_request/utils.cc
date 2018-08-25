@@ -20,6 +20,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
+#include "components/url_pattern_index/url_pattern_index.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/flat_ruleset_indexer.h"
@@ -49,6 +50,13 @@ namespace dnr_api = extensions::api::declarative_net_request;
 // TODO(crbug.com/755717): Add checks to ensure that we increment this when
 // necessary.
 constexpr int kIndexedRulesetFormatVersion = 1;
+
+// This static assert is meant to catch cases where
+// url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
+// updating kIndexedRulesetFormatVersion.
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 1,
+              "kUrlPatternIndexFormatVersion has changed, make sure you've "
+              "also updated kIndexedRulesetFormatVersion above.");
 
 constexpr int kInvalidIndexedRulesetFormatVersion = -1;
 

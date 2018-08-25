@@ -35,6 +35,13 @@ int LocalGetChecksum(const uint8_t* data, size_t size) {
 // tools/perf/core/default_local_state.json.
 const int RulesetIndexer::kIndexedFormatVersion = 20;
 
+// This static assert is meant to catch cases where
+// url_pattern_index::kUrlPatternIndexFormatVersion is incremented without
+// updating RulesetIndexer::kIndexedFormatVersion.
+static_assert(url_pattern_index::kUrlPatternIndexFormatVersion == 1,
+              "kUrlPatternIndexFormatVersion has changed, make sure you've "
+              "also updated RulesetIndexer::kIndexedFormatVersion above.");
+
 RulesetIndexer::RulesetIndexer()
     : blacklist_(&builder_), whitelist_(&builder_), deactivation_(&builder_) {}
 
