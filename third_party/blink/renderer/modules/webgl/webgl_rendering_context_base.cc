@@ -5594,8 +5594,15 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
     }
     return;
   }
+
   sk_sp<SkImage> sk_image =
       bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
+  if (!sk_image) {
+    SynthesizeGLError(GL_OUT_OF_MEMORY, func_name,
+                      "ImageBitmap unexpectedly empty");
+    return;
+  }
+
   SkPixmap pixmap;
   uint8_t* pixel_data_ptr = nullptr;
   scoped_refptr<Uint8Array> pixel_data;
