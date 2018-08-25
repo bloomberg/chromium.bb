@@ -1982,6 +1982,9 @@
   <message name="IDS_DISCOVER_WELCOME_SUBTITLE" desc="A subtitle title of the dialog that starts initial device setup process, explaining the benefits of going through this process.">
     Set up your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> just as you want it and discover all the amazing capabilities at your fingertips.
   </message>
+  <message name="IDS_DISCOVER_REDEEM_YOUR_OFFERS" desc="A label on the button that leads to the new web page where happy owner of the new device can redeem exclusive Google offers.">
+    Redeem your offers
+  </message>
   <message name="IDS_APP_START_NETWORK_WAIT_MESSAGE" desc="Message displayed while installing and/or launching web application in kiosk mode.">
     Waiting for network connection...
   </message>
