@@ -160,9 +160,7 @@ void BleScannerImpl::SetTestDoubles(
 }
 
 bool BleScannerImpl::IsDeviceRegistered(const std::string& device_id) {
-  return std::find(registered_remote_device_ids_.begin(),
-                   registered_remote_device_ids_.end(),
-                   device_id) != registered_remote_device_ids_.end();
+  return base::ContainsValue(registered_remote_device_ids_, device_id);
 }
 
 void BleScannerImpl::DeviceAdded(device::BluetoothAdapter* adapter,

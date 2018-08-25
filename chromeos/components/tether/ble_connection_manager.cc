@@ -447,8 +447,7 @@ void BleConnectionManager::UpdateConnectionAttempts() {
     if (map_entry.second->GetStatus() ==
             cryptauth::SecureChannel::Status::CONNECTING &&
         !map_entry.second->HasEstablishedConnection() &&
-        std::find(should_advertise_to.begin(), should_advertise_to.end(),
-                  map_entry.first) == should_advertise_to.end()) {
+        !base::ContainsValue(should_advertise_to, map_entry.first)) {
       device_ids_to_stop.push_back(map_entry.first);
     }
   }

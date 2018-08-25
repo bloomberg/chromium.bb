@@ -27,10 +27,8 @@ bool FakeBleAdvertiser::StartAdvertisingToDevice(const std::string& device_id) {
   if (should_fail_to_start_advertising_)
     return false;
 
-  if (std::find(registered_device_ids_.begin(), registered_device_ids_.end(),
-                device_id) != registered_device_ids_.end()) {
+  if (base::ContainsValue(registered_device_ids_, device_id))
     return false;
-  }
 
   registered_device_ids_.push_back(device_id);
 
@@ -41,10 +39,8 @@ bool FakeBleAdvertiser::StartAdvertisingToDevice(const std::string& device_id) {
 }
 
 bool FakeBleAdvertiser::StopAdvertisingToDevice(const std::string& device_id) {
-  if (std::find(registered_device_ids_.begin(), registered_device_ids_.end(),
-                device_id) == registered_device_ids_.end()) {
+  if (!base::ContainsValue(registered_device_ids_, device_id))
     return false;
-  }
 
   base::Erase(registered_device_ids_, device_id);
   if (automatically_update_active_advertisements_ &&

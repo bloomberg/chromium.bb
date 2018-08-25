@@ -88,10 +88,8 @@ class NetworkHostScanCacheTest : public NetworkStateTest {
   }
 
   bool HasConnectedToHost(const std::string& tether_network_guid) {
-    auto it =
-        std::find(has_connected_to_host_device_ids_.begin(),
-                  has_connected_to_host_device_ids_.end(), tether_network_guid);
-    return it != has_connected_to_host_device_ids_.end();
+    return base::ContainsValue(has_connected_to_host_device_ids_,
+                               tether_network_guid);
   }
 
   // Verifies that the information present in |expected_cache_| and
