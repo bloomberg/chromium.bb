@@ -9,6 +9,7 @@
 #include "components/mirroring/mojom/mirroring_service_host.mojom.h"
 #include "components/mirroring/mojom/resource_provider.mojom.h"
 #include "content/public/browser/desktop_media_id.h"
+#include "content/public/browser/web_contents_observer.h"
 
 namespace content {
 class AudioLoopbackStreamCreator;
@@ -22,7 +23,8 @@ namespace mirroring {
 //
 // TODO(xjz): Adds the implementation to connect to Mirroring Service.
 class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
-                                       public mojom::ResourceProvider {
+                                       public mojom::ResourceProvider,
+                                       public content::WebContentsObserver {
  public:
   static void GetForTab(content::WebContents* target_contents,
                         mojom::MirroringServiceHostRequest request);
@@ -56,6 +58,9 @@ class CastMirroringServiceHost final : public mojom::MirroringServiceHost,
   void ConnectToRemotingSource(
       media::mojom::RemoterPtr remoter,
       media::mojom::RemotingSourceRequest request) override;
+
+  // content::WebContentsObserver implementation.
+  void WebContentsDestroyed() override;
 
   // Describes the media source for this mirroring session.
   const content::DesktopMediaID source_media_id_;
