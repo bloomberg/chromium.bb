@@ -35,10 +35,8 @@ bool FakeBleScanner::RegisterScanFilterForDevice(const std::string& device_id) {
   if (should_fail_to_register_)
     return false;
 
-  if (std::find(registered_device_ids_.begin(), registered_device_ids_.end(),
-                device_id) != registered_device_ids_.end()) {
+  if (base::ContainsValue(registered_device_ids_, device_id))
     return false;
-  }
 
   bool was_empty = registered_device_ids_.empty();
   registered_device_ids_.push_back(device_id);
@@ -53,10 +51,8 @@ bool FakeBleScanner::RegisterScanFilterForDevice(const std::string& device_id) {
 
 bool FakeBleScanner::UnregisterScanFilterForDevice(
     const std::string& device_id) {
-  if (std::find(registered_device_ids_.begin(), registered_device_ids_.end(),
-                device_id) == registered_device_ids_.end()) {
+  if (!base::ContainsValue(registered_device_ids_, device_id))
     return false;
-  }
 
   base::Erase(registered_device_ids_, device_id);
 
