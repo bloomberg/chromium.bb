@@ -635,12 +635,18 @@ config("compiler") {
 
     cflags += [ "-flto=thin" ]
 
+    if (thin_lto_enable_optimizations) {
+      lto_opt_level = 2
+    } else {
+      lto_opt_level = 0
+    }
+
     if (is_win) {
       # This is a straight translation of the non-Windows flags below,
       # except we do not use the ThinLTO cache, which leaks temporary
       # files on Windows (https://crbug.com/871962).
       ldflags += [
-        "/opt:lldlto=0",
+        "/opt:lldlto=" + lto_opt_level,
         "/opt:lldltojobs=8",
       ]
     } else {
@@ -663,21 +669,19 @@ config("compiler") {
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
       }
-    }
 
-    if (use_lld) {
-      if (thin_lto_enable_optimizations) {
-        ldflags += [ "-Wl,--lto-O2" ]
-        if (is_android) {
-          # TODO(gbiv): We ideally shouldn't need to specify this; ThinLTO
-          # should be able to better manage binary size increases on its own.
-          ldflags += [
-            "-Wl,-mllvm",
-            "-Wl,-import-instr-limit=5",
-          ]
+      if (use_lld) {
+        ldflags += [ "-Wl,--lto-O" + lto_opt_level ]
+        if (thin_lto_enable_optimizations) {
+          if (is_android) {
+            # TODO(gbiv): We ideally shouldn't need to specify this; ThinLTO
+            # should be able to better manage binary size increases on its own.
+            ldflags += [
+              "-Wl,-mllvm",
+              "-Wl,-import-instr-limit=5",
+            ]
+          }
         }
-      } else {
-        ldflags += [ "-Wl,--lto-O0" ]
       }
     }
 
