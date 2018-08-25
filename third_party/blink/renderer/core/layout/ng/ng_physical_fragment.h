@@ -57,6 +57,9 @@ class CORE_EXPORT NGPhysicalFragment
   enum NGBoxType {
     kNormalBox,
     kInlineBox,
+    // A multi-column container creates column boxes as its children, which
+    // content is flowed into. https://www.w3.org/TR/css-multicol-1/#column-box
+    kColumnBox,
     kAtomicInline,
     kFloating,
     kOutOfFlowPositioned,
