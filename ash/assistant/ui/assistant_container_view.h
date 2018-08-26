@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "ui/display/display_observer.h"
 #include "ui/gfx/animation/animation_delegate.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 
 namespace aura {
@@ -29,7 +30,8 @@ class AssistantWebView;
 class AssistantContainerView : public views::BubbleDialogDelegateView,
                                public AssistantUiModelObserver,
                                public display::DisplayObserver,
-                               public gfx::AnimationDelegate {
+                               public gfx::AnimationDelegate,
+                               public keyboard::KeyboardControllerObserver {
  public:
   explicit AssistantContainerView(AssistantController* assistant_controller);
   ~AssistantContainerView() override;
@@ -59,6 +61,10 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  // keyboard::KeyboardControllerObserver:
+  void OnKeyboardWorkspaceDisplacingBoundsChanged(
+      const gfx::Rect& new_bounds) override;
 
  private:
   // Sets anchor rect to |root_window|. If it's null,

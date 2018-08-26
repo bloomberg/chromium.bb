@@ -160,9 +160,11 @@ AssistantContainerView::AssistantContainerView(
   // AssistantContainerView belongs so is guaranteed to outlive it.
   assistant_controller_->ui_controller()->AddModelObserver(this);
   display::Screen::GetScreen()->AddObserver(this);
+  keyboard::KeyboardController::Get()->AddObserver(this);
 }
 
 AssistantContainerView::~AssistantContainerView() {
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
   display::Screen::GetScreen()->RemoveObserver(this);
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
@@ -353,6 +355,11 @@ void AssistantContainerView::OnDisplayMetricsChanged(
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
   if (root_window == Shell::Get()->GetRootWindowForDisplayId(display.id()))
     SetAnchor(root_window);
+}
+
+void AssistantContainerView::OnKeyboardWorkspaceDisplacingBoundsChanged(
+    const gfx::Rect& new_bounds) {
+  SetAnchor(GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 }  // namespace ash
