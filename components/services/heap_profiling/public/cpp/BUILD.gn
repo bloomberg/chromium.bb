@@ -10,6 +10,8 @@ static_library("cpp") {
     "client.h",
     "controller.cc",
     "controller.h",
+    "sampling_profiler_wrapper.cc",
+    "sampling_profiler_wrapper.h",
     "sender_pipe.h",
     "sender_pipe_win.cc",
     "settings.cc",

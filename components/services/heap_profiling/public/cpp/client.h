@@ -12,6 +12,7 @@
 
 namespace heap_profiling {
 
+class SamplingProfilerWrapper;
 class SenderPipe;
 
 // The Client listens on the interface for a StartProfiling message. On
@@ -30,7 +31,7 @@ class Client : public mojom::ProfilingClient {
   void BindToInterface(mojom::ProfilingClientRequest request);
 
  private:
-  void InitAllocatorShimOnUIThread(mojom::ProfilingParamsPtr params);
+  void StartProfilingInternal(mojom::ProfilingParamsPtr params);
 
   // Ideally, this would be a mojo::Binding that would only keep alive one
   // client request. However, the service that makes the client requests
@@ -42,6 +43,7 @@ class Client : public mojom::ProfilingClient {
 
   bool started_profiling_;
 
+  std::unique_ptr<SamplingProfilerWrapper> sampling_profiler_;
   std::unique_ptr<SenderPipe> sender_pipe_;
 
   base::WeakPtrFactory<Client> weak_factory_;

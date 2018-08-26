@@ -17,8 +17,7 @@ namespace heap_profiling {
 void InitTLSSlot();
 
 // Begin profiling all allocations in the process.
-void InitAllocatorShim(SenderPipe* sender_pipe,
-                       mojom::ProfilingParamsPtr params);
+void InitAllocatorShim();
 
 // Stop profiling allocations by dropping shim callbacks. There is no way to
 // consistently, synchronously stop the allocator shim without negatively
@@ -56,6 +55,20 @@ using SetGCFreeHookFunction = void (*)(void (*)(uint8_t*));
 void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,
                                       SetGCFreeHookFunction hook_free);
 
+// Initializes allocation recorder.
+void InitAllocationRecorder(SenderPipe* sender_pipe,
+                            mojom::ProfilingParamsPtr params);
+
+// Creates allocation info record, populates it with current call stack,
+// thread name, allocator type and sends out to the client.
+void RecordAndSendAlloc(AllocatorType type,
+                        void* address,
+                        size_t sz,
+                        const char* context);
+
+// Creates the record for free operation and sends it out to the client.
+void RecordAndSendFree(void* address);
+
 // Exists for testing only.
 // A return value of |true| means that the allocator shim was already
 // initialized and |callback| will never be called. Otherwise, |callback| will
@@ -63,6 +76,9 @@ void SetGCHeapAllocationHookFunctions(SetGCAllocHookFunction hook_alloc,
 bool SetOnInitAllocatorShimCallbackForTesting(
     base::OnceClosure callback,
     scoped_refptr<base::TaskRunner> task_runner);
+
+// Notifies the test clients that allocation hooks have been initialized.
+void AllocatorHooksHaveBeenInitialized();
 
 }  // namespace heap_profiling
 

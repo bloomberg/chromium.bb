@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
+#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
@@ -321,8 +322,8 @@ bool ValidateDump(base::Value* heaps_v2,
       LOG(WARNING) << "Allocation candidate (size:" << sizes_list[i].GetInt()
                    << " count:" << counts_list[i].GetInt() << ")";
     }
-    if (sizes_list[i].GetInt() == expected_alloc_size &&
-        counts_list[i].GetInt() == expected_alloc_count) {
+    if (counts_list[i].GetInt() == expected_alloc_count &&
+        sizes_list[i].GetInt() == expected_alloc_size) {
       browser_alloc_index = i;
       found_browser_alloc = true;
       break;
@@ -561,6 +562,9 @@ TestDriver::~TestDriver() {}
 
 bool TestDriver::RunTest(const Options& options) {
   options_ = options;
+
+  if (options_.should_sample)
+    base::SamplingHeapProfiler::GetInstance()->SuppressRandomnessForTest(true);
 
   running_on_ui_thread_ =
       content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);

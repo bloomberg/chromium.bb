@@ -221,9 +221,9 @@ AllocatorDispatch g_allocator_dispatch = {&AllocFn,
 
 #if BUILDFLAG(USE_PARTITION_ALLOC) && !defined(OS_NACL)
 
-void PartitionAllocHook(void* address, size_t size, const char*) {
+void PartitionAllocHook(void* address, size_t size, const char* type) {
   SamplingHeapProfiler::RecordAlloc(
-      address, size, SamplingHeapProfiler::kPartitionAlloc, nullptr);
+      address, size, SamplingHeapProfiler::kPartitionAlloc, type);
 }
 
 void PartitionFreeHook(void* address) {
