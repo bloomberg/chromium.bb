@@ -115,10 +115,11 @@ void ParseThresholds(const DoubleOrDoubleSequence& threshold_parameter,
                      Vector<float>& thresholds,
                      ExceptionState& exception_state) {
   if (threshold_parameter.IsDouble()) {
-    thresholds.push_back(static_cast<float>(threshold_parameter.GetAsDouble()));
+    thresholds.push_back(
+        MakeClampedNum<float>(threshold_parameter.GetAsDouble()));
   } else {
     for (auto threshold_value : threshold_parameter.GetAsDoubleSequence())
-      thresholds.push_back(static_cast<float>(threshold_value));
+      thresholds.push_back(MakeClampedNum<float>(threshold_value));
   }
 
   for (auto threshold_value : thresholds) {
