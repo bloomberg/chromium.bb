@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -31,7 +32,7 @@ class ManagedWebContents : public content::WebContentsDelegate,
   ManagedWebContents(
       ash::mojom::ManagedWebContentsParamsPtr params,
       ash::mojom::WebContentsManager::ManageWebContentsCallback callback)
-      : callback_(std::move(callback)) {
+      : callback_(std::move(callback)), weak_factory_(this) {
     Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByAccountId(
         params->account_id);
 
@@ -71,7 +72,16 @@ class ManagedWebContents : public content::WebContentsDelegate,
     if (!open_url_delegate_)
       return content::WebContentsDelegate::OpenURLFromTab(source, params);
 
-    open_url_delegate_->OnOpenUrlFromTab(params.url);
+    open_url_delegate_->ShouldOpenUrlFromTab(
+        params.url,
+        base::BindOnce(
+            [](base::WeakPtr<ManagedWebContents> managed_web_contents,
+               const GURL& url, bool should_open) {
+              if (should_open && managed_web_contents)
+                managed_web_contents->NavigateToUrl(url);
+            },
+            weak_factory_.GetWeakPtr(), params.url));
+
     return nullptr;
   }
 
@@ -93,6 +103,11 @@ class ManagedWebContents : public content::WebContentsDelegate,
     } else {
       std::move(callback).Run(false);
     }
+  }
+
+  void NavigateToUrl(const GURL& url) {
+    content::NavigationController::LoadURLParams params(url);
+    web_contents_->GetController().LoadURLWithParams(params);
   }
 
  private:
@@ -166,6 +181,8 @@ class ManagedWebContents : public content::WebContentsDelegate,
   base::Optional<base::UnguessableToken> embed_token_;
 
   ash::mojom::ManagedWebContentsOpenUrlDelegatePtr open_url_delegate_;
+
+  base::WeakPtrFactory<ManagedWebContents> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedWebContents);
 };

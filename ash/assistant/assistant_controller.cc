@@ -212,8 +212,28 @@ void AssistantController::OnDeepLinkReceived(
   }
 }
 
-void AssistantController::OnOpenUrlFromTab(const GURL& url) {
-  OpenUrl(url);
+void AssistantController::ShouldOpenUrlFromTab(
+    const GURL& url,
+    ash::mojom::ManagedWebContentsOpenUrlDelegate::ShouldOpenUrlFromTabCallback
+        callback) {
+  // We always handle deep links ourselves.
+  if (assistant::util::IsDeepLinkUrl(url)) {
+    std::move(callback).Run(/*should_open=*/false);
+    NotifyDeepLinkReceived(url);
+    return;
+  }
+
+  // When in main UI mode, WebContents should not navigate as they are hosting
+  // Assistant cards. Instead, we route navigation attempts to the browser.
+  if (assistant_ui_controller_->model()->ui_mode() ==
+      AssistantUiMode::kMainUi) {
+    std::move(callback).Run(/*should_open=*/false);
+    OpenUrl(url);
+    return;
+  }
+
+  // In all other cases WebContents should be able to navigate freely.
+  std::move(callback).Run(/*should_open=*/true);
 }
 
 void AssistantController::SetVolume(int volume, bool user_initiated) {
