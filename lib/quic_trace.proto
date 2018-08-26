@@ -140,6 +140,27 @@ enum EventType {
   EXTERNAL_PARAMETERS = 5;
 };
 
+enum TransmissionReason {
+  // Indicates that there was not any particular special reason the packet was
+  // sent.
+  NORMAL_TRANSMISSION = 0;
+
+  // Indicates that the packet sent is a tail loss probe, cf.
+  // https://tools.ietf.org/html/draft-ietf-quic-recovery-14#section-4.3.2
+  TAIL_LOSS_PROBE = 1;
+
+  // Indicates that the packet is sent due to retransmission timeout, cf
+  // https://tools.ietf.org/html/draft-ietf-quic-recovery-14#section-4.3.3
+  RTO_TRANSMISSION = 2;
+
+  // Indicates that the packet is sent in order to probe whether there is extra
+  // bandwidth available in cases where the sender needs an estimate of
+  // available bandwidth, but the application does not provide enough data for
+  // such estimate to become naturally available.  This is usually only used in
+  // real-time protocols.
+  PROBING_TRANSMISSION = 3;
+};
+
 // An event that has occurred over duration of the connection.
 message Event {
   optional uint64 time_us = 1;
@@ -153,6 +174,11 @@ message Event {
   optional TransportState transport_state = 7;
   // For event_type = EXTERNAL_PARAMETERS, record parameters specified.
   optional ExternalNetworkParameters external_network_parameters = 8;
+
+  // For sent packets, indicate if there is a special reason for why the packet
+  // in question was transmitted.
+  optional TransmissionReason transmission_reason = 9
+      [default = NORMAL_TRANSMISSION];
 };
 
 message Trace {
