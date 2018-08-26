@@ -333,6 +333,21 @@ bool DocumentProvider::ParseDocumentSearchResults(const base::Value& root_val,
     match.contents = AutocompleteMatch::SanitizeString(title);
     AutocompleteMatch::AddLastClassificationIfNecessary(
         &match.contents_class, 0, ACMatchClassification::NONE);
+    const base::DictionaryValue* metadata = nullptr;
+    if (result->GetDictionary("metadata", &metadata)) {
+      std::string mimetype;
+      if (metadata->GetString("mimeType", &mimetype)) {
+        if (mimetype == "application/vnd.google-apps.document") {
+          match.document_type = AutocompleteMatch::DocumentType::DRIVE_DOCS;
+        } else if (mimetype == "application/vnd.google-apps.spreadsheet") {
+          match.document_type = AutocompleteMatch::DocumentType::DRIVE_SHEETS;
+        } else if (mimetype == "application/vnd.google-apps.presentation") {
+          match.document_type = AutocompleteMatch::DocumentType::DRIVE_SLIDES;
+        } else {
+          match.document_type = AutocompleteMatch::DocumentType::DRIVE_OTHER;
+        }
+      }
+    }
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     matches->push_back(match);
   }
