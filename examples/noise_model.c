@@ -184,6 +184,7 @@ static void print_variance_y(FILE *debug_file, aom_image_t *raw,
 
   if (av1_add_film_grain(grain, denoised, &renoised)) {
     fprintf(stderr, "Internal failure in av1_add_film_grain().\n");
+    aom_img_free(&renoised);
     return;
   }
 
