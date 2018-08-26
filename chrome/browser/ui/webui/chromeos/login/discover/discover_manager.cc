@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_launch_help_app.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_redeem_offers.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_sync_files.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/modules/discover_module_welcome.h"
@@ -29,6 +30,8 @@ bool DiscoverManager::IsCompleted() const {
 }
 
 void DiscoverManager::CreateModules() {
+  modules_[DiscoverModuleLaunchHelpApp::kModuleName] =
+      std::make_unique<DiscoverModuleLaunchHelpApp>();
   modules_[DiscoverModuleRedeemOffers::kModuleName] =
       std::make_unique<DiscoverModuleRedeemOffers>();
   modules_[DiscoverModuleSyncFiles::kModuleName] =
