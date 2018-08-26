@@ -51,7 +51,7 @@ struct AllocPacket {
   // Number of stack entries following this header.
   uint32_t stack_len;
 
-  // Number of context bytes followint the stack;
+  // Number of context bytes following the stack;
   uint32_t context_byte_len;
 
   // Immediately followed by |stack_len| uint64_t addresses and
