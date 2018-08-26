@@ -89,6 +89,7 @@ AutocompleteMatch::AutocompleteMatch()
       typed_count(-1),
       deletable(false),
       allowed_to_be_default_match(false),
+      document_type(DocumentType::NONE),
       swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_GENERATED),
       type(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED),
@@ -105,6 +106,7 @@ AutocompleteMatch::AutocompleteMatch(AutocompleteProvider* provider,
       typed_count(-1),
       deletable(deletable),
       allowed_to_be_default_match(false),
+      document_type(DocumentType::NONE),
       swap_contents_and_description(false),
       transition(ui::PAGE_TRANSITION_TYPED),
       type(type),
@@ -124,6 +126,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
       stripped_destination_url(match.stripped_destination_url),
       image_dominant_color(match.image_dominant_color),
       image_url(match.image_url),
+      document_type(match.document_type),
       contents(match.contents),
       contents_class(match.contents_class),
       description(match.description),
@@ -167,6 +170,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   stripped_destination_url = match.stripped_destination_url;
   image_dominant_color = match.image_dominant_color;
   image_url = match.image_url;
+  document_type = match.document_type;
   contents = match.contents;
   contents_class = match.contents_class;
   description = match.description;
@@ -195,9 +199,11 @@ AutocompleteMatch& AutocompleteMatch::operator=(
 }
 
 // static
-const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
-                                                           bool is_bookmark,
-                                                           bool is_tab_match) {
+const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(
+    Type type,
+    bool is_bookmark,
+    bool is_tab_match,
+    DocumentType document_type) {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
 #if !defined(OS_ANDROID)
   const bool is_refresh_ui = ui::MaterialDesignController::IsRefreshUi();
@@ -228,13 +234,26 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     case Type::PHYSICAL_WEB_DEPRECATED:
     case Type::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case Type::TAB_SEARCH_DEPRECATED:
-    case Type::DOCUMENT_SUGGESTION:
       if (is_refresh_ui)
         return omnibox::kMdPageIcon;
       else if (is_touch_ui)
         return omnibox::kTouchablePageIcon;
       else
         return omnibox::kHttpIcon;
+
+    case Type::DOCUMENT_SUGGESTION:
+      switch (document_type) {
+        case DocumentType::DRIVE_DOCS:
+          return omnibox::kDriveDocsIcon;
+        case DocumentType::DRIVE_SHEETS:
+          return omnibox::kDriveSheetsIcon;
+        case DocumentType::DRIVE_SLIDES:
+          return omnibox::kDriveSlidesIcon;
+        case DocumentType::DRIVE_OTHER:
+          return omnibox::kDriveLogoIcon;
+        default:
+          return omnibox::kMdPageIcon;
+      }
 
     case Type::SEARCH_WHAT_YOU_TYPED:
     case Type::SEARCH_HISTORY:

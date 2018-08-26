@@ -126,7 +126,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   if (!model_) {
     const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
         AutocompleteMatchType::URL_WHAT_YOU_TYPED, false /*is_bookmark*/,
-        false /*is_tab_match*/);
+        false /*is_tab_match*/, AutocompleteMatch::DocumentType::NONE);
     return gfx::CreateVectorIcon(vector_icon, dip_size, color);
   }
 
@@ -161,7 +161,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
   }
 
   const gfx::VectorIcon& vector_icon = AutocompleteMatch::TypeToVectorIcon(
-      match.type, is_bookmarked, false /*is_tab_match*/);
+      match.type, is_bookmarked, false /*is_tab_match*/, match.document_type);
   return gfx::CreateVectorIcon(vector_icon, dip_size, color);
 #endif  // defined(OS_IOS)
 }
