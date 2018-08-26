@@ -124,14 +124,13 @@ class CONTENT_EXPORT AppCacheResponseIO {
   int64_t response_id() const { return response_id_; }
 
  protected:
-  AppCacheResponseIO(
-      int64_t response_id,
-      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
+  AppCacheResponseIO(int64_t response_id,
+                     base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 
   virtual void OnIOComplete(int result) = 0;
   virtual void OnOpenEntryComplete() {}
 
-  bool IsIOPending() { return !callback_.is_null(); }
+  bool IsIOPending() const { return !callback_.is_null(); }
   void ScheduleIOCompletionCallback(int result);
   void InvokeUserCompletionCallback(int result);
   void ReadRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
@@ -202,9 +201,8 @@ class CONTENT_EXPORT AppCacheResponseReader
   friend class content::MockAppCacheStorage;
 
   // Should only be constructed by the storage class and derivatives.
-  AppCacheResponseReader(
-      int64_t response_id,
-      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
+  AppCacheResponseReader(int64_t response_id,
+                         base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 
   void OnIOComplete(int result) override;
   void OnOpenEntryComplete() override;
@@ -215,6 +213,7 @@ class CONTENT_EXPORT AppCacheResponseReader
   int range_length_;
   int read_position_;
   int reading_metadata_size_;
+
   base::WeakPtrFactory<AppCacheResponseReader> weak_factory_;
 };
 
@@ -259,9 +258,8 @@ class CONTENT_EXPORT AppCacheResponseWriter
 
  protected:
   // Should only be constructed by the storage class and derivatives.
-  AppCacheResponseWriter(
-      int64_t response_id,
-      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
+  AppCacheResponseWriter(int64_t response_id,
+                         base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 
  private:
   friend class AppCacheStorageImpl;
@@ -322,7 +320,7 @@ class CONTENT_EXPORT AppCacheResponseMetadataWriter
   // Should only be constructed by the storage class and derivatives.
   AppCacheResponseMetadataWriter(
       int64_t response_id,
-      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
+      base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 
  private:
   void OnIOComplete(int result) override;

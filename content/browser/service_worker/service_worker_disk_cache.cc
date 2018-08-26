@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 
+#include <utility>
+
 namespace content {
 
 ServiceWorkerDiskCache::ServiceWorkerDiskCache()
@@ -13,17 +15,17 @@ ServiceWorkerDiskCache::ServiceWorkerDiskCache()
 
 ServiceWorkerResponseReader::ServiceWorkerResponseReader(
     int64_t resource_id,
-    const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseReader(resource_id, disk_cache) {}
+    base::WeakPtr<AppCacheDiskCacheInterface> disk_cache)
+    : AppCacheResponseReader(resource_id, std::move(disk_cache)) {}
 
 ServiceWorkerResponseWriter::ServiceWorkerResponseWriter(
     int64_t resource_id,
-    const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseWriter(resource_id, disk_cache) {}
+    base::WeakPtr<AppCacheDiskCacheInterface> disk_cache)
+    : AppCacheResponseWriter(resource_id, std::move(disk_cache)) {}
 
 ServiceWorkerResponseMetadataWriter::ServiceWorkerResponseMetadataWriter(
     int64_t resource_id,
-    const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseMetadataWriter(resource_id, disk_cache) {}
+    base::WeakPtr<AppCacheDiskCacheInterface> disk_cache)
+    : AppCacheResponseMetadataWriter(resource_id, std::move(disk_cache)) {}
 
 }  // namespace content

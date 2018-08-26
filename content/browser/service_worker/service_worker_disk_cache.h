@@ -18,8 +18,7 @@ namespace content {
 // TODO(michaeln): If this reuse sticks, refactor/move the
 // resused classes to a more common location.
 
-class CONTENT_EXPORT ServiceWorkerDiskCache
-    : public AppCacheDiskCache {
+class CONTENT_EXPORT ServiceWorkerDiskCache : public AppCacheDiskCache {
  public:
   ServiceWorkerDiskCache();
 };
@@ -32,7 +31,7 @@ class CONTENT_EXPORT ServiceWorkerResponseReader
 
   ServiceWorkerResponseReader(
       int64_t resource_id,
-      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
+      base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseWriter
@@ -43,7 +42,7 @@ class CONTENT_EXPORT ServiceWorkerResponseWriter
 
   ServiceWorkerResponseWriter(
       int64_t resource_id,
-      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
+      base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 };
 
 class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
@@ -54,7 +53,7 @@ class CONTENT_EXPORT ServiceWorkerResponseMetadataWriter
 
   ServiceWorkerResponseMetadataWriter(
       int64_t resource_id,
-      const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache);
+      base::WeakPtr<AppCacheDiskCacheInterface> disk_cache);
 };
 
 }  // namespace content
