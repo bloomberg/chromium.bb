@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
@@ -27,9 +28,7 @@ static constexpr const char* kDiscoveryOnlyModelNames[3] = {
 // |model_name|: device model name.
 bool IsDiscoveryOnly(const std::string& model_name) {
   std::string lower_model_name = base::ToLowerASCII(model_name);
-  return std::find(std::begin(kDiscoveryOnlyModelNames),
-                   std::end(kDiscoveryOnlyModelNames),
-                   lower_model_name) != std::end(kDiscoveryOnlyModelNames);
+  return base::ContainsValue(kDiscoveryOnlyModelNames, lower_model_name);
 }
 
 SinkAppStatus GetSinkAppStatusFromResponse(const DialAppInfoResult& result) {

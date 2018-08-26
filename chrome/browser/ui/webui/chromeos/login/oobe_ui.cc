@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -280,9 +281,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
 std::string GetDisplayType(const GURL& url) {
   std::string path = url.path().size() ? url.path().substr(1) : "";
 
-  if (std::find(kKnownDisplayTypes,
-                kKnownDisplayTypes + arraysize(kKnownDisplayTypes),
-                path) == kKnownDisplayTypes + arraysize(kKnownDisplayTypes)) {
+  if (!base::ContainsValue(kKnownDisplayTypes, path)) {
     LOG(ERROR) << "Unknown display type '" << path << "'. Setting default.";
     return OobeUI::kLoginDisplay;
   }

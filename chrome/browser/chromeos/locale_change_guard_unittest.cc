@@ -8,6 +8,7 @@
 #include <string.h>
 
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -209,11 +210,8 @@ TEST(LocaleChangeGuardTest, ShowNotificationLocaleChangedList) {
     const std::string language =
         (dash ? std::string(locale, dash - locale) : std::string(locale));
 
-    const char* const* allowed_begin = kShowNotificationLanguages;
-    const char* const* allowed_end =
-        kShowNotificationLanguages + arraysize(kShowNotificationLanguages);
     const bool notification_allowed =
-        (std::find(allowed_begin, allowed_end, language) != allowed_end);
+        base::ContainsValue(kShowNotificationLanguages, language);
 
     const char* const* skipped_begin =
         LocaleChangeGuard::GetSkipShowNotificationLanguagesForTesting();

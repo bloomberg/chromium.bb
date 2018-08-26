@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/syslog_logging.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -730,8 +731,7 @@ DeviceSettingsProvider::~DeviceSettingsProvider() {
 
 // static
 bool DeviceSettingsProvider::IsDeviceSetting(const std::string& name) {
-  const char* const* end = kKnownSettings + arraysize(kKnownSettings);
-  return std::find(kKnownSettings, end, name) != end;
+  return base::ContainsValue(kKnownSettings, name);
 }
 
 // static

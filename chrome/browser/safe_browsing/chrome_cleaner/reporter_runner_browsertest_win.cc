@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -147,10 +148,8 @@ IN_PROC_BROWSER_TEST_P(ReporterRunnerPolicyTest, CheckComponent) {
   // component installed.  Otherwise it should be installed.
   std::vector<std::string> component_ids =
       g_browser_process->component_updater()->GetComponentIDs();
-  bool sw_component_registered =
-      std::find(component_ids.begin(), component_ids.end(),
-                component_updater::kSwReporterComponentId) !=
-      component_ids.end();
+  bool sw_component_registered = base::ContainsValue(
+      component_ids, component_updater::kSwReporterComponentId);
   ASSERT_EQ(!is_managed() || is_enabled(), sw_component_registered);
 }
 

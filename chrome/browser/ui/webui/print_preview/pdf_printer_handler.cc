@@ -11,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
@@ -93,8 +94,7 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
   Media default_media("", "", default_media_size.width(),
                       default_media_size.height());
   if (!default_media.MatchBySize() ||
-      std::find(kPdfMedia, kPdfMedia + arraysize(kPdfMedia),
-                default_media.type) == kPdfMedia + arraysize(kPdfMedia)) {
+      !base::ContainsValue(kPdfMedia, default_media.type)) {
     default_media = Media(locale == "en-US" ? NA_LETTER : ISO_A4);
   }
   MediaCapability media;

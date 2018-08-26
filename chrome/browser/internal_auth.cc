@@ -110,10 +110,8 @@ bool IsVarSane(const std::string& var) {
       sizeof(kAllowedChars) == 26 + 26 + 10 + 1 + 1, "some mess with chars");
   // We must not allow kItemSeparator in anything used as an input to construct
   // message to sign.
-  DCHECK(std::find(kAllowedChars, kAllowedChars + arraysize(kAllowedChars),
-      kItemSeparator) == kAllowedChars + arraysize(kAllowedChars));
-  DCHECK(std::find(kAllowedChars, kAllowedChars + arraysize(kAllowedChars),
-      kVarValueSeparator) == kAllowedChars + arraysize(kAllowedChars));
+  DCHECK(!base::ContainsValue(kAllowedChars, kItemSeparator));
+  DCHECK(!base::ContainsValue(kAllowedChars, kVarValueSeparator));
   return !var.empty() &&
       var.size() <= kStringLengthLimit &&
       base::IsStringASCII(var) &&

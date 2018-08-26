@@ -6,6 +6,7 @@
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/app_window_base.h"
@@ -88,9 +89,7 @@ void InternalAppWindowShelfController::OnWindowVisibilityChanging(
     return;
 
   // Skip OnWindowVisibilityChanged for ancestors/descendants.
-  auto it =
-      std::find(observed_windows_.begin(), observed_windows_.end(), window);
-  if (it == observed_windows_.end())
+  if (!base::ContainsValue(observed_windows_, window))
     return;
 
   ash::ShelfID shelf_id =
