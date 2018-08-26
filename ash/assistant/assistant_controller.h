@@ -110,7 +110,10 @@ class ASH_EXPORT AssistantController
       const std::map<std::string, std::string>& params) override;
 
   // mojom::ManagedWebContentsOpenUrlDelegate:
-  void OnOpenUrlFromTab(const GURL& url) override;
+  void ShouldOpenUrlFromTab(
+      const GURL& url,
+      mojom::ManagedWebContentsOpenUrlDelegate::ShouldOpenUrlFromTabCallback
+          callback) override;
 
   // mojom::VolumeControl:
   void SetVolume(int volume, bool user_initiated) override;
