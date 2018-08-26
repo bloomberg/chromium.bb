@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -256,11 +257,7 @@ bool LocaleChangeGuard::ShouldShowLocaleChangeNotification(
   if (from_lang != to_lang)
     return true;
 
-  const char* const* begin = kSkipShowNotificationLanguages;
-  const char* const* end = kSkipShowNotificationLanguages +
-                           arraysize(kSkipShowNotificationLanguages);
-
-  return std::find(begin, end, from_lang) == end;
+  return !base::ContainsValue(kSkipShowNotificationLanguages, from_lang);
 }
 
 // static

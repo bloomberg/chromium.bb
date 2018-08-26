@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/task/post_task.h"
@@ -635,9 +636,7 @@ ash::mojom::AssistantAllowedState IsAssistantAllowedForProfile(
 
     if (!pref_locale.empty()) {
       base::ReplaceChars(pref_locale, "-", "_", &pref_locale);
-      bool disallowed = std::end(kAllowedLocales) ==
-                        std::find(std::begin(kAllowedLocales),
-                                  std::end(kAllowedLocales), pref_locale);
+      bool disallowed = !base::ContainsValue(kAllowedLocales, pref_locale);
 
       if (disallowed &&
           base::CommandLine::ForCurrentProcess()

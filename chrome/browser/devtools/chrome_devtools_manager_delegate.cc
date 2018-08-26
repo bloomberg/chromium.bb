@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/devtools/chrome_devtools_session.h"
@@ -109,9 +110,7 @@ void ChromeDevToolsManagerDelegate::HandleCommand(
 
 std::string ChromeDevToolsManagerDelegate::GetTargetType(
     content::WebContents* web_contents) {
-  auto& all_tabs = AllTabContentses();
-  auto it = std::find(all_tabs.begin(), all_tabs.end(), web_contents);
-  if (it != all_tabs.end())
+  if (base::ContainsValue(AllTabContentses(), web_contents))
     return DevToolsAgentHost::kTypePage;
 
   std::string extension_name;

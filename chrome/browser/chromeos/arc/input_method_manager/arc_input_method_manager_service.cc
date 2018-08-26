@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -211,8 +212,7 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   // TODO(crbug.com/845079): We should keep the order of the IMEs as same as in
   // chrome://settings
   for (const auto& input_method_id : enabled_input_method_ids) {
-    if (std::find(active_ime_list.begin(), active_ime_list.end(),
-                  input_method_id) == active_ime_list.end()) {
+    if (!base::ContainsValue(active_ime_list, input_method_id)) {
       active_ime_list.push_back(input_method_id);
     }
   }

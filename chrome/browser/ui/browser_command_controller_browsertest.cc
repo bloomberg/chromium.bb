@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -150,8 +151,7 @@ IN_PROC_BROWSER_TEST_F(BrowserCommandControllerBrowserTest, LockedFullscreen) {
   // Go through all the command ids and make sure all non-whitelisted commands
   // are disabled.
   for (int id : command_updater->GetAllIds()) {
-    if (std::find(std::begin(kWhitelistedIds), std::end(kWhitelistedIds), id)
-            != std::end(kWhitelistedIds)) {
+    if (base::ContainsValue(kWhitelistedIds, id)) {
       continue;
     }
     EXPECT_FALSE(command_updater->IsCommandEnabled(id));

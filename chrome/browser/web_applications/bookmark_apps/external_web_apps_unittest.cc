@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/path_service.h"
+#include "base/stl_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -46,12 +47,10 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
       "https://events.google.com/io2016/?utm_source=web_app_manifest",
   };
   for (const char* url : urls) {
-    EXPECT_NE(
-        app_infos.end(),
-        std::find(app_infos.begin(), app_infos.end(),
-                  web_app::PendingAppManager::AppInfo(
-                      GURL(url),
-                      web_app::PendingAppManager::LaunchContainer::kWindow)));
+    EXPECT_TRUE(base::ContainsValue(
+        app_infos,
+        web_app::PendingAppManager::AppInfo(
+            GURL(url), web_app::PendingAppManager::LaunchContainer::kWindow)));
   }
 }
 

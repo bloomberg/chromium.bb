@@ -470,9 +470,7 @@ TEST_F(AutocompleteActionPredictorTest,
   auto test = [this](const base::string16& user_text,
                      bool should_be_registered) {
     predictor()->RegisterTransitionalMatches(user_text, AutocompleteResult());
-    bool registered = (std::find(transitional_matches()->begin(),
-                                 transitional_matches()->end(),
-                                 user_text) != transitional_matches()->end());
+    bool registered = base::ContainsValue(*transitional_matches(), user_text);
     EXPECT_EQ(registered, should_be_registered);
   };
 
