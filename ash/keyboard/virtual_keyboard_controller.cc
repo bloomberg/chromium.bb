@@ -36,17 +36,10 @@ bool IsVirtualKeyboardEnabled() {
       keyboard::switches::kEnableVirtualKeyboard);
 }
 
-void ResetVirtualKeyboard(bool disable_accessibility_keyboard) {
-  if (disable_accessibility_keyboard) {
-    // Reset the accessibility keyboard settings.
-    AccessibilityController* accessibility_controller =
-        Shell::Get()->accessibility_controller();
-    if (!accessibility_controller)
-      return;
-
-    DCHECK(accessibility_controller->IsVirtualKeyboardEnabled());
-    accessibility_controller->SetVirtualKeyboardEnabled(false);
-  }
+void ResetVirtualKeyboard() {
+  keyboard::SetKeyboardEnabledFromShelf(false);
+  if (!keyboard::IsKeyboardEnabled())
+    Shell::Get()->DisableKeyboard();
 
   // Reset the keyset after disabling the virtual keyboard to prevent the IME
   // extension from accidentally loading the default keyset while it's shutting
@@ -280,27 +273,13 @@ void VirtualKeyboardController::ForceShowKeyboard() {
     return;
   }
 
-  // Otherwise, force enable the virtual keyboard by turning on the
-  // accessibility keyboard.
-  // TODO(https://crbug.com/818567): This is risky as enabling accessibility
-  // keyboard is a persistent setting, so we have to ensure that we disable it
-  // again when the keyboard is closed.
-  AccessibilityController* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  DCHECK(!accessibility_controller->IsVirtualKeyboardEnabled());
+  // Otherwise, temporarily enable the virtual keyboard until it is dismissed.
+  DCHECK(!keyboard::GetKeyboardEnabledFromShelf());
+  keyboard::SetKeyboardEnabledFromShelf(true);
+  Shell::Get()->EnableKeyboard();
 
-  // TODO(mash): Turning on accessibility keyboard does not create a valid
-  // KeyboardController under MASH. See https://crbug.com/646565.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-    return;
-
-  // Onscreen keyboard has not been enabled yet, forces to bring out the
-  // keyboard for one time.
-  accessibility_controller->SetVirtualKeyboardEnabled(true);
-  keyboard_enabled_using_accessibility_prefs_ = true;
   keyboard_controller = keyboard::KeyboardController::Get();
   DCHECK(keyboard_controller->enabled());
-
   keyboard_controller->ShowKeyboard(false);
 }
 
@@ -317,9 +296,7 @@ void VirtualKeyboardController::OnKeyboardHidden(bool is_temporary_hide) {
 
   // Post a task to reset the virtual keyboard to its original state.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(ResetVirtualKeyboard,
-                                keyboard_enabled_using_accessibility_prefs_));
-  keyboard_enabled_using_accessibility_prefs_ = false;
+      FROM_HERE, base::BindOnce(ResetVirtualKeyboard));
 }
 
 void VirtualKeyboardController::OnActiveUserSessionChanged(

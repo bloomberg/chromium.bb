@@ -156,26 +156,21 @@ TEST_F(VirtualKeyboardControllerTest,
 }
 
 TEST_F(VirtualKeyboardControllerTest,
-       ForceToShowKeyboardWithKeysetWhenAccessibilityKeyboardIsDisabled) {
-  // TODO(mash): Turning on accessibility keyboard does not create a valid
-  // KeyboardController under MASH. See https://crbug.com/646565.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-    return;
-
-  AccessibilityController* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  accessibility_controller->SetVirtualKeyboardEnabled(false);
-  ASSERT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
-
+       ForceToShowKeyboardWithKeysetWhenKeyboardIsDisabled) {
   // Set up a mock ImeControllerClient to test keyset changes.
   TestImeControllerClient client;
   Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
 
-  // Should show the keyboard by turning on the accesibility keyboard.
+  // Should show the keyboard by enabling it temporarily.
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(keyboard::GetKeyboardEnabledFromShelf());
+
   GetVirtualKeyboardController()->ForceShowKeyboardWithKeyset(
       chromeos::input_method::mojom::ImeKeyset::kEmoji);
   Shell::Get()->ime_controller()->FlushMojoForTesting();
-  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  EXPECT_TRUE(keyboard::GetKeyboardEnabledFromShelf());
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
 
   // Keyset should be emoji.
   EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
@@ -189,7 +184,8 @@ TEST_F(VirtualKeyboardControllerTest,
   base::RunLoop().RunUntilIdle();
 
   // The keyboard should still be disabled again.
-  EXPECT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
+  EXPECT_FALSE(keyboard::IsKeyboardEnabled());
+  EXPECT_FALSE(keyboard::GetKeyboardEnabledFromShelf());
 
   // Keyset should be reset to none.
   Shell::Get()->ime_controller()->FlushMojoForTesting();
@@ -199,25 +195,17 @@ TEST_F(VirtualKeyboardControllerTest,
 
 TEST_F(VirtualKeyboardControllerTest,
        ForceToShowKeyboardWithKeysetTemporaryHide) {
-  // TODO(mash): Turning on accessibility keyboard does not create a valid
-  // KeyboardController under MASH. See https://crbug.com/646565.
-  if (Shell::GetAshConfig() == Config::MASH_DEPRECATED)
-    return;
-
-  AccessibilityController* accessibility_controller =
-      Shell::Get()->accessibility_controller();
-  accessibility_controller->SetVirtualKeyboardEnabled(false);
-  ASSERT_FALSE(accessibility_controller->IsVirtualKeyboardEnabled());
-
   // Set up a mock ImeControllerClient to test keyset changes.
   TestImeControllerClient client;
   Shell::Get()->ime_controller()->SetClient(client.CreateInterfacePtr());
 
-  // Should show the keyboard by turning on the accesibility keyboard.
+  // Should show the keyboard by enabling it temporarily.
   GetVirtualKeyboardController()->ForceShowKeyboardWithKeyset(
       chromeos::input_method::mojom::ImeKeyset::kEmoji);
   Shell::Get()->ime_controller()->FlushMojoForTesting();
-  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+
+  EXPECT_TRUE(keyboard::GetKeyboardEnabledFromShelf());
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
 
   // Keyset should be emoji.
   EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
@@ -231,7 +219,8 @@ TEST_F(VirtualKeyboardControllerTest,
   base::RunLoop().RunUntilIdle();
 
   // The keyboard should still be enabled.
-  EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
+  EXPECT_TRUE(keyboard::GetKeyboardEnabledFromShelf());
+  EXPECT_TRUE(keyboard::IsKeyboardEnabled());
 
   // Keyset should still be emoji.
   EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,

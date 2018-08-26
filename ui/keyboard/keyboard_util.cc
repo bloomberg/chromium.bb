@@ -57,6 +57,8 @@ bool g_accessibility_keyboard_enabled = false;
 
 bool g_hotrod_keyboard_enabled = false;
 
+bool g_keyboard_enabled_from_shelf = false;
+
 bool g_touch_keyboard_enabled = false;
 
 KeyboardState g_requested_keyboard_state = KEYBOARD_STATE_AUTO;
@@ -98,6 +100,14 @@ bool GetHotrodKeyboardEnabled() {
   return g_hotrod_keyboard_enabled;
 }
 
+void SetKeyboardEnabledFromShelf(bool enabled) {
+  g_keyboard_enabled_from_shelf = enabled;
+}
+
+bool GetKeyboardEnabledFromShelf() {
+  return g_keyboard_enabled_from_shelf;
+}
+
 void SetTouchKeyboardEnabled(bool enabled) {
   g_touch_keyboard_enabled = enabled;
 }
@@ -123,6 +133,9 @@ std::string GetKeyboardLayout() {
 bool IsKeyboardEnabled() {
   // Accessibility setting prioritized over policy setting.
   if (g_accessibility_keyboard_enabled)
+    return true;
+  // Keyboard can be enabled temporarily by the shelf.
+  if (g_keyboard_enabled_from_shelf)
     return true;
   // Policy strictly disables showing a virtual keyboard.
   if (g_keyboard_show_override == KEYBOARD_SHOW_OVERRIDE_DISABLED)
