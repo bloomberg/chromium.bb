@@ -4285,6 +4285,7 @@ static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
   aom_clear_system_state();
   setup_frame_size(cpi);
   set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
+  printf("Frame %d, q = %d\n", cm->current_video_frame, q);
 
   do {
     aom_clear_system_state();
