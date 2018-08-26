@@ -88,6 +88,12 @@ KEYBOARD_EXPORT void SetHotrodKeyboardEnabled(bool enabled);
 // Gets the state of the hotrod onscreen keyboard.
 KEYBOARD_EXPORT bool GetHotrodKeyboardEnabled();
 
+// Sets whether the keyboard is enabled from the shelf.
+KEYBOARD_EXPORT void SetKeyboardEnabledFromShelf(bool enabled);
+
+// Gets whether the keyboard is enabled from the shelf.
+KEYBOARD_EXPORT bool GetKeyboardEnabledFromShelf();
+
 // Sets the state of the touch onscreen keyboard.
 KEYBOARD_EXPORT void SetTouchKeyboardEnabled(bool enabled);
 

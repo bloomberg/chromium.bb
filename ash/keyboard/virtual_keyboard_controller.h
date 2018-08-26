@@ -83,11 +83,6 @@ class ASH_EXPORT VirtualKeyboardController
   // True if the presence of an external keyboard should be ignored.
   bool ignore_external_keyboard_;
 
-  // Whether the keyboard was forced to be enabled using accessibility prefs.
-  // Used to determine whether we need to disable the accessibility keyboard
-  // when the keyboard closes.
-  bool keyboard_enabled_using_accessibility_prefs_ = false;
-
   DISALLOW_COPY_AND_ASSIGN(VirtualKeyboardController);
 };
 
