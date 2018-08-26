@@ -8473,7 +8473,8 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
                            mbmi->mv[0].as_mv.row, mbmi->mv[0].as_mv.col,
                            &mbmi->wm_params, mi_row, mi_col)) {
         // Refine MV for NEWMV mode
-        if (!is_comp_pred && have_newmv_in_inter_mode(this_mode)) {
+        assert(!is_comp_pred);
+        if (have_newmv_in_inter_mode(this_mode)) {
           int tmp_rate_mv = 0;
           const int_mv mv0 = mbmi->mv[0];
           const WarpedMotionParams wm_params0 = mbmi->wm_params;
