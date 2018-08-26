@@ -99,9 +99,9 @@ AppCacheDiskCacheInterface::~AppCacheDiskCacheInterface() {}
 
 AppCacheResponseIO::AppCacheResponseIO(
     int64_t response_id,
-    const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
+    base::WeakPtr<AppCacheDiskCacheInterface> disk_cache)
     : response_id_(response_id),
-      disk_cache_(disk_cache),
+      disk_cache_(std::move(disk_cache)),
       entry_(nullptr),
       buffer_len_(0),
       weak_factory_(this) {}
@@ -198,16 +198,15 @@ void AppCacheResponseIO::OpenEntryCallback(
 
 AppCacheResponseReader::AppCacheResponseReader(
     int64_t response_id,
-    const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseIO(response_id, disk_cache),
+    base::WeakPtr<AppCacheDiskCacheInterface> disk_cache)
+    : AppCacheResponseIO(response_id, std::move(disk_cache)),
       range_offset_(0),
       range_length_(std::numeric_limits<int32_t>::max()),
       read_position_(0),
       reading_metadata_size_(0),
       weak_factory_(this) {}
 
-AppCacheResponseReader::~AppCacheResponseReader() {
-}
+AppCacheResponseReader::~AppCacheResponseReader() = default;
 
 void AppCacheResponseReader::ReadInfo(HttpResponseInfoIOBuffer* info_buf,
                                       OnceCompletionCallback callback) {
@@ -326,16 +325,15 @@ void AppCacheResponseReader::OnOpenEntryComplete() {
 
 AppCacheResponseWriter::AppCacheResponseWriter(
     int64_t response_id,
-    const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseIO(response_id, disk_cache),
+    base::WeakPtr<AppCacheDiskCacheInterface> disk_cache)
+    : AppCacheResponseIO(response_id, std::move(disk_cache)),
       info_size_(0),
       write_position_(0),
       write_amount_(0),
       creation_phase_(INITIAL_ATTEMPT),
       weak_factory_(this) {}
 
-AppCacheResponseWriter::~AppCacheResponseWriter() {
-}
+AppCacheResponseWriter::~AppCacheResponseWriter() = default;
 
 void AppCacheResponseWriter::WriteInfo(HttpResponseInfoIOBuffer* info_buf,
                                        OnceCompletionCallback callback) {
@@ -491,13 +489,12 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
 
 AppCacheResponseMetadataWriter::AppCacheResponseMetadataWriter(
     int64_t response_id,
-    const base::WeakPtr<AppCacheDiskCacheInterface>& disk_cache)
-    : AppCacheResponseIO(response_id, disk_cache),
+    base::WeakPtr<AppCacheDiskCacheInterface> disk_cache)
+    : AppCacheResponseIO(response_id, std::move(disk_cache)),
       write_amount_(0),
       weak_factory_(this) {}
 
-AppCacheResponseMetadataWriter::~AppCacheResponseMetadataWriter() {
-}
+AppCacheResponseMetadataWriter::~AppCacheResponseMetadataWriter() = default;
 
 void AppCacheResponseMetadataWriter::WriteMetadata(
     net::IOBuffer* buf,
