@@ -597,6 +597,9 @@ void AssistantMainStage::UpdateTopPadding() {
   // Force a layout/paint pass.
   overlay_layout_container_->Layout();
   overlay_layout_container_->SchedulePaint();
+
+  // Modifying borders may affect our preferred size.
+  PreferredSizeChanged();
 }
 
 void AssistantMainStage::UpdateQueryViewTransform(views::View* query_view) {
