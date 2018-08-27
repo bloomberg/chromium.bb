@@ -101,8 +101,9 @@
 #include "chrome/browser/safe_browsing/url_checker_delegate_impl.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/signin/chrome_signin_proxying_url_loader_factory_manager.h"
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
-#include "chrome/browser/signin/chrome_signin_url_loader_throttle_delegate_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_impl.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/speech/tts_controller.h"
@@ -4306,7 +4307,7 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 #endif
 
   if (network_service_enabled) {
-    auto delegate = std::make_unique<signin::URLLoaderThrottleDelegateImpl>(
+    auto delegate = std::make_unique<signin::HeaderModificationDelegateImpl>(
         resource_context);
     auto signin_throttle = signin::URLLoaderThrottle::MaybeCreate(
         std::move(delegate), navigation_ui_data, wc_getter);
@@ -4459,8 +4460,11 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     bool is_navigation,
+    const GURL& url,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  bool use_proxy = false;
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(
@@ -4468,14 +4472,21 @@ bool ChromeContentBrowserClient::WillCreateURLLoaderFactory(
 
   // NOTE: Some unit test environments do not initialize
   // BrowserContextKeyedAPI factories for e.g. WebRequest.
-  if (!web_request_api)
-    return false;
-
-  return web_request_api->MaybeProxyURLLoaderFactory(frame, is_navigation,
-                                                     factory_request);
-#else
-  return false;
+  if (web_request_api) {
+    use_proxy |= web_request_api->MaybeProxyURLLoaderFactory(
+        frame, is_navigation, factory_request);
+  }
 #endif
+
+  auto* signin_proxy_manager =
+      signin::ProxyingURLLoaderFactoryManagerFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context));
+  if (signin_proxy_manager) {
+    use_proxy |= signin_proxy_manager->MaybeProxyURLLoaderFactory(
+        frame, is_navigation, url, factory_request);
+  }
+
+  return use_proxy;
 }
 
 std::vector<std::unique_ptr<content::URLLoaderRequestInterceptor>>

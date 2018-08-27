@@ -290,6 +290,7 @@ bool ShellContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     bool is_navigation,
+    const GURL& url,
     network::mojom::URLLoaderFactoryRequest* factory_request) {
   auto* web_request_api =
       extensions::BrowserContextKeyedAPIFactory<extensions::WebRequestAPI>::Get(

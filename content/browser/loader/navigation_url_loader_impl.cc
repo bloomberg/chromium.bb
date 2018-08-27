@@ -1511,7 +1511,7 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
     auto factory_request = mojo::MakeRequest(&factory_info);
     bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
         partition->browser_context(), frame_tree_node->current_frame_host(),
-        true /* is_navigation */, &factory_request);
+        true /* is_navigation */, new_request->url, &factory_request);
     bypass_redirect_checks = use_proxy;
     if (RenderFrameDevToolsAgentHost::WillCreateURLLoaderFactory(
             frame_tree_node->current_frame_host(), true, false,
@@ -1644,7 +1644,7 @@ void NavigationURLLoaderImpl::BindNonNetworkURLLoaderFactoryRequest(
   auto* frame = frame_tree_node->current_frame_host();
   GetContentClient()->browser()->WillCreateURLLoaderFactory(
       frame->GetSiteInstance()->GetBrowserContext(), frame,
-      true /* is_navigation */, &factory);
+      true /* is_navigation */, url, &factory);
   it->second->Clone(std::move(factory));
 }
 

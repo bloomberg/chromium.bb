@@ -1053,7 +1053,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |OnNetworkServiceConnectionError()| if the factory is out-of-process.  If
   // this returns true, any redirect safety checks should be bypassed in
   // downstream loaders.
+  // |url| is the URL that the RenderFrame is either committing (in the case of
+  // navigation) or has last committed (when handling network process crashes).
   bool CreateNetworkServiceDefaultFactoryAndObserve(
+      const GURL& url,
+      network::mojom::URLLoaderFactoryRequest default_factory_request);
+
+  // |url| is the URL that the RenderFrame is either committing (in the case of
+  // navigation) or has last committed (when handling network process crashes).
+  bool CreateNetworkServiceDefaultFactoryInternal(
+      const GURL& url,
       network::mojom::URLLoaderFactoryRequest default_factory_request);
 
   // Returns true if the ExecuteJavaScript() API can be used on this host.

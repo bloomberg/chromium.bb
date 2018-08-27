@@ -1126,6 +1126,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // or for non-navigation requests initiated by the browser on behalf of a
   // BrowserContext.
   //
+  // |is_navigation| is true when it's a request used for navigation.
+  // |url| is set when it's a request for navigations or for a renderer fetching
+  // subresources. It's not set in the 3rd case (browser-initiated
+  // non-navigation requests) because in that case the factory is cached and it
+  // can be used for multiple URLs.
+  //
   // |*factory_request| is always valid upon entry and MUST be valid upon
   // return. The embedder may swap out the value of |*factory_request| for its
   // own, in which case it must return |true| to indicate that it's proxying
@@ -1138,12 +1144,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Note that |frame| may be null if this is a browser-initiated,
   // non-navigation request, e.g. a request made via
   // |StoragePartition::GetURLLoaderFactoryForBrowserProcess()|.
-  //
-  // This is only called when the network service is enabled.
   virtual bool WillCreateURLLoaderFactory(
       BrowserContext* browser_context,
       RenderFrameHost* frame,
       bool is_navigation,
+      const GURL& url,
       network::mojom::URLLoaderFactoryRequest* factory_request);
 
   // Allows the embedder to intercept a WebSocket connection. |*request|

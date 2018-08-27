@@ -27,19 +27,19 @@ namespace base {
 struct UniquePtrComparator {
   using is_transparent = int;
 
-  template <typename T>
-  bool operator()(const std::unique_ptr<T>& lhs,
-                  const std::unique_ptr<T>& rhs) const {
+  template <typename T, class Deleter = std::default_delete<T>>
+  bool operator()(const std::unique_ptr<T, Deleter>& lhs,
+                  const std::unique_ptr<T, Deleter>& rhs) const {
     return lhs < rhs;
   }
 
-  template <typename T>
-  bool operator()(const T* lhs, const std::unique_ptr<T>& rhs) const {
+  template <typename T, class Deleter = std::default_delete<T>>
+  bool operator()(const T* lhs, const std::unique_ptr<T, Deleter>& rhs) const {
     return lhs < rhs.get();
   }
 
-  template <typename T>
-  bool operator()(const std::unique_ptr<T>& lhs, const T* rhs) const {
+  template <typename T, class Deleter = std::default_delete<T>>
+  bool operator()(const std::unique_ptr<T, Deleter>& lhs, const T* rhs) const {
     return lhs.get() < rhs;
   }
 };

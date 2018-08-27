@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/signin/chrome_signin_url_loader_throttle_delegate_impl.h"
+#include "chrome/browser/signin/header_modification_delegate_impl.h"
 
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
@@ -11,13 +11,13 @@
 
 namespace signin {
 
-URLLoaderThrottleDelegateImpl::URLLoaderThrottleDelegateImpl(
+HeaderModificationDelegateImpl::HeaderModificationDelegateImpl(
     content::ResourceContext* resource_context)
     : io_data_(ProfileIOData::FromResourceContext(resource_context)) {}
 
-URLLoaderThrottleDelegateImpl::~URLLoaderThrottleDelegateImpl() = default;
+HeaderModificationDelegateImpl::~HeaderModificationDelegateImpl() = default;
 
-bool URLLoaderThrottleDelegateImpl::ShouldIntercept(
+bool HeaderModificationDelegateImpl::ShouldInterceptNavigation(
     content::NavigationUIData* navigation_ui_data) {
   if (io_data_->IsOffTheRecord())
     return false;
@@ -40,13 +40,13 @@ bool URLLoaderThrottleDelegateImpl::ShouldIntercept(
   return true;
 }
 
-void URLLoaderThrottleDelegateImpl::ProcessRequest(
+void HeaderModificationDelegateImpl::ProcessRequest(
     ChromeRequestAdapter* request_adapter,
     const GURL& redirect_url) {
   FixAccountConsistencyRequestHeader(request_adapter, redirect_url, io_data_);
 }
 
-void URLLoaderThrottleDelegateImpl::ProcessResponse(
+void HeaderModificationDelegateImpl::ProcessResponse(
     ResponseAdapter* response_adapter,
     const GURL& redirect_url) {
   ProcessAccountConsistencyResponseHeaders(response_adapter, redirect_url,
