@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_PSEUDO_ELEMENT_DATA_H_
 
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -79,18 +80,20 @@ inline void PseudoElementData::SetPseudoElement(PseudoId pseudo_id,
 
 inline PseudoElement* PseudoElementData::GetPseudoElement(
     PseudoId pseudo_id) const {
-  switch (pseudo_id) {
-    case kPseudoIdBefore:
-      return generated_before_;
-    case kPseudoIdAfter:
-      return generated_after_;
-    case kPseudoIdBackdrop:
-      return backdrop_;
-    case kPseudoIdFirstLetter:
-      return generated_first_letter_;
-    default:
-      return nullptr;
-  }
+  if (kPseudoIdBefore == pseudo_id)
+    return generated_before_;
+  if (kPseudoIdAfter == pseudo_id)
+    return generated_after_;
+// Workaround for CPU bug. This avoids compiler optimizing
+// this group of if conditions into switch. See http://crbug.com/855390.
+#if defined(ARCH_CPU_ARMEL)
+  __asm__ volatile("");
+#endif
+  if (kPseudoIdBackdrop == pseudo_id)
+    return backdrop_;
+  if (kPseudoIdFirstLetter == pseudo_id)
+    return generated_first_letter_;
+  return nullptr;
 }
 
 }  // namespace blink
