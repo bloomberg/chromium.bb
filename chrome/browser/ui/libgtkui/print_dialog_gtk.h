@@ -75,16 +75,16 @@ class PrintDialogGtk : public printing::PrintDialogGtkInterface,
 
   // Printing dialog callback.
   PrintingContextLinux::PrintSettingsCallback callback_;
-  PrintingContextLinux* context_;
+  PrintingContextLinux* const context_;
 
   // Print dialog settings. PrintDialogGtk owns |dialog_| and holds references
   // to the other objects.
-  GtkWidget* dialog_;
-  GtkPrintSettings* gtk_settings_;
-  GtkPageSetup* page_setup_;
-  GtkPrinter* printer_;
+  GtkWidget* dialog_ = nullptr;
+  GtkPrintSettings* gtk_settings_ = nullptr;
+  GtkPageSetup* page_setup_ = nullptr;
+  GtkPrinter* printer_ = nullptr;
 
-  aura::Window* parent_;
+  aura::Window* parent_ = nullptr;
 
   base::FilePath path_to_pdf_;
 
