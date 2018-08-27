@@ -19,6 +19,11 @@ void BleAdvertiser::NotifyAdvertisingSlotEnded(
                                     replaced_by_higher_priority_advertisement);
 }
 
+void BleAdvertiser::NotifyFailureToGenerateAdvertisement(
+    const DeviceIdPair& device_id_pair) {
+  delegate_->OnFailureToGenerateAdvertisement(device_id_pair);
+}
+
 }  // namespace secure_channel
 
 }  // namespace chromeos

@@ -9,8 +9,12 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/services/secure_channel/ble_advertiser.h"
 #include "chromeos/services/secure_channel/ble_constants.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
@@ -57,7 +61,9 @@ class BleAdvertiserImpl : public BleAdvertiser {
         Delegate* delegate,
         BleServiceDataHelper* ble_service_data_helper,
         BleSynchronizerBase* ble_synchronizer_base,
-        TimerFactory* timer_factory);
+        TimerFactory* timer_factory,
+        scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner =
+            base::SequencedTaskRunnerHandle::Get());
 
    private:
     static Factory* test_factory_;
@@ -83,10 +89,12 @@ class BleAdvertiserImpl : public BleAdvertiser {
 
   static const int64_t kNumSecondsPerAdvertisementTimeslot;
 
-  BleAdvertiserImpl(Delegate* delegate,
-                    BleServiceDataHelper* ble_service_data_helper,
-                    BleSynchronizerBase* ble_synchronizer_base,
-                    TimerFactory* timer_factory);
+  BleAdvertiserImpl(
+      Delegate* delegate,
+      BleServiceDataHelper* ble_service_data_helper,
+      BleSynchronizerBase* ble_synchronizer_base,
+      TimerFactory* timer_factory,
+      scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner);
 
   // BleAdvertiser:
   void AddAdvertisementRequest(const DeviceIdPair& request,
@@ -102,7 +110,7 @@ class BleAdvertiserImpl : public BleAdvertiser {
       ConnectionPriority connection_priority);
   void UpdateAdvertisementState();
   void AddActiveAdvertisementRequest(size_t index_to_add);
-  void AddActiveAdvertisement(size_t index_to_add);
+  void AttemptToAddActiveAdvertisement(size_t index_to_add);
   base::Optional<size_t> GetIndexForActiveRequest(const DeviceIdPair& request);
   void StopAdvertisementRequestAndUpdateActiveRequests(
       size_t index,
@@ -111,9 +119,18 @@ class BleAdvertiserImpl : public BleAdvertiser {
   void StopActiveAdvertisement(size_t index);
   void OnActiveAdvertisementStopped(size_t index);
 
+  // Notifies the delegate of a request's failure to generate an advertisement,
+  // unless the failed request has already been processed and removed from
+  // |requests_already_removed_due_to_failed_advertisement_|.
+  void AttemptToNotifyFailureToGenerateAdvertisement(
+      const DeviceIdPair& device_id_pair);
+
   BleServiceDataHelper* ble_service_data_helper_;
   BleSynchronizerBase* ble_synchronizer_base_;
   TimerFactory* timer_factory_;
+
+  // For posting tasks to the current base::SequencedTaskRunner.
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   std::unique_ptr<SharedResourceScheduler> shared_resource_scheduler_;
   DeviceIdPairSet all_requests_;
@@ -132,6 +149,15 @@ class BleAdvertiserImpl : public BleAdvertiser {
   std::array<std::unique_ptr<ErrorTolerantBleAdvertisement>,
              kMaxConcurrentAdvertisements>
       active_advertisements_;
+
+  // If a request fails to generate an advertisement, it is immediately removed
+  // internally and tracked here. Then, when the delegate failure callback tries
+  // to clean up the failed advertisement (or something else tries to re-add or
+  // remove it again), its associated entry in this set will be removed instead.
+  base::flat_set<DeviceIdPair>
+      requests_already_removed_due_to_failed_advertisement_;
+
+  base::WeakPtrFactory<BleAdvertiserImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BleAdvertiserImpl);
 };

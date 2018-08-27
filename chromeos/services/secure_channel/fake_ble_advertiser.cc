@@ -53,6 +53,14 @@ void FakeBleAdvertiser::NotifyAdvertisingSlotEnded(
       device_id_pair, replaced_by_higher_priority_advertisement);
 }
 
+void FakeBleAdvertiser::NotifyFailureToGenerateAdvertisement(
+    const DeviceIdPair& device_id_pair) {
+  // |device_id_pair| must be scheduled.
+  DCHECK(GetPriorityForRequest(device_id_pair));
+
+  BleAdvertiser::NotifyFailureToGenerateAdvertisement(device_id_pair);
+}
+
 void FakeBleAdvertiser::AddAdvertisementRequest(
     const DeviceIdPair& request,
     ConnectionPriority connection_priority) {
@@ -77,8 +85,13 @@ FakeBleAdvertiserDelegate::~FakeBleAdvertiserDelegate() = default;
 void FakeBleAdvertiserDelegate::OnAdvertisingSlotEnded(
     const DeviceIdPair& device_id_pair,
     bool replaced_by_higher_priority_advertisement) {
-  ended_advertisements_.push_back(std::make_pair(
-      device_id_pair, replaced_by_higher_priority_advertisement));
+  slot_ended_events_.emplace_back(device_id_pair,
+                                  replaced_by_higher_priority_advertisement);
+}
+
+void FakeBleAdvertiserDelegate::OnFailureToGenerateAdvertisement(
+    const DeviceIdPair& device_id_pair) {
+  advertisement_generation_failures_.emplace_back(device_id_pair);
 }
 
 }  // namespace secure_channel

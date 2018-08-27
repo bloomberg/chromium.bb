@@ -87,6 +87,8 @@ class BleConnectionManagerImpl : public BleConnectionManager,
   void OnAdvertisingSlotEnded(
       const DeviceIdPair& device_id_pair,
       bool replaced_by_higher_priority_advertisement) override;
+  void OnFailureToGenerateAdvertisement(
+      const DeviceIdPair& device_id_pair) override;
 
   // BleScanner::Delegate:
   void OnReceivedAdvertisement(cryptauth::RemoteDeviceRef remote_device,
