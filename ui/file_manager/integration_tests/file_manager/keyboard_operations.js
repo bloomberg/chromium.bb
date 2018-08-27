@@ -118,31 +118,21 @@ function keyboardCopy(path) {
 function keyboardDelete(path) {
   let appId;
 
-  StepsRunner.run([
-    // Open Files app on |path| containing one file entry: hello.
-    function() {
-      setupAndWaitUntilReady(
-          null, path, this.next, [ENTRIES.hello], [ENTRIES.hello]);
-    },
+  return new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, path, resolve, [ENTRIES.hello], [ENTRIES.hello]);
+  }).then(function(results) {
+    appId = results.windowId;
     // Delete the file from the file list.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'deleteFile', appId, ['hello.txt'], this.next);
-    },
+    return remoteCall.callRemoteTestUtil('deleteFile', appId, ['hello.txt']);
+  }).then(function(result) {
+    chrome.test.assertTrue(result, 'deleteFile failed');
     // Run the delete entry confirmation dialog.
-    function(result) {
-      chrome.test.assertTrue(result, 'deleteFile failed');
-      waitAndAcceptDialog(appId).then(this.next);
-    },
-    // Check: the file list should now be empty.
-    function() {
-      remoteCall.waitForFiles(appId, []).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+    return waitAndAcceptDialog(appId);
+  }).then(function() {
+    // Check: the file list should be empty.
+    return remoteCall.waitForFiles(appId, []);
+  });
 }
 
 /**
@@ -337,11 +327,11 @@ testcase.keyboardCopyDrive = function() {
 };
 
 testcase.keyboardDeleteDownloads = function() {
-  keyboardDelete(RootPath.DOWNLOADS);
+  testPromise(keyboardDelete(RootPath.DOWNLOADS));
 };
 
 testcase.keyboardDeleteDrive = function() {
-  keyboardDelete(RootPath.DRIVE);
+  testPromise(keyboardDelete(RootPath.DRIVE));
 };
 
 testcase.keyboardDeleteFolderDownloads = function() {
