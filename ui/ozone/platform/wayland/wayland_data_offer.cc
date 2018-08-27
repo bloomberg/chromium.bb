@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 
 namespace ui {
 
@@ -40,8 +41,7 @@ WaylandDataOffer::~WaylandDataOffer() {
 }
 
 void WaylandDataOffer::EnsureTextMimeTypeIfNeeded() {
-  if (std::find(mime_types_.begin(), mime_types_.end(), kTextPlain) !=
-      mime_types_.end())
+  if (base::ContainsValue(mime_types_, kTextPlain))
     return;
 
   if (std::any_of(mime_types_.begin(), mime_types_.end(),
@@ -56,8 +56,7 @@ void WaylandDataOffer::EnsureTextMimeTypeIfNeeded() {
 }
 
 base::ScopedFD WaylandDataOffer::Receive(const std::string& mime_type) {
-  if (std::find(mime_types_.begin(), mime_types_.end(), mime_type) ==
-      mime_types_.end())
+  if (!base::ContainsValue(mime_types_, mime_type))
     return base::ScopedFD();
 
   base::ScopedFD read_fd;
