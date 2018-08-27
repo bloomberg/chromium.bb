@@ -15,7 +15,7 @@ const TREEITEM_DOWNLOADS = '#directory-tree [entry-label="Downloads"]';
 /**
  * Selects the first item in the file list.
  *
- * @param {string} appId The Files app appId.
+ * @param {string} appId The Files app windowId.
  * @return {Promise} Promise to be fulfilled on success.
  */
 function selectFirstFileListItem(appId) {
@@ -44,7 +44,7 @@ function selectFirstFileListItem(appId) {
 /**
  * Creates a new folder in the file list.
  *
- * @param {string} appId The Files app appId.
+ * @param {string} appId The Files app windowId.
  * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
  * @param {string} selector Downloads or Drive directory tree item selector.
  * @return {Promise} Promise to be fulfilled on success.
@@ -135,7 +135,7 @@ function createNewFolder(appId, initialEntrySet, selector) {
  * Expands the directory tree item given by |selector| (Downloads or Drive)
  * to reveal its subtree child items.
  *
- * @param {string} appId The Files app appId.
+ * @param {string} appId The Files app windowId.
  * @param {string} selector Downloads or Drive directory tree item selector.
  * @return {Promise} Promise fulfilled on success.
  */
