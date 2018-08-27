@@ -37,10 +37,6 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   static BridgedNativeWidget* GetBridgeForNativeWindow(
       gfx::NativeWindow window);
 
-  // Return true if the delegate's modal type is window-modal. These display as
-  // a native window "sheet", and have a different lifetime to regular windows.
-  bool IsWindowModalSheet() const;
-
   // Informs |delegate_| that the native widget is about to be destroyed.
   // BridgedNativeWidget::OnWindowWillClose() invokes this early when the
   // NSWindowDelegate informs the bridge that the window is being closed (later,

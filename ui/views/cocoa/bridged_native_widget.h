@@ -46,6 +46,13 @@ class View;
 // BridgedNativeWidget to BridgedNativeWidgetImpl.
 class VIEWS_EXPORT BridgedNativeWidgetPublic {
  public:
+  struct InitParams {
+    ui::ModalType modal_type = ui::MODAL_TYPE_NONE;
+    bool is_translucent_window = false;
+    bool has_shadow = false;
+    bool force_into_collection_cycle = false;
+  };
+
   // Ways of changing the visibility of the bridged NSWindow.
   enum WindowVisibilityState {
     HIDE_WINDOW,               // Hides with -[NSWindow orderOut:].
@@ -54,10 +61,21 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
                                // the window above its parent if it has one.
   };
 
+  // Initialize the window's style.
+  virtual void InitWindow(const InitParams& params) = 0;
+
   // Initialize the view to display compositor output. This will send the
   // current visibility and dimensions (and any future updates) to the
   // BridgedNativeWidgetHost.
   virtual void InitCompositorView() = 0;
+
+  // Initiate the closing of the window (the closing may be animated or posted
+  // to be run later).
+  virtual void CloseWindow() = 0;
+
+  // Immediately close the window (which will have the consequence of deleting
+  // |this| and its host).
+  virtual void CloseWindowNow() = 0;
 
   // Specify initial bounds for the window via |new_bounds| in screen
   // coordinates. It is invalid for |new_bounds| to have an empty size and
@@ -147,8 +165,20 @@ class VIEWS_EXPORT BridgedNativeWidget
   // boundary, it will not be possible to explicitly set an NSWindow in this
   // way.
   void SetWindow(base::scoped_nsobject<NativeWidgetMacNSWindow> window);
-  // Initialize the bridge (after the NSWindow has been created).
-  void Init(const Widget::InitParams& params);
+
+  // Create the NSView to be the content view for the window.
+  // TODO(ccameron): This function takes a views::View because not all calls
+  // have been routed through |host_| yet.
+  void CreateContentView(views::View* view);
+
+  // Destroy the content NSView for this window. Note that the window will
+  // become blank once this has been called.
+  void DestroyContentView();
+
+  // Set the parent NSView for the widget.
+  // TODO(ccameron): Like SetWindow, this will need to pass a handle instead of
+  // an NSView across processes.
+  void SetParent(NSView* parent);
 
   // Changes the bounds of the window and the hosted layer if present. The
   // origin is a location in screen coordinates except for "child" windows,
@@ -157,10 +187,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // a |parent| NSWindow, the |child| attribute, and a |type| that
   // views::GetAuraWindowTypeForWidgetType does not consider a "popup" type.
   void SetBounds(const gfx::Rect& new_bounds);
-
-  // Set or clears the views::View bridged by the content view. This does NOT
-  // take ownership of |view|.
-  void SetRootView(views::View* view);
 
   // Start moving the window, pinned to the mouse cursor, and monitor events.
   // Return MOVE_LOOP_SUCCESSFUL on mouse up or MOVE_LOOP_CANCELED on premature
@@ -274,7 +300,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   base::TimeDelta PreCommitTimeout() override;
 
   // views::BridgedNativeWidgetPublic:
+  void InitWindow(const InitParams& params) override;
   void InitCompositorView() override;
+  void CloseWindow() override;
+  void CloseWindowNow() override;
   void SetInitialBounds(const gfx::Rect& new_bounds,
                         const gfx::Size& minimum_content_size,
                         const gfx::Vector2d& parent_offset) override;
@@ -321,6 +350,10 @@ class VIEWS_EXPORT BridgedNativeWidget
   // forward them to |host_|.
   void UpdateWindowDisplay();
 
+  // Return true if the delegate's modal type is window-modal. These display as
+  // a native window "sheet", and have a different lifetime to regular windows.
+  bool IsWindowModalSheet() const;
+
   // Show the window using -[NSApp beginSheet:..], modal for the parent window.
   void ShowAsModalSheet();
 
@@ -352,7 +385,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   std::unique_ptr<CocoaWindowMoveLoop> window_move_loop_;
   std::unique_ptr<TooltipManager> tooltip_manager_;
   std::unique_ptr<DragDropClientMac> drag_drop_client_;
-  Widget::InitParams::Type widget_type_;
+  ui::ModalType modal_type_ = ui::MODAL_TYPE_NONE;
   bool is_translucent_window_ = false;
 
   BridgedNativeWidgetOwner* parent_ = nullptr;  // Weak. If non-null, owns this.

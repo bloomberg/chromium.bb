@@ -36,18 +36,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/native_frame_view.h"
 
-// Self-owning animation delegate that starts a hide animation, then calls
-// -[NSWindow close] when the animation ends, releasing itself.
-@interface ViewsNSWindowCloseAnimator : NSObject<NSAnimationDelegate> {
- @private
-  base::scoped_nsobject<NSWindow> window_;
-  base::scoped_nsobject<NSAnimation> animation_;
-}
-
-+ (void)closeWindowWithAnimation:(NSWindow*)window;
-
-@end
-
 namespace views {
 namespace {
 
@@ -118,12 +106,6 @@ BridgedNativeWidgetHostImpl* NativeWidgetMac::GetBridgeHostImplForNativeWindow(
   return nullptr;  // Not created by NativeWidgetMac.
 }
 
-bool NativeWidgetMac::IsWindowModalSheet() const {
-  return bridge() && bridge()->parent() &&
-         GetWidget()->widget_delegate()->GetModalType() ==
-             ui::MODAL_TYPE_WINDOW;
-}
-
 void NativeWidgetMac::WindowDestroying() {
   OnWindowDestroying(GetNativeWindow());
   delegate_->OnNativeWidgetDestroying();
@@ -163,6 +145,7 @@ void NativeWidgetMac::InitNativeWidget(const Widget::InitParams& params) {
 
   DCHECK(GetWidget()->GetRootView());
   bridge_host_->SetRootView(GetWidget()->GetRootView());
+  bridge()->CreateContentView(GetWidget()->GetRootView());
   if (auto* focus_manager = GetWidget()->GetFocusManager()) {
     bridge()->MakeFirstResponder();
     bridge_host_->SetFocusManager(focus_manager);
@@ -385,64 +368,15 @@ void NativeWidgetMac::SetShape(std::unique_ptr<Widget::ShapeRects> shape) {
 }
 
 void NativeWidgetMac::Close() {
-  if (!bridge())
-    return;
-
-  // Keep |window| on the stack so that the ObjectiveC block below can capture
-  // it and properly increment the reference count bound to the posted task.
-  NSWindow* window = GetNativeWindow();
-
-  if (IsWindowModalSheet()) {
-    // Sheets can't be closed normally. This starts the sheet closing. Once the
-    // sheet has finished animating, it will call sheetDidEnd: on the parent
-    // window's delegate. Note it still needs to be asynchronous, since code
-    // calling Widget::Close() doesn't expect things to be deleted upon return.
-    // Ensure |window| is retained by a block. Note in some cases during
-    // teardown, [window sheetParent] may be nil.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(base::RetainBlock(^{
-          [NSApp endSheet:window];
-        })));
-    return;
-  }
-
-  // For other modal types, animate the close.
-  if (bridge()->ShouldRunCustomAnimationFor(Widget::ANIMATE_HIDE)) {
-    [ViewsNSWindowCloseAnimator closeWindowWithAnimation:window];
-    return;
-  }
-
-  // Clear the view early to suppress repaints.
-  bridge_host_->SetRootView(nullptr);
-
-  // Widget::Close() ensures [Non]ClientView::CanClose() returns true, so there
-  // is no need to call the NSWindow or its delegate's -windowShouldClose:
-  // implementation in the manner of -[NSWindow performClose:]. But,
-  // like -performClose:, first remove the window from AppKit's display
-  // list to avoid crashes like http://crbug.com/156101.
-  [window orderOut:nil];
-
-  // Many tests assume that base::RunLoop().RunUntilIdle() is always sufficient
-  // to execute a close. However, in rare cases, -performSelector:..afterDelay:0
-  // does not do this. So post a regular task.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(base::RetainBlock(^{
-        [window close];
-      })));
+  if (bridge())
+    bridge()->CloseWindow();
 }
 
 void NativeWidgetMac::CloseNow() {
-  if (!bridge())
-    return;
-
-  // NSWindows must be retained until -[NSWindow close] returns.
-  base::scoped_nsobject<NSWindow> window(GetNativeWindow(),
-                                         base::scoped_policy::RETAIN);
-
-  // If there's a bridge at this point, it means there must be a window as well.
-  DCHECK(window);
-  [window close];
-  // Note: |this| is deleted here when ownership_ == NATIVE_WIDGET_OWNS_WIDGET.
+  if (bridge())
+    bridge()->CloseWindowNow();
+  // Note: |bridge_host_| will be deleted her, and |this| will be deleted here
+  // when ownership_ == NATIVE_WIDGET_OWNS_WIDGET,
 }
 
 void NativeWidgetMac::Show(ui::WindowShowState show_state,
@@ -879,29 +813,3 @@ gfx::NativeView NativeWidgetPrivate::GetGlobalCapture(
 
 }  // namespace internal
 }  // namespace views
-
-@implementation ViewsNSWindowCloseAnimator
-
-- (id)initWithWindow:(NSWindow*)window {
-  if ((self = [super init])) {
-    window_.reset([window retain]);
-    animation_.reset(
-        [[ConstrainedWindowAnimationHide alloc] initWithWindow:window]);
-    [animation_ setDelegate:self];
-    [animation_ setAnimationBlockingMode:NSAnimationNonblocking];
-    [animation_ startAnimation];
-  }
-  return self;
-}
-
-+ (void)closeWindowWithAnimation:(NSWindow*)window {
-  [[ViewsNSWindowCloseAnimator alloc] initWithWindow:window];
-}
-
-- (void)animationDidEnd:(NSAnimation*)animation {
-  [window_ close];
-  [animation_ setDelegate:nil];
-  [self release];
-}
-
-@end

@@ -55,8 +55,47 @@ BridgedNativeWidgetPublic* BridgedNativeWidgetHostImpl::bridge() const {
 }
 
 void BridgedNativeWidgetHostImpl::InitWindow(const Widget::InitParams& params) {
+  // Tooltip Widgets shouldn't have their own tooltip manager, but tooltips are
+  // native on Mac, so nothing should ever want one in Widget form.
+  DCHECK_NE(params.type, Widget::InitParams::TYPE_TOOLTIP);
   widget_type_ = params.type;
-  bridge_impl_->Init(params);
+
+  bridge_impl_->SetParent(params.parent);
+
+  // Initialize the window.
+  {
+    BridgedNativeWidgetPublic::InitParams bridge_params;
+    bridge_params.modal_type =
+        native_widget_mac_->GetWidget()->widget_delegate()->GetModalType();
+    bridge_params.is_translucent_window =
+        params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW;
+
+    // OSX likes to put shadows on most things. However, frameless windows (with
+    // styleMask = NSBorderlessWindowMask) default to no shadow. So change that.
+    // SHADOW_TYPE_DROP is used for Menus, which get the same shadow style on
+    // Mac.
+    switch (params.shadow_type) {
+      case Widget::InitParams::SHADOW_TYPE_NONE:
+        bridge_params.has_shadow = false;
+        break;
+      case Widget::InitParams::SHADOW_TYPE_DEFAULT:
+        // Controls should get views shadows instead of native shadows.
+        bridge_params.has_shadow =
+            params.type != Widget::InitParams::TYPE_CONTROL;
+        break;
+      case Widget::InitParams::SHADOW_TYPE_DROP:
+        bridge_params.has_shadow = true;
+        break;
+    }  // No default case, to pick up new types.
+
+    // Include "regular" windows without the standard frame in the window cycle.
+    // These use NSBorderlessWindowMask so do not get it by default.
+    bridge_params.force_into_collection_cycle =
+        widget_type_ == Widget::InitParams::TYPE_WINDOW &&
+        params.remove_standard_frame;
+
+    bridge()->InitWindow(bridge_params);
+  }
 
   // Set a meaningful initial bounds. Note that except for frameless widgets
   // with no WidgetDelegate, the bounds will be set again by Widget after
@@ -101,9 +140,6 @@ void BridgedNativeWidgetHostImpl::SetFullscreen(bool fullscreen) {
 
 void BridgedNativeWidgetHostImpl::SetRootView(views::View* root_view) {
   root_view_ = root_view;
-  // TODO(ccameron): The BridgedNativeWidget should not need to know its root
-  // view.
-  bridge_impl_->SetRootView(root_view);
 }
 
 void BridgedNativeWidgetHostImpl::CreateCompositor(
@@ -332,6 +368,10 @@ void BridgedNativeWidgetHostImpl::GetWordAt(
   // Convert |baselinePoint| to the coordinate system of |root_view_|.
   views::View::ConvertPointToTarget(target, root_view_, baseline_point);
   *found_word = true;
+}
+
+void BridgedNativeWidgetHostImpl::GetWidgetIsModal(bool* widget_is_modal) {
+  *widget_is_modal = native_widget_mac_->GetWidget()->IsModal();
 }
 
 void BridgedNativeWidgetHostImpl::OnWindowGeometryChanged(
