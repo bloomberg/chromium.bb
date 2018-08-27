@@ -8,48 +8,49 @@
  * Waits until a dialog with an OK button is shown, and accepts it by clicking
  * on the dialog's OK button.
  *
- * @param {string} windowId Window ID.
+ * @param {string} appId The Files app windowId.
  * @return {Promise} Promise to be fulfilled after clicking the OK button.
  */
-function waitAndAcceptDialog(windowId) {
-  const dialogButton = '.cr-dialog-ok';
-  return remoteCall.waitForElement(windowId, dialogButton)
-      .then(function() {
-        return remoteCall.callRemoteTestUtil(
-            'fakeMouseClick', windowId, [dialogButton]);
-      })
-      .then(function(result) {
-        chrome.test.assertTrue(!!result, 'fakeMouseClick failed');
-        const dialog = '.cr-dialog-container';
-        return remoteCall.waitForElementLost(windowId, dialog);
-      });
+function waitAndAcceptDialog(appId) {
+  const okButton = '.cr-dialog-ok';
+  return new Promise(function(resolve) {
+    // Wait for the Ok button to appear.
+    remoteCall.waitForElement(appId, okButton).then(resolve);
+  }).then(function() {
+    // Click the Ok button.
+    return remoteCall.callRemoteTestUtil('fakeMouseClick', appId, [okButton]);
+  }).then(function(result) {
+    chrome.test.assertTrue(result, 'Dialog Ok button click failed');
+    // Wait until the dialog closes.
+    return remoteCall.waitForElementLost(appId, '.cr-dialog-container');
+  });
 }
 
 /**
- * Returns the visible directory tree items.
+ * Returns the visible directory tree item names.
  *
- * @param {string} windowId Window ID.
+ * @param {string} appId The Files app windowId.
  * @return {!Promise<!Array<string>>} List of visible item names.
  */
-function getTreeItems(windowId) {
-  return remoteCall.callRemoteTestUtil('getTreeItems', windowId, []);
+function getVisibleDirectoryTreeItemNames(appId) {
+  return remoteCall.callRemoteTestUtil('getTreeItems', appId, []);
 }
 
 /**
  * Waits until the directory tree item |name| appears.
  *
- * @param {string} windowId Window ID.
- * @param {string} name Name of tree item.
+ * @param {string} appId The Files app windowId.
+ * @param {string} name Directory tree item name.
  * @return {!Promise}
  */
-function waitForDirectoryItem(windowId, name) {
-  var caller = getCaller();
+function waitForDirectoryTreeItem(appId, name) {
+  let caller = getCaller();
   return repeatUntil(function() {
-    return getTreeItems(windowId).then(function(items) {
-      if (items.indexOf(name) !== -1) {
+    return getVisibleDirectoryTreeItemNames(appId).then(function(names) {
+      if (names.indexOf(name) !== -1) {
         return true;
       } else {
-        return pending(caller, 'Tree item %s is not found.', name);
+        return pending(caller, 'Directory tree item %s not found.', name);
       }
     });
   });
@@ -58,31 +59,29 @@ function waitForDirectoryItem(windowId, name) {
 /**
  * Waits until the directory tree item |name| disappears.
  *
- * @param {string} windowId Window ID.
- * @param {string} name Name of tree item.
+ * @param {string} appId The Files app windowId.
+ * @param {string} name Directory tree item name.
  * @return {!Promise}
  */
-function waitForDirectoryItemLost(windowId, name) {
-  var caller = getCaller();
+function waitForDirectoryTreeItemLost(appId, name) {
+  let caller = getCaller();
   return repeatUntil(function() {
-    return getTreeItems(windowId).then(function(items) {
-      console.log(items);
-      if (items.indexOf(name) === -1) {
+    return getVisibleDirectoryTreeItemNames(appId).then(function(names) {
+      if (names.indexOf(name) === -1) {
         return true;
       } else {
-        return pending(caller, 'Tree item %s is still exists.', name);
+        return pending(caller, 'Directory tree item %s still exists.', name);
       }
     });
   });
 }
 
 /**
- * Tests copying a file to the same volume path file list.
+ * Tests copying a file to the same file list.
  *
  * @param {string} path The path to be tested, Downloads or Drive.
  */
-function keyboardCopy(path, callback) {
-  let fileListBefore;
+function keyboardCopy(path) {
   let appId;
 
   StepsRunner.run([
@@ -94,19 +93,16 @@ function keyboardCopy(path, callback) {
     // Copy the file into the same file list.
     function(results) {
       appId = results.windowId;
-      fileListBefore = results.fileList;
       remoteCall.callRemoteTestUtil(
           'copyFile', appId, ['world.ogv'], this.next);
     },
     // Check: the copied file should appear in the file list.
     function(result) {
-      chrome.test.assertTrue(!!result, 'copyFile failed');
-      const expectedFilesAfter =
-          fileListBefore.concat([['world (1).ogv', '59 KB', 'OGG video']]);
-      remoteCall
-          .waitForFiles(
-              appId, expectedFilesAfter, {ignoreLastModifiedTime: true})
-          .then(this.next);
+      chrome.test.assertTrue(result, 'copyFile failed');
+      const files = [['world.ogv', '59 KB', 'OGG video']].concat(
+          [['world (1).ogv', '59 KB', 'OGG video']]);
+      remoteCall.waitForFiles(
+          appId, files, {ignoreLastModifiedTime: true}).then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -115,7 +111,7 @@ function keyboardCopy(path, callback) {
 }
 
 /**
- * Tests deleting file entry from the file list.
+ * Tests deleting a file from the file list.
  *
  * @param {string} path The path to be tested, Downloads or Drive.
  */
@@ -150,18 +146,17 @@ function keyboardDelete(path) {
 }
 
 /**
- * Tests deleting an directory entry from the file list. The directory entry is
- * also shown in the Files app directory tree, and should not be shown there
- * when the directory entry is deleted.
+ * Tests deleting a folder from the file list. The folder is also shown in the
+ * Files app directory tree, and should not be shown there when deleted.
  *
  * @param {string} path The path to be tested, Downloads or Drive.
  * @param {string} treeItem The directory tree item selector.
  */
-function keyboardDeleteDirectory(path, treeItem) {
+function keyboardDeleteFolder(path, treeItem) {
   let appId;
 
   StepsRunner.run([
-    // Open Files app on |path| containing one directory entry: photos.
+    // Open Files app on |path| containing one folder entry: photos.
     function() {
       setupAndWaitUntilReady(
           null, path, this.next, [ENTRIES.photos], [ENTRIES.photos]);
@@ -171,11 +166,11 @@ function keyboardDeleteDirectory(path, treeItem) {
       appId = results.windowId;
       expandRoot(appId, treeItem).then(this.next);
     },
-    // Check: the directory entry should be shown in the directory tree.
+    // Check: the folder should be shown in the directory tree.
     function() {
-      waitForDirectoryItem(appId, 'photos').then(this.next);
+      waitForDirectoryTreeItem(appId, 'photos').then(this.next);
     },
-    // Delete the directory entry from the file list.
+    // Delete the folder entry from the file list.
     function() {
       remoteCall.callRemoteTestUtil('deleteFile', appId, ['photos'], this.next);
     },
@@ -188,9 +183,9 @@ function keyboardDeleteDirectory(path, treeItem) {
     function() {
       remoteCall.waitForFiles(appId, []).then(this.next);
     },
-    // Check: the directory entry should not be shown in the directory tree.
+    // Check: the folder should not be shown in the directory tree.
     function() {
-      waitForDirectoryItemLost(appId, 'photos').then(this.next);
+      waitForDirectoryTreeItemLost(appId, 'photos').then(this.next);
     },
     function() {
       checkIfNoErrorsOccured(this.next);
@@ -247,7 +242,7 @@ function testRenameFolder(path, treeItem) {
     return expandRoot(windowId, treeItem);
   }).then(function() {
     // Check: the photos folder should be shown in the directory tree.
-    return waitForDirectoryItem(windowId, 'photos');
+    return waitForDirectoryTreeItem(windowId, 'photos');
   }).then(function() {
     // Focus the file-list.
     return remoteCall.callRemoteTestUtil('focus', windowId, ['#file-list']);
@@ -260,7 +255,7 @@ function testRenameFolder(path, treeItem) {
     chrome.test.assertTrue(result);
     // Await file list item selection.
     const selectedItem = '#file-list .table-row[selected]';
-    return remoteCall.waitForElement(windowId, [selectedItem]);
+    return remoteCall.waitForElement(windowId, selectedItem);
   }).then(function() {
     // Press Ctrl+Enter to rename the photos folder.
     const key = ['#file-list', 'Enter', 'Enter', true, false, false];
@@ -285,7 +280,7 @@ function testRenameFolder(path, treeItem) {
   }).then(function(result) {
     chrome.test.assertTrue(result);
     // Wait until renaming is complete.
-    const renamingItem = ['#file-list .table-row[renaming]'];
+    const renamingItem = '#file-list .table-row[renaming]';
     return remoteCall.waitForElementLost(windowId, renamingItem);
   }).then(function() {
     // Check: the renamed folder should be shown in the file list.
@@ -294,7 +289,7 @@ function testRenameFolder(path, treeItem) {
         windowId, expectedRows, {ignoreLastModifiedTime: true});
   }).then(function() {
     // Check: the renamed folder should be shown in the directory tree.
-    return waitForDirectoryItem(windowId, 'bbq photos');
+    return waitForDirectoryTreeItem(windowId, 'bbq photos');
   });
 }
 
@@ -365,11 +360,11 @@ testcase.keyboardDeleteDrive = function() {
 };
 
 testcase.keyboardDeleteFolderDownloads = function() {
-  keyboardDeleteDirectory(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
+  keyboardDeleteFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
 };
 
 testcase.keyboardDeleteFolderDrive = function() {
-  keyboardDeleteDirectory(RootPath.DRIVE, TREEITEM_DRIVE);
+  keyboardDeleteFolder(RootPath.DRIVE, TREEITEM_DRIVE);
 };
 
 testcase.renameFileDownloads = function() {
