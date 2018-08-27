@@ -782,14 +782,12 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item) {
                                    : sizes.max_size;
   }
 
+  // For the inline layout purpose, only inline-margins are needed, computed for
+  // the line's writing-mode.
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
-  bool is_flipped_lines = style.IsFlippedLinesWritingMode();
-  item_result->margins = NGLineBoxStrut(
-      ComputeMarginsForVisualContainer(constraint_space_, style),
-      IsFlippedLinesWritingMode(constraint_space_.GetWritingMode()));
-  item_result->padding = NGLineBoxStrut(
-      ComputePadding(constraint_space_, style), is_flipped_lines);
+  item_result->margins =
+      ComputeLineMarginsForVisualContainer(constraint_space_, style);
   item_result->inline_size += item_result->margins.InlineSum();
 
   if (state_ == LineBreakState::kLeading)
@@ -915,14 +913,10 @@ bool NGLineBreaker::ComputeOpenTagResult(
   if (item.ShouldCreateBoxFragment() &&
       (style.HasBorder() || style.HasPadding() ||
        (style.HasMargin() && item_result->has_edge))) {
-    bool is_flipped_lines = style.IsFlippedLinesWritingMode();
-    item_result->borders = NGLineBoxStrut(
-        ComputeBorders(constraint_space, style), is_flipped_lines);
-    item_result->padding = NGLineBoxStrut(
-        ComputePadding(constraint_space, style), is_flipped_lines);
+    item_result->borders = ComputeLineBorders(constraint_space, style);
+    item_result->padding = ComputeLinePadding(constraint_space, style);
     if (item_result->has_edge) {
-      item_result->margins = NGLineBoxStrut(
-          ComputeMarginsForSelf(constraint_space, style), is_flipped_lines);
+      item_result->margins = ComputeLineMarginsForSelf(constraint_space, style);
       item_result->inline_size = item_result->margins.inline_start +
                                  item_result->borders.inline_start +
                                  item_result->padding.inline_start;

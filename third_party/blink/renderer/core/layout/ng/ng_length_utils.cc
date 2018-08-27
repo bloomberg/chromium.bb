@@ -638,17 +638,25 @@ NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
       .ConvertToLogical(compute_for.GetWritingMode(), compute_for.Direction());
 }
 
-NGBoxStrut ComputeMarginsForVisualContainer(
+NGLineBoxStrut ComputeLineMarginsForVisualContainer(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style) {
   return ComputePhysicalMargins(constraint_space, style)
-      .ConvertToLogical(constraint_space.GetWritingMode(), TextDirection::kLtr);
+      .ConvertToLineLogical(constraint_space.GetWritingMode(),
+                            TextDirection::kLtr);
 }
 
 NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace& constraint_space,
                                  const ComputedStyle& style) {
   return ComputePhysicalMargins(constraint_space, style)
       .ConvertToLogical(style.GetWritingMode(), style.Direction());
+}
+
+NGLineBoxStrut ComputeLineMarginsForSelf(
+    const NGConstraintSpace& constraint_space,
+    const ComputedStyle& style) {
+  return ComputePhysicalMargins(constraint_space, style)
+      .ConvertToLineLogical(style.GetWritingMode(), style.Direction());
 }
 
 NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
@@ -704,6 +712,12 @@ NGBoxStrut ComputeBorders(const NGConstraintSpace& constraint_space,
   return ComputeBorders(constraint_space, node.Style());
 }
 
+NGLineBoxStrut ComputeLineBorders(const NGConstraintSpace& constraint_space,
+                                  const ComputedStyle& style) {
+  return NGLineBoxStrut(ComputeBorders(constraint_space, style),
+                        style.IsFlippedLinesWritingMode());
+}
+
 NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
                           const ComputedStyle& style) {
   // If we are producing an anonymous fragment (e.g. a column) we shouldn't
@@ -742,6 +756,12 @@ NGBoxStrut ComputePadding(const NGConstraintSpace& constraint_space,
     padding.block_end += LayoutUnit(cell->IntrinsicPaddingAfter());
   }
   return padding;
+}
+
+NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace& constraint_space,
+                                  const ComputedStyle& style) {
+  return NGLineBoxStrut(ComputePadding(constraint_space, style),
+                        style.IsFlippedLinesWritingMode());
 }
 
 void ResolveInlineMargins(const ComputedStyle& style,

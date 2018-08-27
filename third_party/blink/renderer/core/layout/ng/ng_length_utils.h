@@ -149,20 +149,28 @@ CORE_EXPORT LayoutUnit ResolveUsedColumnGap(LayoutUnit available_size,
 // Compute physical margins.
 CORE_EXPORT NGPhysicalBoxStrut ComputePhysicalMargins(const NGConstraintSpace&,
                                                       const ComputedStyle&);
+
 // Compute margins for the specified NGConstraintSpace.
 CORE_EXPORT NGBoxStrut ComputeMarginsFor(const NGConstraintSpace&,
                                          const ComputedStyle&,
                                          const NGConstraintSpace& compute_for);
-// Compute margins for the NGConstraintSpace.
-CORE_EXPORT NGBoxStrut ComputeMarginsForContainer(const NGConstraintSpace&,
-                                                  const ComputedStyle&);
-// Compute margins for the NGConstraintSpace in the visual order.
-CORE_EXPORT NGBoxStrut
-ComputeMarginsForVisualContainer(const NGConstraintSpace&,
-                                 const ComputedStyle&);
+
 // Compute margins for the style owner.
 CORE_EXPORT NGBoxStrut ComputeMarginsForSelf(const NGConstraintSpace&,
                                              const ComputedStyle&);
+
+// Compute line logical margins for the style owner.
+//
+// The "line" versions compute line-relative logical values. See NGLineBoxStrut
+// for more details.
+CORE_EXPORT NGLineBoxStrut ComputeLineMarginsForSelf(const NGConstraintSpace&,
+                                                     const ComputedStyle&);
+
+// Compute line logical margins for the constraint space, in the visual order
+// (always assumes LTR, ignoring the direction) for inline layout algorithm.
+CORE_EXPORT NGLineBoxStrut
+ComputeLineMarginsForVisualContainer(const NGConstraintSpace&,
+                                     const ComputedStyle&);
 
 // Compute margins for a child during the min-max size calculation.
 CORE_EXPORT NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
@@ -174,11 +182,17 @@ CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
 CORE_EXPORT NGBoxStrut ComputeBorders(const NGConstraintSpace&,
                                       const NGLayoutInputNode);
 
+CORE_EXPORT NGLineBoxStrut ComputeLineBorders(const NGConstraintSpace&,
+                                              const ComputedStyle&);
+
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
 
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const NGLayoutInputNode);
+
+CORE_EXPORT NGLineBoxStrut ComputeLinePadding(const NGConstraintSpace&,
+                                              const ComputedStyle&);
 
 // Convert inline margins from computed to used values. This will resolve 'auto'
 // values and over-constrainedness. This uses the available size from the

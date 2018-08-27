@@ -49,8 +49,6 @@ NGPhysicalBoxStrut NGBoxStrut::ConvertToPhysical(
   }
 }
 
-// Converts physical dimensions to logical ones per
-// https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
 NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(WritingMode writing_mode,
                                                 TextDirection direction) const {
   NGBoxStrut strut;
@@ -72,6 +70,13 @@ NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(WritingMode writing_mode,
   if (direction == TextDirection::kRtl)
     std::swap(strut.inline_start, strut.inline_end);
   return strut;
+}
+
+NGLineBoxStrut NGPhysicalBoxStrut::ConvertToLineLogical(
+    WritingMode writing_mode,
+    TextDirection direction) const {
+  return NGLineBoxStrut(ConvertToLogical(writing_mode, direction),
+                        IsFlippedLinesWritingMode(writing_mode));
 }
 
 String NGBoxStrut::ToString() const {
