@@ -141,7 +141,6 @@ class MojoCdm : public ContentDecryptionModule,
   mojom::ContentDecryptionModulePtr remote_cdm_;
   mojom::InterfaceFactory* interface_factory_;
   mojo::AssociatedBinding<ContentDecryptionModuleClient> client_binding_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // Protects |cdm_id_|, |decryptor_ptr_|, |decryptor_| and
   // |decryptor_task_runner_| which could be accessed from other threads.

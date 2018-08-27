@@ -69,7 +69,6 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
     : remote_cdm_(std::move(remote_cdm)),
       interface_factory_(interface_factory),
       client_binding_(this),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       cdm_id_(CdmContext::kInvalidCdmId),
       session_message_cb_(session_message_cb),
       session_closed_cb_(session_closed_cb),
@@ -90,11 +89,6 @@ MojoCdm::MojoCdm(mojom::ContentDecryptionModulePtr remote_cdm,
 MojoCdm::~MojoCdm() {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // TODO(crbug.com/819269): It seems possible that |this| is destructed on the
-  // wrong thread. Add this check to help investigation. We cannot CHECK on the
-  // |thread_checker_| because it will not check anything in release builds.
-  CHECK(task_runner_->BelongsToCurrentThread());
 
   base::AutoLock auto_lock(lock_);
 
