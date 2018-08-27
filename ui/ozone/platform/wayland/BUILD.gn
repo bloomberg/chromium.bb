@@ -21,6 +21,8 @@ source_set("wayland") {
     "gpu/wayland_connection_proxy.h",
     "ozone_platform_wayland.cc",
     "ozone_platform_wayland.h",
+    "wayland_buffer_manager.cc",
+    "wayland_buffer_manager.h",
     "wayland_connection.cc",
     "wayland_connection.h",
     "wayland_connection_connector.cc",
