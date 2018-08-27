@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -38,12 +39,16 @@ class WebAppPolicyManager {
   static bool ShouldEnableForProfile(Profile* profile);
 
  private:
+  void InitChangeRegistrarAndRefreshPolicyInstalledApps();
+
   void RefreshPolicyInstalledApps();
 
   PrefService* pref_service_;
 
   // Used to install, uninstall, and update apps. Should outlive this class.
   PendingAppManager* pending_app_manager_;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   base::WeakPtrFactory<WebAppPolicyManager> weak_ptr_factory_{this};
 

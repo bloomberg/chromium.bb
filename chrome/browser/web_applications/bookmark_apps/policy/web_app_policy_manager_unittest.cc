@@ -140,4 +140,50 @@ TEST_F(WebAppPolicyManagerTest, ForceInstallAppWithNoForcedLaunchContainer) {
   EXPECT_EQ(apps_to_install, expected_apps_to_install);
 }
 
+TEST_F(WebAppPolicyManagerTest, DynamicRefresh) {
+  auto prefs = std::make_unique<TestingPrefServiceSyncable>();
+  RegisterUserProfilePrefs(prefs->registry());
+
+  base::Value first_list(base::Value::Type::LIST);
+  {
+    base::Value item(base::Value::Type::DICTIONARY);
+    item.SetKey(kUrlKey, base::Value(kUrl1));
+    item.SetKey(kLaunchContainerKey, base::Value(kLaunchContainerWindowValue));
+
+    first_list.GetList().push_back(std::move(item));
+
+    prefs->Set(prefs::kWebAppInstallForceList, std::move(first_list));
+  }
+
+  auto pending_app_manager = std::make_unique<TestPendingAppManager>();
+  WebAppPolicyManager web_app_policy_manager(prefs.get(),
+                                             pending_app_manager.get());
+  base::RunLoop().RunUntilIdle();
+
+  const auto& apps_to_install = pending_app_manager->installed_apps();
+
+  std::vector<PendingAppManager::AppInfo> expected_apps_to_install;
+  expected_apps_to_install.emplace_back(
+      GURL(kUrl1), PendingAppManager::LaunchContainer::kWindow,
+      false /* create_shortcuts */);
+
+  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+
+  base::Value second_list(base::Value::Type::LIST);
+  {
+    base::Value item(base::Value::Type::DICTIONARY);
+    item.SetKey(kUrlKey, base::Value(kUrl2));
+    item.SetKey(kLaunchContainerKey, base::Value(kLaunchContainerTabValue));
+    second_list.GetList().push_back(std::move(item));
+    prefs->Set(prefs::kWebAppInstallForceList, std::move(second_list));
+  }
+  base::RunLoop().RunUntilIdle();
+
+  expected_apps_to_install.emplace_back(
+      GURL(kUrl2), PendingAppManager::LaunchContainer::kTab,
+      false /* create_shortcuts */);
+
+  EXPECT_EQ(apps_to_install, expected_apps_to_install);
+}
+
 }  // namespace web_app

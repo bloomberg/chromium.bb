@@ -30,7 +30,8 @@ WebAppPolicyManager::WebAppPolicyManager(PrefService* pref_service,
       FROM_HERE,
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI),
-      base::BindOnce(&WebAppPolicyManager::RefreshPolicyInstalledApps,
+      base::BindOnce(&WebAppPolicyManager::
+                         InitChangeRegistrarAndRefreshPolicyInstalledApps,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -56,6 +57,15 @@ bool WebAppPolicyManager::ShouldEnableForProfile(Profile* profile) {
 #else  // !OS_CHROMEOS
   return true;
 #endif
+}
+
+void WebAppPolicyManager::InitChangeRegistrarAndRefreshPolicyInstalledApps() {
+  pref_change_registrar_.Init(pref_service_);
+  pref_change_registrar_.Add(
+      prefs::kWebAppInstallForceList,
+      base::BindRepeating(&WebAppPolicyManager::RefreshPolicyInstalledApps,
+                          weak_ptr_factory_.GetWeakPtr()));
+  RefreshPolicyInstalledApps();
 }
 
 void WebAppPolicyManager::RefreshPolicyInstalledApps() {
