@@ -113,6 +113,7 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -373,6 +374,12 @@ public class CustomTabActivityTest {
         vectorDrawable.setBounds(0, 0, widthPx, heightPx);
         vectorDrawable.draw(canvas);
         return bitmap;
+    }
+
+    private static boolean isSelectPopupVisible(ChromeActivity activity) {
+        Tab tab = activity.getActivityTab();
+        if (tab == null || tab.getWebContents() == null) return false;
+        return WebContentsUtils.isSelectPopupVisible(tab.getWebContents());
     }
 
     /**
@@ -859,19 +866,14 @@ public class CustomTabActivityTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mCustomTabActivityTestRule.getActivity()
-                        .getActivityTab()
-                        .getWebContents()
-                        .isSelectPopupVisibleForTesting();
+                return isSelectPopupVisible(mCustomTabActivityTestRule.getActivity());
             }
         });
         final ChromeActivity newActivity = reparentAndVerifyTab();
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                Tab currentTab = newActivity.getActivityTab();
-                return currentTab != null && currentTab.getWebContents() != null
-                        && !currentTab.getWebContents().isSelectPopupVisibleForTesting();
+                return isSelectPopupVisible(newActivity);
             }
         });
     }
