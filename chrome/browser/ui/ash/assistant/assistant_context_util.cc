@@ -11,6 +11,9 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/common/app.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/accessibility/ax_assistant_structure.h"
@@ -45,7 +48,16 @@ void RequestAssistantStructureForActiveBrowserWindow(
     RequestAssistantStructureCallback callback) {
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   if (!browser || !browser->window()->IsActive()) {
-    std::move(callback).Run(nullptr, nullptr);
+    DCHECK(arc::ArcServiceManager::Get());
+    arc::mojom::AppInstance* app_instance = ARC_GET_INSTANCE_FOR_METHOD(
+        arc::ArcServiceManager::Get()->arc_bridge_service()->app(),
+        RequestAssistStructure);
+    if (!app_instance) {
+      std::move(callback).Run(nullptr, nullptr);
+      return;
+    }
+
+    app_instance->RequestAssistStructure(std::move(callback));
     return;
   }
 

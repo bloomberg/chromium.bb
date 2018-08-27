@@ -467,6 +467,11 @@ void FakeAppInstance::StartFastAppReinstallFlow(
   ++start_fast_app_reinstall_request_count_;
 }
 
+void FakeAppInstance::RequestAssistStructure(
+    RequestAssistStructureCallback callback) {
+  std::move(callback).Run(nullptr, nullptr);
+}
+
 void FakeAppInstance::LaunchIntentDeprecated(
     const std::string& intent_uri,
     const base::Optional<gfx::Rect>& dimension_on_screen) {

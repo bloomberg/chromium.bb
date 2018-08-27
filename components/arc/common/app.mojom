@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 37
+// Next MinVersion: 38
 
 module arc.mojom;
 
 import "components/arc/common/gfx.mojom";
 import "components/arc/common/scale_factor.mojom";
+import "ui/accessibility/mojom/ax_assistant_structure.mojom";
 
 // Describes installation result.
 struct InstallationResult {
@@ -273,7 +274,7 @@ interface AppHost {
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
-// Next method ID: 29
+// Next method ID: 30
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
   InitDeprecated@0(AppHost host_ptr);
@@ -398,4 +399,9 @@ interface AppInstance {
       string query, int32 max_results) =>
           (AppDiscoveryRequestState state@1,
            array<AppDiscoveryResult> results@0);
+
+  // Requests assist structure.
+  [MinVersion=37] RequestAssistStructure@29() =>
+        (ax.mojom.AssistantExtra? assistant_extra,
+         ax.mojom.AssistantTree? assistant_tree);
 };

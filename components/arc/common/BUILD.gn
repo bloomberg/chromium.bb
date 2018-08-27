@@ -64,6 +64,7 @@ if (is_chromeos) {
       ":notifications",
       "//device/usb/public/mojom",
       "//mojo/public/mojom/base",
+      "//ui/accessibility/mojom",
       "//ui/gfx/geometry/mojo",
       "//url/mojom:url_mojom_gurl",
     ]
