@@ -725,10 +725,6 @@ const char kValidateCrx[]                   = "validate-crx";
 // Prints version information and quits.
 const char kVersion[]                       = "version";
 
-// Enables the work-in-progress modal dialog shown for pending WebAuthn
-// requests.
-const char kWebAuthenticationUI[] = "enable-web-authentication-ui";
-
 // Sets the delay (in seconds) between proactive prunings of remote-bound
 // WebRTC event logs which are pending upload.
 // All positive values are legal.

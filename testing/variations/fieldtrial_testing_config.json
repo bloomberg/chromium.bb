@@ -4896,6 +4896,24 @@
             ]
         }
     ],
+    "WebAuthenticationUI": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "WebAuthenticationUI"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebBluetoothBlocklist": [
         {
             "platforms": [
