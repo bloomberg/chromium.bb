@@ -16,8 +16,8 @@
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/form_data_importer.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
+#include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/common/autofill_prefs.h"
 #include "services/identity/public/cpp/identity_manager.h"
 
 namespace autofill {
@@ -121,8 +121,8 @@ bool LocalCardMigrationManager::IsCreditCardMigrationEnabled() {
       client_->GetPrefs(), client_->GetSyncService(),
       client_->GetIdentityManager()->GetPrimaryAccountInfo().email);
   bool has_google_payments_account =
-      (static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-           prefs::kAutofillBillingCustomerNumber)) != 0);
+      (payments::GetBillingCustomerId(personal_data_manager_,
+                                      payments_client_->GetPrefService()) != 0);
   return migration_experiment_enabled && credit_card_upload_enabled &&
          has_google_payments_account;
 }
@@ -202,8 +202,8 @@ int LocalCardMigrationManager::GetDetectedValues() const {
 
   // Local card migration should ONLY be offered when the user already has a
   // Google Payments account.
-  DCHECK(static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-             prefs::kAutofillBillingCustomerNumber)) != 0);
+  DCHECK_NE(0, payments::GetBillingCustomerId(
+                   personal_data_manager_, payments_client_->GetPrefService()));
   detected_values |=
       CreditCardSaveManager::DetectedValue::HAS_GOOGLE_PAYMENTS_ACCOUNT;
 
