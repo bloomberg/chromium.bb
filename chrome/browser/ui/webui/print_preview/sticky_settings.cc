@@ -4,10 +4,7 @@
 
 #include "chrome/browser/ui/webui/print_preview/sticky_settings.h"
 
-#include <memory>
-
 #include "base/values.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -33,18 +30,19 @@ void StickySettings::StoreAppState(const std::string& data) {
 }
 
 void StickySettings::SaveInPrefs(PrefService* prefs) const {
-  auto value = std::make_unique<base::DictionaryValue>();
+  base::Value dict(base::Value::Type::DICTIONARY);
   if (printer_app_state_)
-    value->SetString(kSettingAppState, printer_app_state_.value());
-  prefs->Set(prefs::kPrintPreviewStickySettings, *value);
+    dict.SetKey(kSettingAppState, base::Value(*printer_app_state_));
+  prefs->Set(prefs::kPrintPreviewStickySettings, dict);
 }
 
 void StickySettings::RestoreFromPrefs(PrefService* prefs) {
   const base::DictionaryValue* value =
       prefs->GetDictionary(prefs::kPrintPreviewStickySettings);
-  std::string buffer;
-  if (value->GetString(kSettingAppState, &buffer))
-    StoreAppState(buffer);
+  const base::Value* app_state =
+      value->FindKeyOfType(kSettingAppState, base::Value::Type::STRING);
+  if (app_state)
+    StoreAppState(app_state->GetString());
 }
 
 // static
