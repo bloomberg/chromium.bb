@@ -11,6 +11,15 @@
 
 namespace blink {
 
+namespace {
+
+template <class T>
+T* advance_by_byte_size(T* p, unsigned byte_size) {
+  return reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(p) + byte_size);
+}
+
+}  // namespace
+
 SkiaTextMetrics::SkiaTextMetrics(const SkPaint* paint) : paint_(paint) {
   CHECK(paint_->getTextEncoding() == SkPaint::kGlyphID_TextEncoding);
 }
@@ -27,6 +36,35 @@ void SkiaTextMetrics::GetGlyphWidthForHarfBuzz(hb_codepoint_t codepoint,
   if (!paint_->isSubpixelText())
     sk_width = SkScalarRoundToInt(sk_width);
   *width = SkiaScalarToHarfBuzzPosition(sk_width);
+}
+
+void SkiaTextMetrics::GetGlyphWidthForHarfBuzz(unsigned count,
+                                               hb_codepoint_t* glyphs,
+                                               unsigned glyph_stride,
+                                               hb_position_t* advances,
+                                               unsigned advance_stride) {
+  // Batch the call to getTextWidths because its function entry cost is not
+  // cheap. getTextWidths accepts multiple glyphd ID, but not from a sparse
+  // array that copy them to a regular array.
+  Vector<Glyph, 256> glyph_array(count);
+  for (unsigned i = 0; i < count;
+       i++, glyphs = advance_by_byte_size(glyphs, glyph_stride)) {
+    glyph_array[i] = *glyphs;
+  }
+  Vector<SkScalar, 256> sk_width_array(count);
+  paint_->getTextWidths(glyph_array.data(), sizeof(Glyph) * count,
+                        sk_width_array.data(), nullptr);
+
+  if (!paint_->isSubpixelText()) {
+    for (unsigned i = 0; i < count; i++)
+      sk_width_array[i] = SkScalarRoundToInt(sk_width_array[i]);
+  }
+
+  // Copy the results back to the sparse array.
+  for (unsigned i = 0; i < count;
+       i++, advances = advance_by_byte_size(advances, advance_stride)) {
+    *advances = SkiaScalarToHarfBuzzPosition(sk_width_array[i]);
+  }
 }
 
 void SkiaTextMetrics::GetGlyphExtentsForHarfBuzz(hb_codepoint_t codepoint,
