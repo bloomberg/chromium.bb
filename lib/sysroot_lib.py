@@ -584,9 +584,7 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
     This will install both the toolchains and the packages that are implicitly
     needed (gcc-libs, linux-headers).
     """
-    cros_build_lib.RunCommand(
-        [os.path.join(constants.CROSUTILS_DIR, 'install_toolchain'),
-         '--sysroot', self.path])
+    toolchain.InstallToolchain(self)
 
     if not self.GetCachedField(_IMPLICIT_SYSROOT_DEPS):
       emerge = [os.path.join(constants.CHROMITE_BIN_DIR, 'parallel_emerge'),
