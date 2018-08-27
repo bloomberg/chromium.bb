@@ -41,6 +41,9 @@
 # Mac only failure. See crbug.com/874976
 -MaterialHistoryItemTest.All
 
+# Mac only failure. See crbug.com/876990
+-CrSettingsPrivacyPageTest.All
+
 # Tests that fail only on official builds.
 -CrSettingsChromeCleanupPageTest.All
 -CrSettingsIncompatibleApplicationsPageTest.All
