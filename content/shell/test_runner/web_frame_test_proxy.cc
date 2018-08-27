@@ -56,7 +56,7 @@ void WebFrameTestProxy::DownloadURL(
 void WebFrameTestProxy::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader,
     blink::WebURLRequest& request,
-    const base::TimeTicks& input_start) {
+    base::TimeTicks input_start) {
   test_client_->DidStartProvisionalLoad(document_loader, request, input_start);
   RenderFrameImpl::DidStartProvisionalLoad(document_loader, request,
                                            input_start);

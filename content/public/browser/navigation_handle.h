@@ -106,11 +106,11 @@ class CONTENT_EXPORT NavigationHandle {
 
   // The time the navigation started, recorded either in the renderer or in the
   // browser process. Corresponds to Navigation Timing API.
-  virtual const base::TimeTicks& NavigationStart() = 0;
+  virtual base::TimeTicks NavigationStart() = 0;
 
   // The time the input leading to the navigation started. Will not be
   // set if unknown.
-  virtual const base::TimeTicks& NavigationInputStart() = 0;
+  virtual base::TimeTicks NavigationInputStart() = 0;
 
   // Whether or not the navigation was started within a context menu.
   virtual bool WasStartedFromContextMenu() const = 0;

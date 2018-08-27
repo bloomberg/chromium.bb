@@ -498,7 +498,7 @@ WebURLRequest CreateURLRequestForNavigation(
 CommonNavigationParams MakeCommonNavigationParams(
     const blink::WebLocalFrameClient::NavigationPolicyInfo& info,
     int load_flags,
-    const base::TimeTicks& input_start) {
+    base::TimeTicks input_start) {
   Referrer referrer(
       GURL(info.url_request.HttpHeaderField(WebString::FromUTF8("Referer"))
                .Latin1()),
@@ -923,9 +923,9 @@ void ApplyFilePathAlias(blink::WebURLRequest* request) {
 // Packs all navigation timings sent by the browser to a blink understandable
 // format, blink::WebNavigationTimings.
 blink::WebNavigationTimings BuildNavigationTimings(
-    const base::TimeTicks& navigation_start,
+    base::TimeTicks navigation_start,
     const NavigationTiming& browser_navigation_timings,
-    const base::TimeTicks& input_start) {
+    base::TimeTicks input_start) {
   blink::WebNavigationTimings renderer_navigation_timings;
 
   // Sanitizes the navigation_start timestamp for browser-initiated navigations,
@@ -4146,7 +4146,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
 void RenderFrameImpl::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader,
     blink::WebURLRequest& request,
-    const base::TimeTicks& input_start) {
+    base::TimeTicks input_start) {
   // In fast/loader/stop-provisional-loads.html, we abort the load before this
   // callback is invoked.
   if (!document_loader)

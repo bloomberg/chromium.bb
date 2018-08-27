@@ -251,10 +251,9 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   void DispatchDidHandleOnloadEvents() override {}
   void DispatchWillCommitProvisionalLoad() override {}
-  void DispatchDidStartProvisionalLoad(
-      DocumentLoader*,
-      ResourceRequest&,
-      const base::TimeTicks& input_start) override {}
+  void DispatchDidStartProvisionalLoad(DocumentLoader*,
+                                       ResourceRequest&,
+                                       base::TimeTicks input_start) override {}
   void DispatchDidReceiveTitle(const String&) override {}
   void DispatchDidChangeIcons(IconType) override {}
   void DispatchDidCommitLoad(HistoryItem*,

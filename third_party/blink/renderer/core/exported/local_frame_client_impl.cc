@@ -443,7 +443,7 @@ void LocalFrameClientImpl::DispatchWillCommitProvisionalLoad() {
 void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
     DocumentLoader* loader,
     ResourceRequest& request,
-    const base::TimeTicks& input_start) {
+    base::TimeTicks input_start) {
   if (web_frame_->Client()) {
     WrappedResourceRequest wrapped_request(request);
     web_frame_->Client()->DidStartProvisionalLoad(

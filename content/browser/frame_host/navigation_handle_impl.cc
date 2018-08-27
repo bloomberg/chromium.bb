@@ -127,7 +127,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
     bool is_same_document,
-    const base::TimeTicks& navigation_start,
+    base::TimeTicks navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
@@ -142,7 +142,7 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool is_external_protocol,
     RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
-    const base::TimeTicks& input_start) {
+    base::TimeTicks input_start) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated,
       is_same_document, navigation_start, pending_nav_entry_id,
@@ -159,7 +159,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
     bool is_same_document,
-    const base::TimeTicks& navigation_start,
+    base::TimeTicks navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu,
     CSPDisposition should_check_main_world_csp,
@@ -174,7 +174,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool is_external_protocol,
     RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
-    const base::TimeTicks& input_start)
+    base::TimeTicks input_start)
     : url_(url),
       has_user_gesture_(has_user_gesture),
       transition_(transition),
@@ -359,11 +359,11 @@ RenderFrameHostImpl* NavigationHandleImpl::GetParentFrame() {
   return frame_tree_node_->parent()->current_frame_host();
 }
 
-const base::TimeTicks& NavigationHandleImpl::NavigationStart() {
+base::TimeTicks NavigationHandleImpl::NavigationStart() {
   return navigation_start_;
 }
 
-const base::TimeTicks& NavigationHandleImpl::NavigationInputStart() {
+base::TimeTicks NavigationHandleImpl::NavigationInputStart() {
   return input_start_;
 }
 
