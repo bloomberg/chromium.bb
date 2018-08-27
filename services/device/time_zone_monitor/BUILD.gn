@@ -51,6 +51,10 @@ source_set("time_zone_monitor") {
   if (is_fuchsia) {
     sources += [ "time_zone_monitor_fuchsia.cc" ]
   }
+
+  if (is_chromecast) {
+    defines = [ "IS_CHROMECAST" ]
+  }
 }
 
 if (is_android) {
