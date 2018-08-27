@@ -40,10 +40,18 @@ void ProcessMetricsHistory::Initialize(
   process_metrics_ =
       base::ProcessMetrics::CreateProcessMetrics(process_data_.handle);
 #endif
+
+  // Take the initial sample at the beginning of the first internal. This is
+  // required for metrics that are using the previous sample to compute their
+  // value.
+  SampleMetrics();
 }
 
 void ProcessMetricsHistory::SampleMetrics() {
   cpu_usage_ = process_metrics_->GetPlatformIndependentCPUUsage();
+#if defined(OS_WIN)
+  disk_usage_ = process_metrics_->GetDiskUsageBytesPerSecond();
+#endif
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
   idle_wakeups_ = process_metrics_->GetIdleWakeupsPerSecond();
 #endif
@@ -59,6 +67,12 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
   const int kHistogramMax = 6400;
   const int kHistogramBucketCount = 50;
 
+#if defined(OS_WIN)
+  const int kDiskUsageHistogramMin = 1;
+  const int kDiskUsageHistogramMax = 200 * 1024 * 1024;  // 200 M/sec.
+  const int kDiskUsageHistogramBucketCount = 50;
+#endif
+
   // The histogram macros don't support variables as histogram names,
   // hence the macro duplication for each process type.
   switch (process_data_.process_type) {
@@ -72,6 +86,12 @@ void ProcessMetricsHistory::RunPerformanceTriggers() {
         UMA_HISTOGRAM_BOOLEAN("PerformanceMonitor.HighCPU.BrowserProcess",
                               true);
       }
+#if defined(OS_WIN)
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "PerformanceMonitor.AverageDisk.BrowserProcess", disk_usage_,
+          kDiskUsageHistogramMin, kDiskUsageHistogramMax,
+          kDiskUsageHistogramBucketCount);
+#endif
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
       UMA_HISTOGRAM_COUNTS_10000(
           "PerformanceMonitor.IdleWakeups.BrowserProcess", idle_wakeups_);

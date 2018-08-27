@@ -235,6 +235,15 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   return GetProcessIoCounters(process_.Get(), io_counters) != FALSE;
 }
 
+uint64_t ProcessMetrics::GetCumulativeDiskUsageInBytes() {
+  IoCounters counters;
+  if (!GetIOCounters(&counters))
+    return 0;
+
+  return counters.ReadTransferCount + counters.WriteTransferCount +
+         counters.OtherTransferCount;
+}
+
 ProcessMetrics::ProcessMetrics(ProcessHandle process) {
   if (process) {
     HANDLE duplicate_handle = INVALID_HANDLE_VALUE;

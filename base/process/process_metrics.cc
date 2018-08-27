@@ -10,7 +10,6 @@
 #include "base/values.h"
 #include "build/build_config.h"
 
-#if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
 namespace {
 int CalculateEventsPerSecond(uint64_t event_count,
                              uint64_t* last_event_count,
@@ -42,7 +41,6 @@ int CalculateEventsPerSecond(uint64_t event_count,
 }
 
 }  // namespace
-#endif  // defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
 
 namespace base {
 
@@ -151,4 +149,19 @@ int ProcessMetrics::CalculatePackageIdleWakeupsPerSecond(
 }
 
 #endif  // defined(OS_MACOSX)
+
+#if !defined(OS_WIN)
+uint64_t ProcessMetrics::GetCumulativeDiskUsageInBytes() {
+  // Not implemented.
+  return 0;
+}
+#endif
+
+uint64_t ProcessMetrics::GetDiskUsageBytesPerSecond() {
+  uint64_t cumulative_disk_usage = GetCumulativeDiskUsageInBytes();
+  return CalculateEventsPerSecond(cumulative_disk_usage,
+                                  &last_cumulative_disk_usage_,
+                                  &last_disk_usage_time_);
+}
+
 }  // namespace base
