@@ -1730,12 +1730,12 @@ TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnBrowserWindow) {
 }
 
 // Test that in tablet mode, we only allow dragging that happens on window
-// caption area.
-TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionArea) {
+// caption or top area.
+TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionOrTopArea) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(CreateBrowserTypeWindow(bounds));
 
-  // Only dragging on HTCAPTION area is allowed.
+  // Only dragging on HTCAPTION or HTTOP area is allowed.
   std::unique_ptr<WindowResizer> resizer =
       CreateResizerForTest(window.get(), gfx::Point(), HTLEFT);
   EXPECT_FALSE(resizer.get());
@@ -1745,9 +1745,13 @@ TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionArea) {
   EXPECT_TRUE(resizer.get());
   resizer->CompleteDrag();
   resizer.reset();
+  resizer = CreateResizerForTest(window.get(), gfx::Point(), HTTOP);
+  EXPECT_TRUE(resizer.get());
+  resizer->CompleteDrag();
+  resizer.reset();
 
   // No matter if we're in tab-dragging process, as long as the drag happens on
-  // the caption area, it should be able to drag the window.
+  // the caption or top area, it should be able to drag the window.
   SetIsInTabDragging(window.get(), /*is_dragging=*/true);
   resizer = CreateResizerForTest(window.get(), gfx::Point(), HTCAPTION);
   EXPECT_TRUE(resizer.get());

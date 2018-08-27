@@ -71,8 +71,10 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
           ->IsTabletModeWindowManagerEnabled() &&
       !window_state->IsPip()) {
     // We still don't allow any dragging or resizing happening on the area other
-    // then caption area.
-    if (window_component != HTCAPTION ||
+    // then caption or top area. Note: for a maxmized or fullscreen window, the
+    // window component here is always HTCAPTION, but for a snapped window, the
+    // window component here can either be HTCAPTION or HTTOP.
+    if ((window_component != HTCAPTION && window_component != HTTOP) ||
         window->GetProperty(aura::client::kAppType) !=
             static_cast<int>(AppType::BROWSER)) {
       return nullptr;
