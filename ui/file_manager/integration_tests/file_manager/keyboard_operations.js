@@ -226,13 +226,14 @@ function renameFile(windowId, oldName, newName) {
 }
 
 /**
- * Tests renaming a folder.
+ * Tests renaming a folder. An extra enter key is sent to the file list during
+ * renaming to check the folder cannot be entered while it is being renamed.
+ *
  * @param {string} path Initial path (Downloads or Drive).
  * @param {string} treeItem The directory tree item selector.
- * @param {string} crumb Expected path shown in the breadcrumb.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function testRenameFolder(path, treeItem, crumb) {
+function testRenameFolder(path, treeItem) {
   let windowId;
 
   const textInput = '#file-list .table-row[renaming] input.rename';
@@ -261,7 +262,7 @@ function testRenameFolder(path, treeItem, crumb) {
     const selectedItem = '#file-list .table-row[selected]';
     return remoteCall.waitForElement(windowId, [selectedItem]);
   }).then(function() {
-    // Press Ctrl+Enter key to rename the photos folder.
+    // Press Ctrl+Enter to rename the photos folder.
     const key = ['#file-list', 'Enter', 'Enter', true, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
   }).then(function(result) {
@@ -273,27 +274,24 @@ function testRenameFolder(path, treeItem, crumb) {
     return remoteCall.callRemoteTestUtil(
         'inputText', windowId, [textInput, 'bbq photos']);
   }).then(function() {
-    // Press the Enter key.
-    const key = [textInput, 'Enter', 'Enter', false, false, false];
-    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
-  }).then(function(result) {
-    chrome.test.assertTrue(result);
-    // Press Enter key again to attempt to enter the directory.
+    // Send Enter to the list to attempt to enter the directory.
     const key = ['#list-container', 'Enter', 'Enter', false, false, false];
     return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
   }).then(function(result) {
     chrome.test.assertTrue(result);
-    // Confirm the directory was not entered.
-    return remoteCall.waitUntilCurrentDirectoryIsChanged(windowId, crumb);
-  }).then(function() {
+    // Send Enter to the text input to complete renaming.
+    const key = [textInput, 'Enter', 'Enter', false, false, false];
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', windowId, key);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
     // Wait until renaming is complete.
     const renamingItem = ['#file-list .table-row[renaming]'];
     return remoteCall.waitForElementLost(windowId, renamingItem);
   }).then(function() {
     // Check: the renamed folder should be shown in the file list.
-    const expectedEntryRows = [['bbq photos', '--', 'Folder', '']];
+    const expectedRows = [['bbq photos', '--', 'Folder', '']];
     return remoteCall.waitForFiles(
-        windowId, expectedEntryRows, {ignoreLastModifiedTime: true});
+        windowId, expectedRows, {ignoreLastModifiedTime: true});
   }).then(function() {
     // Check: the renamed folder should be shown in the directory tree.
     return waitForDirectoryItem(windowId, 'bbq photos');
@@ -383,11 +381,9 @@ testcase.renameFileDrive = function() {
 };
 
 testcase.renameNewFolderDownloads = function() {
-  const crumb = '/Downloads';
-  testPromise(testRenameFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS, crumb));
+  testPromise(testRenameFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS));
 };
 
 testcase.renameNewFolderDrive = function() {
-  const crumb = '/My Drive';
-  testPromise(testRenameFolder(RootPath.DRIVE, TREEITEM_DRIVE, crumb));
+  testPromise(testRenameFolder(RootPath.DRIVE, TREEITEM_DRIVE));
 };
