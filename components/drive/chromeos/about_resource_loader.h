@@ -12,6 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/time/default_tick_clock.h"
+#include "base/timer/timer.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 
 namespace drive {
@@ -23,7 +25,10 @@ namespace internal {
 // This class is responsible to load AboutResource from the server and cache it.
 class AboutResourceLoader {
  public:
-  explicit AboutResourceLoader(JobScheduler* scheduler);
+  // |clock| can be injected for testing.
+  explicit AboutResourceLoader(
+      JobScheduler* scheduler,
+      const base::TickClock* clock = base::DefaultTickClock::GetInstance());
   ~AboutResourceLoader();
 
   // Returns the cached about resource.
@@ -54,6 +59,8 @@ class AboutResourceLoader {
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::AboutResource> about_resource);
 
+  void EvictCachedAboutResource();
+
   JobScheduler* scheduler_;
   std::unique_ptr<google_apis::AboutResource> cached_about_resource_;
 
@@ -64,6 +71,8 @@ class AboutResourceLoader {
   // when GetAboutResource is called before the task completes.
   std::map<int, std::vector<google_apis::AboutResourceCallback>>
       pending_callbacks_;
+
+  std::unique_ptr<base::RetainingOneShotTimer> cache_eviction_timer_;
 
   THREAD_CHECKER(thread_checker_);
 
