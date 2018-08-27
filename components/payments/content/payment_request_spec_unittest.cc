@@ -453,7 +453,9 @@ TEST_F(PaymentRequestSpecTest, MultipleCurrenciesWithTwoDisplayItem) {
 }
 
 TEST_F(PaymentRequestSpecTest, ShippingAddressErrors) {
-  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_shipping = true;
+  RecreateSpecWithOptionsAndDetails(std::move(options),
                                     mojom::PaymentDetails::New());
 
   EXPECT_FALSE(spec()->has_shipping_address_error());
@@ -473,7 +475,11 @@ TEST_F(PaymentRequestSpecTest, ShippingAddressErrors) {
 }
 
 TEST_F(PaymentRequestSpecTest, PayerErrors) {
-  RecreateSpecWithOptionsAndDetails(mojom::PaymentOptions::New(),
+  mojom::PaymentOptionsPtr options = mojom::PaymentOptions::New();
+  options->request_payer_email = true;
+  options->request_payer_name = true;
+  options->request_payer_phone = true;
+  RecreateSpecWithOptionsAndDetails(std::move(options),
                                     mojom::PaymentDetails::New());
 
   EXPECT_FALSE(spec()->has_payer_error());

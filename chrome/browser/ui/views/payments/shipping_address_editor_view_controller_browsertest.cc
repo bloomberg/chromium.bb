@@ -1330,4 +1330,34 @@ IN_PROC_BROWSER_TEST_F(
             GetErrorLabelForType(autofill::ADDRESS_HOME_CITY));
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       RetryWithShippingAddressErrors_NoRequestShippingOption) {
+  NavigateTo("/payment_request_retry_with_no_payment_options.html");
+
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  AddAutofillProfile(address);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(address.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+  RetryPaymentRequest(
+      "{"
+      "  shippingAddress: {"
+      "    addressLine: 'ADDRESS LINE ERROR',"
+      "    city: 'CITY ERROR'"
+      "  }"
+      "}");
+
+  const int kErrorLabelOffset =
+      static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET);
+  EXPECT_EQ(nullptr,
+            dialog_view()->GetViewByID(kErrorLabelOffset +
+                                       autofill::ADDRESS_HOME_STREET_ADDRESS));
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(kErrorLabelOffset +
+                                                autofill::ADDRESS_HOME_CITY));
+}
+
 }  // namespace payments
