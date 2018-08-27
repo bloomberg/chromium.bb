@@ -1220,10 +1220,22 @@ class EmulatedTouchTouchMoveInputObserver
   }
 
   void OnInputEvent(const blink::WebInputEvent& event) override {
-    if (event.GetType() != blink::WebInputEvent::kTouchMove ||
-        first_touch_move_seen_) {
+    if (event.GetType() != blink::WebInputEvent::kTouchMove)
       return;
-    }
+
+    const blink::WebTouchEvent& touch_event =
+        static_cast<const blink::WebTouchEvent&>(event);
+    blink::WebFloatPoint pos_in_widget =
+        touch_event.touches[0].PositionInWidget();
+    blink::WebFloatPoint pos_in_screen =
+        touch_event.touches[0].PositionInScreen();
+    LOG(ERROR) << "TouchMove seen: widget @ (" << pos_in_widget.x << ","
+               << pos_in_widget.y << "), screen @ (" << pos_in_screen.x << ","
+               << pos_in_screen.y << ")";
+
+    if (first_touch_move_seen_)
+      return;
+
     first_touch_move_seen_ = true;
     base::debug::StackTrace().Print();
   }
@@ -1325,6 +1337,15 @@ class SitePerProcessEmulatedTouchBrowserTest
       default:
         ASSERT_TRUE(false);
     }
+
+#if defined(OS_WIN)
+    {
+      gfx::Rect view_bounds = root_rwhv->GetViewBounds();
+      LOG(ERROR) << "Root view bounds = (" << view_bounds.x() << ","
+                 << view_bounds.y() << ") " << view_bounds.width() << " x "
+                 << view_bounds.height();
+    }
+#endif
 
     gfx::Point position_in_child(5, 5);
     InputEventAckWaiter child_gesture_event_observer(
