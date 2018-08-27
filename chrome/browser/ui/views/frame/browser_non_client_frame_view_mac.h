@@ -61,6 +61,10 @@ class BrowserNonClientFrameViewMac : public BrowserNonClientFrameView {
   int GetAfterTabstripItemWidth() const;
   CGFloat FullscreenBackingBarHeight() const;
 
+  // Calculate the y offset the top UI needs to shift down due to showing the
+  // slide down menu bar at the very top in full screen.
+  int TopUIFullscreenYOffset() const;
+
   // Used to keep track of the update of kShowFullscreenToolbar preference.
   PrefChangeRegistrar pref_registrar_;
 
