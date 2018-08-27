@@ -87,12 +87,6 @@ public interface ToolbarDataProvider {
     boolean isPreview();
 
     /**
-     * @param urlBarText The text currently displayed in the url bar.
-     * @return Whether the Google 'G' should be shown in the location bar.
-     */
-    boolean shouldShowGoogleG(String urlBarText);
-
-    /**
      * @return Whether verbose status next to the security icon should be displayed.
      */
     boolean shouldShowVerboseStatus();

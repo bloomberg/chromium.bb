@@ -123,7 +123,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kNTPLaunchAfterInactivity,
     &kNTPModernLayoutFeature,
     &kSimplifiedNTP,
-    &kNTPShowGoogleGInOmniboxFeature,
     &kOmniboxSpareRenderer,
     &kOmniboxVoiceSearchAlwaysVisible,
     &kPayWithGoogleV1,
@@ -355,9 +354,6 @@ const base::Feature kNTPModernLayoutFeature{"NTPModernLayout",
 
 const base::Feature kNTPLaunchAfterInactivity{
     "NTPLaunchAfterInactivity", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kNTPShowGoogleGInOmniboxFeature{
-    "NTPShowGoogleGInOmnibox", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_DISABLED_BY_DEFAULT};

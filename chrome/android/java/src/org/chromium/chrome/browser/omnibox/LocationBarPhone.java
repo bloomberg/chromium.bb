@@ -8,22 +8,15 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.util.AttributeSet;
 import android.view.TouchDelegate;
 import android.view.View;
 import android.view.WindowManager;
-import android.view.animation.Interpolator;
-import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
-import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
-import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.ui.UiUtils;
 
@@ -36,14 +29,7 @@ public class LocationBarPhone extends LocationBarLayout {
 
     private static final int ACTION_BUTTON_TOUCH_OVERFLOW_LEFT = 15;
 
-    private static final Interpolator GOOGLE_G_FADE_INTERPOLATOR =
-            new FastOutLinearInInterpolator();
-
     private View mFirstVisibleFocusedView;
-    private View mGoogleGContainer;
-    private View mGoogleG;
-    private int mGoogleGWidth;
-    private int mGoogleGMargin;
 
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
@@ -60,11 +46,6 @@ public class LocationBarPhone extends LocationBarLayout {
         super.onFinishInflate();
 
         mFirstVisibleFocusedView = findViewById(R.id.url_bar);
-
-        mGoogleGContainer = findViewById(R.id.google_g_container);
-        mGoogleG = findViewById(R.id.google_g);
-        mGoogleGWidth = getResources().getDimensionPixelSize(R.dimen.location_bar_google_g_width);
-        mGoogleGMargin = getResources().getDimensionPixelSize(R.dimen.location_bar_google_g_margin);
 
         Rect delegateArea = new Rect();
         mUrlActionContainer.getHitRect(delegateArea);
@@ -187,51 +168,6 @@ public class LocationBarPhone extends LocationBarLayout {
     protected void updateButtonVisibility() {
         super.updateButtonVisibility();
         updateMicButtonVisibility(mUrlFocusChangePercent);
-        updateGoogleG();
-    }
-
-    private void updateGoogleG() {
-        // Inflation might not be finished yet during startup.
-        if (mGoogleGContainer == null) return;
-
-        // The toolbar data provider can be null during startup, before the ToolbarManager has been
-        // initialized.
-        ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
-        if (toolbarDataProvider == null) return;
-
-        if (!getToolbarDataProvider().shouldShowGoogleG(
-                    mUrlCoordinator.getTextWithAutocomplete())) {
-            mGoogleGContainer.setVisibility(View.GONE);
-            return;
-        }
-
-        mGoogleGContainer.setVisibility(View.VISIBLE);
-        float animationProgress =
-                GOOGLE_G_FADE_INTERPOLATOR.getInterpolation(mUrlFocusChangePercent);
-
-        final float finalGScale = 0.3f;
-        // How much we have reduced the size of the G, 0 at the beginning, 0.7 at the end.
-        final float shrinkingProgress = animationProgress * (1 - finalGScale);
-
-        FrameLayout.LayoutParams layoutParams =
-                (FrameLayout.LayoutParams) mGoogleG.getLayoutParams();
-        layoutParams.width = Math.round(mGoogleGWidth * (1f - shrinkingProgress));
-
-        // Shrink the margin down to 50% minus half of the G width (in the end state).
-        final float finalGoogleGMargin = (mGoogleGMargin - mGoogleGWidth * finalGScale) / 2f;
-        MarginLayoutParamsCompat.setMarginEnd(layoutParams,
-                Math.round(MathUtils.interpolate(
-                        mGoogleGMargin, finalGoogleGMargin, animationProgress)));
-        // Just calling requestLayout() would not resolve the end margin.
-        mGoogleG.setLayoutParams(layoutParams);
-
-        // We want the G to be fully transparent when it is 45% of its size.
-        final float scaleWhenTransparent = 0.45f;
-        assert scaleWhenTransparent >= finalGScale;
-
-        // How much we have faded out the G, 0 at the beginning, 1 when we've reduced size to 0.45.
-        final float fadingProgress = Math.min(1, shrinkingProgress / (1 - scaleWhenTransparent));
-        mGoogleG.setAlpha(1 - fadingProgress);
     }
 
     @Override
@@ -286,19 +222,6 @@ public class LocationBarPhone extends LocationBarLayout {
                                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING, false);
                 }
             }
-
-            @Override
-            public void onSheetOpened(@StateChangeReason int reason) {
-                updateGoogleG();
-            }
-
-            @Override
-            public void onSheetClosed(@StateChangeReason int reason) {
-                updateGoogleG();
-            }
         });
-
-        // TODO(twellington): remove and null out mGoogleG and mGoogleGContainer if we remove
-        //                    support for the Google 'G' to save memory.
     }
 }

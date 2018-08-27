@@ -24,14 +24,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.layouts.content.InvalidationAwareThumbnailProvider;
 import org.chromium.chrome.browser.explore_sites.ExperimentalExploreSitesSection;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -313,28 +311,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         TraceEvent.end(TAG + ".initializeSearchBoxTextView()");
     }
 
-    /**
-     * Updates the small search engine logo shown in the search box.
-     */
-    private void updateSearchBoxLogo() {
-        TextView searchBoxTextView = mSearchBoxView.findViewById(R.id.search_box_text);
-        LocaleManager localeManager = LocaleManager.getInstance();
-        if (mSearchProviderIsGoogle && !localeManager.hasCompletedSearchEnginePromo()
-                && !localeManager.hasShownSearchEnginePromoThisSession()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)) {
-            searchBoxTextView.setCompoundDrawablePadding(
-                    getResources().getDimensionPixelOffset(R.dimen.ntp_search_box_logo_padding));
-            ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                    searchBoxTextView, R.drawable.ic_logo_googleg_24dp, 0, 0, 0);
-        } else {
-            searchBoxTextView.setCompoundDrawablePadding(0);
-
-            // Not using the relative version of this call because we only want to clear
-            // the drawables.
-            searchBoxTextView.setCompoundDrawables(null, null, null, null);
-        }
-    }
-
     private void initializeVoiceSearchButton() {
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
         mVoiceSearchButton = findViewById(R.id.voice_search_button);
@@ -560,8 +536,6 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         updateTileGridPlaceholderVisibility();
 
         onUrlFocusAnimationChanged();
-
-        updateSearchBoxLogo();
 
         mSnapshotTileGridChanged = true;
     }

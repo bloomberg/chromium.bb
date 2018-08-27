@@ -100,11 +100,6 @@ public class LocationBarLayoutTest {
             String editingText = mEditingText == null ? urlBarData.editingText : mEditingText;
             return UrlBarData.forUrlAndText(getCurrentUrl(), displayText.toString(), editingText);
         }
-
-        @Override
-        public boolean shouldShowGoogleG(String urlBarText) {
-            return false;
-        }
     }
 
     @Before

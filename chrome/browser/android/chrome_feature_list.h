@@ -68,7 +68,6 @@ extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPButton;
 extern const base::Feature kNTPLaunchAfterInactivity;
 extern const base::Feature kNTPModernLayoutFeature;
-extern const base::Feature kNTPShowGoogleGInOmniboxFeature;
 extern const base::Feature kOmniboxSpareRenderer;
 extern const base::Feature kOmniboxVoiceSearchAlwaysVisible;
 extern const base::Feature kPayWithGoogleV1;
