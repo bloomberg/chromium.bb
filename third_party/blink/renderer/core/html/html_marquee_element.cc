@@ -256,21 +256,24 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
   SecureContextMode secure_context_mode =
       mover_->GetDocument().GetSecureContextMode();
 
-  scoped_refptr<StringKeyframe> keyframe1 = StringKeyframe::Create();
+  StringKeyframeVector keyframes;
+  StringKeyframe* keyframe1 = StringKeyframe::Create();
   set_result = keyframe1->SetCSSPropertyValue(
       CSSPropertyTransform, parameters.transform_begin, secure_context_mode,
       style_sheet_contents);
   DCHECK(set_result.did_parse);
+  keyframes.push_back(keyframe1);
 
-  scoped_refptr<StringKeyframe> keyframe2 = StringKeyframe::Create();
+  StringKeyframe* keyframe2 = StringKeyframe::Create();
   set_result = keyframe2->SetCSSPropertyValue(
       CSSPropertyTransform, parameters.transform_end, secure_context_mode,
       style_sheet_contents);
   DCHECK(set_result.did_parse);
+  keyframes.push_back(keyframe2);
 
-  return StringKeyframeEffectModel::Create(
-      {std::move(keyframe1), std::move(keyframe2)},
-      EffectModel::kCompositeReplace, LinearTimingFunction::Shared());
+  return StringKeyframeEffectModel::Create(keyframes,
+                                           EffectModel::kCompositeReplace,
+                                           LinearTimingFunction::Shared());
 }
 
 void HTMLMarqueeElement::ContinueAnimation() {

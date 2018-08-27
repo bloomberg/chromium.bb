@@ -85,11 +85,11 @@ class AnimationAnimationTest : public RenderingTest {
     Timing timing;
     timing.iteration_duration = 30;
 
-    scoped_refptr<StringKeyframe> start_keyframe = StringKeyframe::Create();
+    Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
     start_keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "1.0",
                                         SecureContextMode::kInsecureContext,
                                         nullptr);
-    scoped_refptr<StringKeyframe> end_keyframe = StringKeyframe::Create();
+    Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
     end_keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "0.0",
                                       SecureContextMode::kInsecureContext,
                                       nullptr);
@@ -922,10 +922,10 @@ TEST_F(AnimationAnimationTest, SetKeyframesCausesCompositorPending) {
 
   // Now change the keyframes; this should mark the animation as compositor
   // pending as we need to sync the compositor side.
-  scoped_refptr<StringKeyframe> start_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> start_keyframe = StringKeyframe::Create();
   start_keyframe->SetCSSPropertyValue(
       CSSPropertyOpacity, "0.0", SecureContextMode::kInsecureContext, nullptr);
-  scoped_refptr<StringKeyframe> end_keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> end_keyframe = StringKeyframe::Create();
   end_keyframe->SetCSSPropertyValue(
       CSSPropertyOpacity, "1.0", SecureContextMode::kInsecureContext, nullptr);
 

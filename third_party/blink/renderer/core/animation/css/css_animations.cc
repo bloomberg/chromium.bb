@@ -100,7 +100,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   PropertySet specified_properties_for_use_counter;
   for (size_t i = 0; i < style_keyframes.size(); ++i) {
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
-    scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
+    StringKeyframe* keyframe = StringKeyframe::Create();
     const Vector<double>& offsets = style_keyframe->Keys();
     DCHECK(!offsets.IsEmpty());
     keyframe->SetOffset(offsets[0]);
@@ -131,7 +131,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     // The last keyframe specified at a given offset is used.
     for (size_t j = 1; j < offsets.size(); ++j) {
       keyframes.push_back(
-          ToStringKeyframe(keyframe->CloneWithOffset(offsets[j]).get()));
+          ToStringKeyframe(keyframe->CloneWithOffset(offsets[j])));
     }
   }
 
@@ -149,11 +149,10 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   }
 
   // Merge duplicate keyframes.
-  std::stable_sort(
-      keyframes.begin(), keyframes.end(),
-      [](const scoped_refptr<Keyframe>& a, const scoped_refptr<Keyframe>& b) {
-        return a->CheckedOffset() < b->CheckedOffset();
-      });
+  std::stable_sort(keyframes.begin(), keyframes.end(),
+                   [](const Member<Keyframe>& a, const Member<Keyframe>& b) {
+                     return a->CheckedOffset() < b->CheckedOffset();
+                   });
   size_t target_index = 0;
   for (size_t i = 1; i < keyframes.size(); i++) {
     if (keyframes[i]->CheckedOffset() ==
@@ -172,15 +171,14 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     keyframes.Shrink(target_index + 1);
 
   // Add 0% and 100% keyframes if absent.
-  scoped_refptr<StringKeyframe> start_keyframe =
-      keyframes.IsEmpty() ? nullptr : keyframes[0];
+  StringKeyframe* start_keyframe = keyframes.IsEmpty() ? nullptr : keyframes[0];
   if (!start_keyframe || keyframes[0]->CheckedOffset() != 0) {
     start_keyframe = StringKeyframe::Create();
     start_keyframe->SetOffset(0);
     start_keyframe->SetEasing(default_timing_function);
     keyframes.push_front(start_keyframe);
   }
-  scoped_refptr<StringKeyframe> end_keyframe = keyframes[keyframes.size() - 1];
+  StringKeyframe* end_keyframe = keyframes[keyframes.size() - 1];
   if (end_keyframe->CheckedOffset() != 1) {
     end_keyframe = StringKeyframe::Create();
     end_keyframe->SetOffset(1);
@@ -208,7 +206,7 @@ std::unique_ptr<TypedInterpolationValue> SampleAnimation(
   KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
   InertEffect* inert_animation_for_sampling = InertEffect::Create(
       effect->Model(), effect->SpecifiedTiming(), false, inherited_time);
-  Vector<scoped_refptr<Interpolation>> sample;
+  HeapVector<Member<Interpolation>> sample;
   inert_animation_for_sampling->Sample(sample);
   // Transition animation has only animated a single property or is not in
   // effect.
@@ -797,16 +795,14 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     timing.start_delay = 0;
   }
 
-  scoped_refptr<TransitionKeyframe> delay_keyframe =
-      TransitionKeyframe::Create(property);
+  TransitionKeyframe* delay_keyframe = TransitionKeyframe::Create(property);
   delay_keyframe->SetValue(TypedInterpolationValue::Create(
       *transition_type, start.interpolable_value->Clone(),
       start.non_interpolable_value));
   delay_keyframe->SetOffset(0);
   keyframes.push_back(delay_keyframe);
 
-  scoped_refptr<TransitionKeyframe> start_keyframe =
-      TransitionKeyframe::Create(property);
+  TransitionKeyframe* start_keyframe = TransitionKeyframe::Create(property);
   start_keyframe->SetValue(TypedInterpolationValue::Create(
       *transition_type, start.interpolable_value->Clone(),
       start.non_interpolable_value));
@@ -815,8 +811,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   timing.timing_function = LinearTimingFunction::Shared();
   keyframes.push_back(start_keyframe);
 
-  scoped_refptr<TransitionKeyframe> end_keyframe =
-      TransitionKeyframe::Create(property);
+  TransitionKeyframe* end_keyframe = TransitionKeyframe::Create(property);
   end_keyframe->SetValue(TypedInterpolationValue::Create(
       *transition_type, end.interpolable_value->Clone(),
       end.non_interpolable_value));
@@ -824,9 +819,9 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (property.GetCSSProperty().IsCompositableProperty()) {
-    scoped_refptr<AnimatableValue> from = CSSAnimatableValueFactory::Create(
+    AnimatableValue* from = CSSAnimatableValueFactory::Create(
         property.GetCSSProperty(), state.old_style);
-    scoped_refptr<AnimatableValue> to = CSSAnimatableValueFactory::Create(
+    AnimatableValue* to = CSSAnimatableValueFactory::Create(
         property.GetCSSProperty(), state.style);
     delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);
@@ -1305,6 +1300,8 @@ void CSSAnimations::Trace(blink::Visitor* visitor) {
   visitor->Trace(transitions_);
   visitor->Trace(pending_update_);
   visitor->Trace(running_animations_);
+  visitor->Trace(previous_active_interpolations_for_standard_animations_);
+  visitor->Trace(previous_active_interpolations_for_custom_animations_);
 }
 
 }  // namespace blink

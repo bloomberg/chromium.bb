@@ -34,17 +34,17 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
-class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
+class CORE_EXPORT AnimatableValue
+    : public GarbageCollectedFinalized<AnimatableValue> {
  public:
   virtual ~AnimatableValue() = default;
 
-  static scoped_refptr<AnimatableValue> Interpolate(const AnimatableValue*,
-                                                    const AnimatableValue*,
-                                                    double fraction);
+  static AnimatableValue* Interpolate(const AnimatableValue*,
+                                      const AnimatableValue*,
+                                      double fraction);
   bool IsDouble() const { return GetType() == kTypeDouble; }
   bool IsFilterOperations() const { return GetType() == kTypeFilterOperations; }
   bool IsTransform() const { return GetType() == kTypeTransform; }
@@ -55,6 +55,8 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
     return value->GetType() == GetType();
   }
 
+  virtual void Trace(Visitor*) {}
+
  protected:
   enum AnimatableType {
     kTypeDouble,
@@ -63,21 +65,15 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
     kTypeUnknown,
   };
 
-  virtual scoped_refptr<AnimatableValue> InterpolateTo(const AnimatableValue*,
-                                                       double fraction) const {
+  virtual AnimatableValue* InterpolateTo(const AnimatableValue*,
+                                         double fraction) const {
     NOTREACHED();
     return nullptr;
   }
-  static scoped_refptr<AnimatableValue> DefaultInterpolateTo(
-      const AnimatableValue* left,
-      const AnimatableValue* right,
-      double fraction) {
-    return TakeConstRef((fraction < 0.5) ? left : right);
-  }
-
-  template <class T>
-  static scoped_refptr<T> TakeConstRef(const T* value) {
-    return scoped_refptr<T>(const_cast<T*>(value));
+  static AnimatableValue* DefaultInterpolateTo(const AnimatableValue* left,
+                                               const AnimatableValue* right,
+                                               double fraction) {
+    return const_cast<AnimatableValue*>((fraction < 0.5) ? left : right);
   }
 
  private:

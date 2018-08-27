@@ -12,11 +12,10 @@
 
 namespace blink {
 
-void TransitionKeyframe::SetCompositorValue(
-    scoped_refptr<AnimatableValue> compositor_value) {
+void TransitionKeyframe::SetCompositorValue(AnimatableValue* compositor_value) {
   DCHECK_EQ(property_.GetCSSProperty().IsCompositableProperty(),
-            static_cast<bool>(compositor_value.get()));
-  compositor_value_ = std::move(compositor_value);
+            static_cast<bool>(compositor_value));
+  compositor_value_ = compositor_value;
 }
 
 PropertyHandleSet TransitionKeyframe::Properties() const {
@@ -31,7 +30,12 @@ void TransitionKeyframe::AddKeyframePropertiesToV8Object(
   // TODO(crbug.com/777971): Add in the property/value for TransitionKeyframe.
 }
 
-scoped_refptr<Keyframe::PropertySpecificKeyframe>
+void TransitionKeyframe::Trace(Visitor* visitor) {
+  visitor->Trace(compositor_value_);
+  Keyframe::Trace(visitor);
+}
+
+Keyframe::PropertySpecificKeyframe*
 TransitionKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property,
     EffectModel::CompositeOperation effect_composite,
@@ -44,7 +48,7 @@ TransitionKeyframe::CreatePropertySpecificKeyframe(
                                           value_->Clone(), compositor_value_);
 }
 
-scoped_refptr<Interpolation>
+Interpolation*
 TransitionKeyframe::PropertySpecificKeyframe::CreateInterpolation(
     const PropertyHandle& property,
     const Keyframe::PropertySpecificKeyframe& other_super_class) const {
@@ -55,6 +59,11 @@ TransitionKeyframe::PropertySpecificKeyframe::CreateInterpolation(
       property, value_->GetType(), value_->Value().Clone(),
       other.value_->Value().Clone(), compositor_value_,
       other.compositor_value_);
+}
+
+void TransitionKeyframe::PropertySpecificKeyframe::Trace(Visitor* visitor) {
+  visitor->Trace(compositor_value_);
+  Keyframe::PropertySpecificKeyframe::Trace(visitor);
 }
 
 }  // namespace blink

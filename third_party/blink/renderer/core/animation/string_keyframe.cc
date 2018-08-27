@@ -134,11 +134,17 @@ void StringKeyframe::AddKeyframePropertiesToV8Object(
   }
 }
 
-scoped_refptr<Keyframe> StringKeyframe::Clone() const {
-  return base::AdoptRef(new StringKeyframe(*this));
+void StringKeyframe::Trace(Visitor* visitor) {
+  visitor->Trace(css_property_map_);
+  visitor->Trace(presentation_attribute_map_);
+  Keyframe::Trace(visitor);
 }
 
-scoped_refptr<Keyframe::PropertySpecificKeyframe>
+Keyframe* StringKeyframe::Clone() const {
+  return new StringKeyframe(*this);
+}
+
+Keyframe::PropertySpecificKeyframe*
 StringKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property,
     EffectModel::CompositeOperation effect_composite,
@@ -172,28 +178,34 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::PopulateAnimatableValue(
   return true;
 }
 
-scoped_refptr<Keyframe::PropertySpecificKeyframe>
+Keyframe::PropertySpecificKeyframe*
 StringKeyframe::CSSPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
     scoped_refptr<TimingFunction> easing) const {
   return Create(offset, std::move(easing), nullptr, EffectModel::kCompositeAdd);
 }
 
-scoped_refptr<Keyframe::PropertySpecificKeyframe>
+void StringKeyframe::CSSPropertySpecificKeyframe::Trace(Visitor* visitor) {
+  visitor->Trace(value_);
+  visitor->Trace(animatable_value_cache_);
+  Keyframe::PropertySpecificKeyframe::Trace(visitor);
+}
+
+Keyframe::PropertySpecificKeyframe*
 StringKeyframe::CSSPropertySpecificKeyframe::CloneWithOffset(
     double offset) const {
-  scoped_refptr<CSSPropertySpecificKeyframe> clone =
+  CSSPropertySpecificKeyframe* clone =
       Create(offset, easing_, value_.Get(), composite_);
   clone->animatable_value_cache_ = animatable_value_cache_;
   return clone;
 }
 
-scoped_refptr<Keyframe::PropertySpecificKeyframe>
+Keyframe::PropertySpecificKeyframe*
 SVGPropertySpecificKeyframe::CloneWithOffset(double offset) const {
   return Create(offset, easing_, value_, composite_);
 }
 
-scoped_refptr<Keyframe::PropertySpecificKeyframe>
+Keyframe::PropertySpecificKeyframe*
 SVGPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
     scoped_refptr<TimingFunction> easing) const {

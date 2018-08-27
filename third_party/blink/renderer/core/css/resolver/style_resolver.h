@@ -75,7 +75,7 @@ class CORE_EXPORT StyleResolver final
       const ComputedStyle* layout_parent_style = nullptr,
       RuleMatchingBehavior = kMatchAllRules);
 
-  static scoped_refptr<AnimatableValue> CreateAnimatableValueSnapshot(
+  static AnimatableValue* CreateAnimatableValueSnapshot(
       Element&,
       const ComputedStyle& base_style,
       const ComputedStyle* parent_style,

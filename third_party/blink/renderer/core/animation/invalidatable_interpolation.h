@@ -31,12 +31,12 @@ namespace blink {
 // objects.
 class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
  public:
-  static scoped_refptr<InvalidatableInterpolation> Create(
+  static InvalidatableInterpolation* Create(
       const PropertyHandle& property,
-      scoped_refptr<PropertySpecificKeyframe> start_keyframe,
-      scoped_refptr<PropertySpecificKeyframe> end_keyframe) {
-    return base::AdoptRef(new InvalidatableInterpolation(
-        property, std::move(start_keyframe), std::move(end_keyframe)));
+      PropertySpecificKeyframe* start_keyframe,
+      PropertySpecificKeyframe* end_keyframe) {
+    return new InvalidatableInterpolation(property, start_keyframe,
+                                          end_keyframe);
   }
 
   const PropertyHandle& GetProperty() const final { return property_; }
@@ -51,17 +51,22 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
     return cached_value_.get();
   }
 
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(start_keyframe_);
+    visitor->Trace(end_keyframe_);
+    Interpolation::Trace(visitor);
+  }
+
  private:
-  InvalidatableInterpolation(
-      const PropertyHandle& property,
-      scoped_refptr<PropertySpecificKeyframe> start_keyframe,
-      scoped_refptr<PropertySpecificKeyframe> end_keyframe)
+  InvalidatableInterpolation(const PropertyHandle& property,
+                             PropertySpecificKeyframe* start_keyframe,
+                             PropertySpecificKeyframe* end_keyframe)
       : Interpolation(),
         property_(property),
         interpolation_types_(nullptr),
         interpolation_types_version_(0),
-        start_keyframe_(std::move(start_keyframe)),
-        end_keyframe_(std::move(end_keyframe)),
+        start_keyframe_(start_keyframe),
+        end_keyframe_(end_keyframe),
         current_fraction_(std::numeric_limits<double>::quiet_NaN()),
         is_conversion_cached_(false) {}
 
@@ -92,8 +97,8 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   const PropertyHandle property_;
   mutable const InterpolationTypes* interpolation_types_;
   mutable size_t interpolation_types_version_;
-  scoped_refptr<PropertySpecificKeyframe> start_keyframe_;
-  scoped_refptr<PropertySpecificKeyframe> end_keyframe_;
+  Member<PropertySpecificKeyframe> start_keyframe_;
+  Member<PropertySpecificKeyframe> end_keyframe_;
   double current_fraction_;
   mutable bool is_conversion_cached_;
   mutable std::unique_ptr<PrimitiveInterpolation> cached_pair_conversion_;

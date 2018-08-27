@@ -20,16 +20,16 @@ namespace {
 
 KeyframeEffectModelBase* CreateEffectModel() {
   StringKeyframeVector frames_mixed_properties;
-  scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
+  Persistent<StringKeyframe> keyframe = StringKeyframe::Create();
   keyframe->SetOffset(0);
   keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "0",
                                 SecureContextMode::kInsecureContext, nullptr);
-  frames_mixed_properties.push_back(std::move(keyframe));
+  frames_mixed_properties.push_back(keyframe);
   keyframe = StringKeyframe::Create();
   keyframe->SetOffset(1);
   keyframe->SetCSSPropertyValue(CSSPropertyOpacity, "1",
                                 SecureContextMode::kInsecureContext, nullptr);
-  frames_mixed_properties.push_back(std::move(keyframe));
+  frames_mixed_properties.push_back(keyframe);
   return StringKeyframeEffectModel::Create(frames_mixed_properties);
 }
 

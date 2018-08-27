@@ -31,7 +31,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATABLE_VALUE_FACTORY_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_ANIMATION_CSS_CSS_ANIMATABLE_VALUE_FACTORY_H_
 
-#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/animation/animatable/animatable_value.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
@@ -45,8 +44,7 @@ class CSSAnimatableValueFactory {
   STATIC_ONLY(CSSAnimatableValueFactory);
 
  public:
-  static scoped_refptr<AnimatableValue> Create(const CSSProperty&,
-                                               const ComputedStyle&);
+  static AnimatableValue* Create(const CSSProperty&, const ComputedStyle&);
 };
 
 }  // namespace blink

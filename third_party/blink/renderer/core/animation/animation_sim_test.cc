@@ -66,12 +66,12 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
-  scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
+  StringKeyframe* keyframe = StringKeyframe::Create();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
                                 "100%", GetDocument().GetSecureContextMode(),
                                 GetDocument().ElementSheet().Contents());
   StringKeyframeVector keyframes;
-  keyframes.push_back(std::move(keyframe));
+  keyframes.push_back(keyframe);
   Timing timing;
   timing.iteration_duration = 1;  // Seconds.
   ElementAnimation::animateInternal(

@@ -783,7 +783,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
 
 // TODO(alancutter): Create compositor keyframe values directly instead of
 // intermediate AnimatableValues.
-scoped_refptr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
+AnimatableValue* StyleResolver::CreateAnimatableValueSnapshot(
     Element& element,
     const ComputedStyle& base_style,
     const ComputedStyle* parent_style,

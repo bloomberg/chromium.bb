@@ -35,9 +35,8 @@
 
 namespace blink {
 
-scoped_refptr<AnimatableValue> AnimatableDouble::InterpolateTo(
-    const AnimatableValue* value,
-    double fraction) const {
+AnimatableValue* AnimatableDouble::InterpolateTo(const AnimatableValue* value,
+                                                 double fraction) const {
   const AnimatableDouble* other = ToAnimatableDouble(value);
   return AnimatableDouble::Create(Blend(number_, other->number_, fraction));
 }
