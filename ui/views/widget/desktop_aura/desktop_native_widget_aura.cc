@@ -1106,7 +1106,7 @@ bool DesktopNativeWidgetAura::ShouldActivate() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopNativeWidgetAura, wmActivationChangeObserver implementation:
+// DesktopNativeWidgetAura, wm::ActivationChangeObserver implementation:
 
 void DesktopNativeWidgetAura::OnWindowActivated(
     wm::ActivationChangeObserver::ActivationReason reason,

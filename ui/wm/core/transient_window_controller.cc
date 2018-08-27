@@ -45,6 +45,15 @@ const aura::Window* TransientWindowController::GetTransientParent(
   return window_manager ? window_manager->transient_parent() : nullptr;
 }
 
+std::vector<aura::Window*> TransientWindowController::GetTransientChildren(
+    const aura::Window* parent) {
+  const TransientWindowManager* window_manager =
+      TransientWindowManager::GetIfExists(parent);
+  if (!window_manager)
+    return {};
+  return window_manager->transient_children();
+}
+
 void TransientWindowController::AddObserver(
     aura::client::TransientWindowClientObserver* observer) {
   observers_.AddObserver(observer);
