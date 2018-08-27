@@ -17,9 +17,6 @@ namespace content {
 const char kHttpGETMethod[] = "GET";
 const char kHttpHEADMethod[] = "HEAD";
 
-const base::FilePath::CharType kAppCacheDatabaseName[] =
-    FILE_PATH_LITERAL("Index");
-
 AppCacheNamespace::AppCacheNamespace()
     : type(APPCACHE_FALLBACK_NAMESPACE), is_pattern(false) {}
 
