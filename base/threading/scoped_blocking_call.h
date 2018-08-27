@@ -21,13 +21,37 @@ enum class BlockingType {
 };
 
 namespace internal {
+
 class BlockingObserver;
-}
+
+// Common implementation class for both ScopedBlockingCall and
+// ScopedBlockingCallWithBaseSyncPrimitives without assertions.
+class BASE_EXPORT UncheckedScopedBlockingCall {
+ public:
+  UncheckedScopedBlockingCall(BlockingType blocking_type);
+  ~UncheckedScopedBlockingCall();
+
+ private:
+  internal::BlockingObserver* const blocking_observer_;
+
+  // Previous ScopedBlockingCall instantiated on this thread.
+  UncheckedScopedBlockingCall* const previous_scoped_blocking_call_;
+
+  // Whether the BlockingType of the current thread was WILL_BLOCK after this
+  // ScopedBlockingCall was instantiated.
+  const bool is_will_block_;
+
+  DISALLOW_COPY_AND_ASSIGN(UncheckedScopedBlockingCall);
+};
+
+}  // namespace internal
 
 // This class must be instantiated in every scope where a blocking call is made.
-// CPU usage should be minimal within that scope. //base APIs that block
-// instantiate their own ScopedBlockingCall; it is not necessary to instantiate
-// another ScopedBlockingCall in the scope where these APIs are used. Nested
+// When a ScopedBlockingCall is instantiated, it asserts that blocking calls are
+// allowed in its scope with a call to base::AssertBlockingAllowed(). CPU usage
+// should be minimal within that scope. //base APIs that block instantiate their
+// own ScopedBlockingCall; it is not necessary to instantiate another
+// ScopedBlockingCall in the scope where these APIs are used. Nested
 // ScopedBlockingCalls are supported (mostly a no-op except for WILL_BLOCK
 // nested within MAY_BLOCK which will result in immediate WILL_BLOCK semantics).
 //
@@ -74,25 +98,26 @@ class BlockingObserver;
 // When a ScopedBlockingCall is instantiated from a TaskScheduler parallel or
 // sequenced task, the thread pool size is incremented to compensate for the
 // blocked thread (more or less aggressively depending on BlockingType).
-class BASE_EXPORT ScopedBlockingCall {
+class BASE_EXPORT ScopedBlockingCall
+    : public internal::UncheckedScopedBlockingCall {
  public:
   ScopedBlockingCall(BlockingType blocking_type);
-  ~ScopedBlockingCall();
-
- private:
-  internal::BlockingObserver* const blocking_observer_;
-
-  // Previous ScopedBlockingCall instantiated on this thread.
-  ScopedBlockingCall* const previous_scoped_blocking_call_;
-
-  // Whether the BlockingType of the current thread was WILL_BLOCK after this
-  // ScopedBlockingCall was instantiated.
-  const bool is_will_block_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedBlockingCall);
+  ~ScopedBlockingCall() = default;
 };
 
 namespace internal {
+
+// This class must be instantiated in every scope where a sync primitive is
+// used. When a ScopedBlockingCallWithBaseSyncPrimitives is instantiated, it
+// asserts that sync primitives are allowed in its scope with a call to
+// internal::AssertBaseSyncPrimitivesAllowed(). The same guidelines as for
+// ScopedBlockingCall should be followed.
+class BASE_EXPORT ScopedBlockingCallWithBaseSyncPrimitives
+    : public UncheckedScopedBlockingCall {
+ public:
+  ScopedBlockingCallWithBaseSyncPrimitives(BlockingType blocking_type);
+  ~ScopedBlockingCallWithBaseSyncPrimitives() = default;
+};
 
 // Interface for an observer to be informed when a thread enters or exits
 // the scope of ScopedBlockingCall objects.

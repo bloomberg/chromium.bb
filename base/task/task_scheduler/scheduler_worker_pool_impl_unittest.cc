@@ -1000,8 +1000,8 @@ class TaskSchedulerWorkerPoolBlockingTest
 
   void SetUp() override {
     TaskSchedulerWorkerPoolImplTestBase::CommonSetUp();
-    task_runner_ =
-        worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+    task_runner_ = worker_pool_->CreateTaskRunnerWithTraits(
+        {MayBlock(), WithBaseSyncPrimitives()});
   }
 
   void TearDown() override {
@@ -1268,8 +1268,8 @@ TEST_F(TaskSchedulerWorkerPoolBlockingTest, ThreadBlockUnblockPremature) {
 TEST_F(TaskSchedulerWorkerPoolBlockingTest,
        MayBlockIncreaseCapacityNestedWillBlock) {
   ASSERT_EQ(worker_pool_->GetMaxTasksForTesting(), kMaxTasks);
-  auto task_runner =
-      worker_pool_->CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+  auto task_runner = worker_pool_->CreateTaskRunnerWithTraits(
+      {MayBlock(), WithBaseSyncPrimitives()});
   WaitableEvent can_return;
 
   // Saturate the pool so that a MAY_BLOCK ScopedBlockingCall would increment
@@ -1333,7 +1333,8 @@ TEST(TaskSchedulerWorkerPoolOverCapacityTest, VerifyCleanup) {
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
 
   scoped_refptr<TaskRunner> task_runner =
-      worker_pool.CreateTaskRunnerWithTraits({WithBaseSyncPrimitives()});
+      worker_pool.CreateTaskRunnerWithTraits(
+          {MayBlock(), WithBaseSyncPrimitives()});
 
   WaitableEvent threads_running;
   WaitableEvent threads_continue;

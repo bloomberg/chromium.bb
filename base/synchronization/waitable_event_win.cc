@@ -53,8 +53,8 @@ bool WaitableEvent::IsSignaled() {
 }
 
 void WaitableEvent::Wait() {
-  internal::AssertBaseSyncPrimitivesAllowed();
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
+      BlockingType::MAY_BLOCK);
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedEventWaitActivity event_activity(this);
 
@@ -69,7 +69,8 @@ namespace {
 
 // Helper function called from TimedWait and TimedWaitUntil.
 bool WaitUntil(HANDLE handle, const TimeTicks& now, const TimeTicks& end_time) {
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
+      BlockingType::MAY_BLOCK);
 
   TimeDelta delta = end_time - now;
   DCHECK_GT(delta, TimeDelta());
@@ -136,8 +137,8 @@ bool WaitableEvent::TimedWaitUntil(const TimeTicks& end_time) {
 size_t WaitableEvent::WaitMany(WaitableEvent** events, size_t count) {
   DCHECK(count) << "Cannot wait on no events";
 
-  internal::AssertBaseSyncPrimitivesAllowed();
-  ScopedBlockingCall scoped_blocking_call(BlockingType::MAY_BLOCK);
+  internal::ScopedBlockingCallWithBaseSyncPrimitives scoped_blocking_call(
+      BlockingType::MAY_BLOCK);
   // Record an event (the first) that this thread is blocking upon.
   base::debug::ScopedEventWaitActivity event_activity(events[0]);
 
