@@ -9,7 +9,7 @@ option optimize_for = LITE_RUNTIME;
 package ukm;
 
 // Source contains data related to a top-level navigation.
-// Next tag: 10
+// Next tag: 13
 message Source {
   // The URL scheme, such as HTTP, HTTPS, CHROME_EXTENSION, etc.
   enum UrlScheme {
@@ -25,6 +25,15 @@ message Source {
 
   // An identifier for the source. This should be unique within a session.
   optional int64 id = 1;
+
+  // The previous source id for the tab this source is in. Should only be set
+  // for navigation sources.
+  optional int64 previous_source_id = 11;
+
+  // For sources representing the first navigation in a new tab, this id marks
+  // the source which opened the tab. Should only be set for the first
+  // navigation source in a tab.
+  optional int64 opener_source_id = 12;
 
   // Holds data about a URL seen by the client.
   message UrlInfo {
@@ -65,6 +74,10 @@ message Source {
   // Timestamp of navigation to this Source, as seen by the client. Time of
   // events related to this Source will generally be relative to this timestamp.
   optional int64 navigation_time_msec = 3;
+
+  // Unique identifier (for a given client_id/session_id) for the tab this
+  // source is associated with. Should only be set for navigation sources.
+  optional int64 tab_id = 10;
 
   // Time between navigation and the first contentful paint, in milliseconds.
   // Deprecated. Use ukm::Entry instead.
