@@ -33,6 +33,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
@@ -188,12 +189,14 @@ base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
       return l10n_util::GetStringUTF16(
           IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD_V3);
     case BubbleType::SIGN_IN_PROMO:
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
       if (AccountConsistencyModeManager::IsDiceEnabledForProfile(
               GetProfile())) {
-        return l10n_util::GetStringUTF16(GetAccountInfo().IsEmpty()
+        return l10n_util::GetStringUTF16(dice_accounts_.empty()
                                              ? IDS_AUTOFILL_SIGNIN_PROMO_MESSAGE
                                              : IDS_AUTOFILL_SYNC_PROMO_MESSAGE);
       }
+#endif
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_SAVED);
     case BubbleType::MANAGE_CARDS:
       return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_SAVED);
@@ -485,6 +488,11 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
     return;
   account_info_ = account_tracker->GetAccountInfo(
       signin_manager->GetAuthenticatedAccountId());
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+  if (AccountConsistencyModeManager::IsDiceEnabledForProfile(profile))
+    dice_accounts_ = signin_ui_util::GetAccountsForDicePromos(profile);
+#endif
 }
 
 void SaveCardBubbleControllerImpl::ShowBubble() {
