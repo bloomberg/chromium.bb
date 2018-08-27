@@ -307,7 +307,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
     demuxer_.reset(new FFmpegDemuxer(
         base::ThreadTaskRunnerHandle::Get(), data_source_.get(),
-        encrypted_media_init_data_cb, tracks_updated_cb, media_log));
+        encrypted_media_init_data_cb, tracks_updated_cb, media_log, false));
   }
 
   void CreateDataSource(const std::string& name) {

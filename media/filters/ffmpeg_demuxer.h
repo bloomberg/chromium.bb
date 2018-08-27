@@ -212,7 +212,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
                 DataSource* data_source,
                 const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
                 const MediaTracksUpdatedCB& media_tracks_updated_cb,
-                MediaLog* media_log);
+                MediaLog* media_log,
+                bool is_local_file);
   ~FFmpegDemuxer() override;
 
   // Demuxer implementation.
@@ -395,6 +396,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   const MediaTracksUpdatedCB media_tracks_updated_cb_;
 
   std::map<MediaTrack::Id, FFmpegDemuxerStream*> track_id_to_demux_stream_map_;
+
+  const bool is_local_file_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtr<FFmpegDemuxer> weak_this_;

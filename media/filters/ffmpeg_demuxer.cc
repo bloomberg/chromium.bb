@@ -900,7 +900,8 @@ FFmpegDemuxer::FFmpegDemuxer(
     DataSource* data_source,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const MediaTracksUpdatedCB& media_tracks_updated_cb,
-    MediaLog* media_log)
+    MediaLog* media_log,
+    bool is_local_file)
     : host_(NULL),
       task_runner_(task_runner),
       // FFmpeg has no asynchronous API, so we use base::WaitableEvents inside
@@ -917,6 +918,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       duration_known_(false),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
       media_tracks_updated_cb_(media_tracks_updated_cb),
+      is_local_file_(is_local_file),
       cancel_pending_seek_factory_(this),
       weak_factory_(this) {
   DCHECK(task_runner_.get());
@@ -968,9 +970,10 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   // Open the AVFormatContext using our glue layer.
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
-      base::Bind(&FFmpegDemuxer::OnOpenContextDone, weak_factory_.GetWeakPtr(),
-                 status_cb));
+      base::BindOnce(&FFmpegGlue::OpenContext, base::Unretained(glue_.get()),
+                     is_local_file_),
+      base::BindOnce(&FFmpegDemuxer::OnOpenContextDone,
+                     weak_factory_.GetWeakPtr(), status_cb));
 }
 
 void FFmpegDemuxer::AbortPendingReads() {
@@ -1296,14 +1299,23 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     if (codec_type == AVMEDIA_TYPE_AUDIO) {
       // Log the codec detected, whether it is supported or not, and whether or
       // not we have already detected a supported codec in another stream.
-      base::UmaHistogramSparse("Media.DetectedAudioCodecHash",
-                               HashCodecName(GetCodecName(codec_id)));
+      const int32_t codec_hash = HashCodecName(GetCodecName(codec_id));
+      base::UmaHistogramSparse("Media.DetectedAudioCodecHash", codec_hash);
+      if (is_local_file_) {
+        base::UmaHistogramSparse("Media.DetectedAudioCodecHash.Local",
+                                 codec_hash);
+      }
+
       detected_audio_track_count++;
     } else if (codec_type == AVMEDIA_TYPE_VIDEO) {
       // Log the codec detected, whether it is supported or not, and whether or
       // not we have already detected a supported codec in another stream.
-      base::UmaHistogramSparse("Media.DetectedVideoCodecHash",
-                               HashCodecName(GetCodecName(codec_id)));
+      const int32_t codec_hash = HashCodecName(GetCodecName(codec_id));
+      base::UmaHistogramSparse("Media.DetectedVideoCodecHash", codec_hash);
+      if (is_local_file_) {
+        base::UmaHistogramSparse("Media.DetectedVideoCodecHash.Local",
+                                 codec_hash);
+      }
       detected_video_track_count++;
 
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)

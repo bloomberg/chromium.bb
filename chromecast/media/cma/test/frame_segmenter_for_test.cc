@@ -309,10 +309,10 @@ DemuxResult FFmpegDemuxForTest(const base::FilePath& filepath,
   CHECK(data_source.Initialize(filepath));
 
   ::media::MediaLog media_log;
-  ::media::FFmpegDemuxer demuxer(base::ThreadTaskRunnerHandle::Get(),
-                                 &data_source,
-                                 base::Bind(&OnEncryptedMediaInitData),
-                                 base::Bind(&OnMediaTracksUpdated), &media_log);
+  ::media::FFmpegDemuxer demuxer(
+      base::ThreadTaskRunnerHandle::Get(), &data_source,
+      base::BindRepeating(&OnEncryptedMediaInitData),
+      base::BindRepeating(&OnMediaTracksUpdated), &media_log, true);
   ::media::WaitableMessageLoopEvent init_event;
   demuxer.Initialize(&fake_demuxer_host, init_event.GetPipelineStatusCB());
   init_event.RunAndWaitForStatus(::media::PIPELINE_OK);

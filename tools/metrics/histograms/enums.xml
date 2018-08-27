@@ -19976,6 +19976,7 @@ Called by update_net_error_codes.py.-->
   <int value="-1396201900" label="lagarith"/>
   <int value="-1394735166" label="s302m"/>
   <int value="-1382236305" label="truemotion2rt"/>
+  <int value="-1369341195" label="atrac9"/>
   <int value="-1366158780" label="mvc2"/>
   <int value="-1351352498" label="srgc"/>
   <int value="-1346295474" label="dfa"/>
@@ -20096,6 +20097,7 @@ Called by update_net_error_codes.py.-->
   <int value="-331242415" label="interplayacm"/>
   <int value="-321063470" label="cavs"/>
   <int value="-312812574" label="dsicinaudio"/>
+  <int value="-307750814" label="codec2"/>
   <int value="-305868762" label="ptx"/>
   <int value="-302658824" label="dxa"/>
   <int value="-302292845" label="atrac1"/>
@@ -20161,6 +20163,7 @@ Called by update_net_error_codes.py.-->
   <int value="287849834" label="msvideo1"/>
   <int value="294769071" label="pcm_s16be_planar"/>
   <int value="296667069" label="pcm_s64le"/>
+  <int value="308682247" label="aptx"/>
   <int value="309105352" label="bmp"/>
   <int value="309392554" label="dsd_msbf"/>
   <int value="311400023" label="zlib"/>
@@ -20170,6 +20173,7 @@ Called by update_net_error_codes.py.-->
   <int value="347789448" label="vplayer"/>
   <int value="373372875" label="pcm_f16le"/>
   <int value="396111544" label="otf"/>
+  <int value="407654794" label="aptx_hd"/>
   <int value="412600562" label="pcm_u16be"/>
   <int value="429618670" label="jv"/>
   <int value="441761537" label="indeo4"/>
@@ -20210,6 +20214,7 @@ Called by update_net_error_codes.py.-->
   <int value="746742638" label="truehd"/>
   <int value="747771882" label="dts"/>
   <int value="753949422" label="indeo5"/>
+  <int value="763718334" label="ttml"/>
   <int value="776942197" label="ylc"/>
   <int value="781916095" label="ayuv"/>
   <int value="789960893" label="bmv_audio"/>
@@ -20288,18 +20293,19 @@ Called by update_net_error_codes.py.-->
   <int value="1526182480" label="klv"/>
   <int value="1535518292" label="pcm_s24le_planar_deprecated"/>
   <int value="1536086449" label="pcx"/>
-  <int value="1550758811" label="mpegvideo_xvmc"/>
+  <int value="1550758811" label="mpegvideo_xvmc_deprecated"/>
   <int value="1565855078" label="adpcm_ea_r2"/>
   <int value="1567457517" label="adpcm_g722"/>
   <int value="1571821879" label="dsicinvideo"/>
   <int value="1578202877" label="h263p"/>
+  <int value="1587938373" label="sbc"/>
   <int value="1603330014" label="r10k"/>
   <int value="1622843532" label="adpcm_sbpro_2"/>
   <int value="1626738193" label="mp3adu"/>
   <int value="1636940385" label="targa_y216"/>
   <int value="1647791075" label="adpcm_g726"/>
   <int value="1651871844" label="svq1"/>
-  <int value="1656834662" label="voxware"/>
+  <int value="1656834662" label="voxware_deprecated"/>
   <int value="1671488988" label="adpcm_ct"/>
   <int value="1681362983" label="webvtt"/>
   <int value="1681507854" label="exr"/>

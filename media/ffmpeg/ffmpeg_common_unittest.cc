@@ -283,6 +283,9 @@ TEST_F(FFmpegCommonTest, VerifyUmaCodecHashes) {
 
           {"pcm_s24le_planar_deprecated", 1535518292},
           {"sanm_deprecated", 2047102762},
+
+          {"mpegvideo_xvmc_deprecated", 1550758811},
+          {"voxware_deprecated", 1656834662}
       };
 
   for (auto& kv : kDeprecatedHashes)
