@@ -505,6 +505,13 @@ ChromeMainDelegate::ChromeMainDelegate(base::TimeTicks exe_entry_point_ticks) {
 ChromeMainDelegate::~ChromeMainDelegate() {
 }
 
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+void ChromeMainDelegate::PostEarlyInitialization() {
+  DCHECK(chrome_feature_list_creator_);
+  chrome_feature_list_creator_->CreateFeatureList();
+}
+#endif
+
 bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #if defined(OS_CHROMEOS)
   chromeos::BootTimesRecorder::Get()->SaveChromeMainStats();
@@ -1054,9 +1061,13 @@ ChromeMainDelegate::CreateContentBrowserClient() {
 #else
   if (chrome_content_browser_client_ == nullptr) {
     DCHECK(service_manifest_data_pack_);
+    DCHECK(!chrome_feature_list_creator_);
+    chrome_feature_list_creator_ = std::make_unique<ChromeFeatureListCreator>();
+
     chrome_content_browser_client_ =
         std::make_unique<ChromeContentBrowserClient>(
-            std::move(service_manifest_data_pack_));
+            std::move(service_manifest_data_pack_),
+            chrome_feature_list_creator_.get());
   }
   return chrome_content_browser_client_.get();
 #endif
@@ -1139,7 +1150,7 @@ service_manager::ProcessType ChromeMainDelegate::OverrideProcessType() {
   return service_manager::ProcessType::kDefault;
 }
 
-void ChromeMainDelegate::PreContentInitialization() {
+void ChromeMainDelegate::PreCreateMainMessageLoop() {
 #if defined(OS_MACOSX)
   // Tell Cocoa to finish its initialization, which we want to do manually
   // instead of calling NSApplicationMain(). The primary reason is that NSAM()

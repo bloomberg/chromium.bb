@@ -21,6 +21,7 @@
 
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
+class ChromeFeatureListCreator;
 class FieldTrialSynchronizer;
 class PrefService;
 class Profile;
@@ -55,8 +56,9 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
 #endif
 
  protected:
-  explicit ChromeBrowserMainParts(const content::MainFunctionParams& parameters,
-                                  std::unique_ptr<ui::DataPack> data_pack);
+  ChromeBrowserMainParts(const content::MainFunctionParams& parameters,
+                         std::unique_ptr<ui::DataPack> data_pack,
+                         ChromeFeatureListCreator* chrome_feature_list_creator);
 
   // content::BrowserMainParts overrides.
   bool ShouldContentCreateFeatureList() override;
@@ -205,6 +207,8 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   // This is used to store the ui data pack. The data pack is moved when
   // resource bundle gets created.
   std::unique_ptr<ui::DataPack> service_manifest_data_pack_;
+
+  ChromeFeatureListCreator* chrome_feature_list_creator_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainParts);
 };

@@ -68,8 +68,11 @@ void EnsureMetadataNeverIndexFile(const base::FilePath& user_data_dir) {
 
 ChromeBrowserMainPartsMac::ChromeBrowserMainPartsMac(
     const content::MainFunctionParams& parameters,
-    std::unique_ptr<ui::DataPack> data_pack)
-    : ChromeBrowserMainPartsPosix(parameters, std::move(data_pack)) {}
+    std::unique_ptr<ui::DataPack> data_pack,
+    ChromeFeatureListCreator* chrome_feature_list_creator)
+    : ChromeBrowserMainPartsPosix(parameters,
+                                  std::move(data_pack),
+                                  chrome_feature_list_creator) {}
 
 ChromeBrowserMainPartsMac::~ChromeBrowserMainPartsMac() {
 }

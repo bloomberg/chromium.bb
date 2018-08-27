@@ -125,10 +125,14 @@ class CONTENT_EXPORT ContentMainDelegate {
       const base::Closure& quit_closure,
       service_manager::BackgroundServiceManager* service_manager);
 
+  // Allows the embedder to perform platform-specific initializatioion before
+  // creating the main message loop.
+  virtual void PreCreateMainMessageLoop() {}
+
   // Allows the embedder to perform platform-specific initializatioion. For
-  // example, things that should be done immediately before the creation of the
-  // main message loop.
-  virtual void PreContentInitialization() {}
+  // example, things that should be done right after TaskScheduler starts and
+  // the main MessageLoop was installed.
+  virtual void PostEarlyInitialization() {}
 
  protected:
   friend class ContentClientInitializer;

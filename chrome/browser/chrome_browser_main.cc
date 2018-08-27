@@ -20,7 +20,6 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/debugger.h"
 #include "base/debug/leak_annotations.h"
-#include "base/deferred_sequenced_task_runner.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -32,8 +31,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -57,6 +54,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_browser_field_trials.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/chrome_feature_list_creator.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
@@ -404,9 +402,9 @@ void InitializeLocalState() {
       registry->RegisterStringPref(language::prefs::kApplicationLocale,
                                    std::string());
       const std::unique_ptr<PrefService> parent_local_state =
-          chrome_prefs::CreateLocalState(parent_profile,
-                                         g_browser_process->policy_service(),
-                                         std::move(registry), false, nullptr);
+          chrome_prefs::CreateLocalState(
+              parent_profile, g_browser_process->policy_service(),
+              std::move(registry), false, nullptr, nullptr);
       // Right now, we only inherit the locale setting from the parent profile.
       local_state->SetString(
           language::prefs::kApplicationLocale,
@@ -782,7 +780,8 @@ const char kMissingLocaleDataMessage[] =
 
 ChromeBrowserMainParts::ChromeBrowserMainParts(
     const content::MainFunctionParams& parameters,
-    std::unique_ptr<ui::DataPack> data_pack)
+    std::unique_ptr<ui::DataPack> data_pack,
+    ChromeFeatureListCreator* chrome_feature_list_creator)
     : parameters_(parameters),
       parsed_command_line_(parameters.command_line),
       result_code_(service_manager::RESULT_CODE_NORMAL_EXIT),
@@ -791,7 +790,9 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
           !parameters.ui_task),
       profile_(NULL),
       run_message_loop_(true),
-      service_manifest_data_pack_(std::move(data_pack)) {
+      service_manifest_data_pack_(std::move(data_pack)),
+      chrome_feature_list_creator_(chrome_feature_list_creator) {
+  DCHECK(chrome_feature_list_creator_);
   // If we're running tests (ui_task is non-null).
   if (parameters.ui_task)
     browser_defaults::enable_help_app = false;
@@ -989,7 +990,10 @@ int ChromeBrowserMainParts::PreEarlyInitialization() {
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreEarlyInitialization();
 
-  browser_process_ = std::make_unique<BrowserProcessImpl>();
+  // Create BrowserProcess in PreEarlyInitialization() so that we can load
+  // field trials (and all it depends upon).
+  browser_process_ = std::make_unique<BrowserProcessImpl>(
+      chrome_feature_list_creator_->GetPrefStore());
 
   bool failed_to_load_resource_bundle = false;
   const int load_local_state_result =

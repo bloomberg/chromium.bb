@@ -215,8 +215,10 @@ rappor::RapporService* GetBrowserRapporService() {
   return nullptr;
 }
 
-BrowserProcessImpl::BrowserProcessImpl()
-    : pref_service_factory_(
+BrowserProcessImpl::BrowserProcessImpl(
+    scoped_refptr<PersistentPrefStore> user_pref_store)
+    : user_pref_store_(std::move(user_pref_store)),
+      pref_service_factory_(
           std::make_unique<prefs::InProcessPrefServiceFactory>()) {
   g_browser_process = this;
   platform_part_ = std::make_unique<BrowserProcessPlatformPart>();
@@ -1118,7 +1120,7 @@ void BrowserProcessImpl::CreateLocalState() {
   delegate->InitPrefRegistry(pref_registry.get());
   local_state_ = chrome_prefs::CreateLocalState(
       local_state_path, policy_service(), std::move(pref_registry), false,
-      std::move(delegate));
+      std::move(delegate), std::move(user_pref_store_));
   DCHECK(local_state_);
 
   sessions::SessionIdGenerator::GetInstance()->Init(local_state_.get());

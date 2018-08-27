@@ -41,7 +41,7 @@ class ShellMainDelegate : public content::ContentMainDelegate {
   void ZygoteForked() override;
 #endif
 #if defined(OS_MACOSX)
-  void PreContentInitialization() override;
+  void PreCreateMainMessageLoop() override;
 #endif
 
  private:
