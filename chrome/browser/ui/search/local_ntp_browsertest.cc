@@ -102,6 +102,69 @@ class TestMostVisitedObserver : public InstantServiceObserver {
   base::OnceClosure quit_closure_;
 };
 
+class TestThemeInfoObserver : public InstantServiceObserver {
+ public:
+  explicit TestThemeInfoObserver(InstantService* service) : service_(service) {
+    service_->AddObserver(this);
+  }
+
+  ~TestThemeInfoObserver() override { service_->RemoveObserver(this); }
+
+  void WaitForThemeInfoUpdated(std::string background_url,
+                               std::string attribution_1,
+                               std::string attribution_2,
+                               std::string attribution_action_url) {
+    DCHECK(!quit_closure_);
+
+    expected_background_url_ = background_url;
+    expected_attribution_1_ = attribution_1;
+    expected_attribution_2_ = attribution_2;
+    expected_attribution_action_url_ = attribution_action_url;
+
+    if (theme_info_.custom_background_url == background_url &&
+        theme_info_.custom_background_attribution_line_1 == attribution_1 &&
+        theme_info_.custom_background_attribution_line_2 == attribution_2 &&
+        theme_info_.custom_background_attribution_action_url ==
+            attribution_action_url) {
+      return;
+    }
+
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+
+ private:
+  void ThemeInfoChanged(const ThemeBackgroundInfo& theme_info) override {
+    theme_info_ = theme_info;
+
+    if (quit_closure_ &&
+        theme_info_.custom_background_url == expected_background_url_ &&
+        theme_info_.custom_background_attribution_line_1 ==
+            expected_attribution_1_ &&
+        theme_info_.custom_background_attribution_line_2 ==
+            expected_attribution_2_ &&
+        theme_info_.custom_background_attribution_action_url ==
+            expected_attribution_action_url_) {
+      std::move(quit_closure_).Run();
+      quit_closure_.Reset();
+    }
+  }
+
+  void MostVisitedItemsChanged(
+      const std::vector<InstantMostVisitedItem>&) override {}
+
+  InstantService* const service_;
+
+  ThemeBackgroundInfo theme_info_;
+
+  std::string expected_background_url_;
+  std::string expected_attribution_1_;
+  std::string expected_attribution_2_;
+  std::string expected_attribution_action_url_;
+  base::OnceClosure quit_closure_;
+};
+
 class LocalNTPTest : public InProcessBrowserTest {
  public:
   LocalNTPTest(const std::vector<base::Feature>& enabled_features,
@@ -309,6 +372,39 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIEndToEnd) {
           "window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem(%d)",
           most_visited_rid)));
   observer.WaitForNumberOfItems(kDefaultMostVisitedItemCount - 1);
+}
+
+IN_PROC_BROWSER_TEST_F(LocalNTPTest,
+                       CustomBackgroundsEmbeddedSearchAPIEndToEnd) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+
+  TestThemeInfoObserver observer(
+      InstantServiceFactory::GetForProfile(browser()->profile()));
+
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Check that a URL with no attributions can be set.
+  ASSERT_TRUE(content::ExecuteScript(active_tab,
+                                     "window.chrome.embeddedSearch.newTabPage."
+                                     "setBackgroundURL('https://www.test.com/"
+                                     "')"));
+  observer.WaitForThemeInfoUpdated("https://www.test.com/", "", "", "");
+
+  // Check that a URL with attributions can be set.
+  ASSERT_TRUE(content::ExecuteScript(active_tab,
+                                     "window.chrome.embeddedSearch.newTabPage."
+                                     "setBackgroundURLWithAttributions('https:/"
+                                     "/www.test.com/', 'attr1', 'attr2', "
+                                     "'https://www.attribution.com/')"));
+  observer.WaitForThemeInfoUpdated("https://www.test.com/", "attr1", "attr2",
+                                   "https://www.attribution.com/");
+
+  // Setting the background URL to an empty string should clear everything.
+  ASSERT_TRUE(content::ExecuteScript(
+      active_tab,
+      "window.chrome.embeddedSearch.newTabPage.setBackgroundURL('')"));
+  observer.WaitForThemeInfoUpdated("", "", "", "");
 }
 
 // Regression test for crbug.com/592273.
