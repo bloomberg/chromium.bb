@@ -480,8 +480,10 @@ bool InputMethodManagerImpl::StateImpl::IsInputMethodAllowed(
     return true;
 
   // We only restrict keyboard layouts.
-  if (!manager_->util_.IsKeyboardLayout(input_method_id))
+  if (!manager_->util_.IsKeyboardLayout(input_method_id) &&
+      !extension_ime_util::IsArcIME(input_method_id)) {
     return true;
+  }
 
   return base::ContainsValue(allowed_keyboard_layout_input_method_ids,
                              input_method_id) ||
