@@ -181,7 +181,7 @@ void AuthenticatorRequestDialogModel::TryTouchId() {
     return;
 
   static base::TimeDelta kTouchIdDispatchDelay =
-      base::TimeDelta::FromMilliseconds(1000);
+      base::TimeDelta::FromMilliseconds(1250);
 
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
