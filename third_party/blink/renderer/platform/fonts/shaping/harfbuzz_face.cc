@@ -135,6 +135,21 @@ static hb_position_t HarfBuzzGetGlyphHorizontalAdvance(hb_font_t* hb_font,
   return advance;
 }
 
+static void HarfBuzzGetGlyphHorizontalAdvances(hb_font_t* font,
+                                               void* font_data,
+                                               unsigned count,
+                                               hb_codepoint_t* first_glyph,
+                                               unsigned int glyph_stride,
+                                               hb_position_t* first_advance,
+                                               unsigned int advance_stride,
+                                               void* user_data) {
+  HarfBuzzFontData* hb_font_data =
+      reinterpret_cast<HarfBuzzFontData*>(font_data);
+  SkiaTextMetrics(&hb_font_data->paint_)
+      .GetGlyphWidthForHarfBuzz(count, first_glyph, glyph_stride, first_advance,
+                                advance_stride);
+}
+
 static hb_bool_t HarfBuzzGetGlyphVerticalOrigin(hb_font_t* hb_font,
                                                 void* font_data,
                                                 hb_codepoint_t glyph,
@@ -302,6 +317,8 @@ static hb_font_funcs_t* HarfBuzzSkiaGetFontFuncs() {
     hb_font_funcs_set_glyph_func(funcs, HarfBuzzGetGlyph, nullptr, nullptr);
     hb_font_funcs_set_glyph_h_advance_func(
         funcs, HarfBuzzGetGlyphHorizontalAdvance, nullptr, nullptr);
+    hb_font_funcs_set_glyph_h_advances_func(
+        funcs, HarfBuzzGetGlyphHorizontalAdvances, nullptr, nullptr);
     hb_font_funcs_set_glyph_h_kerning_func(
         funcs, HarfBuzzGetGlyphHorizontalKerning, nullptr, nullptr);
     hb_font_funcs_set_glyph_v_advance_func(

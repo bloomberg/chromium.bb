@@ -18,6 +18,11 @@ class SkiaTextMetrics final {
   SkiaTextMetrics(const SkPaint*);
 
   void GetGlyphWidthForHarfBuzz(hb_codepoint_t, hb_position_t* width);
+  void GetGlyphWidthForHarfBuzz(unsigned count,
+                                hb_codepoint_t* first_glyph,
+                                unsigned glyph_stride,
+                                hb_position_t* first_advance,
+                                unsigned advance_stride);
   void GetGlyphExtentsForHarfBuzz(hb_codepoint_t, hb_glyph_extents_t*);
 
   void GetSkiaBoundsForGlyph(Glyph, SkRect* bounds);
