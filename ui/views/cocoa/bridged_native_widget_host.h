@@ -57,6 +57,10 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
                          gfx::DecoratedText* decorated_word,
                          gfx::Point* baseline_point) = 0;
 
+  // Synchronously query the value of IsModal for this widget and store it in
+  // |*widget_is_modal|.
+  virtual void GetWidgetIsModal(bool* widget_is_modal) = 0;
+
   // Called whenever the NSWindow's size or position changes.
   virtual void OnWindowGeometryChanged(
       const gfx::Rect& window_bounds_in_screen_dips,

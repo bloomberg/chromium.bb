@@ -594,6 +594,7 @@ void BridgedNativeWidgetTest::SetUp() {
   // The delegate should exist before setting the root view.
   EXPECT_TRUE([window delegate]);
   bridge_host()->SetRootView(view_.get());
+  bridge()->CreateContentView(view_.get());
   ns_view_ = bridge()->ns_view();
 
   // Pretend it has been shown via NativeWidgetMac::Show().
@@ -605,8 +606,10 @@ void BridgedNativeWidgetTest::TearDown() {
   // Clear kill buffer so that no state persists between tests.
   TextfieldModel::ClearKillBuffer();
 
-  if (bridge_host())
+  if (bridge_host()) {
     bridge_host()->SetRootView(nullptr);
+    bridge()->DestroyContentView();
+  }
   view_.reset();
   BridgedNativeWidgetTestBase::TearDown();
 }
