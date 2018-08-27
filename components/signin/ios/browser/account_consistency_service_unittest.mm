@@ -155,7 +155,8 @@ class AccountConsistencyServiceTest : public PlatformTest {
     signin_manager_->Initialize(nullptr);
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* incognito_profile */, false /* guest_profile */,
-        false /* store_last_modified */);
+        false /* store_last_modified */,
+        false /* migrate_requesting_and_top_level_origin_settings */);
     cookie_settings_ =
         new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");
     account_reconcilor_ =

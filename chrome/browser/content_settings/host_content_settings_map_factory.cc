@@ -84,7 +84,8 @@ scoped_refptr<RefcountedKeyedService>
       profile->GetPrefs(),
       profile->GetProfileType() == Profile::INCOGNITO_PROFILE,
       profile->GetProfileType() == Profile::GUEST_PROFILE,
-      /*store_last_modified=*/true));
+      /*store_last_modified=*/true,
+      base::FeatureList::IsEnabled(features::kPermissionDelegation)));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // These must be registered before before the HostSettings are passed over to

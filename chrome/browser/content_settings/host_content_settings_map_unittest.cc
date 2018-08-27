@@ -1767,6 +1767,99 @@ TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {
       CONTENT_SETTINGS_TYPE_POPUPS));
 }
 
+TEST_F(HostContentSettingsMapTest, MigrateRequestingAndTopLevelOriginSettings) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL requesting_origin("https://requester.com");
+  GURL embedding_origin("https://embedder.com");
+
+  ContentSettingsPattern requesting_pattern =
+      ContentSettingsPattern::FromURLNoWildcard(requesting_origin);
+  ContentSettingsPattern embedding_pattern =
+      ContentSettingsPattern::FromURLNoWildcard(embedding_origin);
+
+  // Set content settings for 2 types that use requesting and top level
+  // origin as well as one for a type that doesn't.
+  map->SetContentSettingCustomScope(requesting_pattern, embedding_pattern,
+                                    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                    std::string(), CONTENT_SETTING_ALLOW);
+  map->SetContentSettingCustomScope(requesting_pattern, embedding_pattern,
+                                    CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
+                                    std::string(), CONTENT_SETTING_ALLOW);
+
+  map->SetContentSettingCustomScope(requesting_pattern, embedding_pattern,
+                                    CONTENT_SETTINGS_TYPE_COOKIES,
+                                    std::string(), CONTENT_SETTING_ALLOW);
+
+  map->MigrateRequestingAndTopLevelOriginSettings();
+
+  ContentSettingsForOneType host_settings;
+  // Verify that all the settings are deleted except the cookies setting.
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+                             &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].secondary_pattern);
+
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_MIDI_SYSEX, std::string(),
+                             &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].secondary_pattern);
+
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_COOKIES, std::string(),
+                             &host_settings);
+  EXPECT_EQ(2u, host_settings.size());
+  EXPECT_EQ(requesting_pattern, host_settings[0].primary_pattern);
+  EXPECT_EQ(embedding_pattern, host_settings[0].secondary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[1].primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[1].secondary_pattern);
+}
+
+TEST_F(HostContentSettingsMapTest,
+       MigrateRequestingAndTopLevelOriginSettingsResetsEmbeddedSetting) {
+  TestingProfile profile;
+  HostContentSettingsMap* map =
+      HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL requesting_origin("https://requester.com");
+  GURL embedding_origin("https://embedder.com");
+
+  ContentSettingsPattern requesting_pattern =
+      ContentSettingsPattern::FromURLNoWildcard(requesting_origin);
+  ContentSettingsPattern embedding_pattern =
+      ContentSettingsPattern::FromURLNoWildcard(embedding_origin);
+
+  map->SetContentSettingCustomScope(requesting_pattern, embedding_pattern,
+                                    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                    std::string(), CONTENT_SETTING_BLOCK);
+  map->SetContentSettingCustomScope(embedding_pattern, embedding_pattern,
+                                    CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                    std::string(), CONTENT_SETTING_ALLOW);
+
+  map->MigrateRequestingAndTopLevelOriginSettings();
+
+  ContentSettingsForOneType host_settings;
+  // Verify that all settings for the embedding origin are deleted. This is
+  // important so that a user is repropmted if a permission request from an
+  // embedded site they had previously blocked makes a new request.
+  map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_GEOLOCATION, std::string(),
+                             &host_settings);
+  EXPECT_EQ(1u, host_settings.size());
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].primary_pattern);
+  EXPECT_EQ(ContentSettingsPattern::Wildcard(),
+            host_settings[0].secondary_pattern);
+}
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Test that existing Flash preferences should get copied into the
 // |CONTENT_SETTINGS_TYPE_PLUGINS_DATA| setting on the creation of a new
