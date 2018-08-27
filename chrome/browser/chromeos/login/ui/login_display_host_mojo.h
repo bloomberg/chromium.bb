@@ -162,10 +162,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // first OnStartSigninScreen and remains true afterward.
   bool signin_screen_started_ = false;
 
-  // Whether the captive portal screen should be shown the next time the Gaia
-  // dialog is opened.
-  bool should_display_captive_portal_ = false;
-
   base::WeakPtrFactory<LoginDisplayHostMojo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayHostMojo);

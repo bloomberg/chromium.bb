@@ -9,6 +9,8 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "base/time/time.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -37,6 +39,19 @@ class CaptivePortalWindowProxyDelegate {
 // Proxy which manages showing of the window for CaptivePortal sign-in.
 class CaptivePortalWindowProxy : public views::WidgetObserver {
  public:
+  // Observer interface for CaptivePortalWindowProxy that gets notified when the
+  // CaptivePortal widget is shown or hidden/closed.
+  class Observer : public base::CheckedObserver {
+   public:
+    Observer() = default;
+    ~Observer() override = default;
+    virtual void OnBeforeCaptivePortalShown() {}
+    virtual void OnAfterCaptivePortalHidden() {}
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
   typedef CaptivePortalWindowProxyDelegate Delegate;
 
   CaptivePortalWindowProxy(Delegate* delegate,
@@ -63,6 +78,9 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   // Called by CaptivePortalView when origin URL is loaded without any
   // redirections.
   void OnOriginalURLLoaded();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Overridden from views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
@@ -117,6 +135,8 @@ class CaptivePortalWindowProxy : public views::WidgetObserver {
   CaptivePortalView* captive_portal_view_for_testing_;
 
   base::Time started_loading_at_;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CaptivePortalWindowProxy);
 };
