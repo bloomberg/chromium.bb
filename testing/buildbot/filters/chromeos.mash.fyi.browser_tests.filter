@@ -11,7 +11,6 @@
 -BrowserTabRestoreTest.*
 
 # Extensive use of ash::WindowState.
--AcceleratorCommandsBrowserTest.*
 -InitiallyMaximized/AcceleratorCommandsFullscreenBrowserTest.*
 -InitiallyMaximized/AcceleratorCommandsPlatformAppFullscreenBrowserTest.*
 -InitiallyRestored/AcceleratorCommandsFullscreenBrowserTest.*
