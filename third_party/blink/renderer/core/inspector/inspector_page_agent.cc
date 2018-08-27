@@ -43,7 +43,10 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/report.h"
+#include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/test_report_body.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html/imports/html_import_loader.h"
@@ -1299,6 +1302,20 @@ Response InspectorPageAgent::addCompilationCache(const String& url,
 
 Response InspectorPageAgent::clearCompilationCache() {
   compilation_cache_.clear();
+  return Response::OK();
+}
+
+protocol::Response InspectorPageAgent::generateTestReport(const String& message,
+                                                          Maybe<String> group) {
+  Document* document = inspected_frames_->Root()->GetDocument();
+
+  // Construct the test report.
+  TestReportBody* body = new TestReportBody(message);
+  Report* report = new Report("test", document->Url().GetString(), body);
+
+  // Send the test report to any ReportingObservers.
+  ReportingContext::From(document)->QueueReport(report);
+
   return Response::OK();
 }
 

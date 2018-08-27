@@ -1159,6 +1159,10 @@
       status: "experimental",
     },
     {
+      name: "TestReporting",
+      status: "test",
+    },
+    {
       name: "TextUnderlinePositionLeftRight",
       status: "experimental",
     },
