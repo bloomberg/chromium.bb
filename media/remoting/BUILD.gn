@@ -9,7 +9,7 @@ import("//third_party/protobuf/proto_library.gni")
 proto_library("media_remoting_proto") {
   proto_out_dir = "media/remoting"
   sources = [
-    "rpc.proto",
+    "media_remoting_rpc.proto",
   ]
 }
 

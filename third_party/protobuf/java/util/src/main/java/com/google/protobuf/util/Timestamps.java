@@ -30,7 +30,6 @@
 
 package com.google.protobuf.util;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.math.IntMath.checkedAdd;
 import static com.google.common.math.IntMath.checkedSubtract;
 import static com.google.common.math.LongMath.checkedAdd;
@@ -75,6 +74,11 @@ public final class Timestamps {
   public static final Timestamp MAX_VALUE =
       Timestamp.newBuilder().setSeconds(TIMESTAMP_SECONDS_MAX).setNanos(999999999).build();
 
+  /**
+   * A constant holding the {@link Timestamp} of epoch time, {@code 1970-01-01T00:00:00.000000000Z}.
+   */
+  public static final Timestamp EPOCH = Timestamp.newBuilder().setSeconds(0).setNanos(0).build();
+
   private static final ThreadLocal<SimpleDateFormat> timestampFormat =
       new ThreadLocal<SimpleDateFormat>() {
         @Override
@@ -115,6 +119,17 @@ public final class Timestamps {
   }
 
   /**
+   * Compares two timestamps. The value returned is identical to what would be returned by:
+   * {@code Timestamps.comparator().compare(x, y)}.
+   *
+   * @return the value {@code 0} if {@code x == y}; a value less than {@code 0} if {@code x < y};
+   *     and a value greater than {@code 0} if {@code x > y}
+   */
+  public static int compare(Timestamp x, Timestamp y) {
+    return COMPARATOR.compare(x, y);
+  }
+
+  /**
    * Returns true if the given {@link Timestamp} is valid. The {@code seconds} value must be in the
    * range [-62,135,596,800, +253,402,300,799] (i.e., between 0001-01-01T00:00:00Z and
    * 9999-12-31T23:59:59Z). The {@code nanos} value must be in the range [0, +999,999,999].
@@ -149,13 +164,12 @@ public final class Timestamps {
   public static Timestamp checkValid(Timestamp timestamp) {
     long seconds = timestamp.getSeconds();
     int nanos = timestamp.getNanos();
-    checkArgument(
-        isValid(seconds, nanos),
-        "Timestamp is not valid. See proto definition for valid values. "
+    if (!isValid(seconds, nanos)) {
+        throw new IllegalArgumentException(String.format(
+            "Timestamp is not valid. See proto definition for valid values. "
             + "Seconds (%s) must be in range [-62,135,596,800, +253,402,300,799]. "
-            + "Nanos (%s) must be in range [0, +999,999,999].",
-        seconds,
-        nanos);
+            + "Nanos (%s) must be in range [0, +999,999,999].", seconds, nanos));
+    }
     return timestamp;
   }
 
@@ -349,10 +363,12 @@ public final class Timestamps {
   static Timestamp normalizedTimestamp(long seconds, int nanos) {
     if (nanos <= -NANOS_PER_SECOND || nanos >= NANOS_PER_SECOND) {
       seconds = checkedAdd(seconds, nanos / NANOS_PER_SECOND);
-      nanos %= NANOS_PER_SECOND;
+      nanos = (int) (nanos % NANOS_PER_SECOND);
     }
     if (nanos < 0) {
-      nanos += NANOS_PER_SECOND; // no overflow since nanos is negative (and we're adding)
+      nanos =
+          (int)
+              (nanos + NANOS_PER_SECOND); // no overflow since nanos is negative (and we're adding)
       seconds = checkedSubtract(seconds, 1);
     }
     Timestamp timestamp = Timestamp.newBuilder().setSeconds(seconds).setNanos(nanos).build();

@@ -32,6 +32,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Delphi: http://sourceforge.net/projects/protobuf-delphi/
 * Delphi: http://fundementals.sourceforge.net/dl.html
 * Elixir: https://github.com/jeremyong/exprotoc
+* Elixir: https://github.com/tony612/protobuf-elixir
 * Elm: https://github.com/tiziano88/elm-protobuf
 * Erlang: http://github.com/ngerakines/erlang_protobuffs/tree/master
 * Erlang: http://piqi.org/
@@ -41,7 +42,10 @@ These are projects we know about implementing Protocol Buffers for other program
 * Go: https://github.com/golang/protobuf (Google-official implementation)
 * Go: https://github.com/akunspy/gopbuf
 * Go: https://github.com/gogo/protobuf
+* GopherJS: https://github.com/johanbrandhorst/protobuf
 * Haskell: http://hackage.haskell.org/package/hprotoc
+* Haskell: https://github.com/google/proto-lens (Google-unofficial implementation)
+* Haskell: https://github.com/awakesecurity/proto3-suite (code generator) https://github.com/awakesecurity/proto3-wire (binary serializer/deserializer)
 * Haxe: https://github.com/Atry/protoc-gen-haxe
 * Java: https://github.com/google/protobuf (Google-official implementation)
 * Java/Android: https://github.com/square/wire
@@ -54,6 +58,7 @@ These are projects we know about implementing Protocol Buffers for other program
 * Javascript: http://code.google.com/p/protobuf-for-node/
 * Javascript: http://code.google.com/p/protostuff/
 * Julia: https://github.com/tanmaykm/ProtoBuf.jl
+* Kotlin: https://github.com/Kotlin/kotlinx.serialization
 * Lua: http://code.google.com/p/protoc-gen-lua/
 * Lua: http://github.com/indygreg/lua-protobuf
 * Lua: https://github.com/Neopallium/lua-pb
@@ -106,7 +111,6 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * http://code.google.com/p/cxf-protobuf/ (Java)
 * http://code.google.com/p/protobuf-remote/ (C++/C#)
 * http://code.google.com/p/protobuf-rpc-pro/ (Java)
-* https://code.google.com/p/protorpc/ (Go/C++)
 * https://code.google.com/p/eneter-protobuf-serializer/ (Java/.NET)
 * http://www.deltavsoft.com/RCFProto.html (C++/Java/Python/C#)
 * https://github.com/robbinfan/claire-protorpc (C++)
@@ -117,6 +121,10 @@ GRPC (http://www.grpc.io/) is Google's RPC implementation for Protocol Buffers. 
 * https://github.com/w359405949/libmaid (C++, Python)
 * https://github.com/madwyn/libpbrpc (C++)
 * https://github.com/SeriousMa/grpc-protobuf-validation (Java)
+* https://github.com/tony612/grpc-elixir (Elixir)
+* https://github.com/johanbrandhorst/protobuf (GopherJS)
+* https://github.com/awakesecurity/gRPC-haskell (Haskell)
+* https://github.com/Yeolar/raster (C++)
 
 ## Other Utilities
 
@@ -141,7 +149,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
     * http://igor-petruk.github.com/protobuf-maven-plugin/
     * http://code.google.com/p/maven-protoc-plugin/
     * https://github.com/os72/protoc-jar-maven-plugin
-* [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/estan/protoc-gen-doc)
+* [Documentation generator plugin (Markdown/HTML/DocBook/...)](https://github.com/pseudomuto/protoc-gen-doc)
 * [DocBook generator for .proto files](http://code.google.com/p/protoc-gen-docbook/)
 * [Protobuf for nginx module](https://github.com/dbcode/protobuf-nginx/)
 * [RSpec matchers and Cucumber step defs for testing Protocol Buffers](https://github.com/connamara/protobuf_spec)
@@ -154,5 +162,7 @@ There are miscellaneous other things you may find useful as a Protocol Buffers d
 * [ProtoBuf with Java EE7 Expression Language 3.0; pure Java ProtoBuf Parser and Builder.](https://github.com/protobufel/protobuf-el)
 * [Notepad++ Syntax Highlighting for .proto files](https://github.com/chai2010/notepadplus-protobuf)
 * [Linter for .proto files](https://github.com/ckaznocha/protoc-gen-lint)
-* [Protocol Buffers Dynamic Schema - create protobuf schemas programmatically (Java)] (https://github.com/os72/protobuf-dynamic)
+* [Protocol Buffers Dynamic Schema - create protobuf schemas programmatically (Java)](https://github.com/os72/protobuf-dynamic)
 * [Make protoc plugins in NodeJS](https://github.com/konsumer/node-protoc-plugin)
+* [ProfaneDB - A Protocol Buffers database](https://profanedb.gitlab.io)
+* [Protocol Buffer property-based testing utility and example message generator (Python / Hypothesis)](https://github.com/CurataEng/hypothesis-protobuf)

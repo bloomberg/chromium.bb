@@ -45,8 +45,11 @@ def _CcSrcs(srcs, use_grpc_plugin=False):
 def _CcOuts(srcs, use_grpc_plugin=False):
   return _CcHdrs(srcs, use_grpc_plugin) + _CcSrcs(srcs, use_grpc_plugin)
 
-def _PyOuts(srcs):
-  return [s[:-len(".proto")] + "_pb2.py" for s in srcs]
+def _PyOuts(srcs, use_grpc_plugin=False):
+  ret = [s[:-len(".proto")] + "_pb2.py" for s in srcs]
+  if use_grpc_plugin:
+    ret += [s[:-len(".proto")] + "_pb2_grpc.py" for s in srcs]
+  return ret
 
 def _RelativeOutputPath(path, include, dest=""):
   if include == None:
@@ -171,10 +174,10 @@ def cc_proto_library(
         deps=[],
         cc_libs=[],
         include=None,
-        protoc="//:protoc",
+        protoc="@com_google_protobuf//:protoc",
         internal_bootstrap_hack=False,
         use_grpc_plugin=False,
-        default_runtime="//:protobuf",
+        default_runtime="@com_google_protobuf//:protobuf",
         **kargs):
   """Bazel rule to create a C++ protobuf library from proto source files
 
@@ -245,9 +248,9 @@ def cc_proto_library(
   )
 
   if default_runtime and not default_runtime in cc_libs:
-    cc_libs += [default_runtime]
+    cc_libs = cc_libs + [default_runtime]
   if use_grpc_plugin:
-    cc_libs += ["//external:grpc_lib"]
+    cc_libs = cc_libs + ["//external:grpc_lib"]
 
   native.cc_library(
       name=name,
@@ -263,8 +266,8 @@ def internal_gen_well_known_protos_java(srcs):
   Args:
     srcs: the well known protos
   """
-  root = Label("%s//protobuf_java" % (REPOSITORY_NAME)).workspace_root
-  pkg = PACKAGE_NAME + "/" if PACKAGE_NAME else ""
+  root = Label("%s//protobuf_java" % (native.repository_name())).workspace_root
+  pkg = native.package_name() + "/" if native.package_name() else ""
   if root == "":
     include = " -I%ssrc " % pkg
   else:
@@ -317,8 +320,8 @@ def py_proto_library(
         py_libs=[],
         py_extra_srcs=[],
         include=None,
-        default_runtime="//:protobuf_python",
-        protoc="//:protoc",
+        default_runtime="@com_google_protobuf//:protobuf_python",
+        protoc="@com_google_protobuf//:protoc",
         use_grpc_plugin=False,
         **kargs):
   """Bazel rule to create a Python protobuf library from proto source files
@@ -344,7 +347,7 @@ def py_proto_library(
     **kargs: other keyword arguments that are passed to cc_library.
 
   """
-  outs = _PyOuts(srcs)
+  outs = _PyOuts(srcs, use_grpc_plugin)
 
   includes = []
   if include != None:
@@ -371,7 +374,7 @@ def py_proto_library(
   )
 
   if default_runtime and not default_runtime in py_libs + deps:
-    py_libs += [default_runtime]
+    py_libs = py_libs + [default_runtime]
 
   native.py_library(
       name=name,
@@ -400,3 +403,15 @@ def internal_protobuf_py_tests(
         srcs=[s],
         main=s,
         **kargs)
+
+
+def check_protobuf_required_bazel_version():
+  """For WORKSPACE files, to check the installed version of bazel.
+
+  This ensures bazel supports our approach to proto_library() depending on a
+  copied filegroup. (Fixed in bazel 0.5.4)
+  """
+  expected = apple_common.dotted_version("0.5.4")
+  current = apple_common.dotted_version(native.bazel_version)
+  if current.compare_to(expected) < 0:
+    fail("Bazel must be newer than 0.5.4")

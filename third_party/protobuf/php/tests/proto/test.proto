@@ -115,6 +115,8 @@ message TestMessage {
   message Empty {
     int32 a = 1;
   }
+
+  reserved 111;
 }
 
 enum TestEnum {
@@ -186,4 +188,16 @@ message TestIncludeNamespaceMessage {
 message TestRandomFieldOrder {
   int64 tag13 = 150;
   string tag14 = 160;
+}
+
+message TestReverseFieldOrder {
+  repeated int32 a = 2;
+  string b = 1;
+}
+
+message testLowerCaseMessage {
+}
+
+enum testLowerCaseEnum {
+  VALUE = 0;
 }

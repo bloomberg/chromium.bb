@@ -19,7 +19,7 @@ m4/lt~obsolete.m4
 autom4te.cache
 
 # downloaded files
-gmock
+/gmock
 
 # in-tree configure-generated files
 Makefile
@@ -58,8 +58,6 @@ python/*.egg
 python/.eggs/
 python/.tox
 python/build/
-python/google/protobuf/compiler/
-python/google/protobuf/util/
 
 src/js_embed
 src/protoc
@@ -134,6 +132,7 @@ conformance/Google/
 conformance/Protobuf_test_messages/
 conformance/conformance-php
 conformance/conformance-php-c
+conformance/*.class
 
 # php test output
 composer.lock
@@ -170,3 +169,21 @@ js/testproto_libs2.js
 
 # Ignore the bazel symlinks
 /bazel-*
+
+# ruby test output
+ruby/lib/
+ruby/tests/generated_code_pb.rb
+ruby/tests/test_import_pb.rb
+ruby/tests/test_ruby_package_pb.rb
+ruby/Gemfile.lock
+ruby/compatibility_tests/v3.0.0/protoc
+ruby/compatibility_tests/v3.0.0/tests/generated_code_pb.rb
+ruby/compatibility_tests/v3.0.0/tests/test_import_pb.rb
+
+# IntelliJ CLion Config files and build output
+cmake/.idea
+cmake/cmake-build-debug/
+
+# Common build subdirectories.
+./.build/
+./_build/

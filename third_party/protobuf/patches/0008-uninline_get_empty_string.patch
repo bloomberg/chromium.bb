@@ -1,24 +1,23 @@
-unchanged:
---- protobuf-cleaned/src/google/protobuf/generated_message_util.cc	2015-12-30 13:21:46.000000000 -0800
-+++ protobuf-patched/src/google/protobuf/generated_message_util.cc	2016-03-31 13:25:32.180017848 -0700
-@@ -58,6 +58,12 @@
-   OnShutdown(&DeleteEmptyString);
+diff --git a/src/google/protobuf/message_lite.cc b/src/google/protobuf/message_lite.cc
+index 123b142d..329b475c 100644
+--- a/src/google/protobuf/message_lite.cc
++++ b/src/google/protobuf/message_lite.cc
+@@ -400,6 +400,10 @@ void SetProto3PreserveUnknownsDefault(bool preserve) {
+   proto3_preserve_unknown_ = preserve;
  }
  
 +const ::std::string& GetEmptyString() {
 +  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
 +  return GetEmptyStringAlreadyInited();
 +}
-+
-+
- size_t StringSpaceUsedExcludingSelfLong(const string& str) {
-   const void* start = &str;
-   const void* end = &str + 1;
-only in patch2:
-unchanged:
---- protobuf-cleaned/src/google/protobuf/generated_message_util.h	2015-12-30 13:21:46.000000000 -0800
-+++ protobuf-patched/src/google/protobuf/generated_message_util.h	2016-03-31 13:25:40.252007316 -0700
-@@ -120,10 +120,8 @@
+ 
+ }  // namespace internal
+ 
+diff --git a/src/google/protobuf/message_lite.h b/src/google/protobuf/message_lite.h
+index 4cbec330..e9dda7e7 100644
+--- a/src/google/protobuf/message_lite.h
++++ b/src/google/protobuf/message_lite.h
+@@ -137,10 +137,7 @@ LIBPROTOBUF_EXPORT inline const ::std::string& GetEmptyStringAlreadyInited() {
    return fixed_address_empty_string.get();
  }
  
@@ -26,8 +25,7 @@ unchanged:
 -  ::google::protobuf::GoogleOnceInit(&empty_string_once_init_, &InitEmptyString);
 -  return GetEmptyStringAlreadyInited();
 -}
-+
 +LIBPROTOBUF_EXPORT const ::std::string& GetEmptyString();
  
- LIBPROTOBUF_EXPORT int StringSpaceUsedExcludingSelf(const string& str);
- 
+ LIBPROTOBUF_EXPORT size_t StringSpaceUsedExcludingSelfLong(const string& str);
+ #endif  // SWIG

@@ -10,7 +10,7 @@
 
 #include "components/feature_engagement/internal/condition_validator.h"
 #include "components/feature_engagement/internal/configuration.h"
-#include "components/feature_engagement/internal/proto/event.pb.h"
+#include "components/feature_engagement/internal/proto/feature_event.pb.h"
 
 namespace feature_engagement {
 namespace stats {

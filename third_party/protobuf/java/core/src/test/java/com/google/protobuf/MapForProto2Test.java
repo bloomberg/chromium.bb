@@ -546,12 +546,12 @@ public class MapForProto2Test extends TestCase {
     TestMap map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToInt32Field(5, bytes)
         .build());
-    assertEquals(map.getInt32ToInt32FieldOrDefault(5, -1), 0);
+    assertEquals(0, map.getInt32ToInt32FieldOrDefault(5, -1));
 
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToStringField(stringKey, 5)
         .build());
-    assertEquals(map.getInt32ToStringFieldOrDefault(0, null), "");
+    assertEquals("", map.getInt32ToStringFieldOrDefault(0, null));
 
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToBytesField(stringKey, 5)
@@ -561,7 +561,7 @@ public class MapForProto2Test extends TestCase {
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putInt32ToEnumField(stringKey, bytes)
         .build());
-    assertEquals(map.getInt32ToEnumFieldOrDefault(0, null), TestMap.EnumValue.FOO);
+    assertEquals(TestMap.EnumValue.FOO, map.getInt32ToEnumFieldOrDefault(0, null));
 
     try {
       tryParseTestMap(BizarroTestMap.newBuilder()
@@ -577,7 +577,7 @@ public class MapForProto2Test extends TestCase {
     map = tryParseTestMap(BizarroTestMap.newBuilder()
         .putStringToInt32Field(stringKey, bytes)
         .build());
-    assertEquals(map.getStringToInt32FieldOrDefault(stringKey, -1), 0);
+    assertEquals(0, map.getStringToInt32FieldOrDefault(stringKey, -1));
   }
 
   public void testMergeFrom() throws Exception {
@@ -786,6 +786,24 @@ public class MapForProto2Test extends TestCase {
 
     assertEquals(message, dynamicMessage);
     assertEquals(message.hashCode(), dynamicMessage.hashCode());
+  }
+
+  // Check that DynamicMessage handles map field serialization the same way as generated code
+  // regarding unset key and value field in a map entry.
+  public void testDynamicMessageUnsetKeyAndValue() throws Exception {
+    FieldDescriptor field = f("int32_to_int32_field");
+
+    Message dynamicDefaultInstance =
+        DynamicMessage.getDefaultInstance(TestMap.getDescriptor());
+    Message.Builder builder = dynamicDefaultInstance.newBuilderForType();
+    // Add an entry without key and value.
+    builder.addRepeatedField(field, builder.newBuilderForField(field).build());
+    Message message = builder.build();
+    ByteString bytes = message.toByteString();
+    // Parse it back to the same generated type.
+    Message generatedMessage = TestMap.parseFrom(bytes);
+    // Assert the serialized bytes are equivalent.
+    assertEquals(generatedMessage.toByteString(), bytes);
   }
 
   public void testReflectionEqualsAndHashCode() throws Exception {

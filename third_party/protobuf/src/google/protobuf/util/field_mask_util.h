@@ -70,14 +70,14 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   // Checks whether the given path is valid for type T.
   template <typename T>
   static bool IsValidPath(StringPiece path) {
-    return GetFieldDescriptors(T::descriptor(), path, NULL);
+    return GetFieldDescriptors(T::descriptor(), path, nullptr);
   }
 
   // Checks whether the given FieldMask is valid for type T.
   template <typename T>
   static bool IsValidFieldMask(const FieldMask& mask) {
     for (int i = 0; i < mask.paths_size(); ++i) {
-      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), NULL))
+      if (!GetFieldDescriptors(T::descriptor(), mask.paths(i), nullptr))
         return false;
     }
     return true;
@@ -94,6 +94,13 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   // Creates a FieldMask with all fields of type T. This FieldMask only
   // contains fields of T but not any sub-message fields.
   template <typename T>
+  static FieldMask GetFieldMaskForAllFields() {
+    FieldMask out;
+    InternalGetFieldMaskForAllFields(T::descriptor(), &out);
+    return out;
+  }
+  template <typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Use *out = GetFieldMaskForAllFields() instead")
   static void GetFieldMaskForAllFields(FieldMask* out) {
     InternalGetFieldMaskForAllFields(T::descriptor(), out);
   }
@@ -113,8 +120,17 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   static void Intersect(const FieldMask& mask1, const FieldMask& mask2,
                         FieldMask* out);
 
+  // Subtracts mask2 from mask1 base of type T.
+  template <typename T>
+  static void Subtract(const FieldMask& mask1, const FieldMask& mask2,
+                       FieldMask* out) {
+    InternalSubtract(T::descriptor(), mask1, mask2, out);
+  }
+
   // Returns true if path is covered by the given FieldMask. Note that path
   // "foo.bar" covers all paths like "foo.bar.baz", "foo.bar.quz.x", etc.
+  // Also note that parent paths are not covered by explicit child path, i.e.
+  // "foo.bar" does NOT cover "foo", even if "bar" is the only child.
   static bool IsPathInFieldMask(StringPiece path, const FieldMask& mask);
 
   class MergeOptions;
@@ -124,9 +140,16 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
   static void MergeMessageTo(const Message& source, const FieldMask& mask,
                              const MergeOptions& options, Message* destination);
 
+  class TrimOptions;
   // Removes from 'message' any field that is not represented in the given
   // FieldMask. If the FieldMask is empty, does nothing.
   static void TrimMessage(const FieldMask& mask, Message* message);
+
+  // Removes from 'message' any field that is not represented in the given
+  // FieldMask with customized TrimOptions.
+  // If the FieldMask is empty, does nothing.
+  static void TrimMessage(const FieldMask& mask, Message* message,
+                          const TrimOptions& options);
 
  private:
   friend class SnakeCaseCamelCaseTest;
@@ -160,6 +183,10 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil {
 
   static void InternalGetFieldMaskForAllFields(const Descriptor* descriptor,
                                                FieldMask* out);
+
+  static void InternalSubtract(const Descriptor* descriptor,
+                               const FieldMask& mask1, const FieldMask& mask2,
+                               FieldMask* out);
 };
 
 // Note that for compatibility with the defined behaviour for FieldMask in
@@ -192,6 +219,23 @@ class LIBPROTOBUF_EXPORT FieldMaskUtil::MergeOptions {
  private:
   bool replace_message_fields_;
   bool replace_repeated_fields_;
+};
+
+class LIBPROTOBUF_EXPORT FieldMaskUtil::TrimOptions {
+ public:
+  TrimOptions()
+      : keep_required_fields_(false) {}
+  // When trimming message fields, the default behavior is to trim required
+  // fields of the present message if they are not specified in the field mask.
+  // If you instead want to keep required fields of the present message even
+  // they are not speicifed in the field mask, set this flag to true.
+  void set_keep_required_fields(bool value) {
+    keep_required_fields_ = value;
+  }
+  bool keep_required_fields() const { return keep_required_fields_; }
+
+ private:
+  bool keep_required_fields_;
 };
 
 }  // namespace util

@@ -31,9 +31,6 @@
 #include <google/protobuf/util/internal/protostream_objectsource.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <sstream>
 
 #include <google/protobuf/stubs/casts.h>
@@ -103,7 +100,8 @@ class ProtostreamObjectSourceTest
         ow_(&mock_),
         use_lower_camel_for_enums_(false),
         use_ints_for_enums_(false),
-        add_trailing_zeros_(false) {
+        add_trailing_zeros_(false),
+        render_unknown_enum_values_(true) {
     helper_.ResetTypeInfo(Book::descriptor(), Proto3Message::descriptor());
   }
 
@@ -121,7 +119,7 @@ class ProtostreamObjectSourceTest
     ArrayInputStream arr_stream(proto.data(), proto.size());
     CodedInputStream in_stream(&arr_stream);
 
-    google::protobuf::scoped_ptr<ProtoStreamObjectSource> os(
+    std::unique_ptr<ProtoStreamObjectSource> os(
         helper_.NewProtoSource(&in_stream, GetTypeUrl(descriptor)));
     if (use_lower_camel_for_enums_) os->set_use_lower_camel_for_enums(true);
     if (use_ints_for_enums_) os->set_use_ints_for_enums(true);
@@ -276,6 +274,10 @@ class ProtostreamObjectSourceTest
 
   void AddTrailingZeros() { add_trailing_zeros_ = true; }
 
+  void SetRenderUnknownEnumValues(bool value) {
+    render_unknown_enum_values_ = value;
+  }
+
   testing::TypeInfoTestHelper helper_;
 
   ::testing::NiceMock<MockObjectWriter> mock_;
@@ -283,6 +285,7 @@ class ProtostreamObjectSourceTest
   bool use_lower_camel_for_enums_;
   bool use_ints_for_enums_;
   bool add_trailing_zeros_;
+  bool render_unknown_enum_values_;
 };
 
 INSTANTIATE_TEST_CASE_P(DifferentTypeInfoSourceTest,
@@ -484,13 +487,33 @@ TEST_P(ProtostreamObjectSourceTest,
   DoTest(book, Book::descriptor());
 }
 
-TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputTest) {
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputMacroCase) {
   Book book;
   book.set_type(Book::ACTION_AND_ADVENTURE);
 
   UseLowerCamelForEnums();
 
   ow_.StartObject("")->RenderString("type", "actionAndAdventure")->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputSnakeCase) {
+  Book book;
+  book.set_type(Book::arts_and_photography);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")->RenderString("type", "artsAndPhotography")->EndObject();
+  DoTest(book, Book::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest, LowerCamelEnumOutputWithNumber) {
+  Book book;
+  book.set_type(Book::I18N_Tech);
+
+  UseLowerCamelForEnums();
+
+  ow_.StartObject("")->RenderString("type", "i18nTech")->EndObject();
   DoTest(book, Book::descriptor());
 }
 
@@ -513,12 +536,27 @@ TEST_P(ProtostreamObjectSourceTest, UseIntsForEnumsTest) {
   DoTest(book, Book::descriptor());
 }
 
-TEST_P(ProtostreamObjectSourceTest, UnknownEnum) {
+TEST_P(ProtostreamObjectSourceTest,
+       UnknownEnumAreDroppedWhenRenderUnknownEnumValuesIsUnset) {
   Proto3Message message;
   message.set_enum_value(static_cast<Proto3Message::NestedEnum>(1234));
-  ow_.StartObject("")
-      ->RenderInt32("enumValue", 1234)
-      ->EndObject();
+
+  SetRenderUnknownEnumValues(false);
+
+  // Unknown enum values are not output.
+  ow_.StartObject("")->EndObject();
+  DoTest(message, Proto3Message::descriptor());
+}
+
+TEST_P(ProtostreamObjectSourceTest,
+       UnknownEnumAreOutputWhenRenderUnknownEnumValuesIsSet) {
+  Proto3Message message;
+  message.set_enum_value(static_cast<Proto3Message::NestedEnum>(1234));
+
+  SetRenderUnknownEnumValues(true);
+
+  // Unknown enum values are output.
+  ow_.StartObject("")->RenderInt32("enumValue", 1234)->EndObject();
   DoTest(message, Proto3Message::descriptor());
 }
 

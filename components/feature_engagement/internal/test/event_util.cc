@@ -4,7 +4,7 @@
 
 #include "components/feature_engagement/internal/test/event_util.h"
 
-#include "components/feature_engagement/internal/proto/event.pb.h"
+#include "components/feature_engagement/internal/proto/feature_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement {

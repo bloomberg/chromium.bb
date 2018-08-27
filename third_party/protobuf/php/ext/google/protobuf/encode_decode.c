@@ -142,6 +142,23 @@ static const void* newhandlerdata(upb_handlers* h, uint32_t ofs) {
   return hd_ofs;
 }
 
+typedef size_t (*encodeunknown_handlerfunc)(void* _sink, const void* hd,
+                                            const char* ptr, size_t len,
+                                            const upb_bufhandle* handle);
+
+typedef struct {
+  encodeunknown_handlerfunc handler;
+} unknownfields_handlerdata_t;
+
+// Creates a handlerdata for unknown fields.
+static const void *newunknownfieldshandlerdata(upb_handlers* h) {
+  unknownfields_handlerdata_t* hd =
+      (unknownfields_handlerdata_t*)malloc(sizeof(unknownfields_handlerdata_t));
+  hd->handler = stringsink_string;
+  upb_handlers_addcleanup(h, hd, free);
+  return hd;
+}
+
 typedef struct {
   size_t ofs;
   const upb_msgdef *md;
@@ -354,7 +371,7 @@ static size_t zendstringdata_handler(void* closure, const void* hd,
 
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   int index = zend_hash_num_elements(ht) - 1;
-  php_proto_zend_hash_index_update(
+  php_proto_zend_hash_index_update_mem(
       ht, index, memory, sizeof(zend_string*), NULL);
 
   return len;
@@ -467,11 +484,11 @@ static void map_slot_init(void* memory, upb_fieldtype_t type, zval* cache) {
       // Store zval** in memory in order to be consistent with the layout of
       // singular fields.
       zval** holder = ALLOC(zval*);
+      *(zval***)memory = holder;
       zval* tmp;
       MAKE_STD_ZVAL(tmp);
       PHP_PROTO_ZVAL_STRINGL(tmp, "", 0, 1);
       *holder = tmp;
-      *(zval***)memory = holder;
 #else
       *(zval**)memory = cache;
       PHP_PROTO_ZVAL_STRINGL(*(zval**)memory, "", 0, 1);
@@ -504,7 +521,7 @@ static void map_slot_uninit(void* memory, upb_fieldtype_t type) {
     case UPB_TYPE_BYTES: {
 #if PHP_MAJOR_VERSION < 7
       zval** holder = *(zval***)memory;
-      php_proto_zval_ptr_dtor(*holder);
+      zval_ptr_dtor(holder);
       FREE(holder);
 #else
       php_proto_zval_ptr_dtor(*(zval**)memory);
@@ -716,7 +733,7 @@ static void *oneofbytes_handler(void *closure,
   DEREF(message_data(msg), oneofdata->case_ofs, uint32_t) =
       oneofdata->oneof_case_num;
   DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
-      &(msg->std.properties_table)[oneofdata->property_ofs];
+      OBJ_PROP(&msg->std, oneofdata->property_ofs);
 
    return empty_php_string(DEREF(
        message_data(msg), oneofdata->ofs, CACHED_VALUE*));
@@ -747,7 +764,7 @@ static void* oneofsubmsg_handler(void* closure, const void* hd) {
 
     // Create new message.
     DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*) =
-        &(msg->std.properties_table)[oneofdata->property_ofs];
+        OBJ_PROP(&msg->std, oneofdata->property_ofs);
     ZVAL_OBJ(CACHED_PTR_TO_ZVAL_PTR(
         DEREF(message_data(msg), oneofdata->ofs, CACHED_VALUE*)),
         subklass->create_object(subklass TSRMLS_CC));
@@ -944,6 +961,24 @@ static void add_handlers_for_oneof_field(upb_handlers *h,
   upb_handlerattr_uninit(&attr);
 }
 
+static bool add_unknown_handler(void* closure, const void* hd, const char* buf,
+                         size_t size) {
+  encodeunknown_handlerfunc handler =
+      ((unknownfields_handlerdata_t*)hd)->handler;
+
+  MessageHeader* msg = (MessageHeader*)closure;
+  stringsink* unknown = DEREF(message_data(msg), 0, stringsink*);
+  if (unknown == NULL) {
+    DEREF(message_data(msg), 0, stringsink*) = ALLOC(stringsink);
+    unknown = DEREF(message_data(msg), 0, stringsink*);
+    stringsink_init(unknown);
+  }
+
+  handler(unknown, NULL, buf, size, NULL);
+
+  return true;
+}
+
 static void add_handlers_for_message(const void* closure,
                                      upb_handlers* h) {
   const upb_msgdef* msgdef = upb_handlers_msgdef(h);
@@ -966,6 +1001,10 @@ static void add_handlers_for_message(const void* closure,
   if (desc->layout == NULL) {
     desc->layout = create_layout(desc->msgdef);
   }
+
+  upb_handlerattr attr = UPB_HANDLERATTR_INITIALIZER;
+  upb_handlerattr_sethandlerdata(&attr, newunknownfieldshandlerdata(h));
+  upb_handlers_setunknown(h, add_unknown_handler, &attr);
 
   for (upb_msg_field_begin(&i, desc->msgdef);
        !upb_msg_field_done(&i);
@@ -1278,6 +1317,11 @@ static void putrawmsg(MessageHeader* msg, const Descriptor* desc,
     }
   }
 
+  stringsink* unknown = DEREF(message_data(msg), 0, stringsink*);
+  if (unknown != NULL) {
+    upb_sink_putunknown(sink, unknown->ptr, unknown->len);
+  }
+
   upb_sink_endmsg(sink, &status);
 }
 
@@ -1358,7 +1402,6 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
   RepeatedField* intern = UNBOX(RepeatedField, array);
   HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
   size = zend_hash_num_elements(ht);
-  // size = zend_hash_num_elements(PHP_PROTO_HASH_OF(intern->array));
   if (size == 0) return;
 
   upb_sink_startseq(sink, getsel(f, UPB_HANDLER_STARTSEQ), &subsink);
@@ -1401,7 +1444,7 @@ static void putarray(zval* array, const upb_fielddef* f, upb_sink* sink,
         MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
 #else
         MessageHeader *submsg =
-            (MessageHeader*)((char*)(*(zend_object**)memory) -
+            (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
                 XtOffsetOf(MessageHeader, std));
 #endif
         putrawsubmsg(submsg, f, &subsink, depth TSRMLS_CC);
@@ -1445,9 +1488,9 @@ static const upb_handlers* msgdef_json_serialize_handlers(
 // PHP encode/decode methods
 // -----------------------------------------------------------------------------
 
-PHP_METHOD(Message, serializeToString) {
+void serialize_to_string(zval* val, zval* return_value TSRMLS_DC) {
   Descriptor* desc =
-      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(getThis())));
+      UNBOX_HASHTABLE_VALUE(Descriptor, get_ce_obj(Z_OBJCE_P(val)));
 
   stringsink sink;
   stringsink_init(&sink);
@@ -1461,13 +1504,33 @@ PHP_METHOD(Message, serializeToString) {
     stackenv_init(&se, "Error occurred during encoding: %s");
     encoder = upb_pb_encoder_create(&se.env, serialize_handlers, &sink.sink);
 
-    putmsg(getThis(), desc, upb_pb_encoder_input(encoder), 0 TSRMLS_CC);
+    putmsg(val, desc, upb_pb_encoder_input(encoder), 0 TSRMLS_CC);
 
     PHP_PROTO_RETVAL_STRINGL(sink.ptr, sink.len, 1);
 
     stackenv_uninit(&se);
     stringsink_uninit(&sink);
   }
+}
+
+PHP_METHOD(Message, serializeToString) {
+  serialize_to_string(getThis(), return_value TSRMLS_CC);
+}
+
+void merge_from_string(const char* data, int data_len, const Descriptor* desc,
+                       MessageHeader* msg) {
+  const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
+  const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
+  stackenv se;
+  upb_sink sink;
+  upb_pbdecoder* decoder;
+  stackenv_init(&se, "Error occurred during parsing: %s");
+
+  upb_sink_reset(&sink, h, msg);
+  decoder = upb_pbdecoder_create(&se.env, method, &sink);
+  upb_bufsrc_putbuf(data, data_len, upb_pbdecoder_input(decoder));
+
+  stackenv_uninit(&se);
 }
 
 PHP_METHOD(Message, mergeFromString) {
@@ -1483,20 +1546,7 @@ PHP_METHOD(Message, mergeFromString) {
     return;
   }
 
-  {
-    const upb_pbdecodermethod* method = msgdef_decodermethod(desc);
-    const upb_handlers* h = upb_pbdecodermethod_desthandlers(method);
-    stackenv se;
-    upb_sink sink;
-    upb_pbdecoder* decoder;
-    stackenv_init(&se, "Error occurred during parsing: %s");
-
-    upb_sink_reset(&sink, h, msg);
-    decoder = upb_pbdecoder_create(&se.env, method, &sink);
-    upb_bufsrc_putbuf(data, data_len, upb_pbdecoder_input(decoder));
-
-    stackenv_uninit(&se);
-  }
+  merge_from_string(data, data_len, desc, msg);
 }
 
 PHP_METHOD(Message, serializeToJsonString) {
@@ -1562,4 +1612,104 @@ PHP_METHOD(Message, mergeFromJsonString) {
 
     stackenv_uninit(&se);
   }
+}
+
+// TODO(teboring): refactoring with putrawmsg
+static void discard_unknown_fields(MessageHeader* msg) {
+  upb_msg_field_iter it;
+
+  stringsink* unknown = DEREF(message_data(msg), 0, stringsink*);
+  if (unknown != NULL) {
+    stringsink_uninit(unknown);
+    FREE(unknown);
+    DEREF(message_data(msg), 0, stringsink*) = NULL;
+  }
+
+  // Recursively discard unknown fields of submessages.
+  Descriptor* desc = msg->descriptor;
+  TSRMLS_FETCH();
+  for (upb_msg_field_begin(&it, desc->msgdef);
+       !upb_msg_field_done(&it);
+       upb_msg_field_next(&it)) {
+    upb_fielddef* f = upb_msg_iter_field(&it);
+    uint32_t offset = desc->layout->fields[upb_fielddef_index(f)].offset;
+    bool containing_oneof = false;
+
+    if (upb_fielddef_containingoneof(f)) {
+      uint32_t oneof_case_offset =
+          desc->layout->fields[upb_fielddef_index(f)].case_offset;
+      // For a oneof, check that this field is actually present -- skip all the
+      // below if not.
+      if (DEREF(message_data(msg), oneof_case_offset, uint32_t) !=
+          upb_fielddef_number(f)) {
+        continue;
+      }
+      // Otherwise, fall through to the appropriate singular-field handler
+      // below.
+      containing_oneof = true;
+    }
+
+    if (is_map_field(f)) {
+      MapIter map_it;
+      int len, size;
+      const upb_fielddef* value_field;
+
+      value_field = map_field_value(f);
+      if (!upb_fielddef_issubmsg(value_field)) continue;
+
+      zval* map_php = CACHED_PTR_TO_ZVAL_PTR(
+          DEREF(message_data(msg), offset, CACHED_VALUE*));
+      if (map_php == NULL) continue;
+
+      Map* intern = UNBOX(Map, map_php);
+      for (map_begin(map_php, &map_it TSRMLS_CC);
+           !map_done(&map_it); map_next(&map_it)) {
+        upb_value value = map_iter_value(&map_it, &len);
+        void* memory = raw_value(upb_value_memory(&value), value_field);
+#if PHP_MAJOR_VERSION < 7
+        MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
+#else
+        MessageHeader *submsg =
+            (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
+                XtOffsetOf(MessageHeader, std));
+#endif
+        discard_unknown_fields(submsg);
+      }
+    } else if (upb_fielddef_isseq(f)) {
+      if (!upb_fielddef_issubmsg(f)) continue;
+
+      zval* array_php = CACHED_PTR_TO_ZVAL_PTR(
+          DEREF(message_data(msg), offset, CACHED_VALUE*));
+      if (array_php == NULL) continue;
+
+      int size, i;
+      RepeatedField* intern = UNBOX(RepeatedField, array_php);
+      HashTable *ht = PHP_PROTO_HASH_OF(intern->array);
+      size = zend_hash_num_elements(ht);
+      if (size == 0) continue;
+
+      for (i = 0; i < size; i++) {
+        void* memory = repeated_field_index_native(intern, i TSRMLS_CC);
+#if PHP_MAJOR_VERSION < 7
+        MessageHeader *submsg = UNBOX(MessageHeader, *(zval**)memory);
+#else
+        MessageHeader *submsg =
+            (MessageHeader*)((char*)(Z_OBJ_P((zval*)memory)) -
+                XtOffsetOf(MessageHeader, std));
+#endif
+        discard_unknown_fields(submsg);
+      }
+    } else if (upb_fielddef_issubmsg(f)) {
+      zval* submsg_php = CACHED_PTR_TO_ZVAL_PTR(
+          DEREF(message_data(msg), offset, CACHED_VALUE*));
+      if (Z_TYPE_P(submsg_php) == IS_NULL) continue;
+      MessageHeader* submsg = UNBOX(MessageHeader, submsg_php);
+      discard_unknown_fields(submsg);
+    }
+  }
+}
+
+PHP_METHOD(Message, discardUnknownFields) {
+  MessageHeader* msg = UNBOX(MessageHeader, getThis());
+  discard_unknown_fields(msg);
 }

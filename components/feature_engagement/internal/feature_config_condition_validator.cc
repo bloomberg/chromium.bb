@@ -14,7 +14,7 @@
 #include "components/feature_engagement/internal/configuration.h"
 #include "components/feature_engagement/internal/display_lock_controller.h"
 #include "components/feature_engagement/internal/event_model.h"
-#include "components/feature_engagement/internal/proto/event.pb.h"
+#include "components/feature_engagement/internal/proto/feature_event.pb.h"
 #include "components/feature_engagement/public/feature_list.h"
 
 namespace feature_engagement {

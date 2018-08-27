@@ -11,7 +11,7 @@
 #include "components/feature_engagement/internal/event_model.h"
 #include "components/feature_engagement/internal/never_availability_model.h"
 #include "components/feature_engagement/internal/noop_display_lock_controller.h"
-#include "components/feature_engagement/internal/proto/event.pb.h"
+#include "components/feature_engagement/internal/proto/feature_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement {

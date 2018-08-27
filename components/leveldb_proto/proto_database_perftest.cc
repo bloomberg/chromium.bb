@@ -24,7 +24,7 @@
 #include "base/threading/thread.h"
 #include "components/leveldb_proto/leveldb_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
-#include "components/leveldb_proto/testing/proto/test.pb.h"
+#include "components/leveldb_proto/testing/proto/test_db.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

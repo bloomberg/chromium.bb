@@ -21,7 +21,7 @@
 #include "media/base/eme_constants.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/video_decoder_config.h"
-#include "media/remoting/rpc.pb.h"
+#include "media/remoting/media_remoting_rpc.pb.h"
 
 namespace media {
 namespace remoting {

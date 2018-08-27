@@ -35,9 +35,6 @@
 #include <google/protobuf/compiler/java/java_field.h>
 
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 
 #include <google/protobuf/stubs/logging.h>
 #include <google/protobuf/stubs/common.h>
@@ -45,8 +42,6 @@
 #include <google/protobuf/compiler/java/java_enum_field.h>
 #include <google/protobuf/compiler/java/java_enum_field_lite.h>
 #include <google/protobuf/compiler/java/java_helpers.h>
-#include <google/protobuf/compiler/java/java_lazy_message_field.h>
-#include <google/protobuf/compiler/java/java_lazy_message_field_lite.h>
 #include <google/protobuf/compiler/java/java_map_field.h>
 #include <google/protobuf/compiler/java/java_map_field_lite.h>
 #include <google/protobuf/compiler/java/java_message_field.h>
@@ -77,13 +72,8 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
           return new ImmutableMapFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
         } else {
-          if (IsLazy(field, context->EnforceLite())) {
-            return new RepeatedImmutableLazyMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new RepeatedImmutableMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new RepeatedImmutableMessageFieldGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         }
       case JAVATYPE_ENUM:
         return new RepeatedImmutableEnumFieldGenerator(
@@ -99,13 +89,8 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
     if (field->containing_oneof()) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageOneofFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageOneofFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageOneofFieldGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumOneofFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -119,13 +104,8 @@ ImmutableFieldGenerator* MakeImmutableGenerator(
     } else {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageFieldGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageFieldGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumFieldGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -150,13 +130,8 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
           return new ImmutableMapFieldLiteGenerator(
               field, messageBitIndex, builderBitIndex, context);
         } else {
-          if (IsLazy(field, context->EnforceLite())) {
-            return new RepeatedImmutableLazyMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new RepeatedImmutableMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new RepeatedImmutableMessageFieldLiteGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         }
       case JAVATYPE_ENUM:
         return new RepeatedImmutableEnumFieldLiteGenerator(
@@ -172,13 +147,8 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
     if (field->containing_oneof()) {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageOneofFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageOneofFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageOneofFieldLiteGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumOneofFieldLiteGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -192,13 +162,8 @@ ImmutableFieldLiteGenerator* MakeImmutableLiteGenerator(
     } else {
       switch (GetJavaType(field)) {
         case JAVATYPE_MESSAGE:
-          if (IsLazy(field, context->EnforceLite())) {
-            return new ImmutableLazyMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          } else {
-            return new ImmutableMessageFieldLiteGenerator(
-                field, messageBitIndex, builderBitIndex, context);
-          }
+          return new ImmutableMessageFieldLiteGenerator(
+              field, messageBitIndex, builderBitIndex, context);
         case JAVATYPE_ENUM:
           return new ImmutableEnumFieldLiteGenerator(
               field, messageBitIndex, builderBitIndex, context);
@@ -246,8 +211,7 @@ template <>
 FieldGeneratorMap<ImmutableFieldGenerator>::FieldGeneratorMap(
     const Descriptor* descriptor, Context* context)
     : descriptor_(descriptor),
-      field_generators_(new google::protobuf::scoped_ptr<
-          ImmutableFieldGenerator>[descriptor->field_count()]) {
+      field_generators_(descriptor->field_count()) {
 
   // Construct all the FieldGenerators and assign them bit indices for their
   // bit fields.
@@ -269,8 +233,7 @@ template <>
 FieldGeneratorMap<ImmutableFieldLiteGenerator>::FieldGeneratorMap(
     const Descriptor* descriptor, Context* context)
     : descriptor_(descriptor),
-      field_generators_(new google::protobuf::scoped_ptr<
-          ImmutableFieldLiteGenerator>[descriptor->field_count()]) {
+      field_generators_(descriptor->field_count()) {
   // Construct all the FieldGenerators and assign them bit indices for their
   // bit fields.
   int messageBitIndex = 0;
@@ -293,10 +256,17 @@ void SetCommonFieldVariables(const FieldDescriptor* descriptor,
                              std::map<string, string>* variables) {
   (*variables)["field_name"] = descriptor->name();
   (*variables)["name"] = info->name;
+  (*variables)["classname"] = descriptor->containing_type()->name();
   (*variables)["capitalized_name"] = info->capitalized_name;
   (*variables)["disambiguated_reason"] = info->disambiguated_reason;
   (*variables)["constant_name"] = FieldConstantName(descriptor);
   (*variables)["number"] = SimpleItoa(descriptor->number());
+  // These variables are placeholders to pick out the beginning and ends of
+  // identifiers for annotations (when doing so with existing variables would
+  // be ambiguous or impossible). They should never be set to anything but the
+  // empty string.
+  (*variables)["{"] = "";
+  (*variables)["}"] = "";
 }
 
 void SetCommonOneofVariables(const FieldDescriptor* descriptor,

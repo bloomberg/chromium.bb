@@ -35,6 +35,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include <google/protobuf/stubs/common.h>
 
@@ -48,6 +49,7 @@ class FieldDescriptor;
 namespace util {
 
 class FieldContext;
+class MessageDifferencer;
 
 // Base class specifying the interface for comparing protocol buffer fields.
 // Regular users should consider using or subclassing DefaultFieldComparator
@@ -153,6 +155,15 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
   // REQUIRES: float_comparison_ == APPROXIMATE
   void SetDefaultFractionAndMargin(double fraction, double margin);
 
+ protected:
+  // Compare using the provided message_differencer. For example, a subclass can
+  // use this method to compare some field in a certain way using the same
+  // message_differencer instance and the field context.
+  bool Compare(MessageDifferencer* differencer,
+               const google::protobuf::Message& message1,
+               const google::protobuf::Message& message2,
+               const google::protobuf::util::FieldContext* field_context);
+
  private:
   // Defines the tolerance for floating point comparison (fraction and margin).
   struct Tolerance {
@@ -237,7 +248,7 @@ class LIBPROTOBUF_EXPORT DefaultFieldComparator : public FieldComparator {
 
   // True iff default_tolerance_ has been explicitly set.
   //
-  // If false, then the default tolerance for flaots and doubles is that which
+  // If false, then the default tolerance for floats and doubles is that which
   // is used by MathUtil::AlmostEquals().
   bool has_default_tolerance_;
 
