@@ -32,16 +32,21 @@ Log = function(logStr, logType) {
  */
 LogStore = function() {
   /**
+   * Ring buffer of size this.LOG_LIMIT
    * @type {!Array<Log>}
+   * @private
    */
-  this.logs_ = [];
+  this.logs_ = Array(LogStore.LOG_LIMIT);
 
-  /**
-   * @const {number}
+  /*
+   * this.logs_ is implemented as a ring buffer which starts
+   * from this.startIndex_ and ends at this.startIndex_-1
+   * In the initial state, this array is filled by undefined.
+   * @type {number}
+   * @private
    */
-  this.limitLog_ = 3000;
+  this.startIndex_ = 0;
 };
-
 
 /**
  * @enum {string}
@@ -54,23 +59,49 @@ LogStore.LogType = {
 };
 
 /**
+ * @const
+ * @private
+ */
+LogStore.LOG_LIMIT = 3000;
+
+/**
+ * Create logs in order.
+ * This is not the best way to create logs fast but
+ * getLogs() is not called often.
  * @return {!Array<Log>}
  */
 LogStore.prototype.getLogs = function() {
-  return this.logs_;
+  var returnLogs = [];
+  for (var i = 0; i < LogStore.LOG_LIMIT; i++) {
+    var index = (this.startIndex_ + i) % LogStore.LOG_LIMIT;
+    if (!this.logs_[index])
+      continue;
+    returnLogs.push(this.logs_[index]);
+  }
+  return returnLogs;
 };
 
 /**
+ * Write a log to this.logs_.
+ * To add a message to logs, this function shuold be called.
  * @param {!string} logStr
  * @param {!LogStore.LogType} logType
  */
 LogStore.prototype.writeLog = function(logStr, logType) {
   var log = new Log(logStr, logType);
-  this.logs_.push(log);
-  // TODO(elkurin): shift() takes O(n).
-  // To improve performance, implement QUEUE.
-  if (this.logs_.length > this.limitLog_)
-    this.logs_.shift();
+  this.logs_[this.startIndex_] = log;
+  this.startIndex_ += 1;
+  if (this.startIndex_ == LogStore.LOG_LIMIT)
+    this.startIndex_ = 0;
+};
+
+/**
+ * Clear this.logs_.
+ * Set to initial states.
+ */
+LogStore.prototype.clearLog = function() {
+  this.logs_ = Array(LogStore.LOG_LIMIT);
+  this.startIndex_ = 0;
 };
 
 /**
@@ -83,8 +114,7 @@ LogStore.instance;
  * @return {LogStore}
  */
 LogStore.getInstance = function() {
-  if (!LogStore.instance) {
+  if (!LogStore.instance)
     LogStore.instance = new LogStore();
-  }
   return LogStore.instance;
 };

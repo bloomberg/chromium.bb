@@ -644,6 +644,7 @@ js2gtest("chromevox_extjs_tests") {
     "cvox2/background/editing_test.extjs",
     "cvox2/background/i_search_test.extjs",
     "cvox2/background/live_regions_test.extjs",
+    "cvox2/background/log_store_test.extjs",
     "cvox2/background/output_test.extjs",
     "cvox2/background/panel_test.extjs",
     "cvox2/background/recovery_strategy_test.extjs",
