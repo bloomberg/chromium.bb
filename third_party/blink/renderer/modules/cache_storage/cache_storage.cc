@@ -179,6 +179,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
       web_request, Cache::ToQueryParams(options),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+             const CacheQueryOptions& options,
              mojom::blink::MatchResultPtr result) {
             if (!resolver->GetExecutionContext() ||
                 resolver->GetExecutionContext()->IsContextDestroyed())
@@ -196,14 +197,26 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
                   break;
               }
             } else {
+              TimeDelta elapsed = TimeTicks::Now() - start_time;
               UMA_HISTOGRAM_LONG_TIMES("ServiceWorkerCache.CacheStorage.Match2",
-                                       TimeTicks::Now() - start_time);
+                                       elapsed);
+              if (options.hasIgnoreSearch() && options.ignoreSearch()) {
+                UMA_HISTOGRAM_LONG_TIMES(
+                    "ServiceWorkerCache.CacheStorage.Match2."
+                    "IgnoreSearchEnabled",
+                    elapsed);
+              } else {
+                UMA_HISTOGRAM_LONG_TIMES(
+                    "ServiceWorkerCache.CacheStorage.Match2."
+                    "IgnoreSearchDisabled",
+                    elapsed);
+              }
               ScriptState::Scope scope(resolver->GetScriptState());
               resolver->Resolve(Response::Create(resolver->GetScriptState(),
                                                  *result->get_response()));
             }
           },
-          WrapPersistent(resolver), TimeTicks::Now()));
+          WrapPersistent(resolver), TimeTicks::Now(), options));
 
   return promise;
 }
