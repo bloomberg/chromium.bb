@@ -3,8 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
+
+#include "base/macros.h"
 #include "base/test/mock_callback.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "chrome/browser/signin/header_modification_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,12 +20,12 @@ namespace signin {
 
 namespace {
 
-class MockThrottleDelegate : public URLLoaderThrottle::Delegate {
+class MockDelegate : public HeaderModificationDelegate {
  public:
-  MockThrottleDelegate() = default;
-  ~MockThrottleDelegate() override = default;
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
 
-  MOCK_METHOD1(ShouldIntercept,
+  MOCK_METHOD1(ShouldInterceptNavigation,
                bool(content::NavigationUIData* navigation_ui_data));
   MOCK_METHOD2(ProcessRequest,
                void(ChromeRequestAdapter* request_adapter,
@@ -32,7 +35,7 @@ class MockThrottleDelegate : public URLLoaderThrottle::Delegate {
                     const GURL& redirect_url));
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MockThrottleDelegate);
+  DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
 content::ResourceRequestInfo::WebContentsGetter NullWebContentsGetter() {
@@ -42,17 +45,17 @@ content::ResourceRequestInfo::WebContentsGetter NullWebContentsGetter() {
 }  // namespace
 
 TEST(ChromeSigninURLLoaderThrottleTest, NoIntercept) {
-  auto* delegate = new MockThrottleDelegate();
+  auto* delegate = new MockDelegate();
 
-  EXPECT_CALL(*delegate, ShouldIntercept(_)).WillOnce(Return(false));
+  EXPECT_CALL(*delegate, ShouldInterceptNavigation(_)).WillOnce(Return(false));
   EXPECT_FALSE(URLLoaderThrottle::MaybeCreate(base::WrapUnique(delegate),
                                               nullptr /* navigation_ui_data */,
                                               NullWebContentsGetter()));
 }
 
 TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
-  auto* delegate = new MockThrottleDelegate();
-  EXPECT_CALL(*delegate, ShouldIntercept(_)).WillOnce(Return(true));
+  auto* delegate = new MockDelegate();
+  EXPECT_CALL(*delegate, ShouldInterceptNavigation(_)).WillOnce(Return(true));
   auto throttle = URLLoaderThrottle::MaybeCreate(
       base::WrapUnique(delegate), nullptr, NullWebContentsGetter());
   ASSERT_TRUE(throttle);
@@ -211,8 +214,8 @@ TEST(ChromeSigninURLLoaderThrottleTest, Intercept) {
 }
 
 TEST(ChromeSigninURLLoaderThrottleTest, InterceptSubFrame) {
-  auto* delegate = new MockThrottleDelegate();
-  EXPECT_CALL(*delegate, ShouldIntercept(_)).WillOnce(Return(true));
+  auto* delegate = new MockDelegate();
+  EXPECT_CALL(*delegate, ShouldInterceptNavigation(_)).WillOnce(Return(true));
   auto throttle = URLLoaderThrottle::MaybeCreate(
       base::WrapUnique(delegate), nullptr, NullWebContentsGetter());
   ASSERT_TRUE(throttle);

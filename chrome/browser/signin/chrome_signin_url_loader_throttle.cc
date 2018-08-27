@@ -5,6 +5,7 @@
 #include "chrome/browser/signin/chrome_signin_url_loader_throttle.h"
 
 #include "chrome/browser/signin/chrome_signin_helper.h"
+#include "chrome/browser/signin/header_modification_delegate.h"
 #include "components/signin/core/browser/signin_header_helper.h"
 
 namespace signin {
@@ -116,16 +117,12 @@ class URLLoaderThrottle::ThrottleResponseAdapter : public ResponseAdapter {
   DISALLOW_COPY_AND_ASSIGN(ThrottleResponseAdapter);
 };
 
-URLLoaderThrottle::Delegate::Delegate() = default;
-
-URLLoaderThrottle::Delegate::~Delegate() = default;
-
 // static
 std::unique_ptr<URLLoaderThrottle> URLLoaderThrottle::MaybeCreate(
-    std::unique_ptr<Delegate> delegate,
+    std::unique_ptr<HeaderModificationDelegate> delegate,
     content::NavigationUIData* navigation_ui_data,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter) {
-  if (!delegate->ShouldIntercept(navigation_ui_data))
+  if (!delegate->ShouldInterceptNavigation(navigation_ui_data))
     return nullptr;
 
   return base::WrapUnique(new URLLoaderThrottle(
@@ -196,7 +193,7 @@ void URLLoaderThrottle::WillProcessResponse(
 }
 
 URLLoaderThrottle::URLLoaderThrottle(
-    std::unique_ptr<Delegate> delegate,
+    std::unique_ptr<HeaderModificationDelegate> delegate,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter)
     : delegate_(std::move(delegate)),
       web_contents_getter_(std::move(web_contents_getter)) {}

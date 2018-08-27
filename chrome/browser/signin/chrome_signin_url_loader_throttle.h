@@ -15,30 +15,16 @@ class NavigationUIData;
 
 namespace signin {
 
-class ChromeRequestAdapter;
-class ResponseAdapter;
+class HeaderModificationDelegate;
 
 // This class is used to modify the main frame request made when loading the
 // GAIA signin realm.
 class URLLoaderThrottle : public content::URLLoaderThrottle {
  public:
-  class Delegate {
-   public:
-    Delegate();
-    virtual ~Delegate();
-
-    virtual bool ShouldIntercept(
-        content::NavigationUIData* navigation_ui_data) = 0;
-    virtual void ProcessRequest(ChromeRequestAdapter* request_adapter,
-                                const GURL& redirect_url) = 0;
-    virtual void ProcessResponse(ResponseAdapter* response_adapter,
-                                 const GURL& redirect_url) = 0;
-  };
-
   // Creates a new throttle if |delegate| says that this request should be
   // intercepted.
   static std::unique_ptr<URLLoaderThrottle> MaybeCreate(
-      std::unique_ptr<Delegate> delegate,
+      std::unique_ptr<HeaderModificationDelegate> delegate,
       content::NavigationUIData* navigation_ui_data,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter);
 
@@ -61,10 +47,10 @@ class URLLoaderThrottle : public content::URLLoaderThrottle {
   class ThrottleResponseAdapter;
 
   URLLoaderThrottle(
-      std::unique_ptr<Delegate> delegate,
+      std::unique_ptr<HeaderModificationDelegate> delegate,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter);
 
-  const std::unique_ptr<Delegate> delegate_;
+  const std::unique_ptr<HeaderModificationDelegate> delegate_;
   const content::ResourceRequestInfo::WebContentsGetter web_contents_getter_;
 
   // Information about the current request.
