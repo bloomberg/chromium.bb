@@ -449,9 +449,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
   category = constants.CI_INFRA_STAGE
 
   def PerformStage(self):
-    build_id, _ = self._run.GetCIDBHandle()
-    install_plan_fn = ('/tmp/%s_install_plan.%s' %
-                       (self._current_board, build_id))
+    _, _ = self._run.GetCIDBHandle()
 
     # We need to run chroot updates on most builders because they uprev after
     # the InitSDK stage. For the SDK builder, we can skip updates because uprev
@@ -462,8 +460,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
                           not self._latest_toolchain)
       commands.UpdateChroot(
           self._build_root, toolchain_boards=[self._current_board],
-          usepkg=usepkg_toolchain, extra_env=self._portage_extra_env,
-          save_install_plan=install_plan_fn)
+          usepkg=usepkg_toolchain, extra_env=self._portage_extra_env)
 
     # Always update the board.
     usepkg = self._run.config.usepkg_build_packages
@@ -472,8 +469,7 @@ class SetupBoardStage(generic_stages.BoardSpecificBuilderStage, InitSDKStage):
         chrome_binhost_only=self._run.config.chrome_binhost_only,
         force=self._run.config.board_replace,
         extra_env=self._portage_extra_env, chroot_upgrade=False,
-        profile=self._run.options.profile or self._run.config.profile,
-        save_install_plan=install_plan_fn)
+        profile=self._run.options.profile or self._run.config.profile)
 
 
 class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
@@ -599,9 +595,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
     chroot_args = self._SetupGomaIfNecessary()
 
     build_id, _ = self._run.GetCIDBHandle()
-    install_plan_fn = ('/tmp/%s_install_plan.%s' %
-                       (self._current_board, build_id))
-
     commands.Build(self._build_root,
                    self._current_board,
                    build_autotest=self._run.ShouldBuildAutotest(),
@@ -614,8 +607,7 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                    chroot_args=chroot_args,
                    extra_env=self._portage_extra_env,
                    event_file=event_file_in_chroot,
-                   run_goma=bool(chroot_args),
-                   save_install_plan=install_plan_fn)
+                   run_goma=bool(chroot_args))
 
     if event_file and os.path.isfile(event_file):
       logging.info('Archive build-events.json file')
