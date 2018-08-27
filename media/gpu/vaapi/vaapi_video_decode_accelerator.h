@@ -94,7 +94,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // in order, and run each command only if its dependencies are ready.
   void VASurfaceReady(const scoped_refptr<VASurface>& va_surface,
                       int32_t bitstream_id,
-                      const gfx::Rect& visible_rect);
+                      const gfx::Rect& visible_rect,
+                      const VideoColorSpace& color_space);
   // Returns a new VASurface for decoding into, or nullptr if not available.
   scoped_refptr<VASurface> CreateVASurface();
 
@@ -165,7 +166,8 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // the resulting picture to |client_| along with |visible_rect|.
   void OutputPicture(const scoped_refptr<VASurface>& va_surface,
                      int32_t input_id,
-                     gfx::Rect visible_rect);
+                     gfx::Rect visible_rect,
+                     const VideoColorSpace& picture_color_space);
 
   // Try to OutputPicture() if we have both a ready surface and picture.
   void TryOutputPicture();

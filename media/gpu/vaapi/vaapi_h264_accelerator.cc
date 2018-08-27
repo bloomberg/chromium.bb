@@ -307,7 +307,8 @@ bool VaapiH264Accelerator::OutputPicture(
 
   const VaapiH264Picture* vaapi_pic = pic->AsVaapiH264Picture();
   vaapi_dec_->VASurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
-                             vaapi_pic->visible_rect());
+                             vaapi_pic->visible_rect(),
+                             vaapi_pic->get_colorspace());
   return true;
 }
 

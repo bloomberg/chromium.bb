@@ -230,7 +230,8 @@ bool VaapiVP8Accelerator::OutputPicture(const scoped_refptr<VP8Picture>& pic) {
 
   const VaapiVP8Picture* vaapi_pic = pic->AsVaapiVP8Picture();
   vaapi_dec_->VASurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
-                             vaapi_pic->visible_rect());
+                             vaapi_pic->visible_rect(),
+                             vaapi_pic->get_colorspace());
   return true;
 }
 
