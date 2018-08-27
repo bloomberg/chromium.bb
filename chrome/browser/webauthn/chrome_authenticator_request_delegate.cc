@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -59,8 +61,7 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
 }
 
 bool IsWebAuthnUiEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kWebAuthenticationUI);
+  return base::FeatureList::IsEnabled(features::kWebAuthenticationUI);
 }
 
 }  // namespace

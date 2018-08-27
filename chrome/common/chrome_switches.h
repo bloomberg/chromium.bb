@@ -209,7 +209,6 @@ extern const char kUserAgent[];
 extern const char kUserDataDir[];
 extern const char kValidateCrx[];
 extern const char kVersion[];
-extern const char kWebAuthenticationUI[];
 extern const char kWebRtcRemoteEventLogProactivePruningDelta[];
 extern const char kWebRtcRemoteEventLogUploadDelayMs[];
 extern const char kWebRtcRemoteEventLogUploadNoSuppression[];
