@@ -1429,6 +1429,7 @@ VideoTrack::VideoTrack(unsigned int* seed)
       stereo_mode_(0),
       alpha_mode_(0),
       width_(0),
+      colour_space_(NULL),
       colour_(NULL),
       projection_(NULL) {}
 
@@ -1526,6 +1527,10 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
                           static_cast<uint64>(alpha_mode_)))
       return false;
   }
+  if (colour_space_) {
+    if (!WriteEbmlElement(writer, libwebm::kMkvColourSpace, colour_space_))
+      return false;
+  }
   if (frame_rate_ > 0.0) {
     if (!WriteEbmlElement(writer, libwebm::kMkvFrameRate,
                           static_cast<float>(frame_rate_))) {
@@ -1548,6 +1553,22 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
   }
 
   return true;
+}
+
+void VideoTrack::set_colour_space(const char* colour_space) {
+  if (colour_space) {
+    delete[] colour_space_;
+
+    const size_t length = strlen(colour_space) + 1;
+    colour_space_ = new (std::nothrow) char[length];  // NOLINT
+    if (colour_space_) {
+#ifdef _MSC_VER
+      strcpy_s(colour_space_, length, colour_space);
+#else
+      strcpy(colour_space_, colour_space);
+#endif
+    }
+  }
 }
 
 bool VideoTrack::SetColour(const Colour& colour) {
@@ -1633,6 +1654,8 @@ uint64_t VideoTrack::VideoPayloadSize() const {
   if (frame_rate_ > 0.0)
     size += EbmlElementSize(libwebm::kMkvFrameRate,
                             static_cast<float>(frame_rate_));
+  if (colour_space_)
+    size += EbmlElementSize(libwebm::kMkvColourSpace, colour_space_);
   if (colour_)
     size += colour_->ColourSize();
   if (projection_)
