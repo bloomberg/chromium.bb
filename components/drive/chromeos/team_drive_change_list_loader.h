@@ -56,7 +56,7 @@ class TeamDriveChangeListLoader : public DriveChangeListLoader,
   bool IsRefreshing() override;
   void LoadIfNeeded(const FileOperationCallback& callback) override;
   void ReadDirectory(const base::FilePath& directory_path,
-                     const ReadDirectoryEntriesCallback& entries_callback,
+                     ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback) override;
   void CheckForUpdates(const FileOperationCallback& callback) override;
 

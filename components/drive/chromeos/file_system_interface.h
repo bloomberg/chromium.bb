@@ -98,7 +98,7 @@ typedef base::Callback<void(FileError error,
     GetFileContentInitializedCallback;
 
 // Used to get list of entries under a directory.
-typedef base::Callback<void(std::unique_ptr<ResourceEntryVector> entries)>
+typedef base::OnceCallback<void(std::unique_ptr<ResourceEntryVector> entries)>
     ReadDirectoryEntriesCallback;
 
 // Used to get drive content search results.
@@ -141,8 +141,9 @@ typedef base::Callback<void(FileError error,
                             const GURL& share_url)> GetShareUrlCallback;
 
 // Used to get filesystem metadata.
-typedef base::Callback<void(const FileSystemMetadata&,
-                            const std::map<std::string, FileSystemMetadata>&)>
+typedef base::OnceCallback<void(
+    const FileSystemMetadata&,
+    const std::map<std::string, FileSystemMetadata>&)>
     GetFilesystemMetadataCallback;
 
 // Used to mark cached files mounted.
@@ -391,7 +392,7 @@ class FileSystemInterface {
   // |completion_callback| must not be null.
   virtual void ReadDirectory(
       const base::FilePath& file_path,
-      const ReadDirectoryEntriesCallback& entries_callback,
+      ReadDirectoryEntriesCallback entries_callback,
       const FileOperationCallback& completion_callback) = 0;
 
   // Does server side content search for |search_query|.
@@ -438,8 +439,7 @@ class FileSystemInterface {
 
   // Returns miscellaneous metadata of the file system like the largest
   // timestamp. Used in chrome:drive-internals. |callback| must not be null.
-  virtual void GetMetadata(
-      const GetFilesystemMetadataCallback& callback) = 0;
+  virtual void GetMetadata(GetFilesystemMetadataCallback callback) = 0;
 
   // Marks the cached file as mounted, and runs |callback| upon completion.
   // If succeeded, the cached file path will be passed to the |callback|.

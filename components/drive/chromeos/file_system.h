@@ -141,13 +141,13 @@ class FileSystem : public FileSystemInterface,
   void GetResourceEntry(const base::FilePath& file_path,
                         const GetResourceEntryCallback& callback) override;
   void ReadDirectory(const base::FilePath& directory_path,
-                     const ReadDirectoryEntriesCallback& entries_callback,
+                     ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback) override;
   void GetAvailableSpace(const GetAvailableSpaceCallback& callback) override;
   void GetShareUrl(const base::FilePath& file_path,
                    const GURL& embed_origin,
                    const GetShareUrlCallback& callback) override;
-  void GetMetadata(const GetFilesystemMetadataCallback& callback) override;
+  void GetMetadata(GetFilesystemMetadataCallback callback) override;
   void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
                               const MarkMountedCallback& callback) override;
   void IsCacheFileMarkedAsMounted(const base::FilePath& drive_file_path,
@@ -258,7 +258,7 @@ class FileSystem : public FileSystemInterface,
                                         const GURL& share_url);
 
   void OnGetMetadata(
-      const GetFilesystemMetadataCallback& callback,
+      GetFilesystemMetadataCallback callback,
       drive::FileSystemMetadata* default_corpus_metadata,
       std::map<std::string, drive::FileSystemMetadata>* team_drive_metadata);
 

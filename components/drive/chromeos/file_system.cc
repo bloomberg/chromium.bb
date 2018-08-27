@@ -668,7 +668,7 @@ void FileSystem::GetResourceEntryAfterRead(
 
 void FileSystem::ReadDirectory(
     const base::FilePath& directory_path,
-    const ReadDirectoryEntriesCallback& entries_callback,
+    ReadDirectoryEntriesCallback entries_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(completion_callback);
@@ -682,7 +682,7 @@ void FileSystem::ReadDirectory(
       if (team_drive_path == directory_path ||
           team_drive_path.IsParent(directory_path)) {
         team_drive_loader.second->ReadDirectory(
-            directory_path, entries_callback, completion_callback);
+            directory_path, std::move(entries_callback), completion_callback);
         return;
       }
     }
@@ -691,7 +691,7 @@ void FileSystem::ReadDirectory(
   // We do not refresh the list of team drives from the server until the first
   // ReadDirectory is called on the default corpus change list loader.
   default_corpus_change_list_loader_->ReadDirectory(
-      directory_path, entries_callback, completion_callback);
+      directory_path, std::move(entries_callback), completion_callback);
 }
 
 void FileSystem::GetAvailableSpace(
@@ -959,8 +959,7 @@ void FileSystem::OnTeamDriveListLoaded(
   }
 }
 
-void FileSystem::GetMetadata(
-    const GetFilesystemMetadataCallback& callback) {
+void FileSystem::GetMetadata(GetFilesystemMetadataCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
@@ -973,7 +972,7 @@ void FileSystem::GetMetadata(
   base::RepeatingClosure closure = base::BarrierClosure(
       num_callbacks,
       base::BindOnce(&FileSystem::OnGetMetadata, weak_ptr_factory_.GetWeakPtr(),
-                     callback, base::Owned(metadata),
+                     base::Passed(std::move(callback)), base::Owned(metadata),
                      base::Owned(team_drive_metadata)));
 
   metadata->refreshing = default_corpus_change_list_loader_->IsRefreshing();
@@ -1013,14 +1012,14 @@ void FileSystem::GetMetadata(
 }
 
 void FileSystem::OnGetMetadata(
-    const GetFilesystemMetadataCallback& callback,
+    GetFilesystemMetadataCallback callback,
     drive::FileSystemMetadata* default_corpus_metadata,
     std::map<std::string, drive::FileSystemMetadata>* team_drive_metadata) {
   DCHECK(callback);
   DCHECK(default_corpus_metadata);
   DCHECK(team_drive_metadata);
 
-  callback.Run(*default_corpus_metadata, *team_drive_metadata);
+  std::move(callback).Run(*default_corpus_metadata, *team_drive_metadata);
 }
 
 void FileSystem::MarkCacheFileAsMounted(

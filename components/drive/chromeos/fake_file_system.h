@@ -96,7 +96,7 @@ class FakeFileSystem : public FileSystemInterface {
   void GetResourceEntry(const base::FilePath& file_path,
                         const GetResourceEntryCallback& callback) override;
   void ReadDirectory(const base::FilePath& file_path,
-                     const ReadDirectoryEntriesCallback& entries_callback,
+                     ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback) override;
   void Search(const std::string& search_query,
               const GURL& next_link,
@@ -112,7 +112,7 @@ class FakeFileSystem : public FileSystemInterface {
   void GetShareUrl(const base::FilePath& file_path,
                    const GURL& embed_origin,
                    const GetShareUrlCallback& callback) override;
-  void GetMetadata(const GetFilesystemMetadataCallback& callback) override;
+  void GetMetadata(GetFilesystemMetadataCallback callback) override;
   void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
                               const MarkMountedCallback& callback) override;
   void MarkCacheFileAsUnmounted(const base::FilePath& cache_file_path,

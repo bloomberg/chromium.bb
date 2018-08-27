@@ -52,7 +52,7 @@ class DriveChangeListLoader {
   // |completion_callback| must not be null.
   virtual void ReadDirectory(
       const base::FilePath& directory_path,
-      const ReadDirectoryEntriesCallback& entries_callback,
+      ReadDirectoryEntriesCallback entries_callback,
       const FileOperationCallback& completion_callback) = 0;
 };
 

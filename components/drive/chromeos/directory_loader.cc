@@ -94,6 +94,9 @@ FileError UpdateStartPageToken(ResourceMetadata* resource_metadata,
 }  // namespace
 
 struct DirectoryLoader::ReadDirectoryCallbackState {
+  ReadDirectoryCallbackState(ReadDirectoryEntriesCallback entries_callback)
+      : entries_callback(std::move(entries_callback)) {}
+
   ReadDirectoryEntriesCallback entries_callback;
   FileOperationCallback completion_callback;
   std::set<std::string> sent_entry_names;
@@ -235,31 +238,26 @@ void DirectoryLoader::RemoveObserver(ChangeListLoaderObserver* observer) {
 
 void DirectoryLoader::ReadDirectory(
     const base::FilePath& directory_path,
-    const ReadDirectoryEntriesCallback& entries_callback,
+    ReadDirectoryEntriesCallback entries_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(completion_callback);
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&ResourceMetadata::GetResourceEntryByPath,
-                 base::Unretained(resource_metadata_),
-                 directory_path,
-                 entry),
+                 base::Unretained(resource_metadata_), directory_path, entry),
       base::Bind(&DirectoryLoader::ReadDirectoryAfterGetEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path,
-                 entries_callback,
-                 completion_callback,
+                 weak_ptr_factory_.GetWeakPtr(), directory_path,
+                 base::Passed(std::move(entries_callback)), completion_callback,
                  true,  // should_try_loading_parent
                  base::Owned(entry)));
 }
 
 void DirectoryLoader::ReadDirectoryAfterGetEntry(
     const base::FilePath& directory_path,
-    const ReadDirectoryEntriesCallback& entries_callback,
+    ReadDirectoryEntriesCallback entries_callback,
     const FileOperationCallback& completion_callback,
     bool should_try_loading_parent,
     const ResourceEntry* entry,
@@ -271,12 +269,10 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
       should_try_loading_parent &&
       util::GetDriveGrandRootPath().IsParent(directory_path)) {
     // This entry may be found after loading the parent.
-    ReadDirectory(directory_path.DirName(),
-                  ReadDirectoryEntriesCallback(),
+    ReadDirectory(directory_path.DirName(), ReadDirectoryEntriesCallback(),
                   base::Bind(&DirectoryLoader::ReadDirectoryAfterLoadParent,
-                             weak_ptr_factory_.GetWeakPtr(),
-                             directory_path,
-                             entries_callback,
+                             weak_ptr_factory_.GetWeakPtr(), directory_path,
+                             base::Passed(std::move(entries_callback)),
                              completion_callback));
     return;
   }
@@ -296,10 +292,9 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
 
   // Register the callback function to be called when it is loaded.
   const std::string& local_id = directory_fetch_info.local_id();
-  ReadDirectoryCallbackState callback_state;
-  callback_state.entries_callback = entries_callback;
+  ReadDirectoryCallbackState callback_state(std::move(entries_callback));
   callback_state.completion_callback = completion_callback;
-  pending_load_callback_[local_id].push_back(callback_state);
+  pending_load_callback_[local_id].emplace_back(std::move(callback_state));
 
   // If loading task for |local_id| is already running, do nothing.
   if (pending_load_callback_[local_id].size() > 1)
@@ -312,7 +307,7 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
 
 void DirectoryLoader::ReadDirectoryAfterLoadParent(
     const base::FilePath& directory_path,
-    const ReadDirectoryEntriesCallback& entries_callback,
+    ReadDirectoryEntriesCallback entries_callback,
     const FileOperationCallback& completion_callback,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -325,17 +320,12 @@ void DirectoryLoader::ReadDirectoryAfterLoadParent(
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
+      blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&ResourceMetadata::GetResourceEntryByPath,
-                 base::Unretained(resource_metadata_),
-                 directory_path,
-                 entry),
+                 base::Unretained(resource_metadata_), directory_path, entry),
       base::Bind(&DirectoryLoader::ReadDirectoryAfterGetEntry,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 directory_path,
-                 entries_callback,
-                 completion_callback,
+                 weak_ptr_factory_.GetWeakPtr(), directory_path,
+                 base::Passed(std::move(entries_callback)), completion_callback,
                  false,  // should_try_loading_parent
                  base::Owned(entry)));
 }
@@ -536,7 +526,7 @@ void DirectoryLoader::SendEntries(const std::string& local_id,
         entries_to_send->push_back(entry);
       }
     }
-    callback_state->entries_callback.Run(std::move(entries_to_send));
+    std::move(callback_state->entries_callback).Run(std::move(entries_to_send));
   }
 }
 

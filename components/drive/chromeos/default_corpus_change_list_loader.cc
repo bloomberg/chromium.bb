@@ -104,11 +104,11 @@ void DefaultCorpusChangeListLoader::OnChangeListLoadIfNeeded(
 
 void DefaultCorpusChangeListLoader::ReadDirectory(
     const base::FilePath& directory_path,
-    const ReadDirectoryEntriesCallback& entries_callback,
+    ReadDirectoryEntriesCallback entries_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  directory_loader_->ReadDirectory(directory_path, entries_callback,
+  directory_loader_->ReadDirectory(directory_path, std::move(entries_callback),
                                    completion_callback);
 
   // Also start loading all of the user's contents.
