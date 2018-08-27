@@ -23,7 +23,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/network_change_notifier.h"
-#include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
 #include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"

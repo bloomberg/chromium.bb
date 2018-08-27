@@ -11,7 +11,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
-#include "net/dns/host_resolver.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace extensions {
