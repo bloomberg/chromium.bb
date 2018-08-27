@@ -123,7 +123,7 @@ struct HandlerParams {
   AsyncSafeWaitableEvent* event;
 
   // Return values:
-  // Succesfully copied the stack segment.
+  // Successfully copied the stack segment.
   bool* success;
   // The register context of the thread used by libunwind.
   unw_context_t* context;
@@ -139,10 +139,10 @@ struct HandlerParams {
 base::subtle::AtomicWord g_handler_params;
 
 // The signal handler is called on the stopped thread as an additional stack
-// frame. This relies on no alternate sigalstack() being set. This function
+// frame. This relies on no alternate signalstack() being set. This function
 // skips the handler frame on stack and unwinds the rest of the stack frames.
 // This function should use async-safe functions only. The only call that could
-// allocte memory on heap would be the cache in cfi unwinder. We need to ensure
+// allocate memory on heap would be the cache in cfi unwinder. We need to ensure
 // that AllocateCacheForCurrentThread() is called on the stopped thread before
 // trying to get stack trace from the thread. See
 // https://www.gnu.org/software/libc/manual/html_node/Nonreentrancy.html#Nonreentrancy.
@@ -196,7 +196,7 @@ __wrap_dl_unwind_find_exidx(_Unwind_Ptr pc, int* length) {
   // 0x80000000 has high bit set to 1. This means the unwind data is inline and
   // not in exception table (section 5 EHABI). 0 on the second high byte causes
   // a 0 proceedure to be lsda. But this is never executed since the pc and sp
-  // will be overriden, before calling unw_step.
+  // will be overridden, before calling unw_step.
   static const FakeExidx chrome_exidx_data[] = {
       {CFIBacktraceAndroid::executable_start_addr(), 0x80000000},
       {CFIBacktraceAndroid::executable_end_addr(), 0x80000000}};

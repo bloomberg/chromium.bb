@@ -21,7 +21,7 @@ class TRACING_EXPORT StackUnwinderAndroid {
  public:
   static StackUnwinderAndroid* GetInstance();
 
-  // Intializes the unwinder for current process. It finds all loaded libraries
+  // Initializes the unwinder for current process. It finds all loaded libraries
   // in current process and also initializes CFIBacktraceAndroid, with file IO.
   void Initialize();
 
