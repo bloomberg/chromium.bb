@@ -101,8 +101,5 @@ const char kGoogleHistoryURL[] = "https://history.google.com";
 const char kGoogleMyAccountURL[] =
     "https://myaccount.google.com/privacy#activitycontrols";
 
-const char kNewTabPageReferrerURL[] =
-    "chrome://do_not_consider_for_most_visited/new_tab_page";
-
 const char kReadingListReferrerURL[] =
     "chrome://do_not_consider_for_most_visited/reading_list";

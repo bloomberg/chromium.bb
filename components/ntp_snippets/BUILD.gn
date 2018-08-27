@@ -224,6 +224,7 @@ source_set("unit_tests") {
     "contextual/reporting/contextual_suggestions_composite_reporter_unittest.cc",
     "contextual/reporting/contextual_suggestions_metrics_reporter_unittest.cc",
     "contextual/reporting/contextual_suggestions_ukm_entry_unittest.cc",
+    "features_unittest.cc",
     "logger_unittest.cc",
     "reading_list/reading_list_suggestions_provider_unittest.cc",
     "remote/cached_image_fetcher_unittest.cc",

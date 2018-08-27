@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.suggestions;
 
 import android.content.res.Resources;
+import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
@@ -17,6 +18,18 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  * Provides configuration details for suggestions.
  */
 public final class SuggestionsConfig {
+    /**
+     * Field trial parameter for referrer URL.
+     * It must be kept in sync with //components/ntp_suggestions/features.cc
+     */
+    private static final String REFERRER_URL_PARAM = "referrer_url";
+
+    /**
+     * Default value for referrer URL.
+     * It must be kept in sync with //components/ntp_suggestions/features.cc
+     */
+    private static final String DEFAULT_REFERRER_URL = "https://feed.google.com/";
+
     private SuggestionsConfig() {}
 
     /**
@@ -66,5 +79,17 @@ public final class SuggestionsConfig {
     public static boolean useModernLayout() {
         return FeatureUtilities.isChromeModernDesignEnabled()
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_MODERN_LAYOUT);
+    }
+
+    /** @return The value of referrer URL to use with content suggestions. */
+    public static String getReferrerUrl() {
+        String referrerParamValue = ChromeFeatureList.getFieldTrialParamByFeature(
+                ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS, REFERRER_URL_PARAM);
+
+        if (!TextUtils.isEmpty(referrerParamValue)) {
+            return referrerParamValue;
+        }
+
+        return DEFAULT_REFERRER_URL;
     }
 }

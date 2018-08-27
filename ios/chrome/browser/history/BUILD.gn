@@ -49,6 +49,7 @@ source_set("tab_helper") {
     "//base",
     "//components/history/core/browser",
     "//components/keyed_service/core",
+    "//components/ntp_snippets",
     "//components/strings",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",

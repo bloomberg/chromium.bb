@@ -148,6 +148,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kWebPaymentsSingleAppUiSkip,
     &media::kCafMediaRouterImpl,
     &ntp_snippets::kArticleSuggestionsExpandableHeader,
+    &ntp_snippets::kArticleSuggestionsFeature,
     &ntp_snippets::kIncreasedVisibility,
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
     &ntp_snippets::kNotificationsFeature,

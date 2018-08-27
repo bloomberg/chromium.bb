@@ -41,8 +41,6 @@ import org.chromium.ui.widget.Toast;
  * {@link SuggestionsUiDelegate} implementation.
  */
 public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationDelegate {
-    private static final String CHROME_CONTENT_SUGGESTIONS_REFERRER =
-            "https://www.googleapis.com/auth/chrome-content-suggestions";
     private static final String CHROME_CONTEXTUAL_SUGGESTIONS_REFERRER =
             "https://goto.google.com/explore-on-content-viewer";
     private static final String NEW_TAB_URL_HELP =
@@ -149,8 +147,8 @@ public class SuggestionsNavigationDelegateImpl implements SuggestionsNavigationD
         // to filter out these history entries for NTP tiles.
         // TODO(mastiz): Extend this with support for other categories.
         if (article.mCategory == KnownCategories.ARTICLES) {
-            loadUrlParams.setReferrer(new Referrer(CHROME_CONTENT_SUGGESTIONS_REFERRER,
-                    WebReferrerPolicy.ALWAYS));
+            loadUrlParams.setReferrer(
+                    new Referrer(SuggestionsConfig.getReferrerUrl(), WebReferrerPolicy.ALWAYS));
         }
 
         // Set appropriate referrer for contextual suggestions to distinguish them from navigation
