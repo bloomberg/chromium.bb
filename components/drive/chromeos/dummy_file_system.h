@@ -56,9 +56,9 @@ class DummyFileSystem : public FileSystemInterface {
   void Unpin(const base::FilePath& file_path,
              const FileOperationCallback& callback) override {}
   void GetFile(const base::FilePath& file_path,
-               const GetFileCallback& callback) override {}
+               GetFileCallback callback) override {}
   void GetFileForSaving(const base::FilePath& file_path,
-                        const GetFileCallback& callback) override {}
+                        GetFileCallback callback) override {}
   base::Closure GetFileContent(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,

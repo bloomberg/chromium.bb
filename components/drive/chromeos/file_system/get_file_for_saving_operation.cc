@@ -65,44 +65,42 @@ GetFileForSavingOperation::~GetFileForSavingOperation() = default;
 
 void GetFileForSavingOperation::GetFileForSaving(
     const base::FilePath& file_path,
-    const GetFileCallback& callback) {
+    GetFileCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   create_file_operation_->CreateFile(
       file_path,
-      false,  // error_if_already_exists
+      false,          // error_if_already_exists
       std::string(),  // no specific mime type
       base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterCreate,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_path,
-                 callback));
+                 weak_ptr_factory_.GetWeakPtr(), file_path,
+                 base::Passed(std::move(callback))));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterCreate(
     const base::FilePath& file_path,
-    const GetFileCallback& callback,
+    GetFileCallback callback,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), std::unique_ptr<ResourceEntry>());
+    std::move(callback).Run(error, base::FilePath(),
+                            std::unique_ptr<ResourceEntry>());
     return;
   }
 
   download_operation_->EnsureFileDownloadedByPath(
-      file_path,
-      ClientContext(USER_INITIATED),
-      GetFileContentInitializedCallback(),
-      google_apis::GetContentCallback(),
+      file_path, ClientContext(USER_INITIATED),
+      GetFileContentInitializedCallback(), google_apis::GetContentCallback(),
       base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterDownload,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 base::Passed(std::move(callback))));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterDownload(
-    const GetFileCallback& callback,
+    GetFileCallback callback,
     FileError error,
     const base::FilePath& cache_path,
     std::unique_ptr<ResourceEntry> entry) {
@@ -110,7 +108,8 @@ void GetFileForSavingOperation::GetFileForSavingAfterDownload(
   DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), std::unique_ptr<ResourceEntry>());
+    std::move(callback).Run(error, base::FilePath(),
+                            std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -124,12 +123,12 @@ void GetFileForSavingOperation::GetFileForSavingAfterDownload(
                      file_closer, entry_ptr),
       base::BindOnce(
           &GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite,
-          weak_ptr_factory_.GetWeakPtr(), callback, cache_path,
-          std::move(entry), base::Owned(file_closer)));
+          weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback)),
+          cache_path, std::move(entry), base::Owned(file_closer)));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite(
-    const GetFileCallback& callback,
+    GetFileCallback callback,
     const base::FilePath& cache_path,
     std::unique_ptr<ResourceEntry> entry,
     std::unique_ptr<base::ScopedClosureRunner>* file_closer,
@@ -138,7 +137,8 @@ void GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite(
   DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), std::unique_ptr<ResourceEntry>());
+    std::move(callback).Run(error, base::FilePath(),
+                            std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -147,17 +147,15 @@ void GetFileForSavingOperation::GetFileForSavingAfterOpenForWrite(
       cache_path,
       base::Bind(&GetFileForSavingOperation::GetFileForSavingAfterWatch,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback,
-                 cache_path,
+                 base::Passed(std::move(callback)), cache_path,
                  base::Passed(&entry)),
       base::Bind(&GetFileForSavingOperation::OnWriteEvent,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 local_id,
+                 weak_ptr_factory_.GetWeakPtr(), local_id,
                  base::Passed(file_closer)));
 }
 
 void GetFileForSavingOperation::GetFileForSavingAfterWatch(
-    const GetFileCallback& callback,
+    GetFileCallback callback,
     const base::FilePath& cache_path,
     std::unique_ptr<ResourceEntry> entry,
     bool success) {
@@ -169,12 +167,12 @@ void GetFileForSavingOperation::GetFileForSavingAfterWatch(
                success ? "ok" : "fail");
 
   if (!success) {
-    callback.Run(FILE_ERROR_FAILED, base::FilePath(),
-                 std::unique_ptr<ResourceEntry>());
+    std::move(callback).Run(FILE_ERROR_FAILED, base::FilePath(),
+                            std::unique_ptr<ResourceEntry>());
     return;
   }
 
-  callback.Run(FILE_ERROR_OK, cache_path, std::move(entry));
+  std::move(callback).Run(FILE_ERROR_OK, cache_path, std::move(entry));
 }
 
 void GetFileForSavingOperation::OnWriteEvent(

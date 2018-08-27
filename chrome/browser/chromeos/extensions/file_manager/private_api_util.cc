@@ -75,7 +75,7 @@ void GetFileNativeLocalPathForOpening(Profile* profile,
       return;
     }
     file_system->GetFile(drive::util::ExtractDrivePath(path),
-                         base::Bind(&OnDriveGetFile, path, callback));
+                         base::BindOnce(&OnDriveGetFile, path, callback));
     return;
   }
 
@@ -95,8 +95,9 @@ void GetFileNativeLocalPathForSaving(Profile* profile,
       callback.Run(base::FilePath());
       return;
     }
-    file_system->GetFileForSaving(drive::util::ExtractDrivePath(path),
-                                  base::Bind(&OnDriveGetFile, path, callback));
+    file_system->GetFileForSaving(
+        drive::util::ExtractDrivePath(path),
+        base::BindOnce(&OnDriveGetFile, path, callback));
     return;
   }
 

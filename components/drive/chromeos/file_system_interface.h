@@ -83,9 +83,9 @@ typedef base::Callback<void(FileError error,
     GetResourceEntryCallback;
 
 // Used to get files from the file system.
-typedef base::Callback<void(FileError error,
-                            const base::FilePath& file_path,
-                            std::unique_ptr<ResourceEntry> entry)>
+typedef base::OnceCallback<void(FileError error,
+                                const base::FilePath& file_path,
+                                std::unique_ptr<ResourceEntry> entry)>
     GetFileCallback;
 
 // Used to get file content from the file system.
@@ -349,7 +349,7 @@ class FileSystemInterface {
   //
   // Returns the cache path and entry info to |callback|. It must not be null.
   virtual void GetFile(const base::FilePath& file_path,
-                       const GetFileCallback& callback) = 0;
+                       GetFileCallback callback) = 0;
 
   // Makes sure that |file_path| in the file system is available in the local
   // cache, and mark it as dirty. The next modification to the cache file is
@@ -358,7 +358,7 @@ class FileSystemInterface {
   //
   // Returns the cache path and entry info to |callback|. It must not be null.
   virtual void GetFileForSaving(const base::FilePath& file_path,
-                                const GetFileCallback& callback) = 0;
+                                GetFileCallback callback) = 0;
 
   // Gets a file by the given |file_path| and returns a closure to cancel the
   // task.

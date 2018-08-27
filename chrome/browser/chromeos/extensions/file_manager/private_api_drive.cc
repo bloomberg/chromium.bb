@@ -998,9 +998,9 @@ bool FileManagerPrivateInternalEnsureFileDownloadedFunction::RunAsync() {
 
   file_system->GetFile(
       drive_path,
-      base::Bind(&FileManagerPrivateInternalEnsureFileDownloadedFunction::
-                     OnDownloadFinished,
-                 this));
+      base::BindOnce(&FileManagerPrivateInternalEnsureFileDownloadedFunction::
+                         OnDownloadFinished,
+                     this));
   return true;
 }
 
