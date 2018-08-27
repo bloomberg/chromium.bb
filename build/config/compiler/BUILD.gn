@@ -682,6 +682,8 @@ config("compiler") {
             ]
           }
         }
+      } else {
+        not_needed([ "lto_opt_level" ])
       }
     }
 
