@@ -13,10 +13,23 @@
 namespace drive {
 namespace internal {
 
-AboutResourceLoader::AboutResourceLoader(JobScheduler* scheduler)
+namespace {
+// The time period that we will cache the result of UpdateAboutResource.
+constexpr base::TimeDelta kCacheEvictionTimeout =
+    base::TimeDelta::FromMinutes(1);
+}  // namespace
+
+AboutResourceLoader::AboutResourceLoader(JobScheduler* scheduler,
+                                         const base::TickClock* clock)
     : scheduler_(scheduler),
       current_update_task_id_(-1),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  cache_eviction_timer_ = std::make_unique<base::RetainingOneShotTimer>(
+      FROM_HERE, kCacheEvictionTimeout,
+      base::BindRepeating(&AboutResourceLoader::EvictCachedAboutResource,
+                          base::Unretained(this)),
+      clock);
+}
 
 AboutResourceLoader::~AboutResourceLoader() = default;
 
@@ -81,10 +94,17 @@ void AboutResourceLoader::UpdateAboutResourceAfterGetAbout(
   cached_about_resource_ =
       std::make_unique<google_apis::AboutResource>(*about_resource);
 
+  cache_eviction_timer_->Reset();
+
   for (auto& callback : callbacks) {
     callback.Run(status,
                  std::make_unique<google_apis::AboutResource>(*about_resource));
   }
+}
+
+void AboutResourceLoader::EvictCachedAboutResource() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  cached_about_resource_.reset();
 }
 
 }  // namespace internal
