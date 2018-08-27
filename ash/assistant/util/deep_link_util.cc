@@ -6,6 +6,7 @@
 
 #include <set>
 
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "net/base/escape.h"
@@ -54,25 +55,6 @@ constexpr char kAssistantSettingsWebUrl[] = R"(data:text/html,
   </html>
 )";
 
-// Map of supported deep link types to their prefixes.
-const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
-    {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
-    {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
-    {DeepLinkType::kQuery, kAssistantQueryPrefix},
-    {DeepLinkType::kReminders, kAssistantRemindersPrefix},
-    {DeepLinkType::kScreenshot, kAssistantScreenshotPrefix},
-    {DeepLinkType::kSettings, kAssistantSettingsPrefix},
-    {DeepLinkType::kWhatsOnMyScreen, kAssistantWhatsOnMyScreenPrefix}};
-
-// Map of supported deep link params to their keys.
-const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
-    {DeepLinkParam::kQuery, kQueryParamKey},
-    {DeepLinkParam::kRelaunch, kRelaunchParamKey}};
-
-// Set of deep link types which open web contents in the Assistant UI.
-const std::set<DeepLinkType> kWebDeepLinks = {DeepLinkType::kReminders,
-                                              DeepLinkType::kSettings};
-
 }  // namespace
 
 GURL CreateAssistantSettingsDeepLink() {
@@ -104,15 +86,21 @@ std::map<std::string, std::string> GetDeepLinkParams(const GURL& deep_link) {
     params[pair.first] = pair.second;
 
   return params;
-};
+}
 
 base::Optional<std::string> GetDeepLinkParam(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param) {
+  // Map of supported deep link params to their keys.
+  static const std::map<DeepLinkParam, std::string> kDeepLinkParamKeys = {
+      {DeepLinkParam::kQuery, kQueryParamKey},
+      {DeepLinkParam::kRelaunch, kRelaunchParamKey}};
+
   const std::string& key = kDeepLinkParamKeys.at(param);
-  return params.count(key) == 1
+  const auto it = params.find(key);
+  return it != params.end()
              ? base::Optional<std::string>(net::UnescapeURLComponent(
-                   params.at(key), net::UnescapeRule::REPLACE_PLUS_WITH_SPACE))
+                   it->second, net::UnescapeRule::REPLACE_PLUS_WITH_SPACE))
              : base::nullopt;
 }
 
@@ -120,7 +108,6 @@ base::Optional<bool> GetDeepLinkParamAsBool(
     const std::map<std::string, std::string>& params,
     DeepLinkParam param) {
   const base::Optional<std::string>& value = GetDeepLinkParam(params, param);
-
   if (value == "true")
     return true;
 
@@ -131,6 +118,16 @@ base::Optional<bool> GetDeepLinkParamAsBool(
 }
 
 DeepLinkType GetDeepLinkType(const GURL& url) {
+  // Map of supported deep link types to their prefixes.
+  static const std::map<DeepLinkType, std::string> kSupportedDeepLinks = {
+      {DeepLinkType::kFeedback, kAssistantFeedbackPrefix},
+      {DeepLinkType::kOnboarding, kAssistantOnboardingPrefix},
+      {DeepLinkType::kQuery, kAssistantQueryPrefix},
+      {DeepLinkType::kReminders, kAssistantRemindersPrefix},
+      {DeepLinkType::kScreenshot, kAssistantScreenshotPrefix},
+      {DeepLinkType::kSettings, kAssistantSettingsPrefix},
+      {DeepLinkType::kWhatsOnMyScreen, kAssistantWhatsOnMyScreenPrefix}};
+
   for (const auto& supported_deep_link : kSupportedDeepLinks) {
     if (base::StartsWith(url.spec(), supported_deep_link.second,
                          base::CompareCase::SENSITIVE)) {
@@ -171,6 +168,7 @@ base::Optional<GURL> GetWebUrl(DeepLinkType type) {
       return base::nullopt;
   }
 
+  NOTREACHED();
   return base::nullopt;
 }
 
@@ -179,7 +177,11 @@ bool IsWebDeepLink(const GURL& deep_link) {
 }
 
 bool IsWebDeepLinkType(DeepLinkType type) {
-  return kWebDeepLinks.count(type) != 0;
+  // Set of deep link types which open web contents in the Assistant UI.
+  static const std::set<DeepLinkType> kWebDeepLinks = {DeepLinkType::kReminders,
+                                                       DeepLinkType::kSettings};
+
+  return base::ContainsKey(kWebDeepLinks, type);
 }
 
 }  // namespace util
