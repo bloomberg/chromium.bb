@@ -18,7 +18,6 @@ static_library("web_ui") {
     "//components/resources:components_scaled_resources_grit",
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing:features",
-    "//components/safe_browsing:webui_proto",
     "//components/safe_browsing/browser:referrer_chain_provider",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/safe_browsing/db:v4_local_database_manager",
@@ -29,11 +28,28 @@ static_library("web_ui") {
     "//net",
     "//url",
   ]
+
+  public_deps = [
+    "//components/safe_browsing:webui_proto",
+  ]
 }
 
 static_library("constants") {
   sources = [
     "constants.cc",
     "constants.h",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "safe_browsing_ui_unittest.cc",
+  ]
+
+  deps = [
+    ":web_ui",
+    "//content/test:test_support",
+    "//testing/gtest",
   ]
 }
