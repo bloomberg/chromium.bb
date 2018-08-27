@@ -12,7 +12,7 @@ QuicMemSliceImpl::QuicMemSliceImpl() = default;
 
 QuicMemSliceImpl::QuicMemSliceImpl(QuicBufferAllocator* /*allocator*/,
                                    size_t length) {
-  io_buffer_ = new net::IOBuffer(length);
+  io_buffer_ = base::MakeRefCounted<net::IOBuffer>(length);
   length_ = length;
 }
 

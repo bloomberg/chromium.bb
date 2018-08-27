@@ -69,14 +69,15 @@ class TcpSocketProxyTest : public TestWithScopedTaskEnvironment {
     // Read().
     char test_message = '0';
 
-    scoped_refptr<IOBuffer> write_buffer = new IOBuffer(1);
+    scoped_refptr<IOBuffer> write_buffer = base::MakeRefCounted<IOBuffer>(1);
     *write_buffer->data() = test_message;
     TestCompletionCallback write_callback;
     int write_result =
         socket1->Write(write_buffer.get(), 1, write_callback.callback(),
                        TRAFFIC_ANNOTATION_FOR_TESTS);
 
-    scoped_refptr<IOBufferWithSize> read_buffer(new IOBufferWithSize(1024));
+    scoped_refptr<IOBufferWithSize> read_buffer =
+        base::MakeRefCounted<IOBufferWithSize>(1024);
     TestCompletionCallback read_callback;
     int read_result = socket2->Read(read_buffer.get(), read_buffer->size(),
                                     read_callback.callback());
@@ -88,7 +89,8 @@ class TcpSocketProxyTest : public TestWithScopedTaskEnvironment {
   }
 
   void ExpectClosed(StreamSocket* socket) {
-    scoped_refptr<IOBufferWithSize> read_buffer(new IOBufferWithSize(1024));
+    scoped_refptr<IOBufferWithSize> read_buffer =
+        base::MakeRefCounted<IOBufferWithSize>(1024);
     TestCompletionCallback read_callback;
     int read_result = socket->Read(read_buffer.get(), read_buffer->size(),
                                    read_callback.callback());

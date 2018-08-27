@@ -41,7 +41,7 @@ int ElementsUploadDataStream::ReadInternal(
     IOBuffer* buf,
     int buf_len) {
   DCHECK_GT(buf_len, 0);
-  return ReadElements(new DrainableIOBuffer(buf, buf_len));
+  return ReadElements(base::MakeRefCounted<DrainableIOBuffer>(buf, buf_len));
 }
 
 bool ElementsUploadDataStream::IsInMemory() const {

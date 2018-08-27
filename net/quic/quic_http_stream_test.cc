@@ -193,7 +193,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
         client_headers_include_h2_stream_dependency_(std::get<1>(GetParam())),
         crypto_config_(quic::test::crypto_test_utils::ProofVerifierForTesting(),
                        quic::TlsClientHandshaker::CreateSslCtx()),
-        read_buffer_(new IOBufferWithSize(4096)),
+        read_buffer_(base::MakeRefCounted<IOBufferWithSize>(4096)),
         promise_id_(GetNthServerInitiatedStreamId(0)),
         stream_id_(GetNthClientInitiatedStreamId(0)),
         connection_id_(2),

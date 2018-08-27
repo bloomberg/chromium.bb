@@ -174,7 +174,8 @@ class WritersTest : public TestWithScopedTaskEnvironment {
     std::string content;
     int rv = 0;
     do {
-      scoped_refptr<IOBuffer> buf(new IOBuffer(kDefaultBufferSize));
+      scoped_refptr<IOBuffer> buf =
+          base::MakeRefCounted<IOBuffer>(kDefaultBufferSize);
       rv = writers_->Read(buf.get(), kDefaultBufferSize, callback.callback(),
                           transaction);
       if (rv == ERR_IO_PENDING) {
@@ -199,7 +200,7 @@ class WritersTest : public TestWithScopedTaskEnvironment {
 
     std::string content;
     int rv = 0;
-    scoped_refptr<IOBuffer> buf(new IOBuffer(5));
+    scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(5);
     rv = writers_->Read(buf.get(), 5, callback.callback(), transaction);
     if (rv == ERR_IO_PENDING) {
       rv = callback.WaitForResult();
@@ -230,7 +231,7 @@ class WritersTest : public TestWithScopedTaskEnvironment {
 
     std::vector<scoped_refptr<IOBuffer>> bufs;
     for (auto buffer_length : buffer_lengths)
-      bufs.push_back(new IOBuffer(buffer_length));
+      bufs.push_back(base::MakeRefCounted<IOBuffer>(buffer_length));
 
     std::vector<TestCompletionCallback> callbacks(buffer_lengths.size());
 
@@ -289,7 +290,7 @@ class WritersTest : public TestWithScopedTaskEnvironment {
       std::vector<TestCompletionCallback> callbacks(transactions_.size());
 
       for (size_t i = 0; i < transactions_.size(); i++) {
-        bufs.push_back(new IOBuffer(kDefaultBufferSize));
+        bufs.push_back(base::MakeRefCounted<IOBuffer>(kDefaultBufferSize));
 
         // If we have deleted a transaction in the first iteration, then do not
         // invoke Read on it, in subsequent iterations.
@@ -360,13 +361,13 @@ class WritersTest : public TestWithScopedTaskEnvironment {
 
     // Read a few bytes so that truncation is possible.
     TestCompletionCallback callback;
-    scoped_refptr<IOBuffer> buf = new IOBuffer(5);
+    scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(5);
     int rv = writers_->Read(buf.get(), 5, callback.callback(), transaction);
     EXPECT_EQ(ERR_IO_PENDING, rv);  // Since the default is asynchronous.
     EXPECT_EQ(5, callback.GetResult(rv));
 
     // Start reading a few more bytes and return.
-    buf = new IOBuffer(5);
+    buf = base::MakeRefCounted<IOBuffer>(5);
     rv = writers_->Read(buf.get(), 5, base::BindRepeating([](int rv) {}),
                         transaction);
     EXPECT_EQ(ERR_IO_PENDING, rv);
@@ -391,7 +392,7 @@ class WritersTest : public TestWithScopedTaskEnvironment {
       en->Close();
 
       for (size_t i = 0; i < transactions_.size(); i++) {
-        bufs.push_back(new IOBuffer(30));
+        bufs.push_back(base::MakeRefCounted<IOBuffer>(30));
 
         if (!first_iter && i > 0)
           break;
@@ -424,7 +425,7 @@ class WritersTest : public TestWithScopedTaskEnvironment {
     std::vector<TestCompletionCallback> callbacks(results->size());
 
     for (size_t i = 0; i < transactions_.size(); i++) {
-      bufs.push_back(new IOBuffer(30));
+      bufs.push_back(base::MakeRefCounted<IOBuffer>(30));
 
       rv = writers_->Read(bufs[i].get(), 30, callbacks[i].callback(),
                           transactions_[i].get());
@@ -465,7 +466,8 @@ class WritersTest : public TestWithScopedTaskEnvironment {
     if (io_buf_len == 0)
       return false;
 
-    scoped_refptr<IOBuffer> read_buffer = new IOBuffer(io_buf_len);
+    scoped_refptr<IOBuffer> read_buffer =
+        base::MakeRefCounted<IOBuffer>(io_buf_len);
     int rv = disk_entry_->ReadData(kResponseInfoIndex, 0, read_buffer.get(),
                                    io_buf_len, callback.callback());
     rv = callback.GetResult(rv);
@@ -499,6 +501,8 @@ class WritersTest : public TestWithScopedTaskEnvironment {
 
   std::vector<std::unique_ptr<TestHttpCacheTransaction>> transactions_;
 };
+
+const int WritersTest::kDefaultBufferSize;
 
 // Tests successful addition of a transaction.
 TEST_F(WritersTest, AddTransaction) {

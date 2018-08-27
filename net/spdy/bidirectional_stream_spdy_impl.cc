@@ -141,7 +141,7 @@ void BidirectionalStreamSpdyImpl::SendvData(
   if (buffers.size() == 1) {
     pending_combined_buffer_ = buffers[0];
   } else {
-    pending_combined_buffer_ = new net::IOBuffer(total_len);
+    pending_combined_buffer_ = base::MakeRefCounted<net::IOBuffer>(total_len);
     int len = 0;
     // TODO(xunjieli): Get rid of extra copy. Coalesce headers and data frames.
     for (size_t i = 0; i < buffers.size(); ++i) {

@@ -440,7 +440,7 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
       return;
     }
 
-    buffer_ = new GrowableIOBuffer();
+    buffer_ = base::MakeRefCounted<GrowableIOBuffer>();
 
     if (request->response_headers()->HasHeader(
             HttpRequestHeaders::kContentLength)) {
@@ -555,7 +555,8 @@ class DnsTCPAttempt : public DnsAttempt {
         next_state_(STATE_NONE),
         socket_(std::move(socket)),
         query_(std::move(query)),
-        length_buffer_(new IOBufferWithSize(sizeof(uint16_t))),
+        length_buffer_(
+            base::MakeRefCounted<IOBufferWithSize>(sizeof(uint16_t))),
         response_length_(0) {}
 
   // DnsAttempt:
@@ -651,8 +652,8 @@ class DnsTCPAttempt : public DnsAttempt {
     if (static_cast<int>(query_size) != query_->io_buffer()->size())
       return ERR_FAILED;
     base::WriteBigEndian<uint16_t>(length_buffer_->data(), query_size);
-    buffer_ =
-        new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
+    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(length_buffer_.get(),
+                                                      length_buffer_->size());
     next_state_ = STATE_SEND_LENGTH;
     return OK;
   }
@@ -670,8 +671,8 @@ class DnsTCPAttempt : public DnsAttempt {
           base::BindOnce(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)),
           kTrafficAnnotation);
     }
-    buffer_ =
-        new DrainableIOBuffer(query_->io_buffer(), query_->io_buffer()->size());
+    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(
+        query_->io_buffer(), query_->io_buffer()->size());
     next_state_ = STATE_SEND_QUERY;
     return OK;
   }
@@ -689,8 +690,8 @@ class DnsTCPAttempt : public DnsAttempt {
           base::BindOnce(&DnsTCPAttempt::OnIOComplete, base::Unretained(this)),
           kTrafficAnnotation);
     }
-    buffer_ =
-        new DrainableIOBuffer(length_buffer_.get(), length_buffer_->size());
+    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(length_buffer_.get(),
+                                                      length_buffer_->size());
     next_state_ = STATE_READ_LENGTH;
     return OK;
   }
@@ -721,7 +722,8 @@ class DnsTCPAttempt : public DnsAttempt {
       return ERR_DNS_MALFORMED_RESPONSE;
     // Allocate more space so that DnsResponse::InitParse sanity check passes.
     response_.reset(new DnsResponse(response_length_ + 1));
-    buffer_ = new DrainableIOBuffer(response_->io_buffer(), response_length_);
+    buffer_ = base::MakeRefCounted<DrainableIOBuffer>(response_->io_buffer(),
+                                                      response_length_);
     next_state_ = STATE_READ_RESPONSE;
     return OK;
   }

@@ -739,7 +739,7 @@ void SpdyStream::SendData(IOBuffer* data,
   CHECK(io_state_ == STATE_OPEN ||
         io_state_ == STATE_HALF_CLOSED_REMOTE) << io_state_;
   CHECK(!pending_send_data_.get());
-  pending_send_data_ = new DrainableIOBuffer(data, length);
+  pending_send_data_ = base::MakeRefCounted<DrainableIOBuffer>(data, length);
   pending_send_status_ = send_status;
   QueueNextDataFrame();
 }

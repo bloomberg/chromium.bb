@@ -22,8 +22,8 @@ std::string GetTestString(int size) {
 }
 
 TEST(HttpConnectionTest, ReadIOBuffer_SetCapacity) {
-  scoped_refptr<HttpConnection::ReadIOBuffer> buffer(
-      new HttpConnection::ReadIOBuffer);
+  scoped_refptr<HttpConnection::ReadIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::ReadIOBuffer>();
   EXPECT_EQ(HttpConnection::ReadIOBuffer::kInitialBufSize + 0,
             buffer->GetCapacity());
   EXPECT_EQ(HttpConnection::ReadIOBuffer::kInitialBufSize + 0,
@@ -38,8 +38,8 @@ TEST(HttpConnectionTest, ReadIOBuffer_SetCapacity) {
 }
 
 TEST(HttpConnectionTest, ReadIOBuffer_SetCapacity_WithData) {
-  scoped_refptr<HttpConnection::ReadIOBuffer> buffer(
-      new HttpConnection::ReadIOBuffer);
+  scoped_refptr<HttpConnection::ReadIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::ReadIOBuffer>();
   EXPECT_EQ(HttpConnection::ReadIOBuffer::kInitialBufSize + 0,
             buffer->GetCapacity());
   EXPECT_EQ(HttpConnection::ReadIOBuffer::kInitialBufSize + 0,
@@ -71,8 +71,8 @@ TEST(HttpConnectionTest, ReadIOBuffer_SetCapacity_WithData) {
 }
 
 TEST(HttpConnectionTest, ReadIOBuffer_IncreaseCapacity) {
-  scoped_refptr<HttpConnection::ReadIOBuffer> buffer(
-      new HttpConnection::ReadIOBuffer);
+  scoped_refptr<HttpConnection::ReadIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::ReadIOBuffer>();
   EXPECT_TRUE(buffer->IncreaseCapacity());
   const int kExpectedInitialBufSize =
       HttpConnection::ReadIOBuffer::kInitialBufSize *
@@ -106,8 +106,8 @@ TEST(HttpConnectionTest, ReadIOBuffer_IncreaseCapacity) {
 }
 
 TEST(HttpConnectionTest, ReadIOBuffer_IncreaseCapacity_WithData) {
-  scoped_refptr<HttpConnection::ReadIOBuffer> buffer(
-      new HttpConnection::ReadIOBuffer);
+  scoped_refptr<HttpConnection::ReadIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::ReadIOBuffer>();
   EXPECT_TRUE(buffer->IncreaseCapacity());
   const int kExpectedInitialBufSize =
       HttpConnection::ReadIOBuffer::kInitialBufSize *
@@ -144,8 +144,8 @@ TEST(HttpConnectionTest, ReadIOBuffer_IncreaseCapacity_WithData) {
 }
 
 TEST(HttpConnectionTest, ReadIOBuffer_DidRead_DidConsume) {
-  scoped_refptr<HttpConnection::ReadIOBuffer> buffer(
-      new HttpConnection::ReadIOBuffer);
+  scoped_refptr<HttpConnection::ReadIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::ReadIOBuffer>();
   const char* start_of_buffer = buffer->StartOfBuffer();
   EXPECT_EQ(start_of_buffer, buffer->data());
 
@@ -230,8 +230,8 @@ TEST(HttpConnectionTest, ReadIOBuffer_DidRead_DidConsume) {
 }
 
 TEST(HttpConnectionTest, QueuedWriteIOBuffer_Append_DidConsume) {
-  scoped_refptr<HttpConnection::QueuedWriteIOBuffer> buffer(
-      new HttpConnection::QueuedWriteIOBuffer());
+  scoped_refptr<HttpConnection::QueuedWriteIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::QueuedWriteIOBuffer>();
   EXPECT_TRUE(buffer->IsEmpty());
   EXPECT_EQ(0, buffer->GetSizeToWrite());
   EXPECT_EQ(0, buffer->total_size());
@@ -288,8 +288,8 @@ TEST(HttpConnectionTest, QueuedWriteIOBuffer_Append_DidConsume) {
 }
 
 TEST(HttpConnectionTest, QueuedWriteIOBuffer_TotalSizeLimit) {
-  scoped_refptr<HttpConnection::QueuedWriteIOBuffer> buffer(
-      new HttpConnection::QueuedWriteIOBuffer());
+  scoped_refptr<HttpConnection::QueuedWriteIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::QueuedWriteIOBuffer>();
   EXPECT_EQ(HttpConnection::QueuedWriteIOBuffer::kDefaultMaxBufferSize + 0,
             buffer->max_buffer_size());
 
@@ -331,8 +331,8 @@ TEST(HttpConnectionTest, QueuedWriteIOBuffer_DataPointerStability) {
   // This is a regression test that makes sure that QueuedWriteIOBuffer deals
   // with base::queue's semantics differences vs. std::queue right, and still
   // makes sure our data() pointers are stable.
-  scoped_refptr<HttpConnection::QueuedWriteIOBuffer> buffer(
-      new HttpConnection::QueuedWriteIOBuffer());
+  scoped_refptr<HttpConnection::QueuedWriteIOBuffer> buffer =
+      base::MakeRefCounted<HttpConnection::QueuedWriteIOBuffer>();
 
   // We append a short string to make it fit within any short string
   // optimization, so that if the underlying queue moves the std::string,

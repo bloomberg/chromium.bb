@@ -1449,7 +1449,7 @@ int HttpCache::Transaction::DoCacheReadResponse() {
   TransitionToState(STATE_CACHE_READ_RESPONSE_COMPLETE);
 
   io_buf_len_ = entry_->disk_entry->GetDataSize(kResponseInfoIndex);
-  read_buf_ = new IOBuffer(io_buf_len_);
+  read_buf_ = base::MakeRefCounted<IOBuffer>(io_buf_len_);
 
   net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_READ_INFO);
   return entry_->disk_entry->ReadData(kResponseInfoIndex, 0, read_buf_.get(),
@@ -2130,8 +2130,8 @@ int HttpCache::Transaction::DoCacheReadMetadata() {
   DCHECK(!response_.metadata.get());
   TransitionToState(STATE_CACHE_READ_METADATA_COMPLETE);
 
-  response_.metadata =
-      new IOBufferWithSize(entry_->disk_entry->GetDataSize(kMetadataIndex));
+  response_.metadata = base::MakeRefCounted<IOBufferWithSize>(
+      entry_->disk_entry->GetDataSize(kMetadataIndex));
 
   net_log_.BeginEvent(NetLogEventType::HTTP_CACHE_READ_INFO);
   return entry_->disk_entry->ReadData(kMetadataIndex, 0,

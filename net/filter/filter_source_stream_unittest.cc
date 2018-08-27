@@ -262,7 +262,7 @@ TEST_P(FilterSourceStreamTest, FilterDataReturnNoBytesExceptLast) {
   MockSourceStream* mock_stream = source.get();
   NeedsAllInputFilterSourceStream stream(std::move(source), input.length());
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   std::string actual_output;
   while (true) {
@@ -287,7 +287,7 @@ TEST_P(FilterSourceStreamTest, FilterDataReturnNoByte) {
   MockSourceStream* mock_stream = source.get();
   PassThroughFilterSourceStream stream(std::move(source));
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   int rv = stream.Read(output_buffer.get(), output_buffer->size(),
                        callback.callback());
@@ -315,7 +315,7 @@ TEST_P(FilterSourceStreamTest, FilterDataOutputNoData) {
   MockSourceStream* mock_stream = source.get();
   NoOutputSourceStream stream(std::move(source), input.length());
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   int rv = stream.Read(output_buffer.get(), output_buffer->size(),
                        callback.callback());
@@ -341,7 +341,7 @@ TEST_P(FilterSourceStreamTest, FilterDataReturnData) {
   MockSourceStream* mock_stream = source.get();
   PassThroughFilterSourceStream stream(std::move(source));
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   std::string actual_output;
   while (true) {
@@ -374,7 +374,7 @@ TEST_P(FilterSourceStreamTest, FilterDataReturnMoreData) {
   int multiplier = 2;
   MultiplySourceStream stream(std::move(source), multiplier);
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   std::string actual_output;
   while (true) {
@@ -407,7 +407,7 @@ TEST_P(FilterSourceStreamTest, FilterDataOutputSpace) {
   // Use an extremely small buffer size, so FilterData will need more output
   // space.
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kSmallBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kSmallBufferSize);
   MockSourceStream* mock_stream = source.get();
   PassThroughFilterSourceStream stream(std::move(source));
   TestCompletionCallback callback;
@@ -433,7 +433,7 @@ TEST_P(FilterSourceStreamTest, FilterDataReturnError) {
   std::string input;
   source->AddReadResult(input.data(), 0, OK, GetParam());
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   MockSourceStream* mock_stream = source.get();
   ErrorFilterSourceStream stream(std::move(source));
   TestCompletionCallback callback;
@@ -465,7 +465,7 @@ TEST_P(FilterSourceStreamTest, FilterChaining) {
       new PassThroughFilterSourceStream(std::move(needs_all_input_source)));
   second_pass_through_source->set_type_string("SECOND_PASS_THROUGH");
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
 
   TestCompletionCallback callback;
   std::string actual_output;
@@ -496,7 +496,7 @@ TEST_P(FilterSourceStreamTest, OutputSpaceForOneRead) {
   // Use an extremely small buffer size (1 byte), so FilterData will need more
   // output space.
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kSmallBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kSmallBufferSize);
   MockSourceStream* mock_stream = source.get();
   PassThroughFilterSourceStream stream(std::move(source));
   TestCompletionCallback callback;
@@ -524,7 +524,7 @@ TEST_P(FilterSourceStreamTest, ThrottleSourceStream) {
   // Add a 0 byte read to signal EOF.
   source->AddReadResult(input.data() + input.length(), 0, OK, GetParam());
   scoped_refptr<IOBufferWithSize> output_buffer =
-      new IOBufferWithSize(kDefaultBufferSize);
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   MockSourceStream* mock_stream = source.get();
   ThrottleSourceStream stream(std::move(source));
   TestCompletionCallback callback;

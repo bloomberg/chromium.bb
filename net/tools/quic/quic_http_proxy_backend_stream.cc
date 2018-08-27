@@ -49,7 +49,7 @@ QuicHttpProxyBackendStream::QuicHttpProxyBackendStream(
       delegate_(nullptr),
       quic_peer_ip_(kDefaultQuicPeerIP),
       url_request_(nullptr),
-      buf_(new IOBuffer(kBufferSize)),
+      buf_(base::MakeRefCounted<IOBuffer>(kBufferSize)),
       response_completed_(false),
       headers_set_(false),
       quic_response_(new quic::QuicBackendResponse()),

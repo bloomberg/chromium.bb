@@ -20,7 +20,7 @@ namespace net {
 HttpBasicState::HttpBasicState(std::unique_ptr<ClientSocketHandle> connection,
                                bool using_proxy,
                                bool http_09_on_non_default_ports_enabled)
-    : read_buf_(new GrowableIOBuffer()),
+    : read_buf_(base::MakeRefCounted<GrowableIOBuffer>()),
       connection_(std::move(connection)),
       using_proxy_(using_proxy),
       can_send_early_(false),

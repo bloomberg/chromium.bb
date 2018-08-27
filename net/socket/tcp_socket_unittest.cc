@@ -185,8 +185,8 @@ class TCPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
       // message.
       const std::string message("t");
 
-      scoped_refptr<IOBufferWithSize> write_buffer(
-          new IOBufferWithSize(message.size()));
+      scoped_refptr<IOBufferWithSize> write_buffer =
+          base::MakeRefCounted<IOBufferWithSize>(message.size());
       memmove(write_buffer->data(), message.data(), message.size());
 
       TestCompletionCallback write_callback;
@@ -194,8 +194,8 @@ class TCPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
           write_buffer.get(), write_buffer->size(), write_callback.callback(),
           TRAFFIC_ANNOTATION_FOR_TESTS);
 
-      scoped_refptr<IOBufferWithSize> read_buffer(
-          new IOBufferWithSize(message.size()));
+      scoped_refptr<IOBufferWithSize> read_buffer =
+          base::MakeRefCounted<IOBufferWithSize>(message.size());
       TestCompletionCallback read_callback;
       int read_result = connecting_socket.Read(
           read_buffer.get(), read_buffer->size(), read_callback.callback());
@@ -405,8 +405,8 @@ TEST_F(TCPSocketTest, ReadWrite) {
 
   size_t bytes_written = 0;
   while (bytes_written < message.size()) {
-    scoped_refptr<IOBufferWithSize> write_buffer(
-        new IOBufferWithSize(message.size() - bytes_written));
+    scoped_refptr<IOBufferWithSize> write_buffer =
+        base::MakeRefCounted<IOBufferWithSize>(message.size() - bytes_written);
     memmove(write_buffer->data(), message.data() + bytes_written,
             message.size() - bytes_written);
 
@@ -422,8 +422,8 @@ TEST_F(TCPSocketTest, ReadWrite) {
 
   size_t bytes_read = 0;
   while (bytes_read < message.size()) {
-    scoped_refptr<IOBufferWithSize> read_buffer(
-        new IOBufferWithSize(message.size() - bytes_read));
+    scoped_refptr<IOBufferWithSize> read_buffer =
+        base::MakeRefCounted<IOBufferWithSize>(message.size() - bytes_read);
     TestCompletionCallback read_callback;
     int read_result = connecting_socket.Read(
         read_buffer.get(), read_buffer->size(), read_callback.callback());
@@ -641,7 +641,8 @@ TEST_F(TCPSocketTest, Tag) {
   SocketTag tag2(getuid(), tag_val2);
   socket_.ApplySocketTag(tag2);
   const char kRequest1[] = "GET / HTTP/1.0";
-  scoped_refptr<IOBuffer> write_buffer1(new StringIOBuffer(kRequest1));
+  scoped_refptr<IOBuffer> write_buffer1 =
+      base::MakeRefCounted<StringIOBuffer>(kRequest1);
   TestCompletionCallback write_callback1;
   EXPECT_EQ(
       socket_.Write(write_buffer1.get(), strlen(kRequest1),
@@ -654,7 +655,8 @@ TEST_F(TCPSocketTest, Tag) {
   old_traffic = GetTaggedBytes(tag_val1);
   socket_.ApplySocketTag(tag1);
   const char kRequest2[] = "\n\n";
-  scoped_refptr<IOBuffer> write_buffer2(new StringIOBuffer(kRequest2));
+  scoped_refptr<IOBuffer> write_buffer2 =
+      base::MakeRefCounted<StringIOBuffer>(kRequest2);
   TestCompletionCallback write_callback2;
   EXPECT_EQ(
       socket_.Write(write_buffer2.get(), strlen(kRequest2),
@@ -688,7 +690,8 @@ TEST_F(TCPSocketTest, TagAfterConnect) {
   SocketTag tag2(getuid(), tag_val2);
   socket_.ApplySocketTag(tag2);
   const char kRequest1[] = "GET / HTTP/1.0";
-  scoped_refptr<IOBuffer> write_buffer1(new StringIOBuffer(kRequest1));
+  scoped_refptr<IOBuffer> write_buffer1 =
+      base::MakeRefCounted<StringIOBuffer>(kRequest1);
   TestCompletionCallback write_callback1;
   EXPECT_EQ(
       socket_.Write(write_buffer1.get(), strlen(kRequest1),
@@ -703,7 +706,8 @@ TEST_F(TCPSocketTest, TagAfterConnect) {
   SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
   socket_.ApplySocketTag(tag1);
   const char kRequest2[] = "\n\n";
-  scoped_refptr<IOBuffer> write_buffer2(new StringIOBuffer(kRequest2));
+  scoped_refptr<IOBuffer> write_buffer2 =
+      base::MakeRefCounted<StringIOBuffer>(kRequest2);
   TestCompletionCallback write_callback2;
   EXPECT_EQ(
       socket_.Write(write_buffer2.get(), strlen(kRequest2),

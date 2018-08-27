@@ -164,7 +164,7 @@ SimpleEntryImpl::SimpleEntryImpl(
       net_log_(
           net::NetLogWithSource::Make(net_log,
                                       net::NetLogSourceType::DISK_CACHE_ENTRY)),
-      stream_0_data_(new net::GrowableIOBuffer()),
+      stream_0_data_(base::MakeRefCounted<net::GrowableIOBuffer>()),
       entry_priority_(entry_priority) {
   static_assert(arraysize(data_size_) == arraysize(crc32s_end_offset_),
                 "arrays should be the same size");
@@ -471,7 +471,7 @@ int SimpleEntryImpl::WriteData(int stream_index,
     // here to avoid paying the price of the RefCountedThreadSafe atomic
     // operations.
     if (buf) {
-      op_buf = new IOBuffer(buf_len);
+      op_buf = base::MakeRefCounted<IOBuffer>(buf_len);
       memcpy(op_buf->data(), buf->data(), buf_len);
     }
     op_callback = CompletionOnceCallback();

@@ -312,15 +312,17 @@ TEST_F(BidirectionalStreamSpdyImplTest, SimplePostRequest) {
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                        base::NumberToString(kBodyDataSize));
 
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   auto delegate = std::make_unique<TestDelegateBase>(
       session_, read_buffer.get(), kReadBufferSize);
   delegate->SetRunUntilCompletion(true);
   delegate->Start(&request_info, net_log_.bound());
   sequenced_data_->RunUntilPaused();
 
-  scoped_refptr<StringIOBuffer> write_buffer(
-      new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
+  scoped_refptr<StringIOBuffer> write_buffer =
+      base::MakeRefCounted<StringIOBuffer>(
+          std::string(kBodyData, kBodyDataSize));
   delegate->SendData(write_buffer.get(), write_buffer->size(), true);
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();
@@ -362,8 +364,10 @@ TEST_F(BidirectionalStreamSpdyImplTest, LoadTimingTwoRequests) {
   request_info.url = default_url_;
   request_info.end_stream_on_headers = true;
 
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
-  scoped_refptr<IOBuffer> read_buffer2(new IOBuffer(kReadBufferSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadBufferSize);
+  scoped_refptr<IOBuffer> read_buffer2 =
+      base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   auto delegate = std::make_unique<TestDelegateBase>(
       session_, read_buffer.get(), kReadBufferSize);
   auto delegate2 = std::make_unique<TestDelegateBase>(
@@ -410,7 +414,8 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                        base::NumberToString(kBodyDataSize * 3));
 
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   auto delegate = std::make_unique<TestDelegateBase>(
       session_, read_buffer.get(), kReadBufferSize);
   delegate->SetRunUntilCompletion(true);
@@ -420,7 +425,8 @@ TEST_F(BidirectionalStreamSpdyImplTest, SendDataAfterStreamFailed) {
   EXPECT_TRUE(delegate->on_failed_called());
 
   // Try to send data after OnFailed(), should not get called back.
-  scoped_refptr<StringIOBuffer> buf(new StringIOBuffer("dummy"));
+  scoped_refptr<StringIOBuffer> buf =
+      base::MakeRefCounted<StringIOBuffer>("dummy");
   delegate->SendData(buf.get(), buf->size(), false);
   base::RunLoop().RunUntilIdle();
 
@@ -462,15 +468,17 @@ TEST_P(BidirectionalStreamSpdyImplTest, RstWithNoErrorBeforeSendIsComplete) {
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kContentLength,
                                        base::NumberToString(kBodyDataSize * 3));
 
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   auto delegate = std::make_unique<TestDelegateBase>(
       session_, read_buffer.get(), kReadBufferSize);
   delegate->SetRunUntilCompletion(true);
   delegate->Start(&request_info, net_log_.bound());
   sequenced_data_->RunUntilPaused();
   // Make a write pending before receiving RST_STREAM.
-  scoped_refptr<StringIOBuffer> write_buffer(
-      new StringIOBuffer(std::string(kBodyData, kBodyDataSize)));
+  scoped_refptr<StringIOBuffer> write_buffer =
+      base::MakeRefCounted<StringIOBuffer>(
+          std::string(kBodyData, kBodyDataSize));
   delegate->SendData(write_buffer.get(), write_buffer->size(), false);
   sequenced_data_->Resume();
   base::RunLoop().RunUntilIdle();

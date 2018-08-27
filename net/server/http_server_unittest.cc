@@ -139,7 +139,8 @@ class TestHttpClient {
   }
 
   void ReadInternal(TestCompletionCallback* callback) {
-    read_buffer_ = new IOBufferWithSize(kMaxExpectedResponseLength);
+    read_buffer_ =
+        base::MakeRefCounted<IOBufferWithSize>(kMaxExpectedResponseLength);
     int result = socket_->Read(read_buffer_.get(), kMaxExpectedResponseLength,
                                callback->callback());
     if (result != ERR_IO_PENDING)

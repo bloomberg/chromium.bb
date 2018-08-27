@@ -452,7 +452,8 @@ class QuicProxyClientSocketTest
   }
 
   void AssertWriteReturns(const char* data, int len, int rv) {
-    scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(len));
+    scoped_refptr<IOBufferWithSize> buf =
+        base::MakeRefCounted<IOBufferWithSize>(len);
     memcpy(buf->data(), data, len);
     EXPECT_EQ(rv,
               sock_->Write(buf.get(), buf->size(), write_callback_.callback(),
@@ -460,7 +461,8 @@ class QuicProxyClientSocketTest
   }
 
   void AssertSyncWriteSucceeds(const char* data, int len) {
-    scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(len));
+    scoped_refptr<IOBufferWithSize> buf =
+        base::MakeRefCounted<IOBufferWithSize>(len);
     memcpy(buf->data(), data, len);
     EXPECT_EQ(len,
               sock_->Write(buf.get(), buf->size(), CompletionOnceCallback(),
@@ -468,14 +470,14 @@ class QuicProxyClientSocketTest
   }
 
   void AssertSyncReadEquals(const char* data, int len) {
-    scoped_refptr<IOBuffer> buf(new IOBuffer(len));
+    scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(len);
     ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionOnceCallback()));
     ASSERT_EQ(spdy::SpdyString(data, len), spdy::SpdyString(buf->data(), len));
     ASSERT_TRUE(sock_->IsConnected());
   }
 
   void AssertAsyncReadEquals(const char* data, int len) {
-    scoped_refptr<IOBuffer> buf(new IOBuffer(len));
+    scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(len);
     ASSERT_EQ(ERR_IO_PENDING,
               sock_->Read(buf.get(), len, read_callback_.callback()));
     EXPECT_TRUE(sock_->IsConnected());
@@ -489,7 +491,7 @@ class QuicProxyClientSocketTest
 
   void AssertReadStarts(const char* data, int len) {
     // Issue the read, which will be completed asynchronously.
-    read_buf_ = new IOBuffer(len);
+    read_buf_ = base::MakeRefCounted<IOBuffer>(len);
     ASSERT_EQ(ERR_IO_PENDING,
               sock_->Read(read_buf_.get(), len, read_callback_.callback()));
     EXPECT_TRUE(sock_->IsConnected());
@@ -1038,7 +1040,7 @@ TEST_P(QuicProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
   AssertSyncReadEquals(kMsg33, kLen33);
 
   // Now attempt to do a read of more data than remains buffered
-  scoped_refptr<IOBuffer> buf(new IOBuffer(kLen33));
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(kLen33);
   ASSERT_EQ(kLen3, sock_->Read(buf.get(), kLen33, CompletionOnceCallback()));
   ASSERT_EQ(spdy::SpdyString(kMsg3, kLen3),
             spdy::SpdyString(buf->data(), kLen3));
@@ -1552,7 +1554,7 @@ TEST_P(QuicProxyClientSocketTest, RstWithReadAndWritePendingDelete) {
   EXPECT_TRUE(sock_->IsConnected());
 
   DeleteSockCallback read_callback(&sock_);
-  scoped_refptr<IOBuffer> read_buf(new IOBuffer(kLen1));
+  scoped_refptr<IOBuffer> read_buf = base::MakeRefCounted<IOBuffer>(kLen1);
   ASSERT_EQ(ERR_IO_PENDING,
             sock_->Read(read_buf.get(), kLen1, read_callback.callback()));
 

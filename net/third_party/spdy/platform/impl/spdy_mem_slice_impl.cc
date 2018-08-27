@@ -15,7 +15,7 @@ SpdyMemSliceImpl::SpdyMemSliceImpl(
     : io_buffer_(std::move(io_buffer)) {}
 
 SpdyMemSliceImpl::SpdyMemSliceImpl(size_t length)
-    : io_buffer_(new net::IOBufferWithSize(length)) {}
+    : io_buffer_(base::MakeRefCounted<net::IOBufferWithSize>(length)) {}
 
 SpdyMemSliceImpl::SpdyMemSliceImpl(SpdyMemSliceImpl&& other)
     : io_buffer_(std::move(other.io_buffer_)) {

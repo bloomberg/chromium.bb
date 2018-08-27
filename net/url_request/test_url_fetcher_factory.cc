@@ -187,7 +187,8 @@ void TestURLFetcher::SaveResponseWithWriter(
     // The TestURLFetcher doesn't handle asynchronous writes.
     DCHECK_EQ(OK, response);
 
-    scoped_refptr<IOBuffer> buffer(new StringIOBuffer(fake_response_string_));
+    scoped_refptr<IOBuffer> buffer =
+        base::MakeRefCounted<StringIOBuffer>(fake_response_string_);
     response = response_writer_->Write(
         buffer.get(), fake_response_string_.size(), CompletionOnceCallback());
     DCHECK_EQ(static_cast<int>(fake_response_string_.size()), response);

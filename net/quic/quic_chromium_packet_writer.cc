@@ -87,7 +87,7 @@ QuicChromiumPacketWriter::QuicChromiumPacketWriter(
     base::SequencedTaskRunner* task_runner)
     : socket_(socket),
       delegate_(nullptr),
-      packet_(new ReusableIOBuffer(quic::kMaxPacketSize)),
+      packet_(base::MakeRefCounted<ReusableIOBuffer>(quic::kMaxPacketSize)),
       write_in_progress_(false),
       force_write_blocked_(false),
       retry_count_(0),
@@ -108,16 +108,16 @@ void QuicChromiumPacketWriter::set_force_write_blocked(
 
 void QuicChromiumPacketWriter::SetPacket(const char* buffer, size_t buf_len) {
   if (UNLIKELY(!packet_)) {
-    packet_ = new ReusableIOBuffer(
+    packet_ = base::MakeRefCounted<ReusableIOBuffer>(
         std::max(buf_len, static_cast<size_t>(quic::kMaxPacketSize)));
     RecordNotReusableReason(NOT_REUSABLE_NULLPTR);
   }
   if (UNLIKELY(packet_->capacity() < buf_len)) {
-    packet_ = new ReusableIOBuffer(buf_len);
+    packet_ = base::MakeRefCounted<ReusableIOBuffer>(buf_len);
     RecordNotReusableReason(NOT_REUSABLE_TOO_SMALL);
   }
   if (UNLIKELY(!packet_->HasOneRef())) {
-    packet_ = new ReusableIOBuffer(
+    packet_ = base::MakeRefCounted<ReusableIOBuffer>(
         std::max(buf_len, static_cast<size_t>(quic::kMaxPacketSize)));
     RecordNotReusableReason(NOT_REUSABLE_REF_COUNT);
   }

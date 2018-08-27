@@ -72,8 +72,8 @@ quic::WriteResult QuicSimpleServerPacketWriter::WritePacket(
     const quic::QuicIpAddress& self_address,
     const quic::QuicSocketAddress& peer_address,
     quic::PerPacketOptions* options) {
-  scoped_refptr<StringIOBuffer> buf(
-      new StringIOBuffer(std::string(buffer, buf_len)));
+  scoped_refptr<StringIOBuffer> buf =
+      base::MakeRefCounted<StringIOBuffer>(std::string(buffer, buf_len));
   DCHECK(!IsWriteBlocked());
   int rv;
   if (buf_len <= static_cast<size_t>(std::numeric_limits<int>::max())) {

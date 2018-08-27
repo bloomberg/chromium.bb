@@ -258,7 +258,8 @@ TEST(TCPClientSocketTest, Tag) {
   SocketTag tag2(getuid(), tag_val2);
   s.ApplySocketTag(tag2);
   const char kRequest1[] = "GET / HTTP/1.0";
-  scoped_refptr<IOBuffer> write_buffer1(new StringIOBuffer(kRequest1));
+  scoped_refptr<IOBuffer> write_buffer1 =
+      base::MakeRefCounted<StringIOBuffer>(kRequest1);
   TestCompletionCallback write_callback1;
   EXPECT_EQ(s.Write(write_buffer1.get(), strlen(kRequest1),
                     write_callback1.callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
@@ -270,8 +271,8 @@ TEST(TCPClientSocketTest, Tag) {
   old_traffic = GetTaggedBytes(tag_val1);
   s.ApplySocketTag(tag1);
   const char kRequest2[] = "\n\n";
-  scoped_refptr<IOBufferWithSize> write_buffer2(
-      new IOBufferWithSize(strlen(kRequest2)));
+  scoped_refptr<IOBufferWithSize> write_buffer2 =
+      base::MakeRefCounted<IOBufferWithSize>(strlen(kRequest2));
   memmove(write_buffer2->data(), kRequest2, strlen(kRequest2));
   TestCompletionCallback write_callback2;
   EXPECT_EQ(s.Write(write_buffer2.get(), strlen(kRequest2),
@@ -307,7 +308,8 @@ TEST(TCPClientSocketTest, TagAfterConnect) {
   SocketTag tag2(getuid(), tag_val2);
   s.ApplySocketTag(tag2);
   const char kRequest1[] = "GET / HTTP/1.0";
-  scoped_refptr<IOBuffer> write_buffer1(new StringIOBuffer(kRequest1));
+  scoped_refptr<IOBuffer> write_buffer1 =
+      base::MakeRefCounted<StringIOBuffer>(kRequest1);
   TestCompletionCallback write_callback1;
   EXPECT_EQ(s.Write(write_buffer1.get(), strlen(kRequest1),
                     write_callback1.callback(), TRAFFIC_ANNOTATION_FOR_TESTS),
@@ -321,7 +323,8 @@ TEST(TCPClientSocketTest, TagAfterConnect) {
   SocketTag tag1(SocketTag::UNSET_UID, tag_val1);
   s.ApplySocketTag(tag1);
   const char kRequest2[] = "\n\n";
-  scoped_refptr<IOBuffer> write_buffer2(new StringIOBuffer(kRequest2));
+  scoped_refptr<IOBuffer> write_buffer2 =
+      base::MakeRefCounted<StringIOBuffer>(kRequest2);
   TestCompletionCallback write_callback2;
   EXPECT_EQ(s.Write(write_buffer2.get(), strlen(kRequest2),
                     write_callback2.callback(), TRAFFIC_ANNOTATION_FOR_TESTS),

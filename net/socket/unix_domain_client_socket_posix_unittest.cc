@@ -64,8 +64,8 @@ int ReadSynchronously(StreamSocket* socket,
                       int buf_len,
                       int min_data_len) {
   DCHECK_LE(min_data_len, buf_len);
-  scoped_refptr<DrainableIOBuffer> read_buf(
-      new DrainableIOBuffer(buf, buf_len));
+  scoped_refptr<DrainableIOBuffer> read_buf =
+      base::MakeRefCounted<DrainableIOBuffer>(buf, buf_len);
   TestCompletionCallback read_callback;
   // Iterate reading several times (but not infinite) until it reads at least
   // |min_data_len| bytes into |buf|.
@@ -101,8 +101,8 @@ int ReadSynchronously(StreamSocket* socket,
 int WriteSynchronously(StreamSocket* socket,
                        IOBuffer* buf,
                        int buf_len) {
-  scoped_refptr<DrainableIOBuffer> write_buf(
-      new DrainableIOBuffer(buf, buf_len));
+  scoped_refptr<DrainableIOBuffer> write_buf =
+      base::MakeRefCounted<DrainableIOBuffer>(buf, buf_len);
   TestCompletionCallback write_callback;
   // Iterate writing several times (but not infinite) until it writes buf fully.
   for (int retry_count = 10;
@@ -199,7 +199,8 @@ TEST_F(UnixDomainClientSocketTest, ConnectWithSocketDescriptor) {
 
   // Try to read data.
   const int kReadDataSize = 10;
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadDataSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadDataSize);
   TestCompletionCallback read_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             rewrapped_socket.Read(
@@ -281,7 +282,8 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromClient) {
 
   // Try to read data.
   const int kReadDataSize = 10;
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadDataSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadDataSize);
   TestCompletionCallback read_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             accepted_socket->Read(
@@ -314,7 +316,8 @@ TEST_F(UnixDomainClientSocketTest, DisconnectFromServer) {
 
   // Try to read data.
   const int kReadDataSize = 10;
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadDataSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadDataSize);
   TestCompletionCallback read_callback;
   EXPECT_EQ(ERR_IO_PENDING,
             client_socket.Read(
@@ -347,15 +350,16 @@ TEST_F(UnixDomainClientSocketTest, ReadAfterWrite) {
 
   // Send data from client to server.
   const int kWriteDataSize = 10;
-  scoped_refptr<IOBuffer> write_buffer(
-      new StringIOBuffer(std::string(kWriteDataSize, 'd')));
+  scoped_refptr<IOBuffer> write_buffer =
+      base::MakeRefCounted<StringIOBuffer>(std::string(kWriteDataSize, 'd'));
   EXPECT_EQ(
       kWriteDataSize,
       WriteSynchronously(&client_socket, write_buffer.get(), kWriteDataSize));
 
   // The buffer is bigger than write data size.
   const int kReadBufferSize = kWriteDataSize * 2;
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   EXPECT_EQ(kWriteDataSize,
             ReadSynchronously(accepted_socket.get(),
                               read_buffer.get(),
@@ -419,15 +423,16 @@ TEST_F(UnixDomainClientSocketTest, ReadBeforeWrite) {
   const int kReadBufferSize = kWriteDataSize * 2;
   const int kSmallReadBufferSize = kWriteDataSize / 3;
   // Read smaller than write data size first.
-  scoped_refptr<IOBuffer> read_buffer(new IOBuffer(kReadBufferSize));
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   TestCompletionCallback read_callback;
   EXPECT_EQ(
       ERR_IO_PENDING,
       accepted_socket->Read(
           read_buffer.get(), kSmallReadBufferSize, read_callback.callback()));
 
-  scoped_refptr<IOBuffer> write_buffer(
-      new StringIOBuffer(std::string(kWriteDataSize, 'd')));
+  scoped_refptr<IOBuffer> write_buffer =
+      base::MakeRefCounted<StringIOBuffer>(std::string(kWriteDataSize, 'd'));
   EXPECT_EQ(
       kWriteDataSize,
       WriteSynchronously(&client_socket, write_buffer.get(), kWriteDataSize));

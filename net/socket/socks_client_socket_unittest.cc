@@ -224,7 +224,8 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
     EXPECT_TRUE(
         LogContainsEndEvent(entries, -1, NetLogEventType::SOCKS_CONNECT));
 
-    scoped_refptr<IOBuffer> buffer(new IOBuffer(payload_write.size()));
+    scoped_refptr<IOBuffer> buffer =
+        base::MakeRefCounted<IOBuffer>(payload_write.size());
     memcpy(buffer->data(), payload_write.data(), payload_write.size());
     rv = user_sock_->Write(buffer.get(), payload_write.size(),
                            callback_.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -232,7 +233,7 @@ TEST_F(SOCKSClientSocketTest, CompleteHandshake) {
     rv = callback_.WaitForResult();
     EXPECT_EQ(static_cast<int>(payload_write.size()), rv);
 
-    buffer = new IOBuffer(payload_read.size());
+    buffer = base::MakeRefCounted<IOBuffer>(payload_read.size());
     if (use_read_if_ready) {
       rv = user_sock_->ReadIfReady(buffer.get(), payload_read.size(),
                                    callback_.callback());
