@@ -177,7 +177,7 @@ void FakeFileSystem::GetResourceEntry(
 
 void FakeFileSystem::ReadDirectory(
     const base::FilePath& file_path,
-    const ReadDirectoryEntriesCallback& entries_callback,
+    ReadDirectoryEntriesCallback entries_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -213,8 +213,7 @@ void FakeFileSystem::GetShareUrl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-void FakeFileSystem::GetMetadata(
-    const GetFilesystemMetadataCallback& callback) {
+void FakeFileSystem::GetMetadata(GetFilesystemMetadataCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

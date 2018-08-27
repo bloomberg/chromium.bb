@@ -533,9 +533,9 @@ class SingleEntryPropertiesGetterForFileSystemProvider {
 
     parser.file_system()->GetMetadata(
         parser.file_path(), field_mask,
-        base::Bind(&SingleEntryPropertiesGetterForFileSystemProvider::
-                       OnGetMetadataCompleted,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SingleEntryPropertiesGetterForFileSystemProvider::
+                           OnGetMetadataCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnGetMetadataCompleted(std::unique_ptr<EntryMetadata> metadata,

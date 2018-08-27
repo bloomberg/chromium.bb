@@ -114,15 +114,14 @@ void DebugInfoCollector::IterateFileCache(
       completion_callback);
 }
 
-void DebugInfoCollector::GetMetadata(
-    const GetFilesystemMetadataCallback& callback) {
+void DebugInfoCollector::GetMetadata(GetFilesystemMetadataCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   // Currently, this is just a proxy to the FileSystem.
   // TODO(hidehiko): Move the implementation to here to simplify the
   // FileSystem's implementation. crbug.com/237088
-  file_system_->GetMetadata(callback);
+  file_system_->GetMetadata(std::move(callback));
 }
 
 }  // namespace drive

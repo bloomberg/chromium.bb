@@ -106,7 +106,7 @@ void TeamDriveChangeListLoader::LoadIfNeeded(
 
 void TeamDriveChangeListLoader::ReadDirectory(
     const base::FilePath& directory_path,
-    const ReadDirectoryEntriesCallback& entries_callback,
+    ReadDirectoryEntriesCallback entries_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(root_entry_path_ == directory_path ||
@@ -114,7 +114,7 @@ void TeamDriveChangeListLoader::ReadDirectory(
       << "Directory paths are not related: " << root_entry_path_.value()
       << " -> " << directory_path.value();
 
-  directory_loader_->ReadDirectory(directory_path, entries_callback,
+  directory_loader_->ReadDirectory(directory_path, std::move(entries_callback),
                                    completion_callback);
 }
 

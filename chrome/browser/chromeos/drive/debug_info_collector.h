@@ -51,7 +51,7 @@ class DebugInfoCollector {
 
   // Returns miscellaneous metadata of the file system like the largest
   // timestamp. |callback| must not be null.
-  void GetMetadata(const GetFilesystemMetadataCallback& callback);
+  void GetMetadata(GetFilesystemMetadataCallback callback);
 
  private:
   internal::ResourceMetadata* metadata_;  // No owned.

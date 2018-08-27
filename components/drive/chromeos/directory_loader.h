@@ -63,7 +63,7 @@ class DirectoryLoader {
   // |entries_callback| can be null.
   // |completion_callback| must not be null.
   void ReadDirectory(const base::FilePath& directory_path,
-                     const ReadDirectoryEntriesCallback& entries_callback,
+                     ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback);
 
  private:
@@ -73,14 +73,14 @@ class DirectoryLoader {
   // Part of ReadDirectory().
   void ReadDirectoryAfterGetEntry(
       const base::FilePath& directory_path,
-      const ReadDirectoryEntriesCallback& entries_callback,
+      ReadDirectoryEntriesCallback entries_callback,
       const FileOperationCallback& completion_callback,
       bool should_try_loading_parent,
       const ResourceEntry* entry,
       FileError error);
   void ReadDirectoryAfterLoadParent(
       const base::FilePath& directory_path,
-      const ReadDirectoryEntriesCallback& entries_callback,
+      ReadDirectoryEntriesCallback entries_callback,
       const FileOperationCallback& completion_callback,
       FileError error);
   void ReadDirectoryAfterGetRootFolderId(
