@@ -546,7 +546,7 @@
 <translation id="4756388243121344051">&amp;Verlauf</translation>
 <translation id="4758311279753947758">Kontaktdaten hinzufügen</translation>
 <translation id="4759118997339041434">AutoFill für Zahlung deaktiviert</translation>
-<translation id="4764776831041365478">Die Webseite unter <ph name="URL" /> ist möglicherweise vorübergehend nicht verfügbar oder wurde dauerhaft an eine neue Webadresse verschoben.</translation>
+<translation id="4764776831041365478">Die Webseite unter <ph name="URL" /> ist eventuell vorübergehend nicht verfügbar oder wurde dauerhaft an eine neue Webadresse verschoben.</translation>
 <translation id="4771973620359291008">Ein unbekannter Fehler ist aufgetreten.</translation>
 <translation id="4785689107224900852">Zu diesem Tab wechseln</translation>
 <translation id="4792143361752574037">Beim Zugreifen auf die Sitzungsdateien ist ein Problem aufgetreten. Momentan können keine Dateien auf der Festplatte gespeichert werden. Bitte laden Sie die Seite neu und versuchen Sie es noch einmal.</translation>
@@ -585,7 +585,7 @@
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5040262127954254034">Datenschutz</translation>
 <translation id="5045550434625856497">Falsches Passwort</translation>
-<translation id="5056549851600133418">Artikel für Sie</translation>
+<translation id="5056549851600133418">Artikel für mich</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Proxyadresse prüfen<ph name="END_LINK" /></translation>
 <translation id="5086888986931078152">Eventuell verlieren Sie den Zugriff auf geschützte Inhalte von einigen Websites.</translation>
 <translation id="5087286274860437796">Das Serverzertifikat ist zurzeit ungültig.</translation>
@@ -657,12 +657,12 @@
     <ph name="LINE_BREAK" />
     Wenden Sie sich an Ihren Systemadministrator.</translation>
 <translation id="5509780412636533143">Verwaltete Lesezeichen</translation>
-<translation id="5510766032865166053">Möglicherweise wurde sie verschoben oder gelöscht.</translation>
+<translation id="5510766032865166053">Eventuell wurde sie verschoben oder gelöscht.</translation>
 <translation id="5523118979700054094">Richtlinienname</translation>
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="5541546772353173584">E-Mail-Adresse hinzufügen</translation>
-<translation id="5545756402275714221">Artikel für Sie</translation>
+<translation id="5545756402275714221">Artikel für mich</translation>
 <translation id="5556459405103347317">Neu laden</translation>
 <translation id="5560088892362098740">Ablaufdatum</translation>
 <translation id="5565735124758917034">Aktiv</translation>
@@ -708,7 +708,7 @@
 <translation id="5838278095973806738">Sie sollten keine vertraulichen Informationen wie Passwörter oder Kreditkartennummern auf dieser Website eingeben, da sie von Angreifern gestohlen werden könnten.</translation>
 <translation id="5863847714970149516">Auf der nächsten Seite wird möglicherweise versucht, Ihnen etwas in Rechnung zu stellen</translation>
 <translation id="5866257070973731571">Telefonnummer hinzufügen</translation>
-<translation id="5869405914158311789">Diese Website ist nicht erreichbar</translation>
+<translation id="5869405914158311789">Die Website ist nicht erreichbar</translation>
 <translation id="5869522115854928033">Gespeicherte Passwörter</translation>
 <translation id="5887400589839399685">Karte gespeichert</translation>
 <translation id="5893752035575986141">Kreditkarten werden akzeptiert.</translation>

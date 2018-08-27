@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Ẩn danh</translation>
 <translation id="1054301162707478098">Bạn đã chuyển sang chế độ riêng tư.</translation>
 <translation id="10614374240317010">Không bao giờ lưu</translation>
+<translation id="1067922213147265141">Các dịch vụ khác của Google</translation>
 <translation id="1068672505746868501">Không bao giờ dịch các trang viết bằng <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Bạn đang đăng xuất tài khoản do <ph name="DOMAIN_NAME" /> quản lý. Thao tác này sẽ xóa dữ liệu Chrome được lưu trữ trên thiết bị này nhưng dữ liệu sẽ vẫn còn trong tài khoản Google của bạn.</translation>
@@ -156,7 +157,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="2120297377148151361">Hoạt động và tương tác</translation>
 <translation id="2122601567107267586">Không thể mở ứng dụng</translation>
 <translation id="2126426811489709554">Được hỗ trợ bởi Chrome</translation>
-<translation id="2131665479022868825">Đã lưu <ph name="DATA" /></translation>
+<translation id="2131665479022868825">Đã tiết kiệm <ph name="DATA" /></translation>
 <translation id="213279576345780926">Đã đóng <ph name="TAB_TITLE" /></translation>
 <translation id="2139186145475833000">Thêm vào Màn hình chính</translation>
 <translation id="2146738493024040262">Mở ứng dụng tức thì</translation>
@@ -358,6 +359,7 @@ Tuy nhiên, bạn vẫn có trạng thái hiển thị. Việc chuyển sang ch�
 <translation id="393697183122708255">Không có tìm kiếm bằng giọng nói đã bật</translation>
 <translation id="3950820424414687140">Đăng nhập</translation>
 <translation id="395206256282351086">Tính năng đề xuất trang web và tìm kiếm đã bị tắt</translation>
+<translation id="3955193568934677022">Cho phép trang web phát nội dung được bảo vệ (được đề xuất)</translation>
 <translation id="3967822245660637423">Tải xuống hoàn tất</translation>
 <translation id="397583555483684758">Đồng bộ hóa đã ngừng hoạt động</translation>
 <translation id="3976396876660209797">Xóa và tạo lại lối tắt này</translation>
@@ -465,7 +467,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4751476147751820511">Cảm biến chuyển động hoặc ánh sáng</translation>
 <translation id="4759238208242260848">Tải xuống</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Đã tải xong 1 tệp xuống.}other{Đã tải xong # tệp xuống.}}</translation>
-<translation id="4766369052440583386">Trình tiết kiệm dữ liệu bật</translation>
+<translation id="4766369052440583386">Trình tiết kiệm dữ liệu đang bật</translation>
 <translation id="4797039098279997504">Chạm để quay lại <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
 <translation id="4807098396393229769">Tên trên thẻ</translation>
 <translation id="4807963036345170158">Trình tiết kiệm dữ liệu tắt</translation>
@@ -494,7 +496,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4988210275050210843">Đang tải tệp xuống (<ph name="MEGABYTES" />).</translation>
 <translation id="4988526792673242964">Trang</translation>
 <translation id="4996978546172906250">Chia sẻ qua</translation>
-<translation id="5004339818306944878">Sử dụng ít dữ liệu hơn tối đa 60% và tăng tốc web. Máy chủ của Google sẽ tối ưu hóa các trang bạn truy cập.</translation>
+<translation id="5004339818306944878">Tiết kiệm tới 60% dữ liệu sử dụng và tăng tốc độ tải trang. Máy chủ của Google sẽ tối ưu hóa các trang bạn truy cập.</translation>
 <translation id="5005498671520578047">Sao chép mật khẩu</translation>
 <translation id="5011311129201317034"><ph name="SITE" /> muốn kết nối</translation>
 <translation id="5013696553129441713">Không có đề xuất mới</translation>
@@ -622,7 +624,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5911030830365207728">Google Dịch</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5919204609460789179">Cập nhật <ph name="PRODUCT_NAME" /> để bắt đầu đồng bộ hóa</translation>
-<translation id="5937580074298050696">Tiết kiệm được <ph name="AMOUNT" /></translation>
+<translation id="5937580074298050696">Đã tiết kiệm <ph name="AMOUNT" /></translation>
 <translation id="5939518447894949180">Đặt lại</translation>
 <translation id="5942872142862698679">Sử dụng Google để tìm kiếm</translation>
 <translation id="5952764234151283551">Gửi cho Google URL của trang bạn đang cố truy cập</translation>
@@ -738,7 +740,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6850830437481525139">Đã đóng <ph name="TAB_COUNT" /> tab</translation>
 <translation id="6864459304226931083">Tải hình ảnh xuống</translation>
 <translation id="6865313869410766144">Dữ liệu biểu mẫu tự động điền</translation>
-<translation id="6868088497967843822">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn</translation>
+<translation id="6868088497967843822">Đăng nhập để sử dụng dấu trang, lịch sử, mật khẩu và các mục cài đặt khác trên tất cả thiết bị của bạn</translation>
 <translation id="688738109438487280">Thêm dữ liệu hiện có vào <ph name="TO_ACCOUNT" />.</translation>
 <translation id="6891726759199484455">Mở khóa để sao chép mật khẩu của bạn</translation>
 <translation id="6891858906296486776">{OPEN_TABS,plural, =1{%1$d tab đang mở}other{%1$d tab đang mở}}</translation>
@@ -925,7 +927,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="8374821112118309944">Bạn cần phải cập nhật TalkBack lên phiên bản mới hơn.</translation>
 <translation id="8393700583063109961">Gửi tin nhắn</translation>
 <translation id="8413126021676339697">Hiển thị toàn bộ lịch sử</translation>
-<translation id="8420510748452002155">Dịch vụ không được cá nhân hóa</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8438566539970814960">Cải thiện tính năng tìm kiếm và duyệt web</translation>
 <translation id="8441146129660941386">Tìm kiếm lùi</translation>
@@ -1025,7 +1026,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="9218033835049520260">Đề xuất mật khẩu mạnh...</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="932327136139879170">Trang chủ</translation>
-<translation id="932599481871055447">Lưu dữ liệu và duyệt web nhanh hơn</translation>
+<translation id="932599481871055447">Tiết kiệm dữ liệu và duyệt web nhanh hơn</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
 <translation id="945632385593298557">Truy cập micrô của bạn</translation>

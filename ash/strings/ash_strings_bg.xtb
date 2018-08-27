@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Добавихте <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Няма мрежи</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">„I’m bored“ („Скучно ми е“)</translation>
 <translation id="1104084341931202936">Показване на настройките за достъпност</translation>
 <translation id="1104621072296271835">Устройствата ви работят още по-добре заедно</translation>
 <translation id="112308213915226829">Автоматично скриване на лавицата</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Изчистване на всички</translation>
 <translation id="1247372569136754018">Микрофон (вътрешен)</translation>
 <translation id="1252999807265626933">Зарежда се от <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">„What's the weather?“ („Какво е времето?“)</translation>
 <translation id="1267032506238418139">Промяна на клавишната комбинация</translation>
 <translation id="1270290102613614947">Екранната клавиатура е деактивирана</translation>
 <translation id="1272079795634619415">Стоп</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Можете да използвате най-много <ph name="MULTI_PROFILE_USER_LIMIT" /> профила с функцията за централизиран вход.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Установена е връзка с едно устройство}other{Установена е връзка с # устройства}}</translation>
 <translation id="3236488194889173876">Няма мобилни мрежи</translation>
+<translation id="3255483164551725916">„What can you do?“ („Какво можеш да правиш?“)</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="332587331255250389">Моля, заменете батерията</translation>
 <translation id="3351879221545518001">Понастоящем предавате екрана.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Лазерна показалка</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Изключено за едно приложение}other{Изключено за # приложения}}</translation>
 <translation id="4072264167173457037">умерен сигнал</translation>
+<translation id="4146833061457621061">„Play music“ („Пусни музика“)</translation>
 <translation id="4200057768455216496">Използвахте клавишната комбинация за лупата в прикрепен режим. Искате ли да включите функцията?</translation>
 <translation id="4217571870635786043">Диктуване</translation>
 <translation id="4261870227682513959">Показване на настройките за известия. Известията са изключени</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Използвахте клавишната комбинация за режима на висок контраст. Искате ли да го включите?</translation>
 <translation id="7066646422045619941">Тази мрежа е деактивирана от администратора ви.</translation>
 <translation id="7067196344162293536">Автоматично завъртане</translation>
+<translation id="7068360136237591149">„Open files“ („Отвори файлове“)</translation>
 <translation id="7076293881109082629">Влизате</translation>
 <translation id="7092922358121866860">Показване на настройките за Нощно осветление</translation>
 <translation id="7098389117866926363">Устройство с USB-C (левият порт на гърба)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Предупреждение: Експериментална функция</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7886277072580235377">Сесията ви за интернет ще бъде изчистена, когато излезете от профила си. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">„Send an email“ („Изпрати имейл“)</translation>
 <translation id="790040513076446191">Манипулиране на свързаните с поверителността настройки</translation>
 <translation id="7904094684485781019">Администраторът на този профил е забранил централизирания вход.</translation>
 <translation id="7933084174919150729">Google Асистент е налице само за основния потребителски профил.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">Създаване на бележка</translation>
 <translation id="8392451568018454956">Меню с опции за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Лупа за увеличаване на целия екран</translation>
+<translation id="8425213833346101688">Промяна</translation>
 <translation id="8427213022735114808">Функцията за диктуване изпраща гласа ви до Google, за да даде възможност за гласово въвеждане във всяко текстово поле.</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8431190899827883166">Показване на докосванията</translation>
@@ -426,7 +433,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Установява се повторна връзка...</translation>
 <translation id="8513108775083588393">Автоматична ориентация</translation>
 <translation id="8517041960877371778">Възможно е вашият <ph name="DEVICE_TYPE" /> да не се зарежда, докато е включен.</translation>
-<translation id="8592141010104017453">Известията въобще да не се показват</translation>
+<translation id="8592141010104017453">Известията да не се показват въобще</translation>
 <translation id="8627191004499078455">Установена е връзка (<ph name="DEVICE_NAME" />)</translation>
 <translation id="8639760480004882931">Батерия: <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Прочитане на глас</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">търсене + Esc</translation>
 <translation id="8870509716567206129">Приложението не поддържа разделен екран.</translation>
 <translation id="8874184842967597500">Няма връзка</translation>
+<translation id="8877788021141246043">„Set a reminder“ („Задай напомняне“)</translation>
 <translation id="8878886163241303700">Разгъване на екрана</translation>
 <translation id="8921624153894383499">Google Асистент не поддържа този език.</translation>
 <translation id="8938800817013097409">Устройство с USB-C (десният порт на гърба)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">Излиза се от режима на обединен работен плот</translation>
 <translation id="9215934040295798075">Задаване на тапета</translation>
 <translation id="923686485342484400">Натиснете два пъти „Control+Shift+Q“ за изход.</translation>
+<translation id="938963181863597773">„What's on my calendar?“ („Какво има в календара ми?“)</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>
 <translation id="98515147261107953">Хоризонтално</translation>
-<translation id="995927048686010764">Автоматично кликване</translation>
 </translationbundle>

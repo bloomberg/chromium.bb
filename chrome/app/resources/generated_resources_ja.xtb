@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">置換</translation>
 <translation id="1067048845568873861">作成日</translation>
 <translation id="1067291318998134776">Linux（ベータ版）</translation>
+<translation id="1067922213147265141">他の Google サービス</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">パソコン上の別のプログラムにより、Chrome の動作に影響を及ぼす可能性のある拡張機能が追加されました。
 
@@ -1446,6 +1447,7 @@
 <translation id="3161522574479303604">すべての言語</translation>
 <translation id="3165390001037658081">携帯通信会社によってはこの機能を利用できない場合があります。</translation>
 <translation id="316854673539778496">お使いのどの端末でも同じ拡張機能を使用するには、ログインして同期を有効にします。</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">ログインせずに<ph name="LINK_START" />ゲストとしてブラウジング<ph name="LINK_END" />することもできます。</translation>
 <translation id="3177909033752230686">ページの言語:</translation>
 <translation id="3182749001423093222">スペルチェック</translation>
@@ -2264,7 +2266,6 @@
 <translation id="4467100756425880649">Chrome ウェブストア ギャラリー</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> を展開します</translation>
 <translation id="447252321002412580">Chrome の機能と動作の改善に協力する</translation>
-<translation id="4472575034687746823">利用を開始</translation>
 <translation id="4474155171896946103">すべてのタブをブックマークに追加...</translation>
 <translation id="4475552974751346499">ダウンロード検索</translation>
 <translation id="4476590490540813026">競技選手</translation>
@@ -2829,7 +2830,7 @@
 <translation id="532776649628038357">同意する</translation>
 <translation id="532943162177641444">「<ph name="PHONE_NAME" />」で通知をタップして、この端末で使用できるモバイル アクセス ポイントを設定してください。</translation>
 <translation id="5329858601952122676">削除(&amp;D)</translation>
-<translation id="5329945517224105597">アシスタントでは、画面上のアイテムに関連したおすすめ情報や操作を提案できます。動作を変更するにはアシスタントの設定で行ってください。</translation>
+<translation id="5329945517224105597">アシスタントが画面上のアイテムに関連したおすすめ情報や操作を提案します。この機能はアシスタントの設定で変更できます。</translation>
 <translation id="5330145655348521461">これらのファイルは別のデスクトップで開かれます。表示するには <ph name="USER_NAME" />（<ph name="MAIL_ADDRESS" />）に移動してください。</translation>
 <translation id="5330512191124428349">情報を見る</translation>
 <translation id="5331069282670671859">このカテゴリの証明書はありません</translation>
@@ -3932,7 +3933,6 @@
 <translation id="6985607387932385770">プリンタ</translation>
 <translation id="6990081529015358884">空き容量が不足しています</translation>
 <translation id="6990778048354947307">暗色系テーマ</translation>
-<translation id="6991128190741664836">後で確認</translation>
 <translation id="6991665348624301627">送信先の選択</translation>
 <translation id="6997707937646349884">端末で次の操作を行います。</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> 個のフォルダを選択しました</translation>
@@ -4236,7 +4236,6 @@
 <translation id="7469518857922439236">デフォルトでこのパソコンにメッセージの通知を送信します</translation>
 <translation id="7469894403370665791">このネットワークに自動接続する</translation>
 <translation id="747114903913869239">エラー: 拡張機能をデコードできません</translation>
-<translation id="7473753388963818366"><ph name="DEVICE_TYPE" /> の設定を始めましょう</translation>
 <translation id="7473891865547856676">スキップ</translation>
 <translation id="747459581954555080">すべて復元</translation>
 <translation id="7475671414023905704">Netscape パスワード紛失 URL</translation>
@@ -4862,7 +4861,6 @@
 <translation id="8418445294933751433">タブで表示(&amp;S)</translation>
 <translation id="8419098111404128271">「<ph name="SEARCH_TEXT" />」の検索結果</translation>
 <translation id="8420060421540670057">Google ドキュメントのファイルを表示する</translation>
-<translation id="8420510748452002155">カスタマイズされないサービス</translation>
 <translation id="8424039430705546751">下</translation>
 <translation id="8425213833346101688">変更</translation>
 <translation id="8425492902634685834">タスクバーに固定</translation>

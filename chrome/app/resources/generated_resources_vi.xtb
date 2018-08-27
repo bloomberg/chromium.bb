@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Thay thế</translation>
 <translation id="1067048845568873861">Đã tạo</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
+<translation id="1067922213147265141">Các dịch vụ khác của Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Một chương trình khác trên máy tính của bạn đã thêm một tiện ích có thể thay đổi cách Chrome hoạt động.
 
@@ -889,7 +890,7 @@
 <translation id="2325650632570794183">Loại tệp này không được hỗ trợ. Vui lòng truy cập Cửa hàng Chrome trực tuyến để tìm ứng dụng có thể mở loại tệp này.</translation>
 <translation id="2326931316514688470">Tải &amp;lại ứng dụng</translation>
 <translation id="2327492829706409234">Bật ứng dụng</translation>
-<translation id="2329597144923131178">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và các cài đặt khác trên tất cả các thiết bị của bạn.</translation>
+<translation id="2329597144923131178">Đăng nhập để sử dụng dấu trang, lịch sử, mật khẩu và các mục cài đặt khác trên tất cả thiết bị của bạn.</translation>
 <translation id="2332131598580221120">Xem trong cửa hàng</translation>
 <translation id="2332742915001411729">Đặt lại về mặc định</translation>
 <translation id="2335122562899522968">Trang này đã đặt các cookie.</translation>
@@ -1446,6 +1447,7 @@
 <translation id="3161522574479303604">Tất cả ngôn ngữ</translation>
 <translation id="3165390001037658081">Một số nhà cung cấp dịch vụ có thể chặn tính năng này.</translation>
 <translation id="316854673539778496">Để có tất cả các tiện ích trên mọi thiết bị của bạn, hãy đăng nhập rồi bật tính năng đồng bộ hóa.</translation>
+<translation id="3169472444629675720">Khám phá</translation>
 <translation id="3170072451822350649">Bạn cũng có thể bỏ qua việc đăng nhập và <ph name="LINK_START" />duyệt với tư cách khách<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Ngôn ngữ trang:</translation>
 <translation id="3182749001423093222">Kiểm tra chính tả</translation>
@@ -1996,7 +1998,7 @@
 <translation id="3983586614702900908">thiết bị từ nhà cung cấp không xác định</translation>
 <translation id="3984159763196946143">Không thể khởi động chế độ trình diễn</translation>
 <translation id="3985261842049607969">Sao lưu vào Google Drive. Dễ dàng khôi phục dữ liệu hoặc chuyển đổi thiết bị bất kỳ lúc nào. Bản sao lưu bao gồm cả dữ liệu ứng dụng. <ph name="BEGIN_LINK1" />Tìm hiểu thêm<ph name="END_LINK1" /></translation>
-<translation id="3987348946546879621">Dữ liệu đã lưu</translation>
+<translation id="3987348946546879621">Dữ liệu đã tiết kiệm</translation>
 <translation id="3987938432087324095">Rất tiếc, vẫn chưa hiểu được nội dung đó.</translation>
 <translation id="3988996860813292272">Chọn múi giờ</translation>
 <translation id="399179161741278232">Đã nhập</translation>
@@ -2264,7 +2266,6 @@
 <translation id="4467100756425880649">Thư viện của Cửa hàng Chrome trực tuyến</translation>
 <translation id="4467101674048705704">Mở rộng <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Giúp cải thiện hiệu suất cũng như các tính năng của Chrome</translation>
-<translation id="4472575034687746823">Bắt đầu</translation>
 <translation id="4474155171896946103">Đánh dấu tất cả các tab...</translation>
 <translation id="4475552974751346499">Tìm kiếm tải xuống</translation>
 <translation id="4476590490540813026">Vận động viên</translation>
@@ -2568,7 +2569,7 @@
 <translation id="4924638091161556692">Đã sửa</translation>
 <translation id="4925542575807923399">Quản trị viên của tài khoản này yêu cầu tài khoản này là tài khoản đăng nhập đầu tiên trong phiên đăng nhập nhiều tài khoản.</translation>
 <translation id="4927753642311223124">Không có nội dung nào để xem ở đây, hãy tiếp tục.</translation>
-<translation id="4927846293686536410">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và cài đặt khác trên tất cả thiết bị của bạn. Bạn cũng sẽ tự động được đăng nhập vào các dịch vụ Google của mình.</translation>
+<translation id="4927846293686536410">Đăng nhập để sử dụng dấu trang, lịch sử, mật khẩu và các mục cài đặt khác trên tất cả thiết bị của bạn. Bạn cũng sẽ tự động được đăng nhập vào các dịch vụ Google của mình.</translation>
 <translation id="4929386379796360314">Đích in</translation>
 <translation id="4931132176527519925">Luôn sử dụng tính năng phản chiếu</translation>
 <translation id="4933484234309072027">được nhúng trên <ph name="URL" /></translation>
@@ -2829,7 +2830,7 @@
 <translation id="532776649628038357">Tôi đồng ý</translation>
 <translation id="532943162177641444">Nhấn vào thông báo trên <ph name="PHONE_NAME" /> của bạn để thiết lập điểm phát sóng di động mà thiết bị này có thể dùng.</translation>
 <translation id="5329858601952122676">&amp;Xoá</translation>
-<translation id="5329945517224105597">Trợ lý có thể cung cấp cho bạn nhiều đề xuất phù hợp hơn và các hành động cụ thể liên quan đến nội dung trên màn hình. Bạn có thể thay đổi tùy chọn cài đặt này trong mục cài đặt Trợ lý</translation>
+<translation id="5329945517224105597">Trợ lý có thể cung cấp cho bạn nhiều đề xuất phù hợp và các hành động cụ thể liên quan đến nội dung trên màn hình. Bạn có thể thay đổi tính năng này trong phần cài đặt Trợ lý</translation>
 <translation id="5330145655348521461">Những tệp này được mở trên máy tính khác. Chuyển tới <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) để xem tệp đó.</translation>
 <translation id="5330512191124428349">Nhận thông tin</translation>
 <translation id="5331069282670671859">Bạn không có chứng chỉ nào thuộc loại này</translation>
@@ -3932,7 +3933,6 @@
 <translation id="6985607387932385770">Máy in</translation>
 <translation id="6990081529015358884">Bạn đã hết dung lượng lưu trữ</translation>
 <translation id="6990778048354947307">Chủ đề tối</translation>
-<translation id="6991128190741664836">Sau</translation>
 <translation id="6991665348624301627">Chọn máy in đích</translation>
 <translation id="6997707937646349884">Trên các thiết bị của bạn:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> thư mục đã được chọn</translation>
@@ -4235,7 +4235,6 @@
 <translation id="7469518857922439236">Gửi cho bạn thông báo và đặt mặc định ghi nhớ máy tính này cho ứng dụng Messages</translation>
 <translation id="7469894403370665791">Tự động kết nối vào mạng này</translation>
 <translation id="747114903913869239">Lỗi: Không thể giải mã tiện ích</translation>
-<translation id="7473753388963818366">Hãy bắt đầu thiết lập <ph name="DEVICE_TYPE" /> của bạn</translation>
 <translation id="7473891865547856676">Không, cảm ơn</translation>
 <translation id="747459581954555080">Khôi phục tất cả</translation>
 <translation id="7475671414023905704">URL Mật khẩu đã Mất của Netscape</translation>
@@ -4861,7 +4860,6 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8418445294933751433">&amp;Hiển thị dưới dạng tab</translation>
 <translation id="8419098111404128271">Kết quả tìm kiếm cho '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Hiển thị các tệp được lưu trữ trong Google Documents</translation>
-<translation id="8420510748452002155">Dịch vụ không được cá nhân hóa</translation>
 <translation id="8424039430705546751">xuống</translation>
 <translation id="8425213833346101688">Thay đổi</translation>
 <translation id="8425492902634685834">Ghim lên thanh tác vụ</translation>
@@ -5039,7 +5037,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8677212948402625567">Thu gọn tất cả...</translation>
 <translation id="8678648549315280022">Quản lý cài đặt tải xuống...</translation>
 <translation id="8678933587484842200">Bạn muốn ứng dụng này khởi động như thế nào?</translation>
-<translation id="8680251145628383637">Đăng nhập để nhận dấu trang, lịch sử, mật khẩu và cài đặt khác trên tất cả thiết bị của bạn. Bạn cũng sẽ tự động được đăng nhập vào các dịch vụ Google của mình.</translation>
+<translation id="8680251145628383637">Đăng nhập để sử dụng dấu trang, lịch sử, mật khẩu và các mục cài đặt khác trên tất cả thiết bị của bạn. Bạn cũng sẽ tự động được đăng nhập vào các dịch vụ Google của mình.</translation>
 <translation id="8686213429977032554">Tệp Drive này chưa được chia sẻ</translation>
 <translation id="8687485617085920635">Cửa sổ tiếp theo</translation>
 <translation id="8688579245973331962">Bạn không thấy tên của mình?</translation>
@@ -5066,7 +5064,7 @@ Giữ tệp khóa của bạn ở nơi an toàn. Bạn sẽ cần tệp khóa đ
 <translation id="8714154114375107944">Kết thúc hỗ trợ</translation>
 <translation id="8714838604780058252">Đồ họa nền</translation>
 <translation id="8715480913140015283">Tab nền đang sử dụng máy ảnh</translation>
-<translation id="8716931980467311658">Bạn muốn xóa tất cả các ứng dụng Linux và dữ liệu trong thư mục tệp Linux khỏi <ph name="DEVICE_TYPE" /> này?</translation>
+<translation id="8716931980467311658">Bạn muốn xóa tất cả ứng dụng Linux và dữ liệu trong thư mục tệp Linux khỏi <ph name="DEVICE_TYPE" /> này?</translation>
 <translation id="8719653885894320876">Không tải <ph name="PLUGIN_NAME" /> xuống được</translation>
 <translation id="8723829621484579639">Khung phụ ẩn danh cho: <ph name="PARENT_SITE" /></translation>
 <translation id="8724859055372736596">&amp;Hiển thị trong Thư mục</translation>

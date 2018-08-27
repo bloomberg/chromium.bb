@@ -40,9 +40,9 @@
 
       De bedoeling is organisaties toe te staan beginpunten voor verouderde
       apps die geen TLS kunnen implementeren, op de witte lijst te zetten,
-      of een faserende server voor interne webontwikkelingen in te stellen,
+      of een staging server voor interne webontwikkelingen in te stellen,
       zodat de ontwikkelaars functies die een veilige context vereisen, kunnen
-      testen zonder TLS te hoeven implementeren op de faserende
+      testen zonder TLS te hoeven implementeren op de staging
       server. Dit beleid verhindert ook dat het beginpunt wordt aangeduid als
       onveilig in de omnibox.
 
@@ -116,11 +116,11 @@
 <translation id="1327466551276625742">Prompt voor netwerkconfiguratie inschakelen als je offline bent</translation>
 <translation id="1330145147221172764">Schermtoetsenbord inschakelen</translation>
 <translation id="13356285923490863">Naam van beleid</translation>
-<translation id="1352174694615491349">Dit beleid staat toe dat HTTP/2-verbindingen kunnen worden samengevoegd wanneer clientcertificaten worden gebruikt. De verbindingen kunnen alleen worden samengevoegd als zowel de hostnaam van de potentiële nieuwe verbinding als de hostnaam van een bestaande verbinding overeenkomen met een of meer patronen die in dit beleid worden beschreven. Dit beleid bestaat uit een lijst van hosts die de filterindeling URLBlacklist gebruiken: 'example.com' komt overeen met 'example.com' en alle subdomeinen (zoals 'sub.example.com'), terwijl '.example.net' exact overeenkomt met 'example.net'.
+<translation id="1352174694615491349">Dit beleid staat toe dat HTTP/2-verbindingen kunnen worden samengevoegd wanneer client certificates worden gebruikt. De verbindingen kunnen alleen worden samengevoegd als zowel de hostnaam van de potentiële nieuwe verbinding als de hostnaam van een bestaande verbinding overeenkomen met een of meer patronen die in dit beleid worden beschreven. Dit beleid bestaat uit een lijst van hosts die de filterindeling URLBlacklist gebruiken: 'example.com' komt overeen met 'example.com' en alle subdomeinen (zoals 'sub.example.com'), terwijl '.example.net' exact overeenkomt met 'example.net'.
 
-      Er kunnen beveiligings- of privacyproblemen ontstaan bij samenvoegingsverzoeken voor verschillende hosts via verbindingen die clientcertificaten gebruiken. De ambient authority wordt namelijk toegepast op alle verzoeken, zelfs als de gebruiker hiervoor niet rechtstreeks een machtiging voor heeft gegeven. Dit beleid is tijdelijk en wordt verwijderd in een toekomstige release. Zie https://crbug.com/855690.
+      Er kunnen beveiligings- of privacyproblemen ontstaan bij samenvoegingsverzoeken voor verschillende hosts via verbindingen die client certificates gebruiken. De ambient authority wordt namelijk toegepast op alle verzoeken, zelfs als de gebruiker hiervoor niet rechtstreeks een machtiging voor heeft gegeven. Dit beleid is tijdelijk en wordt verwijderd in een toekomstige release. Zie https://crbug.com/855690.
 
-      Als dit beleid niet wordt ingesteld, wordt het standaardgedrag toegepast. Dit houdt in dat HTTP/2-verbindingen niet kunnen worden samengevoegd voor verbindingen die clientcertificaten gebruiken.</translation>
+      Als dit beleid niet wordt ingesteld, wordt het standaardgedrag toegepast. Dit houdt in dat HTTP/2-verbindingen niet kunnen worden samengevoegd voor verbindingen die client certificates gebruiken.</translation>
 <translation id="1353966721814789986">Homepage's</translation>
 <translation id="1359553908012294236">Als dit beleid is ingesteld op 'waar' of niet is geconfigureerd, schakelt <ph name="PRODUCT_NAME" /> gast-logins in. Gast-logins zijn profielen van <ph name="PRODUCT_NAME" /> waarbij alle vensters in de incognitomodus worden geopend.
 
@@ -213,7 +213,7 @@
 <translation id="1583248206450240930"><ph name="PRODUCT_FRAME_NAME" /> standaard gebruiken</translation>
 <translation id="1599424828227887013">Site-isolatie inschakelen voor gespecificeerde herkomsten op Android-apparaten</translation>
 <translation id="1608755754295374538">URL's die zonder prompt toegang krijgen tot apparaten voor het vastleggen van audio</translation>
-<translation id="1615221548356595305">Toestaan dat HTTP/2-verbindingen voor deze hosts kunnen worden samengevoegd, zelfs als clientcertificaten worden gebruikt</translation>
+<translation id="1615221548356595305">Toestaan dat HTTP/2-verbindingen voor deze hosts kunnen worden samengevoegd, zelfs als client certificates worden gebruikt</translation>
 <translation id="1617235075406854669">Verwijderen van browser- en downloadgeschiedenis inschakelen</translation>
 <translation id="163200210584085447">Patronen in deze lijst worden vergeleken met de
       beveiligingsoorsprong van de aanvragende URL. Als een overeenkomst
@@ -2947,10 +2947,10 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 
       De bedoeling is organisaties toe te staan beginpunten voor
       verouderde apps die geen TLS kunnen implementeren, op
-      de witte lijst te zetten, of een faserende server voor interne
+      de witte lijst te zetten, of een staging server voor interne
       webontwikkelingen in te stellen, zodat de ontwikkelaars functies die een
       veilige context vereisen, kunnen testen zonder TLS te hoeven implementeren
-      op de faserende server. Dit beleid verhindert ook dat het beginpunt wordt
+      op de staging server. Dit beleid verhindert ook dat het beginpunt wordt
       aangeduid als onveilig in de omnibox.
 
       Wanneer er een lijst met URL's wordt ingesteld

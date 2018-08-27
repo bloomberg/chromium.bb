@@ -420,6 +420,7 @@
 <translation id="8351131234907093545">Notiz erstellen</translation>
 <translation id="8392451568018454956">Optionsmenü für <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Vollbildlupe</translation>
+<translation id="8425213833346101688">Ändern</translation>
 <translation id="8427213022735114808">Die Diktierfunktion sendet Ihre Spracheingaben an Google, damit sie in das entsprechende Textfeld eingetragen werden können.</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8431190899827883166">Fingertipps anzeigen</translation>
@@ -481,5 +482,4 @@
 <translation id="938963181863597773">Welche Termine stehen an?</translation>
 <translation id="945522503751344254">Feedback geben</translation>
 <translation id="98515147261107953">Querformat</translation>
-<translation id="995927048686010764">Automatisch klicken</translation>
 </translationbundle>

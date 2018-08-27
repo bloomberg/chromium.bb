@@ -42,7 +42,7 @@
       senarai putih bagi aplikasi lama yang tidak dapat mengerah tugas TLS
       atau menyediakan pelayan pemeringkatan untuk pembangunan web
       dalaman agar pembangunnya boleh menguji ciri yang memerlukan
-      konteks selamat tanpa perlu mengerah tugas TLS pada pelayan.
+      konteks selamat tanpa perlu mengerah tugas TLS pada pelayan
       pemeringkatan. Dasar ini juga menghalang asalan daripada dilabelkan
       sebagai "Tidak Selamat" dalam kotak omni.
 
@@ -1384,7 +1384,7 @@
       Jika dasar ini didayakan, tapak akan dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.
       Jika dasar ini dilumpuhkan atau tidak ditetapkan, tapak tidak dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.</translation>
 <translation id="4680961954980851756">Dayakan Auto Isi</translation>
-<translation id="4703402283970867140">Dayakan model pemalapan pintar untuk melanjutkan masa sehingga skrin dimalapkan</translation>
+<translation id="4703402283970867140">Dayakan model pemalapan pintar untuk melanjutkan masa sebelum skrin dimalapkan</translation>
 <translation id="4722122254122249791">Dayakan Pengasingan Tapak untuk asal yang ditentukan</translation>
 <translation id="4722399051042571387">Jika palsu, pengguna tidak akan dapat menetapkan PIN yang lemah dan mudah diteka.
 
@@ -2183,10 +2183,10 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6943577887654905793">Nama keutamaan Mac/Linux:</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="6956272732789158625">Jangan benarkan mana-mana tapak untuk menggunakan penghasilan kunci</translation>
-<translation id="6965859329738616662">Menentukan sama ada model pemalapan pintar dibenarkan untuk melanjutkan masa sehingga skrin dimalapkan.
+<translation id="6965859329738616662">Menentukan sama ada model pemalapan pintar dibenarkan untuk melanjutkan masa sebelum skrin dimalapkan.
 
-      Apabila skrin hendak dimalapkan, model pemalapan pintar akan menilai sama ada pemalapan skrin harus ditunda. Jika model pemalapan pintar menunda pemalapan skrin, model itu melanjutkan masa sehingga skrin dimalapkan. Dalam kes ini, skrin dimatikan, kunci skrin dan kelengahan melahu dilaraskan untuk mengekalkan jarak yang sama dari kelengahan pemalapan skrin seperti yang dikonfigurasi pada asalnya.
-      Jika dasar ini ditetapkan kepada Benar atau dibiarkan tidak ditetapkan, model pemalapan pintar akan didayakan dan dibenarkan melanjutkan masa sehingga skrin dimalapkan. Jika dasar ini ditetapkan kepada Palsu, model pemalapan pintar tidak akan mempengaruhi pemalapan skrin.</translation>
+      Apabila skrin hendak dimalapkan, model pemalapan pintar akan menilai sama ada pemalapan skrin harus ditunda. Jika model pemalapan pintar menunda pemalapan skrin, model itu melanjutkan masa sebelum skrin dimalapkan. Dalam kes ini, skrin dimatikan, kunci skrin dan kelengahan melahu dilaraskan untuk mengekalkan jarak yang sama dari kelengahan pemalapan skrin seperti yang dikonfigurasi pada asalnya.
+      Jika dasar ini ditetapkan kepada Benar atau dibiarkan tidak ditetapkan, model pemalapan pintar akan didayakan dan dibenarkan melanjutkan masa sebelum skrin dimalapkan. Jika dasar ini ditetapkan kepada Palsu, model pemalapan pintar tidak akan mempengaruhi pemalapan skrin.</translation>
 <translation id="6994082778848658360">Menyatakan cara perkakasan unsur selamat atas papan boleh digunakan untuk menyediakan pengesahan faktor kedua jika serasi dengan ciri ini. Butang kuasa mesin digunakan untuk mengesan kehadiran fizikal pengguna.
 
       Jika 'Dilumpuhkan' dipilih, faktor kedua tidak disediakan.

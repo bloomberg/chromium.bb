@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Sustituir</translation>
 <translation id="1067048845568873861">Creada</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
+<translation id="1067922213147265141">Otros servicios de Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Otro programa de tu ordenador ha añadido una extensión que puede cambiar el funcionamiento de Chrome.
 
@@ -1446,6 +1447,7 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="3161522574479303604">Todos los idiomas</translation>
 <translation id="3165390001037658081">Es posible que algunos operadores bloqueen esta función.</translation>
 <translation id="316854673539778496">Inicia sesión y activa la sincronización para ver tus extensiones en todos tus dispositivos.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">También puedes <ph name="LINK_START" />navegar como invitado<ph name="LINK_END" /> sin iniciar sesión.</translation>
 <translation id="3177909033752230686">Idioma de la página:</translation>
 <translation id="3182749001423093222">Revisión ortográfica</translation>
@@ -2261,7 +2263,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4467100756425880649">Galería de Chrome Web Store</translation>
 <translation id="4467101674048705704">Mostrar <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Ayudar a mejorar las funciones y el rendimiento de Chrome</translation>
-<translation id="4472575034687746823">Empezar</translation>
 <translation id="4474155171896946103">Añadir todas las pestañas a marcadores...</translation>
 <translation id="4475552974751346499">Buscar descargas</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -3927,7 +3928,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6985607387932385770">Impresoras</translation>
 <translation id="6990081529015358884">Te has quedado sin espacio.</translation>
 <translation id="6990778048354947307">Tema oscuro</translation>
-<translation id="6991128190741664836">Más tarde</translation>
 <translation id="6991665348624301627">Seleccionar un destino</translation>
 <translation id="6997707937646349884">En tus dispositivos:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> carpetas seleccionadas</translation>
@@ -4230,7 +4230,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7469518857922439236">Recibe notificaciones en este ordenador y establécelo como predeterminado para los mensajes</translation>
 <translation id="7469894403370665791">Conectarse automáticamente a esta red</translation>
 <translation id="747114903913869239">Error: no es posible decodificar la extensión.</translation>
-<translation id="7473753388963818366">Vamos a dejar listo tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="7473891865547856676">No, gracias</translation>
 <translation id="747459581954555080">Restaurar todo</translation>
 <translation id="7475671414023905704">URL de contraseñas perdidas de Netscape</translation>
@@ -4856,7 +4855,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
 <translation id="8419098111404128271">Resultados de búsqueda de "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">Mostrar archivos de Google Docs</translation>
-<translation id="8420510748452002155">Servicios no personalizados</translation>
 <translation id="8424039430705546751">abajo</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8425492902634685834">Fijar a barra de tareas</translation>

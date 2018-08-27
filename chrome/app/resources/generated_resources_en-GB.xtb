@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1067048845568873861">Created</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
+<translation id="1067922213147265141">Other Google services</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Another program on your computer added an extension that may change the way Chrome works.
 
@@ -1445,6 +1446,7 @@
 <translation id="3161522574479303604">All languages</translation>
 <translation id="3165390001037658081">Some operators might block this feature.</translation>
 <translation id="316854673539778496">To get all your extensions on all your devices, sign in and turn on sync.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">You may also skip signing in and <ph name="LINK_START" />browse as Guest<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Page language:</translation>
 <translation id="3182749001423093222">Spell check</translation>
@@ -2263,7 +2265,6 @@
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Expand <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Help improve Chrome's features and performance</translation>
-<translation id="4472575034687746823">Get started</translation>
 <translation id="4474155171896946103">Bookmark all tabs...</translation>
 <translation id="4475552974751346499">Search downloads</translation>
 <translation id="4476590490540813026">Athlete</translation>
@@ -3931,7 +3932,6 @@
 <translation id="6985607387932385770">Printers</translation>
 <translation id="6990081529015358884">You have run out of space</translation>
 <translation id="6990778048354947307">Dark Theme</translation>
-<translation id="6991128190741664836">Later</translation>
 <translation id="6991665348624301627">Select a destination</translation>
 <translation id="6997707937646349884">On your devices:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folders selected</translation>
@@ -4234,7 +4234,6 @@
 <translation id="7469518857922439236">Send you notifications and default to remembering this computer for Messages</translation>
 <translation id="7469894403370665791">Automatically connect to this network</translation>
 <translation id="747114903913869239">Error: Unable to decode extension</translation>
-<translation id="7473753388963818366">Let's get your <ph name="DEVICE_TYPE" /> ready for you</translation>
 <translation id="7473891865547856676">No Thanks</translation>
 <translation id="747459581954555080">Restore all</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
@@ -4860,7 +4859,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8418445294933751433">&amp;Show as tab</translation>
 <translation id="8419098111404128271">Search results for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Show Google Docs files</translation>
-<translation id="8420510748452002155">Non-personalised services</translation>
 <translation id="8424039430705546751">down</translation>
 <translation id="8425213833346101688">Change</translation>
 <translation id="8425492902634685834">Pin to task bar</translation>

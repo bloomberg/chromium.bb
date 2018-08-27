@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Modo anônimo</translation>
 <translation id="1054301162707478098">Você está em modo privado.</translation>
 <translation id="10614374240317010">Nunca salvas</translation>
+<translation id="1067922213147265141">Outros serviços do Google</translation>
 <translation id="1068672505746868501">Nunca traduzir páginas em <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" />: <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Você está se desconectando de uma conta gerenciada por <ph name="DOMAIN_NAME" />. Essa ação excluirá os dados do Google Chrome armazenados neste dispositivo, mas os dados permanecerão na sua Conta do Google.</translation>
@@ -358,6 +359,7 @@ Porém, você não está invisível, O modo privado não oculta sua navegação 
 <translation id="393697183122708255">Nenhuma pesq. por voz ativada disponível</translation>
 <translation id="3950820424414687140">Fazer login</translation>
 <translation id="395206256282351086">Sugestões de pesquisa e sites desativadas</translation>
+<translation id="3955193568934677022">Permitir que os sites reproduzam conteúdo protegido (recomendado)</translation>
 <translation id="3967822245660637423">Download concluído</translation>
 <translation id="397583555483684758">A sincronização parou de funcionar</translation>
 <translation id="3976396876660209797">Remova e recrie este atalho</translation>
@@ -925,7 +927,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="8374821112118309944">Atualize o TalkBack para receber uma versão mais nova.</translation>
 <translation id="8393700583063109961">Enviar mensagem</translation>
 <translation id="8413126021676339697">Mostrar histórico completo</translation>
-<translation id="8420510748452002155">Serviços não personalizados</translation>
 <translation id="8428213095426709021">Configurações</translation>
 <translation id="8438566539970814960">Melhorar pesquisas e navegação</translation>
 <translation id="8441146129660941386">Retroceder</translation>

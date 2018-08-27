@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Ganti</translation>
 <translation id="1067048845568873861">Dibuat</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
+<translation id="1067922213147265141">Layanan Google lainnya</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Program lain di komputer Anda menambahkan ekstensi yang dapat mengubah cara kerja Chrome.
 
@@ -1446,6 +1447,7 @@
 <translation id="3161522574479303604">Semua bahasa</translation>
 <translation id="3165390001037658081">Beberapa operator mungkin memblokir fitur ini.</translation>
 <translation id="316854673539778496">Untuk mendapatkan semua ekstensi di semua perangkat, login dan aktifkan sinkronisasi.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Anda juga dapat melewati proses masuk dan <ph name="LINK_START" />menjelajah sebagai tamu<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Bahasa Halaman:</translation>
 <translation id="3182749001423093222">Periksa ejaan</translation>
@@ -2264,7 +2266,6 @@
 <translation id="4467100756425880649">Galeri Chrome Webstore</translation>
 <translation id="4467101674048705704">Luaskan <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Bantu sempurnakan fitur dan performa Chrome</translation>
-<translation id="4472575034687746823">Memulai</translation>
 <translation id="4474155171896946103">Bookmark semua tab...</translation>
 <translation id="4475552974751346499">Telusuri download</translation>
 <translation id="4476590490540813026">Atlet</translation>
@@ -3932,7 +3933,6 @@
 <translation id="6985607387932385770">Printer</translation>
 <translation id="6990081529015358884">Anda telah kehabisan ruang</translation>
 <translation id="6990778048354947307">Tema Gelap</translation>
-<translation id="6991128190741664836">Nanti</translation>
 <translation id="6991665348624301627">Pilih tujuan</translation>
 <translation id="6997707937646349884">Di perangkat Anda:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folder dipilih</translation>
@@ -4235,7 +4235,6 @@
 <translation id="7469518857922439236">Kirim notifikasi dan setel secara default untuk mengingat komputer ini untuk Message</translation>
 <translation id="7469894403370665791">Sambungkan ke jaringan ini secara otomatis</translation>
 <translation id="747114903913869239">Kesalahan: Tidak dapat mendekodekan ekstensi</translation>
-<translation id="7473753388963818366">Mari menyiapkan <ph name="DEVICE_TYPE" /> Anda</translation>
 <translation id="7473891865547856676">Lain Kali</translation>
 <translation id="747459581954555080">Pulihkan semua</translation>
 <translation id="7475671414023905704">Netscape Lost Password URL</translation>
@@ -4861,7 +4860,6 @@ Simpan file kunci Anda di tempat yang aman. Anda akan membutuhkannya untuk membu
 <translation id="8418445294933751433">Tampilkan &amp;sebagai tab</translation>
 <translation id="8419098111404128271">Hasil penelusuran untuk '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Tampilkan file Google Dokumen</translation>
-<translation id="8420510748452002155">Layanan yang tidak dipersonalisasi</translation>
 <translation id="8424039430705546751">ke bawah</translation>
 <translation id="8425213833346101688">Ubah</translation>
 <translation id="8425492902634685834">Pasang Pin ke Taskbar</translation>

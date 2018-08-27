@@ -98,7 +98,7 @@
 <translation id="1559572115229829303">&lt;p&gt;您裝置的日期和時間 (<ph name="DATE_AND_TIME" />) 不正確，因此無法與 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私人連線。&lt;/p&gt;
 
       &lt;p&gt;請前往「設定」應用程式的「一般設定」專區調整日期和時間。&lt;strong&gt;&lt;/strong&gt;&lt;strong&gt;&lt;/strong&gt;&lt;/p&gt;</translation>
-<translation id="1581080074034554886">信用卡安全碼</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">顯示這個網頁時發生錯誤。</translation>
 <translation id="1592005682883173041">本機資料存取權</translation>
 <translation id="1594030484168838125">選擇</translation>
@@ -1094,7 +1094,7 @@
 <translation id="8763927697961133303">USB 裝置</translation>
 <translation id="8768895707659403558">如要在所有裝置上使用你的卡片，請<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="8790007591277257123">重做刪除(&amp;R)</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{這張卡片已新增至你的 Google 帳戶，你現在可以在任何已登入帳戶的裝置上使用這張卡片。}other{這些卡片已新增至你的 Google 帳戶，你現在可以在任何已登入帳戶的裝置上使用這些卡片。}}</translation>
+<translation id="8790803786526555470">{NUM_CARDS,plural, =1{這張卡片已新增至你的 Google 帳戶，你現在可以在已登入帳戶的任何裝置上使用這張卡片。}other{這些卡片已新增至你的 Google 帳戶，你現在可以在已登入帳戶的任何裝置上使用這些卡片。}}</translation>
 <translation id="8792621596287649091">你可能會失去 <ph name="ORG_NAME" /> 帳戶存取權，或身分遭到冒用。Chromium 建議你立即變更密碼。</translation>
 <translation id="8800988563907321413">這裡會顯示系統建議你瀏覽的鄰近網頁</translation>
 <translation id="8820817407110198400">書籤</translation>

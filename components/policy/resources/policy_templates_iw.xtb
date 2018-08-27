@@ -180,6 +180,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">הפעלת חסימה של החדרת תוכנות צד שלישי</translation>
 <translation id="1504431521196476721">הזדהות מרחוק</translation>
+<translation id="1507957856411744193">‏אם המדיניות מקבלת את הערך true, <ph name="PRODUCT_NAME" /> יתחבר למכשירי CAST בכל כתובת IP, ולא רק בכתובות פרטיות מסוג RFC1918/RFC4193.
+
+          אם המדיניות הזו מקבלת את הערך false, <ph name="PRODUCT_NAME" /> יתחבר למכשירי CAST בכתובות פרטיות בלבד מסוג RFC1918/RFC4193.
+
+          אם המדיניות הזו לא מוגדרת, <ph name="PRODUCT_NAME" /> יתחבר למכשירי CAST רק בכתובות פרטיות מסוג RFC1918/RFC4193, אלא אם התכונה CastAllowAllIPs מופעלת.
+
+          אם המדיניות EnableMediaRouter מקבלת את הערך false, לערך של המדיניות הזו לא תהיה השפעה.</translation>
 <translation id="1509692106376861764">מדיניות זו הופסקה החל מגרסה 29 של <ph name="PRODUCT_NAME" />.</translation>
 <translation id="1514888685242892912">הפעלת <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">אפשר לאתרים לעקוב אחר המיקום הפיזי של המשתמשים</translation>
@@ -1931,6 +1938,7 @@
 
       המדיניות <ph name="SYNC_DISABLED_POLICY_NAME" /> משביתה לחלוטין את סינכרון הנתונים, ועוקפת את RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">‏סינון אתרים ברמה עליונה שמכילים תוכן למבוגרים בלבד (אבל לא מסגרות iframe מוטמעות)</translation>
+<translation id="6734521799274931721">‏שליטה בהגדרות התכונה 'התקן רשת לשיתוף קבצים' לקביעת הזמינות של ChromeOS</translation>
 <translation id="6735701345096330595">אילוץ הפעלה של שפות לבדיקת איות</translation>
 <translation id="673699536430961464">‏ההגדרה הזו מאפשרת למשתמשים לעבור בין חשבונות Google באזור התוכן של חלון הדפדפן אחרי שהם נכנסים אל מכשיר <ph name="PRODUCT_OS_NAME" />.
 
@@ -2493,7 +2501,7 @@
 <translation id="7980227303582973781">ללא הגבלות מיוחדות</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">סובב את המסך ב-0 מעלות</translation>
-<translation id="8033913082323846868">‏המדיניות הזו הוצאה משימוש ב-M70, במקומה יש להשתמש ב-AutofillAddressEnabled וב-AutofillCreditCardEnabled instead.
+<translation id="8033913082323846868">‏המדיניות הזו הוצאה משימוש ב-M70, במקומה יש להשתמש ב-AutofillAddressEnabled וב-AutofillCreditCardEnabled.
 
 המדיניות מפעילה את תכונת המילוי האוטומטי של <ph name="PRODUCT_NAME" /> ומאפשרת למשתמשים להשלים אוטומטית טפסים באינטרנט באמצעות מידע שאוחסן בעבר, כגון כתובת או פרטי כרטיס אשראי.
 
@@ -2832,7 +2840,6 @@
 
       המדיניות מגדירה רשימת מקורות (כתובות אתרים) או דפוסים של שמות מארחים (כמו 
       ‎"*.example.com"‎) שיש להתייחס אליהם כאל מקור מאובטח.
-
 
       המטרה היא להתיר לארגונים להגדיר מקורות ברשימת היתרים בשביל אפליקציות מדור קודם  
       שאינן יכולות לפרוס TLS (אבטחת שכבת התעבורה), או להגדיר שרת ביניים לפיתוח אינטרנט 

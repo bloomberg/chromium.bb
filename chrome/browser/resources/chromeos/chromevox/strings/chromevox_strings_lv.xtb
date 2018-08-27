@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Nepareiza ievade</translation>
 <translation id="1080471004309605942">Beidzas teksts slīprakstā</translation>
 <translation id="1082209053475788238">Iepriekš nav neviena 6. līmeņa virsraksta.</translation>
+<translation id="1087788677726983142">Paslēpt notikumu plūsmas filtrus</translation>
 <translation id="1088219014394087294">Nav virsrakstu.</translation>
 <translation id="1106741348836243114">Ieslēgt vai izslēgt skaņas signālus.</translation>
 <translation id="1108651818222110612">apakšvirsraksts</translation>
@@ -78,6 +79,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="1618597272655350600">Sniedz pilnīgu aprakstu par pašreizējo pozīciju</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{zīme “lielāks par”}zero{# zīmju “lielāks par”}one{# zīme “lielāks par”}other{# zīmes “lielāks par”}}</translation>
 <translation id="1653266918374749391">Iepriekšējais 3. līmeņa virsraksts</translation>
+<translation id="1657616855184033958">Rādīt notikumu plūsmas filtrus</translation>
 <translation id="1659072772017912254">Nav atzīmēts</translation>
 <translation id="1669290819662866522">nedēļa</translation>
 <translation id="1674262202423278359">ChromeVox navigācija</translation>
@@ -412,6 +414,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="4255943572433203166">Izmantojiet tālāk norādītās opcijas, lai pielāgotu ChromeVox. Izmaiņas stājas spēkā nekavējoties.</translation>
 <translation id="4271220233568730077">Nākamā matemātiskā izteiksme</translation>
 <translation id="4271521365602459209">Nav neviena cita rezultāta.</translation>
+<translation id="4275397969489577657">Iespējot notikumu plūsmas reģistrēšanu</translation>
 <translation id="4287520460805643128">Nav nākamā raksta.</translation>
 <translation id="4289540628985791613">Kopsavilkums</translation>
 <translation id="4300318234632215983">Paziņot par saites URL</translation>
@@ -550,6 +553,7 @@ Ja esat beidzis darbu ar pamācību, izmantojiet ChromeVox, lai pārietu uz aizv
 <translation id="5407530583102765689">{COUNT,plural, =1{semikols}zero{# semikolu}one{# semikols}other{# semikoli}}</translation>
 <translation id="5411891038905756502">Iepriekš nav neviena pārejas punkta.</translation>
 <translation id="5417034931411865818">Noklikšķiniet uz vienuma zem maršrutēšanas taustiņa $1</translation>
+<translation id="5435274640623994081">Iespējot audio ikonas reģistrēšanu</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{zīme “mazāks par”}zero{# zīmju “mazāks par”}one{# zīme “mazāks par”}other{# zīmes “mazāks par”}}</translation>
 <translation id="5444587279251314700">(aktīva)</translation>
 <translation id="5446809554778706307">Nekas nav atlasīts. Nospiediet Ctrl+T, lai atvērtu jaunu cilni.</translation>
@@ -899,6 +903,7 @@ Lai atvērtu Chrome pārlūka izvēlni, vienlaikus nospiediet alternēšanas tau
 <translation id="8650576015643545550">Iepriekš nav neviena saraksta.</translation>
 <translation id="8651481478098336970">izslēgt skaņu</translation>
 <translation id="8653646212587894517">Rādīt saišu sarakstu</translation>
+<translation id="8656888282555543604">Iespējot Braila raksta reģistrēšanu</translation>
 <translation id="8664519043722036194">sekundes</translation>
 <translation id="867187640362843212">5. līmeņa virsraksts</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{vertikālā svītra}zero{# vertikālo svītru}one{# vertikālā svītra}other{# vertikālās svītras}}</translation>

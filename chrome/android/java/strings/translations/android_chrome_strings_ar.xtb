@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="1054301162707478098">لقد انتقلت إلى الوضع الخاص.</translation>
 <translation id="10614374240317010">لم يتم الحفظ مطلقًا</translation>
+<translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
 <translation id="1068672505746868501">عدم ترجمة الصفحات باللغة <ph name="SOURCE_LANGUAGE" /> مُطلقًا</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">‏أنت بصدد الخروج من حساب تحت إدارة <ph name="DOMAIN_NAME" />. سيؤدي هذا إلى حذف بيانات Chrome المخزنة على هذا الجهاز، إلا أن البيانات ستظل في حسابك على Google.</translation>
@@ -292,7 +293,7 @@
 <translation id="3282568296779691940">‏تسجيل الدخول إلى Chrome</translation>
 <translation id="32895400574683172">مسموح بالإشعارات</translation>
 <translation id="3295602654194328831">إخفاء المعلومات</translation>
-<translation id="3298243779924642547">الوضع البسيط</translation>
+<translation id="3298243779924642547">نسخة خفيفة</translation>
 <translation id="3303414029551471755">هل ترغب في الاستمرار في تنزيل المحتوى؟</translation>
 <translation id="3328801116991980348">معلومات موقع الويب</translation>
 <translation id="3341058695485821946">الاطّلاع على مقدار البيانات التي حفظتها</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">لا يتوفر بحث صوتي تم تمكينه</translation>
 <translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="395206256282351086">اقتراحات البحث ومواقع الويب غير مفعّلة</translation>
+<translation id="3955193568934677022">السماح للمواقع الإلكترونية بتشغيل المحتوى المحمي (مُستحسَن)</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
 <translation id="3976396876660209797">إزالة هذا الاختصار وإعادة إنشائه</translation>
@@ -858,7 +860,7 @@
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
 <translation id="7810647596859435254">فتح باستخدام...</translation>
-<translation id="7821588508402923572">ظهور توفير البيانات هنا</translation>
+<translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
 <translation id="7832327313660264358">‏لن تتغير البيانات التي تزامنها مع Google والميزات التي تستخدمها.</translation>
 <translation id="7837721118676387834">السماح بالتشغيل التلقائي للفيديوهات المكتومة الصوت لموقع معين.</translation>
 <translation id="7846076177841592234">إلغاء التحديد</translation>
@@ -926,7 +928,6 @@
 <translation id="8374821112118309944">‏يلزمك تحديث TalkBack إلى إصدار جديد.</translation>
 <translation id="8393700583063109961">إرسال رسالة</translation>
 <translation id="8413126021676339697">عرض السجل بكامله</translation>
-<translation id="8420510748452002155">الخدمات غير المُخصّصة</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8438566539970814960">تحسين عمليات البحث والتصفُّح</translation>
 <translation id="8441146129660941386">الرجوع للوراء</translation>

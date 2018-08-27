@@ -191,6 +191,13 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Įgalinti trečiosios šalies programinės įrangos įdėjimo blokavimą</translation>
 <translation id="1504431521196476721">Nuotolinis patvirtinimas</translation>
+<translation id="1507957856411744193">Jei ši politika nustatyta į „true“, „<ph name="PRODUCT_NAME" />“ prisijungs prie perdavimo įrenginių, pasiekiamų visais IP adresais, o ne tik RFC1918 / RFC4193 privačiais adresais.
+
+          Jei ši politika nustatyta į „false“, „<ph name="PRODUCT_NAME" />“ prisijungs prie perdavimo įrenginių, pasiekiamų tik RFC1918 / RFC4193 privačiais adresais.
+
+          Jei ši politika nenustatyta, „<ph name="PRODUCT_NAME" />“ prisijungs prie perdavimo įrenginių, pasiekiamų tik RFC1918 / RFC4193 privačiais adresais, nebent įgalinta funkcija „CastAllowAllIPs“.
+
+          Jei politika „EnableMediaRouter“ nustatyta į „false“, šios politikos vertė nedaro jokio poveikio.</translation>
 <translation id="1509692106376861764">Ši politika nebenaudojama 29 ir naujesnėse „<ph name="PRODUCT_NAME" />“ versijose.</translation>
 <translation id="1514888685242892912">Įgalinti „<ph name="PRODUCT_NAME" />“</translation>
 <translation id="1522425503138261032">Leisti svetainėse stebėti naudotojo buvimo vietą</translation>
@@ -2031,6 +2038,7 @@
 
       „<ph name="SYNC_DISABLED_POLICY_NAME" />“ politika išjungia visų duomenų sinchronizavimą ir nepaiso „RoamingProfileSupportEnabled“.</translation>
 <translation id="6731757988219967594">Filtruoti turinį suaugusiesiems aukščiausio lygio svetainėse (bet ne įterptuose „iframe“)</translation>
+<translation id="6734521799274931721">Valdomas „Chrome“ OS skirtų tinklo failų bendrinimo įrenginių pasiekiamumas</translation>
 <translation id="6735701345096330595">Priverstinis rašybos tikrinimo kalbų įgalinimas</translation>
 <translation id="673699536430961464">Naudodami šį nustatymą naudotojai gali perjungti „Google“ paskyras naršyklės lango turinio srityje po to, kai prisijungia prie „<ph name="PRODUCT_OS_NAME" />“ įrenginio.
 

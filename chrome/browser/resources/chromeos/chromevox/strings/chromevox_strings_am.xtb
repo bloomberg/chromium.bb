@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">ልክ ያልሆነ ግቤት</translation>
 <translation id="1080471004309605942">ሰያፍ መጨረሻ</translation>
 <translation id="1082209053475788238">ምንም ቀዳሚ የደረጃ 6 ርዕስ የለም።</translation>
+<translation id="1087788677726983142">የክስተት ዥረት ማጣሪያዎችን ደብቅ</translation>
 <translation id="1088219014394087294">ምንም ርዕሶች የሉም።</translation>
 <translation id="1106741348836243114">የድምጽ ግብረመልስ (ኢርኮኖች) ያብሩ ወይም ያጥፉ።</translation>
 <translation id="1108651818222110612">ግርጌ ጽሑፍ</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">የተሟላ የአሁኑ ቦታ ሙሉ ማብራሪያ ያስታውቃል</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{ይበልጣል}one{# የይበልጣል ምልክቶች}other{# የይበልጣል ምልክቶች}}</translation>
 <translation id="1653266918374749391">ቀዳሚ የደረጃ 3 ርዕስ</translation>
+<translation id="1657616855184033958">የክስተት ዥረት ማጣሪያዎችን አሳይ</translation>
 <translation id="1659072772017912254">ምልክት አልተደረገበትም</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">የChromeVox አሰሳ</translation>
@@ -411,6 +413,7 @@
 <translation id="4255943572433203166">ChromeVoxን ለማበጀት ከታች ያሉትን አማራጮች ይጠቀሙ። ለውጦች ወዲያውኑ ነው የሚተገበሩት።</translation>
 <translation id="4271220233568730077">ቀጣይ ሒሳብ</translation>
 <translation id="4271521365602459209">ምንም ተጨማሪ ውጤቶች የሉም።</translation>
+<translation id="4275397969489577657">የክስተት ዥረት ምዝግብ ማስታወሻን ያንቁ</translation>
 <translation id="4287520460805643128">ምንም ቀጣይ ጽሑፍ የለም።</translation>
 <translation id="4289540628985791613">ማጠቃለያ</translation>
 <translation id="4300318234632215983">ከአንድ አገናኝ ጀርባ ያለውን ዩአርኤል አስታውቅ</translation>
@@ -549,6 +552,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{ድርብ ሰረዝ}one{# ድርብ ሰረዞች}other{# ድርብ ሰረዞች}}</translation>
 <translation id="5411891038905756502">ምንም ቀዳሚ የመዝለያ ነጥብ የለም።</translation>
 <translation id="5417034931411865818">ከማዞሪያ ቁልፍ $1 ስር ያለውን ንጥል ጠቅ ያድርጉት</translation>
+<translation id="5435274640623994081">የጆሮ አዶ ምዝግብ ማስታወሻን ያንቁ</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ያንሳል}one{# የያንሳል ምልክቶች}other{# የያንሳል ምልክቶች}}</translation>
 <translation id="5444587279251314700">(ገቢር)</translation>
 <translation id="5446809554778706307">ምንም ትኩረት የለም። አዲስ ትር ለመክፈት Ctrl+T ይጫኑ።</translation>
@@ -898,6 +902,7 @@
 <translation id="8650576015643545550">ምንም ቀዳሚ ዝርዝር የለም።</translation>
 <translation id="8651481478098336970">ድምጽ ዝጋ</translation>
 <translation id="8653646212587894517">የአገናኞች ዝርዝር አሳይ</translation>
+<translation id="8656888282555543604">የብሬይል ምዝግብ ማስታወሻን ያንቁ</translation>
 <translation id="8664519043722036194">ሴኮንድ</translation>
 <translation id="867187640362843212">ርዕስ 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{ቁም መስመር}one{# የቁም መስመሮች}other{# የቁም መስመሮች}}</translation>

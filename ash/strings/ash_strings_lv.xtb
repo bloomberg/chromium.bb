@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Ierīce <ph name="DEVICE_NAME" /> ir pievienota</translation>
 <translation id="1056775291175587022">Nav tīklu</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Man ir garlaicīgi</translation>
 <translation id="1104084341931202936">Rādīt pieejamības iestatījumus</translation>
 <translation id="1104621072296271835">Kopā jūsu ierīces darbojas vēl labāk</translation>
 <translation id="112308213915226829">Automātiski slēpt plauktu</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Notīrīt visu</translation>
 <translation id="1247372569136754018">Mikrofons (iebūvētais)</translation>
 <translation id="1252999807265626933">Uzlādes avots: <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Kādi ir laikapstākļi?</translation>
 <translation id="1267032506238418139">Īsinājumtaustiņš mainīts</translation>
 <translation id="1270290102613614947">Ekrāna tastatūra atspējota</translation>
 <translation id="1272079795634619415">Apturēt</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Vairākkārtējas pierakstīšanās laikā var izmantot ne vairāk kā <ph name="MULTI_PROFILE_USER_LIMIT" /> kontus.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Savienots ar ierīci}zero{Savienots ar # ierīcēm}one{Savienots ar # ierīci}other{Savienots ar # ierīcēm}}</translation>
 <translation id="3236488194889173876">Mobilais tīkls nav pieejams</translation>
+<translation id="3255483164551725916">Iespējamās darbības</translation>
 <translation id="3294437725009624529">Viesis</translation>
 <translation id="332587331255250389">Lūdzu, nomainiet bateriju.</translation>
 <translation id="3351879221545518001">Jūsu ekrānā šobrīd tiek veikta apraide.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Lāzera rādītājs</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Izslēgt lietotnē}zero{Izslēgt # lietotnēs}one{Izslēgt # lietotnē}other{Izslēgt # lietotnēs}}</translation>
 <translation id="4072264167173457037">Vidēji spēcīgs signāls</translation>
+<translation id="4146833061457621061">Atskaņot mūziku</translation>
 <translation id="4200057768455216496">Jūs nospiedāt dokotās lupas īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="4217571870635786043">Diktēšana</translation>
 <translation id="4261870227682513959">Rādīt paziņojumu iestatījumus. Paziņojumi ir izslēgti</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Jūs nospiedāt augsta kontrasta īsinājumtaustiņu. Vai vēlaties to ieslēgt?</translation>
 <translation id="7066646422045619941">Jūsu administrators atspējoja šo tīklu.</translation>
 <translation id="7067196344162293536">Pagriezt automātiski</translation>
+<translation id="7068360136237591149">Atvērt failus</translation>
 <translation id="7076293881109082629">Pierakstīšanās</translation>
 <translation id="7092922358121866860">Rādīt nakts režīma iestatījumus</translation>
 <translation id="7098389117866926363">USB-C ierīce (pieslēgvieta aizmugurē pa kreisi)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Brīdinājums: šī ir eksperimentāla funkcija!</translation>
 <translation id="7846634333498149051">Tastatūra</translation>
 <translation id="7886277072580235377">Pēc izrakstīšanās jūsu interneta sesija tiks notīrīta. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Sūtīt e-pasta ziņojumu</translation>
 <translation id="790040513076446191">Manipulēt ar konfidencialitāti saistītus iestatījumus</translation>
 <translation id="7904094684485781019">Šī konta administrators nav atļāvis vairākkārtēju pierakstīšanos.</translation>
 <translation id="7933084174919150729">Google asistents ir pieejams tikai galvenajam profilam.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">Izveidot piezīmi</translation>
 <translation id="8392451568018454956">Opciju izvēlne kontam <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Pilnekrāna lupa</translation>
+<translation id="8425213833346101688">Mainīt</translation>
 <translation id="8427213022735114808">Diktēšanas funkcija nosūta jūsu balss datus Google serveriem, lai atļautu rakstīšanu ar balsi jebkurā teksta laukā.</translation>
 <translation id="8428213095426709021">Iestatījumi</translation>
 <translation id="8431190899827883166">Pieskārienu rādīšana</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Lietotnē netiek atbalstīta ekrāna sadalīšana.</translation>
 <translation id="8874184842967597500">Savienojums nav izveidots</translation>
+<translation id="8877788021141246043">Iestatīt atgādinājumu</translation>
 <translation id="8878886163241303700">Notiek ekrāna izvēršana</translation>
 <translation id="8921624153894383499">Google asistents nav pieejams šajā valodā.</translation>
 <translation id="8938800817013097409">USB-C ierīce (pieslēgvieta aizmugurē pa labi)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">Notiek iziešana no vienotās darbvirsmas režīma</translation>
 <translation id="9215934040295798075">Iestatīt fona tapeti</translation>
 <translation id="923686485342484400">Lai izrakstītos, divas reizes nospiediet taustiņu kombināciju Ctrl+Shift+Q.</translation>
+<translation id="938963181863597773">Kas ir atrodams manā kalendārā?</translation>
 <translation id="945522503751344254">Sūtīt atsauksmes</translation>
 <translation id="98515147261107953">Ainava</translation>
-<translation id="995927048686010764">Automātisks klikšķis</translation>
 </translationbundle>

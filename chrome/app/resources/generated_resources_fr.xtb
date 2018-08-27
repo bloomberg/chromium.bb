@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Remplacer</translation>
 <translation id="1067048845568873861">Date de création</translation>
 <translation id="1067291318998134776">Linux (version bêta)</translation>
+<translation id="1067922213147265141">Autres services Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Une extension qui risque de modifier le fonctionnement de Chrome a été ajoutée via un autre programme sur votre ordinateur.
 
@@ -96,7 +97,7 @@
 <translation id="1145292499998999162">Plug-in bloqué</translation>
 <translation id="1145532888383813076">Effectuez des recherches sur votre appareil, dans vos applications et sur le Web.</translation>
 <translation id="1146204723345436916">Importer les favoris depuis un fichier HTML...</translation>
-<translation id="114721135501989771">Fonct. Google dans Chrome</translation>
+<translation id="114721135501989771">Profitez des fonctionnalités intelligentes de Google dans Chrome</translation>
 <translation id="1148097584170732637"><ph name="FILE_COUNT" /> trouvées.
     <ph name="LINE_BREAK1" />
     Espace disponible insuffisant dans le stockage local. <ph name="FILE_SIZE" /> supplémentaires requis.
@@ -1446,6 +1447,7 @@
 <translation id="3161522574479303604">Toutes les langues</translation>
 <translation id="3165390001037658081">Certains opérateurs peuvent bloquer cette fonctionnalité.</translation>
 <translation id="316854673539778496">Pour accéder à toutes vos extensions sur tous vos appareils, connectez-vous et activez la synchronisation.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Vous pouvez également ignorer l'étape de connexion et <ph name="LINK_START" />naviguer en tant qu'invité<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Langue de la page :</translation>
 <translation id="3182749001423093222">Correcteur orthographique</translation>
@@ -2264,7 +2266,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Développer le dossier "<ph name="FOLDER_NAME" />"</translation>
 <translation id="447252321002412580">Contribuer à l'amélioration des fonctionnalités et des performances de Chrome</translation>
-<translation id="4472575034687746823">Premiers pas</translation>
 <translation id="4474155171896946103">Ajouter tous les onglets aux favoris...</translation>
 <translation id="4475552974751346499">Rechercher dans les téléchargements</translation>
 <translation id="4476590490540813026">Athlète</translation>
@@ -3933,7 +3934,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6985607387932385770">Imprimantes</translation>
 <translation id="6990081529015358884">Vous avez utilisé tout l'espace de stockage.</translation>
 <translation id="6990778048354947307">Thème sombre</translation>
-<translation id="6991128190741664836">Plus tard</translation>
 <translation id="6991665348624301627">Sélectionner un emplacement de destination</translation>
 <translation id="6997707937646349884">Sur vos appareils :</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> dossiers sélectionnés</translation>
@@ -4236,7 +4236,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7469518857922439236">Vous envoyer des notifications et mémoriser cet ordinateur pour les messages</translation>
 <translation id="7469894403370665791">Se connecter automatiquement à ce réseau</translation>
 <translation id="747114903913869239">Erreur : impossible de décoder l'extension.</translation>
-<translation id="7473753388963818366">Préparons votre <ph name="DEVICE_TYPE" /></translation>
 <translation id="7473891865547856676">Non, merci</translation>
 <translation id="747459581954555080">Tout restaurer</translation>
 <translation id="7475671414023905704">URL de mot de passe perdu Netscape</translation>
@@ -4862,7 +4861,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8418445294933751433">Afficher dan&amp;s un onglet</translation>
 <translation id="8419098111404128271">Résultats de recherche pour "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">Afficher les fichiers Google Docs</translation>
-<translation id="8420510748452002155">Services non personnalisés</translation>
 <translation id="8424039430705546751">bas</translation>
 <translation id="8425213833346101688">Modifier</translation>
 <translation id="8425492902634685834">Épingler sur la barre des tâches</translation>

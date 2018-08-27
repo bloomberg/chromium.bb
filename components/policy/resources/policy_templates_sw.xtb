@@ -169,6 +169,13 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Washa kipengele cha kuzuia uingizaji unaofanywa na programu za kampuni nyingine</translation>
 <translation id="1504431521196476721">Uthibitishaji wa Mbali</translation>
+<translation id="1507957856411744193">Sera hii ikiwekwa kuwa ndivyo, <ph name="PRODUCT_NAME" /> itaunganishwa na Vifaa vinavyotuma maudhui kwenye anwani zote za IP, si anwani za faragha za RFC1918/RFC4193 pekee.
+
+          Sera hii ikiwekwa kuwa sivyo, <ph name="PRODUCT_NAME" /> itaunganishwa na Vifaa vinavyotuma maudhui kwenye anwani za faragha za RFC1918/RFC4193 pekee.
+
+          Sera hii isipowekwa, <ph name="PRODUCT_NAME" /> itaunganishwa na Vifaa vinavyotuma maudhui kwenye anwani za faragha za RFC1918/RFC4193 pekee, isipokuwa kipengele cha CastAllowAllIPs kiwashwe.
+
+         Sera ya "EnableMediaRouter" ikiwekwa kuwa sivyo, inamaanisha kuwa thamani ya sera hii haitakuwa na athari yoyote.</translation>
 <translation id="1509692106376861764">Sera hii imeondolewa kutoka toleo la 29 la <ph name="PRODUCT_NAME" /></translation>
 <translation id="1514888685242892912">Washa <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Ruhusu tovuti kufuatilia eneo halisi la mtumiaji</translation>
@@ -189,7 +196,7 @@ Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini y
 <translation id="1583248206450240930">Tumia <ph name="PRODUCT_FRAME_NAME" /> kwa chaguomsingi</translation>
 <translation id="1599424828227887013">Washa sera ya Utengaji wa Tovuti katika vyanzo vilivyobainishwa kwenye vifaa vya Android</translation>
 <translation id="1608755754295374538">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa sauti bila ushawishi</translation>
-<translation id="1615221548356595305">Ruhusu kuungana kwa miunganisho ya HTTP/2 ya seva hizi pangishi hata wakati vyeti vya mteja vinatumika.</translation>
+<translation id="1615221548356595305">Ruhusu kuungana kwa miunganisho ya HTTP/2 ya seva hizi pangishi hata wakati vyeti vya mteja vinatumika</translation>
 <translation id="1617235075406854669">Washa ufutaji wa historia ya upakuaji na kivinjari</translation>
 <translation id="163200210584085447">Michoro katika orodha hii italinganishwa na asili ya
       usalama wa ombi la URL. Zikilingana, idhini ya kufikia vifaa vya
@@ -1986,6 +1993,7 @@ Ukiweka sera hii kuwa 'ndivyo', kipindi cha mgeni kinachodhibitiwa kitachukua si
 
       Sera ya <ph name="SYNC_DISABLED_POLICY_NAME" /> huzima usawazishaji wote wa data, hivyo kubatilisha RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Chuja tovuti maarufu (lakini si iframes zinazopachikwa) zinazoonyesha maudhui ya watu wazima</translation>
+<translation id="6734521799274931721">Hudhibiti Faili za Kushiriki katika Mtandao kwa ajili ya upatikanaji wa ChromeOS</translation>
 <translation id="6735701345096330595">Lazimisha kuwasha sera ya kikagua tahajia</translation>
 <translation id="673699536430961464">Mipangilio hii huruhusu watumiaji kubadili kati ya akaunti za Google katika eneo la maudhui ya dirisha la kivinjari baada ya kuingia katika akaunti wakitumia kifaa chao cha <ph name="PRODUCT_OS_NAME" />.
 

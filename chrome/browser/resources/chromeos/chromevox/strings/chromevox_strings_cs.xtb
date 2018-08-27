@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Neplatný vstup</translation>
 <translation id="1080471004309605942">Konec kurzívy</translation>
 <translation id="1082209053475788238">Žádný předchozí nadpis 6. úrovně.</translation>
+<translation id="1087788677726983142">Skrýt filtry streamů událostí</translation>
 <translation id="1088219014394087294">Žádné nadpisy.</translation>
 <translation id="1106741348836243114">Zapnout nebo vypnout zvukové signály.</translation>
 <translation id="1108651818222110612">titulek</translation>
@@ -78,6 +79,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="1618597272655350600">Oznamuje úplný popis současné pozice</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{je větší než}few{# znaky je větší než}many{# greater than signs}other{# znaků je větší než}}</translation>
 <translation id="1653266918374749391">Předchozí nadpis 3. úrovně</translation>
+<translation id="1657616855184033958">Zobrazit filtry streamů událostí</translation>
 <translation id="1659072772017912254">Není zaškrtnuto</translation>
 <translation id="1669290819662866522">týden</translation>
 <translation id="1674262202423278359">Navigace ChromeVox</translation>
@@ -411,6 +413,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4255943572433203166">Pomocí možností níže si program ChromeVox můžete přizpůsobit. Změny se projeví okamžitě.</translation>
 <translation id="4271220233568730077">Další matematický objekt</translation>
 <translation id="4271521365602459209">Žádné další výsledky.</translation>
+<translation id="4275397969489577657">Zapnout protokolování streamů událostí</translation>
 <translation id="4287520460805643128">Žádný další článek.</translation>
 <translation id="4289540628985791613">Přehled</translation>
 <translation id="4300318234632215983">Oznámit adresu URL za odkazem</translation>
@@ -549,6 +552,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5407530583102765689">{COUNT,plural, =1{středník}few{# středníky}many{# semicolons}other{# středníků}}</translation>
 <translation id="5411891038905756502">Žádný předchozí bod skoku.</translation>
 <translation id="5417034931411865818">Klikněte na položku pod navigační klávesou $1</translation>
+<translation id="5435274640623994081">Zapnout protokolování</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{je menší než}few{# znaky je menší než}many{# less than signs}other{# znaků je menší než}}</translation>
 <translation id="5444587279251314700">(aktivní)</translation>
 <translation id="5446809554778706307">Nejste na nic zaměřeni. Stisknutím Ctrl + T otevřete novou kartu.</translation>
@@ -898,6 +902,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8650576015643545550">Žádný předchozí seznam.</translation>
 <translation id="8651481478098336970">ztlumit hlasitost</translation>
 <translation id="8653646212587894517">Zobrazit seznam odkazů</translation>
+<translation id="8656888282555543604">Zapnout protokolování Braillova písma</translation>
 <translation id="8664519043722036194">s</translation>
 <translation id="867187640362843212">Nadpis 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{svislá čára}few{# svislé čáry}many{# vertical pipes}other{# svislých čar}}</translation>

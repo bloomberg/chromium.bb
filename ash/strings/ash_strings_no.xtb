@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> er lagt til</translation>
 <translation id="1056775291175587022">Ingen nettverk</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Jeg kjeder meg</translation>
 <translation id="1104084341931202936">Vis innstillinger for tilgjengelighet</translation>
 <translation id="1104621072296271835">Enhetene fungerer enda bedre sammen</translation>
 <translation id="112308213915226829">Skjul hyllen automatisk</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Fjern alle</translation>
 <translation id="1247372569136754018">Mikrofon (intern)</translation>
 <translation id="1252999807265626933">Lader fra <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Hvordan er været?</translation>
 <translation id="1267032506238418139">Endring av hurtigtast</translation>
 <translation id="1270290102613614947">Skjermtastaturet er deaktivert</translation>
 <translation id="1272079795634619415">Stopp</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Du kan bare ha opptil <ph name="MULTI_PROFILE_USER_LIMIT" /> kontoer i multipålogging.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Koblet til en enhet}other{Koblet til # enheter}}</translation>
 <translation id="3236488194889173876">Ingen mobilnettverk er tilgjengelige</translation>
+<translation id="3255483164551725916">Hva kan du gjøre?</translation>
 <translation id="3294437725009624529">Gjest</translation>
 <translation id="332587331255250389">Bytt ut batteriet</translation>
 <translation id="3351879221545518001">Du caster for øyeblikket skjermen.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Laserpeker</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Slått av for en app}other{Slått av for # apper}}</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
+<translation id="4146833061457621061">Spill av musikk</translation>
 <translation id="4200057768455216496">Du trykket på snarveien for den dokkede lupen. Vil du slå den på?</translation>
 <translation id="4217571870635786043">Diktering</translation>
 <translation id="4261870227682513959">Vis innstillinger for varsler. Varsler er av</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Du trykket på snarveien for høy kontrast. Vil du slå det på?</translation>
 <translation id="7066646422045619941">Administratoren din har slått av dette nettverket.</translation>
 <translation id="7067196344162293536">Automatisk retning</translation>
+<translation id="7068360136237591149">Åpne filer</translation>
 <translation id="7076293881109082629">Pålogging</translation>
 <translation id="7092922358121866860">Vis innstillinger for nattlys</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Advarsel: Funksjon på forsøksstadiet</translation>
 <translation id="7846634333498149051">Tastatur</translation>
 <translation id="7886277072580235377">Internett-økten din fjernes når du logger av. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Send e-post</translation>
 <translation id="790040513076446191">manipulere personvernrelaterte innstillinger</translation>
 <translation id="7904094684485781019">Administratoren for denne kontoen har forbudt multipålogging.</translation>
 <translation id="7933084174919150729">Google-assistenten er bare tilgjengelig for den primære profilen.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">Opprett et notat</translation>
 <translation id="8392451568018454956">Alternativmenyen for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupe for hele skjermen</translation>
+<translation id="8425213833346101688">Endre</translation>
 <translation id="8427213022735114808">Diktat sender stemmen din til Google for å muliggjøre stemmestyrt skriving i alle tekstfelt.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8431190899827883166">Vis trykk</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">Søk+Esc</translation>
 <translation id="8870509716567206129">Appen støtter ikke delt skjerm.</translation>
 <translation id="8874184842967597500">Ikke tilkoblet</translation>
+<translation id="8877788021141246043">Angi en påminnelse</translation>
 <translation id="8878886163241303700">Utvidet skjerm</translation>
 <translation id="8921624153894383499">Google-assistenten kan ikke dette språket.</translation>
 <translation id="8938800817013097409">USB-C-enhet (høyre port på baksiden)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">Avslutter enhetlig skrivebordsmodus</translation>
 <translation id="9215934040295798075">Velg bakgrunn</translation>
 <translation id="923686485342484400">Trykk på Control+Shift+Q to ganger for å logge av.</translation>
+<translation id="938963181863597773">Hva er i kalenderen min?</translation>
 <translation id="945522503751344254">Gi tilbakemelding</translation>
 <translation id="98515147261107953">Liggende</translation>
-<translation id="995927048686010764">Autoclick</translation>
 </translationbundle>

@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">シークレット モード</translation>
 <translation id="1054301162707478098">プライベート モードです。</translation>
 <translation id="10614374240317010">常に保存しない</translation>
+<translation id="1067922213147265141">他の Google サービス</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />のページを翻訳しない</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> により管理されているアカウントからログアウトします。このデバイスに保存されている Chrome データは削除されますが、Google アカウントではデータが保持されます。</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">有効な音声検索がありません</translation>
 <translation id="3950820424414687140">ログイン</translation>
 <translation id="395206256282351086">検索とサイトの候補の表示が無効</translation>
+<translation id="3955193568934677022">保護されたコンテンツの再生をサイトに許可する（推奨）</translation>
 <translation id="3967822245660637423">ダウンロード完了</translation>
 <translation id="397583555483684758">同期は停止されました</translation>
 <translation id="3976396876660209797">このショートカットを削除して再度作成します</translation>
@@ -925,7 +927,6 @@
 <translation id="8374821112118309944">TalkBack を最新版に更新する必要があります。</translation>
 <translation id="8393700583063109961">メッセージを送信</translation>
 <translation id="8413126021676339697">全履歴を表示</translation>
-<translation id="8420510748452002155">カスタマイズされないサービス</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8438566539970814960">検索とブラウジングを改善する</translation>
 <translation id="8441146129660941386">後方にシーク再生</translation>

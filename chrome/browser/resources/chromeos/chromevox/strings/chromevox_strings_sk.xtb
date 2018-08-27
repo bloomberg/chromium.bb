@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Neplatný vstup</translation>
 <translation id="1080471004309605942">Koniec kurzívy</translation>
 <translation id="1082209053475788238">Žiadny predchádzajúci nadpis 6. úrovne</translation>
+<translation id="1087788677726983142">Skryť filtre streamovania udalosti</translation>
 <translation id="1088219014394087294">Žiadne nadpisy</translation>
 <translation id="1106741348836243114">Zapnúť alebo vypnúť zvukovú spätnú väzbu (zvukové signály</translation>
 <translation id="1108651818222110612">podnázov</translation>
@@ -78,6 +79,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1618597272655350600">Oznamuje úplný popis aktuálnej pozície</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{znak je väčšie ako}few{# znaky je väčšie ako}many{# greater than signs}other{# znakov je väčšie ako}}</translation>
 <translation id="1653266918374749391">Predchádzajúci nadpis 3. úrovne</translation>
+<translation id="1657616855184033958">Zobraziť filtre streamovania udalosti</translation>
 <translation id="1659072772017912254">Nezačiarknuté</translation>
 <translation id="1669290819662866522">týždeň</translation>
 <translation id="1674262202423278359">Navigácia rozšírenia ChromeVox</translation>
@@ -411,6 +413,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="4255943572433203166">Pomocou možností nižšie si môžete prispôsobiť rozšírenie ChromeVox. Zmeny sa prejavia okamžite.</translation>
 <translation id="4271220233568730077">Ďalší matematický výraz</translation>
 <translation id="4271521365602459209">Žiadne ďalšie výsledky</translation>
+<translation id="4275397969489577657">Povoliť zápis streamovania udalosti do denníka</translation>
 <translation id="4287520460805643128">Žiadny ďalší článok</translation>
 <translation id="4289540628985791613">Prehľad</translation>
 <translation id="4300318234632215983">Oznámiť webovú adresu za odkazom</translation>
@@ -549,6 +552,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5407530583102765689">{COUNT,plural, =1{bodkočiarka}few{# bodkočiarky}many{# semicolons}other{# bodkočiarok}}</translation>
 <translation id="5411891038905756502">Žiadny predchádzajúci bod preskočenia</translation>
 <translation id="5417034931411865818">Kliknite na položku pod navigačným klávesom $1</translation>
+<translation id="5435274640623994081">Povoliť zápis zvukových signálov do denníka</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak je menšie ako}few{# znaky je menšie ako}many{# less than signs}other{# znakov je menšie ako}}</translation>
 <translation id="5444587279251314700">(aktívne)</translation>
 <translation id="5446809554778706307">Nie je označená žiadna položka. Nové okno otvoríte pomocou kombinácie klávesov Ctrl + T.</translation>
@@ -898,6 +902,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8650576015643545550">Žiadny predchádzajúci zoznam</translation>
 <translation id="8651481478098336970">stlmenie hlasitosti</translation>
 <translation id="8653646212587894517">Zobraziť zoznam odkazov</translation>
+<translation id="8656888282555543604">Povoliť zápis Braillovho písma do denníka</translation>
 <translation id="8664519043722036194">sekundy</translation>
 <translation id="867187640362843212">Nadpis 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{zvislá čiara}few{# zvislé čiary}many{# vertical pipes}other{# zvislých čiar}}</translation>

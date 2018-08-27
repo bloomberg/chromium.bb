@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> lisätty</translation>
 <translation id="1056775291175587022">Ei verkkoja</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Minulla on tylsää</translation>
 <translation id="1104084341931202936">Näytä esteettömyysasetukset</translation>
 <translation id="1104621072296271835">Laitteesi toimivat entistä paremmin yhdessä</translation>
 <translation id="112308213915226829">Piilota hylly automaattisesti</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Tyhjennä kaikki</translation>
 <translation id="1247372569136754018">Mikrofoni (sisäinen)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> lataa laitetta.</translation>
+<translation id="1255033239764210633">Miltä päivän sää näyttää?</translation>
 <translation id="1267032506238418139">Pikanäppäimen muutos</translation>
 <translation id="1270290102613614947">Ruutunäppäimistö poistettiin käytöstä</translation>
 <translation id="1272079795634619415">Pysäytä</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Voit lisätä enintään <ph name="MULTI_PROFILE_USER_LIMIT" /> tiliä useille tileille kirjautumista varten.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Yhdistetty 1 laitteeseen}other{Yhdistetty # laitteeseen}}</translation>
 <translation id="3236488194889173876">Mobiiliverkkoja ei ole käytettävissä</translation>
+<translation id="3255483164551725916">Mitä osaat tehdä?</translation>
 <translation id="3294437725009624529">Vieras</translation>
 <translation id="332587331255250389">Vaihda paristo.</translation>
 <translation id="3351879221545518001">Suoratoistat tällä hetkellä näyttöä.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Laserosoitin</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Pois käytöstä sovelluksessa}other{Pois käytöstä # sovelluksessa}}</translation>
 <translation id="4072264167173457037">Keskitasoinen signaali</translation>
+<translation id="4146833061457621061">Soita musiikkia</translation>
 <translation id="4200057768455216496">Painoit kiinnitetyn suurennuksen pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="4217571870635786043">Sanelu</translation>
 <translation id="4261870227682513959">Näytä ilmoitusasetukset. Ilmoitukset on poistettu käytöstä.</translation>
@@ -346,6 +350,7 @@
 <translation id="7037152028959403492">Painoit suuren kontrastin pikanäppäintä. Haluatko ottaa sen käyttöön?</translation>
 <translation id="7066646422045619941">Järjestelmänvalvoja on poistanut tämän verkon käytöstä.</translation>
 <translation id="7067196344162293536">Automaattinen kierto</translation>
+<translation id="7068360136237591149">Avaa tiedostot</translation>
 <translation id="7076293881109082629">Kirjautuminen</translation>
 <translation id="7092922358121866860">Näytä Yövalon asetukset</translation>
 <translation id="7098389117866926363">C-tyypin USB-laite (vasemmanpuoleinen takaportti)</translation>
@@ -389,6 +394,7 @@
 <translation id="7842569679327885685">Varoitus: Kokeellinen ominaisuus</translation>
 <translation id="7846634333498149051">Näppäimistö</translation>
 <translation id="7886277072580235377">Internetin käyttökertasi tyhjennetään kirjautuessasi ulos. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Lähetä sähköposti</translation>
 <translation id="790040513076446191">Muokata tietosuojaan liittyviä asetuksia</translation>
 <translation id="7904094684485781019">Tämän tilin järjestelmänvalvoja on estänyt useisiin tileihin kirjautumisen.</translation>
 <translation id="7933084174919150729">Google Assistant on käytettävissä vain ensisijaisella profiililla.</translation>
@@ -417,6 +423,7 @@
 <translation id="8351131234907093545">Luo muistiinpano</translation>
 <translation id="8392451568018454956">Tilin <ph name="USER_EMAIL_ADDRESS" /> vaihtoehtovalikko</translation>
 <translation id="8406981827175133772">Koko näytön suurennus</translation>
+<translation id="8425213833346101688">Vaihda</translation>
 <translation id="8427213022735114808">Sanelu lähettää äänesi Googlelle, jotta puhekirjoitus on mahdollista kaikissa tekstikentissä.</translation>
 <translation id="8428213095426709021">Asetukset</translation>
 <translation id="8431190899827883166">Näytä kosketus</translation>
@@ -451,6 +458,7 @@
 <translation id="8850991929411075241">Haku+Esc</translation>
 <translation id="8870509716567206129">Sovellus ei tue jaetun näytön tilaa.</translation>
 <translation id="8874184842967597500">Ei yhdistetty</translation>
+<translation id="8877788021141246043">Aseta muistutus</translation>
 <translation id="8878886163241303700">Laajennettu näyttö</translation>
 <translation id="8921624153894383499">Google Assistant ei ole käytettävissä tällä kielellä.</translation>
 <translation id="8938800817013097409">C-tyypin USB-laite (oikeanpuoleinen takaportti)</translation>
@@ -474,7 +482,7 @@
 <translation id="9210037371811586452">Poistutaan yhtenäisen työpöydän tilasta</translation>
 <translation id="9215934040295798075">Aseta taustakuva</translation>
 <translation id="923686485342484400">Kirjaudu ulos painamalla Control Shift Q kahdesti.</translation>
+<translation id="938963181863597773">Mitä kalenterissani on?</translation>
 <translation id="945522503751344254">Lähetä palautetta</translation>
 <translation id="98515147261107953">Vaakasuunta</translation>
-<translation id="995927048686010764">Automaattinen klikkaus</translation>
 </translationbundle>

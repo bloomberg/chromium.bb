@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
 <translation id="1067048845568873861">তৈরি হয়েছে</translation>
 <translation id="1067291318998134776">Linux (বিটা)</translation>
+<translation id="1067922213147265141">Google-এর অন্যান্য পরিষেবা</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">আপনার কম্পিউটারের অন্য একটি প্রোগ্রাম একটি অ্যাপ্লিকেশান যোগ করেছে যা Chrome এর কাজ করার ধরন পাল্টে দিতে পারে।
 
@@ -1436,6 +1437,7 @@
 <translation id="3161522574479303604">সকল ভাষা</translation>
 <translation id="3165390001037658081">কিছু পরিষেবা প্রদানকারী এই বৈশিষ্ট্যকে অবরুদ্ধ করতে পারে।</translation>
 <translation id="316854673539778496">সব ডিভাইসে আপনার এক্সটেনশন পেতে, সাইন-ইন করুন এবং সিঙ্ক চালু করুন।</translation>
+<translation id="3169472444629675720">আবিষ্কার করুন</translation>
 <translation id="3170072451822350649">এছাড়াও আপনি প্রবেশ করুন এড়িয়ে যেতে ও <ph name="LINK_START" />অতিথি হিসাবে ব্রাউজ<ph name="LINK_END" /> করতে পারেন৷</translation>
 <translation id="3177909033752230686">পৃষ্ঠার ভাষা:</translation>
 <translation id="3182749001423093222">বানান পরীক্ষা</translation>
@@ -2237,7 +2239,6 @@
 <translation id="4467100756425880649">Chrome ওয়েব স্টোর গ্যালারি</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> ফোল্ডারটি বড় করুন</translation>
 <translation id="447252321002412580">Chrome-এর বৈশিষ্ট্য এবং পারফরম্যান্স উন্নত করে তুলতে সাহায্য করুন</translation>
-<translation id="4472575034687746823">শুরু করুন</translation>
 <translation id="4474155171896946103">সব কটি ট্যাব বুকমার্ক করুন...</translation>
 <translation id="4475552974751346499">ডাউনলোডগুলি খুঁজুন</translation>
 <translation id="4476590490540813026">ক্রীড়াবিদ</translation>
@@ -3880,7 +3881,6 @@
 <translation id="6985607387932385770">প্রিন্টারগুলি</translation>
 <translation id="6990081529015358884">আপনি জায়গা সমাপ্ত করে ফেলেছেন৷</translation>
 <translation id="6990778048354947307">ডার্ক থিম</translation>
-<translation id="6991128190741664836">পরে</translation>
 <translation id="6991665348624301627">একটি গন্তব্যস্থল বেছে নিন</translation>
 <translation id="6997707937646349884">আপনার ডিভাইসে:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" />টি ফোল্ডার নির্বাচিত</translation>
@@ -4178,7 +4178,6 @@
 <translation id="7469406957790636836">এটি চালু করার জন্য, প্রথমে <ph name="BEGIN_LINK" />ভাষা এবং ইনপুটে <ph name="END_LINK" /> বানান পরীক্ষার বিকল্প চালু করুন</translation>
 <translation id="7469894403370665791">স্বয়ংক্রিয়ভাবে এই নেটওয়ার্কে সংযোগ করুন</translation>
 <translation id="747114903913869239">ত্রুটি: এক্সটেনশানের অর্থোদ্ধার করতে ব্যর্থ</translation>
-<translation id="7473753388963818366">আপনার জন্য <ph name="DEVICE_TYPE" /> রেডি করা যাক</translation>
 <translation id="7473891865547856676">না থাক</translation>
 <translation id="747459581954555080">সকল পুনরুদ্ধার করুন</translation>
 <translation id="7475671414023905704">Netscape পাসওয়ার্ড URL হারিয়েছে</translation>
@@ -4796,7 +4795,6 @@
 <translation id="8418445294933751433">ট্যাব রূপে &amp;দেখান</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' এর সার্চ ফলাফল</translation>
 <translation id="8420060421540670057">Google দস্তাবেজ ফাইলগুলি দেখান</translation>
-<translation id="8420510748452002155">ব্যক্তিগতকৃত নয় এমন পরিষেবাগুলি</translation>
 <translation id="8424039430705546751">নিচে</translation>
 <translation id="8425213833346101688">পরিবর্তন</translation>
 <translation id="8425492902634685834">কার্যদন্ডে পিন করুন</translation>

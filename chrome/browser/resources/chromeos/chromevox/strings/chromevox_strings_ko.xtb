@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">입력이 잘못되었습니다.</translation>
 <translation id="1080471004309605942">기울임꼴 끝부분</translation>
 <translation id="1082209053475788238">이전 수준 6 제목이 없습니다.</translation>
+<translation id="1087788677726983142">이벤트 스트림 필터 숨기기</translation>
 <translation id="1088219014394087294">제목이 없습니다.</translation>
 <translation id="1106741348836243114">음성 피드백(이어콘)을 사용 또는 사용 안함으로 설정합니다.</translation>
 <translation id="1108651818222110612">부제</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">현재 위치에 대한 자세한 설명을 들려줍니다.</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{큼 부호}other{큼 부호 #개}}</translation>
 <translation id="1653266918374749391">이전 수준 3 제목</translation>
+<translation id="1657616855184033958">이벤트 스트림 필터 표시</translation>
 <translation id="1659072772017912254">선택 안함</translation>
 <translation id="1669290819662866522">week</translation>
 <translation id="1674262202423278359">ChromeVox 탐색</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">아래 옵션을 사용하여 ChromeVox를 맞춤설정하세요. 변경사항은 바로 적용됩니다.</translation>
 <translation id="4271220233568730077">다음 수식</translation>
 <translation id="4271521365602459209">결과가 더 이상 없습니다.</translation>
+<translation id="4275397969489577657">이벤트 스트림 로깅 사용</translation>
 <translation id="4287520460805643128">다음 도움말이 없습니다.</translation>
 <translation id="4289540628985791613">개요</translation>
 <translation id="4300318234632215983">링크 이면의 URL 알림</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{세미콜론}other{세미콜론 #개}}</translation>
 <translation id="5411891038905756502">이전 점프 지점이 없습니다.</translation>
 <translation id="5417034931411865818">라우팅 키 $1 아래에서 항목을 클릭합니다.</translation>
+<translation id="5435274640623994081">이어콘 로깅 사용</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{작음 부호}other{작음 부호 #개}}</translation>
 <translation id="5444587279251314700">(활성)</translation>
 <translation id="5446809554778706307">포커스가 없습니다. Ctrl + T를 눌러 새 탭을 여세요.</translation>
@@ -899,6 +903,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8650576015643545550">이전 목록이 없습니다.</translation>
 <translation id="8651481478098336970">음소거</translation>
 <translation id="8653646212587894517">링크 목록 표시</translation>
+<translation id="8656888282555543604">점자 로깅 사용</translation>
 <translation id="8664519043722036194">초</translation>
 <translation id="867187640362843212">제목 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{수직 기호}other{수직 기호 #개}}</translation>

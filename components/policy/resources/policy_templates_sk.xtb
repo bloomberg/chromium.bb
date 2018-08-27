@@ -174,6 +174,13 @@ Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účin
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Povoliť blokovanie vkladania softvérom tretej strany</translation>
 <translation id="1504431521196476721">Diaľkové overenie</translation>
+<translation id="1507957856411744193">Ak toto pravidlo nastavíte na hodnotu true, <ph name="PRODUCT_NAME" /> sa pripojí k zariadeniam Cast na všetkých adresách IP, nie iba na súkromných adresách RFC1918/RFC4193.
+
+          Ak toto pravidlo nastavíte na hodnotu false, <ph name="PRODUCT_NAME" /> sa pripojí k zariadeniam Cast iba na súkromných adresách RFC1918/RFC4193.
+
+          Ak toto pravidlo nenastavíte, <ph name="PRODUCT_NAME" /> sa pripojí k zariadeniam Cast iba na súkromných adresách RFC1918/RFC4193, pokiaľ nie je povolená funkcia CastAllowAllIPs.
+
+          Ak je pravidlo EnableMediaRouter nastavené na hodnotu false, nebude mať hodnota tohto pravidla žiadny účinok.</translation>
 <translation id="1509692106376861764">Toto pravidlo sa prestalo používať v prehliadači <ph name="PRODUCT_NAME" /> verzie 29.</translation>
 <translation id="1514888685242892912">Povoliť <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Povoliť stránkam sledovať fyzickú polohu používateľov</translation>
@@ -1992,6 +1999,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Pravidlo <ph name="SYNC_DISABLED_POLICY_NAME" /> vypne synchronizáciu všetkých údajov a prepíše pravidlo RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrovať weby najvyššej úrovne (ale nie vložené prvky iframe) podľa obsahu pre dospelých</translation>
+<translation id="6734521799274931721">Riadi dostupnosť zdieľaných súborov v sieti pre Chrome OS</translation>
 <translation id="6735701345096330595">Vynútiť povolenie jazykov kontroly pravopisu</translation>
 <translation id="673699536430961464">Toto nastavenie umožňuje používateľom prepínať medzi účtami Google v rámci oblasti s obsahom v okne prehliadača po prihlásení sa do zariadenia <ph name="PRODUCT_OS_NAME" />.
 
@@ -2920,13 +2928,13 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8938932171964587769">Podpora tohto pravidla bola ukončená vo verzii M69. Použite namiesto neho OverrideSecurityRestrictionsOnInsecureOrigin.
 
 Toto pravidlo umožňuje určiť zoznam zdrojov (webových adries) alebo vzorov názvov hostiteľa (napríklad *.example.com), pre ktoré nebudú platiť bezpečnostné obmedzenia nezabezpečených zdrojov.
-.
+
 
 Cieľom je povoliť organizáciám nastaviť zoznam povolených zdrojov pre staré aplikácie, ktoré nemôžu nasadiť TLS, alebo nastaviť pracovný server pre interný vývoj webu, aby ich vývojári mohli testovať funkcie vyžadujúce zabezpečené kontexty bez nutnosti nasadenia protokolu TLS na pracovnom serveri. Týmto pravidlom tiež zabránite, aby sa určitý zdroj označil vo všeobecnom poli ako nezabezpečený.
-.
 
-Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účinok ako nastavenie príznaku príkazového riadka --unsafely-treat-insecure-origin-as-secure do zoznamu rovnakých webových adries oddelených čiarkou. Ak toto pravidlo nastavíte, prepíše príznak príkazového riadka-
-.
+
+Nastavenie zoznamu webových adries v rámci tohto pravidla má rovnaký účinok ako nastavenie príznaku príkazového riadka --unsafely-treat-insecure-origin-as-secure do zoznamu rovnakých webových adries oddelených čiarkou. Ak toto pravidlo nastavíte, prepíše príznak príkazového riadka.
+
 
 Podpora tohto pravidla bola ukončená vo verzii M69 a používa sa namiesto neho pravidlo OverrideSecurityRestrictionsOnInsecureOrigin. Ak sú k dispozícii obidve pravidlá, OverrideSecurityRestrictionsOnInsecureOrigin toto pravidlo prepíše.
 

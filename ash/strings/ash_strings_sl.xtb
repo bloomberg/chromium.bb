@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Dodana je bila naprava <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Ni omrežij</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Dolgočasim se</translation>
 <translation id="1104084341931202936">Prikaz nastavitev funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="1104621072296271835">Naprave delujejo še bolje skupaj</translation>
 <translation id="112308213915226829">Samodejno skrivanje police</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Izbriši vse</translation>
 <translation id="1247372569136754018">Mikrofon (vgrajeni)</translation>
 <translation id="1252999807265626933">Polnjenje iz: <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Kakšno je vreme?</translation>
 <translation id="1267032506238418139">Sprememba bližnjice</translation>
 <translation id="1270290102613614947">Zaslonska tipkovnica onemogočena</translation>
 <translation id="1272079795634619415">Ustavi</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">S prijavo z več računi lahko uporabljate največ toliko računov: <ph name="MULTI_PROFILE_USER_LIMIT" />.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Vzpostavljena je povezava z eno napravo}one{Vzpostavljena je povezava z # napravo}two{Vzpostavljena je povezava z # napravama}few{Vzpostavljena je povezava s # napravami}other{Vzpostavljena je povezava s # napravami}}</translation>
 <translation id="3236488194889173876">Mobilno omrežje ni na voljo</translation>
+<translation id="3255483164551725916">Kakšne možnosti so na voljo?</translation>
 <translation id="3294437725009624529">Gost</translation>
 <translation id="332587331255250389">Zamenjajte baterijo</translation>
 <translation id="3351879221545518001">Trenutno predvajate vsebino zaslona.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Laserski kazalnik</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Izklopljeno za eno aplikacijo}one{Izklopljeno za # aplikacijo}two{Izklopljeno za # aplikaciji}few{Izklopljeno za # aplikacije}other{Izklopljeno za # aplikacij}}</translation>
 <translation id="4072264167173457037">Srednje močan signal</translation>
+<translation id="4146833061457621061">Predvajaj glasbo</translation>
 <translation id="4200057768455216496">Pritisnili ste bližnjico za zasidrano lupo. Ali jo želite vklopiti?</translation>
 <translation id="4217571870635786043">Narek</translation>
 <translation id="4261870227682513959">Prikaz nastavitev obvestil. Obvestila so izklopljena.</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Pritisnili ste bližnjico za visoki kontrast. Ali ga želite vklopiti?</translation>
 <translation id="7066646422045619941">To omrežje je onemogočil skrbnik.</translation>
 <translation id="7067196344162293536">Samodejno sukanje</translation>
+<translation id="7068360136237591149">Odpri datoteke</translation>
 <translation id="7076293881109082629">Prijava</translation>
 <translation id="7092922358121866860">Prikaz nastavitev nočne svetlobe</translation>
 <translation id="7098389117866926363">Naprava USB-C (vrata levo zadaj)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Opozorilo: poskusna funkcija</translation>
 <translation id="7846634333498149051">Tipkovnica</translation>
 <translation id="7886277072580235377">Seja interneta bo počiščena, ko se odjavite. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Pošlji e-poštno sporočilo</translation>
 <translation id="790040513076446191">Upravljajte nastavitve zasebnosti</translation>
 <translation id="7904094684485781019">Skrbnik tega računa je onemogočil prijavo z več računi.</translation>
 <translation id="7933084174919150729">Pomočnik Google je na voljo samo za primarni profil.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">Ustvarjanje zapiska</translation>
 <translation id="8392451568018454956">Meni z možnostmi za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Celozaslonska lupa</translation>
+<translation id="8425213833346101688">Spremeni</translation>
 <translation id="8427213022735114808">Narekovanje pošlje vaš glas v Google zaradi omogočanja glasovnega vnašanja v poljubnem besedilnem polju.</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8431190899827883166">Prikaz dotikov</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">Iskanje + Esc</translation>
 <translation id="8870509716567206129">Aplikacija ne podpira načina razdeljenega zaslona.</translation>
 <translation id="8874184842967597500">Povezava ni vzpostavljena</translation>
+<translation id="8877788021141246043">Nastavi opomnik</translation>
 <translation id="8878886163241303700">Razširjanje zaslona</translation>
 <translation id="8921624153894383499">Pomočnik Google ne podpira tega jezika.</translation>
 <translation id="8938800817013097409">Naprava USB-C (vrata desno zadaj)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">Izhod iz načina enotnega namizja</translation>
 <translation id="9215934040295798075">Nastavi sliko za ozadje</translation>
 <translation id="923686485342484400">Dvakrat pritisnite Control Shift Q, če se želite odjaviti.</translation>
+<translation id="938963181863597773">Kaj je v mojem koledarju?</translation>
 <translation id="945522503751344254">Pošlji povratne informacije</translation>
 <translation id="98515147261107953">Ležeče</translation>
-<translation id="995927048686010764">Samodejni klik</translation>
 </translationbundle>

@@ -737,7 +737,7 @@
 <translation id="6051221802930200923">Anda tidak boleh melawati <ph name="SITE" /> sekarang kerana tapak web ini menggunakan penyematan sijil. Ralat dan serangan rangkaian biasanya bersifat sementara. Oleh sebab itu, halaman ini mungkin akan berfungsi semula kemudian.</translation>
 <translation id="6059925163896151826">Peranti USB</translation>
 <translation id="6071091556643036997">Jenis dasar tidak sah.</translation>
-<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Kad ini akan disimpan ke Akaun Google anda untuk mempercepatkan proses pembayaran pada semua peranti.}other{Kad ini akan disimpan ke Akaun Google anda untuk mempercepatkan proses pembayaran pada semua peranti.}}</translation>
+<translation id="6078024795140153212">{NUM_CARDS,plural, =1{Kad ini akan disimpan ke Akaun Google anda untuk mempercepat proses pembayaran pada semua peranti.}other{Kad ini akan disimpan ke Akaun Google anda untuk mempercepat proses pembayaran pada semua peranti.}}</translation>
 <translation id="6080696365213338172">Anda telah mengakses kandungan menggunakan perakuan yang disediakan oleh pentadbir. Data yang anda berikan kepada <ph name="DOMAIN" /> boleh dipintas oleh pentadbir anda.</translation>
 <translation id="610911394827799129">Akaun Google anda mungkin mempunyai bentuk sejarah penyemakan imbas yang lain di <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{Tiada}=1{1 kata laluan (disegerakkan)}other{# kata laluan (disegerakkan)}}</translation>

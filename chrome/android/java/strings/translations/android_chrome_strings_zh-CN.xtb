@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">隐身</translation>
 <translation id="1054301162707478098">您已进入私密模式。</translation>
 <translation id="10614374240317010">一律不保存</translation>
+<translation id="1067922213147265141">其他 Google 服务</translation>
 <translation id="1068672505746868501">一律不翻译源语言为<ph name="SOURCE_LANGUAGE" />的网页</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">您要退出某个由 <ph name="DOMAIN_NAME" /> 管理的帐号。这会导致系统删除此设备上存储的 Chrome 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">无法启用语音搜索功能</translation>
 <translation id="3950820424414687140">登录</translation>
 <translation id="395206256282351086">搜索和网站建议已停用</translation>
+<translation id="3955193568934677022">允许网站播放受保护的内容（推荐）</translation>
 <translation id="3967822245660637423">下载完毕</translation>
 <translation id="397583555483684758">同步功能已停止工作</translation>
 <translation id="3976396876660209797">移除并重新创建此快捷方式</translation>
@@ -925,7 +927,6 @@
 <translation id="8374821112118309944">您需要将 TalkBack 更新到更高版本。</translation>
 <translation id="8393700583063109961">发送消息</translation>
 <translation id="8413126021676339697">显示全部历史记录</translation>
-<translation id="8420510748452002155">非个性化服务</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8438566539970814960">改善搜索和浏览体验</translation>
 <translation id="8441146129660941386">后退</translation>
@@ -963,6 +964,7 @@
 <translation id="8664979001105139458">文件名已存在</translation>
 <translation id="8676374126336081632">清除输入的内容</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{信号强度：# 格}other{信号强度：# 格}}</translation>
+<translation id="868929229000858085">搜索联系人</translation>
 <translation id="869891660844655955">截止日期</translation>
 <translation id="8719023831149562936">无法传输当前的标签页</translation>
 <translation id="8725066075913043281">重试</translation>
@@ -997,6 +999,7 @@
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8993760627012879038">在无痕模式下打开新标签页</translation>
 <translation id="8998729206196772491">您正要登录由 <ph name="MANAGED_DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chrome 数据。您的数据将与此帐号永久关联。退出 Chrome 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
+<translation id="9018881455348618200">搜索按钮</translation>
 <translation id="9019902583201351841">由您父母管理</translation>
 <translation id="9040142327097499898">允许显示通知。但此设备的位置信息功能已关闭。</translation>
 <translation id="9050666287014529139">密码</translation>

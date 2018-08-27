@@ -169,6 +169,13 @@ Pokud je tato zásada nastavena na hodnotu false nebo ponechána bez nastavení,
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Zapnout blokování vkládání softwaru třetích stran</translation>
 <translation id="1504431521196476721">Vzdálené ověření identity</translation>
+<translation id="1507957856411744193">Je-li tato zásada nastavena na hodnotu true, bude se <ph name="PRODUCT_NAME" /> připojovat k zařízením Cast na všech IP adresách, nikoliv pouze na soukromých adresách RFC1918/RFC4193.
+
+          Je-li tato zásada nastavena na hodnotu false, bude se <ph name="PRODUCT_NAME" /> připojovat pouze k zařízením Cast na soukromých adresách RFC1918/RFC4193.
+
+          Pokud tato zásada není nastavena, bude se <ph name="PRODUCT_NAME" /> připojovat pouze k zařízením Cast na soukromých adresách RFC1918/RFC4193 s výjimkou případů, kdy je aktivována funkce CastAllowAllIPs.
+
+          Je-li zásada EnableMediaRouter nastavena na hodnotu false, hodnoty této zásady se nijak neprojeví.</translation>
 <translation id="1509692106376861764">V prohlížečích <ph name="PRODUCT_NAME" /> verze 29 a novějších byla tato zásada zrušena.</translation>
 <translation id="1514888685242892912">Povolit <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Umožňuje webovým stránkám sledovat fyzickou polohu uživatele</translation>
@@ -1973,6 +1980,7 @@ Pokud bude tato zásada ponechána nenastavená nebo bude seznam prázdný, bude
 
       Zásada <ph name="SYNC_DISABLED_POLICY_NAME" /> zakáže veškerou synchronizaci dat a tím zásadu RoamingProfileSupportEnabled přepíše.</translation>
 <translation id="6731757988219967594">Filtrovat weby nejvyšší úrovně (ale nikoliv vložené prvky iframe) s obsahem pouze pro dospělé</translation>
+<translation id="6734521799274931721">Ovládá dostupnost sdílených síťových složek pro Chrome OS</translation>
 <translation id="6735701345096330595">Vynutit povolení jazyků kontroly pravopisu</translation>
 <translation id="673699536430961464">Toto nastavení uživatelům umožňuje přepínat mezi účty Google v obsahové oblasti okna prohlížeče po přihlášení k zařízení <ph name="PRODUCT_OS_NAME" />.
 

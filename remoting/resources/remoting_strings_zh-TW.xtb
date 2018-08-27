@@ -106,7 +106,6 @@
 <translation id="3258789396564295715">你可以透過 Chrome 遠端桌面安全地存取這台電腦。</translation>
 <translation id="3286521253923406898">Chromoting 主機控制器</translation>
 <translation id="3305934114213025800"><ph name="PRODUCT_NAME" /> 要求進行變更。</translation>
-<translation id="331779822864701136">• 支援 Android 8.0 Oreo。</translation>
 <translation id="332624996707057614">編輯電腦名稱</translation>
 <translation id="3339299787263251426">安全地透過網際網路存取您的電腦</translation>
 <translation id="3360306038446926262">視窗</translation>
@@ -145,7 +144,6 @@
 <translation id="4207623512727273241">請先執行安裝程式，然後再繼續操作。</translation>
 <translation id="4227991223508142681">主機帳戶管理公用程式</translation>
 <translation id="4240294130679914010">Chromoting 主機解除安裝程式</translation>
-<translation id="4249741460382919890">修正一般錯誤並提升穩定性。</translation>
 <translation id="4277463233460010382">這台電腦已設為允許一或多個用戶端可不輸入 PIN 進行連線。</translation>
 <translation id="4277736576214464567">存取碼無效，請再試一次。</translation>
 <translation id="4361728918881830843">如要為其他電腦啟用遠端連線，請在你想要連線的電腦上安裝 Chrome 遠端桌面，然後按一下 [<ph name="BUTTON_NAME" />]。</translation>

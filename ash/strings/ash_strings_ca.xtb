@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">S'ha afegit <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Cap xarxa</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">M'avorreixo</translation>
 <translation id="1104084341931202936">Mostra la configuració d'accessibilitat</translation>
 <translation id="1104621072296271835">Els teus dispositius funcionen encara millor junts</translation>
 <translation id="112308213915226829">Amaga el prestatge automàticament</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Esborra-ho tot</translation>
 <translation id="1247372569136754018">Micròfon (intern)</translation>
 <translation id="1252999807265626933">S'està carregant amb: <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Quin temps fa?</translation>
 <translation id="1267032506238418139">Canvi de drecera</translation>
 <translation id="1270290102613614947">Teclat en pantalla desactivat</translation>
 <translation id="1272079795634619415">Atura</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Només pots tenir <ph name="MULTI_PROFILE_USER_LIMIT" /> comptes com a màxim en un inici de sessió múltiple.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Connectat a un dispositiu}other{Connectat a # dispositius}}</translation>
 <translation id="3236488194889173876">No hi ha cap xarxa mòbil disponible</translation>
+<translation id="3255483164551725916">Què pots fer?</translation>
 <translation id="3294437725009624529">Convidat</translation>
 <translation id="332587331255250389">Canvia la bateria</translation>
 <translation id="3351879221545518001">Estàs emetent la pantalla.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Punter làser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivades en una aplicació}other{Desactivades en # aplicacions}}</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
+<translation id="4146833061457621061">Reprodueix música</translation>
 <translation id="4200057768455216496">Has premut la drecera de la lupa acoblada. Vols activar-la?</translation>
 <translation id="4217571870635786043">Dictat</translation>
 <translation id="4261870227682513959">Mostra la configuració de notificacions. Les notificacions estan desactivades.</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Has premut la drecera de l'alt contrast. Vols activar-lo?</translation>
 <translation id="7066646422045619941">L'administrador ha desactivat aquesta xarxa.</translation>
 <translation id="7067196344162293536">Rotació automàtica</translation>
+<translation id="7068360136237591149">Obre fitxers</translation>
 <translation id="7076293881109082629">Inicia la sessió</translation>
 <translation id="7092922358121866860">Mostra la configuració de Llum nocturna</translation>
 <translation id="7098389117866926363">Dispositiu USB-C (port posterior esquerre)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Advertiment: funció experimental</translation>
 <translation id="7846634333498149051">Teclat</translation>
 <translation id="7886277072580235377">Les dades de la sessió a Internet s'esborraran en tancar-la. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Envia un correu electrònic</translation>
 <translation id="790040513076446191">Manipular la configuració relacionada amb la privadesa</translation>
 <translation id="7904094684485781019">L'administrador d'aquest compte no ha permès l'inici de sessió múltiple.</translation>
 <translation id="7933084174919150729">L'Assistent de Google només està disponible per al perfil principal.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">Crea una nota</translation>
 <translation id="8392451568018454956">Menú d'opcions per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupa de pantalla completa</translation>
+<translation id="8425213833346101688">Canvia</translation>
 <translation id="8427213022735114808">El dictat envia la teva veu a Google per permetre l'escriptura per veu en qualsevol camp de text.</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8431190899827883166">Mostra els tocs</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">Cerca + Esc</translation>
 <translation id="8870509716567206129">L'aplicació no admet la pantalla dividida.</translation>
 <translation id="8874184842967597500">No connectat</translation>
+<translation id="8877788021141246043">Estableix un recordatori</translation>
 <translation id="8878886163241303700">Ampliació de la pantalla</translation>
 <translation id="8921624153894383499">L'Assistent de Google no parla aquest idioma.</translation>
 <translation id="8938800817013097409">Dispositiu USB-C (port posterior dret)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">S'està sortint del mode d'escriptori unificat</translation>
 <translation id="9215934040295798075">Estableix fons de pantalla</translation>
 <translation id="923686485342484400">Premeu Control+Maj+Q dues vegades per tancar la sessió.</translation>
+<translation id="938963181863597773">Què tinc programat al calendari?</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>
 <translation id="98515147261107953">Horitzontal</translation>
-<translation id="995927048686010764">Clic automàtic</translation>
 </translationbundle>

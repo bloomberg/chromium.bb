@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Neveljaven vnos</translation>
 <translation id="1080471004309605942">Konec ležeče pisave</translation>
 <translation id="1082209053475788238">Ni prejšnjega naslova na ravni 6.</translation>
+<translation id="1087788677726983142">Skritje filtrov toka dogodkov</translation>
 <translation id="1088219014394087294">Ni naslovov.</translation>
 <translation id="1106741348836243114">Vklop/izklop zvočnih povratnih informacij (zvočnih ikon).</translation>
 <translation id="1108651818222110612">podnaslov</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">Objavi popoln opis trenutnega položaja</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{znak za več}one{# znak za več}two{# znaka za več}few{# znaki za več}other{# znakov za več}}</translation>
 <translation id="1653266918374749391">Prejšnji naslov na ravni 3</translation>
+<translation id="1657616855184033958">Prikaz filtrov toka dogodkov</translation>
 <translation id="1659072772017912254">Ni potrjeno</translation>
 <translation id="1669290819662866522">tdn</translation>
 <translation id="1674262202423278359">Krmarjenje ChromeVox</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">S spodnjimi možnostmi prilagodite ChromeVox. Spremembe začnejo veljati takoj.</translation>
 <translation id="4271220233568730077">Naslednji matematični znak</translation>
 <translation id="4271521365602459209">Ni več rezultatov.</translation>
+<translation id="4275397969489577657">Omogočanje beleženja toka dogodkov</translation>
 <translation id="4287520460805643128">Ni naslednjega članka.</translation>
 <translation id="4289540628985791613">Pregled</translation>
 <translation id="4300318234632215983">Obvestilo o URL-ju povezave</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{podpičje}one{# podpičje}two{# podpičji}few{# podpičja}other{# podpičij}}</translation>
 <translation id="5411891038905756502">Ni prejšnje točke skoka.</translation>
 <translation id="5417034931411865818">Kliknite element pod tipko za usmerjanje $1</translation>
+<translation id="5435274640623994081">Omogočanje beleženja zvočnih ikon</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{znak za manj}one{# znak za manj}two{# znaka za manj}few{# znaki za manj}other{# znakov za manj}}</translation>
 <translation id="5444587279251314700">(aktivno)</translation>
 <translation id="5446809554778706307">Izbran ni noben element. Pritisnite Ctrl + T, če želite odpreti nov zavihek.</translation>
@@ -899,6 +903,7 @@
 <translation id="8650576015643545550">Ni prejšnjega seznama.</translation>
 <translation id="8651481478098336970">izklop zvoka</translation>
 <translation id="8653646212587894517">Prikaz seznama povezav</translation>
+<translation id="8656888282555543604">Omogočanje beleženja Braillove pisave</translation>
 <translation id="8664519043722036194">sekunde</translation>
 <translation id="867187640362843212">Naslov 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{navpičnica}one{# navpičnica}two{# navpičnici}few{# navpičnice}other{# navpičnic}}</translation>

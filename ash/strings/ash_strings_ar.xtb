@@ -48,7 +48,7 @@
 <translation id="1746730358044914197">تتم تهيئة طرق الإدخال بواسطة المشرف.</translation>
 <translation id="1747827819627189109">تم تفعيل لوحة المفاتيح على الشاشة</translation>
 <translation id="1761222317188459878">تبديل الاتصال بالشبكة. <ph name="STATE_TEXT" /></translation>
-<translation id="1812997170047690955">ما العناصر التي تظهر على شاشتي؟</translation>
+<translation id="1812997170047690955">ماذا يظهر على شاشتي؟</translation>
 <translation id="1823873187264960516">الإيثرنت: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">المساعد (جارٍ التحميل...)</translation>
 <translation id="1841545962859478868">قد يراقب مشرف الجهاز ما يلي:</translation>
@@ -421,6 +421,7 @@
 <translation id="8351131234907093545">إنشاء ملاحظة</translation>
 <translation id="8392451568018454956">قائمة الخيارات لـ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">مُكبِّر بوضع ملء الشاشة</translation>
+<translation id="8425213833346101688">تغيير</translation>
 <translation id="8427213022735114808">‏ترسل ميزة "الإملاء" صوتك إلى Google للسماح بالكتابة بالصوت في أي حقل نصي.</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
 <translation id="8431190899827883166">عرض النقرات</translation>
@@ -482,5 +483,4 @@
 <translation id="938963181863597773">ماذا يتضمّن تقويمي؟</translation>
 <translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="98515147261107953">أفقي</translation>
-<translation id="995927048686010764">النقر التلقائي</translation>
 </translationbundle>

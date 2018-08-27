@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Değiştir</translation>
 <translation id="1067048845568873861">Oluşturulduğu tarih</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
+<translation id="1067922213147265141">Diğer Google hizmetleri</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Bilgisayarınızdaki başka bir program, Chrome'un çalışma şeklini değiştirebilecek bir uzantı ekledi.
 
@@ -1446,6 +1447,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3161522574479303604">Tüm diller</translation>
 <translation id="3165390001037658081">Bazı operatörler bu özelliği engelleyebilir.</translation>
 <translation id="316854673539778496">Tüm uzantılarınızı tüm cihazlarınızda almak için oturum açın ve senkronizasyonu etkinleştirin.</translation>
+<translation id="3169472444629675720">Bul</translation>
 <translation id="3170072451822350649">Ayrıca, oturum açmayı atlayabilir ve <ph name="LINK_START" />misafir olarak göz atabilirsiniz<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Sayfanın Dili:</translation>
 <translation id="3182749001423093222">Yazım denetimi</translation>
@@ -2264,7 +2266,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4467100756425880649">Chrome Web Mağazası Galerisi</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> klasörünü genişlet</translation>
 <translation id="447252321002412580">Chrome'un özelliklerini ve performansını iyileştirmeye yardımcı olun</translation>
-<translation id="4472575034687746823">Başlayın</translation>
 <translation id="4474155171896946103">Tüm sekmelere yer işareti koy...</translation>
 <translation id="4475552974751346499">İndirilenlerde ara</translation>
 <translation id="4476590490540813026">Sporcu</translation>
@@ -3933,7 +3934,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6985607387932385770">Yazıcılar</translation>
 <translation id="6990081529015358884">Boş yeriniz kalmadı</translation>
 <translation id="6990778048354947307">Koyu Renkli Tema</translation>
-<translation id="6991128190741664836">Daha sonra</translation>
 <translation id="6991665348624301627">Bir hedef seç</translation>
 <translation id="6997707937646349884">Cihazlarınızda:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> klasör seçildi</translation>
@@ -4236,7 +4236,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7469518857922439236">Size bildirimler gönderir ve Mesaj göndermek için bu bilgisayarın hatırlanmasını varsayılan ayar yapar</translation>
 <translation id="7469894403370665791">Bu ağa otomatik olarak bağlan</translation>
 <translation id="747114903913869239">Hata: Uzantının kodu çözülemiyor</translation>
-<translation id="7473753388963818366"><ph name="DEVICE_TYPE" /> cihazınızı sizin için hazırlayalım</translation>
 <translation id="7473891865547856676">Hayır, Teşekkürler</translation>
 <translation id="747459581954555080">Tümünü geri yükle</translation>
 <translation id="7475671414023905704">Netscape Kayıp Şifre URL'si</translation>
@@ -4861,7 +4860,6 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8418445294933751433">&amp;Sekme olarak göster</translation>
 <translation id="8419098111404128271">"<ph name="SEARCH_TEXT" />" için arama sonuçları</translation>
 <translation id="8420060421540670057">Google Dokümanlar dosyalarını göster</translation>
-<translation id="8420510748452002155">Kişiselleştirilmemiş hizmetler</translation>
 <translation id="8424039430705546751">aşağı</translation>
 <translation id="8425213833346101688">Değiştir</translation>
 <translation id="8425492902634685834">Görev Çubuğuna sabitle</translation>

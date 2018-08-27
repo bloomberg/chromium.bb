@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">„<ph name="DEVICE_NAME" />“ pridėtas</translation>
 <translation id="1056775291175587022">Nėra tinklų</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">„I’m bored“ (Man nuobodu)</translation>
 <translation id="1104084341931202936">Rodyti pritaikymo neįgaliesiems nustatymus</translation>
 <translation id="1104621072296271835">Jūsų įrenginiai kartu veikia dar geriau</translation>
 <translation id="112308213915226829">Automatiškai slėpti lentyną</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Valyti viską</translation>
 <translation id="1247372569136754018">Mikrofonas (vidinis)</translation>
 <translation id="1252999807265626933">Įkraunama naudojant <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">„What's the weather?“ (Koks oras?)</translation>
 <translation id="1267032506238418139">Spartusis klavišas pasikeitė</translation>
 <translation id="1270290102613614947">Ekrano klaviatūra išjungta</translation>
 <translation id="1272079795634619415">Sustabdyti</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Naudodami kelių paskyrų funkciją, galite turėti iki <ph name="MULTI_PROFILE_USER_LIMIT" /> paskyr.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Prisijungta prie įrenginio}one{Prisijungta prie # įrenginio}few{Prisijungta prie # įrenginių}many{Prisijungta prie # įrenginio}other{Prisijungta prie # įrenginių}}</translation>
 <translation id="3236488194889173876">Nėra jokių pasiekiamų mobiliojo ryšio tinklų</translation>
+<translation id="3255483164551725916">„What can you do?“ (Ką gali atlikti?)</translation>
 <translation id="3294437725009624529">Svečias</translation>
 <translation id="332587331255250389">Pakeiskite akumuliatorių</translation>
 <translation id="3351879221545518001">Šiuo metu perduodate ekrano vaizdą.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Lazerinis žymeklis</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Programos pranešimai išjungti}one{# programos pranešimai išjungti}few{# programų pranešimai išjungti}many{# programos pranešimai išjungti}other{# programų pranešimai išjungti}}</translation>
 <translation id="4072264167173457037">Vidutinio stiprumo signalas</translation>
+<translation id="4146833061457621061">„Play music“ (Leisk muziką)</translation>
 <translation id="4200057768455216496">Paspaudėte prie doko prijungto didintuvo spartųjį klavišą. Ar norite jį įjungti?</translation>
 <translation id="4217571870635786043">Diktavimas</translation>
 <translation id="4261870227682513959">Rodyti pranešimų nustatymus. Pranešimai išjungti</translation>
@@ -344,6 +348,7 @@
 <translation id="7037152028959403492">Paspaudėte didelio kontrasto spartųjį klavišą. Ar norite jį įjungti?</translation>
 <translation id="7066646422045619941">Šį tinklą išjungė jūsų administratorius.</translation>
 <translation id="7067196344162293536">Automatinis kaitaliojimas</translation>
+<translation id="7068360136237591149">„Open files“ (Atidaryk failus)</translation>
 <translation id="7076293881109082629">Prisijungimas</translation>
 <translation id="7092922358121866860">Rodyti „Nakties šviesos“ nustatymus</translation>
 <translation id="7098389117866926363">USB-C įrenginys (prievadas kairėje, užpakalinėje dalyje)</translation>
@@ -387,6 +392,7 @@
 <translation id="7842569679327885685">Įspėjimas: eksperimentinė funkcija</translation>
 <translation id="7846634333498149051">Klaviatūra</translation>
 <translation id="7886277072580235377">Interneto sesijos duomenys bus išvalyti, kai atsijungsite. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">„Send an email“ (Siųsk el. laišką)</translation>
 <translation id="790040513076446191">Keisti privatumo nustatymus</translation>
 <translation id="7904094684485781019">Šios paskyros administratorius neleidžia naudoti kelių paskyrų.</translation>
 <translation id="7933084174919150729">„Google“ padėjėjas pasiekiamas tik pagrindiniame profilyje.</translation>
@@ -415,6 +421,7 @@
 <translation id="8351131234907093545">Sukurti užrašą</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> skirtų parinkčių meniu</translation>
 <translation id="8406981827175133772">Viso ekrano didintuvas</translation>
+<translation id="8425213833346101688">Keisti</translation>
 <translation id="8427213022735114808">Naudojant diktavimo funkciją balsas siunčiamas į sistemą „Google“, kad bet kuriame teksto lauke būtų galima rašyti balsu.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8431190899827883166">Rodyti palietimus</translation>
@@ -449,6 +456,7 @@
 <translation id="8850991929411075241">Paieškos klavišas + „Esc“</translation>
 <translation id="8870509716567206129">Programoje nepalaikomas skaidytas ekranas.</translation>
 <translation id="8874184842967597500">Neprisijungta</translation>
+<translation id="8877788021141246043">„Set a reminder“ (Nustatyk priminimą)</translation>
 <translation id="8878886163241303700">Išplečiamas ekranas</translation>
 <translation id="8921624153894383499">„Google“ padėjėjas nekalba šia kalba.</translation>
 <translation id="8938800817013097409">USB-C įrenginys (prievadas dešinėje, užpakalinėje dalyje)</translation>
@@ -472,7 +480,7 @@
 <translation id="9210037371811586452">Išjungiamas sujungiamojo darbalaukio režimas</translation>
 <translation id="9215934040295798075">Nustatyti ekrano foną</translation>
 <translation id="923686485342484400">Jei norite atsijungti, du kartus paspauskite „Control“ + „Shift“ + Q.</translation>
+<translation id="938963181863597773">„What's on my calendar?“ (Kas mano kalendoriuje?)</translation>
 <translation id="945522503751344254">Siųsti atsiliepimą</translation>
 <translation id="98515147261107953">Gulsčias</translation>
-<translation id="995927048686010764">Automatinis paspaudimas</translation>
 </translationbundle>

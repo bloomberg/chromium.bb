@@ -33,12 +33,12 @@
 <translation id="1099282607296956954">Włącz izolację każdej witryny</translation>
 <translation id="1100570158310952027">
       Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
-      (np. „*.example.com”), dla których nie będą stosowane ograniczenia
+      (np. „*.example.com”), w przypadku których nie będą stosowane ograniczenia
       dotyczące niezabezpieczonych źródeł.
 
       Ta zasada pozwala organizacjom skonfigurować białą listę źródeł dla
       starszych aplikacji, które nie mogą używać TLS. Umożliwia też skonfigurowanie
-      wewnętrznego serwera do testowania własnych stron internetowych, by 
+      wewnętrznego serwera do tworzenia własnych stron internetowych, by 
       programiści mogli testować funkcje, które wymagają bezpiecznych kontekstów,
       bez wdrażania TLS na tym serwerze. Oprócz tego zasada powoduje, że źródło
       nie będzie oznaczane jako strona „Niezabezpieczona” w omniboksie.
@@ -101,8 +101,8 @@
       Jeśli ta zasada nie jest ustawiona lub jest wyłączona, to mechanizmy szyfrowania RC4 w TLS będą wyłączone. Można ją włączyć dla zachowania zgodności z przestarzałym serwerem. Jest to rozwiązanie tymczasowe i konieczna jest zmiana konfiguracji serwera.</translation>
 <translation id="1297182715641689552">Używaj skryptu PAC serwera proxy</translation>
 <translation id="1304973015437969093">Identyfikatory rozszerzeń/aplikacji i adresy URL aktualizacji, które mają być instalowane dyskretnie</translation>
-<translation id="1307454923744766368">Źródła lub wzorce nazw hosta, dla których nie należy stosować
-      ograniczeń dla niezabezpieczonych źródeł</translation>
+<translation id="1307454923744766368">Źródła lub wzorce nazw hosta, w przypadku których nie należy stosować
+      ograniczeń dotyczących niezabezpieczonych źródeł</translation>
 <translation id="1313457536529613143">Określa wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy aktywność użytkownika zostanie wykryta po przyciemnieniu lub wkrótce po wyłączeniu ekranu.
 
           Ustawienie tej zasady pozwala określić wartość procentową skalowania opóźnienia przyciemnienia ekranu, gdy aktywność użytkownika zostanie wykryta po przyciemnieniu lub wkrótce po wyłączeniu ekranu. Skalowanie opóźnienia przyciemnienia powoduje, że opóźnienia wyłączenia i zablokowania ekranu oraz opóźnienie bezczynności są tak dostosowywane, by zachować pierwotnie ustawione odstępy od opóźnienia przyciemnienia ekranu.
@@ -116,7 +116,7 @@
 <translation id="13356285923490863">Nazwa zasady</translation>
 <translation id="1352174694615491349">Ta zasada zezwala na zespolenie połączeń HTTP/2, gdy używane są certyfikaty klienta. Aby połączenia zostały zespolone, nazwa hosta potencjalnego nowego połączenia i nazwa hosta istniejącego połączenia muszą pasować do co najmniej jednego wzorca ustawionego w tej zasadzie. Zasada zawiera listę hostów w formacie filtra URLBlacklist: „example.com” pasuje do „example.com” i wszystkich subdomen (np. „sub.example.com”), a „.example.net” pasuje tylko do „example.net”.
 
-      Zespalanie żądań do różnych hostów, gdy połączenia używają certyfikatów klienta, może obniżać poziom bezpieczeństwa i prywatności, ponieważ uprawnienie uzyskane z otoczenia (ambient authority) będzie przekazywane wszystkim żądaniom – również wtedy, gdy użytkownik nie dał na to wyraźnej zgody. Ta zasada jest tymczasowa i zostanie usunięta w jednej z przyszłych wersji. Zobacz https://crbug.com/855690.
+      Zespalanie żądań do różnych hostów, gdy połączenia używają certyfikatów klienta, może obniżać poziom bezpieczeństwa i prywatności, ponieważ uprawnienie uzyskane z otoczenia (ambient authority) będzie przekazywane wszystkim żądaniom – również wtedy, gdy użytkownik nie dał na to wyraźnej zgody. Ta zasada jest tymczasowa i zostanie usunięta w jednej z przyszłych wersji. Zobacz https://crbug.com/855690
 
       Jeśli ta zasada będzie nieskonfigurowana, stosowane będzie domyślne rozwiązanie: połączenia HTTP/2, które używają certyfikatów klienta, nie będą zespalane.</translation>
 <translation id="1353966721814789986">Strony otwierane po uruchomieniu</translation>
@@ -188,6 +188,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Włącz blokadę wstrzykiwania oprogramowania innych firm</translation>
 <translation id="1504431521196476721">Zdalne poświadczanie</translation>
+<translation id="1507957856411744193">Jeśli ta zasada ma wartość true, <ph name="PRODUCT_NAME" /> będzie łączyć się z urządzeniami przesyłającymi pod wszystkimi adresami IP, a nie tylko pod adresami prywatnymi RFC1918/RFC4193.
+
+          Jeśli ta zasada ma wartość false, <ph name="PRODUCT_NAME" /> będzie łączyć się z urządzeniami przesyłającymi tylko pod adresami prywatnymi RFC1918/RFC4193.
+
+          Jeśli ta zasada nie zostanie ustawiona, <ph name="PRODUCT_NAME" /> będzie łączyć się z urządzeniami przesyłającymi tylko pod prywatnymi adresami RFC1918/RFC4193, chyba że zostanie włączona funkcja CastAllowAllIPs.
+
+          Jeśli zasada „EnableMediaRouter” będzie mieć wartość false, wartość ustawiona dla tej zasady nie będzie miała znaczenia.</translation>
 <translation id="1509692106376861764">Ta zasada została wycofana w <ph name="PRODUCT_NAME" /> w wersji 29.</translation>
 <translation id="1514888685242892912">Włącz: <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Zezwalaj witrynom na śledzenie fizycznej lokalizacji użytkownika</translation>
@@ -1939,6 +1946,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Zasada <ph name="SYNC_DISABLED_POLICY_NAME" /> powoduje wyłączenie wszystkich synchronizacji danych i zastępuje zasadę RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtruj witryny najwyższego poziomu (ale nie osadzone elementy iframe) pod kątem treści dla dorosłych</translation>
+<translation id="6734521799274931721">Określa dostępność sieciowych magazynów plików w Chrome OS</translation>
 <translation id="6735701345096330595">Wymuś włączenie sprawdzania pisowni</translation>
 <translation id="673699536430961464">To ustawienie pozwala użytkownikom zalogowanym na urządzeniu z <ph name="PRODUCT_OS_NAME" /> przełączać konta Google w obszarze treści okna przeglądarki
 
@@ -2502,7 +2510,7 @@ optymalne efekty – izolację i ograniczony wpływ na użytkowników. W tym c
 
       Jeśli wyłączysz to ustawienie, autouzupełnianie będzie niedostępne dla użytkowników.
 
-      Jeśli ustawienie jest włączone lub nieskonfigurowane, użytkownik zachowuje kontrolę nad autouzupełnianiem. Może wówczas konfigurować profile autouzupełniania oraz włączać i wyłączać tę funkcję według własnego uznania.</translation>
+      Jeśli włączysz to ustawienie lub go nie skonfigurujesz, użytkownik zachowa kontrolę nad autouzupełnianiem. Będzie mógł wówczas konfigurować profile autouzupełniania oraz włączać i wyłączać tę funkcję według własnego uznania.</translation>
 <translation id="8044493735196713914">Zgłoś tryb uruchomienia urządzenia</translation>
 <translation id="8050080920415773384">Drukowanie natywne</translation>
 <translation id="8059164285174960932">Adres URL, dla którego klienty dostępu zdalnego powinny uzyskać token uwierzytelniania</translation>
@@ -2835,12 +2843,12 @@ Alerty dotyczące ochrony hasła ostrzegają użytkowników, gdy użyją oni swo
       OverrideSecurityRestrictionsOnInsecureOrigin.
 
 Ta zasada określa listę źródeł (adresów URL) lub wzorców nazw hosta
-      (np. „*.example.com”), dla których nie będą stosowane ograniczenia
+      (np. „*.example.com”), w przypadku których nie będą stosowane ograniczenia
       dotyczące niezabezpieczonych źródeł.
 
       Ta zasada pozwala organizacjom skonfigurować białą listę źródeł dla
-      starszych aplikacji, które nie mogą używać TLS. TLS. Umożliwia też skonfigurowanie
-      wewnętrznego serwera do testowania własnych stron internetowych, by
+      starszych aplikacji, które nie mogą używać TLS. Umożliwia też skonfigurowanie
+      wewnętrznego serwera do tworzenia własnych stron internetowych, by
       programiści mogli testować funkcje, które wymagają bezpiecznych kontekstów,
       bez wdrażania TLS na tym serwerze. Oprócz tego zasada powoduje, że źródło
       nie będzie oznaczane jako strona „Niezabezpieczona” w omniboksie.

@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Неважећи унос</translation>
 <translation id="1080471004309605942">Крај курзива</translation>
 <translation id="1082209053475788238">Нема претходног заглавља 6. нивоа.</translation>
+<translation id="1087788677726983142">Сакриј филтере стрима догађаја</translation>
 <translation id="1088219014394087294">Нема заглавља.</translation>
 <translation id="1106741348836243114">Укључивање или искључивање звучних повратних информација (звучна обавештења).</translation>
 <translation id="1108651818222110612">титл</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">Објављује потпун опис актуелног положаја</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак „веће од“}one{# знак „веће од“}few{# знака „веће од“}other{# знакова „веће од“}}</translation>
 <translation id="1653266918374749391">Претходно заглавље 3. нивоа</translation>
+<translation id="1657616855184033958">Прикажи филтере стрима догађаја</translation>
 <translation id="1659072772017912254">Није проверено</translation>
 <translation id="1669290819662866522">недеља</translation>
 <translation id="1674262202423278359">ChromeVox навигација</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">Користите доленаведене опције да бисте прилагодили ChromeVox. Промене одмах ступају на снагу.</translation>
 <translation id="4271220233568730077">Следећи математички израз</translation>
 <translation id="4271521365602459209">Нема више резултата.</translation>
+<translation id="4275397969489577657">Омогући евидентирање стрима догађаја</translation>
 <translation id="4287520460805643128">Нема следећег чланка.</translation>
 <translation id="4289540628985791613">Преглед</translation>
 <translation id="4300318234632215983">Објављивање URL-а иза линка</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{тачка и зарез}one{# тачка и зарез}few{# тачке и зареза}other{# тачака и зареза}}</translation>
 <translation id="5411891038905756502">Нема претходне тачке преласка.</translation>
 <translation id="5417034931411865818">Кликните на ставку испод тастера за усмеравање $1</translation>
+<translation id="5435274640623994081">Омогући евидентирање аудио икона</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак „мање од“}one{# знак „мање од“}few{# знака „мање од“}other{# знакова „мање од“}}</translation>
 <translation id="5444587279251314700">(активна)</translation>
 <translation id="5446809554778706307">Нема фокуса. Притисните Ctrl + T да бисте отворили нову картицу.</translation>
@@ -899,6 +903,7 @@
 <translation id="8650576015643545550">Нема претходне листе.</translation>
 <translation id="8651481478098336970">искључи звук</translation>
 <translation id="8653646212587894517">Приказивање листе линкова</translation>
+<translation id="8656888282555543604">Омогући евидентирање Брајеве азбуке</translation>
 <translation id="8664519043722036194">секунди</translation>
 <translation id="867187640362843212">Заглавље 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{усправна црта}one{# усправна црта}few{# усправне црте}other{# усправних црта}}</translation>

@@ -239,7 +239,7 @@
 <translation id="523505283826916779">Setelan aksesibilitas</translation>
 <translation id="5313326810920013265">Setelan bluetooth</translation>
 <translation id="5331975486040154427">Perangkat USB-C (port belakang sebelah kiri)</translation>
-<translation id="5379115545237091094">Terlalu sering mencoba</translation>
+<translation id="5379115545237091094">Terlalu banyak upaya gagal</translation>
 <translation id="5397578532367286026">Penggunaan dan histori pengguna ini dapat ditinjau oleh pengelola (<ph name="MANAGER_EMAIL" />) di chrome.com.</translation>
 <translation id="5430931332414098647">Tethering Instan</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -420,6 +420,7 @@
 <translation id="8351131234907093545">Buat catatan</translation>
 <translation id="8392451568018454956">Menu opsi untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Kaca Pembesar Layar Penuh</translation>
+<translation id="8425213833346101688">Ubah</translation>
 <translation id="8427213022735114808">Fitur Pengetikan suara mengirimkan suara Anda ke Google untuk memungkinkan pengetikan menggunakan suara ke kolom teks.</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8431190899827883166">Show taps</translation>
@@ -432,7 +433,7 @@
 <translation id="8484916590211895857"><ph name="NAME" />: Menyambungkan lagi...</translation>
 <translation id="8513108775083588393">Putar otomatis</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
-<translation id="8592141010104017453">Jangan tampilkan notifikasi sama sekali.</translation>
+<translation id="8592141010104017453">Jangan tampilkan notifikasi sama sekali</translation>
 <translation id="8627191004499078455">Tersambung ke <ph name="DEVICE_NAME" /></translation>
 <translation id="8639760480004882931">Sisa <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Klik untuk Diucapkan</translation>
@@ -481,5 +482,4 @@
 <translation id="938963181863597773">Apa saja daftar acara di kalender saya?</translation>
 <translation id="945522503751344254">Kirim masukan</translation>
 <translation id="98515147261107953">Lanskap</translation>
-<translation id="995927048686010764">Autoclick</translation>
 </translationbundle>

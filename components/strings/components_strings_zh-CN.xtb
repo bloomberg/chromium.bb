@@ -137,7 +137,7 @@
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1826516787628120939">正在检查</translation>
 <translation id="1834321415901700177">此网站包含有害程序</translation>
-<translation id="1839551713262164453">未能成功验证政策值，因为出错了</translation>
+<translation id="1839551713262164453">由于出现错误，未能成功验证政策值</translation>
 <translation id="1840414022444569775">此卡号已存在</translation>
 <translation id="1842969606798536927">付款</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
@@ -1091,7 +1091,7 @@
 <translation id="8763927697961133303">USB 设备</translation>
 <translation id="8768895707659403558">要在所有设备上使用您的卡，请<ph name="SIGN_IN_LINK" />。</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
-<translation id="8790803786526555470">{NUM_CARDS,plural, =1{此卡已添加到您的 Google 帐号中。现在，您便可在您已登录的任何设备上使用此卡了。}other{这些卡已添加到您的 Google 帐号中。现在，您便可在您已登录的任何设备上使用这些卡了。}}</translation>
+<translation id="8790803786526555470">{NUM_CARDS,plural, =1{此卡已添加到您的 Google 帐号中。现在，您可在已登录的任何设备上使用此卡。}other{这些卡已添加到您的 Google 帐号中。现在，您可在已登录的任何设备上使用这些卡。}}</translation>
 <translation id="8792621596287649091">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chromium 建议您立即更改密码。</translation>
 <translation id="8800988563907321413">此处将显示系统建议您浏览的附近网页</translation>
 <translation id="8820817407110198400">书签</translation>

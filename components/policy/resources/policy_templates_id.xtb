@@ -38,7 +38,7 @@
 
       Tujuannya adalah mengizinkan organisasi menyiapkan asal yang diizinkan untuk aplikasi lama yang tidak dapat menerapkan TLS, atau menyiapkan server persiapan untuk pengembangan web internal agar developer mereka dapat menguji fitur yang memerlukan konteks aman tanpa harus menerapkan TLS di server persiapan. Dengan kebijakan ini, asal tidak akan dilabeli "Not Secure" di omnibox.
 
-      Menetapkan daftar URL dalam kebijakan ini memiliki efek yang sama dengan menetapkan tanda command-line '--unsafely-treat-insecure-origin-as-secure' ke daftar yang dipisahkan koma yang berisi URL yang sama. Jika ditetapkan, kebijakan ini akan mengganti tanda command-line.
+      Menetapkan daftar URL dalam kebijakan ini memiliki efek yang sama dengan menetapkan tanda baris perintah '--unsafely-treat-insecure-origin-as-secure' ke daftar yang dipisahkan koma yang berisi URL yang sama. Jika ditetapkan, kebijakan ini akan mengganti tanda baris perintah.
 
       Kebijakan ini akan mengganti UnsafelyTreatInsecureOriginAsSecure, jika ada.
 
@@ -103,7 +103,7 @@
 <translation id="1327466551276625742">Aktifkan permintaan konfigurasi jaringan saat offline</translation>
 <translation id="1330145147221172764">Aktifkan keyboard di layar</translation>
 <translation id="13356285923490863">Nama Kebijakan</translation>
-<translation id="1352174694615491349">Kebijakan ini memungkinkan koneksi HTTP/2 bergabung saat sertifikat klien sedang digunakan. Agar dapat bergabung, hostname untuk calon koneksi baru dan hostname untuk koneksi yang sudah ada harus cocok dengan satu atau beberapa pola yang dijelaskan oleh kebijakan ini. Kebijakan ini berupa daftar host yang menggunakan format filter URLBlacklist: "example.com" cocok dengan "example.com" dan semua subdomain (misalnya "sub.example.com"), sedangkan ".example.net" cocok dengan "example.net".
+<translation id="1352174694615491349">Kebijakan ini memungkinkan koneksi HTTP/2 bergabung saat sertifikat klien sedang digunakan. Agar dapat bergabung, hostname untuk calon koneksi baru dan hostname untuk koneksi yang sudah ada harus cocok dengan satu atau beberapa pola yang dijelaskan oleh kebijakan ini. Kebijakan ini berupa daftar host yang menggunakan format filter URLBlacklist: "example.com" cocok dengan "example.com" dan semua subdomain (misalnya "sub.example.com"), sedangkan ".example.net" hanya cocok dengan "example.net".
 
       Permintaan bergabung ke host lain melalui koneksi yang menggunakan sertifikat klien dapat menyebabkan masalah keamanan dan privasi, karena otoritas terdekat akan diperlihatkan ke semua permintaan, meskipun pengguna tidak memberikan izin secara eksplisit. Kebijakan ini bersifat sementara dan akan dihapus dalam rilis mendatang. Lihat https://crbug.com/855690.
 
@@ -2506,11 +2506,11 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
 <translation id="802147957407376460">Putar layar sebesar 0 derajat</translation>
 <translation id="8033913082323846868">Kebijakan ini tidak digunakan lagi di M70. Sebagai gantinya, gunakan AutofillAddressEnabled dan AutofillCreditCardEnabled.
 
-      Mengaktifkan fitur AutoFill <ph name="PRODUCT_NAME" /> dan mengizinkan pengguna untuk melengkapi formulir web secara otomatis menggunakan informasi yang tersimpan sebelumnya, seperti alamat atau informasi kartu kredit.
+      Mengaktifkan fitur IsiOtomatis <ph name="PRODUCT_NAME" /> dan mengizinkan pengguna untuk melengkapi formulir web secara otomatis menggunakan informasi yang tersimpan sebelumnya, seperti alamat atau informasi kartu kredit.
 
-      Jika setelan ini dinonaktifkan, AutoFill tidak akan dapat diakses oleh pengguna.
+      Jika setelan ini dinonaktifkan, IsiOtomatis tidak akan dapat diakses oleh pengguna.
 
-      Jika setelan ini diaktifkan atau nilainya tidak ditetapkan, AutoFill akan dapat dikontrol oleh pengguna. Penetapan ini akan memungkinkan pengguna untuk mengonfigurasi profil AutoFill dan mengaktifkan atau menonaktifkan AutoFill sesuai keinginan.</translation>
+      Jika setelan ini diaktifkan atau nilainya tidak ditetapkan, IsiOtomatis akan dapat dikontrol oleh pengguna. Penetapan ini akan memungkinkan pengguna untuk mengonfigurasi profil IsiOtomatis dan mengaktifkan atau menonaktifkan IsiOtomatis sesuai keinginan.</translation>
 <translation id="8044493735196713914">Laporkan mode boot perangkat</translation>
 <translation id="8050080920415773384">Pencetakan Asli</translation>
 <translation id="8059164285174960932">URL tempat klien akses jarak jauh seharusnya memperoleh token autentikasi mereka</translation>
@@ -2833,7 +2833,7 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 
       Tujuannya adalah mengizinkan organisasi memberikan akses ke asal untuk aplikasi lama yang tidak dapat menerapkan TLS, atau menyiapkan server persiapan untuk pengembangan web internal agar developer mereka dapat menguji fitur yang memerlukan konteks aman tanpa harus menerapkan TLS di server persiapan. Dengan kebijakan ini, asal tidak akan dilabeli "Not Secure" di omnibox.
 
-     Menetapkan daftar URL dalam kebijakan ini memiliki efek yang sama dengan menetapkan tanda command-line '--unsafely-treat-insecure-origin-as-secure' ke daftar yang dipisahkan koma yang berisi URL yang sama. Jika ditetapkan, kebijakan ini akan mengganti tanda command-line.
+     Menetapkan daftar URL dalam kebijakan ini memiliki efek yang sama dengan menetapkan tanda baris perintah '--unsafely-treat-insecure-origin-as-secure' ke daftar yang dipisahkan koma yang berisi URL yang sama. Jika ditetapkan, kebijakan ini akan mengganti tanda baris perintah.
 
       Kebijakan ini tidak lagi digunakan di M69 dan diganti OverrideSecurityRestrictionsOnInsecureOrigin. Jika kedua kebijakan ini ada, OverrideSecurityRestrictionsOnInsecureOrigin akan mengganti kebijakan ini.
 
