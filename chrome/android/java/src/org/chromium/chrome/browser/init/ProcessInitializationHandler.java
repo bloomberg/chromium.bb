@@ -198,6 +198,13 @@ public class ProcessInitializationHandler {
     }
 
     /**
+     * @return Whether post native initialization has been completed.
+     */
+    public final boolean postNativeInitializationComplete() {
+        return mInitializedPostNative;
+    }
+
+    /**
      * Performs the post native initialization.
      */
     protected void handlePostNativeInitialization() {
