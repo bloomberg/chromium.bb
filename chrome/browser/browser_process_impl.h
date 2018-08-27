@@ -81,9 +81,11 @@ class BrowserProcessImpl : public BrowserProcess,
   void Init();
 
 #if !defined(OS_ANDROID)
-  // Called by ChromeBrowserMainParts to provide a closure that will quit the
-  // browser main message-loop.
-  void SetQuitClosure(base::OnceClosure quit_closure);
+  // Indicates that the browser's main message loop will soon start, providing a
+  // closure that will cause the message loop to exit when run. This
+  // effectively transfers ownership of the browser's lifetime from
+  // ChromeBrowserMainParts to the BrowserProcess.
+  void OnEnteringMainMessageLoop(base::OnceClosure quit_closure);
 #endif
 
 #if defined(OS_MACOSX)

@@ -13,8 +13,6 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/installer/util/shell_util.h"
-#include "components/keep_alive_registry/keep_alive_types.h"
-#include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/combobox/combobox.h"
@@ -183,16 +181,6 @@ namespace chrome {
 int ShowUninstallBrowserPrompt() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
   int result = service_manager::RESULT_CODE_NORMAL_EXIT;
-
-  // Register a KeepAlive while showing the dialog. This is done because the
-  // dialog uses the views framework which may take and release a KeepAlive
-  // during the course of displaying UI and this code can be called while
-  // there is no registered KeepAlive.
-  // Note that this reference is never released, as this code is shown on a path
-  // that immediately exits Chrome anyway.
-  // See http://crbug.com/241366 for details.
-  new ScopedKeepAlive(KeepAliveOrigin::LEAKED_UNINSTALL_VIEW,
-                      KeepAliveRestartOption::DISABLED);
 
   base::RunLoop run_loop;
   UninstallView* view = new UninstallView(&result,
