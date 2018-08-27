@@ -364,6 +364,15 @@ python_library("chromedriver_py_tests") {
   }
 }
 
+python_library("chromedriver_replay_unittests") {
+  testonly = true
+  deps = [
+    ":chromedriver",
+  ]
+
+  pydeps_file = "log_replay/client_replay_unittest.pydeps"
+}
+
 test("chromedriver_unittests") {
   sources = [
     "capabilities_unittest.cc",

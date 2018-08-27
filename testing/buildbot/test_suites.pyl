@@ -359,6 +359,7 @@
         "--test-type=integration",
       ],
     },
+    'chromedriver_replay_unittests': {},
   },
 
   'chromeos_gtests': {

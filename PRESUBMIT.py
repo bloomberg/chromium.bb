@@ -688,6 +688,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 
 _GENERIC_PYDEPS_FILES = [
     'chrome/test/chromedriver/test/run_py_tests.pydeps',
+    'chrome/test/chromedriver/log_replay/client_replay_unittest.pydeps',
     'tools/binary_size/supersize.pydeps',
 ]
 

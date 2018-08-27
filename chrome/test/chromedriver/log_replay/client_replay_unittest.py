@@ -14,11 +14,16 @@ import unittest
 import client_replay
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
-_TEST_DIR = os.path.join(_THIS_DIR, os.pardir, "test")
+_PARENT_DIR = os.path.join(_THIS_DIR, os.pardir)
+_TEST_DIR = os.path.join(_PARENT_DIR, "test")
 # pylint: disable=g-import-not-at-top
 sys.path.insert(1, _TEST_DIR)
 import unittest_util
 sys.path.remove(_TEST_DIR)
+
+sys.path.insert(1, _PARENT_DIR)
+import util
+sys.path.insert(1, _PARENT_DIR)
 # pylint: enable=g-import-not-at-top
 
 _SESSION_ID = "b15232d5497ec0d8300a5a1ea56f33ce"
@@ -84,7 +89,7 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
 
     self.assertEqual(command.name, "GetTitle")
     self.assertEqual(command.GetPayloadPrimitive(), {"param1": 7,
-                                            "sessionId": _SESSION_ID})
+                                                     "sessionId": _SESSION_ID})
     self.assertEqual(command.session_id, _SESSION_ID)
 
     self.assertEqual(response.name, "GetTitle")
@@ -314,12 +319,17 @@ class ChromeDriverClientReplayUnitTest(unittest.TestCase):
     self.assertEqual(command_sequence._parser._saved_log_entry.name, "GetTitle")
 
 
-if __name__ == "__main__":
+def main():
   parser = optparse.OptionParser()
   parser.add_option(
       "", "--filter", type="string", default="*",
       help=('Filter for specifying what tests to run, "*" will run all. E.g., '
             "*testReplaceUrl_nothing"))
+  parser.add_option(
+      "", "--isolated-script-test-output",
+      help="JSON output file used by swarming")
+  # this option is ignored
+  parser.add_option("--isolated-script-test-perf-output", type=str)
 
   options, _ = parser.parse_args()
 
@@ -327,4 +337,12 @@ if __name__ == "__main__":
       sys.modules[__name__])
   tests = unittest_util.FilterTestSuite(all_tests_suite, options.filter)
   result = unittest.TextTestRunner(stream=sys.stdout, verbosity=2).run(tests)
+
+  if options.isolated_script_test_output:
+    util.WriteResultToJSONFile(tests, result,
+                               options.isolated_script_test_output)
+
   sys.exit(len(result.failures) + len(result.errors))
+
+if __name__ == "__main__":
+  main()

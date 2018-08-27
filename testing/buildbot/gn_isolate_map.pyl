@@ -338,6 +338,11 @@
       "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
     ],
   },
+  "chromedriver_replay_unittests": {
+    "label": "//chrome/test/chromedriver:chromedriver_replay_unittests",
+    "type": "script",
+    "script": "//chrome/test/chromedriver/log_replay/client_replay_unittest.py"
+  },
   "chromedriver_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_unittests",
     "type": "windowed_test_launcher",
