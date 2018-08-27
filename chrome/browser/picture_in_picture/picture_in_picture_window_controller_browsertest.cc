@@ -7,6 +7,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -1402,4 +1403,62 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       active_web_contents, "isInPictureInPicture();", &result));
   EXPECT_FALSE(result);
+}
+
+// Tests that opening a Picture-in-Picture window from a video in an iframe
+// will not lead to a crash when the tab is closed while devtools is open.
+IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
+                       OpenInFrameWithDevToolsDoesNotCrash) {
+  GURL test_page_url = ui_test_utils::GetTestUrl(
+      base::FilePath(base::FilePath::kCurrentDirectory),
+      base::FilePath(
+          FILE_PATH_LITERAL("media/picture-in-picture/iframe-test.html")));
+  ui_test_utils::NavigateToURL(browser(), test_page_url);
+
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(active_web_contents != nullptr);
+
+  SetUpWindowController(active_web_contents);
+
+  std::vector<content::RenderFrameHost*> render_frame_hosts =
+      active_web_contents->GetAllFrames();
+  ASSERT_EQ(2u, render_frame_hosts.size());
+
+  content::RenderFrameHost* iframe =
+      render_frame_hosts[0] == active_web_contents->GetMainFrame()
+          ? render_frame_hosts[1]
+          : render_frame_hosts[0];
+
+  // Wait for video metadata to load.
+  base::string16 expected_title = base::ASCIIToUTF16("loadedmetadata");
+  EXPECT_EQ(expected_title,
+            content::TitleWatcher(active_web_contents, expected_title)
+                .WaitAndGetTitle());
+
+  // Attaching devtools triggers the change in timing that leads to the crash.
+  DevToolsWindowTesting::OpenDevToolsWindowSync(browser(),
+                                                true /*is_docked=*/);
+
+  {
+    bool result = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        iframe, "enterPictureInPicture();", &result));
+    EXPECT_TRUE(result);
+  }
+
+  EXPECT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+
+  EXPECT_EQ(2u, active_web_contents->GetAllFrames().size());
+
+  // Open a new tab in the browser.
+  AddTabAtIndex(1, GURL("about:blank"), ui::PAGE_TRANSITION_TYPED);
+  ASSERT_TRUE(window_controller()->GetWindowForTesting()->IsVisible());
+  EXPECT_EQ(2, browser()->tab_strip_model()->count());
+  EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
+
+  // Closing the initiator should not crash Chrome.
+  content::WebContentsDestroyedWatcher destroyed_watcher(active_web_contents);
+  browser()->tab_strip_model()->CloseWebContentsAt(0, 0);
+  destroyed_watcher.Wait();
 }
