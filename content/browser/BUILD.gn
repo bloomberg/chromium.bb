@@ -156,13 +156,13 @@ jumbo_source_set("browser") {
     "//services/shape_detection/public/mojom",
     "//services/tracing:lib",
     "//services/tracing/public/cpp",
-    "//services/ui/public/cpp/gpu",
     "//services/video_capture:lib",
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/mojom:constants",
     "//services/video_capture/public/uma",
     "//services/viz/privileged/interfaces",
     "//services/viz/public/interfaces",
+    "//services/ws/public/cpp/gpu",
     "//skia",
     "//sql",
     "//storage/browser",
@@ -2337,7 +2337,7 @@ jumbo_source_set("browser") {
 
   if (use_aura) {
     deps += [
-      "//services/ui/public/cpp",
+      "//services/ws/public/cpp",
       "//services/ws/public/mojom",
       "//ui/aura",
       "//ui/aura_extra",

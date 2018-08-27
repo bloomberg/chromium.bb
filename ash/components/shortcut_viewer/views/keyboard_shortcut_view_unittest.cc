@@ -11,7 +11,7 @@
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"

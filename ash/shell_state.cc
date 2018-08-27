@@ -9,7 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/ws/window_service_owner.h"
-#include "services/ui/ws2/window_service.h"
+#include "services/ws/window_service.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 

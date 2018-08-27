@@ -9,7 +9,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "services/ui/ws2/server_window.h"
+#include "services/ws/server_window.h"
 #include "ui/events/test/event_generator.h"
 
 namespace ash {

@@ -712,7 +712,7 @@ target(link_target_type, "renderer") {
     "//services/network:network_service",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/ui/public/cpp/gpu",
+    "//services/ws/public/cpp/gpu",
     "//skia",
     "//storage/common",
     "//third_party/blink/public:blink",
@@ -790,7 +790,7 @@ target(link_target_type, "renderer") {
   if (use_aura) {
     public_deps += [ "//content/renderer/mus" ]
     allow_circular_includes_from += [ "//content/renderer/mus" ]
-    deps += [ "//services/ui/public/cpp" ]
+    deps += [ "//services/ws/public/cpp" ]
   }
 
   if (use_external_popup_menu) {

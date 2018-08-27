@@ -8,7 +8,7 @@
 #include "ash/content/ash_with_content_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "services/ui/ws2/gpu_interface_provider.h"
+#include "services/ws/gpu_interface_provider.h"
 
 namespace ash {
 

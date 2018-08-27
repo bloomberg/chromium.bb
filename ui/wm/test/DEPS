@@ -1,6 +1,5 @@
 include_rules = [
   "+services/service_manager/public",
-  "+services/ui/public",
   "+services/ws/public",
   "+ui/aura",
   "+ui/base/resource/resource_bundle.h",

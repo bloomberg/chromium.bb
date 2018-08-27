@@ -39,7 +39,7 @@
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "net/base/net_module.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
+#include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"

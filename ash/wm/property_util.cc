@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/window_style.h"
 #include "ash/public/interfaces/window_style.mojom.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"

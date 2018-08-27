@@ -7,7 +7,7 @@
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/touch/touch_devices_controller.h"
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 
 namespace ash {

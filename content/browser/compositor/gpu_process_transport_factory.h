@@ -23,7 +23,7 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/vulkan/buildflags.h"
-#include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
 #include "ui/compositor/compositor.h"
 
 namespace base {

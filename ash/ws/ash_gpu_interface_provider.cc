@@ -8,7 +8,7 @@
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/ui/gpu_host/gpu_host.h"
+#include "services/ws/gpu_host/gpu_host.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace ash {

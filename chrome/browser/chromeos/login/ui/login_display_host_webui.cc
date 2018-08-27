@@ -84,7 +84,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "media/audio/sounds/sounds_manager.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"

@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "services/ui/common/types.h"
+#include "services/ws/common/types.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/aura/mus/mus_types.h"
 

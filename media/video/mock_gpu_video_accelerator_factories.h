@@ -17,7 +17,7 @@
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {

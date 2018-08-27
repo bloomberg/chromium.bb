@@ -129,7 +129,7 @@ Command buffers in the same client-side share group must be in the same stream.
 Command scheduling granuarity is at the stream level, and a client can choose to
 create and use multiple streams with different stream priorities. Stream IDs are
 arbitrary integers assigned by the client at creation time, see for example the
-[ui::ContextProviderCommandBuffer](/services/ui/public/cpp/gpu/context_provider_command_buffer.h)
+[ui::ContextProviderCommandBuffer](/services/ws/public/cpp/gpu/context_provider_command_buffer.h)
 constructor.
 
 The CHROMIUM sync token is intended to order operations among command buffer GL

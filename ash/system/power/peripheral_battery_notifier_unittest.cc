@@ -11,7 +11,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"

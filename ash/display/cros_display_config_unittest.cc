@@ -15,7 +15,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/touch_transform_controller_test_api.h"

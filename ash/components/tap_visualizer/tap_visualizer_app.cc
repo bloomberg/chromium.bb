@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/service_context.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"
 #include "ui/aura/mus/property_converter.h"

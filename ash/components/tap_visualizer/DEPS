@@ -1,5 +1,4 @@
 include_rules = [
-  "+services/ui/public",
   "+services/ws/public",
   "+third_party/skia",
   "+ui/compositor",

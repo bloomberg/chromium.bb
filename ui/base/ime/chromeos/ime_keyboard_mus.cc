@@ -4,7 +4,7 @@
 
 #include "ui/base/ime/chromeos/ime_keyboard_mus.h"
 
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 
 namespace chromeos {
 namespace input_method {

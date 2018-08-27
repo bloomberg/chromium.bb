@@ -16,7 +16,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/wm/core/cursor_manager.h"
 
 namespace ash {

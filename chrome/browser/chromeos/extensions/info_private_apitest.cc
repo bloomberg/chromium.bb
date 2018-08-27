@@ -20,7 +20,7 @@
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_util.h"
 #include "components/prefs/pref_service.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/events/devices/input_device.h"
 #include "ui/events/devices/touchscreen_device.h"
 #include "ui/events/test/event_generator.h"

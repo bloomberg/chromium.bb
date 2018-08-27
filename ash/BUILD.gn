@@ -1323,11 +1323,11 @@ component("ash") {
     "//mash/public/mojom",
     "//mojo/public/cpp/system",
     "//services/service_manager/embedder",
-    "//services/ui/common:mus_common",
-    "//services/ui/public/cpp",
-    "//services/ui/public/cpp/input_devices",
-    "//services/ui/ws2:host",
-    "//services/ui/ws2:lib",
+    "//services/ws:host",
+    "//services/ws:lib",
+    "//services/ws/common",
+    "//services/ws/public/cpp",
+    "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",
@@ -1391,8 +1391,8 @@ component("ash") {
     "//services/data_decoder/public/cpp",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
-    "//services/ui/gpu_host",
-    "//services/ui/public/cpp/input_devices:input_device_controller",
+    "//services/ws/gpu_host",
+    "//services/ws/public/cpp/input_devices:input_device_controller",
     "//services/ws/public/mojom/input_devices",
 
     # TODO(msw): Remove this; only ash_with_content should depend on webkit.
@@ -1593,9 +1593,9 @@ static_library("ash_shell_lib_with_content") {
     "//content/shell:content_shell_lib",
     "//device/bluetooth",
     "//net",
-    "//services/ui/ime/test_ime_driver:lib",
-    "//services/ui/ime/test_ime_driver/public/mojom",
-    "//services/ui/ws2:lib",
+    "//services/ws:lib",
+    "//services/ws/ime/test_ime_driver:lib",
+    "//services/ws/ime/test_ime_driver/public/mojom",
     "//skia",
     "//ui/aura",
     "//ui/base",
@@ -2031,8 +2031,8 @@ test("ash_unittests") {
     "//net:net",
     "//services/catalog:lib",
     "//services/service_manager/public/cpp:service_test_support",
-    "//services/ui/public/cpp/input_devices:test_support",
-    "//services/ui/ws2:test_support",
+    "//services/ws:test_support",
+    "//services/ws/public/cpp/input_devices:test_support",
     "//services/ws/public/mojom",
     "//skia",
     "//testing/gmock",
@@ -2324,9 +2324,9 @@ static_library("test_support_common") {
     "//components/user_manager:user_manager",
     "//components/viz/test:test_support",
     "//device/bluetooth",
-    "//services/ui/public/cpp",
-    "//services/ui/public/cpp/input_devices",
-    "//services/ui/ws2:test_support",
+    "//services/ws:test_support",
+    "//services/ws/public/cpp",
+    "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom",
     "//skia",
     "//testing/gtest",
@@ -2405,7 +2405,7 @@ service("ash_service") {
 service_manifest("manifest") {
   name = "ash"
   source = "manifest.json"
-  packaged_services = [ "//services/ui:manifest" ]
+  packaged_services = [ "//services/ws:manifest" ]
 }
 
 # TODO: Load locale-specific strings.

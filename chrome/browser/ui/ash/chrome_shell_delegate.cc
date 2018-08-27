@@ -32,7 +32,7 @@
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/url_constants.h"
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/ui_base_features.h"
 #include "url/url_constants.h"

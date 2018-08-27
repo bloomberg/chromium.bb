@@ -12,7 +12,7 @@
 #include "ash/public/interfaces/tray_action.mojom.h"
 #include "ash/shell.h"
 #include "base/strings/strcat.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"

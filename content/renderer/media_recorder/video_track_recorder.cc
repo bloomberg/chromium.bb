@@ -24,7 +24,7 @@
 #include "media/base/video_util.h"
 #include "media/filters/context_3d.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/geometry/size.h"

@@ -110,8 +110,8 @@ static_library("test_support") {
   deps = [
     ":wm",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/cpp",
-    "//services/ui/public/cpp/input_devices",
+    "//services/ws/public/cpp",
+    "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom",
     "//skia",
     "//ui/aura",

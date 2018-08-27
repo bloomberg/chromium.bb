@@ -10,7 +10,7 @@
 #include "chrome/browser/chromeos/system/fake_input_device_settings.h"
 #include "chromeos/system/devicemode.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 
 namespace chromeos {
 namespace system {

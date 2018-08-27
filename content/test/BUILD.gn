@@ -345,7 +345,7 @@ jumbo_static_library("test_support") {
     "//net:test_support",
     "//services/audio/public/mojom",
     "//services/device/public/mojom",
-    "//services/ui/public/cpp/gpu",
+    "//services/ws/public/cpp/gpu",
 
     # TODO(jam): remove this by adding a public header for the NetworkContext
     # public testing method.
@@ -623,7 +623,7 @@ static_library("layouttest_support") {
     "//device/gamepad/public/cpp:shared_with_blink",
     "//gpu/ipc/service",
     "//services/device/public/cpp/generic_sensor",
-    "//services/ui/public/cpp/gpu",
+    "//services/ws/public/cpp/gpu",
     "//skia",
     "//ui/accessibility:ax_enums_mojo",
     "//ui/events/blink",
@@ -977,10 +977,10 @@ test("content_browsertests") {
     "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/test/echo/public/mojom",
-    "//services/ui/public/cpp/gpu",
     "//services/video_capture/public/cpp",
     "//services/video_capture/public/mojom:constants",
     "//services/viz/privileged/interfaces",
+    "//services/ws/public/cpp/gpu",
     "//storage/browser",
     "//storage/browser:test_support",
     "//testing/gmock",
@@ -1155,7 +1155,7 @@ test("content_browsertests") {
 
   if (is_chromeos) {
     deps += [ "//chromeos" ]
-    data_deps += [ "//services/ui/test_ws" ]
+    data_deps += [ "//services/ws/test_ws" ]
   }
 
   if (use_aura && !is_win) {
@@ -1243,7 +1243,7 @@ if (is_chromeos) {
   catalog("content_browsertests_catalog") {
     testonly = true
 
-    standalone_services = [ "//services/ui/test_ws:manifest" ]
+    standalone_services = [ "//services/ws/test_ws:manifest" ]
   }
 
   catalog_cpp_source("content_browsertests_catalog_source") {

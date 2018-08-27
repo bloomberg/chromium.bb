@@ -9,7 +9,7 @@
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/host/renderer_settings_creation.h"
-#include "services/ui/public/cpp/gpu/gpu.h"
+#include "services/ws/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/compositor/compositor_switches.h"

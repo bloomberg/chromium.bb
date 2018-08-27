@@ -167,8 +167,8 @@ jumbo_component("aura") {
     "//mojo/public/cpp/system",
     "//net",
     "//services/service_manager/public/cpp",
-    "//services/ui/common:mus_common",
-    "//services/ui/public/cpp",
+    "//services/ws/common",
+    "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//skia",
     "//ui/base",
@@ -278,7 +278,7 @@ jumbo_static_library("test_support") {
 
   public_deps = [
     ":aura",
-    "//services/ui/common:mus_common",
+    "//services/ws/common",
 
     # Must be public as headers include ui_features.h.
     "//ui/base:ui_features",
@@ -288,7 +288,7 @@ jumbo_static_library("test_support") {
     "//cc:test_support",
     "//components/viz/test:test_support",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/cpp/input_devices",
+    "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom",
     "//skia",
     "//testing/gtest",
@@ -391,8 +391,8 @@ test("aura_unittests") {
     "//components/viz/client",
     "//mojo/core/embedder",
     "//net",
-    "//services/ui/common:task_runner_test_base",
-    "//services/ui/public/cpp",
+    "//services/ws/common:task_runner_test_base",
+    "//services/ws/public/cpp",
     "//skia",
     "//testing/gtest",
     "//ui/aura_extra",

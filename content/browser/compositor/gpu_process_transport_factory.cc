@@ -62,7 +62,7 @@
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "gpu/vulkan/buildflags.h"
 #include "services/service_manager/runner/common/client_util.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"

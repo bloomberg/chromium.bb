@@ -13,7 +13,7 @@
 #include "ash/window_factory.h"
 #include "base/feature_list.h"
 #include "base/trace_event/trace_event.h"
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/mus/input_method_mus.h"
 #include "ui/aura/window.h"

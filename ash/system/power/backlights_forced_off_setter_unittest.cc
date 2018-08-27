@@ -17,7 +17,7 @@
 #include "base/scoped_observer.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/test/touch_transform_controller_test_api.h"
 #include "ui/display/manager/touch_transform_setter.h"

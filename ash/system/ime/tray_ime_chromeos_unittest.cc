@@ -14,7 +14,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/keyboard/keyboard_util.h"
 

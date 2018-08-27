@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "services/service_manager/public/cpp/service_test.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "services/ws/public/mojom/window_tree_constants.mojom.h"

@@ -11,9 +11,9 @@
 #include "media/capture/video/video_capture_buffer_pool.h"
 #include "media/capture/video/video_capture_buffer_tracker.h"
 #include "media/capture/video/video_capture_system_impl.h"
-#include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/video_capture/device_factory_media_to_mojo_adapter.h"
 #include "services/video_capture/virtual_device_enabled_device_factory.h"
+#include "services/ws/public/cpp/gpu/gpu.h"
 
 namespace video_capture {
 

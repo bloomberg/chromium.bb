@@ -24,7 +24,7 @@
 #include "base/command_line.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/time/time.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"

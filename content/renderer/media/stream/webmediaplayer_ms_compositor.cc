@@ -22,7 +22,7 @@
 #include "media/base/video_util.h"
 #include "media/filters/video_renderer_algorithm.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_source.h"

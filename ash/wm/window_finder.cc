@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/wm/root_window_finder.h"
-#include "services/ui/ws2/window_service.h"
+#include "services/ws/window_service.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 

@@ -14,7 +14,7 @@
 #include "components/viz/common/surfaces/local_surface_id.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/common/types.h"
+#include "services/ws/common/types.h"
 #include "services/ws/public/mojom/window_tree.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
