@@ -14,6 +14,11 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 
+#if defined(OS_FUCHSIA)
+#include <fuchsia/ui/policy/cpp/fidl.h>
+#include "base/fuchsia/component_context.h"
+#endif
+
 namespace ui {
 
 DemoWindow::DemoWindow(WindowManager* window_manager,
@@ -24,6 +29,24 @@ DemoWindow::DemoWindow(WindowManager* window_manager,
       weak_ptr_factory_(this) {
   PlatformWindowInitProperties properties;
   properties.bounds = bounds;
+
+#if defined(OS_FUCHSIA)
+  // When using Scenic Ozone platform we need to supply a ViewOwner request to
+  // the window. This is not necessary when using the headless ozone platform.
+  if (ui::OzonePlatform::GetInstance()
+          ->GetPlatformProperties()
+          .needs_view_owner_request) {
+    // Initialize view_owner_request for the new instance.
+    fidl::InterfaceHandle<fuchsia::ui::viewsv1token::ViewOwner> view_owner;
+    properties.view_owner_request = view_owner.NewRequest();
+
+    // Request Presenter to show the view full-screen.
+    auto presenter = base::fuchsia::ComponentContext::GetDefault()
+                         ->ConnectToService<fuchsia::ui::policy::Presenter>();
+    presenter->Present(std::move(view_owner), nullptr);
+  }
+#endif
+
   platform_window_ = OzonePlatform::GetInstance()->CreatePlatformWindow(
       this, std::move(properties));
   platform_window_->Show();
