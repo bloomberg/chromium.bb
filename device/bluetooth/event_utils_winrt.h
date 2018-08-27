@@ -123,7 +123,8 @@ HRESULT PostAsyncResults(
 // Convenience template function to construct a TypedEventHandler from a
 // base::RepeatingCallback of a matching signature. In case of success, the
 // EventRegistrationToken is returned to the caller. A return value of
-// base::nullopt indicates a failure.
+// base::nullopt indicates a failure. Events are posted to the same thread the
+// event handler was created on.
 template <typename Interface,
           typename Sender,
           typename Args,
@@ -133,17 +134,24 @@ base::Optional<EventRegistrationToken> AddTypedEventHandler(
     Interface* i,
     internal::IMemberFunction<
         Interface,
-        ABI::Windows::Foundation::ITypedEventHandler<Sender, Args>*,
+        ABI::Windows::Foundation::ITypedEventHandler<Sender*, Args*>*,
         EventRegistrationToken*> function,
-    base::RepeatingCallback<void(SenderAbi, ArgsAbi)> callback) {
+    base::RepeatingCallback<void(SenderAbi*, ArgsAbi*)> callback) {
   EventRegistrationToken token;
   HRESULT hr = ((*i).*function)(
       Microsoft::WRL::Callback<
-          ABI::Windows::Foundation::ITypedEventHandler<Sender, Args>>(
-          [callback](SenderAbi sender, ArgsAbi args) {
-            callback.Run(std::move(sender), std::move(args));
-            return S_OK;
-          })
+          ABI::Windows::Foundation::ITypedEventHandler<Sender*, Args*>>([
+        task_runner(base::ThreadTaskRunnerHandle::Get()),
+        callback(std::move(callback))
+      ](SenderAbi * sender, ArgsAbi * args) {
+        // Make sure we are still on the same thread.
+        DCHECK_EQ(base::ThreadTaskRunnerHandle::Get(), task_runner);
+        task_runner->PostTask(
+            FROM_HERE,
+            base::BindOnce(callback, Microsoft::WRL::ComPtr<SenderAbi>(sender),
+                           Microsoft::WRL::ComPtr<ArgsAbi>(args)));
+        return S_OK;
+      })
           .Get(),
       &token);
 
