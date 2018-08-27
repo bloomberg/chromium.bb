@@ -1986,6 +1986,18 @@ are declared in tools/grit/grit_rule.gni.
         </message>
       </if>
 
+      <!-- "Uninstall web app" menu item -->
+      <if expr="use_titlecase">
+        <message name="IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE" desc="In Title Case: Menu text for uninstalling a web app from the operating system.">
+          Uninstall <ph name="APP">$1<ex>Gmail</ex></ph>...
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE" desc="Menu text for uninstalling a web app from the operating system.">
+          Uninstall <ph name="APP">$1<ex>Gmail</ex></ph>...
+        </message>
+      </if>
+
       <!-- "Application Information" dialog -->
       <if expr="not use_titlecase">
         <message name="IDS_APPLICATION_INFO_WEB_STORE_LINK" desc="Text for the link that opens the app or extension in the Web Store..">

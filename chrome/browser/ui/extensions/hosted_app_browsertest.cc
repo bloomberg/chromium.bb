@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/extensions/hosted_app_menu_model.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
@@ -961,6 +962,28 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PopOutDisabledInIncognito) {
   ASSERT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
       IDC_OPEN_IN_PWA_WINDOW, &model, &index));
   EXPECT_FALSE(model->IsEnabledAt(index));
+}
+
+// Tests that PWA menus have an uninstall option.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, UninstallMenuOption) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+
+  auto app_menu_model =
+      std::make_unique<HostedAppMenuModel>(nullptr, app_browser_);
+  app_menu_model->Init();
+  ui::MenuModel* model = app_menu_model.get();
+  int index = -1;
+  bool found = app_menu_model->GetModelAndIndexForCommandId(
+      HostedAppMenuModel::kUninstallAppCommandId, &model, &index);
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(found);
+#else
+  EXPECT_TRUE(found);
+  EXPECT_TRUE(model->IsEnabledAt(index));
+#endif  // defined(OS_CHROMEOS)
 }
 
 // Tests that the command for OpenActiveTabInPwaWindow is available for secure

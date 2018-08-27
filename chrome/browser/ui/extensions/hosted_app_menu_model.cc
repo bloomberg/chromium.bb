@@ -14,7 +14,12 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/browser/management_policy.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+constexpr int HostedAppMenuModel::kUninstallAppCommandId;
 
 HostedAppMenuModel::HostedAppMenuModel(ui::AcceleratorProvider* provider,
                                        Browser* browser)
@@ -39,7 +44,20 @@ void HostedAppMenuModel::Build() {
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddItemWithStringId(IDC_COPY_URL, IDS_COPY_URL);
   AddItemWithStringId(IDC_OPEN_IN_CHROME, IDS_OPEN_IN_CHROME);
+
+// Chrome OS's app list is prominent enough to not need a separate uninstall
+// option in the app menu.
+#if !defined(OS_CHROMEOS)
+  DCHECK(browser()->hosted_app_controller());
+  AddSeparator(ui::NORMAL_SEPARATOR);
+  AddItem(kUninstallAppCommandId,
+          l10n_util::GetStringFUTF16(
+              IDS_UNINSTALL_FROM_OS_LAUNCH_SURFACE,
+              base::UTF8ToUTF16(
+                  browser()->hosted_app_controller()->GetAppShortName())));
+#endif  // !defined(OS_CHROMEOS)
   AddSeparator(ui::LOWER_SEPARATOR);
+
   CreateZoomMenu();
   AddSeparator(ui::UPPER_SEPARATOR);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
@@ -48,6 +66,26 @@ void HostedAppMenuModel::Build() {
     AddItemWithStringId(IDC_ROUTE_MEDIA, IDS_MEDIA_ROUTER_MENU_ITEM_TITLE);
   AddSeparator(ui::LOWER_SEPARATOR);
   CreateCutCopyPasteMenu();
+}
+
+bool HostedAppMenuModel::IsCommandIdEnabled(int command_id) const {
+  if (command_id == kUninstallAppCommandId) {
+    return extensions::ExtensionSystem::Get(browser()->profile())
+        ->management_policy()
+        ->UserMayModifySettings(
+            browser()->hosted_app_controller()->GetExtension(), nullptr);
+  }
+  return AppMenuModel::IsCommandIdEnabled(command_id);
+}
+
+void HostedAppMenuModel::ExecuteCommand(int command_id, int event_flags) {
+  if (command_id == kUninstallAppCommandId) {
+    browser()->hosted_app_controller()->Uninstall(
+        extensions::UNINSTALL_REASON_USER_INITIATED,
+        extensions::UNINSTALL_SOURCE_HOSTED_APP_MENU);
+  } else {
+    AppMenuModel::ExecuteCommand(command_id, event_flags);
+  }
 }
 
 void HostedAppMenuModel::LogMenuAction(AppMenuAction action_id) {

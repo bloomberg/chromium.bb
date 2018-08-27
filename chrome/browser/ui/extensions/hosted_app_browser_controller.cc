@@ -270,6 +270,13 @@ base::string16 HostedAppBrowserController::GetFormattedUrlOrigin() const {
   return FormatUrlOrigin(AppLaunchInfo::GetLaunchWebURL(GetExtension()));
 }
 
+void HostedAppBrowserController::Uninstall(UninstallReason reason,
+                                           UninstallSource source) {
+  uninstall_dialog_.reset(ExtensionUninstallDialog::Create(
+      browser_->profile(), browser_->window()->GetNativeWindow(), this));
+  uninstall_dialog_->ConfirmUninstall(GetExtension(), reason, source);
+}
+
 void HostedAppBrowserController::OnEngagementEvent(
     content::WebContents* web_contents,
     const GURL& /*url*/,

@@ -11,12 +11,16 @@
 // Menu model for the menu button in a hosted app browser window.
 class HostedAppMenuModel : public AppMenuModel {
  public:
+  static constexpr int kUninstallAppCommandId = 1;
+
   HostedAppMenuModel(ui::AcceleratorProvider* provider, Browser* browser);
   ~HostedAppMenuModel() override;
 
  private:
   // AppMenuModel:
   void Build() override;
+  bool IsCommandIdEnabled(int command_id) const override;
+  void ExecuteCommand(int command_id, int event_flags) override;
   void LogMenuAction(AppMenuAction action_id) override;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppMenuModel);
