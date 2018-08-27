@@ -345,6 +345,7 @@ void UnifiedMessageCenterView::AddNotificationAt(
   MessageView* view = message_center::MessageViewFactory::Create(
       notification, /*top-level=*/false);
   view->AddObserver(this);
+  view->AddSlideObserver(message_list_view_);
   view->set_scroller(scroller_);
   message_list_view_->AddNotificationAt(view, index);
 }
