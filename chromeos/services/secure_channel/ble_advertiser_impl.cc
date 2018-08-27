@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper.h"
@@ -57,27 +58,34 @@ std::unique_ptr<BleAdvertiser> BleAdvertiserImpl::Factory::BuildInstance(
     Delegate* delegate,
     BleServiceDataHelper* ble_service_data_helper,
     BleSynchronizerBase* ble_synchronizer_base,
-    TimerFactory* timer_factory) {
+    TimerFactory* timer_factory,
+    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner) {
   return base::WrapUnique(new BleAdvertiserImpl(
-      delegate, ble_service_data_helper, ble_synchronizer_base, timer_factory));
+      delegate, ble_service_data_helper, ble_synchronizer_base, timer_factory,
+      sequenced_task_runner));
 }
 
 BleAdvertiserImpl::BleAdvertiserImpl(
     Delegate* delegate,
     BleServiceDataHelper* ble_service_data_helper,
     BleSynchronizerBase* ble_synchronizer_base,
-    TimerFactory* timer_factory)
+    TimerFactory* timer_factory,
+    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner)
     : BleAdvertiser(delegate),
       ble_service_data_helper_(ble_service_data_helper),
       ble_synchronizer_base_(ble_synchronizer_base),
       timer_factory_(timer_factory),
-      shared_resource_scheduler_(std::make_unique<SharedResourceScheduler>()) {}
+      sequenced_task_runner_(sequenced_task_runner),
+      shared_resource_scheduler_(std::make_unique<SharedResourceScheduler>()),
+      weak_factory_(this) {}
 
 BleAdvertiserImpl::~BleAdvertiserImpl() = default;
 
 void BleAdvertiserImpl::AddAdvertisementRequest(
     const DeviceIdPair& request,
     ConnectionPriority connection_priority) {
+  requests_already_removed_due_to_failed_advertisement_.erase(request);
+
   if (base::ContainsKey(all_requests_, request)) {
     PA_LOG(ERROR) << "BleAdvertiserImpl::AddAdvertisementRequest(): Tried to "
                   << "add advertisement request which was already present. "
@@ -102,6 +110,10 @@ void BleAdvertiserImpl::AddAdvertisementRequest(
 void BleAdvertiserImpl::UpdateAdvertisementRequestPriority(
     const DeviceIdPair& request,
     ConnectionPriority connection_priority) {
+  if (base::ContainsKey(requests_already_removed_due_to_failed_advertisement_,
+                        request))
+    return;
+
   if (!base::ContainsKey(all_requests_, request)) {
     PA_LOG(ERROR) << "BleAdvertiserImpl::UpdateAdvertisementRequestPriority(): "
                   << "Tried to update request priority for a request, but that "
@@ -155,6 +167,14 @@ void BleAdvertiserImpl::UpdateAdvertisementRequestPriority(
 
 void BleAdvertiserImpl::RemoveAdvertisementRequest(
     const DeviceIdPair& request) {
+  // If the request has already been deleted, then this was invoked by a failure
+  // callback following a failure to generate an advertisement.
+  auto it = requests_already_removed_due_to_failed_advertisement_.find(request);
+  if (it != requests_already_removed_due_to_failed_advertisement_.end()) {
+    requests_already_removed_due_to_failed_advertisement_.erase(it);
+    return;
+  }
+
   if (!base::ContainsKey(all_requests_, request)) {
     PA_LOG(ERROR) << "BleAdvertiserImpl::RemoveAdvertisementRequest(): Tried "
                   << "to remove an advertisement request, but that request was "
@@ -242,7 +262,7 @@ void BleAdvertiserImpl::UpdateAdvertisementState() {
     // |active_advertisement_requests_| contains a request for an advertisement,
     // generate a new active advertisement.
     if (active_advertisement_requests_[i] && !active_advertisements_[i])
-      AddActiveAdvertisement(i);
+      AttemptToAddActiveAdvertisement(i);
   }
 }
 
@@ -270,13 +290,35 @@ void BleAdvertiserImpl::AddActiveAdvertisementRequest(size_t index_to_add) {
                                                    std::move(timer));
 }
 
-void BleAdvertiserImpl::AddActiveAdvertisement(size_t index_to_add) {
+void BleAdvertiserImpl::AttemptToAddActiveAdvertisement(size_t index_to_add) {
+  const DeviceIdPair pair =
+      active_advertisement_requests_[index_to_add]->device_id_pair;
+  std::unique_ptr<cryptauth::DataWithTimestamp> service_data =
+      ble_service_data_helper_->GenerateForegroundAdvertisement(pair);
+
+  // If an advertisement could not be created, the request is immediately
+  // removed. It's also tracked to prevent future operations from referencing
+  // the removed request.
+  if (!service_data) {
+    RemoveAdvertisementRequest(pair);
+    requests_already_removed_due_to_failed_advertisement_.insert(pair);
+
+    // Schedules AttemptToNotifyFailureToGenerateAdvertisement() to run
+    // after the tasks in the current sequence. This is done to avoid invoking
+    // an advertisement generation failure callback on the same call stack that
+    // added the advertisement request in the first place.
+    sequenced_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &BleAdvertiserImpl::AttemptToNotifyFailureToGenerateAdvertisement,
+            weak_factory_.GetWeakPtr(), pair));
+
+    return;
+  }
+
   active_advertisements_[index_to_add] =
       ErrorTolerantBleAdvertisementImpl::Factory::Get()->BuildInstance(
-          active_advertisement_requests_[index_to_add]->device_id_pair,
-          ble_service_data_helper_->GenerateForegroundAdvertisement(
-              active_advertisement_requests_[index_to_add]->device_id_pair),
-          ble_synchronizer_base_);
+          pair, std::move(service_data), ble_synchronizer_base_);
 }
 
 base::Optional<size_t> BleAdvertiserImpl::GetIndexForActiveRequest(
@@ -294,7 +336,7 @@ void BleAdvertiserImpl::StopAdvertisementRequestAndUpdateActiveRequests(
     size_t index,
     bool replaced_by_higher_priority_advertisement,
     bool was_removed) {
-  // Stop the actual advertisement at this index.
+  // Stop the actual advertisement at this index, if there is one.
   StopActiveAdvertisement(index);
 
   // Make a copy of the request to stop from |active_advertisement_requests_|,
@@ -318,7 +360,8 @@ void BleAdvertiserImpl::StopAdvertisementRequestAndUpdateActiveRequests(
 
 void BleAdvertiserImpl::StopActiveAdvertisement(size_t index) {
   auto& active_advertisement = active_advertisements_[index];
-  DCHECK(active_advertisement);
+  if (!active_advertisement)
+    return;
 
   // If |active_advertisement| is already in the process of stopping, there is
   // nothing to do.
@@ -333,6 +376,19 @@ void BleAdvertiserImpl::StopActiveAdvertisement(size_t index) {
 void BleAdvertiserImpl::OnActiveAdvertisementStopped(size_t index) {
   active_advertisements_[index].reset();
   UpdateAdvertisementState();
+}
+
+void BleAdvertiserImpl::AttemptToNotifyFailureToGenerateAdvertisement(
+    const DeviceIdPair& device_id_pair) {
+  // If the request is not found, then that request has either been removed
+  // again or re-scheduled after it failed to generate an advertisement, but
+  // before this task could execute.
+  if (!base::ContainsKey(requests_already_removed_due_to_failed_advertisement_,
+                         device_id_pair)) {
+    return;
+  }
+
+  NotifyFailureToGenerateAdvertisement(device_id_pair);
 }
 
 }  // namespace secure_channel

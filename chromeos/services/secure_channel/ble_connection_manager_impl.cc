@@ -186,6 +186,12 @@ void BleConnectionManagerImpl::OnAdvertisingSlotEnded(
           : BleInitiatorFailureType::kTimeoutContactingRemoteDevice);
 }
 
+void BleConnectionManagerImpl::OnFailureToGenerateAdvertisement(
+    const DeviceIdPair& device_id_pair) {
+  NotifyBleInitiatorFailure(
+      device_id_pair, BleInitiatorFailureType::kCouldNotGenerateAdvertisement);
+}
+
 void BleConnectionManagerImpl::OnReceivedAdvertisement(
     cryptauth::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,

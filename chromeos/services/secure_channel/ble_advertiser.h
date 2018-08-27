@@ -26,6 +26,11 @@ class BleAdvertiser {
     virtual void OnAdvertisingSlotEnded(
         const DeviceIdPair& device_id_pair,
         bool replaced_by_higher_priority_advertisement) = 0;
+
+    // Invoked when there is a failure to generate an advertisement for
+    // |device_id_pair|.
+    virtual void OnFailureToGenerateAdvertisement(
+        const DeviceIdPair& device_id_pair) = 0;
   };
 
   virtual ~BleAdvertiser();
@@ -35,7 +40,9 @@ class BleAdvertiser {
   //
   // Calling AddAdvertisementRequest() does not guarantee that this Chromebook
   // will immediately begin advertising to the remote device; because BLE
-  // advertisements are a shared system resource, requests may be queued.
+  // advertisements are a shared system resource, requests may be queued. If no
+  // advertisement can be generated,
+  // Delegate::OnFailureToGenerateAdvertisement() will be invoked.
   virtual void AddAdvertisementRequest(
       const DeviceIdPair& request,
       ConnectionPriority connection_priority) = 0;
@@ -49,11 +56,13 @@ class BleAdvertiser {
   virtual void RemoveAdvertisementRequest(const DeviceIdPair& request) = 0;
 
  protected:
-  BleAdvertiser(Delegate* delegate);
+  explicit BleAdvertiser(Delegate* delegate);
 
   void NotifyAdvertisingSlotEnded(
       const DeviceIdPair& device_id_pair,
       bool replaced_by_higher_priority_advertisement);
+
+  void NotifyFailureToGenerateAdvertisement(const DeviceIdPair& device_id_pair);
 
  private:
   Delegate* delegate_;

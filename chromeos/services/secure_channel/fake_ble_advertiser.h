@@ -5,7 +5,12 @@
 #ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_BLE_ADVERTISER_H_
 #define CHROMEOS_SERVICES_SECURE_CHANNEL_FAKE_BLE_ADVERTISER_H_
 
+#include <list>
+#include <memory>
+#include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/optional.h"
@@ -22,7 +27,7 @@ namespace secure_channel {
 // SharedResourceScheduler to store the provided requests.
 class FakeBleAdvertiser : public BleAdvertiser {
  public:
-  FakeBleAdvertiser(Delegate* delegate);
+  explicit FakeBleAdvertiser(Delegate* delegate);
   ~FakeBleAdvertiser() override;
 
   const std::list<DeviceIdPair>& GetRequestsForPriority(
@@ -37,6 +42,8 @@ class FakeBleAdvertiser : public BleAdvertiser {
   void NotifyAdvertisingSlotEnded(
       const DeviceIdPair& device_id_pair,
       bool replaced_by_higher_priority_advertisement);
+
+  void NotifyFailureToGenerateAdvertisement(const DeviceIdPair& device_id_pair);
 
  private:
   // BleAdvertiser:
@@ -68,10 +75,14 @@ class FakeBleAdvertiserDelegate : public BleAdvertiser::Delegate {
   FakeBleAdvertiserDelegate();
   ~FakeBleAdvertiserDelegate() override;
 
-  using EndedAdvertisement = std::pair<DeviceIdPair, bool>;
+  using SlotEndedEvent = std::pair<DeviceIdPair, bool>;
 
-  const std::vector<EndedAdvertisement>& ended_advertisements() const {
-    return ended_advertisements_;
+  const std::vector<SlotEndedEvent>& slot_ended_events() const {
+    return slot_ended_events_;
+  }
+
+  const std::vector<DeviceIdPair>& advertisement_generation_failures() const {
+    return advertisement_generation_failures_;
   }
 
  private:
@@ -79,8 +90,11 @@ class FakeBleAdvertiserDelegate : public BleAdvertiser::Delegate {
   void OnAdvertisingSlotEnded(
       const DeviceIdPair& device_id_pair,
       bool replaced_by_higher_priority_advertisement) override;
+  void OnFailureToGenerateAdvertisement(
+      const DeviceIdPair& device_id_pair) override;
 
-  std::vector<EndedAdvertisement> ended_advertisements_;
+  std::vector<SlotEndedEvent> slot_ended_events_;
+  std::vector<DeviceIdPair> advertisement_generation_failures_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBleAdvertiserDelegate);
 };

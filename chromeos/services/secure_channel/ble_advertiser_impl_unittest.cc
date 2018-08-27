@@ -6,9 +6,12 @@
 
 #include <memory>
 #include <sstream>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/services/secure_channel/fake_ble_advertiser.h"
 #include "chromeos/services/secure_channel/fake_ble_service_data_helper.h"
@@ -97,7 +100,7 @@ const int64_t kDefaultEndTimestamp = 13337;
 
 class SecureChannelBleAdvertiserImplTest : public testing::Test {
  protected:
-  SecureChannelBleAdvertiserImplTest() {}
+  SecureChannelBleAdvertiserImplTest() = default;
   ~SecureChannelBleAdvertiserImplTest() override = default;
 
   // testing::Test:
@@ -114,20 +117,30 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
     ErrorTolerantBleAdvertisementImpl::Factory::SetFactoryForTesting(
         fake_advertisement_factory_.get());
 
+    test_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+
     advertiser_ = BleAdvertiserImpl::Factory::Get()->BuildInstance(
         fake_delegate_.get(), fake_ble_service_data_helper_.get(),
-        fake_ble_synchronizer_.get(), fake_timer_factory_.get());
+        fake_ble_synchronizer_.get(), fake_timer_factory_.get(), test_runner_);
   }
 
   void TearDown() override {
     ErrorTolerantBleAdvertisementImpl::Factory::SetFactoryForTesting(nullptr);
 
-    // Ensure that all delegate callbacks were verified.
-    if (highest_delegate_index_verified_) {
-      EXPECT_EQ(*highest_delegate_index_verified_ + 1u,
-                fake_delegate_->ended_advertisements().size());
+    // Ensure that all slot ended delegate callbacks were verified.
+    if (highest_slot_ended_delegate_index_verified_) {
+      EXPECT_EQ(*highest_slot_ended_delegate_index_verified_ + 1u,
+                fake_delegate_->slot_ended_events().size());
     } else {
-      EXPECT_TRUE(fake_delegate_->ended_advertisements().empty());
+      EXPECT_TRUE(fake_delegate_->slot_ended_events().empty());
+    }
+
+    // Ensure that all failed advertisement delegate callbacks were verified.
+    if (highest_failed_advertisement_delegate_index_verified_) {
+      EXPECT_EQ(*highest_failed_advertisement_delegate_index_verified_ + 1u,
+                fake_delegate_->advertisement_generation_failures().size());
+    } else {
+      EXPECT_TRUE(fake_delegate_->advertisement_generation_failures().empty());
     }
 
     // Ensure that there are no more active timers/advertisements.
@@ -175,32 +188,46 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
   }
 
   void AddAdvertisementRequest(const DeviceIdPair& request,
-                               ConnectionPriority connection_priority) {
-    // Generate fake service data using the two device IDs.
-    std::stringstream ss;
-    ss << request.remote_device_id() << "+" << request.local_device_id();
-
-    fake_ble_service_data_helper_->SetAdvertisement(
-        request,
-        cryptauth::DataWithTimestamp(
-            ss.str() /* data */, kDefaultStartTimestamp, kDefaultEndTimestamp));
+                               ConnectionPriority connection_priority,
+                               bool should_advertisement_succeed = true) {
+    if (should_advertisement_succeed) {
+      // Generate fake service data using the two device IDs.
+      std::stringstream ss;
+      ss << request.remote_device_id() << "+" << request.local_device_id();
+      fake_ble_service_data_helper_->SetAdvertisement(
+          request, cryptauth::DataWithTimestamp(ss.str() /* data */,
+                                                kDefaultStartTimestamp,
+                                                kDefaultEndTimestamp));
+    }
 
     advertiser_->AddAdvertisementRequest(request, connection_priority);
   }
 
-  void VerifyDelegateNotified(
+  void VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       const DeviceIdPair& expected_request,
       bool expected_replaced_by_higher_priority_advertisement,
       size_t expected_index) {
-    const std::vector<FakeBleAdvertiserDelegate::EndedAdvertisement>&
-        ended_advertisements = fake_delegate_->ended_advertisements();
+    const std::vector<FakeBleAdvertiserDelegate::SlotEndedEvent>&
+        slot_ended_events = fake_delegate_->slot_ended_events();
 
-    EXPECT_EQ(expected_index + 1, ended_advertisements.size());
-    EXPECT_EQ(expected_request, ended_advertisements.back().first);
+    EXPECT_EQ(expected_index + 1, slot_ended_events.size());
+    EXPECT_EQ(expected_request, slot_ended_events.back().first);
     EXPECT_EQ(expected_replaced_by_higher_priority_advertisement,
-              ended_advertisements.back().second);
+              slot_ended_events.back().second);
 
-    highest_delegate_index_verified_ = expected_index;
+    highest_slot_ended_delegate_index_verified_ = expected_index;
+  }
+
+  void VerifyDelegateNotifiedOnFailureToGenerateAdvertisement(
+      const DeviceIdPair& expected_request,
+      size_t expected_index) {
+    const std::vector<DeviceIdPair>& advertisement_generation_failures =
+        fake_delegate_->advertisement_generation_failures();
+
+    EXPECT_EQ(expected_index + 1, advertisement_generation_failures.size());
+    EXPECT_EQ(expected_request, advertisement_generation_failures.back());
+
+    highest_failed_advertisement_delegate_index_verified_ = expected_index;
   }
 
   size_t GetNumAdvertisementsCreated() {
@@ -211,8 +238,12 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
     return fake_timer_factory_->num_instances_created();
   }
 
-  size_t GetNumDelegateCallbacks() {
-    return fake_delegate_->ended_advertisements().size();
+  size_t GetNumSlotEndedDelegateCallbacks() {
+    return fake_delegate_->slot_ended_events().size();
+  }
+
+  size_t GetNumFailedAdvertisementDelegateCallbacks() {
+    return fake_delegate_->advertisement_generation_failures().size();
   }
 
   void VerifyAdvertisementStopped(
@@ -224,9 +255,15 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
       advertisement->InvokeStopCallback();
   }
 
+  base::TestSimpleTaskRunner* test_runner() { return test_runner_.get(); }
   BleAdvertiser* advertiser() { return advertiser_.get(); }
+  FakeBleServiceDataHelper* fake_ble_service_data_helper() {
+    return fake_ble_service_data_helper_.get();
+  }
 
  private:
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   std::unique_ptr<FakeBleAdvertiserDelegate> fake_delegate_;
   std::unique_ptr<FakeBleServiceDataHelper> fake_ble_service_data_helper_;
   std::unique_ptr<FakeBleSynchronizer> fake_ble_synchronizer_;
@@ -237,7 +274,10 @@ class SecureChannelBleAdvertiserImplTest : public testing::Test {
 
   base::UnguessableToken last_fetched_advertisement_id_;
   base::UnguessableToken last_fetched_timer_id_;
-  base::Optional<size_t> highest_delegate_index_verified_;
+  base::Optional<size_t> highest_slot_ended_delegate_index_verified_;
+  base::Optional<size_t> highest_failed_advertisement_delegate_index_verified_;
+
+  scoped_refptr<base::TestSimpleTaskRunner> test_runner_;
 
   std::unique_ptr<BleAdvertiser> advertiser_;
 
@@ -258,7 +298,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest, OneAdvertisement_TimerFires) {
     timer = GetLastCreatedTimer();
 
     timer->Fire();
-    VerifyDelegateNotified(
+    VerifyDelegateNotifiedOnAdvertisingSlotEnded(
         pair, false /* expected_replaced_by_higher_priority_advertisement */,
         i /* expected_index */);
     VerifyAdvertisementStopped(advertisement,
@@ -277,15 +317,15 @@ TEST_F(SecureChannelBleAdvertiserImplTest, OneAdvertisement_UpdatePriority) {
       GetLastCreatedAdvertisement(pair);
 
   // No delegate callbacks yet.
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
 
   // Updating the priority should not trigger any delegate callbacks.
   advertiser()->UpdateAdvertisementRequestPriority(pair,
                                                    ConnectionPriority::kMedium);
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
   advertiser()->UpdateAdvertisementRequestPriority(pair,
                                                    ConnectionPriority::kHigh);
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
 
   advertiser()->RemoveAdvertisementRequest(pair);
   advertisement->InvokeStopCallback();
@@ -303,7 +343,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   // Fire the timer and verify that the advertisement was stopped, but do not
   // complete the asynchronous stopping flow.
   timer->Fire();
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair, false /* expected_replaced_by_higher_priority_advertisement */,
       0u /* expected_index */);
   VerifyAdvertisementStopped(advertisement, false /* should_finish_stopping */);
@@ -314,7 +354,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
 
   // Simulate another timeout before the first advertisement has stopped.
   timer->Fire();
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair, false /* expected_replaced_by_higher_priority_advertisement */,
       1u /* expected_index */);
   VerifyAdvertisementStopped(advertisement, false /* should_finish_stopping */);
@@ -341,7 +381,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest, TwoAdvertisements_TimerFires) {
   const size_t kNumTimerFires = 5;
   for (size_t i = 0; i < kNumTimerFires; ++i) {
     timer_1->Fire();
-    VerifyDelegateNotified(
+    VerifyDelegateNotifiedOnAdvertisingSlotEnded(
         pair_1, false /* expected_replaced_by_higher_priority_advertisement */,
         2u * i /* expected_index */);
     VerifyAdvertisementStopped(advertisement_1,
@@ -350,7 +390,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest, TwoAdvertisements_TimerFires) {
     timer_1 = GetLastCreatedTimer();
 
     timer_2->Fire();
-    VerifyDelegateNotified(
+    VerifyDelegateNotifiedOnAdvertisingSlotEnded(
         pair_2, false /* expected_replaced_by_higher_priority_advertisement */,
         2u * i + 1u /* expected_index */);
     VerifyAdvertisementStopped(advertisement_2,
@@ -379,21 +419,21 @@ TEST_F(SecureChannelBleAdvertiserImplTest, TwoAdvertisements_UpdatePriority) {
       GetLastCreatedAdvertisement(pair_2);
 
   // No delegate callbacks yet.
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
 
   // Updating the priority should not trigger any delegate callbacks.
   advertiser()->UpdateAdvertisementRequestPriority(pair_1,
                                                    ConnectionPriority::kMedium);
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
   advertiser()->UpdateAdvertisementRequestPriority(pair_1,
                                                    ConnectionPriority::kHigh);
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
   advertiser()->UpdateAdvertisementRequestPriority(pair_2,
                                                    ConnectionPriority::kMedium);
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
   advertiser()->UpdateAdvertisementRequestPriority(pair_2,
                                                    ConnectionPriority::kHigh);
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
 
   advertiser()->RemoveAdvertisementRequest(pair_1);
   advertisement_1->InvokeStopCallback();
@@ -420,7 +460,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   // Fire the timer and verify that the advertisement was stopped, but do not
   // complete the asynchronous stopping flow.
   timer_1->Fire();
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair_1, false /* expected_replaced_by_higher_priority_advertisement */,
       0u /* expected_index */);
   VerifyAdvertisementStopped(advertisement_1,
@@ -432,7 +472,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
 
   // Same thing for pair_2.
   timer_2->Fire();
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair_2, false /* expected_replaced_by_higher_priority_advertisement */,
       1u /* expected_index */);
   VerifyAdvertisementStopped(advertisement_2,
@@ -471,7 +511,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   AddAdvertisementRequest(pair_3, ConnectionPriority::kLow);
   EXPECT_EQ(2u, GetNumAdvertisementsCreated());
   EXPECT_EQ(2u, GetNumTimersCreated());
-  EXPECT_EQ(0u, GetNumDelegateCallbacks());
+  EXPECT_EQ(0u, GetNumSlotEndedDelegateCallbacks());
 
   // Now, update pair_3's priority to medium. This should trigger pair_3 to take
   // pair_1's spot in the active advertisements list.
@@ -483,7 +523,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   EXPECT_EQ(2u, GetNumAdvertisementsCreated());
   EXPECT_EQ(3u, GetNumTimersCreated());
   timer_1 = GetLastCreatedTimer();
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair_1, true /* expected_replaced_by_higher_priority_advertisement */,
       0u /* expected_index */);
 
@@ -501,7 +541,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   // Simulate pair_2's timeslot ending; since pair_1 is also low-priority, it
   // is expected to take pair_2's place.
   timer_2->Fire();
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair_2, false /* expected_replaced_by_higher_priority_advertisement */,
       1u /* expected_index */);
   VerifyAdvertisementStopped(advertisement_2,
@@ -521,7 +561,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   AddAdvertisementRequest(pair_4, ConnectionPriority::kHigh);
   EXPECT_EQ(4u, GetNumAdvertisementsCreated());
   EXPECT_EQ(5u, GetNumTimersCreated());
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair_1, true /* expected_replaced_by_higher_priority_advertisement */,
       2u /* expected_index */);
   timer_2 = GetLastCreatedTimer();
@@ -541,7 +581,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
                                                    ConnectionPriority::kMedium);
   EXPECT_EQ(5u, GetNumAdvertisementsCreated());
   EXPECT_EQ(5u, GetNumTimersCreated());
-  EXPECT_EQ(3u, GetNumDelegateCallbacks());
+  EXPECT_EQ(3u, GetNumSlotEndedDelegateCallbacks());
 
   // Status: pair_1 - medium
   //         pair_2 - low
@@ -553,7 +593,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   advertiser()->RemoveAdvertisementRequest(pair_4);
   EXPECT_EQ(5u, GetNumAdvertisementsCreated());
   EXPECT_EQ(6u, GetNumTimersCreated());
-  EXPECT_EQ(3u, GetNumDelegateCallbacks());
+  EXPECT_EQ(3u, GetNumSlotEndedDelegateCallbacks());
   timer_2 = GetLastCreatedTimer();
   advertisement_2->InvokeStopCallback();
   EXPECT_EQ(6u, GetNumAdvertisementsCreated());
@@ -568,7 +608,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
                                                    ConnectionPriority::kHigh);
   EXPECT_EQ(6u, GetNumAdvertisementsCreated());
   EXPECT_EQ(6u, GetNumTimersCreated());
-  EXPECT_EQ(3u, GetNumDelegateCallbacks());
+  EXPECT_EQ(3u, GetNumSlotEndedDelegateCallbacks());
 
   // Status: pair_1 - medium (active, slot 2)
   //         pair_2 - low
@@ -577,7 +617,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   // Simulate pair_1's timeslot ending; since there are not pending requets with
   // a medium-or-higher priority, pair_1 should start up again.
   timer_2->Fire();
-  VerifyDelegateNotified(
+  VerifyDelegateNotifiedOnAdvertisingSlotEnded(
       pair_1, false /* expected_replaced_by_higher_priority_advertisement */,
       3u /* expected_index */);
   VerifyAdvertisementStopped(advertisement_2,
@@ -595,7 +635,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   advertiser()->RemoveAdvertisementRequest(pair_3);
   EXPECT_EQ(7u, GetNumAdvertisementsCreated());
   EXPECT_EQ(8u, GetNumTimersCreated());
-  EXPECT_EQ(4u, GetNumDelegateCallbacks());
+  EXPECT_EQ(4u, GetNumSlotEndedDelegateCallbacks());
   timer_1 = GetLastCreatedTimer();
   advertisement_1->InvokeStopCallback();
   EXPECT_EQ(8u, GetNumAdvertisementsCreated());
@@ -609,7 +649,7 @@ TEST_F(SecureChannelBleAdvertiserImplTest,
   advertiser()->RemoveAdvertisementRequest(pair_2);
   EXPECT_EQ(8u, GetNumAdvertisementsCreated());
   EXPECT_EQ(8u, GetNumTimersCreated());
-  EXPECT_EQ(4u, GetNumDelegateCallbacks());
+  EXPECT_EQ(4u, GetNumSlotEndedDelegateCallbacks());
   advertisement_1->InvokeStopCallback();
   EXPECT_EQ(8u, GetNumAdvertisementsCreated());
 
@@ -629,6 +669,79 @@ TEST_F(SecureChannelBleAdvertiserImplTest, EdgeCases) {
   EXPECT_DCHECK_DEATH(advertiser()->UpdateAdvertisementRequestPriority(
       pair, ConnectionPriority::kMedium));
   EXPECT_DCHECK_DEATH(advertiser()->RemoveAdvertisementRequest(pair));
+}
+
+TEST_F(SecureChannelBleAdvertiserImplTest, FailToGenerateAdvertisement_Simple) {
+  DeviceIdPair pair("remoteDeviceId", "localDeviceId");
+
+  AddAdvertisementRequest(pair, ConnectionPriority::kLow,
+                          false /* should_advertisement_succeed */);
+
+  test_runner()->RunUntilIdle();
+  EXPECT_EQ(0u, GetNumAdvertisementsCreated());
+  EXPECT_EQ(1u, GetNumTimersCreated());
+  EXPECT_EQ(1u, GetNumFailedAdvertisementDelegateCallbacks());
+  VerifyDelegateNotifiedOnFailureToGenerateAdvertisement(
+      pair, 0u /* expected_index */);
+}
+
+TEST_F(SecureChannelBleAdvertiserImplTest,
+       FailToGenerateAdvertisement_RerequestBeforeCallbackExecutes) {
+  DeviceIdPair pair("remoteDeviceId", "localDeviceId");
+
+  AddAdvertisementRequest(pair, ConnectionPriority::kLow,
+                          false /* should_advertisement_succeed */);
+  AddAdvertisementRequest(pair, ConnectionPriority::kLow,
+                          true /* should_advertisement_succeed */);
+  FakeErrorTolerantBleAdvertisement* advertisement =
+      GetLastCreatedAdvertisement(pair);
+
+  // Since another (valid) AddAdvertisementRequest() executes before the failure
+  // delegate callback could go through, the delegate is never called.
+  test_runner()->RunUntilIdle();
+  EXPECT_EQ(1u, GetNumAdvertisementsCreated());
+  EXPECT_EQ(2u, GetNumTimersCreated());
+  EXPECT_EQ(0u, GetNumFailedAdvertisementDelegateCallbacks());
+
+  advertiser()->RemoveAdvertisementRequest(pair);
+  advertisement->InvokeStopCallback();
+}
+
+TEST_F(SecureChannelBleAdvertiserImplTest,
+       FailToGenerateAdvertisement_UpdateBeforeCallbackExecutes) {
+  DeviceIdPair pair("remoteDeviceId", "localDeviceId");
+
+  AddAdvertisementRequest(pair, ConnectionPriority::kLow,
+                          false /* should_advertisement_succeed */);
+  advertiser()->UpdateAdvertisementRequestPriority(pair,
+                                                   ConnectionPriority::kMedium);
+
+  // Should not DCHECK since UpdateAdvertisementRequestPriority() should have
+  // been a no-op.
+  advertiser()->RemoveAdvertisementRequest(pair);
+
+  // Should not notify the delegate since RemoveAdvertisementRequest() was
+  // called.
+  test_runner()->RunUntilIdle();
+  EXPECT_EQ(0u, GetNumAdvertisementsCreated());
+  EXPECT_EQ(1u, GetNumTimersCreated());
+  EXPECT_EQ(0u, GetNumFailedAdvertisementDelegateCallbacks());
+}
+
+TEST_F(SecureChannelBleAdvertiserImplTest,
+       FailToGenerateAdvertisement_RemoveAgainBeforeCallbackExecutes) {
+  DeviceIdPair pair("remoteDeviceId", "localDeviceId");
+
+  AddAdvertisementRequest(pair, ConnectionPriority::kLow,
+                          false /* should_advertisement_succeed */);
+  advertiser()->RemoveAdvertisementRequest(pair);
+
+  // Should not notify the delegate since RemoveAdvertisementRequest() was
+  // called.
+  test_runner()->RunUntilIdle();
+  EXPECT_EQ(0u, GetNumAdvertisementsCreated());
+  EXPECT_EQ(1u, GetNumTimersCreated());
+  EXPECT_EQ(0u, GetNumFailedAdvertisementDelegateCallbacks());
 }
 
 }  // namespace secure_channel
