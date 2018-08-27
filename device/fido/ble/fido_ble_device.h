@@ -80,6 +80,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
   void StopTimeout();
   void OnTimeout();
 
+  void OnBleResponseReceived(DeviceCallback callback,
+                             base::Optional<FidoBleFrame> frame);
+  void ProcessBleDeviceError(base::span<const uint8_t> data);
+
   base::OneShotTimer timer_;
 
   std::unique_ptr<FidoBleConnection> connection_;

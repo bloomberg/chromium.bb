@@ -33,8 +33,21 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   using DeviceCallback =
       base::OnceCallback<void(base::Optional<std::vector<uint8_t>>)>;
 
-  // Internal state machine states.
-  enum class State { kInit, kConnected, kBusy, kReady, kDeviceError };
+  // Internal state machine states. kMsgError represents a state where error
+  // has been received from the connected device because an
+  // unexpected/incorrectly formatted request was sent from the client. Devices
+  // in this state can be recovered by re-sending a well-formed command. On the
+  // other hand, kDeviceError represents a state where error occurred due to
+  // connection failure/unknown reasons and is considered an unrecoverable
+  // error.
+  enum class State {
+    kInit,
+    kConnected,
+    kBusy,
+    kReady,
+    kMsgError,
+    kDeviceError,
+  };
 
   FidoDevice();
   virtual ~FidoDevice();

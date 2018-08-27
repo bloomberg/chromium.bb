@@ -40,7 +40,7 @@ class FidoBleTransaction {
 
   void StartTimeout();
   void StopTimeout();
-  void OnError();
+  void OnError(base::Optional<FidoBleFrame> response_frame);
 
   FidoBleConnection* connection_;
   uint16_t control_point_length_;
