@@ -683,13 +683,7 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
   TRACE_EVENT1("audio", "WASAPIAudioInputStream::PullCaptureDataAndPushToSink",
                "sample rate", input_format_.nSamplesPerSec);
 
-  // Used for storing information when we need to accumulate before checking for
-  // glitches. We don't accumulate over loop edges (i.e. when we exit this
-  // function).
   UINT64 last_device_position = 0;
-  UINT32 accumulated_frames = 0;
-  DWORD accumulated_discontinuity_flag = 0;
-  UINT64 accumulated_capture_time_100ns = 0;
 
   // Pull data from the capture endpoint buffer until it's empty or an error
   // occurs.
@@ -711,23 +705,8 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     HRESULT hr =
         audio_capture_client_->GetBuffer(&data_ptr, &num_frames_to_read, &flags,
                                          &device_position, &capture_time_100ns);
-    accumulated_frames += num_frames_to_read;
-    accumulated_discontinuity_flag |=
-        flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;
-    // Store the first capture time in a sequence of accumulated buffers.
-    if (accumulated_capture_time_100ns == 0)
-      accumulated_capture_time_100ns = capture_time_100ns;
-
-    if (hr == AUDCLNT_S_BUFFER_EMPTY) {
-      if (accumulated_frames > 0) {
-        ReportDelayStatsAndUpdateGlitchCount(
-            accumulated_frames, accumulated_discontinuity_flag,
-            last_device_position,
-            base::TimeTicks() + CoreAudioUtil::ReferenceTimeToTimeDelta(
-                                    accumulated_capture_time_100ns));
-      }
+    if (hr == AUDCLNT_S_BUFFER_EMPTY)
       break;
-    }
 
     // TODO(grunell): Should we handle different errors explicitly? Perhaps exit
     // by setting |error = true|. What are the assumptions here that makes us
@@ -738,15 +717,20 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
       break;
     }
 
+    // If the device position has changed, we assume this data belongs to a new
+    // chunk, so we report delay and glitch stats and update the last and next
+    // expected device positions.
+    // If the device position has not changed we assume this data belongs to the
+    // previous chunk, and only update the expected next device position.
     if (device_position != last_device_position) {
       ReportDelayStatsAndUpdateGlitchCount(
-          accumulated_frames, accumulated_discontinuity_flag, device_position,
-          base::TimeTicks() + CoreAudioUtil::ReferenceTimeToTimeDelta(
-                                  accumulated_capture_time_100ns));
+          flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY, device_position,
+          base::TimeTicks() +
+              CoreAudioUtil::ReferenceTimeToTimeDelta(capture_time_100ns));
       last_device_position = device_position;
-      accumulated_frames = 0;
-      accumulated_discontinuity_flag = false;
-      accumulated_capture_time_100ns = 0;
+      expected_next_device_position_ = device_position + num_frames_to_read;
+    } else {
+      expected_next_device_position_ += num_frames_to_read;
     }
 
     // TODO(dalecurtis, olka, grunell): Is this ever false? If it is, should we
@@ -1568,7 +1552,6 @@ double WASAPIAudioInputStream::ProvideInput(AudioBus* audio_bus,
 }
 
 void WASAPIAudioInputStream::ReportDelayStatsAndUpdateGlitchCount(
-    UINT32 frames_in_buffer,
     bool discontinuity_flagged,
     UINT64 device_position,
     base::TimeTicks capture_time) {
@@ -1602,8 +1585,6 @@ void WASAPIAudioInputStream::ReportDelayStatsAndUpdateGlitchCount(
       ++total_concurrent_glitch_and_discontinuities_;
     }
   }
-
-  expected_next_device_position_ = device_position + frames_in_buffer;
 }
 
 void WASAPIAudioInputStream::ReportAndResetGlitchStats() {
