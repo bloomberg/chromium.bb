@@ -56,7 +56,7 @@ struct RequestArgs {
 struct RawAllocatorDumpEdge {
   uint64 source_id;
   uint64 target_id;
-  int64 importance;
+  int32 importance;
   bool overridable;
 };
 

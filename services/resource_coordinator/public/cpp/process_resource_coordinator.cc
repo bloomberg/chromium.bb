@@ -28,7 +28,7 @@ void ProcessResourceCoordinator::SetLaunchTime(base::Time launch_time) {
   service_->SetLaunchTime(launch_time);
 }
 
-void ProcessResourceCoordinator::SetPID(int64_t pid) {
+void ProcessResourceCoordinator::SetPID(base::ProcessId pid) {
   if (!service_)
     return;
   service_->SetPID(pid);

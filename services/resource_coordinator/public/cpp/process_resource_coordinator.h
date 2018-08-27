@@ -6,6 +6,7 @@
 #define SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_PROCESS_RESOURCE_COORDINATOR_H_
 
 #include "base/memory/weak_ptr.h"
+#include "base/process/process_handle.h"
 #include "base/threading/thread_checker.h"
 #include "services/resource_coordinator/public/cpp/frame_resource_coordinator.h"
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
@@ -23,7 +24,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ProcessResourceCoordinator
 
   void SetCPUUsage(double usage);
   void SetLaunchTime(base::Time launch_time);
-  void SetPID(int64_t pid);
+  void SetPID(base::ProcessId pid);
 
   void AddFrame(const FrameResourceCoordinator& frame);
   void RemoveFrame(const FrameResourceCoordinator& frame);

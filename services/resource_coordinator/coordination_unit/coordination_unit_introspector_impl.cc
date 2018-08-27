@@ -33,7 +33,7 @@ void CoordinationUnitIntrospectorImpl::GetProcessToURLMap(
       continue;
 
     mojom::ProcessInfoPtr process_info(mojom::ProcessInfo::New());
-    process_info->pid = pid;
+    process_info->pid = base::checked_cast<base::ProcessId>(pid);
     DCHECK_NE(base::kNullProcessId, process_info->pid);
 
     int64_t launch_time;

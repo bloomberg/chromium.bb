@@ -67,7 +67,7 @@ struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MOJOM) StructTraits<
           edge) {
     return edge.target.ToUint64();
   }
-  static int64_t importance(
+  static int importance(
       const base::trace_event::ProcessMemoryDump::MemoryAllocatorDumpEdge&
           edge) {
     return edge.importance;

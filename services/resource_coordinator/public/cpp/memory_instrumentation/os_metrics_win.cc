@@ -9,6 +9,7 @@
 #include <psapi.h>
 #include <tchar.h>
 
+#include <base/numerics/safe_conversions.h>
 #include <base/strings/stringprintf.h>
 #include <base/strings/sys_string_conversions.h>
 #include <base/win/pe_image.h>
@@ -44,7 +45,8 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
                              reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc),
                              sizeof(pmc))) {
     dump->platform_private_footprint->private_bytes = pmc.PrivateUsage;
-    dump->resident_set_kb = pmc.WorkingSetSize / 1024;
+    dump->resident_set_kb =
+        base::saturated_cast<uint32_t>(pmc.WorkingSetSize / 1024);
   }
   return true;
 }
