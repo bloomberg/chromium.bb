@@ -4649,6 +4649,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="On Battery"/>
 </enum>
 
+<enum name="BooleanOriginHeaderSameAsRequestOrigin">
+  <int value="0" label="Headers differ"/>
+  <int value="1" label="Headers match"/>
+</enum>
+
 <enum name="BooleanOrphan">
   <int value="0" label="Non-orphan"/>
   <int value="1" label="Orphan"/>

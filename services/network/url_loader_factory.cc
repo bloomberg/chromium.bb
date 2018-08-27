@@ -5,9 +5,12 @@
 #include "services/network/url_loader_factory.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "services/network/cors/cors_url_loader_factory.h"
 #include "services/network/network_context.h"
 #include "services/network/network_service.h"
@@ -15,6 +18,8 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/url_loader.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace network {
 
@@ -64,6 +69,19 @@ void URLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  std::string origin_string;
+  bool has_origin = url_request.headers.GetHeader("Origin", &origin_string) &&
+                    origin_string != "null";
+  base::Optional<url::Origin> request_initiator = url_request.request_initiator;
+  if (has_origin && request_initiator.has_value()) {
+    url::Origin origin = url::Origin::Create(GURL(origin_string));
+    bool origin_head_same_as_request_origin =
+        request_initiator.value().IsSameOriginWith(origin);
+    UMA_HISTOGRAM_BOOLEAN(
+        "NetworkService.URLLoaderFactory.OriginHeaderSameAsRequestOrigin",
+        origin_head_same_as_request_origin);
+  }
+
   bool report_raw_headers = false;
   if (url_request.report_raw_headers) {
     const NetworkService* service = context_->network_service();
