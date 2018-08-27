@@ -653,9 +653,9 @@ WebContents* PrintPreviewHandler::preview_web_contents() const {
 }
 
 PrefService* PrintPreviewHandler::GetPrefs() const {
-  return Profile::FromBrowserContext(
-             preview_web_contents()->GetBrowserContext())
-      ->GetPrefs();
+  auto* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  DCHECK(prefs);
+  return prefs;
 }
 
 PrintPreviewUI* PrintPreviewHandler::print_preview_ui() const {
@@ -961,9 +961,7 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
   CHECK(!callback_id.empty());
   CHECK(args->GetBoolean(1, &add_account));
 
-  Profile* profile = Profile::FromBrowserContext(
-      preview_web_contents()->GetBrowserContext());
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+  chrome::ScopedTabbedBrowserDisplayer displayer(Profile::FromWebUI(web_ui()));
   print_dialog_cloud::CreateCloudPrintSigninTab(
       displayer.browser(), add_account,
       base::Bind(&PrintPreviewHandler::OnSigninComplete,
@@ -1094,26 +1092,20 @@ void PrintPreviewHandler::SendInitialSettings(
   }
 
   base::Optional<bool> policy = GetHeaderFooterPolicy(prefs);
-  if (policy) {
+  if (policy)
     initial_settings.SetBoolean(kForceEnableHeaderFooter, policy.value());
-  }
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   initial_settings.SetBoolean(kIsInKioskAutoPrintMode,
                               cmdline->HasSwitch(switches::kKioskModePrinting));
   initial_settings.SetBoolean(kIsInAppKioskMode,
                               chrome::IsRunningInForcedAppMode());
-  bool set_rules = false;
-  if (prefs) {
-    const std::string rules_str =
-        prefs->GetString(prefs::kPrintPreviewDefaultDestinationSelectionRules);
-    if (!rules_str.empty()) {
-      initial_settings.SetString(kDefaultDestinationSelectionRules, rules_str);
-      set_rules = true;
-    }
-  }
-  if (!set_rules) {
+  const std::string rules_str =
+      prefs->GetString(prefs::kPrintPreviewDefaultDestinationSelectionRules);
+  if (rules_str.empty()) {
     initial_settings.SetKey(kDefaultDestinationSelectionRules, base::Value());
+  } else {
+    initial_settings.SetString(kDefaultDestinationSelectionRules, rules_str);
   }
 
   GetNumberFormatAndMeasurementSystem(&initial_settings);
