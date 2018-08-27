@@ -234,20 +234,23 @@ const char* BrokerFilePermission::GetErrorMessageForTests() {
   return "Invalid BrokerFilePermission";
 }
 
-BrokerFilePermission::BrokerFilePermission(const std::string& path,
-                                           bool recursive,
-                                           bool temporary_only,
-                                           bool allow_read,
-                                           bool allow_write,
-                                           bool allow_create,
-                                           bool allow_stat_with_intermediates)
+BrokerFilePermission::BrokerFilePermission(
+    const std::string& path,
+    RecursionOption recurse_opt,
+    PersistenceOption persist_opt,
+    ReadPermission read_perm,
+    WritePermission write_perm,
+    CreatePermission create_perm,
+    StatWithIntermediatesPermission stat_perm)
     : path_(path),
-      recursive_(recursive),
-      temporary_only_(temporary_only),
-      allow_read_(allow_read),
-      allow_write_(allow_write),
-      allow_create_(allow_create),
-      allow_stat_with_intermediates_(allow_stat_with_intermediates) {
+      recursive_(recurse_opt == RecursionOption::kRecursive),
+      temporary_only_(persist_opt == PersistenceOption::kTemporaryOnly),
+      allow_read_(read_perm == ReadPermission::kAllowRead),
+      allow_write_(write_perm == WritePermission::kAllowWrite),
+      allow_create_(create_perm == CreatePermission::kAllowCreate),
+      allow_stat_with_intermediates_(
+          stat_perm ==
+          StatWithIntermediatesPermission::kAllowStatWithIntermediates) {
   // Must have enough length for a '/'
   CHECK(path_.length() > 0) << GetErrorMessageForTests();
 
@@ -256,7 +259,7 @@ BrokerFilePermission::BrokerFilePermission(const std::string& path,
 
   // Don't allow temporary creation without create permission
   if (temporary_only_)
-    CHECK(allow_create) << GetErrorMessageForTests();
+    CHECK(allow_create_) << GetErrorMessageForTests();
 
   // Recursive paths must have a trailing slash, absolutes must not.
   const char last_char = *(path_.rbegin());

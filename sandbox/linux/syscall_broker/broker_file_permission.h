@@ -13,6 +13,16 @@
 namespace sandbox {
 namespace syscall_broker {
 
+enum class RecursionOption { kNonRecursive = 0, kRecursive };
+enum class PersistenceOption { kPermanent = 0, kTemporaryOnly };
+enum class ReadPermission { kBlockRead = 0, kAllowRead };
+enum class WritePermission { kBlockWrite = 0, kAllowWrite };
+enum class CreatePermission { kBlockCreate = 0, kAllowCreate };
+enum class StatWithIntermediatesPermission {
+  kBlockStatWithIntermediates = 0,
+  kAllowStatWithIntermediates
+};
+
 // BrokerFilePermission defines a path for whitelisting.
 // Pick the correct static factory method to create a permission.
 // CheckOpen and CheckAccess are async signal safe.
@@ -25,45 +35,81 @@ class SANDBOX_EXPORT BrokerFilePermission {
   BrokerFilePermission& operator=(const BrokerFilePermission&) = default;
 
   static BrokerFilePermission ReadOnly(const std::string& path) {
-    return BrokerFilePermission(path, false, false, true, false, false, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kNonRecursive, PersistenceOption::kPermanent,
+        ReadPermission::kAllowRead, WritePermission::kBlockWrite,
+        CreatePermission::kBlockCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   static BrokerFilePermission ReadOnlyRecursive(const std::string& path) {
-    return BrokerFilePermission(path, true, false, true, false, false, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kRecursive, PersistenceOption::kPermanent,
+        ReadPermission::kAllowRead, WritePermission::kBlockWrite,
+        CreatePermission::kBlockCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   static BrokerFilePermission WriteOnly(const std::string& path) {
-    return BrokerFilePermission(path, false, false, false, true, false, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kNonRecursive, PersistenceOption::kPermanent,
+        ReadPermission::kBlockRead, WritePermission::kAllowWrite,
+        CreatePermission::kBlockCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   static BrokerFilePermission ReadWrite(const std::string& path) {
-    return BrokerFilePermission(path, false, false, true, true, false, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kNonRecursive, PersistenceOption::kPermanent,
+        ReadPermission::kAllowRead, WritePermission::kAllowWrite,
+        CreatePermission::kBlockCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   static BrokerFilePermission ReadWriteCreate(const std::string& path) {
-    return BrokerFilePermission(path, false, false, true, true, true, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kNonRecursive, PersistenceOption::kPermanent,
+        ReadPermission::kAllowRead, WritePermission::kAllowWrite,
+        CreatePermission::kAllowCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   static BrokerFilePermission ReadWriteCreateRecursive(
       const std::string& path) {
-    return BrokerFilePermission(path, true, false, true, true, true, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kRecursive, PersistenceOption::kPermanent,
+        ReadPermission::kAllowRead, WritePermission::kAllowWrite,
+        CreatePermission::kAllowCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   // Temporary files must always be newly created and do not confer rights to
   // use pre-existing files of the same name.
   static BrokerFilePermission ReadWriteCreateTemporary(
       const std::string& path) {
-    return BrokerFilePermission(path, false, true, true, true, true, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kNonRecursive, PersistenceOption::kTemporaryOnly,
+        ReadPermission::kAllowRead, WritePermission::kAllowWrite,
+        CreatePermission::kAllowCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   static BrokerFilePermission ReadWriteCreateTemporaryRecursive(
       const std::string& path) {
-    return BrokerFilePermission(path, true, true, true, true, true, false);
+    return BrokerFilePermission(
+        path, RecursionOption::kRecursive, PersistenceOption::kTemporaryOnly,
+        ReadPermission::kAllowRead, WritePermission::kAllowWrite,
+        CreatePermission::kAllowCreate,
+        StatWithIntermediatesPermission::kBlockStatWithIntermediates);
   }
 
   static BrokerFilePermission StatOnlyWithIntermediateDirs(
       const std::string& path) {
-    return BrokerFilePermission(path, false, false, false, false, false, true);
+    return BrokerFilePermission(
+        path, RecursionOption::kNonRecursive, PersistenceOption::kPermanent,
+        ReadPermission::kBlockRead, WritePermission::kBlockWrite,
+        CreatePermission::kBlockCreate,
+        StatWithIntermediatesPermission::kAllowStatWithIntermediates);
   }
 
   // Returns true if |requested_filename| is allowed to be accessed
@@ -109,12 +155,12 @@ class SANDBOX_EXPORT BrokerFilePermission {
 
   // NOTE: Validates the permission and dies if invalid!
   BrokerFilePermission(const std::string& path,
-                       bool recursive,
-                       bool temporary_only,
-                       bool allow_read,
-                       bool allow_write,
-                       bool allow_create,
-                       bool allow_stat_with_intermediates);
+                       RecursionOption recurse_opt,
+                       PersistenceOption persist_opt,
+                       ReadPermission read_perm,
+                       WritePermission write_perm,
+                       CreatePermission create_perm,
+                       StatWithIntermediatesPermission stat_perm);
 
   // ValidatePath checks |path| and returns true if these conditions are met
   // * Greater than 0 length
