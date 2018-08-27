@@ -157,7 +157,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
   EOverflow MainAxisOverflowForChild(const LayoutBox& child) const;
   EOverflow CrossAxisOverflowForChild(const LayoutBox& child) const;
   void CacheChildMainSize(const LayoutBox& child);
-  bool ShouldForceLayoutForNGChild(const LayoutBlockFlow& child) const;
+  bool CanAvoidLayoutForNGChild(const LayoutBox& child) const;
 
   void LayoutFlexItems(bool relayout_children, SubtreeLayoutScope&);
   LayoutUnit AutoMarginOffsetInMainAxis(const Vector<FlexItem>&,

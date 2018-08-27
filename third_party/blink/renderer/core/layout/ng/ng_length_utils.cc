@@ -461,6 +461,7 @@ LayoutUnit ComputeBlockSizeForFragment(
     // All handled by the table layout code or not applicable.
     return content_size;
   }
+
   LayoutUnit extent = ResolveBlockLength(
       constraint_space, style, style.LogicalHeight(), content_size,
       LengthResolveType::kContentSize, LengthResolvePhase::kLayout);
@@ -886,6 +887,19 @@ NGBoxStrut CalculateBorderScrollbarPadding(
 NGLogicalSize CalculateBorderBoxSize(const NGConstraintSpace& constraint_space,
                                      const NGBlockNode& node,
                                      LayoutUnit block_content_size) {
+  // If we have a percentage size, we need to set the
+  // HasPercentHeightDescendants flag correctly so that flexboz knows it may
+  // need to redo layout and can also do some performance optimizations.
+  if (node.Style().LogicalHeight().IsPercentOrCalc() ||
+      node.Style().LogicalMinHeight().IsPercentOrCalc() ||
+      node.Style().LogicalMaxHeight().IsPercentOrCalc() ||
+      (node.GetLayoutBox()->IsFlexItem() &&
+       node.Style().FlexBasis().IsPercentOrCalc())) {
+    // This call has the side-effect of setting HasPercentHeightDescendants
+    // correctly.
+    node.GetLayoutBox()->ComputePercentageLogicalHeight(Length(0, kPercent));
+  }
+
   return NGLogicalSize(ComputeInlineSizeForFragment(constraint_space, node),
                        ComputeBlockSizeForFragment(
                            constraint_space, node.Style(), block_content_size));

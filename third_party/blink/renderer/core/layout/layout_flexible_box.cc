@@ -827,28 +827,31 @@ void LayoutFlexibleBox::ClearCachedMainSizeForChild(const LayoutBox& child) {
   intrinsic_size_along_main_axis_.erase(&child);
 }
 
-bool LayoutFlexibleBox::ShouldForceLayoutForNGChild(
-    const LayoutBlockFlow& child) const {
+bool LayoutFlexibleBox::CanAvoidLayoutForNGChild(
+    const LayoutBox& child_box) const {
+  if (!child_box.IsLayoutNGMixin())
+    return false;
+  const LayoutBlockFlow& child(ToLayoutBlockFlow(child_box));
   // If the last layout was done with a different override size,
   // or different definite-ness, we need to force-relayout so
   // that percentage sizes are resolved correctly.
   const NGConstraintSpace* old_space = child.CachedConstraintSpace();
   if (!old_space)
-    return true;
+    return false;
   if (old_space->IsFixedSizeInline() != child.HasOverrideLogicalWidth())
-    return true;
+    return false;
   if (old_space->IsFixedSizeBlock() != child.HasOverrideLogicalHeight())
-    return true;
+    return false;
   if (old_space->FixedSizeBlockIsDefinite() !=
       UseOverrideLogicalHeightForPerentageResolution(child))
-    return true;
+    return false;
   if (child.HasOverrideLogicalWidth() &&
       old_space->AvailableSize().inline_size != child.OverrideLogicalWidth())
-    return true;
+    return false;
   if (child.HasOverrideLogicalHeight() &&
       old_space->AvailableSize().block_size != child.OverrideLogicalHeight())
-    return true;
-  return false;
+    return false;
+  return true;
 }
 
 DISABLE_CFI_PERF
@@ -1495,10 +1498,9 @@ void LayoutFlexibleBox::LayoutLineItems(FlexLine* current_line,
         relayout_children && !relaid_out_children_.Contains(child);
     // TODO(dgrogan): Broaden the NG part of this check once NG types other
     // than Mixin derivatives are cached.
-    if ((child->IsLayoutNGMixin() &&
-         ShouldForceLayoutForNGChild(ToLayoutBlockFlow(*child))) ||
-        (child->IsLayoutBlock() &&
-         ToLayoutBlock(*child).HasPercentHeightDescendants())) {
+    if (child->IsLayoutBlock() &&
+        ToLayoutBlock(*child).HasPercentHeightDescendants() &&
+        !CanAvoidLayoutForNGChild(*child)) {
       // Have to force another relayout even though the child is sized
       // correctly, because its descendants are not sized correctly yet. Our
       // previous layout of the child was done without an override height set.
@@ -1731,10 +1733,9 @@ void LayoutFlexibleBox::ApplyStretchAlignmentToChild(
     // FIXME: Can avoid laying out here in some cases. See
     // https://webkit.org/b/87905.
     bool child_needs_relayout = desired_logical_height != child.LogicalHeight();
-    if ((child.IsLayoutNGMixin() &&
-         ShouldForceLayoutForNGChild(ToLayoutBlockFlow(child))) ||
-        (child.IsLayoutBlock() &&
-         ToLayoutBlock(child).HasPercentHeightDescendants())) {
+    if (child.IsLayoutBlock() &&
+        ToLayoutBlock(child).HasPercentHeightDescendants() &&
+        !CanAvoidLayoutForNGChild(child)) {
       // Have to force another relayout even though the child is sized
       // correctly, because its descendants are not sized correctly yet. Our
       // previous layout of the child was done without an override height set.
