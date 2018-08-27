@@ -53,6 +53,7 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   // Enables the swipe control. Buttons will appea behind the view as user
   // slides it partially and it's kept open after the gesture.
   void EnableSwipeControl(int button_count);
+  float GetGestureAmount() const { return gesture_amount_; }
 
   // Moves slide back to the center position to closes the swipe control.
   // Effective only when swipe control is enabled by EnableSwipeControl().
