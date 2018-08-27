@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -211,14 +211,18 @@ base::Optional<SiteCharacteristicsProto>
 LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
     const url::Origin& origin) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AssertBlockingAllowed();
 
   if (!db_)
     return base::nullopt;
 
+  leveldb::Status s;
   std::string protobuf_value;
-  leveldb::Status s = db_->Get(
-      read_options_, SerializeOriginIntoDatabaseKey(origin), &protobuf_value);
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+    s = db_->Get(read_options_, SerializeOriginIntoDatabaseKey(origin),
+                 &protobuf_value);
+  }
   base::Optional<SiteCharacteristicsProto> site_characteristic_proto;
   if (s.ok()) {
     site_characteristic_proto = SiteCharacteristicsProto();
@@ -236,14 +240,18 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
         const url::Origin& origin,
         const SiteCharacteristicsProto& site_characteristic_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AssertBlockingAllowed();
 
   if (!db_)
     return;
 
-  leveldb::Status s =
-      db_->Put(write_options_, SerializeOriginIntoDatabaseKey(origin),
-               site_characteristic_proto.SerializeAsString());
+  leveldb::Status s;
+  {
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
+    s = db_->Put(write_options_, SerializeOriginIntoDatabaseKey(origin),
+                 site_characteristic_proto.SerializeAsString());
+  }
+
   if (!s.ok()) {
     DLOG(ERROR)
         << "Error while inserting an element in the site characteristics "
@@ -255,11 +263,11 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
     RemoveSiteCharacteristicsFromDB(
         const std::vector<url::Origin>& site_origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AssertBlockingAllowed();
 
   if (!db_)
     return;
 
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   leveldb::WriteBatch batch;
   for (const auto& iter : site_origins)
     batch.Delete(SerializeOriginIntoDatabaseKey(iter));
@@ -272,12 +280,12 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
 
 void LevelDBSiteCharacteristicsDatabase::AsyncHelper::ClearDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::AssertBlockingAllowed();
   if (!db_)
     return;
 
-  leveldb_env::Options options;
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   db_.reset();
+  leveldb_env::Options options;
   leveldb::Status status = leveldb::DestroyDB(db_path_.AsUTF8Unsafe(), options);
   if (status.ok()) {
     OpenOrCreateDatabaseImpl();
@@ -291,7 +299,7 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpeningType
 LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabaseImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!db_) << "Database already open";
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   OpeningType opening_type = OpeningType::kNewDb;
 
