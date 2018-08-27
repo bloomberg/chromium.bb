@@ -1899,6 +1899,8 @@ jumbo_split_static_library("ui") {
       "views/frame/browser_non_client_frame_view_ash.h",
       "views/frame/immersive_context_mus.cc",
       "views/frame/immersive_context_mus.h",
+      "views/frame/immersive_focus_watcher_mus.cc",
+      "views/frame/immersive_focus_watcher_mus.h",
       "views/frame/immersive_handler_factory_mus.cc",
       "views/frame/immersive_handler_factory_mus.h",
       "views/frame/immersive_mode_controller_ash.cc",
