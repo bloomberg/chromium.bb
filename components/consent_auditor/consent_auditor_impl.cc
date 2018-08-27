@@ -50,6 +50,8 @@ UserEventSpecifics::UserConsent::Feature FeatureToUserEventProtoEnum(
       return UserEventSpecifics::UserConsent::GOOGLE_LOCATION_SERVICE;
     case consent_auditor::Feature::CHROME_UNIFIED_CONSENT:
       return UserEventSpecifics::UserConsent::CHROME_UNIFIED_CONSENT;
+    case consent_auditor::Feature::ASSISTANT_ACTIVITY_CONTROL:
+      return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
   }
   NOTREACHED();
   return UserEventSpecifics::UserConsent::FEATURE_UNSPECIFIED;
@@ -80,6 +82,8 @@ UserConsentSpecifics::Feature FeatureToUserConsentProtoEnum(
       return UserConsentSpecifics::GOOGLE_LOCATION_SERVICE;
     case consent_auditor::Feature::CHROME_UNIFIED_CONSENT:
       return UserConsentSpecifics::CHROME_UNIFIED_CONSENT;
+    case consent_auditor::Feature::ASSISTANT_ACTIVITY_CONTROL:
+      return UserConsentSpecifics::FEATURE_UNSPECIFIED;
   }
   NOTREACHED();
   return UserConsentSpecifics::FEATURE_UNSPECIFIED;
@@ -290,6 +294,11 @@ void ConsentAuditorImpl::RecordUnifiedConsent(
   RecordGaiaConsent(account_id, Feature::CHROME_UNIFIED_CONSENT,
                     description_grd_ids, consent.confirmation_grd_id(),
                     ConvertConsentStatus(consent.status()));
+}
+
+void ConsentAuditorImpl::RecordAssistantActivityControlConsent(
+    const std::string& account_id,
+    const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent) {
 }
 
 void ConsentAuditorImpl::RecordLocalConsent(

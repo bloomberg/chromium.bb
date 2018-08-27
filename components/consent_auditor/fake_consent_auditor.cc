@@ -49,6 +49,12 @@ void FakeConsentAuditor::RecordUnifiedConsent(
   NOTIMPLEMENTED();
 }
 
+void FakeConsentAuditor::RecordAssistantActivityControlConsent(
+    const std::string& account_id,
+    const sync_pb::UserConsentTypes::AssistantActivityControlConsent& consent) {
+  NOTIMPLEMENTED();
+}
+
 void FakeConsentAuditor::RecordGaiaConsent(
     const std::string& account_id,
     consent_auditor::Feature feature,
