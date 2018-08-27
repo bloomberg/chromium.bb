@@ -130,11 +130,6 @@ class InterceptingCanvasBase : public SkCanvas {
                       const SkScalar xpos[],
                       SkScalar const_y,
                       const SkPaint&) override = 0;
-  void onDrawTextOnPath(const void* text,
-                        size_t byte_length,
-                        const SkPath&,
-                        const SkMatrix*,
-                        const SkPaint&) override = 0;
   void onDrawTextBlob(const SkTextBlob*,
                       SkScalar x,
                       SkScalar y,
@@ -287,15 +282,6 @@ class InterceptingCanvas : public InterceptingCanvasBase {
                       const SkPaint& paint) override {
     Interceptor interceptor(this);
     this->SkCanvas::onDrawPosTextH(text, byte_length, xpos, const_y, paint);
-  }
-
-  void onDrawTextOnPath(const void* text,
-                        size_t byte_length,
-                        const SkPath& path,
-                        const SkMatrix* matrix,
-                        const SkPaint& paint) override {
-    Interceptor interceptor(this);
-    this->SkCanvas::onDrawTextOnPath(text, byte_length, path, matrix, paint);
   }
 
   void onDrawTextBlob(const SkTextBlob* blob,

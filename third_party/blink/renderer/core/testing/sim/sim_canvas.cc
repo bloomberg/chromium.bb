@@ -116,16 +116,6 @@ void SimCanvas::onDrawPosTextH(const void* text,
   SkCanvas::onDrawPosTextH(text, byte_length, xpos, const_y, paint);
 }
 
-void SimCanvas::onDrawTextOnPath(const void* text,
-                                 size_t byte_length,
-                                 const SkPath& path,
-                                 const SkMatrix* matrix,
-                                 const SkPaint& paint) {
-  DrawScope scope;
-  AddCommand(CommandType::kText, paint.getColor());
-  SkCanvas::onDrawTextOnPath(text, byte_length, path, matrix, paint);
-}
-
 void SimCanvas::onDrawTextBlob(const SkTextBlob* blob,
                                SkScalar x,
                                SkScalar y,
