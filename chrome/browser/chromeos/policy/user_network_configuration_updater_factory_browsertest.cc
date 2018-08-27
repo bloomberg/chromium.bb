@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -179,6 +180,7 @@ void IsCertInNSSDatabaseOnIOThreadWithCertDb(
     base::OnceClosure done_closure,
     net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  base::ScopedAllowBlockingForTesting scoped_allow_blocking_for_testing;
   net::ScopedCERTCertificateList certs = cert_db->ListCertsSync();
   for (const net::ScopedCERTCertificate& cert : certs) {
     if (HasSubjectCommonName(cert.get(), subject_common_name)) {
