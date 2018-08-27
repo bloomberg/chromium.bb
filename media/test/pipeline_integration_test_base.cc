@@ -444,7 +444,7 @@ void PipelineIntegrationTestBase::CreateDemuxer(
           base::Unretained(this)),
       base::Bind(&PipelineIntegrationTestBase::DemuxerMediaTracksUpdatedCB,
                  base::Unretained(this)),
-      &media_log_));
+      &media_log_, true));
 #endif
 }
 

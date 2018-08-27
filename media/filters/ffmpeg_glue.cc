@@ -97,7 +97,7 @@ FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol) {
   format_context_->pb = avio_context_.get();
 }
 
-bool FFmpegGlue::OpenContext() {
+bool FFmpegGlue::OpenContext(bool is_local_file) {
   DCHECK(!open_called_) << "OpenContext() shouldn't be called twice.";
 
   // If avformat_open_input() is called we have to take a slightly different
@@ -126,6 +126,8 @@ bool FFmpegGlue::OpenContext() {
 
     container_ = container_names::DetermineContainer(buffer.data(), num_read);
     base::UmaHistogramSparse("Media.DetectedContainer", container_);
+    if (is_local_file)
+      base::UmaHistogramSparse("Media.DetectedContainer.Local", container_);
 
     detected_hls_ =
         container_ == container_names::MediaContainerName::CONTAINER_HLS;

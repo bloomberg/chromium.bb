@@ -65,7 +65,8 @@ class MEDIA_EXPORT FFmpegGlue {
 
   // Opens an AVFormatContext specially prepared to process reads and seeks
   // through the FFmpegURLProtocol provided during construction.
-  bool OpenContext();
+  // |is_local_file| is an optional parameter used for metrics reporting.
+  bool OpenContext(bool is_local_file = false);
   AVFormatContext* format_context() { return format_context_; }
   // Returns the container name.
   // Note that it is only available after calling OpenContext.
