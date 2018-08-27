@@ -90,7 +90,7 @@ void MaybePushBackString(std::vector<std::string>& vector,
 
 }  // anonymous namespace
 
-using AudioFocusType = media_session::mojom::AudioFocusType;
+using media_session::mojom::AudioFocusType;
 
 using MediaSessionSuspendedSource =
     MediaSessionUmaHelper::MediaSessionSuspendedSource;

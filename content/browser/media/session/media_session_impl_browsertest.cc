@@ -36,7 +36,7 @@ using content::MediaSessionPlayerObserver;
 using content::MediaSessionUmaHelper;
 using content::MockMediaSessionPlayerObserver;
 
-using AudioFocusType = media_session::mojom::AudioFocusType;
+using media_session::mojom::AudioFocusType;
 
 using ::testing::Eq;
 using ::testing::Expectation;

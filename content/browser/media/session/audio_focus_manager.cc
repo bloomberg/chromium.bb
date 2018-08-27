@@ -13,7 +13,7 @@
 
 namespace content {
 
-using AudioFocusType = media_session::mojom::AudioFocusType;
+using media_session::mojom::AudioFocusType;
 
 namespace {
 
