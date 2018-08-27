@@ -16,12 +16,17 @@ class PLATFORM_EXPORT AddressCache {
   USING_FAST_MALLOC(AddressCache);
 
  public:
-  AddressCache() : enabled_(false), has_entries_(false), dirty_(false) {
-    // Start by flushing the cache in a non-empty state to initialize all the
-    // cache entries.
-    for (size_t i = 0; i < kNumberOfEntries; ++i)
-      entries_[i] = nullptr;
-  }
+  class PLATFORM_EXPORT EnabledScope {
+   public:
+    explicit EnabledScope(AddressCache*);
+    ~EnabledScope();
+
+   private:
+    AddressCache* const address_cache_;
+  };
+
+  AddressCache()
+      : entries_{}, enabled_(false), has_entries_(false), dirty_(false) {}
 
   void EnableLookup() { enabled_ = true; }
   void DisableLookup() { enabled_ = false; }
@@ -29,7 +34,7 @@ class PLATFORM_EXPORT AddressCache {
   void MarkDirty() { dirty_ = true; }
   void Flush();
   void FlushIfDirty();
-  bool IsEmpty() { return !has_entries_; }
+  bool IsEmpty() const { return !has_entries_; }
 
   // Perform a lookup in the cache. Returns true if the address is guaranteed
   // to not in Blink's heap and false otherwise.

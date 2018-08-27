@@ -15,6 +15,12 @@ const Address kObjectAddress = reinterpret_cast<Address>(kBlinkPageSize);
 
 }  // namespace
 
+TEST(AddressCacheTest, Scope) {
+  AddressCache cache;
+  AddressCache::EnabledScope scope(&cache);
+  EXPECT_FALSE(cache.Lookup(kObjectAddress));
+}
+
 TEST(AddressCacheTest, InitialIsEmpty) {
   AddressCache cache;
   cache.EnableLookup();
