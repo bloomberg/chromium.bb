@@ -75,10 +75,9 @@ int BrowserMainRunnerImpl::Initialize(const MainFunctionParams& parameters) {
 
     const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
 
-    base::SamplingHeapProfiler::InitTLSSlot();
+    base::SamplingHeapProfiler::Init();
     if (parameters.command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
-      base::SamplingHeapProfiler* profiler =
-          base::SamplingHeapProfiler::GetInstance();
+      base::SamplingHeapProfiler* profiler = base::SamplingHeapProfiler::Get();
       unsigned sampling_interval = 0;
       bool parsed =
           base::StringToUint(parameters.command_line.GetSwitchValueASCII(

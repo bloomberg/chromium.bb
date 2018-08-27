@@ -40,7 +40,7 @@ Response MemoryHandler::GetBrowserSamplingProfile(
   std::unique_ptr<Array<Memory::SamplingProfileNode>> samples =
       Array<Memory::SamplingProfileNode>::create();
   std::vector<base::SamplingHeapProfiler::Sample> raw_samples =
-      base::SamplingHeapProfiler::GetInstance()->GetSamples(0);
+      base::SamplingHeapProfiler::Get()->GetSamples(0);
 
   for (auto& sample : raw_samples) {
     std::unique_ptr<Array<String>> stack = Array<String>::create();
