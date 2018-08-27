@@ -144,8 +144,7 @@ void SigninCreateProfileHandler::DoCreateProfile(const base::string16& name,
   profile_path_being_created_ = ProfileManager::CreateMultiProfileAsync(
       name, icon_url,
       base::Bind(&SigninCreateProfileHandler::OnProfileCreated,
-                 weak_ptr_factory_.GetWeakPtr(), create_shortcut),
-      /*supervised_user_id=*/std::string());
+                 weak_ptr_factory_.GetWeakPtr(), create_shortcut));
 }
 
 void SigninCreateProfileHandler::OnProfileCreated(

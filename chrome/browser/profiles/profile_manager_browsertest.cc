@@ -294,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteInactiveProfile) {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
   run_loop.Run();
 
   ASSERT_EQ(2u, storage.GetNumberOfProfiles());
@@ -326,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteCurrentProfile) {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
   run_loop.Run();
 
   ASSERT_EQ(2u, storage.GetNumberOfProfiles());
@@ -358,7 +358,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteAllProfiles) {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
 
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by OnUnblockOnProfileCreation when the profile is created.
@@ -430,11 +430,9 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
 
   // Create a profile, make sure callback is invoked before any callbacks are
   // invoked (so they can do things like sign in the profile, etc).
-  ProfileManager::CreateMultiProfileAsync(
-      base::string16(),  // name
-      std::string(),  // icon url
-      base::Bind(ProfileCreationComplete),
-      std::string());
+  ProfileManager::CreateMultiProfileAsync(base::string16(),  // name
+                                          std::string(),     // icon url
+                                          base::Bind(ProfileCreationComplete));
   // Wait for profile to finish loading.
   content::RunMessageLoop();
   EXPECT_EQ(profile_manager->GetNumberOfProfiles(), 2U);
@@ -469,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, SwitchToProfile) {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       path_profile2, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
 
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by OnUnblockOnProfileCreation when the profile is created.
@@ -528,9 +526,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   base::FilePath path_profile2 =
       profile_manager->GenerateNextProfileDirectoryPath();
   profile_manager->CreateProfileAsync(
-      path_profile2,
-      base::Bind(&EphemeralProfileCreationComplete),
-      base::string16(), std::string(), std::string());
+      path_profile2, base::Bind(&EphemeralProfileCreationComplete),
+      base::string16(), std::string());
 
   // Spin to allow profile creation to take place.
   content::RunMessageLoop();

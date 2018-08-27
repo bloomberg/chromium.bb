@@ -92,7 +92,7 @@ Profile* CreateGuestProfile() {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       new_path, base::Bind(&UnblockOnProfileCreation, &run_loop),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
   run_loop.Run();
   return profile_manager->GetProfileByPath(new_path);
 }
@@ -253,7 +253,7 @@ class UkmBrowserTestBase : public SyncTest {
     base::RunLoop run_loop;
     profile_manager->CreateProfileAsync(
         new_path, base::Bind(&UnblockOnProfileCreation, &run_loop),
-        base::string16(), std::string(), std::string());
+        base::string16(), std::string());
     run_loop.Run();
     Profile* profile = profile_manager->GetProfileByPath(new_path);
     SetupMockGaiaResponsesForProfile(profile);

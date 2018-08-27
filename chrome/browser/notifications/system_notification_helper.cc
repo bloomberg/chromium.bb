@@ -27,7 +27,7 @@ void SystemNotificationHelper::Display(
       base::AdaptCallbackForRepeating(
           base::BindOnce(&SystemNotificationHelper::DoDisplayNotification,
                          weak_factory_.GetWeakPtr(), notification.id())),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
 }
 
 void SystemNotificationHelper::Close(const std::string& notification_id) {

@@ -126,8 +126,7 @@ IN_PROC_BROWSER_TEST_F(ProfileListDesktopBrowserTest, MAYBE_SwitchToProfile) {
       FILE_PATH_LITERAL("New Profile 2"));
   profile_manager->CreateProfileAsync(path_profile2,
                                       base::Bind(&OnUnblockOnProfileCreation),
-                                      base::string16(), std::string(),
-                                      std::string());
+                                      base::string16(), std::string());
 
   // Spin to allow profile creation to take place, loop is terminated
   // by OnUnblockOnProfileCreation when the profile is created.

@@ -72,7 +72,7 @@ class SettingsWindowManagerTest : public InProcessBrowserTest {
         profile_manager->GenerateNextProfileDirectoryPath(),
         base::Bind(&SettingsWindowManagerTest::ProfileInitialized,
                    base::Unretained(this), run_loop.QuitClosure()),
-        base::string16(), std::string(), std::string());
+        base::string16(), std::string());
     run_loop.Run();
 
     return test_profile_;
