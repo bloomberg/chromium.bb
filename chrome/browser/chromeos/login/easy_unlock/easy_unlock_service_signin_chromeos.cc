@@ -608,9 +608,32 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
   remote_device_cache_->SetRemoteDevices(remote_devices);
 
-  SetProximityAuthDevices(
-      account_id, {*remote_device_cache_->GetRemoteDevice(unlock_key_id)},
-      remote_device_cache_->GetRemoteDevice(local_device_id));
+  base::Optional<cryptauth::RemoteDeviceRef> unlock_key_device =
+      remote_device_cache_->GetRemoteDevice(unlock_key_id);
+  base::Optional<cryptauth::RemoteDeviceRef> local_device =
+      remote_device_cache_->GetRemoteDevice(local_device_id);
+
+  // TODO(hansberry): It is possible that there may not be an unlock key by this
+  // point. If this occurs, it is due to a bug in how device metadata is
+  // persisted in CryptoHome. See https://crbug.com/856380 for more details. For
+  // now, simply return early here to prevent a potential crash which can occur
+  // in this situation (see https://crbug.com/866711).
+  if (!unlock_key_device) {
+    SetHardlockStateForUser(account_id,
+                            EasyUnlockScreenlockStateHandler::NO_PAIRING);
+    return;
+  }
+
+  // Likewise, a similar issue could exist when the kMultiDeviceApi flag is
+  // enabled.
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      !local_device) {
+    SetHardlockStateForUser(account_id,
+                            EasyUnlockScreenlockStateHandler::NO_PAIRING);
+    return;
+  }
+
+  SetProximityAuthDevices(account_id, {*unlock_key_device}, local_device);
 }
 
 const EasyUnlockServiceSignin::UserData*
