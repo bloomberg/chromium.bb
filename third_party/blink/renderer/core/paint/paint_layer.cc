@@ -2942,7 +2942,9 @@ void PaintLayer::UpdateSelfPaintingLayer() {
   SetNeedsRepaint();
   is_self_painting_layer_ = is_self_painting_layer;
   self_painting_status_changed_ = true;
-  SetNeedsRepaint();
+  // Self-painting change can change the compositing container chain;
+  // invalidate the new chain in addition to the old one.
+  MarkCompositingContainerChainForNeedsRepaint();
 
   if (PaintLayer* parent = Parent()) {
     parent->MarkAncestorChainForDescendantDependentFlagsUpdate();
