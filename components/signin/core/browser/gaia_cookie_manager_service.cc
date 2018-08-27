@@ -715,12 +715,10 @@ void GaiaCookieManagerService::OnGetTokenSuccess(
 void GaiaCookieManagerService::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  // TODO (valeriyas): Implement OnMultiloginFailure in this class and call it
-  // here.
-  token_requests_.clear();
   VLOG(1) << "Failed to retrieve accesstoken"
           << " account=" << request->GetAccountId()
           << " error=" << error.ToString();
+  OnOAuthMultiloginFailure(error);
 }
 
 void GaiaCookieManagerService::OnMergeSessionSuccess(const std::string& data) {
@@ -764,6 +762,27 @@ void GaiaCookieManagerService::OnMergeSessionFailure(
       error.state(), GoogleServiceAuthError::NUM_STATES);
   HandleNextRequest();
   SignalComplete(account_id, error);
+}
+
+void GaiaCookieManagerService::OnOAuthMultiloginSuccess(
+    const OAuthMultiloginResult& result) {
+  DCHECK(requests_.front().request_type() ==
+         GaiaCookieRequestType::SET_ACCOUNTS);
+  VLOG(1) << "Multilogin successful accounts="
+          << base::JoinString(requests_.front().account_ids(), " ");
+  std::vector<std::string> account_ids = requests_.front().account_ids();
+  access_tokens_.clear();
+  HandleNextRequest();
+}
+
+void GaiaCookieManagerService::OnOAuthMultiloginFailure(
+    const GoogleServiceAuthError& error) {
+  VLOG(1) << "Failed Multilogin "
+          << base::JoinString(requests_.front().account_ids(), " ")
+          << " error=" << error.ToString();
+  access_tokens_.clear();
+  token_requests_.clear();
+  HandleNextRequest();
 }
 
 void GaiaCookieManagerService::OnListAccountsSuccess(const std::string& data) {

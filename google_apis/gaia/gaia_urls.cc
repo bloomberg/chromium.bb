@@ -34,6 +34,7 @@ const char kMergeSessionUrlSuffix[] = "MergeSession";
 const char kOAuthGetAccessTokenUrlSuffix[] = "OAuthGetAccessToken";
 const char kOAuthWrapBridgeUrlSuffix[] = "OAuthWrapBridge";
 const char kOAuth1LoginUrlSuffix[] = "OAuthLogin";
+const char kOAuthMultiloginSuffix[] = "oauth/multilogin";
 const char kOAuthRevokeTokenUrlSuffix[] = "AuthSubRevokeToken";
 const char kListAccountsSuffix[] = "ListAccounts?json=standard";
 const char kEmbeddedSigninSuffix[] = "embedded/setup/chrome/usermenu";
@@ -111,6 +112,7 @@ GaiaUrls::GaiaUrls() {
   get_user_info_url_ = gaia_url_.Resolve(kGetUserInfoUrlSuffix);
   token_auth_url_ = gaia_url_.Resolve(kTokenAuthUrlSuffix);
   merge_session_url_ = gaia_url_.Resolve(kMergeSessionUrlSuffix);
+  oauth_multilogin_url_ = gaia_url_.Resolve(kOAuthMultiloginSuffix);
   oauth_get_access_token_url_ =
       gaia_url_.Resolve(kOAuthGetAccessTokenUrlSuffix);
   oauth_wrap_bridge_url_ = gaia_url_.Resolve(kOAuthWrapBridgeUrlSuffix);
@@ -199,6 +201,10 @@ const GURL& GaiaUrls::merge_session_url() const {
 
 const GURL& GaiaUrls::get_oauth_token_url() const {
   return get_oauth_token_url_;
+}
+
+const GURL& GaiaUrls::oauth_multilogin_url() const {
+  return oauth_multilogin_url_;
 }
 
 const GURL& GaiaUrls::oauth_get_access_token_url() const {

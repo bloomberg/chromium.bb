@@ -120,6 +120,8 @@ template("google_apis_tmpl") {
       "gaia/oauth2_token_service_delegate.h",
       "gaia/oauth2_token_service_request.cc",
       "gaia/oauth2_token_service_request.h",
+      "gaia/oauth_multilogin_result.cc",
+      "gaia/oauth_multilogin_result.h",
       "gaia/oauth_request_signer.cc",
       "gaia/oauth_request_signer.h",
       "gaia/ubertoken_fetcher.cc",
