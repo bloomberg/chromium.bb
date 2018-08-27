@@ -22,6 +22,8 @@
 #error "This file requires ARC support."
 #endif
 
+using fullscreen::features::ViewportAdjustmentExperiment;
+
 namespace {
 // Returns whether fullscreen should be disabled for |web_state|'s SSL status.
 // This will return true if the visible NavigationItem's SSL has a broken
@@ -93,9 +95,11 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   // - For normal pages, using |contentInset| breaks the layout of fixed-
   //   position DOM elements, so top padding must be accomplished by updating
   //   the WKWebView's frame.
+  ViewportAdjustmentExperiment viewport_experiment =
+      fullscreen::features::GetActiveViewportExperiment();
   bool force_content_inset =
-      fullscreen::features::GetActiveViewportExperiment() ==
-      fullscreen::features::ViewportAdjustmentExperiment::CONTENT_INSET;
+      viewport_experiment == ViewportAdjustmentExperiment::CONTENT_INSET ||
+      viewport_experiment == ViewportAdjustmentExperiment::SMOOTH_SCROLLING;
   web_state->GetWebViewProxy().shouldUseViewContentInset =
       force_content_inset ||
       web_state->GetContentsMimeType() == "application/pdf";
