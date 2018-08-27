@@ -282,6 +282,7 @@ class GaiaAuthFetcher {
   static const char kOAuthHeaderFormat[];
   static const char kOAuth2BearerHeaderFormat[];
   static const char kDeviceIdHeaderFormat[];
+  static const char kOAuthMultiBearerHeaderFormat[];
   static const char kClientLoginToOAuth2CookiePartSecure[];
   static const char kClientLoginToOAuth2CookiePartHttpOnly[];
   static const char kClientLoginToOAuth2CookiePartCodePrefix[];
@@ -321,6 +322,10 @@ class GaiaAuthFetcher {
   void OnUberAuthTokenFetch(const std::string& data,
                             net::Error net_error,
                             int response_code);
+
+  void OnOAuthMultiloginFetched(const std::string& data,
+                                net::Error net_error,
+                                int response_code);
 
   void OnOAuthLoginFetched(const std::string& data,
                            net::Error net_error,
@@ -399,6 +404,7 @@ class GaiaAuthFetcher {
   const GURL merge_session_gurl_;
   const GURL uberauth_token_gurl_;
   const GURL oauth_login_gurl_;
+  const GURL oauth_multilogin_gurl_;
   const GURL list_accounts_gurl_;
   const GURL logout_gurl_;
   const GURL get_check_connection_info_url_;

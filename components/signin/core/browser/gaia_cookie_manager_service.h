@@ -19,6 +19,7 @@
 #include "components/signin/core/browser/signin_client.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "google_apis/gaia/oauth_multilogin_result.h"
 #include "google_apis/gaia/ubertoken_fetcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/backoff_entry.h"
@@ -288,6 +289,8 @@ class GaiaCookieManagerService : public KeyedService,
   // Overridden from GaiaAuthConsumer.
   void OnMergeSessionSuccess(const std::string& data) override;
   void OnMergeSessionFailure(const GoogleServiceAuthError& error) override;
+  void OnOAuthMultiloginSuccess(const OAuthMultiloginResult& result) override;
+  void OnOAuthMultiloginFailure(const GoogleServiceAuthError& error) override;
   void OnListAccountsSuccess(const std::string& data) override;
   void OnListAccountsFailure(const GoogleServiceAuthError& error) override;
   void OnLogOutSuccess() override;

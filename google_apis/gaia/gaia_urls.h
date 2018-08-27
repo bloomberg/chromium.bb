@@ -31,6 +31,7 @@ class GaiaUrls {
   const GURL& merge_session_url() const;
   const GURL& get_oauth_token_url() const;
   const GURL& oauth_get_access_token_url() const;
+  const GURL& oauth_multilogin_url() const;
   const GURL& oauth_wrap_bridge_url() const;
   const GURL& oauth_user_info_url() const;
   const GURL& oauth_revoke_token_url() const;
@@ -82,6 +83,7 @@ class GaiaUrls {
   GURL get_oauth_token_url_;
   GURL oauth_get_access_token_url_;
   GURL oauth_wrap_bridge_url_;
+  GURL oauth_multilogin_url_;
   GURL oauth_user_info_url_;
   GURL oauth_revoke_token_url_;
   GURL oauth1_login_url_;
