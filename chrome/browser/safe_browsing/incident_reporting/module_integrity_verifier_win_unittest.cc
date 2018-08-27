@@ -187,7 +187,8 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleUnmodified) {
   ASSERT_EQ(0, num_bytes_different);
 }
 
-TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleModified) {
+// Flaky. See https://crbug.com/877815.
+TEST_F(SafeBrowsingModuleVerifierWinTest, DISABLED_VerifyModuleModified) {
   int num_bytes_different = 0;
   ModuleState state;
 
@@ -328,7 +329,8 @@ TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleRelocOverlap) {
             state.modification(0).modified_bytes());
 }
 
-TEST_F(SafeBrowsingModuleVerifierWinTest, VerifyModuleExportModified) {
+// Flaky. See https://crbug.com/877815.
+TEST_F(SafeBrowsingModuleVerifierWinTest, DISABLED_VerifyModuleExportModified) {
   ModuleState state;
   int num_bytes_different = 0;
   // Confirm the module is identical in memory as on disk before we begin.
