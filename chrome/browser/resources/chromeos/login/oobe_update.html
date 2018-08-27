@@ -34,7 +34,8 @@
           i18n-content="cancelUpdateHint" hidden="[[!cancelAllowed]]">
       </div>
       <div slot="footer" class="flex layout vertical">
-        <paper-progress id="checking-progress" indeterminate></paper-progress>
+        <paper-progress id="checking-progress" hidden="[[!checkingForUpdate]]">
+        </paper-progress>
         <div class="flex"></div>
         <img class="update-illustration"
             srcset="images/1x/updating_1x.png 1x,

@@ -74,6 +74,18 @@ Polymer({
     },
   },
 
+  onBeforeShow: function() {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this);
+    });
+    // 'indeterminate' paper-progress will recalculate styles on every frame
+    // wnen OOBE is loaded (even when another screen is open).
+    // So we make it 'indeterminate' only right before screen is shown, and
+    // make it hidden when its container dialog is hidden.
+    this.$['checking-progress'].indeterminate = true;
+  },
+
   /**
    * This updates "Cancel Update" message.
    */
