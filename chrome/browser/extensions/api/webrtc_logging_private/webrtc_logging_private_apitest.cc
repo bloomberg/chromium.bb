@@ -623,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcLoggingPrivateApiTest,
   ASSERT_TRUE(StartAudioDebugRecordings(1));
 }
 
-#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#if !defined(OS_ANDROID)
 
 // Fixture for various tests over StartEventLogging. Intended to be sub-classed
 // to test different scenarios.
@@ -871,4 +871,4 @@ IN_PROC_BROWSER_TEST_F(
                     error_message);
 }
 
-#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#endif  // !defined(OS_ANDROID)

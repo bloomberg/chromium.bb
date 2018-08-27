@@ -6333,7 +6333,7 @@ IN_PROC_BROWSER_TEST_F(WebAppInstallForceListPolicyTest, StartUpInstallation) {
   EXPECT_EQ(policy_app_url_, installed_app_url);
 }
 
-#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#if !defined(OS_ANDROID)
 
 // The possibilities for a boolean policy.
 enum class BooleanPolicy {
@@ -6341,6 +6341,10 @@ enum class BooleanPolicy {
   kFalse,
   kTrue,
 };
+
+#endif  // !defined(OS_ANDROID)
+
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
 
 // Tests that the PromotionalTabsEnabled policy properly suppresses the welcome
 // page for browser first-runs.
@@ -6418,6 +6422,9 @@ INSTANTIATE_TEST_CASE_P(,
                                           BooleanPolicy::kFalse,
                                           BooleanPolicy::kTrue));
 
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
 class WebRtcEventLogCollectionAllowedPolicyTest
     : public PolicyTest,
       public testing::WithParamInterface<BooleanPolicy> {
@@ -6514,6 +6521,6 @@ INSTANTIATE_TEST_CASE_P(,
                         ::testing::Values(BooleanPolicy::kNotConfigured,
                                           BooleanPolicy::kFalse,
                                           BooleanPolicy::kTrue));
-#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace policy
