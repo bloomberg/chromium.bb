@@ -176,6 +176,9 @@ DialogActionController.prototype.processOKActionForSaveDialog_ = function() {
  * @private
  */
 DialogActionController.prototype.processOKAction_ = function() {
+  if (this.dialogFooter_.okButton.disabled) {
+    throw new Error('Disabled!');
+  }
   if (this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
     this.processOKActionForSaveDialog_();
     return;

@@ -335,6 +335,7 @@ function TestEntryInfo(options) {
   this.sizeText = options.sizeText;
   this.typeText = options.typeText;
   this.capabilities = options.capabilities;
+  this.pinned = !!options.pinned;
   Object.freeze(this);
 }
 
@@ -478,6 +479,18 @@ var ENTRIES = {
     nameText: 'newly added file.ogg',
     sizeText: '14 KB',
     typeText: 'OGG audio'
+  }),
+
+  pinned: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'pinned.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'pinned.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    pinned: true,
   }),
 
   directoryA: new TestEntryInfo({

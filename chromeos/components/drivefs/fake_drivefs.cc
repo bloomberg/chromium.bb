@@ -120,11 +120,13 @@ FakeDriveFs::CreateConnectionDelegate() {
 
 void FakeDriveFs::SetMetadata(const base::FilePath& path,
                               const std::string& mime_type,
-                              const std::string& original_name) {
+                              const std::string& original_name,
+                              bool pinned) {
   auto& stored_metadata = metadata_[path];
   stored_metadata.mime_type = mime_type;
   stored_metadata.original_name = original_name;
   stored_metadata.hosted = (original_name != path.BaseName().value());
+  stored_metadata.pinned = pinned;
 }
 
 void FakeDriveFs::Init(drivefs::mojom::DriveFsConfigurationPtr config,
@@ -151,6 +153,7 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
 
   const auto& stored_metadata = metadata_[path];
   metadata->pinned = stored_metadata.pinned;
+  metadata->available_offline = stored_metadata.pinned;
 
   metadata->content_mime_type = stored_metadata.mime_type;
   metadata->type = stored_metadata.hosted
