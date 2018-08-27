@@ -10,7 +10,7 @@ import org.chromium.base.annotations.JNINamespace;
 /**
  */
 @JNINamespace("android_webview")
-public final class AwRenderProcess {
+public final class AwRenderProcess extends AwSupportLibIsomorphic {
     private long mNativeRenderProcess;
 
     private AwRenderProcess() {}

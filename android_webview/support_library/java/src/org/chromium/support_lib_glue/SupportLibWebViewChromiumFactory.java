@@ -63,7 +63,9 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.WEB_MESSAGE_CALLBACK_ON_MESSAGE,
                     Features.GET_WEB_VIEW_CLIENT,
                     Features.GET_WEB_CHROME_CLIENT,
-                    Features.PROXY_OVERRIDE
+                    Features.PROXY_OVERRIDE,
+                    Features.GET_WEB_VIEW_RENDERER,
+                    Features.WEB_VIEW_RENDERER_TERMINATE,
             };
     // clang-format on
 
