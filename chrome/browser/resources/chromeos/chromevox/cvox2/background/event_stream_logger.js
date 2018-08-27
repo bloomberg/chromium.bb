@@ -54,7 +54,12 @@ EventStreamLogger.prototype = {
    * @param {!AutomationNode} target
    */
   isDescendantOfConsole: function(target) {
-    if (target.docUrl && target.docUrl.indexOf('chrome-devtools://') == 0)
+    /** Event log should not be written when event is dispatched from console or
+     * chromevox log page.
+     */
+    if (target.docUrl &&
+        (target.docUrl.indexOf('chrome-devtools://') == 0 ||
+         target.docUrl == chrome.runtime.getURL('cvox2/background/log.html')))
       return true;
 
     if (!target.parent)
