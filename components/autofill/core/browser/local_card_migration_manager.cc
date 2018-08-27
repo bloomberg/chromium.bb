@@ -90,7 +90,7 @@ void LocalCardMigrationManager::AttemptToOfferLocalCardMigration(
       app_locale_,
       base::BindOnce(&LocalCardMigrationManager::OnDidGetUploadDetails,
                      weak_ptr_factory_.GetWeakPtr(), is_from_settings_page),
-      payments::kMigrateCardBillableServiceNumber);
+      payments::kMigrateCardsBillableServiceNumber);
 }
 
 // Callback function when user agrees to migration on the intermediate dialog.

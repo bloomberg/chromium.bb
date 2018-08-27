@@ -21,6 +21,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
+#include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_request.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -59,6 +60,12 @@ const char kUploadCardRequestFormat[] =
 const char kUploadCardRequestFormatWithoutCvc[] =
     "requestContentType=application/json; charset=utf-8&request=%s"
     "&s7e_1_pan=%s";
+
+const char kMigrateCardsRequestPath[] =
+    "payments/apis-secure/chromepaymentsservice/migratecards"
+    "?s7e_suffix=chromewallet";
+const char kMigrateCardsRequestFormat[] =
+    "requestContentType=application/json; charset=utf-8&request=%s";
 
 const char kTokenFetchId[] = "wallet_client";
 const char kPaymentsOAuth2Scope[] =
@@ -174,6 +181,34 @@ std::unique_ptr<base::DictionaryValue> BuildAddressDictionary(
   }
 
   return address;
+}
+
+// Returns a dictionary of the credit card with the structure expected by
+// Payments RPCs, containing expiration month, expiration year and cardholder
+// name (if any) fields in |credit_card|, formatted according to |app_locale|.
+// |pan_field_name| is the field name for the encrypted pan. We use each credit
+// card's guid as the unique id.
+std::unique_ptr<base::DictionaryValue> BuildCreditCardDictionary(
+    const CreditCard& credit_card,
+    const std::string& app_locale,
+    const std::string& pan_field_name) {
+  std::unique_ptr<base::DictionaryValue> card(new base::DictionaryValue());
+  card->SetString("unique_id", credit_card.guid());
+
+  const base::string16 exp_month =
+      credit_card.GetInfo(AutofillType(CREDIT_CARD_EXP_MONTH), app_locale);
+  const base::string16 exp_year = credit_card.GetInfo(
+      AutofillType(CREDIT_CARD_EXP_4_DIGIT_YEAR), app_locale);
+  int value = 0;
+  if (base::StringToInt(exp_month, &value))
+    card->SetInteger("expiration_month", value);
+  if (base::StringToInt(exp_year, &value))
+    card->SetInteger("expiration_year", value);
+  SetStringIfNotEmpty(credit_card, CREDIT_CARD_NAME_FULL, app_locale,
+                      "cardholder_name", card.get());
+
+  card->SetString("encrypted_pan", "__param:" + pan_field_name);
+  return card;
 }
 
 // Populates the list of active experiments that affect either the data sent in
@@ -452,6 +487,116 @@ class UploadCardRequest : public PaymentsRequest {
   std::string server_id_;
 };
 
+class MigrateCardsRequest : public PaymentsRequest {
+ public:
+  MigrateCardsRequest(
+      const PaymentsClient::MigrationRequestDetails& request_details,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrateCardsCallback callback)
+      : request_details_(request_details),
+        migratable_credit_cards_(migratable_credit_cards),
+        callback_(std::move(callback)) {}
+  ~MigrateCardsRequest() override {}
+
+  std::string GetRequestUrlPath() override { return kMigrateCardsRequestPath; }
+
+  std::string GetRequestContentType() override {
+    return "application/x-www-form-urlencoded";
+  }
+
+  // TODO(crbug.com/877281):Refactor DictionaryValue to base::Value
+  std::string GetRequestContent() override {
+    base::DictionaryValue request_dict;
+
+    request_dict.SetKey("risk_data_encoded",
+                        BuildRiskDictionary(request_details_.risk_data));
+
+    const std::string& app_locale = request_details_.app_locale;
+    std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
+    context->SetString("language_code", app_locale);
+    context->SetInteger("billable_service", kMigrateCardsBillableServiceNumber);
+    request_dict.Set("context", std::move(context));
+
+    request_dict.SetString("context_token", request_details_.context_token);
+
+    std::string all_pans_data = std::string();
+    std::unique_ptr<base::ListValue> migrate_cards(new base::ListValue());
+    for (size_t index = 0; index < migratable_credit_cards_.size(); ++index) {
+      if (migratable_credit_cards_[index].is_chosen()) {
+        std::string pan_field_name = GetPanFieldName(index);
+        // Generate credit card dictionary.
+        migrate_cards->Append(BuildCreditCardDictionary(
+            migratable_credit_cards_[index].credit_card(), app_locale,
+            pan_field_name));
+        // Append pan data to the |all_pans_data|.
+        all_pans_data +=
+            GetAppendPan(migratable_credit_cards_[index].credit_card(),
+                         app_locale, pan_field_name);
+      }
+    }
+    request_dict.Set("local_card", std::move(migrate_cards));
+
+    std::string json_request;
+    base::JSONWriter::Write(request_dict, &json_request);
+    std::string request_content = base::StringPrintf(
+        kMigrateCardsRequestFormat,
+        net::EscapeUrlEncodedData(json_request, true).c_str());
+    request_content += all_pans_data;
+    return request_content;
+  }
+
+  void ParseResponse(std::unique_ptr<base::DictionaryValue> response) override {
+    const base::ListValue* save_result_list = nullptr;
+    if (!response->GetList("save_result", &save_result_list))
+      return;
+    save_result_ =
+        std::make_unique<std::unordered_map<std::string, std::string>>();
+    for (size_t i = 0; i < save_result_list->GetSize(); ++i) {
+      const base::DictionaryValue* single_card_save_result;
+      if (save_result_list->GetDictionary(i, &single_card_save_result)) {
+        std::string unique_id;
+        single_card_save_result->GetString("unique_id", &unique_id);
+        std::string save_result;
+        single_card_save_result->GetString("status", &save_result);
+        save_result_->insert(std::make_pair(unique_id, save_result));
+      }
+    }
+    response->GetString("value_prop_display_text", &display_text_);
+  }
+
+  bool IsResponseComplete() override {
+    return !display_text_.empty() && save_result_;
+  }
+
+  void RespondToDelegate(AutofillClient::PaymentsRpcResult result) override {
+    std::move(callback_).Run(result, std::move(save_result_), display_text_);
+  }
+
+ private:
+  // Return the pan field name for the encrypted pan based on the |index|.
+  std::string GetPanFieldName(const size_t& index) {
+    return "s7e_1_pan" + std::to_string(index);
+  }
+
+  // Return the formatted pan to append to the end of the request.
+  std::string GetAppendPan(const CreditCard& credit_card,
+                           const std::string& app_locale,
+                           const std::string& pan_field_name) {
+    const base::string16 pan =
+        credit_card.GetInfo(AutofillType(CREDIT_CARD_NUMBER), app_locale);
+    std::string pan_str =
+        net::EscapeUrlEncodedData(base::UTF16ToASCII(pan), true).c_str();
+    std::string append_pan = "&" + pan_field_name + "=" + pan_str;
+    return append_pan;
+  }
+
+  const PaymentsClient::MigrationRequestDetails request_details_;
+  const std::vector<MigratableCreditCard>& migratable_credit_cards_;
+  MigrateCardsCallback callback_;
+  std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
+  std::string display_text_;
+};
+
 }  // namespace
 
 const char PaymentsClient::kRecipientName[] = "recipient_name";
@@ -466,6 +611,11 @@ PaymentsClient::UploadRequestDetails::UploadRequestDetails() {}
 PaymentsClient::UploadRequestDetails::UploadRequestDetails(
     const UploadRequestDetails& other) = default;
 PaymentsClient::UploadRequestDetails::~UploadRequestDetails() {}
+
+PaymentsClient::MigrationRequestDetails::MigrationRequestDetails() {}
+PaymentsClient::MigrationRequestDetails::MigrationRequestDetails(
+    const MigrationRequestDetails& other) = default;
+PaymentsClient::MigrationRequestDetails::~MigrationRequestDetails() {}
 
 PaymentsClient::PaymentsClient(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -523,6 +673,16 @@ void PaymentsClient::UploadCard(
   IssueRequest(
       std::make_unique<UploadCardRequest>(request_details, std::move(callback)),
       true);
+}
+
+void PaymentsClient::MigrateCards(
+    const MigrationRequestDetails& request_details,
+    const std::vector<MigratableCreditCard>& migratable_credit_cards,
+    MigrateCardsCallback callback) {
+  IssueRequest(
+      std::make_unique<MigrateCardsRequest>(
+          request_details, migratable_credit_cards, std::move(callback)),
+      /*authenticate=*/true);
 }
 
 void PaymentsClient::CancelRequest() {
