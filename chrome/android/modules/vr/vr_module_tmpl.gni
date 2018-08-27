@@ -24,7 +24,11 @@ template("vr_module_tmpl") {
   }
 
   android_app_bundle_module(target_name) {
-    module_name = invoker.module_name
+    forward_variables_from(invoker,
+                           [
+                             "module_name",
+                             "version_code",
+                           ])
     android_manifest = _manifest
     android_manifest_dep = ":${_manifest_target}"
     deps = [
