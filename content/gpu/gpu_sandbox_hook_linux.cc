@@ -127,8 +127,13 @@ void AddAmdGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
   for (const char* item : kReadWriteList)
     permissions->push_back(BrokerFilePermission::ReadWrite(item));
 
-  static const char kCharDevices[] = "/sys/dev/char/";
-  permissions->push_back(BrokerFilePermission::ReadOnlyRecursive(kCharDevices));
+  static const char* kDevices[] = {"/sys/dev/char", "/sys/devices"};
+  for (const char* item : kDevices) {
+    std::string path(item);
+    permissions->push_back(
+        BrokerFilePermission::StatOnlyWithIntermediateDirs(path));
+    permissions->push_back(BrokerFilePermission::ReadOnlyRecursive(path + "/"));
+  }
 }
 
 void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
