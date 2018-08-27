@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
@@ -148,12 +149,18 @@ void DrawFallbackIconLetter(const GURL& icon_url,
   if (font_size <= 0)
     return;
 
+  gfx::Font::Weight font_weight = gfx::Font::Weight::NORMAL;
+
+#if defined(OS_WIN)
+  font_weight = gfx::Font::Weight::SEMIBOLD;
+#endif
+
   // TODO(crbug.com/853780): Adjust the text color according to the background
   // color.
   canvas->DrawStringRectWithFlags(
       icon_text,
-      gfx::FontList({l10n_util::GetStringUTF8(IDS_SANS_SERIF_FONT_FAMILY)},
-                    gfx::Font::NORMAL, font_size, gfx::Font::Weight::NORMAL),
+      gfx::FontList({l10n_util::GetStringUTF8(IDS_NTP_FONT_FAMILY)},
+                    gfx::Font::NORMAL, font_size, font_weight),
       SK_ColorWHITE, gfx::Rect(0, 0, size, size),
       gfx::Canvas::TEXT_ALIGN_CENTER);
 }
