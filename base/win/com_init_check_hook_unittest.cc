@@ -130,5 +130,46 @@ TEST(ComInitCheckHook, ExternallyHooked) {
 #endif
 }
 
+TEST(ComInitCheckHook, UnexpectedChangeDuringHook) {
+#if defined(COM_INIT_CHECK_HOOK_ENABLED)
+  HMODULE ole32_library = ::LoadLibrary(L"ole32.dll");
+  ASSERT_TRUE(ole32_library);
+
+  uint32_t co_create_instance_padded_address =
+      reinterpret_cast<uint32_t>(
+          GetProcAddress(ole32_library, "CoCreateInstance")) -
+      5;
+  const unsigned char* co_create_instance_bytes =
+      reinterpret_cast<const unsigned char*>(co_create_instance_padded_address);
+  const unsigned char original_byte = co_create_instance_bytes[0];
+  const unsigned char unexpected_byte = 0xdb;
+  ASSERT_EQ(static_cast<DWORD>(NO_ERROR),
+            internal::ModifyCode(
+                reinterpret_cast<void*>(co_create_instance_padded_address),
+                reinterpret_cast<const void*>(&unexpected_byte),
+                sizeof(unexpected_byte)));
+
+  EXPECT_DCHECK_DEATH({
+    ComInitCheckHook com_check_hook;
+
+    internal::ModifyCode(
+        reinterpret_cast<void*>(co_create_instance_padded_address),
+        reinterpret_cast<const void*>(&unexpected_byte),
+        sizeof(unexpected_byte));
+  });
+
+  // If this call fails, really bad things are going to happen to other tests
+  // so CHECK here.
+  CHECK_EQ(static_cast<DWORD>(NO_ERROR),
+           internal::ModifyCode(
+               reinterpret_cast<void*>(co_create_instance_padded_address),
+               reinterpret_cast<const void*>(&original_byte),
+               sizeof(original_byte)));
+
+  ::FreeLibrary(ole32_library);
+  ole32_library = nullptr;
+#endif
+}
+
 }  // namespace win
 }  // namespace base
