@@ -66,7 +66,8 @@ class TestHarness : public PolicyProviderTestHarness {
 };
 
 TestHarness::TestHarness()
-    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+    : PolicyProviderTestHarness(POLICY_LEVEL_MANDATORY,
+                                POLICY_SCOPE_MACHINE,
                                 POLICY_SOURCE_PLATFORM) {}
 
 TestHarness::~TestHarness() {}
@@ -197,8 +198,8 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
   scoped_task_environment_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(test_keys::kKeyString, POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-           POLICY_SOURCE_PLATFORM,
+      .Set(test_keys::kKeyString, POLICY_LEVEL_RECOMMENDED,
+           POLICY_SCOPE_MACHINE, POLICY_SOURCE_PLATFORM,
            std::make_unique<base::Value>("string value"), nullptr);
   EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
 }
