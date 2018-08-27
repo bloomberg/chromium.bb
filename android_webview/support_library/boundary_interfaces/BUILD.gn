@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 android_library("boundary_interface_java") {
   java_files = [
     "src/org/chromium/support_lib_boundary/FeatureFlagHolderBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/IsomorphicObjectBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/SafeBrowsingResponseBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/ServiceWorkerClientBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/ServiceWorkerControllerBoundaryInterface.java",
@@ -23,6 +24,7 @@ android_library("boundary_interface_java") {
     "src/org/chromium/support_lib_boundary/WebViewClientBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebViewProviderBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebViewProviderFactoryBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/WebViewRendererBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebkitToCompatConverterBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/util/BoundaryInterfaceReflectionUtil.java",
     "src/org/chromium/support_lib_boundary/util/Features.java",

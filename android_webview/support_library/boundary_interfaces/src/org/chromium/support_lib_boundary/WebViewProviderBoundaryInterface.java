@@ -19,4 +19,5 @@ public interface WebViewProviderBoundaryInterface {
     void postMessageToMainFrame(/* WebMessage */ InvocationHandler message, Uri targetOrigin);
     WebViewClient getWebViewClient();
     WebChromeClient getWebChromeClient();
+    /* WebViewRenderer */ InvocationHandler getWebViewRenderer();
 }

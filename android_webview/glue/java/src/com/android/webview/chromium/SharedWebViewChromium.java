@@ -8,6 +8,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwRenderProcess;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content_public.browser.MessagePort;
@@ -49,6 +50,14 @@ public class SharedWebViewChromium {
 
     public WebChromeClient getWebChromeClient() {
         return mWebChromeClient;
+    }
+
+    public AwRenderProcess getRenderProcess() {
+        mAwInit.startYourEngines(true);
+        if (checkNeedsPost()) {
+            return mRunQueue.runOnUiThreadBlocking(() -> getRenderProcess());
+        }
+        return mAwContents.getRenderProcess();
     }
 
     public void setAwContentsOnUiThread(AwContents awContents) {

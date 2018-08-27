@@ -70,4 +70,10 @@ class SupportLibWebViewChromium implements WebViewProviderBoundaryInterface {
     public WebChromeClient getWebChromeClient() {
         return mSharedWebViewChromium.getWebChromeClient();
     }
+
+    @Override
+    public /* WebViewRenderer */ InvocationHandler getWebViewRenderer() {
+        return BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                new SupportLibWebViewRendererAdapter(mSharedWebViewChromium.getRenderProcess()));
+    }
 }
