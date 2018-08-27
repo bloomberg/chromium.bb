@@ -70,12 +70,13 @@ function unloadOpenFileDialog(dialog, element = '.button-panel button.ok') {
  */
 function createFileEntryPromise(volume) {
   let localEntryPromise = addEntries(['local'], BASIC_LOCAL_ENTRY_SET);
-  let driveEntryPromise = addEntries(['drive'], BASIC_DRIVE_ENTRY_SET);
+  let driveEntryPromise =
+      addEntries(['drive'], [ENTRIES.hello, ENTRIES.pinned]);
 
   return Promise.all([localEntryPromise, driveEntryPromise])
       .then(function returnVolumeEntrySet() {
         if (volume == 'drive')
-          return BASIC_DRIVE_ENTRY_SET;
+          return [ENTRIES.hello, ENTRIES.pinned];
         return BASIC_LOCAL_ENTRY_SET;
       });
 }
@@ -91,7 +92,7 @@ function createFileEntryPromise(volume) {
 function openFileDialogClickOkButton(volume, name) {
   const type = {type: 'openFile'};
 
-  const okButton = '.button-panel button.ok';
+  const okButton = '.button-panel button.ok:enabled';
   let closer = clickOpenFileDialogButton.bind(null, name, okButton);
 
   return createFileEntryPromise(volume)
@@ -100,6 +101,44 @@ function openFileDialogClickOkButton(volume, name) {
       })
       .then(function expectDialogFileEntry(result) {
         chrome.test.assertEq(name, result.name);
+      });
+}
+
+/**
+ * Adds the basic file entry sets then opens the file dialog on the volume.
+ * Once file |name| is shown, select it and verify that the Ok button is
+ * disabled.
+ *
+ * @param {!string} volume Volume name for openAndWaitForClosingDialog.
+ * @param {!string} name File name to select in the dialog.
+ * @return {!Promise} Promise to be fulfilled on success.
+ */
+function openFileDialogExpectOkButtonDisabled(volume, name, pinnedName) {
+  const type = {type: 'openFile'};
+
+  const okButton = '.button-panel button.ok:enabled';
+  const disabledOkButton = '.button-panel button.ok:disabled';
+  const cancelButton = '.button-panel button.cancel';
+  let closer = dialog => {
+    return remoteCall.callRemoteTestUtil('selectFile', dialog, [pinnedName])
+        .then(function awaitDialogButton() {
+          return remoteCall.waitForElement(dialog, okButton);
+        })
+        .then(() => remoteCall.callRemoteTestUtil('selectFile', dialog, [name]))
+        .then(function awaitDialogButton() {
+          return remoteCall.waitForElement(dialog, disabledOkButton);
+        })
+        .then(() => {
+          clickOpenFileDialogButton(name, cancelButton, dialog);
+        });
+  };
+
+  return createFileEntryPromise(volume)
+      .then(function openFileDialog(entrySet) {
+        return openAndWaitForClosingDialog(type, volume, entrySet, closer);
+      })
+      .then(function expectDialogFileEntry(result) {
+        chrome.test.assertEq(undefined, result);
       });
 }
 
@@ -180,13 +219,34 @@ testcase.openFileDialogEscapeDownloads = function() {
  * Test file present in Drive only.
  * @{!string}
  */
-const TEST_DRIVE_FILE = BASIC_DRIVE_ENTRY_SET[5].targetPath;
+const TEST_DRIVE_FILE = ENTRIES.hello.targetPath;
+
+/**
+ * Test file present in Drive only.
+ * @{!string}
+ */
+const TEST_DRIVE_PINNED_FILE = ENTRIES.pinned.targetPath;
 
 /**
  * Tests opening file dialog on Drive and closing it with Ok button.
  */
 testcase.openFileDialogDrive = function() {
   testPromise(openFileDialogClickOkButton('drive', TEST_DRIVE_FILE));
+};
+
+/**
+ * Tests opening file dialog on Drive and closing it with Ok button.
+ */
+testcase.openFileDialogDriveOffline = function() {
+  testPromise(openFileDialogExpectOkButtonDisabled(
+      'drive', TEST_DRIVE_FILE, TEST_DRIVE_PINNED_FILE));
+};
+
+/**
+ * Tests opening file dialog on Drive and closing it with Ok button.
+ */
+testcase.openFileDialogDriveOfflinePinned = function() {
+  testPromise(openFileDialogClickOkButton('drive', TEST_DRIVE_PINNED_FILE));
 };
 
 /**

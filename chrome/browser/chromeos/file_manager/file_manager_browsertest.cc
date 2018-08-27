@@ -42,6 +42,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& Offline() {
+    offline = true;
+    return *this;
+  }
+
   // Show the startup browser. Some tests invoke the file picker dialog during
   // the test. Requesting a file picker from a background page is forbidden by
   // the apps platform, and it's a bug that these tests do so.
@@ -79,6 +84,7 @@ struct TestCase {
   bool enable_drivefs = false;
   bool with_browser = false;
   bool needs_zip = false;
+  bool offline = false;
 };
 
 // EventCase: FilesAppBrowserTest with trusted JS Events.
@@ -141,6 +147,8 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
   bool GetNeedsZipSupport() const override {
     return GetParam().needs_zip;
   }
+
+  bool GetIsOffline() const override { return GetParam().offline; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);
@@ -499,7 +507,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("openFileDialogCancelDrive").WithBrowser(),
         TestCase("openFileDialogCancelDrive").WithBrowser().EnableDriveFs(),
         TestCase("openFileDialogEscapeDrive").WithBrowser(),
-        TestCase("openFileDialogEscapeDrive").WithBrowser().EnableDriveFs()));
+        TestCase("openFileDialogEscapeDrive").WithBrowser().EnableDriveFs(),
+        TestCase("openFileDialogDriveOffline")
+            .WithBrowser()
+            .Offline()
+            .EnableDriveFs(),
+        TestCase("openFileDialogDriveOfflinePinned")
+            .WithBrowser()
+            .Offline()
+            .EnableDriveFs()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CopyBetweenWindows, /* copy_between_windows.js */

@@ -33,6 +33,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/file_manager_private.h"
 #include "chromeos/chromeos_features.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
@@ -47,6 +48,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/test/test_api.h"
+#include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -196,7 +198,8 @@ struct AddEntriesMessage {
                   const std::string& team_drive_name,
                   SharedOption shared_option,
                   const base::Time& last_modified_time,
-                  const EntryCapabilities& capabilities)
+                  const EntryCapabilities& capabilities,
+                  bool pinned)
         : type(type),
           shared_option(shared_option),
           source_file_name(source_file_name),
@@ -204,7 +207,8 @@ struct AddEntriesMessage {
           team_drive_name(team_drive_name),
           mime_type(mime_type),
           last_modified_time(last_modified_time),
-          capabilities(capabilities) {}
+          capabilities(capabilities),
+          pinned(pinned) {}
 
     EntryType type;                  // Entry type: file or directory.
     SharedOption shared_option;      // File entry sharing option.
@@ -215,6 +219,7 @@ struct AddEntriesMessage {
     std::string mime_type;           // File entry content mime type.
     base::Time last_modified_time;   // Entry last modified time.
     EntryCapabilities capabilities;  // Entry permissions.
+    bool pinned = false;             // Whether the file should be pinned.
 
     // Registers the member information to the given converter.
     static void RegisterJSONConverter(
@@ -236,6 +241,7 @@ struct AddEntriesMessage {
                                      &MapStringToTime);
       converter->RegisterNestedField("capabilities",
                                      &TestEntryInfo::capabilities);
+      converter->RegisterBoolField("pinned", &TestEntryInfo::pinned);
     }
 
     // Maps |value| to an EntryType. Returns true on success.
@@ -375,6 +381,24 @@ class TestVolume {
   DISALLOW_COPY_AND_ASSIGN(TestVolume);
 };
 
+class OfflineGetDriveConnectionState : public UIThreadExtensionFunction {
+ public:
+  OfflineGetDriveConnectionState() = default;
+
+  ResponseAction Run() override {
+    extensions::api::file_manager_private::DriveConnectionState result;
+    result.type = "offline";
+    return RespondNow(
+        ArgumentList(extensions::api::file_manager_private::
+                         GetDriveConnectionState::Results::Create(result)));
+  }
+
+ private:
+  ~OfflineGetDriveConnectionState() override = default;
+
+  DISALLOW_COPY_AND_ASSIGN(OfflineGetDriveConnectionState);
+};
+
 constexpr char kPredefinedProfileSalt[] = "salt";
 
 }  // anonymous namespace
@@ -505,11 +529,11 @@ class FakeTestVolume : public LocalTestVolume {
     CreateEntry(AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::FILE, "text.txt", "hello.txt", std::string(),
         "text/plain", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities()));
+        AddEntriesMessage::EntryCapabilities(), false));
     CreateEntry(AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::DIRECTORY, std::string(), "A", std::string(),
         std::string(), AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
-        AddEntriesMessage::EntryCapabilities()));
+        AddEntriesMessage::EntryCapabilities(), false));
     base::RunLoop().RunUntilIdle();
     return true;
   }
@@ -765,7 +789,7 @@ class DriveFsTestVolume : public DriveTestVolume {
       case AddEntriesMessage::FILE: {
         fake_drivefs_->SetMetadata(
             GetRelativeDrivePathForTestEntry(entry), entry.mime_type,
-            base::FilePath(entry.target_path).BaseName().value());
+            base::FilePath(entry.target_path).BaseName().value(), entry.pinned);
 
         if (entry.source_file_name.empty()) {
           ASSERT_EQ(0, base::WriteFile(target_path, "", 0));
@@ -1015,6 +1039,12 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
   display_service_ =
       std::make_unique<NotificationDisplayServiceTester>(profile());
 
+  if (IsOfflineTest()) {
+    ExtensionFunctionRegistry::GetInstance().OverrideFunctionForTesting(
+        "fileManagerPrivate.getDriveConnectionState",
+        &NewExtensionFunction<OfflineGetDriveConnectionState>);
+  }
+
   // The test resources are setup: enable and add default ChromeOS component
   // extensions now and not before: crbug.com/831074, crbug.com/804413
   test::AddDefaultComponentExtensionsOnMainThread(profile());
@@ -1029,6 +1059,10 @@ bool FileManagerBrowserTestBase::GetRequiresStartupBrowser() const {
 }
 
 bool FileManagerBrowserTestBase::GetNeedsZipSupport() const {
+  return false;
+}
+
+bool FileManagerBrowserTestBase::GetIsOffline() const {
   return false;
 }
 
