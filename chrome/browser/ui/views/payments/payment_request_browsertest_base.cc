@@ -638,6 +638,19 @@ void PaymentRequestBrowserTestBase::PayWithCreditCard(
 }
 
 void PaymentRequestBrowserTestBase::RetryPaymentRequest(
+    const std::string& validation_errors) {
+  ResetEventWaiterForSequence(
+      {DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
+       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::SPEC_DONE_UPDATING,
+       DialogEvent::PROCESSING_SPINNER_HIDDEN, DialogEvent::DIALOG_OPENED});
+
+  ASSERT_TRUE(content::ExecuteScript(GetActiveWebContents(),
+                                     "retry(" + validation_errors + ");"));
+
+  WaitForObservedEvent();
+}
+
+void PaymentRequestBrowserTestBase::RetryPaymentRequest(
     const std::string& validation_errors,
     const DialogEvent& dialog_event) {
   ResetEventWaiterForSequence(

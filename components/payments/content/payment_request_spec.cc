@@ -172,7 +172,7 @@ base::string16 PaymentRequestSpec::GetPayerError(
 }
 
 bool PaymentRequestSpec::has_shipping_address_error() const {
-  return shipping_address_errors_ &&
+  return shipping_address_errors_ && request_shipping() &&
          !(shipping_address_errors_->address_line.empty() &&
            shipping_address_errors_->city.empty() &&
            shipping_address_errors_->country.empty() &&
@@ -188,6 +188,8 @@ bool PaymentRequestSpec::has_shipping_address_error() const {
 
 bool PaymentRequestSpec::has_payer_error() const {
   return payer_errors_ &&
+         (request_payer_email() || request_payer_name() ||
+          request_payer_phone()) &&
          !(payer_errors_->email.empty() && payer_errors_->name.empty() &&
            payer_errors_->phone.empty());
 }

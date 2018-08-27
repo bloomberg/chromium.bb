@@ -391,4 +391,37 @@ IN_PROC_BROWSER_TEST_F(
             GetErrorLabelForType(autofill::PHONE_HOME_WHOLE_NUMBER));
 }
 
+IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
+                       RetryWithPayerErrors_NoPaymentOptions) {
+  NavigateTo("/payment_request_retry_with_no_payment_options.html");
+
+  autofill::AutofillProfile contact = autofill::test::GetFullProfile();
+  AddAutofillProfile(contact);
+
+  autofill::CreditCard card = autofill::test::GetCreditCard();
+  card.set_billing_address_id(contact.guid());
+  AddCreditCard(card);
+
+  InvokePaymentRequestUI();
+  PayWithCreditCard(base::ASCIIToUTF16("123"));
+  RetryPaymentRequest(
+      "{"
+      "  payer: {"
+      "    email: 'EMAIL ERROR',"
+      "    name: 'NAME ERROR',"
+      "    phone: 'PHONE ERROR'"
+      "  }"
+      "}");
+
+  const int kErrorLabelOffset =
+      static_cast<int>(DialogViewID::ERROR_LABEL_OFFSET);
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(kErrorLabelOffset +
+                                                autofill::EMAIL_ADDRESS));
+  EXPECT_EQ(nullptr, dialog_view()->GetViewByID(kErrorLabelOffset +
+                                                autofill::NAME_FULL));
+  EXPECT_EQ(nullptr,
+            dialog_view()->GetViewByID(kErrorLabelOffset +
+                                       autofill::PHONE_HOME_WHOLE_NUMBER));
+}
+
 }  // namespace payments
