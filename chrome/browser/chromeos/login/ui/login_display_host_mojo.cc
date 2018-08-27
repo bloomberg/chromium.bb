@@ -306,6 +306,12 @@ void LoginDisplayHostMojo::UpdateOobeDialogSize(int width, int height) {
     dialog_->UpdateSizeAndPosition(width, height);
 }
 
+void LoginDisplayHostMojo::UpdateOobeDialogState(
+    ash::mojom::OobeDialogState state) {
+  if (dialog_)
+    dialog_->SetState(state);
+}
+
 const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
   return users_;
 }

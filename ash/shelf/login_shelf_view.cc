@@ -420,13 +420,18 @@ void LoginShelfView::SetKioskApps(
   UpdateUi();
 }
 
-void LoginShelfView::SetLoginDialogVisible(bool visible) {
-  dialog_visible_ = visible;
+void LoginShelfView::SetLoginDialogState(mojom::OobeDialogState state) {
+  dialog_state_ = state;
   UpdateUi();
 }
 
 void LoginShelfView::SetAllowLoginAsGuest(bool allow_guest) {
   allow_guest_ = allow_guest;
+  UpdateUi();
+}
+
+void LoginShelfView::SetShowGuestButtonForGaiaScreen(bool can_show) {
+  allow_guest_during_gaia_ = can_show;
   UpdateUi();
 }
 
@@ -448,8 +453,8 @@ void LoginShelfView::OnShutdownPolicyChanged(bool reboot_on_shutdown) {
   UpdateUi();
 }
 
-void LoginShelfView::OnOobeDialogVisibilityChanged(bool visible) {
-  SetLoginDialogVisible(visible);
+void LoginShelfView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
+  SetLoginDialogState(state);
 }
 
 bool LoginShelfView::LockScreenActionBackgroundAnimating() const {
@@ -492,12 +497,37 @@ void LoginShelfView::UpdateUi() {
   // TODO(agawronska): Implement full list of conditions for buttons visibility,
   // when views based shelf if enabled during OOBE. https://crbug.com/798869
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
-  GetViewByID(kBrowseAsGuest)
-      ->SetVisible(allow_guest_ && !dialog_visible_ && is_login_primary);
-  GetViewByID(kAddUser)->SetVisible(!dialog_visible_ && is_login_primary);
-  kiosk_apps_button_->SetVisible(
-      !dialog_visible_ && kiosk_apps_button_->HasApps() && is_login_primary);
+  bool dialog_visible = dialog_state_ != mojom::OobeDialogState::HIDDEN;
 
+  // Show guest button if:
+  // 1. It's in login screen.
+  // 2. Guest login is allowed.
+  // 3. OOBE UI dialog is not currently showing wrong HWID warning screen or
+  // SAML password confirmation screen.
+  // 4. OOBE UI dialog is not currently showing gaia signin screen or guest
+  // login is allowed during gaia.
+  GetViewByID(kBrowseAsGuest)
+      ->SetVisible(
+          allow_guest_ &&
+          dialog_state_ != mojom::OobeDialogState::WRONG_HWID_WARNING &&
+          dialog_state_ != mojom::OobeDialogState::SAML_PASSWORD_CONFIRM &&
+          (dialog_state_ != mojom::OobeDialogState::GAIA_SIGNIN ||
+           allow_guest_during_gaia_) &&
+          is_login_primary);
+
+  // Show add user button when it's in login screen and Oobe UI dialog is not
+  // visible.
+  GetViewByID(kAddUser)->SetVisible(!dialog_visible && is_login_primary);
+
+  // Show kiosk apps button if:
+  // 1. It's in login screen.
+  // 2. There are Kiosk apps available.
+  // 3. Oobe UI dialog is not visible or is currently showing gaia signin
+  // screen.
+  kiosk_apps_button_->SetVisible(
+      (!dialog_visible ||
+       dialog_state_ == mojom::OobeDialogState::GAIA_SIGNIN) &&
+      kiosk_apps_button_->HasApps() && is_login_primary);
   Layout();
 }
 

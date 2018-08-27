@@ -128,6 +128,9 @@ void FakeLoginDisplayHost::HideOobeDialog() {}
 
 void FakeLoginDisplayHost::UpdateOobeDialogSize(int width, int height) {}
 
+void FakeLoginDisplayHost::UpdateOobeDialogState(
+    ash::mojom::OobeDialogState state) {}
+
 const user_manager::UserList FakeLoginDisplayHost::GetUsers() {
   return user_manager::UserList();
 }

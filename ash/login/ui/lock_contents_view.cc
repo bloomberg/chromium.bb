@@ -921,8 +921,8 @@ void LockContentsView::OnFocusLeavingLockScreenApps(bool reverse) {
     FindFirstOrLastFocusableChild(this, reverse)->RequestFocus();
 }
 
-void LockContentsView::OnOobeDialogVisibilityChanged(bool visible) {
-  if (!visible && primary_big_view_)
+void LockContentsView::OnOobeDialogStateChanged(mojom::OobeDialogState state) {
+  if (state == mojom::OobeDialogState::HIDDEN && primary_big_view_)
     primary_big_view_->RequestFocus();
 }
 

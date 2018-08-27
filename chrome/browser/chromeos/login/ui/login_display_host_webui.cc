@@ -1143,6 +1143,11 @@ void LoginDisplayHostWebUI::UpdateOobeDialogSize(int width, int height) {
   NOTREACHED();
 }
 
+void LoginDisplayHostWebUI::UpdateOobeDialogState(
+    ash::mojom::OobeDialogState state) {
+  NOTREACHED();
+}
+
 const user_manager::UserList LoginDisplayHostWebUI::GetUsers() {
   return user_manager::UserList();
 }

@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -145,6 +146,9 @@ class LoginDisplayHost {
 
   // Update the size of the oobe dialog.
   virtual void UpdateOobeDialogSize(int width, int height) = 0;
+
+  // Update the state of the oobe dialog.
+  virtual void UpdateOobeDialogState(ash::mojom::OobeDialogState state) = 0;
 
   // Get users that are visible in the login screen UI.
   // This is mainly used by views login screen. WebUI login screen will

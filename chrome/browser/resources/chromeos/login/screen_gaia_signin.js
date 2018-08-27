@@ -706,6 +706,11 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       $('login-header-bar').showCreateSupervisedButton =
           data.supervisedUsersCanCreate;
       $('login-header-bar').showGuestButton = data.guestSignin;
+      if (Oobe.getInstance().showingViewsLogin) {
+        chrome.send(
+            'showGuestForGaia',
+            [data.guestSignin, !this.closable && this.isAtTheBeginning()]);
+      }
 
       // Reset SAML
       this.classList.toggle('full-width', false);
