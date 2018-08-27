@@ -1040,7 +1040,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnCheckCompleted();
-  void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);
+  void OnPostMessageEvent(FrameMsg_PostMessage_Params params);
   void OnReportContentSecurityPolicyViolation(
       const content::CSPViolationParams& violation_params);
   void OnGetSavableResourceLinks();
@@ -1059,6 +1059,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnNotifyUserActivation();
   void OnMediaPlayerActionAt(const gfx::PointF&,
                              const blink::WebMediaPlayerAction&);
+
+  void PostMessageEvent(FrameMsg_PostMessage_Params params);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)

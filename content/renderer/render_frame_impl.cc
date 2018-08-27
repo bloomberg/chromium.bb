@@ -2504,8 +2504,27 @@ void RenderFrameImpl::OnCheckCompleted() {
   frame_->CheckCompleted();
 }
 
-void RenderFrameImpl::OnPostMessageEvent(
-    const FrameMsg_PostMessage_Params& params) {
+void RenderFrameImpl::OnPostMessageEvent(FrameMsg_PostMessage_Params params) {
+  // This function is called on the per-thread task runner via legacy IPC. From
+  // the investigation of task duration on some web sites [1], this IPC message
+  // processing is one of the heaviest tasks. Use a per-frame task runner
+  // instead to get more efficient scheduing.
+  // [1] http://bit.ly/2MqaXfw
+  //
+  // TODO(hajimehoshi): Replace this legacy IPC usage with Mojo after message
+  // ordering is controllable.
+
+  // Ensure the message data is owned by |params| itself so that the data is
+  // live even after moved.
+  params.message->data.EnsureDataIsOwned();
+
+  frame_->GetTaskRunner(blink::TaskType::kPostedMessage)
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&RenderFrameImpl::PostMessageEvent,
+                                weak_factory_.GetWeakPtr(), std::move(params)));
+}
+
+void RenderFrameImpl::PostMessageEvent(FrameMsg_PostMessage_Params params) {
   // Find the source frame if it exists.
   WebFrame* source_frame = nullptr;
   if (params.source_routing_id != MSG_ROUTING_NONE) {
