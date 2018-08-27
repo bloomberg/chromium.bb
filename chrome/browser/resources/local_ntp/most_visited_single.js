@@ -764,6 +764,9 @@ function renderMaterialDesignTile(data) {
       let fallbackLetter = document.createElement('div');
       fallbackLetter.className = CLASSES.MD_FALLBACK_LETTER;
       fallbackLetter.innerText = data.title.charAt(0).toUpperCase();
+      if (navigator.userAgent.indexOf('Windows') > -1) {
+        fallbackLetter.style.fontWeight = 600;
+      }
       mdFavicon.classList.add(CLASSES.FAILED_FAVICON);
 
       fallbackBackground.appendChild(fallbackLetter);

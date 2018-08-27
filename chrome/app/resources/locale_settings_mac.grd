@@ -132,6 +132,11 @@
         Times
       </message>
 
+      <!-- The default value for |WebPreference::ntp_font_family| -->
+      <message name="IDS_NTP_FONT_FAMILY" use_name_for_id="true">
+        Roboto
+      </message>
+
       <!-- The default value for |WebPreference::sans_serif_font_family| -->
       <message name="IDS_SANS_SERIF_FONT_FAMILY" use_name_for_id="true">
         Helvetica

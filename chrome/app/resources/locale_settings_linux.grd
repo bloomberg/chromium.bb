@@ -137,6 +137,11 @@
         Arial
       </message>
 
+      <!-- The default value for |WebPreference::ntp_font_family| -->
+      <message name="IDS_NTP_FONT_FAMILY" use_name_for_id="true">
+        Roboto
+      </message>
+
       <!-- The default value for |WebPreference::cursive_font_family| -->
       <message name="IDS_CURSIVE_FONT_FAMILY" use_name_for_id="true">
         Comic Sans MS
