@@ -1467,3 +1467,5 @@ crbug.com/874695 virtual/video-surface-layer/media/video-played-collapse.html [ 
 crbug.com/874695 virtual/video-surface-layer/media/video-poster-after-playing.html [ Slow ]
 crbug.com/874695 virtual/video-surface-layer/media/video-poster-load-after-playing.html [ Slow ]
 crbug.com/874695 virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Slow ]
+
+crbug.com/798572 virtual/sharedarraybuffer/external/wpt/html/infrastructure/safe-passing-of-structured-data/shared-array-buffers/window-simple-success.html [ Slow ]

@@ -100,9 +100,6 @@ crbug.com/803276 inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 crbug.com/803276 virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-profile.js [ Skip ]
 crbug.com/803276 virtual/sampling-heap-profiler/inspector-protocol/memory/sampling-native-snapshot.js [ Skip ]
 
-# Crashes on Linux Trusty MSAN
-crbug.com/842262 [ Linux ] virtual/enable_wasm/external/wpt/wasm/wasm_indexeddb_test.https.html [ Crash ]
-
 # The following test is flaky and timing out on chromium.webkit/WebKit Linux Trusty MSAN.
 crbug.com/851497 http/tests/devtools/tracing/timeline-style/timeline-style-recalc-all-invalidator-types.js [ Pass Timeout ]
 
