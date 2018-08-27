@@ -89,7 +89,7 @@ void AppCacheDispatcherHost::SelectCache(int32_t host_id,
       mojo::ReportBadMessage("ACDH_SELECT_CACHE");
     }
   } else {
-    frontend_proxy_.OnCacheSelected(host_id, std::move(AppCacheInfo()));
+    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
   }
 }
 
@@ -99,7 +99,7 @@ void AppCacheDispatcherHost::SelectCacheForSharedWorker(int32_t host_id,
     if (!backend_impl_.SelectCacheForSharedWorker(host_id, appcache_id))
       mojo::ReportBadMessage("ACDH_SELECT_CACHE_FOR_SHARED_WORKER");
   } else {
-    frontend_proxy_.OnCacheSelected(host_id, std::move(AppCacheInfo()));
+    frontend_proxy_.OnCacheSelected(host_id, AppCacheInfo());
   }
 }
 
