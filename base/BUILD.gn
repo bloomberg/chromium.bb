@@ -2929,6 +2929,8 @@ if (is_android) {
       "android/java/src/org/chromium/base/TimezoneUtils.java",
       "android/java/src/org/chromium/base/TraceEvent.java",
       "android/java/src/org/chromium/base/UnguessableToken.java",
+      "android/java/src/org/chromium/base/UserData.java",
+      "android/java/src/org/chromium/base/UserDataHost.java",
       "android/java/src/org/chromium/base/VisibleForTesting.java",
       "android/java/src/org/chromium/base/annotations/AccessedByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNative.java",
@@ -2999,6 +3001,7 @@ if (is_android) {
       "android/javatests/src/org/chromium/base/CommandLineInitUtilTest.java",
       "android/javatests/src/org/chromium/base/CommandLineTest.java",
       "android/javatests/src/org/chromium/base/EarlyTraceEventTest.java",
+      "android/javatests/src/org/chromium/base/UserDataHostTest.java",
 
       # TODO(nona): move to Junit once that is built for Android N.
       "android/javatests/src/org/chromium/base/LocaleUtilsTest.java",
