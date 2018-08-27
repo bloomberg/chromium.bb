@@ -22,6 +22,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -138,6 +139,7 @@ public class ScrimTest {
     @Test
     @SmallTest
     @Feature({"Scrim"})
+    @DisabledTest(message = "crbug.com/877774")
     public void testOmniboxScrim() throws InterruptedException, TimeoutException {
         assertScrimVisibility(false);
         assertFalse("Nothing should be obscuring the tab.",
