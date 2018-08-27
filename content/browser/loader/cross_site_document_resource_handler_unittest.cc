@@ -345,7 +345,13 @@ const TestScenario kScenarios[] = {
         kVerdictPacketForHeadersBasedVerdict,       // verdict_packet
     },
     {
-        "Allowed: Cross-site fetch HTML from Flash without CORS",
+        // Blocked, because the unit test doesn't make a call to
+        // CrossOriginReadBlocking::AddExceptionForFlash (simulating a behavior
+        // of a compromised renderer that only pretends to be hosting Flash).
+        //
+        // The regular scenario is covered by integration tests:
+        // OutOfProcessPPAPITest.URLLoaderTrusted.
+        "Blocked: Cross-site fetch HTML from Flash without CORS",
         __LINE__,
         "http://www.b.com/plugin.html",             // target_url
         RESOURCE_TYPE_PLUGIN_RESOURCE,              // resource_type
@@ -357,7 +363,7 @@ const TestScenario kScenarios[] = {
         false,                                      // simulate_range_response
         AccessControlAllowOriginHeader::kOmit,      // cors_response
         {"<html><head>this should sniff as HTML"},  // packets
-        Verdict::kAllow,                            // verdict
+        Verdict::kBlock,                            // verdict
         kVerdictPacketForHeadersBasedVerdict,       // verdict_packet
     },
     {

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -40,6 +41,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
+#include "ppapi/shared_impl/ppapi_permissions.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
 namespace content {
@@ -178,6 +180,21 @@ PpapiPluginProcessHost* PluginServiceImpl::FindOrStartPpapiPluginProcess(
             << plugin_path.MaybeAsASCII();
     return nullptr;
   }
+
+  // Flash has its own flavour of CORS, so CORB needs to allow all responses
+  // and rely on Flash to enforce same-origin policy.  See also
+  // https://crbug.com/874515 and https://crbug.com/816318#c5.
+  //
+  // Note that ppapi::PERMISSION_FLASH is present not only in the Flash plugin.
+  // This permission is also present in plugins added from the cmdline and so
+  // will be also present for "PPAPI Tests" plugin used for
+  // OutOfProcessPPAPITest.URLLoaderTrusted and related tests.
+  //
+  // TODO(lukasza, laforge): https://crbug.com/702995: Remove the code below
+  // once Flash support is removed from Chromium (probably around 2020 - see
+  // https://www.chromium.org/flash-roadmap).
+  if (info->permissions & ppapi::PERMISSION_FLASH)
+    RenderProcessHostImpl::AddCorbExceptionForPlugin(render_process_id);
 
   PpapiPluginProcessHost* plugin_host =
       FindPpapiPluginProcess(plugin_path, profile_data_directory, origin_lock);

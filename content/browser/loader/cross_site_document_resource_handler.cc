@@ -579,6 +579,8 @@ void CrossSiteDocumentResourceHandler::OnResponseCompleted(
 
 bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
     const network::ResourceResponse& response) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
   // Delegate most decisions to CrossOriginReadBlocking::ResponseAnalyzer.
   analyzer_ =
       std::make_unique<network::CrossOriginReadBlocking::ResponseAnalyzer>(
@@ -612,14 +614,22 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   if (!info || info->GetChildID() == -1)
     return false;
 
-  // Don't block plugin requests.
-  // TODO(lukasza): Only disable CORB for plugins with universal access (see
-  // PepperURLLoaderHost::has_universal_access_), because only such plugins may
-  // have their own CORS-like mechanisms - e.g. crossdomain.xml in Flash).  We
-  // should still enforce CORB for other kinds of plugins (i.e. ones without
-  // universal access).
+  // Don't block some plugin requests.
+  //
+  // Note that in practice this exception only only matters to Flash and test
+  // plugins (both can issue requests without CORS and both will be covered by
+  // CORB::ShouldAllowForPlugin below).
+  //
+  // This exception is not needed for:
+  // - PNaCl (which always issues CORS requests)
+  // - PDF (which is already covered by the exception for chrome-extension://...
+  //   initiators and therefore doesn't need another exception here;
+  //   additionally PDF doesn't _really_ make *cross*-origin requests - it just
+  //   seems that way because of the usage of the Chrome extension).
   if (info->GetResourceType() == RESOURCE_TYPE_PLUGIN_RESOURCE &&
-      is_nocors_plugin_request_) {
+      is_nocors_plugin_request_ &&
+      network::CrossOriginReadBlocking::ShouldAllowForPlugin(
+          info->GetChildID())) {
     return false;
   }
 
