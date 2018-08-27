@@ -16,6 +16,7 @@ Suggestion::Suggestion(const Suggestion& other)
       frontend_id(other.frontend_id),
       value(other.value),
       label(other.label),
+      additional_label(other.additional_label),
       custom_icon(other.custom_icon),
       icon(other.icon),
       match(other.match),

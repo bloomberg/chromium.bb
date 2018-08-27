@@ -362,8 +362,8 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
               SuggestionVectorValuesAre(testing::UnorderedElementsAreArray(
                   GetSuggestionList({test_username_, additional_username}))),
               SuggestionVectorLabelsAre(testing::AllOf(
-                  testing::Contains(base::UTF8ToUTF16(data.preferred_realm)),
-                  testing::Contains(base::UTF8ToUTF16(additional.realm))))),
+                  testing::Contains(base::UTF8ToUTF16("foo.com")),
+                  testing::Contains(base::UTF8ToUTF16("foobarrealm.org"))))),
           false, _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), 0,

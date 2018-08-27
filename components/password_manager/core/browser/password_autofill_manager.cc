@@ -37,6 +37,7 @@
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
@@ -67,6 +68,9 @@ base::string16 GetHumanReadableRealm(const std::string& signon_realm) {
   if (maybe_facet_uri.IsValidAndroidFacetURI())
     return base::UTF8ToUTF16("android://" +
                              maybe_facet_uri.android_package_name() + "/");
+  GURL realm(signon_realm);
+  if (realm.is_valid())
+    return base::UTF8ToUTF16(realm.host());
   return base::UTF8ToUTF16(signon_realm);
 }
 
@@ -98,10 +102,9 @@ void AppendSuggestionIfMatching(
     autofill::Suggestion suggestion(
         ReplaceEmptyUsername(field_suggestion, &replaced_username));
     suggestion.is_value_secondary = replaced_username;
-    suggestion.label =
-        signon_realm.empty()
-            ? base::string16(password_length, kPasswordReplacementChar)
-            : GetHumanReadableRealm(signon_realm);
+    suggestion.label = GetHumanReadableRealm(signon_realm);
+    suggestion.additional_label =
+        base::string16(password_length, kPasswordReplacementChar);
     suggestion.frontend_id = is_password_field
                                  ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
                                  : autofill::POPUP_ITEM_ID_USERNAME_ENTRY;
