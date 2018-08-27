@@ -1279,16 +1279,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
 
   InvokePaymentRequestUI();
   PayWithCreditCard(base::ASCIIToUTF16("123"));
-
-  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   RetryPaymentRequest(
       "{"
       "  shippingAddress: {"
       "    addressLine: 'ADDRESS LINE ERROR',"
       "    city: 'CITY ERROR'"
       "  }"
-      "}");
-  WaitForObservedEvent();
+      "}",
+      DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
 
   EXPECT_EQ(base::ASCIIToUTF16("ADDRESS LINE ERROR"),
             GetErrorLabelForType(autofill::ADDRESS_HOME_STREET_ADDRESS));
@@ -1317,15 +1315,14 @@ IN_PROC_BROWSER_TEST_F(
   InvokePaymentRequestUI();
   PayWithCreditCard(base::ASCIIToUTF16("123"));
 
-  ResetEventWaiter(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
   RetryPaymentRequest(
       "{"
       "  shippingAddress: {"
       "    addressLine: 'ADDRESS LINE ERROR',"
       "    city: 'CITY ERROR'"
       "  }"
-      "}");
-  WaitForObservedEvent();
+      "}",
+      DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
 
   EXPECT_EQ(base::ASCIIToUTF16("ADDRESS LINE ERROR"),
             GetErrorLabelForType(autofill::ADDRESS_HOME_STREET_ADDRESS));

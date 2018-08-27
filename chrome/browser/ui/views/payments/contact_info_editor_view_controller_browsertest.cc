@@ -336,8 +336,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
 
   InvokePaymentRequestUI();
   PayWithCreditCard(base::ASCIIToUTF16("123"));
-
-  ResetEventWaiter(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
   RetryPaymentRequest(
       "{"
       "  payer: {"
@@ -345,8 +343,8 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestContactInfoEditorTest,
       "    name: 'NAME ERROR',"
       "    phone: 'PHONE ERROR'"
       "  }"
-      "}");
-  WaitForObservedEvent();
+      "}",
+      DialogEvent::CONTACT_INFO_EDITOR_OPENED);
 
   EXPECT_EQ(base::ASCIIToUTF16("EMAIL ERROR"),
             GetErrorLabelForType(autofill::EMAIL_ADDRESS));
@@ -375,8 +373,6 @@ IN_PROC_BROWSER_TEST_F(
 
   InvokePaymentRequestUI();
   PayWithCreditCard(base::ASCIIToUTF16("123"));
-
-  ResetEventWaiter(DialogEvent::CONTACT_INFO_EDITOR_OPENED);
   RetryPaymentRequest(
       "{"
       "  payer: {"
@@ -384,8 +380,8 @@ IN_PROC_BROWSER_TEST_F(
       "    name: 'NAME ERROR',"
       "    phone: 'PHONE ERROR'"
       "  }"
-      "}");
-  WaitForObservedEvent();
+      "}",
+      DialogEvent::CONTACT_INFO_EDITOR_OPENED);
 
   EXPECT_EQ(base::ASCIIToUTF16("EMAIL ERROR"),
             GetErrorLabelForType(autofill::EMAIL_ADDRESS));
