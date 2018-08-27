@@ -421,7 +421,7 @@ void OpaqueBrowserFrameViewLayout::LayoutTitleBar(views::View* host) {
     if (hosted_app_button_container_) {
       available_space_trailing_x_ =
           hosted_app_button_container_->LayoutInContainer(
-              available_space_leading_x_, available_space_trailing_x_, y,
+              available_space_leading_x_, available_space_trailing_x_, 0,
               available_height);
     }
   }
