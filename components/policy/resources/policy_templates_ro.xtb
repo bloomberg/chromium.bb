@@ -178,6 +178,13 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Activează blocarea software-ului de la o terță parte</translation>
 <translation id="1504431521196476721">Atestare la distanță</translation>
+<translation id="1507957856411744193">Dacă această politică este activată, <ph name="PRODUCT_NAME" /> se va conecta la dispozitivele Google Cast folosind toate adresele IP, nu numai adresele private RFC1918/RFC4913.
+
+          Dacă această politică este dezactivată, <ph name="PRODUCT_NAME" /> se va conecta la dispozitivele Google Cast folosind numai adresele private RFC1918/RFC4913.
+
+          Dacă această politică nu este configurată, <ph name="PRODUCT_NAME" /> se va conecta la dispozitivele Google Cast folosind numai adresele private RFC1918/RFC4913, cu excepția cazului în care este activată funcția CastAllowAllIPs.
+
+          Dacă politica „EnableMediaRouter” este dezactivată, valoarea acestei politici nu va avea niciun efect.</translation>
 <translation id="1509692106376861764">Această politică a fost retrasă începând cu <ph name="PRODUCT_NAME" /> versiunea 29.</translation>
 <translation id="1514888685242892912">Activează <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Permite site-urilor să urmărească locația fizică a utilizatorilor</translation>
@@ -1951,6 +1958,7 @@ Dacă politica nu este setată, se va folosi comportamentul prestabilit de a nu 
 
       Politica <ph name="SYNC_DISABLED_POLICY_NAME" /> dezactivează integral sincronizarea datelor, ignorând RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtrează conținutul pentru adulți de pe site-urile de nivel superior (nu și pentru cadrele iframe încorporate)</translation>
+<translation id="6734521799274931721">Controlează funcția Dispozitive de stocare în rețea pentru disponibilitatea sistemului de operare Chrome</translation>
 <translation id="6735701345096330595">Forțează activarea verificării ortografice pentru limbi</translation>
 <translation id="673699536430961464">Această setare le permite utilizatorilor să comute între conturile Google, în zona de conținut a ferestrei de browser, după ce se conectează la dispozitivul cu <ph name="PRODUCT_OS_NAME" />.
 

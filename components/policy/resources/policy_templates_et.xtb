@@ -193,6 +193,13 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Kolmanda osapoole tarkvara sisestamise blokeerimise lubamine</translation>
 <translation id="1504431521196476721">Kaugatesteerimine</translation>
+<translation id="1507957856411744193">Kui reegel on seatud väärtusele Tõene, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega kõigi IP-aadresside, mitte ainult RFC1918/RFC4193 privaatsete aadresside kaudu.
+
+          Kui reegel on seatud väärtusele Väär, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega ainult RFC1918/RFC4193 privaatsete aadresside kaudu.
+
+          Kui reegel on määramata, loob <ph name="PRODUCT_NAME" /> ühenduse Casti seadmetega ainult RFC1918/RFC4193 privaatsete aadresside kaudu, v.a juhul, kui funktsioon CastAllowAllIPs on lubatud.
+
+          Kui reegel „EnableMediaRouter” on seatud väärtusele Väär, ei ole selle reegli väärtusel mingit mõju.</translation>
 <translation id="1509692106376861764">Reegel on alates rakenduse <ph name="PRODUCT_NAME" /> versioonist 29 kasutusest kõrvaldatud.</translation>
 <translation id="1514888685242892912">Teenuse <ph name="PRODUCT_NAME" /> lubamine</translation>
 <translation id="1522425503138261032">Luba saitidel kasutaja füüsilist asukohta jälgida</translation>
@@ -2022,6 +2029,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Reegel <ph name="SYNC_DISABLED_POLICY_NAME" /> keelab kogu andmete sünkroonimise, alistades reegli RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtreeri täiskasvanutele mõeldud sisuga ülataseme saidid (kuid mitte manustatud iframe'id)</translation>
+<translation id="6734521799274931721">Juhib Network File Shares for ChromeOS saadavalolekut</translation>
 <translation id="6735701345096330595">Õigekirjakontrolli keelte sundlubamine</translation>
 <translation id="673699536430961464">Seade võimaldab kasutajatel pärast operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmesse sisselogimist vahetada Google'i kontosid brauseriakna sisualal.
 

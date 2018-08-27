@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">ማንነት የማያሳውቅ</translation>
 <translation id="1054301162707478098">እርስዎ የግል ሆነዋል።</translation>
 <translation id="10614374240317010">በጭራሽ አልተቀመጠም</translation>
+<translation id="1067922213147265141">ሌሎች የGoogle አገልግሎቶች</translation>
 <translation id="1068672505746868501">በ<ph name="SOURCE_LANGUAGE" /> ውስጥ ገጾችን በጭራሽ አትተርጉም</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">በ <ph name="DOMAIN_NAME" />ከሚቀናበር መለያ ዘግተው እየወጡ ነው። ይሄ በዚህ መሣሪያ ላይ የተከማቸውን የChrome ውሂብ ይሰርዘዋል፣ ነገር ግን ውሂቡ በእርስዎ የGoogle መለያ ውስጥ እንዳለ ይቀራል።</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">ምንም የነቃ የድምጽ ፍለጋ አይገኝም</translation>
 <translation id="3950820424414687140">ይግቡ</translation>
 <translation id="395206256282351086">ፍለጋ እና የጣቢያ አስተያየት ጥቆማዎች ተሰናክለዋል</translation>
+<translation id="3955193568934677022">ጥበቃ የሚደረግበትን ይዘት እንዲያጫውቱ ለጣቢያዎች ፍቀድ (የሚመከር)</translation>
 <translation id="3967822245660637423">ማውረድ ተጠናቅቋል</translation>
 <translation id="397583555483684758">ስምረት መሥራት አቁሟል</translation>
 <translation id="3976396876660209797">ይህን አቋራጭ ያስወግዱትና እና ዳግም ይፍጠሩት</translation>
@@ -925,7 +927,6 @@
 <translation id="8374821112118309944">TalkBackን ወደ አዲስ ስሪት ማዘመን አለብዎት።</translation>
 <translation id="8393700583063109961">መልዕክት ይላኩ</translation>
 <translation id="8413126021676339697">ሙሉ ታሪክ አሳይ</translation>
-<translation id="8420510748452002155">ግላዊነት ያልተላበሱ አገልግሎቶች</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8438566539970814960">ፍለጋዎችን እና አሰሳን የተሻለ አድርግ</translation>
 <translation id="8441146129660941386">ወደኋላ ፈልግ</translation>
@@ -963,6 +964,7 @@
 <translation id="8664979001105139458">የፋይል ስም አስቀድሞ አለ</translation>
 <translation id="8676374126336081632">ግቤቱን አጽዳ</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌ}one{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌዎች}other{የሲግናል ጥንካሬ ደረጃ፦ # አሞሌዎች}}</translation>
+<translation id="868929229000858085">እውቂያዎችዎን ይፈልጉ</translation>
 <translation id="869891660844655955">የሚያበቀበት ጊዜ</translation>
 <translation id="8719023831149562936">የአሁኑን ትር በሞገድ መላክ አልተቻለም</translation>
 <translation id="8725066075913043281">እንደገና ይሞክሩ</translation>
@@ -997,6 +999,7 @@
 <translation id="8986494364107987395">የአጠቃቀም ስታስቲክስ እና የብልሽት ሪፖርቶች በራስ ሰር ወደ Google ይላኩ።</translation>
 <translation id="8993760627012879038">አዲስ ትር በማንነት የማያሳውቅ ሁነታ ውስጥ ክፈት</translation>
 <translation id="8998729206196772491">በ<ph name="MANAGED_DOMAIN" /> ወደሚተዳደር መለያ እየገቡና ሙሉውን የChrome ውሂብዎ ቁጥጥር ለአስተዳዳሪው እየሰጡ ነው። የእርስዎ ውሂብ እስከመጨረሻው ከዚህ መለያ ጋር ይተሳሰራል። ከChrome ዘግቶ መውጣት ውሂብዎን ከዚህ መሣሪያ ይሰርዘዋል፣ ነገር ግን በእርስዎ የGoogle መለያ ላይ እንደተከማቸ ይቆያል።</translation>
+<translation id="9018881455348618200">የፍለጋ አዝራር</translation>
 <translation id="9019902583201351841">በእርስዎ ወላጆች የሚቀናበር</translation>
 <translation id="9040142327097499898">ማሳወቂያዎች ይፈቀዳሉ። አካባቢ ለዚህ መሣሪያ ጠፍቷል።</translation>
 <translation id="9050666287014529139">የይለፍ ሐረግ</translation>

@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">แทนที่</translation>
 <translation id="1067048845568873861">สร้างแล้ว</translation>
 <translation id="1067291318998134776">Linux (เบต้า)</translation>
+<translation id="1067922213147265141">บริการอื่นๆ ของ Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">โปรแกรมอื่นบนคอมพิวเตอร์ได้เพิ่มส่วนขยายที่อาจเปลี่ยนลักษณะการทำงานของ Chrome
 
@@ -1446,6 +1447,7 @@
 <translation id="3161522574479303604">ทุกภาษา</translation>
 <translation id="3165390001037658081">ผู้ให้บริการบางรายอาจบล็อกฟีเจอร์นี้</translation>
 <translation id="316854673539778496">ลงชื่อเข้าใช้และเปิดการซิงค์เพื่อรับส่วนขยายในอุปกรณ์ทุกเครื่องของคุณ</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">คุณสามารถข้ามการลงชื่อเข้าใช้และ<ph name="LINK_START" />เรียกดูในฐานะผู้เยี่ยมชม<ph name="LINK_END" />ได้ด้วย</translation>
 <translation id="3177909033752230686">ภาษาหน้าเว็บ:</translation>
 <translation id="3182749001423093222">ตรวจตัวสะกด</translation>
@@ -2264,7 +2266,6 @@
 <translation id="4467100756425880649">แกลเลอรี Chrome เว็บสโตร์</translation>
 <translation id="4467101674048705704">ขยาย <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">ช่วยปรับปรุงฟีเจอร์และประสิทธิภาพของ Chrome</translation>
-<translation id="4472575034687746823">เริ่มต้น</translation>
 <translation id="4474155171896946103">บุ๊กมาร์กแท็บทั้งหมด...</translation>
 <translation id="4475552974751346499">ค้นสิ่งที่ดาวน์โหลดไว้</translation>
 <translation id="4476590490540813026">นักกีฬา</translation>
@@ -3932,7 +3933,6 @@
 <translation id="6985607387932385770">เครื่องพิมพ์</translation>
 <translation id="6990081529015358884">คุณไม่มีพื้นที่เหลือแล้ว</translation>
 <translation id="6990778048354947307">ธีมสีเข้ม</translation>
-<translation id="6991128190741664836">ในภายหลัง</translation>
 <translation id="6991665348624301627">เลือกปลายทาง</translation>
 <translation id="6997707937646349884">บนอุปกรณ์ของคุณ:</translation>
 <translation id="6998711733709403587">เลือก <ph name="SELCTED_FOLDERS_COUNT" /> โฟลเดอร์</translation>
@@ -4235,7 +4235,6 @@
 <translation id="7469518857922439236">ส่งการแจ้งเตือนให้คุณและจดจำคอมพิวเตอร์เครื่องนี้สำหรับ Messages โดยค่าเริ่มต้น</translation>
 <translation id="7469894403370665791">เชื่อมต่อกับเครือข่ายนี้อัตโนมัติ</translation>
 <translation id="747114903913869239">ข้อผิดพลาด: ไม่สามารถถอดรหัสส่วนขยาย</translation>
-<translation id="7473753388963818366">มาเตรียม <ph name="DEVICE_TYPE" /> ให้คุณพร้อมใช้งานกัน</translation>
 <translation id="7473891865547856676">ไม่ ขอบคุณ</translation>
 <translation id="747459581954555080">คืนค่าทั้งหมด</translation>
 <translation id="7475671414023905704">URL รหัสผ่านสูญหายของ Netscape</translation>
@@ -4861,7 +4860,6 @@
 <translation id="8418445294933751433">แ&amp;สดงเป็นแถบ</translation>
 <translation id="8419098111404128271">ผลการค้นหาของ "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">แสดงไฟล์ Google เอกสาร</translation>
-<translation id="8420510748452002155">บริการที่ไม่ได้ปรับให้เหมาะกับแต่ละบุคคล</translation>
 <translation id="8424039430705546751">ลง</translation>
 <translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8425492902634685834">กำหนดลงบนทาสก์บาร์</translation>

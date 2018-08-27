@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Erstat</translation>
 <translation id="1067048845568873861">Oprettet</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
+<translation id="1067922213147265141">Andre Google-tjenester</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Et andet program på din computer har tilføjet en udvidelse, som kan ændre måden, Chrome fungerer på.
 
@@ -1444,6 +1445,7 @@
 <translation id="3161522574479303604">Alle sprog</translation>
 <translation id="3165390001037658081">Nogle mobilselskaber blokerer muligvis denne funktion.</translation>
 <translation id="316854673539778496">Log ind, og aktivér synkronisering for at få alle dine udvidelser på alle dine enheder.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Du kan også springe login over og <ph name="LINK_START" />anvende som gæst<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Sidens sprog:</translation>
 <translation id="3182749001423093222">Stavekontrol</translation>
@@ -2262,7 +2264,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4467100756425880649">Chrome Webshop Galleri</translation>
 <translation id="4467101674048705704">Udvid <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Vær med til at forbedre Chromes funktioner og ydeevne</translation>
-<translation id="4472575034687746823">Kom godt i gang</translation>
 <translation id="4474155171896946103">Tilføj alle faner som bogmærker...</translation>
 <translation id="4475552974751346499">Søg i downloads</translation>
 <translation id="4476590490540813026">Atlet</translation>
@@ -3931,7 +3932,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6985607387932385770">Printere</translation>
 <translation id="6990081529015358884">Der er ikke mere plads</translation>
 <translation id="6990778048354947307">Mørkt tema</translation>
-<translation id="6991128190741664836">Senere</translation>
 <translation id="6991665348624301627">Vælg en destination</translation>
 <translation id="6997707937646349884">På dine enheder:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> filer er valgt</translation>
@@ -4234,7 +4234,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7469518857922439236">Få tilsendt underretninger, og vælg, om denne computer som standard skal huskes til Beskeder</translation>
 <translation id="7469894403370665791">Opret automatisk forbindelse til dette netværk</translation>
 <translation id="747114903913869239">Fejl: Udvidelsen kunne ikke afkodes</translation>
-<translation id="7473753388963818366">Lad os gøre din <ph name="DEVICE_TYPE" /> klar til dig</translation>
 <translation id="7473891865547856676">Nej tak</translation>
 <translation id="747459581954555080">Gendan alle</translation>
 <translation id="7475671414023905704">Netscape-webadresse til mistet adgangskode</translation>
@@ -4859,7 +4858,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8418445294933751433">&amp;Vis som fane</translation>
 <translation id="8419098111404128271">Søgeresultater for "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">Vis filer fra Google Docs</translation>
-<translation id="8420510748452002155">Ikke-tilpassede tjenester</translation>
 <translation id="8424039430705546751">ned</translation>
 <translation id="8425213833346101688">Skift</translation>
 <translation id="8425492902634685834">Fastgør til proceslinje</translation>

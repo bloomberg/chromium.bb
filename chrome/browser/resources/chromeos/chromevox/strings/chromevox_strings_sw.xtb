@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Ulichoweka si sahihi</translation>
 <translation id="1080471004309605942">Mwisho wa maandishi ya italiki</translation>
 <translation id="1082209053475788238">Hakuna kichwa cha ngazi ya 6 iliyotangulia.</translation>
+<translation id="1087788677726983142">Ficha vichujio vya mtiririko wa tukio</translation>
 <translation id="1088219014394087294">Hakuna vichwa.</translation>
 <translation id="1106741348836243114">Washa au zima maoni ya sauti (earcons).</translation>
 <translation id="1108651818222110612">kichwa kidogo</translation>
@@ -77,6 +78,7 @@
 <translation id="1618597272655350600">Hutangaza maelezo kamili ya nafasi ya sasa</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{kubwa kuliko}other{alama # za kubwa kuliko}}</translation>
 <translation id="1653266918374749391">Kichwa cha ngazi ya 3 kilichotangulia</translation>
+<translation id="1657616855184033958">Onyesha vichujio vya mtiririko wa tukio</translation>
 <translation id="1659072772017912254">Haijateuliwa</translation>
 <translation id="1669290819662866522">wiki</translation>
 <translation id="1674262202423278359">Kudurusu ChromeVox</translation>
@@ -411,6 +413,7 @@
 <translation id="4255943572433203166">Tumia chaguo zilizo hapa chini ili kubadilisha ChromeVox ikufae. Mabadiliko yataanza kufanya kazi mara moja.</translation>
 <translation id="4271220233568730077">Hisabati inayofuata</translation>
 <translation id="4271521365602459209">Hakuna matokeo zaidi.</translation>
+<translation id="4275397969489577657">Washa kumbukumbu za mtiririko wa tukio</translation>
 <translation id="4287520460805643128">Hakuna makala yanayofuata.</translation>
 <translation id="4289540628985791613">Muhtasari</translation>
 <translation id="4300318234632215983">Tangaza URL nyuma ya kiungo</translation>
@@ -549,6 +552,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{nuktamkato}other{nuktamikato #}}</translation>
 <translation id="5411891038905756502">Hakuna mahali pa kuruka palipotangulia.</translation>
 <translation id="5417034931411865818">Bofya kipengee kilicho chini ya ufunguo wa ruta cha $1</translation>
+<translation id="5435274640623994081">Washa kumbukumbu za sehemu ya kiashiria cha sauti</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ndogo kuliko}other{alama # za ndogo kuliko}}</translation>
 <translation id="5444587279251314700">(inatumika)</translation>
 <translation id="5446809554778706307">Haijaangazia. Bonyeza Ctrl+T ili ufungue kichupo kipya.</translation>
@@ -898,6 +902,7 @@ Ili kufungua menyu ya kivinjari cha Chrome, bonyeza Alt+F.</translation>
 <translation id="8650576015643545550">Hakuna orodha iliyotangulia.</translation>
 <translation id="8651481478098336970">zima sauti</translation>
 <translation id="8653646212587894517">Onyesha orodha ya viungo</translation>
+<translation id="8656888282555543604">Washa kumbukumbu za nukta nundu</translation>
 <translation id="8664519043722036194">sekunde</translation>
 <translation id="867187640362843212">Kichwa 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{kistari}other{vistari wima #}}</translation>

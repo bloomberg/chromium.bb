@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">In incognito</translation>
 <translation id="1054301162707478098">Sei passato alla navigazione privata.</translation>
 <translation id="10614374240317010">Mai salvate</translation>
+<translation id="1067922213147265141">Altri servizi Google</translation>
 <translation id="1068672505746868501">Non tradurre mai le pagine in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Stai per uscire da un account gestito da <ph name="DOMAIN_NAME" />. Verranno eliminati i dati di Chrome memorizzati su questo dispositivo, ma i dati rimarranno nel tuo account Google.</translation>
@@ -358,6 +359,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="393697183122708255">Nessuna ricerca vocale attiva disponib.</translation>
 <translation id="3950820424414687140">Accedi</translation>
 <translation id="395206256282351086">Suggerimenti di ricerche e siti disattivati</translation>
+<translation id="3955193568934677022">Consenti ai siti di riprodurre i contenuti protetti (opzione consigliata)</translation>
 <translation id="3967822245660637423">Download completato</translation>
 <translation id="397583555483684758">La sincronizzazione si è interrotta</translation>
 <translation id="3976396876660209797">Rimuovi e ricrea la scorciatoia</translation>
@@ -641,7 +643,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="60924377787140961">A breve verranno visualizzati altri articoli. Buon pomeriggio.</translation>
 <translation id="6099151465289169210">Schede private attivate</translation>
 <translation id="6108923351542677676">Configurazione in corso…</translation>
-<translation id="6111020039983847643">Dati utilizzati</translation>
+<translation id="6111020039983847643">dati utilizzati</translation>
 <translation id="6112702117600201073">Aggiornamento della pagina in corso</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
 <translation id="6140912465461743537">Paese/regione</translation>
@@ -819,7 +821,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="748127970106343339">Conferma eliminazione credenziali dispositivo</translation>
 <translation id="7481312909269577407">Avanti</translation>
 <translation id="7493994139787901920"><ph name="VERSION" /> (Ultimo aggiornamento: <ph name="TIME_SINCE_UPDATE" />)</translation>
-<translation id="7494974237137038751">Dati risparmiati</translation>
+<translation id="7494974237137038751">dati risparmiati</translation>
 <translation id="7498271377022651285">Attendi…</translation>
 <translation id="7514365320538308">Scarica</translation>
 <translation id="751961395872307827">Impossibile connettersi al sito</translation>
@@ -925,7 +927,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8374821112118309944">Aggiorna TalkBack a una versione più recente.</translation>
 <translation id="8393700583063109961">Invia messaggio</translation>
 <translation id="8413126021676339697">Mostra cronologia completa</translation>
-<translation id="8420510748452002155">Servizi non personalizzati</translation>
 <translation id="8428213095426709021">Impostazioni</translation>
 <translation id="8438566539970814960">Migliora le ricerche e le attività di navigazione</translation>
 <translation id="8441146129660941386">Posiziona indietro</translation>

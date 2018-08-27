@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Entrada no válida</translation>
 <translation id="1080471004309605942">Fin del texto en cursiva</translation>
 <translation id="1082209053475788238">No hay ningún encabezado de nivel 6 anterior.</translation>
+<translation id="1087788677726983142">Ocultar filtros para la transmisión de eventos</translation>
 <translation id="1088219014394087294">No hay encabezados.</translation>
 <translation id="1106741348836243114">Permite activar o desactivar el sonido.</translation>
 <translation id="1108651818222110612">subtítulo</translation>
@@ -78,6 +79,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="1618597272655350600">Muestra una descripción completa de la posición actual.</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{mayor que}other{# signos mayor que}}</translation>
 <translation id="1653266918374749391">Encabezado anterior de nivel 3</translation>
+<translation id="1657616855184033958">Mostrar filtros para la transmisión de eventos</translation>
 <translation id="1659072772017912254">Sin marcar</translation>
 <translation id="1669290819662866522">semana</translation>
 <translation id="1674262202423278359">Navegación de ChromeVox</translation>
@@ -412,6 +414,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="4255943572433203166">Usa las siguientes opciones para personalizar ChromeVox. Los cambios se aplican inmediatamente.</translation>
 <translation id="4271220233568730077">Expresión matemática siguiente</translation>
 <translation id="4271521365602459209">No hay más resultados.</translation>
+<translation id="4275397969489577657">Habilitar el acceso para la transmisión de eventos</translation>
 <translation id="4287520460805643128">No hay ningún artículo posterior.</translation>
 <translation id="4289540628985791613">Descripción general</translation>
 <translation id="4300318234632215983">Indicar URL de un enlace</translation>
@@ -550,6 +553,7 @@ Si completaste este instructivo, usa ChromeVox para navegar hasta el botón Cerr
 <translation id="5407530583102765689">{COUNT,plural, =1{punto y coma}other{# punto y coma}}</translation>
 <translation id="5411891038905756502">No hay ningún punto de salto anterior.</translation>
 <translation id="5417034931411865818">Haz clic en el elemento que aparece debajo de la clave de enrutamiento $1</translation>
+<translation id="5435274640623994081">Habilitar el acceso con íconos sonoros</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{menor que}other{# signos menor que}}</translation>
 <translation id="5444587279251314700">(activo)</translation>
 <translation id="5446809554778706307">No hay ningún elemento enfocado. Presiona Ctrl+T para abrir una nueva pestaña.</translation>
@@ -899,6 +903,7 @@ Para abrir el menú del navegador Chrome, presiona Alt + F.</translation>
 <translation id="8650576015643545550">No hay ninguna lista anterior.</translation>
 <translation id="8651481478098336970">silenciar volumen</translation>
 <translation id="8653646212587894517">Mostrar la lista de vínculos</translation>
+<translation id="8656888282555543604">Habilitar el acceso con braille</translation>
 <translation id="8664519043722036194">segundos</translation>
 <translation id="867187640362843212">Encabezado 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra vertical}other{# barras verticales}}</translation>

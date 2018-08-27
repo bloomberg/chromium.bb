@@ -420,6 +420,7 @@
 <translation id="8351131234907093545">Создать заметку</translation>
 <translation id="8392451568018454956">Меню параметров пользователя "<ph name="USER_EMAIL_ADDRESS" />"</translation>
 <translation id="8406981827175133772">Полноэкранная лупа</translation>
+<translation id="8425213833346101688">Изменить</translation>
 <translation id="8427213022735114808">Запись вашего голоса отправляется в Google. Это позволяет использовать голосовой набор для любого текстового поля.</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8431190899827883166">Визуальный отклик</translation>
@@ -481,5 +482,4 @@
 <translation id="938963181863597773">Что у меня запланировано?</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="98515147261107953">Альбомная</translation>
-<translation id="995927048686010764">Автоклик</translation>
 </translationbundle>

@@ -421,6 +421,7 @@
 <translation id="8351131234907093545">メモを作成</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> のオプション メニュー</translation>
 <translation id="8406981827175133772">拡大鏡（全画面）</translation>
+<translation id="8425213833346101688">変更</translation>
 <translation id="8427213022735114808">音声入力では、テキスト欄で音声入力できるように Google に音声を送信します。</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8431190899827883166">タップを表示</translation>
@@ -482,5 +483,4 @@
 <translation id="938963181863597773">カレンダーに予定は入ってる？</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="98515147261107953">横</translation>
-<translation id="995927048686010764">自動クリック</translation>
 </translationbundle>

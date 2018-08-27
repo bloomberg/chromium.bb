@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">استبدال</translation>
 <translation id="1067048845568873861">تم الإنشاء</translation>
 <translation id="1067291318998134776">‏نظام التشغيل Linux (نسخة تجريبية)</translation>
+<translation id="1067922213147265141">‏خدمات Google الأخرى</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">‏أضاف برنامج آخر بجهاز الكمبيوتر إضافة قد تؤدي إلى تغيير طريقة عمل Chrome.
 
@@ -837,7 +838,7 @@
 <translation id="2241053333139545397">قراءة بياناتك وتغييرها على عدد من المواقع</translation>
 <translation id="2242687258748107519">معلومات الملف</translation>
 <translation id="2243194103992005307">لإزالة التطبيقات، انتقل إلى "الإعدادات" &gt; "التطبيقات" أو "مدير التطبيقات"، ثم انقر على التطبيق الذي تريد إلغاء تثبيته (قد تحتاج إلى التمرير سريعًا لليمين أو اليسار للعثور على التطبيق)، ثم انقر على "إلغاء التثبيت" أو "إيقاف".</translation>
-<translation id="224940702122312781">ستسخدم هذه الصفحة الكثير من البيانات.</translation>
+<translation id="224940702122312781">ستستخدم هذه الصفحة الكثير من البيانات.</translation>
 <translation id="2249605167705922988">مثال: 1-5، 8، 11-13</translation>
 <translation id="2251218783371366160">فتح باستخدام عارض النظام</translation>
 <translation id="225163402930830576">تحديث الشبكات</translation>
@@ -1445,6 +1446,7 @@
 <translation id="3161522574479303604">كل اللغات</translation>
 <translation id="3165390001037658081">قد يحظر بعض مشغلي شبكات الجوّال هذه الميزة.</translation>
 <translation id="316854673539778496">للحصول على كل الإضافات على جميع أجهزتك، يُرجى تسجيل الدخول وتفعيل المزامنة.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">يمكنك أيضًا تخطي تسجيل الدخول و<ph name="LINK_START" />التصفح كضيف<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">لغة الصفحة:</translation>
 <translation id="3182749001423093222">التدقيق الإملائي</translation>
@@ -2259,7 +2261,6 @@
 <translation id="4467100756425880649">‏معرض سوق Chrome الإلكتروني</translation>
 <translation id="4467101674048705704">توسيع <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">‏المساعدة في تحسين ميزات Chrome وأدائه</translation>
-<translation id="4472575034687746823">الخطوات الأولى</translation>
 <translation id="4474155171896946103">وضع إشارات على كل علامات التبويب...</translation>
 <translation id="4475552974751346499">البحث في التنزيلات</translation>
 <translation id="4476590490540813026">رياضي</translation>
@@ -3927,7 +3928,6 @@
 <translation id="6985607387932385770">الطابعات</translation>
 <translation id="6990081529015358884">لقد نفدت المساحة</translation>
 <translation id="6990778048354947307">مظهر معتم</translation>
-<translation id="6991128190741664836">لاحقًا</translation>
 <translation id="6991665348624301627">تحديد وجهة</translation>
 <translation id="6997707937646349884">على أجهزتك:</translation>
 <translation id="6998711733709403587">تم تحديد <ph name="SELCTED_FOLDERS_COUNT" /> من المجلدات</translation>
@@ -4230,7 +4230,6 @@
 <translation id="7469518857922439236">تُرسِل إليك الإشعارات وتضبط الخيار التلقائي على تذكُّر جهاز الكمبيوتر هذا للرسائل</translation>
 <translation id="7469894403370665791">الاتصال بهذه الشبكة تلقائيًا</translation>
 <translation id="747114903913869239">خطأ: تعذر فك تشفير الإضافة</translation>
-<translation id="7473753388963818366">لنبدأ بإعداد الجهاز <ph name="DEVICE_TYPE" /> لك</translation>
 <translation id="7473891865547856676">لا، شكرًا</translation>
 <translation id="747459581954555080">استرداد الكل</translation>
 <translation id="7475671414023905704">‏عنوان URL لكلمة المرور المفقودة في Netscape</translation>
@@ -4584,7 +4583,7 @@
 <translation id="7973962044839454485">‏تعذّرت مصادقة PPP نظرًا لوجود خطأ في اسم المستخدم أو كلمة المرور</translation>
 <translation id="7974566588408714340">إعادة المحاولة باستخدام <ph name="EXTENSIONNAME" /></translation>
 <translation id="7974936243149753750">الخروج عن إطار الشاشة</translation>
-<translation id="79766959863778284">‏خدمة جهاز تم عزلها عن XR</translation>
+<translation id="79766959863778284">‏خدمة جهاز معزولة بواسطة XR</translation>
 <translation id="7977551819349545646">‏جارٍ تحديث جهاز Chromebox...</translation>
 <translation id="7978412674231730200">مفتاح خاص</translation>
 <translation id="7978450511781612192">‏سيؤدي ذلك إلى تسجيل خروجك من حساباتك على Google. ولن تتم بعد ذلك مزامنة الإشارات المرجعية والسجلّ وكلمات المرور والمزيد.</translation>
@@ -4857,7 +4856,6 @@
 <translation id="8418445294933751433">&amp;العرض في علامة تبويب</translation>
 <translation id="8419098111404128271">نتائج البحث عن "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">‏عرض ملفات مستندات Google</translation>
-<translation id="8420510748452002155">الخدمات غير المُخصّصة</translation>
 <translation id="8424039430705546751">لأسفل</translation>
 <translation id="8425213833346101688">تغيير</translation>
 <translation id="8425492902634685834">التثبيت على شريط المهام</translation>

@@ -191,6 +191,13 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">Omogoči blokiranje vstavljanja programske opreme tretjih oseb</translation>
 <translation id="1504431521196476721">Potrditev na daljavo</translation>
+<translation id="1507957856411744193">Če je ta pravilnik nastavljen na »true«, se bo izdelek <ph name="PRODUCT_NAME" /> povezal z napravami za predvajanje na vseh naslovih IP, ne samo na zasebnih naslovih RFC1918/RFC4193.
+
+          Če je ta pravilnik nastavljen na »false«, se bo izdelek <ph name="PRODUCT_NAME" /> povezal samo z napravami za predvajanje na zasebnih naslovih RFC1918/RFC4193.
+
+          Če ta pravilnik ni nastavljen, se bo izdelek <ph name="PRODUCT_NAME" /> povezal samo z napravami za predvajanje na zasebnih naslovih RFC1918/RFC4193, razen če je omogočena funkcija CastAllowAllIPs.
+
+          Če je pravilnik »EnableMediaRouter« nastavljen na »false«, vrednost tega pravilnika ne bo imela nobenega vpliva.</translation>
 <translation id="1509692106376861764">Ta pravilnik se ne uporablja od uveljavitve različice brskalnika <ph name="PRODUCT_NAME" /> 29.</translation>
 <translation id="1514888685242892912">Omogoči: <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Dovoli mestom sledenje fizične lokacije uporabnika</translation>
@@ -2037,6 +2044,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Pravilnik <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogoči vso sinhronizacijo podatkov in preglasi pravilnik RoamingProfileSupportEnabled.</translation>
 <translation id="6731757988219967594">Filtriranje vrhnjih spletnih mest (vendar ne vdelanih elementov iframe) zaradi izločanja  vsebine za odrasle</translation>
+<translation id="6734521799274931721">Nadzira razpoložljivost omrežnih naprav za skupno rabo datotek v okolju OS Chrome</translation>
 <translation id="6735701345096330595">Vsiljeno preverjanje črkovanja jezikov</translation>
 <translation id="673699536430961464">Ta nastavitev uporabnikom po prijavi v napravo <ph name="PRODUCT_OS_NAME" /> omogoča preklop med Google Računi na območju z vsebino v oknu brskalnika.
 
@@ -2632,7 +2640,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če to nastavitev onemogočite, uporabniki ne bodo imeli dostopa do samodejnega izpolnjevanja.
 
-      Če to nastavitev omogočite ali ne nastavitev vrednosti, bo samodejno izpolnjevanje ostalo pod nadzorom uporabnika. Tako bo uporabnik lahko konfiguriral profile samodejnega izpolnjevanja in samodejno izpolnjevanje poljubno vklapljal in izklapljal.</translation>
+      Če to nastavitev omogočite ali ne nastavite vrednosti, bo samodejno izpolnjevanje ostalo pod nadzorom uporabnika. Tako bo uporabnik lahko konfiguriral profile samodejnega izpolnjevanja in samodejno izpolnjevanje poljubno vklapljal in izklapljal.</translation>
 <translation id="8044493735196713914">Pošiljanje podatkov o načinu zagona naprave</translation>
 <translation id="8050080920415773384">Izvorno tiskanje</translation>
 <translation id="8059164285174960932">URL, na katerem morajo odjemalci za oddaljeni dostop pridobiti žeton za preverjanje pristnosti</translation>

@@ -98,7 +98,7 @@
 <translation id="1559572115229829303">&lt;p&gt;<ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके डिवाइस का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.&lt;/p&gt;
 
       &lt;p&gt;कृपया दिनांक और समय को &lt;strong&gt;सेटिंग&lt;/strong&gt; ऐप के &lt;strong&gt;सामान्‍य&lt;/strong&gt; अनुभाग से एडजस्‍ट करें.&lt;/p&gt;</translation>
-<translation id="1581080074034554886">सीवीसी</translation>
+<translation id="1581080074034554886">CVC</translation>
 <translation id="1583429793053364125">यह वेबपेज प्रदर्शित करते समय कोई समस्या हुई.</translation>
 <translation id="1592005682883173041">स्थानीय डेटा एक्सेस</translation>
 <translation id="1594030484168838125">चुनें</translation>
@@ -872,7 +872,7 @@
 <translation id="724691107663265825">साइट में आगे मैलवेयर हैं</translation>
 <translation id="724975217298816891">अपने कार्ड विवरण अपडेट करने के लिए <ph name="CREDIT_CARD" /> का समय समाप्ति दिनांक और CVC डालें. आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ शेयर किए जाएंगे.</translation>
 <translation id="7251437084390964440">नेटवर्क कॉन्फ़िगरेशन ONC मानक के मुताबिक नहीं है. हो सकता है कि कॉन्फ़िगरेशन के कुछ हिस्से नहीं लाए गए हों.
-और ज़्यादा जानकारी:
+ज़्यादा जानकारी:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="725866823122871198"><ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> से एक निजी कनेक्‍शन स्‍थापित नहीं किया जा सकता क्‍योंकि आपके कंप्‍यूटर का दिनांक और समय (<ph name="DATE_AND_TIME" />) गलत है.</translation>
 <translation id="7260504762447901703">एक्सेस निरस्त करें</translation>
@@ -1052,7 +1052,7 @@
 <translation id="8412145213513410671">क्रैश (<ph name="CRASH_COUNT" />)</translation>
 <translation id="8412392972487953978">आपको वही पासफ़्रेज़ दोबारा दर्ज करना होगा.</translation>
 <translation id="8416694386774425977">नेटवर्क कॉन्फ़िगरेशन गलत है और उसे लाया नहीं जा सका.
-और ज़्यादा जानकारी:
+ज़्यादा जानकारी:
 <ph name="DEBUG_INFO" /></translation>
 <translation id="8424582179843326029"><ph name="FIRST_LABEL" /> <ph name="SECOND_LABEL" /> <ph name="THIRD_LABEL" /></translation>
 <translation id="8428213095426709021">सेटिंग</translation>
@@ -1093,7 +1093,7 @@
 <translation id="8759274551635299824">इस कार्ड की अवधि खत्म हो चुकी है</translation>
 <translation id="8761567432415473239">Google सुरक्षित ब्राउज़िंग को <ph name="SITE" /> पर हाल ही में <ph name="BEGIN_LINK" />हानिकारक प्रोग्राम मिले हैं<ph name="END_LINK" />.</translation>
 <translation id="8763927697961133303">USB डिवाइस</translation>
-<translation id="8768895707659403558">अपने सभी डिवाइस पर अपने कार्ड का इस्तेमाल करने के लिए, <ph name="SIGN_IN_LINK" />.</translation>
+<translation id="8768895707659403558">अपने सभी डिवाइस पर कार्ड का इस्तेमाल करने के लिए, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;हटाना फिर से करें</translation>
 <translation id="8790803786526555470">{NUM_CARDS,plural, =1{यह कार्ड आपके Google खाते में जोड़ दिया गया है. अब आप किसी भी साइन-इन किए हुए डिवाइस से इसका इस्तेमाल कर सकते हैं.}one{ये कार्ड आपके Google खाते में जोड़ दिए गए हैं. अब आप किसी भी साइन-इन किए हुए डिवाइस से इनका इस्तेमाल कर सकते हैं.}other{ये कार्ड आपके Google खाते में जोड़ दिए गए हैं. अब आप किसी भी साइन-इन किए हुए डिवाइस से इनका इस्तेमाल कर सकते हैं.}}</translation>
 <translation id="8792621596287649091">आप अपने <ph name="ORG_NAME" /> खाते का एक्सेस खो सकते हैं या आपकी पहचान चोरी हो सकती है. क्रोमियम आपको इसी समय अपना पासवर्ड बदलने का सुझाव देता है.</translation>

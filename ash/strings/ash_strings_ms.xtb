@@ -16,7 +16,7 @@
 <translation id="119944043368869598">Kosongkan semua</translation>
 <translation id="1247372569136754018">Mikrofon (dalaman)</translation>
 <translation id="1252999807265626933">Mengecas daripada <ph name="POWER_SOURCE" /></translation>
-<translation id="1255033239764210633">Apakah keadaan cuaca?</translation>
+<translation id="1255033239764210633">Bagaimanakah keadaan cuaca?</translation>
 <translation id="1267032506238418139">Perubahan pintasan</translation>
 <translation id="1270290102613614947">Papan kekunci pada skrin dilumpuhkan</translation>
 <translation id="1272079795634619415">Berhenti</translation>
@@ -143,7 +143,7 @@
 <translation id="3153444934357957346">Anda hanya boleh memiliki sehingga <ph name="MULTI_PROFILE_USER_LIMIT" /> akaun dalam log masuk berbilang.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Disambungkan ke peranti}other{Disambungkan ke # peranti}}</translation>
 <translation id="3236488194889173876">Tiada rangkaian mudah alih tersedia</translation>
-<translation id="3255483164551725916">Apakah yang anda boleh lakukan?</translation>
+<translation id="3255483164551725916">Apakah yang boleh anda lakukan?</translation>
 <translation id="3294437725009624529">Tetamu</translation>
 <translation id="332587331255250389">Sila gantikan bateri</translation>
 <translation id="3351879221545518001">Anda sedang menghantar skrin.</translation>
@@ -421,6 +421,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8351131234907093545">Buat nota</translation>
 <translation id="8392451568018454956">Menu pilihan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Penggadang Skrin Penuh</translation>
+<translation id="8425213833346101688">Tukar</translation>
 <translation id="8427213022735114808">Pengimlakan menghantar suara anda kepada Google untuk membolehkan penaipan suara dalam mana-mana medan teks.</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8431190899827883166">Tunjukkan ketikan</translation>
@@ -482,5 +483,4 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="938963181863597773">Apakah acara dalam kalendar saya?</translation>
 <translation id="945522503751344254">Hantar maklum balas</translation>
 <translation id="98515147261107953">Lanskap</translation>
-<translation id="995927048686010764">Autoklik</translation>
 </translationbundle>

@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1054301162707478098">Du surfar privat.</translation>
 <translation id="10614374240317010">Aldrig sparad</translation>
+<translation id="1067922213147265141">Andra Google-tjänster</translation>
 <translation id="1068672505746868501">Översätt aldrig sidor på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Du loggar ut från ett konto som hanteras av <ph name="DOMAIN_NAME" />. Chrome-data som lagras på enheten kommer att tas bort, men all data finns kvar i ditt Google-konto.</translation>
@@ -358,6 +359,7 @@ Du är dock inte osynlig. Även om du surfar privat kan din arbetsgivare, din in
 <translation id="393697183122708255">Röstsökning är inte tillgängligt</translation>
 <translation id="3950820424414687140">Logga in</translation>
 <translation id="395206256282351086">Sök- och webbplatsförslag har inaktiverats</translation>
+<translation id="3955193568934677022">Tillåt att skyddat innehåll spelas upp på webbplatser (rekommenderas)</translation>
 <translation id="3967822245660637423">Nedladdning slutförd</translation>
 <translation id="397583555483684758">Synkroniseringen har slutat fungera</translation>
 <translation id="3976396876660209797">Ta bort och återskapa den här genvägen</translation>
@@ -925,7 +927,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="8374821112118309944">Du måste uppdatera till en senare version av TalkBack.</translation>
 <translation id="8393700583063109961">Skicka meddelande</translation>
 <translation id="8413126021676339697">Visa fullständig historik</translation>
-<translation id="8420510748452002155">Tjänster som inte använder anpassning</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8438566539970814960">Förbättra sökningar och surfandet</translation>
 <translation id="8441146129660941386">Sök bakåt</translation>

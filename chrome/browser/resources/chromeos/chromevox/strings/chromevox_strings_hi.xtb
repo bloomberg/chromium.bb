@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">अमान्य इनपुट</translation>
 <translation id="1080471004309605942">इटैलिक समाप्त</translation>
 <translation id="1082209053475788238">कोई पिछला स्‍तर 6 शीर्षक नहीं.</translation>
+<translation id="1087788677726983142">इवेंट स्ट्रीम फ़िल्टर छिपाएं</translation>
 <translation id="1088219014394087294">कोई शीर्षक नहीं.</translation>
 <translation id="1106741348836243114">ध्वनि फ़ीडबैक (ईयरकॉन) चालू या बंद करें.</translation>
 <translation id="1108651818222110612">सबटाइटल</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">वर्तमान स्थिति का संपूर्ण विवरण दर्शाता है</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{इससे बड़ा}one{# इससे बड़ा चिह्न}other{# इससे बड़ा चिह्न}}</translation>
 <translation id="1653266918374749391">पिछले स्‍तर 3 का शीर्षक</translation>
+<translation id="1657616855184033958">इवेंट स्ट्रीम फ़िल्टर दिखाएं</translation>
 <translation id="1659072772017912254">चेक नहीं किया गया</translation>
 <translation id="1669290819662866522">सप्ताह</translation>
 <translation id="1674262202423278359">ChromeVox मार्गदर्शक</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">ChromeVox को कस्टमाइज़ करने के लिए नीचे दिए गए विकल्‍पों का उपयोग करें. बदलाव तुरंत लागू हो जाते हैं.</translation>
 <translation id="4271220233568730077">अगला गणित</translation>
 <translation id="4271521365602459209">और अधिक परिणाम नहीं.</translation>
+<translation id="4275397969489577657">इवेंट स्ट्रीम में लॉग इन करना चालू करें</translation>
 <translation id="4287520460805643128">कोई अगला लेख नहीं.</translation>
 <translation id="4289540628985791613">संक्षिप्त विवरण</translation>
 <translation id="4300318234632215983">किसी लिंक के पीछे का URL दिखाएं</translation>
@@ -502,7 +505,7 @@
 <translation id="5000760171916499057">कोई फ़ॉर्म नहीं.</translation>
 <translation id="5005670136041063723">कोई और समान तत्‍व नहीं.</translation>
 <translation id="501473567976723023">जनवरी</translation>
-<translation id="5020651427400641814">बोलकर लॉग करना चालू करें</translation>
+<translation id="5020651427400641814">'बोलकर लॉग करना' चालू करें</translation>
 <translation id="5041394372352067729">ब्रेल प्रदर्शन को पेज के शीर्ष पर ले जाएं</translation>
 <translation id="5042770794184672516">बोली वॉल्‍यूम बढ़ाएं</translation>
 <translation id="5050015258024679800">पिछले स्‍तर 4 का शीर्षक</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{अर्धविराम}one{# अर्धविराम}other{# अर्धविराम}}</translation>
 <translation id="5411891038905756502">कोई पिछला जंप बिंदु नहीं.</translation>
 <translation id="5417034931411865818">रूटिंग कुंजी $1 के अंतर्गत आइटम क्लिक करें</translation>
+<translation id="5435274640623994081">इयरकॉन में लॉग इन करना चालू करें</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{इससे कम}one{# इससे कम चिह्न}other{# इससे कम चिह्न}}</translation>
 <translation id="5444587279251314700">(सक्रिय)</translation>
 <translation id="5446809554778706307">कोई फ़ोकस नहीं है. नया टैब खोलने के लिए Ctrl+T दबाएं.</translation>
@@ -899,6 +903,7 @@
 <translation id="8650576015643545550">कोई पिछली सूची नहीं.</translation>
 <translation id="8651481478098336970">आवाज़ बंद करें</translation>
 <translation id="8653646212587894517">लिंक सूची दिखाएं</translation>
+<translation id="8656888282555543604">ब्रेल में लॉग इन करना चालू करें</translation>
 <translation id="8664519043722036194">सेकंड</translation>
 <translation id="867187640362843212">शीर्षक 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{पाइप}one{# लम्बवत पाइप}other{# लम्बवत पाइप}}</translation>

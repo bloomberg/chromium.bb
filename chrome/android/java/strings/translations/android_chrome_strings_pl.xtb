@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="1054301162707478098">Jesteś w trybie prywatnym.</translation>
 <translation id="10614374240317010">Nigdy nie zapisane</translation>
+<translation id="1067922213147265141">Inne usługi Google</translation>
 <translation id="1068672505746868501">Nigdy nie tłumacz stron, których językiem jest <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Wylogowujesz się z konta zarządzanego przez <ph name="DOMAIN_NAME" />. Spowoduje to usunięcie danych Chrome zapisanych na tym urządzeniu, jednak pozostaną one na Twoim koncie Google.</translation>
@@ -358,6 +359,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb prywat
 <translation id="393697183122708255">Brak włączonego wyszukiwania głosowego</translation>
 <translation id="3950820424414687140">Zaloguj się</translation>
 <translation id="395206256282351086">Podpowiadanie stron internetowych i wyszukiwanych słów jest wyłączone</translation>
+<translation id="3955193568934677022">Zezwalaj witrynom na odtwarzanie treści chronionej (zalecane)</translation>
 <translation id="3967822245660637423">Pobieranie zakończone</translation>
 <translation id="397583555483684758">Synchronizacja przestała działać</translation>
 <translation id="3976396876660209797">Usuń i utwórz ponownie ten skrót</translation>
@@ -925,7 +927,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8374821112118309944">Musisz zainstalować nowszą wersję TalkBack.</translation>
 <translation id="8393700583063109961">Wyślij wiadomość</translation>
 <translation id="8413126021676339697">Wyświetl całą historię</translation>
-<translation id="8420510748452002155">Niespersonalizowane usługi</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8438566539970814960">Ulepsz wyszukiwanie i przeglądanie</translation>
 <translation id="8441146129660941386">Przewiń do tyłu</translation>
@@ -963,6 +964,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8664979001105139458">Ta nazwa pliku już istnieje</translation>
 <translation id="8676374126336081632">Wyczyść wpisany tekst</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Poziom siły sygnału: # słupek}few{Poziom siły sygnału: # słupki}many{Poziom siły sygnału: # słupków}other{Poziom siły sygnału: # słupka}}</translation>
+<translation id="868929229000858085">Wyszukaj w kontaktach</translation>
 <translation id="869891660844655955">Data wygaśnięcia</translation>
 <translation id="8719023831149562936">Nie można przesłać bieżącej karty</translation>
 <translation id="8725066075913043281">Spróbuj ponownie</translation>
@@ -997,6 +999,7 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="8986494364107987395">Automatycznie przesyłaj do Google statystyki użytkowania i raporty o awariach</translation>
 <translation id="8993760627012879038">Otwórz nową kartę w trybie incognito</translation>
 <translation id="8998729206196772491">Logujesz się na konto, którym zarządza <ph name="MANAGED_DOMAIN" />, i przekazujesz jego administratorowi kontrolę nad Twoimi danymi Chrome. Zostaną one trwale przypisane do tego konta. Gdy się wylogujesz, znikną one z tego urządzenia, ale pozostaną zapisane na Twoim koncie Google.</translation>
+<translation id="9018881455348618200">Przycisk wyszukiwania</translation>
 <translation id="9019902583201351841">Zarządzany przez Twoich rodziców</translation>
 <translation id="9040142327097499898">Powiadomienia są włączone. Lokalizacja jest wyłączona na tym urządzeniu.</translation>
 <translation id="9050666287014529139">Hasło</translation>

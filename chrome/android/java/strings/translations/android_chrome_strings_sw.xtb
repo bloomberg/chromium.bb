@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Kichupo fiche</translation>
 <translation id="1054301162707478098">Unatumia hali ya faragha.</translation>
 <translation id="10614374240317010">Haijahifadhiwa kamwe</translation>
+<translation id="1067922213147265141">Huduma zingine za Google</translation>
 <translation id="1068672505746868501">Usiwahi kutafsiri kurasa katika lugha ya <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Unaondoka katika akaunti inayodhibitiwa na <ph name="DOMAIN_NAME" />. Hii itafuta data ya Chrome iliyohifadhiwa kwenye kifaa hiki, lakini data itasalia katika Akaunti yako ya Google.</translation>
@@ -358,6 +359,7 @@ Hata hivyo, hautaficha kila kitu. Hatua ya kutumia hali ya faragha haifichi kuvi
 <translation id="393697183122708255">Hakuna kutafuta kwa kutamka kulikowashwa</translation>
 <translation id="3950820424414687140">Ingia</translation>
 <translation id="395206256282351086">Mapendekezo ya utafutaji na tovuti yamezimwa</translation>
+<translation id="3955193568934677022">Ruhusu tovuti zicheze maudhui yanayolindwa (inapendekezwa)</translation>
 <translation id="3967822245660637423">Faili imekamilika kupakuliwa</translation>
 <translation id="397583555483684758">Usawazishaji umeacha kufanya kazi</translation>
 <translation id="3976396876660209797">Ondoa na uunde upya njia hii ya mkato</translation>
@@ -925,7 +927,6 @@ Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo 
 <translation id="8374821112118309944">Unahitaji kubadilisha TalkBack kwa kupata toleo jipya.</translation>
 <translation id="8393700583063109961">Tuma ujumbe</translation>
 <translation id="8413126021676339697">Onyesha historia kamili</translation>
-<translation id="8420510748452002155">Huduma zisizo maalum</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8438566539970814960">Boresha utafutaji na kuvinjari</translation>
 <translation id="8441146129660941386">Peleka nyuma</translation>
@@ -963,6 +964,7 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8664979001105139458">Jina la faili tayari lipo</translation>
 <translation id="8676374126336081632">Futa uingizaji wa maandishi</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Kiwango cha Udhibiti wa Mawimbi: upau #}other{Kiwango cha Udhibiti wa Mawimbi: pau #}}</translation>
+<translation id="868929229000858085">Tafuta kwenye anwani zako</translation>
 <translation id="869891660844655955">Muda wake unakwisha tarehe</translation>
 <translation id="8719023831149562936">Haiwezi kusambaza kichupo cha sasa</translation>
 <translation id="8725066075913043281">Jaribu tena</translation>
@@ -997,6 +999,7 @@ Ili kupata leseni mpya, unganisha kwenye intaneti na ucheze maudhui yako yaliyop
 <translation id="8986494364107987395">Tumia Google takwimu za matumizi na ripoti za mara ambazo kivinjari kinaacha kufanya kazi, moja kwa moja</translation>
 <translation id="8993760627012879038">Fungua kichupo kipya katika Hali fiche</translation>
 <translation id="8998729206196772491">Unaingia kwa kutumia akaunti inayodhibitiwa na <ph name="MANAGED_DOMAIN" /> na kumpa msimamizi wa kikoa hicho udhibiti wa data yako ya Chrome. Data yako ya Chrome itahusishwa na akaunti hii daima. Kuondoka kwenye Chrome kutafuta data yako kwenye kifaa hiki, lakini itaendelea kuhifadhiwa katika Akaunti yako ya Google.</translation>
+<translation id="9018881455348618200">Kitufe cha kutafuta</translation>
 <translation id="9019902583201351841">Inadhibitiwa na wazazi wako</translation>
 <translation id="9040142327097499898">Arifa zinaruhusiwa. Kipengele cha mahali kimezimwa kwenye kifaa hiki.</translation>
 <translation id="9050666287014529139">Kaulisiri</translation>

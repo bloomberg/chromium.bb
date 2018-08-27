@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">โหมดไม่ระบุตัวตน</translation>
 <translation id="1054301162707478098">คุณเข้าสู่โหมดส่วนตัวแล้ว</translation>
 <translation id="10614374240317010">ไม่เคยบันทึก</translation>
+<translation id="1067922213147265141">บริการอื่นๆ ของ Google</translation>
 <translation id="1068672505746868501">ไม่ต้องแปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="DOMAIN_NAME" /> การออกจากระบบจะลบข้อมูล Chrome ที่จัดเก็บในอุปกรณ์นี้ แต่ข้อมูลดังกล่าวจะยังคงอยู่ในบัญชี Google ของคุณ</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">ไม่มีการเปิดใช้การค้นหาด้วยเสียง</translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="395206256282351086">ปิดใช้คำแนะนำการค้นหาและเว็บไซต์แล้ว</translation>
+<translation id="3955193568934677022">อนุญาตให้ไซต์เล่นเนื้อหาที่ได้รับความคุ้มครอง (แนะนำ)</translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="397583555483684758">การซิงค์หยุดทำงานแล้ว</translation>
 <translation id="3976396876660209797">นำทางลัดนี้ออกแล้วสร้างใหม่</translation>
@@ -925,7 +927,6 @@
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
-<translation id="8420510748452002155">บริการที่ไม่ได้ปรับให้เหมาะกับแต่ละบุคคล</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8438566539970814960">ปรับปรุงการค้นหาและการท่องเว็บให้ดียิ่งขึ้น</translation>
 <translation id="8441146129660941386">ย้อนกลับ</translation>

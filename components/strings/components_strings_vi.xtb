@@ -137,7 +137,7 @@
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
 <translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="1834321415901700177">Trang web này có chứa các chương trình độc hại</translation>
-<translation id="1839551713262164453">Xác thực các giá trị của chính sách không thành công do xảy ra lỗi</translation>
+<translation id="1839551713262164453">Không xác thực được các giá trị của chính sách do xảy ra lỗi</translation>
 <translation id="1840414022444569775">Số thẻ này đã được sử dụng</translation>
 <translation id="1842969606798536927">Thanh toán</translation>
 <translation id="1871208020102129563">Proxy được đặt để sử dụng máy chủ proxy cố định chứ không phải URL tập lệnh .pac.</translation>
@@ -207,7 +207,7 @@
 <translation id="2356070529366658676">Yêu cầu</translation>
 <translation id="2359629602545592467">Nhiều</translation>
 <translation id="2359808026110333948">Tiếp tục</translation>
-<translation id="2360873523816792727">Để sử dụng thẻ trên tất cả các thiết bị, hãy bật tính năng đồng bộ hóa.</translation>
+<translation id="2360873523816792727">Để sử dụng thẻ trên tất cả thiết bị, hãy bật tính năng đồng bộ hóa.</translation>
 <translation id="2365563543831475020">Báo cáo sự cố được ghi lại vào <ph name="CRASH_TIME" /> chưa được tải lên</translation>
 <translation id="2367567093518048410">Mức độ</translation>
 <translation id="2378238891085281592">Bạn đã chuyển sang chế độ riêng tư</translation>
@@ -639,7 +639,7 @@
 <translation id="536296301121032821">Không thể lưu trữ cài đặt chính sách</translation>
 <translation id="5371425731340848620">Cập nhật thẻ</translation>
 <translation id="5377026284221673050">"Đồng hồ của bạn chạy chậm" hoặc "Đồng hồ của bạn chạy nhanh" hay "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
-<translation id="5384855140246857529">Để sử dụng thẻ trên tất cả các thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa.</translation>
+<translation id="5384855140246857529">Để sử dụng thẻ trên tất cả thiết bị, hãy đăng nhập và bật tính năng đồng bộ hóa.</translation>
 <translation id="5386426401304769735">Chuỗi chứng chỉ cho trang web này có chứa một chứng chỉ đã ký bằng SHA-1.</translation>
 <translation id="5387961145478138773">Truy cập nhanh vào Google Apps ưa thích của bạn</translation>
 <translation id="540969355065856584">Máy chủ này không chứng minh được rằng đó là <ph name="DOMAIN" />; chứng chỉ bảo mật của máy chủ này không hợp lệ tại thời điểm này. Điều này có thể do định cấu hình sai hoặc có kẻ tấn công chặn kết nối của bạn.</translation>
@@ -1093,7 +1093,7 @@ Thông tin chi tiết bổ sung:
 <translation id="8759274551635299824">Thẻ này đã hết hạn</translation>
 <translation id="8761567432415473239">Gần đây, Duyệt web an toàn của Google <ph name="BEGIN_LINK" />tìm thấy chương trình độc hại<ph name="END_LINK" /> trên trang <ph name="SITE" />.</translation>
 <translation id="8763927697961133303">Thiết bị USB</translation>
-<translation id="8768895707659403558">Để sử dụng thẻ trên tất cả các thiết bị, <ph name="SIGN_IN_LINK" />.</translation>
+<translation id="8768895707659403558">Để sử dụng thẻ trên tất cả thiết bị, hãy <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="8790007591277257123">&amp;Làm lại xóa</translation>
 <translation id="8790803786526555470">{NUM_CARDS,plural, =1{Đã thêm thẻ này vào Tài khoản Google của bạn. Bây giờ, bạn có thể sử dụng thẻ này trên mọi thiết bị đã đăng nhập.}other{Đã thêm các thẻ này vào Tài khoản Google của bạn. Bây giờ, bạn có thể sử dụng các thẻ này trên mọi thiết bị đã đăng nhập.}}</translation>
 <translation id="8792621596287649091">Bạn có thể mất quyền truy cập vào tài khoản <ph name="ORG_NAME" /> của mình hoặc bị đánh cắp danh tính. Chromium khuyên bạn nên thay đổi mật khẩu ngay bây giờ.</translation>

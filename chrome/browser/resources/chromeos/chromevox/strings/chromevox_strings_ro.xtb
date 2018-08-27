@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Intrare nevalidă</translation>
 <translation id="1080471004309605942">Finalul textului cursiv</translation>
 <translation id="1082209053475788238">Nu există un titlu de nivel 6 anterior.</translation>
+<translation id="1087788677726983142">Ascunde filtrele pentru fluxul de evenimente</translation>
 <translation id="1088219014394087294">Nu există titluri.</translation>
 <translation id="1106741348836243114">Activați/dezactivați feedbackul sonor (semnalele audio).</translation>
 <translation id="1108651818222110612">subti</translation>
@@ -78,6 +79,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="1618597272655350600">Anunță o descriere completă a poziției curente</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{semn mai mare}few{# semne mai mare}other{# de semne mai mare}}</translation>
 <translation id="1653266918374749391">Titlul de nivel 3 anterior</translation>
+<translation id="1657616855184033958">Afișează filtrele pentru fluxul de evenimente</translation>
 <translation id="1659072772017912254">Nebifat</translation>
 <translation id="1669290819662866522">săptămână</translation>
 <translation id="1674262202423278359">Navigare ChromeVox</translation>
@@ -412,6 +414,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="4255943572433203166">Folosiți opțiunile de mai jos pentru a personaliza ChromeVox. Modificările intră în vigoare imediat.</translation>
 <translation id="4271220233568730077">Expresia matematică următoare</translation>
 <translation id="4271521365602459209">Nu există alte rezultate.</translation>
+<translation id="4275397969489577657">Activează înregistrarea fluxului de evenimente</translation>
 <translation id="4287520460805643128">Nu există un articol următor.</translation>
 <translation id="4289540628985791613">Prezentare generală</translation>
 <translation id="4300318234632215983">Anunță adresa URL la care trimite un link</translation>
@@ -550,6 +553,7 @@ Dacă ai terminat tutorialul, folosește ChromeVox pentru a naviga la butonul Î
 <translation id="5407530583102765689">{COUNT,plural, =1{semn punct și virgulă}few{# semne punct și virgulă}other{# de semne punct și virgulă}}</translation>
 <translation id="5411891038905756502">Nu există un punct de accesare directă anterior.</translation>
 <translation id="5417034931411865818">Dă clic pe elementul de sub tasta de deplasare $1</translation>
+<translation id="5435274640623994081">Activează înregistrarea semnalului audio</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{semn mai mic}few{# semne mai mic}other{# de semne mai mic}}</translation>
 <translation id="5444587279251314700">(activă)</translation>
 <translation id="5446809554778706307">Niciun element focalizat. Pentru a deschide o filă nouă, apasă pe Ctrl + T.</translation>
@@ -899,6 +903,7 @@ Pentru a deschide meniul browserului Chrome, apasă pe Alt + F.</translation>
 <translation id="8650576015643545550">Nu există o listă anterioară.</translation>
 <translation id="8651481478098336970">dezactivează sunetul</translation>
 <translation id="8653646212587894517">Afișați lista de linkuri</translation>
+<translation id="8656888282555543604">Activează înregistrarea braille</translation>
 <translation id="8664519043722036194">secunde</translation>
 <translation id="867187640362843212">Titlu 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{bară verticală}few{# bare verticale}other{# de bare verticale}}</translation>

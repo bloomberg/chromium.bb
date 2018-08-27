@@ -189,6 +189,14 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">Ota käyttöön kolmannen osapuolen ohjelmistojen lisäämisen esto</translation>
 <translation id="1504431521196476721">Etätodennus</translation>
+<translation id="1507957856411744193">Jos tämän käytännön arvo on tosi, <ph name="PRODUCT_NAME" /> yhdistää kaikkiin Cast-laitteisiin kaikissa IP-osoitteissa, ei vain yksityisissä RFC1918- tai RFC4913-osoitteissa.
+
+
+          Jos tämän käytännön arvo on epätosi, <ph name="PRODUCT_NAME" /> yhdistää vain yksityisissä RFC1918- tai RFC4913-osoitteissa oleviin Cast-laitteisiin.
+
+          Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> yhdistää vain yksityisissä RFC1918- tai RFC4913-osoitteissa oleviin Cast-laitteisiin, paitsi jos CastAllowAllIPs-ominaisuus on käytössä.
+
+          Jos EnableMediaRouter-käytännön arvo on epätosi, tämän käytännön arvolla ei ole merkitystä.</translation>
 <translation id="1509692106376861764">Tämä käytäntö on poistettu käytöstä tuotteen <ph name="PRODUCT_NAME" /> versiosta 29 lähtien.</translation>
 <translation id="1514888685242892912">Ota käyttöön <ph name="PRODUCT_NAME" /></translation>
 <translation id="1522425503138261032">Anna sivustojen seurata käyttäjien fyysistä sijaintia</translation>
@@ -1947,6 +1955,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> poistaa kaiken tietojen synkronoinnin käytöstä ja ohittaa RoamingProfileSupportEnabled-käytännön .</translation>
 <translation id="6731757988219967594">Suodata vain aikuisille suunnattua sisältöä (mutta ei upotettua sisältöä) ylimmän tason sivustoilta</translation>
+<translation id="6734521799274931721">Määrittää, onko Verkkotiedostojen jakaminen käytettävissä Chrome-käyttöjärjestelmässä</translation>
 <translation id="6735701345096330595">Pakota oikeinkirjoituksen tarkistuskielten käyttöönotto</translation>
 <translation id="673699536430961464">Tämä käytäntö antaa käyttäjien vaihtaa Google-tililtä toiselle selainikkunan sisältöosassa <ph name="PRODUCT_OS_NAME" /> ‑laitteelle kirjautumisen jälkeen.
 

@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Инкогнито</translation>
 <translation id="1054301162707478098">Вы перешли в режим инкогнито</translation>
 <translation id="10614374240317010">Сайты, пароли для которых не сохраняются</translation>
+<translation id="1067922213147265141">Другие сервисы Google</translation>
 <translation id="1068672505746868501">Не переводить страницы на этом языке: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Вы выходите из аккаунта, которым управляет администратор домена <ph name="DOMAIN_NAME" />. Все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">Голосовой поиск недоступен</translation>
 <translation id="3950820424414687140">Вход</translation>
 <translation id="395206256282351086">Подсказки запросов и сайтов отключены</translation>
+<translation id="3955193568934677022">Разрешить сайтам воспроизводить защищенный контент (рекомендуется)</translation>
 <translation id="3967822245660637423">Скачивание завершено</translation>
 <translation id="397583555483684758">Ошибка синхронизации</translation>
 <translation id="3976396876660209797">Удалите этот ярлык и создайте его заново</translation>
@@ -925,7 +927,6 @@
 <translation id="8374821112118309944">Установите последнюю версию TalkBack.</translation>
 <translation id="8393700583063109961">Отправить сообщение</translation>
 <translation id="8413126021676339697">Показать всю историю</translation>
-<translation id="8420510748452002155">Неперсонализированные сервисы</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8438566539970814960">Помогать улучшить просмотр страниц и поиск</translation>
 <translation id="8441146129660941386">Перемотать назад</translation>

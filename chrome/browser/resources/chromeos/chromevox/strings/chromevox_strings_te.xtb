@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">ఇన్‌పుట్ చెల్లదు</translation>
 <translation id="1080471004309605942">ఇటాలిక్ ముగింపు</translation>
 <translation id="1082209053475788238">మునుపటి స్థాయి 6 శీర్షిక లేదు.</translation>
+<translation id="1087788677726983142">ఈవెంట్ ప్రసార ఫిల్టర్‌లను దాచు</translation>
 <translation id="1088219014394087294">శీర్షికలు లేవు.</translation>
 <translation id="1106741348836243114">ధ్వని అభిప్రాయాన్ని (శబ్ద హెచ్చరికలు) ప్రారంభించండి లేదా ఆపివేయండి.</translation>
 <translation id="1108651818222110612">ఉపశీర్షిక</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">ప్రస్తుత స్థానం యొక్క పూర్తి వివరణను తెలియజేస్తుంది</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{గురుతర గుర్తు}other{# గురుతర గుర్తులు}}</translation>
 <translation id="1653266918374749391">మునుపటి స్థాయి 3 శీర్షిక</translation>
+<translation id="1657616855184033958">ఈవెంట్ ప్రసార ఫిల్టర్‌లను చూపించు</translation>
 <translation id="1659072772017912254">ఎంచుకోబడలేదు</translation>
 <translation id="1669290819662866522">వారం</translation>
 <translation id="1674262202423278359">ChromeVox నావిగేషన్</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">ChromeVoxను అనుకూలీకరించడానికి దిగువ ఎంపికలను ఉపయోగించండి. మార్పులు వెంటనే ప్రభావవంతమవుతాయి.</translation>
 <translation id="4271220233568730077">తదుపరి గణితం</translation>
 <translation id="4271521365602459209">ఇక ఫలితాలు లేవు.</translation>
+<translation id="4275397969489577657">ఈవెంట్ ప్రసార లాగింగ్‌ను ప్రారంభించు</translation>
 <translation id="4287520460805643128">తదుపరి కథనం లేదు.</translation>
 <translation id="4289540628985791613">స్థూలదృష్టి</translation>
 <translation id="4300318234632215983">లింక్ వెనుక URLను తెలియజేయండి</translation>
@@ -490,6 +493,7 @@
 <translation id="4973762002207131920"><ph name="KEY" />కి మారింది.</translation>
 <translation id="4975416682604111799">మిల్లీసెకన్లు</translation>
 <translation id="49787999531187221">ChromeVox ఇప్పుడు క్రియారహితం చేయబడింది.</translation>
+<translation id="4979263087381759787">డెవలపర్ ఎంపికలు</translation>
 <translation id="4979404613699303341">మునుపటి బటన్</translation>
 <translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, జాబితా పెట్టె</translation>
 <translation id="4983588134362688868">పేజీ ఎగువకు వెళ్లండి</translation>
@@ -501,6 +505,7 @@
 <translation id="5000760171916499057">ఫారమ్‌లు లేవు.</translation>
 <translation id="5005670136041063723">మరిన్ని సారూప్య మూలకాలు లేవు.</translation>
 <translation id="501473567976723023">జనవరి</translation>
+<translation id="5020651427400641814">ప్రసంగ లాగింగ్‌ని ప్రారంభించండి</translation>
 <translation id="5041394372352067729">బ్రెయిలీ డిస్‌ప్లేను పేజీ పైకి తరలించండి</translation>
 <translation id="5042770794184672516">ప్రసంగ వాల్యూమ్‌ను పెంచండి</translation>
 <translation id="5050015258024679800">మునుపటి స్థాయి 4 శీర్షిక</translation>
@@ -548,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{సెమీకోలన్ గుర్తు}other{# సెమీకోలన్ గుర్తులు}}</translation>
 <translation id="5411891038905756502">మునుపటి జంప్ పాయింట్ లేదు.</translation>
 <translation id="5417034931411865818">రూటింగ్ కీ $1 క్రింద ఉన్న అంశాన్ని క్లిక్ చేయండి</translation>
+<translation id="5435274640623994081">ఇయర్‌కాన్ లాగింగ్‌ను ప్రారంభించు</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{న్యూన గుర్తు}other{# న్యూన గుర్తులు}}</translation>
 <translation id="5444587279251314700">(సక్రియంగా ఉంది)</translation>
 <translation id="5446809554778706307">దృష్టి కేంద్రీకరించలేదు. కొత్త ట్యాబ్‌ని తెరవడం కోసం Ctrl+T నొక్కండి.</translation>
@@ -897,6 +903,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8650576015643545550">మునుపటి జాబితా లేదు.</translation>
 <translation id="8651481478098336970">వాల్యూమ్‌ను మ్యూట్ చేస్తుంది</translation>
 <translation id="8653646212587894517">లింక్‌ల జాబితాను చూపండి</translation>
+<translation id="8656888282555543604">బ్రెయిలీ లాగింగ్‌ను ప్రారంభించు</translation>
 <translation id="8664519043722036194">సెకన్లు</translation>
 <translation id="867187640362843212">శీర్షిక 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{పైప్ గుర్తు}other{# నిలువు పైప్ గుర్తులు}}</translation>

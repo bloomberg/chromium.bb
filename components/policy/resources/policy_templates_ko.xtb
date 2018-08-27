@@ -191,6 +191,13 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1502843533062797703">타사 소프트웨어 삽입 차단 사용</translation>
 <translation id="1504431521196476721">원격 인증</translation>
+<translation id="1507957856411744193">이 정책이 True로 설정된 경우 <ph name="PRODUCT_NAME" />에서 RFC1918/RFC4193 비공개 주소뿐만 아니라 모든 IP 주소의 Cast 기기에 연결합니다.
+
+          이 정책이 False로 설정된 경우 <ph name="PRODUCT_NAME" />에서 RFC1918/RFC4193 비공개 주소의 Cast 기기에만 연결합니다.
+
+          이 정책이 설정되지 않은 경우 CastAllowAllIPs 기능이 사용 설정되어 있지 않는 한 <ph name="PRODUCT_NAME" />에서 RFC1918/RFC4193 비공개 주소의 Cast 기기에만 연결합니다.
+
+          'EnableMediaRouter' 정책이 False로 설정된 경우 이 정책의 값은 아무런 영향을 미치지 않습니다.</translation>
 <translation id="1509692106376861764">이 정책은 <ph name="PRODUCT_NAME" /> 버전 29를 기준으로 지원 중단되었습니다.</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" /> 사용</translation>
 <translation id="1522425503138261032">사이트에서 사용자 실제 위치를 추적하도록 허용</translation>
@@ -2023,6 +2030,7 @@
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 정책은 모든 데이터 동기화를 사용 중지하며 RoamingProfileSupportEnabled를 무시합니다.</translation>
 <translation id="6731757988219967594">최상위 사이트(삽입된 iframe 제외)에 성인용 콘텐츠 필터링을 적용함</translation>
+<translation id="6734521799274931721">Chrome OS의 네트워크 파일 공유 가능 여부를 제어합니다.</translation>
 <translation id="6735701345096330595">언어 맞춤법 검사 강제 사용</translation>
 <translation id="673699536430961464">이 설정은 사용자가 <ph name="PRODUCT_OS_NAME" /> 기기에 로그인한 후 브라우저 창의 콘텐츠 영역 내에서 Google 계정 사이에 전환하도록 허용합니다.
 

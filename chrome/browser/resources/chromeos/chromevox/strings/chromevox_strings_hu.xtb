@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Érvénytelen adat</translation>
 <translation id="1080471004309605942">Dőlt betű vége</translation>
 <translation id="1082209053475788238">Nincs előző 6-os szintű címsor.</translation>
+<translation id="1087788677726983142">Esemény streamszűrőinek elrejtése</translation>
 <translation id="1088219014394087294">Nincsenek címsorok.</translation>
 <translation id="1106741348836243114">Hangjelzések be- és kikapcsolása.</translation>
 <translation id="1108651818222110612">alcím</translation>
@@ -78,6 +79,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="1618597272655350600">Pontosan elmondja, hogy mi az aktuális pozíció</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{nagyobb jel}other{# nagyobb jel}}</translation>
 <translation id="1653266918374749391">Előző 3. szintű fejléc</translation>
+<translation id="1657616855184033958">Esemény streamszűrőinek megjelenítése</translation>
 <translation id="1659072772017912254">Nincs bejelölve</translation>
 <translation id="1669290819662866522">hét</translation>
 <translation id="1674262202423278359">Navigáció a ChromeVoxban</translation>
@@ -412,6 +414,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="4255943572433203166">Használja az alábbi lehetőségeket a ChromeVox személyre szabásához. A változások azonnal életbe lépnek.</translation>
 <translation id="4271220233568730077">Következő művelet</translation>
 <translation id="4271521365602459209">Nincsenek további találatok.</translation>
+<translation id="4275397969489577657">Esemény streamnaplózásának engedélyezése</translation>
 <translation id="4287520460805643128">Nincs következő cikk.</translation>
 <translation id="4289540628985791613">Áttekintés</translation>
 <translation id="4300318234632215983">Link URL-jének felolvasása</translation>
@@ -550,6 +553,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="5407530583102765689">{COUNT,plural, =1{pontosvessző}other{# pontosvessző}}</translation>
 <translation id="5411891038905756502">Nincs előző ugrópont.</translation>
 <translation id="5417034931411865818">Kattintson a(z) $1 átirányítási kulcs alatti elemre</translation>
+<translation id="5435274640623994081">Hangjelzés naplózásának engedélyezése</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{kisebb jel}other{# kisebb jel}}</translation>
 <translation id="5444587279251314700">(aktív)</translation>
 <translation id="5446809554778706307">Egy elem sincs fókuszban. Új lap megnyitásához nyomja le a Ctrl+t billentyűparancsot.</translation>
@@ -899,6 +903,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="8650576015643545550">Nincs előző lista.</translation>
 <translation id="8651481478098336970">némítás</translation>
 <translation id="8653646212587894517">Linklista megjelenítése</translation>
+<translation id="8656888282555543604">Braille-naplózás engedélyezése</translation>
 <translation id="8664519043722036194">másodperc</translation>
 <translation id="867187640362843212">5-ös címsor</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{függőleges vonal}other{# függőleges vonal karakter}}</translation>

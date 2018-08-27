@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">ಅಮಾನ್ಯ ಇನ್‌ಪುಟ್</translation>
 <translation id="1080471004309605942">ಇಟಾಲಿಕ್ ಮುಕ್ತಾಯ</translation>
 <translation id="1082209053475788238">ಹಿಂದಿನ ಹಂತದ 6 ಶಿರೋನಾಮೆಯಿಲ್ಲ.</translation>
+<translation id="1087788677726983142">ಈವೆಂಟ್ ಸ್ಟ್ರೀಮ್ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="1088219014394087294">ಯಾವುದೇ ಶೀರ್ಷಿಕೆಗಳಿಲ್ಲ.</translation>
 <translation id="1106741348836243114">ಧ್ವನಿ ಪ್ರತಿಕ್ರಿಯೆ (earcons) ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಿ.</translation>
 <translation id="1108651818222110612">ಉಪಶೀರ್ಷಿಕೆ</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">ಪ್ರಸ್ತುತ ಸ್ಥಾನದ ಸಂಪೂರ್ಣ ವಿವರಣೆಯನ್ನು ಪ್ರಕಟಿಸುತ್ತದೆ</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{ಹೆಚ್ಚು ಸೂಚಕ}one{# ಹೆಚ್ಚು ಸೂಚಕ ಚಿಹ್ನೆಗಳು}other{# ಹೆಚ್ಚು ಸೂಚಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="1653266918374749391">ಹಿಂದಿನ ಹಂತದ 3 ಶಿರೋನಾಮೆ</translation>
+<translation id="1657616855184033958">ಈವೆಂಟ್ ಸ್ಟ್ರೀಮ್ ಫಿಲ್ಟರ್‌ಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1659072772017912254">ಪರೀಕ್ಷಿಸಲಾಗಿಲ್ಲ</translation>
 <translation id="1669290819662866522">ವಾರ</translation>
 <translation id="1674262202423278359">ChromeVox ನ್ಯಾವಿಗೇಷನ್</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">ChromeVox ಅನ್ನು ಕಸ್ಟಮೈಜ್‌‍ಗೊಳಿಸಲು ಈ ಆಯ್ಕೆಗಳನ್ನು ಬಳಸಿ. ಬದಲಾವಣೆಗಳು ತಕ್ಷಣವೇ ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="4271220233568730077">ಮುಂದಿನ ಗಣಿತ</translation>
 <translation id="4271521365602459209">ಹೆಚ್ಚಿನ ಫಲಿತಾಂಶಗಳಿಲ್ಲ.</translation>
+<translation id="4275397969489577657">ಈವೆಂಟ್ ಸ್ಟ್ರೀಮ್ ಲಾಗ್ ಇನ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4287520460805643128">ಯಾವುದೇ ಮುಂದಿನ ಲೇಖನವಿಲ್ಲ.</translation>
 <translation id="4289540628985791613">ಅವಲೋಕನ</translation>
 <translation id="4300318234632215983">ಲಿಂಕ್‌ ಹಿಂದಿರುವ URL ಅನ್ನು ಪ್ರಕಟಿಸಿ</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{ಅಲ್ಪವಿರಾಮ ಚಿಹ್ನೆ}one{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}other{# ಅರ್ಧವಿರಾಮ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5411891038905756502">ಯಾವುದೇ ಹಿಂದಿನ ಅಂಶವಿಲ್ಲ.</translation>
 <translation id="5417034931411865818">ರೂಟಿಂಗ್ ಕೀ $1 ಅಡಿಯಲ್ಲಿ ಐಟಂ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
+<translation id="5435274640623994081">ಇಯರ್‌ಕಾನ್‌ ಲಾಗ್ ಇನ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ಕಡಿಮೆ ಸೂಚಕ}one{# ಕಡಿಮೆ ಸೂಚಕ ಚಿಹ್ನೆಗಳು}other{# ಕಡಿಮೆ ಸೂಚಕ ಚಿಹ್ನೆಗಳು}}</translation>
 <translation id="5444587279251314700">(ಸಕ್ರಿಯವಾಗಿದೆ)</translation>
 <translation id="5446809554778706307">ಫೋಕಸ್ ಇಲ್ಲ. ಹೊಸ ಟ್ಯಾಬ್ ತೆರೆಯಲು Ctrl+T ಒತ್ತಿರಿ.</translation>
@@ -899,6 +903,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8650576015643545550">ಯಾವುದೇ ಹಿಂದಿನ ಪಟ್ಟಿಯಿಲ್ಲ.</translation>
 <translation id="8651481478098336970">ವಾಲ್ಯೂಮ್ ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
 <translation id="8653646212587894517">ಲಿಂಕ್‌ಗಳ ಪಟ್ಟಿಯನ್ನು ತೋರಿಸಿ</translation>
+<translation id="8656888282555543604">ಬ್ರೈಲ್‌ ಲಾಗ್ ಇನ್ ಅನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="8664519043722036194">ಸೆಕೆಂಡುಗಳು</translation>
 <translation id="867187640362843212">ಶೀರ್ಷಿಕೆ 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{ಪೈಪ್}one{# ಲಂಬ ಪೈಪ್‌ಗಳು}other{# ಲಂಬ ಪೈಪ್‌ಗಳು}}</translation>

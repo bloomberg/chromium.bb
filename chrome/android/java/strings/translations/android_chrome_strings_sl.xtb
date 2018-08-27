@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Način brez beleženja zgodovine</translation>
 <translation id="1054301162707478098">Uporabljate zasebni način.</translation>
 <translation id="10614374240317010">Nikoli shranjeno</translation>
+<translation id="1067922213147265141">Druge Googlove storitve</translation>
 <translation id="1068672505746868501">Nikoli ne prevedi strani v jeziku <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Odjavljate se iz računa, ki ga upravlja <ph name="DOMAIN_NAME" />. S tem bodo izbrisani podatki, ki jih je Chrome shranil v tej napravi, vendar bodo podatki ostali v vašem Google Računu.</translation>
@@ -358,6 +359,7 @@ Kljub temu niste nevidni. Če uporabljate zasebni način, ne skrijete brskanja p
 <translation id="393697183122708255">Glasovno iskanje ni na voljo</translation>
 <translation id="3950820424414687140">Prijava</translation>
 <translation id="395206256282351086">Predlogi za iskanje in spletna mesta so onemogočeni</translation>
+<translation id="3955193568934677022">Dovoli spletnim mestom predvajanje zaščitene vsebine (priporočeno)</translation>
 <translation id="3967822245660637423">Prenos končan</translation>
 <translation id="397583555483684758">Sinhronizacija je prenehala delovati</translation>
 <translation id="3976396876660209797">Odstranite in znova ustvarite to bližnjico</translation>
@@ -925,7 +927,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="8374821112118309944">TalkBack morate posodobiti na novejšo različico.</translation>
 <translation id="8393700583063109961">Pošlji sporočilo</translation>
 <translation id="8413126021676339697">Prikaži celotno zgodovino</translation>
-<translation id="8420510748452002155">Neprilagojene storitve</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8438566539970814960">Izboljšanje iskanja in brskanja</translation>
 <translation id="8441146129660941386">Išči nazaj</translation>
@@ -963,6 +964,7 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8664979001105139458">Ime datoteke že obstaja</translation>
 <translation id="8676374126336081632">Izbriši vnos</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Moč signala: # črtica}one{Moč signala: # črtica}two{Moč signala: # črtici}few{Moč signala: # črtice}other{Moč signala: # črtic}}</translation>
+<translation id="868929229000858085">Iskanje po stikih</translation>
 <translation id="869891660844655955">Datum izteka</translation>
 <translation id="8719023831149562936">Trenutnega zavihka ni mogoče prenesti</translation>
 <translation id="8725066075913043281">Poskusite znova</translation>
@@ -997,6 +999,7 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="8986494364107987395">Samodejno pošlji statistične podatke o uporabi in poročila o zrušitvah Googlu</translation>
 <translation id="8993760627012879038">Odpiranje novega zavihka brez beleženja zgodovine</translation>
 <translation id="8998729206196772491">Prijavljate se z računom, ki ga upravlja <ph name="MANAGED_DOMAIN" />, in nadzor nad podatki v Chromu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chroma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
+<translation id="9018881455348618200">Gumb za iskanje</translation>
 <translation id="9019902583201351841">Upravljajo starši</translation>
 <translation id="9040142327097499898">Obvestila so dovoljena. Lokacija je izklopljena za to napravo.</translation>
 <translation id="9050666287014529139">Geslo</translation>

@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Incògnit</translation>
 <translation id="1054301162707478098">Has passat al mode privat.</translation>
 <translation id="10614374240317010">Contrasenyes que no es desen mai</translation>
+<translation id="1067922213147265141">Altres serveis de Google</translation>
 <translation id="1068672505746868501">No tradueixis mai les pàgines en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Esteu tancant la sessió d'un compte que gestiona <ph name="DOMAIN_NAME" />. Aquesta acció farà que se suprimeixin les dades de Chrome emmagatzemades en aquest dispositiu, però les dades es conservaran al vostre compte de Google.</translation>
@@ -358,6 +359,7 @@ Tanmateix, no ets invisible. El teu cap, el teu proveïdor de serveis d'Internet
 <translation id="393697183122708255">La cerca per veu no està disponible</translation>
 <translation id="3950820424414687140">Inicia la sessió</translation>
 <translation id="395206256282351086">S'han desactivat els suggeriments de cerques i llocs web</translation>
+<translation id="3955193568934677022">Permet que els llocs web reprodueixin contingut protegit (opció recomanada)</translation>
 <translation id="3967822245660637423">S'ha completat la baixada</translation>
 <translation id="397583555483684758">La sincronització ha deixat de funcionar</translation>
 <translation id="3976396876660209797">Suprimeix aquesta drecera i torna-la a crear</translation>
@@ -925,7 +927,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="8374821112118309944">Heu de fer l'actualització de TalkBack a una versió més recent</translation>
 <translation id="8393700583063109961">Envia el missatge</translation>
 <translation id="8413126021676339697">Mostra l'historial complet</translation>
-<translation id="8420510748452002155">Serveis no personalitzats</translation>
 <translation id="8428213095426709021">Configuració</translation>
 <translation id="8438566539970814960">Millora les cerques i la navegació</translation>
 <translation id="8441146129660941386">Retrocedeix</translation>
@@ -963,6 +964,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8664979001105139458">El nom del fitxer ja existeix</translation>
 <translation id="8676374126336081632">Esborra l'entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Intensitat del senyal: # barra}other{Intensitat del senyal: # barres}}</translation>
+<translation id="868929229000858085">Cerca als contactes</translation>
 <translation id="869891660844655955">Data de caducitat</translation>
 <translation id="8719023831149562936">La pestanya actual no es pot compartir.</translation>
 <translation id="8725066075913043281">Torna-ho a provar</translation>
@@ -997,6 +999,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="8986494364107987395">Envia automàticament estadístiques d'ús i informes d'error a Google</translation>
 <translation id="8993760627012879038">Obre una pestanya nova en mode d'incògnit</translation>
 <translation id="8998729206196772491">Estàs iniciant la sessió amb un compte gestionat per <ph name="MANAGED_DOMAIN" /> i estàs donant a l'administrador el control de les teves dades de Chrome. Les dades passaran a estar vinculades a aquest compte permanentment. Si tanques la sessió de Chrome, se suprimiran les teves dades d'aquest dispositiu, però continuaran emmagatzemades al teu compte de Google.</translation>
+<translation id="9018881455348618200">Botó Cerca</translation>
 <translation id="9019902583201351841">Gestionat pels pares</translation>
 <translation id="9040142327097499898">Es permeten les notificacions. La ubicació està desactivada en aquest dispositiu.</translation>
 <translation id="9050666287014529139">Frase de contrasenya</translation>

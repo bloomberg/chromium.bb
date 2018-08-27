@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">S-a adăugat <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Nu s-au găsit rețele</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">M-am plictisit</translation>
 <translation id="1104084341931202936">Afișează setările de accesibilitate</translation>
 <translation id="1104621072296271835">Dispozitivele funcționează și mai bine împreună</translation>
 <translation id="112308213915226829">Ascundeți automat raftul</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Șterge-le pe toate</translation>
 <translation id="1247372569136754018">Microfon (intern)</translation>
 <translation id="1252999807265626933">Se încarcă de la <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Cum este vremea?</translation>
 <translation id="1267032506238418139">Modificarea comenzii rapide</translation>
 <translation id="1270290102613614947">Tastatură pe ecran dezactivată</translation>
 <translation id="1272079795634619415">Oprește</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Conectarea multiplă acceptă maximum <ph name="MULTI_PROFILE_USER_LIMIT" /> conturi.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Conectat la un dispozitiv}few{Conectat la # dispozitive}other{Conectat la # de dispozitive}}</translation>
 <translation id="3236488194889173876">Nicio rețea mobilă disponibilă</translation>
+<translation id="3255483164551725916">Ce poți face?</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="332587331255250389">Înlocuiește bateria</translation>
 <translation id="3351879221545518001">În prezent proiectezi ecranul.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Indicator laser</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Dezactivat pentru o aplicație}few{Dezactivat pentru # aplicații}other{Dezactivat pentru # de aplicații}}</translation>
 <translation id="4072264167173457037">Semnal mediu</translation>
+<translation id="4146833061457621061">Redă muzică</translation>
 <translation id="4200057768455216496">Ai accesat comanda rapidă pentru lupa andocată. Vrei să o activezi?</translation>
 <translation id="4217571870635786043">Dictare</translation>
 <translation id="4261870227682513959">Afișează setările pentru notificări. Notificările sunt dezactivate</translation>
@@ -337,12 +341,13 @@
 <translation id="6972754398087986839">Începe</translation>
 <translation id="6981982820502123353">Accesibilitate</translation>
 <translation id="698231206551913481">Toate fișierele și datele locale asociate acestui utilizator vor fi șterse definitiv după eliminarea utilizatorului.</translation>
-<translation id="7007100238996585961">Răspunde pe un alt dispozitiv</translation>
+<translation id="7007100238996585961">Se răspunde pe un alt dispozitiv</translation>
 <translation id="7015766095477679451">Revino la <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ieșiți din sesiune</translation>
 <translation id="7037152028959403492">Ai accesat comanda rapidă pentru contrast ridicat. Vrei să-l activezi?</translation>
 <translation id="7066646422045619941">Această rețea este dezactivată de administrator.</translation>
 <translation id="7067196344162293536">Rotire automată</translation>
+<translation id="7068360136237591149">Deschide fișierele</translation>
 <translation id="7076293881109082629">Conectare</translation>
 <translation id="7092922358121866860">Afișează setările pentru Lumină de noapte</translation>
 <translation id="7098389117866926363">Dispozitiv USB-C (portul din stânga în spate)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Avertisment: funcție experimentală</translation>
 <translation id="7846634333498149051">Tastatură</translation>
 <translation id="7886277072580235377">Sesiunea de internet va fi anulată după ce te deconectezi. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Trimite un e-mail</translation>
 <translation id="790040513076446191">Manipulează setările privind confidențialitatea</translation>
 <translation id="7904094684485781019">Administratorul acestui cont a dezactivat conectarea multiplă.</translation>
 <translation id="7933084174919150729">Asistentul Google este disponibil numai pentru profilul principal.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">Creează o notă</translation>
 <translation id="8392451568018454956">Meniu cu opțiuni pentru <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Lupă de ecran complet</translation>
+<translation id="8425213833346101688">Modificați</translation>
 <translation id="8427213022735114808">Dictarea îți trimite vocea la Google pentru a permite tastarea vocală în orice câmp de text.</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8431190899827883166">Afișează atingerile</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">Tasta de căutare + Esc</translation>
 <translation id="8870509716567206129">Aplicația nu acceptă ecranul împărțit.</translation>
 <translation id="8874184842967597500">Neconectat</translation>
+<translation id="8877788021141246043">Setează un memento</translation>
 <translation id="8878886163241303700">Ecran extins</translation>
 <translation id="8921624153894383499">Asistentul Google nu vorbește în această limbă.</translation>
 <translation id="8938800817013097409">Dispozitiv USB-C (portul din dreapta în spate)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">Se iese din modul desktop unificat</translation>
 <translation id="9215934040295798075">Setează o imagine de fundal</translation>
 <translation id="923686485342484400">Apăsați de două ori Control Shift Q pentru a vă deconecta.</translation>
+<translation id="938963181863597773">Ce am în calendar?</translation>
 <translation id="945522503751344254">Trimite feedback</translation>
 <translation id="98515147261107953">Peisaj</translation>
-<translation id="995927048686010764">Autoclic</translation>
 </translationbundle>

@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Înlocuiți</translation>
 <translation id="1067048845568873861">Creat</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
+<translation id="1067922213147265141">Alte servicii Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Un alt program de pe computerul tău a adăugat o extensie care poate schimba modul în care funcționează Chrome.
 
@@ -163,6 +164,7 @@
 <translation id="1225211345201532184">Elementul 5 din raft</translation>
 <translation id="1227507814927581609">Autentificarea nu a reușit în timpul conectării la „<ph name="DEVICE_NAME" />”.</translation>
 <translation id="1230807973377071856">meniul sistem</translation>
+<translation id="123186018454553812">Încearcă altă cheie</translation>
 <translation id="1232569758102978740">Fără titlu</translation>
 <translation id="1233721473400465416">Limbă</translation>
 <translation id="1234808891666923653">Instrumente Service Worker</translation>
@@ -331,6 +333,7 @@
 <translation id="1485141095922496924">Versiunea <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
 <translation id="1486096554574027028">Caută parole</translation>
 <translation id="1487335504823219454">Activat – setări personalizate</translation>
+<translation id="1489664337021920575">Alege altă opțiune</translation>
 <translation id="1493892686965953381">Se așteaptă <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033">Încă <ph name="NUM_PRINTERS" /> dispozitive disponibile.</translation>
 <translation id="1497522201463361063">Nu s-a putut redenumi „<ph name="FILE_NAME" />”. <ph name="ERROR_MESSAGE" /></translation>
@@ -366,6 +369,7 @@
 <translation id="1531004739673299060">Fereastra aplicației</translation>
 <translation id="15373452373711364">Cursor de mouse mare</translation>
 <translation id="1538729222189715449">Se deschid fișierele Linux...</translation>
+<translation id="153933193410874873">Nu ți-am putut confirma identitatea pe acest dispozitiv</translation>
 <translation id="1540605929960647700">Activează modul demonstrativ</translation>
 <translation id="1543284117603151572">Importate din Edge</translation>
 <translation id="1545177026077493356">Mod chioșc automat</translation>
@@ -382,6 +386,7 @@
 <translation id="1564414980088536597">Imaginea nu se poate folosi. Alege altă imagine.</translation>
 <translation id="1566049601598938765">Site</translation>
 <translation id="1567387640189251553">A fost conectată o altă tastatură după ce ai introdus parola ultima dată. Aceasta ar putea încerca să înregistreze ce taste apeși.</translation>
+<translation id="1567750922576943685">Confirmarea identității te ajută să-ți protejezi informațiile cu caracter personal</translation>
 <translation id="1567993339577891801">Consolă JavaScript</translation>
 <translation id="1568067597247500137">Dezactivează sunetul pentru site</translation>
 <translation id="1568323446248056064">Deschide setările dispozitivului privind afișajul</translation>
@@ -1192,6 +1197,7 @@
 <translation id="2783298271312924866">Descărcat</translation>
 <translation id="2783321960289401138">Creează o comandă rapidă...</translation>
 <translation id="2783829359200813069">Selectează tipurile de criptare</translation>
+<translation id="2783952358106015700">Folosește cheia de securitate cu <ph name="APP_NAME" /></translation>
 <translation id="2784407158394623927">Activarea serviciilor de date mobile</translation>
 <translation id="2785873697295365461">Descriptorii fișierelor</translation>
 <translation id="2787047795752739979">Suprascrieți fișierul original</translation>
@@ -1441,6 +1447,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3161522574479303604">Toate limbile</translation>
 <translation id="3165390001037658081">Este posibil ca unii operatori să blocheze funcția.</translation>
 <translation id="316854673539778496">Pentru a accesa toate extensiile pe toate dispozitivele, conectează-te și activează sincronizarea.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">De asemenea, puteți să omiteți conectarea și să <ph name="LINK_START" />navigați ca invitat<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Limba paginii:</translation>
 <translation id="3182749001423093222">Verificarea ortografiei</translation>
@@ -1504,6 +1511,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3285322247471302225">Filă &amp;nouă</translation>
 <translation id="3288047731229977326">Extensiile care rulează în modul pentru dezvoltatori pot afecta computerul. Dacă nu sunteți dezvoltator, se recomandă să dezactivați aceste extensii, pentru siguranță.</translation>
 <translation id="3289856944988573801">Pentru a verifica dacă există actualizări, utilizați Ethernet sau Wi-Fi.</translation>
+<translation id="3292421191230118801">Reia afișarea site-urilor de pe dispozitivele mobile pe Chromebook</translation>
 <translation id="32939749466444286">Containerul Linux nu a pornit. Încearcă din nou.</translation>
 <translation id="3294437725009624529">Invitat</translation>
 <translation id="329838636886466101">Repară</translation>
@@ -1546,6 +1554,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3348038390189153836">S-a detectat un dispozitiv detașabil</translation>
 <translation id="3348459612390503954">Felicitări</translation>
 <translation id="3349933790966648062">Memorie utilizată</translation>
+<translation id="3350117557200012647">Intră în modul de asociere</translation>
 <translation id="3353984535370177728">Selectați un dosar de încărcat</translation>
 <translation id="3355936511340229503">Eroare de conexiune</translation>
 <translation id="3356797067524893661">Ești gata să accesezi Hangouts Meet</translation>
@@ -1685,6 +1694,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3556000484321257665">Motorul de căutare a fost înlocuit cu <ph name="URL" />.</translation>
 <translation id="3563432852173030730">Aplicația de tip chioșc nu a putut fi descărcată.</translation>
 <translation id="3564334271939054422">Rețeaua Wi-Fi pe care o folosești (<ph name="NETWORK_ID" />) poate solicita accesarea paginii de conectare.</translation>
+<translation id="3564848315152754834">Cheie de securitate USB</translation>
 <translation id="3566721612727112615">Nu s-au adăugat site-uri</translation>
 <translation id="3569382839528428029">Doriți ca aplicația <ph name="APP_NAME" /> să aibă acces la ecran?</translation>
 <translation id="3570985609317741174">Conținut web</translation>
@@ -1735,6 +1745,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3627588569887975815">Deschide linkul într-o fereastră inco&amp;gnito</translation>
 <translation id="3627671146180677314">Interval de reînnoire a certificatului Netscape</translation>
 <translation id="3627879631695760395">Instalează <ph name="APP" />...</translation>
+<translation id="3630132874740063857">Numărul tău de telefon</translation>
 <translation id="3630995161997703415">Adaugă acest site pe raft pentru a-l folosi oricând</translation>
 <translation id="3635030235490426869">Fila 1</translation>
 <translation id="3636096452488277381">Bună ziua, <ph name="USER_GIVEN_NAME" />.</translation>
@@ -1756,6 +1767,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3664511988987167893">Pictograma extensiei</translation>
 <translation id="3665589677786828986">Chrome a detectat că unele dintre setări au fost deteriorate de alt program și le-a resetat la valorile inițiale.</translation>
 <translation id="3668570675727296296">Setări de limbă</translation>
+<translation id="3668801437375206837">Pentru o mai bună diagnosticare a problemelor cu funcția Bluetooth, angajații Google pot include jurnale Bluetooth suplimentare în rapoartele de feedback. Dacă această opțiune este selectată, raportul va include jurnalele btsnoop și HCI din sesiunea actuală curățate, pentru a elimina cât mai multe informații de identificare personală. Accesul la aceste jurnale va fi limitat la administratorii grupului de produse Chrome OS din Listnr. Jurnalele vor fi șterse după 90 de zile.</translation>
 <translation id="3668823961463113931">Handlere</translation>
 <translation id="3670229581627177274">Activează Bluetooth</translation>
 <translation id="3672681487849735243">A fost detectată o eroare de fabricație</translation>
@@ -1774,6 +1786,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3691267899302886494"><ph name="HOST" /> dorește să acceseze ecranul</translation>
 <translation id="3693415264595406141">Parolă:</translation>
 <translation id="3694027410380121301">Selectează fila anterioară</translation>
+<translation id="369489984217678710">Parole și alte date de conectare</translation>
 <translation id="3699624789011381381">Adresă de e-mail</translation>
 <translation id="3699920817649120894">Dezactivezi sincronizarea și personalizarea?</translation>
 <translation id="3700888195348409686">Se prezintă (<ph name="PAGE_ORIGIN" />)</translation>
@@ -1797,6 +1810,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3727148787322499904">Modificarea acestei setări se va aplica tuturor rețelelor folosite în comun</translation>
 <translation id="3727187387656390258">Fereastră pop-up de inspectare</translation>
 <translation id="3729506734996624908">Site-uri permise</translation>
+<translation id="3731997362820527097">Selectează cheia de securitate</translation>
 <translation id="3732078975418297900">Eroare pe linia <ph name="ERROR_LINE" /></translation>
 <translation id="3733127536501031542">Server SSL cu Step-Up</translation>
 <translation id="3735740477244556633">Sortează după</translation>
@@ -1897,6 +1911,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3860381078714302691">Bun venit la Hangouts Meet</translation>
 <translation id="3861241522664181545">Pagină întreruptă.</translation>
 <translation id="3862134173397075045">Bun venit la experiența Cast în Chrome!</translation>
+<translation id="3862693525629180217">Verifică prin intermediul senzorului încorporat</translation>
 <translation id="3862788408946266506">Aplicația cu atributul „kiosk_only” din manifest trebuie să fie instalată în modul chioșc pentru sistemul de operare Chrome</translation>
 <translation id="3865414814144988605">Rezoluție</translation>
 <translation id="386548886866354912">Arhivează cu <ph name="EXTENSION_NAME" /></translation>
@@ -2022,6 +2037,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4055023634561256217">Trebuie să reporniți dispozitivul înainte de a fi resetat folosind Powerwash.</translation>
 <translation id="4057041477816018958"><ph name="SPEED" /> – <ph name="RECEIVED_AMOUNT" /></translation>
 <translation id="4057896668975954729">Vedeți în magazin</translation>
+<translation id="4058647953897694817">Verifică prin Bluetooth</translation>
 <translation id="4058720513957747556">AppSocket (TCP/IP)</translation>
 <translation id="4058793769387728514">Verifică acum documentul</translation>
 <translation id="406070391919917862">Aplicații în fundal</translation>
@@ -2035,6 +2051,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="407520071244661467">Redimensionează</translation>
 <translation id="4075639477629295004">Nu se poate proiecta <ph name="FILE_NAME" />.</translation>
 <translation id="4077917118009885966">Anunțurile au fost blocate pe acest site</translation>
+<translation id="4079799245038595838">Ți-am trimis o notificare pe telefon. Urmează instrucțiunile pentru a-ți confirma identitatea.</translation>
 <translation id="4081242589061676262">Nu se poate proiecta fișierul.</translation>
 <translation id="4084682180776658562">Marcaj</translation>
 <translation id="4084835346725913160">Închide <ph name="TAB_NAME" /></translation>
@@ -2134,6 +2151,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4250229828105606438">Captură de ecran</translation>
 <translation id="4250680216510889253">Nu</translation>
 <translation id="4252852543720145436">Identificatori de conținut protejat</translation>
+<translation id="4252899949534773101">Bluetooth este dezactivat</translation>
 <translation id="4252996741873942488"><ph name="WINDOW_TITLE" /> – se permite accesul la conținutul filei</translation>
 <translation id="4254813446494774748">Limba traducerii:</translation>
 <translation id="425573743389990240">Rata de descărcare a bateriei în wați (valoarea negativă înseamnă că bateria se încarcă)</translation>
@@ -2248,7 +2266,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4467100756425880649">Galeria Magazinului web Chrome</translation>
 <translation id="4467101674048705704">Extinde <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Contribuie la îmbunătățirea funcțiilor și performanței Chrome</translation>
-<translation id="4472575034687746823">Începeți</translation>
 <translation id="4474155171896946103">Marchează toate filele...</translation>
 <translation id="4475552974751346499">Caută în descărcări</translation>
 <translation id="4476590490540813026">Atletă</translation>
@@ -2260,6 +2277,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4481530544597605423">Dispozitive neasociate</translation>
 <translation id="4482194545587547824">Google poate folosi istoricul de navigare pentru a personaliza Căutarea și alte servicii Google</translation>
 <translation id="4495419450179050807">Nu afișa pe această pagină</translation>
+<translation id="449938344715680828">Apasă |<ph name="ACCELERATOR1" />|+|<ph name="ACCELERATOR2" />| și |<ph name="ACCELERATOR3" />| pentru a ieși</translation>
 <translation id="4499718683476608392">Activează completarea automată a cardurilor de credit pentru a completa formularele cu un singur clic</translation>
 <translation id="4500114933761911433"><ph name="PLUGIN_NAME" /> s-a blocat</translation>
 <translation id="450099669180426158">Pictogramă semn de exclamare</translation>
@@ -2335,6 +2353,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4611114513649582138">Conexiune de date disponibilă</translation>
 <translation id="4613271546271159013">O extensie a schimbat pagina afișată când deschideți o filă nouă.</translation>
 <translation id="4615586811063744755">nu a fost selectat niciun cookie</translation>
+<translation id="4615618657481886098">Ai înregistrat deja această cheie. Nu trebuie să o înregistrezi din nou.</translation>
 <translation id="4617270414136722281">Opțiuni pentru extensie</translation>
 <translation id="4619615317237390068">File de pe alte dispozitive</translation>
 <translation id="4620809267248568679">Această setare este impusă de o extensie.</translation>
@@ -2444,6 +2463,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4790972063719531840">Trimite automat la Google date de diagnosticare și de utilizare</translation>
 <translation id="4792711294155034829">&amp;Raportează o problemă...</translation>
 <translation id="479536056609751218">Pagină web, numai HTML</translation>
+<translation id="4798236378408895261">Atașează <ph name="BEGIN_LINK" />Jurnalele Bluetooth<ph name="END_LINK" /> (Utilizare internă Google)</translation>
 <translation id="479989351350248267">căutați</translation>
 <translation id="4801448226354548035">Ascundeți conturile</translation>
 <translation id="4801512016965057443">Permite roaming de date mobile</translation>
@@ -2460,7 +2480,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4821935166599369261">&amp;Analizare activată</translation>
 <translation id="4823484602432206655">Citește și modifică setările pentru dispozitiv și pentru utilizator</translation>
 <translation id="4823651846660089135">Dispozitivul este numai în citire</translation>
-<translation id="4823955295535347797">Accesează Asistentul de câte ori rostești „Ok Google” când ecranul este pornit.</translation>
+<translation id="4823955295535347797">Accesează Asistentul rostind „Ok Google” când ecranul este pornit.</translation>
 <translation id="4828937774870308359">Inversă</translation>
 <translation id="4829768588131278040">Configurează codul PIN</translation>
 <translation id="4830502475412647084">Se instalează actualizarea sistemului de operare</translation>
@@ -2510,6 +2530,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4882473678324857464">Focalizează pe marcaje</translation>
 <translation id="4882831918239250449">Controlează modul în care istoricul de navigare este folosit pentru a personaliza Căutarea, anunțurile și alte servicii</translation>
 <translation id="4883178195103750615">Exportați marcajele într-un fișier HTML...</translation>
+<translation id="4883274597792587930">Găsește numele înscris pe partea din spate a cheii</translation>
 <translation id="4883436287898674711">Toate site-urile <ph name="WEBSITE_1" /></translation>
 <translation id="48838266408104654">Manager de ac&amp;tivități</translation>
 <translation id="4883898390143004266">Ajută aplicațiile să-ți găsească locația. Folosește serviciul de localizare de la Google pentru a îmbunătăți locația pentru aplicații. Google poate să culeagă periodic date privind locațiile și să le folosească în mod anonim pentru a îmbunătăți precizia localizării și a serviciilor bazate pe locație. <ph name="BEGIN_LINK1" />Află mai multe<ph name="END_LINK1" /></translation>
@@ -2982,6 +3003,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="55601339223879446">Ajustează delimitările desktopului din afișare</translation>
 <translation id="5562781907504170924">Această filă este conectată la un dispozitiv Bluetooth.</translation>
 <translation id="5563234215388768762">Caută pe Google sau introdu o adresă URL</translation>
+<translation id="5567950944308676169">Conectează cheia de securitate și activeaz-o</translation>
 <translation id="5567989639534621706">Memoriile cache ale aplicației</translation>
 <translation id="5568069709869097550">Nu se poate conecta</translation>
 <translation id="5568144734023334204">Stocare Android</translation>
@@ -3228,6 +3250,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5931146425219109062">Citește și modifică toate datele de pe site-urile pe care le accesezi</translation>
 <translation id="5932881020239635062">Număr de serie</translation>
 <translation id="5933376509899483611">Fus orar</translation>
+<translation id="5938002010494270685">Este disponibilă o actualizare de securitate</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="5939847200023027600">Serviciul PDF Compositor</translation>
 <translation id="5941153596444580863">Adaugă o persoană...</translation>
@@ -3264,6 +3287,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6006484371116297560">Tema clasică</translation>
 <translation id="6007237601604674381">Mutarea nu a reușit. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6007240208646052708">Căutarea vocală în limba ta nu este disponibilă.</translation>
+<translation id="6009781704028455063">Senzor încorporat</translation>
 <translation id="6010869025736512584">Se accesează intrarea video</translation>
 <translation id="6011193465932186973">Amprentă</translation>
 <translation id="6011449291337289699">Șterge datele site-ului</translation>
@@ -3274,6 +3298,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6020431688553761150">Serverul nu te-a autorizat să accesezi această resursă.</translation>
 <translation id="602251597322198729">Acest site încearcă să descarce mai multe fișiere. Permite această operație?</translation>
 <translation id="6022526133015258832">Deschideți în ecran complet</translation>
+<translation id="6022705094403139349">Ești gata să-ți asociezi cheia de securitate?</translation>
 <translation id="6023643151125006053">Dispozitivul (NS: <ph name="SERIAL_NUMBER" />) a fost blocat de administratorul <ph name="SAML_DOMAIN" />.</translation>
 <translation id="6025215716629925253">Urmărire stivă</translation>
 <translation id="6026047032548434446">Instalezi aplicația?</translation>
@@ -3337,6 +3362,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6105877918873366097">Ultima accesare</translation>
 <translation id="6107012941649240045">Emis către</translation>
 <translation id="6112294629795967147">Atinge pentru a redimensiona</translation>
+<translation id="6112931163620622315">Verifică pe telefon</translation>
 <translation id="6112952769866305444">Editează persoana, <ph name="PROFILE_NAME" />, <ph name="USERNAME" /></translation>
 <translation id="6116338172782435947">să afișeze textul și imaginile copiate în clipboard</translation>
 <translation id="6116921718742659598">Schimbați setările pentru limbă și introducere de text</translation>
@@ -3382,6 +3408,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6169666352732958425">Nu se poate proiecta desktopul.</translation>
 <translation id="6171948306033499786">Întrerupe printarea</translation>
 <translation id="6175314957787328458">GUID domeniu Microsoft</translation>
+<translation id="6176043333338857209">Funcția Bluetooth va fi activată temporar pentru a comunica cu cheia de securitate</translation>
 <translation id="6178664161104547336">Selectează un certificat</translation>
 <translation id="6181431612547969857">Descărcarea a fost blocată</translation>
 <translation id="6185132558746749656">Locația dispozitivului</translation>
@@ -3469,6 +3496,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6311220991371174222">Nu se poate porni Chrome, deoarece a apărut o eroare la deschiderea profilului. Repornește Chrome.</translation>
 <translation id="6312400084708441752">Include informații despre software-ul dăunător, setările de sistem și procesele de pe computer</translation>
 <translation id="6312403991423642364">Eroare de rețea necunoscută</translation>
+<translation id="6313320178014547270">Folosești o cheie care nu este înregistrată pe acest site</translation>
 <translation id="6313641880021325787">IEȘI DIN RV</translation>
 <translation id="6314819609899340042">Ai activat funcțiile de remediere a erorilor pe acest dispozitiv <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
 <translation id="6315493146179903667">Toate în față</translation>
@@ -3518,12 +3546,13 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6395423953133416962">Trimiteți <ph name="BEGIN_LINK2" />valori<ph name="END_LINK2" /> și <ph name="BEGIN_LINK1" />informații de sistem<ph name="END_LINK1" /></translation>
 <translation id="6397094776139756010">Opțiuni de sincronizare și personalizare</translation>
 <translation id="6397592254427394018">Deschideți toate marcajele într-o &amp;fereastră incognito</translation>
-<translation id="639777613761517128">Pentru a deschide fișierele cu 1 USD, copiază-le mai întâi în dosarul Fișiere Linux.</translation>
+<translation id="639777613761517128">Pentru a deschide fișierele cu $1, copiază-le mai întâi în dosarul Fișiere Linux.</translation>
 <translation id="6398715114293939307">Elimină Magazinul Google Play</translation>
 <translation id="6398765197997659313">Ieși din ecranul complet</translation>
 <translation id="6399774419735315745">Spioană</translation>
 <translation id="6401445054534215853">Elementul 1 din raft</translation>
 <translation id="6404511346730675251">Modificați marcajul</translation>
+<translation id="6405510437656969977">Continuă când ești gata să introduci codul PIN</translation>
 <translation id="6406303162637086258">Simulați repornirea browserului</translation>
 <translation id="6406506848690869874">Sincronizare</translation>
 <translation id="6408118934673775994">Citește și modifică datele de pe <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și <ph name="WEBSITE_3" /></translation>
@@ -3642,6 +3671,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6579705087617859690"><ph name="WINDOW_TITLE" /> – Conținut de pe desktop la care s-a permis accesul</translation>
 <translation id="6580151766480067746">Versiunea ARC</translation>
 <translation id="6581162200855843583">Link Disc Google</translation>
+<translation id="6582080224869403177">Resetează <ph name="DEVICE_TYPE" /> pentru a îmbunătăți securitatea.</translation>
 <translation id="6582421931165117398">Pentru a proteja informațiile personale, schimbă parola acum. Pentru a putea modifica parola, trebuie să te conectezi.</translation>
 <translation id="6583851739559471707">Blocate pe site-urile care tind să afișeze anunțuri deranjante (recomandat)</translation>
 <translation id="6584878029876017575">Semnare Microsoft pe durata de viață</translation>
@@ -3691,6 +3721,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6644846457769259194">Se actualizează dispozitivul (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="6647228709620733774">Adresă URL de revocare a autorității de certificare Netscape</translation>
 <translation id="6647838571840953560">În prezent, pe <ph name="CHANNEL_NAME" /></translation>
+<translation id="6648051959475508072">Cheia de securitate a fost activată...</translation>
 <translation id="6648911618876616409">O actualizare esențială este gata de instalare. Conectează-te pentru a începe.</translation>
 <translation id="6649018507441623493">O secundă…</translation>
 <translation id="6649563841575838401">Formatul arhivei nu este acceptat sau fișierul este deteriorat.</translation>
@@ -3766,6 +3797,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6759193508432371551">Resetare la setările din fabrică</translation>
 <translation id="6767639283522617719">Dispozitivul nu poate fi asociat domeniului. Asigură-te că setările pentru unitatea organizațională sunt corecte.</translation>
 <translation id="6769712124046837540">Se adaugă imprimanta...</translation>
+<translation id="6770664076092644100">Verifică prin NFC</translation>
 <translation id="6771503742377376720">Este o Autoritate de certificare</translation>
 <translation id="6777817260680419853">Redirecționarea a fost blocată</translation>
 <translation id="6778959797435875428">Activează sunetul pentru site-uri</translation>
@@ -3801,6 +3833,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6823506025919456619">Pentru a vedea dispozitivele, este necesar să vă conectați la Chrome</translation>
 <translation id="6824564591481349393">Copiază adresa de &amp;e-mail</translation>
 <translation id="6825184156888454064">Sortează după nume</translation>
+<translation id="6826872289184051766">Verifică prin USB</translation>
 <translation id="6827236167376090743">Videoclipul va fi redat în continuu.</translation>
 <translation id="6828153365543658583">Restricționează conectarea la următorii utilizatori:</translation>
 <translation id="6828860976882136098">Actualizările automate nu au putut fi configurate pentru toți utilizatorii (eroare la executarea testării pe dispozitiv: <ph name="ERROR_NUMBER" />)</translation>
@@ -3834,6 +3867,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6880587130513028875">Imaginile au fost blocate pe această pagină.</translation>
 <translation id="6883319974225028188">Hopa! Sistemul nu a putut salva configurarea dispozitivului.</translation>
 <translation id="6885771755599377173">Previzualizarea informațiilor de sistem</translation>
+<translation id="6886476658664859389">Cheie de securitate NFC</translation>
 <translation id="6886871292305414135">Deschide linkul într-o filă &amp;nouă</translation>
 <translation id="6892812721183419409">Deschide linkul ca <ph name="USER" /></translation>
 <translation id="6896758677409633944">Copiază</translation>
@@ -3899,7 +3933,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6985607387932385770">Imprimante</translation>
 <translation id="6990081529015358884">Nu aveți spațiu suficient</translation>
 <translation id="6990778048354947307">Temă în culori întunecate</translation>
-<translation id="6991128190741664836">Mai târziu</translation>
 <translation id="6991665348624301627">Selectați o destinație</translation>
 <translation id="6997707937646349884">Pe dispozitivele tale:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> (de) dosare selectate</translation>
@@ -3999,6 +4032,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="713122686776214250">Adăugați pa&amp;gina...</translation>
 <translation id="7133578150266914903">Administratorul restabilește o versiune anterioară a OS de pe acest dispozitiv (<ph name="PROGRESS_PERCENT" />)</translation>
 <translation id="7134098520442464001">Micșorează textul</translation>
+<translation id="7135729336746831607">Activezi Bluetooth?</translation>
 <translation id="7136694880210472378">Setează ca prestabilit</translation>
 <translation id="7136984461011502314">Bun venit la <ph name="PRODUCT_NAME" /></translation>
 <translation id="7136993520339022828">A apărut o eroare. Încearcă din nou alegând alte imagini.</translation>
@@ -4044,6 +4078,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7201118060536064622">„<ph name="DELETED_ITEM_NAME" />” a fost șters</translation>
 <translation id="7206693748120342859">Se descarcă pluginul <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Închide pagina}few{Închide paginile}other{Închide paginile}}</translation>
+<translation id="721467499098558573">Apasă lung butonul de pe cheia de securitate timp de cel puțin cinci secunde</translation>
 <translation id="7216409898977639127">Furnizor de date mobile</translation>
 <translation id="7216595297012131718">Ordonează limbile pe baza preferințelor tale</translation>
 <translation id="7220019174139618249">Nu se pot exporta parole în „<ph name="FOLDER" />”</translation>
@@ -4079,6 +4114,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7256710573727326513">Deschideți într-o filă</translation>
 <translation id="725758059478686223">Serviciul de printare</translation>
 <translation id="7257666756905341374">Citește datele pe care le copiezi și le inserezi</translation>
+<translation id="7260764918845374269">Pentru a vedea cheia de securitate, aceasta trebuie să fie în modul de asociere. Apasă butonul de pe cheie timp de cel puțin cinci secunde.</translation>
 <translation id="7262004276116528033">Acest serviciu de conectare este găzduit de <ph name="SAML_DOMAIN" /></translation>
 <translation id="7268365133021434339">Închide filele</translation>
 <translation id="7268659760406822741">Servicii disponibile</translation>
@@ -4196,9 +4232,9 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7464490149090366184">Arhivarea nu a reușit, elementul există: „$1”</translation>
 <translation id="7465778193084373987">Adresă URL de revocare a certificatului Netscape</translation>
 <translation id="7469406957790636836">Pentru a activa această opțiune, activează mai întâi verificarea ortografiei în <ph name="BEGIN_LINK" />Limbi și mod de introducere<ph name="END_LINK" /></translation>
+<translation id="7469518857922439236">Îți trimite notificări și are ca setare prestabilită reținerea acestui computer pentru Messages</translation>
 <translation id="7469894403370665791">Conectează-te automat la această rețea</translation>
 <translation id="747114903913869239">Eroare: extensia nu poate fi decodificată</translation>
-<translation id="7473753388963818366">Hai să-ți pregătim dispozitivul <ph name="DEVICE_TYPE" /></translation>
 <translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="747459581954555080">Restabilește-le pe toate</translation>
 <translation id="7475671414023905704">Adresă URL pentru parolă pierdută Netscape</translation>
@@ -4245,6 +4281,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7531779363494549572">Accesează Setări &gt; Aplicații și notificări &gt; Notificări.</translation>
 <translation id="7536709149194614609">Repornește dispozitivul și încearcă din nou mai târziu.</translation>
 <translation id="7537601449003285327">Fixează pe bara de activități</translation>
+<translation id="7539856059004947393">Cheie de securitate Bluetooth</translation>
 <translation id="7540972813190816353">A avut loc o eroare la verificarea existenței unor actualizări: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Activează funcțiile de remediere a erorilor pe acest dispozitiv <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="7544853251252956727">Redă aleatoriu</translation>
@@ -4347,6 +4384,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7709152031285164251">Nu a reușit – <ph name="INTERRUPT_REASON" /></translation>
 <translation id="7710568461918838723">&amp;Proiectează…</translation>
 <translation id="7711920809702896782">Informații despre fișierul imagine</translation>
+<translation id="7712740978240882272">Deblochează Chromebookul folosind telefonul. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="7712836429117959503">Extensie necunoscută cu ID-ul <ph name="EXTENSION_ID" /></translation>
 <translation id="7714307061282548371">Se permit cookie-urile de la <ph name="DOMAIN" /></translation>
 <translation id="7714464543167945231">Certificat</translation>
@@ -4562,6 +4600,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7984068253310542383">Oglindește <ph name="DISPLAY_NAME" /></translation>
 <translation id="7986295104073916105">Citește și modifică setările parolelor salvate</translation>
 <translation id="7987764905897278458">Profită mai mult de ingeniozitatea Google</translation>
+<translation id="798835209536175951">Trimite și primește mesaje text pe Chromebook. <ph name="LINK_BEGIN" />Află mai multe<ph name="LINK_END" /></translation>
 <translation id="7988355189918024273">Activați funcțiile de accesibilitate</translation>
 <translation id="7994702968232966508">Metodă EAP</translation>
 <translation id="799547531016638432">Eliminați comanda rapidă</translation>
@@ -4694,6 +4733,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8185331656081929126">Afișați notificări când în rețea sunt detectate imprimante noi</translation>
 <translation id="8186609076106987817">Serverul nu a putut găsi fișierul.</translation>
 <translation id="8188120771410500975">&amp;Verifică ortografia câmpurilor de text</translation>
+<translation id="8188389033983459049">Verifică setările dispozitivului și activează-l pentru a continua</translation>
 <translation id="8190193592390505034">Se conectează la <ph name="PROVIDER_NAME" /></translation>
 <translation id="8191230140820435481">Gestionează aplicațiile, extensiile și temele dvs.</translation>
 <translation id="8191453843330043793">Rezolvitorul proxy-ului V8</translation>
@@ -4788,6 +4828,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8353683614194668312">Permisiuni:</translation>
 <translation id="8356197132883132838"><ph name="TITLE" /> – <ph name="COUNT" /></translation>
 <translation id="8358685469073206162">Restabiliți paginile?</translation>
+<translation id="8362993567435070757">Găsește codul PIN de șase cifre pe partea din spate a cheii</translation>
 <translation id="8363095875018065315">stabil</translation>
 <translation id="8363142353806532503">Microfonul este blocat</translation>
 <translation id="8366396658833131068">Conexiunea la rețea a fost restabilită. Selectați altă rețea sau apăsați mai jos pe butonul „Continuați” pentru a lansa aplicația chioșc.</translation>
@@ -4796,6 +4837,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8371695176452482769">Rostește acum</translation>
 <translation id="8372369524088641025">Cheie WEP greșită</translation>
 <translation id="8373553483208508744">Dezactivează sunetul filelor</translation>
+<translation id="8379878387931047019">Dispozitivul nu acceptă tipul de cheie de securitate solicitată de acest site</translation>
 <translation id="8382913212082956454">Copiază adresa de &amp;e-mail</translation>
 <translation id="8386903983509584791">Scanarea s-a finalizat</translation>
 <translation id="8389492867173948260">Permite ca această extensie să citească și să modifice toate datele de pe site-urile pe care le accesezi:</translation>
@@ -4818,7 +4860,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8418445294933751433">&amp;Afișează ca filă</translation>
 <translation id="8419098111404128271">Rezultatele de căutare pentru „<ph name="SEARCH_TEXT" />”</translation>
 <translation id="8420060421540670057">Afișați fișierele Documente Google</translation>
-<translation id="8420510748452002155">Servicii nepersonalizate</translation>
 <translation id="8424039430705546751">jos</translation>
 <translation id="8425213833346101688">Modificați</translation>
 <translation id="8425492902634685834">Fixează pe Bara de activități</translation>
@@ -4914,6 +4955,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8557930019681227453">Manifest</translation>
 <translation id="8559694214572302298">Decodor de imagini</translation>
 <translation id="8561853412914299728"><ph name="TAB_TITLE" /> <ph name="EMOJI_PLAYING" /></translation>
+<translation id="8562084399541316921">Continuă lectura</translation>
 <translation id="8565650234829130278">S-a încercat trecerea aplicației la o versiune inferioară.</translation>
 <translation id="8569002732135253578">Acum se printează <ph name="DOCUMENT_NAME" /></translation>
 <translation id="8569682776816196752">Nu au fost găsite destinații</translation>
@@ -4968,6 +5010,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8655295600908251630">Canal</translation>
 <translation id="8655319619291175901">Hopa! A apărut o eroare.</translation>
 <translation id="8655972064210167941">Nu s-a conectat, deoarece parola nu a putut fi confirmată. Contactează administratorul sau încearcă din nou.</translation>
+<translation id="8656619792520327915">Adaugă altă cheie de securitate Bluetooth</translation>
 <translation id="8656768832129462377">Nu verifica</translation>
 <translation id="8658595122208653918">Schimbă opțiunile pentru imprimantă...</translation>
 <translation id="8658645149275195032"><ph name="APP_NAME" /> trimite conținutul de pe ecran și conținutul audio către <ph name="TAB_NAME" />.</translation>
@@ -5090,6 +5133,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8814687660896548945">Așteaptă, se scanează arhiva...</translation>
 <translation id="881799181680267069">Ascunde-le pe celelalte</translation>
 <translation id="8818152010000655963">Imaginea de fundal</translation>
+<translation id="8818958672113348984">Verifică prin telefon</translation>
 <translation id="8820817407110198400">Marcaje</translation>
 <translation id="8821045908425223359">Configurează automat adresa IP</translation>
 <translation id="882204272221080310">Actualizează firmware-ul pentru securitate suplimentară.</translation>
@@ -5120,11 +5164,13 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8872155268274985541">S-a găsit un fișier manifest nevalid pentru actualizarea externă a aplicației de tip chioșc. Actualizarea aplicației de tip chioșc nu a reușit. Scoate stickul USB.</translation>
 <translation id="8874184842967597500">Neconectat</translation>
 <translation id="8876215549894133151">Format:</translation>
+<translation id="8876307312329369159">Setarea nu poate fi modificată într-o sesiune demonstrativă.</translation>
 <translation id="8876309039915144086">Generează o parolă...</translation>
 <translation id="8877448029301136595">[directorul părinte]</translation>
 <translation id="8879284080359814990">&amp;Afișează ca filă</translation>
 <translation id="8883847527783433352">Sincronizează cu alt cont</translation>
 <translation id="8885197664446363138">Funcția Smart Lock nu este disponibilă</translation>
+<translation id="88870264962436283">Folosește Touch ID cu <ph name="APP_NAME" /></translation>
 <translation id="8888432776533519951">Culoare:</translation>
 <translation id="8890516388109605451">Surse</translation>
 <translation id="8892168913673237979">Totul este pregătit!</translation>
@@ -5145,6 +5191,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8915370057835397490">Se încarcă sugestiile</translation>
 <translation id="8916476537757519021">Subcadru incognito: <ph name="SUBFRAME_SITE" /></translation>
 <translation id="8919275547519617350">Pentru a accesa toate parolele pe toate dispozitivele, conectează-te și activează sincronizarea.</translation>
+<translation id="8921366488406707015">Se verifică cheia de securitate…</translation>
 <translation id="8922013791253848639">Permite întotdeauna anunțurile pe acest site</translation>
 <translation id="8925458182817574960">&amp;Setări</translation>
 <translation id="8926389886865778422">Nu mai întreba</translation>
@@ -5253,6 +5300,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="9066782832737749352">Redarea vocală a textului</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> te conectează automat pe site-urile și la aplicațiile eligibile cu parolele pe care le-ai salvat.</translation>
 <translation id="9073281213608662541">PAP</translation>
+<translation id="90737709606140813">Asociază-ți cheia la acest dispozitiv, astfel încât să o poți folosi pentru a te conecta la cont</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9074836595010225693">Mouse USB conectat</translation>
 <translation id="9076523132036239772">Din păcate, adresa de e-mail sau parola nu a putut fi verificată. Încearcă să te conectezi mai întâi la o rețea.</translation>
@@ -5377,6 +5425,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="971774202801778802">Adresă URL marcaj</translation>
 <translation id="973473557718930265">Ieșiți</translation>
 <translation id="974555521953189084">Introdu expresia de acces pentru a începe sincronizarea</translation>
+<translation id="977640333593638907">Pentru a folosi cheia, de obicei trebuie doar să apeși butonul</translation>
 <translation id="981121421437150478">Offline</translation>
 <translation id="983511809958454316">Această funcție nu este acceptată în RV</translation>
 <translation id="984275831282074731">Metode de plată</translation>

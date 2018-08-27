@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">גלישה פרטית</translation>
 <translation id="1054301162707478098">עברת למצב פרטיות.</translation>
 <translation id="10614374240317010">פריטים שאף פעם לא נשמרו</translation>
+<translation id="1067922213147265141">‏שירותי Google אחרים</translation>
 <translation id="1068672505746868501">אף פעם אל תתרגם דפים ב<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">‏אתה מתנתק מחשבון המנוהל על ידי <ph name="DOMAIN_NAME" />. הפעולה הזו תמחק את נתוני Chrome המאוחסנים במכשיר הזה, אבל הנתונים יישמרו בחשבון Google שלך.</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">חיפוש קולי מופעל לא זמין</translation>
 <translation id="3950820424414687140">כניסה</translation>
 <translation id="395206256282351086">ההצעות למונחי חיפוש ואתרים הושבתו</translation>
+<translation id="3955193568934677022">התר לאתרים להפעיל תוכן מוגן (מומלץ)</translation>
 <translation id="3967822245660637423">ההורדה הושלמה</translation>
 <translation id="397583555483684758">הסנכרון הפסיק לפעול</translation>
 <translation id="3976396876660209797">הסרה ויצירה מחדש של מקש הקיצור הזה</translation>
@@ -925,7 +927,6 @@
 <translation id="8374821112118309944">‏עליך לעדכן את TalkBack לגרסה חדשה יותר.</translation>
 <translation id="8393700583063109961">שלח הודעה</translation>
 <translation id="8413126021676339697">הצג את ההיסטוריה המלאה</translation>
-<translation id="8420510748452002155">שירותים ללא התאמה אישית</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8438566539970814960">שיפור החיפושים והגלישה</translation>
 <translation id="8441146129660941386">הרץ לאחור</translation>
@@ -961,6 +962,7 @@
 <translation id="8664979001105139458">שם הקובץ כבר קיים</translation>
 <translation id="8676374126336081632">נקה קלט</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{רמת עוצמת אות: עמודה אחת}two{רמת עוצמת אות: שתי עמודות}many{רמת עוצמת אות: # עמודות}other{רמת עוצמת אות: # עמודות}}</translation>
+<translation id="868929229000858085">חיפוש באנשי הקשר</translation>
 <translation id="869891660844655955">תאריך תפוגה</translation>
 <translation id="8719023831149562936">לא ניתן להעביר תוכן מהכרטיסייה הנוכחית</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
@@ -995,6 +997,7 @@
 <translation id="8986494364107987395">‏שלח ל-Google דוחות קריסה וסטטיסטיקת שימוש באופן אוטומטי</translation>
 <translation id="8993760627012879038">פתח חלון חדש במצב גלישה בסתר</translation>
 <translation id="8998729206196772491">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="MANAGED_DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chrome. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chrome תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google.</translation>
+<translation id="9018881455348618200">לחצן חיפוש</translation>
 <translation id="9019902583201351841">מנוהל על-ידי ההורים שלך</translation>
 <translation id="9040142327097499898">יש הרשאה להצגת הודעות. המיקום כבוי בשביל המכשיר הזה.</translation>
 <translation id="9050666287014529139">משפט-סיסמה</translation>

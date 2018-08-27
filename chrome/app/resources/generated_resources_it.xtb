@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Sostituisci</translation>
 <translation id="1067048845568873861">Data creazione</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
+<translation id="1067922213147265141">Altri servizi Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Un altro programma sul computer ha aggiunto un'estensione che potrebbe modificare il funzionamento di Chrome.
 
@@ -1445,6 +1446,7 @@
 <translation id="3161522574479303604">Tutte le lingue</translation>
 <translation id="3165390001037658081">La funzione potrebbe essere bloccata da alcuni operatori.</translation>
 <translation id="316854673539778496">Accedi e attiva la sincronizzazione per trovare tutte le tue estensioni su tutti i dispositivi.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Puoi anche saltare l'accesso e <ph name="LINK_START" />navigare come ospite<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Lingua della pagina:</translation>
 <translation id="3182749001423093222">Controllo ortografico</translation>
@@ -2261,7 +2263,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4467100756425880649">Chrome Web Store Gallery</translation>
 <translation id="4467101674048705704">Espandi <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Contribuisci a migliorare le funzioni e le prestazioni di Chrome</translation>
-<translation id="4472575034687746823">Come iniziare</translation>
 <translation id="4474155171896946103">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="4475552974751346499">Cerca tra i file scaricati</translation>
 <translation id="4476590490540813026">Atleta</translation>
@@ -3928,7 +3929,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6985607387932385770">Stampanti</translation>
 <translation id="6990081529015358884">Spazio disponibile esaurito</translation>
 <translation id="6990778048354947307">Tema scuro</translation>
-<translation id="6991128190741664836">Più tardi</translation>
 <translation id="6991665348624301627">Seleziona una destinazione</translation>
 <translation id="6997707937646349884">Sui tuoi dispositivi:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> cartelle selezionate</translation>
@@ -4231,7 +4231,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7469518857922439236">Ricevi notifiche e valori predefiniti per memorizzare questo computer per Messaggi</translation>
 <translation id="7469894403370665791">Collegati automaticamente a questa rete</translation>
 <translation id="747114903913869239">Errore: impossibile decodificare l'estensione</translation>
-<translation id="7473753388963818366">Avvia la configurazione del tuo <ph name="DEVICE_TYPE" /></translation>
 <translation id="7473891865547856676">No grazie</translation>
 <translation id="747459581954555080">Ripristina tutto</translation>
 <translation id="7475671414023905704">URL password persa Netscape</translation>
@@ -4855,7 +4854,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8418445294933751433">&amp;Mostra come scheda</translation>
 <translation id="8419098111404128271">Risultati di ricerca per "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">Visualizza file Google Documenti</translation>
-<translation id="8420510748452002155">Servizi non personalizzati</translation>
 <translation id="8424039430705546751">giù</translation>
 <translation id="8425213833346101688">Cambia</translation>
 <translation id="8425492902634685834">Aggiungi alla barra delle applicazioni</translation>

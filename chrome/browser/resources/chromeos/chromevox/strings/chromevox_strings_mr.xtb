@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">अवैध इनपुट</translation>
 <translation id="1080471004309605942">इटालिक संपले</translation>
 <translation id="1082209053475788238">मागील स्‍तर 6 मथळा नाही.</translation>
+<translation id="1087788677726983142">इव्हेंट स्ट्रीम फिल्टर लपवा</translation>
 <translation id="1088219014394087294">कोणतेही मथळे नाहीत.</translation>
 <translation id="1106741348836243114">ध्वनी अभिप्राय (इअरकॉन) चालू किंवा बंद करा.</translation>
 <translation id="1108651818222110612">उपशीर्षक</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">वर्तमान स्‍थितीबद्दल पूर्ण वर्णन घोषित करते</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{पेक्षा मोठे}one{# पेक्षा मोठे चिन्हे}other{# पेक्षा मोठे चिन्हे}}</translation>
 <translation id="1653266918374749391">मागील स्तर 3 शीर्षक</translation>
+<translation id="1657616855184033958">इव्हेंट स्ट्रीम फिल्टर दाखवा</translation>
 <translation id="1659072772017912254">न चेक केलेले</translation>
 <translation id="1669290819662866522">आठवडा</translation>
 <translation id="1674262202423278359">ChromeVox नेव्हिगेशन</translation>
@@ -411,6 +413,7 @@
 <translation id="4255943572433203166">ChromeVox सानुकूल करण्‍यासाठी खालील पर्याय वापरा. बदल त्वरीत प्रभावी होतील.</translation>
 <translation id="4271220233568730077">पुढील गणित</translation>
 <translation id="4271521365602459209">अधिक परिणाम नाहीत.</translation>
+<translation id="4275397969489577657">इव्हेंट स्ट्रीम लॉगिंग सुरू करा</translation>
 <translation id="4287520460805643128">पुढील लेख नाही.</translation>
 <translation id="4289540628985791613">विहंगावलोकन</translation>
 <translation id="4300318234632215983">दुव्यामागील URL घोषित करा</translation>
@@ -549,6 +552,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{अर्धविराम}one{# अर्धविराम}other{# अर्धविराम}}</translation>
 <translation id="5411891038905756502">मागील जंप बिंदू नाही.</translation>
 <translation id="5417034931411865818">$1 रूटिंग की अंतर्गत आयटम क्लिक करा</translation>
+<translation id="5435274640623994081">इअरकॉन लॉगिंग सुरू करा</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{पेक्षा कमी}one{# पेक्षा कमी चिन्हे}other{# पेक्षा कमी चिन्हे}}</translation>
 <translation id="5444587279251314700">(सक्रिय)</translation>
 <translation id="5446809554778706307">फोकस नाही. नवीन टॅब उघडण्यासाठी Ctrl+T दाबा.</translation>
@@ -898,6 +902,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8650576015643545550">मागील सूची नाही.</translation>
 <translation id="8651481478098336970">आवाज निःशब्द करा</translation>
 <translation id="8653646212587894517">दुव्यांची सूची दर्शवा</translation>
+<translation id="8656888282555543604">ब्रेल लॉगिंग सुरू करा</translation>
 <translation id="8664519043722036194">सेकंद</translation>
 <translation id="867187640362843212">मथळा 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{पाइप}one{# अनुलंब पाइप}other{# अनुलंब पाइप}}</translation>

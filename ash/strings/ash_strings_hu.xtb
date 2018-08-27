@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> hozzáadva</translation>
 <translation id="1056775291175587022">Nincs hálózat</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Unatkozom</translation>
 <translation id="1104084341931202936">A kisegítő lehetőségekhez tartozó beállítások megjelenítése</translation>
 <translation id="1104621072296271835">Eszközei együtt még jobban működnek</translation>
 <translation id="112308213915226829">Polc automatikus elrejtése</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Összes törlése</translation>
 <translation id="1247372569136754018">Mikrofon (belső)</translation>
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Milyen idő van?</translation>
 <translation id="1267032506238418139">Billentyűparancsot érintő módosítás</translation>
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
 <translation id="1272079795634619415">Leállítás</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Legfeljebb <ph name="MULTI_PROFILE_USER_LIMIT" /> fiókot használhat a többfiókos bejelentkezés során.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Egy eszközhöz csatlakoztatva}other{# eszközhöz csatlakoztatva}}</translation>
 <translation id="3236488194889173876">Nem áll rendelkezésre mobilhálózat</translation>
+<translation id="3255483164551725916">Mit lehet csinálni?</translation>
 <translation id="3294437725009624529">Vendég</translation>
 <translation id="332587331255250389">Cserélje ki az akkumulátort</translation>
 <translation id="3351879221545518001">Folyamatban van a képernyő átküldése.</translation>
@@ -185,6 +188,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="4017989525502048489">Lézermutató</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Kikapcsolva 1 alkalmazás számára}other{Kikapcsolva # alkalmazás számára}}</translation>
 <translation id="4072264167173457037">Közepes jel</translation>
+<translation id="4146833061457621061">Zenelejátszás</translation>
 <translation id="4200057768455216496">Lenyomta a dokkolt nagyító billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="4217571870635786043">Diktálás</translation>
 <translation id="4261870227682513959">Az értesítési beállítások megjelenítése. Az értesítések ki vannak kapcsolva</translation>
@@ -344,6 +348,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7037152028959403492">Lenyomta a nagy kontraszt billentyűparancsát. Bekapcsolja a funkciót?</translation>
 <translation id="7066646422045619941">Ezt a hálózatot letiltotta a rendszergazda.</translation>
 <translation id="7067196344162293536">Automatikus forgatás</translation>
+<translation id="7068360136237591149">Fájlok megnyitása</translation>
 <translation id="7076293881109082629">Bejelentkezés</translation>
 <translation id="7092922358121866860">Az Éjszakai fényhez tartozó beállítások megjelenítése</translation>
 <translation id="7098389117866926363">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
@@ -387,6 +392,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="7842569679327885685">Figyelem! Kísérleti funkció</translation>
 <translation id="7846634333498149051">Billentyűzet</translation>
 <translation id="7886277072580235377">Kijelentkezés után az internetes munkamenet törlődik. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">E-mail küldése</translation>
 <translation id="790040513076446191">Adatvédelemmel kapcsolatos beállítások módosítása</translation>
 <translation id="7904094684485781019">A fiók rendszergazdája letiltotta a többfiókos bejelentkezést.</translation>
 <translation id="7933084174919150729">A Google Segéd csak az elsődleges profilhoz áll rendelkezésre.</translation>
@@ -415,6 +421,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8351131234907093545">Jegyzet létrehozása</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> beállításainak menüje</translation>
 <translation id="8406981827175133772">Teljes képernyős nagyító</translation>
+<translation id="8425213833346101688">Módosítás</translation>
 <translation id="8427213022735114808">A diktálás elküldi a hangját a Google számára, hogy bármely szövegmezőbe írhasson hangvezérléssel.</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8431190899827883166">Koppintások megjelenítése</translation>
@@ -449,6 +456,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="8850991929411075241">Keresés+Esc</translation>
 <translation id="8870509716567206129">Az alkalmazás nem támogatja az osztott képernyős nézetet.</translation>
 <translation id="8874184842967597500">Nincs csatlakozva</translation>
+<translation id="8877788021141246043">Emlékeztető beállítása</translation>
 <translation id="8878886163241303700">Kibővített képernyő</translation>
 <translation id="8921624153894383499">A Google Segéd nem beszél ezen a nyelven.</translation>
 <translation id="8938800817013097409">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
@@ -472,7 +480,7 @@ Az összes felhasználónak ki kell jelentkeznie a folytatáshoz.</translation>
 <translation id="9210037371811586452">Kilépés az Egységes asztali módból</translation>
 <translation id="9215934040295798075">Háttérkép beállítása</translation>
 <translation id="923686485342484400">Nyomja meg a Ctrl Shift Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
+<translation id="938963181863597773">Mi van a naptáramban?</translation>
 <translation id="945522503751344254">Visszajelzés küldése</translation>
 <translation id="98515147261107953">Fekvő</translation>
-<translation id="995927048686010764">Automatikus kattintás</translation>
 </translationbundle>

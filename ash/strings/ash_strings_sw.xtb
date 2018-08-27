@@ -7,6 +7,7 @@
 <translation id="1037492556044956303">Imeongeza <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Hakuna mitandao</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Hainivutii</translation>
 <translation id="1104084341931202936">Onyesha mipangilio ya ufikivu</translation>
 <translation id="1104621072296271835">Vifaa vyako vitafanya kazi vizuri vikiwa pamoja</translation>
 <translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Ondoa vyote</translation>
 <translation id="1247372569136754018">Maikrofoni (ya ndani)</translation>
 <translation id="1252999807265626933">Inachaji kwenye <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Hali ya hewa ikoje?</translation>
 <translation id="1267032506238418139">Mabadiliko kwenye njia ya mkato</translation>
 <translation id="1270290102613614947">Kibodi ya skrini imezimwa</translation>
 <translation id="1272079795634619415">Simamisha</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Unaweza kuingia katika akaunti <ph name="MULTI_PROFILE_USER_LIMIT" /> pekee ukitumia kipengele cha uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Imeunganishwa kwenye kifaa kimoja}other{Imeunganishwa kwenye vifaa #}}</translation>
 <translation id="3236488194889173876">Mtandao wa simu haupatikani</translation>
+<translation id="3255483164551725916">Unaweza kufanya nini?</translation>
 <translation id="3294437725009624529">Mgeni</translation>
 <translation id="332587331255250389">Tafadhali badilisha betri</translation>
 <translation id="3351879221545518001">Kwa sasa unatuma skrini.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Kielekezi cha leza</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Imezimwa katika programu moja}other{Imezimwa katika programu #}}</translation>
 <translation id="4072264167173457037">Mtandao ni thabiti kiasi</translation>
+<translation id="4146833061457621061">Cheza muziki</translation>
 <translation id="4200057768455216496">Umebofya njia ya mkato ya kikuzaji kilichoambatishwa. Ungependa kukiwasha?</translation>
 <translation id="4217571870635786043">Kuandika kwa kutamka</translation>
 <translation id="4261870227682513959">Onyesha mipangilio ya arifa. Umezima arifa</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Umebofya njia ya mkato ya utofautishaji wa juu. Ungependa kuuwasha?</translation>
 <translation id="7066646422045619941">Mtandao huu umezimwa na msimamizi wako.</translation>
 <translation id="7067196344162293536">Zungusha kiotomatiki</translation>
+<translation id="7068360136237591149">Fungua faili</translation>
 <translation id="7076293881109082629">Unaingia katika akaunti</translation>
 <translation id="7092922358121866860">Onyesha mipangilio ya Mwanga wa Usiku</translation>
 <translation id="7098389117866926363">Kifaa cha USB-C (mlango wa kushoto nyuma)</translation>
@@ -387,6 +392,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="7842569679327885685">Ilani: Kipengele cha majaribio</translation>
 <translation id="7846634333498149051">Kibodi</translation>
 <translation id="7886277072580235377">Kipindi chako cha intaneti kitafutwa ukiondoka kwenye akaunti. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Tuma barua pepe</translation>
 <translation id="790040513076446191">Weka utakavyo mipangilio husika ya faragha</translation>
 <translation id="7904094684485781019">Msimamizi wa akaunti hii ameondoa uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="7933084174919150729">Programu ya Mratibu wa Google inapatikana kwenye wasifu wa msingi pekee.</translation>
@@ -415,6 +421,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8351131234907093545">Unda kidokezo</translation>
 <translation id="8392451568018454956">Menyu ya chaguo za <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Kikuzaji cha Skrini Nzima</translation>
+<translation id="8425213833346101688">Badilisha</translation>
 <translation id="8427213022735114808">Utamkaji hutuma sauti yako kwa Google ili kuruhusu huduma ya kuandika kwa kutamka katika sehemu yoyote ya maandishi.</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8431190899827883166">Onyesha unapogusa</translation>
@@ -449,6 +456,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Programu haiwezi kutumia skrini iliyogawanywa.</translation>
 <translation id="8874184842967597500">Haijaunganishwa</translation>
+<translation id="8877788021141246043">Weka kikumbusho</translation>
 <translation id="8878886163241303700">Kuongeza skrini</translation>
 <translation id="8921624153894383499">Programu ya Mratibu wa Google haina huduma ya lugha hii.</translation>
 <translation id="8938800817013097409">Kifaa cha USB-C (mlango wa kulia nyuma)</translation>
@@ -472,7 +480,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="9210037371811586452">Mfumo unaondoka kwenye hali ya eneo-kazi lililounganishwa</translation>
 <translation id="9215934040295798075">Weka mandhari</translation>
 <translation id="923686485342484400">Bonyeza Control Shift Q mara mbili ili kuondoka katika akaunti.</translation>
+<translation id="938963181863597773">Ni nini kilicho kwenye kalenda yangu?</translation>
 <translation id="945522503751344254">Tuma maoni</translation>
 <translation id="98515147261107953">Mlalo</translation>
-<translation id="995927048686010764">Kubofya kiotomatiki</translation>
 </translationbundle>

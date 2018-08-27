@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" />: додато</translation>
 <translation id="1056775291175587022">Нема мрежа</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">Досадно ми је</translation>
 <translation id="1104084341931202936">Прегледајте подешавања приступачности</translation>
 <translation id="1104621072296271835">Уређаји заједно функционишу још боље</translation>
 <translation id="112308213915226829">Аутоматски сакриј полицу</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">Обриши све</translation>
 <translation id="1247372569136754018">Микрофон (интерни)</translation>
 <translation id="1252999807265626933">Пуњење из уређаја <ph name="POWER_SOURCE" /></translation>
+<translation id="1255033239764210633">Какво је време?</translation>
 <translation id="1267032506238418139">Промена пречице</translation>
 <translation id="1270290102613614947">Тастатура на екрану је онемогућена</translation>
 <translation id="1272079795634619415">Заустави</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">Можете да имате највише <ph name="MULTI_PROFILE_USER_LIMIT" /> налога за вишеструко пријављивање.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Повезани сте са једним уређајем}one{Повезани сте са # уређајем}few{Повезани сте са # уређаја}other{Повезани сте са # уређаја}}</translation>
 <translation id="3236488194889173876">Није доступна ниједна мобилна мрежа</translation>
+<translation id="3255483164551725916">Шта можеш да радиш?</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="332587331255250389">Замените батерију</translation>
 <translation id="3351879221545518001">Тренутно пребацујете екран.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">Ласерски показивач</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Искључено за апликацију}one{Искључено за # апликацију}few{Искључено за # апликације}other{Искључено за # апликација}}</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
+<translation id="4146833061457621061">Пусти музику</translation>
 <translation id="4200057768455216496">Притиснули сте пречицу за монтирану лупу екрана. Желите ли да је укључите?</translation>
 <translation id="4217571870635786043">Диктирање</translation>
 <translation id="4261870227682513959">Прегледајте подешавања обавештења. Обавештења су искључена</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">Притиснули сте пречицу за високи контраст. Желите ли да је укључите?</translation>
 <translation id="7066646422045619941">Ову мрежу је онемогућио администратор.</translation>
 <translation id="7067196344162293536">Аутоматски ротирај</translation>
+<translation id="7068360136237591149">Отвори датотеке</translation>
 <translation id="7076293881109082629">Пријављивање</translation>
 <translation id="7092922358121866860">Прегледајте подешавања Ноћног светла</translation>
 <translation id="7098389117866926363">Уређај са USB прикључком типа C (леви задњи порт)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">Упозорење: Експериментална функција</translation>
 <translation id="7846634333498149051">Тастатура</translation>
 <translation id="7886277072580235377">Интернет сесија ће бити обрисана када се одјавите. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">Пошаљи имејл</translation>
 <translation id="790040513076446191">Управљање подешавањима у вези са приватношћу</translation>
 <translation id="7904094684485781019">Администратор за овај налог је забранио вишеструко пријављивање.</translation>
 <translation id="7933084174919150729">Google помоћник је доступан само за примарни профил.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">Направите белешку</translation>
 <translation id="8392451568018454956">Мени са опцијама за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Лупа за цео екран</translation>
+<translation id="8425213833346101688">Промени</translation>
 <translation id="8427213022735114808">Диктирање шаље глас Google-у да би се омогућило писање гласом у пољима за текст.</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8431190899827883166">Приказ додира</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">Апликација не подржава подељени екран.</translation>
 <translation id="8874184842967597500">Није повезано</translation>
+<translation id="8877788021141246043">Подеси подсетник</translation>
 <translation id="8878886163241303700">Проширени екран</translation>
 <translation id="8921624153894383499">Google помоћник не говори овај језик.</translation>
 <translation id="8938800817013097409">Уређај са USB прикључком типа C (задњи десни порт)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">Излазак из режима спојених радних површина</translation>
 <translation id="9215934040295798075">Подеси позадину</translation>
 <translation id="923686485342484400">Двапут притисните Control Shift Q да бисте се одјавили.</translation>
+<translation id="938963181863597773">Шта је у календару?</translation>
 <translation id="945522503751344254">Пошаљи повратне информације</translation>
 <translation id="98515147261107953">Хоризонтално</translation>
-<translation id="995927048686010764">Аутоматски клик</translation>
 </translationbundle>

@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Vervangen</translation>
 <translation id="1067048845568873861">Gemaakt</translation>
 <translation id="1067291318998134776">Linux (bèta)</translation>
+<translation id="1067922213147265141">Andere Google-services</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Een ander programma op je computer heeft een extensie toegevoegd die de manier kan wijzigen waarop Chrome werkt.
 
@@ -1446,6 +1447,7 @@
 <translation id="3161522574479303604">Alle talen</translation>
 <translation id="3165390001037658081">Sommige providers kunnen deze functie blokkeren.</translation>
 <translation id="316854673539778496">Log in en schakel synchronisatie in om al je extensies op al je apparaten beschikbaar te maken.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Je kunt het inloggen ook overslaan en <ph name="LINK_START" />browsen als gast<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Brontaal:</translation>
 <translation id="3182749001423093222">Spellingcontrole</translation>
@@ -2264,7 +2266,6 @@
 <translation id="4467100756425880649">Chrome Web Store-galerij</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" /> uitvouwen</translation>
 <translation id="447252321002412580">Help de functies en prestaties van Chrome verbeteren</translation>
-<translation id="4472575034687746823">Aan de slag</translation>
 <translation id="4474155171896946103">Bladwijzer toevoegen aan alle tabbladen...</translation>
 <translation id="4475552974751346499">Zoeken in downloads</translation>
 <translation id="4476590490540813026">Atlete</translation>
@@ -3933,7 +3934,6 @@
 <translation id="6985607387932385770">Printers</translation>
 <translation id="6990081529015358884">Er is onvoldoende ruimte beschikbaar</translation>
 <translation id="6990778048354947307">Donker thema</translation>
-<translation id="6991128190741664836">Later</translation>
 <translation id="6991665348624301627">Een bestemming selecteren</translation>
 <translation id="6997707937646349884">Op je apparaten:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> mappen geselecteerd</translation>
@@ -4236,7 +4236,6 @@
 <translation id="7469518857922439236">Je meldingen sturen en deze computer standaard onthouden voor Berichten</translation>
 <translation id="7469894403370665791">Automatisch verbinding maken met dit netwerk</translation>
 <translation id="747114903913869239">Fout: kan extensie niet decoderen</translation>
-<translation id="7473753388963818366">Laten we je <ph name="DEVICE_TYPE" /> klaarmaken voor gebruik</translation>
 <translation id="7473891865547856676">Nee, bedankt</translation>
 <translation id="747459581954555080">Alles herstellen</translation>
 <translation id="7475671414023905704">URL van verloren Netscape-wachtwoord</translation>
@@ -4861,7 +4860,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8418445294933751433">Weergeven al&amp;s tabblad</translation>
 <translation id="8419098111404128271">Zoekresultaten voor '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Bestanden van Google Documenten weergeven</translation>
-<translation id="8420510748452002155">Niet-gepersonaliseerde services</translation>
 <translation id="8424039430705546751">omlaag</translation>
 <translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8425492902634685834">Vastzetten op taakbalk</translation>

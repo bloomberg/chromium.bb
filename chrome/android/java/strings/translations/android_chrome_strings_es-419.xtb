@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Incógnito</translation>
 <translation id="1054301162707478098">Estás en modo privado</translation>
 <translation id="10614374240317010">Nunca guardado</translation>
+<translation id="1067922213147265141">Otros servicios de Google</translation>
 <translation id="1068672505746868501">No traducir nunca páginas en <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Saldrás de una cuenta administrada por <ph name="DOMAIN_NAME" />. Esta acción eliminará los datos de Chrome almacenados en este dispositivo, aunque estos se mantendrán en la cuenta de Google.</translation>
@@ -292,7 +293,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="3282568296779691940">Acceder a Chrome</translation>
 <translation id="32895400574683172">Las notificaciones están habilitadas</translation>
 <translation id="3295602654194328831">Ocultar información</translation>
-<translation id="3298243779924642547">Co. básica</translation>
+<translation id="3298243779924642547">Básico</translation>
 <translation id="3303414029551471755">¿Deseas descargar el contenido?</translation>
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="3341058695485821946">Consulta cuántos datos redujiste</translation>
@@ -358,6 +359,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="393697183122708255">La búsqueda por voz no está habilitada</translation>
 <translation id="3950820424414687140">Acceder</translation>
 <translation id="395206256282351086">Se inhabilitaron las sugerencias de sitios y búsqueda</translation>
+<translation id="3955193568934677022">Permitir que los sitios reproduzcan contenido protegido (recomendado)</translation>
 <translation id="3967822245660637423">Descarga completa</translation>
 <translation id="397583555483684758">La sincronización dejó de funcionar</translation>
 <translation id="3976396876660209797">Quita y vuelve a crear este acceso directo</translation>
@@ -925,7 +927,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="8374821112118309944">Debes actualizar a una versión más reciente de TalkBack</translation>
 <translation id="8393700583063109961">Enviar mensaje</translation>
 <translation id="8413126021676339697">Mostrar historial completo</translation>
-<translation id="8420510748452002155">Servicios no personalizados</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8438566539970814960">Mejorar las búsquedas y la navegación</translation>
 <translation id="8441146129660941386">Buscar más atrás</translation>
@@ -963,6 +964,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8664979001105139458">El nombre del archivo ya existe</translation>
 <translation id="8676374126336081632">Borrar entrada</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de potencia de la señal: # barra}other{Nivel de potencia de la señal: # barras}}</translation>
+<translation id="868929229000858085">Busca entre tus contactos</translation>
 <translation id="869891660844655955">Fecha de vencimiento</translation>
 <translation id="8719023831149562936">Esta pestaña no se puede transmitir.</translation>
 <translation id="8725066075913043281">Intentar nuevamente</translation>
@@ -997,6 +999,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
 <translation id="8993760627012879038">Abrir ventana nueva en modo de navegación incógnito</translation>
 <translation id="8998729206196772491">Estás accediendo con una cuenta administrada por <ph name="MANAGED_DOMAIN" /> y dándole permiso a su administrador para que controle tus datos de Chrome. Tus datos se vincularán de forma permanente a esta cuenta. Si sales de Chrome, tus datos se borrarán en este dispositivo, pero quedarán guardados en tu cuenta de Google.</translation>
+<translation id="9018881455348618200">Botón de búsqueda</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9040142327097499898">Las notificaciones están habilitadas. La ubicación está desactivada en este dispositivo.</translation>
 <translation id="9050666287014529139">Frase de contraseña</translation>

@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Въвеждане на невалидни данни</translation>
 <translation id="1080471004309605942">Край на текста с курсив</translation>
 <translation id="1082209053475788238">Няма предишно заглавие от шесто ниво.</translation>
+<translation id="1087788677726983142">Скриване на филтрите за потоци на събития</translation>
 <translation id="1088219014394087294">Няма заглавия.</translation>
 <translation id="1106741348836243114">Включване или изключване на обратната връзка със звук (звукови сигнали).</translation>
 <translation id="1108651818222110612">подзаглавие</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">Съобщава пълно описание на текущата позиция</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{знак за по-голямо}other{# знака за по-голямо}}</translation>
 <translation id="1653266918374749391">Предишното заглавие от трето ниво</translation>
+<translation id="1657616855184033958">Показване на филтрите за потоци на събития</translation>
 <translation id="1659072772017912254">Без отметка</translation>
 <translation id="1669290819662866522">седмица</translation>
 <translation id="1674262202423278359">Придвижване с ChromeVox</translation>
@@ -411,6 +413,7 @@
 <translation id="4255943572433203166">Използвайте опциите по-долу, за да персонализирате ChromeVox. Промените влизат в сила незабавно.</translation>
 <translation id="4271220233568730077">Следващият математически израз</translation>
 <translation id="4271521365602459209">Няма повече резултати.</translation>
+<translation id="4275397969489577657">Активиране на записването в регистрационен файл за потоците на събития</translation>
 <translation id="4287520460805643128">Няма следваща статия.</translation>
 <translation id="4289540628985791613">Общ преглед</translation>
 <translation id="4300318234632215983">Съобщаване на URL адреса зад връзката</translation>
@@ -549,6 +552,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{точка и запетая}other{# точки и запетаи}}</translation>
 <translation id="5411891038905756502">Няма предишна точка за преминаване.</translation>
 <translation id="5417034931411865818">Кликване върху елемента под ключ за пренасочване $1</translation>
+<translation id="5435274640623994081">Активиране на записването в регистрационен файл за аудиоиконите</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{знак за по-малко}other{# знака за по-малко}}</translation>
 <translation id="5444587279251314700">(активен раздел)</translation>
 <translation id="5446809554778706307">Няма откроен елемент. Натиснете Ctrl + T, за да отворите нов раздел.</translation>
@@ -898,6 +902,7 @@
 <translation id="8650576015643545550">Няма предишен списък.</translation>
 <translation id="8651481478098336970">заглушаване на звука</translation>
 <translation id="8653646212587894517">Показване на списъка с връзки</translation>
+<translation id="8656888282555543604">Активиране на записването в регистрационен файл за брайловото писмо</translation>
 <translation id="8664519043722036194">секунди</translation>
 <translation id="867187640362843212">Заглавие от пето ниво</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{вертикална черта}other{# вертикални черти}}</translation>

@@ -240,7 +240,7 @@
 <translation id="523505283826916779">Cài đặt trợ năng</translation>
 <translation id="5313326810920013265">Cài đặt Bluetooth</translation>
 <translation id="5331975486040154427">Thiết bị USB-C (cổng phía sau, bên trái)</translation>
-<translation id="5379115545237091094">Bạn đã mở khóa quá nhiều lần</translation>
+<translation id="5379115545237091094">Quá nhiều lần thử</translation>
 <translation id="5397578532367286026">Người quản lý (<ph name="MANAGER_EMAIL" />) trên chrome.com có thể xem lại mức sử dụng và lịch sử của người dùng này.</translation>
 <translation id="5430931332414098647">Chia sẻ kết nối tức thì</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
@@ -421,6 +421,7 @@
 <translation id="8351131234907093545">Tạo ghi chú</translation>
 <translation id="8392451568018454956">Menu tùy chọn dành cho <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8406981827175133772">Phóng to toàn màn hình</translation>
+<translation id="8425213833346101688">Thay đổi</translation>
 <translation id="8427213022735114808">Tính năng nhập bằng giọng nói gửi giọng nói của bạn tới Google để cho phép nhập liệu bằng giọng nói vào bất kỳ trường văn bản nào.</translation>
 <translation id="8428213095426709021">Cài đặt</translation>
 <translation id="8431190899827883166">Hiển thị điểm khi nhấn</translation>
@@ -482,5 +483,4 @@
 <translation id="938963181863597773">Trên lịch của tôi có sự kiện gì?</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
 <translation id="98515147261107953">Khổ ngang</translation>
-<translation id="995927048686010764">Tự động nhấp</translation>
 </translationbundle>

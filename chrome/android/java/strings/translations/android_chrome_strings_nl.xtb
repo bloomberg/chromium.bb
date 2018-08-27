@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Incognito</translation>
 <translation id="1054301162707478098">Je gebruikt de privémodus.</translation>
 <translation id="10614374240317010">Nooit opgeslagen</translation>
+<translation id="1067922213147265141">Andere Google-services</translation>
 <translation id="1068672505746868501">Pagina's in het <ph name="SOURCE_LANGUAGE" /> nooit vertalen</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Je logt uit van een account dat wordt beheerd door <ph name="DOMAIN_NAME" />. Hiermee worden de Chrome-gegevens verwijderd die zijn opgeslagen op dit apparaat, maar de gegevens blijven bewaard in je Google-account.</translation>
@@ -358,6 +359,7 @@ Je bent echter niet onzichtbaar. Als je de privémodus gebruikt, wordt je browse
 <translation id="393697183122708255">Gesproken zoekopdracht niet beschikbaar</translation>
 <translation id="3950820424414687140">Inloggen</translation>
 <translation id="395206256282351086">Zoek- en sitesuggesties uitgeschakeld</translation>
+<translation id="3955193568934677022">Toestaan dat sites beveiligde content afspelen (aanbevolen)</translation>
 <translation id="3967822245660637423">Downloaden voltooid</translation>
 <translation id="397583555483684758">Synchronisatie werkt niet meer</translation>
 <translation id="3976396876660209797">Verwijder de snelkoppeling en maak deze opnieuw</translation>
@@ -925,7 +927,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="8374821112118309944">Je moet TalkBack bijwerken naar een nieuwere versie.</translation>
 <translation id="8393700583063109961">Bericht verzenden</translation>
 <translation id="8413126021676339697">Volledige geschiedenis weergeven</translation>
-<translation id="8420510748452002155">Niet-gepersonaliseerde services</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8438566539970814960">Zoekopdrachten en browsefunctionaliteit verbeteren</translation>
 <translation id="8441146129660941386">Achteruit zoeken</translation>

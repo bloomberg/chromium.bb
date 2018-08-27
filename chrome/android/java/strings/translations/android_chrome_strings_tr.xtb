@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Gizli mod</translation>
 <translation id="1054301162707478098">Gizli moda geçtiniz.</translation>
 <translation id="10614374240317010">Hiç kaydedilmeyecekler</translation>
+<translation id="1067922213147265141">Diğer Google hizmetleri</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" /> dilindeki sayfaları asla çevirme</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" /> tarafından yönetilen bir hesaptan çıkış yapıyorsunuz. Bu işlem, bu cihazda depolanan Chrome verilerini siler, ancak veriler Google Hesabınızda kalmaya devam eder.</translation>
@@ -358,6 +359,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="393697183122708255">Kullanılabilir etkin sesli arama yok</translation>
 <translation id="3950820424414687140">Oturum açın</translation>
 <translation id="395206256282351086">Arama ve site önerileri devre dışı bırakıldı</translation>
+<translation id="3955193568934677022">Sitelerin korumalı içeriği oynatmasına izin ver (önerilir)</translation>
 <translation id="3967822245660637423">İndirme tamamlandı</translation>
 <translation id="397583555483684758">Senkronizasyonun çalışması durdu</translation>
 <translation id="3976396876660209797">Bu kısayolu kaldırıp yeniden oluşturun</translation>
@@ -925,7 +927,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8374821112118309944">TalkBack'i daha yeni bir sürüme güncellemeniz gerekiyor.</translation>
 <translation id="8393700583063109961">İleti gönder</translation>
 <translation id="8413126021676339697">Tüm geçmişi göster</translation>
-<translation id="8420510748452002155">Kişiselleştirilmemiş hizmetler</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8438566539970814960">Aramaları ve göz atmayı daha iyi yap</translation>
 <translation id="8441146129660941386">Geriye doğru git</translation>

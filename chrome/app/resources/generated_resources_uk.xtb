@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Замінити</translation>
 <translation id="1067048845568873861">Створено</translation>
 <translation id="1067291318998134776">Linux (бета-версія)</translation>
+<translation id="1067922213147265141">Інші сервіси Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Інша програма на вашому комп’ютері додала розширення, яке може впливати на роботу Chrome.
 
@@ -1446,6 +1447,7 @@
 <translation id="3161522574479303604">Усі мови</translation>
 <translation id="3165390001037658081">Деякі оператори можуть блокувати цю функцію.</translation>
 <translation id="316854673539778496">Щоб мати доступ до розширень на всіх своїх пристроях, увійдіть в обліковий запис і ввімкніть синхронізацію.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Можна також пропустити вхід і <ph name="LINK_START" />працювати в режимі "Гість"<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Мова сторінки:</translation>
 <translation id="3182749001423093222">Перевірка правопису</translation>
@@ -2264,7 +2266,6 @@
 <translation id="4467100756425880649">Галерея Веб-магазину Chrome</translation>
 <translation id="4467101674048705704">Розгорнути папку "<ph name="FOLDER_NAME" />"</translation>
 <translation id="447252321002412580">Допоможіть покращити функції й ефективність Chrome</translation>
-<translation id="4472575034687746823">Початок роботи</translation>
 <translation id="4474155171896946103">Позначити закладками всі вкладки...</translation>
 <translation id="4475552974751346499">Пошук завантажень</translation>
 <translation id="4476590490540813026">Спортсменка</translation>
@@ -3932,7 +3933,6 @@
 <translation id="6985607387932385770">Принтери</translation>
 <translation id="6990081529015358884">У вас недостатньо місця</translation>
 <translation id="6990778048354947307">Темна тема</translation>
-<translation id="6991128190741664836">Пізніше</translation>
 <translation id="6991665348624301627">Вибрати місце призначення</translation>
 <translation id="6997707937646349884">На ваших пристроях:</translation>
 <translation id="6998711733709403587">Вибрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
@@ -4235,7 +4235,6 @@
 <translation id="7469518857922439236">Надсилає сповіщення й за умовчанням зберігає цей комп’ютер у додатку Повідомлення</translation>
 <translation id="7469894403370665791">Автоматично з'єднувати з цією мережею</translation>
 <translation id="747114903913869239">Помилка: не вдається розшифрувати розширення</translation>
-<translation id="7473753388963818366">Налаштуйте свій <ph name="DEVICE_TYPE" /></translation>
 <translation id="7473891865547856676">Ні, дякую</translation>
 <translation id="747459581954555080">Відновити все</translation>
 <translation id="7475671414023905704">URL-адреса втраченого пароля Netscape</translation>
@@ -4861,7 +4860,6 @@
 <translation id="8418445294933751433">&amp;Показати як вкладку</translation>
 <translation id="8419098111404128271">Результати пошуку для запиту "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">Показувати файли Документів Google</translation>
-<translation id="8420510748452002155">Неперсоналізовані сервіси</translation>
 <translation id="8424039430705546751">униз</translation>
 <translation id="8425213833346101688">Змінити</translation>
 <translation id="8425492902634685834">Закріпити на панелі завдань</translation>

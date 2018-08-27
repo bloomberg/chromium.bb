@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">시크릿</translation>
 <translation id="1054301162707478098">비공개 모드로 전환되었습니다.</translation>
 <translation id="10614374240317010">저장되지 않음</translation>
+<translation id="1067922213147265141">다른 Google 서비스</translation>
 <translation id="1068672505746868501"><ph name="SOURCE_LANGUAGE" />로 된 페이지는 번역하지 않음</translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> - <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870"><ph name="DOMAIN_NAME" />에서 관리하는 계정에서 로그아웃합니다. 로그아웃하면 이 기기에 저장된 Chrome 데이터는 삭제되지만 Google 계정에는 데이터가 남습니다.</translation>
@@ -358,6 +359,7 @@
 <translation id="393697183122708255">사용 가능한 음성 검색이 없습니다.</translation>
 <translation id="3950820424414687140">로그인</translation>
 <translation id="395206256282351086">검색 및 사이트 추천이 사용 중지됨</translation>
+<translation id="3955193568934677022">사이트에서 보호된 콘텐츠를 재생하도록 허용(권장)</translation>
 <translation id="3967822245660637423">다운로드 완료</translation>
 <translation id="397583555483684758">동기화가 중지되었습니다.</translation>
 <translation id="3976396876660209797">이 바로가기 삭제하고 다시 만들기</translation>
@@ -925,7 +927,6 @@
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>
 <translation id="8393700583063109961">메시지 보내기</translation>
 <translation id="8413126021676339697">방문 기록 전체 보기</translation>
-<translation id="8420510748452002155">맞춤설정되지 않은 서비스</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8438566539970814960">검색 및 탐색 기능 개선</translation>
 <translation id="8441146129660941386">뒤로 탐색</translation>
@@ -963,6 +964,7 @@
 <translation id="8664979001105139458">이미 존재하는 이름입니다.</translation>
 <translation id="8676374126336081632">입력내용 지우기</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{신호 강도: 막대 #개}other{신호 강도: 막대 #개}}</translation>
+<translation id="868929229000858085">연락처 검색</translation>
 <translation id="869891660844655955">유효기간</translation>
 <translation id="8719023831149562936">현재 탭을 공유할 수 없습니다.</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
@@ -997,6 +999,7 @@
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 보내기</translation>
 <translation id="8993760627012879038">시크릿 모드로 새 탭 열기</translation>
 <translation id="8998729206196772491"><ph name="MANAGED_DOMAIN" />에서 관리하는 계정으로 로그인합니다. 계정 관리자가 내 Chrome 데이터를 관리하게 되며 데이터는 이 계정에 영구적으로 연결됩니다. Chrome에서 로그아웃하면 데이터가 이 기기에서 삭제되지만 Google 계정에는 그대로 유지됩니다.</translation>
+<translation id="9018881455348618200">검색 버튼</translation>
 <translation id="9019902583201351841">부모님이 관리합니다.</translation>
 <translation id="9040142327097499898">알림이 허용되었습니다. 이 기기에서 위치가 사용 중지되었습니다.</translation>
 <translation id="9050666287014529139">암호</translation>

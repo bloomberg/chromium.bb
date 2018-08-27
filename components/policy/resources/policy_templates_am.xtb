@@ -175,6 +175,13 @@
           <ph name="PROXY_HELP_URL" /></translation>
 <translation id="1502843533062797703">የሶስተኛ ወገን ሶፍትዌር ማስገባት ማገድን ያንቁ</translation>
 <translation id="1504431521196476721">በርቀት ማስረገጥ</translation>
+<translation id="1507957856411744193">ይህ መመሪያ ወደ እውነት ከተዋቀረ <ph name="PRODUCT_NAME" /> በሁሉም የአይፒ አድራሻዎች ላይ ከCast መሣሪያዎች ጋር ይገናኛል፣ ከRFC1918/RFC4193 የግል አድራሻዎች ጋር ብቻ ሳይሆን።
+
+          ይህ መመሪያ ወደ ሐሰት ከተዋቀረ <ph name="PRODUCT_NAME" /> በRFC1918/RFC4193 የግል አድራሻዎች ላይ ብቻ ነው ከCast መሣሪያዎች ጋር የሚገናኘው።
+
+          ይህ መመሪያ ካልተዋቀረ የCastAllowAllIPs ባህሪ ካልነቃ በስተቀር <ph name="PRODUCT_NAME" /> በRFC1918/RFC4193 የግል አድራሻዎች ላይ ብቻ ነው ከCast መሣሪያዎች ጋር የሚገናኘው።
+
+          የ«EnableMediaRouter» መመሪያ ወደ እውነት ከተዋቀረ የዚህ መመሪያ እሴት ውጤት አይኖረውም።</translation>
 <translation id="1509692106376861764">ይሄ መመሪያ ከ<ph name="PRODUCT_NAME" /> 29 ስሪት ጀምሮ ስራ አቁሟል።</translation>
 <translation id="1514888685242892912"><ph name="PRODUCT_NAME" />ን ያንቁ</translation>
 <translation id="1522425503138261032">ጣቢያዎች የተጠቃሚዎች አካላዊ አካባቢ እንዲከታተሉ ይፍቀዱ</translation>
@@ -2008,6 +2015,7 @@
 
       የ<ph name="SYNC_DISABLED_POLICY_NAME" /> መመሪያ RoamingProfileSupportEnabledን በመሻር ሁሉንም የውሂብ ስምረት ያሰናክላል።</translation>
 <translation id="6731757988219967594">ለዐዋቂ ይዘት ከፍተኛ ደረጃ ጣቢያዎችን (ሆኖንም ግን ያልተካተቱ iframes) አጣራ</translation>
+<translation id="6734521799274931721">የአውታረ መረብ ፋይል ማጋሪያዎችን ለChromeOS ተገኝነትን ይቆጣጠራል</translation>
 <translation id="6735701345096330595">የፊደል ማረሚያ ቋንቋዎችን በግዳጅ ያንቁ</translation>
 <translation id="673699536430961464">ይህ ቅንብር ተጠቃሚዎች ወደ የ<ph name="PRODUCT_OS_NAME" /> መሣሪያቸው በመለያ ከገቡ በኋላ በአሳሽ መስኮታቸው ውስጥ ባለው የይዘት አካባቢ ላይ በGoogle መለያዎች መካከል እንዲቀያይሩ ያስችላቸዋል።
 

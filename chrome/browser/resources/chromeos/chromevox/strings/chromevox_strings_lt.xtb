@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Įvestis negalioja</translation>
 <translation id="1080471004309605942">Kursyvo pabaiga</translation>
 <translation id="1082209053475788238">Nėra ankstesnės 6 lygio antraštės.</translation>
+<translation id="1087788677726983142">Slėpti įvykių srauto filtrus</translation>
 <translation id="1088219014394087294">Nėra antraščių.</translation>
 <translation id="1106741348836243114">Įjunkite arba išjunkite garsinius atsiliepimus (garsinius ženklelius).</translation>
 <translation id="1108651818222110612">paantraštė</translation>
@@ -78,6 +79,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1618597272655350600">Paskelbiamas išsamus esamos pozicijos aprašas</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{ženklas daugiau}one{# ženklas daugiau}few{# ženklai daugiau}many{# greater than signs}other{# ženklų daugiau}}</translation>
 <translation id="1653266918374749391">Ankstesnė 3 lygio antraštė</translation>
+<translation id="1657616855184033958">Rodyti įvykių srauto filtrus</translation>
 <translation id="1659072772017912254">Nepažymėta</translation>
 <translation id="1669290819662866522">sav.</translation>
 <translation id="1674262202423278359">„ChromeVox“ naršymas</translation>
@@ -412,6 +414,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4255943572433203166">Naudodami toliau pateiktas parinktis galite tinkinti „ChromeVox“. Pakeitimai rodomi iš karto.</translation>
 <translation id="4271220233568730077">Kitas matematinis raktas</translation>
 <translation id="4271521365602459209">Nėra daugiau rezultatų.</translation>
+<translation id="4275397969489577657">Įgalinti įvykių srauto įrašymą į žurnalą</translation>
 <translation id="4287520460805643128">Nėra jokių kitų straipsnių.</translation>
 <translation id="4289540628985791613">Apžvalga</translation>
 <translation id="4300318234632215983">Pranešti apie nuorodos URL</translation>
@@ -550,6 +553,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5407530583102765689">{COUNT,plural, =1{kabliataškis}one{# kabliataškis}few{# kabliataškiai}many{# semicolons}other{# kabliataškių}}</translation>
 <translation id="5411891038905756502">Nėra ankstesnės perėjimo vietos.</translation>
 <translation id="5417034931411865818">Spustelėkite $1 maršruto parinkimo klavišo elementą</translation>
+<translation id="5435274640623994081">Įgalinti garsinio ženklelio įrašymą į žurnalą</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ženklas mažiau}one{# ženklas mažiau}few{# ženklai mažiau}many{# less than signs}other{# ženklų mažiau}}</translation>
 <translation id="5444587279251314700">(aktyvus)</translation>
 <translation id="5446809554778706307">Nepasirinktas joks elementas. Kad atidarytumėte naują skirtuką, paspauskite „Ctrl“ + T.</translation>
@@ -899,6 +903,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8650576015643545550">Nėra ankstesnio sąrašo.</translation>
 <translation id="8651481478098336970">garsumo nutildymas</translation>
 <translation id="8653646212587894517">Rodyti nuorodų sąrašą</translation>
+<translation id="8656888282555543604">Įgalinti Brailio rašto įrašymą į žurnalą</translation>
 <translation id="8664519043722036194">sekundės</translation>
 <translation id="867187640362843212">5 antraštė</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{statusis brūkšnys}one{# statusis brūkšnys}few{# statieji brūkšniai}many{# vertical pipes}other{# stačiųjų brūkšnių}}</translation>

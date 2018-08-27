@@ -7,6 +7,7 @@
 <translation id="1049743911850919806">Inkognito</translation>
 <translation id="1054301162707478098">Nå er du i privatmodus.</translation>
 <translation id="10614374240317010">Aldri lagret</translation>
+<translation id="1067922213147265141">Andre Google-tjenester</translation>
 <translation id="1068672505746868501">Oversett aldri sider på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="10713315585330490"><ph name="FILE_SIZE" /> – <ph name="DESCRIPTION" /></translation>
 <translation id="1080790410959514870">Du er i ferd med å logge av en konto som er administrert av <ph name="DOMAIN_NAME" />. Dette fører til at Chrome-data som er lagret på enheten, slettes. Dataene er imidlertid fortsatt lagret i Google-kontoen din.</translation>
@@ -358,6 +359,7 @@ Du er imidlertid ikke usynlig. Privat-modusen skjuler ikke surfingen din for arb
 <translation id="393697183122708255">Ingen aktiverte talesøk er tilgjengelige</translation>
 <translation id="3950820424414687140">Logg på</translation>
 <translation id="395206256282351086">Nettsteds- og søkeforslag er slått av</translation>
+<translation id="3955193568934677022">Gi nettsteder tillatelse til å spille av beskyttet innhold (anbefales)</translation>
 <translation id="3967822245660637423">Nedlasting fullført</translation>
 <translation id="397583555483684758">Synkroniseringen har sluttet å fungere</translation>
 <translation id="3976396876660209797">Fjern denne snarveien, og opprett den på nytt</translation>
@@ -925,7 +927,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8374821112118309944">Du må oppdatere til en nyere versjon av Talkback.</translation>
 <translation id="8393700583063109961">Send melding</translation>
 <translation id="8413126021676339697">Vis fullstendig logg</translation>
-<translation id="8420510748452002155">Tjenester uten personlig preg</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8438566539970814960">Gjør søking og surfing bedre</translation>
 <translation id="8441146129660941386">Spol bakover</translation>
@@ -963,6 +964,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8664979001105139458">Filnavnet finnes allerede</translation>
 <translation id="8676374126336081632">Slett teksten</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkenivå: # stolpe}other{Signalstyrkenivå: # stolper}}</translation>
+<translation id="868929229000858085">Søk i kontaktene dine</translation>
 <translation id="869891660844655955">Utløpsdato</translation>
 <translation id="8719023831149562936">Kan ikke beame gjeldende fane</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
@@ -997,6 +999,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="8986494364107987395">Send bruksstatistikk og programstopprapporter automatisk til Google</translation>
 <translation id="8993760627012879038">Åpne en ny fane i inkognitomodus</translation>
 <translation id="8998729206196772491">Du logger på med en konto som administreres av <ph name="MANAGED_DOMAIN" />, og du gir administratoren for dette domenet kontroll over Chrome-dataene dine. Dataene dine blir permanent knyttet til denne kontoen. Når du logger av Chrome, slettes dataene dine fra denne enheten, men de fortsetter å være lagret i Google-kontoen din.</translation>
+<translation id="9018881455348618200">Søkeknapp</translation>
 <translation id="9019902583201351841">Administrert av foreldrene dine</translation>
 <translation id="9040142327097499898">Varsler er tillatt. Posisjon er slått av for denne enheten.</translation>
 <translation id="9050666287014529139">Passordfrase</translation>

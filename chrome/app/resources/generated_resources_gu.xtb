@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">બદલો</translation>
 <translation id="1067048845568873861">બનાવ્યું</translation>
 <translation id="1067291318998134776">Linux (બીટા)</translation>
+<translation id="1067922213147265141">અન્ય Google સેવાઓ</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">તમારા કોમ્પ્યુટર પરના અન્ય પ્રોગ્રામે કોઇ એક્સ્ટેન્શન ઉમેર્યું છે જેનાથી Chromeની કાર્યપદ્ધતિમાં ફેરફાર થઇ શકે છે.
 
@@ -1431,6 +1432,7 @@
 <translation id="3161522574479303604">બધી ભાષાઓ</translation>
 <translation id="3165390001037658081">કેટલાક કૅરિઅર આ સુવિધાને અવરોધિત કરી શકે છે.</translation>
 <translation id="316854673539778496">તમારા બધા ઉપકરણો પર તમારા બધા એક્સ્ટેંશન મેળવવા માટે સાઇન ઇન કરો અને સિંક ચાલુ કરો.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">તમે સાઇન ઇન કરવાનું છોડી અને <ph name="LINK_START" />અતિથિ તરીકે બ્રાઉઝ<ph name="LINK_END" /> પણ કરી શકો છો.</translation>
 <translation id="3177909033752230686">પૃષ્ઠ ભાષા:</translation>
 <translation id="3182749001423093222">જોડણી તપાસણી</translation>
@@ -2236,7 +2238,6 @@
 <translation id="4467100756425880649">Chrome વેબ દુકાન ગૅલેરી</translation>
 <translation id="4467101674048705704"><ph name="FOLDER_NAME" />ને વિસ્તૃત કરો</translation>
 <translation id="447252321002412580">Chromeની સુવિધાઓ અને પ્રદર્શનને સુધારવામાં સહાય કરો</translation>
-<translation id="4472575034687746823">પ્રારંભ કરો</translation>
 <translation id="4474155171896946103">બધા ટૅબ્સ બુકમાર્ક  કરો...</translation>
 <translation id="4475552974751346499">ડાઉનલોડ્સ શોધો</translation>
 <translation id="4476590490540813026">ઍથ્લીટ</translation>
@@ -3882,7 +3883,6 @@
 <translation id="6985607387932385770">પ્રિન્ટર્સ</translation>
 <translation id="6990081529015358884">તમારી પાસે સ્થાન નથી</translation>
 <translation id="6990778048354947307">ઘાટી થીમ</translation>
-<translation id="6991128190741664836">પછીથી</translation>
 <translation id="6991665348624301627">ગંતવ્ય પસંદ કરો</translation>
 <translation id="6997707937646349884">તમારા ઉપકરણો પર:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> ફોલ્ડર્સ પસંદ કર્યા</translation>
@@ -4180,7 +4180,6 @@
 <translation id="7469406957790636836">આ ચાલુ કરવા માટે, પહેલા <ph name="BEGIN_LINK" />ભાષાઓ અને ઇનપુટ<ph name="END_LINK" />માં જોડણીની તપાસ કાર્ય ચાલુ કરો</translation>
 <translation id="7469894403370665791">આ નેટવર્કથી આપમેળે કનેક્ટ થાઓ</translation>
 <translation id="747114903913869239">ભૂલ: એક્સટેન્શનને ડિકોડ કરવામાં અક્ષમ</translation>
-<translation id="7473753388963818366">ચાલો, તમારા <ph name="DEVICE_TYPE" />ને તમારા માટે તૈયાર કરીએ</translation>
 <translation id="7473891865547856676">નહીં આભાર</translation>
 <translation id="747459581954555080">બધુ પુનર્પ્રાપ્ત કરો</translation>
 <translation id="7475671414023905704">નેટસ્કેપ ખોવાયેલો પાસવર્ડ URL</translation>
@@ -4792,7 +4791,6 @@
 <translation id="8418445294933751433">ટૅબ તરીકે &amp;બતાવો</translation>
 <translation id="8419098111404128271">'<ph name="SEARCH_TEXT" />' માટે શોધ પરિણામ</translation>
 <translation id="8420060421540670057">Google દસ્તાવેજ ફાઇલો બતાવો</translation>
-<translation id="8420510748452002155">બિન-વ્યક્તિગત કરેલી સેવાઓ</translation>
 <translation id="8424039430705546751">નીચે</translation>
 <translation id="8425213833346101688">બદલો</translation>
 <translation id="8425492902634685834">ટાસ્કબારમાં પિન કરો</translation>

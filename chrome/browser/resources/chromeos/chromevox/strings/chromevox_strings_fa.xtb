@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">ورودی نامعتبر</translation>
 <translation id="1080471004309605942">پایان ایتالیک</translation>
 <translation id="1082209053475788238">عنوان سطح ۶ قبلی وجود ندارد.</translation>
+<translation id="1087788677726983142">پنهان کردن فیلترهای جریان رویداد</translation>
 <translation id="1088219014394087294">عنوانی وجود ندارد.</translation>
 <translation id="1106741348836243114">بازخورد صوتی (نمادهای شنیداری) را روشن یا خاموش کنید.</translation>
 <translation id="1108651818222110612">زیرنویس</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">شرح کاملی از موقعیت کنونی را اعلام می‌کند</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{علامت بزرگ‌تر}one{# علامت بزرگ‌تر}other{# علامت بزرگ‌تر}}</translation>
 <translation id="1653266918374749391">عنوان قبلی سطح ۳</translation>
+<translation id="1657616855184033958">نمایش فیلترهای جریان رویداد</translation>
 <translation id="1659072772017912254">بررسی نشده</translation>
 <translation id="1669290819662866522">هفته</translation>
 <translation id="1674262202423278359">‏پیمایش ChromeVox</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">‏از گزینه‌های زیر برای سفارشی کردن ChromeVox استفاده کنید. تغییرات بلافاصله اعمال می‌شوند.</translation>
 <translation id="4271220233568730077">عبارت ریاضی بعدی</translation>
 <translation id="4271521365602459209">نتیجه دیگری موجود نیست.</translation>
+<translation id="4275397969489577657">فعال کردن گزارش‌گیری از جریان رویداد</translation>
 <translation id="4287520460805643128">مقاله بعدی وجود ندارد.</translation>
 <translation id="4289540628985791613">مرور کلی</translation>
 <translation id="4300318234632215983">اعلان نشانی وب پشت یک پیوند</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{نقطه ویرگول}one{# نقطه ویرگول}other{# نقطه ویرگول}}</translation>
 <translation id="5411891038905756502">هیچ نقطه پرش قبلی وجود ندارد.</translation>
 <translation id="5417034931411865818">مورد زیر کلید مسیریابی $1 را کلیک کنید</translation>
+<translation id="5435274640623994081">فعال کردن گزارش‌گیری از نماد شنیداری</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{علامت کوچک‌تر}one{# علامت کوچک‌تر}other{# علامت کوچک‌تر}}</translation>
 <translation id="5444587279251314700">(فعال)</translation>
 <translation id="5446809554778706307">‏هیچ موردی کانونی نشده است. برای باز کردن برگه جدید، Ctrl+T را فشار دهید.</translation>
@@ -899,6 +903,7 @@
 <translation id="8650576015643545550">فهرست قبلی موجود نیست.</translation>
 <translation id="8651481478098336970">بی‌صدا کردن</translation>
 <translation id="8653646212587894517">نمایش فهرست پیوندها</translation>
+<translation id="8656888282555543604">فعال کردن گزارش‌گیری بریل</translation>
 <translation id="8664519043722036194">ثانیه</translation>
 <translation id="867187640362843212">عنوان ۵</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{میله}one{# میله عمودی}other{# میله عمودی}}</translation>

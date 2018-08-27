@@ -7,6 +7,7 @@
 <translation id="1037492556044956303"><ph name="DEVICE_NAME" /> जोडले</translation>
 <translation id="1056775291175587022">कोणतीही नेटवर्क नाहीत</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="109942774857561566">मला कंटाळा आला आहे</translation>
 <translation id="1104084341931202936">अॅक्सेसिबिलिटी सेटिंग्ज दाखवा</translation>
 <translation id="1104621072296271835">तुमची डिव्हाइस एकत्र आणखी चांगले काम करतात</translation>
 <translation id="112308213915226829">शेल्फ स्वयं लपवा</translation>
@@ -15,6 +16,7 @@
 <translation id="119944043368869598">सर्व साफ करा</translation>
 <translation id="1247372569136754018">मायक्रोफोन (अंतर्गत)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> पासून चार्ज होत आहे</translation>
+<translation id="1255033239764210633">हवामान कसे आहे?</translation>
 <translation id="1267032506238418139">शॉर्टकट बदल</translation>
 <translation id="1270290102613614947">ऑन-स्क्रीन कीबोर्ड अक्षम</translation>
 <translation id="1272079795634619415">थांबा</translation>
@@ -141,6 +143,7 @@
 <translation id="3153444934357957346">मल्टिपल साइन इन मध्ये तुमच्याकडे जास्तीत जास्त फक्त <ph name="MULTI_PROFILE_USER_LIMIT" /> खाती असू शकतात.</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{डिव्हाइसशी कनेक्ट केले}one{# डिव्हाइसशी कनेक्ट केले}other{# डिव्हाइसशी कनेक्ट केले}}</translation>
 <translation id="3236488194889173876">कोणतेही मोबाइल नेटवर्क उपलब्ध नाही</translation>
+<translation id="3255483164551725916">तुला काय करता येते?</translation>
 <translation id="3294437725009624529">अतिथी</translation>
 <translation id="332587331255250389">कृपया बॅटरी बदला</translation>
 <translation id="3351879221545518001">तुम्ही सध्या स्क्रीन कास्ट करत आहात.</translation>
@@ -184,6 +187,7 @@
 <translation id="4017989525502048489">लेझर पॉइंट</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{एका अॅपसाठी बंद}one{# अॅपसाठी बंद}other{# अॅप्ससाठी बंद}}</translation>
 <translation id="4072264167173457037">मध्यम सिग्नल</translation>
+<translation id="4146833061457621061">म्युझिक प्ले करा</translation>
 <translation id="4200057768455216496">तुम्ही डॉक मॅग्निफायरसाठीचा शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="4217571870635786043">डिक्टेशन</translation>
 <translation id="4261870227682513959">सूचना सेटिंग्ज दाखवा. सूचना बंद आहेत</translation>
@@ -343,6 +347,7 @@
 <translation id="7037152028959403492">तुम्ही उच्च कॉंट्रास्टसाठीचा शॉर्टकट दाबला. तुम्हाला ते सुरू करायचे आहे का?</translation>
 <translation id="7066646422045619941">हे नेटवर्क आपल्या प्रशासकाने अक्षम केले आहे.</translation>
 <translation id="7067196344162293536">स्वयं फिरवा</translation>
+<translation id="7068360136237591149">फायली उघडा</translation>
 <translation id="7076293881109082629">साइन इन करीत आहे</translation>
 <translation id="7092922358121866860">रात्रीचा प्रकाश सेटिंग्ज दाखवा</translation>
 <translation id="7098389117866926363">USB-C डिव्‍हाइस (मागील बाजूचे डावे पोर्ट)</translation>
@@ -386,6 +391,7 @@
 <translation id="7842569679327885685">चेतावणी: प्रयोगात्मक वैशिष्ट्य</translation>
 <translation id="7846634333498149051">कीबोर्ड</translation>
 <translation id="7886277072580235377">तुम्ही साइन आउट केल्यावर तुमचे इंटरनेट सेशन साफ केले जाईल. <ph name="LEARN_MORE" /></translation>
+<translation id="788781083998633524">ईमेल पाठवा</translation>
 <translation id="790040513076446191">गोपनीयतेशी-संबद्ध सेटिंग्ज कुशलतेने हाताळा</translation>
 <translation id="7904094684485781019">या खात्याच्या प्रशासकाने एकाधिक साइन इन ची अनुमती रद्द केली आहे.</translation>
 <translation id="7933084174919150729">Google Assistant फक्त प्राथमिक प्रोफाइलवर उपलब्ध आहे.</translation>
@@ -414,6 +420,7 @@
 <translation id="8351131234907093545">टीप तयार करा</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> साठी पर्याय मेनू</translation>
 <translation id="8406981827175133772">फुलस्क्रीन मॅग्निफायर</translation>
+<translation id="8425213833346101688">बदल करा</translation>
 <translation id="8427213022735114808">कोणत्याही मजकूर फील्डमध्ये व्हॉइस टायपिंगची अनुमती देण्यासाठी डिक्टेशन तुमचा व्हॉइस Google ला पाठवेल.</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8431190899827883166">टॅप दाखवा</translation>
@@ -448,6 +455,7 @@
 <translation id="8850991929411075241">Search+Esc</translation>
 <translation id="8870509716567206129">अॅप विभाजित-स्क्रीनला सपोर्ट करत नाही.</translation>
 <translation id="8874184842967597500">कनेक्ट केलेले नाही</translation>
+<translation id="8877788021141246043">रिमाइंडर सेट करा</translation>
 <translation id="8878886163241303700">स्क्रीन विस्तृत करत आहे</translation>
 <translation id="8921624153894383499">Google साहाय्यक ही भाषा बोलत नाही.</translation>
 <translation id="8938800817013097409">USB-C डिव्‍हाइस (मागील बाजूचे उजवे पोर्ट)</translation>
@@ -471,7 +479,7 @@
 <translation id="9210037371811586452">एकीकृत डेस्कटॉप मोड मधून बाहेर पडत आहे</translation>
 <translation id="9215934040295798075">वॉलपेपर सेट करा</translation>
 <translation id="923686485342484400">दोनदा साइन आउट करण्यासाठी Control Shift Q दोनदा दाबा.</translation>
+<translation id="938963181863597773">माझ्या कॅलेंडरमधील इव्हेंट काय आहेत?</translation>
 <translation id="945522503751344254">अभिप्राय पाठवा</translation>
 <translation id="98515147261107953">लँडस्केप</translation>
-<translation id="995927048686010764">ऑटोक्लिक</translation>
 </translationbundle>

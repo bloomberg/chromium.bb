@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Gantikan</translation>
 <translation id="1067048845568873861">Dibuat</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
+<translation id="1067922213147265141">Perkhidmatan Google yang lain</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Program lain pada komputer anda telah menambahkan sambungan yang boleh mengubah cara Chrome berfungsi.
 
@@ -1447,6 +1448,7 @@
 <translation id="3161522574479303604">Semua bahasa</translation>
 <translation id="3165390001037658081">Sesetengah pembawa mungkin menyekat ciri ini.</translation>
 <translation id="316854673539778496">Log masuk dan hidupkan penyegerakan untuk mendapatkan semua sambungan pada semua peranti anda.</translation>
+<translation id="3169472444629675720">Temui</translation>
 <translation id="3170072451822350649">Anda juga boleh melangkau log masuk dan <ph name="LINK_START" />menyemak imbas sebagai tetamu<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Bahasa Halaman:</translation>
 <translation id="3182749001423093222">Semakan ejaan</translation>
@@ -1766,7 +1768,7 @@
 <translation id="3664511988987167893">Ikon Sambungan</translation>
 <translation id="3665589677786828986">Chrome mengesan bahawa sesetengah tetapan anda telah terganggu oleh program lain dan menetapkannya semula kepada tetapan lalainya yang asal.</translation>
 <translation id="3668570675727296296">Tetapan bahasa</translation>
-<translation id="3668801437375206837">Untuk mendiagnosis isu Bluetooth dengan lebih berkesan, Googler boleh menyertakan log Bluetooth tambahan dengan laporan maklum balas mereka. Apabila pilihan ini ditandai, laporan anda akan merangkumi log btsnoop dan HCI daripada sesi semasa anda, dibersihkan untuk mengalih keluar sebanyak mungkin PII. Akses kepada log ini akan dihadkan kepada pengurus kumpulan produk OS Chrome dalam Listnr. Log akan dihapuskan selepas 90 hari.</translation>
+<translation id="3668801437375206837">Untuk mendiagnosis isu Bluetooth dengan lebih berkesan, Googler boleh menyertakan log Bluetooth tambahan dengan laporan maklum balas mereka. Apabila pilihan ini ditandai, laporan anda akan merangkumi log btsnoop dan HCI daripada sesi semasa anda, yang telah dibersihkan untuk mengalih keluar sebanyak mungkin PII. Akses kepada log ini akan dihadkan kepada pengurus kumpulan produk OS Chrome dalam Listnr. Log akan dihapuskan selepas 90 hari.</translation>
 <translation id="3668823961463113931">Pengendali</translation>
 <translation id="3670229581627177274">Hidupkan Bluetooth</translation>
 <translation id="3672681487849735243">Ralat kilang telah dikesan</translation>
@@ -2265,7 +2267,6 @@
 <translation id="4467100756425880649">Galeri Gedung Web Chrome</translation>
 <translation id="4467101674048705704">Kembangkan <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Bantu meningkatkan ciri dan prestasi Chrome</translation>
-<translation id="4472575034687746823">Bermula</translation>
 <translation id="4474155171896946103">Tanda halaman semua tab...</translation>
 <translation id="4475552974751346499">Cari muat turun</translation>
 <translation id="4476590490540813026">Atlet</translation>
@@ -2830,7 +2831,7 @@
 <translation id="532776649628038357">Saya Setuju</translation>
 <translation id="532943162177641444">Ketik pemberitahuan pada <ph name="PHONE_NAME" /> anda untuk menyediakan tempat liputan mudah alih yang boleh digunakan oleh peranti ini.</translation>
 <translation id="5329858601952122676">&amp;Padam</translation>
-<translation id="5329945517224105597">Assistant boleh menawarkan cadangan yang lebih berkaitan dan tindakan khusus yang berkaitan dengan item pada skrin anda. Anda boleh menukar perkara ini dalam tetapan Assistant.</translation>
+<translation id="5329945517224105597">Assistant boleh menawarkan cadangan yang lebih berkaitan dan tindakan khusus yang berkaitan dengan item pada skrin anda. Anda boleh menukar perkara ini dalam tetapan Assistant</translation>
 <translation id="5330145655348521461">Fail ini dibuka pada desktop yang berbeza. Alihkan ke <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) untuk melihat fail.</translation>
 <translation id="5330512191124428349">Dapatkan maklumat</translation>
 <translation id="5331069282670671859">Anda tiada sijil dalam kategori ini</translation>
@@ -3933,7 +3934,6 @@
 <translation id="6985607387932385770">Pencetak</translation>
 <translation id="6990081529015358884">Anda telah kehabisan ruang</translation>
 <translation id="6990778048354947307">Tema Gelap</translation>
-<translation id="6991128190741664836">Kemudian</translation>
 <translation id="6991665348624301627">Pilih destinasi</translation>
 <translation id="6997707937646349884">Pada peranti anda:</translation>
 <translation id="6998711733709403587"><ph name="SELCTED_FOLDERS_COUNT" /> folder dipilih</translation>
@@ -4236,7 +4236,6 @@
 <translation id="7469518857922439236">Hantar pemberitahuan kepada anda dan tetapkan mengingati komputer ini untuk Messages sebagai pilihan lalai</translation>
 <translation id="7469894403370665791">Menyambung ke rangkaian ini secara automatik</translation>
 <translation id="747114903913869239">Ralat: Tidak dapat menyahkod sambungan</translation>
-<translation id="7473753388963818366">Mari sediakan <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="7473891865547856676">Tidak, Terima Kasih</translation>
 <translation id="747459581954555080">Pulihkan semua</translation>
 <translation id="7475671414023905704">URL Kata Laluan Hilang Netscape</translation>
@@ -4863,7 +4862,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8418445294933751433">&amp;Paparkan sebagai tab</translation>
 <translation id="8419098111404128271">Hasil carian untuk '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Paparkan fail Dokumen Google</translation>
-<translation id="8420510748452002155">Perkhidmatan tidak diperibadikan</translation>
 <translation id="8424039430705546751">ke bawah</translation>
 <translation id="8425213833346101688">Tukar</translation>
 <translation id="8425492902634685834">Pin ke Bar Tugas</translation>
@@ -5174,7 +5172,7 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8879284080359814990">&amp;Paparkan Sebagai Tab</translation>
 <translation id="8883847527783433352">Segerakkan ke Akaun Lain</translation>
 <translation id="8885197664446363138">Smart Lock tidak tersedia</translation>
-<translation id="88870264962436283">Gunakan ID Sentuh dengan <ph name="APP_NAME" /></translation>
+<translation id="88870264962436283">Gunakan Touch ID dengan <ph name="APP_NAME" /></translation>
 <translation id="8888432776533519951">Warna:</translation>
 <translation id="8890516388109605451">Sumber</translation>
 <translation id="8892168913673237979">Sudah bersedia!</translation>

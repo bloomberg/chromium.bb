@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">അസാധുവായ ഇന്‍‌പുട്ട്</translation>
 <translation id="1080471004309605942">ഇറ്റാലിക്ക് അവസാനിക്കുന്നു</translation>
 <translation id="1082209053475788238">മുൻ നില 6 ശീർഷകം ഒന്നുമില്ല.</translation>
+<translation id="1087788677726983142">ഇവന്റ് സ്‌ട്രീം ഫിൽട്ടറുകൾ അദൃശ്യമാക്കുക</translation>
 <translation id="1088219014394087294">ശീർഷകങ്ങളൊന്നുമില്ല.</translation>
 <translation id="1106741348836243114">ശബ്‌ദ ഫീഡ്‌ബാക്ക് (ഇയർകോൺസ്) ഓണാക്കുക അല്ലെങ്കിൽ ഓഫാക്കുക.</translation>
 <translation id="1108651818222110612">ഉപശീർഷകം</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">നിലവിലെ അവസ്ഥയെക്കുറിച്ച് ഒരു പൂർണ്ണമായ വിവരണം പ്രഖ്യാപിക്കുന്നു</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{അവരോഹണ ചിഹ്നം}other{# അവരോഹണ ചിഹ്നങ്ങൾ}}</translation>
 <translation id="1653266918374749391">മുൻ നില 3 ശീർഷകം</translation>
+<translation id="1657616855184033958">ഇവന്റ് സ്‌ട്രീം ഫിൽട്ടറുകൾ കാണിക്കുക</translation>
 <translation id="1659072772017912254">ചെക്കുചെയ്യാത്തത്</translation>
 <translation id="1669290819662866522">ആഴ്‌ച</translation>
 <translation id="1674262202423278359">ChromeVox നാവിഗേഷൻ</translation>
@@ -411,6 +413,7 @@
 <translation id="4255943572433203166">ChromeVox ഇഷ്ടാനുസൃതമാക്കുന്നതിന് ചുവടെയുള്ള ഓപ്ഷനുകൾ ഉപയോഗിക്കുക. മാറ്റങ്ങൾ പെട്ടെന്ന് പ്രാബല്യത്തിൽ വരും.</translation>
 <translation id="4271220233568730077">അടുത്ത മാത്ത്</translation>
 <translation id="4271521365602459209">കൂടുതൽ ഫലങ്ങളൊന്നുമില്ല.</translation>
+<translation id="4275397969489577657">ഇവന്റ് സ്‌ട്രീം ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="4287520460805643128">അടുത്ത ലേഖനമൊന്നുമില്ല.</translation>
 <translation id="4289540628985791613">അവലോകനം</translation>
 <translation id="4300318234632215983">ഒരു ലിങ്കിന് പുറകിലുള്ള URL അറിയിക്കുക</translation>
@@ -549,6 +552,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{അർദ്ധവിരാമം}other{# അർദ്ധവിരാമങ്ങൾ}}</translation>
 <translation id="5411891038905756502">മുൻ ജംപ് പോയിന്റ് ഒന്നുമില്ല.</translation>
 <translation id="5417034931411865818">$1 റൂട്ടിംഗ് കീയിലുള്ള ഇനം ക്ലിക്കുചെയ്യുക</translation>
+<translation id="5435274640623994081">ഇയർകോൺ ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ആരോഹണ ചിഹ്നം}other{# ആരോഹണ ചിഹ്നങ്ങൾ}}</translation>
 <translation id="5444587279251314700">(സജീവം)</translation>
 <translation id="5446809554778706307">ഫോക്കസ് ഇല്ല. പുതിയ ടാബ് തുറക്കാൻ Ctrl+T അമർത്തുക.</translation>
@@ -898,6 +902,7 @@ Chrome ബ്രൗസർ മെനു തുറക്കാൻ, ആൾട്ട
 <translation id="8650576015643545550">മുൻ ലിസ്റ്റ് ഒന്നുമില്ല.</translation>
 <translation id="8651481478098336970">വോളിയം മ്യൂട്ടുചെയ്യുക</translation>
 <translation id="8653646212587894517">ലിങ്കുകളുടെ ലിസ്റ്റ് കാണിക്കുക</translation>
+<translation id="8656888282555543604">ബ്രെയിലി ലോഗിംഗ് പ്രവർത്തനക്ഷമമാക്കുക</translation>
 <translation id="8664519043722036194">സെക്കന്‍ഡുകള്‍</translation>
 <translation id="867187640362843212">ശീർഷകം 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{പൈപ്പ്}other{# ലംബമായ പൈപ്പുകൾ}}</translation>

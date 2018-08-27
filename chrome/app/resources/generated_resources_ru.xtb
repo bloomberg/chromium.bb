@@ -46,6 +46,7 @@
 <translation id="1062407476771304334">Заменить</translation>
 <translation id="1067048845568873861">Создано</translation>
 <translation id="1067291318998134776">Linux (бета)</translation>
+<translation id="1067922213147265141">Другие сервисы Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Одна из программ на вашем компьютере установила расширение, которое может влиять на работу Chrome.
 
@@ -877,7 +878,7 @@
 <translation id="2307462900900812319">Настройка сети</translation>
 <translation id="230927227160767054">Эта страница пытается установить обработчик службы.</translation>
 <translation id="2309620859903500144">Этому сайту запрещено использовать датчики движения и освещенности.</translation>
-<translation id="2315414688463285945">Не удалось настроить файлы Linux. Пожалуйста, попробуйте ещё раз.</translation>
+<translation id="2315414688463285945">Не удалось настроить файлы Linux. Повторите попытку.</translation>
 <translation id="2315821125498993513">Не удалось подключиться к телефону. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="2316129865977710310">Спасибо, не надо</translation>
 <translation id="2317842250900878657">Выполнено: <ph name="PROGRESS_PERCENT" />%</translation>
@@ -1447,6 +1448,7 @@
 <translation id="3161522574479303604">Все языки</translation>
 <translation id="3165390001037658081">Некоторые операторы могут блокировать эту функцию.</translation>
 <translation id="316854673539778496">Чтобы получить доступ к расширениям на всех своих устройствах, войдите в аккаунт и включите синхронизацию.</translation>
+<translation id="3169472444629675720">Discover</translation>
 <translation id="3170072451822350649">Можно пропустить это действие и начать <ph name="LINK_START" />гостевой сеанс<ph name="LINK_END" />.</translation>
 <translation id="3177909033752230686">Язык страницы:</translation>
 <translation id="3182749001423093222">Проверка правописания</translation>
@@ -2227,7 +2229,7 @@
 <translation id="4394049700291259645">Отключить</translation>
 <translation id="4400367121200150367">Здесь появятся сайты, которые никогда не сохраняют пароли</translation>
 <translation id="4400632832271803360">Чтобы сменить функции клавиш верхнего ряда, удерживайте клавишу Launcher</translation>
-<translation id="4405117686468554883">*JPEG, *JPG, *PNG</translation>
+<translation id="4405117686468554883">*.JPEG, *.JPG, *.PNG</translation>
 <translation id="4408599188496843485">&amp;Справка</translation>
 <translation id="4409697491990005945">Поля</translation>
 <translation id="4411578466613447185">Сертификат кода</translation>
@@ -2265,7 +2267,6 @@
 <translation id="4467100756425880649">Галерея Интернет-магазина Chrome</translation>
 <translation id="4467101674048705704">Развернуть папку <ph name="FOLDER_NAME" /></translation>
 <translation id="447252321002412580">Помогать повышать производительность Chrome и улучшать функции</translation>
-<translation id="4472575034687746823">Начало работы</translation>
 <translation id="4474155171896946103">Добавить все вкладки в закладки…</translation>
 <translation id="4475552974751346499">Искать в скачанных файлах</translation>
 <translation id="4476590490540813026">Спортсмен</translation>
@@ -3933,7 +3934,6 @@
 <translation id="6985607387932385770">Принтеры</translation>
 <translation id="6990081529015358884">Недостаточно свободного места</translation>
 <translation id="6990778048354947307">Темная тема</translation>
-<translation id="6991128190741664836">Не сейчас</translation>
 <translation id="6991665348624301627">Выбор места назначения</translation>
 <translation id="6997707937646349884">На ваших устройствах:</translation>
 <translation id="6998711733709403587">Выбрано папок: <ph name="SELCTED_FOLDERS_COUNT" /></translation>
@@ -4236,7 +4236,6 @@
 <translation id="7469518857922439236">Показывать уведомления о сообщениях, полученных на телефоне</translation>
 <translation id="7469894403370665791">Автоматически подключаться к этой сети</translation>
 <translation id="747114903913869239">Ошибка: не удается расшифровать расширение</translation>
-<translation id="7473753388963818366">Давайте настроим устройство <ph name="DEVICE_TYPE" /></translation>
 <translation id="7473891865547856676">Пропустить</translation>
 <translation id="747459581954555080">Восстановить все</translation>
 <translation id="7475671414023905704">URL потерянных паролей Netscape</translation>
@@ -4814,7 +4813,7 @@
 <translation id="8320459152843401447">Весь экран</translation>
 <translation id="8322814362483282060">Доступ к вашему микрофону для этой страницы заблокирован.</translation>
 <translation id="8326478304147373412">PKCS #7, цепочка сертификатов</translation>
-<translation id="8327039559959785305">Не удалось установить файлы Linux. Пожалуйста, попробуйте ещё раз.</translation>
+<translation id="8327039559959785305">Не удалось подключить файлы Linux. Повторите попытку.</translation>
 <translation id="8329978297633540474">Обычный текст</translation>
 <translation id="8335587457941836791">Открепить от панели запуска</translation>
 <translation id="8336153091935557858">Вчера, <ph name="YESTERDAY_DAYTIME" /></translation>
@@ -4862,7 +4861,6 @@
 <translation id="8418445294933751433">&amp;Показать как вкладку</translation>
 <translation id="8419098111404128271">Результаты поиска по запросу "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">Показать файлы в службе Документов Google</translation>
-<translation id="8420510748452002155">Неперсонализированные сервисы</translation>
 <translation id="8424039430705546751">вниз</translation>
 <translation id="8425213833346101688">Изменить</translation>
 <translation id="8425492902634685834">Закрепить на панели задач</translation>

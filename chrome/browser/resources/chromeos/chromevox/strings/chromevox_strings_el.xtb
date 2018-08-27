@@ -16,6 +16,7 @@
 <translation id="1065552602950927991">Μη έγκυρη καταχώριση</translation>
 <translation id="1080471004309605942">Τέλος πλάγιας γραφής</translation>
 <translation id="1082209053475788238">Δεν υπάρχει προηγούμενη επικεφαλίδα επιπέδου 6.</translation>
+<translation id="1087788677726983142">Απόκρυψη φίλτρων ροής συμβάντων</translation>
 <translation id="1088219014394087294">Δεν υπάρχουν επικεφαλίδες.</translation>
 <translation id="1106741348836243114">Ενεργοποίηση ή απενεργοποίηση των ηχητικών σχολίων (ηχητικά μηνύματα).</translation>
 <translation id="1108651818222110612">υπότιτλος</translation>
@@ -78,6 +79,7 @@
 <translation id="1618597272655350600">Παρέχει μια πλήρη περιγραφή της τρέχουσας τοποθεσίας</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{σύμβολο "μεγαλύτερο από"}other{# σύμβολα "μεγαλύτερο από"}}</translation>
 <translation id="1653266918374749391">Επικεφαλίδα προηγούμενου επιπέδου 3</translation>
+<translation id="1657616855184033958">Εμφάνιση φίλτρων ροής συμβάντων</translation>
 <translation id="1659072772017912254">Μη επιλεγμένο</translation>
 <translation id="1669290819662866522">εβδομάδα</translation>
 <translation id="1674262202423278359">Πλοήγηση ChromeVox</translation>
@@ -412,6 +414,7 @@
 <translation id="4255943572433203166">Χρησιμοποιήστε τις παρακάτω επιλογές για να προσαρμόσετε το ChromeVox. Οι αλλαγές θα εφαρμοστούν αμέσως.</translation>
 <translation id="4271220233568730077">Επόμενη μαθηματική έκφραση</translation>
 <translation id="4271521365602459209">Δεν υπάρχουν άλλα αποτελέσματα.</translation>
+<translation id="4275397969489577657">Ενεργοποίηση καταγραφής ροής συμβάντων</translation>
 <translation id="4287520460805643128">Δεν υπάρχει επόμενο άρθρο.</translation>
 <translation id="4289540628985791613">Επισκόπηση</translation>
 <translation id="4300318234632215983">Ανακοίνωση της διεύθυνσης URL πίσω από ένα σύνδεσμο</translation>
@@ -550,6 +553,7 @@
 <translation id="5407530583102765689">{COUNT,plural, =1{ερωτηματικό}other{# ερωτηματικά}}</translation>
 <translation id="5411891038905756502">Δεν υπάρχει προηγούμενο σημείο μετάβασης.</translation>
 <translation id="5417034931411865818">Κάντε κλικ στο στοιχείο κάτω από το πλήκτρο δρομολόγησης $1</translation>
+<translation id="5435274640623994081">Ενεργοποίηση καταγραφής ηχητικών μηνυμάτων</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{σύμβολο "μικρότερο από"}other{# σύμβολα "μικρότερο από"}}</translation>
 <translation id="5444587279251314700">(ενεργή)</translation>
 <translation id="5446809554778706307">Χωρίς εστίαση. Πατήστε Ctrl+T για να ανοίξετε μια νέα καρτέλα.</translation>
@@ -900,6 +904,7 @@
 <translation id="8650576015643545550">Δεν υπάρχει προηγούμενη λίστα.</translation>
 <translation id="8651481478098336970">σίγαση ήχου</translation>
 <translation id="8653646212587894517">Εμφάνιση λίστας συνδέσμων</translation>
+<translation id="8656888282555543604">Ενεργοποίηση καταγραφής μπράιγ</translation>
 <translation id="8664519043722036194">δευτερόλεπτα</translation>
 <translation id="867187640362843212">Επικεφαλίδα 5</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{κάθετη παύλα}other{# κάθετες παύλες}}</translation>
