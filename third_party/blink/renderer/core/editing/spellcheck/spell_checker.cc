@@ -43,7 +43,7 @@
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
 #include "third_party/blink/renderer/core/editing/markers/spell_check_marker.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
-#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_callback.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/text_checking_paragraph.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
@@ -107,7 +107,7 @@ WebTextCheckClient* SpellChecker::GetTextCheckerClient() const {
 SpellChecker::SpellChecker(LocalFrame& frame)
     : frame_(&frame),
       spell_check_requester_(SpellCheckRequester::Create(frame)),
-      idle_spell_check_callback_(IdleSpellCheckCallback::Create(frame)) {}
+      idle_spell_check_controller_(IdleSpellCheckController::Create(frame)) {}
 
 bool SpellChecker::IsSpellCheckingEnabled() const {
   if (WebTextCheckClient* client = GetTextCheckerClient())
@@ -536,11 +536,11 @@ void SpellChecker::ReplaceMisspelledRange(const String& text) {
 }
 
 void SpellChecker::RespondToChangedSelection() {
-  idle_spell_check_callback_->SetNeedsInvocation();
+  idle_spell_check_controller_->SetNeedsInvocation();
 }
 
 void SpellChecker::RespondToChangedContents() {
-  idle_spell_check_callback_->SetNeedsInvocation();
+  idle_spell_check_controller_->SetNeedsInvocation();
 }
 
 void SpellChecker::RemoveSpellingMarkers() {
@@ -618,18 +618,18 @@ void SpellChecker::CancelCheck() {
 }
 
 void SpellChecker::DocumentAttached(Document* document) {
-  idle_spell_check_callback_->DocumentAttached(document);
+  idle_spell_check_controller_->DocumentAttached(document);
 }
 
 void SpellChecker::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(spell_check_requester_);
-  visitor->Trace(idle_spell_check_callback_);
+  visitor->Trace(idle_spell_check_controller_);
 }
 
 void SpellChecker::PrepareForLeakDetection() {
   spell_check_requester_->PrepareForLeakDetection();
-  idle_spell_check_callback_->Deactivate();
+  idle_spell_check_controller_->Deactivate();
 }
 
 Vector<TextCheckingResult> SpellChecker::FindMisspellings(const String& text) {

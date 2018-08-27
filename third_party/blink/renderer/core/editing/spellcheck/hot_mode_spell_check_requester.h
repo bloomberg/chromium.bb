@@ -13,8 +13,8 @@ namespace blink {
 class Element;
 class SpellCheckRequester;
 
-// This class is only supposed to be used by IdleSpellCheckCallback in hot mode
-// invocation. Not to be confused with SpellCheckRequester.
+// This class is only supposed to be used by IdleSpellCheckController in hot
+// mode invocation. Not to be confused with SpellCheckRequester.
 class HotModeSpellCheckRequester {
   STACK_ALLOCATED();
 

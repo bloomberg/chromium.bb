@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_callback.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/idle_request_options.h"
@@ -39,10 +39,10 @@ constexpr TimeDelta kForcedInvocationDeadline = TimeDelta::FromSeconds(10);
 
 }  // namespace
 
-class IdleSpellCheckCallback::IdleCallback final
+class IdleSpellCheckController::IdleCallback final
     : public ScriptedIdleTaskController::IdleTask {
  public:
-  static IdleCallback* Create(IdleSpellCheckCallback* controller) {
+  static IdleCallback* Create(IdleSpellCheckController* controller) {
     return new IdleCallback(controller);
   }
 
@@ -52,29 +52,29 @@ class IdleSpellCheckCallback::IdleCallback final
   }
 
  private:
-  explicit IdleCallback(IdleSpellCheckCallback* controller)
+  explicit IdleCallback(IdleSpellCheckController* controller)
       : controller_(controller) {}
 
   void invoke(IdleDeadline* deadline) final { controller_->Invoke(deadline); }
 
-  const Member<IdleSpellCheckCallback> controller_;
+  const Member<IdleSpellCheckController> controller_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleCallback);
 };
 
-IdleSpellCheckCallback::~IdleSpellCheckCallback() = default;
+IdleSpellCheckController::~IdleSpellCheckController() = default;
 
-void IdleSpellCheckCallback::Trace(blink::Visitor* visitor) {
+void IdleSpellCheckController::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(cold_mode_requester_);
   DocumentShutdownObserver::Trace(visitor);
 }
 
-IdleSpellCheckCallback* IdleSpellCheckCallback::Create(LocalFrame& frame) {
-  return new IdleSpellCheckCallback(frame);
+IdleSpellCheckController* IdleSpellCheckController::Create(LocalFrame& frame) {
+  return new IdleSpellCheckController(frame);
 }
 
-IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
+IdleSpellCheckController::IdleSpellCheckController(LocalFrame& frame)
     : state_(State::kInactive),
       idle_callback_handle_(kInvalidHandle),
       frame_(frame),
@@ -82,23 +82,23 @@ IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
       cold_mode_requester_(ColdModeSpellCheckRequester::Create(frame)),
       cold_mode_timer_(frame.GetTaskRunner(TaskType::kInternalDefault),
                        this,
-                       &IdleSpellCheckCallback::ColdModeTimerFired) {}
+                       &IdleSpellCheckController::ColdModeTimerFired) {}
 
-SpellCheckRequester& IdleSpellCheckCallback::GetSpellCheckRequester() const {
+SpellCheckRequester& IdleSpellCheckController::GetSpellCheckRequester() const {
   return GetFrame().GetSpellChecker().GetSpellCheckRequester();
 }
 
-bool IdleSpellCheckCallback::IsSpellCheckingEnabled() const {
+bool IdleSpellCheckController::IsSpellCheckingEnabled() const {
   return GetFrame().GetSpellChecker().IsSpellCheckingEnabled();
 }
 
-void IdleSpellCheckCallback::DisposeIdleCallback() {
+void IdleSpellCheckController::DisposeIdleCallback() {
   if (idle_callback_handle_ != kInvalidHandle && IsAvailable())
     GetDocument().CancelIdleCallback(idle_callback_handle_);
   idle_callback_handle_ = kInvalidHandle;
 }
 
-void IdleSpellCheckCallback::Deactivate() {
+void IdleSpellCheckController::Deactivate() {
   state_ = State::kInactive;
   if (cold_mode_timer_.IsActive())
     cold_mode_timer_.Stop();
@@ -106,7 +106,7 @@ void IdleSpellCheckCallback::Deactivate() {
   DisposeIdleCallback();
 }
 
-void IdleSpellCheckCallback::SetNeedsInvocation() {
+void IdleSpellCheckController::SetNeedsInvocation() {
   if (!IsSpellCheckingEnabled() || !IsAvailable()) {
     Deactivate();
     return;
@@ -132,7 +132,7 @@ void IdleSpellCheckCallback::SetNeedsInvocation() {
   state_ = State::kHotModeRequested;
 }
 
-void IdleSpellCheckCallback::SetNeedsColdModeInvocation() {
+void IdleSpellCheckController::SetNeedsColdModeInvocation() {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled() ||
       !IsSpellCheckingEnabled()) {
     Deactivate();
@@ -151,7 +151,7 @@ void IdleSpellCheckCallback::SetNeedsColdModeInvocation() {
   state_ = State::kColdModeTimerStarted;
 }
 
-void IdleSpellCheckCallback::ColdModeTimerFired(TimerBase*) {
+void IdleSpellCheckController::ColdModeTimerFired(TimerBase*) {
   DCHECK(RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled());
   DCHECK_EQ(State::kColdModeTimerStarted, state_);
 
@@ -165,8 +165,8 @@ void IdleSpellCheckCallback::ColdModeTimerFired(TimerBase*) {
   state_ = State::kColdModeRequested;
 }
 
-void IdleSpellCheckCallback::HotModeInvocation(IdleDeadline* deadline) {
-  TRACE_EVENT0("blink", "IdleSpellCheckCallback::hotModeInvocation");
+void IdleSpellCheckController::HotModeInvocation(IdleDeadline* deadline) {
+  TRACE_EVENT0("blink", "IdleSpellCheckController::hotModeInvocation");
 
   // TODO(xiaochengh): Figure out if this has any performance impact.
   GetDocument().UpdateStyleAndLayout();
@@ -194,7 +194,7 @@ void IdleSpellCheckCallback::HotModeInvocation(IdleDeadline* deadline) {
   }
 }
 
-void IdleSpellCheckCallback::Invoke(IdleDeadline* deadline) {
+void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
   DCHECK_NE(idle_callback_handle_, kInvalidHandle);
   idle_callback_handle_ = kInvalidHandle;
 
@@ -220,15 +220,15 @@ void IdleSpellCheckCallback::Invoke(IdleDeadline* deadline) {
   }
 }
 
-void IdleSpellCheckCallback::DocumentAttached(Document* document) {
+void IdleSpellCheckController::DocumentAttached(Document* document) {
   SetContext(document);
 }
 
-void IdleSpellCheckCallback::ContextDestroyed(Document*) {
+void IdleSpellCheckController::ContextDestroyed(Document*) {
   Deactivate();
 }
 
-void IdleSpellCheckCallback::ForceInvocationForTesting() {
+void IdleSpellCheckController::ForceInvocationForTesting() {
   if (!IsSpellCheckingEnabled())
     return;
 
@@ -255,13 +255,13 @@ void IdleSpellCheckCallback::ForceInvocationForTesting() {
   }
 }
 
-void IdleSpellCheckCallback::SkipColdModeTimerForTesting() {
+void IdleSpellCheckController::SkipColdModeTimerForTesting() {
   DCHECK(cold_mode_timer_.IsActive());
   cold_mode_timer_.Stop();
   ColdModeTimerFired(&cold_mode_timer_);
 }
 
-void IdleSpellCheckCallback::SetNeedsMoreColdModeInvocationForTesting() {
+void IdleSpellCheckController::SetNeedsMoreColdModeInvocationForTesting() {
   cold_mode_requester_->SetNeedsMoreInvocationForTesting();
 }
 

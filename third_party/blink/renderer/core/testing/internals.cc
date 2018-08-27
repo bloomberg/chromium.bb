@@ -72,7 +72,7 @@
 #include "third_party/blink/renderer/core/editing/plain_text_range.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
-#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_callback.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -1583,7 +1583,7 @@ String Internals::idleTimeSpellCheckerState(Document* document,
                                             ExceptionState& exception_state) {
   static const char* const kTexts[] = {
 #define V(state) #state,
-      FOR_EACH_IDLE_SPELL_CHECK_CALLBACK_STATE(V)
+      FOR_EACH_IDLE_SPELL_CHECK_CONTROLLER_STATE(V)
 #undef V
   };
 
@@ -1594,10 +1594,10 @@ String Internals::idleTimeSpellCheckerState(Document* document,
     return String();
   }
 
-  IdleSpellCheckCallback::State state = document->GetFrame()
-                                            ->GetSpellChecker()
-                                            .GetIdleSpellCheckCallback()
-                                            .GetState();
+  IdleSpellCheckController::State state = document->GetFrame()
+                                              ->GetSpellChecker()
+                                              .GetIdleSpellCheckController()
+                                              .GetState();
   auto* const* const it = std::begin(kTexts) + static_cast<size_t>(state);
   DCHECK_GE(it, std::begin(kTexts)) << "Unknown state value";
   DCHECK_LT(it, std::end(kTexts)) << "Unknown state value";
@@ -1615,7 +1615,7 @@ void Internals::runIdleTimeSpellChecker(Document* document,
 
   document->GetFrame()
       ->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 }
 

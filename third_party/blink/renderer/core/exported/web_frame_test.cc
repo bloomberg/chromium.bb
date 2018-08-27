@@ -99,7 +99,7 @@
 #include "third_party/blink/renderer/core/editing/finder/text_finder.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/markers/document_marker_controller.h"
-#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_callback.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
@@ -6685,7 +6685,7 @@ TEST_F(WebFrameTest, ReplaceMisspelledRange) {
 
   document->GetFrame()
       ->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
   const int kAllTextBeginOffset = 0;
@@ -6731,7 +6731,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkers) {
 
   document->GetFrame()
       ->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
   frame->RemoveSpellingMarkers();
@@ -6781,7 +6781,7 @@ TEST_F(WebFrameTest, RemoveSpellingMarkersUnderWords) {
   EXPECT_FALSE(exception_state.HadException());
 
   frame->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
   WebVector<unsigned> offsets1;
@@ -6863,7 +6863,7 @@ TEST_F(WebFrameTest, SlowSpellcheckMarkerPosition) {
 
   document->GetFrame()
       ->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
   textcheck.Kick();
@@ -6894,7 +6894,7 @@ TEST_F(WebFrameTest, SpellcheckResultErasesMarkers) {
 
   document->GetFrame()
       ->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
   document->UpdateStyleAndLayout();
@@ -6931,7 +6931,7 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument) {
 
   document->GetFrame()
       ->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
   textcheck.Kick();
@@ -6946,7 +6946,7 @@ TEST_F(WebFrameTest, SpellcheckResultsSavedInDocument) {
 
   document->GetFrame()
       ->GetSpellChecker()
-      .GetIdleSpellCheckCallback()
+      .GetIdleSpellCheckController()
       .ForceInvocationForTesting();
 
   textcheck.KickGrammar();
