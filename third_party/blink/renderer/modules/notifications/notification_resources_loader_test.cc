@@ -8,7 +8,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_constants.h"
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_resources.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/platform/web_url_response.h"
@@ -55,7 +54,9 @@ class NotificationResourcesLoaderTest : public PageTestBase {
 
   NotificationResourcesLoader* Loader() const { return loader_.Get(); }
 
-  WebNotificationResources* Resources() const { return resources_.get(); }
+  const mojom::blink::NotificationResources* Resources() const {
+    return resources_.get();
+  }
 
   void DidFetchResources(NotificationResourcesLoader* loader) {
     resources_ = loader->GetResources();
@@ -82,7 +83,7 @@ class NotificationResourcesLoaderTest : public PageTestBase {
 
  private:
   Persistent<NotificationResourcesLoader> loader_;
-  std::unique_ptr<WebNotificationResources> resources_;
+  mojom::blink::NotificationResourcesPtr resources_;
 };
 
 TEST_F(NotificationResourcesLoaderTest, LoadMultipleResources) {
@@ -114,11 +115,13 @@ TEST_F(NotificationResourcesLoaderTest, LoadMultipleResources) {
   ASSERT_FALSE(Resources()->badge.drawsNothing());
   ASSERT_EQ(48, Resources()->badge.width());
 
-  ASSERT_EQ(2u, Resources()->action_icons.size());
-  ASSERT_FALSE(Resources()->action_icons[0].drawsNothing());
-  ASSERT_EQ(110, Resources()->action_icons[0].width());
-  ASSERT_FALSE(Resources()->action_icons[1].drawsNothing());
-  ASSERT_EQ(120, Resources()->action_icons[1].width());
+  ASSERT_TRUE(Resources()->action_icons.has_value());
+  auto& action_icons = Resources()->action_icons.value();
+  ASSERT_EQ(2u, action_icons.size());
+  ASSERT_FALSE(action_icons[0].drawsNothing());
+  ASSERT_EQ(110, action_icons[0].width());
+  ASSERT_FALSE(action_icons[1].drawsNothing());
+  ASSERT_EQ(120, action_icons[1].width());
 }
 
 TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
@@ -144,12 +147,12 @@ TEST_F(NotificationResourcesLoaderTest, LargeIconsAreScaledDown) {
   ASSERT_EQ(kWebNotificationMaxBadgeSizePx, Resources()->badge.width());
   ASSERT_EQ(kWebNotificationMaxBadgeSizePx, Resources()->badge.height());
 
-  ASSERT_EQ(1u, Resources()->action_icons.size());
-  ASSERT_FALSE(Resources()->action_icons[0].drawsNothing());
-  ASSERT_EQ(kWebNotificationMaxActionIconSizePx,
-            Resources()->action_icons[0].width());
-  ASSERT_EQ(kWebNotificationMaxActionIconSizePx,
-            Resources()->action_icons[0].height());
+  ASSERT_TRUE(Resources()->action_icons.has_value());
+  auto& action_icons = Resources()->action_icons.value();
+  ASSERT_EQ(1u, action_icons.size());
+  ASSERT_FALSE(action_icons[0].drawsNothing());
+  ASSERT_EQ(kWebNotificationMaxActionIconSizePx, action_icons[0].width());
+  ASSERT_EQ(kWebNotificationMaxActionIconSizePx, action_icons[0].height());
 }
 
 TEST_F(NotificationResourcesLoaderTest, DownscalingPreserves3_1AspectRatio) {
@@ -198,7 +201,7 @@ TEST_F(NotificationResourcesLoaderTest, EmptyDataYieldsEmptyResources) {
   ASSERT_TRUE(Resources()->image.drawsNothing());
   ASSERT_TRUE(Resources()->icon.drawsNothing());
   ASSERT_TRUE(Resources()->badge.drawsNothing());
-  ASSERT_EQ(0u, Resources()->action_icons.size());
+  ASSERT_EQ(0u, Resources()->action_icons.value().size());
 }
 
 TEST_F(NotificationResourcesLoaderTest, EmptyResourcesIfAllImagesFailToLoad) {
@@ -222,8 +225,8 @@ TEST_F(NotificationResourcesLoaderTest, EmptyResourcesIfAllImagesFailToLoad) {
   ASSERT_TRUE(Resources()->image.drawsNothing());
   ASSERT_TRUE(Resources()->icon.drawsNothing());
   ASSERT_TRUE(Resources()->badge.drawsNothing());
-  ASSERT_EQ(1u, Resources()->action_icons.size());
-  ASSERT_TRUE(Resources()->action_icons[0].drawsNothing());
+  ASSERT_EQ(1u, Resources()->action_icons.value().size());
+  ASSERT_TRUE(Resources()->action_icons.value()[0].drawsNothing());
 }
 
 TEST_F(NotificationResourcesLoaderTest, OneImageFailsToLoad) {
@@ -244,7 +247,7 @@ TEST_F(NotificationResourcesLoaderTest, OneImageFailsToLoad) {
   ASSERT_FALSE(Resources()->icon.drawsNothing());
   ASSERT_EQ(100, Resources()->icon.width());
   ASSERT_TRUE(Resources()->badge.drawsNothing());
-  ASSERT_EQ(0u, Resources()->action_icons.size());
+  ASSERT_EQ(0u, Resources()->action_icons.value().size());
 }
 
 TEST_F(NotificationResourcesLoaderTest, StopYieldsNoResources) {

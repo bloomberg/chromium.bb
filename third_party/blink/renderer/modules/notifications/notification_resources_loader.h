@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_NOTIFICATIONS_NOTIFICATION_RESOURCES_LOADER_H_
 
 #include <memory>
+#include "third_party/blink/public/platform/modules/notifications/notification.mojom-blink.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/notifications/notification_image_loader.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -20,7 +21,6 @@ namespace blink {
 
 class ExecutionContext;
 struct WebNotificationData;
-struct WebNotificationResources;
 
 // Fetches the resources specified in a given WebNotificationData. Uses a
 // callback to notify the caller when all fetches have finished.
@@ -46,9 +46,9 @@ class MODULES_EXPORT NotificationResourcesLoader final
   void Start(ExecutionContext* context,
              const WebNotificationData& notification_data);
 
-  // Returns a new WebNotificationResources populated with the resources that
+  // Returns a new NotificationResourcesPtr populated with the resources that
   // have been fetched.
-  std::unique_ptr<WebNotificationResources> GetResources() const;
+  mojom::blink::NotificationResourcesPtr GetResources() const;
 
   // Stops every loader in |m_imageLoaders|. This is also used as the
   // pre-finalizer.

@@ -110,31 +110,6 @@ struct PLATFORM_EXPORT StructTraits<blink::mojom::NotificationDataDataView,
                    blink::WebNotificationData* output);
 };
 
-template <>
-struct PLATFORM_EXPORT StructTraits<blink::mojom::NotificationResourcesDataView,
-                                    blink::WebNotificationResources> {
-  static const SkBitmap& image(
-      const blink::WebNotificationResources& resources) {
-    return resources.image;
-  }
-
-  static const SkBitmap& icon(
-      const blink::WebNotificationResources& resources) {
-    return resources.icon;
-  }
-
-  static const SkBitmap& badge(
-      const blink::WebNotificationResources& resources) {
-    return resources.badge;
-  }
-
-  static base::span<const SkBitmap> action_icons(
-      const blink::WebNotificationResources&);
-
-  static bool Read(blink::mojom::NotificationResourcesDataView,
-                   blink::WebNotificationResources* output);
-};
-
 }  // namespace mojo
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_MOJO_NOTIFICATION_STRUCT_TRAITS_H_

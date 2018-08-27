@@ -53,7 +53,7 @@ class NotificationManager final
   void DisplayNonPersistentNotification(
       const String& token,
       const WebNotificationData& notification_data,
-      std::unique_ptr<WebNotificationResources> notification_resources,
+      mojom::blink::NotificationResourcesPtr notification_resources,
       mojom::blink::NonPersistentNotificationListenerPtr event_listener);
 
   // Closes the notification that was most recently displayed with this token.
@@ -63,7 +63,7 @@ class NotificationManager final
   void DisplayPersistentNotification(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebNotificationData& notification_data,
-      std::unique_ptr<blink::WebNotificationResources> notification_resources,
+      mojom::blink::NotificationResourcesPtr notification_resources,
       ScriptPromiseResolver* resolver);
 
   // Closes a persistent notification identified by its notification id.
