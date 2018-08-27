@@ -28,12 +28,15 @@ void AssistantUiModel::SetUiMode(AssistantUiMode ui_mode) {
   NotifyUiModeChanged();
 }
 
-void AssistantUiModel::SetVisible(bool visible, AssistantSource source) {
-  if (visible == visible_)
+void AssistantUiModel::SetVisibility(AssistantVisibility visibility,
+                                     AssistantSource source) {
+  if (visibility == visibility_)
     return;
 
-  visible_ = visible;
-  NotifyUiVisibilityChanged(source);
+  const AssistantVisibility old_visibility = visibility_;
+  visibility_ = visibility;
+
+  NotifyUiVisibilityChanged(old_visibility, source);
 }
 
 void AssistantUiModel::NotifyUiModeChanged() {
@@ -41,9 +44,11 @@ void AssistantUiModel::NotifyUiModeChanged() {
     observer.OnUiModeChanged(ui_mode_);
 }
 
-void AssistantUiModel::NotifyUiVisibilityChanged(AssistantSource source) {
+void AssistantUiModel::NotifyUiVisibilityChanged(
+    AssistantVisibility old_visibility,
+    AssistantSource source) {
   for (AssistantUiModelObserver& observer : observers_)
-    observer.OnUiVisibilityChanged(visible_, source);
+    observer.OnUiVisibilityChanged(visibility_, old_visibility, source);
 }
 
 }  // namespace ash

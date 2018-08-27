@@ -97,21 +97,34 @@ void AssistantInteractionController::OnDeepLinkReceived(
 }
 
 void AssistantInteractionController::OnUiVisibilityChanged(
-    bool visible,
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
     AssistantSource source) {
-  if (visible) {
-    // TODO(dmblack): When the UI becomes visible, we may need to immediately
-    // start a voice interaction depending on |source| and user preference.
-    if (source == AssistantSource::kStylus)
-      assistant_interaction_model_.SetInputModality(InputModality::kStylus);
-    return;
+  switch (new_visibility) {
+    case AssistantVisibility::kClosed:
+      // When the UI is closed we need to stop any active interaction. We also
+      // reset the interaction state and restore the default input modality.
+      StopActiveInteraction();
+      assistant_interaction_model_.ClearInteraction();
+      assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+      break;
+    case AssistantVisibility::kHidden:
+      // When the UI is hidden we stop any voice query in progress so that we
+      // don't listen to the user while not visible. We also restore the default
+      // input modality for the next launch.
+      if (assistant_interaction_model_.pending_query().type() ==
+          AssistantQueryType::kVoice) {
+        StopActiveInteraction();
+      }
+      assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
+      break;
+    case AssistantVisibility::kVisible:
+      // TODO(dmblack): When the UI becomes visible, we may need to immediately
+      // start a voice interaction depending on |source| and user preference.
+      if (source == AssistantSource::kStylus)
+        assistant_interaction_model_.SetInputModality(InputModality::kStylus);
+      break;
   }
-
-  // When the UI is hidden, we need to stop any active interaction. We also
-  // reset the interaction state and restore the default input modality.
-  StopActiveInteraction();
-  assistant_interaction_model_.ClearInteraction();
-  assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
 }
 
 void AssistantInteractionController::OnHighlighterEnabledChanged(
@@ -150,6 +163,11 @@ void AssistantInteractionController::OnInteractionStateChanged(
 
 void AssistantInteractionController::OnInputModalityChanged(
     InputModality input_modality) {
+  if (assistant_controller_->ui_controller()->model()->visibility() !=
+      AssistantVisibility::kVisible) {
+    return;
+  }
+
   if (input_modality == InputModality::kVoice)
     return;
 

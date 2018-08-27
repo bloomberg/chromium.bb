@@ -15,6 +15,7 @@
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/assistant/ui/main_stage/assistant_main_stage.h"
 #include "ash/assistant/util/animation_util.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animator.h"
@@ -129,11 +130,13 @@ void AssistantMainView::InitLayout() {
   AddChildView(dialog_plate_);
 }
 
-void AssistantMainView::OnUiVisibilityChanged(bool visible,
-                                              AssistantSource source) {
-  if (visible) {
-    // When Assistant UI is shown, we animate in the appearance of the caption
-    // bar and dialog plate.
+void AssistantMainView::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    AssistantSource source) {
+  if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
+    // When Assistant is starting a new session, we animate in the appearance of
+    // the caption bar and dialog plate.
     using assistant::util::CreateLayerAnimationSequence;
     using assistant::util::CreateOpacityElement;
 
@@ -158,11 +161,11 @@ void AssistantMainView::OnUiVisibilityChanged(bool visible,
     return;
   }
 
-  // When the Assistant UI is being hidden we need to reset our minimum height
-  // restriction so that the default restrictions are restored for the next
-  // time the view is shown.
-  min_height_dip_ = kMinHeightDip;
-  PreferredSizeChanged();
+  if (assistant::util::IsFinishingSession(new_visibility)) {
+    // When Assistant is finishing a session, we need to reset view state.
+    min_height_dip_ = kMinHeightDip;
+    PreferredSizeChanged();
+  }
 }
 
 void AssistantMainView::RequestFocus() {

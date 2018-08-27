@@ -83,7 +83,7 @@ class UiElementContainerView : public AssistantScrollView,
   // UI elements will be animated on their own layers. We track the desired
   // opacity to which each layer should be animated when processing the next
   // query response.
-  std::vector<std::pair<ui::Layer*, float>> ui_element_layers_;
+  std::vector<std::pair<ui::LayerOwner*, float>> ui_element_views_;
 
   std::unique_ptr<ui::CallbackLayerAnimationObserver>
       ui_elements_exit_animation_observer_;

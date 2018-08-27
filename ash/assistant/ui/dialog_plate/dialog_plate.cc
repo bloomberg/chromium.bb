@@ -224,10 +224,12 @@ void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
   }
 }
 
-void DialogPlate::OnUiVisibilityChanged(bool visible, AssistantSource source) {
-  // When the Assistant UI is hidden we need to clear the dialog plate so that
-  // text does not persist across Assistant entries.
-  if (!visible)
+void DialogPlate::OnUiVisibilityChanged(AssistantVisibility new_visibility,
+                                        AssistantVisibility old_visibility,
+                                        AssistantSource source) {
+  // When the Assistant UI is no longer visible we need to clear the dialog
+  // plate so that text does not persist across Assistant launches.
+  if (old_visibility == AssistantVisibility::kVisible)
     textfield_->SetText(base::string16());
 }
 

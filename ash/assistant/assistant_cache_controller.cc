@@ -8,6 +8,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -61,11 +62,13 @@ void AssistantCacheController::OnAssistantControllerDestroying() {
   assistant_controller_->ui_controller()->RemoveModelObserver(this);
 }
 
-void AssistantCacheController::OnUiVisibilityChanged(bool visible,
-                                                     AssistantSource source) {
-  // When hiding the UI we update our cache of conversation starters so that
-  // they're fresh for the next session.
-  if (!visible)
+void AssistantCacheController::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    AssistantSource source) {
+  // When Assistant is finishing a session, we update our cache of conversation
+  // starters so that they're fresh for the next launch.
+  if (assistant::util::IsFinishingSession(new_visibility))
     UpdateConversationStarters();
 }
 
