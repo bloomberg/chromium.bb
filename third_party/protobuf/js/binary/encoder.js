@@ -51,7 +51,7 @@ goog.require('jspb.utils');
  * @struct
  */
 jspb.BinaryEncoder = function() {
-  /** @private {!Array.<number>} */
+  /** @private {!Array<number>} */
   this.buffer_ = [];
 };
 
@@ -65,7 +65,7 @@ jspb.BinaryEncoder.prototype.length = function() {
 
 
 /**
- * @return {!Array.<number>}
+ * @return {!Array<number>}
  */
 jspb.BinaryEncoder.prototype.end = function() {
   var buffer = this.buffer_;
@@ -390,11 +390,13 @@ jspb.BinaryEncoder.prototype.writeDouble = function(value) {
 
 
 /**
- * Writes a boolean value to the buffer as a varint.
- * @param {boolean} value The value to write.
+ * Writes a boolean value to the buffer as a varint. We allow numbers as input
+ * because the JSPB code generator uses 0/1 instead of true/false to save space
+ * in the string representation of the proto.
+ * @param {boolean|number} value The value to write.
  */
 jspb.BinaryEncoder.prototype.writeBool = function(value) {
-  goog.asserts.assert(goog.isBoolean(value));
+  goog.asserts.assert(goog.isBoolean(value) || goog.isNumber(value));
   this.buffer_.push(value ? 1 : 0);
 };
 

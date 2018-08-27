@@ -112,6 +112,7 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void AddMessageToFileDescriptor(const Descriptor& descriptor) const;
   void AddEnumToFileDescriptor(const EnumDescriptor& descriptor) const;
   void AddExtensionToFileDescriptor(const FieldDescriptor& descriptor) const;
+  void AddServiceToFileDescriptor(const ServiceDescriptor& descriptor) const;
   string FieldReferencingExpression(const Descriptor* containing_type,
                                     const FieldDescriptor& field,
                                     const string& python_dict_name) const;
@@ -126,15 +127,15 @@ class LIBPROTOC_EXPORT Generator : public CodeGenerator {
   void FixForeignFieldsInNestedExtensions(const Descriptor& descriptor) const;
 
   void PrintServices() const;
+  void PrintServiceDescriptors() const;
   void PrintServiceDescriptor(const ServiceDescriptor& descriptor) const;
   void PrintServiceClass(const ServiceDescriptor& descriptor) const;
   void PrintServiceStub(const ServiceDescriptor& descriptor) const;
   void PrintDescriptorKeyAndModuleName(
-      const ServiceDescriptor& descriptor) const ;
+      const ServiceDescriptor& descriptor) const;
 
   void PrintEnumValueDescriptor(const EnumValueDescriptor& descriptor) const;
-  string OptionsValue(const string& class_name,
-                      const string& serialized_options) const;
+  string OptionsValue(const string& serialized_options) const;
   bool GeneratingDescriptorProto() const;
 
   template <typename DescriptorT>

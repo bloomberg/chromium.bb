@@ -27,80 +27,19 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-// Author: kenton@google.com (Kenton Varda)
 //
-// emulates google3/base/once.h
+// Author: medinaandres@google.com (Andres Medina)
 //
-// This header is intended to be included only by internal .cc files and
-// generated .pb.cc files.  Users should not use this directly.
+// Unlines GoogleOnceInit
 
 #include <google/protobuf/stubs/once.h>
-
-#ifndef GOOGLE_PROTOBUF_NO_THREAD_SAFETY
-
-#ifdef _WIN32
-#include <windows.h>
-#else
-#include <sched.h>
-#endif
-
-#include <google/protobuf/stubs/atomicops.h>
 
 namespace google {
 namespace protobuf {
 
-namespace {
-
-void SchedYield() {
-#ifdef _WIN32
-  Sleep(0);
-#else  // POSIX
-  sched_yield();
-#endif
-}
-
-}  // namespace
-
 void GoogleOnceInit(ProtobufOnceType* once, void (*init_func)()) {
-  if (internal::Acquire_Load(once) != ONCE_STATE_DONE) {
-    internal::FunctionClosure0 func(init_func, false);
-    GoogleOnceInitImpl(once, &func);
-  }
-}
-
-void GoogleOnceInitImpl(ProtobufOnceType* once, Closure* closure) {
-  internal::AtomicWord state = internal::Acquire_Load(once);
-  // Fast path. The provided closure was already executed.
-  if (state == ONCE_STATE_DONE) {
-    return;
-  }
-  // The closure execution did not complete yet. The once object can be in one
-  // of the two following states:
-  //   - UNINITIALIZED: We are the first thread calling this function.
-  //   - EXECUTING_CLOSURE: Another thread is already executing the closure.
-  //
-  // First, try to change the state from UNINITIALIZED to EXECUTING_CLOSURE
-  // atomically.
-  state = internal::Acquire_CompareAndSwap(
-      once, ONCE_STATE_UNINITIALIZED, ONCE_STATE_EXECUTING_CLOSURE);
-  if (state == ONCE_STATE_UNINITIALIZED) {
-    // We are the first thread to call this function, so we have to call the
-    // closure.
-    closure->Run();
-    internal::Release_Store(once, ONCE_STATE_DONE);
-  } else {
-    // Another thread has already started executing the closure. We need to
-    // wait until it completes the initialization.
-    while (state == ONCE_STATE_EXECUTING_CLOSURE) {
-      // Note that futex() could be used here on Linux as an improvement.
-      SchedYield();
-      state = internal::Acquire_Load(once);
-    }
-  }
+  std::call_once(*once, init_func);
 }
 
 }  // namespace protobuf
 }  // namespace google
-
-#endif  // GOOGLE_PROTOBUF_NO_THREAD_SAFETY

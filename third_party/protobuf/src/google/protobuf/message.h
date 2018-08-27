@@ -112,7 +112,7 @@
 
 #include <iosfwd>
 #include <string>
-#include <google/protobuf/stubs/type_traits.h>
+#include <type_traits>
 #include <vector>
 
 #include <google/protobuf/arena.h>
@@ -151,6 +151,9 @@ class CodedOutputStream;       // coded_stream.h
 }
 namespace python {
 class MapReflectionFriend;     // scalar_map_container.h
+}
+namespace expr {
+class CelMapReflectionFriend;  // field_backed_map_impl.cc
 }
 
 
@@ -254,6 +257,7 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // fields defined for the proto.
   virtual size_t SpaceUsedLong() const;
 
+  PROTOBUF_RUNTIME_DEPRECATED("Please use SpaceUsedLong() instead")
   int SpaceUsed() const { return internal::ToIntSize(SpaceUsedLong()); }
 
   // Debugging & Testing----------------------------------------------
@@ -326,18 +330,19 @@ class LIBPROTOBUF_EXPORT Message : public MessageLite {
   // Typedef for backwards-compatibility.
   typedef google::protobuf::Reflection Reflection;
 
-  // Get a Descriptor for this message's type.  This describes what
-  // fields the message contains, the types of those fields, etc.
+  // Get a non-owning pointer to a Descriptor for this message's type.  This
+  // describes what fields the message contains, the types of those fields, etc.
+  // This object remains property of the Message.
   const Descriptor* GetDescriptor() const { return GetMetadata().descriptor; }
 
-  // Get the Reflection interface for this Message, which can be used to
-  // read and modify the fields of the Message dynamically (in other words,
-  // without knowing the message type at compile time).  This object remains
-  // property of the Message.
+  // Get a non-owning pointer to the Reflection interface for this Message,
+  // which can be used to read and modify the fields of the Message dynamically
+  // (in other words, without knowing the message type at compile time).  This
+  // object remains property of the Message.
   //
   // This method remains virtual in case a subclass does not implement
   // reflection and wants to override the default behavior.
-  virtual const Reflection* GetReflection() const {
+  virtual const Reflection* GetReflection() const final {
     return GetMetadata().reflection;
   }
 
@@ -404,9 +409,6 @@ class MutableRepeatedFieldRef;
 // double the message's memory footprint, probably worse.  Allocating the
 // objects on-demand, on the other hand, would be expensive and prone to
 // memory leaks.  So, instead we ended up with this flat interface.
-//
-// TODO(kenton):  Create a utility class which callers can use to read and
-//   write fields from a Reflection without paying attention to the type.
 class LIBPROTOBUF_EXPORT Reflection {
  public:
   inline Reflection() {}
@@ -428,6 +430,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // Estimate the amount of memory used by the message object.
   virtual size_t SpaceUsedLong(const Message& message) const = 0;
 
+  PROTOBUF_RUNTIME_DEPRECATED("Please use SpaceUsedLong() instead")
   int SpaceUsed(const Message& message) const {
     return internal::ToIntSize(SpaceUsedLong(message));
   }
@@ -494,11 +497,14 @@ class LIBPROTOBUF_EXPORT Reflection {
                             int index1,
                             int index2) const = 0;
 
-  // List all fields of the message which are currently set.  This includes
-  // extensions.  Singular fields will only be listed if HasField(field) would
-  // return true and repeated fields will only be listed if FieldSize(field)
-  // would return non-zero.  Fields (both normal fields and extension fields)
-  // will be listed ordered by field number.
+  // List all fields of the message which are currently set, except for unknown
+  // fields, but including extension known to the parser (i.e. compiled in).
+  // Singular fields will only be listed if HasField(field) would return true
+  // and repeated fields will only be listed if FieldSize(field) would return
+  // non-zero.  Fields (both normal fields and extension fields) will be listed
+  // ordered by field number.
+  // Use Reflection::GetUnknownFields() or message.unknown_fields() to also get
+  // access to fields/extensions unknown to the parser.
   virtual void ListFields(
       const Message& message,
       std::vector<const FieldDescriptor*>* output) const = 0;
@@ -752,9 +758,9 @@ class LIBPROTOBUF_EXPORT Reflection {
   // specifyed by 'field' passing ownership to the message.
   // TODO(tmarek): Make virtual after all subclasses have been
   // updated.
-  virtual void AddAllocatedMessage(Message* /* message */,
-                                   const FieldDescriptor* /* field */,
-                                   Message* /* new_entry */) const {}
+  virtual void AddAllocatedMessage(Message* message,
+                                   const FieldDescriptor* field,
+                                   Message* new_entry) const;
 
 
   // Get a RepeatedFieldRef object that can be used to read the underlying
@@ -809,6 +815,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetRepeatedFieldRef() instead")
   const RepeatedField<T>& GetRepeatedField(
       const Message&, const FieldDescriptor*) const;
 
@@ -816,6 +823,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   //
   // for T = Cord and all protobuf scalar types except enums.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetMutableRepeatedFieldRef() instead")
   RepeatedField<T>* MutableRepeatedField(
       Message*, const FieldDescriptor*) const;
 
@@ -824,6 +832,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetRepeatedFieldRef() instead")
   const RepeatedPtrField<T>& GetRepeatedPtrField(
       const Message&, const FieldDescriptor*) const;
 
@@ -832,6 +841,7 @@ class LIBPROTOBUF_EXPORT Reflection {
   // for T = string, google::protobuf::internal::StringPieceField
   //         google::protobuf::Message & descendants.
   template<typename T>
+  PROTOBUF_RUNTIME_DEPRECATED("Please use GetMutableRepeatedFieldRef() instead")
   RepeatedPtrField<T>* MutableRepeatedPtrField(
       Message*, const FieldDescriptor*) const;
 
@@ -920,7 +930,7 @@ class LIBPROTOBUF_EXPORT Reflection {
 
   // Returns a raw pointer to the repeated field
   //
-  // "cpp_type" and "message_type" are decuded from the type parameter T passed
+  // "cpp_type" and "message_type" are deduced from the type parameter T passed
   // to Get(Mutable)RepeatedFieldRef. If T is a generated message type,
   // "message_type" should be set to its descriptor. Otherwise "message_type"
   // should be set to NULL. Implementations of this method should check whether
@@ -943,6 +953,8 @@ class LIBPROTOBUF_EXPORT Reflection {
   template<typename T, typename Enable>
   friend class MutableRepeatedFieldRef;
   friend class ::google::protobuf::python::MapReflectionFriend;
+#define GOOGLE_PROTOBUF_HAS_CEL_MAP_REFLECTION_FRIEND
+  friend class ::google::protobuf::expr::CelMapReflectionFriend;
   friend class internal::MapFieldReflectionTest;
   friend class internal::MapKeySorter;
   friend class internal::WireFormat;

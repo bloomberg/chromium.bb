@@ -73,7 +73,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import junit.framework.TestCase;
 
@@ -1144,7 +1143,8 @@ public class JsonFormatTest extends TestCase {
   }
 
   public void testParserAcceptBase64Variants() throws Exception {
-    assertAccepts("optionalBytes", "AQI");
+    assertAccepts("optionalBytes", "AQI");  // No padding
+    assertAccepts("optionalBytes", "-_w");  // base64Url, no padding
   }
 
   public void testParserRejectInvalidEnumValue() throws Exception {
@@ -1172,6 +1172,14 @@ public class JsonFormatTest extends TestCase {
     TestAllTypes.Builder builder = TestAllTypes.newBuilder();
     String json = "{\n" + "  \"unknownField\": \"XXX\"\n" + "}";
     JsonFormat.parser().ignoringUnknownFields().merge(json, builder);
+  }
+
+  public void testParserIntegerEnumValue() throws Exception {
+    TestAllTypes.Builder actualBuilder = TestAllTypes.newBuilder();
+    mergeFromJson("{\n" + "  \"optionalNestedEnum\": 2\n" + "}", actualBuilder);
+
+    TestAllTypes expected = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAZ).build();
+    assertEquals(expected, actualBuilder.build());
   }
 
   public void testCustomJsonName() throws Exception {
@@ -1439,6 +1447,13 @@ public class JsonFormatTest extends TestCase {
     builder.clear();
     JsonFormat.parser().merge("{\"optional_int32\": 54321}", builder);
     assertEquals(54321, builder.getOptionalInt32());
+  }
+
+  public void testPrintingEnumsAsInts() throws Exception {
+    TestAllTypes message = TestAllTypes.newBuilder().setOptionalNestedEnum(NestedEnum.BAR).build();
+    assertEquals(
+        "{\n" + "  \"optionalNestedEnum\": 1\n" + "}",
+        JsonFormat.printer().printingEnumsAsInts().print(message));
   }
 
   public void testOmittingInsignificantWhiteSpace() throws Exception {

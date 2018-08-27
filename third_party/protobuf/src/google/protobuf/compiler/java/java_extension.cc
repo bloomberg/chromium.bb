@@ -75,7 +75,7 @@ void ExtensionGenerator::InitTemplateVars(
   vars["default"] = descriptor->is_repeated() ?
       "" : DefaultValue(descriptor, immutable, name_resolver);
   vars["type_constant"] = FieldTypeName(GetType(descriptor));
-  vars["packed"] = descriptor->options().packed() ? "true" : "false";
+  vars["packed"] = descriptor->is_packed() ? "true" : "false";
   vars["enum_map"] = "null";
   vars["prototype"] = "null";
 
@@ -141,6 +141,7 @@ void ImmutableExtensionGenerator::Generate(io::Printer* printer) {
         "      $singular_type$.class,\n"
         "      $prototype$);\n");
   }
+  printer->Annotate("name", descriptor_);
 }
 
 int ImmutableExtensionGenerator::GenerateNonNestedInitializationCode(

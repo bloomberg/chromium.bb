@@ -1,15 +1,16 @@
---- protobuf-cleaned/src/google/protobuf/compiler/cpp/cpp_message.cc	2015-12-30 13:21:46.000000000 -0800
-+++ protobuf-patched/src/google/protobuf/compiler/cpp/cpp_message.cc	2016-03-31 13:25:40.888006485 -0700
-@@ -1035,7 +1035,7 @@
-   }
+diff -ru protobuf/src/google/protobuf/compiler/cpp/cpp_message.cc protobuf2/src/google/protobuf/compiler/cpp/cpp_message.cc
+--- protobuf/src/google/protobuf/compiler/cpp/cpp_message.cc    2018-05-25 08:49:22.423803658 -0700
++++ protobuf2/src/google/protobuf/compiler/cpp/cpp_message.cc   2018-05-25 08:51:00.622866069 -0700
+@@ -994,7 +994,7 @@
+   vars["new_final"] = " PROTOBUF_FINAL";
  
    printer->Print(vars,
 -    "void Swap($classname$* other);\n"
 +    "GOOGLE_ATTRIBUTE_NOINLINE void Swap($classname$* other);\n"
-     "\n"
-     "// implements Message ----------------------------------------------\n"
-     "\n"
-@@ -2586,7 +2586,7 @@
+     "friend void swap($classname$& a, $classname$& b) {\n"
+     "  a.Swap(&b);\n"
+     "}\n"
+@@ -2973,7 +2973,7 @@
      // ownership situation: swapping across arenas or between an arena and a
      // heap requires copying.
      printer->Print(
@@ -18,3 +19,4 @@
          "  if (other == this) return;\n"
          "  if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {\n"
          "    InternalSwap(other);\n"
+

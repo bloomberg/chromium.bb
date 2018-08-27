@@ -35,6 +35,7 @@
 #include "conformance.pb.h"
 #include "conformance_test.h"
 #include <google/protobuf/test_messages_proto3.pb.h>
+#include <google/protobuf/test_messages_proto2.pb.h>
 
 #include <google/protobuf/stubs/common.h>
 #include <google/protobuf/stubs/stringprintf.h>
@@ -59,7 +60,8 @@ using google::protobuf::util::JsonToBinaryString;
 using google::protobuf::util::MessageDifferencer;
 using google::protobuf::util::NewTypeResolverForDescriptorPool;
 using google::protobuf::util::Status;
-using protobuf_test_messages::proto3::TestAllTypes;
+using protobuf_test_messages::proto3::TestAllTypesProto3;
+using protobuf_test_messages::proto2::TestAllTypesProto2;
 using std::string;
 
 namespace {
@@ -163,8 +165,10 @@ string submsg(uint32_t fn, const string& buf) {
 #define UNKNOWN_FIELD 666
 
 const FieldDescriptor* GetFieldForType(FieldDescriptor::Type type,
-                                       bool repeated) {
-  const Descriptor* d = TestAllTypes().GetDescriptor();
+                                       bool repeated, bool isProto3) {
+
+  const Descriptor* d = isProto3 ?
+      TestAllTypesProto3().GetDescriptor() : TestAllTypesProto2().GetDescriptor();
   for (int i = 0; i < d->field_count(); i++) {
     const FieldDescriptor* f = d->field(i);
     if (f->type() == type && f->is_repeated() == repeated) {
@@ -271,24 +275,63 @@ void ConformanceTestSuite::RunTest(const string& test_name,
 void ConformanceTestSuite::RunValidInputTest(
     const string& test_name, ConformanceLevel level, const string& input,
     WireFormat input_format, const string& equivalent_text_format,
-    WireFormat requested_output) {
-  TestAllTypes reference_message;
+    WireFormat requested_output, bool isProto3) {
+  auto newTestMessage = [&isProto3]() {
+    Message* newMessage;
+    if (isProto3) {
+      newMessage = new TestAllTypesProto3;
+    } else {
+      newMessage = new TestAllTypesProto2;
+    }
+    return newMessage;
+  };
+  Message* reference_message = newTestMessage();
   GOOGLE_CHECK(
-      TextFormat::ParseFromString(equivalent_text_format, &reference_message))
+      TextFormat::ParseFromString(equivalent_text_format, reference_message))
           << "Failed to parse data for test case: " << test_name
           << ", data: " << equivalent_text_format;
+  const string equivalent_wire_format = reference_message->SerializeAsString();
+  RunValidBinaryInputTest(test_name, level, input, input_format,
+                          equivalent_wire_format, requested_output, isProto3);
+}
+
+void ConformanceTestSuite::RunValidBinaryInputTest(
+    const string& test_name, ConformanceLevel level, const string& input,
+    WireFormat input_format, const string& equivalent_wire_format,
+    WireFormat requested_output, bool isProto3) {
+  auto newTestMessage = [&isProto3]() {
+    Message* newMessage;
+    if (isProto3) {
+      newMessage = new TestAllTypesProto3;
+    } else {
+      newMessage = new TestAllTypesProto2;
+    }
+    return newMessage;
+  };
+  Message* reference_message = newTestMessage();
+  GOOGLE_CHECK(
+      reference_message->ParseFromString(equivalent_wire_format))
+          << "Failed to parse wire data for test case: " << test_name;
 
   ConformanceRequest request;
   ConformanceResponse response;
 
   switch (input_format) {
-    case conformance::PROTOBUF:
+    case conformance::PROTOBUF: {
       request.set_protobuf_payload(input);
+      if (isProto3) {
+        request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
+      } else {
+        request.set_message_type("protobuf_test_messages.proto2.TestAllTypesProto2");
+      }
       break;
+    }
 
-    case conformance::JSON:
+    case conformance::JSON: {
+      request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
       request.set_json_payload(input);
       break;
+    }
 
     default:
       GOOGLE_LOG(FATAL) << "Unspecified input format";
@@ -298,7 +341,7 @@ void ConformanceTestSuite::RunValidInputTest(
 
   RunTest(test_name, request, &response);
 
-  TestAllTypes test_message;
+  Message *test_message = newTestMessage();
 
   switch (response.result_case()) {
     case ConformanceResponse::RESULT_NOT_SET:
@@ -334,10 +377,10 @@ void ConformanceTestSuite::RunValidInputTest(
         return;
       }
 
-      if (!test_message.ParseFromString(binary_protobuf)) {
+      if (!test_message->ParseFromString(binary_protobuf)) {
         ReportFailure(test_name, level, request, response,
-                      "INTERNAL ERROR: internal JSON->protobuf transcode "
-                      "yielded unparseable proto.");
+                    "INTERNAL ERROR: internal JSON->protobuf transcode "
+                    "yielded unparseable proto.");
         return;
       }
 
@@ -352,9 +395,9 @@ void ConformanceTestSuite::RunValidInputTest(
         return;
       }
 
-      if (!test_message.ParseFromString(response.protobuf_payload())) {
+      if (!test_message->ParseFromString(response.protobuf_payload())) {
         ReportFailure(test_name, level, request, response,
-                      "Protobuf output we received from test was unparseable.");
+                   "Protobuf output we received from test was unparseable.");
         return;
       }
 
@@ -373,7 +416,9 @@ void ConformanceTestSuite::RunValidInputTest(
   string differences;
   differencer.ReportDifferencesToString(&differences);
 
-  if (differencer.Compare(reference_message, test_message)) {
+  bool check;
+  check = differencer.Compare(*reference_message, *test_message);
+  if (check) {
     ReportSuccess(test_name);
   } else {
     ReportFailure(test_name, level, request, response,
@@ -381,14 +426,19 @@ void ConformanceTestSuite::RunValidInputTest(
                   differences.c_str());
   }
 }
-
-// Expect that this precise protobuf will cause a parse error.
-void ConformanceTestSuite::ExpectParseFailureForProto(
-    const string& proto, const string& test_name, ConformanceLevel level) {
+void ConformanceTestSuite::ExpectParseFailureForProtoWithProtoVersion (
+    const string& proto, const string& test_name, ConformanceLevel level,
+    bool isProto3) {
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(proto);
+  if (isProto3) {
+    request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
+  } else {
+    request.set_message_type("protobuf_test_messages.proto2.TestAllTypesProto2");
+  }
   string effective_test_name = ConformanceLevelToString(level) +
+      (isProto3 ? ".Proto3" : ".Proto2") +
       ".ProtobufInput." + test_name;
 
   // We don't expect output, but if the program erroneously accepts the protobuf
@@ -406,6 +456,13 @@ void ConformanceTestSuite::ExpectParseFailureForProto(
   }
 }
 
+// Expect that this precise protobuf will cause a parse error.
+void ConformanceTestSuite::ExpectParseFailureForProto(
+    const string& proto, const string& test_name, ConformanceLevel level) {
+  ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level, true);
+  ExpectParseFailureForProtoWithProtoVersion(proto, test_name, level, false);
+}
+
 // Expect that this protobuf will cause a parse error, even if it is followed
 // by valid protobuf data.  We can try running this twice: once with this
 // data verbatim and once with this data followed by some valid data.
@@ -420,41 +477,61 @@ void ConformanceTestSuite::RunValidJsonTest(
     const string& test_name, ConformanceLevel level, const string& input_json,
     const string& equivalent_text_format) {
   RunValidInputTest(
-      ConformanceLevelToString(level) + ".JsonInput." + test_name +
+      ConformanceLevelToString(level) + ".Proto3.JsonInput." + test_name +
       ".ProtobufOutput", level, input_json, conformance::JSON,
-      equivalent_text_format, conformance::PROTOBUF);
+      equivalent_text_format, conformance::PROTOBUF, true);
   RunValidInputTest(
-      ConformanceLevelToString(level) + ".JsonInput." + test_name +
+      ConformanceLevelToString(level) + ".Proto3.JsonInput." + test_name +
       ".JsonOutput", level, input_json, conformance::JSON,
-      equivalent_text_format, conformance::JSON);
+      equivalent_text_format, conformance::JSON, true);
 }
 
 void ConformanceTestSuite::RunValidJsonTestWithProtobufInput(
-    const string& test_name, ConformanceLevel level, const TestAllTypes& input,
+    const string& test_name, ConformanceLevel level, const TestAllTypesProto3& input,
     const string& equivalent_text_format) {
   RunValidInputTest(
-      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
+      ConformanceLevelToString(level) + ".Proto3" + ".ProtobufInput." + test_name +
       ".JsonOutput", level, input.SerializeAsString(), conformance::PROTOBUF,
-      equivalent_text_format, conformance::JSON);
+      equivalent_text_format, conformance::JSON, true);
 }
 
 void ConformanceTestSuite::RunValidProtobufTest(
     const string& test_name, ConformanceLevel level,
-    const string& input_protobuf, const string& equivalent_text_format) {
+    const string& input_protobuf, const string& equivalent_text_format,
+    bool isProto3) {
+  string rname = ".Proto3";
+  if (!isProto3) {
+    rname = ".Proto2";
+  }
   RunValidInputTest(
-      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
+      ConformanceLevelToString(level) + rname + ".ProtobufInput." + test_name +
       ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
-      equivalent_text_format, conformance::PROTOBUF);
-  RunValidInputTest(
-      ConformanceLevelToString(level) + ".ProtobufInput." + test_name +
-      ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
-      equivalent_text_format, conformance::JSON);
+      equivalent_text_format, conformance::PROTOBUF, isProto3);
+  if (isProto3) {
+    RunValidInputTest(
+        ConformanceLevelToString(level) + rname + ".ProtobufInput." +  test_name +
+        ".JsonOutput", level, input_protobuf, conformance::PROTOBUF,
+        equivalent_text_format, conformance::JSON, isProto3);
+  }
+}
+
+void ConformanceTestSuite::RunValidBinaryProtobufTest(
+    const string& test_name, ConformanceLevel level,
+    const string& input_protobuf, bool isProto3) {
+  string rname = ".Proto3";
+  if (!isProto3) {
+    rname = ".Proto2";
+  }
+  RunValidBinaryInputTest(
+      ConformanceLevelToString(level) + rname + ".ProtobufInput." + test_name +
+      ".ProtobufOutput", level, input_protobuf, conformance::PROTOBUF,
+      input_protobuf, conformance::PROTOBUF, isProto3);
 }
 
 void ConformanceTestSuite::RunValidProtobufTestWithMessage(
-    const string& test_name, ConformanceLevel level, const TestAllTypes& input,
-    const string& equivalent_text_format) {
-  RunValidProtobufTest(test_name, level, input.SerializeAsString(), equivalent_text_format);
+    const string& test_name, ConformanceLevel level, const Message *input,
+    const string& equivalent_text_format, bool isProto3) {
+  RunValidProtobufTest(test_name, level, input->SerializeAsString(), equivalent_text_format, isProto3);
 }
 
 // According to proto3 JSON specification, JSON serializers follow more strict
@@ -469,9 +546,10 @@ void ConformanceTestSuite::RunValidJsonTestWithValidator(
   ConformanceResponse response;
   request.set_json_payload(input_json);
   request.set_requested_output_format(conformance::JSON);
+  request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
 
   string effective_test_name = ConformanceLevelToString(level) +
-      ".JsonInput." + test_name + ".Validator";
+      ".Proto3.JsonInput." + test_name + ".Validator";
 
   RunTest(effective_test_name, request, &response);
 
@@ -507,8 +585,9 @@ void ConformanceTestSuite::ExpectParseFailureForJson(
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_json_payload(input_json);
+  request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
   string effective_test_name =
-      ConformanceLevelToString(level) + ".JsonInput." + test_name;
+      ConformanceLevelToString(level) + ".Proto3.JsonInput." + test_name;
 
   // We don't expect output, but if the program erroneously accepts the protobuf
   // we let it send its response as this.  We must not leave it unspecified.
@@ -527,7 +606,7 @@ void ConformanceTestSuite::ExpectParseFailureForJson(
 
 void ConformanceTestSuite::ExpectSerializeFailureForJson(
     const string& test_name, ConformanceLevel level, const string& text_format) {
-  TestAllTypes payload_message;
+  TestAllTypesProto3 payload_message;
   GOOGLE_CHECK(
       TextFormat::ParseFromString(text_format, &payload_message))
           << "Failed to parse: " << text_format;
@@ -535,6 +614,7 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   ConformanceRequest request;
   ConformanceResponse response;
   request.set_protobuf_payload(payload_message.SerializeAsString());
+  request.set_message_type("protobuf_test_messages.proto3.TestAllTypesProto3");
   string effective_test_name =
       ConformanceLevelToString(level) + "." + test_name + ".JsonOutput";
   request.set_requested_output_format(conformance::JSON);
@@ -550,6 +630,7 @@ void ConformanceTestSuite::ExpectSerializeFailureForJson(
   }
 }
 
+//TODO: proto2?
 void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
   // Incomplete values for each wire type.
   static const string incompletes[6] = {
@@ -561,8 +642,8 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
     string("abc")       // 32BIT
   };
 
-  const FieldDescriptor* field = GetFieldForType(type, false);
-  const FieldDescriptor* rep_field = GetFieldForType(type, true);
+  const FieldDescriptor* field = GetFieldForType(type, false, true);
+  const FieldDescriptor* rep_field = GetFieldForType(type, true, true);
   WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
       static_cast<WireFormatLite::FieldType>(type));
   const string& incomplete = incompletes[wire_type];
@@ -640,37 +721,40 @@ void ConformanceTestSuite::TestPrematureEOFForType(FieldDescriptor::Type type) {
 void ConformanceTestSuite::TestValidDataForType(
     FieldDescriptor::Type type,
     std::vector<std::pair<std::string, std::string>> values) {
-  const string type_name =
-      UpperCase(string(".") + FieldDescriptor::TypeName(type));
-  WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
-      static_cast<WireFormatLite::FieldType>(type));
-  const FieldDescriptor* field = GetFieldForType(type, false);
-  const FieldDescriptor* rep_field = GetFieldForType(type, true);
+  for (int isProto3 = 0; isProto3 < 2; isProto3++) {
+    const string type_name =
+        UpperCase(string(".") + FieldDescriptor::TypeName(type));
+    WireFormatLite::WireType wire_type = WireFormatLite::WireTypeForFieldType(
+        static_cast<WireFormatLite::FieldType>(type));
+    const FieldDescriptor* field = GetFieldForType(type, false, isProto3);
+    const FieldDescriptor* rep_field = GetFieldForType(type, true, isProto3);
 
-  RunValidProtobufTest("ValidDataScalar" + type_name, REQUIRED,
-                       cat(tag(field->number(), wire_type), values[0].first),
-                       field->name() + ": " + values[0].second);
+    RunValidProtobufTest("ValidDataScalar" + type_name, REQUIRED,
+                         cat(tag(field->number(), wire_type), values[0].first),
+                         field->name() + ": " + values[0].second, isProto3);
 
-  string proto;
-  string text = field->name() + ": " + values.back().second;
-  for (size_t i = 0; i < values.size(); i++) {
-    proto += cat(tag(field->number(), wire_type), values[i].first);
+    string proto;
+    string text = field->name() + ": " + values.back().second;
+    for (size_t i = 0; i < values.size(); i++) {
+      proto += cat(tag(field->number(), wire_type), values[i].first);
+    }
+    RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
+                         proto, text, isProto3);
+
+    proto.clear();
+    text.clear();
+
+    for (size_t i = 0; i < values.size(); i++) {
+      proto += cat(tag(rep_field->number(), wire_type), values[i].first);
+      text += rep_field->name() + ": " + values[i].second + " ";
+    }
+    RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED,
+                         proto, text, isProto3);
   }
-  RunValidProtobufTest("RepeatedScalarSelectsLast" + type_name, REQUIRED,
-                       proto, text);
-
-  proto.clear();
-  text.clear();
-
-  for (size_t i = 0; i < values.size(); i++) {
-    proto += cat(tag(rep_field->number(), wire_type), values[i].first);
-    text += rep_field->name() + ": " + values[i].second + " ";
-  }
-  RunValidProtobufTest("ValidDataRepeated" + type_name, REQUIRED, proto, text);
 }
 
 void ConformanceTestSuite::SetFailureList(const string& filename,
-                                          const vector<string>& failure_list) {
+                                          const std::vector<string>& failure_list) {
   failure_list_filename_ = filename;
   expected_to_fail_.clear();
   std::copy(failure_list.begin(), failure_list.end(),
@@ -708,6 +792,7 @@ bool ConformanceTestSuite::CheckSetEmpty(const std::set<string>& set_to_check,
   }
 }
 
+// TODO: proto2?
 void ConformanceTestSuite::TestIllegalTags() {
   // field num 0 is illegal
   string nullfield[] = {
@@ -722,6 +807,52 @@ void ConformanceTestSuite::TestIllegalTags() {
     ExpectParseFailureForProto(nullfield[i], name, REQUIRED);
   }
 }
+template <class MessageType>
+void ConformanceTestSuite::TestOneofMessage (MessageType &message,
+                                             bool isProto3) {
+  message.set_oneof_uint32(0);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroUint32", RECOMMENDED, &message, "oneof_uint32: 0", isProto3);
+  message.mutable_oneof_nested_message()->set_a(0);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroMessage", RECOMMENDED, &message,
+      isProto3 ? "oneof_nested_message: {}" : "oneof_nested_message: {a: 0}",
+      isProto3);
+  message.mutable_oneof_nested_message()->set_a(1);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroMessageSetTwice", RECOMMENDED, &message,
+      "oneof_nested_message: {a: 1}",
+      isProto3);
+  message.set_oneof_string("");
+  RunValidProtobufTestWithMessage(
+      "OneofZeroString", RECOMMENDED, &message, "oneof_string: \"\"", isProto3);
+  message.set_oneof_bytes("");
+  RunValidProtobufTestWithMessage(
+      "OneofZeroBytes", RECOMMENDED, &message, "oneof_bytes: \"\"", isProto3);
+  message.set_oneof_bool(false);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroBool", RECOMMENDED, &message, "oneof_bool: false", isProto3);
+  message.set_oneof_uint64(0);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroUint64", RECOMMENDED, &message, "oneof_uint64: 0", isProto3);
+  message.set_oneof_float(0.0f);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroFloat", RECOMMENDED, &message, "oneof_float: 0", isProto3);
+  message.set_oneof_double(0.0);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroDouble", RECOMMENDED, &message, "oneof_double: 0", isProto3);
+  message.set_oneof_enum(MessageType::FOO);
+  RunValidProtobufTestWithMessage(
+      "OneofZeroEnum", RECOMMENDED, &message, "oneof_enum: FOO", isProto3);
+}
+
+template <class MessageType>
+void ConformanceTestSuite::TestUnknownMessage(MessageType& message,
+                                              bool isProto3) {
+  message.ParseFromString("\xA8\x1F\x01");
+  RunValidBinaryProtobufTest("UnknownVarint", REQUIRED,
+                             message.SerializeAsString(), isProto3);
+}
 
 bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
                                     std::string* output) {
@@ -734,7 +865,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   unexpected_succeeding_tests_.clear();
   type_resolver_.reset(NewTypeResolverForDescriptorPool(
       kTypeUrlPrefix, DescriptorPool::generated_pool()));
-  type_url_ = GetTypeUrl(TestAllTypes::descriptor());
+  type_url_ = GetTypeUrl(TestAllTypesProto3::descriptor());
 
   output_ = "\nCONFORMANCE TEST BEGIN ====================================\n\n";
 
@@ -1330,7 +1461,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "optional_float: -inf");
   // Non-cannonical Nan will be correctly normalized.
   {
-    TestAllTypes message;
+    TestAllTypesProto3 message;
     // IEEE floating-point standard 32-bit quiet NaN:
     //   0111 1111 1xxx xxxx xxxx xxxx xxxx xxxx
     message.set_optional_float(
@@ -1402,7 +1533,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "optional_double: -inf");
   // Non-cannonical Nan will be correctly normalized.
   {
-    TestAllTypes message;
+    TestAllTypesProto3 message;
     message.set_optional_double(
         WireFormatLite::DecodeDouble(0x7FFA123456789ABCLL));
     RunValidJsonTestWithProtobufInput(
@@ -1517,9 +1648,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "BytesField", REQUIRED,
       R"({"optionalBytes": "AQI="})",
       R"(optional_bytes: "\x01\x02")");
-  ExpectParseFailureForJson(
-      "BytesFieldInvalidBase64Characters", REQUIRED,
-      R"({"optionalBytes": "-_=="})");
+  RunValidJsonTest(
+      "BytesFieldBase64Url", RECOMMENDED,
+      R"({"optionalBytes": "-_"})",
+      R"(optional_bytes: "\xfb")");
 
   // Message fields.
   RunValidJsonTest(
@@ -1532,36 +1664,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "OneofFieldDuplicate", REQUIRED,
       R"({"oneofUint32": 1, "oneofString": "test"})");
   // Ensure zero values for oneof make it out/backs.
-  {
-    TestAllTypes message;
-    message.set_oneof_uint32(0);
-    RunValidProtobufTestWithMessage(
-        "OneofZeroUint32", RECOMMENDED, message, "oneof_uint32: 0");
-    message.mutable_oneof_nested_message()->set_a(0);
-    RunValidProtobufTestWithMessage(
-        "OneofZeroMessage", RECOMMENDED, message, "oneof_nested_message: {}");
-    message.set_oneof_string("");
-    RunValidProtobufTestWithMessage(
-        "OneofZeroString", RECOMMENDED, message, "oneof_string: \"\"");
-    message.set_oneof_bytes("");
-    RunValidProtobufTestWithMessage(
-        "OneofZeroBytes", RECOMMENDED, message, "oneof_bytes: \"\"");
-    message.set_oneof_bool(false);
-    RunValidProtobufTestWithMessage(
-        "OneofZeroBool", RECOMMENDED, message, "oneof_bool: false");
-    message.set_oneof_uint64(0);
-    RunValidProtobufTestWithMessage(
-        "OneofZeroUint64", RECOMMENDED, message, "oneof_uint64: 0");
-    message.set_oneof_float(0.0f);
-    RunValidProtobufTestWithMessage(
-        "OneofZeroFloat", RECOMMENDED, message, "oneof_float: 0");
-    message.set_oneof_double(0.0);
-    RunValidProtobufTestWithMessage(
-        "OneofZeroDouble", RECOMMENDED, message, "oneof_double: 0");
-    message.set_oneof_enum(TestAllTypes::FOO);
-    RunValidProtobufTestWithMessage(
-        "OneofZeroEnum", RECOMMENDED, message, "oneof_enum: FOO");
-  }
+  TestAllTypesProto3 messageProto3;
+  TestAllTypesProto2 messageProto2;
+  TestOneofMessage(messageProto3, true);
+  TestOneofMessage(messageProto2, false);
   RunValidJsonTest(
       "OneofZeroUint32", RECOMMENDED,
       R"({"oneofUint32": 0})", "oneof_uint32: 0");
@@ -1736,6 +1842,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalInt64": null,
         "optionalUint32": null,
         "optionalUint64": null,
+        "optionalSint32": null,
+        "optionalSint64": null,
+        "optionalFixed32": null,
+        "optionalFixed64": null,
+        "optionalSfixed32": null,
+        "optionalSfixed64": null,
+        "optionalFloat": null,
+        "optionalDouble": null,
         "optionalBool": null,
         "optionalString": null,
         "optionalBytes": null,
@@ -1745,6 +1859,14 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "repeatedInt64": null,
         "repeatedUint32": null,
         "repeatedUint64": null,
+        "repeatedSint32": null,
+        "repeatedSint64": null,
+        "repeatedFixed32": null,
+        "repeatedFixed64": null,
+        "repeatedSfixed32": null,
+        "repeatedSfixed64": null,
+        "repeatedFloat": null,
+        "repeatedDouble": null,
         "repeatedBool": null,
         "repeatedString": null,
         "repeatedBytes": null,
@@ -1783,6 +1905,18 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
   ExpectParseFailureForJson(
       "StringFieldSingleQuoteBoth", RECOMMENDED,
       R"({'optionalString': 'Hello world!'})");
+
+  // Unknown fields.
+  {
+    TestAllTypesProto3 messageProto3;
+    TestAllTypesProto2 messageProto2;
+    //TODO(yilunchong): update this behavior when unknown field's behavior
+    // changed in open source. Also delete
+    // Required.Proto3.ProtobufInput.UnknownVarint.ProtobufOutput
+    // from failure list of python_cpp python java
+    TestUnknownMessage(messageProto3, true);
+    TestUnknownMessage(messageProto2, false);
+  }
 
   // Wrapper types.
   RunValidJsonTest(
@@ -1932,6 +2066,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"({"repeatedDuration": ["1.5s", "-1.5s"]})",
       "repeated_duration: {seconds: 1 nanos: 500000000}"
       "repeated_duration: {seconds: -1 nanos: -500000000}");
+  RunValidJsonTest(
+      "DurationNull", REQUIRED,
+      R"({"optionalDuration": null})",
+      "");
 
   ExpectParseFailureForJson(
       "DurationMissingS", REQUIRED,
@@ -2001,6 +2139,10 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "TimestampWithNegativeOffset", REQUIRED,
       R"({"optionalTimestamp": "1969-12-31T16:00:00-08:00"})",
       "optional_timestamp: {seconds: 0}");
+  RunValidJsonTest(
+      "TimestampNull", REQUIRED,
+      R"({"optionalTimestamp": null})",
+      "");
 
   ExpectParseFailureForJson(
       "TimestampJsonInputTooSmall", REQUIRED,
@@ -2183,6 +2325,24 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         }
       )");
   RunValidJsonTest(
+      "ValueAcceptListWithNull", REQUIRED,
+      R"({"optionalValue": ["x", null, "y"]})",
+      R"(
+        optional_value: {
+          list_value: {
+            values: {
+              string_value: "x"
+            }
+            values: {
+              null_value: NULL_VALUE
+            }
+            values: {
+              string_value: "y"
+            }
+          }
+        }
+      )");
+  RunValidJsonTest(
       "ValueAcceptObject", REQUIRED,
       R"({"optionalValue": {"value": 1}})",
       R"(
@@ -2203,13 +2363,13 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       "Any", REQUIRED,
       R"({
         "optionalAny": {
-          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes",
+          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3",
           "optionalInt32": 12345
         }
       })",
       R"(
         optional_any: {
-          [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes] {
+          [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3] {
             optional_int32: 12345
           }
         }
@@ -2220,7 +2380,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
         "optionalAny": {
           "@type": "type.googleapis.com/google.protobuf.Any",
           "value": {
-            "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes",
+            "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3",
             "optionalInt32": 12345
           }
         }
@@ -2228,7 +2388,7 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"(
         optional_any: {
           [type.googleapis.com/google.protobuf.Any] {
-            [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes] {
+            [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3] {
               optional_int32: 12345
             }
           }
@@ -2240,12 +2400,12 @@ bool ConformanceTestSuite::RunSuite(ConformanceTestRunner* runner,
       R"({
         "optionalAny": {
           "optionalInt32": 12345,
-          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes"
+          "@type": "type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3"
         }
       })",
       R"(
         optional_any: {
-          [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypes] {
+          [type.googleapis.com/protobuf_test_messages.proto3.TestAllTypesProto3] {
             optional_int32: 12345
           }
         }

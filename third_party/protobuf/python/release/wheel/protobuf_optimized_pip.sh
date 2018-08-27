@@ -6,7 +6,7 @@ set -ex
 
 # Print usage and fail.
 function usage() {
-  echo "Usage: protobuf_optimized_pip.sh PROTOBUF_VERSION PYPI_USERNAME PYPI_PASSWORD" >&2
+  echo "Usage: protobuf_optimized_pip.sh PROTOBUF_VERSION" >&2
   exit 1   # Causes caller to exit because we use -e.
 }
 
@@ -25,7 +25,7 @@ if [ $0 != ./protobuf_optimized_pip.sh ]; then
   exit 1
 fi
 
-if [ $# -lt 3 ]; then
+if [ $# -lt 1 ]; then
   usage
   exit 1
 fi
@@ -47,6 +47,9 @@ cd $DIR/protobuf-${PROTOBUF_VERSION}
 sed -i '/AC_PROG_OBJC/d' configure.ac
 sed -i 's/conformance\/Makefile//g' configure.ac
 
+# Use the /usr/bin/autoconf and related tools to pick the correct aclocal macros
+export PATH="/usr/bin:$PATH"
+
 # Build protoc
 ./autogen.sh
 CXXFLAGS="-fPIC -g -O2" ./configure
@@ -60,7 +63,4 @@ do
   build_wheel $PYTHON_VERSION
 done
 
-/opt/python/cp27-cp27mu/bin/twine upload wheelhouse/* <<!
-$PYPI_USERNAME
-$PYPI_PASSWORD
-!
+/opt/python/cp27-cp27mu/bin/twine upload wheelhouse/*

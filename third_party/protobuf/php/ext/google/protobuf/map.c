@@ -285,7 +285,7 @@ static bool map_field_read_dimension(zval *object, zval *key, int type,
 
   if (upb_strtable_lookup2(&intern->table, keyval, length, &v)) {
     void* mem = upb_value_memory(&v);
-    native_slot_get_by_array(intern->value_type, mem, retval TSRMLS_CC);
+    native_slot_get_by_map_value(intern->value_type, mem, retval TSRMLS_CC);
     return true;
   } else {
     zend_error(E_USER_ERROR, "Given key doesn't exist.");
@@ -293,13 +293,46 @@ static bool map_field_read_dimension(zval *object, zval *key, int type,
   }
 }
 
+static bool map_index_unset(Map *intern, const char* keyval, int length) {
+  upb_value old_value;
+  if (upb_strtable_remove2(&intern->table, keyval, length, &old_value)) {
+    switch (intern->value_type) {
+      case UPB_TYPE_MESSAGE: {
+#if PHP_MAJOR_VERSION < 7
+        zval_ptr_dtor(upb_value_memory(&old_value));
+#else
+        zend_object* object = *(zend_object**)upb_value_memory(&old_value);
+        if(--GC_REFCOUNT(object) == 0) {
+          zend_objects_store_del(object);
+        }
+#endif
+        break;
+      }
+      case UPB_TYPE_STRING:
+      case UPB_TYPE_BYTES: {
+#if PHP_MAJOR_VERSION < 7
+        zval_ptr_dtor(upb_value_memory(&old_value));
+#else
+        zend_string* object = *(zend_string**)upb_value_memory(&old_value);
+        zend_string_release(object);
+#endif
+        break;
+      }
+      default:
+        break;
+    }
+  }
+}
+
 bool map_index_set(Map *intern, const char* keyval, int length, upb_value v) {
   // Replace any existing value by issuing a 'remove' operation first.
-  upb_strtable_remove2(&intern->table, keyval, length, NULL);
+  map_index_unset(intern, keyval, length);
+
   if (!upb_strtable_insert2(&intern->table, keyval, length, v)) {
     zend_error(E_USER_ERROR, "Could not insert into table");
     return false;
   }
+
   return true;
 }
 
@@ -318,7 +351,7 @@ static void map_field_write_dimension(zval *object, zval *key,
 
   mem = upb_value_memory(&v);
   memset(mem, 0, native_slot_size(intern->value_type));
-  if (!native_slot_set_by_array(intern->value_type, intern->msg_ce, mem,
+  if (!native_slot_set_by_map(intern->value_type, intern->msg_ce, mem,
                                 value TSRMLS_CC)) {
     return;
   }
@@ -326,12 +359,7 @@ static void map_field_write_dimension(zval *object, zval *key,
   v.ctype = UPB_CTYPE_UINT64;
 #endif
 
-  // Replace any existing value by issuing a 'remove' operation first.
-  upb_strtable_remove2(&intern->table, keyval, length, NULL);
-  if (!upb_strtable_insert2(&intern->table, keyval, length, v)) {
-    zend_error(E_USER_ERROR, "Could not insert into table");
-    return;
-  }
+  map_index_set(intern, keyval, length, v);
 }
 
 static bool map_field_unset_dimension(zval *object, zval *key TSRMLS_DC) {
@@ -348,7 +376,7 @@ static bool map_field_unset_dimension(zval *object, zval *key TSRMLS_DC) {
   v.ctype = UPB_CTYPE_UINT64;
 #endif
 
-  upb_strtable_remove2(&intern->table, keyval, length, &v);
+  map_index_unset(intern, keyval, length);
 
   return true;
 }
@@ -535,8 +563,8 @@ PHP_METHOD(MapFieldIter, current) {
   upb_value value = map_iter_value(intern, &value_length);
 
   void* mem = upb_value_memory(&value);
-  native_slot_get_by_array(map_field->value_type, mem,
-                           ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
+  native_slot_get_by_map_value(map_field->value_type, mem,
+                               ZVAL_PTR_TO_CACHED_PTR(return_value) TSRMLS_CC);
 }
 
 PHP_METHOD(MapFieldIter, key) {

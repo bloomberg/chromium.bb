@@ -40,9 +40,6 @@
 #include <google/protobuf/stubs/hash.h>
 #include <map>
 #include <memory>
-#ifndef _SHARED_PTR_H
-#include <google/protobuf/stubs/shared_ptr.h>
-#endif
 #include <set>
 #include <sstream>
 #include <vector>
@@ -130,7 +127,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, map_.at(key));
     Map<int32, int32>::iterator it = map_.find(key);
 
-    // interator dereferenceable
+    // iterator dereferenceable
     EXPECT_EQ(key,   (*it).first);
     EXPECT_EQ(value, (*it).second);
     EXPECT_EQ(key,   it->first);
@@ -158,7 +155,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, const_map_.at(key));
     Map<int32, int32>::const_iterator const_it = const_map_.find(key);
 
-    // interator dereferenceable
+    // iterator dereferenceable
     EXPECT_EQ(key, (*const_it).first);
     EXPECT_EQ(value, (*const_it).second);
     EXPECT_EQ(key, const_it->first);
@@ -170,7 +167,7 @@ class MapImplTest : public ::testing::Test {
     EXPECT_EQ(value, const_it_copy->second);
   }
 
-  google::protobuf::scoped_ptr<Map<int32, int32> > map_ptr_;
+  std::unique_ptr<Map<int32, int32> > map_ptr_;
   Map<int32, int32>& map_;
   const Map<int32, int32>& const_map_;
 };
@@ -235,6 +232,13 @@ TEST_F(MapImplTest, UsageErrors) {
 }
 
 #endif  // PROTOBUF_HAS_DEATH_TEST
+
+TEST_F(MapImplTest, MapKeyAssignment) {
+  MapKey from, to;
+  from.SetStringValue("abc");
+  to = from;
+  EXPECT_EQ("abc", to.GetStringValue());
+}
 
 TEST_F(MapImplTest, CountNonExist) {
   EXPECT_EQ(0, map_.count(0));
@@ -551,7 +555,7 @@ TEST_F(MapImplTest, IteratorInvalidation) {
 #endif
   std::set<int> s;
   int n = kMaxSizeToTest;
-  int frog = k1 + n;
+  unsigned int frog = k1 + n;
   while (n > 1 && s.size() < 25) {
     s.insert(n);
     n = static_cast<int>(n * 100 / (101.0 + (frog & 63)));
@@ -667,6 +671,14 @@ TEST_F(MapImplTest, InsertByIterator) {
 
   map_.insert(map2.begin(), map2.end());
   ExpectElements(map1);
+}
+
+TEST_F(MapImplTest, InsertByInitializerList) {
+  map_.insert({{1, 100}, {2, 200}});
+  ExpectElements({{1, 100}, {2, 200}});
+
+  map_.insert({{2, 201}, {3, 301}});
+  ExpectElements({{1, 100}, {2, 200}, {3, 301}});
 }
 
 TEST_F(MapImplTest, EraseSingleByKey) {
@@ -952,6 +964,17 @@ TEST_F(MapImplTest, SwapArena) {
       testing::Pair(10244, 10247)));
   EXPECT_THAT(m2, testing::UnorderedElementsAre(
       testing::Pair(9398, 41999)));
+}
+
+TEST_F(MapImplTest, CopyAssignMapIterator) {
+  TestMap message;
+  MapReflectionTester reflection_tester(
+      unittest::TestMap::descriptor());
+  reflection_tester.SetMapFieldsViaMapReflection(&message);
+  MapIterator it1 = reflection_tester.MapBegin(&message, "map_int32_int32");
+  MapIterator it2 = reflection_tester.MapEnd(&message, "map_int32_int32");
+  it2 = it1;
+  EXPECT_EQ(it1.GetKey().GetInt32Value(), it2.GetKey().GetInt32Value());
 }
 
 // Map Field Reflection Test ========================================
@@ -1241,19 +1264,19 @@ TEST_F(MapFieldReflectionTest, RepeatedFieldRefForRegularFields) {
               &message, fd_map_int32_foreign_message);
 
   // Get entry default instances
-  google::protobuf::scoped_ptr<Message> entry_int32_int32(
+  std::unique_ptr<Message> entry_int32_int32(
       MessageFactory::generated_factory()
           ->GetPrototype(fd_map_int32_int32->message_type())
           ->New());
-  google::protobuf::scoped_ptr<Message> entry_int32_double(
+  std::unique_ptr<Message> entry_int32_double(
       MessageFactory::generated_factory()
           ->GetPrototype(fd_map_int32_double->message_type())
           ->New());
-  google::protobuf::scoped_ptr<Message> entry_string_string(
+  std::unique_ptr<Message> entry_string_string(
       MessageFactory::generated_factory()
           ->GetPrototype(fd_map_string_string->message_type())
           ->New());
-  google::protobuf::scoped_ptr<Message> entry_int32_foreign_message(
+  std::unique_ptr<Message> entry_int32_foreign_message(
       MessageFactory::generated_factory()
           ->GetPrototype(fd_map_int32_foreign_message->message_type())
           ->New());
@@ -1791,7 +1814,7 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
   // Dynamic Message
   {
     DynamicMessageFactory factory;
-    google::protobuf::scoped_ptr<Message> message(
+    std::unique_ptr<Message> message(
         factory.GetPrototype(unittest::TestMap::descriptor())->New());
     const Reflection* reflection = message->GetReflection();
     const FieldDescriptor* field =
@@ -1808,6 +1831,7 @@ TEST_F(MapFieldReflectionTest, MapSizeWithDuplicatedKey) {
 
     EXPECT_EQ(2, reflection->FieldSize(*message, field));
     EXPECT_EQ(1, MapSize(reflection, field, *message));
+    EXPECT_EQ(2, reflection->FieldSize(*message, field));
   }
 
   // Generated Message
@@ -1976,7 +2000,7 @@ TEST(GeneratedMapFieldTest, CopyFromDynamicMessage) {
 
   // Construct a new version of the dynamic message via the factory.
   DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<Message> message1;
+  std::unique_ptr<Message> message1;
   message1.reset(
       factory.GetPrototype(unittest::TestMap::descriptor())->New());
   MapReflectionTester reflection_tester(
@@ -1993,7 +2017,7 @@ TEST(GeneratedMapFieldTest, CopyFromDynamicMessageMapReflection) {
 
   // Construct a new version of the dynamic message via the factory.
   DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<Message> message1;
+  std::unique_ptr<Message> message1;
   message1.reset(
       factory.GetPrototype(unittest::TestMap::descriptor())->New());
   MapReflectionTester reflection_tester(
@@ -2012,7 +2036,7 @@ TEST(GeneratedMapFieldTest, DynamicMessageCopyFrom) {
 
   // Construct a new version of the dynamic message via the factory.
   DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<Message> message1;
+  std::unique_ptr<Message> message1;
   message1.reset(
       factory.GetPrototype(unittest::TestMap::descriptor())->New());
 
@@ -2031,7 +2055,7 @@ TEST(GeneratedMapFieldTest, DynamicMessageCopyFromMapReflection) {
 
   // Construct a dynamic message via the factory.
   DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<Message> message1;
+  std::unique_ptr<Message> message1;
   message1.reset(
       factory.GetPrototype(unittest::TestMap::descriptor())->New());
 
@@ -2045,7 +2069,7 @@ TEST(GeneratedMapFieldTest, SyncDynamicMapWithRepeatedField) {
   MapReflectionTester reflection_tester(
       unittest::TestMap::descriptor());
   DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<Message> message;
+  std::unique_ptr<Message> message;
   message.reset(
       factory.GetPrototype(unittest::TestMap::descriptor())->New());
   reflection_tester.SetMapFieldsViaReflection(message.get());
@@ -2697,7 +2721,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapIndependentOffsets) {
   // Check that all fields have independent offsets by setting each
   // one to a unique value then checking that they all still have those
   // unique values (i.e. they don't stomp each other).
-  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
+  std::unique_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
 
   reflection_tester.SetMapFieldsViaReflection(message.get());
@@ -2706,7 +2730,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapIndependentOffsets) {
 
 TEST_F(MapFieldInDynamicMessageTest, DynamicMapReflection) {
   // Check that map fields work properly.
-  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
+  std::unique_ptr<Message> message(map_prototype_->New());
 
   // Check set functions.
   MapReflectionTester reflection_tester(map_descriptor_);
@@ -2720,7 +2744,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapSpaceUsed) {
   // Since we share the implementation with generated messages, we don't need
   // to test very much here.  Just make sure it appears to be working.
 
-  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
+  std::unique_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
 
   int initial_space_used = message->SpaceUsed();
@@ -2733,13 +2757,13 @@ TEST_F(MapFieldInDynamicMessageTest, RecursiveMap) {
   TestRecursiveMapMessage from;
   (*from.mutable_a())[""];
   string data = from.SerializeAsString();
-  google::protobuf::scoped_ptr<Message> to(
+  std::unique_ptr<Message> to(
       factory_.GetPrototype(recursive_map_descriptor_)->New());
   ASSERT_TRUE(to->ParseFromString(data));
 }
 
 TEST_F(MapFieldInDynamicMessageTest, MapValueReferernceValidAfterSerialize) {
-  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
+  std::unique_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
   reflection_tester.SetMapFieldsViaMapReflection(message.get());
 
@@ -2770,7 +2794,7 @@ TEST_F(MapFieldInDynamicMessageTest, MapValueReferernceValidAfterSerialize) {
 }
 
 TEST_F(MapFieldInDynamicMessageTest, MapEntryReferernceValidAfterSerialize) {
-  google::protobuf::scoped_ptr<Message> message(map_prototype_->New());
+  std::unique_ptr<Message> message(map_prototype_->New());
   MapReflectionTester reflection_tester(map_descriptor_);
   reflection_tester.SetMapFieldsViaReflection(message.get());
 
@@ -2939,7 +2963,7 @@ TEST(WireFormatForMapFieldTest, SerializeMap) {
 
 TEST(WireFormatForMapFieldTest, SerializeMapDynamicMessage) {
   DynamicMessageFactory factory;
-  google::protobuf::scoped_ptr<Message> dynamic_message;
+  std::unique_ptr<Message> dynamic_message;
   dynamic_message.reset(
       factory.GetPrototype(unittest::TestMap::descriptor())->New());
   MapReflectionTester reflection_tester(
@@ -3263,6 +3287,42 @@ TEST(ArenaTest, IsInitialized) {
   unittest::TestArenaMap* message =
       Arena::CreateMessage<unittest::TestArenaMap>(&arena);
   EXPECT_EQ(0, (*message->mutable_map_int32_int32())[0]);
+}
+
+TEST(MoveTest, MoveConstructorWorks) {
+  Map<int32, TestAllTypes> original_map;
+  original_map[42].mutable_optional_nested_message()->set_bb(42);
+  original_map[43].mutable_optional_nested_message()->set_bb(43);
+  const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
+  const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
+
+  Map<int32, TestAllTypes> moved_to_map(std::move(original_map));
+  EXPECT_TRUE(original_map.empty());
+  EXPECT_EQ(2, moved_to_map.size());
+  EXPECT_EQ(42, moved_to_map[42].optional_nested_message().bb());
+  EXPECT_EQ(43, moved_to_map[43].optional_nested_message().bb());
+  // This test takes advantage of the fact that pointers are swapped, so there
+  // should be pointer stability.
+  EXPECT_EQ(nested_msg42_ptr, &moved_to_map[42].optional_nested_message());
+  EXPECT_EQ(nested_msg43_ptr, &moved_to_map[43].optional_nested_message());
+}
+
+TEST(MoveTest, MoveAssignmentWorks) {
+  Map<int32, TestAllTypes> original_map;
+  original_map[42].mutable_optional_nested_message()->set_bb(42);
+  original_map[43].mutable_optional_nested_message()->set_bb(43);
+  const auto* nested_msg42_ptr = &original_map[42].optional_nested_message();
+  const auto* nested_msg43_ptr = &original_map[43].optional_nested_message();
+
+  Map<int32, TestAllTypes> moved_to_map = std::move(original_map);
+  EXPECT_TRUE(original_map.empty());
+  EXPECT_EQ(2, moved_to_map.size());
+  EXPECT_EQ(42, moved_to_map[42].optional_nested_message().bb());
+  EXPECT_EQ(43, moved_to_map[43].optional_nested_message().bb());
+  // This test takes advantage of the fact that pointers are swapped, so there
+  // should be pointer stability.
+  EXPECT_EQ(nested_msg42_ptr, &moved_to_map[42].optional_nested_message());
+  EXPECT_EQ(nested_msg43_ptr, &moved_to_map[43].optional_nested_message());
 }
 
 }  // namespace internal

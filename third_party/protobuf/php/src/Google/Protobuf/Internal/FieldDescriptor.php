@@ -34,6 +34,7 @@ namespace Google\Protobuf\Internal;
 
 class FieldDescriptor
 {
+    use HasPublicDescriptorTrait;
 
     private $name;
     private $json_name;
@@ -47,6 +48,11 @@ class FieldDescriptor
     private $packed;
     private $is_map;
     private $oneof_index = -1;
+
+    public function __construct()
+    {
+        $this->public_desc = new \Google\Protobuf\FieldDescriptor($this);
+    }
 
     public function setOneofIndex($index)
     {
@@ -173,6 +179,12 @@ class FieldDescriptor
         return $this->getType() == GPBType::MESSAGE &&
                !is_null($this->getMessageType()->getOptions()) &&
                $this->getMessageType()->getOptions()->getMapEntry();
+    }
+
+    public function isTimestamp()
+    {
+        return $this->getType() == GPBType::MESSAGE &&
+            $this->getMessageType()->getClass() === "Google\Protobuf\Timestamp";
     }
 
     private static function isTypePackable($field_type)

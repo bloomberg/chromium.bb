@@ -439,3 +439,37 @@ message TestHugeFieldNumbersLite {
 extend TestHugeFieldNumbersLite {
   optional TestAllTypesLite test_all_types_lite = 536860000;
 }
+
+message TestOneofParsingLite {
+  oneof oneof_field {
+    int32 oneof_int32 = 1;
+    TestAllTypesLite oneof_submessage = 2;
+    string oneof_string = 3;
+    bytes oneof_bytes = 4 [default = "default bytes"];
+    string oneof_string_cord = 5 [ctype = CORD, default = "default Cord"];
+    bytes oneof_bytes_cord = 6 [ctype = CORD];
+    string oneof_string_string_piece = 7 [ctype = STRING_PIECE];
+    bytes oneof_bytes_string_piece = 8
+        [ctype = STRING_PIECE, default = "default StringPiece"];
+    V2EnumLite oneof_enum = 9;
+  }
+}
+
+// The following four messages are set up to test for wire compatibility between
+// packed and non-packed repeated fields. We use the field number 2048, because
+// that is large enough to require a 3-byte varint for the tag.
+message PackedInt32 {
+  repeated int32 repeated_int32 = 2048 [packed = true];
+}
+
+message NonPackedInt32 {
+  repeated int32 repeated_int32 = 2048;
+}
+
+message PackedFixed32 {
+  repeated fixed32 repeated_fixed32 = 2048 [packed = true];
+}
+
+message NonPackedFixed32 {
+  repeated fixed32 repeated_fixed32 = 2048;
+}

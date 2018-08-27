@@ -50,7 +50,7 @@ Context::Context(const FileDescriptor* file, const Options& options)
 Context::~Context() {
 }
 
-ClassNameResolver* Context::GetNameResolver() {
+ClassNameResolver* Context::GetNameResolver() const {
   return name_resolver_.get();
 }
 
@@ -69,14 +69,14 @@ bool IsConflicting(const FieldDescriptor* field1, const string& name1,
       // field1 is repeated, and field2 is not.
       if (name1 + "Count" == name2) {
         *info = "both repeated field \"" + field1->name() + "\" and singular " +
-            "field \"" + field2->name() + "\" generates the method \"" +
-            "get" + name1 + "Count()\"";
+                "field \"" + field2->name() + "\" generate the method \"" +
+                "get" + name1 + "Count()\"";
         return true;
       }
       if (name1 + "List" == name2) {
         *info = "both repeated field \"" + field1->name() + "\" and singular " +
-            "field \"" + field2->name() + "\" generates the method \"" +
-            "get" + name1 + "List()\"";
+                "field \"" + field2->name() + "\" generate the method \"" +
+                "get" + name1 + "List()\"";
         return true;
       }
       // Well, there are obviously many more conflicting cases, but it probably
@@ -154,7 +154,7 @@ void Context::InitializeFieldGeneratorInfoForFields(
   for (int i = 0; i < fields.size(); ++i) {
     const FieldDescriptor* field = fields[i];
     FieldGeneratorInfo info;
-    info.name = UnderscoresToCamelCase(field);
+    info.name = CamelCaseFieldName(field);
     info.capitalized_name = UnderscoresToCapitalizedCamelCase(field);
     // For fields conflicting with some other fields, we append the field
     // number to their field names in generated code to avoid conflicts.

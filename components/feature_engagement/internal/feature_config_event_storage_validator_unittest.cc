@@ -12,7 +12,7 @@
 #include "components/feature_engagement/internal/configuration.h"
 #include "components/feature_engagement/internal/editable_configuration.h"
 #include "components/feature_engagement/internal/event_model.h"
-#include "components/feature_engagement/internal/proto/event.pb.h"
+#include "components/feature_engagement/internal/proto/feature_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feature_engagement {

@@ -11,7 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "remoting/base/compound_buffer.h"
-#include "remoting/proto/test.pb.h"
+#include "remoting/proto/test_data_channel_manager.pb.h"
 #include "remoting/protocol/fake_message_pipe.h"
 #include "remoting/protocol/fake_message_pipe_wrapper.h"
 #include "remoting/protocol/named_message_pipe_handler.h"
