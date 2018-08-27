@@ -79,6 +79,7 @@ class CONTENT_EXPORT IndexedDBFactory
       const url::Origin& origin) const = 0;
 
   virtual void ForceClose(const url::Origin& origin) = 0;
+  virtual void ForceSchemaDowngrade(const url::Origin& origin) = 0;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   virtual void ContextDestroyed() = 0;

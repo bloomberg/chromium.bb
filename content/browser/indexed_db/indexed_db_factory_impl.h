@@ -87,6 +87,7 @@ class CONTENT_EXPORT IndexedDBFactoryImpl : public IndexedDBFactory {
   OriginDBs GetOpenDatabasesForOrigin(const url::Origin& origin) const override;
 
   void ForceClose(const url::Origin& origin) override;
+  void ForceSchemaDowngrade(const url::Origin& origin) override;
 
   // Called by the IndexedDBContext destructor so the factory can do cleanup.
   void ContextDestroyed() override;

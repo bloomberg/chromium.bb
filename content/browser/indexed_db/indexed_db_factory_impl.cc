@@ -338,6 +338,17 @@ void IndexedDBFactoryImpl::ForceClose(const Origin& origin) {
     ReleaseBackingStore(origin, true /* immediate */);
 }
 
+void IndexedDBFactoryImpl::ForceSchemaDowngrade(const Origin& origin) {
+  OriginDBs range = GetOpenDatabasesForOrigin(origin);
+
+  while (range.first != range.second) {
+    IndexedDBDatabase* db = range.first->second;
+    ++range.first;
+    leveldb::Status s = db->backing_store()->RevertSchemaToV2();
+    DLOG_IF(ERROR, !s.ok()) << "Unable to force downgrade: " << s.ToString();
+  }
+}
+
 void IndexedDBFactoryImpl::ContextDestroyed() {
   // Timers on backing stores hold a reference to this factory. When the
   // context (which nominally owns this factory) is destroyed during thread

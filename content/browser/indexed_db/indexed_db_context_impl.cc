@@ -405,6 +405,17 @@ void IndexedDBContextImpl::ForceClose(const Origin origin,
   DCHECK_EQ(0UL, GetConnectionCount(origin));
 }
 
+void IndexedDBContextImpl::ForceSchemaDowngrade(const Origin& origin) {
+  DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
+
+  if (data_path_.empty() || !HasOrigin(origin))
+    return;
+
+  if (factory_.get())
+    factory_->ForceSchemaDowngrade(origin);
+  DCHECK_EQ(0UL, GetConnectionCount(origin));
+}
+
 size_t IndexedDBContextImpl::GetConnectionCount(const Origin& origin) {
   DCHECK(TaskRunner()->RunsTasksInCurrentSequence());
   if (!HasOrigin(origin))
