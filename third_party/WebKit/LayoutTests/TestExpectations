@@ -4775,9 +4775,6 @@ crbug.com/864994 [ Mac ] external/wpt/encoding/legacy-mb-korean/euc-kr/euckr-dec
 
 crbug.com/865432 [ Linux ] external/wpt/workers/modules/dedicated-worker-import-blob-url.any.worker.html [ Timeout Pass ]
 
-skbug.com/8155 virtual/gpu-rasterization/images/jpeg-yuv-progressive-image.html [ Pass Failure ]
-skbug.com/8155 virtual/gpu-rasterization/images/rgb-png-with-cmyk-color-profile.html [ Pass Failure ]
-
 ### fast/canvas/color-space/ + virtual/gpu/..., color management and transparency.
 crbug.com/859102 fast/canvas/color-space/canvas-drawImage-linear-rgb.html [ Pass Failure ]
 crbug.com/859102 fast/canvas/color-space/canvas-drawImage-p3.html [ Pass Failure ]
