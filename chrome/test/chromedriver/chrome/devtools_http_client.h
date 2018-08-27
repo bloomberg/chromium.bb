@@ -80,7 +80,7 @@ class DevToolsHttpClient {
                      std::unique_ptr<DeviceMetrics> device_metrics,
                      std::unique_ptr<std::set<WebViewInfo::Type>> window_types,
                      std::string page_load_strategy);
-  ~DevToolsHttpClient();
+  virtual ~DevToolsHttpClient();
 
   Status Init(const base::TimeDelta& timeout);
 
@@ -98,9 +98,9 @@ class DevToolsHttpClient {
 
  private:
   Status CloseFrontends(const std::string& for_client_id);
-  bool FetchUrlAndLog(const std::string& url,
-                      URLRequestContextGetter* getter,
-                      std::string* response);
+  virtual bool FetchUrlAndLog(const std::string& url,
+                              URLRequestContextGetter* getter,
+                              std::string* response);
 
   scoped_refptr<URLRequestContextGetter> context_getter_;
   SyncWebSocketFactory socket_factory_;

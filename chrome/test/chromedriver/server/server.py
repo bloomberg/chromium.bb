@@ -13,14 +13,18 @@ import urllib2
 class Server(object):
   """A running ChromeDriver server."""
 
-  def __init__(self, exe_path, log_path=None, verbose=True, replayable=False):
+  def __init__(self, exe_path, log_path=None, verbose=True,
+               replayable=False, devtools_replay_path=None):
     """Starts the ChromeDriver server and waits for it to be ready.
 
     Args:
       exe_path: path to the ChromeDriver executable
       log_path: path to the log file
+      verbose: make the logged data verbose
+      replayable: don't truncate strings in log to make the session replayable
+      devtools_replay_path: replay devtools events from the log at this path
     Raises:
-      RuntimeError if ChromeDriver fails to start
+      RuntimeError: if ChromeDriver fails to start
     """
     if not os.path.exists(exe_path):
       raise RuntimeError('ChromeDriver exe not found at: ' + exe_path)
@@ -28,12 +32,15 @@ class Server(object):
     port = self._FindOpenPort()
     chromedriver_args = [exe_path, '--port=%d' % port]
     if log_path:
-      chromedriver_args.extend(['--log-path=%s' %log_path])
+      chromedriver_args.extend(['--log-path=%s' % log_path])
       if verbose:
         chromedriver_args.extend(['--verbose',
                                   '--vmodule=*/chrome/test/chromedriver/*=3'])
       if replayable:
-        chromedriver_args.extend(['--replayable']);
+        chromedriver_args.extend(['--replayable'])
+
+    if devtools_replay_path:
+      chromedriver_args.extend(['--devtools-replay=%s' % devtools_replay_path])
 
     self._process = subprocess.Popen(chromedriver_args)
     self._url = 'http://127.0.0.1:%d' % port

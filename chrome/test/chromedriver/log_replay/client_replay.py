@@ -699,6 +699,7 @@ class CommandSequence(object):
     self._parser = _ParserWithUndo(log_path)
     self._staged_logged_ids = None
     self._staged_logged_session_id = None
+    self._last_response = None
 
   def NextCommand(self, previous_response):
     """Get the next command in the log file.
@@ -865,18 +866,22 @@ class Replayer(object):
                                             command.GetPayloadPrimitive())
 
 
-def StartChromeDriverServer(chromedriver_binary, options):
+def StartChromeDriverServer(chromedriver_binary,
+                            output_log_path,
+                            devtools_replay_path="",
+                            replayable=False):
   chromedriver = util.GetAbsolutePathOfUserPath(chromedriver_binary)
   if (not os.path.exists(chromedriver) and
       util.GetPlatformName() == "win" and
       not chromedriver.lower().endswith(".exe")):
     chromedriver = chromedriver + ".exe"
-  if options.output_log_path:
-    options.output_log_path = util.GetAbsolutePathOfUserPath(
-        options.output_log_path)
+  if output_log_path:
+    output_log_path = util.GetAbsolutePathOfUserPath(output_log_path)
 
   chromedriver_server = server.Server(chromedriver_binary,
-                                      log_path=options.output_log_path)
+                                      log_path=output_log_path,
+                                      devtools_replay_path=devtools_replay_path,
+                                      replayable=replayable)
 
   return chromedriver_server
 
@@ -892,15 +897,25 @@ def _GetCommandLineOptions():
       "", "--chrome", help="Path to a build of the chrome binary. If not\n"
       "specified, uses ChromeDriver's own algorithm to find Chrome.")
   parser.add_option(
-      "", "--base_url", help="Base url to replace logged urls (in "
+      "", "--base-url", help="Base url to replace logged urls (in "
       "navigate, getUrl, and similar commands/responses).")
+  parser.add_option(
+      "", "--devtools-replay", help="Replay DevTools actions in addition\n"
+      "to client-side actions")
+  # TODO(crbug.com/chromedriver/2501)
+  parser.add_option(
+      "", "--replayable", help="Generate logs that do not have truncated\n"
+      "strings so that they can be replayed again.")
 
   options, args = parser.parse_args()
   if not os.path.exists(args[0]):
-    parser.error("Path given by --chromedriver is invalid.\n"
+    parser.error("Path given for chromedriver is invalid.\n"
                  'Please run "%s --help" for help' % __file__)
   if options.chrome and not os.path.exists(options.chrome):
     parser.error("Path given by --chrome is invalid.\n"
+                 'Please run "%s --help" for help' % __file__)
+  if options.replayable and not options.output_log_path:
+    parser.error("Replayable log option needs --output-log-path specified. \n"
                  'Please run "%s --help" for help' % __file__)
 
   return options, args
@@ -908,7 +923,9 @@ def _GetCommandLineOptions():
 
 def main():
   options, args = _GetCommandLineOptions()
-  server = StartChromeDriverServer(args[0], options)
+  devtools_replay_path = args[1] if options.devtools_replay else None
+  server = StartChromeDriverServer(args[0], options.output_log_path,
+      devtools_replay_path, options.replayable)
   input_log_path = util.GetAbsolutePathOfUserPath(args[1])
   chrome_binary = (util.GetAbsolutePathOfUserPath(options.chrome)
                    if options.chrome else None)
