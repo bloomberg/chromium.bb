@@ -184,9 +184,8 @@ class PpdProviderTest : public ::testing::Test {
 
     // It's sufficient to check for one of the expected locale keys to make sure
     // we got the right map.
-    EXPECT_FALSE(std::find(result_vec.begin(), result_vec.end(),
-                           "manufacturer_a_" + expected_used_locale) ==
-                 result_vec.end());
+    EXPECT_TRUE(base::ContainsValue(result_vec,
+                                    "manufacturer_a_" + expected_used_locale));
   }
 
   // Fake server being down, return ERR_ADDRESS_UNREACHABLE for all endpoints
