@@ -44,6 +44,8 @@ const ComponentConfig kConfigs[] = {
      "6d24de30f671da5aee6d463d9e446cafe9ddac672800a9defe86877dcde6c466"},
     {"cros-cellular", "1.0",
      "5714811c04f0a63aac96b39096faa759ace4c04e9b68291e7c9716128f5a2722"},
+    {"demo-mode-resources", "1.0",
+     "93c093ebac788581389015e9c59c5af111d2fa5174d206eb795042e6376cbd10"},
 };
 
 const ComponentConfig* FindConfig(const std::string& name) {
