@@ -122,7 +122,9 @@ python_library("test_runner_py") {
     "${android_sdk_root}/platform-tools/adb",
     "//third_party/catapult/third_party/gsutil/",
     "//third_party/catapult/devil/devil/devil_dependencies.json",
-    "//third_party/proguard/lib/proguard.jar",
+  ]
+  deps = [
+    "//third_party/proguard:proguard603_java",
   ]
 }
 

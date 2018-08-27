@@ -104,8 +104,6 @@ ANDROID_SDK_TOOLS = os.path.join(ANDROID_SDK_ROOT,
 ANDROID_NDK_ROOT = os.path.join(DIR_SOURCE_ROOT,
                                 'third_party', 'android_ndk')
 
-PROGUARD_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'proguard')
-
 BAD_DEVICES_JSON = os.path.join(DIR_SOURCE_ROOT,
                                 os.environ.get('CHROMIUM_OUT_DIR', 'out'),
                                 'bad_devices.json')
