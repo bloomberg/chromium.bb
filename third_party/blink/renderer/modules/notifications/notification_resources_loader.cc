@@ -6,7 +6,6 @@
 
 #include <cmath>
 #include "third_party/blink/public/platform/modules/notifications/web_notification_data.h"
-#include "third_party/blink/public/platform/modules/notifications/web_notification_resources.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
@@ -56,10 +55,9 @@ void NotificationResourcesLoader::Start(
                         WrapWeakPersistent(this), i));
 }
 
-std::unique_ptr<WebNotificationResources>
+mojom::blink::NotificationResourcesPtr
 NotificationResourcesLoader::GetResources() const {
-  std::unique_ptr<WebNotificationResources> resources(
-      new WebNotificationResources());
+  auto resources = mojom::blink::NotificationResources::New();
   resources->image = image_;
   resources->icon = icon_;
   resources->badge = badge_;

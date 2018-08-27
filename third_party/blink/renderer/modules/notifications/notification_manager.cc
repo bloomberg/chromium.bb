@@ -115,12 +115,12 @@ void NotificationManager::OnPermissionServiceConnectionError() {
 void NotificationManager::DisplayNonPersistentNotification(
     const String& token,
     const WebNotificationData& notification_data,
-    std::unique_ptr<WebNotificationResources> notification_resources,
+    mojom::blink::NotificationResourcesPtr notification_resources,
     mojom::blink::NonPersistentNotificationListenerPtr event_listener) {
   DCHECK(!token.IsEmpty());
   DCHECK(notification_resources);
   GetNotificationService()->DisplayNonPersistentNotification(
-      token, notification_data, *notification_resources,
+      token, notification_data, std::move(notification_resources),
       std::move(event_listener));
 }
 
@@ -132,11 +132,13 @@ void NotificationManager::CloseNonPersistentNotification(const String& token) {
 void NotificationManager::DisplayPersistentNotification(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebNotificationData& notification_data,
-    std::unique_ptr<blink::WebNotificationResources> notification_resources,
+    mojom::blink::NotificationResourcesPtr notification_resources,
     ScriptPromiseResolver* resolver) {
   DCHECK(notification_resources);
   DCHECK_EQ(notification_data.actions.size(),
-            notification_resources->action_icons.size());
+            notification_resources->action_icons.has_value()
+                ? notification_resources->action_icons->size()
+                : 0);
 
   // Verify that the author-provided payload size does not exceed our limit.
   // This is an implementation-defined limit to prevent abuse of notification
@@ -161,7 +163,7 @@ void NotificationManager::DisplayPersistentNotification(
 
   GetNotificationService()->DisplayPersistentNotification(
       service_worker_registration->RegistrationId(), notification_data,
-      *notification_resources,
+      std::move(notification_resources),
       WTF::Bind(&NotificationManager::DidDisplayPersistentNotification,
                 WrapPersistent(this), WrapPersistent(resolver)));
 }
