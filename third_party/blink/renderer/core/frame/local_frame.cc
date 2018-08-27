@@ -106,6 +106,7 @@
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
+#include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -980,6 +981,17 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
             SecurityOrigin::Create(destination_url).get())) {
       return true;
     }
+
+    String target_domain = NetworkUtils::GetDomainAndRegistry(
+        target_frame.GetSecurityContext()->GetSecurityOrigin()->Domain(),
+        NetworkUtils::kIncludePrivateRegistries);
+    String destination_domain = NetworkUtils::GetDomainAndRegistry(
+        destination_url.Host(), NetworkUtils::kIncludePrivateRegistries);
+    if (!target_domain.IsEmpty() && !destination_domain.IsEmpty() &&
+        target_domain == destination_domain) {
+      return true;
+    }
+
     // Frame-busting used to be generally allowed in most situations, but may
     // now blocked if the document initiating the navigation has never received
     // a user gesture and the navigation isn't same-origin with the target.
