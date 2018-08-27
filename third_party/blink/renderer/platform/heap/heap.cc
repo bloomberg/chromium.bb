@@ -312,23 +312,6 @@ size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   return object_payload_size;
 }
 
-void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
-  ThreadHeapStatsCollector::Scope stats_scope(
-      stats_collector(), ThreadHeapStatsCollector::kVisitPersistentRoots);
-  DCHECK(thread_state_->InAtomicMarkingPause());
-  thread_state_->VisitPersistents(visitor);
-}
-
-void ThreadHeap::VisitStackRoots() {
-  ThreadHeapStatsCollector::Scope stats_scope(
-      stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);
-  DCHECK(thread_state_->InAtomicMarkingPause());
-  address_cache_->FlushIfDirty();
-  address_cache_->EnableLookup();
-  thread_state_->PushRegistersAndVisitStack();
-  address_cache_->DisableLookup();
-}
-
 BasePage* ThreadHeap::LookupPageForAddress(Address address) {
   if (PageMemoryRegion* region = region_tree_->Lookup(address)) {
     return region->PageFromAddress(address);

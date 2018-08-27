@@ -43,6 +43,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
+#include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -366,7 +367,18 @@ void ThreadState::VisitStack(MarkingVisitor* visitor) {
 #endif
 }
 
+void ThreadState::VisitDOMWrappers(Visitor* visitor) {
+  if (trace_dom_wrappers_) {
+    ThreadHeapStatsCollector::Scope stats_scope(
+        Heap().stats_collector(), ThreadHeapStatsCollector::kVisitDOMWrappers);
+    trace_dom_wrappers_(isolate_, visitor);
+  }
+}
+
 void ThreadState::VisitPersistents(Visitor* visitor) {
+  ThreadHeapStatsCollector::Scope stats_scope(
+      Heap().stats_collector(),
+      ThreadHeapStatsCollector::kVisitPersistentRoots);
   {
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(),
@@ -379,11 +391,6 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
     ThreadHeapStatsCollector::Scope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kVisitPersistents);
     persistent_region_->TracePersistentNodes(visitor);
-  }
-  if (trace_dom_wrappers_) {
-    ThreadHeapStatsCollector::Scope stats_scope(
-        Heap().stats_collector(), ThreadHeapStatsCollector::kVisitDOMWrappers);
-    trace_dom_wrappers_(isolate_, visitor);
   }
 }
 
@@ -1606,16 +1613,22 @@ void ThreadState::AtomicPausePrologue(BlinkGC::StackState stack_state,
 }
 
 void ThreadState::MarkPhaseVisitRoots() {
-  // StackFrameDepth should be disabled so we don't trace most of the object
-  // graph in one incremental marking step.
+  // StackFrameDepth should be disabled to avoid eagerly tracing into the object
+  // graph when just visiting roots.
   DCHECK(!Heap().GetStackFrameDepth().IsEnabled());
 
-  // 1. Trace persistent roots.
-  Heap().VisitPersistentRoots(current_gc_data_.visitor.get());
+  Visitor* visitor = current_gc_data_.visitor.get();
 
-  // 2. Trace objects reachable from the stack.
-  if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack)
-    Heap().VisitStackRoots();
+  VisitPersistents(visitor);
+
+  VisitDOMWrappers(visitor);
+
+  if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack) {
+    ThreadHeapStatsCollector::Scope stats_scope(
+        Heap().stats_collector(), ThreadHeapStatsCollector::kVisitStackRoots);
+    AddressCache::EnabledScope address_cache_scope(Heap().address_cache());
+    PushRegistersAndVisitStack();
+  }
 }
 
 bool ThreadState::MarkPhaseAdvanceMarking(TimeTicks deadline) {

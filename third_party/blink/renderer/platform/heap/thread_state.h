@@ -443,6 +443,9 @@ class PLATFORM_EXPORT ThreadState final
   // Visit all weak persistents allocated on this thread.
   void VisitWeakPersistents(Visitor*);
 
+  // Visit all DOM wrappers allocatd on this thread.
+  void VisitDOMWrappers(Visitor*);
+
   struct GCSnapshotInfo {
     STACK_ALLOCATED();
 

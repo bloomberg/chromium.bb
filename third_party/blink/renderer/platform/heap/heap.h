@@ -203,9 +203,6 @@ class PLATFORM_EXPORT ThreadHeap {
     return weak_callback_worklist_.get();
   }
 
-  void VisitPersistentRoots(Visitor*);
-  void VisitStackRoots();
-
   // Is the finalizable GC object still alive, but slated for lazy sweeping?
   // If a lazy sweep is in progress, returns true if the object was found
   // to be not reachable during the marking phase, but it has yet to be swept
@@ -304,7 +301,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   size_t ObjectPayloadSizeForTesting();
 
-  AddressCache* address_cache() { return address_cache_.get(); }
+  AddressCache* address_cache() const { return address_cache_.get(); }
 
   PagePool* GetFreePagePool() { return free_page_pool_.get(); }
 

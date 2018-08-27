@@ -8,6 +8,16 @@
 
 namespace blink {
 
+AddressCache::EnabledScope::EnabledScope(AddressCache* address_cache)
+    : address_cache_(address_cache) {
+  address_cache_->FlushIfDirty();
+  address_cache_->EnableLookup();
+}
+
+AddressCache::EnabledScope::~EnabledScope() {
+  address_cache_->DisableLookup();
+}
+
 void AddressCache::Flush() {
   if (has_entries_) {
     for (size_t i = 0; i < kNumberOfEntries; ++i)
