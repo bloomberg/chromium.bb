@@ -7,7 +7,7 @@ AM_CONFIG_HEADER(liblouis/config.h)
 
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE([-Wall])
+AM_INIT_AUTOMAKE([-Wall dist-zip])
 
 # Checks for programs.
 # Try to compile using C99
