@@ -649,49 +649,46 @@ void SimpleEntryImpl::RunNextOperationIfNeeded() {
                    "EntryOperationsPending", cache_type_,
                    pending_operations_.size(), 0, 100, 20);
   if (!pending_operations_.empty() && state_ != STATE_IO_PENDING) {
-    std::unique_ptr<SimpleEntryOperation> operation(
-        new SimpleEntryOperation(std::move(pending_operations_.front())));
+    SimpleEntryOperation operation = std::move(pending_operations_.front());
     pending_operations_.pop();
-    switch (operation->type()) {
+    switch (operation.type()) {
       case SimpleEntryOperation::TYPE_OPEN:
-        OpenEntryInternal(operation->have_index(), operation->ReleaseCallback(),
-                          operation->out_entry());
+        OpenEntryInternal(operation.have_index(), operation.ReleaseCallback(),
+                          operation.out_entry());
         break;
       case SimpleEntryOperation::TYPE_CREATE:
-        CreateEntryInternal(operation->have_index(),
-                            operation->ReleaseCallback(),
-                            operation->out_entry());
+        CreateEntryInternal(operation.have_index(), operation.ReleaseCallback(),
+                            operation.out_entry());
         break;
       case SimpleEntryOperation::TYPE_CLOSE:
         CloseInternal();
         break;
       case SimpleEntryOperation::TYPE_READ:
-        ReadDataInternal(/* sync_possible= */ false, operation->index(),
-                         operation->offset(), operation->buf(),
-                         operation->length(), operation->ReleaseCallback());
+        ReadDataInternal(/* sync_possible= */ false, operation.index(),
+                         operation.offset(), operation.buf(),
+                         operation.length(), operation.ReleaseCallback());
         break;
       case SimpleEntryOperation::TYPE_WRITE:
-        WriteDataInternal(operation->index(), operation->offset(),
-                          operation->buf(), operation->length(),
-                          operation->ReleaseCallback(), operation->truncate());
+        WriteDataInternal(operation.index(), operation.offset(),
+                          operation.buf(), operation.length(),
+                          operation.ReleaseCallback(), operation.truncate());
         break;
       case SimpleEntryOperation::TYPE_READ_SPARSE:
-        ReadSparseDataInternal(operation->sparse_offset(), operation->buf(),
-                               operation->length(),
-                               operation->ReleaseCallback());
+        ReadSparseDataInternal(operation.sparse_offset(), operation.buf(),
+                               operation.length(), operation.ReleaseCallback());
         break;
       case SimpleEntryOperation::TYPE_WRITE_SPARSE:
-        WriteSparseDataInternal(operation->sparse_offset(), operation->buf(),
-                                operation->length(),
-                                operation->ReleaseCallback());
+        WriteSparseDataInternal(operation.sparse_offset(), operation.buf(),
+                                operation.length(),
+                                operation.ReleaseCallback());
         break;
       case SimpleEntryOperation::TYPE_GET_AVAILABLE_RANGE:
-        GetAvailableRangeInternal(operation->sparse_offset(),
-                                  operation->length(), operation->out_start(),
-                                  operation->ReleaseCallback());
+        GetAvailableRangeInternal(operation.sparse_offset(), operation.length(),
+                                  operation.out_start(),
+                                  operation.ReleaseCallback());
         break;
       case SimpleEntryOperation::TYPE_DOOM:
-        DoomEntryInternal(operation->ReleaseCallback());
+        DoomEntryInternal(operation.ReleaseCallback());
         break;
       default:
         NOTREACHED();
