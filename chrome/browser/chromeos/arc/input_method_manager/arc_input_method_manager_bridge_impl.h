@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_INPUT_METHOD_MANAGER_ARC_INPUT_METHOD_MANAGER_BRIDGE_IMPL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_INPUT_METHOD_MANAGER_ARC_INPUT_METHOD_MANAGER_BRIDGE_IMPL_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge.h"
 
@@ -28,6 +31,7 @@ class ArcInputMethodManagerBridgeImpl : public ArcInputMethodManagerBridge,
 
   // mojom::InputMethodManagerHost overrides:
   void OnActiveImeChanged(const std::string& ime_id) override;
+  void OnImeDisabled(const std::string& ime_id) override;
   void OnImeInfoChanged(std::vector<mojom::ImeInfoPtr> ime_info_array) override;
 
  private:

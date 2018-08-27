@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -202,6 +203,26 @@ void ArcInputMethodManagerService::OnActiveImeChanged(
   NOTIMPLEMENTED();
 }
 
+void ArcInputMethodManagerService::OnImeDisabled(const std::string& ime_id) {
+  if (!base::FeatureList::IsEnabled(kEnableInputMethodFeature))
+    return;
+
+  const std::string component_id =
+      chromeos::extension_ime_util::GetArcInputMethodID(proxy_ime_extension_id_,
+                                                        ime_id);
+  // Remove the IME from the prefs to disable it.
+  const std::string active_ime_ids =
+      profile_->GetPrefs()->GetString(prefs::kLanguageEnabledImes);
+  std::vector<base::StringPiece> active_ime_list = base::SplitStringPiece(
+      active_ime_ids, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  base::Erase(active_ime_list, component_id);
+  profile_->GetPrefs()->SetString(prefs::kLanguageEnabledImes,
+                                  base::JoinString(active_ime_list, ","));
+
+  // Note: Since this is not about uninstalling the IME, this method does not
+  // modify InputMethodManager::State.
+}
+
 void ArcInputMethodManagerService::OnImeInfoChanged(
     std::vector<mojom::ImeInfoPtr> ime_info_array) {
   using chromeos::input_method::InputMethodDescriptor;
@@ -235,7 +256,7 @@ void ArcInputMethodManagerService::OnImeInfoChanged(
   state->AddInputMethodExtension(proxy_ime_extension_id_, descriptors,
                                  proxy_ime_engine_.get());
 
-  // Enabled IMEs that are already enabled in the container.
+  // Enable IMEs that are already enabled in the container.
   const std::string active_ime_ids =
       profile_->GetPrefs()->GetString(prefs::kLanguageEnabledImes);
   std::vector<std::string> active_ime_list = base::SplitString(

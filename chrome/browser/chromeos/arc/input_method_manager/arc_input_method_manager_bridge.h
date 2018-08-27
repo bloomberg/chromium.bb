@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_INPUT_METHOD_MANAGER_ARC_INPUT_METHOD_MANAGER_BRIDGE_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_INPUT_METHOD_MANAGER_ARC_INPUT_METHOD_MANAGER_BRIDGE_H_
 
+#include <string>
+#include <vector>
+
 #include "components/arc/common/input_method_manager.mojom.h"
 
 namespace arc {
@@ -21,6 +24,7 @@ class ArcInputMethodManagerBridge {
     virtual ~Delegate() = default;
 
     virtual void OnActiveImeChanged(const std::string& ime_id) = 0;
+    virtual void OnImeDisabled(const std::string& ime_id) = 0;
     virtual void OnImeInfoChanged(
         const std::vector<mojom::ImeInfoPtr> ime_info_array) = 0;
   };

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_bridge_impl.h"
 
+#include <utility>
+
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_features.h"
 
@@ -52,6 +54,10 @@ void ArcInputMethodManagerBridgeImpl::SendSwitchImeTo(
 void ArcInputMethodManagerBridgeImpl::OnActiveImeChanged(
     const std::string& ime_id) {
   delegate_->OnActiveImeChanged(ime_id);
+}
+
+void ArcInputMethodManagerBridgeImpl::OnImeDisabled(const std::string& ime_id) {
+  delegate_->OnImeDisabled(ime_id);
 }
 
 void ArcInputMethodManagerBridgeImpl::OnImeInfoChanged(
