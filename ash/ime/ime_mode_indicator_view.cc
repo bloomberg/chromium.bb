@@ -9,7 +9,7 @@
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"

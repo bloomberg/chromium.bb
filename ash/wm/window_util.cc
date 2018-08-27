@@ -22,7 +22,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/wm_event.h"
 #include "ash/ws/window_service_owner.h"
-#include "services/ui/ws2/window_service.h"
+#include "services/ws/window_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/focus_client.h"

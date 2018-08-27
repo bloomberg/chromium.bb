@@ -13,7 +13,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "components/user_manager/user_info_impl.h"
-#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_controller_client.h"
 #include "ui/gfx/image/image.h"
 #include "ui/keyboard/keyboard_ui.h"
 

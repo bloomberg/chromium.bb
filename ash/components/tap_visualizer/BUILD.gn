@@ -17,7 +17,7 @@ source_set("lib") {
     "//base",
     "//cc/paint",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/cpp",
+    "//services/ws/public/cpp",
     "//services/ws/public/mojom",
     "//skia",
     "//ui/compositor",

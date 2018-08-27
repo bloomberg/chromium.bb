@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
-#include "services/ui/common/types.h"
+#include "services/ws/common/types.h"
 #include "ui/aura/aura_export.h"
 
 namespace aura {

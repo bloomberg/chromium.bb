@@ -15,7 +15,7 @@
 #include "cc/base/switches.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "mojo/public/cpp/bindings/map.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"

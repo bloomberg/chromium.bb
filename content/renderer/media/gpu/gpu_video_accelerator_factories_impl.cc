@@ -30,7 +30,7 @@
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkPostConfig.h"
 
 namespace content {

@@ -39,7 +39,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/ui/ws2/window_service.h"
+#include "services/ws/window_service.h"
 #include "ui/aura/env.h"
 #include "ui/aura/input_state_lookup.h"
 #include "ui/aura/test/env_test_helper.h"

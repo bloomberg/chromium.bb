@@ -5,8 +5,8 @@
 #include "ash/test/ash_test_base.h"
 
 #include "ash/shell.h"
-#include "services/ui/ws2/test_window_tree_client.h"
-#include "services/ui/ws2/window_tree_test_helper.h"
+#include "services/ws/test_window_tree_client.h"
+#include "services/ws/window_tree_test_helper.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"

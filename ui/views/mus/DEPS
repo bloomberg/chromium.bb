@@ -7,7 +7,7 @@ include_rules = [
   "+mojo/public",
   "+services/catalog",
   "+services/service_manager/public",
-  "+services/ui",
+  "+services/ws",
   "+skia",
   "+ui/aura",
   "+ui/base",

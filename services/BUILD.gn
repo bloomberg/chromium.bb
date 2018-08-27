@@ -46,10 +46,10 @@ service_test("services_unittests") {
 
   if (use_aura) {
     deps += [
-      "//services/ui/ime:tests",
-      "//services/ui/input_devices:tests",
-      "//services/ui/public/cpp/tests",
-      "//services/ui/ws2:tests",
+      "//services/ws:tests",
+      "//services/ws/ime:tests",
+      "//services/ws/input_devices:tests",
+      "//services/ws/public/cpp/tests",
       "//services/ws/public/mojom:tests",
     ]
   }
@@ -107,8 +107,8 @@ catalog("services_unittests_catalog") {
 
   if (use_aura) {
     catalog_deps += [
-      "//services/ui/ime:tests_catalog",
-      "//services/ui/ws2:tests_catalog",
+      "//services/ws/ime:tests_catalog",
+      "//services/ws:tests_catalog",
     ]
   }
 }

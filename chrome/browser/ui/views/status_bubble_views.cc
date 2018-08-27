@@ -43,7 +43,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"                                           // mash-ok
 #include "ash/wm/window_state.h"                                 // mash-ok
-#include "services/ui/public/cpp/property_type_converters.h"     // nogncheck
+#include "services/ws/public/cpp/property_type_converters.h"     // nogncheck
 #include "services/ws/public/mojom/window_manager.mojom.h"       // nogncheck
 #endif
 

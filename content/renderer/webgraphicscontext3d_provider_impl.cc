@@ -8,7 +8,7 @@
 #include "cc/tiles/gpu_image_decode_cache.h"
 #include "components/viz/common/gl_helper.h"
 #include "gpu/command_buffer/client/context_support.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 

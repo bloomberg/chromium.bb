@@ -45,7 +45,7 @@ jumbo_component("mus") {
 
   public_deps = [
     ":resources",
-    "//services/ui/public/cpp",
+    "//services/ws/public/cpp",
     "//ui/aura",
   ]
   deps = [
@@ -59,8 +59,8 @@ jumbo_component("mus") {
     "//services/catalog/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
-    "//services/ui/public/cpp",
-    "//services/ui/public/cpp/input_devices",
+    "//services/ws/public/cpp",
+    "//services/ws/public/cpp/input_devices",
     "//services/ws/public/mojom",
     "//skia",
     "//third_party/icu",
@@ -126,7 +126,7 @@ jumbo_static_library("test_support") {
     "//services/catalog:lib",
     "//services/service_manager/background:lib",
     "//services/service_manager/public/cpp",
-    "//services/ui/common:mus_common",
+    "//services/ws/common",
     "//testing/gtest",
     "//ui/aura",
     "//ui/aura:test_support",
@@ -144,7 +144,7 @@ jumbo_static_library("test_support") {
 
   data_deps = [
     ":views_mus_tests_catalog",
-    "//services/ui/ime/test_ime_driver",
+    "//services/ws/ime/test_ime_driver",
     "//ui/resources:ui_test_pak_data",
   ]
 }
@@ -202,8 +202,8 @@ test("views_mus_unittests") {
 
   data_deps = [
     ":views_mus_tests_catalog_copy",
-    "//services/ui/ime/test_ime_driver",
-    "//services/ui/test_ws",
+    "//services/ws/ime/test_ime_driver",
+    "//services/ws/test_ws",
   ]
 
   if (is_win) {
@@ -269,7 +269,7 @@ test("views_mus_interactive_ui_tests") {
 
   data_deps = [
     ":views_mus_tests_catalog_copy",
-    "//services/ui/test_ws",
+    "//services/ws/test_ws",
   ]
 
   if (is_win) {
@@ -305,8 +305,8 @@ catalog("views_mus_tests_catalog") {
   ]
 
   standalone_services = [
-    "//services/ui/test_ws:manifest",
-    "//services/ui/ime/test_ime_driver:manifest",
+    "//services/ws/test_ws:manifest",
+    "//services/ws/ime/test_ime_driver:manifest",
   ]
 }
 

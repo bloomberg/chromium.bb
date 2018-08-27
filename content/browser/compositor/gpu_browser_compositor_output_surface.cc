@@ -18,7 +18,7 @@
 #include "gpu/command_buffer/common/swap_buffers_complete_params.h"
 #include "gpu/command_buffer/common/swap_buffers_flags.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/gl/gl_utils.h"
 
 namespace content {

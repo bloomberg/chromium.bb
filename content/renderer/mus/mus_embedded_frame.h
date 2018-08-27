@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "services/ui/common/types.h"
+#include "services/ws/common/types.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ws {

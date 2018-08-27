@@ -30,7 +30,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/runner/common/client_util.h"
-#include "services/ui/public/cpp/gpu/gpu.h"  // nogncheck
+#include "services/ws/public/cpp/gpu/gpu.h"  // nogncheck
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/display/screen.h"

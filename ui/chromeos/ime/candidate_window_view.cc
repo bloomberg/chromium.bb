@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"

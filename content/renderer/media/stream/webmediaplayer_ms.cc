@@ -33,7 +33,7 @@
 #include "media/base/video_types.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_rect.h"

@@ -14,8 +14,8 @@
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/command_buffer_metrics.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "url/gurl.h"
 
 namespace content {

@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "chromeos/chromeos_switches.h"
 #include "content/public/test/test_web_ui.h"
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/devices/input_device.h"
 

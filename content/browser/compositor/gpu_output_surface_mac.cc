@@ -8,7 +8,7 @@
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator.h"
 #include "gpu/GLES2/gl2extchromium.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 

@@ -1160,7 +1160,7 @@
                   '|components/cryptauth/'
     },
     'mus': {
-      'filepath': 'services/ui/'\
+      'filepath': 'services/ws/'\
                   '|mojo/gpu/',
     },
     'nacl': {

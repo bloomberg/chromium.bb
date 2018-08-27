@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "services/ui/ws2/window_service_delegate.h"
+#include "services/ws/window_service_delegate.h"
 
 namespace ash {
 

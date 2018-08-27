@@ -10,8 +10,8 @@
 #include <vector>
 
 #include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/cpp/input_devices/input_device_client.h"
-#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ws/public/cpp/input_devices/input_device_client.h"
+#include "services/ws/public/cpp/property_type_converters.h"
 #include "services/ws/public/mojom/constants.mojom.h"
 #include "services/ws/public/mojom/window_manager.mojom.h"
 #include "ui/aura/client/default_capture_client.h"

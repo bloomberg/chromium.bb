@@ -16,7 +16,7 @@
 #include "ui/gfx/geometry/size.h"
 
 #if defined(USE_OZONE) || defined(USE_X11)
-#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
+#include "services/ws/public/cpp/input_devices/input_device_client_test_api.h"
 #endif
 
 namespace {

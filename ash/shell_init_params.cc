@@ -6,7 +6,7 @@
 
 #include "ash/shell_delegate.h"
 #include "base/values.h"
-#include "services/ui/ws2/gpu_interface_provider.h"
+#include "services/ws/gpu_interface_provider.h"
 
 namespace ash {
 

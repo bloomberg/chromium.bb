@@ -1,7 +1,6 @@
 include_rules = [
   "+mojo/public",
   "+services/service_manager",
-  "+services/ui",
   "+services/ws",
   "+ui/base/ui_base_features.h",
   "+ui/base/ui_base_switches.h",

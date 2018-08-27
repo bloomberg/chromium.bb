@@ -2,7 +2,7 @@ include_rules = [
  "+components/viz/common",
  "+components/viz/host",
  "+components/viz/service",
- "+services/ui/public/cpp",
+ "+services/ws/public/cpp",
  "+ui/platform_window",
 ]
 

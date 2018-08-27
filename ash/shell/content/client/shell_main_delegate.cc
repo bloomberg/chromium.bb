@@ -17,8 +17,8 @@
 #include "base/path_service.h"
 #include "content/public/utility/content_utility_client.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/ui/ime/test_ime_driver/public/mojom/constants.mojom.h"
-#include "services/ui/ime/test_ime_driver/test_ime_application.h"
+#include "services/ws/ime/test_ime_driver/public/mojom/constants.mojom.h"
+#include "services/ws/ime/test_ime_driver/test_ime_application.h"
 #include "ui/base/ime/input_method_initializer.h"
 #include "ui/base/resource/resource_bundle.h"
 

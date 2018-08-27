@@ -77,12 +77,10 @@ include_rules = [
   "+services/resource_coordinator/public/cpp",
   "+services/resource_coordinator/public/mojom",
   "+services/shape_detection/public/mojom",
-  "+services/ui/common",
-  "+services/ui/public",
-  "+services/ui/service.h",
-  "+services/ws/public",
   "+services/video_capture/public",
   "+services/viz/privileged",
+  "+services/ws/common",
+  "+services/ws/public",
   "+skia/ext",
   "+third_party/boringssl/src/include",
   "+third_party/crashpad",
@@ -206,7 +204,7 @@ include_rules = [
   # shouldn't be used by Chrome directly.
   "-ui/events/devices",
   # Enums and supporting classes or observers that are safe (should be moved to
-  # services/ui/public/cpp). http://crbug.com/747544.
+  # services/ws/public/cpp). http://crbug.com/747544.
   "+ui/events/devices/device_hotplug_event_observer.h",
   "+ui/events/devices/input_device.h",
   "+ui/events/devices/input_device_event_observer.h",

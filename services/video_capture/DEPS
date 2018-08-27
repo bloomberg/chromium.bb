@@ -4,5 +4,5 @@ include_rules = [
   "+media/mojo",
   "+media/capture",
   "+ui/gfx/geometry",
-  "+services/ui/public/cpp/gpu",
+  "+services/ws/public/cpp/gpu",
 ]

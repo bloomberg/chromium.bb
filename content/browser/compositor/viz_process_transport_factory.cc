@@ -31,7 +31,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/raster_interface.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
+#include "services/ws/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/reflector.h"
 

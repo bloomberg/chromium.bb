@@ -10,7 +10,7 @@ include_rules = [
   "+jni",
   "+mojo/public/cpp/bindings/callback_helpers.h",
   "+mojo/public/cpp/system/platform_handle.h",
-  "+services/ui/public/cpp/gpu/context_provider_command_buffer.h",
+  "+services/ws/public/cpp/gpu/context_provider_command_buffer.h",
   "+skia/ext",
   "+third_party/ffmpeg",
   "+third_party/libaom",

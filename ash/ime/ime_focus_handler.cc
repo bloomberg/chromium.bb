@@ -5,7 +5,7 @@
 #include "ash/ime/ime_focus_handler.h"
 
 #include "base/logging.h"
-#include "services/ui/ws2/window_service.h"
+#include "services/ws/window_service.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/base/ime/input_method.h"
 

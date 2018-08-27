@@ -11,7 +11,7 @@ include_rules = [
   "+net/base/filename_util.h",
   "+services/service_manager/public/cpp",
   "+services/service_manager/public/mojom",
-  "+services/ui/common",
+  "+services/ws/common",
   "+services/ws/public/mojom",
   "+skia/ext",
   "+third_party/skia",

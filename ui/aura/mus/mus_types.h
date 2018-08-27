@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include "services/ui/common/types.h"
+#include "services/ws/common/types.h"
 
 // Typedefs for the transport types. These typedefs match that of the mojom
 // file, see it for specifics.

@@ -3100,9 +3100,9 @@ jumbo_split_static_library("browser") {
       "//chromeos/services/secure_channel/public/mojom",
       "//components/services/font:lib",
       "//components/services/font/public/interfaces",
-      "//services/ui/public/cpp/input_devices",
-      "//services/ui/public/cpp/input_devices:input_device_controller",
-      "//services/ui/ws2:lib",
+      "//services/ws:lib",
+      "//services/ws/public/cpp/input_devices",
+      "//services/ws/public/cpp/input_devices:input_device_controller",
       "//services/ws/public/mojom",
       "//ui/ozone",
     ]

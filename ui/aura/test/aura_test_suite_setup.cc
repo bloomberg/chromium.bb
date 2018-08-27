@@ -11,7 +11,7 @@
 #include "ui/base/ui_base_features.h"
 
 #if defined(USE_OZONE)
-#include "services/ui/public/cpp/input_devices/input_device_client.h"
+#include "services/ws/public/cpp/input_devices/input_device_client.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MUS)
