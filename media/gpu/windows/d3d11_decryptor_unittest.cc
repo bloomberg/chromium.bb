@@ -123,23 +123,10 @@ class D3D11DecryptorTest : public ::testing::Test {
     device_mock_ = CreateD3D11Mock<D3D11DeviceMock>();
     device_context_mock_ = CreateD3D11Mock<D3D11DeviceContextMock>();
     video_context_mock_ = CreateD3D11Mock<D3D11VideoContextMock>();
-
-    ON_CALL(create_device_mock_,
-            Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-        .WillByDefault(
-            DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
-                  AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
-                  Return(S_OK)));
-
-    decryptor_->SetCreateDeviceCallbackForTesting(
-        base::BindRepeating(&D3D11CreateDeviceMock::Create,
-                            base::Unretained(&create_device_mock_)));
   }
 
   std::unique_ptr<D3D11Decryptor> decryptor_;
   CdmProxyContextMock mock_proxy_;
-
-  D3D11CreateDeviceMock create_device_mock_;
 
   ComPtr<D3D11DeviceMock> device_mock_;
   ComPtr<D3D11DeviceContextMock> device_context_mock_;
@@ -170,14 +157,17 @@ TEST_F(D3D11DecryptorTest, FullSampleCtrDecrypt) {
   decrypt_context.key_blob = kAnyKeyBlob;
   decrypt_context.key_blob_size = base::size(kAnyKeyBlob);
   decrypt_context.key_info_guid = TEST_GUID;
+
+  EXPECT_CALL(*crypto_session_mock.Get(), GetDevice(_))
+      .Times(AtLeast(1))
+      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_mock_.Get()));
+  EXPECT_CALL(*device_mock_.Get(), GetImmediateContext(_))
+      .Times(AtLeast(1))
+      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_context_mock_.Get()));
+
   EXPECT_CALL(mock_proxy_, GetD3D11DecryptContext(kKeyId))
       .WillOnce(Return(decrypt_context));
 
-  EXPECT_CALL(create_device_mock_,
-              Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-      .WillOnce(DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
-                      AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
-                      Return(S_OK)));
   EXPECT_CALL(*device_context_mock_.Get(),
               QueryInterface(IID_ID3D11VideoContext, _))
       .Times(AtLeast(1))
@@ -309,14 +299,17 @@ TEST_F(D3D11DecryptorTest, SubsampleCtrDecrypt) {
   decrypt_context.key_blob = kAnyKeyBlob;
   decrypt_context.key_blob_size = base::size(kAnyKeyBlob);
   decrypt_context.key_info_guid = TEST_GUID;
+
+  EXPECT_CALL(*crypto_session_mock.Get(), GetDevice(_))
+      .Times(AtLeast(1))
+      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_mock_.Get()));
+  EXPECT_CALL(*device_mock_.Get(), GetImmediateContext(_))
+      .Times(AtLeast(1))
+      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_context_mock_.Get()));
+
   EXPECT_CALL(mock_proxy_, GetD3D11DecryptContext(kKeyId))
       .WillOnce(Return(decrypt_context));
 
-  EXPECT_CALL(create_device_mock_,
-              Create(_, D3D_DRIVER_TYPE_HARDWARE, _, _, _, _, _, _, _, _))
-      .WillOnce(DoAll(AddRefAndSetArgPointee<7>(device_mock_.Get()),
-                      AddRefAndSetArgPointee<9>(device_context_mock_.Get()),
-                      Return(S_OK)));
   EXPECT_CALL(*device_context_mock_.Get(),
               QueryInterface(IID_ID3D11VideoContext, _))
       .Times(AtLeast(1))
@@ -417,11 +410,19 @@ TEST_F(D3D11DecryptorTest, DecryptInputTooBig) {
   CdmProxyContext::D3D11DecryptContext decrypt_context = {};
   ComPtr<D3D11CryptoSessionMock> crypto_session_mock =
       CreateD3D11Mock<D3D11CryptoSessionMock>();
+  decrypt_context.crypto_session = crypto_session_mock.Get();
   decrypt_context.key_blob = kAnyKeyBlob;
   decrypt_context.key_blob_size = base::size(kAnyKeyBlob);
   decrypt_context.key_info_guid = TEST_GUID;
   ON_CALL(mock_proxy_, GetD3D11DecryptContext(kKeyId))
       .WillByDefault(Return(decrypt_context));
+
+  EXPECT_CALL(*crypto_session_mock.Get(), GetDevice(_))
+      .Times(AtLeast(1))
+      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_mock_.Get()));
+  EXPECT_CALL(*device_mock_.Get(), GetImmediateContext(_))
+      .Times(AtLeast(1))
+      .WillRepeatedly(AddRefAndSetArgPointee<0>(device_context_mock_.Get()));
 
   ComPtr<D3D11BufferMock> staging_buffer1 = CreateD3D11Mock<D3D11BufferMock>();
   ComPtr<D3D11BufferMock> staging_buffer2 = CreateD3D11Mock<D3D11BufferMock>();
