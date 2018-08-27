@@ -16,7 +16,7 @@
 cr.googleTranslate.readyCallback = function() {
   __gCrWeb.message.invokeOnHost({
       'command': 'translate.ready',
-      'timeout': cr.googleTranslate.error,
+      'errorCode': cr.googleTranslate.errorCode,
       'loadTime': cr.googleTranslate.loadTime,
       'readyTime': cr.googleTranslate.readyTime});
 }
@@ -27,7 +27,7 @@ cr.googleTranslate.readyCallback = function() {
 cr.googleTranslate.resultCallback = function() {
   __gCrWeb.message.invokeOnHost({
       'command': 'translate.status',
-      'success': !cr.googleTranslate.error,
+      'errorCode': cr.googleTranslate.errorCode,
       'originalPageLanguage': cr.googleTranslate.sourceLang,
       'translationTime': cr.googleTranslate.translationTime});
 }

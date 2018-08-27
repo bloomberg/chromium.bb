@@ -11,6 +11,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/translate/core/common/translate_errors.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
 @class JsTranslateManager;
@@ -34,13 +35,14 @@ class TranslateController : public web::WebStateObserver {
   class Observer {
    public:
     // Called when the translate script is ready.
-    // In case of timeout, |success| is false.
-    virtual void OnTranslateScriptReady(bool success,
+    // |error_type| Indicates error code.
+    virtual void OnTranslateScriptReady(TranslateErrors::Type error_type,
                                         double load_time,
                                         double ready_time) = 0;
 
     // Called when the translation is complete.
-    virtual void OnTranslateComplete(bool success,
+    // |error_type| Indicates error code.
+    virtual void OnTranslateComplete(TranslateErrors::Type error_type,
                                      const std::string& original_language,
                                      double translation_time) = 0;
   };

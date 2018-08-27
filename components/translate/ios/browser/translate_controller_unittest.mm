@@ -24,7 +24,7 @@ class TranslateControllerTest : public PlatformTest,
  protected:
   TranslateControllerTest()
       : test_web_state_(new web::TestWebState),
-        success_(false),
+        error_type_(TranslateErrors::Type::NONE),
         ready_time_(0),
         load_time_(0),
         translation_time_(0),
@@ -38,20 +38,20 @@ class TranslateControllerTest : public PlatformTest,
   }
 
   // TranslateController::Observer methods.
-  void OnTranslateScriptReady(bool success,
+  void OnTranslateScriptReady(TranslateErrors::Type error_type,
                               double load_time,
                               double ready_time) override {
     on_script_ready_called_ = true;
-    success_ = success;
+    error_type_ = error_type;
     load_time_ = load_time;
     ready_time_ = ready_time;
   }
 
-  void OnTranslateComplete(bool success,
+  void OnTranslateComplete(TranslateErrors::Type error_type,
                            const std::string& original_language,
                            double translation_time) override {
     on_translate_complete_called_ = true;
-    success_ = success;
+    error_type_ = error_type;
     original_language_ = original_language;
     translation_time_ = translation_time;
   }
@@ -59,7 +59,7 @@ class TranslateControllerTest : public PlatformTest,
   std::unique_ptr<web::TestWebState> test_web_state_;
   id mock_js_translate_manager_;
   std::unique_ptr<TranslateController> translate_controller_;
-  bool success_;
+  TranslateErrors::Type error_type_;
   double ready_time_;
   double load_time_;
   std::string original_language_;
@@ -80,7 +80,7 @@ TEST_F(TranslateControllerTest, OnJavascriptCommandReceived) {
 TEST_F(TranslateControllerTest, OnIFrameJavascriptCommandReceived) {
   base::DictionaryValue command;
   command.SetString("command", "translate.ready");
-  command.SetBoolean("timeout", true);
+  command.SetDouble("errorCode", TranslateErrors::TRANSLATION_TIMEOUT);
   command.SetDouble("loadTime", .0);
   command.SetDouble("readyTime", .0);
   EXPECT_FALSE(translate_controller_->OnJavascriptCommandReceived(
@@ -93,7 +93,7 @@ TEST_F(TranslateControllerTest, OnIFrameJavascriptCommandReceived) {
 TEST_F(TranslateControllerTest, OnTranslateScriptReadyTimeoutCalled) {
   base::DictionaryValue command;
   command.SetString("command", "translate.ready");
-  command.SetBoolean("timeout", true);
+  command.SetDouble("errorCode", TranslateErrors::TRANSLATION_TIMEOUT);
   command.SetDouble("loadTime", .0);
   command.SetDouble("readyTime", .0);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
@@ -101,11 +101,11 @@ TEST_F(TranslateControllerTest, OnTranslateScriptReadyTimeoutCalled) {
       /*is_main_frame=*/true));
   EXPECT_TRUE(on_script_ready_called_);
   EXPECT_FALSE(on_translate_complete_called_);
-  EXPECT_FALSE(success_);
+  EXPECT_FALSE(error_type_ == TranslateErrors::NONE);
 }
 
 // Tests that OnTranslateScriptReady() is called with the right parameters when
-// a |translate.ready| message is recieved from the JS side.
+// a |translate.ready| message is received from the JS side.
 TEST_F(TranslateControllerTest, OnTranslateScriptReadyCalled) {
   // Arbitrary values.
   double some_load_time = 23.1;
@@ -113,7 +113,7 @@ TEST_F(TranslateControllerTest, OnTranslateScriptReadyCalled) {
 
   base::DictionaryValue command;
   command.SetString("command", "translate.ready");
-  command.SetBoolean("timeout", false);
+  command.SetDouble("errorCode", TranslateErrors::NONE);
   command.SetDouble("loadTime", some_load_time);
   command.SetDouble("readyTime", some_ready_time);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
@@ -121,13 +121,13 @@ TEST_F(TranslateControllerTest, OnTranslateScriptReadyCalled) {
       /*is_main_frame=*/true));
   EXPECT_TRUE(on_script_ready_called_);
   EXPECT_FALSE(on_translate_complete_called_);
-  EXPECT_TRUE(success_);
+  EXPECT_TRUE(error_type_ == TranslateErrors::NONE);
   EXPECT_EQ(some_load_time, load_time_);
   EXPECT_EQ(some_ready_time, ready_time_);
 }
 
 // Tests that OnTranslateComplete() is called with the right parameters when a
-// |translate.status| message is recieved from the JS side.
+// |translate.status| message is received from the JS side.
 TEST_F(TranslateControllerTest, TranslationSuccess) {
   // Arbitrary values.
   std::string some_original_language("en");
@@ -135,7 +135,7 @@ TEST_F(TranslateControllerTest, TranslationSuccess) {
 
   base::DictionaryValue command;
   command.SetString("command", "translate.status");
-  command.SetBoolean("success", true);
+  command.SetDouble("errorCode", TranslateErrors::NONE);
   command.SetString("originalPageLanguage", some_original_language);
   command.SetDouble("translationTime", some_translation_time);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
@@ -143,23 +143,23 @@ TEST_F(TranslateControllerTest, TranslationSuccess) {
       /*is_main_frame=*/true));
   EXPECT_FALSE(on_script_ready_called_);
   EXPECT_TRUE(on_translate_complete_called_);
-  EXPECT_TRUE(success_);
+  EXPECT_TRUE(error_type_ == TranslateErrors::NONE);
   EXPECT_EQ(some_original_language, original_language_);
   EXPECT_EQ(some_translation_time, translation_time_);
 }
 
 // Tests that OnTranslateComplete() is called with the right parameters when a
-// |translate.status| message is recieved from the JS side.
+// |translate.status| message is received from the JS side.
 TEST_F(TranslateControllerTest, TranslationFailure) {
   base::DictionaryValue command;
   command.SetString("command", "translate.status");
-  command.SetBoolean("success", false);
+  command.SetDouble("errorCode", TranslateErrors::INITIALIZATION_ERROR);
   EXPECT_TRUE(translate_controller_->OnJavascriptCommandReceived(
       command, GURL("http://google.com"), /*interacting*/ false,
       /*is_main_frame=*/true));
   EXPECT_FALSE(on_script_ready_called_);
   EXPECT_TRUE(on_translate_complete_called_);
-  EXPECT_FALSE(success_);
+  EXPECT_FALSE(error_type_ == TranslateErrors::NONE);
 }
 
 }  // namespace translate

@@ -13,7 +13,6 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/translate_constants.h"
-#include "components/translate/core/common/translate_errors.h"
 #include "components/translate/core/common/translate_metrics.h"
 #import "components/translate/ios/browser/js_language_detection_manager.h"
 #import "components/translate/ios/browser/js_translate_manager.h"
@@ -227,15 +226,16 @@ bool IOSTranslateDriver::IsPageValid(int page_seq_no) const {
 
 // TranslateController::Observer implementation.
 
-void IOSTranslateDriver::OnTranslateScriptReady(bool success,
-                                                double load_time,
-                                                double ready_time) {
+void IOSTranslateDriver::OnTranslateScriptReady(
+    TranslateErrors::Type error_type,
+    double load_time,
+    double ready_time) {
   if (!IsPageValid(pending_page_seq_no_))
     return;
 
-  if (!success) {
+  if (error_type != TranslateErrors::NONE) {
     translate_manager_->PageTranslated(source_language_, target_language_,
-                                       TranslateErrors::INITIALIZATION_ERROR);
+                                       error_type);
     return;
   }
 
@@ -249,16 +249,15 @@ void IOSTranslateDriver::OnTranslateScriptReady(bool success,
 }
 
 void IOSTranslateDriver::OnTranslateComplete(
-    bool success,
+    TranslateErrors::Type error_type,
     const std::string& original_language,
     double translation_time) {
   if (!IsPageValid(pending_page_seq_no_))
     return;
 
-  if (!success) {
-    // TODO(toyoshim): Check |errorCode| of translate.js and notify it here.
+  if (error_type != TranslateErrors::NONE) {
     translate_manager_->PageTranslated(source_language_, target_language_,
-                                       TranslateErrors::TRANSLATION_ERROR);
+                                       error_type);
   }
 
   TranslationDidSucceed(source_language_, target_language_,
