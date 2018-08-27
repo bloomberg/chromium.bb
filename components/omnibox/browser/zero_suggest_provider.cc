@@ -473,10 +473,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
   if (num_results == 0)
     return;
 
-  // TODO(jered): Rip this out once the first match is decoupled from the
-  // current typing in the omnibox.
   matches_.push_back(current_url_match_);
-
   for (MatchMap::const_iterator it(map.begin()); it != map.end(); ++it)
     matches_.push_back(it->second);
 
@@ -516,13 +513,19 @@ bool ZeroSuggestProvider::AllowZeroSuggestSuggestions(
   if (client()->IsOffTheRecord())
     return false;
 
-  // Only show zero suggest for HTTP[S] pages.
-  // TODO(mariakhomenko): We may be able to expand this set to include pages
-  // with other schemes (e.g. chrome://). That may require improvements to
-  // the formatting of the verbatim result returned by MatchForCurrentURL().
+  // Only show zero suggest for pages with URLs the user will recognize.
+  // This list intentionally does not include items such as ftp: and file:
+  // because (a) these do not work on Android and iOS, where non-contextual
+  // zero suggest is launched and (b) on desktop, where contextual zero suggest
+  // is running, these types of schemes aren't eligible to be sent to the
+  // server to ask for suggestions (and thus in practice we won't display zero
+  // suggest for them).
   if (!current_page_url.is_valid() ||
       ((current_page_url.scheme() != url::kHttpScheme) &&
-      (current_page_url.scheme() != url::kHttpsScheme)))
+       (current_page_url.scheme() != url::kHttpsScheme) &&
+       (current_page_url.scheme() != url::kAboutScheme) &&
+       (current_page_url.scheme() !=
+        client()->GetEmbedderRepresentationOfAboutScheme())))
     return false;
 
   return true;

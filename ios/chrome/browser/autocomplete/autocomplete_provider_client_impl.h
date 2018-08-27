@@ -48,7 +48,7 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
   std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
       KeywordProvider* keyword_provider) override;
   std::string GetAcceptLanguages() const override;
-  std::string GetEmbedderRepresentationOfAboutScheme() override;
+  std::string GetEmbedderRepresentationOfAboutScheme() const override;
   std::vector<base::string16> GetBuiltinURLs() override;
   std::vector<base::string16> GetBuiltinsToProvideAsUserTypes() override;
   // GetCurrentVisitTimestamp is only used by the contextual zero suggest

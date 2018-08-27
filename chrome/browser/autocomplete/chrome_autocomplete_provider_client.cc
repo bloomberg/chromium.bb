@@ -201,7 +201,8 @@ std::string ChromeAutocompleteProviderClient::GetAcceptLanguages() const {
 }
 
 std::string
-ChromeAutocompleteProviderClient::GetEmbedderRepresentationOfAboutScheme() {
+ChromeAutocompleteProviderClient::GetEmbedderRepresentationOfAboutScheme()
+    const {
   return content::kChromeUIScheme;
 }
 

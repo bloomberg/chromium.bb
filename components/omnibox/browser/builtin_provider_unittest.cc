@@ -50,7 +50,7 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
  public:
   FakeAutocompleteProviderClient() {}
 
-  std::string GetEmbedderRepresentationOfAboutScheme() override {
+  std::string GetEmbedderRepresentationOfAboutScheme() const override {
     return kEmbedderAboutScheme;
   }
 

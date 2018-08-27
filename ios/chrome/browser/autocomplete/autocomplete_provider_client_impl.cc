@@ -132,7 +132,7 @@ std::string AutocompleteProviderClientImpl::GetAcceptLanguages() const {
 }
 
 std::string
-AutocompleteProviderClientImpl::GetEmbedderRepresentationOfAboutScheme() {
+AutocompleteProviderClientImpl::GetEmbedderRepresentationOfAboutScheme() const {
   return kChromeUIScheme;
 }
 

@@ -336,6 +336,8 @@ public class LocationBarLayoutTest {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
+        mTestToolbarModel.setCurrentUrl(VERBOSE_URL);
+        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         mTestToolbarModel.mDisplayText = TRIMMED_URL;
         mTestToolbarModel.mEditingText = VERBOSE_URL;
         setUrlToPageUrl(locationBar);
