@@ -163,6 +163,10 @@ class BluetoothTestBase : public testing::Test {
   // controlled by this test fixture.
   virtual void InitWithFakeAdapter() {}
 
+  // Similar to InitWithFakeAdapter(), but simulates a state where we fail to
+  // get access to the underlying radio.
+  virtual void InitFakeAdapterWithoutRadio() {}
+
   // Configures the fake adapter to lack the necessary permissions to scan for
   // devices.  Returns false if the current platform always has permission.
   virtual bool DenyPermission();

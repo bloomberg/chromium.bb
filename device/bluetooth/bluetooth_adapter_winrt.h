@@ -37,6 +37,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
                const ErrorCallback& error_callback) override;
   bool IsInitialized() const override;
   bool IsPresent() const override;
+  bool CanPower() const override;
   bool IsPowered() const override;
   bool IsDiscoverable() const override;
   void SetDiscoverable(bool discoverable,

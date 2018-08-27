@@ -33,8 +33,10 @@ using Microsoft::WRL::Make;
 
 }  // namespace
 
-FakeBluetoothAdapterWinrt::FakeBluetoothAdapterWinrt(base::StringPiece address)
-    : raw_address_(ToRawBluetoothAddress(address)) {}
+FakeBluetoothAdapterWinrt::FakeBluetoothAdapterWinrt(
+    base::StringPiece address,
+    Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadio> radio)
+    : raw_address_(ToRawBluetoothAddress(address)), radio_(std::move(radio)) {}
 
 FakeBluetoothAdapterWinrt::~FakeBluetoothAdapterWinrt() = default;
 

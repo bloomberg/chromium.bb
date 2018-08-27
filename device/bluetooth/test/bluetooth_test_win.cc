@@ -42,6 +42,7 @@
 #include "device/bluetooth/test/fake_device_information_winrt.h"
 #include "device/bluetooth/test/fake_gatt_characteristic_winrt.h"
 #include "device/bluetooth/test/fake_gatt_descriptor_winrt.h"
+#include "device/bluetooth/test/fake_radio_winrt.h"
 
 // Note: As UWP does not provide int specializations for IObservableVector and
 // VectorChangedEventHandler we need to supply our own. UUIDs were generated
@@ -655,7 +656,17 @@ void BluetoothTestWinrt::InitWithFakeAdapter() {
 
   base::RunLoop run_loop;
   adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
-      Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress),
+      Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress,
+                                      Make<FakeRadioWinrt>()),
+      Make<FakeDeviceInformationWinrt>(kTestAdapterName),
+      run_loop.QuitClosure(), this);
+  run_loop.Run();
+}
+
+void BluetoothTestWinrt::InitFakeAdapterWithoutRadio() {
+  base::RunLoop run_loop;
+  adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
+      Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress, nullptr /* radio */),
       Make<FakeDeviceInformationWinrt>(kTestAdapterName),
       run_loop.QuitClosure(), this);
   run_loop.Run();
