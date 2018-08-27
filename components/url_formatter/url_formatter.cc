@@ -17,6 +17,7 @@
 #include "base/strings/utf_offset_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local_storage.h"
+#include "build/build_config.h"
 #include "components/url_formatter/idn_spoof_checker.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/icu/source/common/unicode/uidna.h"
@@ -67,6 +68,20 @@ class HostComponentTransform : public AppendComponentTransform {
       : trim_trivial_subdomains_(trim_trivial_subdomains) {}
 
  private:
+  static bool IsTrivialSubdomain(base::StringPiece subdomain) {
+    if (subdomain == "www")
+      return true;
+
+#if defined(OS_ANDROID) || defined(OS_IOS)
+    // Eliding the "m" subdomain on Desktop can be confusing, since users would
+    // generally want to know if they are unintentionally on the mobile site.
+    if (subdomain == "m")
+      return true;
+#endif
+
+    return false;
+  }
+
   base::string16 Execute(
       const std::string& component_text,
       base::OffsetAdjuster::Adjustments* adjustments) const override {
@@ -96,7 +111,7 @@ class HostComponentTransform : public AppendComponentTransform {
     while (tokenizer.GetNext()) {
       // Append delimiters and non-trivial subdomains to the new subdomain part.
       if (tokenizer.token_is_delim() ||
-          (tokenizer.token() != "m" && tokenizer.token() != "www")) {
+          !IsTrivialSubdomain(tokenizer.token_piece())) {
         transformed_subdomain += tokenizer.token();
         continue;
       }

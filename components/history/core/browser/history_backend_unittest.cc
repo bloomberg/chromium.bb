@@ -3906,10 +3906,11 @@ TEST_F(HistoryBackendTest, RedirectScoring) {
 
   // The HTTPS URL should accrue the typed count, even if it removes a trivial
   // subdomain.
-  const char* redirect3[] = {"http://m.foo3.com", "https://foo3.com", nullptr};
+  const char* redirect3[] = {"http://www.foo3.com", "https://foo3.com",
+                             nullptr};
   AddRedirectChainWithTransitionAndTime(redirect3, 3, ui::PAGE_TRANSITION_TYPED,
                                         base::Time::Now());
-  ASSERT_TRUE(backend_->GetURL(GURL("http://m.foo3.com"), &url_row));
+  ASSERT_TRUE(backend_->GetURL(GURL("http://www.foo3.com"), &url_row));
   EXPECT_EQ(0, url_row.typed_count());
   ASSERT_TRUE(backend_->GetURL(GURL("https://foo3.com"), &url_row));
   EXPECT_EQ(1, url_row.typed_count());
@@ -4241,7 +4242,7 @@ TEST(FormatUrlForRedirectComparisonTest, TestUrlFormatting) {
             FormatUrlForRedirectComparison(url2));
 
   // Tests that the formatter removes repeated trivial subdomains.
-  GURL url3("http://m.www.www.baz.com/");
+  GURL url3("http://www.www.baz.com/");
   EXPECT_EQ(base::ASCIIToUTF16("baz.com/"),
             FormatUrlForRedirectComparison(url3));
 }

@@ -281,8 +281,8 @@ TEST(AutocompleteMatchTest, FormatUrlForSuggestionDisplay) {
       {"https://google.com", true, false, false, L"https://google.com"},
 
       // Test the |preserve_subdomain| parameter.
-      {"http://www.m.google.com", false, false, false, L"google.com"},
-      {"http://www.m.google.com", false, true, false, L"www.m.google.com"},
+      {"http://www.google.com", false, false, false, L"google.com"},
+      {"http://www.google.com", false, true, false, L"www.google.com"},
 
       // Test that paths are preserved in the default case.
       {"http://google.com/foobar", false, false, false, L"google.com/foobar"},
