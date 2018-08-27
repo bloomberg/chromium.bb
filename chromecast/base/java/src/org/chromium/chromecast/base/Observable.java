@@ -8,37 +8,32 @@ package org.chromium.chromecast.base;
  * Interface for Observable state.
  *
  * Observables can have some data associated with them, which is provided to observers when the
- * Observable activates. The <T> parameter determines the type of this data.
+ * Observable activates.
  *
- * @param <T> The type of the state data.
+ * @param <T> The type of the activation data.
  */
 public abstract class Observable<T> {
     /**
      * Tracks this Observable with the given observer.
      *
-     * Returns a Scope that, when closed, will unregister the observer so that it will no longer be
-     * notified of updates.
+     * When this Observable is activated, the observer will be opened with the activation data to
+     * produce a scope. When this Observable is deactivated, that scope will be closed.
      *
-     * When this Observable is activated, the observer will be invoked with the activation data
-     * to produce a scope. When this Observable is deactivated, that scope will have its close()
-     * method invoked. In this way, one can define state transitions from the Observer and
-     * its return value's close() method.
+     * When the returned Subscription is closed, the observer's scopes will be closed and the
+     * observer will no longer be notified of updates.
      */
-    public abstract Scope watch(Observer<? super T> observer);
+    public abstract Subscription subscribe(Observer<? super T> observer);
 
     /**
-     * Creates an Observable that activates observers only if both `this` and `other` are activated,
-     * and deactivates observers if either of `this` or `other` are deactivated.
+     * Creates an Observable that opens observers's scopes only if both `this` and `other` are
+     * activated, and closes those scopes if either of `this` or `other` are deactivated.
      *
      * This is useful for creating an event handler that should only activate when two events
      * have occurred, but those events may occur in any order.
-     *
-     * This is composable (returns an Observable), so one can use this to observe the intersection
-     * of arbitrarily many Observables.
      */
     public final <U> Observable<Both<T, U>> and(Observable<U> other) {
         Controller<Both<T, U>> controller = new Controller<>();
-        watch(t -> other.watch(u -> {
+        subscribe(t -> other.subscribe(u -> {
             controller.set(Both.both(t, u));
             return controller::reset;
         }));
@@ -49,28 +44,23 @@ public abstract class Observable<T> {
      * Returns an Observable that is activated when `this` and `other` are activated in order.
      *
      * This is similar to `and()`, but does not activate if `other` is activated before `this`.
-     *
-     * @param <U> The activation data type of the other Observable.
      */
     public final <U> Observable<Both<T, U>> andThen(Observable<U> other) {
         Controller<U> otherAfterThis = new Controller<>();
-        other.watch((U value) -> {
+        other.subscribe((U value) -> {
             otherAfterThis.set(value);
             return otherAfterThis::reset;
         });
-        watch(Observers.onEnter(x -> otherAfterThis.reset()));
+        subscribe(Observers.onEnter(x -> otherAfterThis.reset()));
         return and(otherAfterThis);
     }
 
     /**
-     * Returns an Observable that applies the given Function to this Observable's activation
-     * values.
-     *
-     * @param <R> The return type of the transform function.
+     * Returns an Observable that applies the given Function to this Observable's activation values.
      */
     public final <R> Observable<R> map(Function<? super T, ? extends R> transform) {
         Controller<R> controller = new Controller<>();
-        watch((T value) -> {
+        subscribe((T value) -> {
             controller.set(transform.apply(value));
             return controller::reset;
         });
@@ -83,7 +73,7 @@ public abstract class Observable<T> {
      */
     public final Observable<T> filter(Predicate<? super T> predicate) {
         Controller<T> controller = new Controller<>();
-        watch((T value) -> {
+        subscribe((T value) -> {
             if (predicate.test(value)) {
                 controller.set(value);
             }
@@ -98,7 +88,7 @@ public abstract class Observable<T> {
     public static Observable<Unit> not(Observable<?> observable) {
         Controller<Unit> opposite = new Controller<>();
         opposite.set(Unit.unit());
-        observable.watch(x -> {
+        observable.subscribe(x -> {
             opposite.reset();
             return () -> opposite.set(Unit.unit());
         });

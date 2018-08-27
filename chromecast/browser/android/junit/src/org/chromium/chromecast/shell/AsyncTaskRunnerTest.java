@@ -71,7 +71,7 @@ public class AsyncTaskRunnerTest {
         AsyncTaskRunner runner = new AsyncTaskRunner(executor);
         // For each message in the controller, schedule a task to capitalize the message, and add
         // the capitalized message to the result list.
-        controller.watch(message -> runner.doAsync(() -> message.toUpperCase(), result::add));
+        controller.subscribe(message -> runner.doAsync(() -> message.toUpperCase(), result::add));
         // If the task is run before the controller is reset, it should add to the list.
         controller.set("new");
         executor.flush();

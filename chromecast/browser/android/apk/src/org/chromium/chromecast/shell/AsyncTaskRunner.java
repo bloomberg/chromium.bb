@@ -30,8 +30,8 @@ public class AsyncTaskRunner {
      * The returned Scope will cancel the scheduled task if close()d.
      *
      * Since this returns a Scope, a function that returns the result of doAsync() can easily be
-     * used as an Observer in an Observable#watch() call, which can be used to cancel running tasks
-     * if the Observable deactivates.
+     * used as an Observer in an Observable#subscribe() call, which can be used to cancel running
+     * tasks if the Observable deactivates.
      */
     public <T> Scope doAsync(Supplier<T> task, Consumer<? super T> callback) {
         AsyncTask<T> asyncTask = new AsyncTask<T>() {

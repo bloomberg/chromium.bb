@@ -5,7 +5,7 @@
 package org.chromium.chromecast.base;
 
 /**
- * Helper functions for creating Observers, used by Observable.watch() to handle state changes.
+ * Helper functions for creating Observers, used by Observable.subscribe() to handle state changes.
  */
 public final class Observers {
     // Uninstantiable.
@@ -41,7 +41,7 @@ public final class Observers {
      *
      * For example, one can refactor the following:
      *
-     *     observableA.and(observableB).watch((Both<A, B> data) -> {
+     *     observableA.and(observableB).subscribe((Both<A, B> data) -> {
      *         A a = data.first;
      *         B b = data.second;
      *         ...
@@ -49,7 +49,7 @@ public final class Observers {
      *
      * ... into this:
      *
-     *     observableA.and(observableB).watch(Observers.both((A a, B b) -> ...));
+     *     observableA.and(observableB).subscribe(Observers.both((A a, B b) -> ...));
      */
     public static <A, B> Observer<Both<A, B>> both(
             BiFunction<? super A, ? super B, ? extends Scope> function) {

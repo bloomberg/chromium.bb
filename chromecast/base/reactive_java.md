@@ -126,7 +126,7 @@ class MyClass {
     private final Controller<B> mb = new Controller<>();
 
     {
-        mA.and(mB).watch(Observers.both(C::new));
+        mA.and(mB).subscribe(Observers.both(C::new));
     }
 
     public void setA(A a) {
@@ -151,7 +151,7 @@ is only activated when *both* sources are activated, and then deactivated if
 state if the argument is `null` (the `reset()` method can also be used to
 deactivate the state).
 
-The `watch()` call makes it so that when the composed `Observable` formed by
+The `subscribe()` call makes it so that when the composed `Observable` formed by
 `mA.and(mB)` is activated, a new `C` object will be created. When deactivated,
 that `C` object's `close()` method will be called.
 
@@ -163,7 +163,7 @@ What's better about this? First, notice we **don't need mutable variables**.
 Both `Controller` objects are `final`, and are never `null`. We don't at any
 point need to know what state the object is in inside any method
 implementations; the `Controller`s and the pipeline set up by the `and()` and
-`watch()` calls handle that for you.
+`subscribe()` calls handle that for you.
 
 Second, notice how the concerns of mutating and reacting to state are **cleanly
 separated**. The mutator methods `setA()` and `setB()` are concerned only with
@@ -178,43 +178,42 @@ lifetimes of `A` and `B`, one has to examine both setters and trace through
 approach, using `Controller`s, the relationship between `A`, `B`, and `C` is
 expressed holistically in one line.
 
-## Observables and Scopes
+## Observables and Observers
 
-Think of an `Observable` as an encapsulation of a nullable, mutable variable,
-with one very important feature: the ability to register observers that will be
-notified when changes take place. The `Observable` API alone does not expose any
-state mutators, but it provides ways to register events that will be invoked
-when state changes.
+Think of an `Observable` as a *container*, with one very important feature: the
+ability to register **observers** that will be notified when the contents of the
+container change. The contents of the container at a given time is the *state*
+of the `Observable`. The `Observable` base class alone does not expose any state
+mutators, but it provides ways to register events that will be invoked when
+state changes.
 
-An `Observable` has two states: *activated* and *deactivated*. There are two
-transitions between states: *activation* occurs when transitioning from
-*deactivated* to *activated*, and *deactivation* occurs when transitioning from
-*activated* to *deactivated*.
+All state transitions of an `Observable` is either an *activation* or a
+*deactivation*. An activation refers to putting some data into the container,
+and a deactivation represents removing some data from the container. The data
+that is contained in an `Observable` is thus called **activation data**.
 
-An activation is similar to setting a nullable, mutable variable that was `null`
-to a non-`null` value. A deactivation, likewise, is similar to setting a
-nullable, mutable variable that had a non-`null` value to `null`. The non-`null`
-value that an activation is associated with is called **activation data**.
-
-To register events that should be invoked on these state transitions, we utilize
-**scopes**. When an `Observable` is activated, an observing scope is created,
-and when the `Observable` is deactivated, that scope is `close()`d.
-
-The only requirement of a scope is that it **implements `Scope`**, which has
-a single `close()` method. (`Scope` extends `java.lang.AutoCloseable`, but does
-not throw checked exceptions. This means it can be used in try-with-resources
-statements.) The side-effects of activation are in the scope's constructor (or
-an `Observer`'s `open()` method), and the side-effects of deactivation are in
-the scope's `close()` method. This pairing of constructors with a `close()` is
-inspired by
+To register events that should be invoked on these state transitions, we
+**subscribe** observers. An `Observer` works by opening a `Scope` when an
+activation occurs. If a deactivation occurs, the `Scope` opened by the
+`Observer` will be closed. The name **scope** comes from how its lifetime is the
+time that the activation data exists within the `Observable`, similar to how
+variables are *in scope* when using
 [RAII](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) in
-C++, and allows the activation data injected into the scope to be expressed as
-an **immutable** variable.
+languages like C++.
+
+The one-to-one mapping of activations in an `Observable` to opened `Scopes` for
+each subscribed `Observer` affords many useful properties. Foremost among these
+is that the `Scope` can capture the data it is associated with as an *immutable*
+variable: the activation data is the same when it is deactivated as when it was
+activated. It also ensures that every deactivation requires an activation to
+have occurred first (since you cannot `close()` an object that hasn't been
+constructed). The implications of these properties will be explored further in
+later sections.
 
 ### Registering scopes with Observables
 
-To register scopes to track the state of an `Observable`, we call `watch()` on
-the `Observable`. The `watch()` method takes a single argument, an
+To register scopes to track the state of an `Observable`, we call `subscribe()`
+on the `Observable`. The `subscribe()` method takes a single argument, an
 `Observer`, which has an `open()` method that returns a `Scope`. The
 `Observer`'s `open()` method is called when the `Observable` activates,
 and the resulting `Scope`'s `close()` method is called when the `Observable`
@@ -226,7 +225,7 @@ much boilerplate. For instance, if we want to simply log the transitions of an
 
 ```java
 void logStateTransitions(Observable<?> observable) {
-    observable.watch(x -> {
+    observable.subscribe(x -> {
         Log.d(TAG, "activated");
         return () -> Log.d(TAG, "deactivated");
     });
@@ -237,7 +236,7 @@ This is equivalent to the following, much more verbose version:
 
 ```java
 void logStateTransitions(Observable<?> observable) {
-    observable.watch(new Observer<Object>() {
+    observable.subscribe(new Observer<Object>() {
         @Override
         public Scope create(Object x) {
             Log.d(TAG, "activated");
@@ -253,7 +252,9 @@ void logStateTransitions(Observable<?> observable) {
 ```
 
 As you can see, the version that uses lambdas is much more readable, as long as
-you understand what an `Observer` is.
+you understand what an `Observer` is. It can help to think of the `return () ->`
+as a separator between what happens when the data is activated and what happens
+when the data is deactivated.
 
 Either way, when `logStateTransitions()` is called on an `Observable`,
 `"activated"` will be printed to the log when that `Observable` is activated,
@@ -270,7 +271,7 @@ with:
 
 ```java
 void logStateTransitionsWithData(Observable<String> observable) {
-    observable.watch((String s) -> {
+    observable.subscribe((String s) -> {
         Log.d(TAG, "activated with data: " + s);
         return () -> Log.d(TAG, "deactivated");
     });
@@ -280,16 +281,16 @@ void logStateTransitionsWithData(Observable<String> observable) {
 ### Mutating state with Controllers
 
 The `Observable` interface does not provide any way to directly change the state
-of the `Observable`. However, the `Controller` object, which implements
-`Observable`, exposes two methods to do just that: `set()` and `reset()`.
+of the `Observable`. However, subclasses of `Observable` exist that do provide
+mutators. The `Controller` class provides `set()` and `reset()`.
 
-Remember that `Controller`s are basically nullable, mutable variables that let
-you register callbacks, through the `Observable` interface, that are run when
-the variable changes.
+`Controller`s are basically nullable, mutable variables that let you register
+callbacks, through the `Observable` interface, that are run when the variable
+changes.
 
 With this in mind, the `set()` method on `Controller` is like setting a mutable
 variable to a value. The `reset()` method is like setting the mutable variable
-to `null`. **Any nullable mutable variable can be replaced by a `Controller`**.
+to `null`.
 
 Here are some guarantees that `Controller`s provide:
 
@@ -348,9 +349,13 @@ between contiguous `set()` calls. This cuts the number of state transitions you
 need to worry about in half!
 
 Since `Controller`s implement `Observable`, you can register `Observer`
-objects with `watch()` the same way as in the previous section, or inject a
+objects with `subscribe()` the same way as in the previous section, or inject a
 `Controller` into any method that takes an `Observable` of the same parametric
 type.
+
+Remember that an `Observable` can be thought of as a *container* of data. In
+this frame of mind, a `Controller` is a container of *one or zero* instances of
+some data type.
 
 ### Observables without data
 
@@ -379,7 +384,7 @@ Example:
 ```java
 {
     Controller<Unit> onOrOff = new Controller<>();
-    onOrOff.watch(x -> {
+    onOrOff.subscribe(x -> {
         Log.d(TAG, "on");
         return () -> Log.d(TAG, "off");
     });
@@ -393,11 +398,23 @@ Example:
 ### Composing Observables with `and()`
 
 In the motivating example, we wanted to invoke a callback once *two* independent
-states have been activated.
+`Observable`s have been activated.
 
-If there are two independent states, there are four possible *combinations* of
-states. Given two independent states, `A` and `B`, there are four states in the
-time-independent product state space:
+Let's say we have a set of states:
+
+* `A`
+* `not A`
+
+With the transitions `not A` **<->** `A`.
+
+And introduce another set of states:
+
+* `B`
+* `not B`
+
+With the transitions `not B` **<->** `B`.
+
+We can then describe the *combinations* of those state spaces with four states:
 
 *   `neither`
 *   `just A`
@@ -416,7 +433,7 @@ state with a simple call:
 
 ```java
 public void logWhenBoth(Observable<A> observableA, Observable<B> observableB) {
-    observableA.and(observableB).watch(...);
+    observableA.and(observableB).subscribe(...);
 }
 ```
 
@@ -430,12 +447,12 @@ treats the state `both` as *activated*. For observers of the `and()`-composition
 of states, one needs only worry about the two states, *deactivated* and
 *activated*, same as with any other observer.
 
-So how do we get the data in the `watch()` call? Let's say we want to log when
-both `Observable`s are activated:
+So how do we get the data in the `subscribe()` call? Let's say we want to log
+when both `Observable`s are activated:
 
 ```java
 public void logWhenBoth(Observable<A> observableA, Observable<B> observableB) {
-    observableA.and(observableB).watch((Both<A, B> data) -> {
+    observableA.and(observableB).subscribe((Both<A, B> data) -> {
         A a = data.first;
         B b = data.second;
         Log.d(TAG, "both activated: a=" + a + ", b=" + b);
@@ -460,7 +477,7 @@ Since the `and()` method returns an `Observable`, the result can itself call
 But beware, as the associated type of the `Observable` gets uglier and uglier:
 
 ```java
-    a.and(b).and(c).and(d).watch((Both<Both<Both<A, B>, C>, D> data) -> {
+    a.and(b).and(c).and(d).subscribe((Both<Both<Both<A, B>, C>, D> data) -> {
         A aData = data.first.first.first;
         B bData = data.first.first.second;
         C cData = data.first.second;
@@ -478,16 +495,15 @@ alleviating this are described below.
 
 ### Imposing order dependency with `andThen()`
 
-Every composition of states up to this point has been *time-independent*. For
-example, `stateA.and(stateB)` doesn't care if `stateA` or `stateB` was activated
-first, so it can be activated by either activating `stateA` and then `stateB`,
-or by activating `stateB` and then `stateA`.
+The composition of state spaces `stateA.and(stateB)` doesn't care if `stateA` or
+`stateB` was activated first, so it can be activated by either activating
+`stateA` and then `stateB`, or by activating `stateB` and then `stateA`.
 
 This means the state `(A and B)`, extracted by the `and()` method on
-`Observable`, is too ambiguous for knowing the order of activation. We must
-*partition* the state `(A and B)` into `(A and then B)` and `(B and then A)`.
-The time-dependent state space for two `Observable`s looks like this, with five
-states:
+`Observable`, is too ambiguous for knowing the *order* of activation. If we want
+to know whether `A` was activated before `B`, we must *partition* the state
+`(A and B)` into `(A and then B)` and `(B and then A)`. The time-dependent state
+space for two boolean variables looks like this, with five states:
 
 *   `neither`
 *   `just A`
@@ -499,8 +515,8 @@ states:
 
 *   `neither` **<->** `just A`
 *   `neither` **<->** `just B`
-*   `just A` **<-->** `A and then B`
-*   `just B` **<-->** `B and then A`
+*   `just A` **<->** `A and then B`
+*   `just B` **<->** `B and then A`
 *   `A and then B` **-->** `just B`
 *   `B and then A` **-->** `just A`
 
@@ -511,36 +527,36 @@ on the transition between `(just B)` and `(B and then A)`.
 
 ### Observers as Scopes
 
-Sometimes you might want to only `watch()` an `Observable` for a limited time,
-for instance, until some other `Observable` is activated. So how do you remove
-an observer?
+Sometimes you might want to only `subscribe()` to an `Observable` for a limited
+time, for instance, until some other `Observable` is activated. So how do you
+remove an observer?
 
-The `watch()` method actually returns a `Scope`, which, when `close()`d, will
-unregister the `Observer` registered in the `watch()` call. To `watch()` for
-a limited time, simply store the `Scope` somewhere, and call `close()` on it
-when you're done.
+The `subscribe()` method returns a `Subscription`, which, when `close()`d, will
+unregister the `Observer` registered in the `subscribe()` call. To `subscribe()`
+for a limited time, simply store the `Subscription` somewhere, and call
+`close()` on it when you're done.
 
 ```java
     private final Observable<String> mMessages = ...;
     private final List<String> mLog = ...;
-    private Scope mObserver = null;
+    private Subscription mSubscription = null;
 
     public void startRecording() {
         if (mObserver != null) stopRecording();
-        mObserver = mMessages.watch(Observers.onEnter(mLog::add));
+        mObserver = mMessages.subscribe(Observers.onEnter(mLog::add));
     }
 
     public void stopRecording() {
-        if (mObserver == null) return;
-        mObserver.close();
+        if (mSubscription == null) return;
+        mSubscription.close();
     }
 ```
 
 ... wait a minute, are those `null`-checks? And a *mutable variable*? I thought
 this framework was supposed to get rid of those!
 
-... hold on, `mObserver` is a `Scope`... that means we can use it in another
-`watch()` call!
+And indeed we can! Since `mObserver` is a `Subscription`, which is a kind of
+`Scope`, that means we can use it in another `subscribe()` call!
 
 ```java
     private final Observable<String> mMessages = ...;
@@ -549,12 +565,11 @@ this framework was supposed to get rid of those!
 
     {
         // When mRecordingState is activated, an Observer is registered to
-        // watch mMessages.
-        mRecordingState.watch(x -> {
-            // When mRecordingState is deactivated, the Scope representing the
-            // fact that we are watching mMessages is closed, so new messages
-            // will stop being added to the log.
-            return mMessages.watch(Observers.onEnter(mLog::add));
+        // mMessages.
+        mRecordingState.subscribe(x -> {
+            // When mRecordingState is deactivated, the Subscription is closed,
+            // so new messages will stop being added to the log.
+            return mMessages.subscribe(Observers.onEnter(mLog::add));
         });
     }
 
@@ -574,7 +589,7 @@ But wait, we could have done the same thing with `and()`:
 
 ```java
     {
-        mRecordingState.and(mMessages).watch(Observers.onEnter(
+        mRecordingState.and(mMessages).subscribe(Observers.onEnter(
                 (Both<Unit, String> data) -> mLog.add(data.second)));
     }
 ```
@@ -587,7 +602,7 @@ using a single `and()` call, it gets much harder to work with longer chains of
 Recall that deconstructing larger `Both` trees is ugly:
 
 ```java
-    stateA.and(stateB).and(stateC).and(stateD).watch(data -> {
+    stateA.and(stateB).and(stateC).and(stateD).subscribe(data -> {
         A a = data.first.first.first;
         B b = data.first.first.second;
         C c = data.first.second;
@@ -597,48 +612,51 @@ Recall that deconstructing larger `Both` trees is ugly:
 ```
 
 If we only care about registering a `Scope` for when all four `Observable`s are
-activated, then we can use nested `watch()` calls instead:
+activated, then we can use nested `subscribe()` calls instead:
 
 ```java
-    stateA.watch(a -> stateB.watch(b -> stateC.watch(c -> stateD.watch(d -> {
+    stateA.subscribe(a -> stateB.subscribe(b -> stateC.subscribe(c -> stateD.subscribe(d -> {
         ...
     }))));
 ```
 
-This is called **watch-currying**, and is a useful alternative to `and()` calls
-when registering `Observer` objects for the intersection of many
+This is called **subscription-currying**, and is a useful alternative to `and()`
+calls when registering `Observer` objects for the intersection of many
 `Observable`s.
 
 To show why this works, let's simplify to just this:
 
 ```java
-   stateA.watch(a -> stateB.watch(b -> ...));
+   stateA.subscribe(a -> stateB.subscribe(b -> ...));
 ```
 
-If `stateA` is activated first, then the `a -> stateB.watch(b -> ...)` lambda,
-which is a `Observer`, will start watching `stateB`. If `stateB` is then
-activated, then the `b -> ...` lambda will execute. If `stateB` is then
-deactivated, then the `Scope` created by that lambda will `close()`, or if
-`stateA` is deactivated first, then the `watch()` `Scope` that watches `stateA`
-will `close()`.
+Notice that:
 
-The imporant fact that makes this work is that
-**a `watch()` `Scope` that is activated is implicitly deactivated when closed**.
-In other words, if `stateA` and `stateB` are activated, and then `stateA`
-deactivates, the fact that the `watch()` `Scope` inside `stateA`'s `watch()`
-call is closed implies that `stateB`'s exit handler is called.
+* We do not `subscribe` to `stateB` until `stateA` is activated.
+* If `stateB` is already activated when an `Observer` is subscribed to it, the
+  observer will be notified of the data immediately.
+* While `stateA` is activated, the `Observer` subscribed to `stateB` will open
+  and close its scopes normally as `stateB` mutates.
+* If `stateA` is deactivated, the `Subscription` to `stateB` is closed. Closing
+  a `Subscription` also closes the `Scope`s from the `Observer`.
 
-The fact that unregistering activated `Observers` implicitly closes their
-`Scope`s means that **`Scopes` will clean up after themselves**. Keep in mind,
-this means that if the exit handler of a `Scope` is called, it could mean
-*either* that the `Observable` that it is observing deactivated, *or* that the
-`Observer` that created the `Scope` was unregistered from the `Observable`
-(by calling the watch-scope's `close()` method).
+In other words, the inner `Observer` is only opened if *both* `stateA` and
+`stateB` are activated, and that `Observer`'s `Scope` will be closed if *either*
+`stateA` or `stateB` is deactivated. This is the same as the `and()` operator!
 
-It is still preferable to use `and()`, because that's easier to read, but if an
-`and()`-chain becomes too clunky, and just needs to register a callback rather
-than return an `Observable`, you can use watch-currying to avoid deconstructing
-nasty `Both` objects.
+This even works for `Observable`s that have multiple activations. Each
+activation of `stateA` will produce a unique `Subscription` to `stateB`, so this
+pattern can be compared to a nested `for` loop -- one that operates reactively
+whenever the states update! More precisely, there will be a 1:1 mapping of the
+Cartesian product of activations of `stateA` and `stateB` and `Scopes` from the
+inner `Observer` subscribed to `stateB`.
+
+One should use the `and()` operator when more operations like `map()` and
+`filter()` are needed on the resulting `Observable`, but subscription-currying
+can be used in some other situations as an alternative in situations where
+dealing with `Both` objects becomes cumbersome. It is generally recommended to
+prefer the `and()` operator if all else is equal, because it's easier to add
+more operators to the pipeline later on if needed.
 
 ### Increase readability for Observers with wrapper methods
 
@@ -654,7 +672,7 @@ when the state deactivates, only when it activates. It's possible to create a
 
 ```java
 {
-    observable.watch((String data) -> {
+    observable.subscribe((String data) -> {
         Log.d(TAG, "activated: data=" + data);
         return () -> {};
     });
@@ -670,9 +688,9 @@ the activation data's type:
 ```java
 {
     // Without data.
-    observable.watch(Observers.onEnter(x -> Log.d(TAG, "activated")));
+    observable.subscribe(Observers.onEnter(x -> Log.d(TAG, "activated")));
     // With data.
-    observable.watch(Observers.onEnter((String data) -> {
+    observable.subscribe(Observers.onEnter((String data) -> {
         Log.d(TAG, "activated: data=" + data);
     }));
 }
@@ -680,16 +698,16 @@ the activation data's type:
 
 Likewise, `onExit()` is used the same way to transform any `Consumer` of the
 activation data's type into a `Observer` that only has side effects when the
-state is deactivated.
+`Observable` is deactivated.
 
 #### Deconstructing Both objects
 
 When you use the `and()` method on `Observable` to create an `Observable<Both>`,
-recall that the `Observer` passed to `watch()` must look like this:
+recall that the `Observer` passed to `subscribe()` must look like this:
 
 ```java
 {
-    observableA.and(observableB).watch((Both<A, B> data) -> {
+    observableA.and(observableB).subscribe((Both<A, B> data) -> {
         A a = data.first;
         B b = data.second;
         Log.d(TAG, "on enter: a = " + a + "; b = " + b);
@@ -706,7 +724,7 @@ Using `Observers.both()`, we can rewrite the above like this:
 
 ```java
 {
-    observableA.and(observableB).watch(Observers.both((A a, B b) -> {
+    observableA.and(observableB).subscribe(Observers.both((A a, B b) -> {
         Log.d(TAG, "on enter: a = " + a + "; b = " + b);
         return () -> Log.d(TAG, "on exit: a = " + a + "; b = " + b);
     }));
@@ -721,17 +739,17 @@ it can be useful to use `Both.adapt` on a `BiConsumer` to turn it into a
 {
     // Before:
     Observable<Both<A, B>> both = observableA.and(observableB);
-    both.watch(Observers.onEnter((Both<A, B> data) -> {
+    both.subscribe(Observers.onEnter((Both<A, B> data) -> {
         Log.d(TAG, "on enter: a = " + data.first + "; b = " + data.second);
     }));
-    both.watch(Observers.onExit((Both<A, B> data) -> {
+    both.subscribe(Observers.onExit((Both<A, B> data) -> {
         Log.d(TAG, "on exit: a = " + data.first + "; b = " + data.second);
     }));
     // After:
-    both.watch(Observers.onEnter(Both.adapt((A a, B b) -> {
+    both.subscribe(Observers.onEnter(Both.adapt((A a, B b) -> {
         Log.d(TAG, "on enter: a = " + a + "; b = " + b);
     })));
-    both.watch(Observers.onExit(Both.adapt((A a, B b) -> {
+    both.subscribe(Observers.onExit(Both.adapt((A a, B b) -> {
         Log.d(TAG, "on exit: a = " + a + "; b = " + b);
     })));
 }
@@ -791,7 +809,7 @@ creates a new `Observable` of the result of that function applied to the
 original `Observable`'s activation data. So the activation lifetime of
 `uriState` and `instanceIdState` are the same as `mIntentState` in this example.
 
-The instance initializer can then call `watch()` on `uriState` or
+The instance initializer can then call `subscribe()` on `uriState` or
 `instanceIdState` to register callbacks for when we get a new URI or instance
 ID, and the process of extracting the URI from the `Intent` and the instance ID
 from the `Uri` is delegated to methods with no side-effects.
@@ -807,14 +825,14 @@ the pipeline:
 {
     mIntentState.map(Intent::getExtras)
             .map((Bundle bundle) -> bundle.getString(INTENT_EXTRA_FOO))
-            .watch((String foo) -> ...);
+            .subscribe((String foo) -> ...);
 }
 ```
 
 The `bundle.getString()` call might return `null` if the source `Intent` does
 not have the correct extra data field set. When this happens, the resulting
 `Observable` simply does not activate, so the `Observer` registered in the
-`watch()` call does not need to worry that `foo` might be `null`.
+`subscribe()` call does not need to worry that `foo` might be `null`.
 
 ### Filtering data
 
@@ -830,7 +848,7 @@ an `Intent` with action `"org.my.app.action.FOO"`:
     String ACTION_FOO = "org.my.app.action.FOO";
     mIntentState.map(Intent::getAction)
             .filter(ACTION_FOO::equals)
-            .watch(Observers.onEnter(action -> {
+            .subscribe(Observers.onEnter(action -> {
                 Log.d(TAG, "Got FOO intent");
             }));
 }
@@ -895,19 +913,20 @@ Consider this code:
     Controller<String> c = new Controller<>();
     c.set("hi");
     c.reset();
-    c.watch(Observers.onEnter(s -> Log.d(TAG, s)));
+    c.subscribe(Observers.onEnter(s -> Log.d(TAG, s)));
 ```
 
-Will the callback registered in the `watch()` call get fired? It turns out that
-it will not, since `c` is deactivated when `watch()` is made. But if the
-`watch()` call is made before the `set()` call, then the callback is fired.
+Will the callback registered in the `subscribe()` call get fired? It turns out
+that it will not, since `c` is deactivated when `subscribe()` is made. But if
+the `subscribe()` call is made before the `set()` call, then the callback is
+fired.
 
 Sometimes this is what you want, but it's best to avoid any ambiguity like this.
-Generally, `Observable` methods like `watch()` should be called before any
+Generally, `Observable` methods like `subscribe()` should be called before any
 `Controller` methods. A couple of things that one can do to help with this:
 
 *   Instantiate `Controller` objects in field initializers, not the constructor.
-*   Set up the pipeline (`watch()`, `and()`, `map()`, etc.) in an instance
+*   Set up the pipeline (`subscribe()`, `and()`, `map()`, etc.) in an instance
     initializer. This is run before anything else when creating an instance,
     including the constructor, and is the same regardless of which constructor
     is being used. This also removes the potential of accidentally depending on
@@ -915,8 +934,8 @@ Generally, `Observable` methods like `watch()` should be called before any
     can be dangerous compared to adapting them to `Observable`s.
 *   In the instance initializer, `Observable`s composed from other `Observable`s
     can usually be local variables rather than instance variables. This prevents
-    code outside the initializer from `watch()`ing these `Observable`s after the
-    instance has been initialized.
+    code outside the initializer from `subscribe()`ing these `Observable`s after
+    the instance has been initialized.
 *   Do not call `Controller` mutator methods (`set()` or `reset()`) inside the
     instance initializer. They may be called in the constructor or any instance
     methods.
@@ -930,7 +949,7 @@ What happens here?
 
 ```java
     Controller<Object> c = new Controller<>();
-    c.watch(x -> {
+    c.subscribe(x -> {
         Log.d(TAG, "enter");
         c.reset();
         return () -> Log.d(TAG, "exit");
@@ -955,7 +974,7 @@ an activation handler, **you will get an infinite loop**.
 
 ```java
     Controller<Integer> c = new Controller<>();
-    c.watch(Observers.onEnter(x -> c.set(x + 1))); // Danger!
+    c.subscribe(Observers.onEnter(x -> c.set(x + 1))); // Danger!
     c.set(0); // Infinite loop!
 ```
 
@@ -968,8 +987,7 @@ handlers, but if you do that, it's *your* job to solve the halting problem.
 
 It is good practice to avoid calling `set()` or `reset()` on `Controller`s
 inside `Observer` event handlers altogether, but there are many safe ways
-that are useful. `and()`-composed `Observable`s, for example, use `Controller`s
-under the hood to know when to notify.
+that are useful.
 
 ### Testing
 
@@ -1025,7 +1043,7 @@ public class FlipFlopTest {
 }
 ```
 
-The `ReactiveRecorder` class works by calling `watch()` on the given
+The `ReactiveRecorder` class works by calling `subscribe()` on the given
 `Observable` and storing the activations and deactivations it observes in a
 list. The `verify()` method opens a domain-specific language for performing
 assertions on the activation data, using `opened()` and `closed()` to check
@@ -1033,10 +1051,10 @@ which data has been activated and deactivated. The transitions recorded must
 occur in the same order as the `opened()` and `closed()` calls to pass the test.
 The `end()` method asserts that no more transitions occurred.
 
-You can test behaviors that should occur when closing a `watch()` scope by
+You can test behaviors that should occur when closing a `subscribe()` scope by
 calling `recorder.unsubscribe()`. For example, every `Observable` implementation
 should close all existing `Scopes` emitted from an `Observer` when that
-`Observer`'s `watch()` scope is closed:
+`Observer`'s `subscribe()` scope is closed:
 
 ```java
     @Test
@@ -1116,7 +1134,7 @@ class MyActivity extends Activity {
     private final Controller<Unit> mStartedState = new Controller<>();
 
     {
-        mStartedState.watch(x -> {
+        mStartedState.subscribe(x -> {
             final BroadcastReceiver receiver = new BroadcastReceiver(...);
             registerReceiver(receiver);
             return () -> unregisterReceiver(receiver);
@@ -1171,14 +1189,14 @@ public class AsyncExample {
         Foo.createAsync(fooState::set, fooState::reset);
         // Bar requires Foo to initialize.
         Controller<Bar> barState = new Controller<>();
-        fooState.watch((Foo foo) -> {
+        fooState.subscribe((Foo foo) -> {
             Bar.createAsync(foo, barState::set);
             // If fooState is reset, then barState is also reset.
             return barState::reset;
         });
         // Baz requires Foo and Bar to initialize.
         Controller<Baz> bazState = new Controller<>();
-        fooState.and(barState).watch(Observers.both((Foo foo, Bar bar) -> {
+        fooState.and(barState).subscribe(Observers.both((Foo foo, Bar bar) -> {
             Baz.createAsync(foo, bar, bazState::set);
             // If fooState or barState is reset, then bazState is also reset.
             return bazState::reset;
@@ -1188,7 +1206,7 @@ public class AsyncExample {
 
     public static void demo() {
         Observable<Baz> bazState = createBazDefault();
-        bazState.watch(Observers.onEnter((Baz baz) -> {
+        bazState.subscribe(Observers.onEnter((Baz baz) -> {
             // This runs when the full initialization pipeline is complete.
             Log.d(TAG, "Baz created!");
         }));

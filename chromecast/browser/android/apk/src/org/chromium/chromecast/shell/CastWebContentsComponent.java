@@ -196,7 +196,7 @@ public class CastWebContentsComponent {
             mDelegate = new ActivityDelegate();
         }
 
-        mHasWebContentsState.watch(x -> {
+        mHasWebContentsState.subscribe(x -> {
             final IntentFilter filter = new IntentFilter();
             Uri instanceUri = CastWebContentsIntentUtils.getInstanceUri(instanceId);
             filter.addDataScheme(instanceUri.getScheme());

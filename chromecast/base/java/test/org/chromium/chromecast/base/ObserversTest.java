@@ -20,7 +20,7 @@ import java.util.List;
 
 /**
  * Tests for Observers, a utility class to construct readable objects that can be passed to
- * Observable#watch().
+ * Observable#subscribe().
  */
 @RunWith(BlockJUnit4ClassRunner.class)
 public class ObserversTest {
@@ -28,7 +28,7 @@ public class ObserversTest {
     public void testOnEnterWithConsumer() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(Observers.onEnter((String s) -> result.add(s + ": got it!")));
+        controller.subscribe(Observers.onEnter((String s) -> result.add(s + ": got it!")));
         controller.set("thing");
         assertThat(result, contains("thing: got it!"));
     }
@@ -40,7 +40,7 @@ public class ObserversTest {
         Consumer<Base> consumer = (Base base) -> result.add(base.toString() + ": got it!");
         // Compile error if generics are wrong.
         Observer<Derived> observer = Observers.onEnter(consumer);
-        controller.watch(observer);
+        controller.subscribe(observer);
         controller.set(new Derived());
         assertThat(result, contains("Derived: got it!"));
     }
@@ -50,7 +50,7 @@ public class ObserversTest {
     public void testOnEnterMultipleActivations() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(Observers.onEnter(s -> result.add(s.toString())));
+        controller.subscribe(Observers.onEnter(s -> result.add(s.toString())));
         controller.set("a");
         controller.set("b");
         controller.set("c");
@@ -61,7 +61,7 @@ public class ObserversTest {
     public void testOnExitNotFiredIfObservableIsNotDeactivated() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(Observers.onExit((String s) -> result.add(s + ": got it!")));
+        controller.subscribe(Observers.onExit((String s) -> result.add(s + ": got it!")));
         controller.set("stuff");
         assertThat(result, emptyIterable());
     }
@@ -70,7 +70,7 @@ public class ObserversTest {
     public void testOnExitWithConsumer() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(Observers.onExit((String s) -> result.add(s + ": got it!")));
+        controller.subscribe(Observers.onExit((String s) -> result.add(s + ": got it!")));
         controller.set("thing");
         controller.reset();
         assertThat(result, contains("thing: got it!"));
@@ -83,7 +83,7 @@ public class ObserversTest {
         Consumer<Base> consumer = (Base base) -> result.add(base.toString() + ": got it!");
         // Compile error if generics are wrong.
         Observer<Derived> observer = Observers.onExit(consumer);
-        controller.watch(observer);
+        controller.subscribe(observer);
         controller.set(new Derived());
         controller.reset();
         assertThat(result, contains("Derived: got it!"));
@@ -93,7 +93,7 @@ public class ObserversTest {
     public void testOnExitMultipleActivations() {
         Controller<String> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(Observers.onExit(s -> result.add(s.toString())));
+        controller.subscribe(Observers.onExit(s -> result.add(s.toString())));
         controller.set("a");
         // Implicit reset causes exit handler to fire for "a".
         controller.set("b");
@@ -106,19 +106,19 @@ public class ObserversTest {
     public void testHowUsingBothOnEnterAndOnExitLooks() {
         Controller<Derived> controller = new Controller<>();
         List<String> result = new ArrayList<>();
-        controller.watch(Observers.onEnter((Base base) -> result.add("enter " + base)));
-        controller.watch(Observers.onExit((Base base) -> result.add("exit " + base)));
+        controller.subscribe(Observers.onEnter((Base base) -> result.add("enter " + base)));
+        controller.subscribe(Observers.onExit((Base base) -> result.add("exit " + base)));
         controller.set(new Derived());
         controller.reset();
         assertThat(result, contains("enter Derived", "exit Derived"));
     }
 
     @Test
-    public void testWatchBothWithStrings() {
+    public void testsubscribeBothWithStrings() {
         Controller<String> controllerA = new Controller<>();
         Controller<String> controllerB = new Controller<>();
         List<String> result = new ArrayList<>();
-        controllerA.and(controllerB).watch(Observers.both((String a, String b) -> {
+        controllerA.and(controllerB).subscribe(Observers.both((String a, String b) -> {
             result.add("enter: " + a + ", " + b);
             return () -> result.add("exit: " + a + ", " + b);
         }));

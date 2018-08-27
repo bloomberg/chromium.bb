@@ -57,7 +57,7 @@ public class CastAudioManagerTest {
                         .build();
         Observable<Unit> gotAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
-        gotAudioFocusState.watch(x -> {
+        gotAudioFocusState.subscribe(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -87,7 +87,7 @@ public class CastAudioManagerTest {
                         .build();
         Observable<Unit> gotAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
-        gotAudioFocusState.watch(x -> {
+        gotAudioFocusState.subscribe(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -118,7 +118,7 @@ public class CastAudioManagerTest {
                         .build();
         Observable<Unit> gotAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
-        gotAudioFocusState.watch(x -> {
+        gotAudioFocusState.subscribe(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -150,7 +150,7 @@ public class CastAudioManagerTest {
                         .build();
         Observable<Unit> gotAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
-        gotAudioFocusState.watch(x -> {
+        gotAudioFocusState.subscribe(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });
@@ -182,7 +182,7 @@ public class CastAudioManagerTest {
                         .build();
         Observable<Unit> gotAudioFocusState =
                 audioManager.requestAudioFocusWhen(requestAudioFocusState, castAudioFocusRequest);
-        gotAudioFocusState.watch(x -> {
+        gotAudioFocusState.subscribe(x -> {
             result.add("Got audio focus");
             return () -> result.add("Lost audio focus");
         });

@@ -24,7 +24,7 @@ public class ObservableNotTest {
     public void testNotIsActivatedAtTheStart() {
         Controller<String> invertThis = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable.not(invertThis).watch(x -> {
+        Observable.not(invertThis).subscribe(x -> {
             result.add("enter inverted");
             return () -> result.add("exit inverted");
         });
@@ -36,7 +36,7 @@ public class ObservableNotTest {
         Controller<String> invertThis = new Controller<>();
         List<String> result = new ArrayList<>();
         invertThis.set("way ahead of you");
-        Observable.not(invertThis).watch(x -> {
+        Observable.not(invertThis).subscribe(x -> {
             result.add("enter inverted");
             return () -> result.add("exit inverted");
         });
@@ -47,7 +47,7 @@ public class ObservableNotTest {
     public void testNotExitsWhenSourceIsActivated() {
         Controller<String> invertThis = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable.not(invertThis).watch(x -> {
+        Observable.not(invertThis).subscribe(x -> {
             result.add("enter inverted");
             return () -> result.add("exit inverted");
         });
@@ -59,7 +59,7 @@ public class ObservableNotTest {
     public void testNotReentersWhenSourceIsReset() {
         Controller<String> invertThis = new Controller<>();
         List<String> result = new ArrayList<>();
-        Observable.not(invertThis).watch(x -> {
+        Observable.not(invertThis).subscribe(x -> {
             result.add("enter inverted");
             return () -> result.add("exit inverted");
         });

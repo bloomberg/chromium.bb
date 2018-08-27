@@ -81,8 +81,8 @@ public class ControllerTest {
 
     @Test
     public void testMultipleStatesObservingSingleController() {
-        // Construct two states that watch the same Controller. Verify both observers' events are
-        // triggered.
+        // Construct two states that subscribe the same Controller. Verify both observers' events
+        // are triggered.
         Controller<String> controller = new Controller<>();
         ReactiveRecorder recorder1 = ReactiveRecorder.record(controller);
         ReactiveRecorder recorder2 = ReactiveRecorder.record(controller);
@@ -123,7 +123,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testClosedWatchScopeDoesNotGetNotifiedOfFutureActivations() {
+    public void testClosedSubscriptionDoesNotGetNotifiedOfFutureActivations() {
         Controller<String> a = new Controller<>();
         ReactiveRecorder recorder = ReactiveRecorder.record(a);
         a.set("during temp");
@@ -134,7 +134,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testClosedWatchScopeIsImplicitlyDeactivated() {
+    public void testClosedSubscriptionIsImplicitlyDeactivated() {
         Controller<String> a = new Controller<>();
         ReactiveRecorder recorder = ReactiveRecorder.record(a);
         a.set("implicitly reset this");
@@ -143,7 +143,7 @@ public class ControllerTest {
     }
 
     @Test
-    public void testCloseWatchScopeAfterDeactivatingSourceStateDoesNotCallExitHAndlerAgain() {
+    public void testCloseSubscriptionAfterDeactivatingSourceStateDoesNotCallExitHAndlerAgain() {
         Controller<String> a = new Controller<>();
         ReactiveRecorder recorder = ReactiveRecorder.record(a);
         a.set("and a one");
@@ -165,7 +165,7 @@ public class ControllerTest {
     public void testResetControllerInActivationHandler() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
-        a.watch((String s) -> {
+        a.subscribe((String s) -> {
             result.add("enter " + s);
             a.reset();
             result.add("after reset");
@@ -181,8 +181,8 @@ public class ControllerTest {
     public void testSetControllerInActivationHandler() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
-        a.watch(report(result, "weirdness"));
-        a.watch((String s) -> {
+        a.subscribe(report(result, "weirdness"));
+        a.subscribe((String s) -> {
             // If the activation handler always calls set() on the source controller, you will have
             // an infinite loop, which is not cool. However, if the activation handler only
             // conditionally calls set() on its source controller, then the case where set() is not
@@ -205,8 +205,8 @@ public class ControllerTest {
     public void testResetControllerInDeactivationHandler() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
-        a.watch(report(result, "bizzareness"));
-        a.watch((String s) -> () -> a.reset());
+        a.subscribe(report(result, "bizzareness"));
+        a.subscribe((String s) -> () -> a.reset());
         a.set("yo");
         a.reset();
         // The reset() called by the deactivation handler should be a no-op.
@@ -217,8 +217,8 @@ public class ControllerTest {
     public void testSetControllerInDeactivationHandler() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
-        a.watch(report(result, "astoundingness"));
-        a.watch((String s) -> () -> a.set("never mind"));
+        a.subscribe(report(result, "astoundingness"));
+        a.subscribe((String s) -> () -> a.set("never mind"));
         a.set("retract this");
         a.reset();
         // The set() called by the deactivation handler should immediately set the controller back.
