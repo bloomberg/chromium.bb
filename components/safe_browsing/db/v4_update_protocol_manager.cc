@@ -312,7 +312,7 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
   }
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("safe_browsing_g4_update", R"(
+      net::DefineNetworkTrafficAnnotation("safe_browsing_v4_update", R"(
         semantics {
           sender: "Safe Browsing"
           description:
