@@ -195,26 +195,27 @@ class CrosDisksClientImpl : public CrosDisksClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void EnumerateDevices(const EnumerateDevicesCallback& callback,
-                        const base::Closure& error_callback) override {
+  void EnumerateDevices(EnumerateDevicesCallback callback,
+                        base::OnceClosure error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kEnumerateDevices);
-    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-                       base::BindOnce(&CrosDisksClientImpl::OnEnumerateDevices,
-                                      weak_ptr_factory_.GetWeakPtr(), callback,
-                                      error_callback));
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&CrosDisksClientImpl::OnEnumerateDevices,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   // CrosDisksClient override.
-  void EnumerateMountEntries(const EnumerateMountEntriesCallback& callback,
-                             const base::Closure& error_callback) override {
+  void EnumerateMountEntries(EnumerateMountEntriesCallback callback,
+                             base::OnceClosure error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kEnumerateMountEntries);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrosDisksClientImpl::OnEnumerateMountEntries,
-                       weak_ptr_factory_.GetWeakPtr(), callback,
-                       error_callback));
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   // CrosDisksClient override.
@@ -252,8 +253,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // CrosDisksClient override.
   void GetDeviceProperties(const std::string& device_path,
-                           const GetDevicePropertiesCallback& callback,
-                           const base::Closure& error_callback) override {
+                           GetDevicePropertiesCallback callback,
+                           base::OnceClosure error_callback) override {
     dbus::MethodCall method_call(cros_disks::kCrosDisksInterface,
                                  cros_disks::kGetDeviceProperties);
     dbus::MessageWriter writer(&method_call);
@@ -261,8 +262,8 @@ class CrosDisksClientImpl : public CrosDisksClient {
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&CrosDisksClientImpl::OnGetDeviceProperties,
-                       weak_ptr_factory_.GetWeakPtr(), device_path, callback,
-                       error_callback));
+                       weak_ptr_factory_.GetWeakPtr(), device_path,
+                       std::move(callback), std::move(error_callback)));
   }
 
  protected:
@@ -357,31 +358,30 @@ class CrosDisksClientImpl : public CrosDisksClient {
 
   // Handles the result of EnumerateDevices and EnumarateAutoMountableDevices.
   // Calls |callback| or |error_callback|.
-  void OnEnumerateDevices(const EnumerateDevicesCallback& callback,
-                          const base::Closure& error_callback,
+  void OnEnumerateDevices(EnumerateDevicesCallback callback,
+                          base::OnceClosure error_callback,
                           dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
     dbus::MessageReader reader(response);
     std::vector<std::string> device_paths;
     if (!reader.PopArrayOfStrings(&device_paths)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
-    callback.Run(device_paths);
+    std::move(callback).Run(device_paths);
   }
 
   // Handles the result of EnumerateMountEntries and calls |callback| or
   // |error_callback|.
-  void OnEnumerateMountEntries(
-      const EnumerateMountEntriesCallback& callback,
-      const base::Closure& error_callback,
-      dbus::Response* response) {
+  void OnEnumerateMountEntries(EnumerateMountEntriesCallback callback,
+                               base::OnceClosure error_callback,
+                               dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -389,7 +389,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
     dbus::MessageReader array_reader(NULL);
     if (!reader.PopArray(&array_reader)) {
       LOG(ERROR) << "Invalid response: " << response->ToString();
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -400,26 +400,26 @@ class CrosDisksClientImpl : public CrosDisksClient {
       if (!array_reader.PopStruct(&sub_reader) ||
           !ReadMountEntryFromDbus(&sub_reader, &entry)) {
         LOG(ERROR) << "Invalid response: " << response->ToString();
-        error_callback.Run();
+        std::move(error_callback).Run();
         return;
       }
       entries.push_back(entry);
     }
-    callback.Run(entries);
+    std::move(callback).Run(entries);
   }
 
   // Handles the result of GetDeviceProperties and calls |callback| or
   // |error_callback|.
   void OnGetDeviceProperties(const std::string& device_path,
-                             const GetDevicePropertiesCallback& callback,
-                             const base::Closure& error_callback,
+                             GetDevicePropertiesCallback callback,
+                             base::OnceClosure error_callback,
                              dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
     DiskInfo disk(device_path, response);
-    callback.Run(disk);
+    std::move(callback).Run(disk);
   }
 
   // Handles mount event signals and notifies observers.

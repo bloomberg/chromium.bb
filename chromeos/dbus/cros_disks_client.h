@@ -273,17 +273,17 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
  public:
   // A callback to handle the result of EnumerateDevices.
   // The argument is the enumerated device paths.
-  typedef base::Callback<void(const std::vector<std::string>& device_paths)>
+  typedef base::OnceCallback<void(const std::vector<std::string>& device_paths)>
       EnumerateDevicesCallback;
 
   // A callback to handle the result of EnumerateMountEntries.
   // The argument is the enumerated mount entries.
-  typedef base::Callback<void(const std::vector<MountEntry>& entries)>
+  typedef base::OnceCallback<void(const std::vector<MountEntry>& entries)>
       EnumerateMountEntriesCallback;
 
   // A callback to handle the result of GetDeviceProperties.
   // The argument is the information about the specified device.
-  typedef base::Callback<void(const DiskInfo& disk_info)>
+  typedef base::OnceCallback<void(const DiskInfo& disk_info)>
       GetDevicePropertiesCallback;
 
   // A callback to handle the result of Unmount.
@@ -344,14 +344,13 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
 
   // Calls EnumerateDevices method.  |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.
-  virtual void EnumerateDevices(const EnumerateDevicesCallback& callback,
-                                const base::Closure& error_callback) = 0;
+  virtual void EnumerateDevices(EnumerateDevicesCallback callback,
+                                base::OnceClosure error_callback) = 0;
 
   // Calls EnumerateMountEntries.  |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.
-  virtual void EnumerateMountEntries(
-      const EnumerateMountEntriesCallback& callback,
-      const base::Closure& error_callback) = 0;
+  virtual void EnumerateMountEntries(EnumerateMountEntriesCallback callback,
+                                     base::OnceClosure error_callback) = 0;
 
   // Calls Format method. On completion, |callback| is called, with |true| on
   // success, or with |false| otherwise.
@@ -368,8 +367,8 @@ class CHROMEOS_EXPORT CrosDisksClient : public DBusClient {
   // Calls GetDeviceProperties method.  |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
   virtual void GetDeviceProperties(const std::string& device_path,
-                                   const GetDevicePropertiesCallback& callback,
-                                   const base::Closure& error_callback) = 0;
+                                   GetDevicePropertiesCallback callback,
+                                   base::OnceClosure error_callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().

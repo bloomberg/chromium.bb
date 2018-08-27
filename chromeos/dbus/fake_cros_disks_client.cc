@@ -169,14 +169,12 @@ void FakeCrosDisksClient::Unmount(const std::string& device_path,
     unmount_listener_.Run();
 }
 
-void FakeCrosDisksClient::EnumerateDevices(
-    const EnumerateDevicesCallback& callback,
-    const base::Closure& error_callback) {}
+void FakeCrosDisksClient::EnumerateDevices(EnumerateDevicesCallback callback,
+                                           base::OnceClosure error_callback) {}
 
 void FakeCrosDisksClient::EnumerateMountEntries(
-    const EnumerateMountEntriesCallback& callback,
-    const base::Closure& error_callback) {
-}
+    EnumerateMountEntriesCallback callback,
+    base::OnceClosure error_callback) {}
 
 void FakeCrosDisksClient::Format(const std::string& device_path,
                                  const std::string& filesystem,
@@ -204,9 +202,8 @@ void FakeCrosDisksClient::Rename(const std::string& device_path,
 
 void FakeCrosDisksClient::GetDeviceProperties(
     const std::string& device_path,
-    const GetDevicePropertiesCallback& callback,
-    const base::Closure& error_callback) {
-}
+    GetDevicePropertiesCallback callback,
+    base::OnceClosure error_callback) {}
 
 void FakeCrosDisksClient::NotifyMountCompleted(MountError error_code,
                                                const std::string& source_path,
