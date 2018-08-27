@@ -46,6 +46,8 @@ struct Suggestion {
 
   base::string16 value;
   base::string16 label;
+  // Used only for passwords to show the password value.
+  base::string16 additional_label;
   // Contains an image to display for the suggestion.
   gfx::Image custom_icon;
   // If |custom_icon| is empty, the name of the fallback built-in icon.
