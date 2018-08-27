@@ -417,16 +417,6 @@ Polymer({
     return enabled ? enabledStr : disabledStr;
   },
 
-  /**
-   * @param {boolean} easyUnlockEnabled
-   * @param {boolean} proximityDetectionAllowed
-   * @private
-   */
-  getShowEasyUnlockToggle_: function(
-      easyUnlockEnabled, proximityDetectionAllowed) {
-    return easyUnlockEnabled && proximityDetectionAllowed;
-  },
-
   /** @private */
   updateNumFingerprints_: function() {
     if (this.fingerprintUnlockEnabled_ && this.fingerprintBrowserProxy_) {
