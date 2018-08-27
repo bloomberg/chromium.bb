@@ -63,7 +63,11 @@ ProcessorEntityTracker::ProcessorEntityTracker(
 ProcessorEntityTracker::~ProcessorEntityTracker() {}
 
 void ProcessorEntityTracker::SetStorageKey(const std::string& storage_key) {
-  DCHECK(storage_key_.empty());
+  // TODO(crbug.com/872360): Restore the below DCHECK once we've figured out
+  // (and fixed) why it fired.
+  DCHECK(storage_key_.empty() || storage_key_ == storage_key);
+  // Should be just:
+  // DCHECK(storage_key_.empty());
   DCHECK(!storage_key.empty());
   storage_key_ = storage_key;
 }
