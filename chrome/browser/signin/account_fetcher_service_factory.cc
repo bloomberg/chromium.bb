@@ -11,6 +11,7 @@
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 

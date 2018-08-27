@@ -21,6 +21,7 @@ class AccountInfoFetcher;
 class AccountTrackerService;
 class ChildAccountInfoFetcher;
 class OAuth2TokenService;
+class PrefRegistrySimple;
 class SigninClient;
 
 namespace base {
@@ -35,10 +36,6 @@ class ImageFetcherImpl;
 
 namespace invalidation {
 class InvalidationService;
-}
-
-namespace user_prefs {
-class PrefRegistrySyncable;
 }
 
 // TODO(maroun): Protect with macro for Android only everything that is related
@@ -58,7 +55,7 @@ class AccountFetcherService : public KeyedService,
   ~AccountFetcherService() override;
 
   // Registers the preferences used by AccountFetcherService.
-  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* user_prefs);
+  static void RegisterPrefs(PrefRegistrySimple* user_prefs);
 
   void Initialize(SigninClient* signin_client,
                   OAuth2TokenService* token_service,

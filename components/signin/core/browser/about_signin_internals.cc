@@ -19,7 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -201,8 +201,7 @@ AboutSigninInternals::AboutSigninInternals(
 AboutSigninInternals::~AboutSigninInternals() {}
 
 // static
-void AboutSigninInternals::RegisterPrefs(
-    user_prefs::PrefRegistrySyncable* user_prefs) {
+void AboutSigninInternals::RegisterPrefs(PrefRegistrySimple* user_prefs) {
   // SigninManager information for about:signin-internals.
 
   // TODO(rogerta): leaving untimed fields here for now because legacy

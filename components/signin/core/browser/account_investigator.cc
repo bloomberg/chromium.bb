@@ -53,7 +53,7 @@ AccountInvestigator::~AccountInvestigator() {}
 
 // static
 void AccountInvestigator::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kGaiaCookieHash, "");
+  registry->RegisterStringPref(prefs::kGaiaCookieHash, std::string());
   registry->RegisterDoublePref(prefs::kGaiaCookieChangedTime, 0);
   registry->RegisterDoublePref(prefs::kGaiaCookiePeriodicReportTime, 0);
 }

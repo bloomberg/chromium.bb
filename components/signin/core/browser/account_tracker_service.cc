@@ -19,7 +19,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_pref_names.h"
@@ -110,8 +110,7 @@ AccountTrackerService::~AccountTrackerService() {
 }
 
 // static
-void AccountTrackerService::RegisterPrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void AccountTrackerService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(AccountTrackerService::kAccountInfoPref);
   registry->RegisterIntegerPref(prefs::kAccountIdMigrationState,
                                 AccountTrackerService::MIGRATION_NOT_STARTED);

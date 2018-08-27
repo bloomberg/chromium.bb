@@ -12,7 +12,7 @@
 #include "build/build_config.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher_impl.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/account_info_fetcher.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -62,8 +62,7 @@ AccountFetcherService::~AccountFetcherService() {
 }
 
 // static
-void AccountFetcherService::RegisterPrefs(
-    user_prefs::PrefRegistrySyncable* user_prefs) {
+void AccountFetcherService::RegisterPrefs(PrefRegistrySimple* user_prefs) {
   user_prefs->RegisterTimePref(AccountFetcherService::kLastUpdatePref,
                                base::Time());
 }

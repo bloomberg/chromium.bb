@@ -48,10 +48,6 @@ namespace password_manager {
 class PasswordStoreSigninNotifierImpl;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 class SigninManagerBase : public KeyedService {
  public:
   class Observer {
@@ -109,7 +105,7 @@ class SigninManagerBase : public KeyedService {
   ~SigninManagerBase() override;
 
   // Registers per-profile prefs.
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // Registers per-install prefs.
   static void RegisterPrefs(PrefRegistrySimple* registry);

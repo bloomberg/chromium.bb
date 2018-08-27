@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/google/core/common/google_util.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/profile_management_switches.h"
@@ -246,8 +246,7 @@ AccountConsistencyService::~AccountConsistencyService() {
 }
 
 // static
-void AccountConsistencyService::RegisterPrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+void AccountConsistencyService::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(
       AccountConsistencyService::kDomainsWithCookiePref);
 }

@@ -16,6 +16,7 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 

@@ -21,14 +21,11 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/gfx/image/image.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace base {
 class DictionaryValue;
-}
-
-namespace user_prefs {
-class PrefRegistrySyncable;
 }
 
 // AccountTrackerService is a KeyedService that retrieves and caches GAIA
@@ -80,7 +77,7 @@ class AccountTrackerService : public KeyedService {
   ~AccountTrackerService() override;
 
   // Registers the preferences used by AccountTrackerService.
-  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // KeyedService implementation.
   void Shutdown() override;

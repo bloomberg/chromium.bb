@@ -117,9 +117,7 @@ class GaiaCookieManagerServiceTest : public testing::Test {
         canceled_(GoogleServiceAuthError::REQUEST_CANCELED) {}
 
   void SetUp() override {
-    pref_service_.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
     signin_client_.reset(new TestSigninClient(&pref_service_));
   }
 

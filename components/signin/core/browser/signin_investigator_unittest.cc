@@ -8,6 +8,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/signin_investigator.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,10 +25,7 @@ const char kEmptyId[] = "";
 class FakeProvider : public SigninInvestigator::DependencyProvider {
  public:
   FakeProvider(const std::string& last_email, const std::string& last_id) {
-    prefs_.registry()->RegisterStringPref(prefs::kGoogleServicesLastUsername,
-                                          "");
-    prefs_.registry()->RegisterStringPref(prefs::kGoogleServicesLastAccountId,
-                                          "");
+    SigninManagerBase::RegisterProfilePrefs(prefs_.registry());
     prefs_.SetString(prefs::kGoogleServicesLastUsername, last_email);
     prefs_.SetString(prefs::kGoogleServicesLastAccountId, last_id);
   }
