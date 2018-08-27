@@ -470,6 +470,9 @@ extern const char kEnableResamplingInputEventsDescription[];
 extern const char kEnableResamplingScrollEventsName[];
 extern const char kEnableResamplingScrollEventsDescription[];
 
+extern const char kEnableResourceLoadingHintsName[];
+extern const char kEnableResourceLoadingHintsDescription[];
+
 extern const char kEnableSyncUserConsentSeparateTypeName[];
 extern const char kEnableSyncUserConsentSeparateTypeDescription[];
 

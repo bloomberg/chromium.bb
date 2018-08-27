@@ -28477,6 +28477,7 @@ from previous Chrome versions.
   <int value="-1122853453" label="LazyImageLoading:enabled"/>
   <int value="-1121931029" label="DownloadsForeground:enabled"/>
   <int value="-1119700637" label="ui-disable-partial-swap"/>
+  <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1102212525" label="enable-tcp-fastopen"/>
@@ -29002,6 +29003,7 @@ from previous Chrome versions.
       label="NTPArticleSuggestionsExpandableHeader:disabled"/>
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
   <int value="-22544408" label="enable-video-player-chromecast-support"/>
+  <int value="-20267582" label="ResourceLoadingHints:disabled"/>
   <int value="-19354048" label="AutofillUpstreamSendPanFirstSix:disabled"/>
   <int value="-18464041" label="AutofillPrefilledFields:disabled"/>
   <int value="-16824589" label="ash-shelf-color"/>

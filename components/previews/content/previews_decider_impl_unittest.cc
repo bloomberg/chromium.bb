@@ -989,7 +989,7 @@ TEST_F(PreviewsDeciderImplTest, NoScriptCommitTimeWhitelistCheck) {
 TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsDisallowedByDefault) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kResourceLoadingHints}, {});
+      {features::kPreviews, features::kOptimizationHints}, {});
   InitializeUIService();
 
   network_quality_estimator()->set_effective_connection_type(
@@ -1001,11 +1001,6 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsDisallowedByDefault) {
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::RESOURCE_LOADING_HINTS),
       std::vector<std::string>(), false));
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
-      1);
 }
 
 TEST_F(PreviewsDeciderImplTest,
@@ -1088,7 +1083,7 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsAllowedByFeature) {
 }
 
 TEST_F(PreviewsDeciderImplTest,
-       ResourceLoadingHintsAllowedByFeatureWithWhitelist) {
+       ResourceLoadingHintsAllowedByFeatureWithoutKnownHints) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitWithFeatures(
       {features::kPreviews, features::kResourceLoadingHints,
@@ -1101,23 +1096,9 @@ TEST_F(PreviewsDeciderImplTest,
 
   base::HistogramTester histogram_tester;
 
-  // First verify no preview for non-whitelisted url.
-  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateHttpsRequest(), PreviewsType::RESOURCE_LOADING_HINTS,
-      previews::params::GetECTThresholdForPreview(
-          previews::PreviewsType::RESOURCE_LOADING_HINTS),
-      std::vector<std::string>(), false));
-
-  histogram_tester.ExpectUniqueSample(
-      "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
-      1);
-
-  // Now verify preview for whitelisted url.
+  // First verify preview allowed for url without known hints.
   EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequestWithURL(GURL("https://whitelisted.example.com")),
-      PreviewsType::RESOURCE_LOADING_HINTS,
+      *CreateHttpsRequest(), PreviewsType::RESOURCE_LOADING_HINTS,
       previews::params::GetECTThresholdForPreview(
           previews::PreviewsType::RESOURCE_LOADING_HINTS),
       std::vector<std::string>(), false));
@@ -1162,48 +1143,6 @@ TEST_F(PreviewsDeciderImplTest, ResourceLoadingHintsCommitTimeWhitelistCheck) {
     histogram_tester.ExpectTotalCount(
         "Previews.EligibilityReason.ResourceLoadingHints", 0);
   }
-}
-
-TEST_F(PreviewsDeciderImplTest,
-       ResourceLoadingHintsAndNoScriptAllowedByFeatureWithWhitelist) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatures(
-      {features::kPreviews, features::kResourceLoadingHints,
-       features::kOptimizationHints, features::kNoScriptPreviews},
-      {});
-  InitializeUIService();
-
-  network_quality_estimator()->set_effective_connection_type(
-      net::EFFECTIVE_CONNECTION_TYPE_2G);
-
-  base::HistogramTester histogram_tester;
-
-  // Now verify preview for url that's whitelisted only for NoScript.
-  EXPECT_FALSE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequestWithURL(
-          GURL("https://noscript_only_whitelisted.example.com")),
-      PreviewsType::RESOURCE_LOADING_HINTS,
-      previews::params::GetECTThresholdForPreview(
-          previews::PreviewsType::RESOURCE_LOADING_HINTS),
-      std::vector<std::string>(), false));
-
-  histogram_tester.ExpectBucketCount(
-      "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
-      1);
-
-  EXPECT_TRUE(previews_decider_impl()->ShouldAllowPreviewAtECT(
-      *CreateRequestWithURL(
-          GURL("https://noscript_only_whitelisted.example.com")),
-      PreviewsType::NOSCRIPT,
-      previews::params::GetECTThresholdForPreview(
-          previews::PreviewsType::NOSCRIPT),
-      std::vector<std::string>(), false));
-
-  histogram_tester.ExpectBucketCount(
-      "Previews.EligibilityReason.NoScript",
-      static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 }
 
 TEST_F(PreviewsDeciderImplTest, LogPreviewNavigationPassInCorrectParams) {

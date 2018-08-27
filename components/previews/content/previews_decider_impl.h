@@ -144,10 +144,19 @@ class PreviewsDeciderImpl : public PreviewsDecider,
       std::unique_ptr<PreviewsBlackList> previews_back_list);
 
  private:
+  // Whether the preview |type| should be allowed to be considered for |request|
+  // subject to any server provided optimization hints. This is meant for
+  // checking the initial navigation URL. Returns ALLOWED if no reason found
+  // to deny the preview for consideration.
+  PreviewsEligibilityReason ShouldAllowPreviewPerOptimizationHints(
+      const net::URLRequest& request,
+      PreviewsType type,
+      std::vector<PreviewsEligibilityReason>* passed_reasons) const;
+
   // Whether |request| is allowed for |type| according to server provided
-  // optimization hints, if available. Returns ALLOWED if no optimization
-  // hints are available.
-  PreviewsEligibilityReason IsPreviewAllowedByOptmizationHints(
+  // optimization hints, if available. This is meant for checking the committed
+  // navigation URL against any specific hint details.
+  PreviewsEligibilityReason IsURLAllowedForPreviewByOptmizationHints(
       const net::URLRequest& request,
       PreviewsType type,
       std::vector<PreviewsEligibilityReason>* passed_reasons) const;
