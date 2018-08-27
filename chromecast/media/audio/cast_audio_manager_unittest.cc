@@ -49,6 +49,15 @@ std::unique_ptr<service_manager::Connector> CreateConnector() {
   service_manager::mojom::ConnectorRequest request;
   return service_manager::Connector::Create(&request);
 }
+
+int OnMoreData(base::TimeDelta delay,
+               base::TimeTicks delay_timestamp,
+               int prior_frames_skipped,
+               ::media::AudioBus* dest) {
+  dest->Zero();
+  return kDefaultAudioParams.frames_per_buffer();
+}
+
 }  // namespace
 
 namespace chromecast {
@@ -169,7 +178,7 @@ TEST_F(CastAudioManagerTest, CanMakeStream) {
   EXPECT_TRUE(stream->Open());
 
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
-      .WillRepeatedly(Return(kDefaultAudioParams.frames_per_buffer()));
+      .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
   stream->Start(&mock_source_callback_);
   scoped_task_environment_.RunUntilIdle();
@@ -187,7 +196,7 @@ TEST_F(CastAudioManagerTest, CanMakeStreamProxy) {
   EXPECT_TRUE(stream->Open());
 
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
-      .WillRepeatedly(Return(kDefaultAudioParams.frames_per_buffer()));
+      .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
   stream->Start(&mock_source_callback_);
   scoped_task_environment_.RunUntilIdle();
@@ -206,7 +215,7 @@ TEST_F(CastAudioManagerTest, CanMakeMixerStream) {
   EXPECT_TRUE(stream->Open());
 
   EXPECT_CALL(mock_source_callback_, OnMoreData(_, _, _, _))
-      .WillRepeatedly(Return(kDefaultAudioParams.frames_per_buffer()));
+      .WillRepeatedly(Invoke(OnMoreData));
   EXPECT_CALL(mock_source_callback_, OnError()).Times(0);
   stream->Start(&mock_source_callback_);
   scoped_task_environment_.RunUntilIdle();
