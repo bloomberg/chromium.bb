@@ -420,8 +420,7 @@ CSSInterpolationTypesMap::CreateInterpolationTypesForCSSSyntax(
             property, &registration));
         break;
       case CSSSyntaxType::kImage:
-        result.push_back(std::make_unique<CSSImageInterpolationType>(
-            property, &registration));
+        // TODO(andruud): Implement smooth interpolation for gradients.
         break;
       case CSSSyntaxType::kInteger:
         result.push_back(std::make_unique<CSSNumberInterpolationType>(
