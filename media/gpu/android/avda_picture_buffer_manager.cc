@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_stream_texture_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
@@ -171,10 +172,7 @@ void AVDAPictureBufferManager::ReleaseCodecBufferForPicture(
 
 void AVDAPictureBufferManager::ReuseOnePictureBuffer(
     const PictureBuffer& picture_buffer) {
-  pictures_out_for_display_.erase(
-      std::remove(pictures_out_for_display_.begin(),
-                  pictures_out_for_display_.end(), picture_buffer.id()),
-      pictures_out_for_display_.end());
+  base::Erase(pictures_out_for_display_, picture_buffer.id());
 
   // At this point, the CC must be done with the picture.  We can't really
   // check for that here directly.  it's guaranteed in gpu_video_decoder.cc,
