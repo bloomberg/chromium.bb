@@ -6,15 +6,13 @@
 #define UI_MESSAGE_CENTER_VIEWS_SLIDABLE_MESSAGE_VIEW_H_
 
 #include "ui/message_center/views/message_view.h"
-#include "ui/message_center/views/notification_swipe_control_view.h"
 #include "ui/views/view.h"
 
 namespace message_center {
 
 class MESSAGE_CENTER_EXPORT SlidableMessageView
     : public views::View,
-      public MessageView::SlideObserver,
-      public NotificationSwipeControlView::Observer {
+      public MessageView::SlideObserver {
  public:
   SlidableMessageView(message_center::MessageView* message_view);
   ~SlidableMessageView() override;
@@ -23,10 +21,6 @@ class MESSAGE_CENTER_EXPORT SlidableMessageView
 
   // MessageView::SlideObserver
   void OnSlideChanged(const std::string& notification_id) override;
-
-  // NotificationSwipeControlView::Observer
-  void OnSettingsButtonPressed(const ui::Event& event) override;
-  void OnSnoozeButtonPressed(const ui::Event& event) override;
 
   NotificationControlButtonsView* GetControlButtonsView() {
     return message_view_->GetControlButtonsView();
@@ -79,7 +73,8 @@ class MESSAGE_CENTER_EXPORT SlidableMessageView
 
  private:
   MessageView* message_view_;
-  std::unique_ptr<NotificationSwipeControlView> control_view_;
+  // TODO(crbug.com/840497): Add child view containing settings and snooze
+  // buttons.
 };
 
 }  // namespace message_center
