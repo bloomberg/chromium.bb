@@ -26,6 +26,21 @@ class FidoHidMessage;
 
 class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
  public:
+  // HID transport layer error constants that are returned to the client.
+  // Carried in the payload section of the Error command.
+  // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#ctaphid-commands
+  enum class HidErrorConstant : uint8_t {
+    kInvalidCommand = 0x01,
+    kInvalidParameter = 0x02,
+    kInvalidLength = 0x03,
+    kInvalidSequence = 0x04,
+    kTimeout = 0x05,
+    kBusy = 0x06,
+    kLockRequired = 0x0a,
+    kInvalidChannel = 0x0b,
+    kOther = 0x7f,
+  };
+
   FidoHidDevice(device::mojom::HidDeviceInfoPtr device_info,
                 device::mojom::HidManager* hid_manager);
   ~FidoHidDevice() final;
@@ -98,6 +113,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   void OnWink(WinkCallback callback, base::Optional<FidoHidMessage> response);
   void ArmTimeout(DeviceCallback callback);
   void OnTimeout(DeviceCallback callback);
+  void ProcessHidError(FidoHidDeviceCommand cmd,
+                       base::span<const uint8_t> payload);
 
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 

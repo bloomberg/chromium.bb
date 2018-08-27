@@ -143,7 +143,7 @@ void FidoHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
 
   timeout_callback_.Cancel();
 
-  if (!message) {
+  if (!message || message->cmd() != FidoHidDeviceCommand::kInit) {
     state_ = State::kDeviceError;
     Transition(std::vector<uint8_t>(), std::move(callback));
     return;
@@ -310,8 +310,7 @@ void FidoHidDevice::MessageReceived(DeviceCallback callback,
   }
 
   if (cmd != FidoHidDeviceCommand::kMsg && cmd != FidoHidDeviceCommand::kCbor) {
-    DLOG(ERROR) << "Unexpected HID device command received.";
-    state_ = State::kDeviceError;
+    ProcessHidError(cmd, message->GetMessagePayload());
     Transition(std::vector<uint8_t>(), std::move(callback));
     return;
   }
@@ -374,6 +373,27 @@ void FidoHidDevice::ArmTimeout(DeviceCallback callback) {
 void FidoHidDevice::OnTimeout(DeviceCallback callback) {
   state_ = State::kDeviceError;
   Transition(std::vector<uint8_t>(), std::move(callback));
+}
+
+void FidoHidDevice::ProcessHidError(FidoHidDeviceCommand cmd,
+                                    base::span<const uint8_t> payload) {
+  if (cmd != FidoHidDeviceCommand::kError || payload.size() != 1) {
+    DLOG(ERROR) << "Unexpected HID device command received.";
+    state_ = State::kDeviceError;
+    return;
+  }
+
+  const auto error_constant = payload[0];
+  if (error_constant ==
+          base::strict_cast<uint8_t>(HidErrorConstant::kInvalidCommand) ||
+      error_constant ==
+          base::strict_cast<uint8_t>(HidErrorConstant::kInvalidParameter) ||
+      error_constant ==
+          base::strict_cast<uint8_t>(HidErrorConstant::kInvalidLength)) {
+    state_ = State::kMsgError;
+  } else {
+    state_ = State::kDeviceError;
+  }
 }
 
 std::string FidoHidDevice::GetId() const {

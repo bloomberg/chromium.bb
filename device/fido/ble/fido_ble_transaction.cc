@@ -50,7 +50,7 @@ void FidoBleTransaction::WriteRequestFragment(
 void FidoBleTransaction::OnRequestFragmentWritten(bool success) {
   StopTimeout();
   if (!success) {
-    OnError();
+    OnError(base::nullopt);
     return;
   }
 
@@ -72,7 +72,7 @@ void FidoBleTransaction::OnResponseFragment(std::vector<uint8_t> data) {
     FidoBleFrameInitializationFragment fragment;
     if (!FidoBleFrameInitializationFragment::Parse(data, &fragment)) {
       DLOG(ERROR) << "Malformed Frame Initialization Fragment";
-      OnError();
+      OnError(base::nullopt);
       return;
     }
 
@@ -81,7 +81,7 @@ void FidoBleTransaction::OnResponseFragment(std::vector<uint8_t> data) {
     FidoBleFrameContinuationFragment fragment;
     if (!FidoBleFrameContinuationFragment::Parse(data, &fragment)) {
       DLOG(ERROR) << "Malformed Frame Continuation Fragment";
-      OnError();
+      OnError(base::nullopt);
       return;
     }
 
@@ -118,22 +118,26 @@ void FidoBleTransaction::ProcessResponseFrame(FidoBleFrame response_frame) {
   DCHECK_EQ(response_frame.command(), FidoBleDeviceCommand::kError);
   DLOG(ERROR) << "CMD_ERROR: "
               << static_cast<uint8_t>(response_frame.GetErrorCode());
-  OnError();
+  OnError(response_frame.IsValid()
+              ? base::make_optional(std::move(response_frame))
+              : base::nullopt);
 }
 
 void FidoBleTransaction::StartTimeout() {
-  timer_.Start(FROM_HERE, kDeviceTimeout, this, &FidoBleTransaction::OnError);
+  timer_.Start(FROM_HERE, kDeviceTimeout,
+               base::BindOnce(&FidoBleTransaction::OnError,
+                              base::Unretained(this), base::nullopt));
 }
 
 void FidoBleTransaction::StopTimeout() {
   timer_.Stop();
 }
 
-void FidoBleTransaction::OnError() {
+void FidoBleTransaction::OnError(base::Optional<FidoBleFrame> response_frame) {
   request_frame_.reset();
   request_cont_fragments_ = base::queue<FidoBleFrameContinuationFragment>();
   response_frame_assembler_.reset();
-  std::move(callback_).Run(base::nullopt);
+  std::move(callback_).Run(std::move(response_frame));
 }
 
 }  // namespace device

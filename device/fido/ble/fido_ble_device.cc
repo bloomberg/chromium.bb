@@ -161,6 +161,7 @@ void FidoBleDevice::Transition() {
       break;
     case State::kBusy:
       break;
+    case State::kMsgError:
     case State::kDeviceError:
       auto self = GetWeakPtr();
       // Executing callbacks may free |this|. Check |self| first.
@@ -179,12 +180,9 @@ void FidoBleDevice::AddToPendingFrames(FidoBleDeviceCommand cmd,
                                        DeviceCallback callback) {
   pending_frames_.emplace(
       FidoBleFrame(cmd, std::move(request)),
-      base::BindOnce(
-          [](DeviceCallback callback, base::Optional<FidoBleFrame> frame) {
-            std::move(callback).Run(frame ? base::make_optional(frame->data())
-                                          : base::nullopt);
-          },
-          std::move(callback)));
+      base::BindOnce(&FidoBleDevice::OnBleResponseReceived,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+
   Transition();
 }
 
@@ -230,6 +228,38 @@ void FidoBleDevice::StopTimeout() {
 
 void FidoBleDevice::OnTimeout() {
   state_ = State::kDeviceError;
+}
+
+void FidoBleDevice::OnBleResponseReceived(DeviceCallback callback,
+                                          base::Optional<FidoBleFrame> frame) {
+  if (!frame || !frame->IsValid()) {
+    state_ = State::kDeviceError;
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  if (frame->command() == FidoBleDeviceCommand::kError) {
+    ProcessBleDeviceError(frame->data());
+    std::move(callback).Run(base::nullopt);
+    return;
+  }
+
+  std::move(callback).Run(frame->data());
+}
+
+void FidoBleDevice::ProcessBleDeviceError(base::span<const uint8_t> data) {
+  DCHECK_EQ(1u, data.size());
+  const auto error_constant = data[0];
+  if (error_constant ==
+          base::strict_cast<uint8_t>(FidoBleFrame::ErrorCode::INVALID_CMD) ||
+      error_constant ==
+          base::strict_cast<uint8_t>(FidoBleFrame::ErrorCode::INVALID_PAR) ||
+      error_constant ==
+          base::strict_cast<uint8_t>(FidoBleFrame::ErrorCode::INVALID_LEN)) {
+    state_ = State::kMsgError;
+  } else {
+    state_ = State::kDeviceError;
+  }
 }
 
 }  // namespace device
