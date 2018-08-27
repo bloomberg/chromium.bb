@@ -671,6 +671,7 @@ BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
       ->watcher()
       ->SimulateLowEnergyDevice(data);
 
+  base::RunLoop().RunUntilIdle();
   return adapter_->GetDevice(data.address);
 }
 

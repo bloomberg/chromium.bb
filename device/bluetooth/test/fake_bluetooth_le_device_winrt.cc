@@ -323,6 +323,7 @@ void FakeBluetoothLEDeviceWinrt::SimulateGattDescriptor(
 void FakeBluetoothLEDeviceWinrt::SimulateGattServicesChanged() {
   DCHECK(gatt_services_changed_handler_);
   gatt_services_changed_handler_->Invoke(this, nullptr);
+  base::RunLoop().RunUntilIdle();
 }
 
 void FakeBluetoothLEDeviceWinrt::SimulateGattServicesDiscoveryError() {
