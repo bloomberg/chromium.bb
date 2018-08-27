@@ -48,10 +48,12 @@ public class SuggestionsBinder {
     private static final int MAX_HEADER_LINES = 3;
     private static final int MAX_HEADER_LINES_WITH_SNIPPET = 2;
     private static final int MAX_SNIPPET_LINES = 3;
+    private static final int MAX_SNIPPET_LINES_ALTERNATE = 4;
 
     private final ImageFetcher mImageFetcher;
     private final SuggestionsUiDelegate mUiDelegate;
     private final boolean mIsContextual;
+    private final boolean mUseContextualAlternateCardLayout;
 
     private final View mCardContainerView;
     private final LinearLayout mTextLayout;
@@ -107,8 +109,11 @@ public class SuggestionsBinder {
         if (mIsContextual) {
             mThumbnailSize = mCardContainerView.getResources().getDimensionPixelSize(
                     R.dimen.snippets_thumbnail_size_small);
+            mUseContextualAlternateCardLayout = ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_ALTERNATE_CARD_LAYOUT);
         } else {
             mThumbnailSize = getThumbnailSize(mCardContainerView.getResources());
+            mUseContextualAlternateCardLayout = false;
         }
 
         mSmallThumbnailCornerRadius = mCardContainerView.getResources().getDimensionPixelSize(
@@ -145,7 +150,7 @@ public class SuggestionsBinder {
         ViewGroup.MarginLayoutParams publisherBarParams =
                 (ViewGroup.MarginLayoutParams) mPublisherBar.getLayoutParams();
 
-        if (showHeadline) {
+        if (showHeadline && !mUseContextualAlternateCardLayout) {
             // When we show a headline and not a description, we reduce the top margin of the
             // publisher bar.
             publisherBarParams.topMargin = mPublisherBar.getResources().getDimensionPixelSize(
@@ -161,7 +166,9 @@ public class SuggestionsBinder {
 
         if (mSnippetTextView != null) {
             mSnippetTextView.setVisibility(showSnippet ? View.VISIBLE : View.GONE);
-            mSnippetTextView.setMaxLines(MAX_SNIPPET_LINES);
+            mSnippetTextView.setMaxLines(mUseContextualAlternateCardLayout
+                            ? MAX_SNIPPET_LINES_ALTERNATE
+                            : MAX_SNIPPET_LINES);
         }
     }
 
@@ -241,8 +248,9 @@ public class SuggestionsBinder {
         // Temporarily set placeholder and then fetch the thumbnail from a provider.
         mThumbnailView.setBackground(null);
         if (mIsContextual) {
-            mThumbnailView.setImageResource(
-                    R.drawable.contextual_suggestions_placeholder_thumbnail_background);
+            mThumbnailView.setImageResource(mUseContextualAlternateCardLayout
+                            ? R.drawable.contextual_suggestions_placeholder_thumbnail_alternate
+                            : R.drawable.contextual_suggestions_placeholder_thumbnail);
         } else if (SuggestionsConfig.useModernLayout()
                 && ChromeFeatureList.isEnabled(
                            ChromeFeatureList.CONTENT_SUGGESTIONS_THUMBNAIL_DOMINANT_COLOR)) {
@@ -421,8 +429,10 @@ public class SuggestionsBinder {
 
             Drawable drawable;
             if (mIsContextual) {
-                drawable = ViewUtils.createRoundedBitmapDrawable(
-                        thumbnail, mSmallThumbnailCornerRadius);
+                drawable = mUseContextualAlternateCardLayout
+                        ? new BitmapDrawable(mThumbnailView.getResources(), thumbnail)
+                        : ViewUtils.createRoundedBitmapDrawable(
+                                  thumbnail, mSmallThumbnailCornerRadius);
             } else {
                 drawable = ThumbnailGradient.createDrawableWithGradientIfNeeded(
                         thumbnail, mThumbnailView.getResources());
