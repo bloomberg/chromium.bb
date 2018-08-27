@@ -2295,34 +2295,6 @@ TEST_F(NetworkContextTest, DangerouslyAllowPacAccessToSecureURLs) {
                 ->sanitize_url_policy_for_testing());
 }
 
-class TestProxyConfigLazyPoller : public mojom::ProxyConfigPollerClient {
- public:
-  TestProxyConfigLazyPoller() : binding_(this) {}
-  ~TestProxyConfigLazyPoller() override {}
-
-  void OnLazyProxyConfigPoll() override { ++times_polled_; }
-
-  mojom::ProxyConfigPollerClientPtr BindInterface() {
-    mojom::ProxyConfigPollerClientPtr interface;
-    binding_.Bind(MakeRequest(&interface));
-    return interface;
-  }
-
-  int GetAndClearTimesPolled() {
-    int out = times_polled_;
-    times_polled_ = 0;
-    return out;
-  }
-
- private:
-  int times_polled_ = 0;
-  mojo::Binding<ProxyConfigPollerClient> binding_;
-
-  std::unique_ptr<base::RunLoop> run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProxyConfigLazyPoller);
-};
-
 net::IPEndPoint GetLocalHostWithAnyPort() {
   return net::IPEndPoint(net::IPAddress(127, 0, 0, 1), 0);
 }
