@@ -752,6 +752,11 @@ const char kEnableResamplingScrollEventsName[] =
 const char kEnableResamplingScrollEventsDescription[] =
     "Predicts the scroll amount at vsync time based on previous input";
 
+const char kEnableResourceLoadingHintsName[] = "Enable resource loading hints";
+const char kEnableResourceLoadingHintsDescription[] =
+    "Enable using server-provided resource loading hints to provide a preview "
+    "over slow network connections.";
+
 extern const char kEnableSyncUserConsentSeparateTypeName[] =
     "Enable separate sync type for consents";
 extern const char kEnableSyncUserConsentSeparateTypeDescription[] =

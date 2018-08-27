@@ -362,8 +362,8 @@ bool PreviewsDeciderImpl::ShouldAllowPreviewAtECT(
   if (IsServerWhitelistedType(type)) {
     if (params::IsOptimizationHintsEnabled()) {
       // Optimization hints are configured, so require whitelist match.
-      PreviewsEligibilityReason status =
-          IsPreviewAllowedByOptmizationHints(request, type, &passed_reasons);
+      PreviewsEligibilityReason status = ShouldAllowPreviewPerOptimizationHints(
+          request, type, &passed_reasons);
       if (status != PreviewsEligibilityReason::ALLOWED) {
         LogPreviewDecisionMade(status, request.url(), clock_->Now(), type,
                                std::move(passed_reasons), page_id);
@@ -429,7 +429,8 @@ bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
     if (params::IsOptimizationHintsEnabled()) {
       std::vector<PreviewsEligibilityReason> passed_reasons;
       PreviewsEligibilityReason status =
-          IsPreviewAllowedByOptmizationHints(request, type, &passed_reasons);
+          IsURLAllowedForPreviewByOptmizationHints(request, type,
+                                                   &passed_reasons);
       if (status != PreviewsEligibilityReason::ALLOWED) {
         LogPreviewDecisionMade(status, request.url(), clock_->Now(), type,
                                std::move(passed_reasons),
@@ -442,7 +443,39 @@ bool PreviewsDeciderImpl::IsURLAllowedForPreview(const net::URLRequest& request,
 }
 
 PreviewsEligibilityReason
-PreviewsDeciderImpl::IsPreviewAllowedByOptmizationHints(
+PreviewsDeciderImpl::ShouldAllowPreviewPerOptimizationHints(
+    const net::URLRequest& request,
+    PreviewsType type,
+    std::vector<PreviewsEligibilityReason>* passed_reasons) const {
+  DCHECK(type == PreviewsType::NOSCRIPT ||
+         type == PreviewsType::RESOURCE_LOADING_HINTS);
+
+  // Per-PreviewsType default if no optimization guide data.
+  if (!previews_opt_guide_) {
+    if (type == PreviewsType::NOSCRIPT) {
+      return PreviewsEligibilityReason::ALLOWED;
+    } else {
+      return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
+    }
+  }
+
+  // For NoScript, ensure it is whitelisted for this request.
+  if (type == PreviewsType::NOSCRIPT) {
+    if (!previews_opt_guide_->IsWhitelisted(request, type)) {
+      return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
+    }
+    passed_reasons->push_back(
+        PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER);
+  }
+
+  // Note: allow ResourceLoadingHints since the guide is available. Hints may
+  // need to be loaded from it for commit time detail check.
+
+  return PreviewsEligibilityReason::ALLOWED;
+}
+
+PreviewsEligibilityReason
+PreviewsDeciderImpl::IsURLAllowedForPreviewByOptmizationHints(
     const net::URLRequest& request,
     PreviewsType type,
     std::vector<PreviewsEligibilityReason>* passed_reasons) const {
@@ -454,7 +487,7 @@ PreviewsDeciderImpl::IsPreviewAllowedByOptmizationHints(
   if (!previews_opt_guide_ && type == PreviewsType::NOSCRIPT)
     return PreviewsEligibilityReason::ALLOWED;
 
-  // Check optimization guide whitelist.
+  // Check if request URL is whitelisted by the optimization guide.
   if (!previews_opt_guide_->IsWhitelisted(request, type)) {
     return PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER;
   }
