@@ -83,6 +83,8 @@ blink_core_sources("inspector") {
     "inspector_style_sheet.h",
     "inspector_task_runner.cc",
     "inspector_task_runner.h",
+    "inspector_testing_agent.cc",
+    "inspector_testing_agent.h",
     "inspector_trace_events.cc",
     "inspector_trace_events.h",
     "inspector_worker_agent.cc",
@@ -175,6 +177,8 @@ inspector_protocol_generate("protocol_sources") {
     "inspector/protocol/Security.h",
     "inspector/protocol/Target.cpp",
     "inspector/protocol/Target.h",
+    "inspector/protocol/Testing.cpp",
+    "inspector/protocol/Testing.h",
   ]
 
   deps = [

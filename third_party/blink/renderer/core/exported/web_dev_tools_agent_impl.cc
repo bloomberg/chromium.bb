@@ -76,6 +76,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_resource_content_loader.h"
 #include "third_party/blink/renderer/core/inspector/inspector_session.h"
 #include "third_party/blink/renderer/core/inspector/inspector_task_runner.h"
+#include "third_party/blink/renderer/core/inspector/inspector_testing_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_worker_agent.h"
 #include "third_party/blink/renderer/core/inspector/main_thread_debugger.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -469,6 +470,8 @@ void WebDevToolsAgentImpl::Session::InitializeInspectorSession(
   // during remote->local transition we cannot access mainFrameImpl() yet, so
   // we have to store the frame which will become the main frame later.
   inspector_session_->Append(new InspectorEmulationAgent(frame_.Get()));
+
+  inspector_session_->Append(new InspectorTestingAgent(inspected_frames));
 
   // Call session init callbacks registered from higher layers
   CoreInitializer::GetInstance().InitInspectorAgentSession(
