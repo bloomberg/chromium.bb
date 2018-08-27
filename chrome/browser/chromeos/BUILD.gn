@@ -2143,6 +2143,7 @@ source_set("unit_tests") {
     "login/easy_unlock/easy_unlock_challenge_wrapper_unittest.cc",
     "login/easy_unlock/easy_unlock_tpm_key_manager_unittest.cc",
     "login/enrollment/enrollment_screen_unittest.cc",
+    "login/enterprise_user_session_metrics_unittest.cc",
     "login/error_screens_histogram_helper_unittest.cc",
     "login/existing_user_controller_auto_login_unittest.cc",
     "login/hwid_checker_unittest.cc",
