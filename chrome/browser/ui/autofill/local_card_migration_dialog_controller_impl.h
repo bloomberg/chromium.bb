@@ -31,8 +31,9 @@ class LocalCardMigrationDialogControllerImpl
   // LocalCardMigrationDialogController:
   LocalCardMigrationDialogState GetViewState() const override;
   void SetViewState(LocalCardMigrationDialogState view_state) override;
-  std::vector<MigratableCreditCard>& GetCardList() override;
+  const std::vector<MigratableCreditCard>& GetCardList() const override;
   void SetCardList(std::vector<MigratableCreditCard>& card_list) override;
+  void OnCardSelected(int index) override;
   void OnDialogClosed() override;
 
  protected:
@@ -47,6 +48,9 @@ class LocalCardMigrationDialogControllerImpl
 
   LocalCardMigrationDialogState view_state_;
 
+  // TODO(crbug.com/867194): Currently we will not handle the case of local
+  // cards added/deleted during migration. migratable_credit_cards_ are local
+  // cards presented when the user accepts the intermediate bubble.
   std::vector<MigratableCreditCard> migratable_credit_cards_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalCardMigrationDialogControllerImpl);
