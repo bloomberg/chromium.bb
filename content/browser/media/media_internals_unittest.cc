@@ -104,7 +104,7 @@ class MediaInternalsTestBase {
 
 namespace content {
 
-using AudioFocusType = media_session::mojom::AudioFocusType;
+using media_session::mojom::AudioFocusType;
 
 class MediaInternalsVideoCaptureDeviceTest : public testing::Test,
                                              public MediaInternalsTestBase {
