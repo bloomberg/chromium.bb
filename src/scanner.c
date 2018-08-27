@@ -371,7 +371,7 @@ desc_dump(char *desc, const char *fmt, ...)
 	putchar('\n');
 }
 
-static void
+static void __attribute__ ((noreturn))
 fail(struct location *loc, const char *msg, ...)
 {
 	va_list ap;
