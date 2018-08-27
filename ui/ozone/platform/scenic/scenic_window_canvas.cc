@@ -54,12 +54,6 @@ void ScenicWindowCanvas::Frame::CopyDirtyRegionFrom(const Frame& frame) {
 }
 
 ScenicWindowCanvas::ScenicWindowCanvas(ScenicWindow* window) : window_(window) {
-  ScenicSession* scenic = window_->scenic_session();
-  shape_id_ = scenic->CreateShapeNode();
-  scenic->AddNodeChild(window_->node_id(), shape_id_);
-
-  material_id_ = scenic->CreateMaterial();
-  scenic->SetNodeMaterial(shape_id_, material_id_);
 }
 
 ScenicWindowCanvas::~ScenicWindowCanvas() {
@@ -68,15 +62,12 @@ ScenicWindowCanvas::~ScenicWindowCanvas() {
     if (!frames_[i].is_empty())
       scenic->ReleaseResource(frames_[i].memory_id);
   }
-  scenic->ReleaseResource(material_id_);
-  scenic->ReleaseResource(shape_id_);
 }
 
 void ScenicWindowCanvas::ResizeCanvas(const gfx::Size& viewport_size) {
   viewport_size_ = viewport_size;
 
   ScenicSession* scenic = window_->scenic_session();
-  float device_pixel_ratio = window_->device_pixel_ratio();
 
   // Allocate new buffers with the new size.
   for (int i = 0; i < kNumBuffers; ++i) {
@@ -84,21 +75,6 @@ void ScenicWindowCanvas::ResizeCanvas(const gfx::Size& viewport_size) {
       scenic->ReleaseResource(frames_[i].memory_id);
     frames_[i].Initialize(viewport_size_, scenic);
   }
-
-  gfx::SizeF viewport_size_dips =
-      gfx::ScaleSize(gfx::SizeF(viewport_size_), 1.0 / device_pixel_ratio);
-
-  // Translate the node by half of the view dimensions to put it in the center
-  // of the view.
-  float t[] = {viewport_size_dips.width() / 2.0,
-               viewport_size_dips.height() / 2.0, 0.f};
-  scenic->SetNodeTranslation(window_->node_id(), t);
-
-  // Set node shape to rectangle that matches size of the view.
-  ScenicSession::ResourceId rect_id = scenic->CreateRectangle(
-      viewport_size_dips.width(), viewport_size_dips.height());
-  scenic->SetNodeShape(shape_id_, rect_id);
-  scenic->ReleaseResource(rect_id);
 }
 
 sk_sp<SkSurface> ScenicWindowCanvas::GetSurface() {
@@ -160,7 +136,7 @@ void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {
   ScenicSession::ResourceId image_id = scenic->CreateImage(
       frames_[current_frame_].memory_id, 0, std::move(info));
 
-  scenic->SetMaterialTexture(material_id_, image_id);
+  window_->SetTexture(image_id);
   scenic->ReleaseResource(image_id);
 
   // Create release fence for the current buffer or reset it if it already
