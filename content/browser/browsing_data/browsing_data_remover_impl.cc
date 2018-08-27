@@ -419,22 +419,22 @@ void BrowsingDataRemoverImpl::RemoveImpl(
 
     // TODO(msramek): Clear the cache of all renderers.
 
+    // TODO(crbug.com/813882): implement retry on network service.
     if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
       // The clearing of the HTTP cache happens in the network service process
-      // when enabled.
+      // when enabled. Note that we've deprecated the concept of a media cache,
+      // and are now using a single cache for both purposes.
       network_context->ClearHttpCache(
           delete_begin, delete_end, filter_builder.BuildNetworkServiceFilter(),
           CreatePendingTaskCompletionClosureForMojo());
+    } else {
+      storage_partition->ClearHttpAndMediaCaches(
+          delete_begin, delete_end,
+          filter_builder.IsEmptyBlacklist()
+              ? base::Callback<bool(const GURL&)>()
+              : std::move(filter),
+          CreatePendingTaskCompletionClosureForMojo());
     }
-
-    // In the network service case, the call below will only clear the media
-    // cache.
-    // TODO(crbug.com/813882): implement retry on network service.
-    storage_partition->ClearHttpAndMediaCaches(
-        delete_begin, delete_end,
-        filter_builder.IsEmptyBlacklist() ? base::Callback<bool(const GURL&)>()
-                                          : std::move(filter),
-        CreatePendingTaskCompletionClosureForMojo());
 
     // When clearing cache, wipe accumulated network related data
     // (TransportSecurityState and HttpServerPropertiesManager data).
