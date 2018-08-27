@@ -81,6 +81,7 @@
 #include "chrome/browser/chromeos/policy/configuration_policy_handler_chromeos.h"
 #include "chrome/browser/chromeos/policy/secondary_google_account_signin_policy_handler.h"
 #include "chrome/browser/policy/default_geolocation_policy_handler.h"
+#include "chrome/browser/policy/printing_restrictions_policy_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/chromeos_pref_names.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -1208,6 +1209,15 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(std::make_unique<ArcServicePolicyHandler>(
       key::kArcGoogleLocationServicesEnabled,
       arc::prefs::kArcLocationServiceEnabled));
+  handlers->AddHandler(
+      std::make_unique<PrintingAllowedColorModesPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<PrintingAllowedDuplexModesPolicyHandler>());
+  handlers->AddHandler(
+      std::make_unique<PrintingAllowedPageSizesPolicyHandler>());
+  handlers->AddHandler(std::make_unique<PrintingColorDefaultPolicyHandler>());
+  handlers->AddHandler(std::make_unique<PrintingDuplexDefaultPolicyHandler>());
+  handlers->AddHandler(std::make_unique<PrintingSizeDefaultPolicyHandler>());
 #endif  // defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_PLUGINS)

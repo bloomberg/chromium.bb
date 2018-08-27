@@ -415,7 +415,15 @@ void ProfileImpl::RegisterProfilePrefs(
 
 #if BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
-#endif
+#if defined(OS_CHROMEOS)
+  registry->RegisterIntegerPref(prefs::kPrintingAllowedColorModes, 0);
+  registry->RegisterIntegerPref(prefs::kPrintingAllowedDuplexModes, 0);
+  registry->RegisterListPref(prefs::kPrintingAllowedPageSizes);
+  registry->RegisterIntegerPref(prefs::kPrintingColorDefault, 0);
+  registry->RegisterIntegerPref(prefs::kPrintingDuplexDefault, 0);
+  registry->RegisterDictionaryPref(prefs::kPrintingSizeDefault);
+#endif  // defined(OS_CHROMEOS)
+#endif  // BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintPreviewDisabled, false);
   registry->RegisterStringPref(
       prefs::kPrintPreviewDefaultDestinationSelectionRules, std::string());
