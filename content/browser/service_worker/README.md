@@ -3,6 +3,9 @@
 [content/renderer/service_worker]: /content/renderer/service_worker
 [content/renderer/service_worker]: /content/renderer/service_worker
 [content/common/service_worker]: /content/common/service_worker
+[embedded_worker.mojom]: https://codesearch.chromium.org/chromium/src/content/common/service_worker/embedded_worker.mojom
+[service_worker_container.mojom]: https://codesearch.chromium.org/chromium/src/content/common/service_worker/service_worker_container.mojom
+[service_worker_database.h]: https://codesearch.chromium.org/chromium/src/content/browser/service_worker/service_worker_database.h
 [third_party/blink/common/service_worker]: /third_party/blink/common/service_worker
 [third_party/blink/public/common/service_worker]: /third_party/blink/public/common/service_worker
 [third_party/blink/public/mojom/service_worker]: /third_party/blink/public/mojom/service_worker
@@ -27,7 +30,7 @@ workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API). S
   third_party/blink per [Onion Soup].
 - [content/common/service_worker]: Common process code.
 - [third_party/blink/common/service_worker]: Common process code. Contains the
-  implementation of third_party/blink/public/common/service_worker.
+  implementation of [third_party/blink/public/common/service_worker].
 - [third_party/blink/public/common/service_worker]: Header files for common
   process code that can be used by both inside Blink and outside Blink.
 - [third_party/blink/public/mojom/service_worker]: Mojom files for common
@@ -38,6 +41,32 @@ workers](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API). S
   header files. This should be removed per [Onion Soup].
 - [third_party/blink/renderer/modules/service_worker]: Renderer process code in
   Blink. This is the closest code to the web-exposed Service Worker API.
+
+## UseCounter integration
+
+Blink has a UseCounter mechanism intended to measure the percentage of page
+loads on the web that used a given feature.  Service workers complicate this
+measurement because a feature use in a service worker potentially affects many
+page loads, including ones in the future.
+
+Therefore, service workers integrate with the UseCounter mechanism as follows:
+- If a feature use occurs before the service worker finished installing, it
+is recorded in storage along with the service worker. Any page thereafter that
+the service worker controls is counted as using the feature.
+- If a feature use occurs after the service worker finished installing, all
+currently controlled pages are counted as using the feature.
+
+For more details and rationale, see [Design of UseCounter for
+workers](https://docs.google.com/document/d/1VyYZnhjBdk-MzCRAcX37TM5-yjwTY40U_J9rWnEAo8c/edit?usp=sharing)
+and [crbug 376039](https://bugs.chromium.org/p/chromium/issues/detail?id=376039).
+
+Code pointers include:
+- (Browser -> Page) ServiceWorkerContainer.SetController and
+ServiceWorkerContainer.CountFeature in [service_worker_container.mojom].
+- (Service worker -> Browser) EmbeddedWorkerInstanceHost.CountFeature
+in [embedded_worker.mojom].
+- (Persistence) ServiceWorkerDatabase::RegistrationData::used_features
+in [service_worker_database.h].
 
 ## Other documentation
 
