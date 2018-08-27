@@ -64,25 +64,32 @@ class Nigori {
                   std::string* encryption_key,
                   std::string* mac_key) const;
 
-  static const char kSaltSalt[];  // The salt used to derive the user salt.
-  static const size_t kSaltKeySizeInBits = 128;
-  static const size_t kDerivedKeySizeInBits = 128;
+  // Exposed for tests.
   static const size_t kIvSize = 16;
-  static const size_t kHashSize = 32;
-
-  static const size_t kSaltIterations = 1001;
-  static const size_t kUserIterations = 1002;
-  static const size_t kEncryptionIterations = 1003;
-  static const size_t kSigningIterations = 1004;
 
  private:
-  // user_key isn't used any more, but legacy clients will fail to import a
-  // nigori node without one. We preserve it for the sake of those clients, but
-  // it should be removed once enough clients have upgraded to code that doesn't
-  // enforce its presence.
-  std::unique_ptr<crypto::SymmetricKey> user_key_;
-  std::unique_ptr<crypto::SymmetricKey> encryption_key_;
-  std::unique_ptr<crypto::SymmetricKey> mac_key_;
+  struct Keys {
+    Keys();
+    ~Keys();
+
+    // TODO(vitaliii): user_key isn't used any more, but legacy clients will
+    // fail to import a nigori node without one. We preserve it for the sake of
+    // those clients, but it should be removed once enough clients have upgraded
+    // to code that doesn't enforce its presence.
+    std::unique_ptr<crypto::SymmetricKey> user_key;
+    std::unique_ptr<crypto::SymmetricKey> encryption_key;
+    std::unique_ptr<crypto::SymmetricKey> mac_key;
+
+    bool InitByDerivationUsingPbkdf2(const std::string& hostname,
+                                     const std::string& username,
+                                     const std::string& password);
+    bool InitByDerivationUsingScrypt(const std::string& password);
+    bool InitByImport(const std::string& user_key_str,
+                      const std::string& encryption_key_str,
+                      const std::string& mac_key_str);
+  };
+
+  Keys keys_;
 };
 
 }  // namespace syncer
