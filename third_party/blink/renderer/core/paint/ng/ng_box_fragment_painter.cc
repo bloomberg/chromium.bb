@@ -4,6 +4,9 @@
 
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
 
+#include "third_party/blink/renderer/core/editing/drag_caret.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
@@ -17,6 +20,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_mixin.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/list_marker_painter.h"
@@ -260,12 +264,25 @@ void NGBoxFragmentPainter::PaintObject(
 
   if (ShouldPaintSelfOutline(paint_phase))
     NGFragmentPainter(box_fragment_).PaintOutline(paint_info, paint_offset);
-  // TODO(layout-dev): Implement once we have selections in LayoutNG.
-  // If the caret's node's layout object's containing block is this block, and
+
+  // If the caret's node's fragment's containing block is this block, and
   // the paint action is PaintPhaseForeground, then paint the caret.
-  // if (paint_phase == PaintPhase::kForeground &&
-  //     box_fragment_.ShouldPaintCarets())
-  //  PaintCarets(paint_info, paint_offset);
+  if (paint_phase == PaintPhase::kForeground &&
+      box_fragment_.ShouldPaintCarets())
+    PaintCarets(paint_info, paint_offset);
+}
+
+void NGBoxFragmentPainter::PaintCarets(const PaintInfo& paint_info,
+                                       const LayoutPoint& paint_offset) {
+  LocalFrame* frame = box_fragment_.GetLayoutObject()->GetFrame();
+
+  if (box_fragment_.ShouldPaintCursorCaret())
+    frame->Selection().PaintCaret(paint_info.context, paint_offset);
+
+  if (box_fragment_.ShouldPaintDragCaret()) {
+    frame->GetPage()->GetDragCaret().PaintDragCaret(frame, paint_info.context,
+                                                    paint_offset);
+  }
 }
 
 void NGBoxFragmentPainter::PaintBlockFlowContents(
