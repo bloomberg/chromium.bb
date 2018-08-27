@@ -89,6 +89,9 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
   if (DocumentHasUserExceptionFlag(document))
     return Type::kNoUserGestureRequired;
 
+  if (document.GetSettings()->GetPresentationReceiver())
+    return Type::kNoUserGestureRequired;
+
   return document.GetSettings()->GetAutoplayPolicy();
 }
 
