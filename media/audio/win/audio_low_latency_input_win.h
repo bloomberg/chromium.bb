@@ -170,8 +170,7 @@ class MEDIA_EXPORT WASAPIAudioInputStream
   // Reports delay stats based on |capture_time|. Detects and counts glitches
   // based on |frames_in_buffer|, |discontinuity_flagged|, and
   // |device_position|.
-  void ReportDelayStatsAndUpdateGlitchCount(UINT32 frames_in_buffer,
-                                            bool discontinuity_flagged,
+  void ReportDelayStatsAndUpdateGlitchCount(bool discontinuity_flagged,
                                             UINT64 device_position,
                                             base::TimeTicks capture_time);
 
