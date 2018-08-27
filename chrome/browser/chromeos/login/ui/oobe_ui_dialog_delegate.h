@@ -44,6 +44,8 @@ namespace chromeos {
 class LoginDisplayHostMojo;
 class OobeUI;
 
+class CaptivePortalDialogDelegate;
+
 // This class manages the behavior of the Oobe UI dialog.
 // And its lifecycle is managed by the widget created in Show().
 //   WebDialogView<----delegate_----OobeUIDialogDelegate
@@ -54,9 +56,8 @@ class OobeUI;
 class OobeUIDialogDelegate : public display::DisplayObserver,
                              public TabletModeClientObserver,
                              public ui::WebDialogDelegate,
-                             public ChromeWebModalDialogManagerDelegate,
-                             public web_modal::WebContentsModalDialogHost,
-                             public keyboard::KeyboardControllerObserver {
+                             public keyboard::KeyboardControllerObserver,
+                             public CaptivePortalWindowProxy::Observer {
  public:
   explicit OobeUIDialogDelegate(base::WeakPtr<LoginDisplayHostMojo> controller);
   ~OobeUIDialogDelegate() override;
@@ -79,22 +80,14 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   // Update the oobe state of the dialog.
   void SetState(ash::mojom::OobeDialogState state);
 
+  // Tell the dialog whether to call FixCaptivePortal next time it is shown.
+  void SetShouldDisplayCaptivePortal(bool should_display);
+
   content::WebContents* GetWebContents();
 
   void UpdateSizeAndPosition(int width, int height);
   OobeUI* GetOobeUI() const;
   gfx::NativeWindow GetNativeWindow() const;
-
-  // ChromeWebModalDialogManagerDelegate:
-  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
-      override;
-
-  // web_modal::WebContentsModalDialogHost:
-  gfx::NativeView GetHostView() const override;
-  gfx::Point GetDialogPosition(const gfx::Size& size) override;
-  gfx::Size GetMaximumDialogSize() override;
-  void AddObserver(web_modal::ModalDialogHostObserver* observer) override;
-  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override;
 
  private:
   // display::DisplayObserver:
@@ -124,7 +117,13 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   // keyboard::KeyboardControllerObserver:
   void OnKeyboardVisibilityStateChanged(bool is_visible) override;
 
+  // CaptivePortalWindowProxy::Observer:
+  void OnBeforeCaptivePortalShown() override;
+  void OnAfterCaptivePortalHidden() override;
+
   base::WeakPtr<LoginDisplayHostMojo> controller_;
+
+  CaptivePortalDialogDelegate* captive_portal_delegate_ = nullptr;
 
   // This is owned by the underlying native widget.
   // Before its deletion, onDialogClosed will get called and delete this object.
@@ -133,14 +132,21 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   gfx::Size size_;
   bool showing_fullscreen_ = false;
 
-  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
+  ScopedObserver<display::Screen, display::DisplayObserver> display_observer_{
+      this};
   ScopedObserver<TabletModeClient, TabletModeClientObserver>
-      tablet_mode_observer_;
+      tablet_mode_observer_{this};
   ScopedObserver<keyboard::KeyboardController, KeyboardControllerObserver>
-      keyboard_observer_;
+      keyboard_observer_{this};
+  ScopedObserver<CaptivePortalWindowProxy, OobeUIDialogDelegate>
+      captive_portal_observer_{this};
 
   std::map<ui::Accelerator, std::string> accel_map_;
   ash::mojom::OobeDialogState state_ = ash::mojom::OobeDialogState::HIDDEN;
+
+  // Whether the captive portal screen should be shown the next time the Gaia
+  // dialog is opened.
+  bool should_display_captive_portal_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUIDialogDelegate);
 };

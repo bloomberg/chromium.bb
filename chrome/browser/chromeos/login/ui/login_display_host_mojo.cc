@@ -109,7 +109,7 @@ void LoginDisplayHostMojo::HandleDisplayCaptivePortal() {
   if (dialog_->IsVisible())
     GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
   else
-    should_display_captive_portal_ = true;
+    dialog_->SetShouldDisplayCaptivePortal(true);
 }
 
 LoginDisplay* LoginDisplayHostMojo::GetLoginDisplay() {
@@ -278,11 +278,6 @@ void LoginDisplayHostMojo::ShowGaiaDialog(
   }
 
   dialog_->Show();
-
-  if (should_display_captive_portal_) {
-    GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
-    should_display_captive_portal_ = false;
-  }
 }
 
 void LoginDisplayHostMojo::HideOobeDialog() {

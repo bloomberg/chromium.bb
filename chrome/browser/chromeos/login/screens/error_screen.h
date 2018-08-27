@@ -45,6 +45,10 @@ class ErrorScreen : public BaseScreen,
   ErrorScreen(BaseScreenDelegate* base_screen_delegate, NetworkErrorView* view);
   ~ErrorScreen() override;
 
+  CaptivePortalWindowProxy* captive_portal_window_proxy() {
+    return captive_portal_window_proxy_.get();
+  }
+
   // Toggles the guest sign-in prompt.
   void AllowGuestSignin(bool allowed);
 
@@ -94,6 +98,10 @@ class ErrorScreen : public BaseScreen,
   // to connect to the network should be made.
   ConnectRequestCallbackSubscription RegisterConnectRequestCallback(
       const base::Closure& callback);
+
+  // Creates an instance of CaptivePortalWindowProxy, if one has not already
+  // been created.
+  void MaybeInitCaptivePortalWindowProxy(content::WebContents* web_contents);
 
   // BaseScreen overrides:
   void Show() override;

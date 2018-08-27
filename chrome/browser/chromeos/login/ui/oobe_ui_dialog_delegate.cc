@@ -62,13 +62,113 @@ class OobeWebDialogView : public views::WebDialogView {
   }
 };
 
+class CaptivePortalDialogDelegate
+    : public ui::WebDialogDelegate,
+      public ChromeWebModalDialogManagerDelegate,
+      public web_modal::WebContentsModalDialogHost {
+ public:
+  explicit CaptivePortalDialogDelegate(content::WebContents* web_contents)
+      : web_contents_(web_contents) {
+    view_ = new views::WebDialogView(ProfileHelper::GetSigninProfile(), this,
+                                     new ChromeWebContentsHandler);
+    view_->SetVisible(false);
+
+    views::Widget::InitParams params(
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    params.delegate = view_;
+    params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
+    ash_util::SetupWidgetInitParamsForContainer(
+        &params, ash::kShellWindowId_LockSystemModalContainer);
+
+    widget_ = new views::Widget;
+    widget_->Init(params);
+    widget_->SetBounds(display::Screen::GetScreen()
+                           ->GetDisplayNearestWindow(widget_->GetNativeWindow())
+                           .work_area());
+    widget_->SetOpacity(0);
+
+    // Set this as the web modal delegate so that captive portal dialog can
+    // appear.
+    web_modal::WebContentsModalDialogManager::CreateForWebContents(
+        web_contents_);
+    web_modal::WebContentsModalDialogManager::FromWebContents(web_contents_)
+        ->SetDelegate(this);
+  }
+
+  void Show() { widget_->Show(); }
+
+  void Hide() { widget_->Hide(); }
+
+  web_modal::WebContentsModalDialogHost* GetWebContentsModalDialogHost()
+      override {
+    return this;
+  }
+
+  // web_modal::WebContentsModalDialogHost:
+  gfx::NativeView GetHostView() const override {
+    return widget_->GetNativeWindow();
+  }
+
+  gfx::Point GetDialogPosition(const gfx::Size& size) override {
+    // Center the dialog in the screen.
+    gfx::Size host_size = GetHostView()->GetBoundsInScreen().size();
+    return gfx::Point(host_size.width() / 2 - size.width() / 2,
+                      host_size.height() / 2 - size.height() / 2);
+  }
+
+  gfx::Size GetMaximumDialogSize() override {
+    return display::Screen::GetScreen()
+        ->GetDisplayNearestWindow(widget_->GetNativeWindow())
+        .work_area()
+        .size();
+  }
+
+  void AddObserver(web_modal::ModalDialogHostObserver* observer) override {}
+
+  void RemoveObserver(web_modal::ModalDialogHostObserver* observer) override {}
+
+  // ui::WebDialogDelegate:
+  ui::ModalType GetDialogModalType() const override {
+    return ui::ModalType::MODAL_TYPE_SYSTEM;
+  }
+
+  base::string16 GetDialogTitle() const override { return base::string16(); }
+
+  GURL GetDialogContentURL() const override { return GURL(); }
+
+  void GetWebUIMessageHandlers(
+      std::vector<content::WebUIMessageHandler*>* handlers) const override {}
+
+  void GetDialogSize(gfx::Size* size) const override {
+    *size = display::Screen::GetScreen()
+                ->GetDisplayNearestWindow(widget_->GetNativeWindow())
+                .work_area()
+                .size();
+  }
+
+  std::string GetDialogArgs() const override { return std::string(); }
+
+  void OnDialogClosed(const std::string& json_retval) override { delete this; }
+
+  void OnCloseContents(content::WebContents* source,
+                       bool* out_close_dialog) override {
+    *out_close_dialog = false;
+  }
+
+  bool ShouldShowDialogTitle() const override { return false; }
+
+ private:
+  views::Widget* widget_ = nullptr;
+  views::WebDialogView* view_ = nullptr;
+  content::WebContents* web_contents_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(CaptivePortalDialogDelegate);
+};
+
 OobeUIDialogDelegate::OobeUIDialogDelegate(
     base::WeakPtr<LoginDisplayHostMojo> controller)
     : controller_(controller),
-      size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)),
-      display_observer_(this),
-      tablet_mode_observer_(this),
-      keyboard_observer_(this) {
+      size_(gfx::Size(kGaiaDialogWidth, kGaiaDialogHeight)) {
   display_observer_.Add(display::Screen::GetScreen());
   tablet_mode_observer_.Add(TabletModeClient::Get());
   // TODO(crbug.com/646565): Support virtual keyboard under MASH. There is no
@@ -102,12 +202,13 @@ OobeUIDialogDelegate::OobeUIDialogDelegate(
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
 
-  // Set this as the web modal delegate so that captive portal dialog can
-  // appear.
-  web_modal::WebContentsModalDialogManager::CreateForWebContents(
-      GetWebContents());
-  web_modal::WebContentsModalDialogManager::FromWebContents(GetWebContents())
-      ->SetDelegate(this);
+  captive_portal_delegate_ =
+      new CaptivePortalDialogDelegate(dialog_view_->web_contents());
+
+  GetOobeUI()->GetErrorScreen()->MaybeInitCaptivePortalWindowProxy(
+      dialog_view_->web_contents());
+  captive_portal_observer_.Add(
+      GetOobeUI()->GetErrorScreen()->captive_portal_window_proxy());
 }
 
 OobeUIDialogDelegate::~OobeUIDialogDelegate() {
@@ -123,9 +224,16 @@ bool OobeUIDialogDelegate::IsVisible() {
   return dialog_widget_->IsVisible();
 }
 
+void OobeUIDialogDelegate::SetShouldDisplayCaptivePortal(bool should_display) {
+  should_display_captive_portal_ = should_display;
+}
+
 void OobeUIDialogDelegate::Show() {
   dialog_widget_->Show();
   SetState(ash::mojom::OobeDialogState::GAIA_SIGNIN);
+
+  if (should_display_captive_portal_)
+    GetOobeUI()->GetErrorScreen()->FixCaptivePortal();
 }
 
 void OobeUIDialogDelegate::ShowFullScreen() {
@@ -206,35 +314,6 @@ OobeUI* OobeUIDialogDelegate::GetOobeUI() const {
 gfx::NativeWindow OobeUIDialogDelegate::GetNativeWindow() const {
   return dialog_widget_ ? dialog_widget_->GetNativeWindow() : nullptr;
 }
-
-web_modal::WebContentsModalDialogHost*
-OobeUIDialogDelegate::GetWebContentsModalDialogHost() {
-  return this;
-}
-
-gfx::NativeView OobeUIDialogDelegate::GetHostView() const {
-  return GetNativeWindow();
-}
-
-gfx::Point OobeUIDialogDelegate::GetDialogPosition(const gfx::Size& size) {
-  // Center the dialog in the screen.
-  gfx::Size host_size = GetHostView()->GetBoundsInScreen().size();
-  return gfx::Point(host_size.width() / 2 - size.width() / 2,
-                    host_size.height() / 2 - size.height() / 2);
-}
-
-gfx::Size OobeUIDialogDelegate::GetMaximumDialogSize() {
-  return display::Screen::GetScreen()
-      ->GetDisplayNearestWindow(GetNativeWindow())
-      .work_area()
-      .size();
-}
-
-void OobeUIDialogDelegate::AddObserver(
-    web_modal::ModalDialogHostObserver* observer) {}
-
-void OobeUIDialogDelegate::RemoveObserver(
-    web_modal::ModalDialogHostObserver* observer) {}
 
 void OobeUIDialogDelegate::OnDisplayMetricsChanged(
     const display::Display& display,
@@ -326,6 +405,21 @@ void OobeUIDialogDelegate::OnKeyboardVisibilityStateChanged(bool is_visible) {
     return;
 
   UpdateSizeAndPosition(size_.width(), size_.height());
+}
+
+void OobeUIDialogDelegate::OnBeforeCaptivePortalShown() {
+  should_display_captive_portal_ = false;
+
+  captive_portal_delegate_->Show();
+}
+
+void OobeUIDialogDelegate::OnAfterCaptivePortalHidden() {
+  // If the captive portal state went from hidden -> visible -> back to hidden
+  // while the OOBE dialog was not shown, we should not attempt to load the
+  // captive portal next time the OOBE dialog pops up.
+  should_display_captive_portal_ = false;
+
+  captive_portal_delegate_->Hide();
 }
 
 }  // namespace chromeos
