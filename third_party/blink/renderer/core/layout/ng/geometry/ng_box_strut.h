@@ -130,7 +130,14 @@ struct CORE_EXPORT NGPhysicalBoxStrut {
                      LayoutUnit left)
       : top(top), right(right), bottom(bottom), left(left) {}
 
+  // Converts physical dimensions to logical ones per
+  // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
   NGBoxStrut ConvertToLogical(WritingMode, TextDirection) const;
+
+  // Converts physical dimensions to line-relative logical ones per
+  // https://drafts.csswg.org/css-writing-modes-3/#line-directions
+  NGLineBoxStrut ConvertToLineLogical(WritingMode, TextDirection) const;
+
   NGPixelSnappedPhysicalBoxStrut SnapToDevicePixels() const;
 
   LayoutUnit HorizontalSum() const { return left + right; }
