@@ -27,6 +27,8 @@ issues]].
   new Braille where Chinese character is composed of two Braille
   Symbols, consonants and vowels and the tones are included in vowels.
 - Major update to the Urdu tables thanks to Jake Kyle.
+- Back-translation of numbers in Latvian, Polish, Portuguese, Serbian,
+  and Swedish has been fixed thanks to Bue Vester-Andersen.
 
 ** Other changes
 - Test suite improvements: In addition to checking the translation the
