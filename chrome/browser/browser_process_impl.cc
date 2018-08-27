@@ -307,7 +307,8 @@ void BrowserProcessImpl::Init() {
 }
 
 #if !defined(OS_ANDROID)
-void BrowserProcessImpl::SetQuitClosure(base::OnceClosure quit_closure) {
+void BrowserProcessImpl::OnEnteringMainMessageLoop(
+    base::OnceClosure quit_closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!quit_closure_);
   quit_closure_ = std::move(quit_closure);
@@ -1423,6 +1424,15 @@ void BrowserProcessImpl::Pin() {
 
 void BrowserProcessImpl::Unpin() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+#if !defined(OS_ANDROID)
+  // The quit closure is set by ChromeBrowserMainParts to transfer ownership of
+  // the browser's lifetime to the BrowserProcess. Any KeepAlives registered and
+  // unregistered prior to setting the quit closure are ignored. Only once the
+  // quit closure is set should unpinning start process shutdown.
+  if (!quit_closure_)
+    return;
+#endif
   release_last_reference_callstack_ = base::debug::StackTrace();
 
   DCHECK(!shutting_down_);
