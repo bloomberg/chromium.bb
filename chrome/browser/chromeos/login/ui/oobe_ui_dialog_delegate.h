@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
@@ -75,6 +76,9 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   // Returns whether the dialog is currently visible.
   bool IsVisible();
 
+  // Update the oobe state of the dialog.
+  void SetState(ash::mojom::OobeDialogState state);
+
   content::WebContents* GetWebContents();
 
   void UpdateSizeAndPosition(int width, int height);
@@ -136,6 +140,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
       keyboard_observer_;
 
   std::map<ui::Accelerator, std::string> accel_map_;
+  ash::mojom::OobeDialogState state_ = ash::mojom::OobeDialogState::HIDDEN;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUIDialogDelegate);
 };

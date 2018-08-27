@@ -322,16 +322,11 @@ void LoginScreenController::SetAuthType(
   }
 }
 
-void LoginScreenController::LoadUsers(
-    std::vector<mojom::LoginUserInfoPtr> users,
-    bool show_guest) {
+void LoginScreenController::SetUserList(
+    std::vector<mojom::LoginUserInfoPtr> users) {
   DCHECK(DataDispatcher());
 
   DataDispatcher()->NotifyUsers(users);
-  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
-      ->shelf_widget()
-      ->login_shelf_view()
-      ->SetAllowLoginAsGuest(show_guest);
 }
 
 void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
@@ -421,9 +416,24 @@ void LoginScreenController::SetKioskApps(
       ->SetKioskApps(std::move(kiosk_apps));
 }
 
-void LoginScreenController::NotifyOobeDialogVisibility(bool visible) {
+void LoginScreenController::NotifyOobeDialogState(
+    mojom::OobeDialogState state) {
   for (auto& observer : observers_)
-    observer.OnOobeDialogVisibilityChanged(visible);
+    observer.OnOobeDialogStateChanged(state);
+}
+
+void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetAllowLoginAsGuest(allow_guest);
+}
+
+void LoginScreenController::SetShowGuestButtonForGaiaScreen(bool can_show) {
+  Shelf::ForWindow(Shell::Get()->GetPrimaryRootWindow())
+      ->shelf_widget()
+      ->login_shelf_view()
+      ->SetShowGuestButtonForGaiaScreen(can_show);
 }
 
 void LoginScreenController::SetAddUserButtonEnabled(bool enable) {

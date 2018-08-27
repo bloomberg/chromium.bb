@@ -11,6 +11,7 @@
 #include "ash/lock_screen_action/lock_screen_action_background_observer.h"
 #include "ash/login/login_screen_controller_observer.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
+#include "ash/public/interfaces/login_screen.mojom.h"
 #include "ash/shutdown_controller.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/scoped_observer.h"
@@ -65,13 +66,16 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Sets the list of kiosk apps that can be launched from the login shelf.
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);
 
-  // Sets if the login dialog is visible. This hides some of the buttons on the
-  // LoginShelf.
-  void SetLoginDialogVisible(bool visible);
+  // Sets the state of the login dialog.
+  void SetLoginDialogState(mojom::OobeDialogState state);
 
   // Sets if the guest button on the login shelf can be shown. Even if set to
   // true the button may still not be visible.
   void SetAllowLoginAsGuest(bool allow_guest);
+
+  // Sets if the guest button on the login shelf can be shown during gaia
+  // signin screen.
+  void SetShowGuestButtonForGaiaScreen(bool can_show);
 
   // Sets whether users can be added from the login screen.
   void SetAddUserButtonEnabled(bool enable_add_user);
@@ -97,7 +101,7 @@ class ASH_EXPORT LoginShelfView : public views::View,
   void OnShutdownPolicyChanged(bool reboot_on_shutdown) override;
 
   // LoginScreenControllerObserver:
-  void OnOobeDialogVisibilityChanged(bool visible) override;
+  void OnOobeDialogStateChanged(mojom::OobeDialogState state) override;
 
  private:
   bool LockScreenActionBackgroundAnimating() const;
@@ -106,8 +110,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // policy updates, session state changes etc.
   void UpdateUi();
 
-  bool dialog_visible_ = false;
+  mojom::OobeDialogState dialog_state_ = mojom::OobeDialogState::HIDDEN;
   bool allow_guest_ = true;
+  bool allow_guest_during_gaia_ = false;
 
   LockScreenActionBackgroundController* lock_screen_action_background_;
 

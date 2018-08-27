@@ -124,8 +124,8 @@ bool OobeUIDialogDelegate::IsVisible() {
 }
 
 void OobeUIDialogDelegate::Show() {
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(true);
   dialog_widget_->Show();
+  SetState(ash::mojom::OobeDialogState::GAIA_SIGNIN);
 }
 
 void OobeUIDialogDelegate::ShowFullScreen() {
@@ -141,8 +141,8 @@ void OobeUIDialogDelegate::ShowFullScreen() {
 void OobeUIDialogDelegate::Hide() {
   if (!dialog_widget_)
     return;
-  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
   dialog_widget_->Hide();
+  SetState(ash::mojom::OobeDialogState::HIDDEN);
 }
 
 void OobeUIDialogDelegate::Close() {
@@ -152,6 +152,21 @@ void OobeUIDialogDelegate::Close() {
   // would cause the LoginShelfView to update its button visibility even though
   // the login screen is about to be destroyed. See http://crbug/836172
   dialog_widget_->Close();
+}
+
+void OobeUIDialogDelegate::SetState(ash::mojom::OobeDialogState state) {
+  if (!dialog_widget_ || state_ == state)
+    return;
+
+  // Gaia WebUI is preloaded, so it's possible that WebUI send certain state
+  // while the widget is not visible. Defer the state update until Show().
+  if (!dialog_widget_->IsVisible() &&
+      state != ash::mojom::OobeDialogState::HIDDEN) {
+    return;
+  }
+
+  state_ = state;
+  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogState(state_);
 }
 
 void OobeUIDialogDelegate::UpdateSizeAndPosition(int width, int height) {

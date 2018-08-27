@@ -17,7 +17,7 @@ void LoginScreenControllerObserver::SetAvatarForUser(
 void LoginScreenControllerObserver::OnFocusLeavingLockScreenApps(bool reverse) {
 }
 
-void LoginScreenControllerObserver::OnOobeDialogVisibilityChanged(
-    bool visible) {}
+void LoginScreenControllerObserver::OnOobeDialogStateChanged(
+    mojom::OobeDialogState state) {}
 
 }  // namespace ash
