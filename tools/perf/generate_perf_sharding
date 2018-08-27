@@ -9,15 +9,147 @@ We shard our benchmarks across multiple machines, when we run these benchmarks
 on the buildbot waterfall. This allows us to cut the runtime by the number of
 devices we shard to.
 
-Run -h to see available commands.
+The files are JSON dictionaries which map shard index to a list of benchmarks
+and benchmarks indexed by story. E.g.
+
+{
+  "0": {
+    "benchmarks": [
+      "power.desktop": {},
+      "rendering.mobile": {
+        "begin": 0,
+        "end": 104
+      },
+      ...
+    ],
+  }
+}
+
+This will be used to manually shard tests to certain bots, to more efficiently
+execute all our tests.
+
+Example usage:
+
+Generating sharding maps:
+tools/perf/core/retrieve_story_timing.py --output-file all_desktop_perf.json
+    -c 'linux-perf' -c 'Win 10 High-DPI Perf' -c 'Win 10 Perf' -c 'Win 7 Perf'
+    -c 'Win 7 Intel GPU Perf' -c 'Win 7 Nvidia GPU Perf' -c 'Mac 10.12 Perf'
+    -c 'Mac Pro 10.11 Perf' -c 'Mac Air 10.11 Perf'
+    -c 'mac-10_12_laptop_low_end-perf'
+tools/perf/generate_perf_sharding
+    --output-file tools/perf/core/desktop_sharding_map.json
+    --num-shards 26 --timing-data all_desktop_perf.json
+rm all_desktop_perf.json
+
+tools/perf/core/retrieve_story_timing.py --output-file all_mobile_perf.json
+    -c 'Android Nexus 5X Perf' -c 'Android Nexus5 Perf' -c 'Android One Perf'
+    -c 'Android Nexus5X WebView Perf' -c 'Android Nexus6 WebView Perf'
+tools/perf/generate_perf_sharding
+    --output-file tools/perf/core/mobile_sharding_map.json
+    --num-shards 39 --timing-data all_mobile_perf.json
+rm all_mobile_perf.json
+
+Generating and testing sharding maps:
+tools/perf/core/retrieve_story_timing.py --output-file all_desktop_perf.json
+    -c 'linux-perf' -c 'Win 10 High-DPI Perf' -c 'Win 10 Perf' -c 'Win 7 Perf'
+    -c 'Win 7 Intel GPU Perf' -c 'Win 7 Nvidia GPU Perf' -c 'Mac 10.12 Perf'
+    -c 'Mac Pro 10.11 Perf' -c 'Mac Air 10.11 Perf'
+    -c 'mac-10_12_laptop_low_end-perf'
+tools/perf/core/retrieve_story_timing.py --output-file win_10_test_data.json
+    -c 'Win 10 High-DPI Perf' --build-number 1924
+tools/perf/generate_perf_sharding
+    --output-file tools/perf/core/desktop_sharding_map.json
+    --num-shards 26 --timing-data all_desktop_perf.json
+    --test-data win_10_test_data.json
+rm all_desktop_perf.json
+rm win_10_test_data.json
+
 """
 
+import argparse
+import json
 import sys
 
+from core import benchmark_finders
 from core import benchmark_utils
 from core import sharding_map_generator
-from core import perf_data_generator
 
+
+def get_parser():
+  parser = argparse.ArgumentParser(
+      description='Generate perf test sharding map.')
+  parser.add_argument(
+      '--output-file', action='store', required=True,
+      help='The filename to write the sharding map to.')
+  parser.add_argument(
+      '--num-shards', action='store', required=True, type=int,
+      help='The number of shards to write to.')
+  parser.add_argument(
+      '--timing-data', action='store', required=True,
+      help='The file to read timing data from.')
+  # This json file should contain a list of dicts containing
+  #    the name and duration of the stories. For example:
+  #   [ { "duration": "98.039", "name": "webrtc/multiple_connections"},
+  #     { "duration": "85.118", "name": "webrtc/pause_connections"} ]
+
+  parser.add_argument(
+      '--test-data', action='store',
+      help='If specified, test the generated sharding map with this data.')
+  parser.add_argument(
+      '--test-data-output', action='store',
+      help='If specified with --test-data, file \
+          to output the tested timing data to.')
+  parser.add_argument(
+      '--debug', action='store',
+      help='If specified, the filename to write extra timing data to.')
+  parser.add_argument(
+      '--benchmarks',
+      help='Comma separated list of benchmark names to generate a map for',
+      required=False)
+  return parser
+
+
+def main(options, benchmarks_to_shard):
+  """
+    benchmarks_to_shard is a list all benchmarks to be sharded. Its
+    structure is as follows:
+    [{
+       "name": "benchmark_1",
+       "stories": [ "storyA", "storyB",...],
+       "repeat": <number of pageset_repeat>
+      },
+      {
+       "name": "benchmark_2",
+       "stories": [ "storyA", "storyB",...],
+       "repeat": <number of pageset_repeat>
+      },
+       ...
+    ]
+
+    The "stories" field contains a list of ordered story names. Notes that
+    this should match the actual order of how the benchmark stories are
+    executed for the sharding algorithm to be effective.
+  """
+  with open(options.timing_data) as f:
+    timing_data = json.load(f)
+  sharding_map = sharding_map_generator.generate_sharding_map(
+      benchmarks_to_shard,
+      timing_data, options.num_shards, options.debug)
+
+  with open(options.output_file, 'w') as output_file:
+    json.dump(sharding_map, output_file, indent = 4, separators=(',', ': '))
+
+  if options.test_data:
+    with open(options.test_data) as f:
+      timing_data = json.load(f)
+    test_results = sharding_map_generator.test_sharding_map(
+        sharding_map, benchmarks_to_shard, timing_data)
+    if options.test_data_output:
+      with open(options.test_data_output, 'w') as output_file:
+        json.dump(test_results, output_file, indent = 4, separators=(',', ': '))
+
+    else:
+      print json.dumps(test_results, indent=2)
 
 
 def _include_benchmark(name, shorlist):
@@ -27,24 +159,23 @@ def _include_benchmark(name, shorlist):
 
 
 if __name__ == '__main__':
-  parser = sharding_map_generator.get_parser()
+  parser = get_parser()
   options = parser.parse_args()
 
-  # Parse args and generate data here to avoid circular dependencies between
-  # sharding_map_generator.py and perf_data_generator.py
-  benchmarks = perf_data_generator.current_benchmarks()
+  benchmarks = benchmark_finders.GetAllPerfBenchmarks()
 
   shortlist = []
   if options.benchmarks:
     shortlist = options.benchmarks.split(',')
 
-  benchmarks_data = {}
+  benchmarks_to_shard = []
   for b in benchmarks:
     if not _include_benchmark(b.Name(), shortlist):
       continue
-    benchmarks_data[b.Name()] = {
+    benchmarks_to_shard.append({
+        'name': b.Name(),
         'repeat':  b().options.get('pageset_repeat', 1),
-        'stories': benchmark_utils.GetStoriesForbenchmark(b)
-    }
+        'stories': benchmark_utils.GetBenchmarkStoryNames(b())
+    })
 
-  sys.exit(sharding_map_generator.main(options, benchmarks_data))
+  sys.exit(main(options, benchmarks_to_shard))
