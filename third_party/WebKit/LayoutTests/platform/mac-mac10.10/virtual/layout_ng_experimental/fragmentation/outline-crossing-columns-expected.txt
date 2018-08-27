@@ -7,7 +7,7 @@ layer at (0,0) size 785x3116 backgroundClip at (0,0) size 785x600 clip at (0,0) 
 layer at (8,8) size 250x100
   LayoutNGBlockFlow {DIV} at (0,0) size 250x100
     LayoutMultiColumnSet (anonymous) at (0,0) size 250x58.75
-layer at (8,8) size 117x118 backgroundClip at (0,0) size 133x67 clip at (0,0) size 133x67
+layer at (8,8) size 117x118 backgroundClip at (0,0) size 785x67 clip at (0,0) size 785x67
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 117x117.50
     LayoutNGBlockFlow {DIV} at (0,0) size 30x30
     LayoutNGBlockFlow (anonymous) at (0,58.75) size 117x58.75

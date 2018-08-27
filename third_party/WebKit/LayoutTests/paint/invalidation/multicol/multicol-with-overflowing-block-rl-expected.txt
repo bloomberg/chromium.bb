@@ -19,17 +19,17 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [8, 8, 792, 167],
+          "rect": [8, 8, 792, 500],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [0, 341, 508, 167],
+          "rect": [0, 8, 508, 500],
           "reason": "style change"
         },
         {
           "object": "LayoutBlockFlow DIV id='elm'",
-          "rect": [8, 175, 500, 166],
+          "rect": [8, 8, 500, 500],
           "reason": "style change"
         }
       ]

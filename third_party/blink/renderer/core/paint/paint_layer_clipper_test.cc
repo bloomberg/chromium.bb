@@ -752,9 +752,9 @@ TEST_F(PaintLayerClipperTest, Fragmentation) {
                       &target_paint_layer->GetLayoutObject().FirstFragment(),
                       nullptr, layer_bounds, background_rect, foreground_rect);
 
-  EXPECT_EQ(LayoutRect(FloatRect(-1.0e6, -1.0e6, 1.0001e6, 1.0001e6)),
+  EXPECT_EQ(LayoutRect(FloatRect(-1.0e6, -1.0e6, 2.0000e6, 1.0001e6)),
             background_rect.Rect());
-  EXPECT_EQ(LayoutRect(FloatRect(-1.0e6, -1.0e6, 1.0001e6, 1.0001e6)),
+  EXPECT_EQ(LayoutRect(FloatRect(-1.0e6, -1.0e6, 2.0000e6, 1.0001e6)),
             foreground_rect.Rect());
   EXPECT_EQ(LayoutRect(FloatRect(0, 0, 100, 200)), layer_bounds);
 
@@ -764,9 +764,9 @@ TEST_F(PaintLayerClipperTest, Fragmentation) {
           target_paint_layer->GetLayoutObject().FirstFragment().NextFragment(),
           nullptr, layer_bounds, background_rect, foreground_rect);
 
-  EXPECT_EQ(LayoutRect(FloatRect(100, 0, 1000000, 999900)),
+  EXPECT_EQ(LayoutRect(FloatRect(-999900, 0, 2000000, 999900)),
             background_rect.Rect());
-  EXPECT_EQ(LayoutRect(FloatRect(100, 0, 1000000, 999900)),
+  EXPECT_EQ(LayoutRect(FloatRect(-999900, 0, 2000000, 999900)),
             foreground_rect.Rect());
   // Layer bounds adjusted for pagination offset of second fragment.
   EXPECT_EQ(LayoutRect(FloatRect(100, -100, 100, 200)), layer_bounds);

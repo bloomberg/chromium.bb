@@ -3962,7 +3962,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
   const auto* fragment_clip =
       FragmentAt(flowthread, 0).PaintProperties()->FragmentClip();
   ASSERT_NE(nullptr, fragment_clip);
-  EXPECT_EQ(FloatRect(-1000000, -1000000, 1000100, 1000030),
+  EXPECT_EQ(FloatRect(-1000000, -1000000, 2000000, 1000030),
             fragment_clip->ClipRect().Rect());
   EXPECT_EQ(fragment_clip,
             FragmentAt(relpos, 0).LocalBorderBoxProperties().Clip());
@@ -3977,7 +3977,8 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
   EXPECT_EQ(LayoutUnit(30), FragmentAt(flowthread, 1).LogicalTopInFlowThread());
   fragment_clip = FragmentAt(flowthread, 1).PaintProperties()->FragmentClip();
   ASSERT_NE(nullptr, fragment_clip);
-  EXPECT_EQ(FloatRect(100, 0, 1000000, 30), fragment_clip->ClipRect().Rect());
+  EXPECT_EQ(FloatRect(-999900, 0, 2000000, 30),
+            fragment_clip->ClipRect().Rect());
   EXPECT_EQ(fragment_clip,
             FragmentAt(relpos, 1).LocalBorderBoxProperties().Clip());
 
@@ -3990,7 +3991,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
   EXPECT_EQ(LayoutUnit(60), FragmentAt(flowthread, 2).LogicalTopInFlowThread());
   fragment_clip = FragmentAt(flowthread, 2).PaintProperties()->FragmentClip();
   ASSERT_NE(nullptr, fragment_clip);
-  EXPECT_EQ(FloatRect(-1000000, 80, 1000100, 30),
+  EXPECT_EQ(FloatRect(-1000000, 80, 2000000, 30),
             fragment_clip->ClipRect().Rect());
   EXPECT_EQ(fragment_clip,
             FragmentAt(relpos, 2).LocalBorderBoxProperties().Clip());
@@ -4005,7 +4006,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentsUnderMultiColumn) {
   EXPECT_EQ(LayoutUnit(90), FragmentAt(flowthread, 3).LogicalTopInFlowThread());
   fragment_clip = FragmentAt(flowthread, 3).PaintProperties()->FragmentClip();
   ASSERT_NE(nullptr, fragment_clip);
-  EXPECT_EQ(FloatRect(100, 80, 1000000, 999910),
+  EXPECT_EQ(FloatRect(-999900, 80, 2000000, 999910),
             fragment_clip->ClipRect().Rect());
   EXPECT_EQ(fragment_clip,
             FragmentAt(relpos, 3).LocalBorderBoxProperties().Clip());
@@ -5273,9 +5274,10 @@ TEST_P(PaintPropertyTreeBuilderTest, FragmentClipPixelSnapped) {
   const auto* second_clip =
       FragmentAt(flow_thread, 1).PaintProperties()->FragmentClip();
 
-  EXPECT_EQ(FloatRect(-999992, -999992, 1000025, 1000050),
+  EXPECT_EQ(FloatRect(-999992, -999992, 2000000, 1000050),
             first_clip->ClipRect().Rect());
-  EXPECT_EQ(FloatRect(33, 8, 1000000, 999951), second_clip->ClipRect().Rect());
+  EXPECT_EQ(FloatRect(-999967, 8, 2000000, 999951),
+            second_clip->ClipRect().Rect());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest,

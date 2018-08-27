@@ -79,11 +79,10 @@ LayoutUnit FragmentainerIterator::FragmentainerLogicalTopInFlowThread() const {
          current_fragmentainer_index_ * group.ColumnLogicalHeight();
 }
 
-LayoutRect FragmentainerIterator::ClipRectInFlowThread(
-    MultiColumnFragmentainerGroup::ClipRectAxesSelector axes_selector) const {
+LayoutRect FragmentainerIterator::ClipRectInFlowThread() const {
   DCHECK(!AtEnd());
   LayoutRect clip_rect = CurrentGroup().FlowThreadPortionOverflowRectAt(
-      current_fragmentainer_index_, axes_selector);
+      current_fragmentainer_index_);
   flow_thread_.FlipForWritingMode(clip_rect);
   return clip_rect;
 }
