@@ -117,9 +117,6 @@ CONTENT_EXPORT bool IsSchemeSupportedForAppCache(const GURL& url);
 CONTENT_EXPORT bool IsMethodSupportedForAppCache(
     const std::string& method);
 
-CONTENT_EXPORT extern const base::FilePath::CharType
-    kAppCacheDatabaseName[];
-
 }  // namespace
 
 #endif  // CONTENT_COMMON_APPCACHE_INTERFACES_H_

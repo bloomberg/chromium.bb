@@ -44,17 +44,20 @@
 
 namespace content {
 
-const int kMB = 1024 * 1024;
+namespace {
+
+constexpr const int kMB = 1024 * 1024;
 
 // Hard coded default when not using quota management.
-static const int kDefaultQuota = 5 * kMB;
+constexpr const int kDefaultQuota = 5 * kMB;
 
-static const int kMaxAppCacheDiskCacheSize = 250 * kMB;
-static const int kMaxAppCacheMemDiskCacheSize = 10 * kMB;
-static const base::FilePath::CharType kDiskCacheDirectoryName[] =
+constexpr const int kMaxAppCacheDiskCacheSize = 250 * kMB;
+constexpr const int kMaxAppCacheMemDiskCacheSize = 10 * kMB;
+
+constexpr base::FilePath::CharType kDiskCacheDirectoryName[] =
     FILE_PATH_LITERAL("Cache");
-
-namespace {
+constexpr base::FilePath::CharType kAppCacheDatabaseName[] =
+    FILE_PATH_LITERAL("Index");
 
 // Helpers for clearing data from the AppCacheDatabase.
 bool DeleteGroupAndRelatedRecords(
