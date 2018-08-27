@@ -56,7 +56,11 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
       return 1;
     case LOCATION_BAR_ELEMENT_PADDING: {
-      const int kPadding[] = {1, 3, 3, 2, 3};
+      constexpr int kPadding[] = {1, 3, 3, 2, 3};
+      return kPadding[mode];
+    }
+    case LOCATION_BAR_BETWEEN_ELEMENTS_PADDING: {
+      constexpr int kPadding[] = {1, 3, 3, 0, 0};
       return kPadding[mode];
     }
     case LOCATION_BAR_HEIGHT: {
