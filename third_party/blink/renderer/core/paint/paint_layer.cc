@@ -347,7 +347,7 @@ void PaintLayer::UpdateLayerPositionRecursive(
     SetNeedsCompositingInputsUpdate();
 
   for (PaintLayer* child = FirstChild(); child; child = child->NextSibling())
-    child->UpdateLayerPositionRecursive(behavior);
+    child->UpdateLayerPositionRecursive(behavior, dirty_compositing_if_needed);
 }
 
 bool PaintLayer::SticksToScroller() const {
