@@ -4,7 +4,6 @@
 
 /**
  * @fileoverview Store ChromeVox log.
- *
  */
 
 goog.provide('LogStore');

@@ -67,21 +67,29 @@ LogPage.update = function() {
   }
 
   var log = LogPage.LogStore.getLogs();
-  LogPage.updateLog(log, document.getElementById('logContent'));
+  LogPage.updateLog(log, document.getElementById('logList'));
 };
 
 /**
  * Updates the log section.
- * @param {Array<Log>} log Array of speech.
- * @param {Element} ul
+ * @param {!Array<Log>} log Array of speech.
+ * @param {Element} div
  */
-LogPage.updateLog = function(log, ul) {
+LogPage.updateLog = function(log, div) {
   for (var i = 0; i < log.length; i++) {
     if (sessionStorage.getItem(log[i].logType + 'Filter') != 'true')
       continue;
-    var li = document.createElement('li');
-    li.appendChild(document.createTextNode(log[i].logStr));
-    ul.appendChild(li);
+
+    var p = document.createElement('p');
+    var typeName = document.createElement('span');
+    typeName.textContent = log[i].logType;
+    typeName.className = 'log-type-tag';
+    var textWrapper = document.createElement('span');
+    textWrapper.textContent = log[i].logStr;
+
+    p.appendChild(typeName);
+    p.appendChild(textWrapper);
+    div.appendChild(p);
   }
 };
 
