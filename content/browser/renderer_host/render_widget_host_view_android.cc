@@ -21,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "cc/base/math_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/trees/latency_info_swap_promise.h"
@@ -146,10 +147,6 @@ void RecordToolTypeForActionDown(const ui::MotionEventAndroid& event) {
         static_cast<int>(event.GetToolType(0)),
         static_cast<int>(ui::MotionEventAndroid::ToolType::LAST) + 1);
   }
-}
-
-bool FloatEquals(float a, float b) {
-  return std::abs(a - b) < FLT_EPSILON;
 }
 
 void WakeUpGpu(GpuProcessHost* host) {
@@ -1344,7 +1341,8 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
   float top_content_offset = top_controls_height * top_controls_shown_ratio;
   float top_shown_pix = top_content_offset * to_pix;
   float top_translate = top_shown_pix - top_controls_pix;
-  bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
+  bool top_changed =
+      !cc::MathUtil::IsFloatNearlyTheSame(top_shown_pix, prev_top_shown_pix_);
   // TODO(mthiesse, https://crbug.com/853686): Remove the IsInVR check once
   // there are no use cases for ignoring the initial update.
   if (top_changed || (!controls_initialized_ && IsInVR()))
@@ -1354,7 +1352,8 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
 
   float bottom_controls_pix = bottom_controls_height * to_pix;
   float bottom_shown_pix = bottom_controls_pix * bottom_controls_shown_ratio;
-  bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
+  bool bottom_changed = !cc::MathUtil::IsFloatNearlyTheSame(
+      bottom_shown_pix, prev_bottom_shown_pix_);
   float bottom_translate = bottom_controls_pix - bottom_shown_pix;
   if (bottom_changed || (!controls_initialized_ && IsInVR()))
     view_.OnBottomControlsChanged(bottom_translate, bottom_shown_pix);
