@@ -195,29 +195,38 @@ function keyboardDeleteFolder(path, treeItem) {
 
 /**
  * Renames a file.
- * @param {string} windowId ID of the window.
+ *
+ * @param {string} appId The Files app windowId.
  * @param {string} oldName Old name of a file.
  * @param {string} newName New name of a file.
  * @return {Promise} Promise to be fulfilled on success.
  */
-function renameFile(windowId, oldName, newName) {
-  return remoteCall.callRemoteTestUtil('selectFile', windowId, [oldName]).
-    then(function() {
-      // Push Ctrl+Enter.
-      return remoteCall.fakeKeyDown(
-          windowId, '#detail-table', 'Enter', 'Enter', true, false, false);
-    }).then(function() {
-      // Wait for rename text field.
-      return remoteCall.waitForElement(windowId, 'input.rename');
-    }).then(function() {
-      // Type new file name.
-      return remoteCall.callRemoteTestUtil(
-          'inputText', windowId, ['input.rename', newName]);
-    }).then(function() {
-      // Push Enter.
-      return remoteCall.fakeKeyDown(
-          windowId, 'input.rename', 'Enter', 'Enter', false, false, false);
-    });
+function renameFile(appId, oldName, newName) {
+  const textInput = '#file-list .table-row[renaming] input.rename';
+
+  return Promise.resolve().then(function() {
+    // Select the file.
+    return remoteCall.callRemoteTestUtil('selectFile', appId, [oldName]);
+  }).then(function(result) {
+    chrome.test.assertTrue(result, 'selectFile failed');
+    // Press Ctrl+Enter key to rename the file.
+    const key = ['#file-list', 'Enter', 'Enter', true, false, false];
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
+    // Check: the renaming text input should be shown in the file list.
+    return remoteCall.waitForElement(appId, textInput);
+  }).then(function() {
+    // Type new file name.
+    return remoteCall.callRemoteTestUtil(
+        'inputText', appId, [textInput, newName]);
+  }).then(function() {
+    // Send Enter key to the text input.
+    const key = [textInput, 'Enter', 'Enter', false, false, false];
+    return remoteCall.callRemoteTestUtil('fakeKeyDown', appId, key);
+  }).then(function(result) {
+    chrome.test.assertTrue(result);
+  });
 }
 
 /**
