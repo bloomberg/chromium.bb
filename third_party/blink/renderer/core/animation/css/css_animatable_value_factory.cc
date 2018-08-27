@@ -39,7 +39,7 @@
 
 namespace blink {
 
-static scoped_refptr<AnimatableValue> CreateFromTransformProperties(
+static AnimatableValue* CreateFromTransformProperties(
     scoped_refptr<TransformOperation> transform,
     double zoom,
     scoped_refptr<TransformOperation> initial_transform) {
@@ -52,9 +52,8 @@ static scoped_refptr<AnimatableValue> CreateFromTransformProperties(
   return AnimatableTransform::Create(operation, has_transform ? zoom : 1);
 }
 
-scoped_refptr<AnimatableValue> CSSAnimatableValueFactory::Create(
-    const CSSProperty& property,
-    const ComputedStyle& style) {
+AnimatableValue* CSSAnimatableValueFactory::Create(const CSSProperty& property,
+                                                   const ComputedStyle& style) {
   DCHECK(property.IsInterpolable());
   DCHECK(property.IsCompositableProperty());
   switch (property.PropertyID()) {

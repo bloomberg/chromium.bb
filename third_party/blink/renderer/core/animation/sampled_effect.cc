@@ -24,12 +24,12 @@ bool SampledEffect::WillNeverChange() const {
 
 void SampledEffect::RemoveReplacedInterpolations(
     const HashSet<PropertyHandle>& replaced_properties) {
-  size_t new_size = 0;
-  for (auto& interpolation : interpolations_) {
-    if (!replaced_properties.Contains(interpolation->GetProperty()))
-      interpolations_[new_size++].swap(interpolation);
-  }
-  interpolations_.Shrink(new_size);
+  auto* new_end = std::remove_if(
+      interpolations_.begin(), interpolations_.end(),
+      [&](const auto& interpolation) {
+        return replaced_properties.Contains(interpolation->GetProperty());
+      });
+  interpolations_.Shrink(new_end - interpolations_.begin());
 }
 
 void SampledEffect::UpdateReplacedProperties(
@@ -42,6 +42,7 @@ void SampledEffect::UpdateReplacedProperties(
 
 void SampledEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(effect_);
+  visitor->Trace(interpolations_);
 }
 
 }  // namespace blink

@@ -39,16 +39,15 @@ class InterpolationType;
 // function.
 class CORE_EXPORT TransitionInterpolation : public Interpolation {
  public:
-  static scoped_refptr<TransitionInterpolation> Create(
-      const PropertyHandle& property,
-      const InterpolationType& type,
-      InterpolationValue&& start,
-      InterpolationValue&& end,
-      const scoped_refptr<AnimatableValue> compositor_start,
-      const scoped_refptr<AnimatableValue> compositor_end) {
-    return base::AdoptRef(new TransitionInterpolation(
-        property, type, std::move(start), std::move(end),
-        std::move(compositor_start), std::move(compositor_end)));
+  static TransitionInterpolation* Create(const PropertyHandle& property,
+                                         const InterpolationType& type,
+                                         InterpolationValue&& start,
+                                         InterpolationValue&& end,
+                                         AnimatableValue* compositor_start,
+                                         AnimatableValue* compositor_end) {
+    return new TransitionInterpolation(property, type, std::move(start),
+                                       std::move(end), compositor_start,
+                                       compositor_end);
   }
 
   void Apply(StyleResolverState&) const;
@@ -59,24 +58,30 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
 
   std::unique_ptr<TypedInterpolationValue> GetInterpolatedValue() const;
 
-  scoped_refptr<AnimatableValue> GetInterpolatedCompositorValue() const;
+  AnimatableValue* GetInterpolatedCompositorValue() const;
 
   void Interpolate(int iteration, double fraction) final;
+
+  void Trace(Visitor* visitor) override {
+    visitor->Trace(compositor_start_);
+    visitor->Trace(compositor_end_);
+    Interpolation::Trace(visitor);
+  }
 
  protected:
   TransitionInterpolation(const PropertyHandle& property,
                           const InterpolationType& type,
                           InterpolationValue&& start,
                           InterpolationValue&& end,
-                          const scoped_refptr<AnimatableValue> compositor_start,
-                          const scoped_refptr<AnimatableValue> compositor_end)
+                          AnimatableValue* compositor_start,
+                          AnimatableValue* compositor_end)
       : property_(property),
         type_(type),
         start_(std::move(start)),
         end_(std::move(end)),
         merge_(type.MaybeMergeSingles(start_.Clone(), end_.Clone())),
-        compositor_start_(std::move(compositor_start)),
-        compositor_end_(std::move(compositor_end)) {
+        compositor_start_(compositor_start),
+        compositor_end_(compositor_end) {
     // Incredibly speculative CHECKs, to try and get any insight on
     // crbug.com/826627. Somehow a crash is happening in this constructor, which
     // we believe is based on |start_| having no interpolable value. However a
@@ -99,8 +104,8 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
   const InterpolationValue start_;
   const InterpolationValue end_;
   const PairwiseInterpolationValue merge_;
-  const scoped_refptr<AnimatableValue> compositor_start_;
-  const scoped_refptr<AnimatableValue> compositor_end_;
+  const Member<AnimatableValue> compositor_start_;
+  const Member<AnimatableValue> compositor_end_;
 
   mutable double cached_fraction_ = 0;
   mutable int cached_iteration_ = 0;

@@ -532,7 +532,7 @@ void AddKeyframeToCurve(CompositorTransformAnimationCurve& curve,
 template <typename PlatformAnimationCurveType>
 void AddKeyframesToCurve(PlatformAnimationCurveType& curve,
                          const PropertySpecificKeyframeVector& keyframes) {
-  auto* last_keyframe = keyframes.back().get();
+  Keyframe::PropertySpecificKeyframe* last_keyframe = keyframes.back();
   for (const auto& keyframe : keyframes) {
     const TimingFunction* keyframe_timing_function = nullptr;
     // Ignore timing function of last frame.
@@ -542,7 +542,7 @@ void AddKeyframesToCurve(PlatformAnimationCurveType& curve,
       keyframe_timing_function = &keyframe->Easing();
 
     const AnimatableValue* value = keyframe->GetAnimatableValue();
-    AddKeyframeToCurve(curve, keyframe.get(), value, *keyframe_timing_function);
+    AddKeyframeToCurve(curve, keyframe, value, *keyframe_timing_function);
   }
 }
 

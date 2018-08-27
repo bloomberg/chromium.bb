@@ -25,10 +25,10 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
 
   void Clear();
 
-  const Vector<scoped_refptr<Interpolation>>& Interpolations() const {
+  const HeapVector<Member<Interpolation>>& Interpolations() const {
     return interpolations_;
   }
-  Vector<scoped_refptr<Interpolation>>& MutableInterpolations() {
+  HeapVector<Member<Interpolation>>& MutableInterpolations() {
     return interpolations_;
   }
 
@@ -45,7 +45,7 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   SampledEffect(KeyframeEffect*, unsigned sequence_number);
 
   WeakMember<KeyframeEffect> effect_;
-  Vector<scoped_refptr<Interpolation>> interpolations_;
+  HeapVector<Member<Interpolation>> interpolations_;
   const unsigned sequence_number_;
   KeyframeEffect::Priority priority_;
   DISALLOW_COPY_AND_ASSIGN(SampledEffect);

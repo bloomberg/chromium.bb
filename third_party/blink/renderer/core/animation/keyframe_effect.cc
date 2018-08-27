@@ -355,7 +355,7 @@ void KeyframeEffect::ApplyEffects() {
                              IterationDuration(),
                              sampled_effect_->MutableInterpolations());
   } else {
-    Vector<scoped_refptr<Interpolation>> interpolations;
+    HeapVector<Member<Interpolation>> interpolations;
     model_->Sample(clampTo<int>(iteration, 0), Progress().value(),
                    IterationDuration(), interpolations);
     if (!interpolations.IsEmpty()) {

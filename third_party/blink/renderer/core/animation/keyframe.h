@@ -13,9 +13,9 @@
 #include "third_party/blink/renderer/core/animation/effect_model.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -60,9 +60,7 @@ class V8ObjectBuilder;
 // from the keyframe effect. See KeyframeEffectModelBase::EnsureKeyframeGroups.
 //
 // FIXME: Make Keyframe immutable
-class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
-  USING_FAST_MALLOC(Keyframe);
-
+class CORE_EXPORT Keyframe : public GarbageCollectedFinalized<Keyframe> {
  public:
   virtual ~Keyframe() = default;
 
@@ -97,11 +95,11 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   // The clone should have the same (property, value) pairs, offset value,
   // composite operation, and timing function, as well as any other
   // subclass-specific data.
-  virtual scoped_refptr<Keyframe> Clone() const = 0;
+  virtual Keyframe* Clone() const = 0;
 
   // Helper function to create a clone of this keyframe with a specific offset.
-  scoped_refptr<Keyframe> CloneWithOffset(double offset) const {
-    scoped_refptr<Keyframe> the_clone = Clone();
+  Keyframe* CloneWithOffset(double offset) const {
+    Keyframe* the_clone = Clone();
     the_clone->SetOffset(offset);
     return the_clone;
   }
@@ -115,11 +113,12 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   virtual bool IsStringKeyframe() const { return false; }
   virtual bool IsTransitionKeyframe() const { return false; }
 
+  virtual void Trace(Visitor*) {}
+
   // Represents a property-specific keyframe as defined in the spec. Refer to
   // the Keyframe class-level documentation for more details.
-  class PropertySpecificKeyframe : public RefCounted<PropertySpecificKeyframe> {
-    USING_FAST_MALLOC(PropertySpecificKeyframe);
-
+  class PropertySpecificKeyframe
+      : public GarbageCollectedFinalized<PropertySpecificKeyframe> {
    public:
     virtual ~PropertySpecificKeyframe() = default;
     double Offset() const { return offset_; }
@@ -129,8 +128,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
       return composite_ == EffectModel::kCompositeReplace ? 0 : 1;
     }
     virtual bool IsNeutral() const = 0;
-    virtual scoped_refptr<PropertySpecificKeyframe> CloneWithOffset(
-        double offset) const = 0;
+    virtual PropertySpecificKeyframe* CloneWithOffset(double offset) const = 0;
 
     // FIXME: Remove this once CompositorAnimations no longer depends on
     // AnimatableValues
@@ -150,12 +148,14 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
     virtual bool IsSVGPropertySpecificKeyframe() const { return false; }
     virtual bool IsTransitionPropertySpecificKeyframe() const { return false; }
 
-    virtual scoped_refptr<PropertySpecificKeyframe> NeutralKeyframe(
+    virtual PropertySpecificKeyframe* NeutralKeyframe(
         double offset,
         scoped_refptr<TimingFunction> easing) const = 0;
-    virtual scoped_refptr<Interpolation> CreateInterpolation(
+    virtual Interpolation* CreateInterpolation(
         const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const;
+
+    virtual void Trace(Visitor*){};
 
    protected:
     PropertySpecificKeyframe(double offset,
@@ -180,8 +180,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   // PropertySpecificKeyframe. For CSS Transitions and CSS Animations, this is
   // the normal offset from the keyframe itself. However in web-animations this
   // will be a computed offset value which may differ from the keyframe offset.
-  virtual scoped_refptr<PropertySpecificKeyframe>
-  CreatePropertySpecificKeyframe(
+  virtual PropertySpecificKeyframe* CreatePropertySpecificKeyframe(
       const PropertyHandle&,
       EffectModel::CompositeOperation effect_composite,
       double offset) const = 0;

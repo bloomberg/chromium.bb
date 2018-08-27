@@ -108,10 +108,10 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
   EXPECT_EQ(1, keyframes[1]->CheckedOffset());
 
   const CSSValue& keyframe1_width =
-      ToStringKeyframe(keyframes[0].get())
+      ToStringKeyframe(keyframes[0])
           ->CssPropertyValue(PropertyHandle(GetCSSPropertyWidth()));
   const CSSValue& keyframe2_width =
-      ToStringKeyframe(keyframes[1].get())
+      ToStringKeyframe(keyframes[1])
           ->CssPropertyValue(PropertyHandle(GetCSSPropertyWidth()));
 
   EXPECT_EQ("100px", keyframe1_width.CssText());

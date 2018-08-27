@@ -258,6 +258,10 @@ class CSSAnimationUpdate final {
     visitor->Trace(suppressed_animations_);
     visitor->Trace(animations_with_updates_);
     visitor->Trace(updated_compositor_keyframes_);
+    visitor->Trace(active_interpolations_for_custom_animations_);
+    visitor->Trace(active_interpolations_for_standard_animations_);
+    visitor->Trace(active_interpolations_for_custom_transitions_);
+    visitor->Trace(active_interpolations_for_standard_transitions_);
   }
 
  private:

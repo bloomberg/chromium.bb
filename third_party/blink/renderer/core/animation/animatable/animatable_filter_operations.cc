@@ -34,7 +34,7 @@
 
 namespace blink {
 
-scoped_refptr<AnimatableValue> AnimatableFilterOperations::InterpolateTo(
+AnimatableValue* AnimatableFilterOperations::InterpolateTo(
     const AnimatableValue* value,
     double fraction) const {
   const AnimatableFilterOperations* target =
@@ -62,6 +62,11 @@ scoped_refptr<AnimatableValue> AnimatableFilterOperations::InterpolateTo(
       NOTREACHED();
   }
   return AnimatableFilterOperations::Create(result);
+}
+
+void AnimatableFilterOperations::Trace(Visitor* visitor) {
+  visitor->Trace(operation_wrapper_);
+  AnimatableValue::Trace(visitor);
 }
 
 }  // namespace blink

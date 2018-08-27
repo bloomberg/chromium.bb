@@ -56,13 +56,16 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   // FIXME: Implement accumulation.
 
   using PropertySpecificKeyframeVector =
-      Vector<scoped_refptr<Keyframe::PropertySpecificKeyframe>>;
-  class PropertySpecificKeyframeGroup {
+      HeapVector<Member<Keyframe::PropertySpecificKeyframe>>;
+  class PropertySpecificKeyframeGroup
+      : public GarbageCollected<PropertySpecificKeyframeGroup> {
    public:
-    void AppendKeyframe(scoped_refptr<Keyframe::PropertySpecificKeyframe>);
+    void AppendKeyframe(Keyframe::PropertySpecificKeyframe*);
     const PropertySpecificKeyframeVector& Keyframes() const {
       return keyframes_;
     }
+
+    void Trace(Visitor* visitor) { visitor->Trace(keyframes_); }
 
    private:
     void RemoveRedundantKeyframes();
@@ -79,11 +82,11 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 
   PropertyHandleSet Properties() const;
 
-  using KeyframeVector = Vector<scoped_refptr<Keyframe>>;
+  using KeyframeVector = HeapVector<Member<Keyframe>>;
   const KeyframeVector& GetFrames() const { return keyframes_; }
   bool HasFrames() const { return !keyframes_.IsEmpty(); }
   template <class K>
-  void SetFrames(Vector<K>& keyframes);
+  void SetFrames(HeapVector<K>& keyframes);
 
   CompositeOperation Composite() const { return composite_; }
   void SetComposite(CompositeOperation composite) { composite_ = composite; }
@@ -95,7 +98,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   }
 
   using KeyframeGroupMap =
-      HashMap<PropertyHandle, std::unique_ptr<PropertySpecificKeyframeGroup>>;
+      HeapHashMap<PropertyHandle, Member<PropertySpecificKeyframeGroup>>;
   const KeyframeGroupMap& GetPropertySpecificKeyframeGroups() const {
     EnsureKeyframeGroups();
     return *keyframe_groups_;
@@ -105,7 +108,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   bool Sample(int iteration,
               double fraction,
               double iteration_duration,
-              Vector<scoped_refptr<Interpolation>>&) const override;
+              HeapVector<Member<Interpolation>>&) const override;
 
   bool IsKeyframeEffectModel() const override { return true; }
 
@@ -133,7 +136,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
       const ComputedStyle* parent_style) const;
 
   template <class K>
-  static Vector<double> GetComputedOffsets(const Vector<K>& keyframes);
+  static Vector<double> GetComputedOffsets(const HeapVector<K>& keyframes);
 
   bool Affects(const PropertyHandle& property) const override {
     EnsureKeyframeGroups();
@@ -144,10 +147,13 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 
   virtual KeyframeEffectModelBase* Clone() = 0;
 
+  void Trace(Visitor*) override;
+
  protected:
   KeyframeEffectModelBase(CompositeOperation composite,
                           scoped_refptr<TimingFunction> default_keyframe_easing)
-      : last_iteration_(0),
+      : interpolation_effect_(new InterpolationEffect),
+        last_iteration_(0),
         last_fraction_(std::numeric_limits<double>::quiet_NaN()),
         last_iteration_duration_(0),
         composite_(composite),
@@ -163,8 +169,8 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   // The spec describes filtering the normalized keyframes at sampling time
   // to get the 'property-specific keyframes'. For efficiency, we cache the
   // property-specific lists.
-  mutable std::unique_ptr<KeyframeGroupMap> keyframe_groups_;
-  mutable InterpolationEffect interpolation_effect_;
+  mutable Member<KeyframeGroupMap> keyframe_groups_;
+  mutable Member<InterpolationEffect> interpolation_effect_;
   mutable int last_iteration_;
   mutable double last_fraction_;
   mutable double last_iteration_duration_;
@@ -181,7 +187,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
 template <class K>
 class KeyframeEffectModel final : public KeyframeEffectModelBase {
  public:
-  using KeyframeVector = Vector<scoped_refptr<K>>;
+  using KeyframeVector = HeapVector<Member<K>>;
   static KeyframeEffectModel<K>* Create(
       const KeyframeVector& keyframes,
       CompositeOperation composite = kCompositeReplace,
@@ -193,9 +199,8 @@ class KeyframeEffectModel final : public KeyframeEffectModelBase {
   KeyframeEffectModelBase* Clone() override {
     KeyframeVector keyframes;
     for (const auto& keyframe : GetFrames()) {
-      scoped_refptr<Keyframe> new_keyframe = keyframe->Clone();
-      keyframes.push_back(
-          scoped_refptr<K>(static_cast<K*>(new_keyframe.get())));
+      Keyframe* new_keyframe = keyframe->Clone();
+      keyframes.push_back(static_cast<K*>(new_keyframe));
     }
     return Create(keyframes, composite_, default_keyframe_easing_);
   }

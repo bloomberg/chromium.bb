@@ -9,15 +9,15 @@
 #include "third_party/blink/renderer/core/animation/keyframe.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/timing_function.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
 // Stores all adjacent pairs of keyframes (represented by Interpolations) in a
 // KeyframeEffectModel with keyframe offset data preprocessed for more efficient
 // active keyframe pair sampling.
-class CORE_EXPORT InterpolationEffect {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
+class CORE_EXPORT InterpolationEffect
+    : public GarbageCollected<InterpolationEffect> {
  public:
   InterpolationEffect() : is_populated_(false) {}
 
@@ -31,17 +31,16 @@ class CORE_EXPORT InterpolationEffect {
 
   void GetActiveInterpolations(double fraction,
                                double iteration_duration,
-                               Vector<scoped_refptr<Interpolation>>&) const;
+                               HeapVector<Member<Interpolation>>&) const;
 
-  void AddInterpolation(scoped_refptr<Interpolation> interpolation,
+  void AddInterpolation(Interpolation* interpolation,
                         scoped_refptr<TimingFunction> easing,
                         double start,
                         double end,
                         double apply_from,
                         double apply_to) {
-    interpolations_.push_back(InterpolationRecord(std::move(interpolation),
-                                                  std::move(easing), start, end,
-                                                  apply_from, apply_to));
+    interpolations_.push_back(new InterpolationRecord(
+        interpolation, std::move(easing), start, end, apply_from, apply_to));
   }
 
   void AddInterpolationsFromKeyframes(
@@ -51,31 +50,37 @@ class CORE_EXPORT InterpolationEffect {
       double apply_from,
       double apply_to);
 
+  void Trace(Visitor*);
+
  private:
-  struct InterpolationRecord {
-    InterpolationRecord(scoped_refptr<Interpolation> interpolation,
+  class InterpolationRecord
+      : public GarbageCollectedFinalized<InterpolationRecord> {
+   public:
+    InterpolationRecord(Interpolation* interpolation,
                         scoped_refptr<TimingFunction> easing,
                         double start,
                         double end,
                         double apply_from,
                         double apply_to)
-        : interpolation_(std::move(interpolation)),
+        : interpolation_(interpolation),
           easing_(std::move(easing)),
           start_(start),
           end_(end),
           apply_from_(apply_from),
           apply_to_(apply_to) {}
 
-    scoped_refptr<Interpolation> interpolation_;
+    Member<Interpolation> interpolation_;
     scoped_refptr<TimingFunction> easing_;
     double start_;
     double end_;
     double apply_from_;
     double apply_to_;
+
+    void Trace(Visitor* visitor) { visitor->Trace(interpolation_); }
   };
 
   bool is_populated_;
-  Vector<InterpolationRecord> interpolations_;
+  HeapVector<Member<InterpolationRecord>> interpolations_;
 };
 
 }  // namespace blink

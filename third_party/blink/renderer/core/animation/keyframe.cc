@@ -20,8 +20,7 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
     easing_ = LinearTimingFunction::Shared();
 }
 
-scoped_refptr<Interpolation>
-Keyframe::PropertySpecificKeyframe::CreateInterpolation(
+Interpolation* Keyframe::PropertySpecificKeyframe::CreateInterpolation(
     const PropertyHandle& property_handle,
     const Keyframe::PropertySpecificKeyframe& end) const {
   // const_cast to take refs.

@@ -58,7 +58,7 @@ class CORE_EXPORT EffectModel : public GarbageCollectedFinalized<EffectModel> {
   virtual bool Sample(int iteration,
                       double fraction,
                       double iteration_duration,
-                      Vector<scoped_refptr<Interpolation>>&) const = 0;
+                      HeapVector<Member<Interpolation>>&) const = 0;
 
   virtual bool Affects(const PropertyHandle&) const { return false; }
   virtual bool AffectedByUnderlyingAnimations() const = 0;

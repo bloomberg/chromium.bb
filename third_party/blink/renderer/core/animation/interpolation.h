@@ -11,8 +11,8 @@
 #include "third_party/blink/renderer/core/animation/interpolable_value.h"
 #include "third_party/blink/renderer/core/animation/property_handle.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
@@ -57,9 +57,10 @@ namespace blink {
 //    The interpolation's effect at its current timing state is applied to the
 //    element. How this is done depends on the subclass of Interpolation. See
 //    the subclass documentation for more.
-class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
+class CORE_EXPORT Interpolation
+    : public GarbageCollectedFinalized<Interpolation> {
  public:
-  virtual ~Interpolation() = default;
+  virtual ~Interpolation() {}
 
   virtual void Interpolate(int iteration, double fraction) = 0;
 
@@ -74,13 +75,16 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
   // optimise away computing underlying values.
   virtual bool DependsOnUnderlyingValue() const { return false; }
 
+  virtual void Trace(Visitor*) {}
+
  protected:
   Interpolation() = default;
   DISALLOW_COPY_AND_ASSIGN(Interpolation);
 };
 
-using ActiveInterpolations = Vector<scoped_refptr<Interpolation>, 1>;
-using ActiveInterpolationsMap = HashMap<PropertyHandle, ActiveInterpolations>;
+using ActiveInterpolations = HeapVector<Member<Interpolation>, 1>;
+using ActiveInterpolationsMap =
+    HeapHashMap<PropertyHandle, ActiveInterpolations>;
 
 }  // namespace blink
 

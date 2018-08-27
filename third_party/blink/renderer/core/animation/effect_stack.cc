@@ -41,7 +41,7 @@ namespace blink {
 namespace {
 
 void CopyToActiveInterpolationsMap(
-    const Vector<scoped_refptr<Interpolation>>& source,
+    const HeapVector<Member<Interpolation>>& source,
     EffectStack::PropertyHandleFilter property_handle_filter,
     ActiveInterpolationsMap& target) {
   for (const auto& interpolation : source) {
@@ -57,9 +57,9 @@ void CopyToActiveInterpolationsMap(
         interpolation->IsInvalidatableInterpolation() &&
         ToInvalidatableInterpolation(*interpolation)
             .DependsOnUnderlyingValue()) {
-      active_interpolations.push_back(interpolation.get());
+      active_interpolations.push_back(interpolation);
     } else {
-      active_interpolations.at(0) = interpolation.get();
+      active_interpolations.at(0) = interpolation;
     }
   }
 }
@@ -75,7 +75,7 @@ void CopyNewAnimationsToActiveInterpolationsMap(
     EffectStack::PropertyHandleFilter property_handle_filter,
     ActiveInterpolationsMap& result) {
   for (const auto& new_animation : new_animations) {
-    Vector<scoped_refptr<Interpolation>> sample;
+    HeapVector<Member<Interpolation>> sample;
     new_animation->Sample(sample);
     if (!sample.IsEmpty())
       CopyToActiveInterpolationsMap(sample, property_handle_filter, result);
