@@ -77,7 +77,7 @@ class AutocompleteProviderClient {
 
   // The embedder's representation of the |about| URL scheme for builtin URLs
   // (e.g., |chrome| for Chrome).
-  virtual std::string GetEmbedderRepresentationOfAboutScheme() = 0;
+  virtual std::string GetEmbedderRepresentationOfAboutScheme() const = 0;
 
   // The set of built-in URLs considered worth suggesting as autocomplete
   // suggestions to the user.  Some built-in URLs, e.g. hidden URLs that
