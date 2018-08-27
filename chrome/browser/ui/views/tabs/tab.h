@@ -139,7 +139,7 @@ class Tab : public gfx::AnimationDelegate,
   // Called when the frame state color changes.
   void FrameColorsChanged();
 
-  // Called with the selected state changes.
+  // Called when the selected state changes.
   void SelectedStateChanged();
 
   // Returns true if the tab is selected.

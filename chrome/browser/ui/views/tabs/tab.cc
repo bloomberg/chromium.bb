@@ -1788,18 +1788,16 @@ void Tab::UpdateButtonIconColors(SkColor title_color) {
       IsActive() ? TAB_ACTIVE : TAB_INACTIVE, true);
   SkColor tab_title_color = title_color;
 
+  // Make sure the text has enough contrast to be visible if this tab is
+  // selected.
   if (IsSelected() && !IsActive()) {
-    const SkColor tab_inactive_bg_color = tab_bg_color;
     const SkColor tab_active_bg_color =
         controller_->GetTabBackgroundColor(TAB_ACTIVE, true);
     tab_bg_color = color_utils::AlphaBlend(
         tab_active_bg_color, tab_bg_color,
         gfx::ToRoundedInt(kSelectedTabOpacity * SK_AlphaOPAQUE));
-    const SkAlpha blend_alpha = color_utils::GetBlendValueWithMinimumContrast(
-        tab_bg_color, title_color, tab_inactive_bg_color,
-        kMinimumInactiveContrastRatio);
     tab_title_color =
-        color_utils::AlphaBlend(title_color, tab_bg_color, blend_alpha);
+        color_utils::GetColorWithMinimumContrast(title_color, tab_bg_color);
   }
 
   title_->SetEnabledColor(tab_title_color);
