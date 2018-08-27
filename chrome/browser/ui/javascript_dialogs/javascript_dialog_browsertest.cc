@@ -13,10 +13,16 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_source.h"
 
 using DismissalCause = JavaScriptDialogTabHelper::DismissalCause;
 
@@ -348,4 +354,25 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, NoDismissalAlertTabHidden) {
   tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_ALERT);
   chrome::NewTab(browser());
   histogram_tester.ExpectTotalCount("JSDialogs.DismissalCause.Alert", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, DismissalCauseUkm) {
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  JavaScriptDialogDismissalCauseTester tester(this);
+  tester.PopupDialog(content::JAVASCRIPT_DIALOG_TYPE_CONFIRM);
+  tester.ClickDialogButton(true, base::string16());
+
+  auto entries = ukm_recorder.GetEntriesByName(
+      ukm::builders::AbusiveExperienceHeuristic_JavaScriptDialog::kEntryName);
+  EXPECT_EQ(1u, entries.size());
+  ukm_recorder.ExpectEntrySourceHasUrl(entries.front(), url);
+  ukm_recorder.ExpectEntryMetric(
+      entries.front(),
+      ukm::builders::AbusiveExperienceHeuristic_JavaScriptDialog::
+          kDismissalCauseName,
+      static_cast<int64_t>(DismissalCause::kDialogButtonClicked));
 }

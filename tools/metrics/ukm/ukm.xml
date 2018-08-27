@@ -42,6 +42,18 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="AbusiveExperienceHeuristic.JavaScriptDialog">
+  <owner>yaoxia@chromium.org</owner>
+  <metric name="DismissalCause">
+    <summary>
+      An enum that specifies the dismissal reason for JavaScript popup dialog
+      that can be triggered by window.alert(), window.confirm() or
+      window.prompt(). See JavaScriptDialogTabHelper::DismissalCause for the
+      enum elements.
+    </summary>
+  </metric>
+</event>
+
 <event name="Autofill.CardUploadDecision">
   <owner>sebsg@chromium.org</owner>
   <metric name="UploadDecision">
