@@ -124,7 +124,8 @@ class PasswordProtectionServiceTest
     HostContentSettingsMap::RegisterProfilePrefs(test_pref_service_.registry());
     content_setting_map_ = new HostContentSettingsMap(
         &test_pref_service_, false /* incognito */, false /* guest_profile */,
-        false /* store_last_modified */);
+        false /* store_last_modified */,
+        false /* migrate_requesting_and_top_level_origin_settings */);
     database_manager_ = new MockSafeBrowsingDatabaseManager();
     password_protection_service_ =
         std::make_unique<TestPasswordProtectionService>(
