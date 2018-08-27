@@ -2052,6 +2052,13 @@ void Browser::SetWebContentsBlocked(content::WebContents* web_contents,
     // TabStripModel.
     return;
   }
+
+  // For security, if the WebContents is in fullscreen, have it drop fullscreen.
+  // This gives the user the context they need in order to make informed
+  // decisions.
+  if (web_contents->IsFullscreenForCurrentTab())
+    web_contents->ExitFullscreen(true);
+
   tab_strip_model_->SetTabBlocked(index, blocked);
 
   bool browser_active = BrowserList::GetInstance()->GetLastActive() == this;
