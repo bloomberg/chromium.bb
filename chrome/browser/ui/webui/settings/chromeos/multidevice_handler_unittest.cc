@@ -113,7 +113,6 @@ class MultideviceHandlerTest : public testing::Test {
 
   void CallGetPageContentData(bool expected_to_request_data_from_device_sync) {
     EXPECT_TRUE(current_host_status_with_device_);
-    EXPECT_TRUE(current_host_status_with_device_);
 
     size_t call_data_count_before_call = test_web_ui()->call_data().size();
 
@@ -145,6 +144,15 @@ class MultideviceHandlerTest : public testing::Test {
     EXPECT_EQ("handlerFunctionName", call_data.arg1()->GetString());
     EXPECT_TRUE(call_data.arg2()->GetBool());
     VerifyPageContent(call_data.arg3());
+  }
+
+  void CallRemoveHostDevice() {
+    size_t num_remote_host_device_calls_before_call =
+        fake_multidevice_setup_client()->num_remove_host_device_called();
+    base::ListValue empty_args;
+    test_web_ui()->HandleReceivedMessage("removeHostDevice", &empty_args);
+    EXPECT_EQ(num_remote_host_device_calls_before_call + 1u,
+              fake_multidevice_setup_client()->num_remove_host_device_called());
   }
 
   void SimulateHostStatusUpdate(
@@ -311,6 +319,12 @@ TEST_F(MultideviceHandlerTest, SetFeatureEnabledState) {
   CallSetFeatureEnabledState(
       multidevice_setup::mojom::Feature::kBetterTogetherSuite,
       false /* enabled */, "authToken" /* auth_token */, true /* success */);
+}
+
+TEST_F(MultideviceHandlerTest, RemoveHostDevice) {
+  CallRemoveHostDevice();
+  CallRemoveHostDevice();
+  CallRemoveHostDevice();
 }
 
 }  // namespace settings

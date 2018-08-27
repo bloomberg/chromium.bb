@@ -95,6 +95,26 @@
         </paper-icon-button-light>
       </div>
     </div>
+    <cr-dialog id="forgetDeviceDialog" show-close-button="false">
+      <div slot="title">$i18n{multideviceForgetDeviceDialogHeading}</div>
+      <div slot="body">
+        <div class="settings-box first">
+          $i18n{multideviceForgetDeviceDialogMessage}
+        </div>
+      </div>
+      <div slot="button-container">
+        <paper-button class="cancel-button"
+            on-click="onForgetDeviceDialogCancelClick_">
+          $i18n{cancel}
+        </paper-button>
+
+        <paper-button id="confirmButton"
+            class="action-button"
+            on-click="onForgetDeviceDialogConfirmClick_">
+          $i18n{confirm}
+        </paper-button>
+      </div>
+    </cr-dialog>
   </template>
   <script src="multidevice_subpage.js"></script>
 </dom-module>

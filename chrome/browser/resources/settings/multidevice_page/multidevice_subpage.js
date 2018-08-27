@@ -82,8 +82,18 @@ Polymer({
 
   /** @private */
   handleForgetDeviceClick_: function() {
-    // TODO(khorimoto): Have this navigate to the route for dialog once it is
-    // built.
+    this.$.forgetDeviceDialog.showModal();
+  },
+
+  /** @private */
+  onForgetDeviceDialogCancelClick_: function() {
+    this.$.forgetDeviceDialog.close();
+  },
+
+  /** @private */
+  onForgetDeviceDialogConfirmClick_: function() {
+    this.fire('forget-device-requested');
+    this.$.forgetDeviceDialog.close();
   },
 
   /**

@@ -2601,6 +2601,10 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
       {"multideviceForgetDevice", IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE},
       {"multideviceForgetDeviceSummary",
        IDS_SETTINGS_MULTIDEVICE_FORGET_THIS_DEVICE_EXPLANATION},
+      {"multideviceForgetDeviceDialogHeading",
+       IDS_SETTINGS_MULTIDEVICE_FORGET_DEVICE_DIALOG_HEADING},
+      {"multideviceForgetDeviceDialogMessage",
+       IDS_SETTINGS_MULTIDEVICE_FORGET_DEVICE_DIALOG_MESSAGE},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
