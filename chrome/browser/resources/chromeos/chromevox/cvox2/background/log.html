@@ -12,6 +12,7 @@
 <body>
 <h1 class="i18n" msg="log_title">ChromeVox Log</h1>
   <button id="clearLog">ClearLog</button>
+<div id="logFilters">
   <label>Show: </label>
   <label>
     <input id="speechFilter" type="checkbox" class="log-filter"
@@ -33,7 +34,8 @@
            name="eventFilter">
     <span>event</span>
   </label>
+</div>
 
-<ul id="logContent"></ul>
+<div id="logList"></div>
 </body>
 </html>
