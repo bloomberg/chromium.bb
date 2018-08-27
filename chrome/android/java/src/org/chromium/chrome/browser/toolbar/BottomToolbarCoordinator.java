@@ -16,7 +16,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.ToolbarSwipeLayout;
-import org.chromium.chrome.browser.contextualsearch.ContextualSearchManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.modelutil.PropertyKey;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
@@ -101,8 +100,6 @@ public class BottomToolbarCoordinator {
      * @param tabModelSelector A {@link TabModelSelector} that the tab switcher button uses to
      *                         keep its tab count updated.
      * @param overviewModeBehavior The overview mode manager.
-     * @param contextualSearchManager The manager for Contextual Search to handle interactions when
-     *                                that feature is visible.
      * @param firstSlotTabSwitcherButtonData The button to be shown in the first slot when in tab
      *                                       switcher mode.
      * @param secondSlotTabSwitcherButtonData The button to be shown in the second slot when in tab
@@ -111,14 +108,12 @@ public class BottomToolbarCoordinator {
     public void initializeWithNative(ResourceManager resourceManager, LayoutManager layoutManager,
             OnClickListener tabSwitcherListener, OnTouchListener menuButtonListener,
             TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
-            ContextualSearchManager contextualSearchManager, WindowAndroid windowAndroid,
-            ToolbarButtonData firstSlotTabSwitcherButtonData,
+            WindowAndroid windowAndroid, ToolbarButtonData firstSlotTabSwitcherButtonData,
             ToolbarButtonData secondSlotTabSwitcherButtonData) {
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
         mMediator.setToolbarSwipeHandler(layoutManager.getToolbarSwipeHandler());
-        mMediator.setContextualSearchManager(contextualSearchManager);
         mMediator.setWindowAndroid(windowAndroid);
         mMediator.setTabSwitcherButtonData(
                 firstSlotTabSwitcherButtonData, secondSlotTabSwitcherButtonData);
