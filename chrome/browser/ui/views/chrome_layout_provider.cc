@@ -158,6 +158,8 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return kSmallSnapPoint;
     case DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH:
       return kMediumSnapPoint;
+    case DISTANCE_LARGE_MODAL_DIALOG_PREFERRED_WIDTH:
+      return kLargeSnapPoint;
     default:
       return LayoutProvider::GetDistanceMetric(metric);
   }

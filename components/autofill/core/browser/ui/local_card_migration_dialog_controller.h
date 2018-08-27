@@ -26,8 +26,11 @@ class LocalCardMigrationDialogController {
 
   virtual LocalCardMigrationDialogState GetViewState() const = 0;
   virtual void SetViewState(LocalCardMigrationDialogState view_state) = 0;
-  virtual std::vector<MigratableCreditCard>& GetCardList() = 0;
+  virtual const std::vector<MigratableCreditCard>& GetCardList() const = 0;
+  // TODO(crbug.com/867194): Ensure this would not be called when migration is
+  // happending.
   virtual void SetCardList(std::vector<MigratableCreditCard>& card_list) = 0;
+  virtual void OnCardSelected(int index) = 0;
   virtual void OnDialogClosed() = 0;
 
  private:

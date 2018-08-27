@@ -32,7 +32,7 @@ class MigratableCreditCard {
   CreditCard credit_card() const { return credit_card_; }
 
   bool is_chosen() const { return is_chosen_; }
-  void set_is_chosen(bool is_chosen) { is_chosen_ = is_chosen; }
+  void ToggleChosen() { is_chosen_ = !is_chosen(); }
 
  private:
   // The main card information of the current migratable card.

@@ -56,14 +56,18 @@ void LocalCardMigrationDialogControllerImpl::SetViewState(
   view_state_ = view_state;
 }
 
-std::vector<MigratableCreditCard>&
-LocalCardMigrationDialogControllerImpl::GetCardList() {
+const std::vector<MigratableCreditCard>&
+LocalCardMigrationDialogControllerImpl::GetCardList() const {
   return migratable_credit_cards_;
 }
 
 void LocalCardMigrationDialogControllerImpl::SetCardList(
     std::vector<MigratableCreditCard>& migratable_credit_cards) {
   migratable_credit_cards_ = migratable_credit_cards;
+}
+
+void LocalCardMigrationDialogControllerImpl::OnCardSelected(int index) {
+  migratable_credit_cards_[index].ToggleChosen();
 }
 
 void LocalCardMigrationDialogControllerImpl::OnDialogClosed() {

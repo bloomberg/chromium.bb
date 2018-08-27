@@ -17,6 +17,7 @@ class LocalCardMigrationDialog {
   virtual void ShowDialog(
       base::OnceClosure user_accepted_migration_closure) = 0;
   virtual void CloseDialog() = 0;
+  virtual void OnMigrationFinished() = 0;
 
  protected:
   LocalCardMigrationDialog() {}
