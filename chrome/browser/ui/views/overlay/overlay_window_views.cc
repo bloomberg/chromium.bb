@@ -38,7 +38,7 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 namespace {
 constexpr gfx::Size kMinWindowSize = gfx::Size(144, 100);
 
-const int kOverlayBorderThickness = 5;
+const int kOverlayBorderThickness = 10;
 
 // |button_size_| scales both its width and height to be 30% the size of the
 // smaller of the screen's width and height.
