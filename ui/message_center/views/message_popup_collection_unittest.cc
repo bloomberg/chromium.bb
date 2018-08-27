@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/message_popup_collection.h"
 
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
@@ -62,8 +63,7 @@ class MockMessagePopupCollection : public MessagePopupCollection {
   }
 
   void RemovePopup(MockMessagePopupView* popup) {
-    popups_.erase(std::remove(popups_.begin(), popups_.end(), popup),
-                  popups_.end());
+    base::Erase(popups_, popup);
   }
 
   bool IsAnimating() { return animation()->is_animating(); }

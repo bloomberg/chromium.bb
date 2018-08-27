@@ -4,6 +4,7 @@
 
 #include "ui/message_center/views/message_popup_collection.h"
 
+#include "base/stl_util.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/message_center/message_center.h"
@@ -518,10 +519,7 @@ void MessagePopupCollection::ClosePopupsOutsideWorkArea() {
 }
 
 void MessagePopupCollection::RemoveClosedPopupItems() {
-  popup_items_.erase(
-      std::remove_if(popup_items_.begin(), popup_items_.end(),
-                     [](const auto& item) { return !item.popup; }),
-      popup_items_.end());
+  base::EraseIf(popup_items_, [](const auto& item) { return !item.popup; });
 }
 
 bool MessagePopupCollection::CollapseAllPopups() {

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
@@ -380,14 +381,10 @@ void LayerAnimator::AddOwnedObserver(
 
 void LayerAnimator::RemoveAndDestroyOwnedObserver(
     ImplicitAnimationObserver* animation_observer) {
-  owned_observer_list_.erase(
-      std::remove_if(
-          owned_observer_list_.begin(), owned_observer_list_.end(),
-          [animation_observer](
-              const std::unique_ptr<ImplicitAnimationObserver>& other) {
-            return other.get() == animation_observer;
-          }),
-      owned_observer_list_.end());
+  base::EraseIf(owned_observer_list_,[animation_observer](
+      const std::unique_ptr<ImplicitAnimationObserver>& other) {
+    return other.get() == animation_observer;
+  });
 }
 
 void LayerAnimator::OnThreadedAnimationStarted(
