@@ -158,6 +158,8 @@ class CORE_EXPORT InspectorPageAgent final
       std::unique_ptr<protocol::Page::FontFamilies>) override;
   protocol::Response setFontSizes(
       std::unique_ptr<protocol::Page::FontSizes>) override;
+  protocol::Response generateTestReport(const String& message,
+                                        Maybe<String> group) override;
 
   protocol::Response setProduceCompilationCache(bool enabled) override;
   protocol::Response addCompilationCache(const String& url,

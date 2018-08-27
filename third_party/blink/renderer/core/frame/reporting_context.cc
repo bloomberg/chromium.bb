@@ -53,7 +53,6 @@ void ReportingContext::CountReport(Report* report) {
   } else if (type == "intervention") {
     feature = WebFeature::kInterventionReport;
   } else {
-    NOTREACHED();
     return;
   }
 
