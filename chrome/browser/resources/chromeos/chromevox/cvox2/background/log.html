@@ -10,6 +10,29 @@
 </head>
 
 <body>
-<h1>ChromeVox Log</h1>
+<h1 class="i18n" msg="log_title">ChromeVox Log</h1>
+  <label>Show: </label>
+  <label>
+    <input id="speechFilter" type="checkbox" class="log-filter"
+           name="speechFilter">
+    <span>speech</span>
+  </label>
+  <label>
+    <input id="earconFilter" type="checkbox" class="log-filter"
+           name="earconFilter">
+    <span>earcon</span>
+  </label>
+  <label>
+    <input id="brailleFilter" type="checkbox" class="log-filter"
+           name="brailleFilter">
+    <span>braille</span>
+  </label>
+  <label>
+    <input id="eventFilter" type="checkbox" class="log-filter"
+           name="eventFilter">
+    <span>event</span>
+  </label>
+
+<ul id="logContent"></ul>
 </body>
 </html>

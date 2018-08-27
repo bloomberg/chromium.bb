@@ -11,6 +11,7 @@
 goog.provide('NextEarcons');
 
 goog.require('EarconEngine');
+goog.require('LogStore');
 goog.require('cvox.AbstractEarcons');
 
 
@@ -56,8 +57,10 @@ NextEarcons.prototype = {
     if (!cvox.AbstractEarcons.enabled) {
       return;
     }
-    if (localStorage['enableEarconLogging'] == 'true')
+    if (localStorage['enableEarconLogging'] == 'true') {
+      LogStore.getInstance().writeLog(earcon, LogStore.LogType.EARCON);
       console.log('Earcon ' + earcon);
+    }
     if (ChromeVoxState.instance.currentRange &&
         ChromeVoxState.instance.currentRange.isValid()) {
       var node = ChromeVoxState.instance.currentRange.start.node;
