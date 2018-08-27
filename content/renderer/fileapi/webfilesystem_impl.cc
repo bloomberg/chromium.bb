@@ -430,6 +430,12 @@ void WebFileSystemImpl::CreateFileWriter(const WebURL& path,
           base::BindRepeating(&StatusCallbackAdapter, callbacks_id)));
 }
 
+void WebFileSystemImpl::CreateFileWriter(
+    const blink::WebURL& path,
+    std::unique_ptr<CreateFileWriterCallbacks> callbacks) {
+  file_system_dispatcher_.CreateFileWriter(path, std::move(callbacks));
+}
+
 void WebFileSystemImpl::CreateSnapshotFileAndReadMetadata(
     const blink::WebURL& path,
     WebFileSystemCallbacks callbacks) {
