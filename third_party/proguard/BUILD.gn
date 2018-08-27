@@ -4,19 +4,21 @@
 
 import("//build/config/android/rules.gni")
 
-java_prebuilt("proguard_java") {
-  jar_path = "lib/proguard.jar"
+# This target is used only by retrace. proguard.jar (v5.2.1) is used for
+# compiling, and is reference directly via "java -jar proguar.jar"
+java_prebuilt("proguard603_java") {
+  jar_path = "lib/proguard603.jar"
   data = [
-    "$root_build_dir/lib.java/third_party/proguard/proguard.jar",
+    "$root_build_dir/lib.java/third_party/proguard/proguard603.jar",
   ]
 }
 
 java_prebuilt("retrace_java") {
-  jar_path = "lib/retrace.jar"
+  jar_path = "lib/retrace603.jar"
   deps = [
-    ":proguard_java",
+    ":proguard603_java",
   ]
   data = [
-    "$root_build_dir/lib.java/third_party/proguard/retrace.jar",
+    "$root_build_dir/lib.java/third_party/proguard/retrace603.jar",
   ]
 }

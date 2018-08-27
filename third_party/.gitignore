@@ -167,6 +167,7 @@
 /perfetto
 /perl
 /ppapi
+/proguard/lib/
 /psyco_win32
 /pthreads-win32
 /py_trace_event/src

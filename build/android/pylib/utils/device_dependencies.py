@@ -16,6 +16,7 @@ _BLACKLIST = [
   re.compile(r'.*\.py'),  # Some test_support targets include python deps.
   re.compile(r'.*\.stamp'),  # Stamp files should never be included.
   re.compile(r'.*\.apk'),  # Should be installed separately.
+  re.compile(r'.*lib.java/.*'),  # Never need java intermediates.
 
   # Chrome external extensions config file.
   re.compile(r'.*external_extensions\.json'),
