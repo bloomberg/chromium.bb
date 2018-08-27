@@ -79,11 +79,6 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean shouldShowGoogleG(String urlBarText) {
-        return false;
-    }
-
-    @Override
     public boolean isOfflinePage() {
         return false;
     }

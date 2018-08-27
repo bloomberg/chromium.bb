@@ -229,11 +229,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
-            public boolean shouldShowGoogleG(String urlBarText) {
-                return false;
-            }
-
-            @Override
             public boolean shouldShowVerboseStatus() {
                 return false;
             }

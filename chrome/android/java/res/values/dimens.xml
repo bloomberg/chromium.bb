@@ -267,10 +267,6 @@
     <dimen name="toolbar_button_width">48dp</dimen>
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
-    <dimen name="location_bar_google_g_width">24dp</dimen>
-    <dimen name="location_bar_google_g_margin">8dp</dimen>
-    <!-- location_bar_google_g_width + 2 * location_bar_google_g_margin -->
-    <dimen name="location_bar_google_g_container_width">40dp</dimen>
     <dimen name="location_bar_vertical_margin">8dp</dimen>
     <dimen name="location_bar_url_text_size">16sp</dimen>
     <dimen name="location_bar_icon_width">32dp</dimen>
@@ -346,7 +342,6 @@
     <dimen name="ntp_search_box_height_modern">48dp</dimen>
     <dimen name="ntp_search_box_shadow_width">4dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
-    <dimen name="ntp_search_box_logo_padding">8dp</dimen>
     <dimen name="ntp_search_box_voice_search_margin_end_modern">6dp</dimen>
     <dimen name="explore_sites_radius">8dp</dimen>
     <dimen name="explore_sites_padding">8dp</dimen>

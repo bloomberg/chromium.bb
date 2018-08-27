@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
-import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.native_page.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
@@ -329,24 +328,6 @@ public class ToolbarModel implements ToolbarDataProvider {
         return hasTab() && mTab.getWebContents() != null && !mTab.isNativePage()
                 && !mTab.isShowingInterstitialPage()
                 && PreviewsAndroidBridge.getInstance().shouldShowPreviewUI(mTab.getWebContents());
-    }
-
-    @Override
-    public boolean shouldShowGoogleG(String urlBarText) {
-        LocaleManager localeManager = LocaleManager.getInstance();
-        if (localeManager.hasCompletedSearchEnginePromo()
-                || localeManager.hasShownSearchEnginePromoThisSession()) {
-            return false;
-        }
-
-        // Only access ChromeFeatureList and TemplateUrlService after the NTP check,
-        // to prevent native method calls before the native side has been initialized.
-        NewTabPage ntp = getNewTabPageForCurrentTab();
-        boolean isShownInRegularNtp = ntp != null && ntp.isLocationBarShownInNTP()
-                && ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX);
-
-        return isShownInRegularNtp
-                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
     }
 
     @Override

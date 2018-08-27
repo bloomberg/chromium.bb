@@ -224,11 +224,6 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        public boolean shouldShowGoogleG(String urlBarText) {
-            return false;
-        }
-
-        @Override
         public boolean shouldShowVerboseStatus() {
             return false;
         }
