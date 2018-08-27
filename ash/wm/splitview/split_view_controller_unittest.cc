@@ -2697,17 +2697,19 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
   }
 
   void SendScrollStartAndUpdate(const gfx::Point& start,
-                                float scroll_delta,
+                                float scroll_y,
                                 base::TimeTicks& timestamp,
-                                aura::Window* window) {
+                                aura::Window* window,
+                                float scroll_x = 0.f) {
     SendGestureEventToController(
         start.x(), start.y(), timestamp,
         ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0), window);
 
     timestamp += base::TimeDelta::FromMilliseconds(100);
     SendGestureEventToController(
-        start.x(), start.y() + scroll_delta, timestamp,
-        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, scroll_delta),
+        start.x() + scroll_x, start.y() + scroll_y, timestamp,
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, scroll_x,
+                                scroll_y),
         window);
   }
 
@@ -2716,14 +2718,21 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
                          base::TimeTicks& timestamp,
                          aura::Window* window,
                          bool is_fling = false,
-                         float velocity_y = 0.f) {
+                         float velocity_y = 0.f,
+                         float velocity_x = 0.f) {
     timestamp += base::TimeDelta::FromMilliseconds(100);
     ui::GestureEventDetails details =
-        is_fling
-            ? ui::GestureEventDetails(ui::ET_SCROLL_FLING_START, 0, velocity_y)
-            : ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END);
+        is_fling ? ui::GestureEventDetails(ui::ET_SCROLL_FLING_START,
+                                           velocity_x, velocity_y)
+                 : ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END);
     SendGestureEventToController(start.x(), start.y() + scroll_delta, timestamp,
                                  details, window);
+  }
+
+  IndicatorState GetIndicatorState() {
+    return controller_->drag_delegate_for_testing()
+        ->split_view_drag_indicators_for_testing()
+        ->current_indicator_state();
   }
 
  private:
@@ -2904,6 +2913,145 @@ TEST_F(SplitViewAppDraggingTest, DisplayConfigurationChangeTest) {
   EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
   EXPECT_FALSE(window_selector_controller->IsSelecting());
   EXPECT_FALSE(wm::GetWindowState(window.get())->is_dragged());
+}
+
+// Tests the functionalities that fling the window when preview area is shown.
+TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
+  std::unique_ptr<aura::Window> window = CreateTestWindowWithWidget();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+
+  const float long_scroll_delta = display_bounds.height() / 4 + 5;
+  float large_velocity =
+      TabletModeAppWindowDragController::kFlingToOverviewThreshold + 10.f;
+  float small_velocity =
+      TabletModeAppWindowDragController::kFlingToOverviewThreshold - 10.f;
+  gfx::Point start(gfx::Point(0, 0));
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+
+  // Fling to the right with large enough velocity when trying to snap the
+  // window to the left should drop the window to overview.
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_EQ(IndicatorState::kPreviewAreaLeft, GetIndicatorState());
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get(),
+                    /*is_fling=*/true, /*velocity_y*/ 0,
+                    /*velocity_x=*/large_velocity);
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  WindowSelector* window_selector =
+      window_selector_controller->window_selector();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_TRUE(window_selector->IsWindowInOverview(window.get()));
+  ToggleOverview();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // Fling to the right with small velocity when trying to snap the
+  // window to the left should still snap the window to left.
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_EQ(IndicatorState::kPreviewAreaLeft, GetIndicatorState());
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get(),
+                    /*is_fling=*/true, /*velocity_y*/ 0,
+                    /*velocity_x=*/small_velocity);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+  EndSplitView();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // Fling to the left with large enough velocity when trying to snap the window
+  // to the right should drop the window to overvie.
+  start = gfx::Point(display_bounds.right(), 0);
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_EQ(IndicatorState::kPreviewAreaRight, GetIndicatorState());
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get(),
+                    /*is_fling=*/true, /*velocity_y*/ 0,
+                    /*velocity_x=*/-large_velocity);
+  window_selector = window_selector_controller->window_selector();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_TRUE(window_selector->IsWindowInOverview(window.get()));
+  ToggleOverview();
+
+  // Fling to the left with small velocity when trying to snap the
+  // window to the right should still snap the window to right.
+  SendScrollStartAndUpdate(start, long_scroll_delta, timestamp, window.get());
+  EXPECT_EQ(IndicatorState::kPreviewAreaRight, GetIndicatorState());
+  EndScrollSequence(start, long_scroll_delta, timestamp, window.get(),
+                    /*is_fling=*/true, /*velocity_y*/ 0,
+                    /*velocity_x=*/-small_velocity);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+}
+
+// Tests the functionalities that fling a window when splitview is active.
+TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
+  std::unique_ptr<aura::Window> window1 = CreateTestWindowWithWidget();
+  std::unique_ptr<aura::Window> window2 = CreateTestWindowWithWidget();
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+  const float long_scroll_y = display_bounds.bottom() - 10;
+  float large_velocity =
+      TabletModeAppWindowDragController::kFlingToOverviewThreshold + 10.f;
+  gfx::Point start(gfx::Point(0, 0));
+
+  // Fling the window in left snapping area to left should still snap the
+  // window.
+  base::TimeTicks timestamp = base::TimeTicks::Now();
+  SendScrollStartAndUpdate(start, long_scroll_y, timestamp, window1.get());
+  EndScrollSequence(start, long_scroll_y, timestamp, window1.get(),
+                    /*is_fling=*/true, /*velocity_y=*/0,
+                    /*velocity_x=*/-large_velocity);
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsSnapped());
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+
+  // Fling the window in left snapping area to right should drop the window
+  // into overview.
+  SendScrollStartAndUpdate(start, long_scroll_y, timestamp, window1.get());
+  EndScrollSequence(start, long_scroll_y, timestamp, window1.get(),
+                    /*is_fling=*/true, /*velocity_y=*/0,
+                    /*velocity_x=*/large_velocity);
+  WindowSelectorController* selector_controller =
+      Shell::Get()->window_selector_controller();
+  EXPECT_TRUE(selector_controller->window_selector()->IsWindowInOverview(
+      window1.get()));
+  EXPECT_EQ(SplitViewController::RIGHT_SNAPPED,
+            split_view_controller()->state());
+  ToggleOverview();
+
+  // Fling the window in right snapping area to left should drop the window into
+  // overview.
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+  const int scroll_x = display_bounds.CenterPoint().x() + 10;
+  SendScrollStartAndUpdate(start, long_scroll_y, timestamp, window1.get(),
+                           scroll_x);
+  gfx::Point end(scroll_x, 0);
+  EndScrollSequence(end, long_scroll_y, timestamp, window1.get(),
+                    /*is_fling=*/true, /*velocity_y=*/0,
+                    /*velocity_x=*/-large_velocity);
+  EXPECT_TRUE(selector_controller->window_selector()->IsWindowInOverview(
+      window1.get()));
+  EXPECT_EQ(SplitViewController::RIGHT_SNAPPED,
+            split_view_controller()->state());
+  ToggleOverview();
+
+  // Fling the window in right snapping area to right should snap the window to
+  // right side.
+  EXPECT_EQ(SplitViewController::BOTH_SNAPPED,
+            split_view_controller()->state());
+  SendScrollStartAndUpdate(start, long_scroll_y, timestamp, window1.get(),
+                           scroll_x);
+  EndScrollSequence(end, long_scroll_y, timestamp, window1.get(),
+                    /*is_fling=*/true, /*velocity_y=*/0,
+                    /*velocity_x=*/large_velocity);
+  EXPECT_EQ(split_view_controller()->right_window(), window1.get());
+  EXPECT_TRUE(selector_controller->window_selector()->IsWindowInOverview(
+      window2.get()));
+  EXPECT_EQ(SplitViewController::RIGHT_SNAPPED,
+            split_view_controller()->state());
 }
 
 }  // namespace ash

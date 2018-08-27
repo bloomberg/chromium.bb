@@ -33,12 +33,19 @@ class ASH_EXPORT TabletModeAppWindowDragController
   // window may be 1) maximized, or 2) snapped in splitscren.
   bool DragWindowFromTop(ui::GestureEvent* event);
 
+  TabletModeWindowDragDelegate* drag_delegate_for_testing() {
+    return drag_delegate_.get();
+  }
+
  private:
   // Gesture window drag related functions. Used in DragWindowFromTop.
   bool StartWindowDrag(ui::GestureEvent* event);
   void UpdateWindowDrag(ui::GestureEvent* event);
   void EndWindowDrag(ui::GestureEvent* event,
                      wm::WmToplevelWindowEventHandler::DragResult result);
+
+  // Returns true if fling event should drop the window into overview grid.
+  bool ShouldFlingIntoOverview(ui::GestureEvent* event);
 
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,

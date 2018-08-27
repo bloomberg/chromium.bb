@@ -50,6 +50,9 @@ class TabletModeWindowDragDelegate {
   void EndWindowDrag(wm::WmToplevelWindowEventHandler::DragResult result,
                      const gfx::Point& location_in_screen);
 
+  // Returns the IndicatorState according to |location_in_screen|.
+  IndicatorState GetIndicatorState(const gfx::Point& location_in_screen) const;
+
   aura::Window* dragged_window() { return dragged_window_; }
 
   SplitViewDragIndicators* split_view_drag_indicators_for_testing() {
@@ -81,9 +84,6 @@ class TabletModeWindowDragDelegate {
   // Gets the desired snap position for |location_in_screen|.
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::Point& location_in_screen) const;
-
-  // Returns the IndicatorState according to |location_in_screen|.
-  IndicatorState GetIndicatorState(const gfx::Point& location_in_screen) const;
 
   // Update the dragged window's transform during dragging.
   void UpdateDraggedWindowTransform(const gfx::Point& location_in_screen);
