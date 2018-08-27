@@ -1822,6 +1822,21 @@
     },
   },
 
+  'single_process_mash_fyi_chromium_gtests': {
+    'single_process_mash_fyi_browser_tests': {
+      'test': 'browser_tests',
+      'args': [
+        '--enable-features=SingleProcessMash',
+        '--override-use-software-gl-for-tests',
+        '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.single_process_mash.fyi.browser_tests.filter',
+      ],
+      'swarming': {
+        'hard_timeout': 1800,
+        'shards': 10,
+      },
+    },
+  },
+
   # These can be folded into linux_chromeos_specific_gtests once we stop moving
   # tests around on the main waterfall.
   'mash_chromium_gtests' : {
@@ -2825,6 +2840,7 @@
   'mojo_chromiumos_fyi_gtests': [
     'aura_gtests',
     'mash_fyi_chromium_gtests',
+    'single_process_mash_fyi_chromium_gtests',
     'mojo_chromiumos_specific_gtests',
     'viz_gtests',
     'viz_non_android_fyi_gtests',
