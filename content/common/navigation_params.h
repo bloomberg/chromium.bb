@@ -69,7 +69,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       const GURL& base_url_for_data_url,
       const GURL& history_url_for_data_url,
       PreviewsState previews_state,
-      const base::TimeTicks& navigation_start,
+      base::TimeTicks navigation_start,
       std::string method,
       const scoped_refptr<network::ResourceRequestBody>& post_data,
       base::Optional<SourceLocation> source_location,
@@ -78,7 +78,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       bool has_user_gesture,
       const std::vector<ContentSecurityPolicy>& initiator_csp,
       const base::Optional<CSPSource>& initiator_self_source,
-      const base::TimeTicks& input_start = base::TimeTicks());
+      base::TimeTicks input_start = base::TimeTicks());
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 

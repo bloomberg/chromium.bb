@@ -63,7 +63,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
       bool is_same_document,
-      const base::TimeTicks& navigation_start,
+      base::TimeTicks navigation_start,
       int pending_nav_entry_id,
       bool started_from_context_menu,
       CSPDisposition should_check_main_world_csp,
@@ -81,7 +81,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
           REQUEST_CONTEXT_TYPE_UNSPECIFIED,
       blink::WebMixedContentContextType mixed_content_context_type =
           blink::WebMixedContentContextType::kBlockable,
-      const base::TimeTicks& input_start = base::TimeTicks());
+      base::TimeTicks input_start = base::TimeTicks());
 
   ~NavigationHandleImpl() override;
 
@@ -113,8 +113,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   const std::vector<GURL>& GetRedirectChain() override;
   int GetFrameTreeNodeId() override;
   RenderFrameHostImpl* GetParentFrame() override;
-  const base::TimeTicks& NavigationStart() override;
-  const base::TimeTicks& NavigationInputStart() override;
+  base::TimeTicks NavigationStart() override;
+  base::TimeTicks NavigationInputStart() override;
   bool IsPost() override;
   const scoped_refptr<network::ResourceRequestBody>& GetResourceRequestBody()
       override;
@@ -394,7 +394,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       FrameTreeNode* frame_tree_node,
       bool is_renderer_initiated,
       bool is_same_document,
-      const base::TimeTicks& navigation_start,
+      base::TimeTicks navigation_start,
       int pending_nav_entry_id,
       bool started_from_context_menu,
       CSPDisposition should_check_main_world_csp,
@@ -409,7 +409,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_external_protocol,
       RequestContextType request_context_type,
       blink::WebMixedContentContextType mixed_content_context_type,
-      const base::TimeTicks& input_start);
+      base::TimeTicks input_start);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();

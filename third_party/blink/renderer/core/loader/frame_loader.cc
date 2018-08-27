@@ -761,7 +761,7 @@ static WebURLRequest::RequestContext DetermineRequestContextFromNavigationType(
 void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
                                   WebFrameLoadType frame_load_type,
                                   NavigationPolicy policy,
-                                  const base::TimeTicks& input_start) {
+                                  base::TimeTicks input_start) {
   CHECK(!passed_request.GetSubstituteData().IsValid());
   CHECK(!IsBackForwardLoadType(frame_load_type));
   DCHECK(passed_request.TriggeringEventInfo() !=
