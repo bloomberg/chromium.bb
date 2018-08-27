@@ -662,11 +662,17 @@ TraceConfig BackgroundTracingManagerImpl::GetConfigForCategoryPreset(
     case BackgroundTracingConfigImpl::CategoryPreset::
         BENCHMARK_EXECUTION_METRIC:
       return TraceConfig("blink.console,v8", record_mode);
-    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_NAVIGATION:
-      return TraceConfig(
+    case BackgroundTracingConfigImpl::CategoryPreset::BENCHMARK_NAVIGATION: {
+      auto config = TraceConfig(
           "benchmark,toplevel,ipc,base,browser,navigation,omnibox,"
           "safe_browsing,disabled-by-default-system_stats",
           record_mode);
+      // Filter only browser process events.
+      base::trace_event::TraceConfig::ProcessFilterConfig process_config(
+          {base::GetCurrentProcId()});
+      config.SetProcessFilterConfig(process_config);
+      return config;
+    }
     case BackgroundTracingConfigImpl::CategoryPreset::BLINK_STYLE:
       return TraceConfig("blink_style", record_mode);
 
