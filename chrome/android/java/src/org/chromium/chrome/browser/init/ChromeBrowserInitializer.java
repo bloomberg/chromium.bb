@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.init;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.Process;
 import android.os.StrictMode;
 
@@ -62,13 +60,13 @@ public class ChromeBrowserInitializer {
     private static final String TAG = "BrowserInitializer";
     private static ChromeBrowserInitializer sChromeBrowserInitializer;
     private static BrowserStartupController sBrowserStartupController;
-    private final Handler mHandler;
     private final ChromeApplication mApplication;
     private final Locale mInitialLocale = Locale.getDefault();
 
     private boolean mPreInflationStartupComplete;
     private boolean mPostInflationStartupComplete;
     private boolean mNativeInitializationComplete;
+    private boolean mNetworkChangeNotifierInitializationComplete;
 
     // Public to allow use in ChromeBackupAgent
     public static final String PRIVATE_DATA_DIRECTORY_SUFFIX = "chrome";
@@ -107,7 +105,6 @@ public class ChromeBrowserInitializer {
 
     private ChromeBrowserInitializer() {
         mApplication = (ChromeApplication) ContextUtils.getApplicationContext();
-        mHandler = new Handler(Looper.getMainLooper());
         initLeakCanary();
     }
 
@@ -274,7 +271,8 @@ public class ChromeBrowserInitializer {
         final ChainedTasks tasks = new ChainedTasks();
         // If full browser process is not going to be launched, it is up to individual service to
         // launch its required components.
-        if (!delegate.startServiceManagerOnly()) {
+        if (!delegate.startServiceManagerOnly()
+                && !ProcessInitializationHandler.getInstance().postNativeInitializationComplete()) {
             tasks.add(new Runnable() {
                 @Override
                 public void run() {
@@ -283,12 +281,14 @@ public class ChromeBrowserInitializer {
             });
         }
 
-        tasks.add(new Runnable() {
-            @Override
-            public void run() {
-                initNetworkChangeNotifier(mApplication.getApplicationContext());
-            }
-        });
+        if (!mNetworkChangeNotifierInitializationComplete) {
+            tasks.add(new Runnable() {
+                @Override
+                public void run() {
+                    initNetworkChangeNotifier();
+                }
+            });
+        }
 
         tasks.add(new Runnable() {
             @Override
@@ -322,12 +322,14 @@ public class ChromeBrowserInitializer {
             }
         });
 
-        tasks.add(new Runnable() {
-            @Override
-            public void run() {
-                onFinishNativeInitialization();
-            }
-        });
+        if (!mNativeInitializationComplete) {
+            tasks.add(new Runnable() {
+                @Override
+                public void run() {
+                    onFinishNativeInitialization();
+                }
+            });
+        }
 
         tasks.add(new Runnable() {
             @Override
@@ -395,7 +397,10 @@ public class ChromeBrowserInitializer {
         return sBrowserStartupController;
     }
 
-    public static void initNetworkChangeNotifier(Context context) {
+    public void initNetworkChangeNotifier() {
+        if (mNetworkChangeNotifierInitializationComplete) return;
+        mNetworkChangeNotifierInitializationComplete = true;
+
         ThreadUtils.assertOnUiThread();
         TraceEvent.begin("NetworkChangeNotifier.init");
         // Enable auto-detection of network connectivity state changes.

@@ -423,8 +423,7 @@ public class CustomTabsConnection {
             tasks.add(() -> {
                 try (TraceEvent e = TraceEvent.scoped("CustomTabsConnection.initializeBrowser()")) {
                     initializeBrowser(ContextUtils.getApplicationContext());
-                    ChromeBrowserInitializer.initNetworkChangeNotifier(
-                            ContextUtils.getApplicationContext());
+                    ChromeBrowserInitializer.getInstance().initNetworkChangeNotifier();
                     mWarmupHasBeenFinished.set(true);
                 }
             });
