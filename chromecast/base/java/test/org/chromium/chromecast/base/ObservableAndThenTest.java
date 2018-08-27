@@ -25,7 +25,7 @@ public class ObservableAndThenTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(Observers.onEnter(
+        aState.andThen(bState).subscribe(Observers.onEnter(
                 Both.adapt((String a, String b) -> { result.add("a=" + a + ", b=" + b); })));
         assertThat(result, emptyIterable());
     }
@@ -35,7 +35,7 @@ public class ObservableAndThenTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(Observers.onEnter(
+        aState.andThen(bState).subscribe(Observers.onEnter(
                 Both.adapt((String a, String b) -> { result.add("a=" + a + ", b=" + b); })));
         bState.set("b");
         aState.set("a");
@@ -47,7 +47,7 @@ public class ObservableAndThenTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(Observers.onEnter(
+        aState.andThen(bState).subscribe(Observers.onEnter(
                 Both.adapt((String a, String b) -> { result.add("a=" + a + ", b=" + b); })));
         aState.set("a");
         bState.set("b");
@@ -59,7 +59,7 @@ public class ObservableAndThenTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(Observers.onEnter(
+        aState.andThen(bState).subscribe(Observers.onEnter(
                 Both.adapt((String a, String b) -> { result.add("a=" + a + ", b=" + b); })));
         bState.set("b");
         aState.set("a");
@@ -73,7 +73,7 @@ public class ObservableAndThenTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(Observers.onExit(
+        aState.andThen(bState).subscribe(Observers.onExit(
                 Both.adapt((String a, String b) -> { result.add("a=" + a + ", b=" + b); })));
         aState.set("A");
         bState.set("B");
@@ -86,7 +86,7 @@ public class ObservableAndThenTest {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         List<String> result = new ArrayList<>();
-        aState.andThen(bState).watch(Observers.onExit(
+        aState.andThen(bState).subscribe(Observers.onExit(
                 Both.adapt((String a, String b) -> { result.add("a=" + a + ", b=" + b); })));
         aState.set("A");
         bState.set("B");
@@ -105,10 +105,10 @@ public class ObservableAndThenTest {
         Observable<Both<Both<Both<Unit, Unit>, Unit>, Unit>> aThenBThenCThenD =
                 aThenBThenC.andThen(dState);
         List<String> result = new ArrayList<>();
-        aState.watch(Observers.onEnter(x -> result.add("A")));
-        aThenB.watch(Observers.onEnter(x -> result.add("B")));
-        aThenBThenC.watch(Observers.onEnter(x -> result.add("C")));
-        aThenBThenCThenD.watch(Observers.onEnter(x -> result.add("D")));
+        aState.subscribe(Observers.onEnter(x -> result.add("A")));
+        aThenB.subscribe(Observers.onEnter(x -> result.add("B")));
+        aThenBThenC.subscribe(Observers.onEnter(x -> result.add("C")));
+        aThenBThenCThenD.subscribe(Observers.onEnter(x -> result.add("D")));
         aState.set(Unit.unit());
         bState.set(Unit.unit());
         cState.set(Unit.unit());

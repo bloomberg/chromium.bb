@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Miscellaneous tests for Observable.
  *
- * This includes advanced behaviors like watch-currying and correct use of generics.
+ * This includes advanced behaviors like subscription-currying and correct use of generics.
  */
 @RunWith(BlockJUnit4ClassRunner.class)
 public class ObservableMiscellaneousTest {
@@ -35,9 +35,9 @@ public class ObservableMiscellaneousTest {
             result.add("enter: " + value.toString());
             return () -> result.add("exit: " + value.toString());
         };
-        baseController.watch(observer);
+        baseController.subscribe(observer);
         // Compile error if generics are wrong.
-        derivedController.watch(observer);
+        derivedController.subscribe(observer);
         baseController.set(new Base());
         // The scope from the previous set() call will not be overridden because this is activating
         // a different Controller.
@@ -49,13 +49,13 @@ public class ObservableMiscellaneousTest {
     }
 
     @Test
-    public void testWatchCurrying() {
+    public void testsubscribeCurrying() {
         Controller<String> aState = new Controller<>();
         Controller<String> bState = new Controller<>();
         Controller<String> result = new Controller<>();
         ReactiveRecorder recorder = ReactiveRecorder.record(result);
         // I guess this makes .and() obsolete?
-        aState.watch(a -> bState.watch(b -> {
+        aState.subscribe(a -> bState.subscribe(b -> {
             result.set("" + a + ", " + b);
             return () -> result.reset();
         }));
@@ -78,7 +78,7 @@ public class ObservableMiscellaneousTest {
         Controller<Unit> dState = new Controller<>();
         List<String> result = new ArrayList<>();
         // Praise be to Haskell Curry.
-        aState.watch(a -> bState.watch(b -> cState.watch(c -> dState.watch(d -> {
+        aState.subscribe(a -> bState.subscribe(b -> cState.subscribe(c -> dState.subscribe(d -> {
             result.add("it worked!");
             return () -> result.add("exit");
         }))));
@@ -133,8 +133,8 @@ public class ObservableMiscellaneousTest {
     @Test
     public void testObserverWithAutoCloseableConstructor() {
         Controller<String> controller = new Controller<>();
-        // You can use a constructor method reference in a watch() call.
-        controller.watch(TransitionLogger::new);
+        // You can use a constructor method reference in a subscribe() call.
+        controller.subscribe(TransitionLogger::new);
         controller.set("a");
         controller.reset();
         assertThat(TransitionLogger.sResult, contains("enter: a", "exit: a"));

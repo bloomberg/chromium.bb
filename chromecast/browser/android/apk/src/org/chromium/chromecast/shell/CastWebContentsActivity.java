@@ -65,7 +65,7 @@ public class CastWebContentsActivity extends Activity {
                 mIsFinishingState.andThen(mGotIntentState).map(Both::getSecond);
         Observable<?> createdAndNotTestingState =
                 mCreatedState.and(Observable.not(mIsTestingState));
-        createdAndNotTestingState.watch(x -> {
+        createdAndNotTestingState.subscribe(x -> {
             // Register handler for web content stopped event while we have an Intent.
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_ON_WEB_CONTENT_STOPPED);
@@ -73,7 +73,7 @@ public class CastWebContentsActivity extends Activity {
                 mIsFinishingState.set("Stopped by intent: " + intent.getAction());
             });
         });
-        createdAndNotTestingState.watch(Observers.onEnter(x -> {
+        createdAndNotTestingState.subscribe(Observers.onEnter(x -> {
             // Do this in onCreate() only if not testing.
             if (!CastBrowserHelper.initializeBrowser(getApplicationContext())) {
                 Toast.makeText(this, R.string.browser_process_initialization_failed,
@@ -94,7 +94,7 @@ public class CastWebContentsActivity extends Activity {
 
         mCreatedState.map(x -> getWindow())
                 .and(mGotIntentState)
-                .watch(Observers.onEnter(Both.adapt((Window window, Intent intent) -> {
+                .subscribe(Observers.onEnter(Both.adapt((Window window, Intent intent) -> {
                     // Set flags to both exit sleep mode when this activity starts and
                     // avoid entering sleep mode while playing media. If an app that shouldn't turn
                     // on the screen is launching, we don't add TURN_SCREEN_ON.
@@ -104,14 +104,14 @@ public class CastWebContentsActivity extends Activity {
                 })));
 
         // Initialize the audio manager in onCreate() if tests haven't already.
-        mCreatedState.and(Observable.not(mAudioManagerState)).watch(Observers.onEnter(x -> {
+        mCreatedState.and(Observable.not(mAudioManagerState)).subscribe(Observers.onEnter(x -> {
             mAudioManagerState.set(CastAudioManager.getAudioManager(this));
         }));
 
         // Clean up stream mute state on pause events.
         mAudioManagerState.andThen(Observable.not(mResumedState))
                 .map(Both::getFirst)
-                .watch(Observers.onEnter((CastAudioManager audioManager) -> {
+                .subscribe(Observers.onEnter((CastAudioManager audioManager) -> {
                     audioManager.releaseStreamMuteIfNecessary(AudioManager.STREAM_MUSIC);
                 }));
 
@@ -122,16 +122,16 @@ public class CastWebContentsActivity extends Activity {
                 .map(Intent::getExtras)
                 .map(CastWebContentsSurfaceHelper.StartParams::fromBundle)
                 // Use the duplicate-filtering functionality of Controller to drop duplicate params.
-                .watch(Observers.onEnter(startParamsState::set));
-        startParamsState.watch(Observers.onEnter(this ::notifyNewWebContents));
+                .subscribe(Observers.onEnter(startParamsState::set));
+        startParamsState.subscribe(Observers.onEnter(this ::notifyNewWebContents));
 
-        mIsFinishingState.watch(Observers.onEnter((String reason) -> {
+        mIsFinishingState.subscribe(Observers.onEnter((String reason) -> {
             if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
             finish();
         }));
 
         // If a new Intent arrives after finishing, start a new Activity instead of recycling this.
-        gotIntentAfterFinishingState.watch(Observers.onEnter((Intent intent) -> {
+        gotIntentAfterFinishingState.subscribe(Observers.onEnter((Intent intent) -> {
             Log.d(TAG, "Got intent while finishing current activity, so start new activity.");
             int flags = intent.getFlags();
             flags = flags & ~Intent.FLAG_ACTIVITY_SINGLE_TOP;
@@ -141,7 +141,7 @@ public class CastWebContentsActivity extends Activity {
 
         Observable<?> stoppingBecauseUserLeftState =
                 Observable.not(mStartedState).and(mUserLeftState);
-        stoppingBecauseUserLeftState.watch(Observers.onEnter(
+        stoppingBecauseUserLeftState.subscribe(Observers.onEnter(
                 x -> { mIsFinishingState.set("User left and activity stopped."); }));
     }
 

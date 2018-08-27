@@ -40,8 +40,8 @@ public class CastWebContentsService extends Service {
 
     {
         // React to web contents by presenting them in a headless view.
-        mWebContentsState.watch(CastWebContentsView.withoutLayout(this));
-        mWebContentsState.watch(x -> {
+        mWebContentsState.subscribe(CastWebContentsView.withoutLayout(this));
+        mWebContentsState.subscribe(x -> {
             // TODO(thoren): Notification.Builder(Context) is deprecated in O. Use the
             // (Context, String) constructor when CastWebContentsService starts supporting O.
             Notification notification = new Notification.Builder(this).build();
@@ -49,13 +49,13 @@ public class CastWebContentsService extends Service {
             return () -> stopForeground(true /*removeNotification*/);
         });
         mWebContentsState.map(this ::getMediaSessionImpl)
-                .watch(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
+                .subscribe(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
         // Inform CastContentWindowAndroid we're detaching.
         Observable<String> instanceIdState = mIntentState.map(Intent::getData).map(Uri::getPath);
-        instanceIdState.watch(Observers.onExit(CastWebContentsComponent::onComponentClosed));
+        instanceIdState.subscribe(Observers.onExit(CastWebContentsComponent::onComponentClosed));
 
         if (DEBUG) {
-            mWebContentsState.watch(x -> {
+            mWebContentsState.subscribe(x -> {
                 Log.d(TAG, "show web contents");
                 return () -> Log.d(TAG, "detach web contents");
             });

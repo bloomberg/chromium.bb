@@ -26,7 +26,7 @@ public class ReactiveRecorder {
 
     private ReactiveRecorder(Observable<?> observable) {
         mRecord = new ArrayList<>();
-        mSubscription = observable.watch((Object value) -> {
+        mSubscription = observable.subscribe((Object value) -> {
             mRecord.add(openEvent(value));
             return () -> mRecord.add(closeEvent(value));
         });

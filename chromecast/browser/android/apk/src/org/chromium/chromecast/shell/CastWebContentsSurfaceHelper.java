@@ -115,7 +115,7 @@ class CastWebContentsSurfaceHelper {
                 (WebContents webContents) -> MediaSessionImpl.fromWebContents(webContents);
 
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
-        mHasUriState.watch((Uri uri) -> {
+        mHasUriState.subscribe((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_SCREEN_OFF);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
@@ -125,7 +125,7 @@ class CastWebContentsSurfaceHelper {
         });
 
         // Receive broadcasts requesting to tear down this app while we have a valid URI.
-        mHasUriState.watch((Uri uri) -> {
+        mHasUriState.subscribe((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_STOP_WEB_CONTENT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
@@ -142,7 +142,7 @@ class CastWebContentsSurfaceHelper {
 
         // Receive broadcasts indicating that touch input should be enabled.
         // TODO(yyzhong) Handle this intent in an external activity hosting a cast fragment as well.
-        mHasUriState.watch((Uri uri) -> {
+        mHasUriState.subscribe((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
@@ -157,14 +157,14 @@ class CastWebContentsSurfaceHelper {
         });
 
         // webContentsView is responsible for displaying each new WebContents.
-        mWebContentsState.watch(webContentsView);
+        mWebContentsState.subscribe(webContentsView);
 
         // Take audio focus when receiving new WebContents.
         mWebContentsState.map(webContents -> mMediaSessionGetter.get(webContents))
-                .watch(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
+                .subscribe(Observers.onEnter(MediaSessionImpl::requestSystemAudioFocus));
 
         // Miscellaneous actions responding to WebContents lifecycle.
-        mWebContentsState.watch((WebContents webContents) -> {
+        mWebContentsState.subscribe((WebContents webContents) -> {
             // Whenever our app is visible, volume controls should modify the music stream.
             // For more information read:
             // http://developer.android.com/training/managing-audio/volume-playback.html
@@ -176,7 +176,7 @@ class CastWebContentsSurfaceHelper {
         // When onDestroy() is called after onNewStartParams(), log and reset StartParams states.
         mHasUriState.andThen(Observable.not(mCreatedState))
                 .map(Both::getFirst)
-                .watch(Observers.onEnter((Uri uri) -> {
+                .subscribe(Observers.onEnter((Uri uri) -> {
                     Log.d(TAG, "onDestroy: " + uri);
                     mWebContentsState.reset();
                     mHasUriState.reset();
