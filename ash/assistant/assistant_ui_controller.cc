@@ -22,6 +22,9 @@ namespace ash {
 
 namespace {
 
+// When hidden, Assistant will automatically close after |kAutoCloseThreshold|.
+constexpr base::TimeDelta kAutoCloseThreshold = base::TimeDelta::FromMinutes(5);
+
 // Toast -----------------------------------------------------------------------
 
 constexpr int kToastDurationMs = 2500;
@@ -40,7 +43,7 @@ void ShowToast(const std::string& id, int message_id) {
 
 AssistantUiController::AssistantUiController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller) {
+    : assistant_controller_(assistant_controller), weak_factory_(this) {
   AddModelObserver(this);
   assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
@@ -214,6 +217,18 @@ void AssistantUiController::OnUiVisibilityChanged(
       new_visibility == AssistantVisibility::kVisible
           ? mojom::VoiceInteractionState::RUNNING
           : mojom::VoiceInteractionState::STOPPED);
+
+  if (new_visibility == AssistantVisibility::kHidden) {
+    // When hiding the UI, start a timer to automatically close ourselves after
+    // |kAutoCloseThreshold|. This is to give the user an opportunity to resume
+    // their previous session before it is automatically finished.
+    auto_close_timer_.Start(FROM_HERE, kAutoCloseThreshold,
+                            base::BindRepeating(&AssistantUiController::CloseUi,
+                                                weak_factory_.GetWeakPtr(),
+                                                AssistantSource::kUnspecified));
+  } else {
+    auto_close_timer_.Stop();
+  }
 
   // Metalayer should not be sticky. Disable when the UI is no longer visible.
   if (old_visibility == AssistantVisibility::kVisible)
