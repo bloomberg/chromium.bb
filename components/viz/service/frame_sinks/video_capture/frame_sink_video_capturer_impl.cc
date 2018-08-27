@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/copy_output_result.h"
 #include "components/viz/common/surfaces/local_surface_id.h"
@@ -497,10 +498,12 @@ void FrameSinkVideoCapturerImpl::MaybeCaptureFrame(
                       frame_metadata.root_scroll_offset.x());
   metadata->SetDouble(VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y,
                       frame_metadata.root_scroll_offset.y());
+#if defined(OS_ANDROID)
   metadata->SetDouble(VideoFrameMetadata::TOP_CONTROLS_HEIGHT,
                       frame_metadata.top_controls_height);
   metadata->SetDouble(VideoFrameMetadata::TOP_CONTROLS_SHOWN_RATIO,
                       frame_metadata.top_controls_shown_ratio);
+#endif  // defined(OS_ANDROID)
 
   oracle_.RecordCapture(utilization);
   const int64_t frame_number = next_capture_frame_number_++;

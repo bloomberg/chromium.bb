@@ -29,10 +29,6 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   out->may_contain_video = data.may_contain_video();
   out->is_resourceless_software_draw_with_scroll_or_animation =
       data.is_resourceless_software_draw_with_scroll_or_animation();
-  out->top_controls_height = data.top_controls_height();
-  out->top_controls_shown_ratio = data.top_controls_shown_ratio();
-  out->bottom_controls_height = data.bottom_controls_height();
-  out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
   out->content_source_id = data.content_source_id();
   out->frame_token = data.frame_token();
   out->send_frame_token_to_embedder = data.send_frame_token_to_embedder();
@@ -43,6 +39,10 @@ bool StructTraits<viz::mojom::CompositorFrameMetadataDataView,
 #if defined(OS_ANDROID)
   out->max_page_scale_factor = data.max_page_scale_factor();
   out->root_overflow_y_hidden = data.root_overflow_y_hidden();
+  out->top_controls_height = data.top_controls_height();
+  out->top_controls_shown_ratio = data.top_controls_shown_ratio();
+  out->bottom_controls_height = data.bottom_controls_height();
+  out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
 #endif
 
   return data.ReadLatencyInfo(&out->latency_info) &&

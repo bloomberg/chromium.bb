@@ -64,16 +64,6 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   // depending on this anymore.
   bool is_resourceless_software_draw_with_scroll_or_animation = false;
 
-  // Used to position the Android location top bar and page content, whose
-  // precise position is computed by the renderer compositor.
-  float top_controls_height = 0.f;
-  float top_controls_shown_ratio = 0.f;
-
-  // Used to position Android bottom bar, whose position is computed by the
-  // renderer compositor.
-  float bottom_controls_height = 0.f;
-  float bottom_controls_shown_ratio = 0.f;
-
   // This color is usually obtained from the background color of the <body>
   // element. It can be used for filling in gutter areas around the frame when
   // it's too small to fill the box the parent reserved for it.
@@ -146,6 +136,16 @@ class VIZ_COMMON_EXPORT CompositorFrameMetadata {
   float max_page_scale_factor = 0.f;
   gfx::SizeF root_layer_size;
   bool root_overflow_y_hidden = false;
+
+  // Used to position the Android location top bar and page content, whose
+  // precise position is computed by the renderer compositor.
+  float top_controls_height = 0.f;
+  float top_controls_shown_ratio = 0.f;
+
+  // Used to position Android bottom bar, whose position is computed by the
+  // renderer compositor.
+  float bottom_controls_height = 0.f;
+  float bottom_controls_shown_ratio = 0.f;
 
   // Provides selection region updates relative to the current viewport. If the
   // selection is empty or otherwise unused, the bound types will indicate such.

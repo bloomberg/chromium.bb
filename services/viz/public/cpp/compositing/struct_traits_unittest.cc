@@ -616,10 +616,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
   const bool may_contain_video = true;
   const bool is_resourceless_software_draw_with_scroll_or_animation = true;
-  const float top_bar_height(1234.5f);
-  const float top_bar_shown_ratio(1.0f);
-  const float bottom_bar_height(1234.5f);
-  const float bottom_bar_shown_ratio(1.0f);
   const uint32_t root_background_color = 1337;
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
@@ -643,6 +639,10 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const float max_page_scale_factor = 4.6f;
   const gfx::SizeF root_layer_size(1234.5f, 5432.1f);
   const bool root_overflow_y_hidden = true;
+  const float top_bar_height(1234.5f);
+  const float top_bar_shown_ratio(1.0f);
+  const float bottom_bar_height(1234.5f);
+  const float bottom_bar_shown_ratio(1.0f);
   Selection<gfx::SelectionBound> selection;
   selection.start.SetEdge(gfx::PointF(1234.5f, 67891.f),
                           gfx::PointF(5432.1f, 1987.6f));
@@ -662,10 +662,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.may_contain_video = may_contain_video;
   input.is_resourceless_software_draw_with_scroll_or_animation =
       is_resourceless_software_draw_with_scroll_or_animation;
-  input.top_controls_height = top_bar_height;
-  input.top_controls_shown_ratio = top_bar_shown_ratio;
-  input.bottom_controls_height = bottom_bar_height;
-  input.bottom_controls_shown_ratio = bottom_bar_shown_ratio;
   input.root_background_color = root_background_color;
   input.latency_info = latency_infos;
   input.referenced_surfaces = referenced_surfaces;
@@ -679,6 +675,10 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.max_page_scale_factor = max_page_scale_factor;
   input.root_layer_size = root_layer_size;
   input.root_overflow_y_hidden = root_overflow_y_hidden;
+  input.top_controls_height = top_bar_height;
+  input.top_controls_shown_ratio = top_bar_shown_ratio;
+  input.bottom_controls_height = bottom_bar_height;
+  input.bottom_controls_shown_ratio = bottom_bar_shown_ratio;
   input.selection = selection;
 #endif  // defined(OS_ANDROID)
 
@@ -691,10 +691,6 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(may_contain_video, output.may_contain_video);
   EXPECT_EQ(is_resourceless_software_draw_with_scroll_or_animation,
             output.is_resourceless_software_draw_with_scroll_or_animation);
-  EXPECT_EQ(top_bar_height, output.top_controls_height);
-  EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
-  EXPECT_EQ(bottom_bar_height, output.bottom_controls_height);
-  EXPECT_EQ(bottom_bar_shown_ratio, output.bottom_controls_shown_ratio);
   EXPECT_EQ(root_background_color, output.root_background_color);
   EXPECT_EQ(latency_infos.size(), output.latency_info.size());
   EXPECT_TRUE(output.latency_info[0].FindLatency(
@@ -716,6 +712,10 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(max_page_scale_factor, output.max_page_scale_factor);
   EXPECT_EQ(root_layer_size, output.root_layer_size);
   EXPECT_EQ(root_overflow_y_hidden, output.root_overflow_y_hidden);
+  EXPECT_EQ(top_bar_height, output.top_controls_height);
+  EXPECT_EQ(top_bar_shown_ratio, output.top_controls_shown_ratio);
+  EXPECT_EQ(bottom_bar_height, output.bottom_controls_height);
+  EXPECT_EQ(bottom_bar_shown_ratio, output.bottom_controls_shown_ratio);
   EXPECT_EQ(selection, output.selection);
 #endif  // defined(OS_ANDROID)
 }

@@ -172,11 +172,16 @@ void GetMetadataFromFrame(const media::VideoFrame& frame,
       media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_X, &root_scroll_offset_x);
   success &= frame.metadata()->GetDouble(
       media::VideoFrameMetadata::ROOT_SCROLL_OFFSET_Y, &root_scroll_offset_y);
+#if defined(OS_ANDROID)
   success &= frame.metadata()->GetDouble(
       media::VideoFrameMetadata::TOP_CONTROLS_HEIGHT, top_controls_height);
   success &= frame.metadata()->GetDouble(
       media::VideoFrameMetadata::TOP_CONTROLS_SHOWN_RATIO,
       top_controls_shown_ratio);
+#else
+  *top_controls_height = 0.;
+  *top_controls_shown_ratio = 0.;
+#endif  // defined(OS_ANDROID)
   DCHECK(success);
 
   root_scroll_offset->set_x(root_scroll_offset_x);
@@ -937,13 +942,19 @@ void PageHandler::InnerSwapCompositorFrame() {
   if (snapshot_size.IsEmpty())
     return;
 
+  double top_controls_height = 0.;
+  double top_controls_shown_ratio = 0.;
+#if defined(OS_ANDROID)
+  top_controls_height = last_compositor_frame_metadata_.top_controls_height;
+  top_controls_shown_ratio =
+      last_compositor_frame_metadata_.top_controls_shown_ratio;
+#endif
   std::unique_ptr<Page::ScreencastFrameMetadata> page_metadata =
       BuildScreencastFrameMetadata(
           surface_size, last_compositor_frame_metadata_.device_scale_factor,
           last_compositor_frame_metadata_.page_scale_factor,
           last_compositor_frame_metadata_.root_scroll_offset,
-          last_compositor_frame_metadata_.top_controls_height,
-          last_compositor_frame_metadata_.top_controls_shown_ratio);
+          top_controls_height, top_controls_shown_ratio);
   if (!page_metadata)
     return;
 

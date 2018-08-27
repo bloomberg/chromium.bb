@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "media/base/media_export.h"
 #include "media/base/video_rotation.h"
 
@@ -134,8 +135,10 @@ class MEDIA_EXPORT VideoFrameMetadata {
     PAGE_SCALE_FACTOR,
     ROOT_SCROLL_OFFSET_X,
     ROOT_SCROLL_OFFSET_Y,
+#if defined(OS_ANDROID)
     TOP_CONTROLS_HEIGHT,
     TOP_CONTROLS_SHOWN_RATIO,
+#endif
 
     NUM_KEYS
   };
