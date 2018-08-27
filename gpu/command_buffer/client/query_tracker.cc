@@ -31,19 +31,16 @@ QuerySyncManager::Bucket::Bucket(QuerySync* sync_mem,
 QuerySyncManager::Bucket::~Bucket() = default;
 
 void QuerySyncManager::Bucket::FreePendingSyncs() {
-  auto it =
-      std::remove_if(pending_syncs.begin(), pending_syncs.end(),
-                     [this](const PendingSync& pending) {
-                       QuerySync* sync = this->syncs + pending.index;
-                       if (base::subtle::Acquire_Load(&sync->process_count) ==
-                           pending.submit_count) {
-                         this->in_use_query_syncs[pending.index] = false;
-                         return true;
-                       } else {
-                         return false;
-                       }
-                     });
-  pending_syncs.erase(it, pending_syncs.end());
+  base::EraseIf(pending_syncs, [this](const PendingSync& pending) {
+    QuerySync* sync = this->syncs + pending.index;
+    if (base::subtle::Acquire_Load(&sync->process_count) ==
+        pending.submit_count) {
+      this->in_use_query_syncs[pending.index] = false;
+      return true;
+    } else {
+      return false;
+    }
+  });
 }
 
 QuerySyncManager::QuerySyncManager(MappedMemoryManager* manager)

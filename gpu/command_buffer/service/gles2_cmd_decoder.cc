@@ -5372,12 +5372,11 @@ void GLES2DecoderImpl::ReleaseNotInUseBackTextures() {
     if (!saved_back_texture.in_use)
       saved_back_texture.back_texture->Destroy();
   }
-  auto to_remove =
-      std::remove_if(saved_back_textures_.begin(), saved_back_textures_.end(),
-                     [](const SavedBackTexture& saved_back_texture) {
-                       return !saved_back_texture.in_use;
-                     });
-  saved_back_textures_.erase(to_remove, saved_back_textures_.end());
+
+  base::EraseIf(saved_back_textures_,
+                [](const SavedBackTexture& saved_back_texture) {
+                  return !saved_back_texture.in_use;
+                });
 }
 
 void GLES2DecoderImpl::ReleaseAllBackTextures(bool have_context) {
