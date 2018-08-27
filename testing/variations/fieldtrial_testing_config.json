@@ -3018,7 +3018,7 @@
             ]
         }
     ],
-    "PageAlmostIdleAndLocalDB": [
+    "PageAlmostIdle": [
         {
             "platforms": [
                 "chromeos",
@@ -3033,8 +3033,7 @@
                         "mainThreadTaskLoadLowThreshold": "25"
                     },
                     "enable_features": [
-                        "PageAlmostIdle",
-                        "SiteCharacteristicsDatabase"
+                        "PageAlmostIdle"
                     ]
                 }
             ]
@@ -3437,14 +3436,18 @@
             ],
             "experiments": [
                 {
-                    "name": "FreezeAndDiscardWithUnfreeze",
+                    "name": "FreezeAndDiscard",
                     "params": {
+                        "HighLoadedTabCount": "10000",
                         "ShouldPeriodicallyUnfreeze": "true",
-                        "ShouldProactivelyDiscard": "true"
+                        "ShouldProactivelyDiscard": "true",
+                        "ShouldProtectTabsSharingBrowsingInstance": "true"
                     },
                     "enable_features": [
                         "PageLifecycle",
-                        "ProactiveTabFreezeAndDiscard"
+                        "ProactiveTabFreezeAndDiscard",
+                        "SiteCharacteristicsDatabase",
+                        "stop-non-timers-in-background"
                     ]
                 }
             ]
