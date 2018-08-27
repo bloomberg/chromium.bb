@@ -60,7 +60,8 @@ uint32_t CalculatePrivateFootprintKb(const mojom::RawOSMemDump& os_dump,
         base::saturated_cast<int32_t>(shared_resident_kb));
   }
 #elif defined(OS_WIN)
-  return os_dump.platform_private_footprint->private_bytes / 1024;
+  return base::saturated_cast<int32_t>(
+      os_dump.platform_private_footprint->private_bytes / 1024);
 #else
   return 0;
 #endif
@@ -476,8 +477,10 @@ void QueuedRequestDispatcher::Finalize(QueuedRequest* request,
         }
       }
 #endif
-      os_dump = CreatePublicOSDump(*raw_os_dump, shared_resident_kb);
-      os_dump->shared_footprint_kb = shared_footprints[pid] / 1024;
+      os_dump = CreatePublicOSDump(
+          *raw_os_dump, base::saturated_cast<uint32_t>(shared_resident_kb));
+      os_dump->shared_footprint_kb =
+          base::saturated_cast<uint32_t>(shared_footprints[pid] / 1024);
     }
 
     // Trace the OS and Chrome dumps if they exist.

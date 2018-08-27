@@ -68,12 +68,12 @@ void ProcessCoordinationUnitImpl::SetMainThreadTaskLoadIsLow(
               main_thread_task_load_is_low);
 }
 
-void ProcessCoordinationUnitImpl::SetPID(int64_t pid) {
+void ProcessCoordinationUnitImpl::SetPID(base::ProcessId pid) {
   // The PID can only be set once.
   DCHECK_EQ(process_id_, base::kNullProcessId);
 
   graph()->BeforeProcessPidChange(this, pid);
-  process_id_ = static_cast<base::ProcessId>(pid);
+  process_id_ = pid;
   SetProperty(mojom::PropertyType::kPID, pid);
 }
 

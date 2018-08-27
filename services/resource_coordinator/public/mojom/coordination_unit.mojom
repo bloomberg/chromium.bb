@@ -110,7 +110,7 @@ interface ProcessCoordinationUnit {
   SetExpectedTaskQueueingDuration(mojo_base.mojom.TimeDelta duration);
   SetLaunchTime(mojo_base.mojom.Time launch_time);
   SetMainThreadTaskLoadIsLow(bool main_thread_task_load_is_low);
-  SetPID(int64 pid);
+  SetPID(mojo_base.mojom.ProcessId pid);
 
   // Event signals.
 
