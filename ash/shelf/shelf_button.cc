@@ -41,10 +41,15 @@ constexpr int kStatusIndicatorMaxAnimationSeconds = 10;
 constexpr int kStatusIndicatorRadiusDip = 2;
 constexpr int kStatusIndicatorMaxSize = 10;
 constexpr int kStatusIndicatorActiveSize = 8;
-constexpr int kStatusIndicatorActiveThickness = 2;
+constexpr int kStatusIndicatorRunningSize = 4;
+constexpr int kStatusIndicatorThickness = 2;
 constexpr int kNotificationIndicatorRadiusDip = 7;
 constexpr SkColor kIndicatorBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 constexpr SkColor kIndicatorColor = SK_ColorWHITE;
+
+// Slightly different colors and alpha in the new UI.
+constexpr SkColor kIndicatorColorActive = kIndicatorColor;
+constexpr SkColor kIndicatorColorRunning = SkColorSetA(SK_ColorWHITE, 0x7F);
 
 // Shelf item ripple size.
 constexpr int kInkDropLargeSize = 60;
@@ -210,23 +215,23 @@ class ShelfButton::AppStatusIndicatorView
     gfx::PointF center = gfx::RectF(GetLocalBounds()).CenterPoint();
     center.Scale(dsf);
     cc::PaintFlags flags;
-    if (active_ && chromeos::switches::ShouldUseShelfNewUi()) {
-      // In the new UI, visually distinguish the active app.
-      flags.setColor(kIndicatorColor);
+    if (chromeos::switches::ShouldUseShelfNewUi()) {
+      // Active and running indicators look a little different in the new UI.
+      flags.setColor(active_ ? kIndicatorColorActive : kIndicatorColorRunning);
       float indicator_width;
       float indicator_height;
       gfx::PointF origin;
       if (horizontal_shelf_) {
-        indicator_width = kStatusIndicatorActiveSize;
-        indicator_height = kStatusIndicatorActiveThickness;
-        origin = gfx::PointF(center.x() - kStatusIndicatorActiveSize / 2,
-                             center.y() - kStatusIndicatorActiveThickness / 2);
+        indicator_width =
+            active_ ? kStatusIndicatorActiveSize : kStatusIndicatorRunningSize;
+        indicator_height = kStatusIndicatorThickness;
       } else {
-        indicator_width = kStatusIndicatorActiveThickness;
-        indicator_height = kStatusIndicatorActiveSize;
-        origin = gfx::PointF(center.x() - kStatusIndicatorActiveThickness / 2,
-                             center.y() - kStatusIndicatorActiveSize / 2);
+        indicator_width = kStatusIndicatorThickness;
+        indicator_height =
+            active_ ? kStatusIndicatorActiveSize : kStatusIndicatorRunningSize;
       }
+      origin = gfx::PointF(center.x() - indicator_width / 2,
+                           center.y() - indicator_height / 2);
       canvas->DrawRect(
           gfx::ScaleRect(
               gfx::RectF(origin, gfx::SizeF(indicator_width, indicator_height)),
