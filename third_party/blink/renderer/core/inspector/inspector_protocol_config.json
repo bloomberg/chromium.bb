@@ -99,6 +99,9 @@
                 "domain": "Target",
                 "include": ["setAutoAttach", "sendMessageToTarget"],
                 "include_events": ["attachedToTarget", "detachedFromTarget", "receivedMessageFromTarget"]
+            },
+            {
+                "domain": "Testing"
             }
         ]
     },
