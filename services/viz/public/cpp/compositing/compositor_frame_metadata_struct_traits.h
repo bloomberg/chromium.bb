@@ -47,26 +47,6 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
     return metadata.is_resourceless_software_draw_with_scroll_or_animation;
   }
 
-  static float top_controls_height(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.top_controls_height;
-  }
-
-  static float top_controls_shown_ratio(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.top_controls_shown_ratio;
-  }
-
-  static float bottom_controls_height(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.bottom_controls_height;
-  }
-
-  static float bottom_controls_shown_ratio(
-      const viz::CompositorFrameMetadata& metadata) {
-    return metadata.bottom_controls_shown_ratio;
-  }
-
   static uint32_t root_background_color(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.root_background_color;
@@ -135,6 +115,26 @@ struct StructTraits<viz::mojom::CompositorFrameMetadataDataView,
   static bool root_overflow_y_hidden(
       const viz::CompositorFrameMetadata& metadata) {
     return metadata.root_overflow_y_hidden;
+  }
+
+  static float top_controls_height(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.top_controls_height;
+  }
+
+  static float top_controls_shown_ratio(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.top_controls_shown_ratio;
+  }
+
+  static float bottom_controls_height(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.bottom_controls_height;
+  }
+
+  static float bottom_controls_shown_ratio(
+      const viz::CompositorFrameMetadata& metadata) {
+    return metadata.bottom_controls_shown_ratio;
   }
 
   static const viz::Selection<gfx::SelectionBound>& selection(

@@ -1899,14 +1899,6 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
 
   metadata.page_scale_factor = active_tree_->current_page_scale_factor();
   metadata.scrollable_viewport_size = active_tree_->ScrollableViewportSize();
-  metadata.top_controls_height =
-      browser_controls_offset_manager_->TopControlsHeight();
-  metadata.top_controls_shown_ratio =
-      browser_controls_offset_manager_->TopControlsShownRatio();
-  metadata.bottom_controls_height =
-      browser_controls_offset_manager_->BottomControlsHeight();
-  metadata.bottom_controls_shown_ratio =
-      browser_controls_offset_manager_->BottomControlsShownRatio();
   metadata.root_background_color = active_tree_->background_color();
   metadata.content_source_id = active_tree_->content_source_id();
 
@@ -1947,6 +1939,15 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
     metadata.root_overflow_y_hidden =
         !outer_viewport_scroll_node->user_scrollable_vertical;
   }
+
+  metadata.top_controls_height =
+      browser_controls_offset_manager_->TopControlsHeight();
+  metadata.top_controls_shown_ratio =
+      browser_controls_offset_manager_->TopControlsShownRatio();
+  metadata.bottom_controls_height =
+      browser_controls_offset_manager_->BottomControlsHeight();
+  metadata.bottom_controls_shown_ratio =
+      browser_controls_offset_manager_->BottomControlsShownRatio();
 
   active_tree_->GetViewportSelection(&metadata.selection);
 #endif
