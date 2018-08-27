@@ -31,20 +31,19 @@ namespace {
 // Disk cache entry data indices.
 enum { kResponseInfoIndex, kResponseContentIndex, kResponseMetadataIndex };
 
-// An IOBuffer that wraps a pickle's data. Ownership of the
-// pickle is transfered to the WrappedPickleIOBuffer object.
+// An IOBuffer that wraps a pickle's data.
 class WrappedPickleIOBuffer : public net::WrappedIOBuffer {
  public:
-  explicit WrappedPickleIOBuffer(const base::Pickle* pickle)
+  explicit WrappedPickleIOBuffer(std::unique_ptr<const base::Pickle> pickle)
       : net::WrappedIOBuffer(reinterpret_cast<const char*>(pickle->data())),
-        pickle_(pickle) {
-    DCHECK(pickle->data());
+        pickle_(std::move(pickle)) {
+    DCHECK(pickle_->data());
   }
 
  private:
-  ~WrappedPickleIOBuffer() override {}
+  ~WrappedPickleIOBuffer() override = default;
 
-  std::unique_ptr<const base::Pickle> pickle_;
+  const std::unique_ptr<const base::Pickle> pickle_;
 };
 
 }  // anon namespace
@@ -358,10 +357,11 @@ void AppCacheResponseWriter::ContinueWriteInfo() {
 
   const bool kSkipTransientHeaders = true;
   const bool kTruncated = false;
-  base::Pickle* pickle = new base::Pickle;
-  info_buffer_->http_info->Persist(pickle, kSkipTransientHeaders, kTruncated);
+  std::unique_ptr<base::Pickle> pickle = std::make_unique<base::Pickle>();
+  info_buffer_->http_info->Persist(pickle.get(), kSkipTransientHeaders,
+                                   kTruncated);
   write_amount_ = static_cast<int>(pickle->size());
-  buffer_ = new WrappedPickleIOBuffer(pickle);  // takes ownership of pickle
+  buffer_ = base::MakeRefCounted<WrappedPickleIOBuffer>(std::move(pickle));
   WriteRaw(kResponseInfoIndex, 0, buffer_.get(), write_amount_);
 }
 
