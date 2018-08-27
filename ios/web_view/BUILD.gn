@@ -415,7 +415,7 @@ js_compile_bundle("web_view_bundle") {
     "//components/autofill/ios/browser/resources/autofill_controller.js",
     "//components/autofill/ios/form_util/resources/fill.js",
     "//components/autofill/ios/form_util/resources/form.js",
-    "//ios/chrome/browser/passwords/resources/password_controller.js",
+    "//components/password_manager/ios/resources/password_controller.js",
     "resources/web_view_bundle.js",
   ]
 }

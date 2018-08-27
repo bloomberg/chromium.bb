@@ -42,7 +42,6 @@ source_set("passwords") {
     "update_password_infobar_controller.mm",
   ]
   deps = [
-    ":injected_js",
     "//base",
     "//base:i18n",
     "//components/autofill/core/browser",
@@ -180,16 +179,5 @@ source_set("eg_tests") {
   libs = [
     "UIKit.framework",
     "XCTest.framework",
-  ]
-}
-
-js_compile_checked("injected_js") {
-  visibility = [ ":passwords" ]
-  sources = [
-    "resources/password_controller.js",
-  ]
-  js_modules = [
-    "//components/autofill/ios/form_util/resources/form.js",
-    "//components/autofill/ios/form_util/resources/fill.js",
   ]
 }
