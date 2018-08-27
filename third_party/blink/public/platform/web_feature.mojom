@@ -1987,6 +1987,7 @@ enum WebFeature {
   kInterventionReport = 2531,
   kV8WasmSharedMemory = 2532,
   kV8WasmThreadOpcodes = 2533,
+  kCacheStorageAddAllSuccessWithDuplicate = 2534,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
