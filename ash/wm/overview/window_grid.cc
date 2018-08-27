@@ -216,21 +216,35 @@ std::unique_ptr<views::Widget> CreateNewSelectorItemWidget(
 // window dragging.
 gfx::Rect GetGridBoundsInScreenDuringDragging(aura::Window* dragged_window,
                                               IndicatorState indicator_state) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
   switch (indicator_state) {
     case IndicatorState::kPreviewAreaLeft:
-      return Shell::Get()
-          ->split_view_controller()
-          ->GetSnappedWindowBoundsInScreen(dragged_window,
-                                           SplitViewController::RIGHT);
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          dragged_window, SplitViewController::RIGHT);
     case IndicatorState::kPreviewAreaRight:
-      return Shell::Get()
-          ->split_view_controller()
-          ->GetSnappedWindowBoundsInScreen(dragged_window,
-                                           SplitViewController::LEFT);
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          dragged_window, SplitViewController::LEFT);
     default:
-      return Shell::Get()
-          ->split_view_controller()
-          ->GetDisplayWorkAreaBoundsInScreen(dragged_window);
+      return split_view_controller->GetDisplayWorkAreaBoundsInScreen(
+          dragged_window);
+  }
+}
+
+// Gets the expected grid bounds according to current splitview state.
+gfx::Rect GetGridBoundsInScreenAfterDragging(aura::Window* dragged_window) {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  switch (split_view_controller->state()) {
+    case SplitViewController::LEFT_SNAPPED:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          dragged_window, SplitViewController::RIGHT);
+    case SplitViewController::RIGHT_SNAPPED:
+      return split_view_controller->GetSnappedWindowBoundsInScreen(
+          dragged_window, SplitViewController::LEFT);
+    default:
+      return split_view_controller->GetDisplayWorkAreaBoundsInScreen(
+          dragged_window);
   }
 }
 
@@ -750,9 +764,11 @@ void WindowGrid::OnWindowDragEnded(aura::Window* dragged_window,
   // Called to reset caption and title visibility after dragging.
   OnSelectorItemDragEnded();
 
-  // Need to call PositionWindows() here as the above two functions AddItem()
-  // and RemoveWindowSelectorItem() are called without repositioning windows.
-  PositionWindows(/*animate=*/true);
+  // Update the grid bounds and reposition windows. Since the grid bounds might
+  // be updated based on the preview area during drag, but the window finally
+  // didn't be snapped to the preview area.
+  SetBoundsAndUpdatePositions(
+      GetGridBoundsInScreenAfterDragging(dragged_window));
 }
 
 bool WindowGrid::IsNewSelectorItemWindow(aura::Window* window) const {

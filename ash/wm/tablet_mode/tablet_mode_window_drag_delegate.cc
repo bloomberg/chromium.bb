@@ -215,6 +215,51 @@ void TabletModeWindowDragDelegate::EndWindowDrag(
   did_move_ = false;
 }
 
+IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
+    const gfx::Point& location_in_screen) const {
+  SplitViewController::SnapPosition snap_position =
+      GetSnapPosition(location_in_screen);
+  const bool can_snap = split_view_controller_->CanSnap(dragged_window_);
+  if (snap_position != SplitViewController::NONE &&
+      !split_view_controller_->IsSplitViewModeActive() && can_snap) {
+    return snap_position == SplitViewController::LEFT
+               ? IndicatorState::kPreviewAreaLeft
+               : IndicatorState::kPreviewAreaRight;
+  }
+
+  // Do not show the drag indicators if split view mode is active.
+  if (split_view_controller_->IsSplitViewModeActive())
+    return IndicatorState::kNone;
+
+  // If the event location hasn't passed the indicator vertical threshold, do
+  // not show the drag indicators.
+  const gfx::Rect work_area_bounds =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(dragged_window_)
+          .work_area();
+  if (!did_move_ && location_in_screen.y() <
+                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
+    return IndicatorState::kNone;
+  }
+
+  // If the event location has passed the maximize vertical threshold, and the
+  // event location is not in snap indicator area, and overview mode is not
+  // active at the moment, do not show the drag indicators.
+  if (location_in_screen.y() >=
+          GetMaximizeVerticalThreshold(work_area_bounds) &&
+      snap_position == SplitViewController::NONE &&
+      !Shell::Get()->window_selector_controller()->IsSelecting()) {
+    return IndicatorState::kNone;
+  }
+
+  // No top drag indicator if in portrait screen orientation.
+  if (split_view_controller_->IsCurrentScreenOrientationLandscape())
+    return can_snap ? IndicatorState::kDragArea : IndicatorState::kCannotSnap;
+
+  return can_snap ? IndicatorState::kDragAreaRight
+                  : IndicatorState::kCannotSnapRight;
+}
+
 bool TabletModeWindowDragDelegate::ShouldOpenOverviewWhenDragStarts() {
   DCHECK(dragged_window_);
   return true;
@@ -294,51 +339,6 @@ SplitViewController::SnapPosition TabletModeWindowDragDelegate::GetSnapPosition(
     return is_primary ? SplitViewController::RIGHT : SplitViewController::LEFT;
 
   return SplitViewController::NONE;
-}
-
-IndicatorState TabletModeWindowDragDelegate::GetIndicatorState(
-    const gfx::Point& location_in_screen) const {
-  SplitViewController::SnapPosition snap_position =
-      GetSnapPosition(location_in_screen);
-  const bool can_snap = split_view_controller_->CanSnap(dragged_window_);
-  if (snap_position != SplitViewController::NONE &&
-      !split_view_controller_->IsSplitViewModeActive() && can_snap) {
-    return snap_position == SplitViewController::LEFT
-               ? IndicatorState::kPreviewAreaLeft
-               : IndicatorState::kPreviewAreaRight;
-  }
-
-  // Do not show the drag indicators if split view mode is active.
-  if (split_view_controller_->IsSplitViewModeActive())
-    return IndicatorState::kNone;
-
-  // If the event location hasn't passed the indicator vertical threshold, do
-  // not show the drag indicators.
-  const gfx::Rect work_area_bounds =
-      display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(dragged_window_)
-          .work_area();
-  if (!did_move_ && location_in_screen.y() <
-                        GetIndicatorsVerticalThreshold(work_area_bounds)) {
-    return IndicatorState::kNone;
-  }
-
-  // If the event location has passed the maximize vertical threshold, and the
-  // event location is not in snap indicator area, and overview mode is not
-  // active at the moment, do not show the drag indicators.
-  if (location_in_screen.y() >=
-          GetMaximizeVerticalThreshold(work_area_bounds) &&
-      snap_position == SplitViewController::NONE &&
-      !Shell::Get()->window_selector_controller()->IsSelecting()) {
-    return IndicatorState::kNone;
-  }
-
-  // No top drag indicator if in portrait screen orientation.
-  if (split_view_controller_->IsCurrentScreenOrientationLandscape())
-    return can_snap ? IndicatorState::kDragArea : IndicatorState::kCannotSnap;
-
-  return can_snap ? IndicatorState::kDragAreaRight
-                  : IndicatorState::kCannotSnapRight;
 }
 
 void TabletModeWindowDragDelegate::UpdateDraggedWindowTransform(

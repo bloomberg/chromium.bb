@@ -1163,10 +1163,10 @@ TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
       start, end, base::TimeDelta::FromMilliseconds(100), 2);
   EXPECT_TRUE(ash::wm::GetWindowState(window)->IsMaximized());
 
-  // FLING the window with large veloicty (larger than
-  // kFlingToOverviewThreshold) will drop the window into overview.
+  // FLING the window not inisde preview area with large enough y veloicty
+  // (larger than kFlingToOverviewThreshold) will drop the window into overview.
   EXPECT_FALSE(shell->window_selector_controller()->IsSelecting());
-  end = gfx::Point(0, 210);
+  end = gfx::Point(400, 210);
   const base::TimeDelta duration =
       event_generator->CalculateScrollDurationForFlingVelocity(
           start, end,
@@ -1181,6 +1181,7 @@ TEST_F(ClientControlledShellSurfaceTest, DragWindowFromTopInTabletMode) {
 
   // Drag the window long enough (pass one fourth of the screen vertical
   // height) to snap the window to splitscreen.
+  end = gfx::Point(0, 210);
   shell->window_selector_controller()->ToggleOverview();
   EXPECT_FALSE(shell->window_selector_controller()->IsSelecting());
   EXPECT_TRUE(ash::wm::GetWindowState(window)->IsMaximized());

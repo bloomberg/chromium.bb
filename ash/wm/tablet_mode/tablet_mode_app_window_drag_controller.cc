@@ -105,11 +105,58 @@ void TabletModeAppWindowDragController::UpdateWindowDrag(
       TabletModeWindowDragDelegate::UpdateDraggedWindowType::UPDATE_TRANSFORM);
 }
 
+bool TabletModeAppWindowDragController::ShouldFlingIntoOverview(
+    ui::GestureEvent* event) {
+  if (event->type() != ui::ET_SCROLL_FLING_START)
+    return false;
+
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  const gfx::Point location_in_screen = GetEventLocationInScreen(event);
+  const IndicatorState indicator_state =
+      drag_delegate_->GetIndicatorState(location_in_screen);
+  const bool is_landscape =
+      split_view_controller->IsCurrentScreenOrientationLandscape();
+  const float velocity = is_landscape ? event->details().velocity_x()
+                                      : event->details().velocity_y();
+
+  // Drop the window into overview if fling with large enough velocity to the
+  // opposite snap position when preview area is shown.
+  if (split_view_controller->IsCurrentScreenOrientationPrimary()) {
+    if (indicator_state == IndicatorState::kPreviewAreaLeft)
+      return velocity > kFlingToOverviewThreshold;
+    else if (indicator_state == IndicatorState::kPreviewAreaRight)
+      return -velocity > kFlingToOverviewThreshold;
+  } else {
+    if (indicator_state == IndicatorState::kPreviewAreaLeft)
+      return -velocity > kFlingToOverviewThreshold;
+    else if (indicator_state == IndicatorState::kPreviewAreaRight)
+      return velocity > kFlingToOverviewThreshold;
+  }
+
+  const SplitViewController::State snap_state = split_view_controller->state();
+  const int end_position =
+      is_landscape ? location_in_screen.x() : location_in_screen.y();
+  // Fling the window when splitview is active. Since each snapping area in
+  // splitview has a corresponding snap position. Fling the window to the
+  // opposite position of the area's snap position with large enough velocity
+  // should drop the window into overview grid.
+  if (snap_state == SplitViewController::LEFT_SNAPPED ||
+      snap_state == SplitViewController::RIGHT_SNAPPED) {
+    return end_position > split_view_controller->divider_position()
+               ? -velocity > kFlingToOverviewThreshold
+               : velocity > kFlingToOverviewThreshold;
+  }
+
+  // Consider only the velocity_y if splitview is not active and preview area is
+  // not shown.
+  return event->details().velocity_y() > kFlingToOverviewThreshold;
+}
+
 void TabletModeAppWindowDragController::EndWindowDrag(
     ui::GestureEvent* event,
     wm::WmToplevelWindowEventHandler::DragResult result) {
-  if (event->type() == ui::ET_SCROLL_FLING_START &&
-      event->details().velocity_y() > kFlingToOverviewThreshold) {
+  if (ShouldFlingIntoOverview(event)) {
     DCHECK(Shell::Get()->window_selector_controller()->IsSelecting());
     Shell::Get()->window_selector_controller()->window_selector()->AddItem(
         drag_delegate_->dragged_window(), /*reposition=*/true,
