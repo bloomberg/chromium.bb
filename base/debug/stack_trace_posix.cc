@@ -49,6 +49,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 
 #if defined(USE_SYMBOLIZE)
@@ -688,6 +689,11 @@ class SandboxSymbolizeHelper {
         }
         if (region.path[0] == '[') {
           // Skip pseudo-paths, like [stack], [vdso], [heap], etc ...
+          continue;
+        }
+        if (base::EndsWith(region.path, " (deleted)",
+                           base::CompareCase::SENSITIVE)) {
+          // Skip deleted files.
           continue;
         }
         // Avoid duplicates.
