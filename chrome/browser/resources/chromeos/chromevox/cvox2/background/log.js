@@ -34,6 +34,12 @@ LogPage.init = function() {
   LogPage.backgroundWindow = chrome.extension.getBackgroundPage();
   LogPage.LogStore = LogPage.backgroundWindow.LogStore.getInstance();
 
+  var clearLogButton = document.getElementById('clearLog');
+  clearLogButton.onclick = function(event) {
+    LogPage.LogStore.clearLog();
+    location.reload();
+  };
+
   var checkboxes = document.getElementsByClassName('log-filter');
   var filterEventListener = function(event) {
     var target = event.target;
@@ -46,6 +52,10 @@ LogPage.init = function() {
   LogPage.update();
 };
 
+/**
+ * Update the states of checkboxes and
+ * update logs.
+ */
 LogPage.update = function() {
   for (var type in LogStore.LogType) {
     var typeFilter = LogStore.LogType[type] + 'Filter';
