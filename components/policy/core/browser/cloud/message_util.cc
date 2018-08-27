@@ -51,6 +51,8 @@ int GetIDSForDMStatus(DeviceManagementStatus status) {
     case DM_STATUS_SERVICE_ARC_DISABLED:
       // This error is never shown on the UI.
       return IDS_POLICY_DM_STATUS_UNKNOWN_ERROR;
+    case DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE:
+      return IDS_POLICY_DM_STATUS_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE;
   }
   NOTREACHED() << "Unhandled DM status " << status;
   return IDS_POLICY_DM_STATUS_UNKNOWN_ERROR;

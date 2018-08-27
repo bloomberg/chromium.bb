@@ -121,6 +121,8 @@ enum DeviceManagementStatus {
   DM_STATUS_SERVICE_POLICY_NOT_FOUND = 902,
   // Service error: ARC is not enabled on this domain.
   DM_STATUS_SERVICE_ARC_DISABLED = 904,
+  // Service error: Non-dasher account with packaged license can't enroll.
+  DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE = 905,
 };
 
 // List of modes that the device can be locked into.

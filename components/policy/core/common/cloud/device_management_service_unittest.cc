@@ -434,6 +434,11 @@ INSTANTIATE_TEST_CASE_P(
             DM_STATUS_SERVICE_MISSING_LICENSES,
             net::OK,
             402,
+            PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE,
+            net::OK,
+            417,
             PROTO_STRING(kResponseEmpty))));
 
 // Simple query parameter parser for testing.

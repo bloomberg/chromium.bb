@@ -208,11 +208,13 @@ void EnrollmentHandlerChromeOS::CheckAvailableLicenses(
 void EnrollmentHandlerChromeOS::HandleAvailableLicensesResult(
     DeviceManagementStatus status,
     const CloudPolicyClient::LicenseMap& license_map) {
-  if (status == DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED) {
+  if (status == DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED ||
+      status == DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&EnrollmentHandlerChromeOS::ReportResult,
-                              weak_ptr_factory_.GetWeakPtr(),
-                              EnrollmentStatus::ForRegistrationError(status)));
+        FROM_HERE,
+        base::BindOnce(&EnrollmentHandlerChromeOS::ReportResult,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       EnrollmentStatus::ForRegistrationError(status)));
     return;
   } else if (status != DM_STATUS_SUCCESS) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
