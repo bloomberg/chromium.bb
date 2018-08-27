@@ -62,9 +62,6 @@ void PreviewsUITabHelper::ShowUIElement(
     bool is_data_saver_user,
     bool is_reload,
     OnDismissPreviewsUICallback on_dismiss_callback) {
-  if (!web_contents())
-    return;
-
   // Retrieve PreviewsUIService* from |web_contents| if available.
   PreviewsService* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
