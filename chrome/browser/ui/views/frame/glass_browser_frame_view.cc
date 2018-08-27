@@ -75,6 +75,17 @@ base::win::ScopedHICON CreateHICONFromSkBitmapSizedTo(
 
 constexpr char GlassBrowserFrameView::kClassName[];
 
+SkColor GlassBrowserFrameView::GetReadableFeatureColor(
+    SkColor background_color) {
+  // BlendTowardOppositeLuma or IsDark isn't used here because those functions
+  // may use a different value for the dark/light threshold or the upper/lower
+  // bounds to which the color is blended. This will ensure the results of this
+  // function remain unchanged should those other functions behave differently.
+  // This algorithm matches the behaviour for native Windows caption buttons.
+  return color_utils::GetLuma(background_color) < 128 ? SK_ColorWHITE
+                                                      : SK_ColorBLACK;
+}
+
 GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
                                              BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
@@ -628,8 +639,7 @@ SkColor GlassBrowserFrameView::GetTitlebarFeatureColor(
   const SkAlpha title_alpha = ShouldPaintAsActive(active_state)
                                   ? SK_AlphaOPAQUE
                                   : kInactiveTitlebarFeatureAlpha;
-  return SkColorSetA(color_utils::BlendTowardOppositeLuma(
-                         GetFrameColor(active_state), SK_AlphaOPAQUE),
+  return SkColorSetA(GetReadableFeatureColor(GetFrameColor(active_state)),
                      title_alpha);
 }
 

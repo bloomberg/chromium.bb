@@ -29,6 +29,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   static constexpr char kClassName[] = "GlassBrowserFrameView";
 
+  static SkColor GetReadableFeatureColor(SkColor background_color);
+
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~GlassBrowserFrameView() override;
