@@ -277,13 +277,13 @@ using translate::LanguageDetectionController;
   _webState->ExecuteJavaScript(
       base::UTF8ToUTF16("__gCrWeb.message.invokeOnHost({"
                         "  'command': 'translate.ready',"
-                        "  'timeout': false,"
+                        "  'errorCode': 0,"
                         "  'loadTime': 0,"
                         "  'readyTime': 0});"));
   _webState->ExecuteJavaScript(
       base::UTF8ToUTF16("__gCrWeb.message.invokeOnHost({"
                         "  'command': 'translate.status',"
-                        "  'success': true,"
+                        "  'errorCode': 0,"
                         "  'originalPageLanguage': 'fr',"
                         "  'translationTime': 0});"));
 }
