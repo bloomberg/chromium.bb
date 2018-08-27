@@ -26,7 +26,152 @@ Signing Flow:
 
 from __future__ import print_function
 
+
+import ConfigParser
+import os
+import re
+
 from chromite.lib import cros_build_lib
+
+
+class SignerOutputTemplateError(Exception):
+  """Raise when there is an issue with filling a signer output template"""
+
+
+class SignerInstructionConfig(object):
+  """Signer Configuration based on ini file.
+
+  See Signer Documentation - Instruction File Format:
+  https://goto.google.com/cros-signer-instruction-file
+  """
+  DEFAULT_TEMPLATE = ('chromeos_@VERSION@_@BOARD@_@TYPE@_@CHANNEL@-channel_'
+                      '@KEYSET@.bin')
+
+  def __init__(self, archive='', board='', artifact_type='', version='',
+               versionrev='', keyset='', channel='', input_files=(),
+               output_files=()):
+    """Initialize Configuration."""
+    # [general] section
+    self.archive = archive
+    self.board = board
+    self.artifact_type = artifact_type
+    self.version = version
+    self.versionrev = versionrev
+
+    # [insns] section
+    self.keyset = keyset
+    self.channel = channel
+
+    # Wrap files in tuple if given as a string
+    self.input_files = ((input_files,) if isinstance(input_files, basestring)
+                        else input_files)
+
+    self.output_files = ((output_files,) if isinstance(output_files, basestring)
+                         else output_files)
+
+  def __eq__(self, other):
+    return self.ToIniDict() == other.ToIniDict()
+
+  def ToIniDict(self):
+    """Return ini layout."""
+
+    # [general] section
+    general_dict = {}
+    if self.archive:
+      general_dict['archive'] = self.archive
+    if self.board:
+      general_dict['board'] = self.board
+    if self.artifact_type:
+      general_dict['type'] = self.artifact_type
+    if self.version:
+      general_dict['version'] = self.version
+    if self.versionrev:
+      general_dict['versionrev'] = self.versionrev
+
+    # [insns] section
+    insns_dict = {}
+    if self.keyset:
+      insns_dict['keyset'] = self.keyset
+    if self.channel:
+      insns_dict['channel'] = self.channel
+    if self.input_files:
+      insns_dict['input_files'] = ' '.join(self.input_files)
+    if self.output_files:
+      insns_dict['output_names'] = ' '.join(self.output_files)
+
+    return {'general': general_dict,
+            'insns': insns_dict}
+
+  def ReadIniFile(self, fd):
+    """Reads given file descriptor into configuration"""
+    config = ConfigParser.ConfigParser(self.ToIniDict())
+    config.readfp(fd)
+
+    self.archive = config.get('general', 'archive')
+    self.board = config.get('general', 'board')
+    self.artifact_type = config.get('general', 'type')
+    self.version = config.get('general', 'version')
+    self.versionrev = config.get('general', 'versionrev')
+
+    self.keyset = config.get('insns', 'keyset')
+    self.channel = config.get('insns', 'channel')
+
+    # Optional options
+    if config.has_option('insns', 'input_files'):
+      self.input_files = config.get('insns', 'input_files').split(' ')
+
+    if config.has_option('insns', 'output_names'):
+      self.output_files = config.get('insns', 'output_names').split(' ')
+
+  def GetFilePairs(self):
+    """Returns list of (input_file,output_file) tuples"""
+    files = []
+
+    if self.output_files:
+      out_files = self.output_files
+    else:
+      out_files = [SignerInstructionConfig.DEFAULT_TEMPLATE]
+
+    if len(out_files) == 1:
+      out_file = out_files[0]
+
+      # Check template generate unique output files
+      if (len(self.input_files) > 1 and
+          not re.search('(@BASENAME@)|(@ROOTNAME@)', out_file)):
+        raise SignerOutputTemplateError('@BASENAME@ or @ROOTNAME@ required for'
+                                        'templates with multiple input files')
+
+      for in_file in self.input_files:
+        files.append((in_file, self.FillTemplate(out_file, filename=in_file)))
+
+    elif len(self.input_files) == len(out_files):
+      for in_file, out_file in zip(self.input_files, out_files):
+        files.append((in_file, self.FillTemplate(out_file, filename=in_file)))
+
+    else:
+      raise IndexError('Equal number of input_files and output_names required')
+
+
+    return files
+
+  def FillTemplate(self, template_str, filename=''):
+    """Return string based on given template."""
+
+    rep_dict = {'@BOARD@': self.board,
+                '@CHANNEL@': self.channel,
+                '@KEYSET@': self.keyset,
+                '@TYPE@': self.artifact_type,
+                '@VERSION@': self.version,
+               }
+
+    if filename:
+      basename = os.path.basename(filename)
+      rep_dict['@BASENAME@'] = basename
+      rep_dict['@ROOTNAME@'] = os.path.splitext(basename)[0]
+
+    return re.sub('@[A-Z]+@',
+                  lambda x: rep_dict.get(x.group(0), x.group(0)),
+                  template_str)
 
 
 class BaseSigner(object):
