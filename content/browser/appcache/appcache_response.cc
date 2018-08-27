@@ -102,8 +102,7 @@ AppCacheResponseIO::AppCacheResponseIO(
     : response_id_(response_id),
       disk_cache_(std::move(disk_cache)),
       entry_(nullptr),
-      buffer_len_(0),
-      weak_factory_(this) {}
+      buffer_len_(0) {}
 
 AppCacheResponseIO::~AppCacheResponseIO() {
   if (entry_)
@@ -112,8 +111,8 @@ AppCacheResponseIO::~AppCacheResponseIO() {
 
 void AppCacheResponseIO::ScheduleIOCompletionCallback(int result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&AppCacheResponseIO::OnIOComplete,
-                                weak_factory_.GetWeakPtr(), result));
+      FROM_HERE,
+      base::BindOnce(&AppCacheResponseIO::OnIOComplete, GetWeakPtr(), result));
 }
 
 void AppCacheResponseIO::InvokeUserCompletionCallback(int result) {
@@ -131,8 +130,7 @@ void AppCacheResponseIO::ReadRaw(int index, int offset,
   DCHECK(entry_);
   int rv = entry_->Read(
       index, offset, buf, buf_len,
-      base::Bind(&AppCacheResponseIO::OnRawIOComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&AppCacheResponseIO::OnRawIOComplete, GetWeakPtr()));
   if (rv != net::ERR_IO_PENDING)
     ScheduleIOCompletionCallback(rv);
 }
@@ -142,8 +140,7 @@ void AppCacheResponseIO::WriteRaw(int index, int offset,
   DCHECK(entry_);
   int rv = entry_->Write(
       index, offset, buf, buf_len,
-      base::Bind(&AppCacheResponseIO::OnRawIOComplete,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&AppCacheResponseIO::OnRawIOComplete, GetWeakPtr()));
   if (rv != net::ERR_IO_PENDING)
     ScheduleIOCompletionCallback(rv);
 }
@@ -164,12 +161,12 @@ void AppCacheResponseIO::OpenEntryIfNeeded() {
     entry_ptr = new AppCacheDiskCacheInterface::Entry*;
     rv = disk_cache_->OpenEntry(
         response_id_, entry_ptr,
-        base::BindOnce(&AppCacheResponseIO::OpenEntryCallback,
-                       weak_factory_.GetWeakPtr(), entry_ptr));
+        base::BindOnce(&AppCacheResponseIO::OpenEntryCallback, GetWeakPtr(),
+                       entry_ptr));
   }
 
   if (rv != net::ERR_IO_PENDING)
-    OpenEntryCallback(weak_factory_.GetWeakPtr(), entry_ptr, rv);
+    OpenEntryCallback(GetWeakPtr(), entry_ptr, rv);
 }
 
 // static
@@ -318,6 +315,10 @@ void AppCacheResponseReader::OnOpenEntryComplete() {
     ContinueReadInfo();
   else
     ContinueReadData();
+}
+
+base::WeakPtr<AppCacheResponseIO> AppCacheResponseReader::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 // AppCacheResponseWriter ----------------------------------------------
@@ -485,6 +486,10 @@ void AppCacheResponseWriter::OnCreateEntryComplete(
     writer->ContinueWriteData();
 }
 
+base::WeakPtr<AppCacheResponseIO> AppCacheResponseWriter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 // AppCacheResponseMetadataWriter ----------------------------------------------
 
 AppCacheResponseMetadataWriter::AppCacheResponseMetadataWriter(
@@ -526,6 +531,10 @@ void AppCacheResponseMetadataWriter::OnIOComplete(int result) {
     storage::RecordBytesWritten(disk_cache_->uma_name(), result);
   InvokeUserCompletionCallback(result);
   // Note: |this| may have been deleted by the completion callback.
+}
+
+base::WeakPtr<AppCacheResponseIO> AppCacheResponseMetadataWriter::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace content
