@@ -66,6 +66,7 @@ ScenicWindowCanvas::~ScenicWindowCanvas() {
 
 void ScenicWindowCanvas::ResizeCanvas(const gfx::Size& viewport_size) {
   viewport_size_ = viewport_size;
+  viewport_size_.SetToMax(gfx::Size(1, 1));
 
   ScenicSession* scenic = window_->scenic_session();
 
