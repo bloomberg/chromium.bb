@@ -91,7 +91,8 @@ bool ContentDecoderToolProcessInput(std::vector<std::string> content_encodings,
     LOG(ERROR) << "Couldn't create the decoder.";
     return false;
   }
-  scoped_refptr<IOBuffer> read_buffer = new IOBufferWithSize(kBufferLen);
+  scoped_refptr<IOBuffer> read_buffer =
+      base::MakeRefCounted<IOBufferWithSize>(kBufferLen);
   while (true) {
     TestCompletionCallback callback;
     int bytes_read =

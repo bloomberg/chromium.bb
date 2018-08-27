@@ -34,7 +34,7 @@ class SocketDataPump {
       : from_socket_(from_socket),
         to_socket_(to_socket),
         on_done_callback_(std::move(on_done_callback)) {
-    read_buffer_ = new IOBuffer(kBufferSize);
+    read_buffer_ = base::MakeRefCounted<IOBuffer>(kBufferSize);
   }
 
   ~SocketDataPump() { DCHECK_CALLED_ON_VALID_THREAD(thread_checker_); }
@@ -61,7 +61,8 @@ class SocketDataPump {
       return;
     }
 
-    write_buffer_ = new DrainableIOBuffer(read_buffer_.get(), result);
+    write_buffer_ =
+        base::MakeRefCounted<DrainableIOBuffer>(read_buffer_.get(), result);
     Write();
   }
 

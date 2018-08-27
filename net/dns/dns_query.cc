@@ -41,8 +41,8 @@ DnsQuery::DnsQuery(uint16_t id,
                    uint16_t qtype,
                    const OptRecordRdata* opt_rdata)
     : qname_size_(qname.size()),
-      io_buffer_(new IOBufferWithSize(kHeaderSize + question_size() +
-                                      OptRecordSize(opt_rdata))),
+      io_buffer_(base::MakeRefCounted<IOBufferWithSize>(
+          kHeaderSize + question_size() + OptRecordSize(opt_rdata))),
       header_(reinterpret_cast<dns_protocol::Header*>(io_buffer_->data())) {
   DCHECK(!DNSDomainToString(qname).empty());
   *header_ = {};
@@ -106,7 +106,7 @@ void DnsQuery::set_flags(uint16_t flags) {
 
 DnsQuery::DnsQuery(const DnsQuery& orig, uint16_t id) {
   qname_size_ = orig.qname_size_;
-  io_buffer_ = new IOBufferWithSize(orig.io_buffer()->size());
+  io_buffer_ = base::MakeRefCounted<IOBufferWithSize>(orig.io_buffer()->size());
   memcpy(io_buffer_.get()->data(), orig.io_buffer()->data(),
          io_buffer_.get()->size());
   header_ = reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());

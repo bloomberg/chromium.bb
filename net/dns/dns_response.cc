@@ -151,17 +151,18 @@ bool DnsRecordParser::SkipQuestion() {
 }
 
 DnsResponse::DnsResponse()
-    : io_buffer_(new IOBuffer(dns_protocol::kMaxUDPSize + 1)),
+    : io_buffer_(base::MakeRefCounted<IOBuffer>(dns_protocol::kMaxUDPSize + 1)),
       io_buffer_size_(dns_protocol::kMaxUDPSize + 1) {}
 
 DnsResponse::DnsResponse(IOBuffer* buffer, size_t size)
     : io_buffer_(buffer), io_buffer_size_(size) {}
 
 DnsResponse::DnsResponse(size_t length)
-    : io_buffer_(new IOBuffer(length)), io_buffer_size_(length) {}
+    : io_buffer_(base::MakeRefCounted<IOBuffer>(length)),
+      io_buffer_size_(length) {}
 
 DnsResponse::DnsResponse(const void* data, size_t length, size_t answer_offset)
-    : io_buffer_(new IOBufferWithSize(length)),
+    : io_buffer_(base::MakeRefCounted<IOBufferWithSize>(length)),
       io_buffer_size_(length),
       parser_(io_buffer_->data(), length, answer_offset) {
   DCHECK(data);

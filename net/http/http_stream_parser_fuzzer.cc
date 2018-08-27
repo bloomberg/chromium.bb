@@ -46,7 +46,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   request_info.method = "GET";
   request_info.url = GURL("http://localhost/");
 
-  scoped_refptr<net::GrowableIOBuffer> read_buffer(new net::GrowableIOBuffer());
+  scoped_refptr<net::GrowableIOBuffer> read_buffer =
+      base::MakeRefCounted<net::GrowableIOBuffer>();
   // Use a NetLog that listens to events, to get coverage of logging
   // callbacks.
   net::HttpStreamParser parser(&socket_handle, &request_info, read_buffer.get(),
@@ -67,8 +68,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     return 0;
 
   while (true) {
-    scoped_refptr<net::IOBufferWithSize> io_buffer(
-        new net::IOBufferWithSize(64));
+    scoped_refptr<net::IOBufferWithSize> io_buffer =
+        base::MakeRefCounted<net::IOBufferWithSize>(64);
     result = parser.ReadResponseBody(io_buffer.get(), io_buffer->size(),
                                      callback.callback());
 

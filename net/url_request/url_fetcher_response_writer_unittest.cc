@@ -30,7 +30,7 @@ class URLFetcherStringWriterTest : public PlatformTest {
  protected:
   void SetUp() override {
     writer_.reset(new URLFetcherStringWriter);
-    buf_ = new StringIOBuffer(kData);
+    buf_ = base::MakeRefCounted<StringIOBuffer>(kData);
   }
 
   std::unique_ptr<URLFetcherStringWriter> writer_;
@@ -65,7 +65,7 @@ class URLFetcherFileWriterTest : public PlatformTest,
     file_path_ = temp_dir_.GetPath().AppendASCII("test.txt");
     writer_.reset(new URLFetcherFileWriter(base::ThreadTaskRunnerHandle::Get(),
                                            file_path_));
-    buf_ = new StringIOBuffer(kData);
+    buf_ = base::MakeRefCounted<StringIOBuffer>(kData);
   }
 
   base::ScopedTempDir temp_dir_;
@@ -115,7 +115,8 @@ TEST_F(URLFetcherFileWriterTest, InitializeAgain) {
 
   // Initialize() again to reset. Write different data.
   const std::string data2 = "Bye!";
-  scoped_refptr<StringIOBuffer> buf2(new StringIOBuffer(data2));
+  scoped_refptr<StringIOBuffer> buf2 =
+      base::MakeRefCounted<StringIOBuffer>(data2);
 
   rv = writer_->Initialize(callback.callback());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
@@ -212,7 +213,7 @@ class URLFetcherFileWriterTemporaryFileTest : public PlatformTest,
   void SetUp() override {
     writer_.reset(new URLFetcherFileWriter(base::ThreadTaskRunnerHandle::Get(),
                                            base::FilePath()));
-    buf_ = new StringIOBuffer(kData);
+    buf_ = base::MakeRefCounted<StringIOBuffer>(kData);
   }
 
   std::unique_ptr<URLFetcherFileWriter> writer_;

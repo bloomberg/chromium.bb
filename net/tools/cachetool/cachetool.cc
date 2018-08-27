@@ -322,7 +322,8 @@ bool GetResponseInfoForEntry(disk_cache::Entry* entry,
   int size = entry->GetDataSize(kResponseInfoIndex);
   if (size == 0)
     return false;
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBufferWithSize(size);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(size);
   net::TestCompletionCallback cb;
 
   int bytes_read = 0;
@@ -357,7 +358,7 @@ std::string GetMD5ForResponseBody(disk_cache::Entry* entry) {
 
   const int kInitBufferSize = 80 * 1024;
   scoped_refptr<net::IOBuffer> buffer =
-      new net::IOBufferWithSize(kInitBufferSize);
+      base::MakeRefCounted<net::IOBufferWithSize>(kInitBufferSize);
   net::TestCompletionCallback cb;
 
   base::MD5Context ctx;
@@ -482,7 +483,8 @@ scoped_refptr<net::GrowableIOBuffer> GetStreamForKeyBuffer(
   }
 
   const int kInitBufferSize = 8192;
-  scoped_refptr<net::GrowableIOBuffer> buffer(new net::GrowableIOBuffer());
+  scoped_refptr<net::GrowableIOBuffer> buffer =
+      base::MakeRefCounted<net::GrowableIOBuffer>();
   buffer->SetCapacity(kInitBufferSize);
   while (true) {
     rv = cache_entry->ReadData(index, buffer->offset(), buffer.get(),
@@ -555,7 +557,8 @@ void UpdateRawResponseHeaders(CommandMarshal* command_marshal) {
     std::cerr << "WARNING: Truncated HTTP response." << std::endl;
 
   response_info.headers = new net::HttpResponseHeaders(raw_headers);
-  scoped_refptr<net::PickledIOBuffer> data(new net::PickledIOBuffer());
+  scoped_refptr<net::PickledIOBuffer> data =
+      base::MakeRefCounted<net::PickledIOBuffer>();
   response_info.Persist(data->pickle(), false, false);
   data->Done();
   Entry* cache_entry;
@@ -585,7 +588,8 @@ void DeleteStreamForKey(CommandMarshal* command_marshal) {
   if (cb.GetResult(rv) != net::OK)
     return command_marshal->ReturnFailure("Couldn't find key's entry.");
 
-  scoped_refptr<net::StringIOBuffer> buffer(new net::StringIOBuffer(""));
+  scoped_refptr<net::StringIOBuffer> buffer =
+      base::MakeRefCounted<net::StringIOBuffer>("");
   rv = cache_entry->WriteData(index, 0, buffer.get(), 0, cb.callback(), true);
   if (cb.GetResult(rv) != net::OK)
     return command_marshal->ReturnFailure("Couldn't delete key stream.");

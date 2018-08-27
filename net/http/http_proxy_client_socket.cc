@@ -27,6 +27,8 @@
 
 namespace net {
 
+const int HttpProxyClientSocket::kDrainBodyBufferSize;
+
 HttpProxyClientSocket::HttpProxyClientSocket(
     std::unique_ptr<ClientSocketHandle> transport_socket,
     const std::string& user_agent,
@@ -263,7 +265,7 @@ int HttpProxyClientSocket::PrepareForAuthRestart() {
   // If the auth request had a body, need to drain it before reusing the socket.
   if (!http_stream_parser_->IsResponseBodyComplete()) {
     next_state_ = STATE_DRAIN_BODY;
-    drain_buf_ = new IOBuffer(kDrainBodyBufferSize);
+    drain_buf_ = base::MakeRefCounted<IOBuffer>(kDrainBodyBufferSize);
     return OK;
   }
 
@@ -397,7 +399,7 @@ int HttpProxyClientSocket::DoSendRequest() {
                    base::Unretained(&request_headers_), &request_line_));
   }
 
-  parser_buf_ = new GrowableIOBuffer();
+  parser_buf_ = base::MakeRefCounted<GrowableIOBuffer>();
   http_stream_parser_.reset(new HttpStreamParser(
       transport_.get(), &request_, parser_buf_.get(), net_log_));
   return http_stream_parser_->SendRequest(request_line_, request_headers_,

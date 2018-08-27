@@ -436,7 +436,7 @@ void URLFetcherCore::OnResponseStarted(URLRequest* request, int net_error) {
 
   DCHECK(!buffer_);
   if (request_type_ != URLFetcher::HEAD)
-    buffer_ = new IOBuffer(kBufferSize);
+    buffer_ = base::MakeRefCounted<IOBuffer>(kBufferSize);
   ReadResponse();
 }
 
@@ -469,8 +469,8 @@ void URLFetcherCore::OnReadCompleted(URLRequest* request,
     current_response_bytes_ += bytes_read;
     InformDelegateDownloadProgress();
 
-    const int result =
-        WriteBuffer(new DrainableIOBuffer(buffer_.get(), bytes_read));
+    const int result = WriteBuffer(
+        base::MakeRefCounted<DrainableIOBuffer>(buffer_.get(), bytes_read));
     if (result < 0) {
       // Write failed or waiting for write completion.
       return;

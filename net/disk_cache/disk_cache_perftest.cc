@@ -134,8 +134,9 @@ class WriteHandler {
   int pending_result_ = net::OK;
 
   scoped_refptr<net::IOBuffer> headers_buffer_ =
-      new net::IOBuffer(kHeadersSize);
-  scoped_refptr<net::IOBuffer> body_buffer_ = new net::IOBuffer(kChunkSize);
+      base::MakeRefCounted<net::IOBuffer>(kHeadersSize);
+  scoped_refptr<net::IOBuffer> body_buffer_ =
+      base::MakeRefCounted<net::IOBuffer>(kChunkSize);
 };
 
 void WriteHandler::Run() {
@@ -232,7 +233,8 @@ class ReadHandler {
         cache_(cache),
         final_callback_(std::move(final_callback)) {
     for (int i = 0; i < kMaxParallelOperations; ++i)
-      read_buffers_[i] = new net::IOBuffer(std::max(kHeadersSize, kChunkSize));
+      read_buffers_[i] = base::MakeRefCounted<net::IOBuffer>(
+          std::max(kHeadersSize, kChunkSize));
   }
 
   void Run();
@@ -513,8 +515,10 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
 
   InitCache();
   // Write out the entries, and keep their objects around.
-  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kHeadersSize));
-  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBodySize));
+  scoped_refptr<net::IOBuffer> buffer1 =
+      base::MakeRefCounted<net::IOBuffer>(kHeadersSize);
+  scoped_refptr<net::IOBuffer> buffer2 =
+      base::MakeRefCounted<net::IOBuffer>(kBodySize);
 
   CacheTestFillBuffer(buffer1->data(), kHeadersSize, false);
   CacheTestFillBuffer(buffer2->data(), kBodySize, false);

@@ -170,7 +170,7 @@ class OCSPRequestSession
       : url_(url),
         http_request_method_(http_request_method),
         timeout_(timeout),
-        buffer_(new IOBuffer(kRecvBufferSize)),
+        buffer_(base::MakeRefCounted<IOBuffer>(kRecvBufferSize)),
         response_code_(-1),
         cv_(&lock_),
         finished_(false) {}

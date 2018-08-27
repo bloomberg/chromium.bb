@@ -187,8 +187,8 @@ int GzipSourceStream::FilterData(IOBuffer* output_buffer,
         // operations, though it's not pretty.
         input_state_ = replay_state_;
         int bytes_used;
-        scoped_refptr<IOBuffer> replay_buffer(
-            new WrappedIOBuffer(replay_data_.data()));
+        scoped_refptr<IOBuffer> replay_buffer =
+            base::MakeRefCounted<WrappedIOBuffer>(replay_data_.data());
         int result =
             FilterData(output_buffer, output_buffer_size, replay_buffer.get(),
                        replay_data_.size(), &bytes_used, upstream_end_reached);

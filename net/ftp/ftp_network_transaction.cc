@@ -222,7 +222,7 @@ FtpNetworkTransaction::FtpNetworkTransaction(
                                        base::Unretained(this))),
       request_(nullptr),
       resolver_(resolver),
-      read_ctrl_buf_(new IOBuffer(kCtrlBufLen)),
+      read_ctrl_buf_(base::MakeRefCounted<IOBuffer>(kCtrlBufLen)),
       read_data_buf_len_(0),
       last_error_(OK),
       system_type_(SYSTEM_TYPE_UNKNOWN),
@@ -350,7 +350,7 @@ void FtpNetworkTransaction::ResetStateForRestart() {
   command_sent_ = COMMAND_NONE;
   user_callback_.Reset();
   response_ = FtpResponseInfo();
-  read_ctrl_buf_ = new IOBuffer(kCtrlBufLen);
+  read_ctrl_buf_ = base::MakeRefCounted<IOBuffer>(kCtrlBufLen);
   ctrl_response_buffer_ = std::make_unique<FtpCtrlResponseBuffer>(net_log_);
   read_data_buf_ = nullptr;
   read_data_buf_len_ = 0;
@@ -479,9 +479,10 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
 
   command_sent_ = cmd;
 
-  write_command_buf_ = new IOBufferWithSize(command.length() + 2);
-  write_buf_ = new DrainableIOBuffer(write_command_buf_.get(),
-                                     write_command_buf_->size());
+  write_command_buf_ =
+      base::MakeRefCounted<IOBufferWithSize>(command.length() + 2);
+  write_buf_ = base::MakeRefCounted<DrainableIOBuffer>(
+      write_command_buf_.get(), write_command_buf_->size());
   memcpy(write_command_buf_->data(), command.data(), command.length());
   memcpy(write_command_buf_->data() + command.length(), kCRLF, 2);
 

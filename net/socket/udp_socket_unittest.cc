@@ -56,7 +56,7 @@ namespace {
 
 class UDPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
  public:
-  UDPSocketTest() : buffer_(new IOBufferWithSize(kMaxRead)) {}
+  UDPSocketTest() : buffer_(base::MakeRefCounted<IOBufferWithSize>(kMaxRead)) {}
 
   // Blocks until data is read from the socket.
   std::string RecvFromSocket(UDPServerSocket* socket) {
@@ -81,7 +81,8 @@ class UDPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
   int SendToSocket(UDPServerSocket* socket,
                    std::string msg,
                    const IPEndPoint& address) {
-    scoped_refptr<StringIOBuffer> io_buffer = new StringIOBuffer(msg);
+    scoped_refptr<StringIOBuffer> io_buffer =
+        base::MakeRefCounted<StringIOBuffer>(msg);
     TestCompletionCallback callback;
     int rv = socket->SendTo(io_buffer.get(), io_buffer->size(), address,
                             callback.callback());
@@ -100,7 +101,8 @@ class UDPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
 
   // Writes specified message to the socket.
   int WriteSocket(UDPClientSocket* socket, const std::string& msg) {
-    scoped_refptr<StringIOBuffer> io_buffer(new StringIOBuffer(msg));
+    scoped_refptr<StringIOBuffer> io_buffer =
+        base::MakeRefCounted<StringIOBuffer>(msg);
     TestCompletionCallback callback;
     int rv = socket->Write(io_buffer.get(), io_buffer->size(),
                            callback.callback(), TRAFFIC_ANNOTATION_FOR_TESTS);
@@ -132,6 +134,8 @@ class UDPSocketTest : public PlatformTest, public WithScopedTaskEnvironment {
   scoped_refptr<IOBufferWithSize> buffer_;
   IPEndPoint recv_from_address_;
 };
+
+const int UDPSocketTest::kMaxRead;
 
 void ReadCompleteCallback(int* result_out, base::Closure callback, int result) {
   *result_out = result;
@@ -272,7 +276,8 @@ TEST_F(UDPSocketTest, PartialRecv) {
   // Read just 2 bytes. Read() is expected to return the first 2 bytes from the
   // packet and discard the rest.
   const int kPartialReadSize = 2;
-  scoped_refptr<IOBuffer> buffer = new IOBuffer(kPartialReadSize);
+  scoped_refptr<IOBuffer> buffer =
+      base::MakeRefCounted<IOBuffer>(kPartialReadSize);
   int rv =
       server_socket.RecvFrom(buffer.get(), kPartialReadSize,
                              &recv_from_address_, recv_callback.callback());

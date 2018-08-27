@@ -23,8 +23,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::unique_ptr<net::SourceStream> brotli_stream =
       net::CreateBrotliSourceStream(std::move(fuzzed_source_stream));
   while (true) {
-    scoped_refptr<net::IOBufferWithSize> io_buffer(
-        new net::IOBufferWithSize(64));
+    scoped_refptr<net::IOBufferWithSize> io_buffer =
+        base::MakeRefCounted<net::IOBufferWithSize>(64);
     int result = brotli_stream->Read(io_buffer.get(), io_buffer->size(),
                                      callback.callback());
     // Releasing the pointer to IOBuffer immediately is more likely to lead to a

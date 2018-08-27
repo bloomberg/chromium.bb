@@ -49,7 +49,7 @@ int FilterSourceStream::Read(IOBuffer* read_buffer,
 
   // Allocate a BlockBuffer during first Read().
   if (!input_buffer_) {
-    input_buffer_ = new IOBufferWithSize(kBufferSize);
+    input_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kBufferSize);
     // This is first Read(), start with reading data from |upstream_|.
     next_state_ = STATE_READ_DATA;
   } else {
@@ -141,7 +141,7 @@ int FilterSourceStream::DoReadDataComplete(int result) {
 
   if (result >= OK) {
     drainable_input_buffer_ =
-        new DrainableIOBuffer(input_buffer_.get(), result);
+        base::MakeRefCounted<DrainableIOBuffer>(input_buffer_.get(), result);
     next_state_ = STATE_FILTER_DATA;
   }
   if (result <= OK)

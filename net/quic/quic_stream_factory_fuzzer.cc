@@ -189,7 +189,8 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
   callback.WaitForResult();
 
-  scoped_refptr<net::IOBuffer> buffer = new net::IOBuffer(kBufferSize);
+  scoped_refptr<net::IOBuffer> buffer =
+      base::MakeRefCounted<net::IOBuffer>(kBufferSize);
   rv = stream->ReadResponseBody(buffer.get(), kBufferSize, callback.callback());
   if (rv == ERR_IO_PENDING)
     callback.WaitForResult();

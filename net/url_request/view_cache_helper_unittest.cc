@@ -58,8 +58,8 @@ void WriteHeaders(disk_cache::Entry* entry, int flags,
   pickle.WriteString("example.com");
   pickle.WriteUInt16(80);
 
-  scoped_refptr<WrappedIOBuffer> buf(new WrappedIOBuffer(
-      reinterpret_cast<const char*>(pickle.data())));
+  scoped_refptr<WrappedIOBuffer> buf = base::MakeRefCounted<WrappedIOBuffer>(
+      reinterpret_cast<const char*>(pickle.data()));
   int len = static_cast<int>(pickle.size());
 
   TestCompletionCallback cb;
@@ -72,7 +72,7 @@ void WriteData(disk_cache::Entry* entry, int index, const std::string& data) {
     return;
 
   int len = data.length();
-  scoped_refptr<IOBuffer> buf(new IOBuffer(len));
+  scoped_refptr<IOBuffer> buf = base::MakeRefCounted<IOBuffer>(len);
   memcpy(buf->data(), data.data(), data.length());
 
   TestCompletionCallback cb;

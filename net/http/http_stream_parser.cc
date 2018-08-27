@@ -93,7 +93,8 @@ bool ShouldTryReadingOnUploadError(int error_code) {
 //
 // Example:
 //
-// scoped_refptr<SeekableIOBuffer> buf = new SeekableIOBuffer(1024);
+// scoped_refptr<SeekableIOBuffer> buf =
+//     base::MakeRefCounted<SeekableIOBuffer>(1024);
 // // capacity() == 1024. size() == BytesRemaining() == BytesConsumed() == 0.
 // // data() points to the beginning of the buffer.
 //
@@ -248,12 +249,13 @@ int HttpStreamParser::SendRequest(
   request_headers_length_ = request.size();
 
   if (request_->upload_data_stream != NULL) {
-    request_body_send_buf_ = new SeekableIOBuffer(kRequestBodyBufferSize);
+    request_body_send_buf_ =
+        base::MakeRefCounted<SeekableIOBuffer>(kRequestBodyBufferSize);
     if (request_->upload_data_stream->is_chunked()) {
       // Read buffer is adjusted to guarantee that |request_body_send_buf_| is
       // large enough to hold the encoded chunk.
-      request_body_read_buf_ =
-          new SeekableIOBuffer(kRequestBodyBufferSize - kChunkHeaderFooterSize);
+      request_body_read_buf_ = base::MakeRefCounted<SeekableIOBuffer>(
+          kRequestBodyBufferSize - kChunkHeaderFooterSize);
     } else {
       // No need to encode request body, just send the raw data.
       request_body_read_buf_ = request_body_send_buf_;
@@ -268,11 +270,11 @@ int HttpStreamParser::SendRequest(
   if (ShouldMergeRequestHeadersAndBody(request, request_->upload_data_stream)) {
     int merged_size = static_cast<int>(
         request_headers_length_ + request_->upload_data_stream->size());
-    scoped_refptr<IOBuffer> merged_request_headers_and_body(
-        new IOBuffer(merged_size));
+    scoped_refptr<IOBuffer> merged_request_headers_and_body =
+        base::MakeRefCounted<IOBuffer>(merged_size);
     // We'll repurpose |request_headers_| to store the merged headers and
     // body.
-    request_headers_ = new DrainableIOBuffer(
+    request_headers_ = base::MakeRefCounted<DrainableIOBuffer>(
         merged_request_headers_and_body.get(), merged_size);
 
     memcpy(request_headers_->data(), request.data(), request_headers_length_);
@@ -303,9 +305,10 @@ int HttpStreamParser::SendRequest(
   if (!did_merge) {
     // If we didn't merge the body with the headers, then |request_headers_|
     // contains just the HTTP headers.
-    scoped_refptr<StringIOBuffer> headers_io_buf(new StringIOBuffer(request));
-    request_headers_ =
-        new DrainableIOBuffer(headers_io_buf.get(), headers_io_buf->size());
+    scoped_refptr<StringIOBuffer> headers_io_buf =
+        base::MakeRefCounted<StringIOBuffer>(request);
+    request_headers_ = base::MakeRefCounted<DrainableIOBuffer>(
+        headers_io_buf.get(), headers_io_buf->size());
   }
 
   result = DoLoop(OK);

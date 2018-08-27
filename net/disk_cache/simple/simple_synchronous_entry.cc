@@ -808,7 +808,7 @@ int SimpleSynchronousEntry::PreReadStreamPayload(
 
   int stream_size = entry_stat.data_size(stream_index);
   int read_size = stream_size + extra_size;
-  out->data = new net::GrowableIOBuffer();
+  out->data = base::MakeRefCounted<net::GrowableIOBuffer>();
   out->data->SetCapacity(read_size);
   int file_offset = entry_stat.GetOffsetInFile(key_.size(), 0, stream_index);
   if (!ReadFromFileOrPrefetched(file, file_0_prefetch, 0, file_offset,

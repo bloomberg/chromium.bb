@@ -294,7 +294,8 @@ int SpdyHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
 
   CHECK(!request_body_buf_.get());
   if (HasUploadData()) {
-    request_body_buf_ = new IOBufferWithSize(kRequestBodyBufferSize);
+    request_body_buf_ =
+        base::MakeRefCounted<IOBufferWithSize>(kRequestBodyBufferSize);
     // The request body buffer is empty at first.
     request_body_buf_size_ = 0;
   }

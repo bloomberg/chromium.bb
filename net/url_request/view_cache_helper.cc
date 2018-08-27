@@ -291,7 +291,7 @@ int ViewCacheHelper::DoReadResponse() {
   if (!buf_len_)
     return buf_len_;
 
-  buf_ = new IOBuffer(buf_len_);
+  buf_ = base::MakeRefCounted<IOBuffer>(buf_len_);
   return entry_->ReadData(
       0,
       0,
@@ -339,7 +339,7 @@ int ViewCacheHelper::DoReadData() {
   if (!buf_len_)
     return buf_len_;
 
-  buf_ = new IOBuffer(buf_len_);
+  buf_ = base::MakeRefCounted<IOBuffer>(buf_len_);
   return entry_->ReadData(
       index_,
       0,

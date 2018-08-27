@@ -129,7 +129,8 @@ void StreamDelegateSendImmediate::OnHeadersReceived(
   StreamDelegateBase::OnHeadersReceived(response_headers,
                                         pushed_request_headers);
   if (data_.data()) {
-    scoped_refptr<StringIOBuffer> buf(new StringIOBuffer(data_.as_string()));
+    scoped_refptr<StringIOBuffer> buf =
+        base::MakeRefCounted<StringIOBuffer>(data_.as_string());
     stream()->SendData(buf.get(), buf->size(), MORE_DATA_TO_SEND);
   }
 }
@@ -137,7 +138,8 @@ void StreamDelegateSendImmediate::OnHeadersReceived(
 StreamDelegateWithBody::StreamDelegateWithBody(
     const base::WeakPtr<SpdyStream>& stream,
     base::StringPiece data)
-    : StreamDelegateBase(stream), buf_(new StringIOBuffer(data.as_string())) {}
+    : StreamDelegateBase(stream),
+      buf_(base::MakeRefCounted<StringIOBuffer>(data.as_string())) {}
 
 StreamDelegateWithBody::~StreamDelegateWithBody() = default;
 

@@ -1137,7 +1137,7 @@ class MDnsConnectionTest : public TestWithScopedTaskEnvironment {
     factory_.PushSocket(base::WrapUnique(socket_ipv6_));
     factory_.PushSocket(base::WrapUnique(socket_ipv4_));
     sample_packet_ = MakeString(kSamplePacket1, sizeof(kSamplePacket1));
-    sample_buffer_ = new StringIOBuffer(sample_packet_);
+    sample_buffer_ = base::MakeRefCounted<StringIOBuffer>(sample_packet_);
   }
 
   bool InitConnection() {

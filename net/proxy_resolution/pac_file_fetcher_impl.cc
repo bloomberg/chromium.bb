@@ -306,7 +306,7 @@ void PacFileFetcherImpl::OnReadCompleted(URLRequest* request, int num_bytes) {
 PacFileFetcherImpl::PacFileFetcherImpl(URLRequestContext* url_request_context,
                                        bool allow_file_url)
     : url_request_context_(url_request_context),
-      buf_(new IOBuffer(kBufSize)),
+      buf_(base::MakeRefCounted<IOBuffer>(kBufSize)),
       next_id_(0),
       cur_request_id_(0),
       result_code_(OK),

@@ -2053,7 +2053,7 @@ int SpdySession::DoRead() {
   CHECK(connection_->socket());
   read_state_ = READ_STATE_DO_READ_COMPLETE;
   int rv = ERR_READ_IF_READY_NOT_IMPLEMENTED;
-  read_buffer_ = new IOBuffer(kReadBufferSize);
+  read_buffer_ = base::MakeRefCounted<IOBuffer>(kReadBufferSize);
   if (base::FeatureList::IsEnabled(Socket::kReadIfReadyExperiment)) {
     rv = connection_->socket()->ReadIfReady(
         read_buffer_.get(), kReadBufferSize,

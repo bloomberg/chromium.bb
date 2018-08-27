@@ -238,11 +238,13 @@ int QuicHttpStream::SendRequest(const HttpRequestHeaders& request_headers,
     // Set the body buffer size to be the size of the body clamped
     // into the range [10 * quic::kMaxPacketSize, 256 * quic::kMaxPacketSize].
     // With larger bodies, larger buffers reduce CPU usage.
-    raw_request_body_buf_ = new IOBufferWithSize(static_cast<size_t>(std::max(
-        10 * quic::kMaxPacketSize,
-        std::min(request_body_stream_->size(), 256 * quic::kMaxPacketSize))));
+    raw_request_body_buf_ =
+        base::MakeRefCounted<IOBufferWithSize>(static_cast<size_t>(std::max(
+            10 * quic::kMaxPacketSize, std::min(request_body_stream_->size(),
+                                                256 * quic::kMaxPacketSize))));
     // The request body buffer is empty at first.
-    request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_.get(), 0);
+    request_body_buf_ =
+        base::MakeRefCounted<DrainableIOBuffer>(raw_request_body_buf_.get(), 0);
   }
 
   // Store the response info.
@@ -618,7 +620,8 @@ int QuicHttpStream::DoReadRequestBodyComplete(int rv) {
     return rv;
   }
 
-  request_body_buf_ = new DrainableIOBuffer(raw_request_body_buf_.get(), rv);
+  request_body_buf_ =
+      base::MakeRefCounted<DrainableIOBuffer>(raw_request_body_buf_.get(), rv);
   if (rv == 0) {  // Reached the end.
     DCHECK(request_body_stream_->IsEOF());
   }

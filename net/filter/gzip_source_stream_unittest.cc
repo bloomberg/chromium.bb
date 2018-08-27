@@ -71,7 +71,7 @@ class GzipSourceStreamTest : public ::testing::TestWithParam<GzipTestParam> {
     CompressGzip(source_data_, source_data_len_, encoded_data_,
                  &encoded_data_len_, type != SourceStream::TYPE_DEFLATE);
 
-    output_buffer_ = new IOBuffer(output_buffer_size_);
+    output_buffer_ = base::MakeRefCounted<IOBuffer>(output_buffer_size_);
     std::unique_ptr<MockSourceStream> source(new MockSourceStream());
     if (GetParam().read_result_type == ReadResultType::ONE_BYTE_AT_A_TIME)
       source->set_read_one_byte_at_a_time(true);

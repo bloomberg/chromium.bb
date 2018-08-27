@@ -89,7 +89,7 @@ class BrotliSourceStreamTest : public PlatformTest {
 TEST_F(BrotliSourceStreamTest, DecodeBrotliOneBlockSync) {
   source()->AddReadResult(encoded_buffer(), encoded_len(), OK,
                           MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   int bytes_read = ReadStream(callback);
 
@@ -108,7 +108,7 @@ TEST_F(BrotliSourceStreamTest, IgnoreExtraData) {
   // Add an EOF.
   source()->AddReadResult(reinterpret_cast<const char*>(kResponse), 0, OK,
                           MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   std::string actual_output;
   TestCompletionCallback callback;
   int bytes_read = ReadStream(callback);
@@ -126,7 +126,7 @@ TEST_F(BrotliSourceStreamTest, IgnoreExtraDataInOneRead) {
   // Add an EOF.
   source()->AddReadResult(response_with_extra_data.c_str(), 0, OK,
                           MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   std::string actual_output;
   TestCompletionCallback callback;
   while (true) {
@@ -151,7 +151,7 @@ TEST_F(BrotliSourceStreamTest, IgnoreExtraDataInDifferentRead) {
                           MockSourceStream::SYNC);
   // Add an EOF.
   source()->AddReadResult(extra_data.c_str(), 0, OK, MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   std::string actual_output;
   TestCompletionCallback callback;
   while (true) {
@@ -171,7 +171,7 @@ TEST_F(BrotliSourceStreamTest, DecodeBrotliTwoBlockSync) {
   source()->AddReadResult(encoded_buffer(), 10, OK, MockSourceStream::SYNC);
   source()->AddReadResult(encoded_buffer() + 10, encoded_len() - 10, OK,
                           MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   int bytes_read = ReadStream(callback);
   EXPECT_EQ(static_cast<int>(source_data_len()), bytes_read);
@@ -183,7 +183,7 @@ TEST_F(BrotliSourceStreamTest, DecodeBrotliTwoBlockSync) {
 TEST_F(BrotliSourceStreamTest, DecodeBrotliOneBlockAsync) {
   source()->AddReadResult(encoded_buffer(), encoded_len(), OK,
                           MockSourceStream::ASYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   int bytes_read = ReadStream(callback);
 
@@ -204,9 +204,10 @@ TEST_F(BrotliSourceStreamTest, DecodeWithSmallBufferSync) {
   // Add a 0 byte read to signal EOF.
   source()->AddReadResult(encoded_buffer(), 0, OK, MockSourceStream::SYNC);
 
-  out_buffer_ = new IOBufferWithSize(kSmallBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kSmallBufferSize);
 
-  scoped_refptr<IOBuffer> buffer = new IOBufferWithSize(source_data_len());
+  scoped_refptr<IOBuffer> buffer =
+      base::MakeRefCounted<IOBufferWithSize>(source_data_len());
   size_t total_bytes_read = 0;
   int bytes_read = 0;
   TestCompletionCallback callback;
@@ -231,9 +232,10 @@ TEST_F(BrotliSourceStreamTest, DecodeWithSmallBufferAsync) {
   // Add a 0 byte read to signal EOF.
   source()->AddReadResult(encoded_buffer(), 0, OK, MockSourceStream::ASYNC);
 
-  out_buffer_ = new IOBufferWithSize(kSmallBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kSmallBufferSize);
 
-  scoped_refptr<IOBuffer> buffer = new IOBufferWithSize(source_data_len());
+  scoped_refptr<IOBuffer> buffer =
+      base::MakeRefCounted<IOBufferWithSize>(source_data_len());
   size_t total_bytes_read = 0;
   int bytes_read = 0;
   do {
@@ -260,8 +262,9 @@ TEST_F(BrotliSourceStreamTest, DecodeWithOneByteBuffer) {
                           MockSourceStream::SYNC);
   // Add a 0 byte read to signal EOF.
   source()->AddReadResult(encoded_buffer(), 0, OK, MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(1);
-  scoped_refptr<IOBuffer> buffer = new IOBufferWithSize(source_data_len());
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(1);
+  scoped_refptr<IOBuffer> buffer =
+      base::MakeRefCounted<IOBufferWithSize>(source_data_len());
   size_t total_bytes_read = 0;
   int bytes_read = 0;
   do {
@@ -288,7 +291,7 @@ TEST_F(BrotliSourceStreamTest, DecodeCorruptedData) {
 
   source()->AddReadResult(corrupt_data, corrupt_data_len, OK,
                           MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   int error = OK;
   do {
@@ -319,7 +322,7 @@ TEST_F(BrotliSourceStreamTest, DecodeMissingData) {
   // Decode the corrupted data with filter
   source()->AddReadResult(corrupt_data, corrupt_data_len, OK,
                           MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   int error = OK;
   do {
     TestCompletionCallback callback;
@@ -338,7 +341,7 @@ TEST_F(BrotliSourceStreamTest, DecodeEmptyData) {
 
   source()->AddReadResult(data, data_len, OK, MockSourceStream::SYNC);
   source()->AddReadResult(data, 0, OK, MockSourceStream::SYNC);
-  out_buffer_ = new IOBufferWithSize(kDefaultBufferSize);
+  out_buffer_ = base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
   TestCompletionCallback callback;
   int bytes_read = ReadStream(callback);
   EXPECT_EQ(OK, bytes_read);

@@ -13,7 +13,7 @@
 namespace net {
 
 HttpConnection::ReadIOBuffer::ReadIOBuffer()
-    : base_(new GrowableIOBuffer()),
+    : base_(base::MakeRefCounted<GrowableIOBuffer>()),
       max_buffer_size_(kDefaultMaxBufferSize) {
   SetCapacity(kInitialBufSize);
 }
@@ -153,8 +153,8 @@ int HttpConnection::QueuedWriteIOBuffer::GetSizeToWrite() const {
 HttpConnection::HttpConnection(int id, std::unique_ptr<StreamSocket> socket)
     : id_(id),
       socket_(std::move(socket)),
-      read_buf_(new ReadIOBuffer()),
-      write_buf_(new QueuedWriteIOBuffer()) {}
+      read_buf_(base::MakeRefCounted<ReadIOBuffer>()),
+      write_buf_(base::MakeRefCounted<QueuedWriteIOBuffer>()) {}
 
 HttpConnection::~HttpConnection() = default;
 

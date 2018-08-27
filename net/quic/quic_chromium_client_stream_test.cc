@@ -209,7 +209,8 @@ class QuicChromiumClientStreamTest
   }
 
   void ReadData(quic::QuicStringPiece expected_data) {
-    scoped_refptr<IOBuffer> buffer(new IOBuffer(expected_data.length() + 1));
+    scoped_refptr<IOBuffer> buffer =
+        base::MakeRefCounted<IOBuffer>(expected_data.length() + 1);
     EXPECT_EQ(static_cast<int>(expected_data.length()),
               stream_->Read(buffer.get(), expected_data.length() + 1));
     EXPECT_EQ(expected_data,
@@ -320,7 +321,7 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
                                      true, callback.callback()));
 
   std::vector<scoped_refptr<IOBuffer>> buffers = {
-      scoped_refptr<IOBuffer>(new IOBuffer(10))};
+      base::MakeRefCounted<IOBuffer>(10)};
   std::vector<int> lengths = {10};
   EXPECT_EQ(
       ERR_CONNECTION_CLOSED,
@@ -372,7 +373,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
 
   // Read the body and verify that it arrives correctly.
   TestCompletionCallback callback;
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
   EXPECT_EQ(data_len,
             handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
   EXPECT_EQ(quic::QuicStringPiece(data),
@@ -388,7 +389,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableAfterReadBody) {
 
   // Start to read the body.
   TestCompletionCallback callback;
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
   EXPECT_EQ(ERR_IO_PENDING,
             handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
 
@@ -426,7 +427,7 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
 
   // Start to read the body.
   TestCompletionCallback callback;
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
   EXPECT_EQ(ERR_IO_PENDING,
             handle_->ReadBody(
                 buffer.get(), 2 * data_len,
@@ -458,7 +459,7 @@ TEST_P(QuicChromiumClientStreamTest, OnTrailers) {
 
   // Read the body and verify that it arrives correctly.
   TestCompletionCallback callback;
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
   EXPECT_EQ(data_len,
             handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
   EXPECT_EQ(quic::QuicStringPiece(data),
@@ -499,7 +500,7 @@ TEST_P(QuicChromiumClientStreamTest, MarkTrailersConsumedWhenNotifyDelegate) {
 
   // Read the body and verify that it arrives correctly.
   TestCompletionCallback callback;
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
   EXPECT_EQ(data_len,
             handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
   EXPECT_EQ(quic::QuicStringPiece(data),
@@ -547,7 +548,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
 
   // Read the body and verify that it arrives correctly.
   TestCompletionCallback callback;
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(2 * data_len));
+  scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
   EXPECT_EQ(data_len,
             handle_->ReadBody(buffer.get(), 2 * data_len, callback.callback()));
   EXPECT_EQ(quic::QuicStringPiece(data),
@@ -624,9 +625,10 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
 }
 
 TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
-  scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer("hello world!"));
-  scoped_refptr<StringIOBuffer> buf2(
-      new StringIOBuffer("Just a small payload"));
+  scoped_refptr<StringIOBuffer> buf1 =
+      base::MakeRefCounted<StringIOBuffer>("hello world!");
+  scoped_refptr<StringIOBuffer> buf2 =
+      base::MakeRefCounted<StringIOBuffer>("Just a small payload");
 
   // All data written.
   EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
@@ -639,9 +641,10 @@ TEST_P(QuicChromiumClientStreamTest, WritevStreamData) {
 }
 
 TEST_P(QuicChromiumClientStreamTest, WritevStreamDataAsync) {
-  scoped_refptr<StringIOBuffer> buf1(new StringIOBuffer("hello world!"));
-  scoped_refptr<StringIOBuffer> buf2(
-      new StringIOBuffer("Just a small payload"));
+  scoped_refptr<StringIOBuffer> buf1 =
+      base::MakeRefCounted<StringIOBuffer>("hello world!");
+  scoped_refptr<StringIOBuffer> buf2 =
+      base::MakeRefCounted<StringIOBuffer>("Just a small payload");
 
   // Only a part of the data is written.
   EXPECT_CALL(session_, WritevData(stream_, stream_->id(), _, _, _))
@@ -716,7 +719,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeHandle) {
 
   // Now explicitly read the data.
   int data_len = arraysize(data) - 1;
-  scoped_refptr<IOBuffer> buffer(new IOBuffer(data_len + 1));
+  scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(data_len + 1);
   ASSERT_EQ(data_len, stream2->Read(buffer.get(), data_len + 1));
   EXPECT_EQ(quic::QuicStringPiece(data),
             quic::QuicStringPiece(buffer->data(), data_len));

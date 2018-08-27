@@ -122,7 +122,7 @@ int SocketBIOAdapter::BIORead(char* out, int len) {
     // reused after shutdown for non-SSL traffic, so overreading is fine.
     DCHECK(!read_buffer_);
     DCHECK_EQ(0, read_offset_);
-    read_buffer_ = new IOBuffer(read_buffer_capacity_);
+    read_buffer_ = base::MakeRefCounted<IOBuffer>(read_buffer_capacity_);
     int result = ERR_READ_IF_READY_NOT_IMPLEMENTED;
     if (base::FeatureList::IsEnabled(Socket::kReadIfReadyExperiment)) {
       result = socket_->ReadIfReady(
@@ -220,7 +220,7 @@ int SocketBIOAdapter::BIOWrite(const char* in, int len) {
   // Instantiate the write buffer if needed.
   if (!write_buffer_) {
     DCHECK_EQ(0, write_buffer_used_);
-    write_buffer_ = new GrowableIOBuffer;
+    write_buffer_ = base::MakeRefCounted<GrowableIOBuffer>();
     write_buffer_->SetCapacity(write_buffer_capacity_);
   }
 

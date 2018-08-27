@@ -28,8 +28,8 @@ QuicChromiumPacketReader::QuicChromiumPacketReader(
       yield_after_packets_(yield_after_packets),
       yield_after_duration_(yield_after_duration),
       yield_after_(quic::QuicTime::Infinite()),
-      read_buffer_(
-          new IOBufferWithSize(static_cast<size_t>(quic::kMaxPacketSize))),
+      read_buffer_(base::MakeRefCounted<IOBufferWithSize>(
+          static_cast<size_t>(quic::kMaxPacketSize))),
       net_log_(net_log),
       weak_factory_(this) {}
 
