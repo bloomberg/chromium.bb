@@ -90,6 +90,10 @@ class SVGAnimatedPropertyBase : public GarbageCollectedMixin {
                           const QualifiedName& attribute_name,
                           CSSPropertyID = CSSPropertyInvalid);
 
+  void ClearBaseValueNeedsSynchronization() {
+    base_value_needs_synchronization_ = false;
+  }
+
  private:
   static_assert(kNumberOfAnimatedPropertyTypes <= (1u << 5),
                 "enough bits for AnimatedPropertyType (type_)");
@@ -125,6 +129,7 @@ class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
   bool IsAnimating() const override { return current_value_; }
 
   SVGParsingError AttributeChanged(const String& value) override {
+    ClearBaseValueNeedsSynchronization();
     return base_value_->SetValueAsString(value);
   }
 

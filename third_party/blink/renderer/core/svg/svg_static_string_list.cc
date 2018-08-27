@@ -86,6 +86,7 @@ SVGStringListTearOff* SVGStaticStringList::TearOff() {
 }
 
 SVGParsingError SVGStaticStringList::AttributeChanged(const String& value) {
+  ClearBaseValueNeedsSynchronization();
   return value_->SetValueAsString(value);
 }
 
