@@ -158,9 +158,6 @@ class CORE_EXPORT ReattachLegacyLayoutObjectList final {
   }
   void ForceLegacyLayoutIfNeeded();
 
-  void DidRecalcStyle();
-  void WillRecalcStyle();
-
   void Trace(blink::Visitor*);
 
  private:
@@ -180,8 +177,6 @@ class CORE_EXPORT ReattachLegacyLayoutObjectList final {
     kCollecting,
     // Replaces LayoutNG objects to legacy layout objects.
     kForcingLegacyLayout,
-    // Doing style re-calculation.
-    kRecalcStyle,
   } state_ = State::kInvalid;
 
   DISALLOW_COPY_AND_ASSIGN(ReattachLegacyLayoutObjectList);

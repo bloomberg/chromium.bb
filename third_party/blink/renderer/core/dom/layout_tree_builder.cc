@@ -284,7 +284,7 @@ void ReattachLegacyLayoutObjectList::AddForceLegacyAtBFCAncestor(
 }
 
 bool ReattachLegacyLayoutObjectList::IsCollecting() const {
-  return state_ == State::kCollecting || state_ == State::kRecalcStyle;
+  return state_ == State::kCollecting;
 }
 
 void ReattachLegacyLayoutObjectList::ForceLegacyLayoutIfNeeded() {
@@ -303,26 +303,6 @@ void ReattachLegacyLayoutObjectList::ForceLegacyLayoutIfNeeded() {
   WhitespaceAttacher whitespace_attacher;
   document_element.RebuildLayoutTree(whitespace_attacher);
   state_ = State::kClosed;
-}
-
-void ReattachLegacyLayoutObjectList::DidRecalcStyle() {
-  const State state = state_;
-  state_ = State::kClosed;
-  if (state == State::kBuildingLegacyLayoutTree)
-    return;
-  DCHECK_EQ(state, State::kRecalcStyle);
-  for (const LayoutObject* block : blocks_)
-    ToElement(*block->GetNode()).LazyReattachIfAttached();
-}
-
-void ReattachLegacyLayoutObjectList::WillRecalcStyle() {
-  // TODO(layout-dev): Once make |RecalcStyle()| not to create layout object,
-  // we don't need to have |WillRecalcStyle()| and |DidRecalcStyle()|.
-  // Note: "first-letter-removed-added.html" creates layout object during
-  // style recalc. See http://crbug.com/847218
-  if (state_ == State::kBuildingLegacyLayoutTree)
-    return;
-  state_ = State::kRecalcStyle;
 }
 
 void ReattachLegacyLayoutObjectList::Trace(blink::Visitor* visitor) {

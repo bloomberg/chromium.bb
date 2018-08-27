@@ -2304,10 +2304,7 @@ void Document::UpdateStyle() {
       TRACE_EVENT0("blink,blink_style", "Document::recalcStyle");
       SCOPED_BLINK_UMA_HISTOGRAM_TIMER_HIGHRES("Style.RecalcTime");
       Element* viewport_defining = ViewportDefiningElement();
-      ReattachLegacyLayoutObjectList legacy_layout_objects(*this);
-      legacy_layout_objects.WillRecalcStyle();
       document_element->RecalcStyle(change);
-      legacy_layout_objects.DidRecalcStyle();
       if (viewport_defining != ViewportDefiningElement())
         ViewportDefiningElementDidChange();
     }
