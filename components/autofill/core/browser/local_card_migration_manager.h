@@ -18,10 +18,11 @@ namespace autofill {
 class CreditCard;
 class PersonalDataManager;
 
-// MigratableCreditCard class is used as a DataStructure to work as an
+// MigratableCreditCard class is used as a data structure to work as an
 // intermediary between the UI side and the migration manager. Besides the basic
 // credit card information, it also includes a boolean that represents whether
-// the card was chosen for upload.
+// the card was chosen for upload. We use each card's guid to distinguish each
+// credit card for upload request/response.
 // TODO(crbug.com/852904): Create one Enum to represent migration status such as
 // whether the card is successfully uploaded or failure on uploading.
 class MigratableCreditCard {

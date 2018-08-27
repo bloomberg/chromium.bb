@@ -30,13 +30,25 @@ class SharedURLLoaderFactory;
 
 namespace autofill {
 
+class MigratableCreditCard;
+
 namespace payments {
+
+// Callback type for MigrateCards callback. |result| is the Payments Rpc result.
+// |save_result| is an unordered_map parsed from the response whose key is the
+// unique id (guid) for each card and value is the server save result string.
+// |display_text| is the returned tip from Payments to show on the UI.
+typedef base::OnceCallback<void(
+    AutofillClient::PaymentsRpcResult result,
+    std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
+    const std::string& display_text)>
+    MigrateCardsCallback;
 
 // Billable service number is defined in Payments server to distinguish
 // different requests.
 const int kUnmaskCardBillableServiceNumber = 70154;
 const int kUploadCardBillableServiceNumber = 70073;
-const int kMigrateCardBillableServiceNumber = 70264;
+const int kMigrateCardsBillableServiceNumber = 70264;
 
 class PaymentsRequest;
 
@@ -81,6 +93,18 @@ class PaymentsClient {
     std::string risk_data;
     std::string app_locale;
     std::vector<const char*> active_experiments;
+  };
+
+  // A collection of the information required to make local credit cards
+  // migration request.
+  struct MigrationRequestDetails {
+    MigrationRequestDetails();
+    MigrationRequestDetails(const MigrationRequestDetails& other);
+    ~MigrationRequestDetails();
+
+    base::string16 context_token;
+    std::string risk_data;
+    std::string app_locale;
   };
 
   // |url_loader_factory| is reference counted so it has no lifetime or
@@ -141,6 +165,14 @@ class PaymentsClient {
       const UploadRequestDetails& details,
       base::OnceCallback<void(AutofillClient::PaymentsRpcResult,
                               const std::string&)> callback);
+
+  // The user has indicated that they would like to migrate their local credit
+  // cards. This request will fail server-side if a successful call to
+  // GetUploadDetails has not already been made.
+  virtual void MigrateCards(
+      const MigrationRequestDetails& details,
+      const std::vector<MigratableCreditCard>& migratable_credit_cards,
+      MigrateCardsCallback callback);
 
   // Cancels and clears the current |request_|.
   void CancelRequest();

@@ -17,6 +17,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/credit_card_save_manager.h"
+#include "components/autofill/core/browser/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -83,6 +84,11 @@ class PaymentsClientTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(kAutofillUpstreamSendPanFirstSix);
   }
 
+  void EnableAutofillSendExperimentIdsInPaymentsRPCs() {
+    scoped_feature_list_.InitAndEnableFeature(
+        features::kAutofillSendExperimentIdsInPaymentsRPCs);
+  }
+
   void DisableAutofillSendExperimentIdsInPaymentsRPCs() {
     scoped_feature_list_.InitAndDisableFeature(
         features::kAutofillSendExperimentIdsInPaymentsRPCs);
@@ -117,6 +123,15 @@ class PaymentsClientTest : public testing::Test {
                        const std::string& server_id) {
     result_ = result;
     server_id_ = server_id;
+  }
+
+  void OnDidMigrateLocalCards(
+      AutofillClient::PaymentsRpcResult result,
+      std::unique_ptr<std::unordered_map<std::string, std::string>> save_result,
+      const std::string& display_text) {
+    result_ = result;
+    save_result_ = std::move(save_result);
+    display_text_ = display_text;
   }
 
  protected:
@@ -172,6 +187,32 @@ class PaymentsClientTest : public testing::Test {
                                        weak_ptr_factory_.GetWeakPtr()));
   }
 
+  void StartMigrating(bool uncheck_last_card, bool has_cardholder_name) {
+    if (!identity_test_env_.identity_manager()->HasPrimaryAccount())
+      identity_test_env_.MakePrimaryAccountAvailable("example@gmail.com");
+
+    PaymentsClient::MigrationRequestDetails request_details;
+    request_details.context_token = base::ASCIIToUTF16("context token");
+    request_details.risk_data = "some risk data";
+    request_details.app_locale = "language-LOCALE";
+
+    migratable_credit_cards_.clear();
+    CreditCard card1 = test::GetCreditCard();
+    CreditCard card2 = test::GetCreditCard2();
+    if (!has_cardholder_name) {
+      card1.SetRawInfo(CREDIT_CARD_NAME_FULL, base::UTF8ToUTF16(""));
+      card2.SetRawInfo(CREDIT_CARD_NAME_FULL, base::UTF8ToUTF16(""));
+    }
+    migratable_credit_cards_.push_back(MigratableCreditCard(card1));
+    migratable_credit_cards_.push_back(MigratableCreditCard(card2));
+    if (uncheck_last_card)
+      migratable_credit_cards_.back().ToggleChosen();
+    client_->MigrateCards(
+        request_details, migratable_credit_cards_,
+        base::BindOnce(&PaymentsClientTest::OnDidMigrateLocalCards,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
+
   network::TestURLLoaderFactory* factory() { return &test_url_loader_factory_; }
 
   const std::string& GetUploadData() { return intercepted_body_; }
@@ -202,6 +243,9 @@ class PaymentsClientTest : public testing::Test {
   std::string server_id_;
   std::string real_pan_;
   std::unique_ptr<base::DictionaryValue> legal_message_;
+  std::vector<MigratableCreditCard> migratable_credit_cards_;
+  std::unique_ptr<std::unordered_map<std::string, std::string>> save_result_;
+  std::string display_text_;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -423,6 +467,43 @@ TEST_F(PaymentsClientTest, UnmaskCardVariationsTestExperimentOff) {
   variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
 }
 
+TEST_F(PaymentsClientTest, MigrateCardsVariationsTest) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  EnableAutofillSendExperimentIdsInPaymentsRPCs();
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+
+  std::string value;
+  EXPECT_TRUE(GetRequestHeaders()->GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_FALSE(value.empty());
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
+TEST_F(PaymentsClientTest, MigrateCardsVariationsTestExperimentFlagOff) {
+  // Register a trial and variation id, so that there is data in variations
+  // headers. Also, the variations header provider may have been registered to
+  // observe some other field trial list, so reset it.
+  DisableAutofillSendExperimentIdsInPaymentsRPCs();
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+  base::FieldTrialList field_trial_list_(nullptr);
+  CreateFieldTrialWithId("AutofillTest", "Group", 369);
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+
+  std::string value;
+  EXPECT_FALSE(GetRequestHeaders()->GetHeader("X-Client-Data", &value));
+  // Note that experiment information is stored in X-Client-Data.
+  EXPECT_TRUE(value.empty());
+
+  variations::VariationsHttpHeaderProvider::GetInstance()->ResetForTesting();
+}
+
 TEST_F(PaymentsClientTest,
        GetDetailsIncludesPanFirstSixInRequestIfExperimentOn) {
   EnableAutofillUpstreamSendPanFirstSixExperiment();
@@ -525,6 +606,104 @@ TEST_F(PaymentsClientTest, UploadDoesNotIncludeCvcInRequestIfNotProvided) {
   EXPECT_TRUE(GetUploadData().find("&s7e_13_cvc=") == std::string::npos);
 }
 
+TEST_F(PaymentsClientTest, MigrationRequestIncludesUniqueId) {
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+
+  // Verify that the unique id was included in the request.
+  EXPECT_TRUE(GetUploadData().find("unique_id") != std::string::npos);
+  EXPECT_TRUE(
+      GetUploadData().find(migratable_credit_cards_[0].credit_card().guid()) !=
+      std::string::npos);
+  EXPECT_TRUE(
+      GetUploadData().find(migratable_credit_cards_[1].credit_card().guid()) !=
+      std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, MigrationRequestIncludesEncryptedPan) {
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+
+  // Verify that the encrypted_pan and s7e_1_pan parameters were included
+  // in the request.
+  EXPECT_TRUE(GetUploadData().find("encrypted_pan") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("__param:s7e_1_pan0") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("&s7e_1_pan0=4111111111111111") !=
+              std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("__param:s7e_1_pan1") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("&s7e_1_pan1=378282246310005") !=
+              std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, MigrationRequestExcludesUncheckedCard) {
+  StartMigrating(/*uncheck_last_card=*/true, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+
+  // Verify that the encrypted_pan and s7e_1_pan parameters were included
+  // in the request.
+  EXPECT_TRUE(GetUploadData().find("encrypted_pan") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("__param:s7e_1_pan0") != std::string::npos);
+  EXPECT_TRUE(GetUploadData().find("&s7e_1_pan0=4111111111111111") !=
+              std::string::npos);
+  EXPECT_FALSE(GetUploadData().find("__param:s7e_1_pan1") != std::string::npos);
+  EXPECT_FALSE(GetUploadData().find("&s7e_1_pan1=378282246310005") !=
+               std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, MigrationRequestIncludesCardholderNameWhenItExists) {
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+
+  EXPECT_TRUE(!GetUploadData().empty());
+  // Verify that the cardholder name is sent if it exists.
+  EXPECT_TRUE(GetUploadData().find("cardholder_name") != std::string::npos);
+}
+
+TEST_F(PaymentsClientTest,
+       MigrationRequestExcludesCardholderNameWhenItDoesNotExist) {
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/false);
+  IssueOAuthToken();
+
+  EXPECT_TRUE(!GetUploadData().empty());
+  // Verify that the cardholder name is not sent if it doesn't exist.
+  EXPECT_TRUE(GetUploadData().find("cardholder_name") == std::string::npos);
+}
+
+TEST_F(PaymentsClientTest, MigrationSuccessWithSaveResult) {
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{\"save_result\":[{\"unique_id\":\"0\",\"status\":"
+                 "\"SUCCESS\"},{\"unique_id\":\"1\",\"status\":\"TEMPORARY_"
+                 "FAILURE\"}],\"value_prop_display_text\":\"display text\"}");
+
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_TRUE(save_result_.get());
+  EXPECT_TRUE(save_result_->find("0") != save_result_->end());
+  EXPECT_TRUE(save_result_->at("0") == "SUCCESS");
+  EXPECT_TRUE(save_result_->find("1") != save_result_->end());
+  EXPECT_TRUE(save_result_->at("1") == "TEMPORARY_FAILURE");
+}
+
+TEST_F(PaymentsClientTest, MigrationMissingSaveResult) {
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{\"value_prop_display_text\":\"display text\"}");
+  EXPECT_EQ(AutofillClient::PERMANENT_FAILURE, result_);
+  EXPECT_EQ(nullptr, save_result_.get());
+}
+
+TEST_F(PaymentsClientTest, MigrationSuccessWithDisplayText) {
+  StartMigrating(/*uncheck_last_card=*/false, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+  ReturnResponse(net::HTTP_OK,
+                 "{\"save_result\":[{\"unique_id\":\"0\",\"status\":"
+                 "\"SUCCESS\"}],\"value_prop_display_text\":\"display text\"}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+  EXPECT_EQ("display text", display_text_);
+}
+
 TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
   StartGettingUploadDetails();
   ReturnResponse(
@@ -537,6 +716,23 @@ TEST_F(PaymentsClientTest, GetDetailsFollowedByUploadSuccess) {
   StartUploading(/*include_cvc=*/true);
   IssueOAuthToken();
   ReturnResponse(net::HTTP_OK, "{}");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+}
+
+TEST_F(PaymentsClientTest, GetDetailsFollowedByMigrationSuccess) {
+  StartGettingUploadDetails();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{ \"context_token\": \"some_token\", \"legal_message\": {} }");
+  EXPECT_EQ(AutofillClient::SUCCESS, result_);
+
+  result_ = AutofillClient::NONE;
+
+  StartMigrating(/*uncheck_last_card=*/true, /*has_cardholder_name=*/true);
+  IssueOAuthToken();
+  ReturnResponse(
+      net::HTTP_OK,
+      "{\"save_result\":[],\"value_prop_display_text\":\"display text\"}");
   EXPECT_EQ(AutofillClient::SUCCESS, result_);
 }
 
