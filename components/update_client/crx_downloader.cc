@@ -25,10 +25,6 @@
 
 namespace update_client {
 
-CrxDownloader::Result::Result()
-    : error(0), downloaded_bytes(-1), total_bytes(-1) {
-}
-
 CrxDownloader::DownloadMetrics::DownloadMetrics()
     : downloader(kNone),
       error(0),
@@ -136,13 +132,13 @@ void CrxDownloader::OnDownloadComplete(
                                   download_metrics));
 }
 
-void CrxDownloader::OnDownloadProgress(const Result& result) {
+void CrxDownloader::OnDownloadProgress() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (progress_callback_.is_null())
     return;
 
-  progress_callback_.Run(result);
+  progress_callback_.Run();
 }
 
 // The function mutates the values of the parameters |result| and

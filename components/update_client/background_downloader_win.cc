@@ -580,8 +580,6 @@ void BackgroundDownloader::EndDownload(HRESULT error) {
   result.error = error_to_report;
   if (!result.error)
     result.response = response_;
-  result.downloaded_bytes = downloaded_bytes;
-  result.total_bytes = total_bytes;
   main_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadComplete,
                                 base::Unretained(this), is_handled, result,
@@ -662,19 +660,9 @@ bool BackgroundDownloader::OnStateTransferring() {
   // data and it is making progress.
   job_stuck_begin_time_ = base::TimeTicks::Now();
 
-  int64_t downloaded_bytes = -1;
-  int64_t total_bytes = -1;
-  HRESULT hr = GetJobByteCount(job_, &downloaded_bytes, &total_bytes);
-  if (FAILED(hr))
-    return false;
-
-  Result result;
-  result.downloaded_bytes = downloaded_bytes;
-  result.total_bytes = total_bytes;
-
   main_task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&BackgroundDownloader::OnDownloadProgress,
-                                base::Unretained(this), result));
+                                base::Unretained(this)));
   return false;
 }
 

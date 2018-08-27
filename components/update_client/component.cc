@@ -522,12 +522,10 @@ void Component::StateDownloadingDiff::DoHandle() {
   component.NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
 }
 
-// Called when progress is being made downloading a CRX. The progress may
-// not monotonically increase due to how the CRX downloader switches between
-// different downloaders and fallback urls.
-void Component::StateDownloadingDiff::DownloadProgress(
-    const std::string& id,
-    const CrxDownloader::Result& download_result) {
+// Called when progress is being made downloading a CRX. Can be called multiple
+// times due to how the CRX downloader switches between different downloaders
+// and fallback urls.
+void Component::StateDownloadingDiff::DownloadProgress(const std::string& id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   component().NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
@@ -591,12 +589,10 @@ void Component::StateDownloading::DoHandle() {
   component.NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
 }
 
-// Called when progress is being made downloading a CRX. The progress may
-// not monotonically increase due to how the CRX downloader switches between
-// different downloaders and fallback urls.
-void Component::StateDownloading::DownloadProgress(
-    const std::string& id,
-    const CrxDownloader::Result& download_result) {
+// Called when progress is being made downloading a CRX. Can be called multiple
+// times due to how the CRX downloader switches between different downloaders
+// and fallback urls.
+void Component::StateDownloading::DownloadProgress(const std::string& id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   component().NotifyObservers(Events::COMPONENT_UPDATE_DOWNLOADING);
