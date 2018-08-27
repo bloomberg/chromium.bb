@@ -18,6 +18,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Button for creating new tabs.
@@ -45,6 +46,7 @@ public class NewTabButton extends Button implements Drawable.Callback {
         mModernDrawable.setBounds(
                 0, 0, mModernDrawable.getIntrinsicWidth(), mModernDrawable.getIntrinsicHeight());
         mModernDrawable.setCallback(this);
+        updateDrawableTint();
     }
 
     /**
@@ -125,11 +127,13 @@ public class NewTabButton extends Button implements Drawable.Callback {
 
     /** Update the tint for the icon drawable for Chrome Modern. */
     private void updateDrawableTint() {
-        final boolean shouldUseLightMode = mIsNativeReady
-                && (DeviceClassManager.enableAccessibilityLayout()
-                           || ChromeFeatureList.isEnabled(
-                                      ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
-                && mIsIncognito;
+        final boolean shouldUseLightMode =
+                DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
+                || (mIsNativeReady
+                           && (DeviceClassManager.enableAccessibilityLayout()
+                                      || ChromeFeatureList.isEnabled(
+                                                 ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID))
+                           && mIsIncognito);
         mModernDrawable.setTintList(shouldUseLightMode ? mLightModeTint : mDarkModeTint);
     }
 }
