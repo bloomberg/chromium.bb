@@ -33,6 +33,7 @@ class SyncWebSocketImpl : public SyncWebSocket {
   explicit SyncWebSocketImpl(net::URLRequestContextGetter* context_getter);
   ~SyncWebSocketImpl() override;
 
+  void SetId(const std::string& socket_id) override {}
   // Overridden from SyncWebSocket:
   bool IsConnected() override;
   bool Connect(const GURL& url) override;

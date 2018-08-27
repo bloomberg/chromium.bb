@@ -21,6 +21,8 @@ class SyncWebSocket {
 
   virtual ~SyncWebSocket() {}
 
+  virtual void SetId(const std::string& socket_id) {}
+
   // Return true if connected, otherwise return false.
   virtual bool IsConnected() = 0;
 

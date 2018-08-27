@@ -32,13 +32,13 @@ base::FilePath GetLogFileFromLiteral(const char literal[]) {
 TEST(DevToolsLogReaderTest, Basic) {
   base::FilePath path = GetLogFileFromLiteral(kTestGetTitlePath);
   DevToolsLogReader reader(path);
-  std::unique_ptr<LogEntry> next = reader.GetNext(LogEntry::Protocol::HTTP);
+  std::unique_ptr<LogEntry> next = reader.GetNext(LogEntry::kHTTP);
   EXPECT_TRUE(next != nullptr);
-  EXPECT_EQ(next->protocol_type, LogEntry::Protocol::HTTP);
-  EXPECT_EQ(next->command_name, "http://localhost:38845/json/version");
-  next = reader.GetNext(LogEntry::Protocol::HTTP);
+  EXPECT_EQ(next->protocol_type, LogEntry::kHTTP);
+  EXPECT_EQ(next->command_name, "http://localhost:38037/json/version");
+  next = reader.GetNext(LogEntry::kHTTP);
   EXPECT_TRUE(next != nullptr);
-  EXPECT_EQ(next->payload, "{   \"string_key\": \"string_value\"}");
+  EXPECT_EQ(next->payload, "{\n   \"string_key\": \"string_value\"\n}\n");
 }
 
 TEST(DevToolsLogReaderTest, Multiple) {
@@ -46,33 +46,32 @@ TEST(DevToolsLogReaderTest, Multiple) {
   DevToolsLogReader reader(path);
   std::unique_ptr<LogEntry> next;
   for (int i = 0; i < 3; i++)
-    next = reader.GetNext(LogEntry::Protocol::HTTP);
+    next = reader.GetNext(LogEntry::kHTTP);
 
   EXPECT_TRUE(next != nullptr);
-  EXPECT_EQ(next->command_name, "http://localhost:38845/json");
-  next = reader.GetNext(LogEntry::Protocol::HTTP);
+  EXPECT_EQ(next->command_name, "http://localhost:38037/json");
+  next = reader.GetNext(LogEntry::kHTTP);
   EXPECT_EQ(next->payload,
-            "[ {   \"string_key1\": \"string_value1\"}, {   "
-            "\"string_key2\": \"string_value2\"} ]");
+            "[ {\n   \"string_key1\": \"string_value1\"\n}, {\n   "
+            "\"string_key2\": \"string_value2\"\n} ]\n");
 }
 
 TEST(DevToolsLogReaderTest, EndOfFile) {
   base::FilePath path = GetLogFileFromLiteral(kOneEntryPath);
   DevToolsLogReader reader(path);
-  std::unique_ptr<LogEntry> next = reader.GetNext(LogEntry::Protocol::HTTP);
+  std::unique_ptr<LogEntry> next = reader.GetNext(LogEntry::kHTTP);
   EXPECT_TRUE(next != nullptr);
-  next = reader.GetNext(LogEntry::Protocol::HTTP);
+  next = reader.GetNext(LogEntry::kHTTP);
   EXPECT_TRUE(next == nullptr);
 }
 
 TEST(DevToolsLogReaderTest, WebSocketBasic) {
   base::FilePath path = GetLogFileFromLiteral(kTestGetTitlePath);
   DevToolsLogReader reader(path);
-  std::unique_ptr<LogEntry> next =
-      reader.GetNext(LogEntry::Protocol::WebSocket);
+  std::unique_ptr<LogEntry> next = reader.GetNext(LogEntry::kWebSocket);
   EXPECT_TRUE(next != nullptr);
-  EXPECT_EQ(next->protocol_type, LogEntry::Protocol::WebSocket);
-  EXPECT_EQ(next->event_type, LogEntry::EventType::request);
+  EXPECT_EQ(next->protocol_type, LogEntry::kWebSocket);
+  EXPECT_EQ(next->event_type, LogEntry::kRequest);
   EXPECT_EQ(next->command_name, "Log.enable");
   EXPECT_EQ(next->id, 1);
 }
@@ -80,11 +79,10 @@ TEST(DevToolsLogReaderTest, WebSocketBasic) {
 TEST(DevToolsLogReaderTest, WebSocketMultiple) {
   base::FilePath path = GetLogFileFromLiteral(kTestGetTitlePath);
   DevToolsLogReader reader(path);
-  std::unique_ptr<LogEntry> next =
-      reader.GetNext(LogEntry::Protocol::WebSocket);
-  next = reader.GetNext(LogEntry::Protocol::WebSocket);
+  std::unique_ptr<LogEntry> next = reader.GetNext(LogEntry::kWebSocket);
+  next = reader.GetNext(LogEntry::kWebSocket);
   EXPECT_TRUE(next != nullptr);
-  EXPECT_EQ(next->event_type, LogEntry::EventType::request);
+  EXPECT_EQ(next->event_type, LogEntry::kRequest);
   EXPECT_EQ(next->command_name, "DOM.getDocument");
   EXPECT_EQ(next->id, 2);
 }
@@ -94,18 +92,18 @@ TEST(DevToolsLogReaderTest, WebSocketPayload) {
   DevToolsLogReader reader(path);
   std::unique_ptr<LogEntry> next;
   for (int i = 0; i < 3; i++)
-    next = reader.GetNext(LogEntry::Protocol::WebSocket);
+    next = reader.GetNext(LogEntry::kWebSocket);
   EXPECT_TRUE(next != nullptr);
   EXPECT_EQ(next->command_name, "Target.setAutoAttach");
   EXPECT_EQ(next->id, 3);
-  EXPECT_EQ(next->payload,
-            "{   \"autoAttach\": true,   \"waitForDebuggerOnStart\": false}");
+  EXPECT_EQ(
+      next->payload,
+      "{\n   \"autoAttach\": true,\n   \"waitForDebuggerOnStart\": false\n}\n");
 }
 
 TEST(DevToolsLogReaderTest, TruncatedJSON) {
   base::FilePath path = GetLogFileFromLiteral(kTruncatedJSONPath);
   DevToolsLogReader reader(path);
-  std::unique_ptr<LogEntry> next =
-      reader.GetNext(LogEntry::Protocol::WebSocket);
+  std::unique_ptr<LogEntry> next = reader.GetNext(LogEntry::kWebSocket);
   EXPECT_TRUE(next == nullptr);
 }

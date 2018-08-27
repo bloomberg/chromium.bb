@@ -47,7 +47,7 @@ def SubstituteVariableEntries(s):
 def ClearPort(s):
   """Removes port numbers from urls in the given string."""
   s = re.sub(r":([0-9]){5}/", "<port>", s)
-  return re.sub(r"localhost:([0-9]){5}", "localhost:<port>", s)
+  return re.sub(r"localhost:([0-9]*)", "localhost:<port>", s)
 
 
 class ChromeDriverClientReplayTest(unittest.TestCase):
@@ -113,9 +113,12 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
       log_file_relative_path: relative path (from this the directory this file
         is in) to the log file for this test as a string.
     """
-    log_file = os.path.join(_THIS_DIR, log_file_relative_path)
-    with open(log_file) as lf:
-      server = client_replay.StartChromeDriverServer(_CHROMEDRIVER, _OPTIONS)
+    log_path = os.path.join(_THIS_DIR, log_file_relative_path)
+    with open(log_path) as lf:
+      replay_path = log_path if _OPTIONS.devtools_replay else ""
+      server = client_replay.StartChromeDriverServer(_CHROMEDRIVER,
+                                                     _OPTIONS.output_log_path,
+                                                     replay_path)
       chrome_binary = (util.GetAbsolutePathOfUserPath(_OPTIONS.chrome)
                        if _OPTIONS.chrome else None)
 
@@ -136,7 +139,7 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
       server.Kill()
 
   def testGetPageSource(self):
-    self.runTest("test_data/testPageSource.log")
+    self.runTest("test_data/testGetPageSource.log")
 
   def testCloseWindow(self):
     self.runTest("test_data/testCloseWindow.log")
@@ -150,11 +153,11 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
   def testSendingTabKeyMovesToNextInputElement(self):
     self.runTest("test_data/testSendingTabKeyMovesToNextInputElement.log")
 
-  def testUnexpectedalertBehavior(self):
-    self.runTest("test_data/testUnexpectedAlertBehavior.log")
+  def testUnexpectedAlertBehaviour(self):
+    self.runTest("test_data/testUnexpectedAlertBehaviour.log")
 
   def testDownload(self):
-    self.runTest("test_data/testDownload.log")
+    self.runTest("test_data/testFileDownloadWithClick.log")
 
   def testCanSwitchToPrintPreviewDialog(self):
     self.runTest("test_data/testCanSwitchToPrintPreviewDialog.log")
@@ -163,10 +166,10 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
     self.runTest("test_data/testClearElement.log")
 
   def testEmulateNetwork(self):
-    self.runTest("test_data/testEmulateNetwork.log")
+    self.runTest("test_data/testEmulateNetworkConditions.log")
 
   def testSwitchTo(self):
-    self.runTest("test_data/testSwitchTo.log")
+    self.runTest("test_data/testSwitchToWindow.log")
 
   def testEvaluateScript(self):
     self.runTest("test_data/testEvaluateScript.log")
@@ -180,14 +183,23 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
   def testSendCommand(self):
     self.runTest("test_data/testSendCommand.log")
 
-  def testSessionHandling(self):
-    self.runTest("test_data/testSessionHandling.log")
+  def testGetSessions(self):
+    self.runTest("test_data/testGetSessions.log")
+
+  def testQuitASessionMoreThanOnce(self):
+    self.runTest("test_data/testQuitASessionMoreThanOnce.log")
+
+  def testCanClickOOPIF(self):
+    self.runTest("test_data/testCanClickOOPIF.log")
 
   def testRunMethod(self):
     """Check the Replayer.run method, which the other tests bypass."""
     log_path = os.path.join(_THIS_DIR, "test_data/testGetTitle.log")
     with open(log_path) as lf:
-      server = client_replay.StartChromeDriverServer(_CHROMEDRIVER, _OPTIONS)
+      replay_path = log_path if _OPTIONS.devtools_replay else ""
+      server = client_replay.StartChromeDriverServer(_CHROMEDRIVER,
+                                                     _OPTIONS.output_log_path,
+                                                     replay_path)
       chrome_binary = (util.GetAbsolutePathOfUserPath(_OPTIONS.chrome)
                        if _OPTIONS.chrome else None)
 
@@ -196,6 +208,14 @@ class ChromeDriverClientReplayTest(unittest.TestCase):
 
   def testChromeBinary(self):
     self.runTest("test_data/testChromeBinary.log")
+
+
+def GetNegativeFilter(chrome_version):
+  if chrome_version in _VERSION_SPECIFIC_NEGATIVE_FILTER:
+    negative_filter = _VERSION_SPECIFIC_NEGATIVE_FILTER[chrome_version]
+    return "*-" + ":__main__.".join([""] + negative_filter)
+  return "*"
+
 
 def main():
   usage = "usage: %prog <chromedriver binary> [options]"
@@ -206,9 +226,15 @@ def main():
   parser.add_option(
       "", "--chrome", help="Path to the desired Chrome binary.")
   parser.add_option(
+      "", "--chrome-version", default="HEAD",
+      help="Version of Chrome. Default is 'HEAD'.")
+  parser.add_option(
       "", "--filter", type="string", default="*",
-      help="Filter for specifying what tests to run, \"*\" will run all. E.g., "
-      "*testRunMethod")
+      help="Filter for specifying what tests to run, \"*\" will run all,"
+      "including tests excluded by default. E.g., *testRunMethod")
+  parser.add_option(
+      "", "--devtools-replay", help="Replay DevTools instead of using\n"
+      "real Chrome.")
 
   global _OPTIONS, _CHROMEDRIVER
   _OPTIONS, args = parser.parse_args()

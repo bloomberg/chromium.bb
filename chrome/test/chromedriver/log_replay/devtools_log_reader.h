@@ -28,6 +28,8 @@
 // <id> is a sequential number to identify WebSocket commands with their
 // responses
 //
+// <socket_id> identifies the WebSocket instance this entry came from, if any.
+//
 // <payload> is either the parameters in case of a WebSocket command, or the
 // response in case of any response. It is always a JSON, and always spans
 // multiple lines.
@@ -40,17 +42,18 @@ class LogEntry {
   ~LogEntry();
 
   enum EventType {
-    request,  // Command or Request depending on HTTP or WebSocket client
-    response,
-    event
+    kRequest,  // Command or Request depending on HTTP or WebSocket client
+    kResponse,
+    kEvent
   };
-  enum Protocol { HTTP, WebSocket };
+  enum Protocol { kHTTP, kWebSocket };
 
   EventType event_type;
   Protocol protocol_type;
   std::string command_name;
   std::string payload;
   int id;
+  std::string socket_id;
   bool error;
 };
 
@@ -67,8 +70,14 @@ class DevToolsLogReader {
   // no remaining entries of the specified type, or if there is some other
   // problem encountered like a truncated JSON, nullptr is returned.
   std::unique_ptr<LogEntry> GetNext(LogEntry::Protocol protocol_type);
+  // Undo the previous GetNext call.
+  //
+  // "Gives back" the unique_ptr to the LogEntry object to the log reader,
+  // to be returned the next time GetNext is called.
+  void UndoGetNext(std::unique_ptr<LogEntry> next);
 
  private:
+  std::unique_ptr<LogEntry> peeked;
   std::ifstream log_file;
   // Starting with |header_line|, parse a JSON string out of the log file.
   //
@@ -81,7 +90,7 @@ class DevToolsLogReader {
   // This only parses out the first two words of the line, meaning that the
   // stream can be re-used to parse the specifics of the entry after calling
   // this.
-  bool IsHeader(std::istringstream& line);
+  bool IsHeader(std::istringstream& line) const;
 
   // Count (number of opening_char) - (number of closing_char) in |line|.
   //

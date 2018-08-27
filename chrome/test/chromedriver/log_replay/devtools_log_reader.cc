@@ -25,9 +25,9 @@ LogEntry::LogEntry(std::istringstream& header_stream) {
   std::string protocol_type_string;
   header_stream >> protocol_type_string;  // "HTTP" or "WebSocket"
   if (protocol_type_string == "HTTP") {
-    protocol_type = HTTP;
+    protocol_type = kHTTP;
   } else if (protocol_type_string == "WebSocket") {
-    protocol_type = WebSocket;
+    protocol_type = kWebSocket;
   } else {
     error = true;
     LOG(ERROR) << "Could not read protocol from log entry header.";
@@ -38,31 +38,38 @@ LogEntry::LogEntry(std::istringstream& header_stream) {
   header_stream >> event_type_string;
 
   if (event_type_string == "Response:") {
-    event_type = response;
+    event_type = kResponse;
   } else if (event_type_string == "Command:" ||
              event_type_string == "Request:") {
-    event_type = request;
+    event_type = kRequest;
   } else if (event_type_string == "Event:") {
-    event_type = event;
+    event_type = kEvent;
   } else {
     error = true;
     LOG(ERROR) << "Could not read event type from log entry header.";
     return;
   }
 
-  if (!(protocol_type == HTTP && event_type == response)) {
+  if (!(protocol_type == kHTTP && event_type == kResponse)) {
     header_stream >> command_name;
     if (command_name == "") {
       error = true;
       LOG(ERROR) << "Could not read command name from log entry header";
       return;
     }
-    if (protocol_type != HTTP) {
-      id = GetId(header_stream);
-      if (id == 0) {
+    if (protocol_type != kHTTP) {
+      if (event_type != kEvent) {
+        id = GetId(header_stream);
+        if (id == 0) {
+          error = true;
+          LOG(ERROR) << "Could not read sequential id from log entry header.";
+          return;
+        }
+      }
+      header_stream >> socket_id;
+      if (socket_id == "") {
         error = true;
-        LOG(ERROR) << "Could not read sequential id from log entry header.";
-        return;
+        LOG(ERROR) << "Could not read socket id from log entry header.";
       }
     }
   }
@@ -75,7 +82,7 @@ DevToolsLogReader::DevToolsLogReader(const base::FilePath& log_path)
 
 DevToolsLogReader::~DevToolsLogReader() {}
 
-bool DevToolsLogReader::IsHeader(std::istringstream& header_stream) {
+bool DevToolsLogReader::IsHeader(std::istringstream& header_stream) const {
   std::string word;
   header_stream >> word;  // preamble
   if (!base::MatchPattern(word, "[??????????.???][DEBUG]:")) {
@@ -86,8 +93,15 @@ bool DevToolsLogReader::IsHeader(std::istringstream& header_stream) {
   return result;
 }
 
+void DevToolsLogReader::UndoGetNext(std::unique_ptr<LogEntry> next) {
+  peeked = std::move(next);
+}
+
 std::unique_ptr<LogEntry> DevToolsLogReader::GetNext(
     LogEntry::Protocol protocol_type) {
+  if (peeked) {
+    return std::move(peeked);
+  }
   std::string next_line;
   while (true) {
     if (log_file.eof())
@@ -103,8 +117,8 @@ std::unique_ptr<LogEntry> DevToolsLogReader::GetNext(
       }
       if (log_entry->protocol_type != protocol_type)
         continue;
-      if (!(log_entry->event_type == LogEntry::EventType::request &&
-            log_entry->protocol_type == LogEntry::Protocol::HTTP)) {
+      if (!(log_entry->event_type == LogEntry::kRequest &&
+            log_entry->protocol_type == LogEntry::kHTTP)) {
         log_entry->payload = GetJSONString(next_line_stream);
         if (log_entry->payload == "") {
           LOG(ERROR) << "Problem parsing JSON from log file";
@@ -133,10 +147,10 @@ std::string DevToolsLogReader::GetJSONString(
       closing_char = ']';
       break;
     default:
-      return "";
+      return next_line;  // For rare cases when payload is a string, not a JSON.
   }
   while (true) {
-    json += next_line;
+    json += next_line + "\n";
     opening_char_count += CountChar(next_line, opening_char, closing_char);
     if (opening_char_count == 0)
       break;
