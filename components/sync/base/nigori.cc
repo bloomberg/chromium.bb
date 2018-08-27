@@ -69,25 +69,26 @@ bool Nigori::InitByDerivation(const std::string& hostname,
   salt_password << username << hostname;
 
   // Suser = PBKDF2(Username || Servername, "saltsalt", Nsalt, 8)
-  std::unique_ptr<SymmetricKey> user_salt(SymmetricKey::DeriveKeyFromPassword(
-      SymmetricKey::HMAC_SHA1, salt_password.str(), kSaltSalt, kSaltIterations,
-      kSaltKeySizeInBits));
+  std::unique_ptr<SymmetricKey> user_salt(
+      SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
+          SymmetricKey::HMAC_SHA1, salt_password.str(), kSaltSalt,
+          kSaltIterations, kSaltKeySizeInBits));
   DCHECK(user_salt);
 
   // Kuser = PBKDF2(P, Suser, Nuser, 16)
-  user_key_ = SymmetricKey::DeriveKeyFromPassword(
+  user_key_ = SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
       SymmetricKey::AES, password, user_salt->key(), kUserIterations,
       kDerivedKeySizeInBits);
   DCHECK(user_key_);
 
   // Kenc = PBKDF2(P, Suser, Nenc, 16)
-  encryption_key_ = SymmetricKey::DeriveKeyFromPassword(
+  encryption_key_ = SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
       SymmetricKey::AES, password, user_salt->key(), kEncryptionIterations,
       kDerivedKeySizeInBits);
   DCHECK(encryption_key_);
 
   // Kmac = PBKDF2(P, Suser, Nmac, 16)
-  mac_key_ = SymmetricKey::DeriveKeyFromPassword(
+  mac_key_ = SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
       SymmetricKey::HMAC_SHA1, password, user_salt->key(), kSigningIterations,
       kDerivedKeySizeInBits);
   DCHECK(mac_key_);

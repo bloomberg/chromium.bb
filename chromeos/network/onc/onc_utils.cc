@@ -721,9 +721,9 @@ std::unique_ptr<base::Value> Decrypt(const std::string& passphrase,
   }
 
   std::unique_ptr<crypto::SymmetricKey> key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
-                                                  passphrase, salt, iterations,
-                                                  kKeySizeInBits));
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
+          crypto::SymmetricKey::AES, passphrase, salt, iterations,
+          kKeySizeInBits));
 
   if (!base::Base64Decode(initial_vector, &initial_vector)) {
     NET_LOG(ERROR) << kUnableToDecode;

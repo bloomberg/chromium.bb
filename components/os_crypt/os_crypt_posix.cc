@@ -46,11 +46,9 @@ crypto::SymmetricKey* GetEncryptionKey() {
 
   // Create an encryption key from our password and salt.
   std::unique_ptr<crypto::SymmetricKey> encryption_key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
-                                                  password,
-                                                  salt,
-                                                  kEncryptionIterations,
-                                                  kDerivedKeySizeInBits));
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
+          crypto::SymmetricKey::AES, password, salt, kEncryptionIterations,
+          kDerivedKeySizeInBits));
   DCHECK(encryption_key.get());
 
   return encryption_key.release();
