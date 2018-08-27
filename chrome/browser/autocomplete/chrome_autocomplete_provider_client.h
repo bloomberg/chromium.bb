@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "chrome/browser/autocomplete/chrome_autocomplete_scheme_classifier.h"
-#include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 
 class Profile;
@@ -41,7 +40,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
       bool create_if_necessary) const override;
   DocumentSuggestionsService* GetDocumentSuggestionsService(
       bool create_if_necessary) const override;
-  const SearchTermsData& GetSearchTermsData() const override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
   std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
@@ -86,7 +84,6 @@ class ChromeAutocompleteProviderClient : public AutocompleteProviderClient {
  private:
   Profile* profile_;
   ChromeAutocompleteSchemeClassifier scheme_classifier_;
-  UIThreadSearchTermsData search_terms_data_;
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       url_consent_helper_;
 

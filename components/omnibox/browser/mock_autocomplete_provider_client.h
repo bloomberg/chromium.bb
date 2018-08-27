@@ -15,7 +15,6 @@
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/contextual_suggestions_service.h"
 #include "components/omnibox/browser/document_suggestions_service.h"
-#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -61,8 +60,6 @@ class MockAutocompleteProviderClient
       bool create_if_necessary) const override {
     return document_suggestions_service_.get();
   }
-
-  MOCK_CONST_METHOD0(GetSearchTermsData, const SearchTermsData&());
 
   // Can't mock scoped_refptr :\.
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override {

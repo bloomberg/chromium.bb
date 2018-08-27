@@ -15,6 +15,7 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "components/omnibox/browser/shortcuts_backend.h"
+#include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 
 FakeAutocompleteProviderClient::FakeAutocompleteProviderClient(
@@ -63,11 +64,6 @@ bookmarks::BookmarkModel* FakeAutocompleteProviderClient::GetBookmarkModel() {
 
 InMemoryURLIndex* FakeAutocompleteProviderClient::GetInMemoryURLIndex() {
   return in_memory_url_index_.get();
-}
-
-const SearchTermsData& FakeAutocompleteProviderClient::GetSearchTermsData()
-    const {
-  return search_terms_data_;
 }
 
 scoped_refptr<ShortcutsBackend>

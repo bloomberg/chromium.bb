@@ -280,7 +280,7 @@ GURL ConvertToHostOnly(const history::HistoryMatch& match,
 // UIThreadSearchTermsData but is subsequently safe to use on any thread.
 class SearchTermsDataSnapshot : public SearchTermsData {
  public:
-  explicit SearchTermsDataSnapshot(const SearchTermsData& search_terms_data);
+  explicit SearchTermsDataSnapshot(const SearchTermsData* search_terms_data);
   ~SearchTermsDataSnapshot() override;
 
   std::string GoogleBaseURLValue() const override;
@@ -304,12 +304,14 @@ class SearchTermsDataSnapshot : public SearchTermsData {
 };
 
 SearchTermsDataSnapshot::SearchTermsDataSnapshot(
-    const SearchTermsData& search_terms_data)
-    : google_base_url_value_(search_terms_data.GoogleBaseURLValue()),
-      application_locale_(search_terms_data.GetApplicationLocale()),
-      rlz_parameter_value_(search_terms_data.GetRlzParameterValue(false)),
-      search_client_(search_terms_data.GetSearchClient()),
-      google_image_search_source_(search_terms_data.GoogleImageSearchSource()) {
+    const SearchTermsData* search_terms_data) {
+  if (search_terms_data) {
+    google_base_url_value_ = search_terms_data->GoogleBaseURLValue();
+    application_locale_ = search_terms_data->GetApplicationLocale();
+    rlz_parameter_value_ = search_terms_data->GetRlzParameterValue(false);
+    search_client_ = search_terms_data->GetSearchClient();
+    google_image_search_source_ = search_terms_data->GoogleImageSearchSource();
+  }
 }
 
 SearchTermsDataSnapshot::~SearchTermsDataSnapshot() {
@@ -443,7 +445,7 @@ HistoryURLProviderParams::HistoryURLProviderParams(
     bool trim_http,
     const AutocompleteMatch& what_you_typed_match,
     const TemplateURL* default_search_provider,
-    const SearchTermsData& search_terms_data)
+    const SearchTermsData* search_terms_data)
     : origin_task_runner(base::SequencedTaskRunnerHandle::Get()),
       input(input),
       prevent_inline_autocomplete(input.prevent_inline_autocomplete()),
@@ -541,13 +543,16 @@ void HistoryURLProvider::Start(const AutocompleteInput& input,
   TemplateURLService* template_url_service = client()->GetTemplateURLService();
   const TemplateURL* default_search_provider = template_url_service ?
       template_url_service->GetDefaultSearchProvider() : nullptr;
+  const SearchTermsData* search_terms_data =
+      template_url_service ? &template_url_service->search_terms_data()
+                           : nullptr;
 
   // Create the data structure for the autocomplete passes.  We'll save this off
   // onto the |params_| member for later deletion below if we need to run pass
   // 2.
   std::unique_ptr<HistoryURLProviderParams> params(new HistoryURLProviderParams(
       fixed_up_input, trim_http, what_you_typed_match, default_search_provider,
-      client()->GetSearchTermsData()));
+      search_terms_data));
   // Note that we use the non-fixed-up input here, since fixup may strip
   // trailing whitespace.
   params->prevent_inline_autocomplete = PreventInlineAutocomplete(input);

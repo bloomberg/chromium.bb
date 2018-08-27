@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
-#include "ios/chrome/browser/search_engines/ui_thread_search_terms_data.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -42,7 +41,6 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
       bool create_if_necessary) const override;
   DocumentSuggestionsService* GetDocumentSuggestionsService(
       bool create_if_necessary) const override;
-  const SearchTermsData& GetSearchTermsData() const override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
   std::unique_ptr<KeywordExtensionsDelegate> GetKeywordExtensionsDelegate(
@@ -77,7 +75,6 @@ class AutocompleteProviderClientImpl : public AutocompleteProviderClient {
  private:
   ios::ChromeBrowserState* browser_state_;
   AutocompleteSchemeClassifierImpl scheme_classifier_;
-  ios::UIThreadSearchTermsData search_terms_data_;
   std::unique_ptr<unified_consent::UrlKeyedDataCollectionConsentHelper>
       url_consent_helper_;
 

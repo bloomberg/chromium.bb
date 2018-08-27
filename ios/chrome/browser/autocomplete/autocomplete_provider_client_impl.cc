@@ -32,7 +32,6 @@
 AutocompleteProviderClientImpl::AutocompleteProviderClientImpl(
     ios::ChromeBrowserState* browser_state)
     : browser_state_(browser_state),
-      search_terms_data_(browser_state_),
       url_consent_helper_(unified_consent::UrlKeyedDataCollectionConsentHelper::
                               NewPersonalizedDataCollectionConsentHelper(
                                   IsUnifiedConsentEnabled(),
@@ -103,11 +102,6 @@ DocumentSuggestionsService*
 AutocompleteProviderClientImpl::GetDocumentSuggestionsService(
     bool create_if_necessary) const {
   return nullptr;
-}
-
-const SearchTermsData& AutocompleteProviderClientImpl::GetSearchTermsData()
-    const {
-  return search_terms_data_;
 }
 
 scoped_refptr<ShortcutsBackend>
