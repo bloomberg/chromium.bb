@@ -21,7 +21,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/version.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -62,7 +62,7 @@ NSString* GetServiceProcessLaunchDSocketKey() {
 
 bool RemoveFromLaunchd() {
   // We're killing a file.
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
   return Launchd::GetInstance()->DeletePlist(Launchd::User,
                                              Launchd::Agent,
@@ -274,7 +274,7 @@ CFDictionaryRef CreateServiceProcessLaunchdPlist(base::CommandLine* cmd_line,
 // auto launched on the next user login.
 bool ServiceProcessState::AddToAutoRun() {
   // We're creating directories and writing a file.
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   DCHECK(autorun_command_line_.get());
   base::ScopedCFTypeRef<CFStringRef> name(CopyServiceProcessLaunchDName());
   base::ScopedCFTypeRef<CFDictionaryRef> plist(

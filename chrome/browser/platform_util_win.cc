@@ -21,7 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "chrome/browser/platform_util_internal.h"
@@ -37,7 +37,7 @@ namespace platform_util {
 namespace {
 
 void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   base::FilePath dir = full_path.DirName().AsEndingWithSeparator();
   // ParseDisplayName will fail if the directory is "C:", it must be "C:\\".
   if (dir.empty())
@@ -80,7 +80,7 @@ void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
 }
 
 void OpenExternalOnWorkerThread(const GURL& url) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   // Quote the input scheme to be sure that the command does not have
   // parameters unexpected by the external program. This url should already
   // have been escaped.
