@@ -69,7 +69,7 @@ class DownloadOperation {
       const ClientContext& context,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
-      const GetFileCallback& completion_callback);
+      GetFileCallback completion_callback);
 
   // Does the same thing as EnsureFileDownloadedByLocalId for the file
   // specified by |file_path|.
@@ -78,7 +78,7 @@ class DownloadOperation {
       const ClientContext& context,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
-      const GetFileCallback& completion_callback);
+      GetFileCallback completion_callback);
 
  private:
   // Parameters for EnsureFileDownloaded.

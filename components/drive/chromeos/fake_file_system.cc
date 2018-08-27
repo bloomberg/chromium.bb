@@ -121,12 +121,12 @@ void FakeFileSystem::Unpin(const base::FilePath& file_path,
 }
 
 void FakeFileSystem::GetFile(const base::FilePath& file_path,
-                             const GetFileCallback& callback) {
+                             GetFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
 void FakeFileSystem::GetFileForSaving(const base::FilePath& file_path,
-                                      const GetFileCallback& callback) {
+                                      GetFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

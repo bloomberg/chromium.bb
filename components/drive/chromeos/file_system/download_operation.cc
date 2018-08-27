@@ -263,11 +263,11 @@ class DownloadOperation::DownloadParams {
  public:
   DownloadParams(const GetFileContentInitializedCallback initialized_callback,
                  const google_apis::GetContentCallback get_content_callback,
-                 const GetFileCallback completion_callback,
+                 GetFileCallback completion_callback,
                  std::unique_ptr<ResourceEntry> entry)
       : initialized_callback_(initialized_callback),
         get_content_callback_(get_content_callback),
-        completion_callback_(completion_callback),
+        completion_callback_(std::move(completion_callback)),
         entry_(std::move(entry)),
         was_cancelled_(false),
         weak_ptr_factory_(this) {
@@ -284,7 +284,8 @@ class DownloadOperation::DownloadParams {
       initialized_callback_.Run(FILE_ERROR_OK, cache_file_path,
                                 std::make_unique<ResourceEntry>(*entry_));
     }
-    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, std::move(entry_));
+    std::move(completion_callback_)
+        .Run(FILE_ERROR_OK, cache_file_path, std::move(entry_));
   }
 
   void OnStartDownloading(const base::Closure& cancel_download_closure) {
@@ -298,14 +299,15 @@ class DownloadOperation::DownloadParams {
                               std::make_unique<ResourceEntry>(*entry_));
   }
 
-  void OnError(FileError error) const {
-    completion_callback_.Run(error, base::FilePath(),
-                             std::unique_ptr<ResourceEntry>());
+  void OnError(FileError error) {
+    std::move(completion_callback_)
+        .Run(error, base::FilePath(), std::unique_ptr<ResourceEntry>());
   }
 
   void OnDownloadCompleted(const base::FilePath& cache_file_path,
-                           std::unique_ptr<ResourceEntry> entry) const {
-    completion_callback_.Run(FILE_ERROR_OK, cache_file_path, std::move(entry));
+                           std::unique_ptr<ResourceEntry> entry) {
+    std::move(completion_callback_)
+        .Run(FILE_ERROR_OK, cache_file_path, std::move(entry));
   }
 
   const google_apis::GetContentCallback& get_content_callback() const {
@@ -325,7 +327,7 @@ class DownloadOperation::DownloadParams {
 
   const GetFileContentInitializedCallback initialized_callback_;
   const google_apis::GetContentCallback get_content_callback_;
-  const GetFileCallback completion_callback_;
+  GetFileCallback completion_callback_;
 
   std::unique_ptr<ResourceEntry> entry_;
   base::Closure cancel_download_closure_;
@@ -358,7 +360,7 @@ base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
     const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
-    const GetFileCallback& completion_callback) {
+    GetFileCallback completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!completion_callback.is_null());
 
@@ -370,9 +372,9 @@ base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
   base::FilePath* cache_file_path = new base::FilePath;
   base::FilePath* temp_download_file_path = new base::FilePath;
   ResourceEntry* entry = new ResourceEntry;
-  std::unique_ptr<DownloadParams> download_params(
-      new DownloadParams(initialized_callback, get_content_callback,
-                         completion_callback, base::WrapUnique(entry)));
+  std::unique_ptr<DownloadParams> download_params(new DownloadParams(
+      initialized_callback, get_content_callback,
+      std::move(completion_callback), base::WrapUnique(entry)));
   base::Closure cancel_closure = download_params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
@@ -392,7 +394,7 @@ base::Closure DownloadOperation::EnsureFileDownloadedByPath(
     const ClientContext& context,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
-    const GetFileCallback& completion_callback) {
+    GetFileCallback completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!completion_callback.is_null());
 
@@ -404,9 +406,9 @@ base::Closure DownloadOperation::EnsureFileDownloadedByPath(
   base::FilePath* cache_file_path = new base::FilePath;
   base::FilePath* temp_download_file_path = new base::FilePath;
   ResourceEntry* entry = new ResourceEntry;
-  std::unique_ptr<DownloadParams> download_params(
-      new DownloadParams(initialized_callback, get_content_callback,
-                         completion_callback, base::WrapUnique(entry)));
+  std::unique_ptr<DownloadParams> download_params(new DownloadParams(
+      initialized_callback, get_content_callback,
+      std::move(completion_callback), base::WrapUnique(entry)));
   base::Closure cancel_closure = download_params->GetCancelClosure();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,

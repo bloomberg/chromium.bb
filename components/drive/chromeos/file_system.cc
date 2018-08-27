@@ -594,24 +594,23 @@ void FileSystem::FinishUnpin(const FileOperationCallback& callback,
 }
 
 void FileSystem::GetFile(const base::FilePath& file_path,
-                         const GetFileCallback& callback) {
+                         GetFileCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   download_operation_->EnsureFileDownloadedByPath(
-      file_path,
-      ClientContext(USER_INITIATED),
-      GetFileContentInitializedCallback(),
-      google_apis::GetContentCallback(),
-      callback);
+      file_path, ClientContext(USER_INITIATED),
+      GetFileContentInitializedCallback(), google_apis::GetContentCallback(),
+      std::move(callback));
 }
 
 void FileSystem::GetFileForSaving(const base::FilePath& file_path,
-                                  const GetFileCallback& callback) {
+                                  GetFileCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
-  get_file_for_saving_operation_->GetFileForSaving(file_path, callback);
+  get_file_for_saving_operation_->GetFileForSaving(file_path,
+                                                   std::move(callback));
 }
 
 base::Closure FileSystem::GetFileContent(
