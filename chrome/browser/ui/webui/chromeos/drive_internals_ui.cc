@@ -797,9 +797,8 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {
 
   debug_info_collector->GetResourceEntry(
       root_path,
-      base::Bind(&DriveInternalsWebUIHandler::OnGetResourceEntryByPath,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 root_path));
+      base::BindOnce(&DriveInternalsWebUIHandler::OnGetResourceEntryByPath,
+                     weak_ptr_factory_.GetWeakPtr(), root_path));
 
   debug_info_collector->ReadDirectory(
       root_path,

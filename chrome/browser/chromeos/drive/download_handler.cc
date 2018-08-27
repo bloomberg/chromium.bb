@@ -252,8 +252,7 @@ void DownloadHandler::CheckForFileExistence(
     content::CheckForFileExistenceCallback callback) {
   file_system_->GetResourceEntry(
       util::ExtractDrivePath(GetTargetPath(download)),
-      base::Bind(&ContinueCheckingForFileExistence,
-                 base::Passed(std::move(callback))));
+      base::BindOnce(&ContinueCheckingForFileExistence, std::move(callback)));
 }
 
 void DownloadHandler::SetFreeDiskSpaceDelayForTesting(

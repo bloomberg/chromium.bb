@@ -94,7 +94,7 @@ class FakeFileSystem : public FileSystemInterface {
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) override;
   void GetResourceEntry(const base::FilePath& file_path,
-                        const GetResourceEntryCallback& callback) override;
+                        GetResourceEntryCallback callback) override;
   void ReadDirectory(const base::FilePath& file_path,
                      ReadDirectoryEntriesCallback entries_callback,
                      const FileOperationCallback& completion_callback) override;
@@ -172,17 +172,17 @@ class FakeFileSystem : public FileSystemInterface {
   // files sharing the same name under a directory, the second (or later)
   // file cannot be taken with the suffixed name.
   void GetResourceEntryAfterGetAboutResource(
-      const GetResourceEntryCallback& callback,
+      GetResourceEntryCallback callback,
       google_apis::DriveApiErrorCode gdata_error,
       std::unique_ptr<google_apis::AboutResource> about_resource);
   void GetResourceEntryAfterGetParentEntryInfo(
       const base::FilePath& base_name,
-      const GetResourceEntryCallback& callback,
+      GetResourceEntryCallback callback,
       FileError error,
       std::unique_ptr<ResourceEntry> parent_entry);
   void GetResourceEntryAfterGetFileList(
       const base::FilePath& base_name,
-      const GetResourceEntryCallback& callback,
+      GetResourceEntryCallback callback,
       google_apis::DriveApiErrorCode gdata_error,
       std::unique_ptr<google_apis::FileList> file_list);
 

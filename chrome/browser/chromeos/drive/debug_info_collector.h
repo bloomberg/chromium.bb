@@ -35,7 +35,7 @@ class DebugInfoCollector {
   // Finds a locally stored entry (a file or a directory) by |file_path|.
   // |callback| must not be null.
   void GetResourceEntry(const base::FilePath& file_path,
-                        const GetResourceEntryCallback& callback);
+                        GetResourceEntryCallback callback);
 
   // Finds and reads a directory by |file_path|.
   // |callback| must not be null.

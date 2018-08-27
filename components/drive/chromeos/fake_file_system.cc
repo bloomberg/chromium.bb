@@ -152,17 +152,15 @@ base::Closure FakeFileSystem::GetFileContent(
   return base::DoNothing();
 }
 
-void FakeFileSystem::GetResourceEntry(
-    const base::FilePath& file_path,
-    const GetResourceEntryCallback& callback) {
+void FakeFileSystem::GetResourceEntry(const base::FilePath& file_path,
+                                      GetResourceEntryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (file_path == util::GetDriveMyDriveRootPath()) {
     // Specialized for the root entry.
-    drive_service_->GetAboutResource(
-        base::Bind(
-            &FakeFileSystem::GetResourceEntryAfterGetAboutResource,
-            weak_ptr_factory_.GetWeakPtr(), callback));
+    drive_service_->GetAboutResource(base::Bind(
+        &FakeFileSystem::GetResourceEntryAfterGetAboutResource,
+        weak_ptr_factory_.GetWeakPtr(), base::Passed(std::move(callback))));
     return;
   }
 
@@ -170,9 +168,9 @@ void FakeFileSystem::GetResourceEntry(
   DCHECK(util::GetDriveMyDriveRootPath().IsParent(file_path));
   GetResourceEntry(
       file_path.DirName(),
-      base::Bind(
-          &FakeFileSystem::GetResourceEntryAfterGetParentEntryInfo,
-          weak_ptr_factory_.GetWeakPtr(), file_path.BaseName(), callback));
+      base::BindOnce(&FakeFileSystem::GetResourceEntryAfterGetParentEntryInfo,
+                     weak_ptr_factory_.GetWeakPtr(), file_path.BaseName(),
+                     std::move(callback)));
 }
 
 void FakeFileSystem::ReadDirectory(
@@ -358,14 +356,14 @@ void FakeFileSystem::GetFileContentAfterDownloadFile(
 
 // Implementation of GetResourceEntry.
 void FakeFileSystem::GetResourceEntryAfterGetAboutResource(
-    const GetResourceEntryCallback& callback,
+    GetResourceEntryCallback callback,
     google_apis::DriveApiErrorCode gdata_error,
     std::unique_ptr<google_apis::AboutResource> about_resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, std::unique_ptr<ResourceEntry>());
+    std::move(callback).Run(error, std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -374,39 +372,39 @@ void FakeFileSystem::GetResourceEntryAfterGetAboutResource(
   root->mutable_file_info()->set_is_directory(true);
   root->set_resource_id(about_resource->root_folder_id());
   root->set_title(util::kDriveMyDriveRootDirName);
-  callback.Run(error, std::move(root));
+  std::move(callback).Run(error, std::move(root));
 }
 
 void FakeFileSystem::GetResourceEntryAfterGetParentEntryInfo(
     const base::FilePath& base_name,
-    const GetResourceEntryCallback& callback,
+    GetResourceEntryCallback callback,
     FileError error,
     std::unique_ptr<ResourceEntry> parent_entry) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, std::unique_ptr<ResourceEntry>());
+    std::move(callback).Run(error, std::unique_ptr<ResourceEntry>());
     return;
   }
 
   DCHECK(parent_entry);
   drive_service_->GetFileListInDirectory(
       parent_entry->resource_id(),
-      base::Bind(
-          &FakeFileSystem::GetResourceEntryAfterGetFileList,
-          weak_ptr_factory_.GetWeakPtr(), base_name, callback));
+      base::Bind(&FakeFileSystem::GetResourceEntryAfterGetFileList,
+                 weak_ptr_factory_.GetWeakPtr(), base_name,
+                 base::Passed(std::move(callback))));
 }
 
 void FakeFileSystem::GetResourceEntryAfterGetFileList(
     const base::FilePath& base_name,
-    const GetResourceEntryCallback& callback,
+    GetResourceEntryCallback callback,
     google_apis::DriveApiErrorCode gdata_error,
     std::unique_ptr<google_apis::FileList> file_list) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, std::unique_ptr<ResourceEntry>());
+    std::move(callback).Run(error, std::unique_ptr<ResourceEntry>());
     return;
   }
 
@@ -423,12 +421,13 @@ void FakeFileSystem::GetResourceEntryAfterGetFileList(
 
     if (entry->base_name() == base_name.AsUTF8Unsafe()) {
       // Found the target entry.
-      callback.Run(FILE_ERROR_OK, std::move(entry));
+      std::move(callback).Run(FILE_ERROR_OK, std::move(entry));
       return;
     }
   }
 
-  callback.Run(FILE_ERROR_NOT_FOUND, std::unique_ptr<ResourceEntry>());
+  std::move(callback).Run(FILE_ERROR_NOT_FOUND,
+                          std::unique_ptr<ResourceEntry>());
 }
 
 }  // namespace test_util

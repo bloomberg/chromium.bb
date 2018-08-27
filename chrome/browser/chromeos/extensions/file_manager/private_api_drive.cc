@@ -312,8 +312,8 @@ class SingleEntryPropertiesGetterForDrive {
 
     file_system->GetResourceEntry(
         file_path_,
-        base::Bind(&SingleEntryPropertiesGetterForDrive::OnGetFileInfo,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SingleEntryPropertiesGetterForDrive::OnGetFileInfo,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnGetFileInfo(drive::FileError error,
@@ -367,8 +367,8 @@ class SingleEntryPropertiesGetterForDrive {
 
     file_system->GetResourceEntry(
         file_path,
-        base::Bind(&SingleEntryPropertiesGetterForDrive::OnGetShareInfo,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&SingleEntryPropertiesGetterForDrive::OnGetShareInfo,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   void OnGetShareInfo(drive::FileError error,
@@ -1465,7 +1465,7 @@ bool FileManagerPrivateInternalGetDownloadUrlFunction::RunAsyncForDrive(
 
   file_system->GetResourceEntry(
       file_path,
-      base::Bind(
+      base::BindOnce(
           &FileManagerPrivateInternalGetDownloadUrlFunction::OnGetResourceEntry,
           this));
   return true;

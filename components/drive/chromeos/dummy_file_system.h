@@ -65,7 +65,7 @@ class DummyFileSystem : public FileSystemInterface {
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) override;
   void GetResourceEntry(const base::FilePath& file_path,
-                        const GetResourceEntryCallback& callback) override {}
+                        GetResourceEntryCallback callback) override {}
   void ReadDirectory(
       const base::FilePath& file_path,
       ReadDirectoryEntriesCallback entries_callback,

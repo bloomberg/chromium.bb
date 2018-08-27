@@ -220,8 +220,7 @@ void GetFileInfo(const base::FilePath& file_path,
                  FileSystemInterface* file_system) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   file_system->GetResourceEntry(
-      file_path,
-      base::Bind(&RunGetFileInfoCallback, callback));
+      file_path, base::BindOnce(&RunGetFileInfoCallback, callback));
 }
 
 void Copy(const base::FilePath& src_file_path,

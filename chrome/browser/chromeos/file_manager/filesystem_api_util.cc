@@ -176,7 +176,7 @@ void GetNonNativeLocalPathMimeType(
 
     file_system->GetResourceEntry(
         drive::util::ExtractDrivePath(path),
-        base::Bind(&GetMimeTypeAfterGetResourceEntryForDrive, callback));
+        base::BindOnce(&GetMimeTypeAfterGetResourceEntryForDrive, callback));
     return;
   }
 

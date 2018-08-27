@@ -65,8 +65,8 @@ void GetRedirectURLForContentsOnUIThread(
 
   file_system->GetResourceEntry(
       file_path,
-      base::Bind(&GetRedirectURLForContentsOnUIThreadWithResourceEntry,
-                 callback));
+      base::BindOnce(&GetRedirectURLForContentsOnUIThreadWithResourceEntry,
+                     callback));
 }
 
 }  // namespace
