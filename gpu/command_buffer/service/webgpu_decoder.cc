@@ -38,10 +38,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   }
   void Destroy(bool have_context) override {}
   bool MakeCurrent() override { return true; }
-  gl::GLContext* GetGLContext() override {
-    NOTREACHED();
-    return nullptr;
-  }
+  gl::GLContext* GetGLContext() override { return nullptr; }
   gl::GLSurface* GetGLSurface() override {
     NOTREACHED();
     return nullptr;
