@@ -93,11 +93,6 @@ class LoggingCanvas : public InterceptingCanvasBase {
                       const SkScalar xpos[],
                       SkScalar const_y,
                       const SkPaint&) override;
-  void onDrawTextOnPath(const void* text,
-                        size_t byte_length,
-                        const SkPath&,
-                        const SkMatrix*,
-                        const SkPaint&) override;
   void onDrawTextBlob(const SkTextBlob*,
                       SkScalar x,
                       SkScalar y,
