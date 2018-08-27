@@ -8,6 +8,7 @@
 #include <utility>
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
@@ -25,6 +26,7 @@
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
@@ -211,6 +213,21 @@ class Cache::BarrierCallbackForPut final
                 if (message) {
                   context->AddConsoleMessage(ConsoleMessage::Create(
                       kJSMessageSource, kWarningMessageLevel, message));
+
+                  // If the message indicates there were duplicate requests in
+                  // the batch argument list, but the operation succeeded
+                  // anyway, then record the UseCounter event.  We use string
+                  // matching on the message to avoid temporarily plumbing
+                  // additional meta data through the operation result.
+                  // TODO(crbug.com/877737): Remove this once the
+                  // cache.addAll() duplicate rejection finally ships.
+                  if (error->message.Contains(
+                          blink::cache_storage::
+                              kDuplicateOperationBaseMessage)) {
+                    UseCounter::Count(
+                        context,
+                        WebFeature::kCacheStorageAddAllSuccessWithDuplicate);
+                  }
                 }
               } else {
                 resolver->Reject(

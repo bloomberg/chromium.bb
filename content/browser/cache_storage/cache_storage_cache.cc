@@ -50,6 +50,7 @@
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/blob_storage/blob_handle.h"
 #include "storage/common/storage_histograms.h"
+#include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
 
 using blink::mojom::CacheStorageError;
@@ -649,8 +650,14 @@ void CacheStorageCache::BatchOperation(
     std::string url_list_string = base::JoinString(duplicate_url_list, ", ");
 
     // Place the duplicate list into an error message.
-    message.emplace(
-        base::StringPrintf("duplicate requests (%s)", url_list_string.c_str()));
+    // NOTE: This must use kDuplicateOperationsBaseMessage in the string so
+    // that the renderer can identify successes with duplicates and log the
+    // appropriate use counter.
+    // TODO(crbug.com/877737): Remove this note once the cache.addAll()
+    // duplicate rejection finally ships.
+    message.emplace(base::StringPrintf(
+        "%s (%s)", blink::cache_storage::kDuplicateOperationBaseMessage,
+        url_list_string.c_str()));
 
     // Depending on the feature flag, we may treat this as an error or allow
     // the batch operation to continue.

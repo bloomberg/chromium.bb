@@ -19861,6 +19861,7 @@ Called by update_net_error_codes.py.-->
   <int value="2531" label="InterventionReport"/>
   <int value="2532" label="V8WasmSharedMemory"/>
   <int value="2533" label="V8WasmThreadOpcodes"/>
+  <int value="2534" label="CacheStorageAddAllSuccessWithDuplicate"/>
 </enum>
 
 <enum name="FeedbackSource">
