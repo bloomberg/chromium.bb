@@ -38,8 +38,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "json_schema_validator_unittest.cc",
-    "json_schema_validator_unittest_base.cc",
-    "json_schema_validator_unittest_base.h",
   ]
   deps = [
     ":json_schema",

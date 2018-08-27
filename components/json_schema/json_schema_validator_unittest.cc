@@ -6,51 +6,13 @@
 
 #include "base/values.h"
 #include "components/json_schema/json_schema_validator.h"
-#include "components/json_schema/json_schema_validator_unittest_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class JSONSchemaValidatorCPPTest : public JSONSchemaValidatorTestBase {
+class JSONSchemaValidatorCPPTest : public testing::Test {
  public:
   JSONSchemaValidatorCPPTest() {}
 
- protected:
-  void ExpectValid(const std::string& test_source,
-                   base::Value* instance,
-                   base::DictionaryValue* schema,
-                   base::ListValue* types) override {
-    JSONSchemaValidator validator(schema, types);
-    if (validator.Validate(instance))
-      return;
-
-    for (size_t i = 0; i < validator.errors().size(); ++i) {
-      ADD_FAILURE() << test_source << ": "
-                    << validator.errors()[i].path << ": "
-                    << validator.errors()[i].message;
-    }
-  }
-
-  void ExpectNotValid(const std::string& test_source,
-                      base::Value* instance,
-                      base::DictionaryValue* schema,
-                      base::ListValue* types,
-                      const std::string& expected_error_path,
-                      const std::string& expected_error_message) override {
-    JSONSchemaValidator validator(schema, types);
-    if (validator.Validate(instance)) {
-      ADD_FAILURE() << test_source;
-      return;
-    }
-
-    ASSERT_EQ(1u, validator.errors().size()) << test_source;
-    EXPECT_EQ(expected_error_path, validator.errors()[0].path) << test_source;
-    EXPECT_EQ(expected_error_message, validator.errors()[0].message)
-        << test_source;
-  }
 };
-
-TEST_F(JSONSchemaValidatorCPPTest, Test) {
-  RunTests();
-}
 
 TEST(JSONSchemaValidator, IsValidSchema) {
   std::string error;
