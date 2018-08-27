@@ -2381,43 +2381,11 @@ void RenderWidgetHostViewAura::OnImeCancelComposition(
 void RenderWidgetHostViewAura::OnSelectionBoundsChanged(
     TextInputManager* text_input_manager,
     RenderWidgetHostViewBase* updated_view) {
+  // Note: accessibility caret move events are no longer fired directly here,
+  // because they were redundant with the events fired by the top level window
+  // by HWNDMessageHandler::OnCaretBoundsChanged().
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
-
-#if defined(OS_WIN)
-  RenderWidgetHostViewBase* focused_view = GetFocusedViewForTextSelection();
-  if (!focused_view || !GetTextInputManager()->IsRegistered(focused_view))
-    return;
-
-  // Some assistive software need to track the location of the caret.
-  if (!GetRenderWidgetHost() || !legacy_render_widget_host_HWND_)
-    return;
-
-  // Not using |GetCaretBounds| because it includes the whole of the selection,
-  // not just the focus.
-  const TextInputManager::SelectionRegion* region =
-      GetTextInputManager()->GetSelectionRegion(focused_view);
-  if (!region)
-    return;
-
-  // Do not notify of change unless selection or caret is visible.
-  if (region->anchor == region->focus) {
-    // If selection is collapsed, check to see if user is editing (caret will be
-    // visible).
-    const TextInputState* state = GetTextInputManager()->GetTextInputState();
-    if (!state || (state->type == ui::TEXT_INPUT_TYPE_NONE &&
-                   state->mode == ui::TEXT_INPUT_MODE_NONE))
-      return;
-  }
-
-  const gfx::Rect caret_rect = ConvertRectToScreen(gfx::Rect(
-      region->focus.edge_top_rounded().x(),
-      region->focus.edge_top_rounded().y(), 1, region->focus.GetHeight()));
-  gfx::Rect dip_caret_rect = display::win::ScreenWin::DIPToScreenRect(
-      legacy_render_widget_host_HWND_->hwnd(), caret_rect);
-  dip_caret_rect.set_width(1);  // Collapse any selection.
-  legacy_render_widget_host_HWND_->MoveCaretTo(dip_caret_rect);
-#endif  // defined(OS_WIN)
 }
 
 void RenderWidgetHostViewAura::OnTextSelectionChanged(
