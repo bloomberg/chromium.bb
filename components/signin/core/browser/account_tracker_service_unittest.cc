@@ -983,170 +983,169 @@ TEST_F(AccountTrackerServiceTest, LegacyDottedAccountIds) {
 }
 
 TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
-  if (account_tracker()->GetMigrationState() !=
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
-    AccountTrackerService tracker;
-    TestingPrefServiceSimple pref;
-    AccountInfo account_info;
+  if (!AccountTrackerService::IsMigrationSupported())
+    return;
 
-    std::string email_alpha = AccountIdToEmail("alpha");
-    std::string gaia_alpha = AccountIdToGaiaId("alpha");
-    std::string email_beta = AccountIdToEmail("beta");
-    std::string gaia_beta = AccountIdToGaiaId("beta");
+  AccountTrackerService tracker;
+  TestingPrefServiceSimple pref;
+  AccountInfo account_info;
 
-    AccountTrackerService::RegisterPrefs(pref.registry());
-    ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
+  std::string email_alpha = AccountIdToEmail("alpha");
+  std::string gaia_alpha = AccountIdToGaiaId("alpha");
+  std::string email_beta = AccountIdToEmail("beta");
+  std::string gaia_beta = AccountIdToGaiaId("beta");
 
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
-    update->Append(std::move(dict));
+  AccountTrackerService::RegisterPrefs(pref.registry());
+  ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
-    dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
-    dict->SetString("email", base::UTF8ToUTF16(email_beta));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
-    update->Append(std::move(dict));
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
+  dict->SetString("email", base::UTF8ToUTF16(email_alpha));
+  dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+  update->Append(std::move(dict));
 
-    tracker.Initialize(&pref, base::FilePath());
+  dict.reset(new base::DictionaryValue());
+  dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
+  dict->SetString("email", base::UTF8ToUTF16(email_beta));
+  dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
+  update->Append(std::move(dict));
 
-    ASSERT_EQ(tracker.GetMigrationState(),
-              AccountTrackerService::MIGRATION_IN_PROGRESS);
+  tracker.Initialize(&pref, base::FilePath());
 
-    account_info = tracker.GetAccountInfo(gaia_alpha);
-    ASSERT_EQ(account_info.account_id, gaia_alpha);
-    ASSERT_EQ(account_info.gaia, gaia_alpha);
-    ASSERT_EQ(account_info.email, email_alpha);
+  ASSERT_EQ(tracker.GetMigrationState(),
+            AccountTrackerService::MIGRATION_IN_PROGRESS);
 
-    account_info = tracker.GetAccountInfo(gaia_beta);
-    ASSERT_EQ(account_info.account_id, gaia_beta);
-    ASSERT_EQ(account_info.gaia, gaia_beta);
-    ASSERT_EQ(account_info.email, email_beta);
+  account_info = tracker.GetAccountInfo(gaia_alpha);
+  ASSERT_EQ(account_info.account_id, gaia_alpha);
+  ASSERT_EQ(account_info.gaia, gaia_alpha);
+  ASSERT_EQ(account_info.email, email_alpha);
 
-    std::vector<AccountInfo> accounts = tracker.GetAccounts();
-    ASSERT_EQ(2u, accounts.size());
-  }
+  account_info = tracker.GetAccountInfo(gaia_beta);
+  ASSERT_EQ(account_info.account_id, gaia_beta);
+  ASSERT_EQ(account_info.gaia, gaia_beta);
+  ASSERT_EQ(account_info.email, email_beta);
+
+  std::vector<AccountInfo> accounts = tracker.GetAccounts();
+  ASSERT_EQ(2u, accounts.size());
 }
 
 TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
-  if ((account_tracker()->GetMigrationState() !=
-       AccountTrackerService::MIGRATION_NOT_STARTED)) {
-    AccountTrackerService tracker;
-    TestingPrefServiceSimple pref;
-    AccountInfo account_info;
+  if (!AccountTrackerService::IsMigrationSupported())
+    return;
 
-    std::string email_alpha = AccountIdToEmail("alpha");
-    std::string gaia_alpha = AccountIdToGaiaId("alpha");
-    std::string email_beta = AccountIdToEmail("beta");
+  AccountTrackerService tracker;
+  TestingPrefServiceSimple pref;
+  AccountInfo account_info;
 
-    AccountTrackerService::RegisterPrefs(pref.registry());
-    ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
+  std::string email_alpha = AccountIdToEmail("alpha");
+  std::string gaia_alpha = AccountIdToGaiaId("alpha");
+  std::string email_beta = AccountIdToEmail("beta");
 
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
-    update->Append(std::move(dict));
+  AccountTrackerService::RegisterPrefs(pref.registry());
+  ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
-    dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
-    dict->SetString("email", base::UTF8ToUTF16(email_beta));
-    dict->SetString("gaia", base::UTF8ToUTF16(std::string()));
-    update->Append(std::move(dict));
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
+  dict->SetString("email", base::UTF8ToUTF16(email_alpha));
+  dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+  update->Append(std::move(dict));
 
-    tracker.Initialize(&pref, base::FilePath());
+  dict.reset(new base::DictionaryValue());
+  dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
+  dict->SetString("email", base::UTF8ToUTF16(email_beta));
+  dict->SetString("gaia", base::UTF8ToUTF16(std::string()));
+  update->Append(std::move(dict));
 
-    ASSERT_EQ(tracker.GetMigrationState(),
-              AccountTrackerService::MIGRATION_NOT_STARTED);
+  tracker.Initialize(&pref, base::FilePath());
 
-    account_info = tracker.GetAccountInfo(email_alpha);
-    ASSERT_EQ(account_info.account_id, email_alpha);
-    ASSERT_EQ(account_info.gaia, gaia_alpha);
-    ASSERT_EQ(account_info.email, email_alpha);
+  ASSERT_EQ(tracker.GetMigrationState(),
+            AccountTrackerService::MIGRATION_NOT_STARTED);
 
-    account_info = tracker.GetAccountInfo(email_beta);
-    ASSERT_EQ(account_info.account_id, email_beta);
-    ASSERT_EQ(account_info.email, email_beta);
+  account_info = tracker.GetAccountInfo(email_alpha);
+  ASSERT_EQ(account_info.account_id, email_alpha);
+  ASSERT_EQ(account_info.gaia, gaia_alpha);
+  ASSERT_EQ(account_info.email, email_alpha);
 
-    std::vector<AccountInfo> accounts = tracker.GetAccounts();
-    ASSERT_EQ(2u, accounts.size());
-  }
+  account_info = tracker.GetAccountInfo(email_beta);
+  ASSERT_EQ(account_info.account_id, email_beta);
+  ASSERT_EQ(account_info.email, email_beta);
+
+  std::vector<AccountInfo> accounts = tracker.GetAccounts();
+  ASSERT_EQ(2u, accounts.size());
 }
 
 TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
-  if (account_tracker()->GetMigrationState() !=
-      AccountTrackerService::MIGRATION_NOT_STARTED) {
-    AccountTrackerService tracker;
-    TestingPrefServiceSimple pref;
-    AccountInfo account_info;
+  if (!AccountTrackerService::IsMigrationSupported())
+    return;
 
-    std::string email_alpha = AccountIdToEmail("alpha");
-    std::string gaia_alpha = AccountIdToGaiaId("alpha");
-    std::string email_beta = AccountIdToEmail("beta");
-    std::string gaia_beta = AccountIdToGaiaId("beta");
+  AccountTrackerService tracker;
+  TestingPrefServiceSimple pref;
+  AccountInfo account_info;
 
-    AccountTrackerService::RegisterPrefs(pref.registry());
-    ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
+  std::string email_alpha = AccountIdToEmail("alpha");
+  std::string gaia_alpha = AccountIdToGaiaId("alpha");
+  std::string email_beta = AccountIdToEmail("beta");
+  std::string gaia_beta = AccountIdToGaiaId("beta");
 
-    std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
-    update->Append(std::move(dict));
+  AccountTrackerService::RegisterPrefs(pref.registry());
+  ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
-    dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
-    dict->SetString("email", base::UTF8ToUTF16(email_beta));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
-    update->Append(std::move(dict));
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->SetString("account_id", base::UTF8ToUTF16(email_alpha));
+  dict->SetString("email", base::UTF8ToUTF16(email_alpha));
+  dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+  update->Append(std::move(dict));
 
-    // Succeed miggrated account.
-    dict.reset(new base::DictionaryValue());
-    dict->SetString("account_id", base::UTF8ToUTF16(gaia_alpha));
-    dict->SetString("email", base::UTF8ToUTF16(email_alpha));
-    dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
-    update->Append(std::move(dict));
+  dict.reset(new base::DictionaryValue());
+  dict->SetString("account_id", base::UTF8ToUTF16(email_beta));
+  dict->SetString("email", base::UTF8ToUTF16(email_beta));
+  dict->SetString("gaia", base::UTF8ToUTF16(gaia_beta));
+  update->Append(std::move(dict));
 
-    tracker.Initialize(&pref, base::FilePath());
+  // Succeed miggrated account.
+  dict.reset(new base::DictionaryValue());
+  dict->SetString("account_id", base::UTF8ToUTF16(gaia_alpha));
+  dict->SetString("email", base::UTF8ToUTF16(email_alpha));
+  dict->SetString("gaia", base::UTF8ToUTF16(gaia_alpha));
+  update->Append(std::move(dict));
 
-    ASSERT_EQ(tracker.GetMigrationState(),
-              AccountTrackerService::MIGRATION_IN_PROGRESS);
+  tracker.Initialize(&pref, base::FilePath());
 
-    account_info = tracker.GetAccountInfo(gaia_alpha);
-    ASSERT_EQ(account_info.account_id, gaia_alpha);
-    ASSERT_EQ(account_info.gaia, gaia_alpha);
-    ASSERT_EQ(account_info.email, email_alpha);
+  ASSERT_EQ(tracker.GetMigrationState(),
+            AccountTrackerService::MIGRATION_IN_PROGRESS);
 
-    account_info = tracker.GetAccountInfo(gaia_beta);
-    ASSERT_EQ(account_info.account_id, gaia_beta);
-    ASSERT_EQ(account_info.gaia, gaia_beta);
-    ASSERT_EQ(account_info.email, email_beta);
+  account_info = tracker.GetAccountInfo(gaia_alpha);
+  ASSERT_EQ(account_info.account_id, gaia_alpha);
+  ASSERT_EQ(account_info.gaia, gaia_alpha);
+  ASSERT_EQ(account_info.email, email_alpha);
 
-    std::vector<AccountInfo> accounts = tracker.GetAccounts();
-    ASSERT_EQ(2u, accounts.size());
+  account_info = tracker.GetAccountInfo(gaia_beta);
+  ASSERT_EQ(account_info.account_id, gaia_beta);
+  ASSERT_EQ(account_info.gaia, gaia_beta);
+  ASSERT_EQ(account_info.email, email_beta);
 
-    tracker.SetMigrationDone();
-    tracker.Shutdown();
-    tracker.Initialize(&pref, base::FilePath());
+  std::vector<AccountInfo> accounts = tracker.GetAccounts();
+  ASSERT_EQ(2u, accounts.size());
 
-    ASSERT_EQ(tracker.GetMigrationState(),
-              AccountTrackerService::MIGRATION_DONE);
+  tracker.SetMigrationDone();
+  tracker.Shutdown();
+  tracker.Initialize(&pref, base::FilePath());
 
-    account_info = tracker.GetAccountInfo(gaia_alpha);
-    ASSERT_EQ(account_info.account_id, gaia_alpha);
-    ASSERT_EQ(account_info.gaia, gaia_alpha);
-    ASSERT_EQ(account_info.email, email_alpha);
+  ASSERT_EQ(tracker.GetMigrationState(), AccountTrackerService::MIGRATION_DONE);
 
-    account_info = tracker.GetAccountInfo(gaia_beta);
-    ASSERT_EQ(account_info.account_id, gaia_beta);
-    ASSERT_EQ(account_info.gaia, gaia_beta);
-    ASSERT_EQ(account_info.email, email_beta);
+  account_info = tracker.GetAccountInfo(gaia_alpha);
+  ASSERT_EQ(account_info.account_id, gaia_alpha);
+  ASSERT_EQ(account_info.gaia, gaia_alpha);
+  ASSERT_EQ(account_info.email, email_alpha);
 
-    accounts.clear();
-    accounts = tracker.GetAccounts();
-    ASSERT_EQ(2u, accounts.size());
-  }
+  account_info = tracker.GetAccountInfo(gaia_beta);
+  ASSERT_EQ(account_info.account_id, gaia_beta);
+  ASSERT_EQ(account_info.gaia, gaia_beta);
+  ASSERT_EQ(account_info.email, email_beta);
+
+  accounts.clear();
+  accounts = tracker.GetAccounts();
+  ASSERT_EQ(2u, accounts.size());
 }
 
 TEST_F(AccountTrackerServiceTest, ChildAccountBasic) {

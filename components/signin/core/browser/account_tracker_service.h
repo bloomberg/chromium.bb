@@ -129,6 +129,10 @@ class AccountTrackerService : public KeyedService {
 
   void RemoveAccount(const std::string& account_id);
 
+  // Is migration of the account id from normalized email to gaia id supported
+  // on the current platform?
+  static bool IsMigrationSupported();
+
   AccountIdMigrationState GetMigrationState() const;
   void SetMigrationDone();
   static AccountIdMigrationState GetMigrationState(
