@@ -27,6 +27,23 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
+namespace {
+
+void CountRenderProcessHosts(size_t* initialized_and_not_dead, size_t* all) {
+  *initialized_and_not_dead = *all = 0;
+
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (auto iter = content::RenderProcessHost::AllHostsIterator();
+       !iter.IsAtEnd(); iter.Advance()) {
+    content::RenderProcessHost& render_process_host = *iter.GetCurrentValue();
+    ++*all;
+    if (render_process_host.IsInitializedAndNotDead())
+      ++*initialized_and_not_dead;
+  }
+}
+
+}  // namespace
+
 MetricsMemoryDetails::MetricsMemoryDetails(const base::Closure& callback)
     : callback_(callback) {}
 
@@ -163,6 +180,13 @@ void MetricsMemoryDetails::UpdateHistograms() {
                            static_cast<int>(browser.processes.size()));
   UMA_HISTOGRAM_COUNTS_100("Memory.ExtensionProcessCount", extension_count);
   UMA_HISTOGRAM_COUNTS_100("Memory.RendererProcessCount", renderer_count);
+
+  size_t initialized_and_not_dead_rphs, all_rphs;
+  CountRenderProcessHosts(&initialized_and_not_dead_rphs, &all_rphs);
+  UMA_HISTOGRAM_COUNTS_100("Memory.RenderProcessHost.Count.All", all_rphs);
+  UMA_HISTOGRAM_COUNTS_100(
+      "Memory.RenderProcessHost.Count.InitializedAndNotDead",
+      initialized_and_not_dead_rphs);
 
   leveldb_chrome::UpdateHistograms();
 }
