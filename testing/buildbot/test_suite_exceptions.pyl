@@ -1029,18 +1029,6 @@
       },
     },
   },
-  'surface_sync_content_browsertests': {
-    'remove_from': [
-      # TODO(crbug.com/877280): Add it back when we have the capacity.
-      'android-marshmallow-arm64-rel',
-    ],
-    'modifications': {
-      # chromium.android
-      'android-kitkat-arm-rel': {
-        'experiment_percentage': 100,
-      },
-    },
-  },
   'sync_integration_tests': {
     'modifications': {
       'Win7 Tests (dbg)(1)': {

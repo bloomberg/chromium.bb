@@ -2214,18 +2214,6 @@
     },
   },
 
-  'surface_sync_gtests': {
-     'surface_sync_content_browsertests': {
-      'args': [
-        '--enable-surface-synchronization',
-      ],
-      'android_swarming': {
-        'shards': 9,
-      },
-      'test': 'content_browsertests',
-    },
-  },
-
   'system_webview_shell_instrumentation_tests': {
     'system_webview_shell_layout_test_apk': {},
   },
@@ -2430,7 +2418,6 @@
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'linux_flavor_specific_chromium_gtests',
-    'surface_sync_gtests',
     'vr_platform_specific_chromium_gtests',
   ],
 
@@ -2826,7 +2813,6 @@
 
   'mojo_android_gtests': [
     'network_service_android_gtests',
-    'surface_sync_gtests',
     'viz_gtests',
   ],
 
