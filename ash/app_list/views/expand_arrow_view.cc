@@ -177,6 +177,13 @@ void ExpandArrowView::PaintButtonContents(gfx::Canvas* canvas) {
     canvas->DrawCircle(circle_center, pulse_radius_, pulse_flags);
   }
 
+  // Add a clip path so that arrow will only be shown within the circular
+  // highlight area.
+  gfx::Path arrow_mask_path;
+  arrow_mask_path.addCircle(circle_center.x(), circle_center.y(),
+                            kCircleRadius);
+  canvas->ClipPath(arrow_mask_path, true);
+
   // Draw an arrow. (It becomes a horizontal line in fullscreen state.)
   for (auto& point : arrow_points)
     point.Offset(arrow_origin.x(), arrow_origin.y());
