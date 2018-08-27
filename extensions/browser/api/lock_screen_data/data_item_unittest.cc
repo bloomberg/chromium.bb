@@ -114,7 +114,7 @@ class DataItemTest : public testing::Test {
 
   std::string GenerateKey(const std::string& password) {
     std::unique_ptr<crypto::SymmetricKey> key =
-        crypto::SymmetricKey::DeriveKeyFromPassword(
+        crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
             crypto::SymmetricKey::AES, password, "salt", 1000, 256);
     if (!key) {
       ADD_FAILURE() << "Failed to create symmetric key";

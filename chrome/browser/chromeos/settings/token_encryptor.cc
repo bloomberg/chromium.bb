@@ -70,7 +70,7 @@ std::string CryptohomeTokenEncryptor::DecryptWithSystemSalt(
 std::unique_ptr<crypto::SymmetricKey> CryptohomeTokenEncryptor::PassphraseToKey(
     const std::string& passphrase,
     const std::string& salt) {
-  return crypto::SymmetricKey::DeriveKeyFromPassword(
+  return crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
       crypto::SymmetricKey::AES, passphrase, salt, 1000, 256);
 }
 

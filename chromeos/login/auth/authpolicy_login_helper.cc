@@ -88,7 +88,7 @@ std::string DoDecrypt(const std::string& encrypted_data,
   const size_t kHmacKeySize = 32;
   const size_t kKeySize = kAesKeySize + kAesIvSize + kHmacKeySize;
   std::unique_ptr<crypto::SymmetricKey> key =
-      crypto::SymmetricKey::DeriveKeyFromPassword(
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::HMAC_SHA1, password, salt, 10000, kKeySize * 8);
   if (!key) {
     LOG(ERROR) << error_msg;

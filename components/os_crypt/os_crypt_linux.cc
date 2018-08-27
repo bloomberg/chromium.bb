@@ -121,7 +121,7 @@ std::unique_ptr<crypto::SymmetricKey> GetEncryptionKey(Version version) {
 
   // Create an encryption key from our password and salt.
   std::unique_ptr<crypto::SymmetricKey> encryption_key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::AES, *password, salt, kEncryptionIterations,
           kDerivedKeySizeInBits));
   DCHECK(encryption_key);

@@ -85,7 +85,7 @@ void Key::Transform(KeyType target_key_type, const std::string& salt) {
     }
     case KEY_TYPE_SALTED_PBKDF2_AES256_1234: {
       std::unique_ptr<crypto::SymmetricKey> key(
-          crypto::SymmetricKey::DeriveKeyFromPassword(
+          crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
               crypto::SymmetricKey::AES, secret_, salt, kNumIterations,
               kKeySizeInBits));
       base::Base64Encode(key->key(), &secret_);

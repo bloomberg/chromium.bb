@@ -87,10 +87,11 @@ crypto::SymmetricKey* GetEncryptionKey() {
 
   // Create an encryption key from our password and salt. The key is
   // intentionally leaked.
-  cached_encryption_key = crypto::SymmetricKey::DeriveKeyFromPassword(
-                              crypto::SymmetricKey::AES, password, salt,
-                              kEncryptionIterations, kDerivedKeySizeInBits)
-                              .release();
+  cached_encryption_key =
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
+          crypto::SymmetricKey::AES, password, salt, kEncryptionIterations,
+          kDerivedKeySizeInBits)
+          .release();
   ANNOTATE_LEAKING_OBJECT_PTR(cached_encryption_key);
   DCHECK(cached_encryption_key);
   return cached_encryption_key;

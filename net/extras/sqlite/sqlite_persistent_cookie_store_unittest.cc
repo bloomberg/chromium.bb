@@ -65,12 +65,12 @@ class CookieCryptor : public CookieCryptoDelegate {
 
 CookieCryptor::CookieCryptor()
     : should_encrypt_(true),
-      key_(
-          crypto::SymmetricKey::DeriveKeyFromPassword(crypto::SymmetricKey::AES,
-                                                      "password",
-                                                      "saltiest",
-                                                      1000,
-                                                      256)) {
+      key_(crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
+          crypto::SymmetricKey::AES,
+          "password",
+          "saltiest",
+          1000,
+          256)) {
   std::string iv("the iv: 16 bytes");
   encryptor_.Init(key_.get(), crypto::Encryptor::CBC, iv);
 }

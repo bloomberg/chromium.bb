@@ -16,7 +16,7 @@
 
 TEST(EncryptorTest, EncryptDecrypt) {
   std::unique_ptr<crypto::SymmetricKey> key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::AES, "password", "saltiest", 1000, 256));
   EXPECT_TRUE(key.get());
 
@@ -40,27 +40,27 @@ TEST(EncryptorTest, EncryptDecrypt) {
 
 TEST(EncryptorTest, DecryptWrongKey) {
   std::unique_ptr<crypto::SymmetricKey> key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::AES, "password", "saltiest", 1000, 256));
   EXPECT_TRUE(key.get());
 
   // A wrong key that can be detected by implementations that validate every
   // byte in the padding.
   std::unique_ptr<crypto::SymmetricKey> wrong_key(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::AES, "wrongword", "sweetest", 1000, 256));
   EXPECT_TRUE(wrong_key.get());
 
   // A wrong key that can't be detected by any implementation.  The password
   // "wrongword;" would also work.
   std::unique_ptr<crypto::SymmetricKey> wrong_key2(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::AES, "wrongword+", "sweetest", 1000, 256));
   EXPECT_TRUE(wrong_key2.get());
 
   // A wrong key that can be detected by all implementations.
   std::unique_ptr<crypto::SymmetricKey> wrong_key3(
-      crypto::SymmetricKey::DeriveKeyFromPassword(
+      crypto::SymmetricKey::DeriveKeyFromPasswordUsingPbkdf2(
           crypto::SymmetricKey::AES, "wrongwordx", "sweetest", 1000, 256));
   EXPECT_TRUE(wrong_key3.get());
 
