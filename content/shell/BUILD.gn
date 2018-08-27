@@ -54,6 +54,19 @@ source_set("layout_test_switches") {
   ]
 }
 
+source_set("layout_test_utils") {
+  testonly = true
+  sources = [
+    "common/layout_test/layout_test_utils.cc",
+    "common/layout_test/layout_test_utils.h",
+  ]
+  deps = [
+    "//cc/paint:paint",
+    "//skia",
+    "//third_party/blink/public:blink_headers",
+  ]
+}
+
 static_library("content_shell_lib") {
   testonly = true
   sources = [
@@ -238,6 +251,7 @@ static_library("content_shell_lib") {
   deps = [
     ":content_shell_packaged_services_manifest_overlay",
     ":layout_test_switches",
+    ":layout_test_utils",
     ":mojo_bindings",
     ":resources",
     "//base",

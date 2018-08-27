@@ -67,6 +67,7 @@
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/layout_test/layout_test_utils.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
@@ -571,7 +572,6 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableDisplayCompositorPixelDump));
     waiting_for_pixel_results_ = true;
-
     auto* rwhv = main_window_->web_contents()->GetRenderWidgetHostView();
     // If we're running in threaded mode, then the frames will be produced via a
     // scheduler elsewhere, all we need to do is to ensure that the surface is
@@ -584,7 +584,7 @@ void BlinkTestController::OnInitiateCaptureDump(bool capture_navigation_history,
       CompositeAllFrames();
     }
 
-    // Enqueue a copy output request.
+    // Enqueue an image copy output request.
     rwhv->CopyFromSurface(
         gfx::Rect(), gfx::Size(),
         base::BindOnce(&BlinkTestController::OnPixelDumpCaptured,
@@ -945,16 +945,7 @@ void BlinkTestController::OnCaptureDumpCompleted(
 
 void BlinkTestController::OnPixelDumpCaptured(const SkBitmap& snapshot) {
   DCHECK(!snapshot.drawsNothing());
-
-  // The snapshot arrives from the GPU process via shared memory. Because MSan
-  // can't track initializedness across processes, we must assure it that the
-  // pixels are in fact initialized.
-  MSAN_UNPOISON(snapshot.getPixels(), snapshot.computeByteSize());
-  base::MD5Digest digest;
-  base::MD5Sum(snapshot.getPixels(), snapshot.computeByteSize(), &digest);
-  actual_pixel_hash_ = base::MD5DigestToBase16(digest);
   pixel_dump_ = snapshot;
-
   waiting_for_pixel_results_ = false;
   ReportResults();
 }
@@ -962,7 +953,6 @@ void BlinkTestController::OnPixelDumpCaptured(const SkBitmap& snapshot) {
 void BlinkTestController::ReportResults() {
   if (waiting_for_pixel_results_ || waiting_for_main_frame_dump_)
     return;
-
   if (main_frame_dump_->audio)
     OnAudioDump(*main_frame_dump_->audio);
   if (main_frame_dump_->layout)
@@ -970,6 +960,20 @@ void BlinkTestController::ReportResults() {
   // If we have local pixels, report that. Otherwise report whatever the pixel
   // dump received from the renderer contains.
   if (pixel_dump_) {
+    // See if we need to draw the selection bounds rect on top of the snapshot.
+    if (!main_frame_dump_->selection_rect.IsEmpty()) {
+      content::layout_test_utils::DrawSelectionRect(
+          *pixel_dump_, main_frame_dump_->selection_rect);
+    }
+    // The snapshot arrives from the GPU process via shared memory. Because MSan
+    // can't track initializedness across processes, we must assure it that the
+    // pixels are in fact initialized.
+    MSAN_UNPOISON(pixel_dump_->getPixels(), pixel_dump_->computeByteSize());
+    base::MD5Digest digest;
+    base::MD5Sum(pixel_dump_->getPixels(), pixel_dump_->computeByteSize(),
+                 &digest);
+    actual_pixel_hash_ = base::MD5DigestToBase16(digest);
+
     OnImageDump(actual_pixel_hash_, *pixel_dump_);
   } else if (!main_frame_dump_->actual_pixel_hash.empty()) {
     OnImageDump(main_frame_dump_->actual_pixel_hash, main_frame_dump_->pixels);
