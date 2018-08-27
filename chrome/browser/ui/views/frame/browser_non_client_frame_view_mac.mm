@@ -91,32 +91,21 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
 
   // Calculate the y offset for the tab strip because in fullscreen mode the tab
   // strip may need to move under the slide down menu bar.
-  CGFloat y_offset = top_inset;
-  if (browser_view()->IsFullscreen()) {
-    CGFloat menu_bar_height =
-        [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
-    CGFloat title_bar_height =
-        NSHeight([NSWindow frameRectForContentRect:NSZeroRect
-                                         styleMask:NSWindowStyleMaskTitled]);
-    CGFloat added_height =
-        [[fullscreen_toolbar_controller_ menubarTracker] menubarFraction] *
-        (menu_bar_height + title_bar_height);
-    y_offset += added_height;
-
-    if (added_height > 0) {
-      // When menubar shows up, we need to update mouse tracking area.
-      NSWindow* window = GetWidget()->GetNativeWindow();
-      NSRect content_bounds = [[window contentView] bounds];
-      // Backing bar tracking area uses native coordinates.
-      CGFloat backing_bar_height = FullscreenBackingBarHeight();
-      NSRect backing_bar_area =
-          NSMakeRect(0, NSMaxY(content_bounds) - backing_bar_height - y_offset,
-                     NSWidth(content_bounds), backing_bar_height + y_offset);
-      [fullscreen_toolbar_controller_ updateToolbarFrame:backing_bar_area];
-    }
+  CGFloat y_offset = TopUIFullscreenYOffset();
+  if (y_offset > 0) {
+    // When menubar shows up, we need to update mouse tracking area.
+    NSWindow* window = GetWidget()->GetNativeWindow();
+    NSRect content_bounds = [[window contentView] bounds];
+    // Backing bar tracking area uses native coordinates.
+    CGFloat tracking_height =
+        FullscreenBackingBarHeight() + top_inset + y_offset;
+    NSRect backing_bar_area =
+        NSMakeRect(0, NSMaxY(content_bounds) - tracking_height,
+                   NSWidth(content_bounds), tracking_height);
+    [fullscreen_toolbar_controller_ updateToolbarFrame:backing_bar_area];
   }
 
-  return y_offset;
+  return y_offset + top_inset;
 }
 
 int BrowserNonClientFrameViewMac::GetAfterTabstripItemWidth() const {
@@ -304,7 +293,8 @@ AvatarButtonStyle BrowserNonClientFrameViewMac::GetAvatarButtonStyle() const {
 
 void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
   gfx::ImageSkia image = GetFrameImage();
-  canvas->TileImageInt(image, 0, 0, width(), image.height());
+  canvas->TileImageInt(image, 0, TopUIFullscreenYOffset(), width(),
+                       image.height());
   gfx::ImageSkia overlay = GetFrameOverlayImage();
   canvas->DrawImageInt(overlay, 0, 0);
 }
@@ -328,4 +318,17 @@ CGFloat BrowserNonClientFrameViewMac::FullscreenBackingBarHeight() const {
   }
 
   return total_height;
+}
+
+int BrowserNonClientFrameViewMac::TopUIFullscreenYOffset() const {
+  if (!browser_view()->IsTabStripVisible() || !browser_view()->IsFullscreen())
+    return 0;
+
+  CGFloat menu_bar_height =
+      [[[NSApplication sharedApplication] mainMenu] menuBarHeight];
+  CGFloat title_bar_height =
+      NSHeight([NSWindow frameRectForContentRect:NSZeroRect
+                                       styleMask:NSWindowStyleMaskTitled]);
+  return [[fullscreen_toolbar_controller_ menubarTracker] menubarFraction] *
+         (menu_bar_height + title_bar_height);
 }
