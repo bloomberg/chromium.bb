@@ -40,16 +40,10 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
   void ResetDecoder(StreamType stream_type) final;
   void DeinitializeDecoder(StreamType stream_type) final;
 
-  void SetCreateDeviceCallbackForTesting(D3D11CreateDeviceCB callback) {
-    create_device_func_ = callback;
-  }
-
  private:
-  // Returns true if the decryption buffers have been initialized.
-  bool IsDecryptionBufferInitialized();
-
-  // Initialize the buffers for decryption.
-  bool InitializeDecryptionBuffer();
+  // Initialize the buffers for decryption from decryption context.
+  bool InitializeDecryptionBuffer(
+      const CdmProxyContext::D3D11DecryptContext& decrypt_context);
 
   // CTR mode decrypts |encrypted| data into |output|. |output| is always
   // cleared. Returns true on success.
@@ -89,10 +83,6 @@ class MEDIA_GPU_EXPORT D3D11Decryptor : public Decryptor {
   // A CPU accessible buffer where the content of |decrypted_buffer_| is copied
   // to.
   ComPtr<ID3D11Buffer> cpu_accessible_buffer_;
-
-  // Can be set in tests via SetCreateDeviceCallbackForTesting().
-  // Is D3D11CreateDevice() when not mocked.
-  D3D11CreateDeviceCB create_device_func_;
 
   base::WeakPtrFactory<D3D11Decryptor> weak_factory_;
 

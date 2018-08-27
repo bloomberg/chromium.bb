@@ -104,9 +104,7 @@ bool IsWholeSampleEncrypted(const DecryptConfig& decrypt_config,
 }  // namespace
 
 D3D11Decryptor::D3D11Decryptor(CdmProxyContext* cdm_proxy_context)
-    : cdm_proxy_context_(cdm_proxy_context),
-      create_device_func_(base::BindRepeating(D3D11CreateDevice)),
-      weak_factory_(this) {
+    : cdm_proxy_context_(cdm_proxy_context), weak_factory_(this) {
   DCHECK(cdm_proxy_context_);
 }
 
@@ -147,7 +145,10 @@ void D3D11Decryptor::Decrypt(StreamType stream_type,
     return;
   }
 
-  if (!IsDecryptionBufferInitialized() && !InitializeDecryptionBuffer()) {
+  // Because DecryptionBlt() implementation checks whether the device, buffers,
+  // and the crypto session are from the same device, the buffers have to be
+  // recreated.
+  if (!InitializeDecryptionBuffer(*context)) {
     decrypt_cb.Run(kError, nullptr);
     return;
   }
@@ -214,30 +215,21 @@ void D3D11Decryptor::DeinitializeDecoder(StreamType stream_type) {
   // nothing to be done here.
 }
 
-bool D3D11Decryptor::IsDecryptionBufferInitialized() {
-  // This must be the last object initialized in InitializeDecryptionBuffer().
-  return cpu_accessible_buffer_;
-}
+bool D3D11Decryptor::InitializeDecryptionBuffer(
+    const CdmProxyContext::D3D11DecryptContext& decrypt_context) {
+  // TODO(crbug.com/877667): Check whether the crypto session's device is the
+  // same as device_, if so there is no reason to recreate buffers.
+  decrypt_context.crypto_session->GetDevice(device_.ReleaseAndGetAddressOf());
+  device_->GetImmediateContext(device_context_.ReleaseAndGetAddressOf());
 
-bool D3D11Decryptor::InitializeDecryptionBuffer() {
-  const D3D_FEATURE_LEVEL feature_levels[] = {D3D_FEATURE_LEVEL_11_1};
-  HRESULT hresult = create_device_func_.Run(
-      nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, feature_levels,
-      base::size(feature_levels), D3D11_SDK_VERSION,
-      device_.ReleaseAndGetAddressOf(), nullptr,
-      device_context_.ReleaseAndGetAddressOf());
-  if (FAILED(hresult)) {
-    DVLOG(2) << "Failed to create D3D11 device: " << hresult;
-    return false;
-  }
-
-  hresult = device_context_.CopyTo(video_context_.ReleaseAndGetAddressOf());
+  HRESULT hresult =
+      device_context_.CopyTo(video_context_.ReleaseAndGetAddressOf());
   if (FAILED(hresult)) {
     DVLOG(2) << "Failed to get video context.";
     return false;
   }
 
-  // The buffer is statging so that the data can be accessed by the CPU and HW.
+  // The buffer is staging so that the data can be accessed by the CPU and HW.
   if (!CreateBuffer(device_.Get(), D3D11_USAGE_STAGING, 0,  // no binding.
                     D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE,
                     encrypted_sample_buffer_.ReleaseAndGetAddressOf())) {
