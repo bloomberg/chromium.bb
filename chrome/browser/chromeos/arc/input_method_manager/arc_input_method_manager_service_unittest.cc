@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/common/pref_names.h"
@@ -307,6 +308,54 @@ TEST_F(ArcInputMethodManagerServiceTest, SwitchImeTo) {
   service()->InputMethodChanged(imm(), nullptr, false /* show_message */);
   ASSERT_EQ(3u, bridge()->switch_ime_to_calls_.size());
   EXPECT_EQ("ime.id.in.arc.container", bridge()->switch_ime_to_calls_[2]);
+}
+
+TEST_F(ArcInputMethodManagerServiceTest, OnImeDisabled) {
+  namespace ceiu = chromeos::extension_ime_util;
+
+  base::test::ScopedFeatureList feature;
+  feature.InitAndEnableFeature(kEnableInputMethodFeature);
+
+  constexpr char kNonArcIme[] = "ime_a";
+  constexpr char kArcImeX[] = "arc_ime_x";
+  constexpr char kArcImeY[] = "arc_ime_y";
+  constexpr char kArcIMEProxyExtensionName[] =
+      "org.chromium.arc.inputmethod.proxy";
+
+  const std::string proxy_ime_extension_id =
+      crx_file::id_util::GenerateId(kArcIMEProxyExtensionName);
+  const std::string arc_ime_x_component =
+      ceiu::GetArcInputMethodID(proxy_ime_extension_id, kArcImeX);
+  const std::string arc_ime_y_component =
+      ceiu::GetArcInputMethodID(proxy_ime_extension_id, kArcImeY);
+
+  // Enable one non-ARC IME, then remove an ARC IME. This usually does not
+  // happen, but confirm that OnImeDisabled() does not do anything bad even
+  // if the IPC is called that way.
+  profile()->GetPrefs()->SetString(prefs::kLanguageEnabledImes, kNonArcIme);
+  service()->OnImeDisabled(kArcImeX);
+  EXPECT_EQ(kNonArcIme,
+            profile()->GetPrefs()->GetString(prefs::kLanguageEnabledImes));
+
+  // Enable two IMEs (one non-ARC and one ARC), remove the ARC IME, and then
+  // confirm the non-ARC one remains.
+  std::string pref_str =
+      base::StringPrintf("%s,%s", kNonArcIme, arc_ime_x_component.c_str());
+  profile()->GetPrefs()->SetString(prefs::kLanguageEnabledImes, pref_str);
+  service()->OnImeDisabled(kArcImeX);
+  EXPECT_EQ(kNonArcIme,
+            profile()->GetPrefs()->GetString(prefs::kLanguageEnabledImes));
+
+  // Enable two ARC IMEs along with one non-ARC one, remove one of two ARC IMEs,
+  // then confirm one non-ARC IME and one ARC IME still remain.
+  pref_str = base::StringPrintf("%s,%s,%s", arc_ime_x_component.c_str(),
+                                kNonArcIme, arc_ime_y_component.c_str());
+  profile()->GetPrefs()->SetString(prefs::kLanguageEnabledImes, pref_str);
+  service()->OnImeDisabled(kArcImeX);
+  pref_str =
+      base::StringPrintf("%s,%s", kNonArcIme, arc_ime_y_component.c_str());
+  EXPECT_EQ(pref_str,
+            profile()->GetPrefs()->GetString(prefs::kLanguageEnabledImes));
 }
 
 TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {

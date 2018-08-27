@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Next MinVersion: 2
+
 module arc.mojom;
 
 // Represents the information of an Android IME.
@@ -23,10 +25,13 @@ struct ImeInfo {
 // In Android container, ArcInputMethodService IME is pre-installed to bridge
 // Chrome OS's IME to Android apps. The bridge is defined in ime.mojom.
 //
-// Next method ID: 2
+// Next method ID: 3
 interface InputMethodManagerHost {
   // Notifies Chrome that active IME in Android is changed.
   OnActiveImeChanged@0(string ime_id);
+
+  // Notifies Chrome of the ID of the IME Android has disabled.
+  [MinVersion=1] OnImeDisabled@2(string ime_id);
 
   // Notifies Chrome of information of installed IMEs in Android.
   // The passed list doesn't contain information of our bridge IME,
