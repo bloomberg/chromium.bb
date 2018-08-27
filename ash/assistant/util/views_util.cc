@@ -66,35 +66,48 @@ class DefaultImageButton : public views::ImageButton {
 
 }  // namespace
 
-views::ImageButton* CreateImageButton(views::ButtonListener* listener,
-                                      const gfx::VectorIcon& icon,
-                                      int size_in_dip,
-                                      int icon_size_in_dip,
-                                      int accessible_name_id,
-                                      SkColor icon_color) {
+views::ImageButton* CreateButton(views::ButtonListener* listener,
+                                 int size_in_dip,
+                                 base::Optional<int> accessible_name_id) {
   constexpr SkColor kInkDropBaseColor = SK_ColorBLACK;
   constexpr float kInkDropVisibleOpacity = 0.06f;
 
   auto* button = new DefaultImageButton(listener);
 
+  if (accessible_name_id.has_value()) {
+    button->SetAccessibleName(
+        l10n_util::GetStringUTF16(accessible_name_id.value()));
+  }
+
   button->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
                             views::ImageButton::ALIGN_MIDDLE);
-
-  button->SetImage(views::Button::STATE_NORMAL,
-                   gfx::CreateVectorIcon(icon, icon_size_in_dip, icon_color));
 
   button->SetInkDropMode(views::Button::InkDropMode::ON);
   button->set_has_ink_drop_action_on_click(true);
   button->set_ink_drop_base_color(kInkDropBaseColor);
   button->set_ink_drop_visible_opacity(kInkDropVisibleOpacity);
 
-  button->SetPreferredSize(gfx::Size(size_in_dip, size_in_dip));
   button->SetFocusForPlatform();
   button->SetFocusPainter(views::Painter::CreateSolidRoundRectPainter(
       SkColorSetA(kInkDropBaseColor, 0xff * kHighlightOpacity),
       size_in_dip / 2 - kInkDropInset, gfx::Insets(kInkDropInset)));
 
-  button->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
+  button->SetPreferredSize(gfx::Size(size_in_dip, size_in_dip));
+
+  return button;
+}
+
+views::ImageButton* CreateImageButton(views::ButtonListener* listener,
+                                      const gfx::VectorIcon& icon,
+                                      int size_in_dip,
+                                      int icon_size_in_dip,
+                                      int accessible_name_id,
+                                      SkColor icon_color) {
+  auto* button = CreateButton(listener, size_in_dip, accessible_name_id);
+
+  button->SetImage(views::Button::STATE_NORMAL,
+                   gfx::CreateVectorIcon(icon, icon_size_in_dip, icon_color));
+
   return button;
 }
 

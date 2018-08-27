@@ -7,7 +7,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace ash {
 
@@ -15,33 +15,30 @@ class ActionView;
 class AssistantController;
 class BaseLogoView;
 
-// Listener which receives notification of action view events.
-class ActionViewListener {
- public:
-  // Invoked when the action is pressed.
-  virtual void OnActionPressed() = 0;
-
- protected:
-  virtual ~ActionViewListener() = default;
-};
-
 // A stateful view belonging to DialogPlate which indicates current user input
 // modality and delivers notification of press events.
-class ActionView : public views::View,
+class ActionView : public views::Button,
+                   public views::ButtonListener,
                    public AssistantInteractionModelObserver {
  public:
-  ActionView(AssistantController* assistant_controller,
-             ActionViewListener* listener);
+  ActionView(views::ButtonListener* listener,
+             AssistantController* assistant_controller);
   ~ActionView() override;
 
-  // views::View:
+  // views::Button:
   gfx::Size CalculatePreferredSize() const override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
+  int GetHeightForWidth(int width) const override;
+  void RequestFocus() override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // AssistantInteractionModelObserver:
   void OnMicStateChanged(MicState mic_state) override;
   void OnSpeechLevelChanged(float speech_level_db) override;
+
+  void SetAccessibleName(const base::string16& accessible_name);
+  void SetFocusBehavior(FocusBehavior focus_behavior);
 
  private:
   void InitLayout();
@@ -51,8 +48,9 @@ class ActionView : public views::View,
   void UpdateState(bool animate);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
-  ActionViewListener* listener_;
+  views::ButtonListener* const listener_;
 
+  views::Button* button_;                   // Owned by view hierarchy.
   BaseLogoView* voice_action_view_;         // Owned by view hierarchy.
 
   // True when speech level goes above a threshold and sets LogoView in

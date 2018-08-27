@@ -9,10 +9,9 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/logo_view/base_logo_view.h"
-#include "ash/resources/vector_icons/vector_icons.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
-#include "ui/views/controls/image_view.h"
+#include "ash/assistant/util/views_util.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
@@ -20,15 +19,17 @@ namespace ash {
 namespace {
 
 // Appearance.
-constexpr int kPreferredSizeDip = 22;
+constexpr int kIconSizeDip = 22;
+constexpr int kPreferredSizeDip = 32;
 
 }  // namespace
 
-ActionView::ActionView(AssistantController* assistant_controller,
-                       ActionViewListener* listener)
-    : assistant_controller_(assistant_controller), listener_(listener) {
+ActionView::ActionView(views::ButtonListener* listener,
+                       AssistantController* assistant_controller)
+    : views::Button(/*listener=*/nullptr),
+      assistant_controller_(assistant_controller),
+      listener_(listener) {
   InitLayout();
-  UpdateState(/*animate=*/false);
 
   // The Assistant controller indirectly owns the view hierarchy to which
   // ActionView belongs so is guaranteed to outlive it.
@@ -40,33 +41,51 @@ ActionView::~ActionView() {
 }
 
 gfx::Size ActionView::CalculatePreferredSize() const {
-  return gfx::Size(kPreferredSizeDip, kPreferredSizeDip);
+  return gfx::Size(kPreferredSizeDip, GetHeightForWidth(kPreferredSizeDip));
+}
+
+int ActionView::GetHeightForWidth(int width) const {
+  return kPreferredSizeDip;
+}
+
+void ActionView::RequestFocus() {
+  button_->RequestFocus();
+}
+
+void ActionView::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  if (listener_)
+    listener_->ButtonPressed(this, event);
 }
 
 void ActionView::InitLayout() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
+  // Button.
+  button_ = assistant::util::CreateButton(this, kPreferredSizeDip);
+  AddChildView(button_);
+
+  // Voice action container.
+  views::View* voice_action_container_ = new views::View();
+  voice_action_container_->set_can_process_events_within_subtree(false);
+  AddChildView(voice_action_container_);
+
+  views::BoxLayout* layout_manager = voice_action_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(
+          views::BoxLayout::Orientation::kVertical));
+
+  layout_manager->set_cross_axis_alignment(
+      views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
+
+  layout_manager->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+
   // Voice action.
   voice_action_view_ = BaseLogoView::Create();
-  voice_action_view_->SetPreferredSize(
-      gfx::Size(kPreferredSizeDip, kPreferredSizeDip));
-  AddChildView(voice_action_view_);
-}
+  voice_action_view_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
+  voice_action_container_->AddChildView(voice_action_view_);
 
-void ActionView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() != ui::ET_GESTURE_TAP)
-    return;
-
-  event->SetHandled();
-
-  if (listener_)
-    listener_->OnActionPressed();
-}
-
-bool ActionView::OnMousePressed(const ui::MouseEvent& event) {
-  if (listener_)
-    listener_->OnActionPressed();
-  return true;
+  // Initialize state.
+  UpdateState(/*animate=*/false);
 }
 
 void ActionView::OnMicStateChanged(MicState mic_state) {
@@ -102,6 +121,14 @@ void ActionView::UpdateState(bool animate) {
       break;
   }
   voice_action_view_->SetState(mic_state, animate);
+}
+
+void ActionView::SetAccessibleName(const base::string16& accessible_name) {
+  button_->SetAccessibleName(accessible_name);
+}
+
+void ActionView::SetFocusBehavior(FocusBehavior focus_behavior) {
+  button_->SetFocusBehavior(focus_behavior);
 }
 
 }  // namespace ash
