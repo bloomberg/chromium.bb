@@ -10,9 +10,11 @@
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/font_list.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/views_export.h"
@@ -59,6 +61,12 @@ class VIEWS_EXPORT MenuDelegate {
     DROP_ON
   };
 
+  // Used when indicating the style for a given label.
+  struct LabelStyle {
+    gfx::FontList font_list;
+    SkColor foreground;
+  };
+
   virtual ~MenuDelegate();
 
   // Whether or not an item should be shown as checked. This is invoked for
@@ -69,12 +77,9 @@ class VIEWS_EXPORT MenuDelegate {
   // added with an empty label.
   virtual base::string16 GetLabel(int id) const;
 
-  // The font for the menu item label.
-  virtual const gfx::FontList* GetLabelFontList(int id) const;
-
-  // Whether this item should be displayed with the normal text color, even if
-  // it's disabled.
-  virtual bool GetShouldUseNormalForegroundColor(int command_id) const;
+  // The style for the label with the given |id|. Implementations may update any
+  // parts of |style| or leave it unmodified.
+  virtual void GetLabelStyle(int id, LabelStyle* style) const;
 
   // The tooltip shown for the menu item. This is invoked when the user
   // hovers over the item, and no tooltip text has been set for that item.

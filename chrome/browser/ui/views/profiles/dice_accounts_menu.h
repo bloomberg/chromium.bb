@@ -54,7 +54,7 @@ class DiceAccountsMenu : public views::MenuDelegate {
                                 int icon_size,
                                 int* left_margin,
                                 int* right_margin) const override;
-  const gfx::FontList* GetLabelFontList(int id) const override;
+  void GetLabelStyle(int id, LabelStyle* style) const override;
 
   std::unique_ptr<views::MenuRunner> runner_;
 

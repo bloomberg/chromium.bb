@@ -850,18 +850,20 @@ void AppMenu::RemoveObserver(AppMenuObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-const gfx::FontList* AppMenu::GetLabelFontList(int command_id) const {
+void AppMenu::GetLabelStyle(int command_id, LabelStyle* style) const {
   if (IsRecentTabsCommand(command_id)) {
-    return recent_tabs_menu_model_delegate_->GetLabelFontListAt(
-        ModelIndexFromCommandId(command_id));
+    const gfx::FontList* font_list =
+        recent_tabs_menu_model_delegate_->GetLabelFontListAt(
+            ModelIndexFromCommandId(command_id));
+    // Only fill in |*color| if there's a font list - otherwise this method will
+    // override the color for every recent tab item, not just the header.
+    if (font_list) {
+      // TODO(ellyjones): Use CONTEXT_MENU instead of CONTEXT_LABEL.
+      style->foreground = views::style::GetColor(
+          *root_, views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
+      style->font_list = *font_list;
+    }
   }
-  return nullptr;
-}
-
-bool AppMenu::GetShouldUseNormalForegroundColor(int command_id) const {
-  // Use the normal foreground color instead of the disabled color for the
-  // recent tab headers. Only the headers from that submenu have font lists.
-  return IsRecentTabsCommand(command_id) && GetLabelFontList(command_id);
 }
 
 base::string16 AppMenu::GetTooltipText(int command_id,

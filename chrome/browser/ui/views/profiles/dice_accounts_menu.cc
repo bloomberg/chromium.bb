@@ -146,9 +146,9 @@ void DiceAccountsMenu::GetHorizontalIconMargins(int command_id,
   *right_margin = kHorizontalIconSpacing - config.item_horizontal_padding;
 }
 
-const gfx::FontList* DiceAccountsMenu::GetLabelFontList(int id) const {
+void DiceAccountsMenu::GetLabelStyle(int id, LabelStyle* style) const {
   const views::LayoutProvider* provider = views::LayoutProvider::Get();
   // Match the font of the HoverButtons in the avatar bubble.
-  return &provider->GetTypographyProvider().GetFont(
+  style->font_list = provider->GetTypographyProvider().GetFont(
       views::style::CONTEXT_BUTTON, STYLE_SECONDARY);
 }

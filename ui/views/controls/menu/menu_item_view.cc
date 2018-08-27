@@ -849,17 +849,20 @@ int MenuItemView::GetDrawStringFlags() {
   return flags;
 }
 
-const gfx::FontList& MenuItemView::GetFontList() const {
-  const MenuDelegate* delegate = GetDelegate();
-  if (delegate) {
-    const gfx::FontList* font_list = delegate->GetLabelFontList(GetCommand());
-    if (font_list)
-      return *font_list;
+void MenuItemView::GetLabelStyle(MenuDelegate::LabelStyle* style) const {
+  // Start with the default font:
+  style->font_list = MenuConfig::instance().font_list;
+
+  // Replace it with the touchable font in touchable menus:
+  if (GetMenuController() && GetMenuController()->use_touchable_layout()) {
+    style->font_list =
+        style::GetFont(style::CONTEXT_TOUCH_MENU, style::STYLE_PRIMARY);
   }
 
-  if (GetMenuController() && GetMenuController()->use_touchable_layout())
-    return style::GetFont(style::CONTEXT_TOUCH_MENU, style::STYLE_PRIMARY);
-  return MenuConfig::instance().font_list;
+  // Then let the delegate replace any part of |style|.
+  const MenuDelegate* delegate = GetDelegate();
+  if (delegate)
+    delegate->GetLabelStyle(GetCommand(), style);
 }
 
 void MenuItemView::AddEmptyMenus() {
@@ -908,8 +911,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
     render_selection = *forced_visual_selection_;
 
   MenuDelegate *delegate = GetDelegate();
-  bool emphasized =
-      delegate && delegate->GetShouldUseNormalForegroundColor(GetCommand());
   // Render the background. As MenuScrollViewContainer draws the background, we
   // only need the background when we want it to look different, as when we're
   // selected.
@@ -939,8 +940,11 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   const int available_height = height() - top_margin - bottom_margin;
 
   // Calculate some colors.
-  SkColor fg_color = GetTextColor(false, render_selection, emphasized);
-  SkColor icon_color = color_utils::DeriveDefaultIconColor(fg_color);
+  MenuDelegate::LabelStyle style;
+  style.foreground = GetTextColor(false, render_selection);
+  GetLabelStyle(&style);
+
+  SkColor icon_color = color_utils::DeriveDefaultIconColor(style.foreground);
   if (GetMenuController() && GetMenuController()->use_touchable_layout())
     icon_color = config.touchable_icon_color;
 
@@ -953,7 +957,6 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   }
 
   // Render the foreground.
-  const gfx::FontList& font_list = GetFontList();
   int accel_width = parent_menu_item_->GetSubmenu()->max_minor_text_width();
   int label_start = GetLabelStartForThisItem();
 
@@ -968,25 +971,26 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int flags = GetDrawStringFlags();
   if (mode == PB_FOR_DRAG)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
-  canvas->DrawStringRectWithFlags(title(), font_list, fg_color, text_bounds,
-                                  flags);
+  canvas->DrawStringRectWithFlags(title(), style.font_list, style.foreground,
+                                  text_bounds, flags);
   if (!subtitle_.empty()) {
     canvas->DrawStringRectWithFlags(
-        subtitle_, font_list,
+        subtitle_, style.font_list,
         GetNativeTheme()->GetSystemColor(
             ui::NativeTheme::kColorId_MenuItemMinorTextColor),
-        text_bounds + gfx::Vector2d(0, font_list.GetHeight()), flags);
+        text_bounds + gfx::Vector2d(0, style.font_list.GetHeight()), flags);
   }
 
-  PaintMinorIconAndText(canvas,
-                        GetTextColor(true, render_selection, emphasized));
+  PaintMinorIconAndText(canvas, style);
 
   // Set the submenu indicator (arrow) image and color.
   if (HasSubmenu())
     submenu_arrow_image_view_->SetImage(GetSubmenuArrowImage(icon_color));
 }
 
-void MenuItemView::PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color) {
+void MenuItemView::PaintMinorIconAndText(
+    gfx::Canvas* canvas,
+    const MenuDelegate::LabelStyle& style) {
   base::string16 minor_text = GetMinorText();
   const gfx::VectorIcon* minor_icon = GetMinorIcon();
   if (minor_text.empty() && !minor_icon)
@@ -1007,8 +1011,8 @@ void MenuItemView::PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color) {
   auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   if (!minor_text.empty()) {
     render_text->SetText(minor_text);
-    render_text->SetFontList(GetFontList());
-    render_text->SetColor(color);
+    render_text->SetFontList(style.font_list);
+    render_text->SetColor(style.foreground);
     render_text->SetDisplayRect(minor_text_bounds);
     render_text->SetHorizontalAlignment(base::i18n::IsRTL() ? gfx::ALIGN_LEFT
                                                             : gfx::ALIGN_RIGHT);
@@ -1016,7 +1020,7 @@ void MenuItemView::PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color) {
   }
 
   if (minor_icon) {
-    gfx::ImageSkia image = CreateVectorIcon(*minor_icon, color);
+    gfx::ImageSkia image = CreateVectorIcon(*minor_icon, style.foreground);
 
     int image_x = GetMirroredRect(minor_text_bounds).right() -
                   render_text->GetContentWidth() -
@@ -1030,9 +1034,7 @@ void MenuItemView::PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color) {
   }
 }
 
-SkColor MenuItemView::GetTextColor(bool minor,
-                                   bool render_selection,
-                                   bool emphasized) const {
+SkColor MenuItemView::GetTextColor(bool minor, bool render_selection) const {
   ui::NativeTheme::ColorId color_id =
       minor ? ui::NativeTheme::kColorId_MenuItemMinorTextColor
             : ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor;
@@ -1040,8 +1042,7 @@ SkColor MenuItemView::GetTextColor(bool minor,
     if (render_selection)
       color_id = ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor;
   } else {
-    if (!emphasized)
-      color_id = ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
+    color_id = ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor;
   }
 
   if (GetMenuController() && GetMenuController()->use_touchable_layout())
@@ -1138,7 +1139,8 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
     return dimensions;
   }
 
-  const gfx::FontList& font_list = GetFontList();
+  MenuDelegate::LabelStyle style;
+  GetLabelStyle(&style);
   base::string16 minor_text = GetMinorText();
 
   dimensions.height = child_size.height();
@@ -1170,23 +1172,23 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   int label_start = GetLabelStartForThisItem();
 
   // Determine the length of the label text.
-  int string_width = gfx::GetStringWidth(title_, font_list);
+  int string_width = gfx::GetStringWidth(title_, style.font_list);
   if (!subtitle_.empty()) {
-    string_width = std::max(string_width,
-                            gfx::GetStringWidth(subtitle_, font_list));
+    string_width =
+        std::max(string_width, gfx::GetStringWidth(subtitle_, style.font_list));
   }
 
   dimensions.standard_width = string_width + label_start +
       item_right_margin_;
   // Determine the length of the right-side text.
   dimensions.minor_text_width =
-      minor_text.empty() ? 0 : gfx::GetStringWidth(minor_text, font_list);
+      minor_text.empty() ? 0 : gfx::GetStringWidth(minor_text, style.font_list);
 
   // Determine the height to use.
-  dimensions.height =
-      std::max(dimensions.height,
-               (subtitle_.empty() ? 0 : font_list.GetHeight()) +
-               font_list.GetHeight() + GetBottomMargin() + GetTopMargin());
+  dimensions.height = std::max(
+      dimensions.height, (subtitle_.empty() ? 0 : style.font_list.GetHeight()) +
+                             style.font_list.GetHeight() + GetBottomMargin() +
+                             GetTopMargin());
   dimensions.height =
       std::max(dimensions.height, MenuConfig::instance().item_min_height);
 

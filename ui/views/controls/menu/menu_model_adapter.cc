@@ -172,17 +172,19 @@ base::string16 MenuModelAdapter::GetLabel(int id) const {
   return base::string16();
 }
 
-const gfx::FontList* MenuModelAdapter::GetLabelFontList(int id) const {
+void MenuModelAdapter::GetLabelStyle(int id, LabelStyle* style) const {
   ui::MenuModel* model = menu_model_;
   int index = 0;
   if (ui::MenuModel::GetModelAndIndexForCommandId(id, &model, &index)) {
     const gfx::FontList* font_list = model->GetLabelFontListAt(index);
-    if (font_list)
-      return font_list;
+    if (font_list) {
+      style->font_list = *font_list;
+      return;
+    }
   }
 
   // This line may be reached for the empty menu item.
-  return MenuDelegate::GetLabelFontList(id);
+  return MenuDelegate::GetLabelStyle(id, style);
 }
 
 bool MenuModelAdapter::IsCommandEnabled(int id) const {

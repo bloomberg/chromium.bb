@@ -28,7 +28,6 @@
 #endif
 
 namespace gfx {
-class FontList;
 struct VectorIcon;
 }
 
@@ -406,8 +405,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the flags passed to DrawStringRect.
   int GetDrawStringFlags();
 
-  // Returns the font list to use for menu text.
-  const gfx::FontList& GetFontList() const;
+  // Returns the style for the menu text.
+  void GetLabelStyle(MenuDelegate::LabelStyle* style) const;
 
   // If this menu item has no children a child is added showing it has no
   // children. Otherwise AddEmtpyMenus is recursively invoked on child menu
@@ -426,7 +425,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   void PaintButton(gfx::Canvas* canvas, PaintButtonMode mode);
 
   // Paints the right-side icon and text.
-  void PaintMinorIconAndText(gfx::Canvas* canvas, SkColor color);
+  void PaintMinorIconAndText(gfx::Canvas* canvas,
+                             const MenuDelegate::LabelStyle& style);
 
   // Destroys the window used to display this menu and recursively destroys
   // the windows used to display all descendants.
@@ -441,9 +441,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Returns the text color for the current state.  |minor| specifies if the
   // minor text or the normal text is desired.
-  SkColor GetTextColor(bool minor,
-                       bool render_selection,
-                       bool emphasized) const;
+  SkColor GetTextColor(bool minor, bool render_selection) const;
 
   // Calculates and returns the MenuItemDimensions.
   MenuItemDimensions CalculateDimensions() const;
