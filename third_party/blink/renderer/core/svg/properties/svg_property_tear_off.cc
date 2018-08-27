@@ -66,9 +66,6 @@ void SVGPropertyTearOffBase::Bind(SVGAnimatedPropertyBase* binding) {
   DCHECK(binding);
   DCHECK(binding->ContextElement());
   context_element_ = binding->ContextElement();
-  // Requires SVGPropertyTearOffBase to be the left-most class in the
-  // inheritance hierarchy.
-  ScriptWrappableMarkingVisitor::WriteBarrier(context_element_.Get());
   binding_ = binding;
 }
 
