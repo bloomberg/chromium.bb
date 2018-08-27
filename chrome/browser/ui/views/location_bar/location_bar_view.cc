@@ -228,7 +228,7 @@ void LocationBarView::Init() {
   }
   page_action_icon_container_view_ = new PageActionIconContainerView(
       page_action_icon_types, GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING), browser_, this,
+      GetLayoutConstant(LOCATION_BAR_BETWEEN_ELEMENTS_PADDING), browser_, this,
       delegate_);
   AddChildView(page_action_icon_container_view_);
   page_action_icon_container_view_->SetIconColor(icon_color);
@@ -472,9 +472,11 @@ void LocationBarView::Layout() {
   location_icon_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
 
-  const int item_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
+  const int edge_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
+  const int internal_padding =
+      GetLayoutConstant(LOCATION_BAR_BETWEEN_ELEMENTS_PADDING);
 
-  int leading_edit_item_padding = item_padding;
+  int leading_edit_item_padding = edge_padding;
   if (OmniboxFieldTrial::IsJogTextfieldOnPopupEnabled()) {
     // With jog enabled, the text should be indented only if these are all true:
     //  - The popup is open.
@@ -509,10 +511,10 @@ void LocationBarView::Layout() {
   // an extended I-beam click target without affecting actual layout.
   leading_edit_item_padding -= omnibox_view_->GetInsets().left();
 
-  LocationBarLayout leading_decorations(
-      LocationBarLayout::LEFT_EDGE, item_padding, leading_edit_item_padding);
+  LocationBarLayout leading_decorations(LocationBarLayout::LEFT_EDGE,
+                                        leading_edit_item_padding);
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
-                                         item_padding, item_padding);
+                                         edge_padding);
 
   const base::string16 keyword(omnibox_view_->model()->keyword());
   // In some cases (e.g. fullscreen mode) we may have 0 height.  We still want
@@ -529,7 +531,7 @@ void LocationBarView::Layout() {
   if (ShouldShowKeywordBubble()) {
     leading_decorations.AddDecoration(
         vertical_padding, location_height, false, kLeadingDecorationMaxFraction,
-        item_padding, item_padding, selected_keyword_view_);
+        edge_padding, internal_padding, selected_keyword_view_);
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
@@ -548,18 +550,20 @@ void LocationBarView::Layout() {
     location_icon_view_->SetLabel(GetLocationIconText());
     leading_decorations.AddDecoration(
         vertical_padding, location_height, false, kLeadingDecorationMaxFraction,
-        item_padding, item_padding, location_icon_view_);
+        edge_padding, internal_padding, location_icon_view_);
   } else {
-    leading_decorations.AddDecoration(vertical_padding, location_height,
+    leading_decorations.AddDecoration(vertical_padding, location_height, false,
+                                      0, edge_padding, internal_padding,
                                       location_icon_view_);
   }
 
   auto add_trailing_decoration = [&trailing_decorations, vertical_padding,
-                                  location_height, item_padding](View* view) {
+                                  location_height, edge_padding,
+                                  internal_padding](View* view) {
     if (view->visible()) {
       trailing_decorations.AddDecoration(vertical_padding, location_height,
-                                         false, 0, item_padding, item_padding,
-                                         view);
+                                         false, 0, edge_padding,
+                                         internal_padding, view);
     }
   };
 
@@ -587,7 +591,7 @@ void LocationBarView::Layout() {
       omnibox_view_->model()->is_keyword_hint() &&
       !omnibox_view_->IsImeComposing()) {
     trailing_decorations.AddDecoration(vertical_padding, location_height, true,
-                                       0, item_padding, item_padding,
+                                       0, edge_padding, internal_padding,
                                        keyword_hint_view_);
     keyword_hint_view_->SetKeyword(keyword, GetOmniboxPopupView()->IsOpen(),
                                    tint());
@@ -777,9 +781,10 @@ int LocationBarView::GetAvailableDecorationTextHeight() {
 // LocationBarView, private:
 
 int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
-  return view->visible() ? (GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-                            view->GetMinimumSize().width())
-                         : 0;
+  return view->visible()
+             ? (GetLayoutConstant(LOCATION_BAR_BETWEEN_ELEMENTS_PADDING) +
+                view->GetMinimumSize().width())
+             : 0;
 }
 
 SkColor LocationBarView::GetBorderColor() const {

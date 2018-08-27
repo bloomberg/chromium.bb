@@ -68,12 +68,8 @@ DecorationInfo::DecorationInfo(int y,
 
 // LocationBarLayout ---------------------------------------------------------
 
-LocationBarLayout::LocationBarLayout(Position position,
-                                     int item_padding,
-                                     int item_edit_padding)
-    : position_(position),
-      item_padding_(item_padding),
-      item_edit_padding_(item_edit_padding) {}
+LocationBarLayout::LocationBarLayout(Position position, int item_edit_padding)
+    : position_(position), item_edit_padding_(item_edit_padding) {}
 
 LocationBarLayout::~LocationBarLayout() {
 }
@@ -88,13 +84,6 @@ void LocationBarLayout::AddDecoration(int y,
   decorations_.push_back(
       std::make_unique<DecorationInfo>(y, height, auto_collapse, max_fraction,
                                        edge_item_padding, item_padding, view));
-}
-
-void LocationBarLayout::AddDecoration(int y,
-                                      int height,
-                                      views::View* view) {
-  decorations_.push_back(std::make_unique<DecorationInfo>(
-      y, height, false, 0, item_padding_, item_padding_, view));
 }
 
 void LocationBarLayout::LayoutPass1(int* entry_width) {
