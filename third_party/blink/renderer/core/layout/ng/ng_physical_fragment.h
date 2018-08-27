@@ -235,18 +235,18 @@ class CORE_EXPORT NGPhysicalFragment
 
   const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
-  LayoutObject* layout_object_;
+  LayoutObject* const layout_object_;
   scoped_refptr<const ComputedStyle> style_;
-  NGPhysicalSize size_;
+  const NGPhysicalSize size_;
   NGPhysicalOffset offset_;
   scoped_refptr<NGBreakToken> break_token_;
 
-  unsigned type_ : 2;  // NGFragmentType
-  unsigned sub_type_ : 3;  // Union of NGBoxType and NGTextType
+  const unsigned type_ : 2;      // NGFragmentType
+  const unsigned sub_type_ : 3;  // Union of NGBoxType and NGTextType
   unsigned is_old_layout_root_ : 1;
   unsigned is_placed_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
-  unsigned style_variant_ : 2;  // NGStyleVariant
+  const unsigned style_variant_ : 2;  // NGStyleVariant
   unsigned base_direction_ : 1;  // TextDirection, for NGPhysicalLineBoxFragment
 
  private:
