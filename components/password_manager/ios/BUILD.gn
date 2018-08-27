@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
+
 component("ios") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
@@ -49,11 +51,26 @@ source_set("unit_tests") {
   ]
   deps = [
     ":ios",
+    ":test_bundle",
     ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
-    "//testing/gmock",
+    "//components/password_manager/core/browser",
+    "//components/password_manager/core/browser:test_support",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
+  ]
+}
+
+js_compile_bundle("test_bundle") {
+  closure_entry_point = "__crWeb.testBundle"
+  testonly = true
+  sources = [
+    "//components/autofill/ios/form_util/resources/fill.js",
+    "//components/autofill/ios/form_util/resources/form.js",
+    "resources/password_controller.js",
+    "resources/test_bundle.js",
   ]
 }
