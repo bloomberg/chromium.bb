@@ -207,6 +207,15 @@ gfx::Image AccountTrackerService::GetAccountImage(
                                                   : gfx::Image();
 }
 
+// static
+bool AccountTrackerService::IsMigrationSupported() {
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
 AccountTrackerService::AccountIdMigrationState
 AccountTrackerService::GetMigrationState() const {
   return GetMigrationState(pref_service_);
@@ -347,7 +356,9 @@ void AccountTrackerService::SetIsAdvancedProtectionAccount(
 }
 
 bool AccountTrackerService::IsMigratable() const {
-#if !defined(OS_CHROMEOS)
+  if (!IsMigrationSupported())
+    return false;
+
   for (std::map<std::string, AccountState>::const_iterator it =
            accounts_.begin();
        it != accounts_.end(); ++it) {
@@ -356,9 +367,6 @@ bool AccountTrackerService::IsMigratable() const {
       return false;
   }
   return true;
-#else
-  return false;
-#endif
 }
 
 void AccountTrackerService::MigrateToGaiaId() {
