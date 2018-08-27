@@ -198,7 +198,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 
   if (profile >= H264PROFILE_MIN && profile <= H264PROFILE_MAX) {
     decoder_.reset(new H264Decoder(
-        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_)));
+        std::make_unique<VaapiH264Accelerator>(this, vaapi_wrapper_),
+        config.container_color_space));
   } else if (profile >= VP8PROFILE_MIN && profile <= VP8PROFILE_MAX) {
     decoder_.reset(new VP8Decoder(
         std::make_unique<VaapiVP8Accelerator>(this, vaapi_wrapper_)));
@@ -222,7 +223,8 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 void VaapiVideoDecodeAccelerator::OutputPicture(
     const scoped_refptr<VASurface>& va_surface,
     int32_t input_id,
-    gfx::Rect visible_rect) {
+    gfx::Rect visible_rect,
+    const VideoColorSpace& picture_color_space) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   const VASurfaceID va_surface_id = va_surface->id();
@@ -265,9 +267,9 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
             << input_id
             << " is ready. visible rect: " << visible_rect.ToString();
   if (client_) {
-    // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
     client_->PictureReady(Picture(output_id, input_id, visible_rect,
-                                  gfx::ColorSpace(), picture->AllowOverlay()));
+                                  picture_color_space.ToGfxColorSpace(),
+                                  picture->AllowOverlay()));
   }
 }
 
@@ -916,12 +918,13 @@ bool VaapiVideoDecodeAccelerator::TryToSetupDecodeOnSeparateThread(
 void VaapiVideoDecodeAccelerator::VASurfaceReady(
     const scoped_refptr<VASurface>& va_surface,
     int32_t bitstream_id,
-    const gfx::Rect& visible_rect) {
+    const gfx::Rect& visible_rect,
+    const VideoColorSpace& color_space) {
   if (!task_runner_->BelongsToCurrentThread()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VaapiVideoDecodeAccelerator::VASurfaceReady, weak_this_,
-                   va_surface, bitstream_id, visible_rect));
+                   va_surface, bitstream_id, visible_rect, color_space));
     return;
   }
 
@@ -936,7 +939,7 @@ void VaapiVideoDecodeAccelerator::VASurfaceReady(
 
   pending_output_cbs_.push(
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
-                 va_surface, bitstream_id, visible_rect));
+                 va_surface, bitstream_id, visible_rect, color_space));
 
   TryOutputPicture();
 }
