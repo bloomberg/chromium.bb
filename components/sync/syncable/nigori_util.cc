@@ -14,7 +14,7 @@
 #include "base/containers/queue.h"
 #include "base/json/json_writer.h"
 #include "components/sync/base/cryptographer.h"
-#include "components/sync/base/passphrase_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/mutable_entry.h"

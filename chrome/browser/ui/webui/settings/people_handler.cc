@@ -49,7 +49,7 @@
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/sync/base/passphrase_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/sync_prefs.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"

@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_ENGINE_SYNC_STRING_CONVERSIONS_H_
 #define COMPONENTS_SYNC_ENGINE_SYNC_STRING_CONVERSIONS_H_
 
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/engine/connection_status.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 
@@ -20,6 +21,9 @@ const char* PassphraseRequiredReasonToString(PassphraseRequiredReason reason);
 const char* PassphraseTypeToString(PassphraseType type);
 
 const char* BootstrapTokenTypeToString(BootstrapTokenType type);
+
+const char* KeyDerivationMethodToString(KeyDerivationMethod method);
+
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_ENGINE_SYNC_STRING_CONVERSIONS_H_

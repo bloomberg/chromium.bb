@@ -4,7 +4,7 @@
 
 #include "components/sync/test/fake_sync_encryption_handler.h"
 
-#include "components/sync/base/passphrase_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/protocol/nigori_specifics.pb.h"
 #include "components/sync/syncable/nigori_util.h"
 
