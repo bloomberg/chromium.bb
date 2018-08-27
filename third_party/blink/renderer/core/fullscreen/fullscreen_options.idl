@@ -4,6 +4,12 @@
 
 // https://github.com/dtapuska/fullscreen
 
+enum FullscreenNavigationUI {
+  "auto",
+  "show",
+  "hide"
+};
+
 dictionary FullscreenOptions {
-    [RuntimeEnabled=FullscreenOptions] boolean prefersNavigationBar = false;
+    [RuntimeEnabled=FullscreenOptions] FullscreenNavigationUI navigationUI = "auto";
 };
