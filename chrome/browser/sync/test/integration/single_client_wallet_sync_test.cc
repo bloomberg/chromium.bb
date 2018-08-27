@@ -36,6 +36,7 @@ using autofill_helper::GetAccountWebDataService;
 using autofill_helper::GetPersonalDataManager;
 using autofill_helper::GetProfileWebDataService;
 using base::ASCIIToUTF16;
+using testing::Eq;
 
 namespace {
 
@@ -103,6 +104,61 @@ class PersonalDataLoadedObserverMock
   MOCK_METHOD0(OnPersonalDataChanged, void());
 };
 
+class WaitForNextWalletUpdateChecker : public StatusChangeChecker,
+                                       public syncer::SyncServiceObserver {
+ public:
+  explicit WaitForNextWalletUpdateChecker(
+      browser_sync::ProfileSyncService* service)
+      : service_(service),
+        initial_marker_(GetInitialMarker(service)),
+        scoped_observer_(this) {
+    scoped_observer_.Add(service);
+  }
+
+  bool IsExitConditionSatisfied() override {
+    // GetLastCycleSnapshot() returns by value, so make sure to capture it for
+    // iterator use.
+    const syncer::SyncCycleSnapshot snap = service_->GetLastCycleSnapshot();
+    const syncer::ProgressMarkerMap& progress_markers =
+        snap.download_progress_markers();
+    auto marker_it = progress_markers.find(syncer::AUTOFILL_WALLET_DATA);
+    if (marker_it == progress_markers.end()) {
+      return false;
+    }
+    return marker_it->second != initial_marker_;
+  }
+
+  std::string GetDebugMessage() const override {
+    return "Waiting for an updated Wallet progress marker.";
+  }
+
+  // syncer::SyncServiceObserver implementation.
+  void OnSyncCycleCompleted(syncer::SyncService* sync) override {
+    CheckExitCondition();
+  }
+
+ private:
+  static std::string GetInitialMarker(
+      const browser_sync::ProfileSyncService* service) {
+    // GetLastCycleSnapshot() returns by value, so make sure to capture it for
+    // iterator use.
+    const syncer::SyncCycleSnapshot snap = service->GetLastCycleSnapshot();
+    const syncer::ProgressMarkerMap& progress_markers =
+        snap.download_progress_markers();
+    auto marker_it = progress_markers.find(syncer::AUTOFILL_WALLET_DATA);
+    if (marker_it == progress_markers.end()) {
+      return "N/A";
+    }
+    return marker_it->second;
+  }
+
+  const browser_sync::ProfileSyncService* service_;
+  const std::string initial_marker_;
+  ScopedObserver<browser_sync::ProfileSyncService,
+                 WaitForNextWalletUpdateChecker>
+      scoped_observer_;
+};
+
 std::vector<std::unique_ptr<CreditCard>> GetServerCards(
     scoped_refptr<autofill::AutofillWebDataService> service) {
   AutofillWebDataServiceConsumer<std::vector<std::unique_ptr<CreditCard>>>
@@ -144,6 +200,18 @@ sync_pb::SyncEntity CreateDefaultSyncWalletCard() {
   credit_card->set_type(kDefaultCardType);
   credit_card->set_billing_address_id(kDefaultBillingAddressId);
   return entity;
+}
+
+sync_pb::SyncEntity CreateSyncWalletCard(const std::string& name,
+                                         const std::string& last_four) {
+  sync_pb::SyncEntity result = CreateDefaultSyncWalletCard();
+  result.set_name(name);
+  result.set_id_string(name);
+  result.mutable_specifics()
+      ->mutable_autofill_wallet()
+      ->mutable_masked_card()
+      ->set_last_four(last_four);
+  return result;
 }
 
 CreditCard GetDefaultCreditCard() {
@@ -188,6 +256,18 @@ sync_pb::SyncEntity CreateDefaultSyncWalletAddress() {
   wallet_address->set_language_code(kDefaultLanguageCode);
 
   return entity;
+}
+
+sync_pb::SyncEntity CreateSyncWalletAddress(const std::string& name,
+                                            const std::string& company) {
+  sync_pb::SyncEntity result = CreateDefaultSyncWalletAddress();
+  result.set_name(name);
+  result.set_id_string(name);
+  result.mutable_specifics()
+      ->mutable_autofill_wallet()
+      ->mutable_address()
+      ->set_company_name(company);
+  return result;
 }
 
 // TODO(sebsg): Instead add a function to create a card, and one to inject in
@@ -405,6 +485,54 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
   ASSERT_TRUE(GetClient(0)->DisableSyncForAllDatatypes());
   cards = pdm->GetCreditCards();
   ASSERT_EQ(0uL, cards.size());
+}
+
+// Wallet is not using incremental updates. Make sure existing data gets
+// replaced when synced down.
+IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+                       NewSyncDataShouldReplaceExistingData) {
+  sync_pb::SyncEntity first_card =
+      CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001");
+  sync_pb::SyncEntity first_address =
+      CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1");
+
+  GetFakeServer()->SetWalletData({first_card, first_address});
+  ASSERT_TRUE(SetupSync());
+
+  // Make sure the card is in the DB.
+  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
+  ASSERT_NE(nullptr, pdm);
+  std::vector<CreditCard*> cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_THAT(cards[0]->LastFourDigits(), Eq(ASCIIToUTF16("0001")));
+  std::vector<AutofillProfile*> profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("Company-1", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
+
+  sync_pb::SyncEntity new_card =
+      CreateSyncWalletCard(/*name=*/"new-card", /*last_four=*/"0002");
+  sync_pb::SyncEntity new_address =
+      CreateSyncWalletAddress(/*name=*/"new-address", /*company=*/"Company-2");
+
+  GetFakeServer()->SetWalletData({new_card, new_address});
+
+  // Constructing the checker captures the current progress marker. Make sure to
+  // do that before triggering the fetch.
+  WaitForNextWalletUpdateChecker checker(GetSyncService(0));
+  // Trigger a sync and wait for the new data to arrive.
+  TriggerSyncForModelTypes(0,
+                           syncer::ModelTypeSet(syncer::AUTOFILL_WALLET_DATA));
+  ASSERT_TRUE(checker.Wait());
+
+  // Make sure only the new data is present.
+  cards = pdm->GetCreditCards();
+  ASSERT_EQ(1uL, cards.size());
+  EXPECT_THAT(cards[0]->LastFourDigits(), Eq(ASCIIToUTF16("0002")));
+  profiles = pdm->GetServerProfiles();
+  ASSERT_EQ(1uL, profiles.size());
+  EXPECT_EQ("Company-2", TruncateUTF8(base::UTF16ToUTF8(
+                             profiles[0]->GetRawInfo(autofill::COMPANY_NAME))));
 }
 
 // Wallet data should get cleared from the database when the wallet sync type
