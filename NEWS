@@ -13,6 +13,8 @@ issues]].
   reworked the handling of the input/output positions for
   back-translation. This solves numerous issues with backward
   translation.
+- The returned ~inlen~ and ~outlen~ now always match thanks to the
+  above work on input/output positions by Bert Frees.
 
 ** Braille table improvements
 - Danish grade 2 tables: Reduced hyphenation to only the hyphens
