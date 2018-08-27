@@ -65,6 +65,10 @@ const int kMaxFetchCount = 100;
 const CGFloat kSeparationSpaceBetweenSections = 9;
 // The Alpha value used by the SearchBar when disabled.
 const CGFloat kAlphaForDisabledSearchBar = 0.5;
+// The default UIButton font size used by UIKit.
+const CGFloat kButtonDefaultFontSize = 15.0;
+// Horizontal width representing UIButton's padding.
+const CGFloat kButtonHorizontalPadding = 30.0;
 }  // namespace
 
 @interface HistoryTableViewController ()<HistoryEntriesStatusItemDelegate,
@@ -1077,6 +1081,13 @@ const CGFloat kAlphaForDisabledSearchBar = 0.5;
                target:self
                action:@selector(animateViewsConfigurationForEditingChange)];
     _editButton.accessibilityIdentifier = kHistoryToolbarEditButtonIdentifier;
+    // Buttons don't conform to dynamic types. So it's safe to just use the
+    // default font size.
+    CGSize stringSize = [titleString sizeWithAttributes:@{
+      NSFontAttributeName : [UIFont boldSystemFontOfSize:kButtonDefaultFontSize]
+    }];
+    // Include button padding to ensure string does not get truncated
+    _editButton.width = stringSize.width + kButtonHorizontalPadding;
   }
   return _editButton;
 }
