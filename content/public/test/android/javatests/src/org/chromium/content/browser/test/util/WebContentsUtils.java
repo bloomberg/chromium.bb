@@ -5,6 +5,7 @@
 package org.chromium.content.browser.test.util;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -20,6 +21,14 @@ public class WebContentsUtils {
      */
     public static void reportAllFrameSubmissions(final WebContents webContents, boolean enabled) {
         nativeReportAllFrameSubmissions(webContents, enabled);
+    }
+
+    /**
+     * @param webContents The WebContents on which the SelectPopup is being shown.
+     * @return {@code true} if select popup is being shown.
+     */
+    public static boolean isSelectPopupVisible(WebContents webContents) {
+        return SelectPopup.fromWebContents(webContents).isVisibleForTesting();
     }
 
     private static native void nativeReportAllFrameSubmissions(

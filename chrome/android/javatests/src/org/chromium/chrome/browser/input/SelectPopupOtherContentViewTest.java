@@ -26,6 +26,7 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
+import org.chromium.content.browser.test.util.WebContentsUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ActivityWindowAndroid;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -69,8 +70,10 @@ public class SelectPopupOtherContentViewTest {
 
     private boolean isSelectPopupVisibleOnUiThread() {
         try {
-            return ThreadUtils.runOnUiThreadBlocking(
-                    () -> mActivityTestRule.getWebContents().isSelectPopupVisibleForTesting());
+            // clang-format off
+            return ThreadUtils.runOnUiThreadBlocking(() ->
+                    WebContentsUtils.isSelectPopupVisible(mActivityTestRule.getWebContents()));
+            // clang-format on
         } catch (ExecutionException e) {
             throw new RuntimeException(e);
         }
