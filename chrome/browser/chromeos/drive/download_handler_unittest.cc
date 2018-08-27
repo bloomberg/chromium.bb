@@ -35,10 +35,10 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
 
   // FileSystemInterface overrides.
   void GetResourceEntry(const base::FilePath& file_path,
-                        const GetResourceEntryCallback& callback) override {
-    callback.Run(error_, std::unique_ptr<ResourceEntry>(error_ == FILE_ERROR_OK
-                                                            ? new ResourceEntry
-                                                            : nullptr));
+                        GetResourceEntryCallback callback) override {
+    std::move(callback).Run(
+        error_, std::unique_ptr<ResourceEntry>(
+                    error_ == FILE_ERROR_OK ? new ResourceEntry : nullptr));
   }
 
   void CreateDirectory(const base::FilePath& directory_path,

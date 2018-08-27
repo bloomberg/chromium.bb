@@ -29,13 +29,13 @@ void IterateFileCacheInternal(
 }
 
 // Runs the callback with arguments.
-void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
+void RunGetResourceEntryCallback(GetResourceEntryCallback callback,
                                  std::unique_ptr<ResourceEntry> entry,
                                  FileError error) {
   DCHECK(callback);
   if (error != FILE_ERROR_OK)
     entry.reset();
-  callback.Run(error, std::move(entry));
+  std::move(callback).Run(error, std::move(entry));
 }
 
 // Runs the callback with arguments.
@@ -64,22 +64,19 @@ DebugInfoCollector::DebugInfoCollector(
 
 DebugInfoCollector::~DebugInfoCollector() = default;
 
-void DebugInfoCollector::GetResourceEntry(
-    const base::FilePath& file_path,
-    const GetResourceEntryCallback& callback) {
+void DebugInfoCollector::GetResourceEntry(const base::FilePath& file_path,
+                                          GetResourceEntryCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&internal::ResourceMetadata::GetResourceEntryByPath,
-                 base::Unretained(metadata_),
-                 file_path,
-                 entry_ptr),
-      base::Bind(&RunGetResourceEntryCallback, callback, base::Passed(&entry)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&internal::ResourceMetadata::GetResourceEntryByPath,
+                     base::Unretained(metadata_), file_path, entry_ptr),
+      base::BindOnce(&RunGetResourceEntryCallback, std::move(callback),
+                     base::Passed(&entry)));
 }
 
 void DebugInfoCollector::ReadDirectory(

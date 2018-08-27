@@ -98,14 +98,14 @@ FileError GetLocallyStoredResourceEntry(
 }
 
 // Runs the callback with parameters.
-void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
+void RunGetResourceEntryCallback(GetResourceEntryCallback callback,
                                  std::unique_ptr<ResourceEntry> entry,
                                  FileError error) {
   DCHECK(callback);
 
   if (error != FILE_ERROR_OK)
     entry.reset();
-  callback.Run(error, std::move(entry));
+  std::move(callback).Run(error, std::move(entry));
 }
 
 // Used to implement Pin().
@@ -632,24 +632,20 @@ base::Closure FileSystem::GetFileContent(
                  completion_callback));
 }
 
-void FileSystem::GetResourceEntry(
-    const base::FilePath& file_path,
-    const GetResourceEntryCallback& callback) {
+void FileSystem::GetResourceEntry(const base::FilePath& file_path,
+                                  GetResourceEntryCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
-  ReadDirectory(file_path.DirName(),
-                ReadDirectoryEntriesCallback(),
+  ReadDirectory(file_path.DirName(), ReadDirectoryEntriesCallback(),
                 base::Bind(&FileSystem::GetResourceEntryAfterRead,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           file_path,
-                           callback));
+                           weak_ptr_factory_.GetWeakPtr(), file_path,
+                           base::Passed(std::move(callback))));
 }
 
-void FileSystem::GetResourceEntryAfterRead(
-    const base::FilePath& file_path,
-    const GetResourceEntryCallback& callback,
-    FileError error) {
+void FileSystem::GetResourceEntryAfterRead(const base::FilePath& file_path,
+                                           GetResourceEntryCallback callback,
+                                           FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
@@ -662,7 +658,8 @@ void FileSystem::GetResourceEntryAfterRead(
       blocking_task_runner_.get(), FROM_HERE,
       base::BindOnce(&GetLocallyStoredResourceEntry, resource_metadata_, cache_,
                      file_path, entry_ptr),
-      base::BindOnce(&RunGetResourceEntryCallback, callback, std::move(entry)));
+      base::BindOnce(&RunGetResourceEntryCallback, std::move(callback),
+                     std::move(entry)));
 }
 
 void FileSystem::ReadDirectory(

@@ -693,13 +693,15 @@ TEST_F(FileSystemTest, DuplicatedAsyncInitialization) {
   base::RunLoop loop;
 
   int counter = 0;
-  const GetResourceEntryCallback& callback = base::Bind(
-      &AsyncInitializationCallback, &counter, 2, loop.QuitClosure());
 
   file_system_->GetResourceEntry(
-      base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
+      base::FilePath(FILE_PATH_LITERAL("drive/root")),
+      base::BindOnce(&AsyncInitializationCallback, &counter, 2,
+                     loop.QuitClosure()));
   file_system_->GetResourceEntry(
-      base::FilePath(FILE_PATH_LITERAL("drive/root")), callback);
+      base::FilePath(FILE_PATH_LITERAL("drive/root")),
+      base::BindOnce(&AsyncInitializationCallback, &counter, 2,
+                     loop.QuitClosure()));
   loop.Run();  // Wait to get our result
   EXPECT_EQ(2, counter);
 
