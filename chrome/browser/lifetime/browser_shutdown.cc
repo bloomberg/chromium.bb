@@ -18,8 +18,8 @@
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/about_flags.h"
@@ -286,7 +286,7 @@ void ShutdownPostThreadsStop(int shutdown_flags) {
 void ReadLastShutdownFile(ShutdownType type,
                           int num_procs,
                           int num_procs_slow) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::FilePath shutdown_ms_file = GetShutdownMsPath();
   std::string shutdown_ms_str;
