@@ -40,6 +40,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/transient_window_manager.h"
 
 namespace ash {
 
@@ -1830,6 +1831,23 @@ TEST_F(TabletModeWindowManagerTest, DontChangeBoundsForTabDraggingWindow) {
   ASSERT_TRUE(manager);
   EXPECT_EQ(1, manager->GetNumberOfManagedWindows());
   EXPECT_EQ(window->bounds(), rect);
+}
+
+// Make sure that transient children should not be maximized.
+TEST_F(TabletModeWindowManagerTest, DontMaximizeTransientChild) {
+  gfx::Rect rect(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> parent(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  std::unique_ptr<aura::Window> child(
+      CreateWindow(aura::client::WINDOW_TYPE_NORMAL, rect));
+  ::wm::TransientWindowManager::GetOrCreate(parent.get())
+      ->AddTransientChild(child.get());
+
+  ASSERT_TRUE(CreateTabletModeWindowManager());
+  EXPECT_TRUE(wm::GetWindowState(parent.get())->IsMaximized());
+  EXPECT_NE(rect.size(), parent->bounds().size());
+  EXPECT_FALSE(wm::GetWindowState(child.get())->IsMaximized());
+  EXPECT_EQ(rect.size(), child->bounds().size());
 }
 
 }  // namespace ash

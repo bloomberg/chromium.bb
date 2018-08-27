@@ -298,7 +298,11 @@ void ShellSurface::OnSetParent(Surface* parent, const gfx::Point& position) {
 
 void ShellSurface::InitializeWindowState(ash::wm::WindowState* window_state) {
   window_state->AddObserver(this);
-  window_state->set_allow_set_bounds_direct(false);
+  // Sommelier sets the null application id for override redirect windows,
+  // which controls its bounds by itself.
+  bool emulate_x11_override_redirect =
+      (GetApplicationId(window_state->window()) == nullptr) && !!parent_;
+  window_state->set_allow_set_bounds_direct(emulate_x11_override_redirect);
   widget_->set_movement_disabled(movement_disabled_);
   window_state->set_ignore_keyboard_bounds_change(movement_disabled_);
 }

@@ -24,6 +24,7 @@
 #include "ui/aura/window_delegate.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/wm/core/window_util.h"
 
 namespace ash {
 namespace {
@@ -103,7 +104,11 @@ gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
 
   gfx::Rect bounds_in_parent;
   // Make the window as big as possible.
-  if (state_object->CanMaximize() || state_object->CanResize()) {
+
+  // Do no maximize the transient children, which should be stacked
+  // above the transient parent.
+  if ((state_object->CanMaximize() || state_object->CanResize()) &&
+      ::wm::GetTransientParent(state_object->window()) == nullptr) {
     bounds_in_parent.set_size(GetMaximumSizeOfWindow(state_object));
   } else {
     // We prefer the user given window dimensions over the current windows
@@ -284,7 +289,9 @@ void TabletModeWindowState::OnWMEvent(wm::WindowState* window_state,
         // requested bounds and center it to a fully visible area on the screen.
         bounds_in_parent = GetCenteredBounds(bounds_in_parent, window_state);
         if (bounds_in_parent != window_state->window()->bounds()) {
-          if (window_state->window()->IsVisible())
+          const wm::SetBoundsEvent* bounds_event =
+              static_cast<const wm::SetBoundsEvent*>(event);
+          if (window_state->window()->IsVisible() && bounds_event->animate())
             window_state->SetBoundsDirectAnimated(bounds_in_parent);
           else
             window_state->SetBoundsDirect(bounds_in_parent);
@@ -355,7 +362,8 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
          target_state == mojom::WindowStateType::PINNED ||
          target_state == mojom::WindowStateType::TRUSTED_PINNED ||
          (target_state == mojom::WindowStateType::NORMAL &&
-          !window_state->CanMaximize()) ||
+          (!window_state->CanMaximize() ||
+           !!::wm::GetTransientParent(window_state->window()))) ||
          target_state == mojom::WindowStateType::FULLSCREEN ||
          target_state == mojom::WindowStateType::LEFT_SNAPPED ||
          target_state == mojom::WindowStateType::RIGHT_SNAPPED);
@@ -404,8 +412,10 @@ void TabletModeWindowState::UpdateWindow(wm::WindowState* window_state,
 
 mojom::WindowStateType TabletModeWindowState::GetMaximizedOrCenteredWindowType(
     wm::WindowState* window_state) {
-  return window_state->CanMaximize() ? mojom::WindowStateType::MAXIMIZED
-                                     : mojom::WindowStateType::NORMAL;
+  return (window_state->CanMaximize() &&
+          ::wm::GetTransientParent(window_state->window()) == nullptr)
+             ? mojom::WindowStateType::MAXIMIZED
+             : mojom::WindowStateType::NORMAL;
 }
 
 mojom::WindowStateType TabletModeWindowState::GetSnappedWindowStateType(

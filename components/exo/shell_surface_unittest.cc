@@ -285,9 +285,37 @@ TEST_F(ShellSurfaceTest, SetApplicationId) {
   EXPECT_EQ("pre-widget-id", *ShellSurface::GetApplicationId(window));
   shell_surface->SetApplicationId("test");
   EXPECT_EQ("test", *ShellSurface::GetApplicationId(window));
+  EXPECT_FALSE(ash::wm::GetWindowState(window)->allow_set_bounds_direct());
 
   shell_surface->SetApplicationId(nullptr);
   EXPECT_EQ(nullptr, ShellSurface::GetApplicationId(window));
+}
+
+TEST_F(ShellSurfaceTest, EmulateOverrideRedirect) {
+  gfx::Size buffer_size(64, 64);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+
+  EXPECT_FALSE(shell_surface->GetWidget());
+  surface->Attach(buffer.get());
+  surface->Commit();
+  aura::Window* window = shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_FALSE(ash::wm::GetWindowState(window)->allow_set_bounds_direct());
+
+  // Only surface with no app id with parent surface is considered
+  // override redirect.
+  std::unique_ptr<Surface> child_surface(new Surface);
+  std::unique_ptr<ShellSurface> child_shell_surface(
+      new ShellSurface(child_surface.get()));
+
+  child_surface->SetParent(surface.get(), gfx::Point());
+  child_surface->Attach(buffer.get());
+  child_surface->Commit();
+  aura::Window* child_window =
+      child_shell_surface->GetWidget()->GetNativeWindow();
+  EXPECT_TRUE(ash::wm::GetWindowState(child_window)->allow_set_bounds_direct());
 }
 
 TEST_F(ShellSurfaceTest, SetStartupId) {
