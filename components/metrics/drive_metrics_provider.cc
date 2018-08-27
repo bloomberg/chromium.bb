@@ -14,7 +14,7 @@
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
 
 namespace metrics {
@@ -50,7 +50,7 @@ DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
 DriveMetricsProvider::DriveMetrics
 DriveMetricsProvider::GetDriveMetricsOnBackgroundThread(
     int local_state_path_key) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::WILL_BLOCK);
 
   DriveMetricsProvider::DriveMetrics metrics;
   QuerySeekPenalty(base::FILE_EXE, &metrics.app_drive);
