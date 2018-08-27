@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/accessibility/platform/test_ax_node_wrapper.h"
+
 #include "base/containers/hash_tables.h"
+#include "base/stl_util.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_table_info.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -184,10 +186,9 @@ void TestAXNodeWrapper::ReplaceIntAttribute(int32_t node_id,
   std::vector<std::pair<ax::mojom::IntAttribute, int32_t>>& attributes =
       new_data.int_attributes;
 
-  auto deleted = std::remove_if(
-      attributes.begin(), attributes.end(),
-      [attribute](auto& pair) { return pair.first == attribute; });
-  attributes.erase(deleted, attributes.end());
+  base::EraseIf(attributes, [attribute](auto& pair) {
+    return pair.first == attribute;
+  });
 
   new_data.AddIntAttribute(attribute, value);
   node->SetData(new_data);

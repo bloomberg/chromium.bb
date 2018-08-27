@@ -130,16 +130,14 @@ std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
     const DisplayInfo& ref_display_info,
     std::vector<DisplayInfo>* display_infos) {
   std::vector<DisplayInfo> touching_display_infos;
-  display_infos->erase(
-      std::remove_if(display_infos->begin(), display_infos->end(),
-          [&touching_display_infos, ref_display_info](
-              const DisplayInfo& display_info) {
-            if (DisplayInfosTouch(ref_display_info, display_info)) {
-              touching_display_infos.push_back(display_info);
-              return true;
-            }
-            return false;
-          }), display_infos->end());
+  base::EraseIf(*display_infos, [&touching_display_infos, ref_display_info](
+      const DisplayInfo& display_info) {
+    if (DisplayInfosTouch(ref_display_info, display_info)) {
+      touching_display_infos.push_back(display_info);
+      return true;
+    }
+    return false;
+  });
   return touching_display_infos;
 }
 
