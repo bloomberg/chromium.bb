@@ -95,43 +95,109 @@ source_set("dns") {
 
   public_deps = [
     ":dns_client",
+    ":host_resolver",
     ":host_resolver_impl",
     ":mdns_client",
-    ":public",
     "//net:net_public_deps",
   ]
 
   allow_circular_includes_from = [
     ":dns_client",
+    ":host_resolver",
     ":host_resolver_impl",
     ":mdns_client",
-    ":public",
   ]
 }
 
-# The standard public API of net/dns. Available for use both inside and outside
-# the network stack by any code that needs it.
-# TODO(crbug.com/821021): Servicify and convert all non-constant external usage
-# to IPCs.
-source_set("public") {
+# The standard API of net/dns.
+#
+# Should typically only be used within the network service. Usage external to
+# the network service should instead use network service Mojo IPCs for host
+# resolution. See ResolveHost() in
+# /services/network/public/mojom/network_context.mojom and
+# /services/network/public/mojom/host_resolver.mojom.
+source_set("host_resolver") {
   # Due to circular dependencies, should only be depended on through //net.
   # Limit visibility to //net and other source_sets with the same access
   # restriction.
   visibility = [
     ":dns",
-    ":dns_client",
     ":host_resolver_impl",
     ":mdns_client",
     "//net",
+  ]
+
+  # Whitelist-only access so we can keep track of all usage external to the
+  # network stack and network service.
+  friend = [
+    # chrome/browser/devtools/device/tcp_device_provider.cc
+    # TODO(crbug.com/874653): Remove once migrated to network service IPC.
+    #
+    # chrome/browser/devtools/device/port_forwarding_controller.cc
+    # TODO(crbug.com/874651): Remove once migrated to network service IPC.
+    "//chrome/browser/devtools",
+
+    # chrome/browser/io_thread.cc
+    # Used to build in-process HostResolver when network service disabled.
+    #
+    # chrome/browser/net/dns_probe_service.cc
+    # TODO(crbug.com/874660): Remove once migrated to network service IPC.
+    #
+    # chrome/browser/net/url_info.h
+    # chrome/browser/net_benchmarking.cc
+    # HostResolver only used for deprecated net::Predictor.
+    # TODO(crbug.com/875238): Remove once deprecated code is removed.
+    "//chrome/browser",
+
+    # chrome/browser/ui/webui/net_internals/net_internals_ui.cc
+    # TODO(crbug.com/876110): Remove once migrated to network service IPC.
+    "//chrome/browser/ui",
+
+    # chromecast/browser/url_request_context_factory.cc
+    # URLRequestContext creation for chromecast.
+    "//chromecast/browser",
+
+    # components/network_hints/browser/network_hints_message_filter.cc
+    # TODO(crbug.com/874654): Remove once migrated to network service IPC.
+    "//components/network_hints/browser",
+
+    # content/public/browser/resource_hints.h
+    # Deprecated and soon to be removed.
+    # TODO(crbug.com/875238): Remove once code is removed.
+    "//content/public/browser:browser_sources",
+
+    # headless/lib/browser/headless_url_request_context_getter.cc
+    # URLRequestContext creation for headless.
+    "//headless",
+
+    # URLRequestContext and HttpNetworkSession::Context creation for iOS.
+    "//ios/components/io_thread",
+    "//ios/web/shell",
+    "//ios/web_view:*",
+
+    # Tests and test support.
+    "//chrome/browser:test_support",
+    "//chrome/test:browser_tests",
+    "//components/grpc_support/test:unit_tests",
+    "//content/shell:content_shell_lib",
+
+    # Stand-alone tools.
+    "//components/sync/tools:*",
+    "//google_apis/gcm:mcs_probe",
+
+    # Network stack/service.
+    "//components/certificate_transparency/*",
+    "//components/cronet/*",
+    "//net/*",
+    "//services/network/*",
   ]
 
   sources = []
   public = []
 
   if (!is_nacl) {
-    public += [
+    sources += [
       "dns_config_service.h",
-      "dns_protocol.h",
       "host_cache.h",
       "host_resolver.h",
       "mapped_host_resolver.h",
@@ -154,7 +220,6 @@ source_set("host_resolver_impl") {
   # restriction.
   visibility = [
     ":dns",
-    ":public",
     "//net",
   ]
 
@@ -178,7 +243,7 @@ source_set("host_resolver_impl") {
   }
 
   deps = [
-    ":public",
+    ":host_resolver",
     "//net:net_deps",
   ]
   public_deps = [
@@ -210,6 +275,7 @@ source_set("dns_client") {
     "//chrome/test/*",
     "//components/certificate_transparency/*",
     "//net/*",
+    "//services/network/*",
   ]
 
   sources = []
@@ -218,6 +284,7 @@ source_set("dns_client") {
   if (!is_nacl) {
     sources += [
       "dns_client.h",
+      "dns_protocol.h",
       "dns_response.h",
       "dns_transaction.h",
       "record_parsed.h",
@@ -226,7 +293,6 @@ source_set("dns_client") {
   }
 
   deps = [
-    ":public",
     "//net:net_deps",
   ]
   public_deps = [
@@ -265,7 +331,7 @@ source_set("mdns_client") {
 
   deps = [
     ":dns_client",
-    ":public",
+    ":host_resolver",
     "//net:net_deps",
   ]
   public_deps = [

@@ -22,7 +22,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
-#include "net/dns/host_resolver.h"
 #include "net/socket/tcp_socket.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/ppb_tcp_socket.h"
