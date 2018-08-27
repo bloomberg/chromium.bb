@@ -123,9 +123,6 @@
           }
         },
         {
-          "driver_vendor": "osmesa"
-        },
-        {
           "vendor_id": "0x1414",
           "device_id": ["0x02c1"]
         },

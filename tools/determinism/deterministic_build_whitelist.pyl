@@ -140,7 +140,6 @@
     'nacl_loader_unittests',
     'native_theme_unittests',
     'net_unittests',
-    'osmesa.so',
     'performance_browser_tests',
     'ppapi_perftests',
     'ppapi_unittests',

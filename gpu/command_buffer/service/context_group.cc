@@ -421,27 +421,6 @@ gpu::ContextResult ContextGroup::Initialize(
                     : gpu::ContextResult::kFatalFailure;
   }
 
-  // Some shaders in Skia need more than the min available vertex and
-  // fragment shader uniform vectors in case of OSMesa GL Implementation
-  if (feature_info_->workarounds().max_fragment_uniform_vectors) {
-    max_fragment_uniform_vectors_ = std::min(
-        max_fragment_uniform_vectors_,
-        static_cast<uint32_t>(
-            feature_info_->workarounds().max_fragment_uniform_vectors));
-  }
-  if (feature_info_->workarounds().max_varying_vectors) {
-    max_varying_vectors_ =
-        std::min(max_varying_vectors_,
-                 static_cast<uint32_t>(
-                     feature_info_->workarounds().max_varying_vectors));
-  }
-  if (feature_info_->workarounds().max_vertex_uniform_vectors) {
-    max_vertex_uniform_vectors_ =
-        std::min(max_vertex_uniform_vectors_,
-                 static_cast<uint32_t>(
-                     feature_info_->workarounds().max_vertex_uniform_vectors));
-  }
-
   if (context_type != CONTEXT_TYPE_WEBGL1 &&
       context_type != CONTEXT_TYPE_OPENGLES2) {
     const GLuint kMinVertexOutputComponents = 64;

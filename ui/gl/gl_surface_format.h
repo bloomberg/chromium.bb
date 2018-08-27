@@ -27,7 +27,7 @@ class GL_EXPORT GLSurfaceFormat {
   // Use the setters below to change attributes if needed.
   GLSurfaceFormat();
 
-  // Use a specified pixel layout, cf. gl_surface_osmesa.
+  // Use a specified pixel layout, cf. GLSurfaceFormatTest.
   GLSurfaceFormat(SurfacePixelLayout layout);
 
   // Copy constructor from pre-existing format.

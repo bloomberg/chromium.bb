@@ -293,9 +293,9 @@ class ChromeLauncher(BrowserLauncher):
     # Log network requests to assist debugging.
     cmd.append('--log-net-log=%s' % self.NetLogName())
     if PLATFORM == 'linux':
-      # Explicitly run with mesa on linux. The test infrastructure doesn't have
-      # sufficient native GL contextes to run these tests.
-      cmd.append('--use-gl=osmesa')
+      # Explicitly run with SwiftShader on linux. The test infrastructure
+      # doesn't have sufficient native GL contextes to run these tests.
+      cmd.append('--use-gl=swiftshader')
     if self.options.ppapi_plugin is None:
       cmd.append('--enable-nacl')
       disable_sandbox = False
