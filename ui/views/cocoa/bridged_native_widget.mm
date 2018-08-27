@@ -498,11 +498,13 @@ void BridgedNativeWidget::SetVisibilityState(WindowVisibilityState new_state) {
 }
 
 void BridgedNativeWidget::AcquireCapture() {
-  DCHECK(!HasCapture());
+  if (HasCapture())
+    return;
   if (!window_visible_)
     return;  // Capture on hidden windows is disallowed.
 
   mouse_capture_.reset(new CocoaMouseCapture(this));
+  host_->OnMouseCaptureActiveChanged(true);
 
   // Initiating global event capture with addGlobalMonitorForEventsMatchingMask:
   // will reset the mouse cursor to an arrow. Asking the window for an update
@@ -578,10 +580,10 @@ void BridgedNativeWidget::OnWindowWillClose() {
   host_->OnWindowWillClose();
 
   // Ensure BridgedNativeWidget does not have capture, otherwise
-  // OnMouseCaptureLost() may reference a deleted |native_widget_mac_| when
-  // called via ~CocoaMouseCapture() upon the destruction of |mouse_capture_|.
-  // See crbug.com/622201. Also we do this before setting the delegate to nil,
-  // because this may lead to callbacks to bridge which rely on a valid
+  // OnMouseCaptureLost() may reference a deleted |host_| when called via
+  // ~CocoaMouseCapture() upon the destruction of |mouse_capture_|. See
+  // https://crbug.com/622201. Also we do this before setting the delegate to
+  // nil, because this may lead to callbacks to bridge which rely on a valid
   // delegate.
   ReleaseCapture();
 
@@ -924,7 +926,7 @@ void BridgedNativeWidget::PostCapturedEvent(NSEvent* event) {
 }
 
 void BridgedNativeWidget::OnMouseCaptureLost() {
-  native_widget_mac_->GetWidget()->OnMouseCaptureLost();
+  host_->OnMouseCaptureActiveChanged(false);
 }
 
 NSWindow* BridgedNativeWidget::GetWindow() const {

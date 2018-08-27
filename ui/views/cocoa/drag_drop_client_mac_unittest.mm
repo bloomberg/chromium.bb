@@ -14,6 +14,7 @@
 #import "ui/base/clipboard/clipboard_util_mac.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #import "ui/views/cocoa/bridged_native_widget.h"
+#import "ui/views/cocoa/bridged_native_widget_host_impl.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_mac.h"
@@ -187,6 +188,8 @@ class DragDropClientMacTest : public WidgetTest {
 
     bridge_ =
         NativeWidgetMac::GetBridgeForNativeWindow(widget_->GetNativeWindow());
+    bridge_host_ = NativeWidgetMac::GetBridgeHostImplForNativeWindow(
+        widget_->GetNativeWindow());
     widget_->Show();
 
     target_ = new DragDropView();
@@ -205,6 +208,7 @@ class DragDropClientMacTest : public WidgetTest {
  protected:
   Widget* widget_ = nullptr;
   BridgedNativeWidget* bridge_ = nullptr;
+  BridgedNativeWidgetHostImpl* bridge_host_ = nullptr;
   DragDropView* target_ = nullptr;
   base::scoped_nsobject<MockDraggingInfo> dragging_info_;
 
@@ -236,7 +240,7 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
   // since the runloop will exit before the system has any opportunity to
   // capture anything.
   bridge_->AcquireCapture();
-  EXPECT_TRUE(bridge_->HasCapture());
+  EXPECT_TRUE(bridge_host_->IsMouseCaptureActive());
 
   // Create the drop data
   OSExchangeData data;
@@ -262,7 +266,7 @@ TEST_F(DragDropClientMacTest, ReleaseCapture) {
       target_, data, 0, ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
 
   // The capture should be released.
-  EXPECT_FALSE(bridge_->HasCapture());
+  EXPECT_FALSE(bridge_host_->IsMouseCaptureActive());
 }
 
 // Tests if the drag and drop target rejects the dropped data with the
