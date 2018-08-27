@@ -66,12 +66,7 @@ SkColor Windows10CaptionButton::GetBaseColor() const {
                             SkColorSetA(bg_color, SK_AlphaOPAQUE),
                             titlebar_color, ButtonBackgroundAlpha(theme_alpha))
                       : titlebar_color;
-  // BlendTowardOppositeLuma or IsDark isn't used here because those functions
-  // may use a different value for the dark/light threshold or the upper/lower
-  // bounds to which the color is blended. This will ensure the results of this
-  // function remain unchanged should those other functions behave differently.
-  return color_utils::GetLuma(blend_color) < 128 ? SK_ColorWHITE
-                                                 : SK_ColorBLACK;
+  return GlassBrowserFrameView::GetReadableFeatureColor(blend_color);
 }
 
 void Windows10CaptionButton::OnPaintBackground(gfx::Canvas* canvas) {
