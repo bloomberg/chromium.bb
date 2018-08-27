@@ -181,7 +181,7 @@ void UserMediaClientImpl::RequestUserMedia(
 void UserMediaClientImpl::ApplyConstraints(
     const blink::WebApplyConstraintsRequest& web_request) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(guidou): Implement applyConstraints(). http://crbug.com/338503
+
   pending_request_infos_.push_back(Request(web_request));
   if (!is_processing_request_)
     MaybeProcessNextRequestInfo();
