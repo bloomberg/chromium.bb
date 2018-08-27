@@ -9,7 +9,6 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "components/safe_browsing/proto/webui.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
@@ -75,6 +74,9 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
 
   // Register callbacks for WebUI messages.
   void RegisterMessages() override;
+
+  // Sets the WebUI for testing
+  void SetWebUIForTesting(content::WebUI* web_ui);
 
  private:
   friend class WebUIInfoSingleton;
@@ -302,6 +304,9 @@ class WebUIInfoSingleton {
   DISALLOW_COPY_AND_ASSIGN(WebUIInfoSingleton);
 };
 
+// Used for streaming messages to the WebUIInfoSingleton. Collects streamed
+// messages, then sends them to the WebUIInfoSingleton when destroyed. Intended
+// to be used in CRSBLOG macro.
 class CrSBLogMessage {
  public:
   CrSBLogMessage();
@@ -313,7 +318,22 @@ class CrSBLogMessage {
   std::ostringstream stream_;
 };
 
-#define CRSBLOG CrSBLogMessage().stream()
+// Used to consume a stream so that we don't even evaluate the streamed data if
+// there are no chrome://safe-browsing tabs open.
+class CrSBLogVoidify {
+ public:
+  CrSBLogVoidify() = default;
+
+  // This has to be an operator with a precedence lower than <<,
+  // but higher than ?:
+  void operator&(std::ostream&) {}
+};
+
+#define CRSBLOG                                         \
+  (!::safe_browsing::WebUIInfoSingleton::HasListener()) \
+      ? static_cast<void>(0)                            \
+      : ::safe_browsing::CrSBLogVoidify() &             \
+            ::safe_browsing::CrSBLogMessage().stream()
 
 }  // namespace safe_browsing
 

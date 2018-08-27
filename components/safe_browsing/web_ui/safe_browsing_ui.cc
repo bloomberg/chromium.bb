@@ -31,6 +31,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/web_contents.h"
 
 #if SAFE_BROWSING_DB_LOCAL
 #include "components/safe_browsing/db/v4_local_database_manager.h"
@@ -1243,6 +1244,10 @@ void SafeBrowsingUIHandler::RegisterMessages() {
       "getReferrerChain",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReferrerChain,
                           base::Unretained(this)));
+}
+
+void SafeBrowsingUIHandler::SetWebUIForTesting(content::WebUI* web_ui) {
+  set_web_ui(web_ui);
 }
 
 CrSBLogMessage::CrSBLogMessage() {}
