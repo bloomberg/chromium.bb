@@ -68,6 +68,9 @@ class ProcessMetricsHistory {
   int last_update_sequence_ = 0;
 
   double cpu_usage_ = 0.0;
+#if defined(OS_WIN)
+  uint64_t disk_usage_ = 0;
+#endif
 
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
   int idle_wakeups_ = 0;
