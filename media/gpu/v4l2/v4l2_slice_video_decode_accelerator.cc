@@ -503,6 +503,7 @@ V4L2SliceVideoDecodeAccelerator::~V4L2SliceVideoDecodeAccelerator() {
 }
 
 void V4L2SliceVideoDecodeAccelerator::NotifyError(Error error) {
+  // Notifying the client should only happen from the client's thread.
   if (!child_task_runner_->BelongsToCurrentThread()) {
     child_task_runner_->PostTask(
         FROM_HERE, base::Bind(&V4L2SliceVideoDecodeAccelerator::NotifyError,
@@ -510,6 +511,7 @@ void V4L2SliceVideoDecodeAccelerator::NotifyError(Error error) {
     return;
   }
 
+  // Notify the decoder's client an error has occurred.
   if (client_) {
     client_->NotifyError(error);
     client_ptr_factory_.reset();
@@ -630,6 +632,9 @@ void V4L2SliceVideoDecodeAccelerator::InitializeTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kInitialized);
 
+  if (IsDestroyPending())
+    return;
+
   if (!CreateInputBuffers())
     NOTIFY_ERROR(PLATFORM_FAILURE);
 
@@ -641,6 +646,10 @@ void V4L2SliceVideoDecodeAccelerator::InitializeTask() {
 void V4L2SliceVideoDecodeAccelerator::Destroy() {
   VLOGF(2);
   DCHECK(child_task_runner_->BelongsToCurrentThread());
+
+  // Signal any waiting/sleeping tasks to early exit as soon as possible to
+  // avoid waiting too long for the decoder_thread_ to Stop().
+  destroy_pending_.Signal();
 
   if (decoder_thread_.IsRunning()) {
     decoder_thread_task_runner_->PostTask(
@@ -659,7 +668,7 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
   DVLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  state_ = kError;
+  state_ = kDestroying;
 
   decoder_->Reset();
 
@@ -915,6 +924,9 @@ void V4L2SliceVideoDecodeAccelerator::DevicePollTask(bool poll_device) {
 void V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask() {
   DVLOGF(4);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+
+  if (IsDestroyPending())
+    return;
 
   // ServiceDeviceTask() should only ever be scheduled from DevicePollTask().
 
@@ -1180,14 +1192,30 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(int index) {
   DCHECK_NE(output_record.picture_id, -1);
 
   if (output_record.egl_sync != EGL_NO_SYNC_KHR) {
-    // If we have to wait for completion, wait.  Note that
-    // free_output_buffers_ is a FIFO queue, so we always wait on the
-    // buffer that has been in the queue the longest.
-    if (eglClientWaitSyncKHR(egl_display_, output_record.egl_sync, 0,
-                             EGL_FOREVER_KHR) == EGL_FALSE) {
-      // This will cause tearing, but is safe otherwise.
-      DVLOGF(1) << "eglClientWaitSyncKHR failed!";
+    // If we have to wait for completion, wait. Note that free_output_buffers_
+    // is a FIFO queue, so we always wait on the buffer that has been in the
+    // queue the longest. Every 100ms we check whether the decoder is shutting
+    // down, or we might get stuck waiting on a sync that will never come:
+    // https://crbug.com/845645
+    while (!IsDestroyPending()) {
+      constexpr EGLTimeKHR wait_ns =
+          100 * base::Time::kNanosecondsPerMicrosecond *
+          base::Time::kMicrosecondsPerMillisecond;  // 100ms
+      EGLint result = eglClientWaitSyncKHR(egl_display_, output_record.egl_sync,
+                                           0, wait_ns);
+      if (result == EGL_CONDITION_SATISFIED_KHR) {
+        break;
+      } else if (result == EGL_FALSE) {
+        // This will cause tearing, but is safe otherwise.
+        DVLOGF(1) << "eglClientWaitSyncKHR failed!";
+        break;
+      }
+      DCHECK_EQ(result, EGL_TIMEOUT_EXPIRED_KHR);
     }
+
+    if (IsDestroyPending())
+      return false;
+
     if (eglDestroySyncKHR(egl_display_, output_record.egl_sync) != EGL_TRUE) {
       VLOGF(1) << "eglDestroySyncKHR failed!";
       NOTIFY_ERROR(PLATFORM_FAILURE);
@@ -1345,6 +1373,9 @@ void V4L2SliceVideoDecodeAccelerator::DecodeTask(
             << " size=" << bitstream_buffer.size();
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
+  if (IsDestroyPending())
+    return;
+
   std::unique_ptr<BitstreamBufferRef> bitstream_record(
       new BitstreamBufferRef(decode_client_, decode_task_runner_,
                              &bitstream_buffer, bitstream_buffer.id()));
@@ -1404,6 +1435,9 @@ void V4L2SliceVideoDecodeAccelerator::ScheduleDecodeBufferTaskIfNeeded() {
 void V4L2SliceVideoDecodeAccelerator::DecodeBufferTask() {
   DVLOGF(4);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+
+  if (IsDestroyPending())
+    return;
 
   if (state_ != kDecoding) {
     DVLOGF(3) << "Early exit, not in kDecoding";
@@ -1601,6 +1635,9 @@ void V4L2SliceVideoDecodeAccelerator::AssignPictureBuffersTask(
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kAwaitingPictureBuffers);
 
+  if (IsDestroyPending())
+    return;
+
   const uint32_t req_buffer_count = decoder_->GetRequiredNumOfPictures();
 
   if (buffers.size() < req_buffer_count) {
@@ -1731,6 +1768,9 @@ void V4L2SliceVideoDecodeAccelerator::AssignDmaBufs(
   DVLOGF(3) << "index=" << buffer_index;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
+  if (IsDestroyPending())
+    return;
+
   // It's possible that while waiting for the EGLImages to be allocated and
   // assigned, we have already decoded more of the stream and saw another
   // resolution change. This is a normal situation, in such a case either there
@@ -1802,6 +1842,9 @@ void V4L2SliceVideoDecodeAccelerator::ImportBufferForPictureTask(
     std::unique_ptr<std::vector<base::ScopedFD>> passed_dmabuf_fds) {
   DVLOGF(3) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+
+  if (IsDestroyPending())
+    return;
 
   const auto iter =
       std::find_if(output_buffer_map_.begin(), output_buffer_map_.end(),
@@ -1885,6 +1928,9 @@ void V4L2SliceVideoDecodeAccelerator::ReusePictureBufferTask(
   DVLOGF(4) << "picture_buffer_id=" << picture_buffer_id;
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
+  if (IsDestroyPending())
+    return;
+
   V4L2DecodeSurfaceByPictureBufferId::iterator it =
       surfaces_at_display_.find(picture_buffer_id);
   if (it == surfaces_at_display_.end()) {
@@ -1929,6 +1975,9 @@ void V4L2SliceVideoDecodeAccelerator::Flush() {
 void V4L2SliceVideoDecodeAccelerator::FlushTask() {
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
+
+  if (IsDestroyPending())
+    return;
 
   // Queue an empty buffer which - when reached - will trigger flush sequence.
   decoder_input_queue_.push(std::make_unique<BitstreamBufferRef>(
@@ -2006,6 +2055,9 @@ void V4L2SliceVideoDecodeAccelerator::ResetTask() {
   VLOGF(2);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
+  if (IsDestroyPending())
+    return;
+
   if (decoder_resetting_) {
     // This is a bug in the client, multiple Reset()s before NotifyResetDone()
     // are not allowed.
@@ -2065,6 +2117,10 @@ bool V4L2SliceVideoDecodeAccelerator::FinishReset() {
   return true;
 }
 
+bool V4L2SliceVideoDecodeAccelerator::IsDestroyPending() {
+  return destroy_pending_.IsSignaled();
+}
+
 void V4L2SliceVideoDecodeAccelerator::SetErrorState(Error error) {
   // We can touch decoder_state_ only if this is the decoder thread or the
   // decoder thread isn't running.
@@ -2076,9 +2132,10 @@ void V4L2SliceVideoDecodeAccelerator::SetErrorState(Error error) {
     return;
   }
 
-  // Post NotifyError only if we are already initialized, as the API does
-  // not allow doing so before that.
-  if (state_ != kError && state_ != kUninitialized)
+  // Notifying the client of an error will only happen if we are already
+  // initialized, as the API does not allow doing so before that. Subsequent
+  // errors and errors while destroying will be suppressed.
+  if (state_ != kError && state_ != kUninitialized && state_ != kDestroying)
     NotifyError(error);
 
   state_ = kError;
