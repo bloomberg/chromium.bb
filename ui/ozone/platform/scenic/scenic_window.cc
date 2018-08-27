@@ -86,6 +86,12 @@ ScenicWindow::ScenicWindow(
       input_connection_.NewRequest().TakeChannel());
   input_connection_->SetEventListener(input_listener_binding_.NewBinding());
 
+  // Add shape node for window.
+  shape_id_ = scenic_session_.CreateShapeNode();
+  scenic_session_.AddNodeChild(node_id_, shape_id_);
+  material_id_ = scenic_session_.CreateMaterial();
+  scenic_session_.SetNodeMaterial(shape_id_, material_id_);
+
   // Call Present() to ensure that the scenic session commands are processed,
   // which is necessary to receive metrics event from Scenic.
   scenic_session_.Present();
@@ -96,9 +102,15 @@ ScenicWindow::ScenicWindow(
 ScenicWindow::~ScenicWindow() {
   scenic_session_.ReleaseResource(node_id_);
   scenic_session_.ReleaseResource(parent_node_id_);
+  scenic_session_.ReleaseResource(shape_id_);
+  scenic_session_.ReleaseResource(material_id_);
 
   manager_->RemoveWindow(window_id_, this);
   view_.Unbind();
+}
+
+void ScenicWindow::SetTexture(ScenicSession::ResourceId texture) {
+  scenic_session_.SetMaterialTexture(material_id_, texture);
 }
 
 gfx::Rect ScenicWindow::GetBounds() {
@@ -192,6 +204,19 @@ gfx::Rect ScenicWindow::GetRestoredBoundsInPixels() const {
 void ScenicWindow::UpdateSize() {
   gfx::SizeF scaled = ScaleSize(size_dips_, device_pixel_ratio_);
   size_pixels_ = gfx::Size(ceilf(scaled.width()), ceilf(scaled.height()));
+
+  // Translate the node by half of the view dimensions to put it in the center
+  // of the view.
+  float translation[] = {size_dips_.width() / 2.0, size_dips_.height() / 2.0,
+                         0.f};
+
+  // Set node shape to rectangle that matches size of the view.
+  ScenicSession::ResourceId rect_id =
+      scenic_session_.CreateRectangle(size_dips_.width(), size_dips_.height());
+  scenic_session_.SetNodeShape(shape_id_, rect_id);
+  scenic_session_.SetNodeTranslation(shape_id_, translation);
+  scenic_session_.ReleaseResource(rect_id);
+
   delegate_->OnBoundsChanged(gfx::Rect(size_pixels_));
 }
 

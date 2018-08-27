@@ -41,6 +41,10 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
   ScenicSession::ResourceId node_id() const { return node_id_; }
   float device_pixel_ratio() const { return device_pixel_ratio_; }
 
+  // Overrides texture of the window. This is used by ScenicWindowCanvas.
+  // TODO(spang): Deprecate software rendering on fuchsia.
+  void SetTexture(ScenicSession::ResourceId texture);
+
   // PlatformWindow implementation.
   gfx::Rect GetBounds() override;
   void SetBounds(const gfx::Rect& bounds) override;
@@ -103,6 +107,12 @@ class OZONE_EXPORT ScenicWindow : public PlatformWindow,
 
   // Node ID in |scenic_session_| for the view.
   ScenicSession::ResourceId node_id_;
+
+  // Shape and material resource ids for the view in the context of the scenic
+  // session for the window. They are used to set shape and texture for the view
+  // node.
+  ScenicSession::ResourceId shape_id_;
+  ScenicSession::ResourceId material_id_;
 
   // Current view size in DIPs.
   gfx::SizeF size_dips_;

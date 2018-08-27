@@ -68,12 +68,6 @@ class ScenicWindowCanvas : public SurfaceOzoneCanvas {
 
   ScenicWindow* const window_;
 
-  // Shape and material resource ids for the view in the context of the scenic
-  // session for the |window_| (window_->scenic()). They are used to set shape
-  // and texture for the view node.
-  ScenicSession::ResourceId shape_id_;
-  ScenicSession::ResourceId material_id_;
-
   Frame frames_[kNumBuffers];
 
   // Buffer index in |frames_| for the frame that's currently being rendered.
