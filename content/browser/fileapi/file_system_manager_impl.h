@@ -120,6 +120,8 @@ class CONTENT_EXPORT FileSystemManagerImpl
                           CreateSnapshotFileCallback callback) override;
   void GetPlatformPath(const GURL& file_path,
                        GetPlatformPathCallback callback) override;
+  void CreateWriter(const GURL& file_path,
+                    CreateWriterCallback callback) override;
 
  private:
   class FileSystemCancellableOperationImpl;

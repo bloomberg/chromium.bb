@@ -80,6 +80,9 @@ class WebFileSystemImpl : public blink::WebFileSystem,
   void CreateFileWriter(const blink::WebURL& path,
                         blink::WebFileWriterClient*,
                         blink::WebFileSystemCallbacks) override;
+  void CreateFileWriter(
+      const blink::WebURL& path,
+      std::unique_ptr<CreateFileWriterCallbacks> callbacks) override;
   void CreateSnapshotFileAndReadMetadata(
       const blink::WebURL& path,
       blink::WebFileSystemCallbacks) override;

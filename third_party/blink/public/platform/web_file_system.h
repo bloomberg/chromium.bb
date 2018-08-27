@@ -31,6 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_SYSTEM_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FILE_SYSTEM_H_
 
+#include "base/files/file.h"
+#include "mojo/public/cpp/system/message_pipe.h"
+#include "third_party/blink/public/platform/web_callbacks.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_file_system_callbacks.h"
 #include "third_party/blink/public/platform/web_file_system_type.h"
@@ -170,6 +173,14 @@ class WebFileSystem {
   virtual void CreateFileWriter(const WebURL& path,
                                 WebFileWriterClient*,
                                 WebFileSystemCallbacks) = 0;
+
+  // Creates a blink::mojom::FileWriter that can be used to write to the given
+  // file. The resulting FileWriter is passed as a ScopedMessagePipeHandle to
+  // deal with converting between non-blink and blink mojom bindings variants.
+  using CreateFileWriterCallbacks =
+      WebCallbacks<mojo::ScopedMessagePipeHandle, base::File::Error>;
+  virtual void CreateFileWriter(const WebURL& path,
+                                std::unique_ptr<CreateFileWriterCallbacks>) = 0;
 
   // Creates a snapshot file for a given file specified by |path|. It returns
   // the metadata of the created snapshot file.  The returned metadata should

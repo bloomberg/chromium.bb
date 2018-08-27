@@ -27,6 +27,7 @@
 #include "content/common/fileapi/webblob_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_platform_file.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/mime_util.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -34,6 +35,7 @@
 #include "storage/browser/fileapi/file_observers.h"
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
+#include "storage/browser/fileapi/file_writer_impl.h"
 #include "storage/browser/fileapi/isolated_context.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_type_converters.h"
@@ -513,26 +515,6 @@ void FileSystemManagerImpl::TouchFile(const GURL& path,
                           base::Passed(&callback)));
 }
 
-void FileSystemManagerImpl::Cancel(
-    OperationID op_id,
-    FileSystemCancellableOperationImpl::CancelCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  operation_runner()->Cancel(
-      op_id, base::BindRepeating(&FileSystemManagerImpl::DidFinish,
-                                 GetWeakPtr(), base::Passed(&callback)));
-}
-
-void FileSystemManagerImpl::GetPlatformPath(const GURL& path,
-                                            GetPlatformPathCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::FilePath platform_path;
-  context_->default_file_task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&FileSystemManagerImpl::GetPlatformPathOnFileThread, path,
-                     process_id_, base::Unretained(context_), GetWeakPtr(),
-                     std::move(callback)));
-}
-
 void FileSystemManagerImpl::CreateSnapshotFile(
     const GURL& file_path,
     CreateSnapshotFileCallback callback) {
@@ -568,6 +550,49 @@ void FileSystemManagerImpl::CreateSnapshotFile(
         url, base::BindRepeating(&FileSystemManagerImpl::DidCreateSnapshot,
                                  GetWeakPtr(), base::Passed(&callback), url));
   }
+}
+
+void FileSystemManagerImpl::GetPlatformPath(const GURL& path,
+                                            GetPlatformPathCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  base::FilePath platform_path;
+  context_->default_file_task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&FileSystemManagerImpl::GetPlatformPathOnFileThread, path,
+                     process_id_, base::Unretained(context_), GetWeakPtr(),
+                     std::move(callback)));
+}
+
+void FileSystemManagerImpl::CreateWriter(const GURL& file_path,
+                                         CreateWriterCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  FileSystemURL url(context_->CrackURL(file_path));
+  base::Optional<base::File::Error> opt_error = ValidateFileSystemURL(url);
+  if (opt_error) {
+    std::move(callback).Run(opt_error.value(), nullptr);
+    return;
+  }
+  if (!security_policy_->CanWriteFileSystemFile(process_id_, url)) {
+    std::move(callback).Run(base::File::FILE_ERROR_SECURITY, nullptr);
+    return;
+  }
+
+  blink::mojom::FileWriterPtr writer;
+  mojo::MakeStrongBinding(std::make_unique<storage::FileWriterImpl>(
+                              url, context_->CreateFileSystemOperationRunner(),
+                              blob_storage_context_->context()->AsWeakPtr()),
+                          MakeRequest(&writer));
+  std::move(callback).Run(base::File::FILE_OK, std::move(writer));
+}
+
+void FileSystemManagerImpl::Cancel(
+    OperationID op_id,
+    FileSystemCancellableOperationImpl::CancelCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  operation_runner()->Cancel(
+      op_id, base::BindRepeating(&FileSystemManagerImpl::DidFinish,
+                                 GetWeakPtr(), base::Passed(&callback)));
 }
 
 void FileSystemManagerImpl::DidReceiveSnapshotFile(int snapshot_id) {

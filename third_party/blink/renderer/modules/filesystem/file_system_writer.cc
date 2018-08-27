@@ -70,6 +70,7 @@ void FileSystemWriter::WriteComplete(base::File::Error result,
   } else {
     pending_operation_->Reject(FileError::CreateDOMException(result));
   }
+  pending_operation_ = nullptr;
 }
 
 void FileSystemWriter::TruncateComplete(base::File::Error result) {
@@ -79,6 +80,7 @@ void FileSystemWriter::TruncateComplete(base::File::Error result) {
   } else {
     pending_operation_->Reject(FileError::CreateDOMException(result));
   }
+  pending_operation_ = nullptr;
 }
 
 }  // namespace blink

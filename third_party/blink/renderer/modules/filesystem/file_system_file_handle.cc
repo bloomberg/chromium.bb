@@ -4,8 +4,10 @@
 
 #include "third_party/blink/renderer/modules/filesystem/file_system_file_handle.h"
 
+#include "third_party/blink/public/mojom/filesystem/file_writer.mojom-blink.h"
 #include "third_party/blink/public/platform/web_file_system.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/modules/filesystem/dom_file_system.h"
 #include "third_party/blink/renderer/modules/filesystem/file_system_callbacks.h"
@@ -14,6 +16,26 @@
 namespace blink {
 
 namespace {
+
+class CreateWriterCallbacks
+    : public WebCallbacks<mojo::ScopedMessagePipeHandle, base::File::Error> {
+ public:
+  explicit CreateWriterCallbacks(ScriptPromiseResolver* resolver)
+      : resolver_(resolver) {}
+
+  void OnSuccess(mojo::ScopedMessagePipeHandle handle) override {
+    mojom::blink::FileWriterPtr mojo_writer(mojom::blink::FileWriterPtrInfo(
+        std::move(handle), mojom::blink::FileWriter::Version_));
+    resolver_->Resolve(new FileSystemWriter(std::move(mojo_writer)));
+  }
+
+  void OnError(base::File::Error error) override {
+    resolver_->Reject(FileError::CreateDOMException(error));
+  }
+
+ private:
+  Persistent<ScriptPromiseResolver> resolver_;
+};
 
 class OnDidCreateSnapshotFilePromise
     : public SnapshotFileCallback::OnDidCreateSnapshotFileCallback {
@@ -37,9 +59,17 @@ FileSystemFileHandle::FileSystemFileHandle(DOMFileSystemBase* file_system,
     : FileSystemBaseHandle(file_system, full_path) {}
 
 ScriptPromise FileSystemFileHandle::createWriter(ScriptState* script_state) {
-  // TODO(mek): Implement this.
-  return ScriptPromise::RejectWithDOMException(
-      script_state, FileError::CreateDOMException(FileError::kAbortErr));
+  if (!filesystem()->FileSystem()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, FileError::CreateDOMException(FileError::kAbortErr));
+  }
+
+  auto* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise result = resolver->Promise();
+  filesystem()->FileSystem()->CreateFileWriter(
+      filesystem()->CreateFileSystemURL(this),
+      std::make_unique<CreateWriterCallbacks>(resolver));
+  return result;
 }
 
 ScriptPromise FileSystemFileHandle::getFile(ScriptState* script_state) {
