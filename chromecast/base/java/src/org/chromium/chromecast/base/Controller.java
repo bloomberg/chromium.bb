@@ -4,10 +4,10 @@
 
 package org.chromium.chromecast.base;
 
-import org.chromium.base.ObserverList;
-
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,19 +21,19 @@ import java.util.Map;
  */
 public class Controller<T> extends Observable<T> {
     private final Sequencer mSequencer = new Sequencer();
-    private final ObserverList<Observer<? super T>> mEnterObservers = new ObserverList<>();
+    private final List<Observer<? super T>> mObservers = new ArrayList<>();
     private final Map<Observer<? super T>, Scope> mScopeMap = new HashMap<>();
     private T mData = null;
 
     @Override
     public Scope watch(Observer<? super T> observer) {
         mSequencer.sequence(() -> {
-            mEnterObservers.addObserver(observer);
+            mObservers.add(observer);
             if (mData != null) notifyEnter(observer);
         });
         return () -> mSequencer.sequence(() -> {
             if (mData != null) notifyExit(observer);
-            mEnterObservers.removeObserver(observer);
+            mObservers.remove(observer);
         });
     }
 
@@ -65,8 +65,8 @@ public class Controller<T> extends Observable<T> {
             }
 
             mData = data;
-            for (Observer<? super T> observer : mEnterObservers) {
-                notifyEnter(observer);
+            for (int i = 0; i < mObservers.size(); i++) {
+                notifyEnter(mObservers.get(i));
             }
         });
     }
@@ -88,8 +88,8 @@ public class Controller<T> extends Observable<T> {
         assert mSequencer.inSequence();
         if (mData == null) return;
         mData = null;
-        for (Observer<? super T> observer : Itertools.reverse(mEnterObservers)) {
-            notifyExit(observer);
+        for (int i = mObservers.size() - 1; i >= 0; i--) {
+            notifyExit(mObservers.get(i));
         }
     }
 
