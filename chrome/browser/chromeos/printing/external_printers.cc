@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/threading/thread_restrictions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/values.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/printing/printer_translator.h"
@@ -37,7 +37,7 @@ std::unique_ptr<PrinterCache> ParsePrinters(std::unique_ptr<std::string> data) {
   int error_line = 0;
 
   // This could be really slow.
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
   std::unique_ptr<base::Value> json_blob = base::JSONReader::ReadAndReturnError(
       *data, base::JSONParserOptions::JSON_PARSE_RFC, &error_code,
       nullptr /* error_msg_out */, &error_line);
@@ -90,7 +90,8 @@ class Restrictions {
   // computed, returns the computed list.  Otherwise, nullptr.
   std::unique_ptr<PrinterView> SetData(std::unique_ptr<std::string> data) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    base::AssertBlockingAllowed();
+    base::ScopedBlockingCall scoped_blocking_call(
+        base::BlockingType::MAY_BLOCK);
     printers_cache_ = ParsePrinters(std::move(data));
     return ComputePrinters();
   }
