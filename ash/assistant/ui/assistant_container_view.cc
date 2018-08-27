@@ -188,7 +188,8 @@ void AssistantContainerView::PreferredSizeChanged() {
     return;
 
   const bool visible =
-      assistant_controller_->ui_controller()->model()->visible();
+      assistant_controller_->ui_controller()->model()->visibility() ==
+      AssistantVisibility::kVisible;
 
   // When visible, size changes are animated.
   if (visible) {

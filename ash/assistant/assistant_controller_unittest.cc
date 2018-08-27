@@ -57,12 +57,6 @@ class AssistantControllerTest : public AshTestBase {
     chromeos::assistant::mojom::AssistantPtr assistant;
     assistant_binding_->Bind(mojo::MakeRequest(&assistant));
     controller_->SetAssistant(std::move(assistant));
-
-    ASSERT_FALSE(IsAssistantUiVisible());
-  }
-
-  bool IsAssistantUiVisible() {
-    return controller_->ui_controller()->model()->visible();
   }
 
   ash::AssistantController* controller() { return controller_; }

@@ -254,8 +254,8 @@ void UiElementContainerView::OnCommittedQueryChanged(
 
   // When a query is committed, we fade out the views for the previous response
   // until the next Assistant response has been received.
-  for (const std::pair<ui::Layer*, float>& pair : ui_element_layers_) {
-    pair.first->GetAnimator()->StartAnimation(
+  for (const std::pair<ui::LayerOwner*, float>& pair : ui_element_views_) {
+    pair.first->layer()->GetAnimator()->StartAnimation(
         CreateLayerAnimationSequence(CreateOpacityElement(
             /*opacity=*/pair.second, kUiElementAnimationFadeOutDuration)));
   }
@@ -263,9 +263,9 @@ void UiElementContainerView::OnCommittedQueryChanged(
 
 void UiElementContainerView::OnResponseChanged(
     const AssistantResponse& response) {
-  // If we haven't cached any layers, there is nothing to animate off stage so
-  // we can proceed to add the new response.
-  if (ui_element_layers_.empty()) {
+  // If we don't have any pre-existing content, there is nothing to animate off
+  // stage so we we can proceed to add the new response.
+  if (!content_view()->has_children()) {
     OnResponseAdded(response);
     return;
   }
@@ -277,9 +277,9 @@ void UiElementContainerView::OnResponseChanged(
   // There is a previous response on stage, so we'll animate it off before
   // adding the new response. The new response will be added upon invocation of
   // the exit animation ended callback.
-  for (const std::pair<ui::Layer*, float> pair : ui_element_layers_) {
+  for (const std::pair<ui::LayerOwner*, float>& pair : ui_element_views_) {
     StartLayerAnimationSequence(
-        pair.first->GetAnimator(),
+        pair.first->layer()->GetAnimator(),
         // Fade out the opacity to 0%.
         CreateLayerAnimationSequence(
             CreateOpacityElement(0.f, kUiElementAnimationFadeOutDuration)),
@@ -296,7 +296,7 @@ void UiElementContainerView::OnResponseCleared() {
   render_request_weak_factory_.InvalidateWeakPtrs();
 
   content_view()->RemoveAllChildViews(/*delete_children=*/true);
-  ui_element_layers_.clear();
+  ui_element_views_.clear();
 
   ReleaseAllCards();
 
@@ -336,13 +336,14 @@ void UiElementContainerView::OnAllUiElementsAdded() {
 
   // Now that we've received and added all UI elements for the current query
   // response, we can animate them in.
-  for (const std::pair<ui::Layer*, float>& pair : ui_element_layers_) {
+  for (const std::pair<ui::LayerOwner*, float>& pair : ui_element_views_) {
     // We fade in the views to full opacity after a slight delay.
-    pair.first->GetAnimator()->StartAnimation(CreateLayerAnimationSequence(
-        ui::LayerAnimationElement::CreatePauseElement(
-            ui::LayerAnimationElement::AnimatableProperty::OPACITY,
-            kUiElementAnimationFadeInDelay),
-        CreateOpacityElement(1.f, kUiElementAnimationFadeInDuration)));
+    pair.first->layer()->GetAnimator()->StartAnimation(
+        CreateLayerAnimationSequence(
+            ui::LayerAnimationElement::CreatePauseElement(
+                ui::LayerAnimationElement::AnimatableProperty::OPACITY,
+                kUiElementAnimationFadeInDelay),
+            CreateOpacityElement(1.f, kUiElementAnimationFadeInDuration)));
   }
 }
 
@@ -440,12 +441,10 @@ void UiElementContainerView::OnCardReady(
     view_holder->native_view()->layer()->SetFillsBoundsOpaquely(false);
     view_holder->native_view()->layer()->SetOpacity(0.f);
 
-    // We cache the layer for the view for use during animations and cache its
-    // desired opacity that we'll animate to while processing the next query
-    // response.
-    ui_element_layers_.push_back(
-        std::pair<ui::Layer*, float>(view_holder->native_view()->layer(),
-                                     kCardElementAnimationFadeOutOpacity));
+    // We cache the native view for use during animations and its desired
+    // opacity that we'll animate to while processing the next query response.
+    ui_element_views_.push_back(std::pair<ui::LayerOwner*, float>(
+        view_holder->native_view(), kCardElementAnimationFadeOutOpacity));
   }
 
   // TODO(dmblack): Handle Mash case.
@@ -467,11 +466,10 @@ void UiElementContainerView::OnTextElementAdded(
   text_element_view->layer()->SetFillsBoundsOpaquely(false);
   text_element_view->layer()->SetOpacity(0.f);
 
-  // We cache the layer for the view for use during animations and cache its
-  // desired opacity that we'll animate to while processing the next query
-  // response.
-  ui_element_layers_.push_back(std::pair<ui::Layer*, float>(
-      text_element_view->layer(), kTextElementAnimationFadeOutOpacity));
+  // We cache the view for use during animations and its desired opacity that
+  // we'll animate to while processing the next query response.
+  ui_element_views_.push_back(std::pair<ui::LayerOwner*, float>(
+      text_element_view, kTextElementAnimationFadeOutOpacity));
 
   content_view()->AddChildView(text_element_view);
 }

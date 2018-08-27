@@ -12,6 +12,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -98,8 +99,8 @@ void SuggestionContainerView::OnResponseChanged(
 
 void SuggestionContainerView::OnResponseCleared() {
   // Note that we don't reset |has_received_response_| here because that refers
-  // to whether we've received a response during the current Assistant UI
-  // session, not whether we are currently displaying a response.
+  // to whether we've received a response during the current Assistant session,
+  // not whether we are currently displaying a response.
   OnSuggestionsCleared();
 }
 
@@ -185,22 +186,28 @@ void SuggestionContainerView::ButtonPressed(views::Button* sender,
       suggestion);
 }
 
-void SuggestionContainerView::OnUiVisibilityChanged(bool visible,
-                                                    AssistantSource source) {
-  if (visible) {
-    // Show conversation starters at the beginning of an Assistant session.
+void SuggestionContainerView::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    AssistantSource source) {
+  if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
+    // Show conversation starters at the start of a new Assistant session.
     OnConversationStartersChanged(assistant_controller_->cache_controller()
                                       ->model()
                                       ->GetConversationStarters());
-  } else {
-    // Reset view state.
-    has_received_response_ = false;
-
-    // When we become visible again we will be showing conversation starters so
-    // we need to center align our content.
-    layout_manager_->set_main_axis_alignment(
-        views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
+    return;
   }
+
+  if (!assistant::util::IsFinishingSession(new_visibility))
+    return;
+
+  // When Assistant is finishing a session, we need to reset view state.
+  has_received_response_ = false;
+
+  // When we start a new session we will be showing conversation starters so
+  // we need to center align our content.
+  layout_manager_->set_main_axis_alignment(
+      views::BoxLayout::MainAxisAlignment::MAIN_AXIS_ALIGNMENT_CENTER);
 }
 
 }  // namespace ash

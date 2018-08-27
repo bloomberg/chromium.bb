@@ -14,6 +14,7 @@
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/logo_view/base_logo_view.h"
 #include "ash/assistant/util/animation_util.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -134,11 +135,13 @@ void AssistantHeaderView::OnResponseChanged(const AssistantResponse& response) {
            CreateOpacityElement(1.f, kResponseAnimationFadeInDuration))});
 }
 
-void AssistantHeaderView::OnUiVisibilityChanged(bool visible,
-                                                AssistantSource source) {
-  if (visible) {
-    // When Assistant UI is shown, we animate in the appearance of the molecule
-    // icon.
+void AssistantHeaderView::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    AssistantSource source) {
+  if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
+    // When Assistant is starting a new session, we animate in the appearance of
+    // the molecule icon.
     using assistant::util::CreateLayerAnimationSequence;
     using assistant::util::CreateOpacityElement;
     using assistant::util::CreateTransformElement;
@@ -168,7 +171,10 @@ void AssistantHeaderView::OnUiVisibilityChanged(bool visible,
     return;
   }
 
-  // When Assistant UI is hidden, we restore initial state for the next session.
+  if (!assistant::util::IsFinishingSession(new_visibility))
+    return;
+
+  // When Assistant is finishing a session, we need to reset view state.
   is_first_response_ = true;
 
   molecule_icon_->layer()->SetTransform(gfx::Transform());

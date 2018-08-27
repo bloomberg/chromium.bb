@@ -93,7 +93,9 @@ class DialogPlate : public views::View,
   void OnInputModalityChanged(InputModality input_modality) override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
+  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
+                             AssistantVisibility old_visibility,
+                             AssistantSource source) override;
 
  private:
   void InitLayout();

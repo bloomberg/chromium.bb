@@ -55,7 +55,9 @@ class AssistantMiniView : public views::Button,
   void OnResponseChanged(const AssistantResponse& response) override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
+  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
+                             AssistantVisibility old_visibility,
+                             AssistantSource source) override;
 
   void set_delegate(AssistantMiniViewDelegate* delegate) {
     delegate_ = delegate;

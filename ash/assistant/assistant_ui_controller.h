@@ -94,10 +94,13 @@ class ASH_EXPORT AssistantUiController
   void OnUrlOpened(const GURL& url) override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
+  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
+                             AssistantVisibility old_visibility,
+                             AssistantSource source) override;
 
   void ShowUi(AssistantSource source);
   void HideUi(AssistantSource source);
+  void CloseUi(AssistantSource source);
   void ToggleUi(AssistantSource source);
 
   AssistantContainerView* GetViewForTest();

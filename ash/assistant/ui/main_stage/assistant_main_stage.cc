@@ -14,6 +14,7 @@
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 #include "ash/assistant/util/animation_util.h"
+#include "ash/assistant/util/assistant_util.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/time/time.h"
@@ -510,11 +511,13 @@ void AssistantMainStage::OnResponseChanged(const AssistantResponse& response) {
   OnActivateQuery();
 }
 
-void AssistantMainStage::OnUiVisibilityChanged(bool visible,
-                                               AssistantSource source) {
-  if (visible) {
-    // When Assistant UI is shown, we animate in the appearance of the greeting
-    // label and footer.
+void AssistantMainStage::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    AssistantSource source) {
+  if (assistant::util::IsStartingSession(new_visibility, old_visibility)) {
+    // When Assistant is starting a new session, we animate in the appearance of
+    // the greeting label and footer.
     using assistant::util::CreateLayerAnimationSequence;
     using assistant::util::CreateOpacityElement;
     using assistant::util::CreateTransformElement;
@@ -553,7 +556,10 @@ void AssistantMainStage::OnUiVisibilityChanged(bool visible,
     return;
   }
 
-  // When Assistant UI is hidden, we restore initial state for the next session.
+  if (!assistant::util::IsFinishingSession(new_visibility))
+    return;
+
+  // When Assistant is finishing a session, we need to reset view state.
   is_first_query_ = true;
 
   delete active_query_view_;

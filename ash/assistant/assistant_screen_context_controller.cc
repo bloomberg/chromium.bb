@@ -188,11 +188,12 @@ void AssistantScreenContextController::OnAssistantControllerDestroying() {
 }
 
 void AssistantScreenContextController::OnUiVisibilityChanged(
-    bool visible,
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
     AssistantSource source) {
-  // We don't initiate a cache request if the UI is being hidden. Instead, we
-  // abort any requests in progress and reset state.
-  if (!visible) {
+  // We only initiate a contextual query for caching if the UI is being shown.
+  // Otherwise, we abort any requests in progress and reset state.
+  if (new_visibility != AssistantVisibility::kVisible) {
     screen_context_request_factory_.InvalidateWeakPtrs();
     assistant_screen_context_model_.SetRequestState(
         ScreenContextRequestState::kIdle);

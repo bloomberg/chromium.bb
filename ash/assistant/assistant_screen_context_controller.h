@@ -56,7 +56,9 @@ class ASH_EXPORT AssistantScreenContextController
   void OnAssistantControllerDestroying() override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
+  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
+                             AssistantVisibility old_visibility,
+                             AssistantSource source) override;
 
   // Invoked on screen context request finished event.
   void OnScreenContextRequestFinished();

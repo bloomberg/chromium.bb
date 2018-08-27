@@ -79,10 +79,11 @@ void AssistantUiController::OnWidgetVisibilityChanged(views::Widget* widget,
 }
 
 void AssistantUiController::OnWidgetDestroying(views::Widget* widget) {
-  // We need to update the model when the widget is destroyed as this may not
-  // have occurred due to a call to HideUi/ToggleUi. This can occur as the
-  // result of pressing the ESC key.
-  assistant_ui_model_.SetVisible(false, AssistantSource::kUnspecified);
+  // We need to update the model when the widget is destroyed as this may have
+  // happened outside our control. This can occur as the result of pressing the
+  // ESC key, for example.
+  assistant_ui_model_.SetVisibility(AssistantVisibility::kClosed,
+                                    AssistantSource::kUnspecified);
 
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
@@ -110,7 +111,7 @@ void AssistantUiController::OnMicStateChanged(MicState mic_state) {
 
 void AssistantUiController::OnScreenContextRequestStateChanged(
     ScreenContextRequestState request_state) {
-  if (!assistant_ui_model_.visible())
+  if (assistant_ui_model_.visibility() != AssistantVisibility::kVisible)
     return;
 
   // Once screen context request state has become idle, it is safe to activate
@@ -159,11 +160,11 @@ void AssistantUiController::OnHighlighterEnabledChanged(
     HighlighterEnabledState state) {
   switch (state) {
     case HighlighterEnabledState::kEnabled:
-      if (!assistant_ui_model_.visible())
+      if (assistant_ui_model_.visibility() != AssistantVisibility::kVisible)
         ShowUi(AssistantSource::kStylus);
       break;
     case HighlighterEnabledState::kDisabledByUser:
-      if (assistant_ui_model_.visible())
+      if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
         HideUi(AssistantSource::kStylus);
       break;
     case HighlighterEnabledState::kDisabledBySessionComplete:
@@ -200,22 +201,23 @@ void AssistantUiController::OnDeepLinkReceived(
 }
 
 void AssistantUiController::OnUrlOpened(const GURL& url) {
-  // We go into mini UI mode when opening a URL in a new tab.
-  if (assistant_ui_model_.visible())
-    UpdateUiMode(AssistantUiMode::kMiniUi);
+  // We hide Assistant UI when opening a URL in a new tab.
+  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
+    HideUi(AssistantSource::kUnspecified);
 }
 
-void AssistantUiController::OnUiVisibilityChanged(bool visible,
-                                                  AssistantSource source) {
+void AssistantUiController::OnUiVisibilityChanged(
+    AssistantVisibility new_visibility,
+    AssistantVisibility old_visibility,
+    AssistantSource source) {
   Shell::Get()->voice_interaction_controller()->NotifyStatusChanged(
-      visible ? mojom::VoiceInteractionState::RUNNING
-              : mojom::VoiceInteractionState::STOPPED);
+      new_visibility == AssistantVisibility::kVisible
+          ? mojom::VoiceInteractionState::RUNNING
+          : mojom::VoiceInteractionState::STOPPED);
 
-  if (visible)
-    return;
-
-  // Metalayer mode should not be sticky. Disable it when hiding UI.
-  Shell::Get()->highlighter_controller()->AbortSession();
+  // Metalayer should not be sticky. Disable when the UI is no longer visible.
+  if (old_visibility == AssistantVisibility::kVisible)
+    Shell::Get()->highlighter_controller()->AbortSession();
 }
 
 void AssistantUiController::ShowUi(AssistantSource source) {
@@ -234,7 +236,7 @@ void AssistantUiController::ShowUi(AssistantSource source) {
     return;
   }
 
-  if (assistant_ui_model_.visible())
+  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
     return;
 
   if (!container_view_) {
@@ -246,22 +248,34 @@ void AssistantUiController::ShowUi(AssistantSource source) {
   // necessary due to limitations imposed by retrieving screen context. Once we
   // have finished retrieving screen context, the Assistant widget is activated.
   container_view_->GetWidget()->ShowInactive();
-  assistant_ui_model_.SetVisible(true, source);
+  assistant_ui_model_.SetVisibility(AssistantVisibility::kVisible, source);
 }
 
 void AssistantUiController::HideUi(AssistantSource source) {
-  if (!assistant_ui_model_.visible())
+  if (assistant_ui_model_.visibility() == AssistantVisibility::kHidden)
     return;
 
   if (container_view_)
     container_view_->GetWidget()->Hide();
 
-  assistant_ui_model_.SetVisible(false, source);
+  assistant_ui_model_.SetVisibility(AssistantVisibility::kHidden, source);
+}
+
+void AssistantUiController::CloseUi(AssistantSource source) {
+  if (assistant_ui_model_.visibility() == AssistantVisibility::kClosed)
+    return;
+
+  assistant_ui_model_.SetVisibility(AssistantVisibility::kClosed, source);
+
+  if (container_view_) {
+    container_view_->GetWidget()->CloseNow();
+    DCHECK_EQ(nullptr, container_view_);
+  }
 }
 
 void AssistantUiController::ToggleUi(AssistantSource source) {
-  if (assistant_ui_model_.visible())
-    HideUi(source);
+  if (assistant_ui_model_.visibility() == AssistantVisibility::kVisible)
+    CloseUi(source);
   else
     ShowUi(source);
 }

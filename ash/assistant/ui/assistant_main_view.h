@@ -30,7 +30,9 @@ class AssistantMainView : public views::View, public AssistantUiModelObserver {
   void RequestFocus() override;
 
   // AssistantUiModelObserver:
-  void OnUiVisibilityChanged(bool visible, AssistantSource source) override;
+  void OnUiVisibilityChanged(AssistantVisibility new_visibility,
+                             AssistantVisibility old_visibility,
+                             AssistantSource source) override;
 
  private:
   void InitLayout();
