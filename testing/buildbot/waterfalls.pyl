@@ -3385,6 +3385,79 @@
     },
   },
   {
+    'name': 'chromium.webrtc.experimental',
+    'machines': {
+      'Linux Builder': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+          'gtest_tests': 'webrtc_chromium_baremetal_gtests',
+        },
+      },
+      'Mac Builder': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+          'gtest_tests': 'webrtc_chromium_baremetal_gtests',
+        },
+      },
+      'Win Builder': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+          'gtest_tests': 'webrtc_chromium_baremetal_gtests',
+        },
+      },
+    },
+  },
+  {
+    'name': 'chromium.webrtc.fyi.experimental',
+    'machines': {
+      'Android Builder': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Android Builder (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Android Builder ARM64 (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Linux Builder': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Linux Builder (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Mac Builder': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Mac Builder (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Win Builder': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+      'Win Builder (dbg)': {
+        'test_suites': {
+          'gtest_tests': 'webrtc_chromium_gtests',
+        },
+      },
+    },
+  },
+  {
     'name': 'chromium.win',
     'machines': {
       'Win Builder': {
