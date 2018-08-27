@@ -95,6 +95,27 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
     bool cleared;
   };
 
+  // Decoder state enum.
+  enum State {
+    // We are in this state until Initialize() returns successfully.
+    // We can't post errors to the client in this state yet.
+    kUninitialized,
+    // Initialize() returned successfully.
+    kInitialized,
+    // This state allows making progress decoding more input stream.
+    kDecoding,
+    // Transitional state when we are not decoding any more stream, but are
+    // performing flush, reset, resolution change or are destroying ourselves.
+    kIdle,
+    // Requested new PictureBuffers via ProvidePictureBuffers(), awaiting
+    // AssignPictureBuffers().
+    kAwaitingPictureBuffers,
+    // Error state, set when sending NotifyError to client.
+    kError,
+    // Destroying state, when shutting down the decoder.
+    kDestroying,
+  };
+
   // See http://crbug.com/255116.
   // Input bitstream buffer size for up to 1080p streams.
   const size_t kInputBufferMaxSizeFor1080p = 1024 * 1024;
@@ -179,6 +200,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   void NotifyError(Error error);
   void DestroyTask();
+
+  // Check whether a destroy is scheduled.
+  bool IsDestroyPending();
 
   // Sets the state to kError and notifies client if needed.
   void SetErrorState(Error error);
@@ -289,24 +313,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Ran on device_poll_thread_ to wait for device events.
   void DevicePollTask(bool poll_device);
-
-  enum State {
-    // We are in this state until Initialize() returns successfully.
-    // We can't post errors to the client in this state yet.
-    kUninitialized,
-    // Initialize() returned successfully.
-    kInitialized,
-    // This state allows making progress decoding more input stream.
-    kDecoding,
-    // Transitional state when we are not decoding any more stream, but are
-    // performing flush, reset, resolution change or are destroying ourselves.
-    kIdle,
-    // Requested new PictureBuffers via ProvidePictureBuffers(), awaiting
-    // AssignPictureBuffers().
-    kAwaitingPictureBuffers,
-    // Error state, set when sending NotifyError to client.
-    kError,
-  };
 
   // Buffer id for flush buffer, queued by FlushTask().
   const int kFlushBufferId = -2;
@@ -423,6 +429,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   // Decoder state.
   State state_;
+
+  // Waitable event signaled when the decoder is destroying.
+  base::WaitableEvent destroy_pending_;
 
   Config::OutputMode output_mode_;
 
