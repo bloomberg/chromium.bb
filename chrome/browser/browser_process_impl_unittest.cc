@@ -13,6 +13,7 @@
 #include "base/task/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_feature_list_creator.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/test/base/testing_profile.h"
@@ -30,12 +31,19 @@ class BrowserProcessImplTest : public ::testing::Test {
       : stashed_browser_process_(g_browser_process),
         loop_(base::MessageLoop::TYPE_UI),
         ui_thread_(content::BrowserThread::UI, &loop_),
-        command_line_(base::CommandLine::NO_PROGRAM),
-        browser_process_impl_(new BrowserProcessImpl()) {
+        command_line_(base::CommandLine::NO_PROGRAM) {
     // Create() and StartWithDefaultParams() TaskScheduler in seperate steps to
     // properly simulate the browser process' lifecycle.
     base::TaskScheduler::Create("BrowserProcessImplTest");
     base::SetRecordActionTaskRunner(loop_.task_runner());
+
+    // |chrome_feature_list_creator_->CreatePrefServiceForTesting()| creates a
+    // user pref store, and must occur before creating |browser_process_impl_|.
+    chrome_feature_list_creator_ = std::make_unique<ChromeFeatureListCreator>();
+    chrome_feature_list_creator_->CreatePrefServiceForTesting();
+
+    browser_process_impl_ = std::make_unique<BrowserProcessImpl>(
+        chrome_feature_list_creator_->GetPrefStore());
     browser_process_impl_->SetApplicationLocale("en");
   }
 
@@ -98,6 +106,7 @@ class BrowserProcessImplTest : public ::testing::Test {
   std::unique_ptr<content::TestBrowserThread> io_thread_;
   base::CommandLine command_line_;
   std::unique_ptr<content::TestServiceManagerContext> service_manager_context_;
+  std::unique_ptr<ChromeFeatureListCreator> chrome_feature_list_creator_;
   std::unique_ptr<BrowserProcessImpl> browser_process_impl_;
 };
 

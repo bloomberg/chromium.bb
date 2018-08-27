@@ -8,7 +8,7 @@
 
 namespace extensions {
 
-void ShellMainDelegate::PreContentInitialization() {
+void ShellMainDelegate::PreCreateMainMessageLoop() {
   // Force the NSApplication subclass to be used.
   [ShellCrApplication sharedApplication];
 }

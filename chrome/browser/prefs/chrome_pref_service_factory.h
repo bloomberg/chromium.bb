@@ -64,12 +64,15 @@ extern const char kSettingsEnforcementGroupEnforceAlwaysWithExtensionsAndDSE[];
 // guaranteed that in asynchronous version initialization happens after this
 // function returned.
 
+// |user_pref_store| instance is an existing pref store that the local state
+// PrefService uses as its persistent user pref store.
 std::unique_ptr<PrefService> CreateLocalState(
     const base::FilePath& pref_filename,
     policy::PolicyService* policy_service,
     scoped_refptr<PrefRegistry> pref_registry,
     bool async,
-    std::unique_ptr<PrefValueStore::Delegate> delegate);
+    std::unique_ptr<PrefValueStore::Delegate> delegate,
+    scoped_refptr<PersistentPrefStore> user_pref_store);
 
 std::unique_ptr<sync_preferences::PrefServiceSyncable> CreateProfilePrefs(
     const base::FilePath& pref_filename,

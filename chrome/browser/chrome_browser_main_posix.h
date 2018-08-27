@@ -10,9 +10,10 @@
 
 class ChromeBrowserMainPartsPosix : public ChromeBrowserMainParts {
  public:
-  explicit ChromeBrowserMainPartsPosix(
+  ChromeBrowserMainPartsPosix(
       const content::MainFunctionParams& parameters,
-      std::unique_ptr<ui::DataPack> data_pack);
+      std::unique_ptr<ui::DataPack> data_pack,
+      ChromeFeatureListCreator* chrome_feature_list_creator);
 
   // content::BrowserMainParts overrides.
   int PreEarlyInitialization() override;

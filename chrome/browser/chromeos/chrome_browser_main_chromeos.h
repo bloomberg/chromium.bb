@@ -68,9 +68,10 @@ class UserActivityController;
 // src/ash or chrome/browser/ui/ash.
 class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
  public:
-  explicit ChromeBrowserMainPartsChromeos(
+  ChromeBrowserMainPartsChromeos(
       const content::MainFunctionParams& parameters,
-      std::unique_ptr<ui::DataPack> data_pack);
+      std::unique_ptr<ui::DataPack> data_pack,
+      ChromeFeatureListCreator* chrome_feature_list_creator);
   ~ChromeBrowserMainPartsChromeos() override;
 
   // ChromeBrowserMainParts overrides.

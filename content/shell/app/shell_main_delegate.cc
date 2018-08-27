@@ -414,7 +414,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 #endif
 }
 
-void ShellMainDelegate::PreContentInitialization() {
+void ShellMainDelegate::PreCreateMainMessageLoop() {
 #if defined(OS_ANDROID)
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kRunWebTests) ||

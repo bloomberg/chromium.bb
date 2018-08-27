@@ -877,7 +877,7 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
       base::TaskScheduler::Create("Browser");
     }
 
-    delegate_->PreContentInitialization();
+    delegate_->PreCreateMainMessageLoop();
 
     // Create a MessageLoop if one does not already exist for the current
     // thread. This thread won't be promoted as BrowserThread::UI until
@@ -885,6 +885,7 @@ int ContentMainRunnerImpl::Run(bool start_service_manager_only) {
     if (!base::MessageLoopCurrentForUI::IsSet())
       main_message_loop_ = std::make_unique<base::MessageLoopForUI>();
 
+    delegate_->PostEarlyInitialization();
     return RunBrowserProcessMain(main_params, delegate_);
   }
 #endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
