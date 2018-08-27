@@ -99,7 +99,16 @@ void UkmSource::PopulateProto(Source* proto_source) const {
   if (custom_tab_state_ != kCustomTabUnset)
     proto_source->set_is_custom_tab(custom_tab_state_ == kCustomTabTrue);
 
-  // TODO(csharrison): Populate other fields from |navigation_data_|.
+  if (navigation_data_.previous_source_id != kInvalidSourceId)
+    proto_source->set_previous_source_id(navigation_data_.previous_source_id);
+
+  if (navigation_data_.opener_source_id != kInvalidSourceId)
+    proto_source->set_opener_source_id(navigation_data_.opener_source_id);
+
+  // Tab ids will always be greater than 0. See CreateUniqueTabId in
+  // source_url_recorder.cc
+  if (navigation_data_.tab_id != 0)
+    proto_source->set_tab_id(navigation_data_.tab_id);
 }
 
 }  // namespace ukm
