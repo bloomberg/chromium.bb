@@ -48,9 +48,9 @@ class ExtensionUninstallDialog
     // Called when the dialog closes.
     // |did_start_uninstall| indicates whether the uninstall process for the
     // extension started. If this is false, |error| will contain the reason.
-    virtual void OnExtensionUninstallDialogClosed(
-        bool did_start_uninstall,
-        const base::string16& error) = 0;
+    virtual void OnExtensionUninstallDialogClosed(bool did_start_uninstall,
+                                                  const base::string16& error) {
+    }
 
    protected:
     virtual ~Delegate() {}
