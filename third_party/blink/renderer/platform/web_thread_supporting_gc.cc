@@ -35,11 +35,17 @@ WebThreadSupportingGC::WebThreadSupportingGC(
   WTF::WillCreateThread();
 #endif
   if (!thread_) {
-    // If |thread| is not given, create a new one and own it.
     // TODO(scheduler-dev): AnimationWorklet can pass nullptr as WebThread*
     // reference when a test doesn't have a compositor thread.
-    owning_thread_ = Platform::Current()->CreateThread(
-        params ? *params : WebThreadCreationParams(WebThreadType::kTestThread));
+    if (params->thread_type == WebThreadType::kAudioWorkletThread) {
+      owning_thread_ = Platform::Current()->CreateWebAudioThread();
+    } else {
+      // If |thread| is not given, create a new one and own it.
+      owning_thread_ =
+          Platform::Current()->CreateThread(params
+              ? *params
+              : WebThreadCreationParams(WebThreadType::kTestThread));
+    }
     thread_ = owning_thread_.get();
   }
   MemoryCoordinator::Instance().RegisterThread(thread_);
