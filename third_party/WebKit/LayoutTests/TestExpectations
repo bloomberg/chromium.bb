@@ -2723,6 +2723,7 @@ crbug.com/870526 external/wpt/push-api/idlharness.https.any.serviceworker.html [
 crbug.com/875249 external/wpt/infrastructure/testdriver/bless.html [ Timeout Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/html/rendering/non-replaced-elements/the-fieldset-element-0/fieldset-vertical.html [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-16.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-83.xml [ Failure ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-64.xml [ Skip ]
