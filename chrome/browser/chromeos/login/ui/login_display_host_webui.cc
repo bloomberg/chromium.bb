@@ -111,6 +111,7 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
+namespace chromeos {
 namespace {
 
 // Maximum delay for startup sound after 'loginPromptVisible' signal.
@@ -139,14 +140,6 @@ const int kCrashCountLimit = 5;
 
 // The default fade out animation time in ms.
 const int kDefaultFadeTimeMs = 200;
-
-// Whether to enable tnitializing WebUI in hidden state (see
-// |initialize_webui_hidden_|) by default.
-const bool kHiddenWebUIInitializationDefault = true;
-
-// Switch values that might be used to override WebUI init type.
-const char kWebUIInitParallel[] = "parallel";
-const char kWebUIInitPostpone[] = "postpone";
 
 // A class to observe an implicit animation and invokes the callback after the
 // animation is completed.
@@ -358,9 +351,25 @@ bool CanPlayStartupSound() {
          device.type != chromeos::AudioDeviceType::AUDIO_TYPE_OTHER;
 }
 
-}  // namespace
+bool ShouldInitializeWebUIHidden() {
+  // Not supported under mash.
+  if (features::IsUsingWindowService())
+    return false;
 
-namespace chromeos {
+  // Always postpone WebUI initialization on first boot, otherwise we miss
+  // initial animation.
+  if (!StartupUtils::IsOobeCompleted())
+    return false;
+
+  // Tests and kiosk app autolaunch don't support hidden.
+  if (WizardController::IsZeroDelayEnabled())
+    return false;
+
+  // Default.
+  return true;
+}
+
+}  // namespace
 
 // static
 const int LoginDisplayHostWebUI::kShowLoginWebUIid = 0x1111;
@@ -429,12 +438,12 @@ class LoginDisplayHostWebUI::LoginWidgetDelegate
 // LoginDisplayHostWebUI, public
 
 LoginDisplayHostWebUI::LoginDisplayHostWebUI()
-    : oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
+    : initialize_webui_hidden_(ShouldInitializeWebUIHidden()),
+      oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
       weak_factory_(this) {
   if (features::IsUsingWindowService()) {
-    // Animation, and initializing hidden, are not currently supported for Mash.
+    // Animation is not currently supported for Mash.
     finalize_animation_type_ = ANIMATION_NONE;
-    initialize_webui_hidden_ = false;
   }
 
   DBusThreadManager::Get()->GetSessionManagerClient()->AddObserver(this);
@@ -454,30 +463,6 @@ LoginDisplayHostWebUI::LoginDisplayHostWebUI()
     zero_delay_enabled = true;
 
   waiting_for_wallpaper_load_ = !zero_delay_enabled;
-
-  // Initializing hidden is not supported in Mash
-  if (!features::IsUsingWindowService()) {
-    initialize_webui_hidden_ =
-        kHiddenWebUIInitializationDefault && !zero_delay_enabled;
-  }
-
-  // Check if WebUI init type is overriden. Not supported in Mash.
-  if (!features::IsUsingWindowService() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshWebUIInit)) {
-    const std::string override_type =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kAshWebUIInit);
-    if (override_type == kWebUIInitParallel)
-      initialize_webui_hidden_ = true;
-    else if (override_type == kWebUIInitPostpone)
-      initialize_webui_hidden_ = false;
-  }
-
-  // Always postpone WebUI initialization on first boot, otherwise we miss
-  // initial animation.
-  if (!StartupUtils::IsOobeCompleted())
-    initialize_webui_hidden_ = false;
 
   if (waiting_for_wallpaper_load_) {
     registrar_.Add(this, chrome::NOTIFICATION_WALLPAPER_ANIMATION_FINISHED,
