@@ -6,6 +6,7 @@
 
 import atexit
 import httplib
+import json
 import os
 import platform
 import random
@@ -15,6 +16,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import urlparse
 import zipfile
 
@@ -253,3 +255,44 @@ def FindProbableFreePorts():
       # it.
       yield port
   raise RuntimeError('Cannot find open port')
+
+
+def WriteResultToJSONFile(tests, result, json_path):
+  """Write a unittest result object to a file as a JSON.
+
+  This takes a result object from a run of Python unittest tests and writes
+  it to a file in the correct format for the --isolated-script-test-output
+  argument passed to test isolates.
+
+  Args:
+    tests: unittest.TestSuite that was run to get the result object; iterated
+      to get all test cases that were run.
+    result: unittest.TextTestResult object returned from running unittest tests.
+    json_path: desired path to JSON file of result.
+  """
+  output = {
+      'interrupted': False,
+      'num_failures_by_type': {},
+      'path_delimiter': '.',
+      'seconds_since_epoch': time.time(),
+      'tests': {},
+      'version': 3,
+  }
+
+  for test in tests:
+    output['tests'][test.id()] = {
+        'expected': 'PASS',
+        'actual': 'PASS'
+    }
+
+  for failure in result.failures + result.errors:
+    output['tests'][failure[0].id()]['actual'] = 'FAIL'
+    output['tests'][failure[0].id()]['is_unexpected'] = True
+
+  num_fails = len(result.failures) + len(result.errors)
+  output['num_failures_by_type']['FAIL'] = num_fails
+  output['num_failures_by_type']['PASS'] = len(output['tests']) - num_fails
+
+  with open(json_path, 'w') as script_out_file:
+    json.dump(output, script_out_file)
+    script_out_file.write('\n')

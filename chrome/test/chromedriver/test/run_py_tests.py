@@ -2983,31 +2983,7 @@ if __name__ == '__main__':
   MobileEmulationCapabilityTest.GlobalTearDown()
 
   if options.isolated_script_test_output:
-    output = {
-        'interrupted': False,
-        'num_failures_by_type': { },
-        'path_delimiter': '.',
-        'seconds_since_epoch': time.time(),
-        'tests': { },
-        'version': 3,
-    }
-
-    for test in tests:
-      output['tests'][test.id()] = {
-          'expected': 'PASS',
-          'actual': 'PASS'
-      }
-
-    for failure in result.failures + result.errors:
-      output['tests'][failure[0].id()]['actual'] = 'FAIL'
-      output['tests'][failure[0].id()]['is_unexpected'] = True
-
-    num_fails = len(result.failures) + len(result.errors)
-    output['num_failures_by_type']['FAIL'] = num_fails
-    output['num_failures_by_type']['PASS'] = len(output['tests']) - num_fails
-
-    with open(options.isolated_script_test_output, 'w') as fp:
-      json.dump(output, fp)
-      fp.write('\n')
+    util.WriteResultToJSONFile(tests, result,
+                               options.isolated_script_test_output)
 
   sys.exit(len(result.failures) + len(result.errors))
