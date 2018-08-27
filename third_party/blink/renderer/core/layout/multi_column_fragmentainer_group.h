@@ -126,22 +126,7 @@ class CORE_EXPORT MultiColumnFragmentainerGroup {
 
   LayoutRect FlowThreadPortionRectAt(unsigned column_index) const;
 
-  enum ClipRectAxesSelector {
-    // Only limit the clip rectangle in the block direction. Leave inline
-    // position and length at infinity. Certain operations require this. Those
-    // operations would typically ideally want no clipping at all, but in our
-    // implementation we have to clip in the block direction, in order to slice
-    // the flow thread properly into columns.
-    kBlockDirectionAxis,
-
-    // Limit the clip rectangle along both axes. This is what to use for
-    // painting and hit testing.
-    kBothAxes
-  };
-
-  LayoutRect FlowThreadPortionOverflowRectAt(
-      unsigned column_index,
-      ClipRectAxesSelector = kBothAxes) const;
+  LayoutRect FlowThreadPortionOverflowRectAt(unsigned column_index) const;
 
   // Get the first and the last column intersecting the specified block range.
   // Note that |logicalBottomInFlowThread| is an exclusive endpoint.

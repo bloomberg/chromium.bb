@@ -7,7 +7,7 @@ layer at (0,0) size 785x3116 backgroundClip at (0,0) size 785x600 clip at (0,0) 
 layer at (8,8) size 250x100
   LayoutBlockFlow {DIV} at (0,0) size 250x100
     LayoutMultiColumnSet (anonymous) at (0,0) size 250x71
-layer at (8,8) size 117x142 backgroundClip at (0,0) size 133x79 clip at (0,0) size 133x79
+layer at (8,8) size 117x142 backgroundClip at (0,0) size 785x79 clip at (0,0) size 785x79
   LayoutMultiColumnFlowThread (anonymous) at (0,0) size 117x142
     LayoutBlockFlow {DIV} at (0,0) size 30x30
     LayoutBlockFlow (anonymous) at (0,71) size 117x71

@@ -149,8 +149,7 @@ void LayoutFlowThread::AbsoluteQuadsForDescendant(const LayoutBox& descendant,
     LayoutRect fragment = bounding_rect_in_flow_thread;
     // We use inclusiveIntersect() because intersect() would reset the
     // coordinates for zero-height objects.
-    LayoutRect clip_rect = iterator.ClipRectInFlowThread(
-        MultiColumnFragmentainerGroup::kBlockDirectionAxis);
+    LayoutRect clip_rect = iterator.ClipRectInFlowThread();
     fragment.InclusiveIntersect(clip_rect);
     fragment.MoveBy(-offset_from_flow_thread);
     quads.push_back(descendant.LocalToAbsoluteQuad(FloatRect(fragment), mode));

@@ -460,12 +460,9 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionRectAt(
 static const int kMulticolMaxClipPixels = 1000000;
 
 LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
-    unsigned column_index,
-    ClipRectAxesSelector axes_selector) const {
+    unsigned column_index) const {
   // This function determines the portion of the flow thread that paints for the
-  // column. Along the inline axis, columns are unclipped at outside edges
-  // (i.e., the first and last column in the set), and they clip to half the
-  // column gap along interior edges.
+  // column.
   //
   // In the block direction, we will not clip overflow out of the top of the
   // first column, or out of the bottom of the last column. This applies only to
@@ -476,11 +473,6 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
   // contents from a previous column in the overflow area of a following column.
   bool is_first_column_in_row = !column_index;
   bool is_last_column_in_row = column_index == ActualColumnCount() - 1;
-  bool is_ltr = column_set_.StyleRef().IsLeftToRightDirection();
-  bool is_leftmost_column =
-      is_ltr ? is_first_column_in_row : is_last_column_in_row;
-  bool is_rightmost_column =
-      is_ltr ? is_last_column_in_row : is_first_column_in_row;
 
   LayoutRect portion_rect = FlowThreadPortionRectAt(column_index);
   bool is_first_column_in_multicol_container =
@@ -498,33 +490,16 @@ LayoutRect MultiColumnFragmentainerGroup::FlowThreadPortionOverflowRectAt(
   LayoutRect overflow_rect(
       IntRect(-kMulticolMaxClipPixels, -kMulticolMaxClipPixels,
               2 * kMulticolMaxClipPixels, 2 * kMulticolMaxClipPixels));
-  LayoutUnit column_gap = column_set_.ColumnGap();
   if (column_set_.IsHorizontalWritingMode()) {
     if (!is_first_column_in_multicol_container)
       overflow_rect.ShiftYEdgeTo(portion_rect.Y());
     if (!is_last_column_in_multicol_container)
       overflow_rect.ShiftMaxYEdgeTo(portion_rect.MaxY());
-    if (axes_selector == kBothAxes) {
-      if (!is_leftmost_column)
-        overflow_rect.ShiftXEdgeTo(portion_rect.X() - column_gap / 2);
-      if (!is_rightmost_column) {
-        overflow_rect.ShiftMaxXEdgeTo(portion_rect.MaxX() + column_gap -
-                                      column_gap / 2);
-      }
-    }
   } else {
     if (!is_first_column_in_multicol_container)
       overflow_rect.ShiftXEdgeTo(portion_rect.X());
     if (!is_last_column_in_multicol_container)
       overflow_rect.ShiftMaxXEdgeTo(portion_rect.MaxX());
-    if (axes_selector == kBothAxes) {
-      if (!is_leftmost_column)
-        overflow_rect.ShiftYEdgeTo(portion_rect.Y() - column_gap / 2);
-      if (!is_rightmost_column) {
-        overflow_rect.ShiftMaxYEdgeTo(portion_rect.MaxY() + column_gap -
-                                      column_gap / 2);
-      }
-    }
   }
   return overflow_rect;
 }
