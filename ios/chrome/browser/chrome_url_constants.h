@@ -103,10 +103,6 @@ extern const char kGoogleHistoryURL[];
 // Google my account URL for the sign-in confirmation screen.
 extern const char kGoogleMyAccountURL[];
 
-// URL used in referrer to signal that the navigation originates from the New
-// Tab page and thus should not be considered for Most Visited.
-extern const char kNewTabPageReferrerURL[];
-
 // URL used in referrer to signal that the navigation originates from Reading
 // List page and thus should not be considered for Most Visited.
 extern const char kReadingListReferrerURL[];

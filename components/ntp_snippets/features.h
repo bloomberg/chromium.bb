@@ -140,6 +140,8 @@ extern const base::Feature kContentSuggestionsDebugLog;
 // Return all the features as a vector.
 std::vector<const base::Feature*> GetAllFeatures();
 
+// Return a referrer URL for content suggestions.
+std::string GetContentSuggestionsReferrerURL();
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_FEATURES_H_

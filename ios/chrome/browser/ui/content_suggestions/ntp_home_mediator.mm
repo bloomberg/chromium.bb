@@ -10,6 +10,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/ntp_snippets/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
@@ -241,7 +242,8 @@ const char kRateThisAppCommand[] = "ratethisapp";
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
   params.referrer =
-      web::Referrer(GURL(kNewTabPageReferrerURL), web::ReferrerPolicyDefault);
+      web::Referrer(GURL(ntp_snippets::GetContentSuggestionsReferrerURL()),
+                    web::ReferrerPolicyDefault);
   params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   [self.dispatcher loadURLWithParams:params];
   [self.NTPMetrics recordAction:new_tab_page_uma::ACTION_OPENED_SUGGESTION];

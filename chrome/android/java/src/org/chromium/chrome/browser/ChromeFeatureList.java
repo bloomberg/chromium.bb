@@ -236,6 +236,7 @@ public abstract class ChromeFeatureList {
     public static final String NEW_PHOTO_PICKER = "NewPhotoPicker";
 
     public static final String NO_CREDIT_CARD_ABORT = "NoCreditCardAbort";
+    public static final String NTP_ARTICLE_SUGGESTIONS = "NTPArticleSuggestions";
     public static final String NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER =
             "NTPArticleSuggestionsExpandableHeader";
     public static final String NTP_BUTTON = "NTPButton";

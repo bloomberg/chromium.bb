@@ -8,6 +8,7 @@
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/ntp_snippets/features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
@@ -161,7 +162,7 @@ void HistoryTabHelper::DidFinishNavigation(
   // Navigations originating from New Tab Page or Reading List should not
   // contribute to Most Visited.
   const bool consider_for_ntp_most_visited =
-      referrer_url != kNewTabPageReferrerURL &&
+      referrer_url != ntp_snippets::GetContentSuggestionsReferrerURL() &&
       referrer_url != kReadingListReferrerURL;
 
   // Top-level frame navigations are visible; everything else is hidden.
