@@ -872,8 +872,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                         mActivity.getCompositorViewHolder().getLayoutManager(),
                         wrapBottomToolbarClickListenerForIPH(tabSwitcherClickHandler),
                         mAppMenuButtonHelper, mTabModelSelector, mOverviewModeBehavior,
-                        mActivity.getContextualSearchManager(), mActivity.getWindowAndroid(),
-                        firstSlotTabSwitcherButtonData,
+                        mActivity.getWindowAndroid(), firstSlotTabSwitcherButtonData,
                         createNewTabButton(
                                 wrapBottomToolbarClickListenerForIPH(newTabClickHandler)));
 

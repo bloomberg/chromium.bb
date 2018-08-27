@@ -232,6 +232,13 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         setNextLayout(null);
     }
 
+    /**
+     * @return The layout manager's panel manager.
+     */
+    public OverlayPanelManager getOverlayPanelManager() {
+        return mOverlayPanelManager;
+    }
+
     @Override
     public CompositorAnimationHandler getAnimationHandler() {
         return mAnimationHandler;

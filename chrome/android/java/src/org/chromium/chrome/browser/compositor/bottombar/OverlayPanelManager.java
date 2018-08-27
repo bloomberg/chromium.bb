@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.compositor.bottombar;
 import android.support.annotation.IntDef;
 import android.view.ViewGroup;
 
+import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -23,6 +24,19 @@ import java.util.Set;
  * Used to decide which panel should be showing on screen at any moment.
  */
 public class OverlayPanelManager {
+    /** An observer of panel visibility. */
+    public interface OverlayPanelManagerObserver {
+        /**
+         * A notification that an {@link OverlayPanel} has been shown.
+         */
+        void onOverlayPanelShown();
+
+        /**
+         * A notification that an {@link OverlayPanel} has been hidden.
+         */
+        void onOverlayPanelHidden();
+    }
+
     /**
      * Priority of an OverlayPanel; used for deciding which panel will be shown when there are
      * multiple candidates. Values should be numbered from 0 and can't have gaps.
@@ -40,6 +54,9 @@ public class OverlayPanelManager {
 
     /** A map of panels that this class is managing. */
     private final Set<OverlayPanel> mPanelSet;
+
+    /** A list of observers for this manager. */
+    private final ObserverList<OverlayPanelManagerObserver> mObservers;
 
     /** The panel that is currently being displayed. */
     private OverlayPanel mActivePanel;
@@ -76,6 +93,7 @@ public class OverlayPanelManager {
                     }
                 });
         mPanelSet = new HashSet<>();
+        mObservers = new ObserverList<>();
     }
 
     /**
@@ -90,9 +108,7 @@ public class OverlayPanelManager {
         if (mActivePanel == null) {
             // If no panel is currently showing, simply show the requesting panel.
             mActivePanel = panel;
-            // TODO(mdjones): peekPanel should not be exposed publicly since the manager
-            // controls if a panel should show or not.
-            mActivePanel.peekPanel(reason);
+            peekPanel(mActivePanel, reason);
 
         } else if (panel.getPriority() > mActivePanel.getPriority()) {
             // If a panel with higher priority than the active one requests to be shown, suppress
@@ -127,7 +143,7 @@ public class OverlayPanelManager {
                     mSuppressedPanels.add(mActivePanel);
                 }
                 mActivePanel = mPendingPanel;
-                mActivePanel.peekPanel(mPendingReason);
+                peekPanel(mActivePanel, mPendingReason);
                 mPendingPanel = null;
                 mPendingReason = StateChangeReason.UNKNOWN;
             }
@@ -137,12 +153,27 @@ public class OverlayPanelManager {
                 mActivePanel = null;
                 if (!mSuppressedPanels.isEmpty()) {
                     mActivePanel = mSuppressedPanels.poll();
-                    mActivePanel.peekPanel(StateChangeReason.PANEL_UNSUPPRESS);
+                    peekPanel(mActivePanel, StateChangeReason.PANEL_UNSUPPRESS);
                 }
             } else {
                 mSuppressedPanels.remove(panel);
             }
         }
+        for (OverlayPanelManagerObserver o : mObservers) o.onOverlayPanelHidden();
+    }
+
+    /**
+     * Peek an {@link OverlayPanel} and trigger the observer event.
+     * @param overlayPanel The panel to peek.
+     * @param reason The reason the panel was peeked.
+     */
+    private void peekPanel(OverlayPanel overlayPanel, @StateChangeReason int reason) {
+        // TODO(mdjones): peekPanel should not be exposed publicly since the manager
+        // controls if a panel should show or not.
+        overlayPanel.peekPanel(reason);
+        Thread.dumpStack();
+        android.util.Log.w("mdjones", "--------- SHOWING: " + overlayPanel);
+        for (OverlayPanelManagerObserver o : mObservers) o.onOverlayPanelShown();
     }
 
     /**
@@ -216,5 +247,19 @@ public class OverlayPanelManager {
         }
 
         mPanelSet.add(panel);
+    }
+
+    /**
+     * @param observer The observer to add to this manager.
+     */
+    public void addObserver(OverlayPanelManagerObserver observer) {
+        mObservers.addObserver(observer);
+    }
+
+    /**
+     * @param observer The observer to remove from this manager.
+     */
+    public void removeObserver(OverlayPanelManagerObserver observer) {
+        mObservers.removeObserver(observer);
     }
 }
