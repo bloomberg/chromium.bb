@@ -12,7 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/platform_thread.h"
@@ -564,7 +564,7 @@ bool TestDriver::RunTest(const Options& options) {
   options_ = options;
 
   if (options_.should_sample)
-    base::SamplingHeapProfiler::GetInstance()->SuppressRandomnessForTest(true);
+    base::PoissonAllocationSampler::Get()->SuppressRandomnessForTest(true);
 
   running_on_ui_thread_ =
       content::BrowserThread::CurrentlyOn(content::BrowserThread::UI);

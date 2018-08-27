@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/heap/process_heap.h"
 
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "third_party/blink/renderer/platform/heap/gc_info.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/persistent_node.h"
@@ -15,13 +15,13 @@ namespace blink {
 namespace {
 
 void BlinkGCAllocHook(uint8_t* address, size_t size, const char* context) {
-  base::SamplingHeapProfiler::RecordAlloc(
-      address, size, base::SamplingHeapProfiler::AllocatorType::kBlinkGC,
+  base::PoissonAllocationSampler::RecordAlloc(
+      address, size, base::PoissonAllocationSampler::AllocatorType::kBlinkGC,
       context);
 }
 
 void BlinkGCFreeHook(uint8_t* address) {
-  base::SamplingHeapProfiler::RecordFree(address);
+  base::PoissonAllocationSampler::RecordFree(address);
 }
 
 }  // namespace
@@ -33,7 +33,7 @@ void ProcessHeap::Init() {
 
   GCInfoTable::CreateGlobalTable();
 
-  base::SamplingHeapProfiler::SetHooksInstallCallback([]() {
+  base::PoissonAllocationSampler::SetHooksInstallCallback([]() {
     HeapAllocHooks::SetAllocationHook(&BlinkGCAllocHook);
     HeapAllocHooks::SetFreeHook(&BlinkGCFreeHook);
   });

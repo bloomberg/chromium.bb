@@ -81,18 +81,18 @@ Response InspectorMemoryAgent::startSampling(
       in_sampling_interval.fromMaybe(kDefaultNativeMemorySamplingInterval);
   if (interval <= 0)
     return Response::Error("Invalid sampling rate.");
-  base::SamplingHeapProfiler::GetInstance()->SetSamplingInterval(interval);
+  base::SamplingHeapProfiler::Get()->SetSamplingInterval(interval);
   sampling_profile_interval_.Set(interval);
   if (in_suppressRandomness.fromMaybe(false))
-    base::SamplingHeapProfiler::GetInstance()->SuppressRandomnessForTest(true);
-  profile_id_ = base::SamplingHeapProfiler::GetInstance()->Start();
+    base::PoissonAllocationSampler::Get()->SuppressRandomnessForTest(true);
+  profile_id_ = base::SamplingHeapProfiler::Get()->Start();
   return Response::OK();
 }
 
 Response InspectorMemoryAgent::stopSampling() {
   if (sampling_profile_interval_.Get() == 0)
     return Response::Error("Sampling profiler is not started.");
-  base::SamplingHeapProfiler::GetInstance()->Stop();
+  base::SamplingHeapProfiler::Get()->Stop();
   sampling_profile_interval_.Clear();
   return Response::OK();
 }
@@ -116,7 +116,7 @@ InspectorMemoryAgent::GetSamplingProfileById(uint32_t id) {
       samples =
           protocol::Array<protocol::Memory::SamplingProfileNode>::create();
   std::vector<base::SamplingHeapProfiler::Sample> raw_samples =
-      base::SamplingHeapProfiler::GetInstance()->GetSamples(id);
+      base::SamplingHeapProfiler::Get()->GetSamples(id);
 
   for (auto& it : raw_samples) {
     std::unique_ptr<protocol::Array<protocol::String>> stack =

@@ -7,12 +7,12 @@
 
 #include <memory>
 
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 
 namespace heap_profiling {
 
 class SamplingProfilerWrapper
-    : private base::SamplingHeapProfiler::SamplesObserver {
+    : private base::PoissonAllocationSampler::SamplesObserver {
  public:
   SamplingProfilerWrapper();
   ~SamplingProfilerWrapper() override;
@@ -20,11 +20,11 @@ class SamplingProfilerWrapper
   void StartProfiling(size_t sampling_rate);
 
  private:
-  // base::SamplingHeapProfiler::SamplesObserver
+  // base::PoissonAllocationSampler::SamplesObserver
   void SampleAdded(void* address,
                    size_t size,
                    size_t total,
-                   base::SamplingHeapProfiler::AllocatorType,
+                   base::PoissonAllocationSampler::AllocatorType,
                    const char* context) override;
   void SampleRemoved(void* address) override;
 };

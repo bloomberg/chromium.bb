@@ -9,17 +9,17 @@
 namespace heap_profiling {
 namespace {
 
-AllocatorType ConvertType(base::SamplingHeapProfiler::AllocatorType type) {
-  static_assert(
-      static_cast<uint32_t>(base::SamplingHeapProfiler::AllocatorType::kMax) ==
-          static_cast<uint32_t>(AllocatorType::kCount),
-      "AllocatorType lengths do not match.");
+AllocatorType ConvertType(base::PoissonAllocationSampler::AllocatorType type) {
+  static_assert(static_cast<uint32_t>(
+                    base::PoissonAllocationSampler::AllocatorType::kMax) ==
+                    static_cast<uint32_t>(AllocatorType::kCount),
+                "AllocatorType lengths do not match.");
   switch (type) {
-    case base::SamplingHeapProfiler::AllocatorType::kMalloc:
+    case base::PoissonAllocationSampler::AllocatorType::kMalloc:
       return AllocatorType::kMalloc;
-    case base::SamplingHeapProfiler::AllocatorType::kPartitionAlloc:
+    case base::PoissonAllocationSampler::AllocatorType::kPartitionAlloc:
       return AllocatorType::kPartitionAlloc;
-    case base::SamplingHeapProfiler::AllocatorType::kBlinkGC:
+    case base::PoissonAllocationSampler::AllocatorType::kBlinkGC:
       return AllocatorType::kOilpan;
     default:
       NOTREACHED();
@@ -30,24 +30,24 @@ AllocatorType ConvertType(base::SamplingHeapProfiler::AllocatorType type) {
 }  // namespace
 
 SamplingProfilerWrapper::SamplingProfilerWrapper() {
-  base::SamplingHeapProfiler::GetInstance()->AddSamplesObserver(this);
+  base::PoissonAllocationSampler::Get()->AddSamplesObserver(this);
 }
 
 SamplingProfilerWrapper::~SamplingProfilerWrapper() {
-  base::SamplingHeapProfiler::GetInstance()->RemoveSamplesObserver(this);
+  base::PoissonAllocationSampler::Get()->RemoveSamplesObserver(this);
 }
 
 void SamplingProfilerWrapper::StartProfiling(size_t sampling_rate) {
-  auto* profiler = base::SamplingHeapProfiler::GetInstance();
-  profiler->SetSamplingInterval(sampling_rate);
-  profiler->Start();
+  auto* sampler = base::PoissonAllocationSampler::Get();
+  sampler->SetSamplingInterval(sampling_rate);
+  sampler->Start();
 }
 
 void SamplingProfilerWrapper::SampleAdded(
     void* address,
     size_t size,
     size_t total,
-    base::SamplingHeapProfiler::AllocatorType type,
+    base::PoissonAllocationSampler::AllocatorType type,
     const char* context) {
   RecordAndSendAlloc(ConvertType(type), address, size, context);
 }

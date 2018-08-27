@@ -731,6 +731,8 @@ jumbo_component("base") {
     "sampling_heap_profiler/module_cache.h",
     "sampling_heap_profiler/module_cache_mac.cc",
     "sampling_heap_profiler/module_cache_win.cc",
+    "sampling_heap_profiler/poisson_allocation_sampler.cc",
+    "sampling_heap_profiler/poisson_allocation_sampler.h",
     "sampling_heap_profiler/sampling_heap_profiler.cc",
     "sampling_heap_profiler/sampling_heap_profiler.h",
     "scoped_clear_errno.h",
@@ -3094,7 +3096,7 @@ if (is_android) {
   }
 
   android_library("base_junit_test_support") {
-    # Plaform checks are broken for Robolectric.
+    # Platform checks are broken for Robolectric.
     bypass_platform_checks = true
     testonly = true
     java_files = [

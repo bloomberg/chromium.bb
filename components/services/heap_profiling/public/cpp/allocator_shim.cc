@@ -15,7 +15,7 @@
 #include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
-#include "base/sampling_heap_profiler/sampling_heap_profiler.h"
+#include "base/sampling_heap_profiler/poisson_allocation_sampler.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/threading/thread_local.h"
@@ -683,7 +683,7 @@ class FrameSerializer {
 }  // namespace
 
 void InitTLSSlot() {
-  base::SamplingHeapProfiler::InitTLSSlot();
+  base::PoissonAllocationSampler::Init();
   InitializeReentrancyKey();
   ignore_result(ShimStateTLS());
 }

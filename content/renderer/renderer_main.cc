@@ -84,10 +84,9 @@ int RendererMain(const MainFunctionParams& parameters) {
 
   const base::CommandLine& command_line = parameters.command_line;
 
-  base::SamplingHeapProfiler::InitTLSSlot();
+  base::SamplingHeapProfiler::Init();
   if (command_line.HasSwitch(switches::kSamplingHeapProfiler)) {
-    base::SamplingHeapProfiler* profiler =
-        base::SamplingHeapProfiler::GetInstance();
+    base::SamplingHeapProfiler* profiler = base::SamplingHeapProfiler::Get();
     unsigned sampling_interval = 0;
     bool parsed = base::StringToUint(
         command_line.GetSwitchValueASCII(switches::kSamplingHeapProfiler),
