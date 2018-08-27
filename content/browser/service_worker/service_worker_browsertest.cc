@@ -1998,21 +1998,32 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerNavigationPreloadTest, NetworkFallback) {
   EXPECT_EQ("Hello world.",
             LoadNavigationPreloadTestPage(page_url, worker_url, "PASS"));
 
-  // The page request must be sent once or twice:
+  // The page request can be sent one, two, or three times.
   // - A navigation preload request may be sent. But it is possible that the
   //   navigation preload request is canceled before reaching the server.
   // - A fallback request must be sent since respondWith wasn't used.
+  // - A second fallback request can be sent because the HttpCache may get
+  //   confused when there are two concurrent requests (navigation preload and
+  //   fallback) and one of them is cancelled (navigation preload). It restarts
+  //   the ongoing request, possibly triggering another network request (see
+  //   https://crbug.com/876911).
   const int request_count = GetRequestCount(kPageUrl);
-  ASSERT_TRUE(request_count == 1 || request_count == 2);
+  ASSERT_TRUE(request_count == 1 || request_count == 2 || request_count == 3)
+      << request_count;
   if (request_count == 1) {
     // Fallback request.
     EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][0]));
-  } else if (request_count == 2) {
+  } else {
     // Navigation preload request.
     ASSERT_TRUE(HasNavigationPreloadHeader(request_log_[kPageUrl][0]));
     EXPECT_EQ("true", GetNavigationPreloadHeader(request_log_[kPageUrl][0]));
     // Fallback request.
     EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][1]));
+
+    // Additional fallback request when the HttpCache reissues a network
+    // request.
+    if (request_count == 3)
+      EXPECT_FALSE(HasNavigationPreloadHeader(request_log_[kPageUrl][2]));
   }
 }
 
