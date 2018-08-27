@@ -199,11 +199,6 @@ class BASE_EXPORT TimeDelta {
   double InMicrosecondsF() const;
   int64_t InNanoseconds() const;
 
-  constexpr TimeDelta& operator=(TimeDelta other) {
-    delta_ = other.delta_;
-    return *this;
-  }
-
   // Computations with other deltas. Can easily be made constexpr with C++17 but
   // hard to do until then per limitations around
   // __builtin_(add|sub)_overflow in safe_math_clang_gcc_impl.h :
@@ -282,11 +277,6 @@ class BASE_EXPORT TimeDelta {
   constexpr bool operator>=(TimeDelta other) const {
     return delta_ >= other.delta_;
   }
-
-#if defined(OS_WIN)
-  // This works around crbug.com/635974
-  constexpr TimeDelta(const TimeDelta& other) : delta_(other.delta_) {}
-#endif
 
  private:
   friend int64_t time_internal::SaturatedAdd(TimeDelta delta, int64_t value);
@@ -375,7 +365,7 @@ class TimeBase {
   //
   // DEPRECATED - Do not use in new code. For serializing Time values, prefer
   // Time::ToDeltaSinceWindowsEpoch().InMicroseconds(). http://crbug.com/634507
-  int64_t ToInternalValue() const { return us_; }
+  constexpr int64_t ToInternalValue() const { return us_; }
 
   // The amount of time since the origin (or "zero") point. This is a syntactic
   // convenience to aid in code readability, mainly for debugging/testing use
@@ -799,7 +789,7 @@ constexpr TimeDelta TimeDelta::FromDouble(double value) {
 // static
 constexpr TimeDelta TimeDelta::FromProduct(int64_t value,
                                            int64_t positive_value) {
-  DCHECK(positive_value > 0);
+  DCHECK(positive_value > 0);  // NOLINT, DCHECK_GT isn't constexpr.
   return value > std::numeric_limits<int64_t>::max() / positive_value
              ? Max()
              : value < std::numeric_limits<int64_t>::min() / positive_value
@@ -903,8 +893,8 @@ class BASE_EXPORT TimeTicks : public time_internal::TimeBase<TimeTicks> {
     return TimeTicks(us);
   }
 
-#if defined(OS_WIN)
  protected:
+#if defined(OS_WIN)
   typedef DWORD (*TickFunctionType)(void);
   static TickFunctionType SetMockTickFunction(TickFunctionType ticker);
 #endif
@@ -926,8 +916,7 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& os, TimeTicks time_ticks);
 // thread is running.
 class BASE_EXPORT ThreadTicks : public time_internal::TimeBase<ThreadTicks> {
  public:
-  ThreadTicks() : TimeBase(0) {
-  }
+  constexpr ThreadTicks() : TimeBase(0) {}
 
   // Returns true if ThreadTicks::Now() is supported on this system.
   static bool IsSupported() WARN_UNUSED_RESULT {
