@@ -60,7 +60,8 @@ bool AreGamepadButtonAxisEventsEnabled() {
 }
 
 size_t GetGamepadPollingInterval() {
-  size_t polling_interval = kPollingIntervalMillisecondsMax;
+  // Default to the minimum polling interval.
+  size_t polling_interval = kPollingIntervalMillisecondsMin;
 
   // Check if the polling interval is overridden by a field trial.
   if (base::FeatureList::IsEnabled(kGamepadPollingInterval)) {
