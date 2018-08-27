@@ -1211,13 +1211,9 @@ bool WebLocalFrameImpl::HasSelection() const {
     return plugin_container->Plugin()->HasSelection();
 
   // frame()->selection()->isNone() never returns true.
-  return GetFrame()
-             ->Selection()
-             .ComputeVisibleSelectionInDOMTreeDeprecated()
-             .Start() != GetFrame()
-                             ->Selection()
-                             .ComputeVisibleSelectionInDOMTreeDeprecated()
-                             .End();
+  const auto& selection =
+      GetFrame()->Selection().ComputeVisibleSelectionInDOMTreeDeprecated();
+  return selection.Start() != selection.End();
 }
 
 WebRange WebLocalFrameImpl::SelectionRange() const {

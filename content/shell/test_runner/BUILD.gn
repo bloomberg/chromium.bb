@@ -106,6 +106,7 @@ component("test_runner") {
     "//content/public/renderer",
     "//content/renderer:for_content_tests",
     "//content/shell:layout_test_switches",
+    "//content/shell:layout_test_utils",
     "//content/test:test_runner_support",
     "//device/base/synchronization",
     "//device/gamepad/public/cpp:shared_with_blink",

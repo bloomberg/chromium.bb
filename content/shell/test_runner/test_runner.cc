@@ -1600,6 +1600,10 @@ void TestRunner::SetTestIsRunning(bool running) {
   test_is_running_ = running;
 }
 
+bool TestRunner::ShouldDumpSelectionRect() const {
+  return layout_test_runtime_flags_.dump_selection_rect();
+}
+
 bool TestRunner::shouldDumpEditingCallbacks() const {
   return layout_test_runtime_flags_.dump_editting_callbacks();
 }

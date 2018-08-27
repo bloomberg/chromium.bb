@@ -52,6 +52,10 @@ class WebTestRunner {
   // (i.e. text mode if testRunner.dumpAsText() was called from javascript).
   virtual std::string DumpLayout(blink::WebLocalFrame* frame) = 0;
 
+  // Returns true if the selection window should be painted onto captured
+  // pixels.
+  virtual bool ShouldDumpSelectionRect() const = 0;
+
   // Snapshots image of |web_view| using the mode requested by the current test
   // and calls |callback| with the result.  Caller needs to ensure that
   // |web_view| stays alive until |callback| is called.

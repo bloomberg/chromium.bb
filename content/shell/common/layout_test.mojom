@@ -22,7 +22,7 @@ struct ShellTestConfiguration {
   // True if pixel tests are enabled.
   bool enable_pixel_dumping = true;
 
-  // True if tests can open external URLs
+  // True if tests can open external URLs.
   bool allow_external_pages;
 
   // The expected MD5 hash of the pixel results.
@@ -43,6 +43,9 @@ struct LayoutTestDump {
   // Image dump.
   skia.mojom.Bitmap? pixels;
   string actual_pixel_hash;
+
+  // Selection rect dump.
+  gfx.mojom.Rect selection_rect;
 };
 
 interface LayoutTestControl {

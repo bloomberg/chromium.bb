@@ -16,6 +16,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "content/shell/common/layout_test/layout_test_utils.h"
 #include "content/shell/test_runner/layout_test_runtime_flags.h"
 #include "services/service_manager/public/cpp/connector.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
@@ -60,17 +61,7 @@ void DrawSelectionRect(
     const blink::WebRect& wr,
     base::OnceCallback<void(const SkBitmap&)> original_callback,
     const SkBitmap& bitmap) {
-  // Render a red rectangle bounding selection rect
-  cc::SkiaPaintCanvas canvas(bitmap);
-  cc::PaintFlags flags;
-  flags.setColor(0xFFFF0000);  // Fully opaque red
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setAntiAlias(true);
-  flags.setStrokeWidth(1.0f);
-  SkIRect rect;  // Bounding rect
-  rect.set(wr.x, wr.y, wr.x + wr.width, wr.y + wr.height);
-  canvas.drawIRect(rect, flags);
-
+  content::layout_test_utils::DrawSelectionRect(bitmap, wr);
   std::move(original_callback).Run(bitmap);
 }
 
