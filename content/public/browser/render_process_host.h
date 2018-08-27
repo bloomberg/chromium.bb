@@ -457,6 +457,16 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // be posted back on the UI thread).
   void PostTaskWhenProcessIsReady(base::OnceClosure task);
 
+  // Controls whether the destructor of RenderProcessHost*Impl* will end up
+  // cleaning the memory used by the exception added via
+  // RenderProcessHostImpl::AddCorbExceptionForPlugin.
+  //
+  // TODO(lukasza): https://crbug.com/652474: This method shouldn't be part of
+  // the //content public API, because it shouldn't be called by anyone other
+  // than RenderProcessHostImpl (from underneath
+  // RenderProcessHostImpl::AddCorbExceptionForPlugin).
+  virtual void CleanupCorbExceptionForPluginUponDestruction() = 0;
+
   // Static management functions -----------------------------------------------
 
   // Possibly start an unbound, spare RenderProcessHost. A subsequent creation

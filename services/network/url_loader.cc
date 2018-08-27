@@ -352,7 +352,9 @@ URLLoader::URLLoader(
 
   is_nocors_corb_excluded_request_ =
       resource_type_ == factory_params_->corb_excluded_resource_type &&
-      request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS;
+      request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS &&
+      CrossOriginReadBlocking::ShouldAllowForPlugin(
+          factory_params_->process_id);
 
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
