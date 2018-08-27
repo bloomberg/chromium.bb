@@ -84,30 +84,21 @@ function waitForDirectoryTreeItemLost(appId, name) {
 function keyboardCopy(path) {
   let appId;
 
-  StepsRunner.run([
-    // Open Files app on |path| containing one file entry: world.
-    function() {
-      setupAndWaitUntilReady(
-          null, path, this.next, [ENTRIES.world], [ENTRIES.world]);
-    },
+  return new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, path, resolve, [ENTRIES.world], [ENTRIES.world]);
+  }).then(function(results) {
+    appId = results.windowId;
     // Copy the file into the same file list.
-    function(results) {
-      appId = results.windowId;
-      remoteCall.callRemoteTestUtil(
-          'copyFile', appId, ['world.ogv'], this.next);
-    },
+    return remoteCall.callRemoteTestUtil('copyFile', appId, ['world.ogv']);
+  }).then(function(result) {
+    chrome.test.assertTrue(result, 'copyFile failed');
     // Check: the copied file should appear in the file list.
-    function(result) {
-      chrome.test.assertTrue(result, 'copyFile failed');
-      const files = [['world.ogv', '59 KB', 'OGG video']].concat(
-          [['world (1).ogv', '59 KB', 'OGG video']]);
-      remoteCall.waitForFiles(
-          appId, files, {ignoreLastModifiedTime: true}).then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+    const expectedEntryRows = [ENTRIES.world.getExpectedRow()].concat(
+        [['world (1).ogv', '59 KB', 'OGG video']]);
+    return remoteCall.waitForFiles(
+        appId, expectedEntryRows, {ignoreLastModifiedTime: true});
+  });
 }
 
 /**
@@ -319,11 +310,11 @@ function testRenameFile(path) {
 }
 
 testcase.keyboardCopyDownloads = function() {
-  keyboardCopy(RootPath.DOWNLOADS);
+  testPromise(keyboardCopy(RootPath.DOWNLOADS));
 };
 
 testcase.keyboardCopyDrive = function() {
-  keyboardCopy(RootPath.DRIVE);
+  testPromise(keyboardCopy(RootPath.DRIVE));
 };
 
 testcase.keyboardDeleteDownloads = function() {
