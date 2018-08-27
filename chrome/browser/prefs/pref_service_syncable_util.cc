@@ -4,7 +4,7 @@
 
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 
-#include <vector>
+#include <utility>
 
 #include "chrome/browser/prefs/pref_service_incognito_whitelist.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,9 +28,9 @@ CreateIncognitoPrefServiceSyncable(
     sync_preferences::PrefServiceSyncable* pref_service,
     PrefStore* incognito_extension_pref_store,
     std::unique_ptr<PrefValueStore::Delegate> delegate) {
-
   // TODO(https://crbug.com/861722): Current implementation does not cover
-  // preferences from iOS. The code should be refactored to cover it.
+  // preferences from iOS. The code should be refactored to cover it. e.g. Moved
+  // to components/ so it can be used on iOS.
 
   return pref_service->CreateIncognitoPrefService(
       incognito_extension_pref_store,
