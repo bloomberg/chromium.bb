@@ -214,9 +214,7 @@ void UrlFetcherDownloader::OnResponseStarted(
   if (response_head.content_length != -1)
     total_bytes_ = response_head.content_length;
 
-  // TODO(crbug.com/871211): |Result| is not being used on production.
-  // Clean it up.
-  OnDownloadProgress(Result());
+  OnDownloadProgress();
 }
 
 }  // namespace update_client

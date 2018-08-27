@@ -466,12 +466,10 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoUpdate) {
       Result result;
       result.error = 0;
       result.response = path;
-      result.downloaded_bytes = 1843;
-      result.total_bytes = 1843;
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -668,12 +666,10 @@ TEST_F(UpdateClientTest, TwoCrxUpdateFirstServerIgnoresSecond) {
       Result result;
       result.error = 0;
       result.response = path;
-      result.downloaded_bytes = 1843;
-      result.total_bytes = 1843;
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -878,15 +874,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateNoCrxComponentData) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 1843;
-        result.total_bytes = 1843;
       } else {
         NOTREACHED();
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -1204,8 +1198,6 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
         // The result must not include a file path in the case of errors.
         result.error = -118;
-        result.downloaded_bytes = 0;
-        result.total_bytes = 0;
       } else if (url.path() ==
                  "/download/ihfokbkgjpifnbbojhneepfflplebdkc_1.crx") {
         download_metrics.url = url;
@@ -1220,15 +1212,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 53638;
-        result.total_bytes = 53638;
       } else {
         NOTREACHED();
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -1501,8 +1491,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 53638;
-        result.total_bytes = 53638;
       } else if (url.path() ==
                  "/download/ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx") {
         download_metrics.url = url;
@@ -1517,15 +1505,13 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdate) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 2105;
-        result.total_bytes = 2105;
       } else {
         NOTREACHED();
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -1777,12 +1763,10 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       Result result;
       result.error = 0;
       result.response = path;
-      result.downloaded_bytes = 1843;
-      result.total_bytes = 1843;
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -2028,8 +2012,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 53638;
-        result.total_bytes = 53638;
       } else if (url.path() ==
                  "/download/ihfokbkgjpifnbbojhneepfflplebdkc_1to2.crx") {
         // A download error is injected on this execution path.
@@ -2042,8 +2024,6 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
         // The response must not include a file path in the case of errors.
         result.error = -1;
-        result.downloaded_bytes = 0;
-        result.total_bytes = 2105;
       } else if (url.path() ==
                  "/download/ihfokbkgjpifnbbojhneepfflplebdkc_2.crx") {
         download_metrics.url = url;
@@ -2058,13 +2038,11 @@ TEST_F(UpdateClientTest, OneCrxDiffUpdateFailsFullUpdateSucceeds) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 53855;
-        result.total_bytes = 53855;
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -2398,15 +2376,13 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 1843;
-        result.total_bytes = 1843;
       } else {
         NOTREACHED();
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -3185,15 +3161,13 @@ TEST_F(UpdateClientTest, TwoCrxUpdateOneUpdateDisabled) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 53638;
-        result.total_bytes = 53638;
       } else {
         NOTREACHED();
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadProgress,
-                                    base::Unretained(this), result));
+                                    base::Unretained(this)));
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
           FROM_HERE, base::BindOnce(&MockCrxDownloader::OnDownloadComplete,
@@ -3693,8 +3667,6 @@ TEST_F(UpdateClientTest, ActionRun_Install) {
 
         result.error = 0;
         result.response = path;
-        result.downloaded_bytes = 1843;
-        result.total_bytes = 1843;
       } else {
         NOTREACHED();
       }

@@ -59,7 +59,7 @@ class CrxDownloaderTest : public testing::Test {
 
   void DownloadComplete(int crx_context, const CrxDownloader::Result& result);
 
-  void DownloadProgress(int crx_context, const CrxDownloader::Result& result);
+  void DownloadProgress(int crx_context);
 
   int GetInterceptorCount() { return interceptor_count_; }
 
@@ -82,7 +82,6 @@ class CrxDownloaderTest : public testing::Test {
 
   // These members are updated by DownloadProgress.
   int num_progress_calls_;
-  CrxDownloader::Result download_progress_result_;
 
   // Accumulates the number of loads triggered.
   int interceptor_count_ = 0;
@@ -121,7 +120,6 @@ void CrxDownloaderTest::SetUp() {
   num_download_complete_calls_ = 0;
   download_complete_result_ = CrxDownloader::Result();
   num_progress_calls_ = 0;
-  download_progress_result_ = CrxDownloader::Result();
 
   // Do not use the background downloader in these tests.
   crx_downloader_ =
@@ -149,10 +147,8 @@ void CrxDownloaderTest::DownloadComplete(int crx_context,
   Quit();
 }
 
-void CrxDownloaderTest::DownloadProgress(int crx_context,
-                                         const CrxDownloader::Result& result) {
+void CrxDownloaderTest::DownloadProgress(int crx_context) {
   ++num_progress_calls_;
-  download_progress_result_ = result;
 }
 
 void CrxDownloaderTest::AddResponse(const GURL& url,
@@ -204,8 +200,6 @@ TEST_F(CrxDownloaderTest, NoUrl) {
   EXPECT_EQ(static_cast<int>(CrxDownloaderError::NO_URL),
             download_complete_result_.error);
   EXPECT_TRUE(download_complete_result_.response.empty());
-  EXPECT_EQ(-1, download_complete_result_.downloaded_bytes);
-  EXPECT_EQ(-1, download_complete_result_.total_bytes);
   EXPECT_EQ(0, num_progress_calls_);
 }
 
@@ -221,8 +215,6 @@ TEST_F(CrxDownloaderTest, NoHash) {
   EXPECT_EQ(static_cast<int>(CrxDownloaderError::NO_HASH),
             download_complete_result_.error);
   EXPECT_TRUE(download_complete_result_.response.empty());
-  EXPECT_EQ(-1, download_complete_result_.downloaded_bytes);
-  EXPECT_EQ(-1, download_complete_result_.total_bytes);
   EXPECT_EQ(0, num_progress_calls_);
 }
 

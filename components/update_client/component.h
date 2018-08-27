@@ -242,11 +242,10 @@ class Component {
     // State overrides.
     void DoHandle() override;
 
-    // Called when progress is being made downloading a CRX. The progress may
-    // not monotonically increase due to how the CRX downloader switches between
+    // Called when progress is being made downloading a CRX. Can be called
+    // multiple times due to how the CRX downloader switches between
     // different downloaders and fallback urls.
-    void DownloadProgress(const std::string& id,
-                          const CrxDownloader::Result& download_result);
+    void DownloadProgress(const std::string& id);
 
     void DownloadComplete(const std::string& id,
                           const CrxDownloader::Result& download_result);
@@ -266,11 +265,10 @@ class Component {
     // State overrides.
     void DoHandle() override;
 
-    // Called when progress is being made downloading a CRX. The progress may
-    // not monotonically increase due to how the CRX downloader switches between
+    // Called when progress is being made downloading a CRX. Can be called
+    // multiple times due to how the CRX downloader switches between
     // different downloaders and fallback urls.
-    void DownloadProgress(const std::string& id,
-                          const CrxDownloader::Result& download_result);
+    void DownloadProgress(const std::string& id);
 
     void DownloadComplete(const std::string& id,
                           const CrxDownloader::Result& download_result);
