@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "components/signin/core/browser/test_signin_client.h"

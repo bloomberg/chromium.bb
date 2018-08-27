@@ -20,11 +20,8 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 class AccountTrackerService;
+class PrefRegistrySimple;
 class ProfileOAuth2TokenService;
 class SigninClient;
 
@@ -62,7 +59,7 @@ class AboutSigninInternals
   ~AboutSigninInternals() override;
 
   // Registers the preferences used by AboutSigninInternals.
-  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* user_prefs);
+  static void RegisterPrefs(PrefRegistrySimple* user_prefs);
 
   // Each instance of SigninInternalsUI adds itself as an observer to be
   // notified of all updates that AboutSigninInternals receives.

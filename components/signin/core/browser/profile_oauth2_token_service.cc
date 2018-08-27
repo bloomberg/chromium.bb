@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/device_id_helper.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 
@@ -27,7 +27,7 @@ ProfileOAuth2TokenService::~ProfileOAuth2TokenService() {
 
 // static
 void ProfileOAuth2TokenService::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+    PrefRegistrySimple* registry) {
 #if defined(OS_IOS)
   registry->RegisterBooleanPref(prefs::kTokenServiceExcludeAllSecondaryAccounts,
                                 false);

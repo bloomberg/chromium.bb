@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
-#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_gaia_cookie_manager_service.h"

@@ -13,6 +13,7 @@
 #include "chrome/browser/signin/signin_error_controller_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/signin_manager.h"
 

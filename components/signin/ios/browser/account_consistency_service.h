@@ -58,7 +58,7 @@ class AccountConsistencyService : public KeyedService,
   ~AccountConsistencyService() override;
 
   // Registers the preferences used by AccountConsistencyService.
-  static void RegisterPrefs(user_prefs::PrefRegistrySyncable* registry);
+  static void RegisterPrefs(PrefRegistrySimple* registry);
 
   // Sets the handler for |web_state| that reacts on Gaia responses with the
   // X-Chrome-Manage-Accounts header and notifies |delegate|.

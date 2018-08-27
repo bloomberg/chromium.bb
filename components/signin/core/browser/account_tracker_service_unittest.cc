@@ -285,13 +285,8 @@ class AccountTrackerServiceTest : public testing::Test {
 
     fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
 
-    pref_service_.registry()->RegisterListPref(
-        AccountTrackerService::kAccountInfoPref);
-    pref_service_.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
-    pref_service_.registry()->RegisterTimePref(
-        AccountFetcherService::kLastUpdatePref, base::Time());
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    AccountFetcherService::RegisterPrefs(pref_service_.registry());
     signin_client_.reset(new TestSigninClient(&pref_service_));
 
     account_tracker_.reset(new AccountTrackerService());
@@ -999,11 +994,7 @@ TEST_F(AccountTrackerServiceTest, MigrateAccountIdToGaiaId) {
     std::string email_beta = AccountIdToEmail("beta");
     std::string gaia_beta = AccountIdToGaiaId("beta");
 
-    pref.registry()->RegisterListPref(AccountTrackerService::kAccountInfoPref);
-    pref.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
-
+    AccountTrackerService::RegisterPrefs(pref.registry());
     ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -1049,11 +1040,7 @@ TEST_F(AccountTrackerServiceTest, CanNotMigrateAccountIdToGaiaId) {
     std::string gaia_alpha = AccountIdToGaiaId("alpha");
     std::string email_beta = AccountIdToEmail("beta");
 
-    pref.registry()->RegisterListPref(AccountTrackerService::kAccountInfoPref);
-    pref.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_NOT_STARTED);
-
+    AccountTrackerService::RegisterPrefs(pref.registry());
     ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
@@ -1099,11 +1086,7 @@ TEST_F(AccountTrackerServiceTest, GaiaIdMigrationCrashInTheMiddle) {
     std::string email_beta = AccountIdToEmail("beta");
     std::string gaia_beta = AccountIdToGaiaId("beta");
 
-    pref.registry()->RegisterListPref(AccountTrackerService::kAccountInfoPref);
-    pref.registry()->RegisterIntegerPref(
-        prefs::kAccountIdMigrationState,
-        AccountTrackerService::MIGRATION_IN_PROGRESS);
-
+    AccountTrackerService::RegisterPrefs(pref.registry());
     ListPrefUpdate update(&pref, AccountTrackerService::kAccountInfoPref);
 
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
