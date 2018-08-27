@@ -115,6 +115,9 @@ SVGParsingError SVGStringList::SetValueAsString(const String& data) {
 }
 
 String SVGStringList::ValueAsString() const {
+  if (values_.IsEmpty())
+    return String();
+
   StringBuilder builder;
 
   Vector<String>::const_iterator it = values_.begin();

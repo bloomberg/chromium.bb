@@ -363,18 +363,7 @@ SVGTransformType ParseTransformType(const String& string) {
 }
 
 String SVGTransformList::ValueAsString() const {
-  StringBuilder builder;
-
-  ConstIterator it = begin();
-  ConstIterator it_end = end();
-  while (it != it_end) {
-    builder.Append(it->ValueAsString());
-    ++it;
-    if (it != it_end)
-      builder.Append(' ');
-  }
-
-  return builder.ToString();
+  return SVGListPropertyHelper<SVGTransformList, SVGTransform>::SerializeList();
 }
 
 SVGParsingError SVGTransformList::SetValueAsString(const String& value) {

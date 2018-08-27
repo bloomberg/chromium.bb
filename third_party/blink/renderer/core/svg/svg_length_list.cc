@@ -43,21 +43,7 @@ SVGPropertyBase* SVGLengthList::CloneForAnimation(const String& value) const {
 }
 
 String SVGLengthList::ValueAsString() const {
-  StringBuilder builder;
-
-  ConstIterator it = begin();
-  ConstIterator it_end = end();
-  if (it != it_end) {
-    builder.Append(it->ValueAsString());
-    ++it;
-
-    for (; it != it_end; ++it) {
-      builder.Append(' ');
-      builder.Append(it->ValueAsString());
-    }
-  }
-
-  return builder.ToString();
+  return SVGListPropertyHelper<SVGLengthList, SVGLength>::SerializeList();
 }
 
 template <typename CharType>

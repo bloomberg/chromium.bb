@@ -33,21 +33,7 @@ SVGPointList::SVGPointList() = default;
 SVGPointList::~SVGPointList() = default;
 
 String SVGPointList::ValueAsString() const {
-  StringBuilder builder;
-
-  ConstIterator it = begin();
-  ConstIterator it_end = end();
-  if (it != it_end) {
-    builder.Append(it->ValueAsString());
-    ++it;
-
-    for (; it != it_end; ++it) {
-      builder.Append(' ');
-      builder.Append(it->ValueAsString());
-    }
-  }
-
-  return builder.ToString();
+  return SVGListPropertyHelper<SVGPointList, SVGPoint>::SerializeList();
 }
 
 template <typename CharType>
