@@ -56,7 +56,7 @@ class CONTENT_EXPORT AppCacheResponseInfo
   const int64_t response_id_;
   const std::unique_ptr<net::HttpResponseInfo> http_response_info_;
   const int64_t response_data_size_;
-  AppCacheStorage* storage_;
+  AppCacheStorage* const storage_;
 };
 
 // A refcounted wrapper for HttpResponseInfo so we can apply the
