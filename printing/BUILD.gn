@@ -214,8 +214,6 @@ component("printing") {
 
     sources += [
       "backend/print_backend_chromeos.cc",
-      "backend/printing_restrictions.cc",
-      "backend/printing_restrictions.h",
       "printed_document_chromeos.cc",
       "printing_context_no_system_dialog.cc",
       "printing_context_no_system_dialog.h",

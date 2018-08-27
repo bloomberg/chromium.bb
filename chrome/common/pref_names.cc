@@ -1171,26 +1171,6 @@ const char kRecommendedNativePrintersWhitelist[] =
 const char kUserNativePrintersAllowed[] =
     "native_printing.user_native_printers_allowed";
 
-// A pref holding the list of allowed printing color mode as a bitmask composed
-// of |printing::ColorModeRestriction| values. 0 is no restriction.
-const char kPrintingAllowedColorModes[] = "printing.allowed_color_modes";
-
-// A pref holding the list of allowed printing duplex mode as a bitmask composed
-// of |printing::DuplexModeRestriction| values. 0 is no restriction.
-const char kPrintingAllowedDuplexModes[] = "printing.allowed_duplex_modes";
-
-// A pref holding the list of allowed printing duplex mode.
-// Empty list is no restriction.
-const char kPrintingAllowedPageSizes[] = "printing.allowed_page_sizes";
-
-// A pref holding the default color mode.
-const char kPrintingColorDefault[] = "printing.color_default";
-
-// A pref holding the default duplex mode.
-const char kPrintingDuplexDefault[] = "printing.duplex_default";
-
-// A pref holding the default page size.
-const char kPrintingSizeDefault[] = "printing.size_default";
 #endif  // OS_CHROMEOS
 
 // An integer pref specifying the fallback behavior for sites outside of content

@@ -14259,12 +14259,6 @@ Called by update_net_error_codes.py.-->
   <int value="467" label="NetBiosShareDiscoveryEnabled"/>
   <int value="468" label="WebAppInstallForceList"/>
   <int value="469" label="SmsMessagesAllowed"/>
-  <int value="470" label="PrintingAllowedColorModes"/>
-  <int value="471" label="PrintingAllowedDuplexModes"/>
-  <int value="472" label="PrintingAllowedPageSizes"/>
-  <int value="473" label="PrintingColorDefault"/>
-  <int value="474" label="PrintingDuplexDefault"/>
-  <int value="475" label="PrintingSizeDefault"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
