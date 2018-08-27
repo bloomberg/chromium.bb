@@ -69,6 +69,10 @@ subjectAltName = IP:127.0.0.1
 subjectAltName = IP:127.0.0.1
 1.3.6.1.4.1.11129.2.1.22 = ASN1:NULL
 
+[req_extensions_with_can_sign_http_exchanges_draft_invalid]
+subjectAltName = IP:127.0.0.1
+1.3.6.1.4.1.11129.2.1.22 = DER:30:00
+
 [req_localhost_san]
 subjectAltName = DNS:localhost
 

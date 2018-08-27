@@ -452,6 +452,15 @@ openssl req -x509 -newkey rsa:2048 \
   -extensions req_extensions_with_can_sign_http_exchanges_draft \
   -nodes -config ee.cnf
 
+# Includes the canSignHttpExchangesDraft extension, but with a SEQUENCE in the
+# body rather than a NULL.
+openssl req -x509 -newkey rsa:2048 \
+  -keyout out/can_sign_http_exchanges_draft_extension_invalid.key \
+  -out ../certificates/can_sign_http_exchanges_draft_extension_invalid.pem \
+  -days 365 \
+  -extensions req_extensions_with_can_sign_http_exchanges_draft_invalid \
+  -nodes -config ee.cnf
+
 # SHA-1 certificate issued by locally trusted CA
 openssl req \
   -config ../scripts/ee.cnf \

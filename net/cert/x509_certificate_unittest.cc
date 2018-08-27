@@ -610,6 +610,16 @@ TEST(X509CertificateTest, HasCanSignHttpExchangesDraftExtension) {
       x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
 }
 
+TEST(X509CertificateTest, HasCanSignHttpExchangesDraftExtensionInvalid) {
+  base::FilePath certs_dir = GetTestCertsDirectory();
+  scoped_refptr<X509Certificate> cert = ImportCertFromFile(
+      certs_dir, "can_sign_http_exchanges_draft_extension_invalid.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
+
+  EXPECT_FALSE(asn1::HasCanSignHttpExchangesDraftExtension(
+      x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
+}
+
 TEST(X509CertificateTest, DoesNotHaveCanSignHttpExchangesDraftExtension) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =

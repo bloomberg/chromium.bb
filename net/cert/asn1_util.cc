@@ -261,7 +261,17 @@ bool HasCanSignHttpExchangesDraftExtension(base::StringPiece cert) {
   static const uint8_t kCanSignHttpExchangesDraftOid[] = {
       0x2B, 0x06, 0x01, 0x04, 0x01, 0xd6, 0x79, 0x02, 0x01, 0x16};
 
-  return HasExtensionWithOID(cert, der::Input(kCanSignHttpExchangesDraftOid));
+  bool extension_present;
+  ParsedExtension extension;
+  if (!ExtractExtensionWithOID(cert, der::Input(kCanSignHttpExchangesDraftOid),
+                               &extension_present, &extension) ||
+      !extension_present) {
+    return false;
+  }
+
+  // The extension should have contents NULL.
+  static const uint8_t kNull[] = {0x05, 0x00};
+  return extension.value == der::Input(kNull);
 }
 
 bool ExtractSignatureAlgorithmsFromDERCert(

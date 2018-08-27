@@ -2340,6 +2340,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/aia-root.pem",
     "data/ssl/certificates/bad_validity.pem",
     "data/ssl/certificates/can_sign_http_exchanges_draft_extension.pem",
+    "data/ssl/certificates/can_sign_http_exchanges_draft_extension_invalid.pem",
     "data/ssl/certificates/client-empty-password.p12",
     "data/ssl/certificates/client-nokey.p12",
     "data/ssl/certificates/client-null-password.p12",
