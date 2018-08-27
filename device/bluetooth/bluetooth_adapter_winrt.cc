@@ -465,6 +465,10 @@ bool BluetoothAdapterWinrt::IsPresent() const {
   return adapter_ != nullptr;
 }
 
+bool BluetoothAdapterWinrt::CanPower() const {
+  return radio_ != nullptr;
+}
+
 bool BluetoothAdapterWinrt::IsPowered() const {
   // Due to an issue on WoW64 we might fail to obtain the radio in OnGetRadio().
   // This is why it can be null here.

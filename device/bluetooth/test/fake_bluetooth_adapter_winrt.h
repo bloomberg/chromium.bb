@@ -14,7 +14,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece_forward.h"
-#include "device/bluetooth/test/fake_radio_winrt.h"
 
 namespace device {
 
@@ -24,7 +23,9 @@ class FakeBluetoothAdapterWinrt
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Bluetooth::IBluetoothAdapter> {
  public:
-  explicit FakeBluetoothAdapterWinrt(base::StringPiece address);
+  FakeBluetoothAdapterWinrt(
+      base::StringPiece address,
+      Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadio> radio);
   ~FakeBluetoothAdapterWinrt() override;
 
   static uint64_t ToRawBluetoothAddress(base::StringPiece address);
@@ -45,8 +46,7 @@ class FakeBluetoothAdapterWinrt
 
  private:
   uint64_t raw_address_;
-  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadio> radio_ =
-      Microsoft::WRL::Make<FakeRadioWinrt>();
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Radios::IRadio> radio_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothAdapterWinrt);
 };

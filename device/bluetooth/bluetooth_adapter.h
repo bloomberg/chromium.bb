@@ -343,6 +343,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
   // is only considered present if the address has been obtained.
   virtual bool IsPresent() const = 0;
 
+  // Indicates whether the adapter radio can be powered. Defaults to
+  // IsPresent(). Currently only overridden on Windows, where the adapter can be
+  // present, but we might fail to get access to the underlying radio.
+  virtual bool CanPower() const;
+
   // Indicates whether the adapter radio is powered.
   virtual bool IsPowered() const = 0;
 

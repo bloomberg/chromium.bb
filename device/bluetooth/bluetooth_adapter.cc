@@ -58,6 +58,10 @@ bool BluetoothAdapter::HasObserver(BluetoothAdapter::Observer* observer) {
   return observers_.HasObserver(observer);
 }
 
+bool BluetoothAdapter::CanPower() const {
+  return IsPresent();
+}
+
 void BluetoothAdapter::SetPowered(bool powered,
                                   const base::Closure& callback,
                                   const ErrorCallback& error_callback) {
