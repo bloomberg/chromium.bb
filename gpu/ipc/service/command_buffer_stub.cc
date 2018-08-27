@@ -464,8 +464,7 @@ void CommandBufferStub::Destroy() {
   }
 
   bool have_context = false;
-  if (decoder_context_ && decoder_context_->GetFeatureInfo()->IsGLContext() &&
-      decoder_context_->GetGLContext()) {
+  if (decoder_context_ && decoder_context_->GetGLContext()) {
     // Try to make the context current regardless of whether it was lost, so we
     // don't leak resources.
     have_context =
