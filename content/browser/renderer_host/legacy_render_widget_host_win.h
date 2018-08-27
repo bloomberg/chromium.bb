@@ -123,9 +123,6 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     host_ = host;
   }
 
-  // Changes the position of the system caret used for accessibility.
-  void MoveCaretTo(const gfx::Rect& bounds);
-
   // DirectManipulation needs to poll for new events every frame while finger
   // gesturing on touchpad.
   void PollForNextEvent();
