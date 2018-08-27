@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CALLBACK_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CALLBACK_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CONTROLLER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CONTROLLER_H_
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
@@ -17,30 +17,28 @@ class ColdModeSpellCheckRequester;
 class LocalFrame;
 class SpellCheckRequester;
 
-#define FOR_EACH_IDLE_SPELL_CHECK_CALLBACK_STATE(V) \
-  V(Inactive)                                       \
-  V(HotModeRequested)                               \
-  V(InHotModeInvocation)                            \
-  V(ColdModeTimerStarted)                           \
-  V(ColdModeRequested)                              \
+#define FOR_EACH_IDLE_SPELL_CHECK_CONTROLLER_STATE(V) \
+  V(Inactive)                                         \
+  V(HotModeRequested)                                 \
+  V(InHotModeInvocation)                              \
+  V(ColdModeTimerStarted)                             \
+  V(ColdModeRequested)                                \
   V(InColdModeInvocation)
 
 // Main class for the implementation of idle time spell checker.
-// TODO(xiaochengh): Remane the class to IdleSpellCheckController, as it's no
-// longer a callback object anymore.
-class CORE_EXPORT IdleSpellCheckCallback final
-    : public GarbageCollectedFinalized<IdleSpellCheckCallback>,
+class CORE_EXPORT IdleSpellCheckController final
+    : public GarbageCollectedFinalized<IdleSpellCheckController>,
       public DocumentShutdownObserver {
-  DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckCallback);
-  USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckCallback);
+  DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckController);
+  USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckController);
 
  public:
-  static IdleSpellCheckCallback* Create(LocalFrame&);
-  ~IdleSpellCheckCallback();
+  static IdleSpellCheckController* Create(LocalFrame&);
+  ~IdleSpellCheckController();
 
   enum class State {
 #define V(state) k##state,
-    FOR_EACH_IDLE_SPELL_CHECK_CALLBACK_STATE(V)
+    FOR_EACH_IDLE_SPELL_CHECK_CONTROLLER_STATE(V)
 #undef V
   };
 
@@ -68,7 +66,7 @@ class CORE_EXPORT IdleSpellCheckCallback final
  private:
   class IdleCallback;
 
-  explicit IdleSpellCheckCallback(LocalFrame&);
+  explicit IdleSpellCheckController(LocalFrame&);
 
   LocalFrame& GetFrame() const { return *frame_; }
 
@@ -108,11 +106,11 @@ class CORE_EXPORT IdleSpellCheckCallback final
   const Member<LocalFrame> frame_;
   uint64_t last_processed_undo_step_sequence_;
   const Member<ColdModeSpellCheckRequester> cold_mode_requester_;
-  TaskRunnerTimer<IdleSpellCheckCallback> cold_mode_timer_;
+  TaskRunnerTimer<IdleSpellCheckController> cold_mode_timer_;
 
-  friend class IdleSpellCheckCallbackTest;
+  friend class IdleSpellCheckControllerTest;
 };
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CALLBACK_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CONTROLLER_H_

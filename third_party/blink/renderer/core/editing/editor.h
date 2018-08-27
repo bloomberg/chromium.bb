@@ -129,7 +129,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool CanRedo();
   void Redo();
 
-  // Exposed for IdleSpellCheckCallback only.
+  // Exposed for IdleSpellCheckController only.
   // Supposed to be used as |const UndoStack&|.
   UndoStack& GetUndoStack() const { return *undo_stack_; }
 

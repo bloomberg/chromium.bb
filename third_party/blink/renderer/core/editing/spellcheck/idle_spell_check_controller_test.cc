@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_callback.h"
+#include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_test_base.h"
@@ -14,12 +14,12 @@
 
 namespace blink {
 
-using State = IdleSpellCheckCallback::State;
+using State = IdleSpellCheckController::State;
 
-class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
+class IdleSpellCheckControllerTest : public SpellCheckTestBase {
  protected:
-  IdleSpellCheckCallback& IdleChecker() {
-    return GetSpellChecker().GetIdleSpellCheckCallback();
+  IdleSpellCheckController& IdleChecker() {
+    return GetSpellChecker().GetIdleSpellCheckController();
   }
 
   void SetUp() override {
@@ -55,28 +55,28 @@ class IdleSpellCheckCallbackTest : public SpellCheckTestBase {
 
 // Test cases for lifecycle state transitions.
 
-TEST_F(IdleSpellCheckCallbackTest, InitializationWithColdMode) {
+TEST_F(IdleSpellCheckControllerTest, InitializationWithColdMode) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, InitializationWithoutColdMode) {
+TEST_F(IdleSpellCheckControllerTest, InitializationWithoutColdMode) {
   if (RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, RequestWhenInactive) {
+TEST_F(IdleSpellCheckControllerTest, RequestWhenInactive) {
   TransitTo(State::kInactive);
   IdleChecker().SetNeedsInvocation();
   EXPECT_EQ(State::kHotModeRequested, IdleChecker().GetState());
   EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, RequestWhenHotModeRequested) {
+TEST_F(IdleSpellCheckControllerTest, RequestWhenHotModeRequested) {
   TransitTo(State::kHotModeRequested);
   int handle = IdleChecker().IdleCallbackHandle();
   IdleChecker().SetNeedsInvocation();
@@ -85,7 +85,7 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenHotModeRequested) {
   EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeTimerStarted) {
+TEST_F(IdleSpellCheckControllerTest, RequestWhenColdModeTimerStarted) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -95,7 +95,7 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeTimerStarted) {
   EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
+TEST_F(IdleSpellCheckControllerTest, RequestWhenColdModeRequested) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -107,7 +107,7 @@ TEST_F(IdleSpellCheckCallbackTest, RequestWhenColdModeRequested) {
   EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToInactive) {
+TEST_F(IdleSpellCheckControllerTest, HotModeTransitToInactive) {
   if (RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -116,7 +116,7 @@ TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToInactive) {
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToColdMode) {
+TEST_F(IdleSpellCheckControllerTest, HotModeTransitToColdMode) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -125,7 +125,7 @@ TEST_F(IdleSpellCheckCallbackTest, HotModeTransitToColdMode) {
   EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, ColdModeTimerStartedToRequested) {
+TEST_F(IdleSpellCheckControllerTest, ColdModeTimerStartedToRequested) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -135,7 +135,7 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeTimerStartedToRequested) {
   EXPECT_NE(-1, IdleChecker().IdleCallbackHandle());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, ColdModeStayAtColdMode) {
+TEST_F(IdleSpellCheckControllerTest, ColdModeStayAtColdMode) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -145,7 +145,7 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeStayAtColdMode) {
   EXPECT_EQ(State::kColdModeTimerStarted, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, ColdModeToInactive) {
+TEST_F(IdleSpellCheckControllerTest, ColdModeToInactive) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -154,19 +154,19 @@ TEST_F(IdleSpellCheckCallbackTest, ColdModeToInactive) {
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, DetachWhenInactive) {
+TEST_F(IdleSpellCheckControllerTest, DetachWhenInactive) {
   TransitTo(State::kInactive);
   GetDocument().Shutdown();
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, DetachWhenHotModeRequested) {
+TEST_F(IdleSpellCheckControllerTest, DetachWhenHotModeRequested) {
   TransitTo(State::kHotModeRequested);
   GetDocument().Shutdown();
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeTimerStarted) {
+TEST_F(IdleSpellCheckControllerTest, DetachWhenColdModeTimerStarted) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -175,7 +175,7 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeTimerStarted) {
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
-TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeRequested) {
+TEST_F(IdleSpellCheckControllerTest, DetachWhenColdModeRequested) {
   if (!RuntimeEnabledFeatures::IdleTimeColdModeSpellCheckingEnabled())
     return;
 
@@ -184,8 +184,8 @@ TEST_F(IdleSpellCheckCallbackTest, DetachWhenColdModeRequested) {
   EXPECT_EQ(State::kInactive, IdleChecker().GetState());
 }
 
-// crbug.com/863784
-TEST_F(IdleSpellCheckCallbackTest, ColdModeRangeCrossesShadow) {
+// https://crbug.com/863784
+TEST_F(IdleSpellCheckControllerTest, ColdModeRangeCrossesShadow) {
   ScopedIdleTimeColdModeSpellCheckingForTest cold_mode_scope(true);
   SetBodyContent(
       "<div contenteditable style=\"width:800px\">"

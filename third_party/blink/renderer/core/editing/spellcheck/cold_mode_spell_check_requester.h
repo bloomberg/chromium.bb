@@ -16,10 +16,10 @@ class LocalFrame;
 class IdleDeadline;
 class SpellCheckRequester;
 
-// This class is only supposed to be used by IdleSpellCheckCallback in cold mode
-// invocation. Not to be confused with SpellCheckRequester.
-// The class iteratively checks the editing host currently focused when the
-// document is idle.
+// This class is only supposed to be used by IdleSpellCheckController in cold
+// mode invocation. Not to be confused with SpellCheckRequester. The class
+// iteratively checks the editing host currently focused when the document is
+// idle.
 class ColdModeSpellCheckRequester
     : public GarbageCollected<ColdModeSpellCheckRequester> {
  public:
