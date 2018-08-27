@@ -51,6 +51,31 @@ TEST_F(AcceleratorCommandsTest, ToggleMinimized) {
   EXPECT_TRUE(window_state1->IsActive());
 }
 
+TEST_F(AcceleratorCommandsTest, ToggleMaximized) {
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  wm::WindowState* window_state = wm::GetWindowState(window.get());
+  window_state->Activate();
+
+  // When not in fullscreen, accelerators::ToggleMaximized toggles Maximized.
+  EXPECT_FALSE(window_state->IsMaximized());
+  accelerators::ToggleMaximized();
+  EXPECT_TRUE(window_state->IsMaximized());
+  accelerators::ToggleMaximized();
+  EXPECT_FALSE(window_state->IsMaximized());
+
+  // When in fullscreen accelerators::ToggleMaximized gets out of fullscreen.
+  EXPECT_FALSE(window_state->IsFullscreen());
+  accelerators::ToggleFullscreen();
+  EXPECT_TRUE(window_state->IsFullscreen());
+  accelerators::ToggleMaximized();
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_FALSE(window_state->IsMaximized());
+  accelerators::ToggleMaximized();
+  EXPECT_FALSE(window_state->IsFullscreen());
+  EXPECT_TRUE(window_state->IsMaximized());
+}
+
 TEST_F(AcceleratorCommandsTest, Unpin) {
   std::unique_ptr<aura::Window> window1(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
