@@ -77,7 +77,9 @@ LayoutInline::LayoutInline(Element* element)
 
 #if DCHECK_IS_ON()
 LayoutInline::~LayoutInline() {
-  if (!IsInLayoutNGInlineFormattingContext())
+  if (IsInLayoutNGInlineFormattingContext())
+    DCHECK(!first_paint_fragment_);
+  else
     line_boxes_.AssertIsEmpty();
 }
 #endif

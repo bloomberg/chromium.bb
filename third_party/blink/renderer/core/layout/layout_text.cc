@@ -145,7 +145,9 @@ LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
 
 #if DCHECK_IS_ON()
 LayoutText::~LayoutText() {
-  if (!IsInLayoutNGInlineFormattingContext())
+  if (IsInLayoutNGInlineFormattingContext())
+    DCHECK(!first_paint_fragment_);
+  else
     text_boxes_.AssertIsEmpty();
 }
 #endif
