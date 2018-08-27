@@ -251,10 +251,10 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (refresh_callbacks_.size() == 1) {
       // If there's no in-flight refreshing task, start it.
       cros_disks_client_->EnumerateDevices(
-          base::Bind(&DiskMountManagerImpl::RefreshAfterEnumerateDevices,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&DiskMountManagerImpl::RefreshCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), false));
+          base::BindOnce(&DiskMountManagerImpl::RefreshAfterEnumerateDevices,
+                         weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&DiskMountManagerImpl::RefreshCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), false));
     }
   }
 
@@ -651,19 +651,20 @@ class DiskMountManagerImpl : public DiskMountManager,
     if (index == devices.size()) {
       // All devices info retrieved. Proceed to enumerate mount point info.
       cros_disks_client_->EnumerateMountEntries(
-          base::Bind(&DiskMountManagerImpl::RefreshAfterEnumerateMountEntries,
-                     weak_ptr_factory_.GetWeakPtr()),
-          base::Bind(&DiskMountManagerImpl::RefreshCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), false));
+          base::BindOnce(
+              &DiskMountManagerImpl::RefreshAfterEnumerateMountEntries,
+              weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&DiskMountManagerImpl::RefreshCompleted,
+                         weak_ptr_factory_.GetWeakPtr(), false));
       return;
     }
 
     cros_disks_client_->GetDeviceProperties(
         devices[index],
-        base::Bind(&DiskMountManagerImpl::RefreshAfterGetDeviceProperties,
-                   weak_ptr_factory_.GetWeakPtr(), devices, index + 1),
-        base::Bind(&DiskMountManagerImpl::RefreshDeviceAtIndex,
-                   weak_ptr_factory_.GetWeakPtr(), devices, index + 1));
+        base::BindOnce(&DiskMountManagerImpl::RefreshAfterGetDeviceProperties,
+                       weak_ptr_factory_.GetWeakPtr(), devices, index + 1),
+        base::BindOnce(&DiskMountManagerImpl::RefreshDeviceAtIndex,
+                       weak_ptr_factory_.GetWeakPtr(), devices, index + 1));
   }
 
   // Part of EnsureMountInfoRefreshed().
@@ -699,8 +700,8 @@ class DiskMountManagerImpl : public DiskMountManager,
       case CROS_DISKS_DISK_ADDED: {
         cros_disks_client_->GetDeviceProperties(
             device_path,
-            base::Bind(&DiskMountManagerImpl::OnGetDeviceProperties,
-                       weak_ptr_factory_.GetWeakPtr()),
+            base::BindOnce(&DiskMountManagerImpl::OnGetDeviceProperties,
+                           weak_ptr_factory_.GetWeakPtr()),
             base::DoNothing());
         break;
       }
