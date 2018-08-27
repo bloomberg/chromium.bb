@@ -31,13 +31,16 @@ KeepAliveDelegate::KeepAliveDelegate(
       liveness_timeout_(liveness_timeout),
       ping_interval_(ping_interval),
       ping_message_(CreateKeepAlivePingMessage()),
-      pong_message_(CreateKeepAlivePongMessage()) {
+      pong_message_(CreateKeepAlivePongMessage()),
+      weak_factory_(this) {
   DCHECK(ping_interval_ < liveness_timeout_);
   DCHECK(inner_delegate_);
   DCHECK(socket_);
 }
 
-KeepAliveDelegate::~KeepAliveDelegate() {}
+KeepAliveDelegate::~KeepAliveDelegate() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+}
 
 void KeepAliveDelegate::SetTimersForTest(
     std::unique_ptr<base::RetainingOneShotTimer> injected_ping_timer,
@@ -77,6 +80,7 @@ void KeepAliveDelegate::Start() {
 }
 
 void KeepAliveDelegate::ResetTimers() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(started_);
   ping_timer_->Reset();
   liveness_timer_->Reset();
@@ -89,12 +93,13 @@ void KeepAliveDelegate::SendKeepAliveMessage(const CastMessage& message,
 
   socket_->transport()->SendMessage(
       message, base::Bind(&KeepAliveDelegate::SendKeepAliveMessageComplete,
-                          base::Unretained(this), message_type));
+                          weak_factory_.GetWeakPtr(), message_type));
 }
 
 void KeepAliveDelegate::SendKeepAliveMessageComplete(
     CastMessageType message_type,
     int rv) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(2) << "Sending " << CastMessageTypeToString(message_type)
            << " complete, rv=" << rv;
   if (rv != net::OK) {
@@ -111,6 +116,7 @@ void KeepAliveDelegate::SendKeepAliveMessageComplete(
 }
 
 void KeepAliveDelegate::LivenessTimeout() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   OnError(ChannelError::PING_TIMEOUT);
   Stop();
 }

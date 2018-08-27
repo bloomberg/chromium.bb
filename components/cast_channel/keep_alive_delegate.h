@@ -6,6 +6,7 @@
 #define COMPONENTS_CAST_CHANNEL_KEEP_ALIVE_DELEGATE_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "components/cast_channel/cast_message_util.h"
@@ -100,6 +101,8 @@ class KeepAliveDelegate : public CastTransport::Delegate {
   const CastMessage pong_message_;
 
   THREAD_CHECKER(thread_checker_);
+
+  base::WeakPtrFactory<KeepAliveDelegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveDelegate);
 };
