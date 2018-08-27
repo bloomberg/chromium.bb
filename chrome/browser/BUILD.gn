@@ -3130,6 +3130,10 @@ jumbo_split_static_library("browser") {
 
   if (is_win) {
     sources += [
+      "browser_switcher/browser_switcher_prefs.cc",
+      "browser_switcher/browser_switcher_prefs.h",
+      "browser_switcher/browser_switcher_sitelist.cc",
+      "browser_switcher/browser_switcher_sitelist.h",
       "downgrade/user_data_downgrade.cc",
       "downgrade/user_data_downgrade.h",
       "first_run/upgrade_util.cc",

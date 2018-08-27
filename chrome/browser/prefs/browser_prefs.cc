@@ -297,6 +297,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/browser/apps/platform_apps/app_launch_for_metro_restart_win.h"
+#include "chrome/browser/browser_switcher/browser_switcher_prefs.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/conflicts/incompatible_applications_updater_win.h"
@@ -706,6 +707,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 #endif
 
 #if defined(OS_WIN)
+  browser_switcher::prefs::RegisterProfilePrefs(registry);
   component_updater::RegisterProfilePrefsForSwReporter(registry);
   desktop_ios_promotion::RegisterProfilePrefs(registry);
   NetworkProfileBubble::RegisterProfilePrefs(registry);
