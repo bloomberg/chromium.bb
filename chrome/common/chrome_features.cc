@@ -504,7 +504,7 @@ const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
 #endif
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
-// Launch bug: https://crbug.com/739418.  This is a //chrome-layer feature to
+// Launch bug: https://crbug.com/810843.  This is a //chrome-layer feature to
 // avoid turning on site-per-process by default for *all* //content embedders
 // (e.g. this approach lets ChromeCast avoid site-per-process mode).
 const base::Feature kSitePerProcess {
