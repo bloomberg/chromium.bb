@@ -10,6 +10,7 @@ goog.provide('cvox.ChromeVoxBackground');
 
 goog.require('ChromeVoxState');
 goog.require('EventStreamLogger');
+goog.require('LogStore');
 goog.require('Msgs');
 goog.require('constants');
 goog.require('cvox.AbstractEarcons');
@@ -132,6 +133,8 @@ cvox.ChromeVoxBackground.prototype.init = function() {
 
   var consoleTts = cvox.ConsoleTts.getInstance();
   consoleTts.setEnabled(this.prefs.getPrefs()['enableSpeechLogging'] == 'true');
+
+  LogStore.getInstance();
 
   /**
    * Chrome's actual TTS which knows and cares about pitch, volume, etc.

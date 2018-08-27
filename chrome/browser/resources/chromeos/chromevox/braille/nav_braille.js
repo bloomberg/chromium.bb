@@ -11,6 +11,7 @@
 
 goog.provide('cvox.NavBraille');
 
+goog.require('LogStore');
 goog.require('Spannable');
 
 /**
@@ -118,5 +119,6 @@ cvox.NavBraille.prototype.brailleLogging = function() {
     return;
 
   var logStr = 'Braille "' + this.text.toString() + '"';
+  LogStore.getInstance().writeLog(logStr, LogStore.LogType.BRAILLE);
   console.log(logStr);
 };

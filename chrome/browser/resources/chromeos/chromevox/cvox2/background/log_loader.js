@@ -4,6 +4,7 @@
 
 /**
  * @fileoverview Loads the log script.
+ *
  */
 
-goog.require('cvox.LogPage');
+goog.require('LogPage');

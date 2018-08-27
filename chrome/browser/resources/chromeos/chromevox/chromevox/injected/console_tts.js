@@ -8,6 +8,7 @@
 
 goog.provide('cvox.ConsoleTts');
 
+goog.require('LogStore');
 goog.require('cvox.AbstractTts');
 goog.require('cvox.TtsInterface');
 
@@ -41,6 +42,7 @@ cvox.ConsoleTts.prototype.speak = function(textString, queueMode, properties) {
       logStr += ' category=' + properties.category;
     }
     logStr += ' "' + textString + '"';
+    LogStore.getInstance().writeLog(logStr, LogStore.LogType.SPEECH);
     console.log(logStr);
   }
   return this;
