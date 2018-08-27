@@ -2765,6 +2765,99 @@ static int ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
 }
 #undef FEATURE_SIZE
 
+static void ml_prune_rect_partition(const AV1_COMP *const cpi,
+                                    const MACROBLOCK *const x, BLOCK_SIZE bsize,
+                                    int64_t best_rd, int64_t none_rd,
+                                    int64_t *split_rd,
+                                    int *const dst_prune_horz,
+                                    int *const dst_prune_vert) {
+  if (bsize < BLOCK_8X8 || best_rd >= 1000000000) return;
+  best_rd = AOMMAX(best_rd, 1);
+  const NN_CONFIG *nn_config = NULL;
+  const float prob_thresholds[5] = { 0.01f, 0.01f, 0.004f, 0.002f, 0.002f };
+  float cur_thresh = 0.0f;
+  switch (bsize) {
+    case BLOCK_8X8:
+      nn_config = &av1_rect_partition_nnconfig_8;
+      cur_thresh = prob_thresholds[0];
+      break;
+    case BLOCK_16X16:
+      nn_config = &av1_rect_partition_nnconfig_16;
+      cur_thresh = prob_thresholds[1];
+      break;
+    case BLOCK_32X32:
+      nn_config = &av1_rect_partition_nnconfig_32;
+      cur_thresh = prob_thresholds[2];
+      break;
+    case BLOCK_64X64:
+      nn_config = &av1_rect_partition_nnconfig_64;
+      cur_thresh = prob_thresholds[3];
+      break;
+    case BLOCK_128X128:
+      nn_config = &av1_rect_partition_nnconfig_128;
+      cur_thresh = prob_thresholds[4];
+      break;
+    default: assert(0 && "Unexpected bsize.");
+  }
+  if (!nn_config) return;
+  aom_clear_system_state();
+
+  // 1. Compute input features
+  float features[9];
+
+  // RD cost ratios
+  for (int i = 0; i < 5; i++) features[i] = 1.0f;
+  if (none_rd > 0 && none_rd < 1000000000)
+    features[0] = (float)none_rd / (float)best_rd;
+  for (int i = 0; i < 4; i++) {
+    if (split_rd[i] > 0 && split_rd[i] < 1000000000)
+      features[1 + i] = (float)split_rd[i] / (float)best_rd;
+  }
+
+  // Variance ratios
+  const MACROBLOCKD *const xd = &x->e_mbd;
+  int whole_block_variance;
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    whole_block_variance = av1_high_get_sby_perpixel_variance(
+        cpi, &x->plane[0].src, bsize, xd->bd);
+  } else {
+    whole_block_variance =
+        av1_get_sby_perpixel_variance(cpi, &x->plane[0].src, bsize);
+  }
+  whole_block_variance = AOMMAX(whole_block_variance, 1);
+
+  int split_variance[4];
+  const BLOCK_SIZE subsize = get_partition_subsize(bsize, PARTITION_SPLIT);
+  struct buf_2d buf;
+  buf.stride = x->plane[0].src.stride;
+  const int bw = block_size_wide[bsize];
+  for (int i = 0; i < 4; ++i) {
+    const int x_idx = (i & 1) * bw / 2;
+    const int y_idx = (i >> 1) * bw / 2;
+    buf.buf = x->plane[0].src.buf + x_idx + y_idx * buf.stride;
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      split_variance[i] =
+          av1_high_get_sby_perpixel_variance(cpi, &buf, subsize, xd->bd);
+    } else {
+      split_variance[i] = av1_get_sby_perpixel_variance(cpi, &buf, subsize);
+    }
+  }
+
+  for (int i = 0; i < 4; i++)
+    features[5 + i] = (float)split_variance[i] / (float)whole_block_variance;
+
+  // 2. Do the prediction and prune 0-2 partitions based on their probabilities
+  float raw_scores[3] = { 0.0f };
+  av1_nn_predict(features, nn_config, raw_scores);
+  float probs[3] = { 0.0f };
+  av1_nn_softmax(raw_scores, probs, 3);
+
+  // probs[0] is the probability of the fact that both rectangular partitions
+  // are worse than current best_rd
+  if (probs[1] <= cur_thresh) (*dst_prune_horz) = 1;
+  if (probs[2] <= cur_thresh) (*dst_prune_vert) = 1;
+}
+
 // Use a ML model to predict if horz_a, horz_b, vert_a, and vert_b should be
 // considered.
 static void ml_prune_ab_partition(BLOCK_SIZE bsize, int part_ctx, int var_ctx,
@@ -3108,6 +3201,7 @@ static void rd_pick_partition(AV1_COMP *const cpi, ThreadData *td,
       pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
 
   int do_rectangular_split = 1;
+  int64_t cur_none_rd = 0;
   int64_t split_rd[4] = { 0, 0, 0, 0 };
   int64_t horz_rd[2] = { 0, 0 };
   int64_t vert_rd[2] = { 0, 0 };
@@ -3372,6 +3466,7 @@ BEGIN_PARTITION_SEARCH:
                      PARTITION_NONE, bsize, ctx_none, best_remain_rdcost);
     pb_source_variance = x->source_variance;
     if (none_rd) *none_rd = this_rdc.rdcost;
+    cur_none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
       if (cpi->sf.prune_ref_frame_for_rect_partitions) {
         const int ref_type = av1_ref_frame_type(ctx_none->mic.ref_frame);
@@ -3563,8 +3658,17 @@ BEGIN_PARTITION_SEARCH:
     if (used_frames) pc_tree->vertical[1].skip_ref_frame_mask = ~used_frames;
   }
 
+  int prune_horz = 0;
+  int prune_vert = 0;
+  if (cpi->sf.ml_prune_rect_partition && !frame_is_intra_only(cm) &&
+      (partition_horz_allowed || partition_vert_allowed)) {
+    av1_setup_src_planes(x, cpi->source, mi_row, mi_col, num_planes);
+    ml_prune_rect_partition(cpi, x, bsize, best_rdc.rdcost, cur_none_rd,
+                            split_rd, &prune_horz, &prune_vert);
+  }
+
   // PARTITION_HORZ
-  if (partition_horz_allowed &&
+  if (partition_horz_allowed && !prune_horz &&
       (do_rectangular_split || active_h_edge(cpi, mi_row, mi_step))) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_HORZ);
@@ -3637,7 +3741,7 @@ BEGIN_PARTITION_SEARCH:
   }
 
   // PARTITION_VERT
-  if (partition_vert_allowed &&
+  if (partition_vert_allowed && !prune_vert &&
       (do_rectangular_split || active_v_edge(cpi, mi_col, mi_step))) {
     av1_init_rd_stats(&sum_rdc);
     subsize = get_partition_subsize(bsize, PARTITION_VERT);
