@@ -117,13 +117,7 @@ IN_PROC_BROWSER_TEST_F(AppWindowApiTest, AlwaysOnTopNoPermissions) {
       "platform_apps/windows_api_always_on_top/no_permissions")) << message_;
 }
 
-// Flaky on CrOS. https://crbug.com/877129
-#if defined(OS_CHROMEOS)
-#define MAYBE_Get DISABLED_Get
-#else
-#define MAYBE_Get Get
-#endif
-IN_PROC_BROWSER_TEST_F(AppWindowApiTest, MAYBE_Get) {
+IN_PROC_BROWSER_TEST_F(AppWindowApiTest, Get) {
   EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_get"))
       << message_;
 }
