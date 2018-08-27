@@ -63,6 +63,13 @@ class TestUDPSocket: public TestCase {
   std::string TestParallelSend();
   std::string TestMulticast();
 
+  // Error cases. It's up to the parent test fixture to ensure that these events
+  // result in errors.
+  std::string TestBindFails();
+  std::string TestSetBroadcastFails();
+  std::string TestSendToFails();
+  std::string TestReadFails();
+
   pp::NetAddress address_;
 
   const PPB_UDPSocket_1_0* socket_interface_1_0_;
