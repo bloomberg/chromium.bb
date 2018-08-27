@@ -137,6 +137,10 @@ class CONTENT_EXPORT AppCacheResponseIO {
   void WriteRaw(int index, int offset, net::IOBuffer* buf, int buf_len);
   void OpenEntryIfNeeded();
 
+  // Methods in this class use weak pointers. The weak pointer factories must be
+  // defined in the subclasses, to avoid use-after-free situations.
+  virtual base::WeakPtr<AppCacheResponseIO> GetWeakPtr() = 0;
+
   const int64_t response_id_;
   base::WeakPtr<AppCacheDiskCacheInterface> disk_cache_;
   AppCacheDiskCacheInterface::Entry* entry_;
@@ -145,7 +149,6 @@ class CONTENT_EXPORT AppCacheResponseIO {
   int buffer_len_;
   OnceCompletionCallback callback_;
   net::CompletionOnceCallback open_callback_;
-  base::WeakPtrFactory<AppCacheResponseIO> weak_factory_;
 
  private:
   void OnRawIOComplete(int result);
@@ -158,8 +161,7 @@ class CONTENT_EXPORT AppCacheResponseIO {
 // and there is a read in progress, the implementation will return
 // immediately but will take care of any side effect of cancelling the
 // operation.  In other words, instances are safe to delete at will.
-class CONTENT_EXPORT AppCacheResponseReader
-    : public AppCacheResponseIO {
+class CONTENT_EXPORT AppCacheResponseReader : public AppCacheResponseIO {
  public:
   ~AppCacheResponseReader() override;
 
@@ -206,6 +208,8 @@ class CONTENT_EXPORT AppCacheResponseReader
 
   void OnIOComplete(int result) override;
   void OnOpenEntryComplete() override;
+  base::WeakPtr<AppCacheResponseIO> GetWeakPtr() override;
+
   void ContinueReadInfo();
   void ContinueReadData();
 
@@ -221,8 +225,7 @@ class CONTENT_EXPORT AppCacheResponseReader
 // and there is a write in progress, the implementation will return
 // immediately but will take care of any side effect of cancelling the
 // operation. In other words, instances are safe to delete at will.
-class CONTENT_EXPORT AppCacheResponseWriter
-    : public AppCacheResponseIO {
+class CONTENT_EXPORT AppCacheResponseWriter : public AppCacheResponseIO {
  public:
   ~AppCacheResponseWriter() override;
 
@@ -273,6 +276,8 @@ class CONTENT_EXPORT AppCacheResponseWriter
   };
 
   void OnIOComplete(int result) override;
+  base::WeakPtr<AppCacheResponseIO> GetWeakPtr() override;
+
   void ContinueWriteInfo();
   void ContinueWriteData();
   void CreateEntryIfNeededAndContinue();
@@ -325,6 +330,7 @@ class CONTENT_EXPORT AppCacheResponseMetadataWriter
  private:
   void OnIOComplete(int result) override;
   void OnOpenEntryComplete() override;
+  base::WeakPtr<AppCacheResponseIO> GetWeakPtr() override;
 
   int write_amount_;
   base::WeakPtrFactory<AppCacheResponseMetadataWriter> weak_factory_;
