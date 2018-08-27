@@ -12,13 +12,11 @@
 
 namespace blink {
 
-class WebThread;
 class WorkerReportingProxy;
 
-// AudioWorkletThread is a per-frame singleton object that represents the
-// backing thread for the processing of AudioWorkletNode/AudioWorkletProcessor.
-// It is supposed to run an instance of V8 isolate. The life cycle of this
-// object is managed by the reference counting of the static backing thread.
+// AudioWorkletThread is a per-frame singleton object that has a reference count
+// to the backing thread for the processing of AudioWorkletNode and
+// AudioWorkletProcessor.
 
 class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
  public:
@@ -54,10 +52,6 @@ class MODULES_EXPORT AudioWorkletThread final : public WorkerThread {
   WebThreadType GetThreadType() const override {
     return WebThreadType::kAudioWorkletThread;
   }
-
-  // This raw pointer gets assigned in EnsureSharedBackingThread() and manually
-  // released by ClearSharedBackingThread().
-  static WebThread* s_backing_thread_;
 
   // This is only accessed by the main thread. Incremented by the constructor,
   // and decremented by destructor.
