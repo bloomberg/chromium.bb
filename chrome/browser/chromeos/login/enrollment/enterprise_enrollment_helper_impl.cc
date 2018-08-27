@@ -429,6 +429,10 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
         case policy::DM_STATUS_SERVICE_ARC_DISABLED:
           NOTREACHED();
           break;
+        case policy::DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE:
+          UMA(policy::
+                  kMetricEnrollmentRegisterConsumerAccountWithPackagedLicense);
+          break;
       }
       break;
     case policy::EnrollmentStatus::REGISTRATION_BAD_MODE:

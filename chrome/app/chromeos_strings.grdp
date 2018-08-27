@@ -4239,6 +4239,9 @@
   <message name="IDS_ENTERPRISE_ENROLLMENT_DOMAIN_MISMATCH_ERROR" desc="Error message shown when the device doesn't belong to the domain the user tried to enroll it to.">
     This device cannot be enrolled to the domain your account belongs to because the device is marked for management by a different domain.
   </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE" desc="Error message to show when the user tries to enroll a device with a packaged license using a consumer account.">
+    Your device includes a Chrome license, but your username is not associated with an Admin console. Please create an Admin console account to proceed with enrollment. Note: If you choose to use your own domain to create a new Admin console account, you must also complete domain verification after signup. https://g.co/ChromeEnterpriseAccount
+  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR" desc="Error message shown when successfully enrolled, but the device attribute update has failed.">
     Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> has successfully been enrolled for enterprise management, but failed to send its asset and location information. Please manually enter this information from your Admin console for this device.
   </message>

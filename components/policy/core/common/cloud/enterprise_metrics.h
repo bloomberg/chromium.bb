@@ -232,6 +232,8 @@ enum MetricEnrollment {
   kMetricEnrollmentStoreDMTokenFailed = 56,
   // Failed to get available licenses.
   kMetricEnrollmentLicenseRequestFailed = 57,
+  // Registration failed: Consumer account with packaged license.
+  kMetricEnrollmentRegisterConsumerAccountWithPackagedLicense = 58,
 };
 
 // Events related to policy refresh.
