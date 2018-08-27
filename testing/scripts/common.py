@@ -77,23 +77,11 @@ def run_runtest(cmd_args, runtest_args):
   env = os.environ.copy()
   env['CHROME_HEADLESS'] = '1'
 
-  if cmd_args.use_src_side_runtest_py:
-    cmd = [
+  return run_command([
       sys.executable,
       os.path.join(
           cmd_args.paths['checkout'], 'infra', 'scripts', 'runtest_wrapper.py'),
       '--',
-    ]
-  else:
-    cmd = [
-      sys.executable,
-      cmd_args.paths['runit.py'],
-      '--show-path',
-      '--with-third-party-lib',
-      sys.executable,
-      cmd_args.paths['runtest.py'],
-    ]
-  return run_command(cmd + [
       '--target', cmd_args.build_config_fs,
       '--xvfb',
       '--builder-name', cmd_args.properties['buildername'],
