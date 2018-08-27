@@ -2190,6 +2190,23 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   top_contents->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, FileChooserEndsFullscreen) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestWCDelegateForDialogsAndFullscreen test_delegate;
+  wc->SetDelegate(&test_delegate);
+
+  GURL url("about:blank");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  wc->EnterFullscreenMode(url, blink::WebFullscreenOptions());
+  EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
+  wc->RunFileChooser(wc->GetMainFrame(), FileChooserParams());
+  EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
                        PopupsFromJavaScriptEndFullscreen) {
   WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());

@@ -2747,3 +2747,26 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, TestPopupBounds) {
     browser->window()->Close();
   }
 }
+
+// Makes sure showing dialogs drops fullscreen.
+IN_PROC_BROWSER_TEST_F(BrowserTest, DialogsDropFullscreen) {
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::WebContentsDelegate* browser_as_wc_delegate =
+      static_cast<content::WebContentsDelegate*>(browser());
+  web_modal::WebContentsModalDialogManagerDelegate* browser_as_dialog_delegate =
+      static_cast<web_modal::WebContentsModalDialogManagerDelegate*>(browser());
+
+  // Simulate the tab requesting fullscreen.
+  browser_as_wc_delegate->EnterFullscreenModeForTab(
+      tab, GURL(), blink::WebFullscreenOptions());
+  EXPECT_TRUE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
+
+  // The tab gets a modal dialog.
+  browser_as_dialog_delegate->SetWebContentsBlocked(tab, true);
+
+  // The dialog should drop fullscreen.
+  EXPECT_FALSE(browser_as_wc_delegate->IsFullscreenForTabOrPending(tab));
+
+  browser_as_dialog_delegate->SetWebContentsBlocked(tab, false);
+}
