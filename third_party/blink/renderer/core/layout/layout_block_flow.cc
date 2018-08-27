@@ -4313,9 +4313,11 @@ void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
   bool float_box_is_self_painting_layer =
       float_box.HasLayer() && float_box.Layer()->IsSelfPaintingLayer();
   bool found_painting_ancestor = false;
-  for (LayoutObject* ancestor = float_box.Parent();
-       ancestor && ancestor->IsLayoutBlockFlow();
-       ancestor = ancestor->Parent()) {
+  for (LayoutObject* ancestor = float_box.ContainingBlock(); ancestor;
+       ancestor = ancestor->ContainingBlock()) {
+    if (!ancestor->IsLayoutBlockFlow())
+      continue;
+
     LayoutBlockFlow* ancestor_block = ToLayoutBlockFlow(ancestor);
     FloatingObjects* ancestor_floating_objects =
         ancestor_block->floating_objects_.get();
