@@ -548,8 +548,7 @@ class WeakPtrEquals {
 }  // namespace anonymous
 
 bool ContextGroup::HaveContexts() {
-  decoders_.erase(std::remove_if(decoders_.begin(), decoders_.end(), IsNull),
-                  decoders_.end());
+  base::EraseIf(decoders_, IsNull);
   return !decoders_.empty();
 }
 
@@ -559,9 +558,8 @@ void ContextGroup::ReportProgress() {
 }
 
 void ContextGroup::Destroy(DecoderContext* decoder, bool have_context) {
-  decoders_.erase(std::remove_if(decoders_.begin(), decoders_.end(),
-                                 WeakPtrEquals<DecoderContext>(decoder)),
-                  decoders_.end());
+  base::EraseIf(decoders_, WeakPtrEquals<DecoderContext>(decoder));
+
   // If we still have contexts do nothing.
   if (HaveContexts()) {
     return;
