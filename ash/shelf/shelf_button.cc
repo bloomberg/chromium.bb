@@ -46,8 +46,7 @@ constexpr int kNotificationIndicatorRadiusDip = 7;
 constexpr SkColor kIndicatorBorderColor = SkColorSetA(SK_ColorBLACK, 0x4D);
 constexpr SkColor kIndicatorColor = SK_ColorWHITE;
 
-// Shelf item ripple constants.
-constexpr int kInkDropSmallSize = 48;
+// Shelf item ripple size.
 constexpr int kInkDropLargeSize = 60;
 
 // The time threshold before an item can be dragged.
@@ -685,10 +684,11 @@ void ShelfButton::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 std::unique_ptr<views::InkDropRipple> ShelfButton::CreateInkDropRipple() const {
+  const int ink_drop_small_size = ash::ShelfConstants::shelf_size();
   return std::make_unique<views::SquareInkDropRipple>(
       gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
       ink_drop_large_corner_radius(),
-      gfx::Size(kInkDropSmallSize, kInkDropSmallSize),
+      gfx::Size(ink_drop_small_size, ink_drop_small_size),
       ink_drop_small_corner_radius(), GetLocalBounds().CenterPoint(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
