@@ -18,9 +18,12 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/app_modal/javascript_dialog_manager.h"
 #include "components/navigation_metrics/navigation_metrics.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "ui/gfx/text_elider.h"
 
 #if defined(OS_ANDROID)
@@ -476,7 +479,7 @@ void JavaScriptDialogTabHelper::TabDetachedAt(content::WebContents* contents,
 #endif
 
 void JavaScriptDialogTabHelper::LogDialogDismissalCause(DismissalCause cause) {
-  // Log to UMA
+  // Log to UMA.
   switch (dialog_type_) {
     case content::JAVASCRIPT_DIALOG_TYPE_ALERT:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Alert", cause);
@@ -487,6 +490,20 @@ void JavaScriptDialogTabHelper::LogDialogDismissalCause(DismissalCause cause) {
     case content::JAVASCRIPT_DIALOG_TYPE_PROMPT:
       UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Prompt", cause);
       break;
+  }
+
+  // Log to UKM.
+  //
+  // Note that this will return the outermost WebContents, not necessarily the
+  // WebContents that had the alert call in it. For 99.9999% of cases they're
+  // the same, but for instances like the <webview> tag in extensions and PDF
+  // files that alert they may differ.
+  ukm::SourceId source_id = ukm::GetSourceIdForWebContentsDocument(
+      WebContentsObserver::web_contents());
+  if (source_id != ukm::kInvalidSourceId) {
+    ukm::builders::AbusiveExperienceHeuristic_JavaScriptDialog(source_id)
+        .SetDismissalCause(static_cast<int64_t>(cause))
+        .Record(ukm::UkmRecorder::Get());
   }
 }
 
