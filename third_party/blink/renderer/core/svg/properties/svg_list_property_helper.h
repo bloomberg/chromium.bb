@@ -137,6 +137,8 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
                               float percentage,
                               AnimationMode);
 
+  String SerializeList() const;
+
   virtual ItemPropertyType* CreatePaddingItem() const {
     return ItemPropertyType::Create();
   }
@@ -283,6 +285,24 @@ bool SVGListPropertyHelper<Derived, ItemProperty>::AdjustFromToListValues(
     Append(CreatePaddingItem());
 
   return true;
+}
+
+template <typename Derived, typename ItemProperty>
+String SVGListPropertyHelper<Derived, ItemProperty>::SerializeList() const {
+  if (values_.IsEmpty())
+    return String();
+
+  StringBuilder builder;
+
+  auto it = values_.begin();
+  auto it_end = values_.end();
+  while (it != it_end) {
+    builder.Append((*it)->ValueAsString());
+    ++it;
+    if (it != it_end)
+      builder.Append(' ');
+  }
+  return builder.ToString();
 }
 
 }  // namespace blink

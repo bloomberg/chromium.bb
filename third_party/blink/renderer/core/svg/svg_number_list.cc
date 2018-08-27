@@ -32,21 +32,7 @@ SVGNumberList::SVGNumberList() = default;
 SVGNumberList::~SVGNumberList() = default;
 
 String SVGNumberList::ValueAsString() const {
-  StringBuilder builder;
-
-  ConstIterator it = begin();
-  ConstIterator it_end = end();
-  if (it != it_end) {
-    builder.Append(it->ValueAsString());
-    ++it;
-
-    for (; it != it_end; ++it) {
-      builder.Append(' ');
-      builder.Append(it->ValueAsString());
-    }
-  }
-
-  return builder.ToString();
+  return SVGListPropertyHelper<SVGNumberList, SVGNumber>::SerializeList();
 }
 
 template <typename CharType>
