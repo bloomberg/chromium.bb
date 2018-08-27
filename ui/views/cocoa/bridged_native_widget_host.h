@@ -33,6 +33,9 @@ class VIEWS_EXPORT BridgedNativeWidgetHost {
   // Indicate if the NSView is the first responder.
   virtual void SetIsFirstResponder(bool is_first_responder) = 0;
 
+  // Indicate if mouse capture is active.
+  virtual void OnMouseCaptureActiveChanged(bool capture_is_active) = 0;
+
   // Handle events. Note that whether or not the event is actually handled is
   // not returned.
   virtual void OnScrollEvent(const ui::ScrollEvent& const_event) = 0;

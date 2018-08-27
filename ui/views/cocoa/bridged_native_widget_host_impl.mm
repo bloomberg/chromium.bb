@@ -277,6 +277,13 @@ void BridgedNativeWidgetHostImpl::SetIsFirstResponder(bool is_first_responder) {
     root_view_->GetWidget()->GetFocusManager()->StoreFocusedView(true);
 }
 
+void BridgedNativeWidgetHostImpl::OnMouseCaptureActiveChanged(bool is_active) {
+  DCHECK_NE(is_mouse_capture_active_, is_active);
+  is_mouse_capture_active_ = is_active;
+  if (!is_mouse_capture_active_)
+    native_widget_mac_->GetWidget()->OnMouseCaptureLost();
+}
+
 void BridgedNativeWidgetHostImpl::GetIsDraggableBackgroundAt(
     const gfx::Point& location_in_content,
     bool* is_draggable_background) {

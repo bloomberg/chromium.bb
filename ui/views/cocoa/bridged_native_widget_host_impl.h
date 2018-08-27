@@ -108,6 +108,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool IsVisible() const { return is_visible_; }
   bool IsMiniaturized() const { return is_miniaturized_; }
   bool IsWindowKey() const { return is_window_key_; }
+  bool IsMouseCaptureActive() const { return is_mouse_capture_active_; }
 
  private:
   gfx::Vector2d GetBoundsOffsetForParent() const;
@@ -119,6 +120,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   void SetViewSize(const gfx::Size& new_size) override;
   void SetKeyboardAccessible(bool enabled) override;
   void SetIsFirstResponder(bool is_first_responder) override;
+  void OnMouseCaptureActiveChanged(bool capture_is_active) override;
   void OnScrollEvent(const ui::ScrollEvent& const_event) override;
   void OnMouseEvent(const ui::MouseEvent& const_event) override;
   void OnGestureEvent(const ui::GestureEvent& const_event) override;
@@ -190,6 +192,7 @@ class VIEWS_EXPORT BridgedNativeWidgetHostImpl
   bool in_fullscreen_transition_ = false;
   bool is_miniaturized_ = false;
   bool is_window_key_ = false;
+  bool is_mouse_capture_active_ = false;
   gfx::Rect window_bounds_before_fullscreen_;
 
   std::unique_ptr<ui::RecyclableCompositorMac> compositor_;

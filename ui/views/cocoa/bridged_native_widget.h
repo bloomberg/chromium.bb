@@ -113,6 +113,11 @@ class VIEWS_EXPORT BridgedNativeWidgetPublic {
 
   // Clear the touchbar.
   virtual void ClearTouchBar() = 0;
+
+  // Acquiring mouse capture first steals capture from any existing
+  // CocoaMouseCaptureDelegate, then captures all mouse events until released.
+  virtual void AcquireCapture() = 0;
+  virtual void ReleaseCapture() = 0;
 };
 
 // A bridge to an NSWindow managed by an instance of NativeWidgetMac or
@@ -156,12 +161,6 @@ class VIEWS_EXPORT BridgedNativeWidget
   // Set or clears the views::View bridged by the content view. This does NOT
   // take ownership of |view|.
   void SetRootView(views::View* view);
-
-  // Acquiring mouse capture first steals capture from any existing
-  // CocoaMouseCaptureDelegate, then captures all mouse events until released.
-  void AcquireCapture();
-  void ReleaseCapture();
-  bool HasCapture();
 
   // Start moving the window, pinned to the mouse cursor, and monitor events.
   // Return MOVE_LOOP_SUCCESSFUL on mouse up or MOVE_LOOP_CANCELED on premature
@@ -295,6 +294,8 @@ class VIEWS_EXPORT BridgedNativeWidget
   void SetWindowTitle(const base::string16& title) override;
   void MakeFirstResponder() override;
   void ClearTouchBar() override;
+  void AcquireCapture() override;
+  void ReleaseCapture() override;
 
   // TODO(ccameron): This method exists temporarily as we move all direct access
   // of TextInputClient out of BridgedContentView.
@@ -322,6 +323,9 @@ class VIEWS_EXPORT BridgedNativeWidget
 
   // Show the window using -[NSApp beginSheet:..], modal for the parent window.
   void ShowAsModalSheet();
+
+  // Returns true if capture exists and is currently active.
+  bool HasCapture();
 
   // CocoaMouseCaptureDelegate:
   void PostCapturedEvent(NSEvent* event) override;

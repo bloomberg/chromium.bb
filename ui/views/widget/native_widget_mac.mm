@@ -54,6 +54,17 @@ namespace {
 base::LazyInstance<ui::GestureRecognizerImplMac>::Leaky
     g_gesture_recognizer_instance = LAZY_INSTANCE_INITIALIZER;
 
+NativeWidgetMac* GetNativeWidgetMacForNativeWindow(
+    gfx::NativeWindow native_window) {
+  id<NSWindowDelegate> window_delegate = [native_window delegate];
+  if ([window_delegate respondsToSelector:@selector(nativeWidgetMac)]) {
+    ViewsNSWindowDelegate* delegate =
+        base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
+    return [delegate nativeWidgetMac];
+  }
+  return nullptr;  // Not created by NativeWidgetMac.
+}
+
 NSInteger StyleMaskForParams(const Widget::InitParams& params) {
   // If the Widget is modal, it will be displayed as a sheet. This works best if
   // it has NSTitledWindowMask. For example, with NSBorderlessWindowMask, the
@@ -94,12 +105,16 @@ NativeWidgetMac::~NativeWidgetMac() {
 // static
 BridgedNativeWidget* NativeWidgetMac::GetBridgeForNativeWindow(
     gfx::NativeWindow window) {
-  id<NSWindowDelegate> window_delegate = [window delegate];
-  if ([window_delegate respondsToSelector:@selector(nativeWidgetMac)]) {
-    ViewsNSWindowDelegate* delegate =
-        base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
-    return [delegate nativeWidgetMac]->bridge();
-  }
+  if (NativeWidgetMac* widget = GetNativeWidgetMacForNativeWindow(window))
+    return widget->bridge();
+  return nullptr;  // Not created by NativeWidgetMac.
+}
+
+// static
+BridgedNativeWidgetHostImpl* NativeWidgetMac::GetBridgeHostImplForNativeWindow(
+    gfx::NativeWindow window) {
+  if (NativeWidgetMac* widget = GetNativeWidgetMacForNativeWindow(window))
+    return widget->bridge_host_.get();
   return nullptr;  // Not created by NativeWidgetMac.
 }
 
@@ -245,7 +260,7 @@ TooltipManager* NativeWidgetMac::GetTooltipManager() const {
 }
 
 void NativeWidgetMac::SetCapture() {
-  if (bridge() && !bridge()->HasCapture())
+  if (bridge())
     bridge()->AcquireCapture();
 }
 
@@ -255,7 +270,7 @@ void NativeWidgetMac::ReleaseCapture() {
 }
 
 bool NativeWidgetMac::HasCapture() const {
-  return bridge() && bridge()->HasCapture();
+  return bridge_host_ && bridge_host_->IsMouseCaptureActive();
 }
 
 ui::InputMethod* NativeWidgetMac::GetInputMethod() {
@@ -734,13 +749,9 @@ NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeView(
 
 // static
 NativeWidgetPrivate* NativeWidgetPrivate::GetNativeWidgetForNativeWindow(
-    gfx::NativeWindow native_window) {
-  id<NSWindowDelegate> window_delegate = [native_window delegate];
-  if ([window_delegate respondsToSelector:@selector(nativeWidgetMac)]) {
-    ViewsNSWindowDelegate* delegate =
-        base::mac::ObjCCastStrict<ViewsNSWindowDelegate>(window_delegate);
-    return [delegate nativeWidgetMac];
-  }
+    gfx::NativeWindow window) {
+  if (NativeWidgetMac* widget = GetNativeWidgetMacForNativeWindow(window))
+    return widget;
   return nullptr;  // Not created by NativeWidgetMac.
 }
 

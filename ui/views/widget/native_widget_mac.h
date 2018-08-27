@@ -32,6 +32,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
 
   // Retrieves the bridge associated with the given NSWindow. Returns null if
   // the supplied handle has no associated Widget.
+  static BridgedNativeWidgetHostImpl* GetBridgeHostImplForNativeWindow(
+      gfx::NativeWindow window);
   static BridgedNativeWidget* GetBridgeForNativeWindow(
       gfx::NativeWindow window);
 
