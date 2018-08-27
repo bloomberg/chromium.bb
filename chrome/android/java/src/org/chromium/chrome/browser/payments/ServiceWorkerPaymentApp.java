@@ -356,12 +356,6 @@ public class ServiceWorkerPaymentApp extends PaymentInstrument implements Paymen
     public void dismissInstrument() {}
 
     @Override
-    public boolean canMakePayment() {
-        // Return false for PaymentRequest.canMakePayment() if installation is needed.
-        return !mNeedsInstallation;
-    }
-
-    @Override
     public boolean canPreselect() {
         return mCanPreselect;
     }

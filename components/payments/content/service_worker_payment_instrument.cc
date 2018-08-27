@@ -279,15 +279,9 @@ base::string16 ServiceWorkerPaymentInstrument::GetMissingInfoLabel() const {
 }
 
 bool ServiceWorkerPaymentInstrument::IsValidForCanMakePayment() const {
-  // This instrument should not be used when can_make_payment_result_ is false
-  // , so this interface should not be invoked.
+  // This instrument should not be used when can_make_payment_result_ is false,
+  // so this interface should not be invoked.
   DCHECK(can_make_payment_result_);
-
-  // Returns false for PaymentRequest.CanMakePayment query if the app needs
-  // installation.
-  if (needs_installation_)
-    return false;
-
   return true;
 }
 
