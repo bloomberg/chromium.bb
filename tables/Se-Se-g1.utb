@@ -49,8 +49,6 @@ punctuation - 36			hyphen-minus				x002D
 punctuation . 3				point								x002E
 math / 34							solidus							x002F
 
-include digits6Dots.uti
-
 punctuation : 25			colon								x003A
 punctuation ; 23			semicolon						x003B
 math < 246-3					less-than sign			x003C
@@ -60,6 +58,9 @@ punctuation ? 26			question mark				x003F
 sign @ 45-12356				commercial at				x0040
 
 include latinLetterDef6Dots.uti
+include digits6Dots.uti # must come after letters
+include litdigits6Dots.uti # Must come after letters
+
 
 punctuation [ 12356	left square bracket		x005B
 sign \\ 45-34				reverse solidus				x005C

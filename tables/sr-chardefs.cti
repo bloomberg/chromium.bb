@@ -109,9 +109,11 @@ math \x00F7 1256 					# DIVISION SIGN
 #uplow	\x00D3\x00F3 346				# LATIN CAPITAL LETTER O WITH ACUTE
 
 
-include digits6Dots.uti
-
 include latinLetterDef6Dots.uti
+
+include digits6Dots.uti # Must come after letters.
+include litdigits6Dots.uti # Must come after letters.
+
 uplow \x010C\x010D 16				# LATIN LETTER C WITH CARON
 uplow \x0106\x0107 146				# LATIN LETTER C WITH ACUTE
 uplow \x0110\x0111 1456				# LATIN LETTER D WITH STROKE
