@@ -240,6 +240,10 @@ message DeviceServiceApiAccessRequest {
     // Authcode will be used by Android (ARC) subsystem
     // (this is typically requested during ARC Kiosk session setup)
     ANDROID_OS = 1;
+    // Authcode will be used by Chrome OS Demo Mode. This auth code can be used
+    // to access Google Docs.
+    // Please see go/cros-demo-mode and go/demo-mode-account-brainstorm.
+    CHROME_OS_DEMO_MODE = 2;
   };
 
   // Device type indicates the intended use of the auth code.
@@ -521,6 +525,17 @@ message PolicyData {
   // Gaia id of the user the policy is intended for.
   // Should be fetched with user policy.
   optional string gaia_id = 29;
+
+  // Indicate this device's market segment.
+  enum MarketSegment {
+    MARKET_SEGMENT_UNSPECIFIED = 0;
+    ENROLLED_EDUCATION = 1;
+    ENROLLED_ENTERPRISE = 2;
+  }
+
+  // This field should only be set for Device Policy response.
+  // See go/cros-rlz-segments
+  optional MarketSegment market_segment = 30;
 }
 
 message PolicyFetchResponse {
@@ -1747,9 +1762,19 @@ message AppInstallReportResponse {}
 // Request from device to stop using a previously issued service account.
 // The identity of a freshly-issued service account will be returned by a
 // subsequent device policy fetch (see the |service_account_identity| field in
-// |PolicyData| and auth codes tied to the new service account can be retrived
+// |PolicyData| and auth codes tied to the new service account can be retrieved
 // by subsequent |DeviceServiceApiAccessRequest| requests.
-message RefreshAccountRequest {}
+message RefreshAccountRequest {
+  enum AccountType {
+    ACCOUNT_TYPE_UNSPECIFIED = 0;
+
+    // Refresh demo mode user account.
+    // See go/cros-demo-mode and go/demo-mode-account-brainstorm.
+    CHROME_OS_DEMO_MODE = 1;
+  }
+
+  optional AccountType account_type = 1;
+}
 
 // Response from server after receiving a request to refresh the service
 // account.
