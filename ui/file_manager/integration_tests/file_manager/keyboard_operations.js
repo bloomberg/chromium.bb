@@ -155,42 +155,30 @@ function keyboardDelete(path) {
 function keyboardDeleteFolder(path, treeItem) {
   let appId;
 
-  StepsRunner.run([
-    // Open Files app on |path| containing one folder entry: photos.
-    function() {
-      setupAndWaitUntilReady(
-          null, path, this.next, [ENTRIES.photos], [ENTRIES.photos]);
-    },
+  return new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, path, resolve, [ENTRIES.photos], [ENTRIES.photos]);
+  }).then(function(results) {
+    appId = results.windowId;
     // Expand the directory tree |treeItem|.
-    function(results) {
-      appId = results.windowId;
-      expandRoot(appId, treeItem).then(this.next);
-    },
+    return expandRoot(appId, treeItem);
+  }).then(function() {
     // Check: the folder should be shown in the directory tree.
-    function() {
-      waitForDirectoryTreeItem(appId, 'photos').then(this.next);
-    },
+    return waitForDirectoryTreeItem(appId, 'photos');
+  }).then(function() {
     // Delete the folder entry from the file list.
-    function() {
-      remoteCall.callRemoteTestUtil('deleteFile', appId, ['photos'], this.next);
-    },
+    return remoteCall.callRemoteTestUtil('deleteFile', appId, ['photos']);
+  }).then(function(result) {
+    chrome.test.assertTrue(result, 'deleteFile failed');
     // Run the delete entry confirmation dialog.
-    function(result) {
-      chrome.test.assertTrue(result, 'deleteFile failed');
-      waitAndAcceptDialog(appId).then(this.next);
-    },
-    // Check: the file list should now be empty.
-    function() {
-      remoteCall.waitForFiles(appId, []).then(this.next);
-    },
+    return waitAndAcceptDialog(appId);
+  }).then(function() {
+    // Check: the file list should be empty.
+    return remoteCall.waitForFiles(appId, []);
+  }).then(function() {
     // Check: the folder should not be shown in the directory tree.
-    function() {
-      waitForDirectoryTreeItemLost(appId, 'photos').then(this.next);
-    },
-    function() {
-      checkIfNoErrorsOccured(this.next);
-    }
-  ]);
+    return waitForDirectoryTreeItemLost(appId, 'photos');
+  });
 }
 
 /**
@@ -369,11 +357,11 @@ testcase.keyboardDeleteDrive = function() {
 };
 
 testcase.keyboardDeleteFolderDownloads = function() {
-  keyboardDeleteFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS);
+  testPromise(keyboardDeleteFolder(RootPath.DOWNLOADS, TREEITEM_DOWNLOADS));
 };
 
 testcase.keyboardDeleteFolderDrive = function() {
-  keyboardDeleteFolder(RootPath.DRIVE, TREEITEM_DRIVE);
+  testPromise(keyboardDeleteFolder(RootPath.DRIVE, TREEITEM_DRIVE));
 };
 
 testcase.renameFileDownloads = function() {
