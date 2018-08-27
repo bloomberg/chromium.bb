@@ -19,7 +19,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/encryptor.h"
 #include "components/sync/base/experiments.h"
-#include "components/sync/base/passphrase_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/protocol/encryption.pb.h"
@@ -88,40 +88,6 @@ bool IsNigoriMigratedToKeystore(const sync_pb::NigoriSpecifics& nigori) {
       nigori.keystore_decryptor_token().blob().empty())
     return false;
   return true;
-}
-
-PassphraseType ProtoPassphraseTypeToEnum(
-    sync_pb::NigoriSpecifics::PassphraseType type) {
-  switch (type) {
-    case sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE:
-      return PassphraseType::IMPLICIT_PASSPHRASE;
-    case sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE:
-      return PassphraseType::KEYSTORE_PASSPHRASE;
-    case sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE:
-      return PassphraseType::CUSTOM_PASSPHRASE;
-    case sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE:
-      return PassphraseType::FROZEN_IMPLICIT_PASSPHRASE;
-    default:
-      NOTREACHED();
-      return PassphraseType::IMPLICIT_PASSPHRASE;
-  }
-}
-
-sync_pb::NigoriSpecifics::PassphraseType EnumPassphraseTypeToProto(
-    PassphraseType type) {
-  switch (type) {
-    case PassphraseType::IMPLICIT_PASSPHRASE:
-      return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
-    case PassphraseType::KEYSTORE_PASSPHRASE:
-      return sync_pb::NigoriSpecifics::KEYSTORE_PASSPHRASE;
-    case PassphraseType::CUSTOM_PASSPHRASE:
-      return sync_pb::NigoriSpecifics::CUSTOM_PASSPHRASE;
-    case PassphraseType::FROZEN_IMPLICIT_PASSPHRASE:
-      return sync_pb::NigoriSpecifics::FROZEN_IMPLICIT_PASSPHRASE;
-    default:
-      NOTREACHED();
-      return sync_pb::NigoriSpecifics::IMPLICIT_PASSPHRASE;
-  }
 }
 
 // Keystore Bootstrap Token helper methods.

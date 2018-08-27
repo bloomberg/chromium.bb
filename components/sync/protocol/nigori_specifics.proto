@@ -151,4 +151,22 @@ message NigoriSpecifics {
 
   // Boolean corresponding to whether mountain shares should be encrypted.
   optional bool encrypt_mountain_shares = 44;
+
+  enum KeyDerivationMethod {
+    // This comes from a <= M69 client, who does not know about the field
+    // (but implicitly uses PBKDF2_HMAC_SHA1_1003).
+    UNSPECIFIED = 0;
+    // PBKDF2-HMAC-SHA1 with 1003 iterations and constant hardcoded salt. Was
+    // implicitly used in <= M69.
+    PBKDF2_HMAC_SHA1_1003 = 1;
+  }
+
+  // ID of the method used to derive the encryption key from a custom
+  // passphrase. Should be set only when |passphrase_type| is CUSTOM_PASSPHRASE
+  // and only based on CustomPassphraseKeyDerivationMethod. This field has been
+  // added in M70. All previous versions just ignore it, attempt to use
+  // PBKDF2_HMAC_SHA1_1003 and, thus, reject any passphrase if a different
+  // method has been used. The default corresponds to UNSPECIFIED. An |int|
+  // field is used so we can detect unknown values coming from later versions.
+  optional int32 custom_passphrase_key_derivation_method = 45 [default = 0];
 }

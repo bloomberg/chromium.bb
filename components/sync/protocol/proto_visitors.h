@@ -633,6 +633,7 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(keystore_decryptor_token);
   VISIT(keystore_migration_time);
   VISIT(custom_passphrase_time);
+  VISIT(custom_passphrase_key_derivation_method);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::PasswordSpecifics& proto) {

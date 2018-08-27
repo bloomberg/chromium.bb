@@ -4,7 +4,7 @@
 
 #include "components/sync/syncable/base_transaction.h"
 
-#include "components/sync/base/passphrase_type.h"
+#include "components/sync/base/passphrase_enums.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/nigori_handler.h"
 
