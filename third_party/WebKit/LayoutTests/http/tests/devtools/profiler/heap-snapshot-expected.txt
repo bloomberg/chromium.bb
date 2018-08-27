@@ -21,6 +21,8 @@ Running: heapSnapshotPostOrderIndexTest
 
 Running: heapSnapshotDominatorsTreeTest
 
+Running: heapSnapshotLocations
+
 Running: heapSnapshotRetainedSizeTest
 
 Running: heapSnapshotLargeRetainedSize

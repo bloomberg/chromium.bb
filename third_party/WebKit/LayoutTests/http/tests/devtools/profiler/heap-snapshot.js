@@ -156,6 +156,22 @@
           TestRunner.assertEquals(expected[i], dominatorsTree[i], 'Dominators Tree');
       },
 
+      function heapSnapshotLocations() {
+        var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
+            HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
+        const expected = new Map([
+          [0, new HeapSnapshotModel.Location(1, 2, 3)],
+          [18, new HeapSnapshotModel.Location(2, 3, 4)],
+        ]);
+
+        expected.forEach((expected_location, index) => {
+          const location = snapshot.getLocation(index);
+          TestRunner.assertEquals(expected_location.scriptId, location.scriptId, 'Locations scriptId');
+          TestRunner.assertEquals(expected_location.lineNumber, location.lineNumber, 'Locations lineNumber');
+          TestRunner.assertEquals(expected_location.columnNumber, location.columnNumber, 'Locations columnNumber');
+        });
+      },
+
       function heapSnapshotRetainedSizeTest() {
         var snapshot = new HeapSnapshotWorker.JSHeapSnapshot(
             HeapProfilerTestRunner.createHeapSnapshotMock(), new HeapSnapshotWorker.HeapSnapshotProgress());
