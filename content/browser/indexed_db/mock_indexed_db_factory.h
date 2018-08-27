@@ -78,6 +78,7 @@ class MockIndexedDBFactory : public IndexedDBFactory {
   // deal with std::pair's. This means we can't use GoogleMock for this method
   OriginDBs GetOpenDatabasesForOrigin(const url::Origin& origin) const override;
   MOCK_METHOD1(ForceClose, void(const url::Origin& origin));
+  MOCK_METHOD1(ForceSchemaDowngrade, void(const url::Origin& origin));
   MOCK_METHOD0(ContextDestroyed, void());
   MOCK_METHOD1(DatabaseDeleted,
                void(const IndexedDBDatabase::Identifier& identifier));

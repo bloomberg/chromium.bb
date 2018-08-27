@@ -47,6 +47,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
     FORCE_CLOSE_BACKING_STORE_FAILURE,
     FORCE_CLOSE_INTERNALS_PAGE,
     FORCE_CLOSE_COPY_ORIGIN,
+    FORCE_SCHEMA_DOWNGRADE_INTERNALS_PAGE,
     // Append new values here and update IDBContextForcedCloseReason in
     // enums.xml.
     FORCE_CLOSE_REASON_MAX
@@ -122,6 +123,7 @@ class CONTENT_EXPORT IndexedDBContextImpl : public IndexedDBContext {
   // ForceClose takes a value rather than a reference since it may release the
   // owning object.
   void ForceClose(const url::Origin origin, ForceCloseReason reason);
+  void ForceSchemaDowngrade(const url::Origin& origin);
   // GetStoragePaths returns all paths owned by this database, in arbitrary
   // order.
   std::vector<base::FilePath> GetStoragePaths(const url::Origin& origin) const;

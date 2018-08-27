@@ -687,6 +687,19 @@ Status IndexedDBBackingStore::AnyDatabaseContainsBlobs(
   return Status::OK();
 }
 
+Status IndexedDBBackingStore::RevertSchemaToV2() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  const std::string schema_version_key = SchemaVersionKey::Encode();
+  scoped_refptr<LevelDBTransaction> transaction =
+      IndexedDBClassFactory::Get()->CreateLevelDBTransaction(db_.get());
+
+  PutInt(transaction.get(), schema_version_key, 2);
+  Status s = transaction->Commit();
+  if (!s.ok())
+    INTERNAL_WRITE_ERROR_UNTESTED(REVERT_SCHEMA_TO_V2);
+  return s;
+}
+
 WARN_UNUSED_RESULT Status IndexedDBBackingStore::SetUpMetadata() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 

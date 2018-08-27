@@ -577,6 +577,11 @@ class CONTENT_EXPORT IndexedDBBackingStore
   // Stops the journal_cleaning_timer_ and runs its pending task.
   void ForceRunBlobCleanup();
 
+  // RevertSchemaToV2() updates a backing store state on disk to override its
+  // metadata version to 2.  This allows triggering https://crbug.com/829141 on
+  // an otherwise healthy backing store.
+  leveldb::Status RevertSchemaToV2();
+
  protected:
   friend class base::RefCounted<IndexedDBBackingStore>;
 

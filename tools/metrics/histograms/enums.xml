@@ -24488,6 +24488,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="3" label="CopyOrigin">
     The database is force closed so that it can be copied.
   </int>
+  <int value="4" label="ForceSchemaDowngradeInternalsPage">
+    A forced schema downgrade was requested from the indexeddb-internals page.
+  </int>
 </enum>
 
 <enum name="IDBException">
