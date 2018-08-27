@@ -3209,7 +3209,7 @@
   },
 
   "WebRtcEventLogCollectionAllowed": {
-    "os": ["win", "linux", "mac"],
+    "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "WebRtcEventLogCollectionAllowed": false },
     "pref_mappings": [
       { "pref": "webrtc.event_logs_collection" }
