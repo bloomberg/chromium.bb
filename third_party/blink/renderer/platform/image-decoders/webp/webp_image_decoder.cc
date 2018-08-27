@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/webp/webp_image_decoder.h"
 
 #include "build/build_config.h"
+#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/skia/include/core/SkData.h"
 
 #if defined(ARCH_CPU_BIG_ENDIAN)
@@ -113,6 +114,50 @@ void alphaBlendNonPremultiplied(blink::ImageFrame& src,
       blink::ImageFrame::BlendSrcOverDstRaw(pixel, prevPixel);
     }
   }
+}
+
+// Do not rename entries nor reuse numeric values. See the following link for
+// descriptions: https://developers.google.com/speed/webp/docs/riff_container.
+enum WebPFileFormat {
+  kSimpleLossyFileFormat = 0,
+  kSimpleLosslessFileFormat = 1,
+  kExtendedAlphaFileFormat = 2,
+  kExtendedAnimationFileFormat = 3,
+  kExtendedAnimationWithAlphaFileFormat = 4,
+  kUnknownFileFormat = 5,
+  kCountWebPFileFormats
+};
+
+// This method parses |blob|'s header and emits a UMA with the file format, as
+// defined by WebP, see WebPFileFormat.
+void UpdateWebPFileFormatUMA(const sk_sp<SkData>& blob) {
+  if (!IsMainThread())
+    return;
+
+  WebPBitstreamFeatures features{};
+  if (WebPGetFeatures(blob->bytes(), blob->size(), &features) != VP8_STATUS_OK)
+    return;
+
+  // These constants are defined verbatim in webp_dec.c::ParseHeadersInternal().
+  constexpr int kLossyFormat = 1;
+  constexpr int kLosslessFormat = 2;
+
+  WebPFileFormat file_format = kUnknownFileFormat;
+  if (features.has_alpha && features.has_animation)
+    file_format = kExtendedAnimationWithAlphaFileFormat;
+  else if (features.has_animation)
+    file_format = kExtendedAnimationFileFormat;
+  else if (features.has_alpha)
+    file_format = kExtendedAlphaFileFormat;
+  else if (features.format == kLossyFormat)
+    file_format = kSimpleLossyFileFormat;
+  else if (features.format == kLosslessFormat)
+    file_format = kSimpleLosslessFileFormat;
+
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      blink::EnumerationHistogram, file_format_histogram,
+      ("Blink.DecodedImage.WebPFileFormat", kCountWebPFileFormats));
+  file_format_histogram.Count(file_format);
 }
 
 }  // namespace
@@ -234,6 +279,8 @@ bool WEBPImageDecoder::UpdateDemuxer() {
     int height = WebPDemuxGetI(demux_, WEBP_FF_CANVAS_HEIGHT);
     if (!SetSize(width, height))
       return SetFailed();
+
+    UpdateWebPFileFormatUMA(consolidated_data_);
 
     format_flags_ = WebPDemuxGetI(demux_, WEBP_FF_FORMAT_FLAGS);
     if (!(format_flags_ & ANIMATION_FLAG)) {
