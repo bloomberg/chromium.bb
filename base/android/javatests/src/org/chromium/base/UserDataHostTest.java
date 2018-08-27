@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.DisabledTest;
 
 /**
  * Test class for {@link UserDataHost}.
@@ -80,6 +81,7 @@ public class UserDataHostTest {
      */
     @Test
     @SmallTest
+    @DisabledTest
     public void testBasicOperations() {
         TestObjectA obj = new TestObjectA();
         mHost.setUserData(TestObjectA.class, obj);
@@ -94,6 +96,7 @@ public class UserDataHostTest {
      */
     @Test
     @SmallTest
+    @DisabledTest
     public void testNullKeyOrDataAreDisallowed() {
         TestObjectA obj = new TestObjectA();
         assertSetUserData(null, null);
@@ -123,6 +126,7 @@ public class UserDataHostTest {
      */
     @Test
     @SmallTest
+    @DisabledTest
     public void testSingleThreadPolicy() {
         TestObjectA obj = new TestObjectA();
         mHost.setUserData(TestObjectA.class, obj);
@@ -152,6 +156,7 @@ public class UserDataHostTest {
      */
     @Test
     @SmallTest
+    @DisabledTest
     public void testOperationsDisallowedAfterDestroy() {
         TestObjectA obj = new TestObjectA();
         mHost.setUserData(TestObjectA.class, obj);
