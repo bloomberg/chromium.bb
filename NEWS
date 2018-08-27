@@ -44,6 +44,8 @@ issues]].
   documented. Consequently it was never used. Meanwhile the original
   code for multipass opcodes was much improved. So there is no more
   need for this (duplicate) code and we are removing it.
+- The nightly snapshots of pre-built windows binaries are now built
+  with UCS4 enabled.
 
 ** Deprecation notice
 ** Backwards incompatible changes
