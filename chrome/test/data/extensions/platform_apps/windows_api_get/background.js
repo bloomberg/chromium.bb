@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 function compareId(a, b) {
-  return a.id < b.id;
+  return a.id.localeCompare(b.id);
 }
 
 chrome.app.runtime.onLaunched.addListener(function() {
