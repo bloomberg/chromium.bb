@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/supports_user_data.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -16,7 +17,7 @@ class Value;
 
 namespace web {
 
-class WebFrame {
+class WebFrame : public base::SupportsUserData {
  public:
   // The frame identifier which uniquely identifies this frame across the
   // application's lifetime.
@@ -41,7 +42,7 @@ class WebFrame {
       const std::string& name,
       const std::vector<base::Value>& parameters) = 0;
 
-  virtual ~WebFrame() {}
+  ~WebFrame() override {}
 
  protected:
   WebFrame() {}
