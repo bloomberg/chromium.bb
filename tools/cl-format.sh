@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 
 for f in $(git diff --name-only @{u}); do
-  if echo $f | sed -n '/\.\(cc\|h\)$/q1;q0'; then
+  if echo $f | sed -n '/^third_party\//q0;/\.\(cc\|h\)$/q1;q0'; then
     continue;
   fi
   clang-format -style=file -i "$f"
