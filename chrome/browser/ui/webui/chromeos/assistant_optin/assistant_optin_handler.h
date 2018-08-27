@@ -60,6 +60,9 @@ class AssistantOptInHandler
   // Consent token used to complete the opt-in.
   std::string consent_token_;
 
+  // An opaque token for audit record.
+  std::string ui_audit_key_;
+
   // Whether activity control is needed for user.
   bool activity_control_needed_ = true;
 
