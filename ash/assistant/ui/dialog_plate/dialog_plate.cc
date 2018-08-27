@@ -37,7 +37,6 @@ namespace {
 // Appearance.
 constexpr int kIconSizeDip = 20;
 constexpr int kButtonSizeDip = 32;
-constexpr int kKeyboardLayoutPaddingDip = 16;
 constexpr int kPreferredHeightDip = 48;
 
 // Animation.
@@ -50,6 +49,8 @@ constexpr base::TimeDelta kAnimationFadeOutDuration =
 constexpr base::TimeDelta kAnimationTransformInDuration =
     base::TimeDelta::FromMilliseconds(333);
 constexpr int kAnimationTranslationDip = 30;
+
+// Helpers ---------------------------------------------------------------------
 
 bool IsTabletMode() {
   return Shell::Get()
@@ -105,10 +106,6 @@ void DialogPlate::ChildPreferredSizeChanged(views::View* child) {
 
 void DialogPlate::ChildVisibilityChanged(views::View* child) {
   PreferredSizeChanged();
-}
-
-void DialogPlate::OnActionPressed() {
-  OnButtonPressed(DialogPlateButtonId::kVoiceInputToggle);
 }
 
 void DialogPlate::ButtonPressed(views::Button* sender, const ui::Event& event) {
@@ -234,7 +231,9 @@ void DialogPlate::OnUiVisibilityChanged(AssistantVisibility new_visibility,
 }
 
 void DialogPlate::RequestFocus() {
-  textfield_->RequestFocus();
+  SetFocus(assistant_controller_->interaction_controller()
+               ->model()
+               ->input_modality());
 }
 
 void DialogPlate::InitLayout() {
@@ -281,11 +280,13 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   keyboard_layout_container_->layer()->SetFillsBoundsOpaquely(false);
   keyboard_layout_container_->layer()->SetOpacity(0.f);
 
+  constexpr int kHorizontalPaddingDip = 16;
+
   views::BoxLayout* layout_manager =
       keyboard_layout_container_->SetLayoutManager(
           std::make_unique<views::BoxLayout>(
               views::BoxLayout::Orientation::kHorizontal,
-              gfx::Insets(0, kKeyboardLayoutPaddingDip)));
+              gfx::Insets(0, kHorizontalPaddingDip)));
 
   layout_manager->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::CROSS_AXIS_ALIGNMENT_CENTER);
@@ -314,8 +315,7 @@ void DialogPlate::InitKeyboardLayoutContainer() {
   // Voice input toggle.
   voice_input_toggle_ = assistant::util::CreateImageButton(
       this, kMicIcon, kButtonSizeDip, kIconSizeDip,
-      IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME,
-      /*no use, color icon*/gfx::kGoogleGrey600);
+      IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME);
   voice_input_toggle_->set_id(
       static_cast<int>(DialogPlateButtonId::kVoiceInputToggle));
   keyboard_layout_container_->AddChildView(voice_input_toggle_);
@@ -353,8 +353,12 @@ void DialogPlate::InitVoiceLayoutContainer() {
   layout_manager->SetFlexForView(spacer, 1);
 
   // Animated voice input toggle.
-  voice_layout_container_->AddChildView(
-      new ActionView(assistant_controller_, this));
+  animated_voice_input_toggle_ = new ActionView(this, assistant_controller_);
+  animated_voice_input_toggle_->set_id(
+      static_cast<int>(DialogPlateButtonId::kVoiceInputToggle));
+  animated_voice_input_toggle_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_ASSISTANT_DIALOG_PLATE_MIC_ACCNAME));
+  voice_layout_container_->AddChildView(animated_voice_input_toggle_);
 
   // Spacer.
   spacer = new views::View();
@@ -384,11 +388,11 @@ bool DialogPlate::OnAnimationEnded(
                                      ->model()
                                      ->input_modality();
   SetFocusMode(input_modality);
+  SetFocus(input_modality);
 
   switch (input_modality) {
     case InputModality::kKeyboard:
       keyboard_layout_container_->set_can_process_events_within_subtree(true);
-      textfield_->RequestFocus();
       break;
     case InputModality::kVoice:
       voice_layout_container_->set_can_process_events_within_subtree(true);
@@ -402,17 +406,33 @@ bool DialogPlate::OnAnimationEnded(
   return false;
 }
 
-void DialogPlate::SetFocusMode(InputModality modality) {
-  switch (modality) {
+void DialogPlate::SetFocus(InputModality input_modality) {
+  switch (input_modality) {
+    case InputModality::kKeyboard:
+      textfield_->RequestFocus();
+      break;
+    case InputModality::kVoice:
+      animated_voice_input_toggle_->RequestFocus();
+      break;
+    case InputModality::kStylus:
+      // No action necessary.
+      break;
+  }
+}
+
+void DialogPlate::SetFocusMode(InputModality input_modality) {
+  switch (input_modality) {
     case InputModality::kKeyboard:
       textfield_->SetFocusBehavior(FocusBehavior::ALWAYS);
       voice_input_toggle_->SetFocusBehavior(FocusBehavior::ALWAYS);
       keyboard_input_toggle_->SetFocusBehavior(FocusBehavior::NEVER);
+      animated_voice_input_toggle_->SetFocusBehavior(FocusBehavior::NEVER);
       break;
     case InputModality::kVoice:
       textfield_->SetFocusBehavior(FocusBehavior::NEVER);
       voice_input_toggle_->SetFocusBehavior(FocusBehavior::NEVER);
       keyboard_input_toggle_->SetFocusBehavior(FocusBehavior::ALWAYS);
+      animated_voice_input_toggle_->SetFocusBehavior(FocusBehavior::ALWAYS);
       break;
     case InputModality::kStylus:
       // No action necessary.

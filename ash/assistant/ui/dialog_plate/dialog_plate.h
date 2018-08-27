@@ -28,6 +28,7 @@ class ImageButton;
 namespace ash {
 
 class AssistantController;
+class ActionView;
 
 // DialogPlateButtonId ---------------------------------------------------------
 
@@ -60,7 +61,6 @@ class DialogPlateObserver {
 // interaction as appropriate for the user's current input modality.
 class DialogPlate : public views::View,
                     public views::TextfieldController,
-                    public ActionViewListener,
                     public AssistantInteractionModelObserver,
                     public AssistantUiModelObserver,
                     public views::ButtonListener {
@@ -78,9 +78,6 @@ class DialogPlate : public views::View,
   void ChildPreferredSizeChanged(views::View* child) override;
   void ChildVisibilityChanged(views::View* child) override;
   void RequestFocus() override;
-
-  // ActionViewListener:
-  void OnActionPressed() override;
 
   // ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -106,6 +103,8 @@ class DialogPlate : public views::View,
 
   void OnAnimationStarted(const ui::CallbackLayerAnimationObserver& observer);
   bool OnAnimationEnded(const ui::CallbackLayerAnimationObserver& observer);
+
+  void SetFocus(InputModality modality);
   void SetFocusMode(InputModality modality);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
@@ -115,6 +114,7 @@ class DialogPlate : public views::View,
   views::View* voice_layout_container_;              // Owned by view hierarchy.
   views::ImageButton* keyboard_input_toggle_;        // Owned by view hierarchy.
   views::ImageButton* voice_input_toggle_;           // Owned by view hierarchy.
+  ActionView* animated_voice_input_toggle_;          // Owned by view hierarchy.
   views::ImageButton* settings_button_;              // Owned by view hierarchy.
   views::Textfield* textfield_;                      // Owned by view hierarchy.
 

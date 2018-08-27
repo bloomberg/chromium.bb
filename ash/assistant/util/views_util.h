@@ -5,7 +5,9 @@
 #ifndef ASH_ASSISTANT_UTIL_VIEWS_UTIL_H_
 #define ASH_ASSISTANT_UTIL_VIEWS_UTIL_H_
 
+#include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/color_palette.h"
 
 namespace gfx {
 struct VectorIcon;
@@ -20,13 +22,19 @@ namespace ash {
 namespace assistant {
 namespace util {
 
+// Creates a button with the default Assistant styles.
+views::ImageButton* CreateButton(
+    views::ButtonListener* listener,
+    int size_in_dip,
+    base::Optional<int> accessible_name_id = base::nullopt);
+
 // Creates an ImageButton with the default Assistant styles.
 views::ImageButton* CreateImageButton(views::ButtonListener* listener,
                                       const gfx::VectorIcon& icon,
                                       int size_in_dip,
                                       int icon_size_in_dip,
                                       int accessible_name_id,
-                                      SkColor icon_color);
+                                      SkColor icon_color = gfx::kGoogleGrey600);
 
 }  // namespace util
 }  // namespace assistant
