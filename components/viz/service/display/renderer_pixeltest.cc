@@ -3003,10 +3003,7 @@ TEST_F(GLRendererPixelTest, AntiAliasingPerspective) {
 }
 
 // Trilinear filtering is only supported in the gl renderer.
-// TODO(reveman): Enable test after updating osmesa to a version where
-// GL_LINEAR_MIPMAP_LINEAR works correctly. --use-gpu-in-tests can be
-// used to verify that trilinear filtering works until then.
-TEST_F(GLRendererPixelTest, DISABLED_TrilinearFiltering) {
+TEST_F(GLRendererPixelTest, TrilinearFiltering) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;

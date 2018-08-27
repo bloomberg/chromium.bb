@@ -28,13 +28,6 @@ void IntSetToWorkarounds(const std::vector<int32_t>& enabled_workarounds,
   if (workarounds->max_texture_size_limit_4096)
     workarounds->max_texture_size = 4096;
 
-  if (workarounds->max_fragment_uniform_vectors_32)
-    workarounds->max_fragment_uniform_vectors = 32;
-  if (workarounds->max_varying_vectors_16)
-    workarounds->max_varying_vectors = 16;
-  if (workarounds->max_vertex_uniform_vectors_256)
-    workarounds->max_vertex_uniform_vectors = 256;
-
   if (workarounds->max_copy_texture_chromium_size_1048576)
     workarounds->max_copy_texture_chromium_size = 1048576;
   if (workarounds->max_copy_texture_chromium_size_262144)
@@ -81,12 +74,6 @@ void GpuDriverBugWorkarounds::Append(const GpuDriverBugWorkarounds& extra) {
 #undef GPU_OP
 
   max_texture_size = LowerMax(max_texture_size, extra.max_texture_size);
-  max_fragment_uniform_vectors = LowerMax(max_fragment_uniform_vectors,
-                                          extra.max_fragment_uniform_vectors);
-  max_varying_vectors =
-      LowerMax(max_varying_vectors, extra.max_varying_vectors);
-  max_vertex_uniform_vectors =
-      LowerMax(max_vertex_uniform_vectors, extra.max_vertex_uniform_vectors);
   max_copy_texture_chromium_size = LowerMax(
       max_copy_texture_chromium_size, extra.max_copy_texture_chromium_size);
 }

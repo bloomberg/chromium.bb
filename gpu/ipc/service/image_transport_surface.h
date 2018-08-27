@@ -25,10 +25,6 @@ class ImageTransportSurfaceDelegate;
 
 class GPU_IPC_SERVICE_EXPORT ImageTransportSurface {
  public:
-#if defined(OS_MACOSX)
-  static void SetAllowOSMesaForTesting(bool allow);
-#endif
-
   // Creates the appropriate native surface depending on the GL implementation.
   // This will be implemented separately by each platform. On failure, a null
   // scoped_refptr should be returned.

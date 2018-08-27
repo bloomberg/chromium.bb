@@ -88,8 +88,7 @@ testing it through Chromium Remote Desktop you might face drawing
 problems (e.g. Aura window not painting anything). Possible remedies:
 
 *   `--ui-enable-software-compositing --ui-disable-threaded-compositing`
-*   `--use-gl=osmesa`, but it's ultra slow, and you'll have to build osmesa
-    yourself.
+*   `--use-gl=swiftshader`, but it's slow.
 
 To more closely match the UI used on devices, you can install fonts used
 by Chrome OS, such as Roboto, on your Linux distro.

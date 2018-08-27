@@ -458,17 +458,6 @@
       ]
     },
     {
-      "id": 69,
-      "description": "Some shaders in Skia need more than the min available vertex and fragment shader uniform vectors in case of OSMesa",
-      "cr_bugs": [174845],
-      "driver_vendor": "osmesa",
-      "features": [
-       "max_fragment_uniform_vectors_32",
-       "max_varying_vectors_16",
-       "max_vertex_uniform_vectors_256"
-      ]
-    },
-    {
       "id": 70,
       "description": "Disable D3D11 on older nVidia drivers",
       "cr_bugs": [349929],

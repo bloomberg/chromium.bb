@@ -275,12 +275,6 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
 
   void TestShadersWithPrecisionAndSampler(TexCoordPrecision precision,
                                           SamplerType sampler) {
-    if (!context_provider()->ContextCapabilities().egl_image_external &&
-        sampler == SAMPLER_TYPE_EXTERNAL_OES) {
-      // This will likely be hit in tests due to usage of osmesa.
-      return;
-    }
-
     TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
                                    false, true, false));
     TestShader(ProgramKey::Texture(precision, sampler, PREMULTIPLIED_ALPHA,
@@ -355,12 +349,6 @@ class GLRendererShaderPixelTest : public cc::GLRendererPixelTest {
                             SamplerType sampler,
                             BlendMode blend_mode,
                             bool mask_for_background) {
-    if (!context_provider()->ContextCapabilities().egl_image_external &&
-        sampler == SAMPLER_TYPE_EXTERNAL_OES) {
-      // This will likely be hit in tests due to usage of osmesa.
-      return;
-    }
-
     TestShader(ProgramKey::RenderPass(precision, sampler, blend_mode, NO_AA,
                                       HAS_MASK, mask_for_background, false,
                                       false));
