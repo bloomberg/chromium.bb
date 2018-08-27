@@ -56,6 +56,10 @@ void MultideviceHandler::RegisterMessages() {
       base::BindRepeating(&MultideviceHandler::HandleSetFeatureEnabledState,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "removeHostDevice",
+      base::BindRepeating(&MultideviceHandler::HandleRemoveHostDevice,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "retryPendingHostSetup",
       base::BindRepeating(&MultideviceHandler::HandleRetryPendingHostSetup,
                           base::Unretained(this)));
@@ -161,6 +165,11 @@ void MultideviceHandler::HandleSetFeatureEnabledState(
       feature, enabled, auth_token,
       base::BindOnce(&MultideviceHandler::OnSetFeatureStateEnabledResult,
                      callback_weak_ptr_factory_.GetWeakPtr(), callback_id));
+}
+
+void MultideviceHandler::HandleRemoveHostDevice(const base::ListValue* args) {
+  DCHECK(args->empty());
+  multidevice_setup_client_->RemoveHostDevice();
 }
 
 void MultideviceHandler::HandleRetryPendingHostSetup(

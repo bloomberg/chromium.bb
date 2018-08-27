@@ -196,14 +196,6 @@
     Offer new features that use your phone's connection to your Chromebook
   </message>
 
-  <!-- MultiDevice 'Forget device' dialog -->
-  <message name="IDS_MULTIDEVICE_FORGET_DEVICE_DIALOG_HEADING" desc="Heading for a dialog that lets the user choose if their Chromebook should forget their phone. This means they will no longer have access to multidevice features.">
-    Forget device
-  </message>
-  <message name="IDS_MULTIDEVICE_FORGET_DEVICE_DIALOG_MESSAGE" desc="Text of a dialog that lets the user choose if their Chromebook should forget their phone. This means they will no longer have access to multidevice features.">
-    Remove your phone and disable Better Together
-  </message>
-
   <!-- File Manager -->
   <message name="IDS_FILE_BROWSER_ANDROID_FILES_ROOT_LABEL" desc="A label for the 'Play files' root which shows Android files. 'Play' in this label is an abbreviation of 'Google Play', so it should not be translated. Use sentence case.">
     Play files

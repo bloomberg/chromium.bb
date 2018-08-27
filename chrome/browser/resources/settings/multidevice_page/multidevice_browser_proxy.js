@@ -21,6 +21,8 @@ cr.define('settings', function() {
      */
     setFeatureEnabledState(feature, enabled, opt_authToken) {}
 
+    removeHostDevice() {}
+
     retryPendingHostSetup() {}
   }
 
@@ -42,6 +44,11 @@ cr.define('settings', function() {
     setFeatureEnabledState(feature, enabled, opt_authToken) {
       return cr.sendWithPromise(
           'setFeatureEnabledState', feature, enabled, opt_authToken);
+    }
+
+    /** @override */
+    removeHostDevice() {
+      chrome.send('removeHostDevice');
     }
 
     /** @override */

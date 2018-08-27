@@ -56,6 +56,7 @@ Polymer({
 
   listeners: {
     'feature-toggle-clicked': 'onFeatureToggleClicked_',
+    'forget-device-requested': 'onForgetDeviceRequested_',
   },
 
   /** @private {?settings.MultiDeviceBrowserProxy} */
@@ -224,6 +225,12 @@ Polymer({
 
     // No authentication is required.
     this.browserProxy_.setFeatureEnabledState(feature, enabled);
+  },
+
+  /** @private */
+  onForgetDeviceRequested_: function() {
+    this.browserProxy_.removeHostDevice();
+    settings.navigateTo(settings.routes.MULTIDEVICE);
   },
 
   /**

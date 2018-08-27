@@ -54,6 +54,7 @@ class MultideviceHandler
   void HandleShowMultiDeviceSetupDialog(const base::ListValue* args);
   void HandleGetPageContent(const base::ListValue* args);
   void HandleSetFeatureEnabledState(const base::ListValue* args);
+  void HandleRemoveHostDevice(const base::ListValue* args);
   void HandleRetryPendingHostSetup(const base::ListValue* args);
 
   void OnHostStatusFetched(
