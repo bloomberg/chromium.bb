@@ -894,9 +894,10 @@ TEST_F(TouchActionFilterTest, TouchActionNotResetWithinGestureSequence) {
   EXPECT_FALSE(ScrollingTouchAction().has_value());
 }
 
-// This test ensures that when the IPC message OnHasTouchEventHandlers is
-// received in the middle of a gesture sequence, the touch action is not reset.
-TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
+// The following 3 tests ensures that when the IPC message
+// OnHasTouchEventHandlers is received in the middle of a gesture sequence, the
+// touch action is not reset.
+TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringTap) {
   filter_.OnHasTouchEventHandlers(false);
 
   WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
@@ -916,28 +917,104 @@ TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
   // reset the |allowed_touch_action_|.
   filter_.ResetTouchAction();
   EXPECT_FALSE(filter_.allowed_touch_action().has_value());
+}
 
-  filter_.OnHasTouchEventHandlers(true);
-  // Simulate a double tap gesture: GTD-->GT-->GTD-->GDT.
-  filter_.OnSetTouchAction(cc::kTouchActionPan);
+TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringDoubleTap) {
+  filter_.OnHasTouchEventHandlers(false);
+
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapDown, kSourceDevice);
+  WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapCancel, kSourceDevice);
+  WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureDoubleTap, kSourceDevice);
+
+  // Simulate a double tap gesture: GTD-->GTC-->GTD-->GTC-->GDT.
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPan);
-  EXPECT_EQ(filter_.FilterGestureEvent(&tap),
+  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionAuto);
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_cancel),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_TRUE(ScrollingTouchAction().has_value());
   filter_.OnSetTouchAction(cc::kTouchActionPan);
   EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPan);
-  WebGestureEvent double_tap = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureDoubleTap, kSourceDevice);
-  EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
-            FilterGestureEventResult::kFilterGestureEventAllowed);
-  EXPECT_EQ(filter_.FilterGestureEvent(&tap),
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_cancel),
             FilterGestureEventResult::kFilterGestureEventAllowed);
   EXPECT_EQ(filter_.FilterGestureEvent(&double_tap),
             FilterGestureEventResult::kFilterGestureEventAllowed);
+}
+
+TEST_F(TouchActionFilterTest, OnHasTouchEventHandlersReceivedDuringScroll) {
+  filter_.OnHasTouchEventHandlers(false);
+
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapDown, kSourceDevice);
+  WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapCancel, kSourceDevice);
+  WebGestureEvent scroll_begin =
+      SyntheticWebGestureEventBuilder::BuildScrollBegin(5, 0, kSourceDevice);
+  WebGestureEvent scroll_update =
+      SyntheticWebGestureEventBuilder::BuildScrollUpdate(5, 0, 0,
+                                                         kSourceDevice);
+  WebGestureEvent scroll_end = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureScrollEnd, kSourceDevice);
+
+  // Simulate a gesture scroll: GTD-->GTC-->GSB-->GSU-->GSE.
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_cancel),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  filter_.OnHasTouchEventHandlers(true);
+  filter_.OnSetTouchAction(cc::kTouchActionPan);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_begin),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionPan);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_update),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&scroll_end),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+}
+
+// If OnHasTouchEventHandlers IPC is received after LongTap or TwoFingerTap,
+// the touch action should be reset.
+TEST_F(TouchActionFilterTest,
+       OnHasTouchEventHandlersReceivedAfterLongTapOrTwoFingerTap) {
+  filter_.OnHasTouchEventHandlers(false);
+
+  WebGestureEvent tap_down = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapDown, kSourceDevice);
+  WebGestureEvent tap_cancel = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTapCancel, kSourceDevice);
+  WebGestureEvent long_tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureLongTap, kSourceDevice);
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_cancel),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&long_tap),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionAuto);
+
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_FALSE(ScrollingTouchAction().has_value());
+
+  filter_.OnHasTouchEventHandlers(false);
+  WebGestureEvent two_finger_tap = SyntheticWebGestureEventBuilder::Build(
+      WebInputEvent::kGestureTwoFingerTap, kSourceDevice);
+
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_down),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&tap_cancel),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(filter_.FilterGestureEvent(&two_finger_tap),
+            FilterGestureEventResult::kFilterGestureEventAllowed);
+  EXPECT_EQ(ScrollingTouchAction().value(), cc::kTouchActionAuto);
+
+  filter_.OnHasTouchEventHandlers(true);
+  EXPECT_FALSE(ScrollingTouchAction().has_value());
 }
 
 // If the renderer is busy, the gesture event might have come before the

@@ -157,9 +157,16 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
     }
 
     case WebInputEvent::kGestureTap:
-    case WebInputEvent::kGestureTapCancel:
       gesture_sequence_in_progress_ = false;
       gesture_sequence_.append("A");
+      if (drop_current_tap_ending_event_) {
+        drop_current_tap_ending_event_ = false;
+        return FilterGestureEventResult::kFilterGestureEventFiltered;
+      }
+      break;
+
+    case WebInputEvent::kGestureTapCancel:
+      gesture_sequence_.append("K");
       if (drop_current_tap_ending_event_) {
         drop_current_tap_ending_event_ = false;
         return FilterGestureEventResult::kFilterGestureEventFiltered;
@@ -182,6 +189,11 @@ FilterGestureEventResult TouchActionFilter::FilterGestureEvent(
         gesture_sequence_.clear();
       }
       DCHECK(!drop_current_tap_ending_event_);
+      break;
+
+    case WebInputEvent::kGestureLongTap:
+    case WebInputEvent::kGestureTwoFingerTap:
+      gesture_sequence_in_progress_ = false;
       break;
 
     default:
