@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/cronet/native/test/test_upload_data_provider.h"
 #include "components/cronet/native/test/test_url_request_callback.h"
 #include "components/cronet/native/test/test_util.h"
@@ -144,8 +145,15 @@ class UrlRequestTest : public ::testing::Test {
                   bool expect_error);
 
  protected:
+#if !defined(_WIN32) || defined(_WIN64)
+  // Needed to avoid triggering the global TaskScheduler leak detector when
+  // running cronet_unittests_android on android_cronet_tester. However,
+  // this breaks on 32-bit Windows 7. See https://crbug.com/877868
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+#else
   // Provide a message loop for use by TestExecutor instances.
   base::MessageLoop message_loop_;
+#endif  // !defined(_WIN32) || defined(_WIN64)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UrlRequestTest);
