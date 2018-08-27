@@ -45,7 +45,7 @@ void ScriptWrappableMarkingVisitor::TracePrologue() {
 void ScriptWrappableMarkingVisitor::EnterFinalPause(EmbedderStackState) {
   CHECK(ThreadState::Current());
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
-  ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate_, this);
+  ActiveScriptWrappableBase::TraceActiveScriptWrappables(isolate(), this);
 }
 
 void ScriptWrappableMarkingVisitor::TraceEpilogue() {
@@ -53,7 +53,7 @@ void ScriptWrappableMarkingVisitor::TraceEpilogue() {
   CHECK(!ThreadState::Current()->IsWrapperTracingForbidden());
   DCHECK(marking_deque_.IsEmpty());
 #if DCHECK_IS_ON()
-  ScriptWrappableVisitorVerifier verifier;
+  ScriptWrappableVisitorVerifier verifier(ThreadState::Current());
   for (auto& marking_data : verifier_deque_) {
     // Check that all children of this object are marked.
     marking_data.Trace(&verifier);
@@ -246,7 +246,7 @@ void ScriptWrappableMarkingVisitor::Visit(
   // requires us to bail out here when tracing is not in progress.
   if (!tracing_in_progress_ || traced_wrapper.Get().IsEmpty())
     return;
-  traced_wrapper.Get().RegisterExternalReference(isolate_);
+  traced_wrapper.Get().RegisterExternalReference(isolate());
 }
 
 void ScriptWrappableMarkingVisitor::VisitWithWrappers(

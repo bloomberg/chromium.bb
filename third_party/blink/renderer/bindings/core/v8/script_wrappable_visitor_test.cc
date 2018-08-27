@@ -13,6 +13,9 @@ namespace {
 
 class VerifyingScriptWrappableVisitor : public ScriptWrappableVisitor {
  public:
+  VerifyingScriptWrappableVisitor()
+      : ScriptWrappableVisitor(ThreadState::Current()) {}
+
   // Visitor interface.
   void Visit(const TraceWrapperV8Reference<v8::Value>&) override {}
   void Visit(DOMWrapperMap<ScriptWrappable>*,

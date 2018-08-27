@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/platform/bindings/dom_data_store.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable_marking_visitor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
 #include "third_party/blink/renderer/platform/bindings/v8_private_property.h"
@@ -80,6 +81,8 @@ V8PerIsolateData::V8PerIsolateData(
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
+      script_wrappable_visitor_(
+          new ScriptWrappableMarkingVisitor(ThreadState::Current())),
       runtime_call_stats_(base::DefaultTickClock::GetInstance()),
       handled_near_v8_heap_limit_(false) {
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.

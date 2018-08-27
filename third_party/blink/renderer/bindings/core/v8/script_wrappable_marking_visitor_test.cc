@@ -56,8 +56,8 @@ class TemporaryScriptWrappableVisitorScope {
 class InterceptingScriptWrappableMarkingVisitor
     : public blink::ScriptWrappableMarkingVisitor {
  public:
-  InterceptingScriptWrappableMarkingVisitor(v8::Isolate* isolate)
-      : ScriptWrappableMarkingVisitor(isolate),
+  InterceptingScriptWrappableMarkingVisitor()
+      : ScriptWrappableMarkingVisitor(ThreadState::Current()),
         marked_wrappers_(new size_t(0)) {}
   ~InterceptingScriptWrappableMarkingVisitor() override {
     delete marked_wrappers_;
@@ -93,7 +93,7 @@ class InterceptingScriptWrappableMarkingVisitorScope
       : TemporaryScriptWrappableVisitorScope(
             isolate,
             std::unique_ptr<InterceptingScriptWrappableMarkingVisitor>(
-                new InterceptingScriptWrappableMarkingVisitor(isolate))) {
+                new InterceptingScriptWrappableMarkingVisitor())) {
     Visitor()->Start();
   }
 
@@ -285,9 +285,8 @@ TEST(ScriptWrappableMarkingVisitorTest, VtableAtObjectStart) {
   // at the start of a ScriptWrappableMarkingVisitor object. We do this to
   // mitigate potential problems that could be caused by LTO when passing
   // v8::EmbedderHeapTracer across the API boundary.
-  V8TestingScope scope;
   std::unique_ptr<blink::ScriptWrappableMarkingVisitor> visitor(
-      new ScriptWrappableMarkingVisitor(scope.GetIsolate()));
+      new ScriptWrappableMarkingVisitor(ThreadState::Current()));
   CHECK_EQ(
       static_cast<void*>(visitor.get()),
       static_cast<void*>(dynamic_cast<v8::EmbedderHeapTracer*>(visitor.get())));

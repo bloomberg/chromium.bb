@@ -63,7 +63,8 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
                            DOMWrapperMap<ScriptWrappable>*,
                            ScriptWrappable* key);
 
-  ScriptWrappableMarkingVisitor(v8::Isolate* isolate) : isolate_(isolate){};
+  explicit ScriptWrappableMarkingVisitor(ThreadState* thread_state)
+      : ScriptWrappableVisitor(thread_state) {}
   ~ScriptWrappableMarkingVisitor() override;
 
   bool WrapperTracingInProgress() const { return tracing_in_progress_; }
@@ -90,8 +91,6 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
 
  protected:
   using Visitor::Visit;
-
-  v8::Isolate* isolate() const { return isolate_; }
 
  private:
   class MarkingDequeItem {
@@ -189,7 +188,6 @@ class PLATFORM_EXPORT ScriptWrappableMarkingVisitor
   // - objects this headers belong to are invalidated by the oilpan GC in
   //   invalidateDeadObjectsInMarkingDeque.
   WTF::Vector<HeapObjectHeader*> headers_to_unmark_;
-  v8::Isolate* isolate_;
 
   FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest, MixinTracing);
   FRIEND_TEST_ALL_PREFIXES(ScriptWrappableMarkingVisitorTest,

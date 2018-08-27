@@ -16,6 +16,9 @@ namespace blink {
 // is also marked.
 class ScriptWrappableVisitorVerifier final : public ScriptWrappableVisitor {
  public:
+  ScriptWrappableVisitorVerifier(ThreadState* thread_state)
+      : ScriptWrappableVisitor(thread_state) {}
+
   void Visit(const TraceWrapperV8Reference<v8::Value>&) final {}
 
   void VisitWithWrappers(void* object, TraceDescriptor descriptor) final {
