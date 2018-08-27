@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextual_suggestions;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -19,7 +20,10 @@ public class ContextualSuggestionCardViewHolder extends SnippetArticleViewHolder
             ContextMenuManager contextMenuManager, SuggestionsUiDelegate uiDelegate,
             UiConfig uiConfig, OfflinePageBridge offlinePageBridge) {
         super(parent, contextMenuManager, uiDelegate, uiConfig, offlinePageBridge,
-                R.layout.contextual_suggestions_card_modern);
+                ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_ALTERNATE_CARD_LAYOUT)
+                        ? R.layout.contextual_suggestions_card_modern_alternate
+                        : R.layout.contextual_suggestions_card_modern);
     }
 
     @Override

@@ -28248,6 +28248,8 @@ from previous Chrome versions.
   <int value="-1543316040"
       label="DisplayPersistenceToggleInPermissionPrompts:disabled"/>
   <int value="-1538492024" label="OmniboxReverseAnswers:enabled"/>
+  <int value="-1537773844"
+      label="ContextualSuggestionsAlternateCardLayout:disabled"/>
   <int value="-1536293422" label="SharedArrayBuffer:enabled"/>
   <int value="-1536242739" label="security-chip"/>
   <int value="-1535758690" label="AutoplayIgnoreWebAudio:disabled"/>
@@ -30019,6 +30021,8 @@ from previous Chrome versions.
   <int value="2004483175" label="multi-instance-merge-tabs"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
+  <int value="2006413281"
+      label="ContextualSuggestionsAlternateCardLayout:enabled"/>
   <int value="2014331873" label="NTPDownloadSuggestions:disabled"/>
   <int value="2014629801" label="view-passwords:disabled"/>
   <int value="2015335629" label="shelf-hover-previews"/>

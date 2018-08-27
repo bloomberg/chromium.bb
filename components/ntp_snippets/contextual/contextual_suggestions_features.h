@@ -9,6 +9,7 @@
 
 namespace contextual_suggestions {
 
+extern const base::Feature kContextualSuggestionsAlternateCardLayout;
 extern const base::Feature kContextualSuggestionsBottomSheet;
 extern const base::Feature kContextualSuggestionsButton;
 extern const base::Feature kContextualSuggestionsSlimPeekUI;
