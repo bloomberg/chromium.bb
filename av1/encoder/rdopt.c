@@ -8388,6 +8388,9 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     last_motion_mode_allowed = OBMC_CAUSAL;
   }
   base_mbmi = *mbmi;
+
+  int switchable_rate =
+      av1_is_interp_needed(xd) ? av1_get_switchable_rate(cm, x, xd) : 0;
   int64_t best_rd = INT64_MAX;
   for (int mode_index = (int)SIMPLE_TRANSLATION;
        mode_index <= (int)last_motion_mode_allowed + interintra_allowed;
@@ -8546,13 +8549,10 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
       if (rd != INT64_MAX)
         rd = RDCOST(x->rdmult, rate_mv + rmode + rate_sum, dist_sum);
       best_interintra_rd = rd;
-
       if (ref_best_rd < INT64_MAX && (best_interintra_rd >> 1) > ref_best_rd) {
-        // restore ref_frame[1]
-        mbmi->ref_frame[1] = ref_frame_1;
+        mbmi->ref_frame[1] = ref_frame_1;  // restore ref_frame[1]
         continue;
       }
-
       if (is_interintra_wedge_used(bsize)) {
         int64_t best_interintra_rd_nowedge = INT64_MAX;
         int64_t best_interintra_rd_wedge = INT64_MAX;
@@ -8638,8 +8638,7 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     rd_stats->sse = 0;
     rd_stats->skip = 1;
     rd_stats->rate = tmp_rate2;
-    if (av1_is_interp_needed(xd))
-      rd_stats->rate += av1_get_switchable_rate(cm, x, xd);
+    if (mbmi->motion_mode != WARPED_CAUSAL) rd_stats->rate += switchable_rate;
     if (interintra_allowed) {
       rd_stats->rate += x->interintra_cost[size_group_lookup[bsize]]
                                           [mbmi->ref_frame[1] == INTRA_FRAME];
@@ -8715,6 +8714,11 @@ static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
     } else {
 #endif
       int mode_rate = rd_stats->rate;
+      const int64_t tmp_mode_rd = RDCOST(x->rdmult, rd_stats->rate, 0);
+      if (ref_best_rd < INT64_MAX && tmp_mode_rd > ref_best_rd) {
+        mbmi->ref_frame[1] = ref_frame_1;
+        continue;
+      }
       if (!txfm_search(cpi, x, bsize, mi_row, mi_col, rd_stats, rd_stats_y,
                        rd_stats_uv, mode_rate, ref_best_rd)) {
         if (rd_stats_y->rate == INT_MAX) {
