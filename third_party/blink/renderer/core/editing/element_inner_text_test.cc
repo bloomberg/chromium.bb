@@ -17,4 +17,14 @@ TEST_F(ElementInnerTest, ListItemWithLeadingWhiteSpace) {
   EXPECT_EQ("abc", target.innerText());
 }
 
+// http://crbug.com/877470
+TEST_F(ElementInnerTest, SVGElementAsTableCell) {
+  SetBodyContent(
+      "<div id=target>abc"
+      "<svg><rect style='display:table-cell'></rect></svg>"
+      "</div>");
+  Element& target = *GetDocument().getElementById("target");
+  EXPECT_EQ("abc", target.innerText());
+}
+
 }  // namespace blink
