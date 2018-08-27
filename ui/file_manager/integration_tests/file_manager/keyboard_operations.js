@@ -291,52 +291,40 @@ function testRenameFolder(path, treeItem) {
 }
 
 /**
- * Test for renaming a file.
- * @param {string} path Initial path.
- * @param {Array<TestEntryInfo>} initialEntrySet Initial set of entries.
+ * Tests renaming a file.
+ *
+ * @param {string} path Initial path (Downloads or Drive).
  * @return {Promise} Promise to be fulfilled on success.
  */
-function testRenameFile(path, initialEntrySet) {
-  var windowId;
+function testRenameFile(path) {
+  let appId;
 
-  // Make expected rows.
-  var initialExpectedEntryRows = TestEntryInfo.getExpectedRows(initialEntrySet);
-  var expectedEntryRows = TestEntryInfo.getExpectedRows(initialEntrySet);
-  for (var i = 0; i < expectedEntryRows.length; i++) {
-    if (expectedEntryRows[i][0] === 'hello.txt') {
-      expectedEntryRows[i][0] = 'New File Name.txt';
-      break;
-    }
-  }
-  chrome.test.assertTrue(
-      i != expectedEntryRows.length, 'hello.txt is not found.');
+  const newFile = [['New File Name.txt', '51 bytes', 'Plain text', '']];
 
-  // Open a window.
-  return new Promise(function(callback) {
-    setupAndWaitUntilReady(null, path, callback);
+  return new Promise(function(resolve) {
+    setupAndWaitUntilReady(
+        null, path, resolve, [ENTRIES.hello], [ENTRIES.hello]);
   }).then(function(results) {
-    windowId = results.windowId;
-    return remoteCall.waitForFiles(windowId, initialExpectedEntryRows);
-  }).then(function(){
-    return renameFile(windowId, 'hello.txt', 'New File Name.txt');
+    // Rename the file.
+    appId = results.windowId;
+    return renameFile(appId, 'hello.txt', 'New File Name.txt');
   }).then(function() {
-    // Wait until rename completes.
-    return remoteCall.waitForElementLost(windowId, '#detail-table [renaming]');
+    // Wait until renaming completes.
+    return remoteCall.waitForElementLost(appId, '#file-list [renaming]');
   }).then(function() {
-    // Wait for the new file name.
-    return remoteCall.waitForFiles(windowId,
-                        expectedEntryRows,
-                        {ignoreLastModifiedTime: true});
+    // Check: the new file name should be shown in the file list.
+    return remoteCall.waitForFiles(
+        appId, newFile, {ignoreLastModifiedTime: true});
   }).then(function() {
-    return renameFile(windowId, 'New File Name.txt', '.hidden file');
+    // Try renaming the new file to an invalid file name.
+    return renameFile(appId, 'New File Name.txt', '.hidden file');
   }).then(function() {
-    // The error dialog is shown.
-    return waitAndAcceptDialog(windowId);
+    // Check: the error dialog should be shown.
+    return waitAndAcceptDialog(appId);
   }).then(function() {
-    // The name did not change.
-    return remoteCall.waitForFiles(windowId,
-                        expectedEntryRows,
-                        {ignoreLastModifiedTime: true});
+    // Check: the new file name should not be changed.
+    return remoteCall.waitForFiles(
+        appId, newFile, {ignoreLastModifiedTime: true});
   });
 }
 
@@ -365,11 +353,11 @@ testcase.keyboardDeleteFolderDrive = function() {
 };
 
 testcase.renameFileDownloads = function() {
-  testPromise(testRenameFile(RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET));
+  testPromise(testRenameFile(RootPath.DOWNLOADS));
 };
 
 testcase.renameFileDrive = function() {
-  testPromise(testRenameFile(RootPath.DRIVE, BASIC_DRIVE_ENTRY_SET));
+  testPromise(testRenameFile(RootPath.DRIVE));
 };
 
 testcase.renameNewFolderDownloads = function() {
