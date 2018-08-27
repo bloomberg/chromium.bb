@@ -105,7 +105,8 @@ class WTF_EXPORT ArrayBufferContents {
           deleter_(data_, data_length_, deleter_info_);
           return;
         case AllocationKind::kReservation:
-          base::FreePages(allocation_base_, allocation_length_);
+          DCHECK(deleter_);
+          deleter_(data_, data_length_, deleter_info_);
           return;
       }
     }
