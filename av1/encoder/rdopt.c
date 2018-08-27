@@ -9811,6 +9811,10 @@ static void rd_pick_skip_mode(RD_STATS *rd_cost,
   mbmi->ref_frame[1] = second_ref_frame;
   const uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   if (x->mbmi_ext->ref_mv_count[ref_frame_type] == UINT8_MAX) {
+    if (x->mbmi_ext->ref_mv_count[ref_frame] == UINT8_MAX ||
+        x->mbmi_ext->ref_mv_count[second_ref_frame] == UINT8_MAX) {
+      return;
+    }
     MB_MODE_INFO_EXT *mbmi_ext = x->mbmi_ext;
     av1_find_mv_refs(cm, xd, mbmi, ref_frame_type, mbmi_ext->ref_mv_count,
                      mbmi_ext->ref_mv_stack, NULL, mbmi_ext->global_mvs, mi_row,
@@ -10069,7 +10073,13 @@ static void set_params_rd_pick_inter_mode(
     x->pred_mv_sad[ref_frame] = INT_MAX;
     x->mbmi_ext->mode_context[ref_frame] = 0;
     x->mbmi_ext->compound_mode_context[ref_frame] = 0;
+    mbmi_ext->ref_mv_count[ref_frame] = UINT8_MAX;
     if (cpi->ref_frame_flags & ref_frame_flag_list[ref_frame]) {
+      if (mbmi->partition != PARTITION_NONE &&
+          mbmi->partition != PARTITION_SPLIT &&
+          (skip_ref_frame_mask & (1 << ref_frame))) {
+        continue;
+      }
       assert(get_ref_frame_buffer(cpi, ref_frame) != NULL);
       setup_buffer_ref_mvs_inter(cpi, x, ref_frame, bsize, mi_row, mi_col,
                                  yv12_mb);
