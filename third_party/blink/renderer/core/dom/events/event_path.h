@@ -31,10 +31,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/node_event_context.h"
 #include "third_party/blink/renderer/core/dom/events/tree_scope_event_context.h"
-#include "third_party/blink/renderer/core/dom/events/window_event_context.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
@@ -44,6 +41,7 @@ class Node;
 class TouchEvent;
 class TouchList;
 class TreeScope;
+class WindowEventContext;
 
 class CORE_EXPORT EventPath final
     : public GarbageCollectedFinalized<EventPath> {
