@@ -210,7 +210,7 @@ bool ElementInnerTextCollector::IsAfterWhiteSpace(
   }
   if (InlineTextBox* text_box = layout_text.FirstTextBox()) {
     const InlineBox* previous = text_box->PrevLeafChild();
-    if (!previous || !previous->IsText())
+    if (!previous || !previous->IsInlineTextBox())
       return false;
     return EndsWithWhiteSpace(ToInlineTextBox(*previous));
   }

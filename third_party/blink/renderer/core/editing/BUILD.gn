@@ -357,6 +357,7 @@ jumbo_source_set("unit_tests") {
     "editing_style_test.cc",
     "editing_utilities_test.cc",
     "editor_test.cc",
+    "element_inner_text_test.cc",
     "ephemeral_range_test.cc",
     "frame_caret_test.cc",
     "frame_selection_test.cc",
