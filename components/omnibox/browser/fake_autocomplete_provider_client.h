@@ -12,7 +12,6 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
-#include "components/search_engines/search_terms_data.h"
 
 namespace bookmarks {
 class BookmarkModel;
@@ -41,7 +40,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   history::HistoryService* GetHistoryService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
   InMemoryURLIndex* GetInMemoryURLIndex() override;
-  const SearchTermsData& GetSearchTermsData() const override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackend() override;
   scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() override;
 
@@ -63,7 +61,6 @@ class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
   base::ScopedTempDir history_dir_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
   TestSchemeClassifier scheme_classifier_;
-  SearchTermsData search_terms_data_;
   std::unique_ptr<InMemoryURLIndex> in_memory_url_index_;
   std::unique_ptr<history::HistoryService> history_service_;
   scoped_refptr<ShortcutsBackend> shortcuts_backend_;

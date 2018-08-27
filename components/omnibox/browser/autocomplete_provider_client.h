@@ -42,7 +42,6 @@ namespace network {
 class SharedURLLoaderFactory;
 }
 
-class SearchTermsData;
 class TemplateURLService;
 
 class AutocompleteProviderClient {
@@ -65,7 +64,6 @@ class AutocompleteProviderClient {
       bool create_if_necessary) const = 0;
   virtual DocumentSuggestionsService* GetDocumentSuggestionsService(
       bool create_if_necessary) const = 0;
-  virtual const SearchTermsData& GetSearchTermsData() const = 0;
   virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackend() = 0;
   virtual scoped_refptr<ShortcutsBackend> GetShortcutsBackendIfExists() = 0;
   virtual std::unique_ptr<KeywordExtensionsDelegate>

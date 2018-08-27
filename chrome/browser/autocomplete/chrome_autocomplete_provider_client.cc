@@ -89,7 +89,6 @@ ChromeAutocompleteProviderClient::ChromeAutocompleteProviderClient(
     Profile* profile)
     : profile_(profile),
       scheme_classifier_(profile),
-      search_terms_data_(profile_),
       url_consent_helper_(
           unified_consent::UrlKeyedDataCollectionConsentHelper::
               NewPersonalizedDataCollectionConsentHelper(
@@ -168,11 +167,6 @@ ChromeAutocompleteProviderClient::GetDocumentSuggestionsService(
     bool create_if_necessary) const {
   return DocumentSuggestionsServiceFactory::GetForProfile(profile_,
                                                           create_if_necessary);
-}
-
-const
-SearchTermsData& ChromeAutocompleteProviderClient::GetSearchTermsData() const {
-  return search_terms_data_;
 }
 
 scoped_refptr<ShortcutsBackend>

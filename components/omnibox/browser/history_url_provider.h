@@ -106,7 +106,7 @@ struct HistoryURLProviderParams {
                            bool trim_http,
                            const AutocompleteMatch& what_you_typed_match,
                            const TemplateURL* default_search_provider,
-                           const SearchTermsData& search_terms_data);
+                           const SearchTermsData* search_terms_data);
   ~HistoryURLProviderParams();
 
   // Estimates dynamic memory usage.
