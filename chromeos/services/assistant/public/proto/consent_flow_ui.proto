@@ -61,6 +61,12 @@ message ConsentFlowUi {
       // Required.
       optional bytes consent_token = 2;
 
+      // An opaque token to pass to Gmscore's auditing API, which strengthens
+      // the audit trail.
+      //
+      // Required.
+      optional bytes ui_audit_key = 3;
+
       // The title of the page.
       //
       // Required.

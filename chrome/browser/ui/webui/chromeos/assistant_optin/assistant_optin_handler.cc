@@ -5,19 +5,25 @@
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_handler.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/webui/chromeos/user_image_source.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/services/assistant/public/mojom/constants.mojom.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "components/arc/arc_prefs.h"
+#include "components/consent_auditor/consent_auditor.h"
 #include "components/login/localized_values_builder.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/user_manager/user_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
+
+using sync_pb::UserConsentTypes;
 
 namespace chromeos {
 
@@ -208,6 +214,23 @@ base::Value GetSettingsUiStrings(const assistant::SettingsUi& settings_ui,
   return dictionary;
 }
 
+void RecordActivityControlConsent(Profile* profile,
+                                  std::string ui_audit_key,
+                                  bool opted_in) {
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
+  DCHECK(signin_manager->IsAuthenticated());
+  std::string account_id = signin_manager->GetAuthenticatedAccountId();
+
+  UserConsentTypes::AssistantActivityControlConsent consent;
+  consent.set_ui_audit_key(ui_audit_key);
+  consent.set_status(opted_in ? UserConsentTypes::GIVEN
+                              : UserConsentTypes::NOT_GIVEN);
+
+  ConsentAuditorFactory::GetForProfile(profile)
+      ->RecordAssistantActivityControlConsent(account_id, consent);
+}
+
 }  // namespace
 
 AssistantOptInHandler::AssistantOptInHandler(
@@ -243,17 +266,19 @@ void AssistantOptInHandler::ShowNextScreen() {
 }
 
 void AssistantOptInHandler::OnActivityControlOptInResult(bool opted_in) {
+  Profile* profile = Profile::FromWebUI(web_ui());
   if (opted_in) {
     settings_manager_->UpdateSettings(
         GetSettingsUiUpdate(consent_token_).SerializeAsString(),
         base::BindOnce(&AssistantOptInHandler::OnUpdateSettingsResponse,
                        weak_factory_.GetWeakPtr()));
   } else {
-    PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-    prefs->SetBoolean(arc::prefs::kVoiceInteractionActivityControlAccepted,
-                      false);
+    profile->GetPrefs()->SetBoolean(
+        arc::prefs::kVoiceInteractionActivityControlAccepted, false);
     CallJSOrDefer("closeDialog");
   }
+
+  RecordActivityControlConsent(profile, ui_audit_key_, opted_in);
 }
 
 void AssistantOptInHandler::OnEmailOptInResult(bool opted_in) {
@@ -317,6 +342,7 @@ void AssistantOptInHandler::OnGetSettingsResponse(const std::string& settings) {
   auto third_party_disclosure_ui = consent_ui.third_party_disclosure_ui();
 
   consent_token_ = activity_control_ui.consent_token();
+  ui_audit_key_ = activity_control_ui.ui_audit_key();
 
   // Process activity control data.
   if (!activity_control_ui.setting_zippy().size()) {
