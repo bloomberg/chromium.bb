@@ -29,8 +29,8 @@ void TimeZoneMonitor::Bind(device::mojom::TimeZoneMonitorRequest request) {
 
 void TimeZoneMonitor::NotifyClients() {
   DCHECK(thread_checker_.CalledOnValidThread());
-#if defined(OS_CHROMEOS)
-  // On CrOS, ICU's default tz is already set to a new zone. No
+#if defined(OS_CHROMEOS) || (defined(OS_LINUX) && defined(IS_CHROMECAST))
+  // On CrOS (and Chromecast), ICU's default tz is already set to a new zone. No
   // need to redetect it with detectHostTimeZone().
   std::unique_ptr<icu::TimeZone> new_zone(icu::TimeZone::createDefault());
 #else
@@ -41,7 +41,7 @@ void TimeZoneMonitor::NotifyClients() {
 #else
   std::unique_ptr<icu::TimeZone> new_zone(icu::TimeZone::detectHostTimeZone());
 #endif
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(IS_CHROMECAST)
   // We get here multiple times on Linux per a single tz change, but
   // want to update the ICU default zone and notify renderer only once.
   std::unique_ptr<icu::TimeZone> current_zone(icu::TimeZone::createDefault());
