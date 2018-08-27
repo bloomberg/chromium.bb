@@ -35,6 +35,8 @@ class CONTENT_EXPORT BrowserAccessibilityManagerWin
 
   // IAccessible2UsageObserver
   void OnIAccessible2Used() override;
+  void OnScreenReaderHoneyPotQueried() override;
+  void OnAccNameCalled() override;
 
   // BrowserAccessibilityManager methods
   void UserIsReloading() override;

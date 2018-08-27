@@ -828,6 +828,11 @@ IFACEMETHODIMP AXPlatformNodeWin::get_accName(VARIANT var_id, BSTR* name) {
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, name, target);
 
+  for (IAccessible2UsageObserver& observer :
+       GetIAccessible2UsageObserverList()) {
+    observer.OnAccNameCalled();
+  }
+
   // Ignored items are also marked invisible, but NVDA was not actually ignoring
   // them.
   // TODO(accessibility) Find a way to not expose ignored items at all, which

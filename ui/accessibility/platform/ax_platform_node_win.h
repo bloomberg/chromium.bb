@@ -202,11 +202,15 @@ class AXPlatformRelationWin;
 // A simple interface for a class that wants to be notified when IAccessible2
 // is used by a client, a strong indication that full accessibility support
 // should be enabled.
+//
+// TODO(dmazzoni): Rename this to something more general.
 class AX_EXPORT IAccessible2UsageObserver {
  public:
   IAccessible2UsageObserver();
   virtual ~IAccessible2UsageObserver();
   virtual void OnIAccessible2Used() = 0;
+  virtual void OnScreenReaderHoneyPotQueried() = 0;
+  virtual void OnAccNameCalled() = 0;
 };
 
 // Get an observer list that allows modules across the codebase to
