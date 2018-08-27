@@ -35,7 +35,7 @@ void ShowUserManager(const ProfileManager::CreateCallback& callback) {
 
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileManager::GetSystemProfilePath(), callback, base::string16(),
-      std::string(), std::string());
+      std::string());
 }
 
 std::string GetProfileUserName(Profile* profile) {

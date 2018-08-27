@@ -279,8 +279,7 @@ void DiceTurnSyncOnHelper::CreateNewSignedInProfile() {
       base::UTF8ToUTF16(account_info_.email),
       profiles::GetDefaultAvatarIconUrl(icon_index),
       base::BindRepeating(&DiceTurnSyncOnHelper::CompleteInitForNewProfile,
-                          weak_pointer_factory_.GetWeakPtr()),
-      std::string());
+                          weak_pointer_factory_.GetWeakPtr()));
 }
 
 void DiceTurnSyncOnHelper::CompleteInitForNewProfile(

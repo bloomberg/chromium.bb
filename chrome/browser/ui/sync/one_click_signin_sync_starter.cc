@@ -296,8 +296,7 @@ void OneClickSigninSyncStarter::CreateNewSignedInProfile() {
       base::UTF8ToUTF16(signin->GetUsernameForAuthInProgress()),
       profiles::GetDefaultAvatarIconUrl(icon_index),
       base::Bind(&OneClickSigninSyncStarter::CompleteInitForNewProfile,
-                 weak_pointer_factory_.GetWeakPtr()),
-      std::string());
+                 weak_pointer_factory_.GetWeakPtr()));
 }
 
 void OneClickSigninSyncStarter::CompleteInitForNewProfile(

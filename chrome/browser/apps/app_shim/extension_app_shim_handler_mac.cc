@@ -189,7 +189,7 @@ void ExtensionAppShimHandler::Delegate::LoadProfileAsync(
   profile_manager->CreateProfileAsync(
       full_path,
       base::Bind(&ProfileLoadedCallback, callback),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
 }
 
 bool ExtensionAppShimHandler::Delegate::IsProfileLockedForPath(

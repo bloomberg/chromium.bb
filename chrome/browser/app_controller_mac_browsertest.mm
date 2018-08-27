@@ -293,7 +293,6 @@ void CreateAndWaitForSystemProfile() {
       ProfileManager::GetSystemProfilePath(),
       create_callback,
       base::string16(),
-      std::string(),
       std::string());
   base::RunLoop().Run();
 }
@@ -624,7 +623,6 @@ IN_PROC_BROWSER_TEST_F(AppControllerMainMenuBrowserTest,
       base::Bind(&RunClosureWhenProfileInitialized,
                  run_loop.QuitClosure()),
       base::string16(),
-      std::string(),
       std::string());
   run_loop.Run();
   Profile* profile2 = profile_manager->GetProfileByPath(profile2_path);

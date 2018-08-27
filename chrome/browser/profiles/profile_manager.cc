@@ -547,17 +547,14 @@ bool ProfileManager::LoadProfileByPath(const base::FilePath& profile_path,
                           // |callback| will be called only once.
                           base::AdaptCallbackForRepeating(std::move(callback)),
                           incognito),
-      base::string16() /* name */, std::string() /* icon_url */,
-      std::string() /* supervided_user_id */);
+      base::string16() /* name */, std::string() /* icon_url */);
   return true;
 }
 
-void ProfileManager::CreateProfileAsync(
-    const base::FilePath& profile_path,
-    const CreateCallback& callback,
-    const base::string16& name,
-    const std::string& icon_url,
-    const std::string& supervised_user_id) {
+void ProfileManager::CreateProfileAsync(const base::FilePath& profile_path,
+                                        const CreateCallback& callback,
+                                        const base::string16& name,
+                                        const std::string& icon_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   TRACE_EVENT1("browser,startup",
                "ProfileManager::CreateProfileAsync",
@@ -586,12 +583,7 @@ void ProfileManager::CreateProfileAsync(
       // add profile to cache with user selected name and avatar
       GetProfileAttributesStorage().AddProfile(
           profile_path, name, std::string(), base::string16(), icon_index,
-          supervised_user_id, EmptyAccountId());
-    }
-
-    if (!supervised_user_id.empty()) {
-      base::RecordAction(
-          UserMetricsAction("ManagedMode_LocallyManagedUserCreated"));
+          /*supervised_user_id=*/std::string(), EmptyAccountId());
     }
 
     ProfileMetrics::UpdateReportedProfilesStatistics(this);
@@ -761,19 +753,14 @@ Profile* ProfileManager::GetProfileByPath(const base::FilePath& path) const {
 base::FilePath ProfileManager::CreateMultiProfileAsync(
     const base::string16& name,
     const std::string& icon_url,
-    const CreateCallback& callback,
-    const std::string& supervised_user_id) {
+    const CreateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
 
-  profile_manager->CreateProfileAsync(new_path,
-                                      callback,
-                                      name,
-                                      icon_url,
-                                      supervised_user_id);
+  profile_manager->CreateProfileAsync(new_path, callback, name, icon_url);
   return new_path;
 }
 
@@ -1554,7 +1541,7 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
           // OnNewActiveProfileLoaded may be called several times, but
           // only once with CREATE_STATUS_INITIALIZED.
           base::AdaptCallbackForRepeating(std::move(callback))),
-      new_profile_name, new_avatar_url, std::string());
+      new_profile_name, new_avatar_url);
 }
 
 void ProfileManager::OnLoadProfileForProfileDeletion(

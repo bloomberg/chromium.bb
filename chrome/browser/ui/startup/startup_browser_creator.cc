@@ -922,7 +922,7 @@ void StartupBrowserCreator::ProcessCommandLineAlreadyRunning(
     profile_manager->CreateProfileAsync(
         profile_path,
         base::Bind(&ProcessCommandLineOnProfileCreated, command_line, cur_dir),
-        base::string16(), std::string(), std::string());
+        base::string16(), std::string());
     return;
   }
   StartupBrowserCreator startup_browser_creator;

@@ -1128,7 +1128,7 @@ void UserSessionManager::PrepareProfile() {
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
       base::Bind(&UserSessionManager::OnProfileCreated, AsWeakPtr(),
                  user_context_, is_demo_session),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
 }
 
 void UserSessionManager::OnProfileCreated(const UserContext& user_context,

@@ -403,7 +403,6 @@ Profile* SyncTest::MakeProfileForUISignin(base::FilePath profile_path) {
   profile_manager->CreateProfileAsync(profile_path,
                                       create_callback,
                                       base::string16(),
-                                      std::string(),
                                       std::string());
   run_loop.Run();
   return profile_manager->GetProfileByPath(profile_path);

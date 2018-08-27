@@ -62,7 +62,7 @@ void CreateAndSwitchToProfile(const std::string& basepath) {
   base::RunLoop run_loop;
   profile_manager->CreateProfileAsync(
       path, base::Bind(&UnblockOnProfileInitialized, run_loop.QuitClosure()),
-      base::string16(), std::string(), std::string());
+      base::string16(), std::string());
   // Run the message loop to allow profile creation to take place; the loop is
   // terminated by UnblockOnProfileCreation when the profile is created.
   run_loop.Run();

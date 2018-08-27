@@ -31,7 +31,6 @@ class CreateProfileHelper {
         base::Bind(&CreateProfileHelper::OnProfileCreated,
                    base::Unretained(this)),
         base::string16(),
-        std::string(),
         std::string());
     run_loop_.Run();
     return profile_;
