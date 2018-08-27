@@ -40,36 +40,26 @@
 
 namespace ash {
 
-namespace {
-
 ///////////////////////////////////////////////////////////////////////////////
 // NonClientFrameViewAshWindowStateDelegate
 
-// Handles a user's fullscreen request (Shift+F4/F4). Puts the window into
-// immersive fullscreen if immersive fullscreen is enabled for non-browser
-// windows.
-class NonClientFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
-                                                 public wm::WindowStateObserver,
-                                                 public aura::WindowObserver,
-                                                 public TabletModeObserver {
+// This helper enables and disables immersive mode in response to state such as
+// tablet mode and fullscreen changing. For legacy reasons, it's only
+// instantiated for windows that have no WindowStateDelegate provided.
+class NonClientFrameViewAshImmersiveHelper : public wm::WindowStateObserver,
+                                             public aura::WindowObserver,
+                                             public TabletModeObserver {
  public:
-  NonClientFrameViewAshWindowStateDelegate(
-      wm::WindowState* window_state,
-      NonClientFrameViewAsh* custom_frame_view,
-      bool enable_immersive)
-      : window_state_(nullptr) {
-    // Add a window state observer to exit fullscreen properly in case
-    // fullscreen is exited without going through
-    // WindowState::ToggleFullscreen(). This is the case when exiting
-    // immersive fullscreen via the "Restore" window control.
-    // TODO(pkotwicz): This is a hack. Remove ASAP. http://crbug.com/319048
-    window_state_ = window_state;
+  NonClientFrameViewAshImmersiveHelper(views::Widget* widget,
+                                       NonClientFrameViewAsh* custom_frame_view,
+                                       bool control_immersive)
+      : widget_(widget),
+        window_state_(wm::GetWindowState(widget->GetNativeWindow())) {
     window_state_->window()->AddObserver(this);
-
-    if (!enable_immersive)
-      return;
-
     window_state_->AddObserver(this);
+
+    if (!control_immersive)
+      return;
 
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
 
@@ -79,7 +69,7 @@ class NonClientFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
         immersive_fullscreen_controller_.get());
   }
 
-  ~NonClientFrameViewAshWindowStateDelegate() override {
+  ~NonClientFrameViewAshImmersiveHelper() override {
     if (Shell::Get()->tablet_mode_controller())
       Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
@@ -93,12 +83,9 @@ class NonClientFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
   void OnTabletModeStarted() override {
     if (window_state_->IsFullscreen())
       return;
-    views::Widget* widget =
-        views::Widget::GetWidgetForNativeWindow(window_state_->window());
     if (Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
-            widget)) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ImmersiveFullscreenController::WINDOW_TYPE_OTHER, true);
+            widget_)) {
+      ImmersiveFullscreenController::EnableForWidget(widget_, true);
     }
   }
 
@@ -106,27 +93,10 @@ class NonClientFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
     if (window_state_->IsFullscreen())
       return;
 
-    immersive_fullscreen_controller_->SetEnabled(
-        ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+    ImmersiveFullscreenController::EnableForWidget(widget_, false);
   }
 
  private:
-  // wm::WindowStateDelegate:
-  bool ToggleFullscreen(wm::WindowState* window_state) override {
-    bool enter_fullscreen = !window_state->IsFullscreen();
-    if (enter_fullscreen) {
-      window_state_->window()->SetProperty(aura::client::kShowStateKey,
-                                           ui::SHOW_STATE_FULLSCREEN);
-    } else {
-      window_state->Restore();
-    }
-    if (immersive_fullscreen_controller_) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ImmersiveFullscreenController::WINDOW_TYPE_OTHER, enter_fullscreen);
-    }
-    return true;
-  }
-
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override {
     window_state_->RemoveObserver(this);
@@ -139,27 +109,24 @@ class NonClientFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
                                    mojom::WindowStateType old_type) override {
     views::Widget* widget =
         views::Widget::GetWidgetForNativeWindow(window_state->window());
-    if (Shell::Get()->tablet_mode_controller() &&
+    if (immersive_fullscreen_controller_ &&
+        Shell::Get()->tablet_mode_controller() &&
         Shell::Get()->tablet_mode_controller()->ShouldAutoHideTitlebars(
             widget)) {
-      DCHECK(immersive_fullscreen_controller_);
-      if (window_state->IsMinimized() &&
-          immersive_fullscreen_controller_->IsEnabled()) {
-        immersive_fullscreen_controller_->SetEnabled(
-            ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
-      } else if (window_state->IsMaximized() &&
-                 !immersive_fullscreen_controller_->IsEnabled()) {
-        immersive_fullscreen_controller_->SetEnabled(
-            ImmersiveFullscreenController::WINDOW_TYPE_OTHER, true);
-      }
+      if (window_state->IsMinimized())
+        ImmersiveFullscreenController::EnableForWidget(widget_, false);
+      else if (window_state->IsMaximized())
+        ImmersiveFullscreenController::EnableForWidget(widget_, true);
       return;
     }
 
-    if (!window_state->IsFullscreen() && !window_state->IsMinimized() &&
-        immersive_fullscreen_controller_ &&
-        immersive_fullscreen_controller_->IsEnabled()) {
-      immersive_fullscreen_controller_->SetEnabled(
-          ImmersiveFullscreenController::WINDOW_TYPE_OTHER, false);
+    if (!window_state->IsFullscreen() && !window_state->IsMinimized())
+      ImmersiveFullscreenController::EnableForWidget(widget_, false);
+
+    if (window_state->IsFullscreen() &&
+        window_state->window()->GetProperty(
+            ash::kImmersiveImpliedByFullscreen)) {
+      ImmersiveFullscreenController::EnableForWidget(widget_, true);
     }
   }
 
@@ -170,14 +137,13 @@ class NonClientFrameViewAshWindowStateDelegate : public wm::WindowStateDelegate,
         widget->non_client_view()->frame_view());
   }
 
+  views::Widget* widget_;
   wm::WindowState* window_state_;
   std::unique_ptr<ImmersiveFullscreenController>
       immersive_fullscreen_controller_;
 
-  DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshWindowStateDelegate);
+  DISALLOW_COPY_AND_ASSIGN(NonClientFrameViewAshImmersiveHelper);
 };
-
-}  // namespace
 
 // static
 bool NonClientFrameViewAsh::use_empty_minimum_size_for_test_ = false;
@@ -271,7 +237,7 @@ const char NonClientFrameViewAsh::kViewClassName[] = "NonClientFrameViewAsh";
 NonClientFrameViewAsh::NonClientFrameViewAsh(
     views::Widget* frame,
     ImmersiveFullscreenControllerDelegate* immersive_delegate,
-    bool enable_immersive,
+    bool control_immersive,
     mojom::WindowStyle window_style,
     std::unique_ptr<CaptionButtonModel> model)
     : frame_(frame),
@@ -285,13 +251,13 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(
   // overlay the web contents in immersive fullscreen.
   frame->non_client_view()->SetOverlayView(overlay_view_);
 
-  // A delegate for a more complex way of fullscreening the window may already
-  // be set. This is the case for packaged apps.
+  // A delegate may be set which takes over the responsibilities of the
+  // NonClientFrameViewAshImmersiveHelper. This is the case for container apps
+  // such as ARC++, and in some tests.
   wm::WindowState* window_state = wm::GetWindowState(frame_window);
   if (!window_state->HasDelegate()) {
-    window_state->SetDelegate(std::unique_ptr<wm::WindowStateDelegate>(
-        new NonClientFrameViewAshWindowStateDelegate(window_state, this,
-                                                     enable_immersive)));
+    immersive_helper_ = std::make_unique<NonClientFrameViewAshImmersiveHelper>(
+        frame, this, control_immersive);
   }
   Shell::Get()->AddShellObserver(this);
   Shell::Get()->split_view_controller()->AddObserver(this);
