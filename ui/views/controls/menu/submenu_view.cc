@@ -374,7 +374,8 @@ void SubmenuView::SetSelectedRow(int row) {
 }
 
 base::string16 SubmenuView::GetTextForRow(int row) {
-  return GetMenuItemAt(row)->title();
+  return MenuItemView::GetAccessibleNameForMenuItem(GetMenuItemAt(row)->title(),
+                                                    base::string16());
 }
 
 bool SubmenuView::IsShowing() {

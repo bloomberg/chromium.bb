@@ -5,6 +5,7 @@
 #include "ui/views/controls/prefix_selector.h"
 
 #include "base/i18n/case_conversion.h"
+#include "base/time/default_tick_clock.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/range/range.h"
@@ -21,14 +22,20 @@ const int64_t kTimeBeforeClearingMS = 1000;
 }  // namespace
 
 PrefixSelector::PrefixSelector(PrefixDelegate* delegate, View* host_view)
-    : prefix_delegate_(delegate), host_view_(host_view) {
-}
+    : prefix_delegate_(delegate),
+      host_view_(host_view),
+      tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 PrefixSelector::~PrefixSelector() {
 }
 
 void PrefixSelector::OnViewBlur() {
   ClearText();
+}
+
+bool PrefixSelector::ShouldContinueSelection() const {
+  const base::TimeTicks now(tick_clock_->NowTicks());
+  return ((now - time_of_last_key_).InMilliseconds() < kTimeBeforeClearingMS);
 }
 
 void PrefixSelector::SetCompositionText(
@@ -174,15 +181,14 @@ void PrefixSelector::OnTextInput(const base::string16& text) {
   // while search after the current row, otherwise search starting from the
   // current row.
   int row = std::max(0, prefix_delegate_->GetSelectedRow());
-  const base::TimeTicks now(base::TimeTicks::Now());
-  if ((now - time_of_last_key_).InMilliseconds() < kTimeBeforeClearingMS) {
+  if (ShouldContinueSelection()) {
     current_text_ += text;
   } else {
     current_text_ = text;
     if (prefix_delegate_->GetSelectedRow() >= 0)
       row = (row + 1) % row_count;
   }
-  time_of_last_key_ = now;
+  time_of_last_key_ = tick_clock_->NowTicks();
 
   const int start_row = row;
   const base::string16 lower_text(base::i18n::ToLower(current_text_));

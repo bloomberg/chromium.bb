@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -80,6 +81,11 @@ class MenuRunnerTest : public ViewsTestBase {
 
   // ViewsTestBase:
   void TearDown() override;
+
+  bool IsItemSelected(int command_id) {
+    MenuItemView* item = menu_item_view()->GetMenuItemByID(command_id);
+    return item ? item->IsSelected() : false;
+  }
 
  private:
   // Owned by menu_runner_.
@@ -168,6 +174,11 @@ TEST_F(MenuRunnerTest, LatinMnemonic) {
   if (IsMus())
     return;
 
+  // Menus that use prefix selection don't support mnemonics - the input is
+  // always part of the prefix.
+  if (MenuConfig::instance().all_menus_use_prefix_selection)
+    return;
+
   views::test::DisableMenuClosureAnimations();
   InitMenuRunner(0);
   MenuRunner* runner = menu_runner();
@@ -194,6 +205,11 @@ TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   if (IsMus())
     return;
 
+  // Menus that use prefix selection don't support mnemonics - the input is
+  // always part of the prefix.
+  if (MenuConfig::instance().all_menus_use_prefix_selection)
+    return;
+
   views::test::DisableMenuClosureAnimations();
   InitMenuRunner(0);
   MenuRunner* runner = menu_runner();
@@ -212,6 +228,85 @@ TEST_F(MenuRunnerTest, NonLatinMnemonic) {
   EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
 }
 #endif  // !defined(OS_WIN)
+
+TEST_F(MenuRunnerTest, PrefixSelect) {
+  if (!MenuConfig::instance().all_menus_use_prefix_selection)
+    return;
+
+  base::SimpleTestTickClock clock;
+
+  // This test has a menu with three items:
+  //   { 1, "One" }
+  //   { 2, "\x062f\x0648" }
+  //   { 3, "One Two" }
+  // It progressively prefix searches for "One " (note the space) and ensures
+  // that the right item is found.
+
+  views::test::DisableMenuClosureAnimations();
+  InitMenuRunner(0);
+  menu_item_view()->AppendMenuItemWithLabel(3, base::ASCIIToUTF16("One Two"));
+
+  MenuRunner* runner = menu_runner();
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                    ui::MENU_SOURCE_NONE);
+  EXPECT_TRUE(runner->IsRunning());
+
+  menu_item_view()
+      ->GetSubmenu()
+      ->GetPrefixSelector()
+      ->set_tick_clock_for_testing(&clock);
+
+  ui::test::EventGenerator generator(GetContext(), owner()->GetNativeWindow());
+  generator.PressKey(ui::VKEY_O, 0);
+  EXPECT_TRUE(IsItemSelected(1));
+  generator.PressKey(ui::VKEY_N, 0);
+  generator.PressKey(ui::VKEY_E, 0);
+  EXPECT_TRUE(IsItemSelected(1));
+
+  generator.PressKey(ui::VKEY_SPACE, 0);
+  EXPECT_TRUE(IsItemSelected(3));
+
+  // Wait out the PrefixSelector's timeout.
+  clock.Advance(base::TimeDelta::FromSeconds(10));
+
+  // Send Space to activate the selected menu item.
+  generator.PressKey(ui::VKEY_SPACE, 0);
+  views::test::WaitForMenuClosureAnimation();
+  EXPECT_FALSE(runner->IsRunning());
+  TestMenuDelegate* delegate = menu_delegate();
+  EXPECT_EQ(3, delegate->execute_command_id());
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
+  EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
+}
+
+// This test is Mac-specific: Mac is the only platform where VKEY_SPACE
+// activates menu items.
+#if defined(OS_MACOSX)
+TEST_F(MenuRunnerTest, SpaceActivatesItem) {
+  if (!MenuConfig::instance().all_menus_use_prefix_selection)
+    return;
+
+  views::test::DisableMenuClosureAnimations();
+  InitMenuRunner(0);
+
+  MenuRunner* runner = menu_runner();
+  runner->RunMenuAt(owner(), nullptr, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                    ui::MENU_SOURCE_NONE);
+  EXPECT_TRUE(runner->IsRunning());
+
+  ui::test::EventGenerator generator(GetContext(), owner()->GetNativeWindow());
+  generator.PressKey(ui::VKEY_DOWN, 0);
+  EXPECT_TRUE(IsItemSelected(1));
+  generator.PressKey(ui::VKEY_SPACE, 0);
+  views::test::WaitForMenuClosureAnimation();
+
+  EXPECT_FALSE(runner->IsRunning());
+  TestMenuDelegate* delegate = menu_delegate();
+  EXPECT_EQ(1, delegate->execute_command_id());
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
+  EXPECT_NE(nullptr, delegate->on_menu_closed_menu());
+}
+#endif  // OS_MACOSX
 
 // Tests that attempting to nest a menu within a drag-and-drop menu does not
 // cause a crash. Instead the drag and drop action should be canceled, and the
