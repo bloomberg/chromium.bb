@@ -25,7 +25,7 @@ bool TestSafeBrowsingDatabaseManager::CanCheckResourceType(
 
 bool TestSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
   NOTIMPLEMENTED();
-  return false;
+  return (url != GURL("about:blank"));
 }
 
 bool TestSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {

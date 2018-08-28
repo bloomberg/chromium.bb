@@ -82,6 +82,14 @@ void PasswordProtectionRequest::Start() {
 void PasswordProtectionRequest::CheckWhitelist() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
+  // In order to send pings for about:blank, we skip the whitelist check for
+  // URLs with unsupported schemes.
+  if (!password_protection_service_->database_manager()->CanCheckUrl(
+          main_frame_url_)) {
+    OnWhitelistCheckDone(false);
+    return;
+  }
+
   // Start a task on the IO thread to check the whitelist. It may
   // callback immediately on the IO thread or take some time if a full-hash-
   // check is required.
