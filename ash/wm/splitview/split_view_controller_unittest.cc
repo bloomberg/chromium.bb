@@ -2927,10 +2927,12 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
 
   const float long_scroll_delta = display_bounds.height() / 4 + 5;
-  float large_velocity =
-      TabletModeAppWindowDragController::kFlingToOverviewThreshold + 10.f;
-  float small_velocity =
-      TabletModeAppWindowDragController::kFlingToOverviewThreshold - 10.f;
+  float large_velocity = TabletModeAppWindowDragController::
+                             kFlingToOverviewFromSnappingAreaThreshold +
+                         10.f;
+  float small_velocity = TabletModeAppWindowDragController::
+                             kFlingToOverviewFromSnappingAreaThreshold -
+                         10.f;
   gfx::Point start(gfx::Point(0, 0));
   base::TimeTicks timestamp = base::TimeTicks::Now();
 
@@ -2996,8 +2998,9 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
   gfx::Rect display_bounds =
       split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
   const float long_scroll_y = display_bounds.bottom() - 10;
-  float large_velocity =
-      TabletModeAppWindowDragController::kFlingToOverviewThreshold + 10.f;
+  float large_velocity = TabletModeAppWindowDragController::
+                             kFlingToOverviewFromSnappingAreaThreshold +
+                         10.f;
   gfx::Point start(gfx::Point(0, 0));
 
   // Fling the window in left snapping area to left should still snap the
