@@ -321,14 +321,23 @@ void ExpectDefaultProfileValues(const AutofillProfile& profile) {
 // convert all tests from *_P back to *_F and remove the instance at the end.
 class UssSwitchToggler : public testing::WithParamInterface<bool> {
  public:
-  UssSwitchToggler() {
+  UssSwitchToggler() {}
+
+  // Sets up feature overrides, based on the parameter of the test.
+  void InitWithDefaultFeatures() { InitWithFeatures({}, {}); }
+
+  // Sets up feature overrides, adds the toggled feature on top of specified
+  // |enabled_features| and |disabled_features|. Vectors are passed by value
+  // because we need to alter them anyway.
+  void InitWithFeatures(std::vector<base::Feature> enabled_features,
+                        std::vector<base::Feature> disabled_features) {
     if (GetParam()) {
-      override_features_.InitAndEnableFeature(
-          switches::kSyncUSSAutofillWalletData);
+      enabled_features.push_back(switches::kSyncUSSAutofillWalletData);
     } else {
-      override_features_.InitAndDisableFeature(
-          switches::kSyncUSSAutofillWalletData);
+      disabled_features.push_back(switches::kSyncUSSAutofillWalletData);
     }
+
+    override_features_.InitWithFeatures(enabled_features, disabled_features);
   }
 
  private:
@@ -337,7 +346,7 @@ class UssSwitchToggler : public testing::WithParamInterface<bool> {
 
 }  // namespace
 
-class SingleClientWalletSyncTest : public SyncTest {
+class SingleClientWalletSyncTest : public UssSwitchToggler, public SyncTest {
  public:
   SingleClientWalletSyncTest() : SyncTest(SINGLE_CLIENT) {}
   ~SingleClientWalletSyncTest() override {}
@@ -360,20 +369,8 @@ class SingleClientWalletSyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSyncTest);
 };
 
-// TODO: Merge the two fixtures into one when all tests are passing for USS.
-class SingleClientWalletSyncTestIncludingUssTests
-    : public UssSwitchToggler,
-      public SingleClientWalletSyncTest {
- public:
-  SingleClientWalletSyncTestIncludingUssTests() {}
-  ~SingleClientWalletSyncTestIncludingUssTests() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SingleClientWalletSyncTestIncludingUssTests);
-};
-
-IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestIncludingUssTests,
-                       EnabledByDefault) {
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, EnabledByDefault) {
+  InitWithDefaultFeatures();
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(GetClient(0)->service()->GetActiveDataTypes().Has(
       syncer::AUTOFILL_WALLET_DATA));
@@ -383,13 +380,11 @@ IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTestIncludingUssTests,
       syncer::AUTOFILL_WALLET_METADATA));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, DownloadProfileStorage) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // Enabled.
-      {},
-      // Disabled.
-      {autofill::features::kAutofillEnableAccountWalletStorage});
+  InitWithFeatures(/*enabled_features=*/{},
+                   /*disabled_features=*/
+                   {autofill::features::kAutofillEnableAccountWalletStorage});
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
@@ -420,15 +415,14 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, DownloadProfileStorage) {
 #if !defined(OS_CHROMEOS)
 // TODO(crbug.com/853688): Reenable once the USS implementation of
 // AUTOFILL_WALLET_DATA (AutofillWalletSyncBridge) has sufficient functionality.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
                        DISABLED_DownloadAccountStorage_Card) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      // Enabled.
-      {switches::kSyncStandaloneTransport, switches::kSyncUSSAutofillWalletData,
-       autofill::features::kAutofillEnableAccountWalletStorage},
-      // Disabled.
-      {});
+  InitWithFeatures(
+      /*enabled_features=*/{switches::kSyncStandaloneTransport,
+                            switches::kSyncUSSAutofillWalletData,
+                            autofill::features::
+                                kAutofillEnableAccountWalletStorage},
+      /*disabled_features=*/{});
 
   ASSERT_TRUE(SetupClients());
 
@@ -470,7 +464,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 #endif  // !defined(OS_CHROMEOS)
 
 // Wallet data should get cleared from the database when sync is disabled.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableSync) {
+  InitWithDefaultFeatures();
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
@@ -489,8 +484,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableSync) {
 
 // Wallet is not using incremental updates. Make sure existing data gets
 // replaced when synced down.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
                        NewSyncDataShouldReplaceExistingData) {
+  InitWithDefaultFeatures();
   sync_pb::SyncEntity first_card =
       CreateSyncWalletCard(/*name=*/"card-1", /*last_four=*/"0001");
   sync_pb::SyncEntity first_address =
@@ -537,7 +533,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data should get cleared from the database when the wallet sync type
 // flag is disabled.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
+  InitWithDefaultFeatures();
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
@@ -556,8 +553,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest, ClearOnDisableWalletSync) {
 
 // Wallet data should get cleared from the database when the wallet autofill
 // integration flag is disabled.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
                        ClearOnDisableWalletAutofill) {
+  InitWithDefaultFeatures();
   GetFakeServer()->SetWalletData(
       {CreateDefaultSyncWalletAddress(), CreateDefaultSyncWalletCard()});
   ASSERT_TRUE(SetupSync());
@@ -578,8 +576,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data present on the client should be cleared in favor of the new data
 // synced down form the server.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
                        NewWalletCardRemovesExistingCardAndProfile) {
+  InitWithDefaultFeatures();
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -625,8 +624,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Wallet data present on the client should be cleared in favor of the new data
 // synced down form the server.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
                        NewWalletProfileRemovesExistingProfileAndCard) {
+  InitWithDefaultFeatures();
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -674,8 +674,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Tests that a local billing address id set on a card on the client should not
 // be overwritten when that same card is synced again.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
                        SameWalletCard_PreservesLocalBillingAddressId) {
+  InitWithDefaultFeatures();
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -709,8 +710,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 
 // Tests that a server billing address id set on a card on the client is
 // overwritten when that same card is synced again.
-IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
+IN_PROC_BROWSER_TEST_P(SingleClientWalletSyncTest,
                        SameWalletCard_DiscardsOldServerBillingAddressId) {
+  InitWithDefaultFeatures();
   ASSERT_TRUE(SetupClients());
   autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
   ASSERT_NE(nullptr, pdm);
@@ -743,5 +745,5 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
 }
 
 INSTANTIATE_TEST_CASE_P(USS,
-                        SingleClientWalletSyncTestIncludingUssTests,
+                        SingleClientWalletSyncTest,
                         ::testing::Values(false, true));
