@@ -118,6 +118,7 @@ class WidgetTest : public ViewsTestBase {
 class TestDesktopWidgetDelegate : public WidgetDelegate {
  public:
   TestDesktopWidgetDelegate();
+  TestDesktopWidgetDelegate(Widget* widget);
   ~TestDesktopWidgetDelegate() override;
 
   // Initialize the Widget, adding some meaningful default InitParams.

@@ -1944,6 +1944,29 @@ TEST_F(WidgetTest, DestroyedWithCaptureViaEventMonitor) {
   EXPECT_TRUE(observer.widget_closed());
 }
 
+// Widget used to destroy itself when OnNativeWidgetDestroyed is called.
+class TestNativeWidgetDestroyedWidget : public Widget {
+ public:
+  // Overridden from NativeWidgetDelegate:
+  void OnNativeWidgetDestroyed() override;
+};
+
+void TestNativeWidgetDestroyedWidget::OnNativeWidgetDestroyed() {
+  Widget::OnNativeWidgetDestroyed();
+  delete this;
+}
+
+// Verifies that widget destroyed itself in OnNativeWidgetDestroyed does not
+// crash in ASan.
+TEST_F(WidgetTest, WidgetDestroyedItselfDoesNotCrash) {
+  TestDesktopWidgetDelegate delegate(new TestNativeWidgetDestroyedWidget);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  delegate.InitWidget(params);
+  delegate.GetWidget()->Show();
+  delegate.GetWidget()->CloseNow();
+}
+
 // Verifies WindowClosing() is invoked correctly on the delegate when a Widget
 // is closed.
 TEST_F(WidgetTest, SingleWindowClosing) {

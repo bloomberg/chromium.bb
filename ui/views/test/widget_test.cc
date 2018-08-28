@@ -99,6 +99,9 @@ View* WidgetTest::GetGestureHandler(internal::RootView* root_view) {
 TestDesktopWidgetDelegate::TestDesktopWidgetDelegate() : widget_(new Widget) {
 }
 
+TestDesktopWidgetDelegate::TestDesktopWidgetDelegate(Widget* widget)
+    : widget_(widget) {}
+
 TestDesktopWidgetDelegate::~TestDesktopWidgetDelegate() {
   if (widget_)
     widget_->CloseNow();
