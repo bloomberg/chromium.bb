@@ -59,6 +59,7 @@
 #include "net/http/http_util.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
