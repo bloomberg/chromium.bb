@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
@@ -37,6 +38,7 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -224,6 +226,45 @@ class AutofillTest : public InProcessBrowserTest {
  private:
   net::TestURLFetcherFactory url_fetcher_factory_;
 };
+
+class AutofillParamTest : public AutofillTest,
+                          public testing::WithParamInterface<bool> {
+ protected:
+  AutofillParamTest() : enable_company_feature_state_(GetParam()) {
+    feature_list_.InitWithFeatureState(features::kAutofillEnableCompanyName,
+                                       enable_company_feature_state_);
+  }
+
+  const bool enable_company_feature_state_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Test that Autofill respects CompanyName Feature state
+IN_PROC_BROWSER_TEST_P(AutofillParamTest, CompanyNameTest) {
+  SCOPED_TRACE(enable_company_feature_state_ ? "Enabled" : "Disabled");
+
+  const char kCompanyName[] = "Google";
+  FormMap data;
+  data["NAME_FIRST"] = "Bob";
+  data["NAME_LAST"] = "Smith";
+  data["ADDRESS_HOME_LINE1"] = "1234 H St.";
+  data["ADDRESS_HOME_CITY"] = "Mountain View";
+  data["ADDRESS_HOME_STATE"] = "CA";
+  data["ADDRESS_HOME_ZIP"] = "94043";
+  data["COMPANY_NAME"] = kCompanyName;
+
+  std::string submit("document.forms[0].submit();");
+  FillFormAndSubmitWithHandler("duplicate_profiles_test.html", data, submit,
+                               false, true);
+
+  EXPECT_EQ(
+      ASCIIToUTF16(enable_company_feature_state_ ? kCompanyName : ""),
+      personal_data_manager()->GetProfiles()[0]->GetRawInfo(COMPANY_NAME));
+}
+
+INSTANTIATE_TEST_CASE_P(, AutofillParamTest, testing::Bool());
 
 // Test that Autofill aggregates a minimum valid profile.
 // The minimum required address fields must be specified: First Name, Last Name,
