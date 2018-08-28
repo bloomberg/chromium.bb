@@ -140,7 +140,7 @@ class SQL_EXPORT Database {
   // Record a sparse UMA histogram sample under
   // |name|+"."+|histogram_tag_|.  If |histogram_tag_| is empty, no
   // histogram is recorded.
-  void AddTaggedHistogram(const std::string& name, size_t sample) const;
+  void AddTaggedHistogram(const std::string& name, int sample) const;
 
   // Track various API calls and results.  Values corrospond to UMA
   // histograms, do not modify, or add or delete other than directly

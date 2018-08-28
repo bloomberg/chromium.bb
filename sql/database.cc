@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -337,7 +338,7 @@ bool Database::Open(const base::FilePath& path) {
   if (!histogram_tag_.empty()) {
     int64_t size_64 = 0;
     if (base::GetFileSize(path, &size_64)) {
-      size_t sample = static_cast<size_t>(size_64 / 1024);
+      int sample = base::saturated_cast<int>(size_64 / 1024);
       std::string full_histogram_name = "Sqlite.SizeKB." + histogram_tag_;
       base::HistogramBase* histogram = base::Histogram::FactoryGet(
           full_histogram_name, 1, 1000000, 50,
@@ -1794,8 +1795,7 @@ void Database::set_histogram_tag(const std::string& tag) {
   histogram_tag_ = tag;
 }
 
-void Database::AddTaggedHistogram(const std::string& name,
-                                  size_t sample) const {
+void Database::AddTaggedHistogram(const std::string& name, int sample) const {
   if (histogram_tag_.empty())
     return;
 

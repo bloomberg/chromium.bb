@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -17,23 +18,27 @@ namespace {
 
 #if !defined(OS_IOS)
 void RecordSqliteMemory10Min() {
-  const int64_t used = sqlite3_memory_used();
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.TenMinutes", used / 1024);
+  const int32_t used =
+      base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
+  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.TenMinutes", used);
 }
 
 void RecordSqliteMemoryHour() {
-  const int64_t used = sqlite3_memory_used();
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneHour", used / 1024);
+  const int32_t used =
+      base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
+  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneHour", used);
 }
 
 void RecordSqliteMemoryDay() {
-  const int64_t used = sqlite3_memory_used();
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneDay", used / 1024);
+  const int32_t used =
+      base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
+  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneDay", used);
 }
 
 void RecordSqliteMemoryWeek() {
-  const int64_t used = sqlite3_memory_used();
-  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneWeek", used / 1024);
+  const int32_t used =
+      base::saturated_cast<int32_t>(sqlite3_memory_used() / 1024);
+  UMA_HISTOGRAM_COUNTS("Sqlite.MemoryKB.OneWeek", used);
 }
 #endif  // !defined(OS_IOS)
 
