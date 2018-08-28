@@ -171,9 +171,13 @@ class KeyboardAccessoryMediator
         }
     }
 
+    boolean hasContents() {
+        return mModel.getActionList().size() > 0 || mModel.getTabList().size() > 0;
+    }
+
     private boolean shouldShowAccessory() {
         if (!mShowIfNotEmpty && mModel.activeTab() == null) return false;
-        return mModel.getActionList().size() > 0 || mModel.getTabList().size() > 0;
+        return hasContents();
     }
 
     private void updateVisibility() {

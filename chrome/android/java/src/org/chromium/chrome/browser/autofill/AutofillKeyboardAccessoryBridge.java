@@ -57,7 +57,7 @@ public class AutofillKeyboardAccessoryBridge
     @Override
     public void suggestionSelected(int listIndex) {
         KeyboardAccessoryMetricsRecorder.recordActionSelected(AccessoryAction.AUTOFILL_SUGGESTION);
-        if (mManualFillingCoordinator != null) mManualFillingCoordinator.dismiss();
+        mManualFillingCoordinator.dismiss();
         if (mNativeAutofillKeyboardAccessory == 0) return;
         nativeSuggestionSelected(mNativeAutofillKeyboardAccessory, listIndex);
     }
@@ -96,8 +96,10 @@ public class AutofillKeyboardAccessoryBridge
         assert mContext != null;
         if (mContext instanceof ChromeActivity) {
             mManualFillingCoordinator = ((ChromeActivity) mContext).getManualFillingController();
-            mManualFillingCoordinator.getKeyboardAccessory().registerActionListProvider(
-                    mChipProvider);
+            if (mManualFillingCoordinator.getKeyboardAccessory() != null) {
+                mManualFillingCoordinator.getKeyboardAccessory().registerActionListProvider(
+                        mChipProvider);
+            }
         }
 
         mNativeAutofillKeyboardAccessory = nativeAutofillKeyboardAccessory;
@@ -118,7 +120,6 @@ public class AutofillKeyboardAccessoryBridge
     private void dismiss() {
         mChipProvider.notifyObservers(new KeyboardAccessoryData.Action[0]);
         mContext = null;
-        mManualFillingCoordinator = null;
     }
 
     /**

@@ -261,7 +261,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private BottomSheet mBottomSheet;
     private ContextualSuggestionsCoordinator mContextualSuggestionsCoordinator;
     private ScrimView mScrimView;
-    private ManualFillingCoordinator mManualFillingController;
     private float mStatusBarScrimFraction;
     private int mBaseStatusBarColor;
     private int mScrimColor;
@@ -278,6 +277,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private Runnable mRecordMultiWindowModeScreenWidthRunnable;
 
     private final DiscardableReferencePool mReferencePool = new DiscardableReferencePool();
+    private final ManualFillingCoordinator mManualFillingController =
+            new ManualFillingCoordinator();
 
     private AssistStatusHandler mAssistStatusHandler;
 
@@ -691,13 +692,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     /**
      * @return The {@link KeyboardAccessoryCoordinator} that belongs to this activity.
      */
-    public KeyboardAccessoryCoordinator getKeyboardAccessory() {
-        return mManualFillingController.getKeyboardAccessory();
-    }
-
-    /**
-     * @return The {@link KeyboardAccessoryCoordinator} that belongs to this activity.
-     */
     public ManualFillingCoordinator getManualFillingController() {
         return mManualFillingController;
     }
@@ -939,7 +933,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         OfflineIndicatorController.onUpdate();
 
-        if (getManualFillingController() != null) getManualFillingController().onResume();
+        getManualFillingController().onResume();
     }
 
     @Override
@@ -957,7 +951,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         RecordUserAction.record("MobileGoToBackground");
         Tab tab = getActivityTab();
         if (tab != null) getTabContentManager().cacheTabThumbnail(tab);
-        if (getManualFillingController() != null) getManualFillingController().onPause();
+        getManualFillingController().onPause();
 
         VrModuleProvider.getDelegate().maybeUnregisterVrEntryHook();
         markSessionEnd();
@@ -1269,10 +1263,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mTabContentManager = null;
         }
 
-        if (mManualFillingController != null) {
-            mManualFillingController.destroy();
-            mManualFillingController = null;
-        }
+        mManualFillingController.destroy();
 
         if (mActivityTabStartupMetricsTracker != null) {
             mActivityTabStartupMetricsTracker.destroy();
@@ -1383,7 +1374,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             setStatusBarColor(null, mBaseStatusBarColor);
         }, coordinator);
 
-        mManualFillingController = new ManualFillingCoordinator(getWindowAndroid(),
+        mManualFillingController.initialize(getWindowAndroid(),
                 findViewById(R.id.keyboard_accessory_stub),
                 findViewById(R.id.keyboard_accessory_sheet_stub));
 

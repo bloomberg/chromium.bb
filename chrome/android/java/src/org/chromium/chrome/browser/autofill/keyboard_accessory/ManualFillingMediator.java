@@ -172,10 +172,15 @@ class ManualFillingMediator
         }
     }
 
+    boolean isInitialized() {
+        return mWindowAndroid != null;
+    }
+
     // TODO(fhorschig): Look for stronger signals than |keyboardVisibilityChanged|.
     // This variable remembers the last state of |keyboardVisibilityChanged| which might not be
     // sufficient for edge cases like hardware keyboards, floating keyboards, etc.
     private void onKeyboardVisibilityChanged(boolean isShowing) {
+        if (!mKeyboardAccessory.hasContents()) return; // Exit early to not affect the layout.
         if (isShowing) {
             mKeyboardAccessory.requestShowing();
             mActivity.getFullscreenManager().setBottomControlsHeight(calculateAccessoryBarHeight());
@@ -184,22 +189,21 @@ class ManualFillingMediator
             mAccessorySheet.hide();
         } else {
             mKeyboardAccessory.close();
+            onBottomControlSpaceChanged();
             if (mKeyboardAccessory.hasActiveTab()) {
-                mKeyboardAccessory.setBottomOffset(mAccessorySheet.getHeight());
                 mAccessorySheet.show();
-                onBottomControlSpaceChanged();
-            } else {
-                mActivity.getFullscreenManager().setBottomControlsHeight(mPreviousControlHeight);
             }
         }
     }
 
     void registerPasswordProvider(Provider<KeyboardAccessoryData.Item> itemProvider) {
+        if (!isInitialized()) return;
         assert getPasswordAccessorySheet() != null : "No password sheet available!";
         getPasswordAccessorySheet().registerItemProvider(itemProvider);
     }
 
     void registerActionProvider(KeyboardAccessoryData.PropertyProvider<Action> actionProvider) {
+        if (!isInitialized()) return;
         ActionProviderCacheAdapter adapter =
                 new ActionProviderCacheAdapter(mActiveBrowserTab, actionProvider, new Action[0]);
         mModel.get(mActiveBrowserTab).mActionsProvider = adapter;
@@ -207,6 +211,7 @@ class ManualFillingMediator
     }
 
     void destroy() {
+        if (!isInitialized()) return;
         if (mWindowAndroid != null) {
             mWindowAndroid.removeKeyboardVisibilityListener(mVisibilityListener);
         }
@@ -214,7 +219,7 @@ class ManualFillingMediator
     }
 
     boolean handleBackPress() {
-        if (mAccessorySheet.isShown()) {
+        if (isInitialized() && mAccessorySheet.isShown()) {
             mKeyboardAccessory.dismiss();
             return true;
         }
@@ -222,6 +227,7 @@ class ManualFillingMediator
     }
 
     void dismiss() {
+        if (!isInitialized()) return;
         mKeyboardAccessory.dismiss();
         if (getContentView() != null) UiUtils.hideKeyboard(getContentView());
     }
@@ -231,10 +237,12 @@ class ManualFillingMediator
     }
 
     public void pause() {
+        if (!isInitialized()) return;
         mKeyboardAccessory.dismiss();
     }
 
     void resume() {
+        if (!isInitialized()) return;
         restoreCachedState(mActiveBrowserTab);
     }
 
@@ -266,7 +274,7 @@ class ManualFillingMediator
      * Opens the keyboard which implicitly dismisses the sheet. Without open sheet, this is a NoOp.
      */
     void swapSheetWithKeyboard() {
-        if (mAccessorySheet.isShown()) onOpenKeyboard();
+        if (isInitialized() && mAccessorySheet.isShown()) onOpenKeyboard();
     }
 
     @Override
@@ -278,12 +286,15 @@ class ManualFillingMediator
 
     @Override
     public void onBottomControlSpaceChanged() {
-        @Px
         int newControlsHeight = calculateAccessoryBarHeight();
-        if (mAccessorySheet.isShown()) {
+        int newControlsOffset = 0;
+        if (mKeyboardAccessory.hasActiveTab()) {
             newControlsHeight += mAccessorySheet.getHeight();
+            newControlsOffset += mAccessorySheet.getHeight();
         }
-        mActivity.getFullscreenManager().setBottomControlsHeight(newControlsHeight);
+        mKeyboardAccessory.setBottomOffset(newControlsOffset);
+        mActivity.getFullscreenManager().setBottomControlsHeight(
+                mKeyboardAccessory.isShown() ? newControlsHeight : mPreviousControlHeight);
     }
 
     /**
@@ -342,6 +353,7 @@ class ManualFillingMediator
 
     @VisibleForTesting
     void addTab(KeyboardAccessoryData.Tab tab) {
+        if (!isInitialized()) return;
         // TODO(fhorschig): This should add the tab only to the state. Sheet and accessory should be
         // using a |set| method or even observe the state.
         mKeyboardAccessory.addTab(tab);
@@ -351,6 +363,7 @@ class ManualFillingMediator
     @VisibleForTesting
     @Nullable
     PasswordAccessorySheetCoordinator getPasswordAccessorySheet() {
+        if (!isInitialized()) return null;
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.EXPERIMENTAL_UI)
                 && !ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORDS_KEYBOARD_ACCESSORY)) {
             return null;
@@ -365,6 +378,7 @@ class ManualFillingMediator
     }
 
     // TODO(fhorschig): Should be @VisibleForTesting.
+    @Nullable
     KeyboardAccessoryCoordinator getKeyboardAccessory() {
         return mKeyboardAccessory;
     }

@@ -192,6 +192,15 @@ public class KeyboardAccessoryCoordinator {
     }
 
     /**
+     * This method returns whether the accessory has any contents that justify showing it. A single
+     * tab, action or suggestion chip would already allow that.
+     * @return True if there is any content to be shown. False otherwise.
+     */
+    public boolean hasContents() {
+        return mMediator.hasContents();
+    }
+
+    /**
      * Returns whether the active tab is non-null. The returned property reflects the latest change
      * while the view might still be in progress of being updated accordingly.
      * @return True if the accessory has an active tab, false otherwise.
