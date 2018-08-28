@@ -4,213 +4,101 @@
 
 #include "content/child/font_warmup_win.h"
 
+#include <dwrite.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <windows.h>
+#include <wrl.h>
 
 #include <memory>
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/sys_byteorder.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/win/windows_version.h"
+
+#include "content/child/dwrite_font_proxy/dwrite_font_proxy_win.h"
+#include "content/public/common/content_paths.h"
+#include "content/test/dwrite_font_fake_sender_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkFontMgr.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkString.h"
 #include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/ports/SkTypeface_win.h"
+
+namespace mswr = Microsoft::WRL;
 
 namespace content {
 
 namespace {
 
-class TestSkTypeface : public SkTypeface {
+class GDIFontEmulationTest : public testing::Test {
  public:
-  TestSkTypeface(const SkFontStyle& style,
-                 const char* familyName,
-                 SkFontTableTag tag,
-                 const char* data,
-                 size_t dataLength)
-      : SkTypeface(style, 0),
-        familyName_(familyName),
-        tag_(tag),
-        data_(data, data + dataLength) {}
+  GDIFontEmulationTest() {
+    fake_collection_ = std::make_unique<FakeFontCollection>();
+    SetupFonts(fake_collection_.get());
+    DWriteFontCollectionProxy::Create(&collection_, factory.Get(),
+                                      fake_collection_->CreatePtr());
+    EXPECT_TRUE(collection_.Get());
 
- protected:
-  SkScalerContext* onCreateScalerContext(const SkScalerContextEffects&,
-                                         const SkDescriptor*) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-  void onFilterRec(SkScalerContextRec*) const override { ADD_FAILURE(); }
-
-  SkStreamAsset* onOpenStream(int* ttcIndex) const override {
-    ADD_FAILURE();
-    return nullptr;
+    content::SetPreSandboxWarmupFontMgrForTesting(
+        SkFontMgr_New_DirectWrite(factory.Get(), collection_.Get()));
   }
 
-  int onGetVariationDesignPosition(
-      SkFontArguments::VariationPosition::Coordinate coordinates[],
-      int coordinateCount) const override {
-    ADD_FAILURE();
-    return -1;
-  }
-
-  void onGetFontDescriptor(SkFontDescriptor*, bool* isLocal) const override {
-    ADD_FAILURE();
-  }
-
-  int onCharsToGlyphs(const void* chars,
-                      Encoding,
-                      uint16_t glyphs[],
-                      int glyphCount) const override {
-    ADD_FAILURE();
-    return 0;
-  }
-
-  int onCountGlyphs() const override {
-    ADD_FAILURE();
-    return 0;
-  }
-
-  int onGetUPEM() const override {
-    ADD_FAILURE();
-    return 0;
-  }
-  bool onGetKerningPairAdjustments(const uint16_t glyphs[],
-                                   int count,
-                                   int32_t adjustments[]) const override {
-    ADD_FAILURE();
-    return false;
-  }
-
-  void onGetFamilyName(SkString* familyName) const override {
-    *familyName = familyName_;
-  }
-
-  LocalizedStrings* onCreateFamilyNameIterator() const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  int onGetTableTags(SkFontTableTag tags[]) const override {
-    ADD_FAILURE();
-    return 0;
-  }
-
-  size_t onGetTableData(SkFontTableTag tag,
-                        size_t offset,
-                        size_t length,
-                        void* data) const override {
-    size_t retsize = 0;
-    if (tag == tag_) {
-      retsize = length > data_.size() ? data_.size() : length;
-      if (data)
-        memcpy(data, &data_[0], retsize);
-    }
-    return retsize;
-  }
-
-  bool onComputeBounds(SkRect*) const override {
-    ADD_FAILURE();
-    return false;
-  }
-
- private:
-  SkString familyName_;
-  SkFontTableTag tag_;
-  std::vector<char> data_;
-};
-
-const char* kTestFontFamily = "GDITest";
-const wchar_t* kTestFontFamilyW = L"GDITest";
-const SkFontTableTag kTestFontTableTag = 0x11223344;
-const char* kTestFontData = "GDITestGDITest";
-const wchar_t* kTestFontFamilyInvalid = L"InvalidFont";
-
-class TestSkFontMgr : public SkFontMgr {
- public:
-  TestSkFontMgr() {
-    content::SetPreSandboxWarmupFontMgrForTesting(sk_ref_sp(this));
-  }
-  ~TestSkFontMgr() override {
+  ~GDIFontEmulationTest() override {
     content::SetPreSandboxWarmupFontMgrForTesting(nullptr);
+
+    if (collection_)
+      collection_->Unregister();
+  }
+
+  static void SetupFonts(FakeFontCollection* fonts) {
+    base::FilePath data_path;
+    EXPECT_TRUE(base::PathService::Get(content::DIR_TEST_DATA, &data_path));
+
+    base::FilePath gdi_path = data_path.AppendASCII("font/gdi_test.ttf");
+    fonts->AddFont(L"GDITest")
+        .AddFamilyName(L"en-us", L"GDITest")
+        .AddFamilyName(L"de-de", L"GDIUntersuchung")
+        .AddFilePath(gdi_path);
+  }
+
+  static void SetUpTestCase() {
+    DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory),
+                        &factory);
   }
 
  protected:
-  int onCountFamilies() const override { return 1; }
+  base::test::ScopedTaskEnvironment task_environment;
+  std::unique_ptr<FakeFontCollection> fake_collection_;
+  mswr::ComPtr<DWriteFontCollectionProxy> collection_;
 
-  void onGetFamilyName(int index, SkString* familyName) const override {
-    if (index == 0)
-      *familyName = kTestFontFamily;
-  }
-
-  SkFontStyleSet* onCreateStyleSet(int index) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  SkFontStyleSet* onMatchFamily(const char familyName[]) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  SkTypeface* onMatchFamilyStyle(const char familyName[],
-                                 const SkFontStyle&) const override {
-    if (strcmp(familyName, kTestFontFamily) == 0)
-      return createTypeface();
-    return nullptr;
-  }
-
-  SkTypeface* onMatchFamilyStyleCharacter(const char familyName[],
-                                          const SkFontStyle&,
-                                          const char* bcp47[],
-                                          int bcp47Count,
-                                          SkUnichar character) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  SkTypeface* onMatchFaceStyle(const SkTypeface*,
-                               const SkFontStyle&) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  sk_sp<SkTypeface> onMakeFromData(sk_sp<SkData>, int ttcIndex) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  sk_sp<SkTypeface> onMakeFromStreamIndex(std::unique_ptr<SkStreamAsset>,
-                                          int ttcIndex) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  sk_sp<SkTypeface> onMakeFromFile(const char path[],
-                                   int ttcIndex) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
-  sk_sp<SkTypeface> onLegacyMakeTypeface(const char familyName[],
-                                         SkFontStyle style) const override {
-    ADD_FAILURE();
-    return nullptr;
-  }
-
- private:
-  SkTypeface* createTypeface() const {
-    SkFontStyle style(400, 100, SkFontStyle::kUpright_Slant);
-
-    return new TestSkTypeface(style, kTestFontFamily,
-                              base::ByteSwap(kTestFontTableTag), kTestFontData,
-                              strlen(kTestFontData));
-  }
+  static mswr::ComPtr<IDWriteFactory> factory;
 };
+mswr::ComPtr<IDWriteFactory> GDIFontEmulationTest::factory;
+
+// The test fixture will provide a font named "GDITest".
+const wchar_t* kTestFontFamilyW = L"GDITest";
+
+// The "GDITest" font will have an 'hhea' table (all ttf fonts do).
+const DWORD kTestFontTableTag = DWRITE_MAKE_OPENTYPE_TAG('h', 'h', 'e', 'a');
+
+// The 'hhea' table will be of length 36 (all 'hhea' tables do).
+const size_t kTestFontTableDataLength = 36;
+
+// The 'hhea' table will contain this content (specific to this font).
+const uint8_t kTestFontTableData[kTestFontTableDataLength] = {
+    0x00, 0x01, 0x00, 0x00, 0x03, 0x34, 0xFF, 0x33, 0x00, 0x5e, 0x04, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03};
+
+// The test fixture will not provide a font names "InvalidFont".
+const wchar_t* kTestFontFamilyInvalid = L"InvalidFont";
 
 void InitLogFont(LOGFONTW* logfont, const wchar_t* fontname) {
   size_t length = std::min(sizeof(logfont->lfFaceName),
@@ -247,10 +135,9 @@ int CALLBACK EnumFontCallbackTest(const LOGFONT* log_font,
 
 }  // namespace
 
-TEST(GDIFontEmulationTest, CreateDeleteDCSuccess) {
+TEST_F(GDIFontEmulationTest, CreateDeleteDCSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_FALSE(!patch_data);
 
@@ -261,10 +148,9 @@ TEST(GDIFontEmulationTest, CreateDeleteDCSuccess) {
   EXPECT_EQ(0u, GetEmulatedGdiHandleCountForTesting());
 }
 
-TEST(GDIFontEmulationTest, CreateUniqueDCSuccess) {
+TEST_F(GDIFontEmulationTest, CreateUniqueDCSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
 
@@ -279,10 +165,9 @@ TEST(GDIFontEmulationTest, CreateUniqueDCSuccess) {
   EXPECT_EQ(0u, GetEmulatedGdiHandleCountForTesting());
 }
 
-TEST(GDIFontEmulationTest, CreateFontSuccess) {
+TEST_F(GDIFontEmulationTest, CreateFontSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   LOGFONTW logfont = {0};
@@ -293,10 +178,9 @@ TEST(GDIFontEmulationTest, CreateFontSuccess) {
   EXPECT_EQ(0u, GetEmulatedGdiHandleCountForTesting());
 }
 
-TEST(GDIFontEmulationTest, CreateFontFailure) {
+TEST_F(GDIFontEmulationTest, CreateFontFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   LOGFONTW logfont = {0};
@@ -305,10 +189,9 @@ TEST(GDIFontEmulationTest, CreateFontFailure) {
   EXPECT_EQ(font, nullptr);
 }
 
-TEST(GDIFontEmulationTest, EnumFontFamilySuccess) {
+TEST_F(GDIFontEmulationTest, EnumFontFamilySuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
@@ -320,10 +203,9 @@ TEST(GDIFontEmulationTest, EnumFontFamilySuccess) {
   EXPECT_TRUE(DeleteDC(hdc));
 }
 
-TEST(GDIFontEmulationTest, EnumFontFamilyFailure) {
+TEST_F(GDIFontEmulationTest, EnumFontFamilyFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
@@ -335,30 +217,27 @@ TEST(GDIFontEmulationTest, EnumFontFamilyFailure) {
   EXPECT_TRUE(DeleteDC(hdc));
 }
 
-TEST(GDIFontEmulationTest, DeleteDCFailure) {
+TEST_F(GDIFontEmulationTest, DeleteDCFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = reinterpret_cast<HDC>(0x55667788);
   EXPECT_FALSE(DeleteDC(hdc));
 }
 
-TEST(GDIFontEmulationTest, DeleteObjectFailure) {
+TEST_F(GDIFontEmulationTest, DeleteObjectFailure) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HFONT font = reinterpret_cast<HFONT>(0x88aabbcc);
   EXPECT_FALSE(DeleteObject(font));
 }
 
-TEST(GDIFontEmulationTest, GetFontDataSizeSuccess) {
+TEST_F(GDIFontEmulationTest, GetFontDataSizeSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
@@ -369,16 +248,15 @@ TEST(GDIFontEmulationTest, GetFontDataSizeSuccess) {
   EXPECT_NE(font, nullptr);
   EXPECT_EQ(SelectObject(hdc, font), nullptr);
   DWORD size = GetFontData(hdc, kTestFontTableTag, 0, nullptr, 0);
-  DWORD data_size = static_cast<DWORD>(strlen(kTestFontData));
+  DWORD data_size = static_cast<DWORD>(kTestFontTableDataLength);
   EXPECT_EQ(size, data_size);
   EXPECT_TRUE(DeleteObject(font));
   EXPECT_TRUE(DeleteDC(hdc));
 }
 
-TEST(GDIFontEmulationTest, GetFontDataInvalidTagSuccess) {
+TEST_F(GDIFontEmulationTest, GetFontDataInvalidTagSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
@@ -394,10 +272,9 @@ TEST(GDIFontEmulationTest, GetFontDataInvalidTagSuccess) {
   EXPECT_TRUE(DeleteDC(hdc));
 }
 
-TEST(GDIFontEmulationTest, GetFontDataInvalidFontSuccess) {
+TEST_F(GDIFontEmulationTest, GetFontDataInvalidFontSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
@@ -407,10 +284,9 @@ TEST(GDIFontEmulationTest, GetFontDataInvalidFontSuccess) {
   EXPECT_TRUE(DeleteDC(hdc));
 }
 
-TEST(GDIFontEmulationTest, GetFontDataDataSuccess) {
+TEST_F(GDIFontEmulationTest, GetFontDataDataSuccess) {
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return;
-  TestSkFontMgr fontmgr;
   std::unique_ptr<GdiFontPatchData> patch_data(SetupTest());
   EXPECT_NE(patch_data, nullptr);
   HDC hdc = CreateCompatibleDC(0);
@@ -420,11 +296,11 @@ TEST(GDIFontEmulationTest, GetFontDataDataSuccess) {
   HFONT font = CreateFontIndirectW(&logfont);
   EXPECT_NE(font, nullptr);
   EXPECT_EQ(SelectObject(hdc, font), nullptr);
-  DWORD data_size = static_cast<DWORD>(strlen(kTestFontData));
+  DWORD data_size = static_cast<DWORD>(kTestFontTableDataLength);
   std::vector<char> data(data_size);
   DWORD size = GetFontData(hdc, kTestFontTableTag, 0, &data[0], data.size());
   EXPECT_EQ(size, data_size);
-  EXPECT_EQ(memcmp(&data[0], kTestFontData, data.size()), 0);
+  EXPECT_EQ(memcmp(&data[0], kTestFontTableData, data.size()), 0);
   EXPECT_TRUE(DeleteObject(font));
   EXPECT_TRUE(DeleteDC(hdc));
 }
