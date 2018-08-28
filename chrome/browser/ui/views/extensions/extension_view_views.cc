@@ -139,11 +139,6 @@ namespace extensions {
 std::unique_ptr<ExtensionView> ExtensionViewHost::CreateExtensionView(
     ExtensionViewHost* host,
     Browser* browser) {
-#if defined(OS_MACOSX)
-  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
-    return CreateExtensionViewCocoa(host, browser);
-  }
-#endif
   std::unique_ptr<ExtensionViewViews> view(
       new ExtensionViewViews(host, browser));
   // We own |view_|, so don't auto delete when it's removed from the view

@@ -12,8 +12,6 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-@class ExtensionPopupController;
-
 // The Cocoa-specific implementation for ExtensionActionPlatformDelegate.
 class ExtensionActionPlatformDelegateCocoa
     : public ExtensionActionPlatformDelegate,
