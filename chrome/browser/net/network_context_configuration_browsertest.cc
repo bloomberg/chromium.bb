@@ -679,6 +679,13 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, FileURL) {
 
 // Make sure a cache is used when expected.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
+  // Crashing the network service may corrupt the disk cache, so skip this test
+  // in tests that crash the network service and use an on-disk cache.
+  if (GetParam().network_service_state == NetworkServiceState::kRestarted &&
+      GetHttpCacheType() == StorageType::kDisk) {
+    return;
+  }
+
   // Make a request whose response should be cached.
   GURL request_url = embedded_test_server()->GetURL("/cachetime");
   std::unique_ptr<network::ResourceRequest> request =
@@ -712,7 +719,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, Cache) {
       loader_factory(), simple_loader_helper2.GetCallback());
   simple_loader_helper2.WaitForCallback();
   if (GetHttpCacheType() == StorageType::kNone) {
-    // If there's no cache, and not server running, the request should have
+    // If there's no cache, and no server running, the request should have
     // failed.
     EXPECT_FALSE(simple_loader_helper2.response_body());
     EXPECT_EQ(net::ERR_CONNECTION_REFUSED, simple_loader2->NetError());
@@ -811,9 +818,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, PRE_DiskCache) {
 // browser restart.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   // Crashing the network service may corrupt the disk cache, so skip this phase
-  // in tests that crash the network service.
-  if (GetParam().network_service_state == NetworkServiceState::kRestarted)
+  // in tests that crash the network service and use an on-disk cache.
+  if (GetParam().network_service_state == NetworkServiceState::kRestarted &&
+      GetHttpCacheType() == StorageType::kDisk) {
     return;
+  }
 
   // Load URL from the above test body to disk.
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -846,18 +855,11 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DiskCache) {
   // The request should only succeed if there is an on-disk cache.
   if (GetHttpCacheType() != StorageType::kDisk) {
     EXPECT_FALSE(simple_loader_helper.response_body());
-  } else if (GetParam().network_service_state !=
-             NetworkServiceState::kRestarted) {
+  } else {
+    DCHECK_NE(GetParam().network_service_state,
+              NetworkServiceState::kRestarted);
     ASSERT_TRUE(simple_loader_helper.response_body());
     EXPECT_EQ(original_response, *simple_loader_helper.response_body());
-  } else {
-    // The network service restarted, and may or may not have recovered the
-    // cache entry. If the request succeded, though, it must return the correct
-    // result.
-    // TODO(mmenke): Is there any way to ensure the item in the cache can be
-    // recovered / the cache can be loaded in this test?
-    if (simple_loader_helper.response_body())
-      EXPECT_EQ(original_response, *simple_loader_helper.response_body());
   }
 }
 
