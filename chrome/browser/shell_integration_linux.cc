@@ -38,6 +38,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
@@ -139,7 +140,7 @@ shell_integration::DefaultWebClientState GetIsDefaultWebClient(
 #if defined(OS_CHROMEOS)
   return shell_integration::UNKNOWN_DEFAULT;
 #else
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
@@ -297,7 +298,7 @@ base::FilePath GetDataWriteLocation(base::Environment* env) {
 }
 
 std::vector<base::FilePath> GetDataSearchLocations(base::Environment* env) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::vector<base::FilePath> search_paths;
   base::FilePath write_location = GetDataWriteLocation(env);
@@ -447,7 +448,7 @@ std::string GetIconName() {
 bool GetExistingShortcutContents(base::Environment* env,
                                  const base::FilePath& desktop_filename,
                                  std::string* output) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   std::vector<base::FilePath> search_paths = GetDataSearchLocations(env);
 
@@ -491,7 +492,7 @@ base::FilePath GetWebShortcutFilename(const GURL& url) {
 std::vector<base::FilePath> GetExistingProfileShortcutFilenames(
     const base::FilePath& profile_path,
     const base::FilePath& directory) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string prefix(chrome::kBrowserProcessExecutableName);
@@ -657,7 +658,7 @@ std::string GetDirectoryFileContents(const base::string16& title,
 bool CreateAppListDesktopShortcut(
     const std::string& wm_class,
     const std::string& title) {
-  base::AssertBlockingAllowed();
+  base::ScopedBlockingCall scoped_blocking_call(base::BlockingType::MAY_BLOCK);
 
   base::FilePath desktop_name(kAppListDesktopName);
   base::FilePath shortcut_filename = desktop_name.AddExtension("desktop");
