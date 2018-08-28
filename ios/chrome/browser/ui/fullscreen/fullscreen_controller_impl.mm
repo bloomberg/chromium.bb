@@ -10,6 +10,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_system_notification_observer.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_web_state_list_observer.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -46,6 +48,9 @@ FullscreenControllerImpl::FullscreenControllerImpl()
                 forSelector:@selector(broadcastExpandedToolbarHeight:)];
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastBottomToolbarHeight:)];
+  ios::GetChromeBrowserProvider()
+      ->GetFullscreenProvider()
+      ->InitializeFullscreen(this);
 }
 
 FullscreenControllerImpl::~FullscreenControllerImpl() = default;
