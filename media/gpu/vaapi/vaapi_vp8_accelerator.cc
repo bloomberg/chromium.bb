@@ -5,8 +5,8 @@
 #include "media/gpu/vaapi/vaapi_vp8_accelerator.h"
 
 #include "base/numerics/ranges.h"
+#include "media/gpu/decode_surface_handler.h"
 #include "media/gpu/vaapi/vaapi_common.h"
-#include "media/gpu/vaapi/vaapi_video_decode_accelerator.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
 #include "media/gpu/vp8_picture.h"
 
@@ -20,7 +20,7 @@
 namespace media {
 
 VaapiVP8Accelerator::VaapiVP8Accelerator(
-    VaapiVideoDecodeAccelerator* vaapi_dec,
+    DecodeSurfaceHandler<VASurface>* vaapi_dec,
     scoped_refptr<VaapiWrapper> vaapi_wrapper)
     : vaapi_wrapper_(vaapi_wrapper), vaapi_dec_(vaapi_dec) {
   DCHECK(vaapi_wrapper_);
@@ -35,7 +35,7 @@ VaapiVP8Accelerator::~VaapiVP8Accelerator() {
 
 scoped_refptr<VP8Picture> VaapiVP8Accelerator::CreateVP8Picture() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const auto va_surface = vaapi_dec_->CreateVASurface();
+  const auto va_surface = vaapi_dec_->CreateSurface();
   if (!va_surface)
     return nullptr;
 
@@ -229,9 +229,9 @@ bool VaapiVP8Accelerator::OutputPicture(const scoped_refptr<VP8Picture>& pic) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const VaapiVP8Picture* vaapi_pic = pic->AsVaapiVP8Picture();
-  vaapi_dec_->VASurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
-                             vaapi_pic->visible_rect(),
-                             vaapi_pic->get_colorspace());
+  vaapi_dec_->SurfaceReady(vaapi_pic->va_surface(), vaapi_pic->bitstream_id(),
+                           vaapi_pic->visible_rect(),
+                           vaapi_pic->get_colorspace());
   return true;
 }
 
