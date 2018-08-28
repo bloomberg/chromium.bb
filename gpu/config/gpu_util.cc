@@ -78,6 +78,9 @@ GpuFeatureStatus GetOopRasterizationFeatureStatus(
   else if (gpu_preferences.enable_oop_rasterization)
     return kGpuFeatureStatusEnabled;
 
+  // TODO(enne): Eventually oop rasterization will replace gpu rasterization,
+  // and so we will need to address the underlying bugs or turn of GPU
+  // rasterization for these cases.
   if (blacklisted_features.count(GPU_FEATURE_TYPE_OOP_RASTERIZATION))
     return kGpuFeatureStatusBlacklisted;
 
