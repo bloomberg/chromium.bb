@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "chrome/browser/shell_integration_linux.h"
+#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/chrome_switches.h"
@@ -53,8 +54,20 @@ views::Widget::InitParams DesktopBrowserFrameAuraX11::GetWidgetParams() {
 }
 
 bool DesktopBrowserFrameAuraX11::UseCustomFrame() const {
-  return use_custom_frame_pref_.GetValue() &&
-      browser_view()->IsBrowserTypeNormal();
+  // Normal browser windows get a custom frame (per the user's preference).
+  if (use_custom_frame_pref_.GetValue() &&
+      browser_view()->IsBrowserTypeNormal()) {
+    return true;
+  }
+
+  // Hosted app windows get a custom frame (if the desktop PWA experimental
+  // feature is enabled).
+  if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
+          browser_view()->browser())) {
+    return true;
+  }
+
+  return false;
 }
 
 void DesktopBrowserFrameAuraX11::OnUseCustomChromeFrameChanged() {
