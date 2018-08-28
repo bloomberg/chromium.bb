@@ -44,6 +44,7 @@ namespace ash {
 namespace {
 
 constexpr int kShelfRoundedCornerRadius = 28;
+constexpr int kShelfBlurRadius = 10;
 
 // Return the first or last focusable child of |root|.
 views::View* FindFirstOrLastFocusableChild(views::View* root,
@@ -213,6 +214,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
         mask_ = views::Painter::CreatePaintedLayer(
             views::Painter::CreateSolidRoundRectPainter(SK_ColorBLACK, radius));
         mask_->layer()->SetBounds(opaque_background_bounds);
+        opaque_background_.SetBackgroundBlur(kShelfBlurRadius);
         opaque_background_.SetMaskLayer(mask_->layer());
       }
     }
