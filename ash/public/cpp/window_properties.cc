@@ -33,6 +33,9 @@ namespace ash {
 
 void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
+      aura::client::kAppType, mojom::kAppType_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kBlockedForAssistantSnapshotKey,
       mojom::kBlockedForAssistantSnapshot_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
