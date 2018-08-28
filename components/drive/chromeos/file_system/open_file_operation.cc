@@ -45,7 +45,7 @@ OpenFileOperation::~OpenFileOperation() = default;
 void OpenFileOperation::OpenFile(const base::FilePath& file_path,
                                  OpenMode open_mode,
                                  const std::string& mime_type,
-                                 const OpenFileCallback& callback) {
+                                 OpenFileCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
@@ -54,51 +54,49 @@ void OpenFileOperation::OpenFile(const base::FilePath& file_path,
       // It is not necessary to create a new file even if not exists.
       // So call OpenFileAfterCreateFile directly with FILE_ERROR_OK
       // to skip file creation.
-      OpenFileAfterCreateFile(file_path, callback, FILE_ERROR_OK);
+      OpenFileAfterCreateFile(file_path, std::move(callback), FILE_ERROR_OK);
       break;
     case CREATE_FILE:
       create_file_operation_->CreateFile(
           file_path,
           true,  // exclusive: fail if already exists
           mime_type,
-          base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
-                     weak_ptr_factory_.GetWeakPtr(), file_path, callback));
+          base::BindRepeating(&OpenFileOperation::OpenFileAfterCreateFile,
+                              weak_ptr_factory_.GetWeakPtr(), file_path,
+                              base::Passed(std::move(callback))));
       break;
     case OPEN_OR_CREATE_FILE:
       create_file_operation_->CreateFile(
           file_path,
           false,  // not-exclusive
           mime_type,
-          base::Bind(&OpenFileOperation::OpenFileAfterCreateFile,
-                     weak_ptr_factory_.GetWeakPtr(), file_path, callback));
+          base::BindRepeating(&OpenFileOperation::OpenFileAfterCreateFile,
+                              weak_ptr_factory_.GetWeakPtr(), file_path,
+                              base::Passed(std::move(callback))));
       break;
   }
 }
 
-void OpenFileOperation::OpenFileAfterCreateFile(
-    const base::FilePath& file_path,
-    const OpenFileCallback& callback,
-    FileError error) {
+void OpenFileOperation::OpenFileAfterCreateFile(const base::FilePath& file_path,
+                                                OpenFileCallback callback,
+                                                FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), base::Closure());
+    std::move(callback).Run(error, base::FilePath(), base::Closure());
     return;
   }
 
   download_operation_->EnsureFileDownloadedByPath(
-      file_path,
-      ClientContext(USER_INITIATED),
-      GetFileContentInitializedCallback(),
-      google_apis::GetContentCallback(),
-      base::Bind(
-          &OpenFileOperation::OpenFileAfterFileDownloaded,
-          weak_ptr_factory_.GetWeakPtr(), callback));
+      file_path, ClientContext(USER_INITIATED),
+      GetFileContentInitializedCallback(), google_apis::GetContentCallback(),
+      base::BindOnce(&OpenFileOperation::OpenFileAfterFileDownloaded,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void OpenFileOperation::OpenFileAfterFileDownloaded(
-    const OpenFileCallback& callback,
+    OpenFileCallback callback,
     FileError error,
     const base::FilePath& local_file_path,
     std::unique_ptr<ResourceEntry> entry) {
@@ -114,46 +112,41 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
   }
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), base::Closure());
+    std::move(callback).Run(error, base::FilePath(), base::Closure());
     return;
   }
 
   std::unique_ptr<base::ScopedClosureRunner>* file_closer =
       new std::unique_ptr<base::ScopedClosureRunner>;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&internal::FileCache::OpenForWrite,
-                 base::Unretained(cache_),
-                 entry->local_id(),
-                 file_closer),
-      base::Bind(&OpenFileOperation::OpenFileAfterOpenForWrite,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 local_file_path,
-                 entry->local_id(),
-                 callback,
-                 base::Owned(file_closer)));
+      blocking_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&internal::FileCache::OpenForWrite,
+                     base::Unretained(cache_), entry->local_id(), file_closer),
+      base::BindOnce(&OpenFileOperation::OpenFileAfterOpenForWrite,
+                     weak_ptr_factory_.GetWeakPtr(), local_file_path,
+                     entry->local_id(), std::move(callback),
+                     base::Owned(file_closer)));
 }
 
 void OpenFileOperation::OpenFileAfterOpenForWrite(
     const base::FilePath& local_file_path,
     const std::string& local_id,
-    const OpenFileCallback& callback,
+    OpenFileCallback callback,
     std::unique_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
-    callback.Run(error, base::FilePath(), base::Closure());
+    std::move(callback).Run(error, base::FilePath(), base::Closure());
     return;
   }
 
   ++open_files_[local_id];
-  callback.Run(error, local_file_path,
-               base::Bind(&OpenFileOperation::CloseFile,
-                          weak_ptr_factory_.GetWeakPtr(),
-                          local_id,
+  std::move(callback).Run(
+      error, local_file_path,
+      base::BindRepeating(&OpenFileOperation::CloseFile,
+                          weak_ptr_factory_.GetWeakPtr(), local_id,
                           base::Passed(file_closer)));
 }
 

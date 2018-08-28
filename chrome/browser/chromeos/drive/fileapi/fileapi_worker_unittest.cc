@@ -46,12 +46,11 @@ class TestFileSystemForOpenFile : public DummyFileSystem {
   void OpenFile(const base::FilePath& file_path,
                 OpenMode open_mode,
                 const std::string& mime_type,
-                const drive::OpenFileCallback& callback) override {
+                drive::OpenFileCallback callback) override {
     EXPECT_EQ(expected_open_mode_, open_mode);
 
-    callback.Run(
-        FILE_ERROR_OK,
-        local_file_path_,
+    std::move(callback).Run(
+        FILE_ERROR_OK, local_file_path_,
         base::Bind(&TestFileSystemForOpenFile::Close, base::Unretained(this)));
   }
 

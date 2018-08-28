@@ -1129,11 +1129,12 @@ void FileSystem::SetProperty(
 void FileSystem::OpenFile(const base::FilePath& file_path,
                           OpenMode open_mode,
                           const std::string& mime_type,
-                          const OpenFileCallback& callback) {
+                          OpenFileCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(callback);
 
-  open_file_operation_->OpenFile(file_path, open_mode, mime_type, callback);
+  open_file_operation_->OpenFile(file_path, open_mode, mime_type,
+                                 std::move(callback));
 }
 
 void FileSystem::GetPathFromResourceId(const std::string& resource_id,

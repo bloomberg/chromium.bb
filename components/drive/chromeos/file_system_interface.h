@@ -126,9 +126,9 @@ typedef base::OnceCallback<void(FileError, const std::vector<HashAndFilePath>&)>
 // modification to the cache is done. Otherwise, Drive file system does not
 // pick up the file for uploading.
 // |close_callback| must not be called more than once.
-typedef base::Callback<void(FileError error,
-                            const base::FilePath& file_path,
-                            const base::Closure& close_callback)>
+typedef base::OnceCallback<void(FileError error,
+                                const base::FilePath& file_path,
+                                const base::RepeatingClosure& close_callback)>
     OpenFileCallback;
 
 // Used to get available space for the account from Drive.
@@ -228,7 +228,7 @@ class FileSystemInterface {
   virtual void OpenFile(const base::FilePath& file_path,
                         OpenMode open_mode,
                         const std::string& mime_type,
-                        const OpenFileCallback& callback) = 0;
+                        OpenFileCallback callback) = 0;
 
   // Copies |src_file_path| to |dest_file_path| on the file system.
   // |src_file_path| can be a hosted document (see limitations below).

@@ -25,7 +25,7 @@ class DummyFileSystem : public FileSystemInterface {
   void OpenFile(const base::FilePath& file_path,
                 OpenMode open_mode,
                 const std::string& mime_type,
-                const OpenFileCallback& callback) override {}
+                OpenFileCallback callback) override {}
   void Copy(const base::FilePath& src_file_path,
             const base::FilePath& dest_file_path,
             bool preserve_last_modified,
