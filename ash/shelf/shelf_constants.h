@@ -64,9 +64,9 @@ constexpr float kShelfInkDropVisibleOpacity = 0.2f;
 // notifications, etc).
 ASH_EXPORT constexpr SkColor kShelfIconColor = SK_ColorWHITE;
 
-// The alpha value for the shelf background when a window is overlapping.
-ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;
-ASH_EXPORT constexpr int kShelfTranslucentWithOverlapAlphaNewUi = 190;
+// The alpha value for the shelf background.
+ASH_EXPORT constexpr int kShelfTranslucentAlpha = 153;                 // 60%
+ASH_EXPORT constexpr int kShelfTranslucentMaximizedWindowNewUi = 230;  // 90%
 
 // The alpha value used to darken a colorized shelf when the shelf is
 // translucent.
