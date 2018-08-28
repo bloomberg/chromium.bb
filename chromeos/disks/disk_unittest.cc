@@ -231,6 +231,24 @@ TEST(DiskTest, ConstructFromDiskInfo_Mounted) {
   EXPECT_EQ(kMountPath1, disk.mount_path());
 }
 
+TEST(DiskTest, SetMountPath) {
+  std::unique_ptr<dbus::Response> response = BuildBasicDbusResponse();
+  DiskInfo disk_info(kDevicePath, response.get());
+  Disk disk(disk_info, false /* write_disabled_by_policy */, "", "");
+
+  EXPECT_EQ("", disk.mount_path());
+  EXPECT_EQ("", disk.base_mount_path());
+  EXPECT_FALSE(disk.is_mounted());
+
+  disk.SetMountPath(kMountPath1);
+  EXPECT_EQ(kMountPath1, disk.mount_path());
+  EXPECT_EQ(kMountPath1, disk.base_mount_path());
+  EXPECT_FALSE(disk.is_mounted());
+
+  disk.set_mounted(true);
+  EXPECT_TRUE(disk.is_mounted());
+}
+
 }  // namespace
 }  // namespace disks
 }  // namespace chromeos

@@ -443,6 +443,14 @@ class DiskMountManagerImpl : public DiskMountManager,
             it != access_modes_.end() && !disk->is_read_only_hardware()
                 && it->second == MOUNT_ACCESS_MODE_READ_ONLY);
         disk->SetMountPath(mount_info.mount_path);
+        // Only set the mount path if the disk is actually mounted. Right now, a
+        // number of code paths (format, rename, unmount) rely on the mount path
+        // being set even if the disk isn't mounted. cros-disks also does some
+        // tracking of non-mounted mount paths. Making this change is
+        // non-trivial.
+        // TODO(amistry): Change these code paths to use device path instead of
+        // mount path.
+        disk->set_mounted(entry.error_code() == MOUNT_ERROR_NONE);
       }
     }
     // Observers may read the values of disks_. So notify them after tweaking
@@ -477,8 +485,10 @@ class DiskMountManagerImpl : public DiskMountManager,
     DiskMap::iterator disk_iter = disks_.find(path);
     if (disk_iter != disks_.end()) {
       DCHECK(disk_iter->second);
-      if (error_code == MOUNT_ERROR_NONE)
+      if (error_code == MOUNT_ERROR_NONE) {
         disk_iter->second->clear_mount_path();
+        disk_iter->second->set_mounted(false);
+      }
     }
 
     if (!callback.is_null())
