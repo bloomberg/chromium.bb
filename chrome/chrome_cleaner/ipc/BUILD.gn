@@ -32,6 +32,8 @@ source_set("chrome_prompt_ipc") {
 
 source_set("sandbox") {
   sources = [
+    "mojo_sandbox_hooks.cc",
+    "mojo_sandbox_hooks.h",
     "sandbox.cc",
     "sandbox.h",
   ]
@@ -74,6 +76,7 @@ source_set("unittest_sources") {
 
   sources = [
     "chrome_prompt_ipc_unittest.cc",
+    "mojo_sandbox_hooks_unittest.cc",
     "mojo_task_runner_unittest.cc",
     "sandbox_unittest.cc",
   ]
@@ -85,6 +88,7 @@ source_set("unittest_sources") {
     ":sandbox",
     "//base",
     "//base/test:test_support",
+    "//chrome/chrome_cleaner/interfaces:mojo_sandbox_hooks_test_interface",
     "//chrome/chrome_cleaner/logging:common",
     "//chrome/chrome_cleaner/os:common_os",
     "//chrome/chrome_cleaner/test:test_util",
