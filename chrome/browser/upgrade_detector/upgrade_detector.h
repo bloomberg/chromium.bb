@@ -86,9 +86,9 @@ class UpgradeDetector {
     return critical_update_acknowledged_;
   }
 
+#if defined(OS_CHROMEOS)
   bool is_factory_reset_required() const { return is_factory_reset_required_; }
 
-#if defined(OS_CHROMEOS)
   bool is_rollback() const { return is_rollback_; }
 #endif  // defined(OS_CHROMEOS)
 
@@ -197,11 +197,11 @@ class UpgradeDetector {
     upgrade_notification_stage_ = stage;
   }
 
+#if defined(OS_CHROMEOS)
   void set_is_factory_reset_required(bool is_factory_reset_required) {
     is_factory_reset_required_ = is_factory_reset_required;
   }
 
-#if defined(OS_CHROMEOS)
   void set_is_rollback(bool is_rollback) { is_rollback_ = is_rollback; }
 #endif  // defined(OS_CHROMEOS)
 
@@ -245,10 +245,10 @@ class UpgradeDetector {
   // Whether the user has acknowledged the critical update.
   bool critical_update_acknowledged_;
 
-  // Whether a factory reset is needed to complete an update.
-  bool is_factory_reset_required_;
-
 #if defined(OS_CHROMEOS)
+  // Whether a factory reset is needed to complete an update.
+  bool is_factory_reset_required_ = false;
+
   // Whether the update is actually an admin-initiated rollback of the device
   // to an earlier version of Chrome OS, which results in the device being
   // wiped when it's rebooted.
