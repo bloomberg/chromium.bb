@@ -4380,6 +4380,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVaapiJpegImageDecodeAccelerationName,
      flag_descriptions::kVaapiJpegImageDecodeAccelerationDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kVaapiJpegImageDecodeAcceleration)},
+
+    {"enable-home-launcher-gestures",
+     flag_descriptions::kEnableHomeLauncherGesturesName,
+     flag_descriptions::kEnableHomeLauncherGesturesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(app_list::features::kEnableHomeLauncherGestures)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
