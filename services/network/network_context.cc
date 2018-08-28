@@ -299,8 +299,13 @@ class NetworkContext::ContextNetworkDelegate
     LOG(ERROR) << "Cancelling request to " << target_url
                << " with invalid referrer " << referrer_url;
     // Record information to help debug issues like http://crbug.com/422871.
-    if (target_url.SchemeIsHTTPOrHTTPS())
+    if (target_url.SchemeIsHTTPOrHTTPS()) {
+      auto referrer_policy = request.referrer_policy();
+      base::debug::Alias(&referrer_policy);
+      DEBUG_ALIAS_FOR_GURL(target_buf, target_url);
+      DEBUG_ALIAS_FOR_GURL(referrer_buf, referrer_url);
       base::debug::DumpWithoutCrashing();
+    }
     return true;
   }
 
