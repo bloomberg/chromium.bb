@@ -2744,7 +2744,6 @@ crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-17.xml [ Skip 
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-65.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-18b.xml [ Skip ]
 crbug.com/626703 external/wpt/css/selectors/old-tests/css3-modsel-159.xml [ Skip ]
-crbug.com/626703 external/wpt/service-workers/service-worker/update-top-level.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/service-workers/service-worker/update-top-level.https.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors-ns/external/wpt/service-workers/service-worker/update-top-level.https.html [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/dynamic-markup-insertion/opening-the-input-stream/reload.window.html [ Timeout ]
